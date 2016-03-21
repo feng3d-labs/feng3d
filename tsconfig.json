@@ -1,10 +1,28 @@
+// {
+//     "compilerOptions": {
+//         "target": "es5",
+//         "noImplicitAny": false,
+//         "module": "amd",
+//         "removeComments": false,
+//         "outDir": "bin",
+//         "sourceMap": true
+//     }
+// }
+
 {
-    "compilerOptions": {
-        "target": "es5",
-        "noImplicitAny": false,
-        "module": "amd",
-        "removeComments": false,
-        "outDir": "bin",
-        "sourceMap": true
-    }
+	"compilerOptions": {
+		"target": "es5",
+		"noImplicitAny": false,
+		"sourceMap": true,
+		"declaration": true,
+		"out": "feng3d.js"
+	},
+	"files": [
+        "src/Feng3d.ts",
+        "src/math/Matrix3D.ts",
+        "src/math/Matrix3DUtils.ts",
+        "src/math/Orientation3D.ts",
+        "src/math/Quaternion.ts",
+        "src/math/Vector3D.ts"
+    ]
 }
