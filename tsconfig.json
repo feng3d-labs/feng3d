@@ -15,7 +15,7 @@
 		"noImplicitAny": false,
 		"sourceMap": true,
 		"declaration": true,
-		"out": "feng3d.js"
+		"out": "../feng3d-ts-examples/libs/feng3d.js"
 	},
 	"files": [
         "src/Feng3d.ts",
