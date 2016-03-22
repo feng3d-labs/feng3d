@@ -15,7 +15,7 @@
 		"noImplicitAny": false,
 		"sourceMap": true,
 		"declaration": true,
-		"out": "../feng3d-ts-examples/libs/feng3d.js"
+		"out": "release/feng3d.js"
 	},
 	"files": [
         "src/Feng3d.ts",
@@ -23,6 +23,10 @@
         "src/math/Matrix3DUtils.ts",
         "src/math/Orientation3D.ts",
         "src/math/Quaternion.ts",
-        "src/math/Vector3D.ts"
+        "src/math/Vector3D.ts",
+        
+        "src/me/feng3d/events/Event.ts",
+        "src/me/feng3d/events/EventDispatcher.ts",
+        "src/me/feng3d/events/IEventDispatcher.ts"
     ]
 }
