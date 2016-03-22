@@ -77,14 +77,14 @@ module feng3d {
 		/**
 		 * 事件目标。
 		 */
-        public get target(): Object {
+        public get target(): IEventDispatcher {
             return this._target;
         }
 
 		/**
 		 * 当前正在使用某个事件侦听器处理 Event 对象的对象。
 		 */
-        public get currentTarget(): Object {
+        public get currentTarget(): IEventDispatcher {
             return this._currentTarget;
         }
 
