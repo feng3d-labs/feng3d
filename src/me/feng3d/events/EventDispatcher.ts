@@ -29,7 +29,10 @@ module feng3d {
             var listeners: Function[] = this._eventListeners[type];
             if (listeners == null)
                 listeners = this._eventListeners[type] = [];
-            listeners.push(listener);
+            var index = listeners.indexOf(listener);
+            if (index == -1) {
+                listeners.push(listener);
+            }
         }
 
         public removeEventListener(type: string, listener: Function): void {
