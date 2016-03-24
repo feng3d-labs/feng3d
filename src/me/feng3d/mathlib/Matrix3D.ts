@@ -106,14 +106,20 @@ module feng3d {
          * 将 Vector3D 对象复制到调用方 Matrix3D 对象的特定列中。
          */
         public copyColumnFrom(column: number, vector3D: Vector3D) {
-            alert("未实现" + "Matrix3D.copyColumnFrom");
+            this.rawData[column * 4 + 0] = vector3D.x;
+            this.rawData[column * 4 + 1] = vector3D.y;
+            this.rawData[column * 4 + 2] = vector3D.z;
+            this.rawData[column * 4 + 3] = vector3D.w;
         }
 
         /**
          * 将调用方 Matrix3D 对象的特定列复制到 Vector3D 对象中。
          */
-        public copyColumnTo(col: number, vector3D: Vector3D) {
-            alert("未实现" + "Matrix3D.copyFrom");
+        public copyColumnTo(column: number, vector3D: Vector3D) {
+            vector3D.x = this.rawData[column * 4 + 0];
+            vector3D.y = this.rawData[column * 4 + 1];
+            vector3D.z = this.rawData[column * 4 + 2];
+            vector3D.w = this.rawData[column * 4 + 3];
         }
 
         /**
