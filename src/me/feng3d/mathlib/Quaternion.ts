@@ -1,68 +1,34 @@
 module feng3d {
     /**
-     * @language zh_CN
-     * @class egret3d.Quaternion
-     * @classdesc
-     * Quaternion类
+     * 四元素
      * 
      * 定义了一个四元数表示物体在空间的旋转。
      * 四元数通常用作替代欧拉角和旋转矩阵的方式来实现平滑插值和避免万向节锁
      * 注意，这四元数类不自动保持四元数标准化。因此，在必要的时候，必须采取单位化的四元数，通过调用单位化方法
-     * @version Egret 3.0
-     * @platform Web,Native
      */
     export class Quaternion {
 
         /**
-        * @language en_US
-        * The x value of the quaternion.
-        */
-        /**
-        * @language zh_CN
         * 四元数的x值.
         */
         public x: number = 0;
 
         /**
-        * @language en_US
-        * The y value of the quaternion.
-        */
-        /**
-        * @language zh_CN
         * 四元数的y值.
         */
         public y: number = 0;
 
         /**
-        * @language en_US
-        * The z value of the quaternion.
-        */
-        /**
-        * @language zh_CN
         * 四元数的z值.
         */
         public z: number = 0;
 
         /**
-        * @language en_US
-        * The w value of the quaternion.
-        */
-        /**
-        * @language zh_CN
         * 四元数的w值.
         */
         public w: number = 1;
 
         /**
-        * @language en_US
-        * Creates a new Quaternion object.
-        * @param x The x value of the quaternion.
-        * @param y The y value of the quaternion.
-        * @param z The z value of the quaternion.
-        * @param w The w value of the quaternion.
-        */
-        /**
-        * @language zh_CN
         * 创建一个四元数.
         * @param x
         * @param y
@@ -77,13 +43,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        *  
-        * @returns the magnitude of the quaternion object.
-        */
-        /**
-        * @language zh_CN
-        *  
         * 返回四元数的大小.
         * @param w
         * @returns 四元数的大小.
@@ -93,14 +52,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Fills the quaternion object with the result from a multiplication of two quaternion objects.
-        *
-        * @param    qa    The first quaternion in the multiplication.
-        * @param    qb    The second quaternion in the multiplication.
-        */
-        /**
-        * @language zh_CN
         * 两个四元数相乘,然后结果给当调用者.
         * @param qa 第一个四元数
         * @param qb 第二个四元数
@@ -116,7 +67,6 @@ module feng3d {
         }
 
         /**
-        * @language zh_CN
         * 四元数乘以一个3维向量，结果返回一个四元数
         * @param vector 相乘的向量
         * @param target 返回的结果，如果为null就会实例化一个四元数对象返回
@@ -140,14 +90,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Fills the quaternion object with values representing the given rotation around a vector.
-        *
-        * @param    axis    The axis around which to rotate
-        * @param    angle    The angle in radians of the rotation.
-        */
-        /**
-        * @language zh_CN
         * 创建一个以axis轴为中心旋转angle角度的四元数
         *
         * @param axis   旋转轴
@@ -167,7 +109,6 @@ module feng3d {
         }
 
         /**
-        * @language zh_CN
         * 返回四元数绕轴心和角度
         *
         * @param axis 轴心
@@ -194,14 +135,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Spherically interpolates between two quaternions, providing an interpolation between rotations with constant angle change rate.
-        * @param qa The first quaternion to interpolate.
-        * @param qb The second quaternion to interpolate.
-        * @param t The interpolation weight, a value between 0 and 1.
-        */
-        /**
-        * @language zh_CN
         * 两个四元数之间球形插值，插值之间提供旋转恒定角变化率。
         *
         * @param qa 四元数1
@@ -247,14 +180,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Linearly interpolates between two quaternions.
-        * @param qa The first quaternion to interpolate.
-        * @param qb The second quaternion to interpolate.
-        * @param t The interpolation weight, a value between 0 and 1.
-        */
-        /**
-        * @language zh_CN
         * 两个四元数之间的线性插值
         *
         * @param qa 四元数1
@@ -287,15 +212,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Fills the quaternion object with values representing the given euler rotation.
-        *
-        * @param    ax        The angle in radians of the rotation around the ax axis.
-        * @param    ay        The angle in radians of the rotation around the ay axis.
-        * @param    az        The angle in radians of the rotation around the az axis.
-        */
-        /**
-        * @language zh_CN
         * 用数值表示给定的欧拉旋转填充四元数对象。
         *
         * @param ax x轴旋转角度
@@ -321,13 +237,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Fills a target Vector3D object with the Euler angles that form the rotation represented by this quaternion.
-        * @param target An optional Vector3D object to contain the Euler angles. If not provided, a new object is created.
-        * @returns The Vector3D containing the Euler angles.
-        */
-        /**
-        * @language zh_CN
         * 把四元数转成欧拉角返回
         *
         * @param target 转成的欧拉返回值，如果为null就新建一个对象返回
@@ -352,11 +261,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Normalises the quaternion object.
-        */
-        /**
-        * @language zh_CN
         * 单位化四元数
         */
         public normalize(val: number = 1) {
@@ -369,13 +273,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Used to trace the values of a quaternion.
-        *
-        * @returns A string representation of the quaternion object.
-        */
-        /**
-        * @language zh_CN
         * 以字符串形式返回四元数的值
         * @returns 
         */
@@ -384,16 +281,8 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Converts the quaternion to a Matrix3D object representing an equivalent rotation.
-        * @param target An optional Matrix3D container to store the transformation in. If not provided, a new object is created.
-        * @returns A Matrix3D object representing an equivalent rotation.
-        */
-        /**
-        * @language zh_CN
         * 把一个四元数转换成矩阵
         * @param target 返回转换后的矩阵，如果为null就新建一个对象返回
-        * @see egret3d.Matrix3D
         * @returns 返回转换后的矩阵
         */
         public toMatrix3D(target: Matrix3D = null): Matrix3D {
@@ -428,12 +317,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Extracts a quaternion rotation matrix out of a given Matrix3D object.
-        * @param matrix The Matrix3D out of which the rotation will be extracted.
-        */
-        /**
-        * @language zh_CN
         * 用一个旋转矩阵生成四元数
         * @param matrix 旋转矩阵
         */
@@ -446,12 +329,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Clones the quaternion.
-        * @returns An exact duplicate of the current Quaternion.
-        */
-        /**
-        * @language zh_CN
         * 克隆一个四元数
         * @returns 当前四元数复制后返回.
         */
@@ -460,14 +337,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Rotates a point.
-        * @param vector The Vector3D object to be rotated.
-        * @param target An optional Vector3D object that will contain the rotated coordinates. If not provided, a new object will be created.
-        * @returns A Vector3D object containing the rotated point.
-        */
-        /**
-        * @language zh_CN
         * 旋转一个3量坐标点
         * @param vector 被旋转的对象
         * @param target 旋转后的坐标对象。如果为null，将创建一个新的对象
@@ -494,12 +363,6 @@ module feng3d {
         }
 
         /**
-        * @language en_US
-        * Copies the data from a quaternion into this instance.
-        * @param q The quaternion to copy from.
-        */
-        /**
-        * @language zh_CN
         * 将数据从四元数复制到该实例
         * @param q 被复制的四元数对象
         */
