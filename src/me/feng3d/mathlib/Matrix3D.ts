@@ -45,15 +45,36 @@ module feng3d {
          * 一个用于确定矩阵是否可逆的数字。
          */
         public get determinant(): number {
-            alert("未实现" + "Matrix3D.determinant");
-            return 0;
+
+            return ((this.rawData[0] * this.rawData[5] - this.rawData[4] * this.rawData[1]) * (this.rawData[10] * this.rawData[15] - this.rawData[14] * this.rawData[11]) - (this.rawData[0] * this.rawData[9] - this.rawData[8] * this.rawData[1]) * (this.rawData[6] * this.rawData[15] - this.rawData[14] * this.rawData[7]) + (this.rawData[0] * this.rawData[13] - this.rawData[12] * this.rawData[1]) * (this.rawData[6] * this.rawData[11] - this.rawData[10] * this.rawData[7]) + (this.rawData[4] * this.rawData[9] - this.rawData[8] * this.rawData[5]) * (this.rawData[2] * this.rawData[15] - this.rawData[14] * this.rawData[3]) - (this.rawData[4] * this.rawData[13] - this.rawData[12] * this.rawData[5]) * (this.rawData[2] * this.rawData[11] - this.rawData[10] * this.rawData[3]) + (this.rawData[8] * this.rawData[13] - this.rawData[12] * this.rawData[9]) * (this.rawData[2] * this.rawData[7] - this.rawData[6] * this.rawData[3]));
+
         }
 
         /**
          * 通过将另一个 Matrix3D 对象与当前 Matrix3D 对象相乘来后置一个矩阵。
          */
         public append(lhs: Matrix3D) {
-            alert("未实现" + "Matrix3D.append");
+            var m111: number = this.rawData[0], m121: number = this.rawData[4], m131: number = this.rawData[8], m141: number = this.rawData[12], m112: number = this.rawData[1], m122: number = this.rawData[5], m132: number = this.rawData[9], m142: number = this.rawData[13], m113: number = this.rawData[2], m123: number = this.rawData[6], m133: number = this.rawData[10], m143: number = this.rawData[14], m114: number = this.rawData[3], m124: number = this.rawData[7], m134: number = this.rawData[11], m144: number = this.rawData[15], m211: number = lhs.rawData[0], m221: number = lhs.rawData[4], m231: number = lhs.rawData[8], m241: number = lhs.rawData[12], m212: number = lhs.rawData[1], m222: number = lhs.rawData[5], m232: number = lhs.rawData[9], m242: number = lhs.rawData[13], m213: number = lhs.rawData[2], m223: number = lhs.rawData[6], m233: number = lhs.rawData[10], m243: number = lhs.rawData[14], m214: number = lhs.rawData[3], m224: number = lhs.rawData[7], m234: number = lhs.rawData[11], m244: number = lhs.rawData[15];
+
+            this.rawData[0] = m111 * m211 + m112 * m221 + m113 * m231 + m114 * m241;
+            this.rawData[1] = m111 * m212 + m112 * m222 + m113 * m232 + m114 * m242;
+            this.rawData[2] = m111 * m213 + m112 * m223 + m113 * m233 + m114 * m243;
+            this.rawData[3] = m111 * m214 + m112 * m224 + m113 * m234 + m114 * m244;
+
+            this.rawData[4] = m121 * m211 + m122 * m221 + m123 * m231 + m124 * m241;
+            this.rawData[5] = m121 * m212 + m122 * m222 + m123 * m232 + m124 * m242;
+            this.rawData[6] = m121 * m213 + m122 * m223 + m123 * m233 + m124 * m243;
+            this.rawData[7] = m121 * m214 + m122 * m224 + m123 * m234 + m124 * m244;
+
+            this.rawData[8] = m131 * m211 + m132 * m221 + m133 * m231 + m134 * m241;
+            this.rawData[9] = m131 * m212 + m132 * m222 + m133 * m232 + m134 * m242;
+            this.rawData[10] = m131 * m213 + m132 * m223 + m133 * m233 + m134 * m243;
+            this.rawData[11] = m131 * m214 + m132 * m224 + m133 * m234 + m134 * m244;
+
+            this.rawData[12] = m141 * m211 + m142 * m221 + m143 * m231 + m144 * m241;
+            this.rawData[13] = m141 * m212 + m142 * m222 + m143 * m232 + m144 * m242;
+            this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
+            this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
         }
 
         /**
@@ -67,7 +88,9 @@ module feng3d {
          * 在 Matrix3D 对象上后置一个增量平移，沿 x、y 和 z 轴重新定位。
          */
         public appendTranslation(x: number, y: number, z: number) {
-            alert("未实现" + "Matrix3D.appendTranslation");
+            this.rawData[12] += x;
+            this.rawData[13] += y;
+            this.rawData[14] += z;
         }
 
         /**
