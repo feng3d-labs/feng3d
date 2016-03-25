@@ -135,15 +135,30 @@ module feng3d {
          * @param transpose 是否转置当前矩阵.
          */
         public copyRawDataFrom(vector: Array<number>, index: number = 0, transpose: boolean = false): void {
-            alert("未实现" + "Matrix3D.copyRawDataFrom");
+            if (vector.length - index < 16) {
+                throw new ArgumentError();
+            }
+            for (var i = 0; i < 16; i++) {
+                this.rawData[i] = vector[index + i];
+            }
+            if(transpose){
+                this.transpose();
+            }
         }
 
         /**
          * 将调用方 Matrix3D 对象中的所有矩阵数据复制到提供的矢量中。
          */
         public copyRawDataTo(vector: Array<number>, index: number = 0, transpose: boolean = false) {
-
-            alert("未实现" + "Matrix3D.copyRawDataTo");
+            if(transpose){
+                this.transpose();
+            }
+            for (var i = 0; i < 16; i++) {
+                vector[i+index] = this.rawData[i];
+            }
+            if(transpose){
+                this.transpose();
+            }
         }
 
         /**

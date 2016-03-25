@@ -29,8 +29,9 @@
         
         "src/me/feng3d/utils/StringUtils.ts",
         
-        "src/me/feng3d/events/Event.ts",
-        "src/me/feng3d/events/EventDispatcher.ts",
-        "src/me/feng3d/events/IEventDispatcher.ts"
+        "src/me/feng3d/events/ArgumentError.ts",
+        "src/me/feng3d/events/base/Event.ts",
+        "src/me/feng3d/events/base/EventDispatcher.ts",
+        "src/me/feng3d/events/base/IEventDispatcher.ts"
     ]
 }
