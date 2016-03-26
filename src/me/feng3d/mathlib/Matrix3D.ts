@@ -54,7 +54,16 @@ module feng3d {
          * 通过将另一个 Matrix3D 对象与当前 Matrix3D 对象相乘来后置一个矩阵。
          */
         public append(lhs: Matrix3D) {
-            var m111: number = this.rawData[0], m121: number = this.rawData[4], m131: number = this.rawData[8], m141: number = this.rawData[12], m112: number = this.rawData[1], m122: number = this.rawData[5], m132: number = this.rawData[9], m142: number = this.rawData[13], m113: number = this.rawData[2], m123: number = this.rawData[6], m133: number = this.rawData[10], m143: number = this.rawData[14], m114: number = this.rawData[3], m124: number = this.rawData[7], m134: number = this.rawData[11], m144: number = this.rawData[15], m211: number = lhs.rawData[0], m221: number = lhs.rawData[4], m231: number = lhs.rawData[8], m241: number = lhs.rawData[12], m212: number = lhs.rawData[1], m222: number = lhs.rawData[5], m232: number = lhs.rawData[9], m242: number = lhs.rawData[13], m213: number = lhs.rawData[2], m223: number = lhs.rawData[6], m233: number = lhs.rawData[10], m243: number = lhs.rawData[14], m214: number = lhs.rawData[3], m224: number = lhs.rawData[7], m234: number = lhs.rawData[11], m244: number = lhs.rawData[15];
+            var //
+                m111: number = this.rawData[0], m121: number = this.rawData[4], m131: number = this.rawData[8], m141: number = this.rawData[12],//
+                m112: number = this.rawData[1], m122: number = this.rawData[5], m132: number = this.rawData[9], m142: number = this.rawData[13],//
+                m113: number = this.rawData[2], m123: number = this.rawData[6], m133: number = this.rawData[10], m143: number = this.rawData[14],//
+                m114: number = this.rawData[3], m124: number = this.rawData[7], m134: number = this.rawData[11], m144: number = this.rawData[15], //
+
+                m211: number = lhs.rawData[0], m221: number = lhs.rawData[4], m231: number = lhs.rawData[8], m241: number = lhs.rawData[12], //
+                m212: number = lhs.rawData[1], m222: number = lhs.rawData[5], m232: number = lhs.rawData[9], m242: number = lhs.rawData[13], //
+                m213: number = lhs.rawData[2], m223: number = lhs.rawData[6], m233: number = lhs.rawData[10], m243: number = lhs.rawData[14], //
+                m214: number = lhs.rawData[3], m224: number = lhs.rawData[7], m234: number = lhs.rawData[11], m244: number = lhs.rawData[15];
 
             this.rawData[0] = m111 * m211 + m112 * m221 + m113 * m231 + m114 * m241;
             this.rawData[1] = m111 * m212 + m112 * m222 + m113 * m232 + m114 * m242;
@@ -75,6 +84,41 @@ module feng3d {
             this.rawData[13] = m141 * m212 + m142 * m222 + m143 * m232 + m144 * m242;
             this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
             this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
+        }
+
+        /**
+         * @param   degrees     角度
+         * @param   axis        旋转轴
+         * @param   
+         */
+        public appendRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = null): void {
+
+            var n = axis.clone();
+            n.normalize();
+            var q = degrees * Math.PI / 180;
+
+            var sinq = Math.sin(q);
+            var cosq = Math.cos(q);
+            var lcosq = 1-cosq;
+
+            var rotationMat:Matrix3D = new Matrix3D([//
+                n.x * n.x * lcosq + cosq, n.x * n.y * lcosq + n.z * sinq, n.x * n.z * lcosq - n.y * sinq, 0,//
+                n.x * n.y * lcosq - n.z * sinq, n.y * n.y * lcosq + cosq, n.y * n.z * lcosq + n.x * sinq, 0,//
+                n.x * n.z * lcosq + n.y * sinq, n.y * n.z * lcosq - n.x * sinq, n.z * n.z * lcosq + cosq, 0,//
+                0, 0, 0, 1//
+            ]);
+
+            if(pivotPoint != null)
+            {
+                this.appendTranslation(-pivotPoint.x,-pivotPoint.y,-pivotPoint.z)
+            }
+
+            this.append(rotationMat);
+
+            if(pivotPoint != null)
+            {
+                this.appendTranslation(pivotPoint.x,pivotPoint.y,pivotPoint.z)
+            }
         }
 
         /**
@@ -141,7 +185,7 @@ module feng3d {
             for (var i = 0; i < 16; i++) {
                 this.rawData[i] = vector[index + i];
             }
-            if(transpose){
+            if (transpose) {
                 this.transpose();
             }
         }
@@ -150,13 +194,13 @@ module feng3d {
          * 将调用方 Matrix3D 对象中的所有矩阵数据复制到提供的矢量中。
          */
         public copyRawDataTo(vector: Array<number>, index: number = 0, transpose: boolean = false) {
-            if(transpose){
+            if (transpose) {
                 this.transpose();
             }
             for (var i = 0; i < 16; i++) {
-                vector[i+index] = this.rawData[i];
+                vector[i + index] = this.rawData[i];
             }
-            if(transpose){
+            if (transpose) {
                 this.transpose();
             }
         }
@@ -166,7 +210,10 @@ module feng3d {
          */
         public copyRowFrom(column: number, vector3D: Vector3D) {
 
-            alert("未实现" + "Matrix3D.copyRowFrom");
+            this.rawData[column + 4 * 0] = vector3D.x;
+            this.rawData[column + 4 * 1] = vector3D.y;
+            this.rawData[column + 4 * 2] = vector3D.z;
+            this.rawData[column + 4 * 3] = vector3D.w;
         }
 
         /**
@@ -174,7 +221,10 @@ module feng3d {
          */
         public copyRowTo(column: number, vector3D: Vector3D) {
 
-            alert("未实现" + "Matrix3D.copyRowTo");
+            vector3D.x = this.rawData[column + 4 * 0];
+            vector3D.y = this.rawData[column + 4 * 1];
+            vector3D.z = this.rawData[column + 4 * 2];
+            vector3D.w = this.rawData[column + 4 * 3];
         }
 
         /**
