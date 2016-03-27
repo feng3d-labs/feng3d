@@ -114,6 +114,23 @@ module feng3d {
         }
 
         /**
+         * 创建位移矩阵
+         * @param   x   沿 x 轴的增量平移。
+         * @param   y   沿 y 轴的增量平移。
+         * @param   z   沿 z 轴的增量平移。
+         */
+        public static createTranslationMatrix3D(x: number, y: number, z: number): Matrix3D {
+
+            var rotationMat: Matrix3D = new Matrix3D([//
+                1, 0, 0, 0,//
+                0, 1, 0, 0,//
+                0, 0, 1, 0,//
+                x, y, z, 1//
+            ]);
+            return rotationMat;
+        }
+
+        /**
          * 通过将另一个 Matrix3D 对象与当前 Matrix3D 对象相乘来后置一个矩阵。
          */
         public append(lhs: Matrix3D) {
@@ -324,8 +341,21 @@ module feng3d {
          */
         public deltaTransformVector(v: Vector3D): Vector3D {
 
-            alert("未实现" + "Matrix3D.invert");
-            return null;
+            var tempx = this.rawData[12];
+            var tempy = this.rawData[13];
+            var tempz = this.rawData[14];
+
+            this.rawData[12] = 0;
+            this.rawData[13] = 0;
+            this.rawData[14] = 0;
+
+            var result = this.transformVector(v)
+
+            this.rawData[12] = tempx;
+            this.rawData[13] = tempy;
+            this.rawData[14] = tempz;
+
+            return result;
         }
 
         /**
@@ -398,7 +428,10 @@ module feng3d {
          * @param   rhs     个右侧矩阵，它与当前 Matrix3D 对象相乘。
          */
         public prepend(rhs: Matrix3D): void {
-            alert("未实现" + "Matrix3D.prepend");
+
+            var mat = this.clone();
+            this.copyFrom(rhs);
+            this.append(mat);
         }
 
         /**
@@ -408,7 +441,8 @@ module feng3d {
          * @param   pivotPoint  一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
          */
         public prependRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = new Vector3D()): void {
-            alert("未实现" + "Matrix3D.prependRotation");
+            var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
+            this.prepend(rotationMat);
         }
 
         /**
@@ -418,7 +452,8 @@ module feng3d {
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
         public prependScale(xScale: number, yScale: number, zScale: number): void {
-            alert("未实现" + "Matrix3D.prependScale");
+            var scaleMat = Matrix3D.createScaleMatrix3D(xScale, yScale, zScale);
+            this.prepend(scaleMat);
         }
 
         /**
@@ -428,7 +463,8 @@ module feng3d {
          * @param   z   沿 z 轴的增量平移。
          */
         public prependTranslation(x: number, y: number, z: number): void {
-            alert("未实现" + "Matrix3D.prependTranslation");
+            var translationMat = Matrix3D.createTranslationMatrix3D(x, y, z);
+            this.prepend(translationMat);
         }
 
         /**
@@ -448,8 +484,20 @@ module feng3d {
          * @return  一个包含转换后的坐标的 Vector3D 对象。
          */
         public transformVector(v: Vector3D): Vector3D {
-            alert("未实现" + "Matrix3D.transformVector");
-            return null;
+            if (v == null)
+                return new Vector3D();
+
+            var x: number = v.x;
+            var y: number = v.y;
+            var z: number = v.z;
+
+            var out: Vector3D = new Vector3D();
+            out.x = x * this.rawData[0] + y * this.rawData[4] + z * this.rawData[8] + this.rawData[12];
+            out.y = x * this.rawData[1] + y * this.rawData[5] + z * this.rawData[9] + this.rawData[13];
+            out.z = x * this.rawData[2] + y * this.rawData[6] + z * this.rawData[10] + this.rawData[14];
+            out.w = x * this.rawData[3] + y * this.rawData[7] + z * this.rawData[11] + this.rawData[15];
+
+            return out;
         }
 
         /**
@@ -457,8 +505,16 @@ module feng3d {
          * @param   vin     一个由多个数字组成的矢量，其中每三个数字构成一个要转换的 3D 坐标 (x,y,z)。
          * @param   vout    一个由多个数字组成的矢量，其中每三个数字构成一个已转换的 3D 坐标 (x,y,z)。
          */
-        public transformVectors(vin: Number[], vout: Number[]): void {
+        public transformVectors(vin: number[], vout: number[]): void {
 
+            var vec = new Vector3D();
+            for (var i = 0; i < vin.length; i += 3) {
+                vec.setTo(vin[i], vin[i + 1], vin[i + 2]);
+                vec = this.transformVector(vec);
+                vout[i] = vec.x;
+                vout[i + 1] = vec.y;
+                vout[i + 2] = vec.z;
+            }
         }
 
         /**
