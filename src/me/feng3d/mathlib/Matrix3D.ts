@@ -13,22 +13,6 @@ module feng3d {
         public rawData: Array<number>;
 
         /**
-         * 创建 Matrix3D 对象。
-         */
-        constructor(datas: Array<number> = null) {
-            if (datas) {
-                this.rawData = datas;
-            }
-            else
-                this.rawData = [//
-                    1, 0, 0, 0,// 
-                    0, 1, 0, 0,// 
-                    0, 0, 1, 0,//
-                    0, 0, 0, 1//
-                ];
-        }
-
-        /**
          * 一个保存显示对象在转换参照帧中的 3D 坐标 (x,y,z) 位置的 Vector3D 对象。
          */
         public get position(): Vector3D {
@@ -46,8 +30,73 @@ module feng3d {
          */
         public get determinant(): number {
 
-            return ((this.rawData[0] * this.rawData[5] - this.rawData[4] * this.rawData[1]) * (this.rawData[10] * this.rawData[15] - this.rawData[14] * this.rawData[11]) - (this.rawData[0] * this.rawData[9] - this.rawData[8] * this.rawData[1]) * (this.rawData[6] * this.rawData[15] - this.rawData[14] * this.rawData[7]) + (this.rawData[0] * this.rawData[13] - this.rawData[12] * this.rawData[1]) * (this.rawData[6] * this.rawData[11] - this.rawData[10] * this.rawData[7]) + (this.rawData[4] * this.rawData[9] - this.rawData[8] * this.rawData[5]) * (this.rawData[2] * this.rawData[15] - this.rawData[14] * this.rawData[3]) - (this.rawData[4] * this.rawData[13] - this.rawData[12] * this.rawData[5]) * (this.rawData[2] * this.rawData[11] - this.rawData[10] * this.rawData[3]) + (this.rawData[8] * this.rawData[13] - this.rawData[12] * this.rawData[9]) * (this.rawData[2] * this.rawData[7] - this.rawData[6] * this.rawData[3]));
+            return (//
+                (this.rawData[0] * this.rawData[5] - this.rawData[4] * this.rawData[1]) * (this.rawData[10] * this.rawData[15] - this.rawData[14] * this.rawData[11]) //
+                - (this.rawData[0] * this.rawData[9] - this.rawData[8] * this.rawData[1]) * (this.rawData[6] * this.rawData[15] - this.rawData[14] * this.rawData[7]) //
+                + (this.rawData[0] * this.rawData[13] - this.rawData[12] * this.rawData[1]) * (this.rawData[6] * this.rawData[11] - this.rawData[10] * this.rawData[7]) //
+                + (this.rawData[4] * this.rawData[9] - this.rawData[8] * this.rawData[5]) * (this.rawData[2] * this.rawData[15] - this.rawData[14] * this.rawData[3]) //
+                - (this.rawData[4] * this.rawData[13] - this.rawData[12] * this.rawData[5]) * (this.rawData[2] * this.rawData[11] - this.rawData[10] * this.rawData[3]) //
+                + (this.rawData[8] * this.rawData[13] - this.rawData[12] * this.rawData[9]) * (this.rawData[2] * this.rawData[7] - this.rawData[6] * this.rawData[3])//
+            );
+        }
 
+        /**
+         * 创建 Matrix3D 对象。
+         * @param   datas    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
+         */
+        constructor(datas: Array<number> = null) {
+            if (datas) {
+                this.rawData = datas;
+            }
+            else
+                this.rawData = [//
+                    1, 0, 0, 0,// 
+                    0, 1, 0, 0,// 
+                    0, 0, 1, 0,//
+                    0, 0, 0, 1//
+                ];
+        }
+
+        /**
+         * 创建旋转矩阵
+         * @param   degrees         角度
+         * @param   axis            旋转轴
+         * @param   pivotPoint      旋转中心点
+         */
+        public static createRotationMatrix3D(degrees: number, axis: Vector3D): Matrix3D {
+
+            var n = axis.clone();
+            n.normalize();
+            var q = degrees * Math.PI / 180;
+
+            var sinq = Math.sin(q);
+            var cosq = Math.cos(q);
+            var lcosq = 1 - cosq;
+
+            var rotationMat: Matrix3D = new Matrix3D([//
+                n.x * n.x * lcosq + cosq, n.x * n.y * lcosq + n.z * sinq, n.x * n.z * lcosq - n.y * sinq, 0,//
+                n.x * n.y * lcosq - n.z * sinq, n.y * n.y * lcosq + cosq, n.y * n.z * lcosq + n.x * sinq, 0,//
+                n.x * n.z * lcosq + n.y * sinq, n.y * n.z * lcosq - n.x * sinq, n.z * n.z * lcosq + cosq, 0,//
+                0, 0, 0, 1//
+            ]);
+            return rotationMat;
+        }
+
+        /**
+         * 创建缩放矩阵
+         * @param   xScale      用于沿 x 轴缩放对象的乘数。
+         * @param   yScale      用于沿 y 轴缩放对象的乘数。
+         * @param   zScale      用于沿 z 轴缩放对象的乘数。
+         */
+        public static createScaleMatrix3D(xScale: number, yScale: number, zScale: number): Matrix3D {
+
+            var rotationMat: Matrix3D = new Matrix3D([//
+                xScale, 0.0000, 0.0000, 0,//
+                0.0000, yScale, 0.0000, 0,//
+                0.0000, 0.0000, zScale, 0,//
+                0.0000, 0.0000, 0.0000, 1//
+            ]);
+            return rotationMat;
         }
 
         /**
@@ -87,45 +136,36 @@ module feng3d {
         }
 
         /**
-         * @param   degrees     角度
-         * @param   axis        旋转轴
-         * @param   
+         * 在 Matrix3D 对象上后置一个增量旋转。
+         * @param   degrees         角度
+         * @param   axis            旋转轴
+         * @param   pivotPoint      旋转中心点
          */
         public appendRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = null): void {
 
-            var n = axis.clone();
-            n.normalize();
-            var q = degrees * Math.PI / 180;
+            var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
 
-            var sinq = Math.sin(q);
-            var cosq = Math.cos(q);
-            var lcosq = 1-cosq;
-
-            var rotationMat:Matrix3D = new Matrix3D([//
-                n.x * n.x * lcosq + cosq, n.x * n.y * lcosq + n.z * sinq, n.x * n.z * lcosq - n.y * sinq, 0,//
-                n.x * n.y * lcosq - n.z * sinq, n.y * n.y * lcosq + cosq, n.y * n.z * lcosq + n.x * sinq, 0,//
-                n.x * n.z * lcosq + n.y * sinq, n.y * n.z * lcosq - n.x * sinq, n.z * n.z * lcosq + cosq, 0,//
-                0, 0, 0, 1//
-            ]);
-
-            if(pivotPoint != null)
-            {
-                this.appendTranslation(-pivotPoint.x,-pivotPoint.y,-pivotPoint.z)
+            if (pivotPoint != null) {
+                this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z)
             }
 
             this.append(rotationMat);
 
-            if(pivotPoint != null)
-            {
-                this.appendTranslation(pivotPoint.x,pivotPoint.y,pivotPoint.z)
+            if (pivotPoint != null) {
+                this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z)
             }
         }
 
         /**
          * 在 Matrix3D 对象上后置一个增量缩放，沿 x、y 和 z 轴改变位置。
+         * @param   xScale      用于沿 x 轴缩放对象的乘数。
+         * @param   yScale      用于沿 y 轴缩放对象的乘数。
+         * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
         public appendScale(xScale: number, yScale: number, zScale: number) {
-            alert("未实现" + "Matrix3D.appendScale");
+
+            var scaleMat = Matrix3D.createScaleMatrix3D(xScale, yScale, zScale);
+            this.append(scaleMat);
         }
 
         /**
