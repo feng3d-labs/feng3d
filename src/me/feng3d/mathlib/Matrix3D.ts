@@ -172,7 +172,7 @@ module feng3d {
          * @param   axis            旋转轴
          * @param   pivotPoint      旋转中心点
          */
-        public appendRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = null): void {
+        public appendRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = new Vector3D()): void {
 
             var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
 
@@ -326,12 +326,54 @@ module feng3d {
 
         /**
          * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3D 对象组成的矢量返回。
-         * @param       orientationStyle    一个可选参数，它确定用于矩阵转换的方向样式。
          * @return      一个由三个 Vector3D 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
          */
-        public decompose(orientationStyle: string = "eulerAngles"): Vector3D[] {
-            alert("未实现" + "Matrix3D.decompose");
-            return null;
+        public decompose(): Vector3D[] {
+            var vec: Vector3D[] = [];
+            var m = this.clone();
+            var mr = m.rawData;
+
+            var pos: Vector3D = new Vector3D(mr[12], mr[13], mr[14]);
+            mr[12] = 0;
+            mr[13] = 0;
+            mr[14] = 0;
+
+            var scale: Vector3D = new Vector3D();
+
+            scale.x = Math.sqrt(mr[0] * mr[0] + mr[1] * mr[1] + mr[2] * mr[2]);
+            scale.y = Math.sqrt(mr[4] * mr[4] + mr[5] * mr[5] + mr[6] * mr[6]);
+            scale.z = Math.sqrt(mr[8] * mr[8] + mr[9] * mr[9] + mr[10] * mr[10]);
+
+            if (mr[0] * (mr[5] * mr[10] - mr[6] * mr[9]) - mr[1] * (mr[4] * mr[10] - mr[6] * mr[8]) + mr[2] * (mr[4] * mr[9] - mr[5] * mr[8]) < 0)
+                scale.z = -scale.z;
+
+            mr[0] /= scale.x;
+            mr[1] /= scale.x;
+            mr[2] /= scale.x;
+            mr[4] /= scale.y;
+            mr[5] /= scale.y;
+            mr[6] /= scale.y;
+            mr[8] /= scale.z;
+            mr[9] /= scale.z;
+            mr[10] /= scale.z;
+
+            var rot = new Vector3D();
+
+            rot.y = Math.asin(-mr[2]);
+
+            if (mr[2] != 1 && mr[2] != -1) {
+                rot.x = Math.atan2(mr[6], mr[10]);
+                rot.z = Math.atan2(mr[1], mr[0]);
+            } else {
+                rot.z = 0;
+                rot.x = Math.atan2(mr[4], mr[5]);
+            }
+
+            vec.push(pos);
+            vec.push(rot);
+            vec.push(scale);
+
+            return vec;
         }
 
         /**
@@ -382,45 +424,50 @@ module feng3d {
         }
 
         /**
-         * 朝着目标矩阵的平移、旋转和缩放转换插补某个矩阵的这些转换。使用四元素对方向进行插值。
-         * @param   thisMat     要插补的 Matrix3D 对象。
-         * @param   toMat       目标 Matrix3D 对象。
-         * @param   percent     一个介于 0 和 1 之间的值，它确定显示对象相对于目标的位置。该值越接近于 1.0，显示对象就越靠近其当前位置。该值越接近于 0，显示对象就越靠近其目标。
-         * @return      一个 Matrix3D 对象，其中包含用于放置原始矩阵和目标矩阵之间的矩阵值的元素。在将返回的矩阵应用于 this 显示对象时，该对象会朝着目标对象移动到指定的百分比位置。
-         */
-        public static interpolate(thisMat: Matrix3D, toMat: Matrix3D, percent: number): Matrix3D {
-            alert("未实现" + "Matrix3D.interpolate");
-            return null;
-        }
-
-        /**
-         * 朝着目标矩阵的平移、旋转和缩放转换插补此矩阵。使用四元素对方向进行插值。
-         * @param   toMat       目标 Matrix3D 对象。
-         * @param   percent     一个介于 0 和 1 之间的值，它确定显示对象相对于目标的位置。该值越接近于 1.0，显示对象就越靠近其当前位置。该值越接近于 0，显示对象就越靠近其目标。
-         */
-        public interpolateTo(toMat: Matrix3D, percent: number): void {
-
-            alert("未实现" + "Matrix3D.interpolateTo");
-        }
-
-        /**
-         * 反转当前矩阵。
+         * 反转当前矩阵。逆矩阵
          * @return      如果成功反转矩阵，则返回 true。
          */
         public invert(): boolean {
-            alert("未实现" + "Matrix3D.invert");
-            return false;
-        }
+            var d = this.determinant;
+            var invertable = Math.abs(d) > 0.00000000001;
 
-        /**
-         * 旋转显示对象以使其朝向指定的位置。
-         * @param   pos     目标对象的相对于现实世界的位置。相对于现实世界定义了相对于所有对象所在的现实世界空间和坐标的对象转换。
-         * @param   at      用于定义显示对象所指向的位置的相对于对象的矢量。
-         * @param   up      用于为显示对象定义“向上”方向的相对于对象的矢量。
-         */
-        public pointAt(pos: Vector3D, at: Vector3D = null, up: Vector3D = null): void {
+            if (invertable) {
+                d = 1 / d;
+                var m11: number = this.rawData[0];
+                var m21: number = this.rawData[4];
+                var m31: number = this.rawData[8];
+                var m41: number = this.rawData[12];
+                var m12: number = this.rawData[1];
+                var m22: number = this.rawData[5];
+                var m32: number = this.rawData[9];
+                var m42: number = this.rawData[13];
+                var m13: number = this.rawData[2];
+                var m23: number = this.rawData[6];
+                var m33: number = this.rawData[10];
+                var m43: number = this.rawData[14];
+                var m14: number = this.rawData[3];
+                var m24: number = this.rawData[7];
+                var m34: number = this.rawData[11];
+                var m44: number = this.rawData[15];
 
-            alert("未实现" + "Matrix3D.pointAt");
+                this.rawData[0] = d * (m22 * (m33 * m44 - m43 * m34) - m32 * (m23 * m44 - m43 * m24) + m42 * (m23 * m34 - m33 * m24));
+                this.rawData[1] = -d * (m12 * (m33 * m44 - m43 * m34) - m32 * (m13 * m44 - m43 * m14) + m42 * (m13 * m34 - m33 * m14));
+                this.rawData[2] = d * (m12 * (m23 * m44 - m43 * m24) - m22 * (m13 * m44 - m43 * m14) + m42 * (m13 * m24 - m23 * m14));
+                this.rawData[3] = -d * (m12 * (m23 * m34 - m33 * m24) - m22 * (m13 * m34 - m33 * m14) + m32 * (m13 * m24 - m23 * m14));
+                this.rawData[4] = -d * (m21 * (m33 * m44 - m43 * m34) - m31 * (m23 * m44 - m43 * m24) + m41 * (m23 * m34 - m33 * m24));
+                this.rawData[5] = d * (m11 * (m33 * m44 - m43 * m34) - m31 * (m13 * m44 - m43 * m14) + m41 * (m13 * m34 - m33 * m14));
+                this.rawData[6] = -d * (m11 * (m23 * m44 - m43 * m24) - m21 * (m13 * m44 - m43 * m14) + m41 * (m13 * m24 - m23 * m14));
+                this.rawData[7] = d * (m11 * (m23 * m34 - m33 * m24) - m21 * (m13 * m34 - m33 * m14) + m31 * (m13 * m24 - m23 * m14));
+                this.rawData[8] = d * (m21 * (m32 * m44 - m42 * m34) - m31 * (m22 * m44 - m42 * m24) + m41 * (m22 * m34 - m32 * m24));
+                this.rawData[9] = -d * (m11 * (m32 * m44 - m42 * m34) - m31 * (m12 * m44 - m42 * m14) + m41 * (m12 * m34 - m32 * m14));
+                this.rawData[10] = d * (m11 * (m22 * m44 - m42 * m24) - m21 * (m12 * m44 - m42 * m14) + m41 * (m12 * m24 - m22 * m14));
+                this.rawData[11] = -d * (m11 * (m22 * m34 - m32 * m24) - m21 * (m12 * m34 - m32 * m14) + m31 * (m12 * m24 - m22 * m14));
+                this.rawData[12] = -d * (m21 * (m32 * m43 - m42 * m33) - m31 * (m22 * m43 - m42 * m23) + m41 * (m22 * m33 - m32 * m23));
+                this.rawData[13] = d * (m11 * (m32 * m43 - m42 * m33) - m31 * (m12 * m43 - m42 * m13) + m41 * (m12 * m33 - m32 * m13));
+                this.rawData[14] = -d * (m11 * (m22 * m43 - m42 * m23) - m21 * (m12 * m43 - m42 * m13) + m41 * (m12 * m23 - m22 * m13));
+                this.rawData[15] = d * (m11 * (m22 * m33 - m32 * m23) - m21 * (m12 * m33 - m32 * m13) + m31 * (m12 * m23 - m22 * m13));
+            }
+            return invertable;
         }
 
         /**
@@ -470,11 +517,15 @@ module feng3d {
         /**
          * 设置转换矩阵的平移、旋转和缩放设置。
          * @param   components      一个由三个 Vector3D 对象组成的矢量，这些对象将替代 Matrix3D 对象的平移、旋转和缩放元素。
-         * @param   orientationStyle    一个可选参数，它确定用于矩阵转换的方向样式。
          */
-        public recompose(components: Vector3D[], orientationStyle: String = "eulerAngles"): boolean {
+        public recompose(components: Vector3D[]): boolean {
 
-            alert("未实现" + "Matrix3D.recompose");
+            this.identity();
+            this.appendRotation(components[1].x * 180 / Math.PI, Vector3D.X_AXIS);
+            this.appendRotation(components[1].y * 180 / Math.PI, Vector3D.Y_AXIS);
+            this.appendRotation(components[1].z * 180 / Math.PI, Vector3D.Z_AXIS);
+            this.appendScale(components[2].x, components[2].y, components[2].z);
+            this.appendTranslation(components[0].x, components[0].y, components[0].z);
             return true;
         }
 
