@@ -4,6 +4,20 @@ module feng3d {
      * Matrix3D 类表示一个转换矩阵，该矩阵确定三维 (3D) 显示对象的位置和方向。
      * 该矩阵可以执行转换功能，包括平移（沿 x、y 和 z 轴重新定位）、旋转和缩放（调整大小）。
      * Matrix3D 类还可以执行透视投影，这会将 3D 坐标空间中的点映射到二维 (2D) 视图。
+     * 
+     *  ---            方向              平移 ---
+     *  |   scaleX      0         0       tx    |
+     *  |     0       scaleY      0       ty    |
+     *  |     0         0       scaleZ    tz    |
+     *  |     0         0         0       tw    |
+     *  ---  x轴        y轴      z轴          ---
+     * 
+     *  ---            方向              平移 ---
+     *  |     0         4         8       12    |
+     *  |     1         5         9       13    |
+     *  |     2         6        10       14    |
+     *  |     3         7        11       15    |
+     *  ---  x轴        y轴      z轴          ---
      */
     export class Matrix3D {
 
@@ -170,6 +184,9 @@ module feng3d {
 
         /**
          * 在 Matrix3D 对象上后置一个增量平移，沿 x、y 和 z 轴重新定位。
+         * @param   x   沿 x 轴的增量平移。
+         * @param   y   沿 y 轴的增量平移。
+         * @param   z   沿 z 轴的增量平移。
          */
         public appendTranslation(x: number, y: number, z: number) {
             this.rawData[12] += x;
@@ -188,6 +205,8 @@ module feng3d {
 
         /**
          * 将 Vector3D 对象复制到调用方 Matrix3D 对象的特定列中。
+         * @param   column      副本的目标列。
+         * @param   vector3D    要从中复制数据的 Vector3D 对象。
          */
         public copyColumnFrom(column: number, vector3D: Vector3D) {
             this.rawData[column * 4 + 0] = vector3D.x;
@@ -198,6 +217,8 @@ module feng3d {
 
         /**
          * 将调用方 Matrix3D 对象的特定列复制到 Vector3D 对象中。
+         * @param   column       要从中复制数据的列。
+         * @param   vector3D     副本的目标 Vector3D 对象。
          */
         public copyColumnTo(column: number, vector3D: Vector3D) {
             vector3D.x = this.rawData[column * 4 + 0];
@@ -208,6 +229,7 @@ module feng3d {
 
         /**
          * 将源 Matrix3D 对象中的所有矩阵数据复制到调用方 Matrix3D 对象中。
+         * @param   sourceMatrix3D      要从中复制数据的 Matrix3D 对象。
          */
         public copyFrom(sourceMatrix3D: Matrix3D): void {
             for (var i = 0; i < 16; i++) {
@@ -216,7 +238,10 @@ module feng3d {
         }
 
         /**
-         * @param transpose 是否转置当前矩阵.
+         * 将源 Vector 对象中的所有矢量数据复制到调用方 Matrix3D 对象中。利用可选索引参数，您可以选择矢量中的任何起始文字插槽。
+         * @param   vector      要从中复制数据的 Vector 对象。
+         * @param   index       vector中的起始位置
+         * @param   transpose   是否转置当前矩阵
          */
         public copyRawDataFrom(vector: Array<number>, index: number = 0, transpose: boolean = false): void {
             if (vector.length - index < 16) {
@@ -232,6 +257,9 @@ module feng3d {
 
         /**
          * 将调用方 Matrix3D 对象中的所有矩阵数据复制到提供的矢量中。
+         * @param   vector      要将数据复制到的 Vector 对象。
+         * @param   index       vector中的起始位置
+         * @param   transpose   是否转置当前矩阵
          */
         public copyRawDataTo(vector: Array<number>, index: number = 0, transpose: boolean = false) {
             if (transpose) {
@@ -247,28 +275,33 @@ module feng3d {
 
         /**
          * 将 Vector3D 对象复制到调用方 Matrix3D 对象的特定行中。
+         * @param   row         要将数据复制到的行。
+         * @param   vector3D    要从中复制数据的 Vector3D 对象。
          */
-        public copyRowFrom(column: number, vector3D: Vector3D) {
+        public copyRowFrom(row: number, vector3D: Vector3D) {
 
-            this.rawData[column + 4 * 0] = vector3D.x;
-            this.rawData[column + 4 * 1] = vector3D.y;
-            this.rawData[column + 4 * 2] = vector3D.z;
-            this.rawData[column + 4 * 3] = vector3D.w;
+            this.rawData[row + 4 * 0] = vector3D.x;
+            this.rawData[row + 4 * 1] = vector3D.y;
+            this.rawData[row + 4 * 2] = vector3D.z;
+            this.rawData[row + 4 * 3] = vector3D.w;
         }
 
         /**
          * 将调用方 Matrix3D 对象的特定行复制到 Vector3D 对象中。
+         * @param   row         要从中复制数据的行。
+         * @param   vector3D    将作为数据复制目的地的 Vector3D 对象。
          */
-        public copyRowTo(column: number, vector3D: Vector3D) {
+        public copyRowTo(row: number, vector3D: Vector3D) {
 
-            vector3D.x = this.rawData[column + 4 * 0];
-            vector3D.y = this.rawData[column + 4 * 1];
-            vector3D.z = this.rawData[column + 4 * 2];
-            vector3D.w = this.rawData[column + 4 * 3];
+            vector3D.x = this.rawData[row + 4 * 0];
+            vector3D.y = this.rawData[row + 4 * 1];
+            vector3D.z = this.rawData[row + 4 * 2];
+            vector3D.w = this.rawData[row + 4 * 3];
         }
 
         /**
          * 拷贝当前矩阵
+         * @param   dest    目标矩阵
          */
         public copyToMatrix3D(dest: Matrix3D) {
             dest.rawData = this.rawData.slice(0);
@@ -276,6 +309,8 @@ module feng3d {
 
         /**
          * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3D 对象组成的矢量返回。
+         * @param       orientationStyle    一个可选参数，它确定用于矩阵转换的方向样式。
+         * @return      一个由三个 Vector3D 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
          */
         public decompose(orientationStyle: string = "eulerAngles"): Vector3D[] {
             alert("未实现" + "Matrix3D.decompose");
@@ -284,6 +319,8 @@ module feng3d {
 
         /**
          * 使用不含平移元素的转换矩阵将 Vector3D 对象从一个空间坐标转换到另一个空间坐标。
+         * @param   v   一个容纳要转换的坐标的 Vector3D 对象。
+         * @return  一个包含转换后的坐标的 Vector3D 对象。
          */
         public deltaTransformVector(v: Vector3D): Vector3D {
 
@@ -312,11 +349,33 @@ module feng3d {
             this.rawData[5] = 1;
             this.rawData[10] = 1;
             this.rawData[15] = 1;
+        }
 
+        /**
+         * 朝着目标矩阵的平移、旋转和缩放转换插补某个矩阵的这些转换。使用四元素对方向进行插值。
+         * @param   thisMat     要插补的 Matrix3D 对象。
+         * @param   toMat       目标 Matrix3D 对象。
+         * @param   percent     一个介于 0 和 1 之间的值，它确定显示对象相对于目标的位置。该值越接近于 1.0，显示对象就越靠近其当前位置。该值越接近于 0，显示对象就越靠近其目标。
+         * @return      一个 Matrix3D 对象，其中包含用于放置原始矩阵和目标矩阵之间的矩阵值的元素。在将返回的矩阵应用于 this 显示对象时，该对象会朝着目标对象移动到指定的百分比位置。
+         */
+        public static interpolate(thisMat: Matrix3D, toMat: Matrix3D, percent: number): Matrix3D {
+            alert("未实现" + "Matrix3D.interpolate");
+            return null;
+        }
+
+        /**
+         * 朝着目标矩阵的平移、旋转和缩放转换插补此矩阵。使用四元素对方向进行插值。
+         * @param   toMat       目标 Matrix3D 对象。
+         * @param   percent     一个介于 0 和 1 之间的值，它确定显示对象相对于目标的位置。该值越接近于 1.0，显示对象就越靠近其当前位置。该值越接近于 0，显示对象就越靠近其目标。
+         */
+        public interpolateTo(toMat: Matrix3D, percent: number): void {
+
+            alert("未实现" + "Matrix3D.interpolateTo");
         }
 
         /**
          * 反转当前矩阵。
+         * @return      如果成功反转矩阵，则返回 true。
          */
         public invert(): boolean {
             alert("未实现" + "Matrix3D.invert");
@@ -324,9 +383,60 @@ module feng3d {
         }
 
         /**
-         * 通过平移、旋转和缩放设置矩阵。
+         * 旋转显示对象以使其朝向指定的位置。
+         * @param   pos     目标对象的相对于现实世界的位置。相对于现实世界定义了相对于所有对象所在的现实世界空间和坐标的对象转换。
+         * @param   at      用于定义显示对象所指向的位置的相对于对象的矢量。
+         * @param   up      用于为显示对象定义“向上”方向的相对于对象的矢量。
          */
-        public recompose(components: Vector3D[]): boolean {
+        public pointAt(pos: Vector3D, at: Vector3D = null, up: Vector3D = null): void {
+
+            alert("未实现" + "Matrix3D.pointAt");
+        }
+
+        /**
+         * 通过将当前 Matrix3D 对象与另一个 Matrix3D 对象相乘来前置一个矩阵。得到的结果将合并两个矩阵转换。
+         * @param   rhs     个右侧矩阵，它与当前 Matrix3D 对象相乘。
+         */
+        public prepend(rhs: Matrix3D): void {
+            alert("未实现" + "Matrix3D.prepend");
+        }
+
+        /**
+         * 在 Matrix3D 对象上前置一个增量旋转。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行旋转，然后再执行其他转换。
+         * @param   degrees     旋转的角度。
+         * @param   axis        旋转的轴或方向。常见的轴为 X_AXIS (Vector3D(1,0,0))、Y_AXIS (Vector3D(0,1,0)) 和 Z_AXIS (Vector3D(0,0,1))。此矢量的长度应为 1。
+         * @param   pivotPoint  一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
+         */
+        public prependRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = new Vector3D()): void {
+            alert("未实现" + "Matrix3D.prependRotation");
+        }
+
+        /**
+         * 在 Matrix3D 对象上前置一个增量缩放，沿 x、y 和 z 轴改变位置。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行缩放更改，然后再执行其他转换。
+         * @param   xScale      用于沿 x 轴缩放对象的乘数。
+         * @param   yScale      用于沿 y 轴缩放对象的乘数。
+         * @param   zScale      用于沿 z 轴缩放对象的乘数。
+         */
+        public prependScale(xScale: number, yScale: number, zScale: number): void {
+            alert("未实现" + "Matrix3D.prependScale");
+        }
+
+        /**
+         * 在 Matrix3D 对象上前置一个增量平移，沿 x、y 和 z 轴重新定位。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行平移更改，然后再执行其他转换。
+         * @param   x   沿 x 轴的增量平移。
+         * @param   y   沿 y 轴的增量平移。
+         * @param   z   沿 z 轴的增量平移。
+         */
+        public prependTranslation(x: number, y: number, z: number): void {
+            alert("未实现" + "Matrix3D.prependTranslation");
+        }
+
+        /**
+         * 设置转换矩阵的平移、旋转和缩放设置。
+         * @param   components      一个由三个 Vector3D 对象组成的矢量，这些对象将替代 Matrix3D 对象的平移、旋转和缩放元素。
+         * @param   orientationStyle    一个可选参数，它确定用于矩阵转换的方向样式。
+         */
+        public recompose(components: Vector3D[], orientationStyle: String = "eulerAngles"): boolean {
 
             alert("未实现" + "Matrix3D.recompose");
             return true;
@@ -334,10 +444,21 @@ module feng3d {
 
         /**
          * 使用转换矩阵将 Vector3D 对象从一个空间坐标转换到另一个空间坐标。
+         * @param   v   一个容纳要转换的坐标的 Vector3D 对象。
+         * @return  一个包含转换后的坐标的 Vector3D 对象。
          */
         public transformVector(v: Vector3D): Vector3D {
             alert("未实现" + "Matrix3D.transformVector");
             return null;
+        }
+
+        /**
+         * 使用转换矩阵将由数字构成的矢量从一个空间坐标转换到另一个空间坐标。
+         * @param   vin     一个由多个数字组成的矢量，其中每三个数字构成一个要转换的 3D 坐标 (x,y,z)。
+         * @param   vout    一个由多个数字组成的矢量，其中每三个数字构成一个已转换的 3D 坐标 (x,y,z)。
+         */
+        public transformVectors(vin: Number[], vout: Number[]): void {
+
         }
 
         /**
