@@ -21,8 +21,8 @@
 	},
 	"files": [
         "src/Feng3d.ts",
+        "src/me/feng3d/mathlib/MathConsts.ts",
         "src/me/feng3d/mathlib/Matrix3D.ts",
-        "src/me/feng3d/mathlib/Matrix3DUtils.ts",
         "src/me/feng3d/mathlib/Orientation3D.ts",
         "src/me/feng3d/mathlib/Quaternion.ts",
         "src/me/feng3d/mathlib/Vector3D.ts",

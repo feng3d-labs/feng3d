@@ -55,12 +55,46 @@ module feng3d {
         }
 
         /**
+         * 前方（+Z轴方向）
+         */
+        public get forward(): Vector3D {
+
+            var v = new Vector3D(0.0, 0.0, 0.0);
+
+            this.copyColumnTo(2, v);
+            v.normalize();
+            return v;
+        }
+
+        /**
+         * 上方（+y轴方向）
+         */
+        public get up(): Vector3D {
+
+            var v = new Vector3D();
+            this.copyColumnTo(1, v);
+            v.normalize();
+            return v;
+        }
+
+        /**
+         * 右方（+x轴方向）
+         */
+        public get right(): Vector3D {
+
+            var v = new Vector3D();
+            this.copyColumnTo(0, v);
+            v.normalize();
+            return v;
+        }
+
+        /**
          * 创建 Matrix3D 对象。
          * @param   datas    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
         constructor(datas: Array<number> = null) {
             if (datas) {
-                this.rawData = datas;
+                this.rawData = datas.concat();
             }
             else
                 this.rawData = [//
@@ -521,9 +555,9 @@ module feng3d {
         public recompose(components: Vector3D[]): boolean {
 
             this.identity();
-            this.appendRotation(components[1].x * 180 / Math.PI, Vector3D.X_AXIS);
-            this.appendRotation(components[1].y * 180 / Math.PI, Vector3D.Y_AXIS);
-            this.appendRotation(components[1].z * 180 / Math.PI, Vector3D.Z_AXIS);
+            this.appendRotation(components[1].x * MathConsts.RADIANS_TO_DEGREES, Vector3D.X_AXIS);
+            this.appendRotation(components[1].y * MathConsts.RADIANS_TO_DEGREES, Vector3D.Y_AXIS);
+            this.appendRotation(components[1].z * MathConsts.RADIANS_TO_DEGREES, Vector3D.Z_AXIS);
             this.appendScale(components[2].x, components[2].y, components[2].z);
             this.appendTranslation(components[0].x, components[0].y, components[0].z);
             return true;
@@ -582,6 +616,19 @@ module feng3d {
                     }
                 }
             }
+        }
+
+        /**
+         * 比较矩阵是否相等
+         */
+        public compare(matrix3D: Matrix3D, precision: number = 0.0001): Boolean {
+            var r2 = matrix3D.rawData;
+            for (var i: number = 0; i < 16; ++i) {
+                if (Math.abs(this.rawData[i] - r2[i]) > precision)
+                    return false;
+            }
+
+            return true;
         }
 
         /**

@@ -90,13 +90,12 @@ module feng3d {
         }
 
         /**
-        * 创建一个以axis轴为中心旋转angle角度的四元数
+        * 创建一个以axis轴为中心旋转angle旋转弧度的四元数
         *
         * @param axis   旋转轴
-        * @param angle  旋转角度
+        * @param angle  旋转弧度
         */
         public fromAxisAngle(axis: Vector3D, angle: number) {
-            angle *= Math.PI / 180.0;
             var halfAngle: number = angle * 0.5;
             var sin_a: number = Math.sin(halfAngle);
 
@@ -109,37 +108,11 @@ module feng3d {
         }
 
         /**
-        * 返回四元数绕轴心和角度
-        *
-        * @param axis 轴心
-        * @returns 角度
-        */
-        public toAxisAngle(axis: Vector3D): number {
-            var sqrLength: number = this.x * this.x + this.y * this.y + this.z * this.z;
-            var angle: number = 0;
-            if (sqrLength > 0.0) {
-                angle = 2.0 * Math.acos(this.w);
-                sqrLength = 1.0 / Math.sqrt(sqrLength);
-                axis.x = this.x * sqrLength;
-                axis.y = this.y * sqrLength;
-                axis.z = this.z * sqrLength;
-            }
-            else {
-                angle = 0;
-                axis.x = 1.0;
-                axis.y = 0;
-                axis.z = 0;
-            }
-            angle /= Math.PI / 180.0;
-            return angle;
-        }
-
-        /**
         * 两个四元数之间球形插值，插值之间提供旋转恒定角变化率。
         *
         * @param qa 四元数1
         * @param qb 四元数2
-        * @param t 差值时刻
+        * @param t 权重
         */
         public slerp(qa: Quaternion, qb: Quaternion, t: number) {
             var w1: number = qa.w, x1: number = qa.x, y1: number = qa.y, z1: number = qa.z;
@@ -184,7 +157,7 @@ module feng3d {
         *
         * @param qa 四元数1
         * @param qb 四元数2
-        * @param t 差值时刻
+        * @param t 权重
         */
         public lerp(qa: Quaternion, qb: Quaternion, t: number) {
             var w1: number = qa.w, x1: number = qa.x, y1: number = qa.y, z1: number = qa.z;
@@ -214,14 +187,11 @@ module feng3d {
         /**
         * 用数值表示给定的欧拉旋转填充四元数对象。
         *
-        * @param ax x轴旋转角度
-        * @param ay y轴旋转角度
-        * @param az z轴旋转角度
+        * @param ax x轴旋转弧度
+        * @param ay y轴旋转弧度
+        * @param az z轴旋转弧度
         */
-        public fromEulerAngles(ax: number, ay: number, az: number):Quaternion {
-            ax *= Matrix3DUtils.DEGREES_TO_RADIANS;
-            ay *= Matrix3DUtils.DEGREES_TO_RADIANS;
-            az *= Matrix3DUtils.DEGREES_TO_RADIANS;
+        public fromEulerAngles(ax: number, ay: number, az: number): Quaternion {
 
             var halfX: number = ax * 0.5, halfY: number = ay * 0.5, halfZ: number = az * 0.5;
             var cosX: number = Math.cos(halfX), sinX: number = Math.sin(halfX);
@@ -240,23 +210,14 @@ module feng3d {
         * 把四元数转成欧拉角返回
         *
         * @param target 转成的欧拉返回值，如果为null就新建一个对象返回
-        * @retruns 转成的欧拉返回值
+        * @retruns 转成的欧拉弧度返回值
         */
         public toEulerAngles(target: Vector3D = null): Vector3D {
-            if (target === null) {
-                target = new Vector3D();
-            }
-
+            
+            target != new Vector3D();
             target.x = Math.atan2(2.0 * (this.w * this.x + this.y * this.z), 1.0 - 2.0 * (this.x * this.x + this.y * this.y));
-
-            var temp: number = 2.0 * (this.w * this.y - this.z * this.x);
-            temp = Matrix3DUtils.clampf(temp, -1.0, 1.0);
-            target.y = Math.asin(temp);
+            target.y = Math.asin(2.0 * (this.w * this.y - this.z * this.x));
             target.z = Math.atan2(2.0 * (this.w * this.z + this.x * this.y), 1.0 - 2.0 * (this.y * this.y + this.z * this.z));
-
-            target.x /= Matrix3DUtils.DEGREES_TO_RADIANS;
-            target.y /= Matrix3DUtils.DEGREES_TO_RADIANS;
-            target.z /= Matrix3DUtils.DEGREES_TO_RADIANS;
             return target;
         }
 
@@ -321,11 +282,8 @@ module feng3d {
         * @param matrix 旋转矩阵
         */
         public fromMatrix(matrix: Matrix3D) {
-            var v: Vector3D = matrix.decompose(Orientation3D.QUATERNION)[1];
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
-            this.w = v.w;
+            var v: Vector3D = matrix.decompose()[1];
+            this.fromEulerAngles(v.x, v.y, v.z);
         }
 
         /**
@@ -352,9 +310,9 @@ module feng3d {
 
             // p*q'
             w1 = -this.x * x2 - this.y * y2 - this.z * z2;
-            x1 =  this.w * x2 + this.y * z2 - this.z * y2;
-            y1 =  this.w * y2 - this.x * z2 + this.z * x2;
-            z1 =  this.w * z2 + this.x * y2 - this.y * x2;
+            x1 = this.w * x2 + this.y * z2 - this.z * y2;
+            y1 = this.w * y2 - this.x * z2 + this.z * x2;
+            z1 = this.w * z2 + this.x * y2 - this.y * x2;
 
             target.x = -w1 * this.x + x1 * this.w - y1 * this.z + z1 * this.y;
             target.y = -w1 * this.y + x1 * this.z + y1 * this.w - z1 * this.x;
