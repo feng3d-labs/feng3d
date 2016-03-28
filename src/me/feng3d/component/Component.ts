@@ -5,15 +5,27 @@ module feng3d {
 	 * @author feng 2015-5-6
 	 */
     export class Component extends EventDispatcher {
-        /**
-         * 组件名称
-         */
-        public componentName: String;
+
+        private _componentName: string;
 
 		/**
 		 * 组件列表
 		 */
         protected components = []; //我并不喜欢使用vector，这使得我不得不去处理越界的问题，繁琐！此处重新修改为Array！
+
+        public set componentName(value: string) {
+            this._componentName = value;
+        }
+
+		/**
+		 * 组件名称
+		 */
+        public get componentName(): string {
+            if (this._componentName == null)
+                this._componentName = ClassUtils.getDefaultName(this);
+
+            return this._componentName;
+        }
 
 		/**
 		 * 创建一个组件容器
@@ -143,7 +155,7 @@ module feng3d {
          * @param componentName		组件名称
          * @return 					获取到的组件
          */
-        public getComponentsByName(componentName: String): [] {
+        public getComponentsByName(componentName: String): any[] {
             var filterResult = this.components.filter(function(item: Component, ...args): boolean {
                 return item.componentName == componentName;
             });
@@ -157,11 +169,8 @@ module feng3d {
          * @param cls				类定义
          * @return
          */
-        public getComponentByClass<T extends Component>(cls: Class):T
-        {
-            
-            var component: Component = this.getComponentsByClass(cls)[0];
-
+        public getComponentByClass(cls: any): any {
+            var component = this.getComponentsByClass(cls)[0];
             return component;
         }
 
@@ -170,7 +179,7 @@ module feng3d {
          * @param cls		类定义
          * @return			返回与给出类定义一致的组件
          */
-        public getComponentsByClass(cls: Class): [] {
+        public getComponentsByClass(cls: any): any[] {
             var filterResult = this.components.filter(function(item: Component, ...args): boolean {
                 return ClassUtils.isSameClass(item, cls);
             });
@@ -184,8 +193,7 @@ module feng3d {
          * @param cls
          * @return
          */
-        public getOrCreateComponentByClass(cls: Class):*
-        {
+        public getOrCreateComponentByClass(cls: any): any {
             var component: Component = this.getComponentByClass(cls);
 
             if (component == null) {
@@ -201,7 +209,7 @@ module feng3d {
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。
          */
-        public hasComponent(com: Component): Boolean {
+        public hasComponent(com: Component): boolean {
             return this.components.indexOf(com) != -1;
         }
 

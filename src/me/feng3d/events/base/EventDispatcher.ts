@@ -22,7 +22,7 @@ module feng3d {
             this._eventListeners = {};
         }
 
-        public addEventListener(type: string, listener: Function, priority: number = 0, useWeakReference: Boolean = false): void {
+        public addEventListener(type: string, listener: Function, priority: number = 0, useWeakReference: boolean = false): void {
             if (listener == null)
                 return;
 
@@ -53,7 +53,7 @@ module feng3d {
 		/**
 		 * @inheritDoc
 		 */
-        public dispatchEvent(event: Event): Boolean {
+        public dispatchEvent(event: Event): boolean {
             //停止事件流
             if (!event || event.stopsPropagation)
                 return false;
@@ -80,7 +80,7 @@ module feng3d {
             return event.stopsPropagation;
         }
 
-        public hasEventListener(type: string): Boolean {
+        public hasEventListener(type: string): boolean {
             var listeners: any = this._eventListeners ? this._eventListeners[type] : null;
             for (var key in listeners) {
                 return true;
@@ -93,7 +93,7 @@ module feng3d {
 		 * @param type
 		 * @return
 		 */
-        public willTrigger(type: string): Boolean {
+        public willTrigger(type: string): boolean {
             // TODO Auto Generated method stub
             return false;
         }
