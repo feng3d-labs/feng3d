@@ -247,7 +247,7 @@ module feng3d {
         * @returns 返回转换后的矩阵
         */
         public toMatrix3D(target: Matrix3D = null): Matrix3D {
-            var rawData = Matrix3DUtils.RAW_DATA_CONTAINER;
+            var rawData = [];
             var xy2: number = 2.0 * this.x * this.y, xz2: number = 2.0 * this.x * this.z, xw2: number = 2.0 * this.x * this.w;
             var yz2: number = 2.0 * this.y * this.z, yw2: number = 2.0 * this.y * this.w, zw2: number = 2.0 * this.z * this.w;
             var xx: number = this.x * this.x, yy: number = this.y * this.y, zz: number = this.z * this.z, ww: number = this.w * this.w;

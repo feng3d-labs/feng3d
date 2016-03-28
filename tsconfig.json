@@ -8,43 +8,40 @@
 //         "sourceMap": true
 //     }
 // }
-
 {
-	"compilerOptions": {
-		"target": "es5",
-		"noImplicitAny": false,
-		"sourceMap": true,
-		"declaration": true,
+    "compilerOptions": {
+        "target": "es5",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "declaration": true,
         // "out": "release/feng3d.js"
-		// "out": "../feng3d-ts-examples/libs/feng3d.js"
-		"out": "../feng3d-ts-test/libs/feng3d.js"
-	},
-	"files": [
+        // "out": "../feng3d-ts-examples/libs/feng3d.js"
+        "out": "../feng3d-ts-test/libs/feng3d.js"
+    },
+    "files": [//注：如果有继承关系的，父类必须排在子类前面
         "src/Feng3d.ts",
+        //
         "src/me/feng3d/mathlib/MathConsts.ts",
         "src/me/feng3d/mathlib/Matrix3D.ts",
         "src/me/feng3d/mathlib/Orientation3D.ts",
         "src/me/feng3d/mathlib/Quaternion.ts",
         "src/me/feng3d/mathlib/Vector3D.ts",
-        
+        //
         "src/me/feng3d/utils/ClassUtils.ts",
         "src/me/feng3d/utils/getDefinitionByName.ts",
         "src/me/feng3d/utils/getQualifiedClassName.ts",
         "src/me/feng3d/utils/getQualifiedSuperclassName.ts",
         "src/me/feng3d/utils/StringUtils.ts",
-        
         "src/me/feng3d/debug/assert.ts",
-        
-        // "src/me/feng3d/component/Component.ts",
-        "src/me/feng3d/component/event/vo/AddedComponentEventVO.ts",
-        "src/me/feng3d/component/event/vo/RemovedComponentEventVO.ts",
-        "src/me/feng3d/component/event/ComponentEvent.ts",
-        
         "src/me/feng3d/events/ArgumentError.ts",
+        //
         "src/me/feng3d/events/base/Event.ts",
         "src/me/feng3d/events/base/EventDispatcher.ts",
-        "src/me/feng3d/events/base/IEventDispatcher.ts"
-        
-        
+        "src/me/feng3d/events/base/IEventDispatcher.ts",
+        //
+        "src/me/feng3d/component/Component.ts",
+        "src/me/feng3d/component/event/vo/AddedComponentEventVO.ts",
+        "src/me/feng3d/component/event/vo/RemovedComponentEventVO.ts",
+        "src/me/feng3d/component/event/ComponentEvent.ts"
     ]
 }
