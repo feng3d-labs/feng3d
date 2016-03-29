@@ -1,5 +1,12 @@
-module feng3d
+package me.feng3d.core.base.data
 {
+	import flash.geom.Matrix3D;
+	import flash.geom.Vector3D;
+
+	import me.feng.component.Component;
+	import me.feng3d.events.Transform3DEvent;
+	import me.feng3d.mathlib.MathConsts;
+	import me.feng3d.mathlib.Matrix3DUtils;
 
 	/**
 	 * 位移时抛出
@@ -36,26 +43,26 @@ module feng3d
 	 * </ul>
 	 * @author feng 2014-3-31
 	 */
-	export class Element3D extends Component
+	public class Element3D extends Component
 	{
-		private _smallestNumber:number = 0.0000000000000000000001;
-		protected _transformDirty:boolean = true;
+		private var _smallestNumber:Number = 0.0000000000000000000001;
+		protected var _transformDirty:Boolean = true;
 
-		private _positionDirty:boolean;
-		private _rotationDirty:boolean;
-		private _scaleDirty:boolean;
+		private var _positionDirty:Boolean;
+		private var _rotationDirty:Boolean;
+		private var _scaleDirty:Boolean;
 
-		private _positionChanged:Transform3DEvent;
-		private _rotationChanged:Transform3DEvent;
-		private _scaleChanged:Transform3DEvent;
-		private _transformChanged:Transform3DEvent;
+		private var _positionChanged:Transform3DEvent;
+		private var _rotationChanged:Transform3DEvent;
+		private var _scaleChanged:Transform3DEvent;
+		private var _transformChanged:Transform3DEvent;
 
-		private _eulers:Vector3D = new Vector3D();
+		private var _eulers:Vector3D = new Vector3D();
 
-		private _listenToPositionChanged:boolean;
-		private _listenToRotationChanged:boolean;
-		private _listenToScaleChanged:boolean;
-		private _listenToTransformChanged:boolean;
+		private var _listenToPositionChanged:Boolean;
+		private var _listenToRotationChanged:Boolean;
+		private var _listenToScaleChanged:Boolean;
+		private var _listenToTransformChanged:Boolean;
 
 		protected var _transform:Matrix3D = new Matrix3D();
 		protected var _x:Number = 0;
@@ -68,7 +75,7 @@ module feng3d
 		protected var _scaleY:Number = 1;
 		protected var _scaleZ:Number = 1;
 		protected var _pivotPoint:Vector3D = new Vector3D();
-		protected var _pivotZero:boolean = true;
+		protected var _pivotZero:Boolean = true;
 		protected var _pos:Vector3D = new Vector3D();
 		protected var _rot:Vector3D = new Vector3D();
 		protected var _sca:Vector3D = new Vector3D();
@@ -478,7 +485,7 @@ module feng3d
 		 * @param type 事件类型
 		 * @param listener 回调函数
 		 */
-		override public function addEventListener(type:String, listener:Function, useCapture:boolean = false, priority:int = 0, useWeakReference:boolean = false):void
+		override public function addEventListener(type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void
 		{
 			super.addEventListener(type, listener, useCapture, priority, useWeakReference);
 			switch (type)
@@ -503,7 +510,7 @@ module feng3d
 		 * @param type 事件类型
 		 * @param listener 回调函数
 		 */
-		override public function removeEventListener(type:String, listener:Function, useCapture:boolean = false):void
+		override public function removeEventListener(type:String, listener:Function, useCapture:Boolean = false):void
 		{
 			super.removeEventListener(type, listener, useCapture);
 
