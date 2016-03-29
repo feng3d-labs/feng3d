@@ -43,9 +43,10 @@
         "src/me/feng3d/component/event/vo/RemovedComponentEventVO.ts",
         "src/me/feng3d/component/event/ComponentEvent.ts",
         //
+        "src/me/feng3d/events/Transform3DEvent.ts",
         "src/me/feng3d/core/base/data/Element3D.ts",
         "src/me/feng3d/core/base/data/Transform3D.ts",
-        "src/me/feng3d/events/Transform3DEvent.ts",
+        //"src/me/feng3d/core/base/Object3D.ts",
         
         //
         "src/Feng3d.ts"
