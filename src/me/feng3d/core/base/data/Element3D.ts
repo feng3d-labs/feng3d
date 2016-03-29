@@ -1,39 +1,5 @@
-package me.feng3d.core.base.data
+module feng3d
 {
-	import flash.geom.Matrix3D;
-	import flash.geom.Vector3D;
-
-	import me.feng.component.Component;
-	import me.feng3d.events.Transform3DEvent;
-	import me.feng3d.mathlib.MathConsts;
-	import me.feng3d.mathlib.Matrix3DUtils;
-
-	/**
-	 * 位移时抛出
-	 */
-	[Event(name = "positionChanged", type = "me.feng3d.events.Transform3DEvent")]
-
-	/**
-	 * 旋转时抛出
-	 */
-	[Event(name = "rotationChanged", type = "me.feng3d.events.Transform3DEvent")]
-
-	/**
-	 * 缩放时抛出
-	 */
-	[Event(name = "scaleChanged", type = "me.feng3d.events.Transform3DEvent")]
-
-	/**
-	 * 变换状态抛出
-	 */
-	[Event(name = "transformChanged", type = "me.feng3d.events.Transform3DEvent")]
-
-	/**
-	 * 变换已更新
-	 */
-	[Event(name = "transformUpdated", type = "me.feng3d.events.Transform3DEvent")]
-
-
 	/**
 	 * 3D元素<br/><br/>
 	 *
@@ -43,216 +9,217 @@ package me.feng3d.core.base.data
 	 * </ul>
 	 * @author feng 2014-3-31
 	 */
-	public class Element3D extends Component
+	export class Element3D extends Component
 	{
-		private var _smallestNumber:Number = 0.0000000000000000000001;
-		protected var _transformDirty:Boolean = true;
+		private _smallestNumber:number = 0.0000000000000000000001;
+		protected _transformDirty:boolean = true;
 
-		private var _positionDirty:Boolean;
-		private var _rotationDirty:Boolean;
-		private var _scaleDirty:Boolean;
+		private _positionDirty:boolean;
+		private _rotationDirty:boolean;
+		private _scaleDirty:boolean;
 
-		private var _positionChanged:Transform3DEvent;
-		private var _rotationChanged:Transform3DEvent;
-		private var _scaleChanged:Transform3DEvent;
-		private var _transformChanged:Transform3DEvent;
+		private _positionChanged:Transform3DEvent;
+		private _rotationChanged:Transform3DEvent;
+		private _scaleChanged:Transform3DEvent;
+		private _transformChanged:Transform3DEvent;
 
-		private var _eulers:Vector3D = new Vector3D();
+		private _eulers:Vector3D = new Vector3D();
 
-		private var _listenToPositionChanged:Boolean;
-		private var _listenToRotationChanged:Boolean;
-		private var _listenToScaleChanged:Boolean;
-		private var _listenToTransformChanged:Boolean;
+		private _listenToPositionChanged:boolean;
+		private _listenToRotationChanged:boolean;
+		private _listenToScaleChanged:boolean;
+		private _listenToTransformChanged:boolean;
 
-		protected var _transform:Matrix3D = new Matrix3D();
-		protected var _x:Number = 0;
-		protected var _y:Number = 0;
-		protected var _z:Number = 0;
-		protected var _rotationX:Number = 0;
-		protected var _rotationY:Number = 0;
-		protected var _rotationZ:Number = 0;
-		protected var _scaleX:Number = 1;
-		protected var _scaleY:Number = 1;
-		protected var _scaleZ:Number = 1;
-		protected var _pivotPoint:Vector3D = new Vector3D();
-		protected var _pivotZero:Boolean = true;
-		protected var _pos:Vector3D = new Vector3D();
-		protected var _rot:Vector3D = new Vector3D();
-		protected var _sca:Vector3D = new Vector3D();
-		protected var _transformComponents:Vector.<Vector3D>;
+		protected _transform:Matrix3D = new Matrix3D();
+		protected _x:number = 0;
+		protected _y:number = 0;
+		protected _z:number = 0;
+		protected _rotationX:number = 0;
+		protected _rotationY:number = 0;
+		protected _rotationZ:number = 0;
+		protected _scaleX:number = 1;
+		protected _scaleY:number = 1;
+		protected _scaleZ:number = 1;
+		protected _pivotPoint:Vector3D = new Vector3D();
+		protected _pivotZero:boolean = true;
+		protected _pos:Vector3D = new Vector3D();
+		protected _rot:Vector3D = new Vector3D();
+		protected _sca:Vector3D = new Vector3D();
+		protected _transformComponents:Vector3D[];
 
-		public function Element3D()
+		constructor()
 		{
+            super();
 			// Cached vector of transformation components used when
 			// recomposing the transform matrix in updateTransform()
-			_transformComponents = new Vector.<Vector3D>(3, true);
-			_transformComponents[0] = _pos;
-			_transformComponents[1] = _rot;
-			_transformComponents[2] = _sca;
+			this._transformComponents = [];
+			this._transformComponents[0] = this._pos;
+			this._transformComponents[1] = this._rot;
+			this._transformComponents[2] = this._sca;
 
-			_transform.identity();
+			this._transform.identity();
 		}
 
 		/**
 		 * 相对父容器的X坐标
 		 */
-		public function get x():Number
+		public get x():number
 		{
-			return _x;
+			return this._x;
 		}
 
-		public function set x(val:Number):void
+		public set x(val:number)
 		{
-			if (_x == val)
+			if (this._x == val)
 				return;
 
-			_x = val;
+			this._x = val;
 
-			invalidatePosition();
+			this.invalidatePosition();
 		}
 
 		/**
 		 * 相对父容器的Y坐标
 		 */
-		public function get y():Number
+		public get y():number
 		{
-			return _y;
+			return this._y;
 		}
 
-		public function set y(val:Number):void
+		public set y(val:number)
 		{
-			if (_y == val)
+			if (this._y == val)
 				return;
 
-			_y = val;
+			this._y = val;
 
-			invalidatePosition();
+			this.invalidatePosition();
 		}
 
 		/**
 		 * 相对父容器的Z坐标
 		 */
-		public function get z():Number
+		public get z():number
 		{
-			return _z;
+			return this._z;
 		}
 
-		public function set z(val:Number):void
+		public set z(val:number)
 		{
-			if (_z == val)
+			if (this._z == val)
 				return;
 
-			_z = val;
+			this._z = val;
 
-			invalidatePosition();
+			this.invalidatePosition();
 		}
 
 		/**
 		 * 绕X轴旋转角度
 		 */
-		public function get rotationX():Number
+		public get rotationX():number
 		{
-			return _rotationX * MathConsts.RADIANS_TO_DEGREES;
+			return this._rotationX * MathConsts.RADIANS_TO_DEGREES;
 		}
 
-		public function set rotationX(val:Number):void
+		public set rotationX(val:number)
 		{
-			if (rotationX == val)
+			if (this.rotationX == val)
 				return;
 
-			_rotationX = val * MathConsts.DEGREES_TO_RADIANS;
+			this._rotationX = val * MathConsts.DEGREES_TO_RADIANS;
 
-			invalidateRotation();
+			this.invalidateRotation();
 		}
 
 		/**
 		 * 绕Y轴旋转角度
 		 */
-		public function get rotationY():Number
+		public get rotationY():number
 		{
-			return _rotationY * MathConsts.RADIANS_TO_DEGREES;
+			return this._rotationY * MathConsts.RADIANS_TO_DEGREES;
 		}
 
-		public function set rotationY(val:Number):void
+		public set rotationY(val:number)
 		{
-			if (rotationY == val)
+			if (this.rotationY == val)
 				return;
 
-			_rotationY = val * MathConsts.DEGREES_TO_RADIANS;
+			this._rotationY = val * MathConsts.DEGREES_TO_RADIANS;
 
-			invalidateRotation();
+			this.invalidateRotation();
 		}
 
 		/**
 		 * 绕Z轴旋转角度
 		 */
-		public function get rotationZ():Number
+		public get rotationZ():number
 		{
-			return _rotationZ * MathConsts.RADIANS_TO_DEGREES;
+			return this._rotationZ * MathConsts.RADIANS_TO_DEGREES;
 		}
 
-		public function set rotationZ(val:Number):void
+		public set rotationZ(val:number)
 		{
-			if (rotationZ == val)
+			if (this.rotationZ == val)
 				return;
 
-			_rotationZ = val * MathConsts.DEGREES_TO_RADIANS;
+			this._rotationZ = val * MathConsts.DEGREES_TO_RADIANS;
 
-			invalidateRotation();
+			this.invalidateRotation();
 		}
 
 		/**
 		 * X轴旋方向缩放
 		 */
-		public function get scaleX():Number
+		public get scaleX():number
 		{
-			return _scaleX;
+			return this._scaleX;
 		}
 
-		public function set scaleX(val:Number):void
+		public set scaleX(val:number)
 		{
-			if (_scaleX == val)
+			if (this._scaleX == val)
 				return;
 
-			_scaleX = val;
+			this._scaleX = val;
 
-			invalidateScale();
+			this.invalidateScale();
 		}
 
 		/**
 		 * Y轴旋方向缩放
 		 */
-		public function get scaleY():Number
+		public get scaleY():number
 		{
-			return _scaleY;
+			return this._scaleY;
 		}
 
-		public function set scaleY(val:Number):void
+		public set scaleY(val:number)
 		{
-			if (_scaleY == val)
+			if (this._scaleY == val)
 				return;
 
-			_scaleY = val;
+			this._scaleY = val;
 
-			invalidateScale();
+			this.invalidateScale();
 		}
 
 		/**
 		 * Z轴旋方向缩放
 		 */
-		public function get scaleZ():Number
+		public get scaleZ():number
 		{
-			return _scaleZ;
+			return this._scaleZ;
 		}
 
-		public function set scaleZ(val:Number):void
+		public set scaleZ(val:number)
 		{
-			if (_scaleZ == val)
+			if (this._scaleZ == val)
 				return;
 
-			_scaleZ = val;
+			this._scaleZ = val;
 
-			invalidateScale();
+			this.invalidateScale();
 		}
 
 		/**
@@ -261,223 +228,223 @@ package me.feng3d.core.base.data
 		 *     <li>使用Vector3D对象表示 相对x、y、z轴上的旋转角度</li>
 		 * </ul>
 		 */
-		public function get eulers():Vector3D
+		public get eulers():Vector3D
 		{
-			_eulers.x = _rotationX * MathConsts.RADIANS_TO_DEGREES;
-			_eulers.y = _rotationY * MathConsts.RADIANS_TO_DEGREES;
-			_eulers.z = _rotationZ * MathConsts.RADIANS_TO_DEGREES;
+			this._eulers.x = this._rotationX * MathConsts.RADIANS_TO_DEGREES;
+			this._eulers.y = this._rotationY * MathConsts.RADIANS_TO_DEGREES;
+			this._eulers.z = this._rotationZ * MathConsts.RADIANS_TO_DEGREES;
 
-			return _eulers;
+			return this._eulers;
 		}
 
-		public function set eulers(value:Vector3D):void
+		public set eulers(value:Vector3D)
 		{
-			_rotationX = value.x * MathConsts.DEGREES_TO_RADIANS;
-			_rotationY = value.y * MathConsts.DEGREES_TO_RADIANS;
-			_rotationZ = value.z * MathConsts.DEGREES_TO_RADIANS;
+			this._rotationX = value.x * MathConsts.DEGREES_TO_RADIANS;
+			this._rotationY = value.y * MathConsts.DEGREES_TO_RADIANS;
+			this._rotationZ = value.z * MathConsts.DEGREES_TO_RADIANS;
 
-			invalidateRotation();
+			this.invalidateRotation();
 		}
 
 		/**
 		 * 3d元素变换矩阵
 		 */
-		public function get transform():Matrix3D
+		public get transform():Matrix3D
 		{
-			if (_transformDirty)
-				updateTransform();
+			if (this._transformDirty)
+				this.updateTransform();
 
-			return _transform;
+			return this._transform;
 		}
 
-		public function set transform(val:Matrix3D):void
+		public set transform(val:Matrix3D)
 		{
 			//ridiculous matrix error
-			var raw:Vector.<Number> = Matrix3DUtils.RAW_DATA_CONTAINER;
+			var raw:number[] = [];
 			val.copyRawDataTo(raw);
-			if (!raw[uint(0)])
+			if (!raw[0])
 			{
-				raw[uint(0)] = _smallestNumber;
+				raw[0] = this._smallestNumber;
 				val.copyRawDataFrom(raw);
 			}
 
-			var elements:Vector.<Vector3D> = Matrix3DUtils.decompose(val);
+			var elements:Vector3D[] = val.decompose();
 			var vec:Vector3D;
 
 			vec = elements[0];
 
-			if (_x != vec.x || _y != vec.y || _z != vec.z)
+			if (this._x != vec.x || this._y != vec.y || this._z != vec.z)
 			{
-				_x = vec.x;
-				_y = vec.y;
-				_z = vec.z;
+				this._x = vec.x;
+				this._y = vec.y;
+				this._z = vec.z;
 
-				invalidatePosition();
+				this.invalidatePosition();
 			}
 
 			vec = elements[1];
 
-			if (_rotationX != vec.x || _rotationY != vec.y || _rotationZ != vec.z)
+			if (this._rotationX != vec.x || this._rotationY != vec.y || this._rotationZ != vec.z)
 			{
-				_rotationX = vec.x;
-				_rotationY = vec.y;
-				_rotationZ = vec.z;
+				this._rotationX = vec.x;
+				this._rotationY = vec.y;
+				this._rotationZ = vec.z;
 
-				invalidateRotation();
+				this.invalidateRotation();
 			}
 
 			vec = elements[2];
 
-			if (_scaleX != vec.x || _scaleY != vec.y || _scaleZ != vec.z)
+			if (this._scaleX != vec.x || this._scaleY != vec.y || this._scaleZ != vec.z)
 			{
-				_scaleX = vec.x;
-				_scaleY = vec.y;
-				_scaleZ = vec.z;
+				this._scaleX = vec.x;
+				this._scaleY = vec.y;
+				this._scaleZ = vec.z;
 
-				invalidateScale();
+				this.invalidateScale();
 			}
 		}
 
 		/**
 		 * 中心点坐标（本地对象旋转点）
 		 */
-		public function get pivotPoint():Vector3D
+		public get pivotPoint():Vector3D
 		{
-			return _pivotPoint;
+			return this._pivotPoint;
 		}
 
-		public function set pivotPoint(pivot:Vector3D):void
+		public set pivotPoint(pivot:Vector3D)
 		{
-			if (!_pivotPoint)
-				_pivotPoint = new Vector3D();
-			_pivotPoint.x = pivot.x;
-			_pivotPoint.y = pivot.y;
-			_pivotPoint.z = pivot.z;
+			if (!this._pivotPoint)
+				this._pivotPoint = new Vector3D();
+			this._pivotPoint.x = pivot.x;
+			this._pivotPoint.y = pivot.y;
+			this._pivotPoint.z = pivot.z;
 
-			invalidatePivot();
+			this.invalidatePivot();
 		}
 
 		/**
 		 * 获取在父容器中的坐标
 		 */
-		public function get position():Vector3D
+		public get position():Vector3D
 		{
-			transform.copyColumnTo(3, _pos);
+			this.transform.copyColumnTo(3, this._pos);
 
-			return _pos.clone();
+			return this._pos.clone();
 		}
 
-		public function set position(value:Vector3D):void
+		public set position(value:Vector3D)
 		{
-			_x = value.x;
-			_y = value.y;
-			_z = value.z;
+			this._x = value.x;
+			this._y = value.y;
+			this._z = value.z;
 
-			invalidatePosition();
+			this.invalidatePosition();
 		}
 
 		/**
 		 * 使位置数据无效
 		 */
-		protected function invalidatePosition():void
+		protected invalidatePosition():void
 		{
-			if (_positionDirty)
+			if (this._positionDirty)
 				return;
 
-			_positionDirty = true;
+			this._positionDirty = true;
 
-			invalidateTransform();
+			this.invalidateTransform();
 
-			if (_listenToPositionChanged)
-				notifyPositionChanged();
+			if (this._listenToPositionChanged)
+				this.notifyPositionChanged();
 		}
 
 		/**
 		 * 发出平移事件
 		 */
-		private function notifyPositionChanged():void
+		private notifyPositionChanged():void
 		{
-			if (!_positionChanged)
-				_positionChanged = new Transform3DEvent(Transform3DEvent.POSITION_CHANGED, this);
+			if (!this._positionChanged)
+				this._positionChanged = new Transform3DEvent(Transform3DEvent.POSITION_CHANGED, this);
 
-			dispatchEvent(_positionChanged);
+			this.dispatchEvent(this._positionChanged);
 		}
 
 		/**
 		 * 使变换矩阵失效
 		 */
-		public function invalidateTransform():void
+		public invalidateTransform():void
 		{
-			_transformDirty = true;
+			this._transformDirty = true;
 
-			if (_listenToTransformChanged)
-				notifyTransformChanged();
+			if (this._listenToTransformChanged)
+				this.notifyTransformChanged();
 		}
 
 		/**
 		 * 发出状态改变消息
 		 */
-		private function notifyTransformChanged():void
+		private notifyTransformChanged():void
 		{
-			if (!_transformChanged)
-				_transformChanged = new Transform3DEvent(Transform3DEvent.TRANSFORM_CHANGED, this);
+			if (!this._transformChanged)
+				this._transformChanged = new Transform3DEvent(Transform3DEvent.TRANSFORM_CHANGED, this);
 
-			dispatchEvent(_transformChanged);
+			this.dispatchEvent(this._transformChanged);
 		}
 
 		/**
 		 * 更新变换矩阵
 		 */
-		protected function updateTransform():void
+		protected updateTransform():void
 		{
-			_pos.x = _x;
-			_pos.y = _y;
-			_pos.z = _z;
+			this._pos.x = this._x;
+			this._pos.y = this._y;
+			this._pos.z = this._z;
 
-			_rot.x = _rotationX;
-			_rot.y = _rotationY;
-			_rot.z = _rotationZ;
+			this._rot.x = this._rotationX;
+			this._rot.y = this._rotationY;
+			this._rot.z = this._rotationZ;
 
-			if (!_pivotZero)
+			if (!this._pivotZero)
 			{
-				_sca.x = 1;
-				_sca.y = 1;
-				_sca.z = 1;
+				this._sca.x = 1;
+				this._sca.y = 1;
+				this._sca.z = 1;
 
-				_transform.recompose(_transformComponents);
-				_transform.appendTranslation(_pivotPoint.x, _pivotPoint.y, _pivotPoint.z);
-				_transform.prependTranslation(-_pivotPoint.x, -_pivotPoint.y, -_pivotPoint.z);
-				_transform.prependScale(_scaleX, _scaleY, _scaleZ);
+				this._transform.recompose(this._transformComponents);
+				this._transform.appendTranslation(this._pivotPoint.x, this._pivotPoint.y, this._pivotPoint.z);
+				this._transform.prependTranslation(-this._pivotPoint.x, -this._pivotPoint.y, -this._pivotPoint.z);
+				this._transform.prependScale(this._scaleX, this._scaleY, this._scaleZ);
 
-				_sca.x = _scaleX;
-				_sca.y = _scaleY;
-				_sca.z = _scaleZ;
+				this._sca.x = this._scaleX;
+				this._sca.y = this._scaleY;
+				this._sca.z = this._scaleZ;
 			}
 			else
 			{
-				_sca.x = _scaleX;
-				_sca.y = _scaleY;
-				_sca.z = _scaleZ;
+				this._sca.x = this._scaleX;
+				this._sca.y = this._scaleY;
+				this._sca.z = this._scaleZ;
 
-				_transform.recompose(_transformComponents);
+				this._transform.recompose(this._transformComponents);
 			}
 
-			_transformDirty = false;
-			_positionDirty = false;
-			_rotationDirty = false;
-			_scaleDirty = false;
+			this._transformDirty = false;
+			this._positionDirty = false;
+			this._rotationDirty = false;
+			this._scaleDirty = false;
 
-			dispatchEvent(new Transform3DEvent(Transform3DEvent.TRANSFORM_UPDATED, this));
+			this.dispatchEvent(new Transform3DEvent(Transform3DEvent.TRANSFORM_UPDATED, this));
 		}
 
 		/**
 		 * 使中心点无效
 		 */
-		protected function invalidatePivot():void
+		protected invalidatePivot():void
 		{
-			_pivotZero = (_pivotPoint.x == 0) && (_pivotPoint.y == 0) && (_pivotPoint.z == 0);
+			this._pivotZero = (this._pivotPoint.x == 0) && (this._pivotPoint.y == 0) && (this._pivotPoint.z == 0);
 
-			invalidateTransform();
+			this.invalidateTransform();
 		}
 
 		/**
@@ -485,22 +452,22 @@ package me.feng3d.core.base.data
 		 * @param type 事件类型
 		 * @param listener 回调函数
 		 */
-		override public function addEventListener(type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void
+		public addEventListener(type:string, listener:Function, priority:number = 0, useWeakReference:boolean = false):void
 		{
-			super.addEventListener(type, listener, useCapture, priority, useWeakReference);
+			super.addEventListener(type, listener, priority, useWeakReference);
 			switch (type)
 			{
 				case Transform3DEvent.POSITION_CHANGED:
-					_listenToPositionChanged = true;
+					this._listenToPositionChanged = true;
 					break;
 				case Transform3DEvent.ROTATION_CHANGED:
-					_listenToRotationChanged = true;
+					this._listenToRotationChanged = true;
 					break;
 				case Transform3DEvent.SCALE_CHANGED:
-					_listenToRotationChanged = true;
+					this._listenToRotationChanged = true;
 					break;
 				case Transform3DEvent.TRANSFORM_CHANGED:
-					_listenToTransformChanged = true;
+					this._listenToTransformChanged = true;
 					break;
 			}
 		}
@@ -510,26 +477,26 @@ package me.feng3d.core.base.data
 		 * @param type 事件类型
 		 * @param listener 回调函数
 		 */
-		override public function removeEventListener(type:String, listener:Function, useCapture:Boolean = false):void
+		public removeEventListener(type:string, listener:Function):void
 		{
-			super.removeEventListener(type, listener, useCapture);
+			super.removeEventListener(type, listener);
 
-			if (hasEventListener(type))
+			if (this.hasEventListener(type))
 				return;
 
 			switch (type)
 			{
 				case Transform3DEvent.POSITION_CHANGED:
-					_listenToPositionChanged = false;
+					this._listenToPositionChanged = false;
 					break;
 				case Transform3DEvent.ROTATION_CHANGED:
-					_listenToRotationChanged = false;
+					this._listenToRotationChanged = false;
 					break;
 				case Transform3DEvent.SCALE_CHANGED:
-					_listenToScaleChanged = false;
+					this._listenToScaleChanged = false;
 					break;
 				case Transform3DEvent.TRANSFORM_CHANGED:
-					_listenToTransformChanged = false;
+					this._listenToTransformChanged = false;
 					break;
 			}
 		}
@@ -537,55 +504,55 @@ package me.feng3d.core.base.data
 		/**
 		 * 使旋转角度无效
 		 */
-		protected function invalidateRotation():void
+		protected invalidateRotation():void
 		{
-			if (_rotationDirty)
+			if (this._rotationDirty)
 				return;
 
-			_rotationDirty = true;
+			this._rotationDirty = true;
 
-			invalidateTransform();
+			this.invalidateTransform();
 
-			if (_listenToRotationChanged)
-				notifyRotationChanged();
+			if (this._listenToRotationChanged)
+				this.notifyRotationChanged();
 		}
 
 		/**
 		 * 抛出旋转事件
 		 */
-		private function notifyRotationChanged():void
+		private notifyRotationChanged():void
 		{
-			if (!_rotationChanged)
-				_rotationChanged = new Transform3DEvent(Transform3DEvent.ROTATION_CHANGED, this);
+			if (!this._rotationChanged)
+				this._rotationChanged = new Transform3DEvent(Transform3DEvent.ROTATION_CHANGED, this);
 
-			dispatchEvent(_rotationChanged);
+			this.dispatchEvent(this._rotationChanged);
 		}
 
 		/**
 		 * 使缩放无效
 		 */
-		protected function invalidateScale():void
+		protected invalidateScale():void
 		{
-			if (_scaleDirty)
+			if (this._scaleDirty)
 				return;
 
-			_scaleDirty = true;
+			this._scaleDirty = true;
 
-			invalidateTransform();
+			this.invalidateTransform();
 
-			if (_listenToScaleChanged)
-				notifyScaleChanged();
+			if (this._listenToScaleChanged)
+				this.notifyScaleChanged();
 		}
 
 		/**
 		 * 抛出缩放事件
 		 */
-		private function notifyScaleChanged():void
+		private notifyScaleChanged():void
 		{
-			if (!_scaleChanged)
-				_scaleChanged = new Transform3DEvent(Transform3DEvent.SCALE_CHANGED, this);
+			if (!this._scaleChanged)
+				this._scaleChanged = new Transform3DEvent(Transform3DEvent.SCALE_CHANGED, this);
 
-			dispatchEvent(_scaleChanged);
+			this.dispatchEvent(this._scaleChanged);
 		}
 	}
 }
