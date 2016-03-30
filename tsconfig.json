@@ -18,19 +18,24 @@
         // "out": "../feng3d-ts-examples/libs/feng3d.js"
         "out": "../feng3d-ts-test/libs/feng3d.js"
     },
-    "files": [//注：如果有继承关系的，父类必须排在子类前面
+    "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //
         "src/me/feng3d/mathlib/MathConsts.ts",
         "src/me/feng3d/mathlib/Matrix3D.ts",
         "src/me/feng3d/mathlib/Orientation3D.ts",
         "src/me/feng3d/mathlib/Quaternion.ts",
         "src/me/feng3d/mathlib/Vector3D.ts",
+        "src/me/feng3d/mathlib/Line3D.ts",
+        "src/me/feng3d/mathlib/Ray3D.ts",
+        "src/me/feng3d/mathlib/Triangle3D.ts",
+        "src/me/feng3d/mathlib/Plane3D.ts",
         //
         "src/me/feng3d/utils/ClassUtils.ts",
         "src/me/feng3d/utils/getDefinitionByName.ts",
         "src/me/feng3d/utils/getQualifiedClassName.ts",
         "src/me/feng3d/utils/getQualifiedSuperclassName.ts",
         "src/me/feng3d/utils/StringUtils.ts",
+        //
         "src/me/feng3d/debug/assert.ts",
         "src/me/feng3d/events/ArgumentError.ts",
         //
@@ -43,11 +48,29 @@
         "src/me/feng3d/component/event/vo/RemovedComponentEventVO.ts",
         "src/me/feng3d/component/event/ComponentEvent.ts",
         //
+        "src/me/feng3d/library/assets/AssetType.ts",
+        "src/me/feng3d/library/assets/IAsset.ts",
+        "src/me/feng3d/library/assets/NamedAsset.ts",
+        //
         "src/me/feng3d/events/Transform3DEvent.ts",
         "src/me/feng3d/core/base/data/Element3D.ts",
         "src/me/feng3d/core/base/data/Transform3D.ts",
-        //"src/me/feng3d/core/base/Object3D.ts",
-        
+        "src/me/feng3d/core/base/Object3D.ts",
+        "src/me/feng3d/core/base/InteractiveObject3D.ts",
+        //
+        "src/me/feng3d/core/partition/node/NodeBase.ts",
+        "src/me/feng3d/core/partition/node/EntityNode.ts",
+        "src/me/feng3d/core/partition/Partition3D.ts",
+        //
+        "src/me/feng3d/containers/Container3D.ts",
+        "src/me/feng3d/containers/ContainerTransform3D.ts",
+        "src/me/feng3d/containers/Scene3D.ts",
+        //
+        "src/me/feng3d/entities/Entity.ts",
+        //
+        "src/me/feng3d/controllers/ControllerBase.ts",
+        //
+        "src/me/feng3d/bounds/BoundingVolumeBase.ts",
         //
         "src/Feng3d.ts"
     ]

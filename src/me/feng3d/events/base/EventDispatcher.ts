@@ -5,6 +5,7 @@ module feng3d {
 	 * @author feng 2016-3-22
 	 */
     export class EventDispatcher implements IEventDispatcher {
+        name: string;
         _target: IEventDispatcher;
         _eventListeners: any;
 

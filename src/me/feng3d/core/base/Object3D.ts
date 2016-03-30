@@ -14,6 +14,8 @@ module feng3d {
     export class Object3D extends Component {
         private _transform3D: Transform3D;
 
+        public _controller: ControllerBase;
+
         protected _parent: Container3D;
 
         protected _sceneTransform: Matrix3D = new Matrix3D();

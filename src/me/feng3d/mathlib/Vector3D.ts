@@ -89,7 +89,7 @@ module feng3d {
          * 将源 Vector3D 对象中的所有矢量数据复制到调用方 Vector3D 对象中。
          * @return 要从中复制数据的 Vector3D 对象。
          */
-        public copyFrom(sourceVector3D: Vector3D): void {
+        public copyFrom(sourceVector3D: Vector3D) {
             this.x = sourceVector3D.x;
             this.y = sourceVector3D.y;
             this.z = sourceVector3D.z;
@@ -148,7 +148,7 @@ module feng3d {
         /**
          * 将当前 Vector3D 对象设置为其逆对象。
          */
-        public negate(): void {
+        public negate() {
             this.x = -this.x;
             this.y = -this.y;
             this.z = -this.z;
@@ -170,7 +170,7 @@ module feng3d {
         /**
          * 按标量（大小）缩放当前的 Vector3D 对象。
          */
-        public scaleBy(s: number): void {
+        public scaleBy(s: number) {
             this.x *= s;
             this.y *= s;
             this.z *= s;
@@ -179,7 +179,7 @@ module feng3d {
         /**
          * 将 Vector3D 的成员设置为指定值
          */
-        public setTo(xa: number, ya: number, za: number): void {
+        public setTo(xa: number, ya: number, za: number) {
             this.x = xa;
             this.y = ya;
             this.z = za;

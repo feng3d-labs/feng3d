@@ -206,7 +206,7 @@ module feng3d {
          * @param   axis            旋转轴
          * @param   pivotPoint      旋转中心点
          */
-        public appendRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = new Vector3D()): void {
+        public appendRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = new Vector3D()) {
 
             var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
 
@@ -282,7 +282,7 @@ module feng3d {
          * 将源 Matrix3D 对象中的所有矩阵数据复制到调用方 Matrix3D 对象中。
          * @param   sourceMatrix3D      要从中复制数据的 Matrix3D 对象。
          */
-        public copyFrom(sourceMatrix3D: Matrix3D): void {
+        public copyFrom(sourceMatrix3D: Matrix3D) {
             for (var i = 0; i < 16; i++) {
                 this.rawData[i] = sourceMatrix3D.rawData[i];
             }
@@ -294,7 +294,7 @@ module feng3d {
          * @param   index       vector中的起始位置
          * @param   transpose   是否转置当前矩阵
          */
-        public copyRawDataFrom(vector: Array<number>, index: number = 0, transpose: boolean = false): void {
+        public copyRawDataFrom(vector: Array<number>, index: number = 0, transpose: boolean = false) {
             if (vector.length - index < 16) {
                 throw new ArgumentError();
             }
@@ -508,7 +508,7 @@ module feng3d {
          * 通过将当前 Matrix3D 对象与另一个 Matrix3D 对象相乘来前置一个矩阵。得到的结果将合并两个矩阵转换。
          * @param   rhs     个右侧矩阵，它与当前 Matrix3D 对象相乘。
          */
-        public prepend(rhs: Matrix3D): void {
+        public prepend(rhs: Matrix3D) {
 
             var mat = this.clone();
             this.copyFrom(rhs);
@@ -521,7 +521,7 @@ module feng3d {
          * @param   axis        旋转的轴或方向。常见的轴为 X_AXIS (Vector3D(1,0,0))、Y_AXIS (Vector3D(0,1,0)) 和 Z_AXIS (Vector3D(0,0,1))。此矢量的长度应为 1。
          * @param   pivotPoint  一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
          */
-        public prependRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = new Vector3D()): void {
+        public prependRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = new Vector3D()) {
             var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
             this.prepend(rotationMat);
         }
@@ -532,7 +532,7 @@ module feng3d {
          * @param   yScale      用于沿 y 轴缩放对象的乘数。
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
-        public prependScale(xScale: number, yScale: number, zScale: number): void {
+        public prependScale(xScale: number, yScale: number, zScale: number) {
             var scaleMat = Matrix3D.createScaleMatrix3D(xScale, yScale, zScale);
             this.prepend(scaleMat);
         }
@@ -543,7 +543,7 @@ module feng3d {
          * @param   y   沿 y 轴的增量平移。
          * @param   z   沿 z 轴的增量平移。
          */
-        public prependTranslation(x: number, y: number, z: number): void {
+        public prependTranslation(x: number, y: number, z: number) {
             var translationMat = Matrix3D.createTranslationMatrix3D(x, y, z);
             this.prepend(translationMat);
         }
@@ -590,7 +590,7 @@ module feng3d {
          * @param   vin     一个由多个数字组成的矢量，其中每三个数字构成一个要转换的 3D 坐标 (x,y,z)。
          * @param   vout    一个由多个数字组成的矢量，其中每三个数字构成一个已转换的 3D 坐标 (x,y,z)。
          */
-        public transformVectors(vin: number[], vout: number[]): void {
+        public transformVectors(vin: number[], vout: number[]) {
 
             var vec = new Vector3D();
             for (var i = 0; i < vin.length; i += 3) {
@@ -621,7 +621,7 @@ module feng3d {
         /**
          * 比较矩阵是否相等
          */
-        public compare(matrix3D: Matrix3D, precision: number = 0.0001): Boolean {
+        public compare(matrix3D: Matrix3D, precision: number = 0.0001):boolean {
             var r2 = matrix3D.rawData;
             for (var i: number = 0; i < 16; ++i) {
                 if (Math.abs(this.rawData[i] - r2[i]) > precision)
