@@ -8,7 +8,7 @@ module feng3d
 	 */
 	export class Ray3D extends Line3D
 	{
-		public Ray3D(position:Vector3D = null, direction:Vector3D = null)
+		constructor(position:Vector3D = null, direction:Vector3D = null)
 		{
 			super(position, direction);
 		}
