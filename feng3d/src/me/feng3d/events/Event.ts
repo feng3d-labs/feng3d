@@ -6,8 +6,6 @@ module feng3d {
     export class Event {
         private _type: string;
 
-        private _data: any;
-
         private _bubbles: boolean;
 
         private _target: IEventDispatcher;
@@ -18,6 +16,11 @@ module feng3d {
 
         private _stopsImmediatePropagation: boolean;
 
+        /**
+         * 事件携带的自定义数据
+         */
+        public data: any;
+
 		/**
 		 * 创建一个作为参数传递给事件侦听器的 Event 对象。
 		 * @param type 事件的类型，可以作为 Event.type 访问。
@@ -26,8 +29,8 @@ module feng3d {
 		 */
         constructor(type: string, data = null, bubbles = false, cancelable = false) {
             this._type = type;
-            this._data = data;
             this._bubbles = bubbles;
+            this.data = data;
         }
 
 		/**
@@ -62,23 +65,18 @@ module feng3d {
             return this._type;
         }
 
-        /** 事件携带的自定义数据 */
-        public get data(): any {
-            return this._data;
-        }
-
-		/**
-		 * @private
-		 */
-        public set data(value: any) {
-            this._data = value;
-        }
-
 		/**
 		 * 事件目标。
 		 */
         public get target(): IEventDispatcher {
             return this._target;
+        }
+
+        public set target(value: IEventDispatcher) {
+            this._currentTarget = value;
+            if (this._target == null) {
+                this._target = value;
+            }
         }
 
 		/**
@@ -94,14 +92,6 @@ module feng3d {
 
         get stopsPropagation(): boolean {
             return this._stopsPropagation;
-        }
-
-        setTarget(value: IEventDispatcher) {
-            this._target = value;
-        }
-
-        setCurrentTarget(value: IEventDispatcher) {
-            this._currentTarget = value;
         }
     }
 }

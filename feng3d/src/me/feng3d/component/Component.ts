@@ -4,7 +4,7 @@ module feng3d {
 	 * 组件容器（集合）
 	 * @author feng 2015-5-6
 	 */
-    export class Component extends EventDispatcher {
+    export class Component extends EventDispatcher implements IComponent {
 
         private _componentName: string;
 
@@ -22,7 +22,7 @@ module feng3d {
 		 */
         public get componentName(): string {
             if (this._componentName == null)
-                this._componentName = ClassUtils.getDefaultName(this);
+                this._componentName = getQualifiedClassName(this).split("::").pop();
 
             return this._componentName;
         }
@@ -43,17 +43,17 @@ module feng3d {
 
 		/**
 		 * 添加组件
-		 * @param com 被添加组件
+		 * @param component 被添加组件
 		 */
-        public addComponent(com: Component): void {
-            assert(com != this, "子项与父项不能相同");
+        public addComponent(component: IComponent): void {
+            assert(component != this, "子项与父项不能相同");
 
-            if (this.hasComponent(com)) {
-                this.setComponentIndex(com, this.components.length - 1);
+            if (this.hasComponent(component)) {
+                this.setComponentIndex(component, this.components.length - 1);
                 return;
             }
 
-            this.addComponentAt(com, this.components.length);
+            this.addComponentAt(component, this.components.length);
         }
 
 		/**
@@ -61,7 +61,7 @@ module feng3d {
 		 * @param component		被添加的组件
 		 * @param index			插入的位置
 		 */
-        public addComponentAt(component: Component, index: number): void {
+        public addComponentAt(component: IComponent, index: number): void {
             assert(component != this, "子项与父项不能相同");
             assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
 
@@ -81,12 +81,12 @@ module feng3d {
 
 		/**
 		 * 移除组件
-		 * @param com 被移除组件
+		 * @param component 被移除组件
 		 */
-        public removeComponent(com: Component): void {
-            assert(this.hasComponent(com), "只能移除在容器中的组件");
+        public removeComponent(component: IComponent): void {
+            assert(this.hasComponent(component), "只能移除在容器中的组件");
 
-            var index: number = this.getComponentIndex(com);
+            var index: number = this.getComponentIndex(component);
             this.removeComponentAt(index);
         }
 
@@ -94,38 +94,38 @@ module feng3d {
          * 移除组件
          * @param index		要删除的 Component 的子索引。
          */
-        public removeComponentAt(index: number): Component {
+        public removeComponentAt(index: number): IComponent {
             assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
-            var removeComponent: Component = this.components.splice(index, 1)[0];
+            var removeComponent: IComponent = this.components.splice(index, 1)[0];
             return removeComponent;
         }
 
         /**
          * 获取组件在容器的索引位置
-         * @param com			查询的组件
-         * @return				组件在容器的索引位置
+         * @param component			查询的组件
+         * @return				    组件在容器的索引位置
          */
-        public getComponentIndex(com: Component): number {
-            assert(this.components.indexOf(com) != -1, "组件不在容器中");
+        public getComponentIndex(component: IComponent): number {
+            assert(this.components.indexOf(component) != -1, "组件不在容器中");
 
-            var index: number = this.components.indexOf(com);
+            var index: number = this.components.indexOf(component);
             return index;
         }
 
         /**
          * 设置子组件的位置
-         * @param com				子组件
+         * @param component				子组件
          * @param index				位置索引
          */
-        public setComponentIndex(com: Component, index: number): void {
+        public setComponentIndex(component: IComponent, index: number): void {
             assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
-            var oldIndex: number = this.components.indexOf(com);
+            var oldIndex: number = this.components.indexOf(component);
             assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
 
             this.components.splice(oldIndex, 1);
-            this.components.splice(index, 0, com);
+            this.components.splice(index, 0, component);
         }
 
         /**
@@ -133,7 +133,7 @@ module feng3d {
          * @param index			位置索引
          * @return				子组件
          */
-        public getComponentAt(index: number): any {
+        public getComponentAt(index: number): IComponent {
             assert(index < this.numComponents, "给出索引超出范围");
             return this.components[index];
         }
@@ -144,7 +144,7 @@ module feng3d {
          * @param componentName		组件名称
          * @return 					获取到的组件
          */
-        public getComponentByName(componentName: String): any {
+        public getComponentByName(componentName: String): IComponent {
             var filterResult = this.getComponentsByName(this.componentName);
             return filterResult[0];
         }
@@ -155,11 +155,10 @@ module feng3d {
          * @param componentName		组件名称
          * @return 					获取到的组件
          */
-        public getComponentsByName(componentName: String): any[] {
-            var filterResult = this.components.filter(function(item: Component, ...args): boolean {
+        public getComponentsByName(componentName: String): IComponent[] {
+            var filterResult = this.components.filter(function (item: IComponent, ...args): boolean {
                 return item.componentName == componentName;
             });
-
             return filterResult;
         }
 
@@ -169,7 +168,7 @@ module feng3d {
          * @param cls				类定义
          * @return
          */
-        public getComponentByClass(cls: any): any {
+        public getComponentByClass(cls: IComponentClass): IComponent {
             var component = this.getComponentsByClass(cls)[0];
             return component;
         }
@@ -179,9 +178,9 @@ module feng3d {
          * @param cls		类定义
          * @return			返回与给出类定义一致的组件
          */
-        public getComponentsByClass(cls: any): any[] {
-            var filterResult = this.components.filter(function(item: Component, ...args): boolean {
-                return ClassUtils.isSameClass(item, cls);
+        public getComponentsByClass(cls: IComponentClass): IComponent[] {
+            var filterResult = this.components.filter(function (item: IComponent, ...args): boolean {
+                return item instanceof cls;
             });
 
             return filterResult;
@@ -193,8 +192,8 @@ module feng3d {
          * @param cls
          * @return
          */
-        public getOrCreateComponentByClass(cls: any): any {
-            var component: Component = this.getComponentByClass(cls);
+        public getOrCreateComponentByClass(cls: IComponentClass): IComponent {
+            var component = this.getComponentByClass(cls);
 
             if (component == null) {
                 component = new cls();
@@ -209,7 +208,7 @@ module feng3d {
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。
          */
-        public hasComponent(com: Component): boolean {
+        public hasComponent(com: IComponent): boolean {
             return this.components.indexOf(com) != -1;
         }
 
@@ -245,10 +244,93 @@ module feng3d {
          * @param event
          */
         protected dispatchChildrenEvent(event: Event): void {
-            this.components.forEach(function(item: Component, ...args): void {
+            this.components.forEach(function (item: Component, ...args): void {
                 item.dispatchEvent(event);
             });
         }
 
+    }
+    export type IComponentClass = new (...args) => IComponent;
+
+    new Component().getComponentByClass(ComponentA)
+    new Component().getComponentByClass(Component)
+    new Component().getComponentByClass(ComponentB)
+    new Component().addComponent(ComponentB)
+
+    class ComponentA extends Component {
+
+    }
+    class ComponentB implements IComponent {
+        /**
+         * 组件名称
+         */
+        componentName: string;
+
+        /**
+         * 组件数量
+         */
+        numComponents: number;
+
+        /**
+         * 添加组件
+         * @param component 被添加组件
+         */
+        addComponent(component: Component): void { }
+
+        /**
+		 * 添加组件到指定位置
+		 * @param component		被添加的组件
+		 * @param index			插入的位置
+		 */
+        addComponentAt(component: Component, index: number): void { }
+
+        /**
+		 * 移除组件
+		 * @param component 被移除组件
+		 */
+        removeComponent(component: Component): void { }
+
+        /**
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
+         */
+        removeComponentAt(index: number): Component { return null }
+
+        /**
+         * 获取组件在容器的索引位置
+         * @param component			查询的组件
+         * @return				    组件在容器的索引位置
+         */
+        getComponentIndex(com: Component): number { return 0 }
+
+        /**
+        * 设置子组件的位置
+        * @param component				子组件
+        * @param index				    位置索引
+        */
+        setComponentIndex(component: Component, index: number): void { }
+
+        /**
+         * 获取指定位置索引的子组件
+         * @param index			位置索引
+         * @return				子组件
+         */
+        getComponentAt(index: number): Component { return null }
+
+        /**
+         * 根据组件名称获取组件
+         * <p>注意：此处比较的是componentName而非name</p>
+         * @param componentName		组件名称
+         * @return 					获取到的组件
+         */
+        getComponentByName(componentName: String): Component { return null }
+
+        /**
+        * 获取与给出组件名称相同的所有组件
+        * <p>注意：此处比较的是componentName而非name</p>
+        * @param componentName		组件名称
+        * @return 					获取到的组件
+        */
+        getComponentsByName(componentName: String): Component[] { return null }
     }
 }
