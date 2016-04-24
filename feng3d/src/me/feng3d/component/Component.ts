@@ -250,18 +250,16 @@ module feng3d {
          * 派发移除子组件事件
          */
         private dispatchAddedEvent(component: IComponent): void {
-            var data = { container: this, child: component };
-            this.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONET, data));
-            component.dispatchEvent(new ComponentEvent(ComponentEvent.BE_ADDED_COMPONET, data));
+            this.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONET, { container: this, child: component }));
+            component.dispatchEvent(new ComponentEvent(ComponentEvent.BE_ADDED_COMPONET, { container: this, child: component }));
         }
 
         /**
          * 派发移除子组件事件
          */
         private dispatchRemovedEvent(component: IComponent): void {
-            var data = { container: this, child: component };
-            this.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONET, data));
-            component.dispatchEvent(new ComponentEvent(ComponentEvent.BE_REMOVED_COMPONET, data));
+            this.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONET, { container: this, child: component }));
+            component.dispatchEvent(new ComponentEvent(ComponentEvent.BE_REMOVED_COMPONET, { container: this, child: component }));
         }
     }
     //定义实现 IComponent 的类定义
