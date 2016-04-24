@@ -3,7 +3,7 @@ module feng3d {
      * 组件接口
      * @author feng 2016-4-24
      */
-    export interface IComponent {
+    export interface IComponent extends IEventDispatcher{
         /**
          * 组件名称
          */
@@ -75,5 +75,56 @@ module feng3d {
         * @return 					获取到的组件
         */
         getComponentsByName(componentName: String): IComponent[];
+
+        /**
+         * 根据类定义获取组件
+         * <p>如果存在多个则返回第一个</p>
+         * @param cls				类定义
+         * @return
+         */
+        getComponentByClass(cls: IComponentClass): IComponent;
+
+        /**
+         * 根据类定义查找组件
+         * @param cls		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsByClass(cls: IComponentClass): IComponent[];
+
+        /**
+         * 根据类定义获取或创建组件
+         * <p>当不存在该类型对象时创建一个该组件并且添加到容器中</p>
+         * @param cls
+         * @return
+         */
+        getOrCreateComponentByClass(cls: IComponentClass): IComponent;
+
+        /**
+        * 判断是否拥有组件
+        * @param com	被检测的组件
+        * @return		true：拥有该组件；false：不拥有该组件。
+        */
+        hasComponent(com: IComponent): boolean;
+
+        /**
+         * 交换子组件位置
+         * @param index1		第一个子组件的索引位置
+         * @param index2		第二个子组件的索引位置
+         */
+        swapComponentsAt(index1: number, index2: number): void;
+
+        /**
+         * 交换子组件位置
+         * @param a		第一个子组件
+         * @param b		第二个子组件
+         */
+        swapComponents(a: IComponent, b: IComponent): void;
+
+        /**
+         * 派发子组件事件
+         * <p>事件广播给子组件</p>
+         * @param event
+         */
+        dispatchChildrenEvent(event: Event): void;
     }
 }

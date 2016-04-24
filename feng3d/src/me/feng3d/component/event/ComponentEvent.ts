@@ -4,7 +4,7 @@ module feng3d {
 	 * 组件事件
 	 * @author feng 2015-12-2
 	 */
-    export class ComponentEvent extends Event{
+    export class ComponentEvent extends Event {
 		/**
 		 * 添加子组件事件
 		 */
@@ -25,7 +25,15 @@ module feng3d {
 		 */
         public static BE_REMOVED_COMPONET = "beRemovedComponet";
 
-        constructor(type: string, data = null, bubbles = false, cancelable = false) {
+		/**
+		 * 数据
+		 */
+		data: { container: IComponent, child: IComponent };
+
+		/**
+		 * 构建组件事件
+		 */
+        constructor(type: string, data: { container: IComponent, child: IComponent }, bubbles = false, cancelable = false) {
             super(type, data, bubbles, cancelable);
         }
     }
