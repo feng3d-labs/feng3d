@@ -1,4 +1,4 @@
-module feng3d {
+module me.feng3d {
 
 	/**
 	 * 组件容器（集合）

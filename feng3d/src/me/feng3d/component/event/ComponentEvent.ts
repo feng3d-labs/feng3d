@@ -1,4 +1,4 @@
-module feng3d {
+module me.feng3d {
 
 	/**
 	 * 组件事件
@@ -33,8 +33,8 @@ module feng3d {
 		/**
 		 * 构建组件事件
 		 */
-        constructor(type: string, data: { container: IComponent, child: IComponent }, bubbles = false, cancelable = false) {
-            super(type, data, bubbles, cancelable);
+        constructor(type: string, data: { container: IComponent, child: IComponent }, bubbles = false) {
+            super(type, data, bubbles);
         }
     }
 }

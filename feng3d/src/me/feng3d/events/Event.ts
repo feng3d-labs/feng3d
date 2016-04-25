@@ -1,6 +1,6 @@
-module feng3d {
+module me.feng3d {
 	/**
-	 * 自定义事件
+	 * 事件
 	 * @author warden_feng 2014-5-7
 	 */
     export class Event {
@@ -12,9 +12,9 @@ module feng3d {
 
         private _currentTarget: IEventDispatcher;
 
-        private _stopsPropagation: boolean;
+        private _isStopBubbles: boolean;
 
-        private _stopsImmediatePropagation: boolean;
+        private _isStop: boolean;
 
         /**
          * 事件携带的自定义数据
@@ -25,26 +25,33 @@ module feng3d {
 		 * 创建一个作为参数传递给事件侦听器的 Event 对象。
 		 * @param type 事件的类型，可以作为 Event.type 访问。
 		 * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
-		 * @param cancelable 确定是否可以取消 Event 对象。默认值为 false。
 		 */
-        constructor(type: string, data = null, bubbles = false, cancelable = false) {
+        constructor(type: string, data = null, bubbles = false) {
             this._type = type;
             this._bubbles = bubbles;
             this.data = data;
         }
 
-		/**
-		 * 防止对事件流中当前节点中和所有后续节点中的事件侦听器进行处理。此方法会立即生效，并且会影响当前节点中的事件侦听器。相比之下，在当前节点中的所有事件侦听器都完成处理之前，stopPropagation() 方法不会生效。
-		 */
-        public stopImmediatePropagation() {
-            this._stopsPropagation = this._stopsImmediatePropagation = true;
+        /**
+         * 是否停止处理事件监听器
+         */
+        get isStop(): boolean {
+            return this._isStop;
         }
 
-		/**
-		 * 防止对事件流中当前节点的后续节点中的所有事件侦听器进行处理。此方法不会影响当前节点 (currentTarget) 中的任何事件侦听器。相比之下，stopImmediatePropagation() 方法可以防止对当前节点中和后续节点中的事件侦听器进行处理。对此方法的其他调用没有任何效果。可以在事件流的任何阶段中调用此方法。
-		 */
-        public stopPropagation() {
-            this._stopsPropagation = true;
+        set isStop(value: boolean) {
+            this._isStopBubbles = this._isStop = this._isStopBubbles || value;
+        }
+
+        /**
+         * 是否停止冒泡
+         */
+        get isStopBubbles(): boolean {
+            return this._isStopBubbles;
+        }
+
+        set isStopBubbles(value: boolean) {
+            this._isStopBubbles = this._isStopBubbles || value;
         }
 
         public tostring(): string {
@@ -84,14 +91,6 @@ module feng3d {
 		 */
         public get currentTarget(): IEventDispatcher {
             return this._currentTarget;
-        }
-
-        get stopsImmediatePropagation(): boolean {
-            return this._stopsImmediatePropagation;
-        }
-
-        get stopsPropagation(): boolean {
-            return this._stopsPropagation;
         }
     }
 }
