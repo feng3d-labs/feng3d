@@ -30,6 +30,7 @@
         //基础工具
         "src/me/feng3d/utils/getClassName.ts",
         "src/me/feng3d/utils/StringUtils.ts",
+        "src/me/feng3d/utils/Temp.ts",
         //
         "src/me/feng3d/mathlib/MathConsts.ts",
         "src/me/feng3d/mathlib/Vector3D.ts",
