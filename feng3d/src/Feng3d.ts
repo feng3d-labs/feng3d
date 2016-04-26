@@ -1,13 +1,7 @@
-/**
- * Feng3D
- */
-class Feng3D {
-
-    public static REVISION: number = 0;
-
-    constructor(parameters) {
-
-        console.log("Feng3D version " + Feng3D.REVISION)
-    }
-
+module me.feng3d {
+    /**
+     * feng3d的版本号
+     */
+    var $REVISION: string = "0.0.0";
+    console.log(`Feng3D version ${$REVISION}`)
 }

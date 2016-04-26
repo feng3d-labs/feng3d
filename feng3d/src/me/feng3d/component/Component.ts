@@ -29,7 +29,7 @@ module me.feng3d {
 		 */
         public get componentName(): string {
             if (this._componentName == null)
-                this._componentName = getQualifiedClassName(this).split("::").pop();
+                this._componentName = Object.getPrototypeOf(this).constructor.name;
 
             return this._componentName;
         }
@@ -142,7 +142,7 @@ module me.feng3d {
          * @return 					获取到的组件
          */
         public getComponentByName(componentName: String): IComponent {
-            var filterResult = this.getComponentsByName(this.componentName);
+            var filterResult = this.getComponentsByName(componentName);
             return filterResult[0];
         }
 
@@ -165,7 +165,7 @@ module me.feng3d {
          * @param cls				类定义
          * @return
          */
-        public getComponentByClass(cls: IComponentClass): IComponent {
+        public getComponentByClass<T extends IComponent>(cls: new (...args) => T): T {
             var component = this.getComponentsByClass(cls)[0];
             return component;
         }
@@ -175,8 +175,8 @@ module me.feng3d {
          * @param cls		类定义
          * @return			返回与给出类定义一致的组件
          */
-        public getComponentsByClass(cls: IComponentClass): IComponent[] {
-            var filterResult = this.components.filter(function (item: IComponent, ...args): boolean {
+        public getComponentsByClass<T extends IComponent>(cls: new (...args) => T): T[] {
+            var filterResult: any = this.components.filter(function (item: T, ...args): boolean {
                 return item instanceof cls;
             });
 
@@ -189,7 +189,7 @@ module me.feng3d {
          * @param cls
          * @return
          */
-        public getOrCreateComponentByClass(cls: IComponentClass): IComponent {
+        public getOrCreateComponentByClass<T extends IComponent>(cls: new (...args) => T): T {
             var component = this.getComponentByClass(cls);
 
             if (component == null) {
@@ -250,18 +250,29 @@ module me.feng3d {
          * 派发移除子组件事件
          */
         private dispatchAddedEvent(component: IComponent): void {
-            this.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONET, { container: this, child: component }));
-            component.dispatchEvent(new ComponentEvent(ComponentEvent.BE_ADDED_COMPONET, { container: this, child: component }));
+            this.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONENT, { container: this, child: component }));
+            component.dispatchEvent(new ComponentEvent(ComponentEvent.BE_ADDED_COMPONENT, { container: this, child: component }));
         }
 
         /**
          * 派发移除子组件事件
          */
         private dispatchRemovedEvent(component: IComponent): void {
-            this.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONET, { container: this, child: component }));
-            component.dispatchEvent(new ComponentEvent(ComponentEvent.BE_REMOVED_COMPONET, { container: this, child: component }));
+            this.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }));
+            component.dispatchEvent(new ComponentEvent(ComponentEvent.BE_REMOVED_COMPONENT, { container: this, child: component }));
         }
     }
     //定义实现 IComponent 的类定义
-    export type IComponentClass = new (...args) => IComponent;
+    // export type IComponentClass<T> = ;
+
+    /**
+	 * 断言
+	 * @b			判定为真的表达式
+	 * @msg			在表达式为假时将输出的错误信息
+	 * @author feng 2014-10-29
+	 */
+    function assert(b: boolean, msg: string = "assert"): void {
+        if (!b)
+            throw new Error(msg);
+    }
 }

@@ -82,14 +82,14 @@ module me.feng3d {
          * @param cls				类定义
          * @return
          */
-        getComponentByClass(cls: IComponentClass): IComponent;
+        getComponentByClass<T extends IComponent>(cls: new (...args) => T): T;
 
         /**
          * 根据类定义查找组件
          * @param cls		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsByClass(cls: IComponentClass): IComponent[];
+        getComponentsByClass<T extends IComponent>(cls: new (...args) => T): T[];
 
         /**
          * 根据类定义获取或创建组件
@@ -97,7 +97,7 @@ module me.feng3d {
          * @param cls
          * @return
          */
-        getOrCreateComponentByClass(cls: IComponentClass): IComponent;
+        getOrCreateComponentByClass<T extends IComponent>(cls: new (...args) => T): T;
 
         /**
         * 判断是否拥有组件

@@ -16,7 +16,8 @@
         "declaration": true,
         // "out": "release/feng3d.js"
         // "out": "../feng3d-ts-examples/libs/feng3d.js"
-        "out": "../feng3d-ts-test/libs/feng3d.js"
+        // "out": "../feng3d-ts-test/libs/feng3d.js"
+        "outDir": "bin"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //
@@ -24,7 +25,7 @@
         //
         "src/me/feng3d/debug/assert.ts",
         //基础工具
-        "src/me/feng3d/utils/getQualifiedClassName.ts",
+        "src/me/feng3d/utils/getClassName.ts",
         //事件模块
         "src/me/feng3d/events/Event.ts",
         "src/me/feng3d/events/IEventDispatcher.ts",
