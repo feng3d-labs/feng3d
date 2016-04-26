@@ -15,25 +15,27 @@
         "sourceMap": true,
         "declaration": true,
         // "out": "release/feng3d.js"
-        // "out": "../feng3d-ts-examples/libs/feng3d.js"
+        "out": "../feng3d-ts-examples/libs/feng3d.js"
         // "out": "../feng3d-ts-test/libs/feng3d.js"
-        "outDir": "bin"
+        // "outDir": "bin"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //
         "src/Feng3d.ts",
+        //libs
+        "libs/feng3d-event.d.ts",
+        "libs/feng3d-component.d.ts",
         //
         "src/me/feng3d/debug/assert.ts",
         //基础工具
         "src/me/feng3d/utils/getClassName.ts",
-        //事件模块
-        "src/me/feng3d/events/Event.ts",
-        "src/me/feng3d/events/IEventDispatcher.ts",
-        "src/me/feng3d/events/EventDispatcher.ts",
-        //组件模块
-        "src/me/feng3d/component/event/ComponentEvent.ts",
-        "src/me/feng3d/component/IComponent.ts",
-        "src/me/feng3d/component/Component.ts"
-        
+        "src/me/feng3d/utils/StringUtils.ts",
+        //
+        "src/me/feng3d/mathlib/MathConsts.ts",
+        "src/me/feng3d/mathlib/Vector3D.ts",
+        "src/me/feng3d/mathlib/Matrix3D.ts",
+        //
+        "src/me/feng3d/core/Space3D.ts",
+        "src/me/feng3d/core/GameObject.ts"
     ]
 }
