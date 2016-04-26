@@ -17,6 +17,7 @@ declare module me.feng3d {
         /**
          * 创建一个作为参数传递给事件侦听器的 Event 对象。
          * @param type 事件的类型，可以作为 Event.type 访问。
+         * @param data 携带数据
          * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
          */
         constructor(type: string, data?: any, bubbles?: boolean);

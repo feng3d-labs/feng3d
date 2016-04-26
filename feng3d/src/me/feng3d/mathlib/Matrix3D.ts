@@ -552,7 +552,7 @@ module me.feng3d {
          * 设置转换矩阵的平移、旋转和缩放设置。
          * @param   components      一个由三个 Vector3D 对象组成的矢量，这些对象将替代 Matrix3D 对象的平移、旋转和缩放元素。
          */
-        public recompose(components: Vector3D[]): boolean {
+        public recompose(components: Vector3D[]): void {
 
             this.identity();
             this.appendRotation(components[1].x * MathConsts.RADIANS_TO_DEGREES, Vector3D.X_AXIS);
@@ -560,29 +560,26 @@ module me.feng3d {
             this.appendRotation(components[1].z * MathConsts.RADIANS_TO_DEGREES, Vector3D.Z_AXIS);
             this.appendScale(components[2].x, components[2].y, components[2].z);
             this.appendTranslation(components[0].x, components[0].y, components[0].z);
-            return true;
         }
 
         /**
          * 使用转换矩阵将 Vector3D 对象从一个空间坐标转换到另一个空间坐标。
-         * @param   v   一个容纳要转换的坐标的 Vector3D 对象。
+         * @param   vin   一个容纳要转换的坐标的 Vector3D 对象。
          * @return  一个包含转换后的坐标的 Vector3D 对象。
          */
-        public transformVector(v: Vector3D): Vector3D {
-            if (v == null)
-                return new Vector3D();
+        public transformVector(vin: Vector3D, vout?: Vector3D): Vector3D {
 
-            var x: number = v.x;
-            var y: number = v.y;
-            var z: number = v.z;
+            var x: number = vin.x;
+            var y: number = vin.y;
+            var z: number = vin.z;
 
-            var out: Vector3D = new Vector3D();
-            out.x = x * this.rawData[0] + y * this.rawData[4] + z * this.rawData[8] + this.rawData[12];
-            out.y = x * this.rawData[1] + y * this.rawData[5] + z * this.rawData[9] + this.rawData[13];
-            out.z = x * this.rawData[2] + y * this.rawData[6] + z * this.rawData[10] + this.rawData[14];
-            out.w = x * this.rawData[3] + y * this.rawData[7] + z * this.rawData[11] + this.rawData[15];
+            vout = vout || new Vector3D();
+            vout.x = x * this.rawData[0] + y * this.rawData[4] + z * this.rawData[8] + this.rawData[12];
+            vout.y = x * this.rawData[1] + y * this.rawData[5] + z * this.rawData[9] + this.rawData[13];
+            vout.z = x * this.rawData[2] + y * this.rawData[6] + z * this.rawData[10] + this.rawData[14];
+            vout.w = x * this.rawData[3] + y * this.rawData[7] + z * this.rawData[11] + this.rawData[15];
 
-            return out;
+            return vout;
         }
 
         /**
@@ -621,7 +618,7 @@ module me.feng3d {
         /**
          * 比较矩阵是否相等
          */
-        public compare(matrix3D: Matrix3D, precision: number = 0.0001):boolean {
+        public compare(matrix3D: Matrix3D, precision: number = 0.0001): boolean {
             var r2 = matrix3D.rawData;
             for (var i: number = 0; i < 16; ++i) {
                 if (Math.abs(this.rawData[i] - r2[i]) > precision)
