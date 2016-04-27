@@ -4,16 +4,15 @@ module me.feng3d {
 	 * 摄像机镜头
 	 * @author feng 2014-10-14
 	 */
-	export abstract class LensBase extends EventDispatcher {
-		protected _matrix: Matrix3D;
+	export abstract class CameraBase extends Component {
+		protected _projectionMatrix3D: Matrix3D;
 		protected _scissorRect: Rectangle = new Rectangle();
 		protected _viewPort: Rectangle = new Rectangle();
 		protected _near: number = 0.1;
 		protected _far: number = 3000;
 		protected _aspectRatio: number = 1;
 
-		protected _matrixInvalid: boolean = true;
-		protected _frustumCorners: number[] = [];
+		protected _projectionMatrix3DDirty: boolean = true;
 
 		private _unprojection: Matrix3D;
 		private _unprojectionInvalid: boolean = true;
@@ -23,34 +22,23 @@ module me.feng3d {
 		 */
 		constructor() {
             super();
-			this._matrix = new Matrix3D();
-		}
-
-		/**
-		 * Retrieves the corner points of the lens frustum.
-		 */
-		public get frustumCorners(): number[] {
-			return this._frustumCorners;
-		}
-
-		public set frustumCorners(frustumCorners: number[]) {
-			this._frustumCorners = frustumCorners;
+			this._projectionMatrix3D = new Matrix3D();
 		}
 
 		/**
 		 * 投影矩阵
 		 */
-		public get matrix(): Matrix3D {
-			if (this._matrixInvalid) {
-				this.updateMatrix();
-				this._matrixInvalid = false;
+		public get projectionMatrix3D(): Matrix3D {
+			if (this._projectionMatrix3DDirty) {
+				this.updateProjectionMatrix();
+				this._projectionMatrix3DDirty = false;
 			}
-			return this._matrix;
+			return this._projectionMatrix3D;
 		}
 
-		public set matrix(value: Matrix3D) {
-			this._matrix = value;
-			this.invalidateMatrix();
+		public set projectionMatrix3D(value: Matrix3D) {
+			this._projectionMatrix3D = value;
+			this.invalidateProjectionMatrix();
 		}
 
 		/**
@@ -64,7 +52,7 @@ module me.feng3d {
 			if (value == this._near)
 				return;
 			this._near = value;
-			this.invalidateMatrix();
+			this.invalidateProjectionMatrix();
 		}
 
 		/**
@@ -78,7 +66,7 @@ module me.feng3d {
 			if (value == this._far)
 				return;
 			this._far = value;
-			this.invalidateMatrix();
+			this.invalidateProjectionMatrix();
 		}
 
 		/**
@@ -92,7 +80,7 @@ module me.feng3d {
 			if (this._aspectRatio == value || (value * 0) != 0)
 				return;
 			this._aspectRatio = value;
-			this.invalidateMatrix();
+			this.invalidateProjectionMatrix();
 		}
 
 		/**
@@ -104,7 +92,7 @@ module me.feng3d {
 		public project(point3d: Vector3D, v: Vector3D = null): Vector3D {
 			if (!v)
 				v = new Vector3D();
-			this.matrix.transformVector(point3d, v);
+			this.projectionMatrix3D.transformVector(point3d, v);
 			v.x = v.x / v.w;
 			v.y = -v.y / v.w;
 
@@ -121,7 +109,7 @@ module me.feng3d {
 			if (this._unprojectionInvalid) {
                 if (this._unprojection == null)
 					this._unprojection = new Matrix3D();
-				this._unprojection.copyFrom(this.matrix);
+				this._unprojection.copyFrom(this.projectionMatrix3D);
 				this._unprojection.invert();
 				this._unprojectionInvalid = false;
 			}
@@ -142,15 +130,15 @@ module me.feng3d {
 		/**
 		 * 投影矩阵失效
 		 */
-		protected invalidateMatrix() {
-			this._matrixInvalid = true;
+		protected invalidateProjectionMatrix() {
+			this._projectionMatrix3DDirty = true;
 			this._unprojectionInvalid = true;
-			this.dispatchEvent(new LensEvent(LensEvent.MATRIX_CHANGED, this));
+			this.dispatchEvent(new CameraEvent(CameraEvent.MATRIX_CHANGED, this));
 		}
 
 		/**
 		 * 更新投影矩阵
 		 */
-		protected abstract updateMatrix();
+		protected abstract updateProjectionMatrix();
 	}
 }

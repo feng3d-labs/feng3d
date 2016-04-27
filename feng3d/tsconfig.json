@@ -36,14 +36,13 @@
         "src/me/feng3d/mathlib/Vector3D.ts",
         "src/me/feng3d/mathlib/Matrix3D.ts",
         //
-        "src/me/feng3d/evnets/LensEvent.ts",
-        //
         "src/me/feng3d/core/Space3D.ts",
         "src/me/feng3d/core/Object3D.ts",
         //摄像机
-        "src/me/feng3d/cameras/lenses/CoordinateSystem.ts",
-        "src/me/feng3d/cameras/lenses/LensBase.ts",
-        "src/me/feng3d/cameras/lenses/PerspectiveLens.ts",
+        "src/me/feng3d/cameras/CameraEvent.ts",
+        "src/me/feng3d/cameras/CoordinateSystem.ts",
+        "src/me/feng3d/cameras/CameraBase.ts",
+        "src/me/feng3d/cameras/Camera.ts",
         //临时变量
         "src/me/feng3d/utils/Temp.ts"
     ]

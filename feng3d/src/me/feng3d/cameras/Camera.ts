@@ -1,10 +1,10 @@
 module me.feng3d {
 
 	/**
-	 * 透视摄像机镜头
+	 * 透视摄像机（镜头）
 	 * @author feng 2014-10-14
 	 */
-    export class PerspectiveLens extends LensBase {
+    export class Camera extends CameraBase {
         private _fieldOfView: number;
         private _focalLength: number;
         private _focalLengthInv: number;
@@ -40,7 +40,7 @@ module me.feng3d {
             this._focalLengthInv = Math.tan(this._fieldOfView * Math.PI / 360);
             this._focalLength = 1 / this._focalLengthInv;
 
-            this.invalidateMatrix();
+            this.invalidateProjectionMatrix();
         }
 
 		/**
@@ -59,7 +59,7 @@ module me.feng3d {
             this._focalLengthInv = 1 / this._focalLength;
             this._fieldOfView = Math.atan(this._focalLengthInv) * 360 / Math.PI;
 
-            this.invalidateMatrix();
+            this.invalidateProjectionMatrix();
         }
 
         public unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D {
@@ -94,10 +94,13 @@ module me.feng3d {
 
             this._coordinateSystem = value;
 
-            this.invalidateMatrix();
+            this.invalidateProjectionMatrix();
         }
 
-        protected updateMatrix() {
+        /**
+         * 更新投影矩阵
+         */
+        protected updateProjectionMatrix() {
             var raw: number[] = temp.rawData;
 
             this._yMax = this._near * this._focalLengthInv;
@@ -145,25 +148,9 @@ module me.feng3d {
             if (this._coordinateSystem == CoordinateSystem.RIGHT_HANDED)
                 raw[5] = -raw[5];
 
-            this._matrix.copyRawDataFrom(raw);
+            this._projectionMatrix3D.copyRawDataFrom(raw);
 
-            var yMaxFar: number = this._far * this._focalLengthInv;
-            var xMaxFar: number = yMaxFar * this._aspectRatio;
-
-            this._frustumCorners[0] = this._frustumCorners[9] = left;
-            this._frustumCorners[3] = this._frustumCorners[6] = right;
-            this._frustumCorners[1] = this._frustumCorners[4] = top;
-            this._frustumCorners[7] = this._frustumCorners[10] = bottom;
-
-            this._frustumCorners[12] = this._frustumCorners[21] = -xMaxFar;
-            this._frustumCorners[15] = this._frustumCorners[18] = xMaxFar;
-            this._frustumCorners[13] = this._frustumCorners[16] = -yMaxFar;
-            this._frustumCorners[19] = this._frustumCorners[22] = yMaxFar;
-
-            this._frustumCorners[2] = this._frustumCorners[5] = this._frustumCorners[8] = this._frustumCorners[11] = this._near;
-            this._frustumCorners[14] = this._frustumCorners[17] = this._frustumCorners[20] = this._frustumCorners[23] = this._far;
-
-            this._matrixInvalid = false;
+            this._projectionMatrix3DDirty = false;
         }
     }
 }
