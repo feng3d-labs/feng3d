@@ -44,9 +44,9 @@ declare module me.feng3d {
      */
     interface IComponent extends IEventDispatcher {
         /**
-         * 组件名称
+         * 名称
          */
-        componentName: string;
+        name: string;
         /**
          * 组件数量
          */
@@ -156,7 +156,6 @@ declare module me.feng3d {
      * @author feng 2015-5-6
      */
     class Component extends EventDispatcher implements IComponent {
-        private _componentName;
         /**
          * 组件列表
          */
@@ -165,10 +164,6 @@ declare module me.feng3d {
          * 创建一个组件容器
          */
         constructor();
-        /**
-         * 组件名称
-         */
-        componentName: string;
         /**
          * 子组件个数
          */
@@ -218,14 +213,14 @@ declare module me.feng3d {
          * @param componentName		组件名称
          * @return 					获取到的组件
          */
-        getComponentByName(componentName: String): IComponent;
+        getComponentByName(name: String): IComponent;
         /**
          * 获取与给出组件名称相同的所有组件
          * <p>注意：此处比较的是componentName而非name</p>
-         * @param componentName		组件名称
+         * @param name		        组件名称
          * @return 					获取到的组件
          */
-        getComponentsByName(componentName: String): IComponent[];
+        getComponentsByName(name: String): IComponent[];
         /**
          * 根据类定义获取组件
          * <p>如果存在多个则返回第一个</p>

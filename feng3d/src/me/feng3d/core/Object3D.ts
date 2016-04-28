@@ -15,9 +15,10 @@ module me.feng3d {
         /**
          * 构建3D对象
          */
-        constructor() {
+        constructor(name?: string) {
             super();
 
+            this.name = name || getClassName(this);
             this.getOrCreateComponentByClass(Space3D);
         }
     }
