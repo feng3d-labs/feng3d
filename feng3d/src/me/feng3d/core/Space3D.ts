@@ -28,7 +28,6 @@ module me.feng3d {
             this._sx = sx;
             this._sy = sy;
             this._sz = sz;
-            this.updateTransform3D();
         }
 
         /**

@@ -9,9 +9,10 @@ module me.feng3d {
         private gl: WebGLRenderingContext;
         private shaderProgram: WebGLProgram;
         private vertexPositionAttribute: number;
-        private squareVerticesBuffer: WebGLBuffer;
 
         private _camera: Object3D;
+
+        private plane: Object3D;
 
         vertexShaderStr = //
         `
@@ -41,7 +42,7 @@ void main(void) {
 
             this.initShaders();
 
-            this.initBuffers();
+            this.initObject3D();
 
             setInterval(this.drawScene.bind(this), 15);
         }
@@ -109,22 +110,12 @@ void main(void) {
             return shader;
         }
 
-        private initBuffers() {
+        private initObject3D() {
 
-            // Create a buffer for the square's vertices.
-            this.squareVerticesBuffer = this.gl.createBuffer();
-
-            // Select the squareVerticesBuffer as the one to apply vertex
-            // operations to from here out.
-            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.squareVerticesBuffer);
-
-            var planeGeometry = me.feng3d.primitives.createPlane(1, 1);
-            var positionData = planeGeometry.getVAData(me.feng3d.GLAttribute.position);
-
-            // Now pass the list of vertices into WebGL to build the shape. We
-            // do this by creating a Float32Array from the JavaScript array,
-            // then use it to fill the current vertex buffer.
-            this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(positionData), this.gl.STATIC_DRAW);
+            var plane = this.plane = new Object3D();
+            plane.addComponent(primitives.createPlane(1, 1));
+            plane.space3D.z = 3;
+            plane.space3D.rx = 90;
         }
 
         private drawScene() {
@@ -132,42 +123,69 @@ void main(void) {
 
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
-            // Establish the perspective with which we want to view the
-            // scene. Our field of view is 45 degrees, with a width/height
-            // ratio of 640:480, and we only want to see objects between 0.1 units
-            // and 100 units away from the camera.
-
-            // Draw the square by binding the array buffer to the square's vertices
-            // array, setting attributes, and pushing it to GL.
-
-            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.squareVerticesBuffer);
-            this.gl.vertexAttribPointer(this.vertexPositionAttribute, 3, this.gl.FLOAT, false, 0, 0);
-            this.setMatrixUniforms();
-            this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            this.drawObject3D(this.plane);
         }
 
         private setMatrixUniforms() {
 
-            // var perspectiveMatrix = new me.feng3d.Matrix3D([1.8106601717798214, 0, 0, 0, 0, 2.4142135623730954, 0, 0, 0, 0, -1.002002002002002, -1, 0, 0, -0.20020020020020018, 0])
+            var perspectiveMatrix = this.getPerspectiveMatrix();
+            var pUniform = this.gl.getUniformLocation(this.shaderProgram, "uPMatrix");
+            this.gl.uniformMatrix4fv(pUniform, false, new Float32Array(perspectiveMatrix.rawData));
+        }
+
+        private getPerspectiveMatrix(): Matrix3D {
+
             var camSpace3D = this._camera.space3D;
             var camera = this._camera.getComponentByClass(Camera);
 
-            var perspectiveMatrix = camSpace3D.transform3D.clone();
+            var perspectiveMatrix = camSpace3D.transform3D;
             perspectiveMatrix.invert();
             perspectiveMatrix.append(camera.projectionMatrix3D);
 
-            var mvMatrix = this.objSpace3d.transform3D;
-
-            var pUniform = this.gl.getUniformLocation(this.shaderProgram, "uPMatrix");
-            this.gl.uniformMatrix4fv(pUniform, false, new Float32Array(perspectiveMatrix.rawData));
-
-            var mvUniform = this.gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
-            this.gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mvMatrix.rawData));
+            return perspectiveMatrix;
         }
 
-        /**
-         * 物体空间
-         */
-        objSpace3d = new me.feng3d.Space3D(0, 0, 3, 90);
+        private drawObject3D(object3D: Object3D) {
+
+            var object3DBuffer = object3DBufferManager.getBuffer(this.gl, object3D);
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object3DBuffer.squareVerticesBuffer);
+            this.gl.vertexAttribPointer(this.vertexPositionAttribute, 3, this.gl.FLOAT, false, 0, 0);
+
+            var mvMatrix = object3D.space3D.transform3D;
+            var mvUniform = this.gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
+            this.gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mvMatrix.rawData));
+
+            this.setMatrixUniforms();
+            this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+        }
     }
+
+    class Object3DBuffer {
+
+        squareVerticesBuffer: WebGLBuffer;
+    }
+
+    class Object3DBufferManager {
+
+        buffer: Object3DBuffer;
+
+        getBuffer(gl: WebGLRenderingContext, object3D: Object3D) {
+
+            if (this.buffer == null) {
+                this.buffer = new Object3DBuffer();
+
+                var geometry = object3D.getComponentByClass(Geometry);
+                var positionData = geometry.getVAData(GLAttribute.position);
+
+                // Create a buffer for the square's vertices.
+                var squareVerticesBuffer = this.buffer.squareVerticesBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionData), gl.STATIC_DRAW);
+            }
+
+            return this.buffer;
+        }
+    }
+
+    var object3DBufferManager = new Object3DBufferManager();
 }
