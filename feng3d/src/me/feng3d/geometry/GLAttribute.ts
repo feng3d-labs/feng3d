@@ -19,5 +19,10 @@ module me.feng3d {
          * 切线
          */
         static tangent = "vaTangent";
+
+        /**
+         * uv（纹理坐标）
+         */
+        static uv = "vaUV";
     }
 }

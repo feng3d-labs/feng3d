@@ -12,8 +12,6 @@ module me.feng3d {
 
         private _camera: Object3D;
 
-        private plane: Object3D;
-
         private _scene: Scene3D;
 
         vertexShaderStr = //
@@ -50,8 +48,6 @@ void main(void) {
             this.initGL();
 
             this.initShaders();
-
-            this.initObject3D();
 
             setInterval(this.drawScene.bind(this), 15);
         }
@@ -128,14 +124,6 @@ void main(void) {
             return shader;
         }
 
-        private initObject3D() {
-
-            var plane = this.plane = new Object3D();
-            plane.addComponent(primitives.createPlane(1, 1));
-            plane.space3D.z = 3;
-            plane.space3D.rx = 90;
-        }
-
         private drawScene() {
             // Clear the canvas before we start drawing on it.
 
@@ -145,8 +133,6 @@ void main(void) {
             renderables.forEach(element => {
                 this.drawObject3D(element);
             });
-
-            this.drawObject3D(this.plane);
         }
 
         private setMatrixUniforms() {

@@ -5,6 +5,7 @@ module me.feng3d {
      * @author feng 2016-05-01
      */
     export enum PrimitiveType {
-        Plane
+        Plane,
+        Cube
     }
 }

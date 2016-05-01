@@ -7,8 +7,9 @@ module me.feng3d.primitives {
      * @param segmentsW 横向分割数
      * @param segmentsH 纵向分割数
      * @param yUp 正面朝向 true:Y+ false:Z+
+     * @param elements 顶点元素列表
      */
-    export function createPlane(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true, elements = [GLAttribute.position, GLAttribute.normal, GLAttribute.tangent]): Geometry {
+    export function createPlane(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true, elements = [GLAttribute.position, GLAttribute.uv, GLAttribute.normal, GLAttribute.tangent]): Geometry {
 
         var geometry = new Geometry();
 
@@ -16,15 +17,19 @@ module me.feng3d.primitives {
             switch (element) {
                 case GLAttribute.position:
                     var vertexPositionData = buildPosition(width, height, segmentsW, segmentsH, yUp);
-                    geometry.setVAData(GLAttribute.position, vertexPositionData, 3);
+                    geometry.setVAData(element, vertexPositionData, 3);
                     break;
                 case GLAttribute.normal:
                     var vertexNormalData = buildNormal(segmentsW, segmentsH, yUp);
-                    geometry.setVAData(GLAttribute.normal, vertexNormalData, 3)
+                    geometry.setVAData(element, vertexNormalData, 3)
                     break;
                 case GLAttribute.tangent:
                     var vertexTangentData = buildTangent(segmentsW, segmentsH, yUp);
-                    geometry.setVAData(GLAttribute.tangent, vertexTangentData, 3)
+                    geometry.setVAData(element, vertexTangentData, 3)
+                    break;
+                case GLAttribute.uv:
+                    var uvData = buildUVs(segmentsW, segmentsH);
+                    geometry.setVAData(element, uvData, 2);
                     break;
                 default:
                     throw (`不支持为平面创建顶点属性 ${element}`);
@@ -151,5 +156,31 @@ module me.feng3d.primitives {
         }
 
         return indices;
+    }
+
+    /**
+     * 构建uv
+     * @param segmentsW 横向分割数
+     * @param segmentsH 纵向分割数
+     */
+    function buildUVs(segmentsW = 1, segmentsH = 1): number[] {
+        var data: number[];
+        var stride: number = 2;
+
+        var index: number = 0;
+
+        for (var yi: number = 0; yi <= this._segmentsH; ++yi) {
+            for (var xi: number = 0; xi <= this._segmentsW; ++xi) {
+                data[index++] = xi / this._segmentsW;
+                data[index++] = 1 - yi / this._segmentsH;
+
+                if (this._doubleSided) {
+                    data[index++] = xi / this._segmentsW;
+                    data[index++] = 1 - yi / this._segmentsH;
+                }
+            }
+        }
+
+        return data;
     }
 }
