@@ -62,7 +62,7 @@ module me.feng3d {
         }
 
         /**
-         * 深度查找与name相同的节点
+         * 根据名称深度查找节点
          * @param name 节点名称
          */
         find(name: string): Scene3DNode {
@@ -82,5 +82,26 @@ module me.feng3d {
             return null;
         }
 
+        /**
+         * 是否可渲染
+         */
+        renderable(): boolean {
+            return true;
+        }
+
+        /**
+         * 获取可渲染对象列表
+         */
+        getRenderables(renderables: Object3D[]): Object3D[] {
+
+            renderables = renderables || [];
+            this.renderable || renderables.push(this.object3D);
+
+            this.children.forEach(element => {
+                element.getRenderables(renderables);
+            });
+
+            return renderables;
+        }
     }
 }
