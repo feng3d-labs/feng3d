@@ -85,17 +85,17 @@ module me.feng3d {
         /**
          * 是否可渲染
          */
-        renderable(): boolean {
-            return true;
+        get renderable(): boolean {
+            return this.object3D != null;
         }
 
         /**
          * 获取可渲染对象列表
          */
-        getRenderables(renderables: Object3D[]): Object3D[] {
+        getRenderables(renderables: Object3D[] = null): Object3D[] {
 
             renderables = renderables || [];
-            this.renderable || renderables.push(this.object3D);
+            this.renderable && renderables.push(this.object3D);
 
             this.children.forEach(element => {
                 element.getRenderables(renderables);

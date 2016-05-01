@@ -38,7 +38,7 @@ void main(void) {
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas, scene: Scene3D, camera: Object3D = null) {
+        constructor(canvas, scene: Scene3D = null, camera: Object3D = null) {
 
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this.scene = scene || new Scene3D();
@@ -140,6 +140,11 @@ void main(void) {
             // Clear the canvas before we start drawing on it.
 
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+
+            var renderables = this._scene.getRenderables();
+            renderables.forEach(element => {
+                this.drawObject3D(element);
+            });
 
             this.drawObject3D(this.plane);
         }

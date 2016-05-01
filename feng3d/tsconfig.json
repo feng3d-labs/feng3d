@@ -40,8 +40,8 @@
         "src/me/feng3d/core/Object3D.ts",
         "src/me/feng3d/core/View3D.ts",
         //3D场景
-        "src/me/feng3d/scene/Scene3D.ts",
         "src/me/feng3d/scene/Scene3DNode.ts",
+        "src/me/feng3d/scene/Scene3D.ts",
         "src/me/feng3d/scene/Scene3DEvent.ts",
         //几何体
         "src/me/feng3d/geometry/GLAttribute.ts",
