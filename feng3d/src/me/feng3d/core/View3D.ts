@@ -14,6 +14,8 @@ module me.feng3d {
 
         private plane: Object3D;
 
+        private _scene: Scene3D;
+
         vertexShaderStr = //
         `
 attribute vec3 aVertexPosition;
@@ -30,9 +32,16 @@ void main(void) {
     gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }`;
 
-        constructor(canvas, camera: Object3D = null) {
+        /**
+         * 构建3D视图
+         * @param canvas    画布
+         * @param scene     3D场景
+         * @param camera    摄像机
+         */
+        constructor(canvas, scene: Scene3D, camera: Object3D = null) {
 
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
+            this.scene = scene || new Scene3D();
             this._camera = camera || factory.createCamera();
 
             this.gl = canvas.getContext("experimental-webgl");
@@ -45,6 +54,15 @@ void main(void) {
             this.initObject3D();
 
             setInterval(this.drawScene.bind(this), 15);
+        }
+
+        /** 3d场景 */
+        public get scene(): Scene3D {
+            return this._scene;
+        }
+
+        public set scene(value: Scene3D) {
+            this._scene = value;
         }
 
         private initGL() {
