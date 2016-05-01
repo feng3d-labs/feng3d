@@ -53,8 +53,8 @@
         "src/me/feng3d/cameras/CameraBase.ts",
         "src/me/feng3d/cameras/Camera.ts",
         //几何体基元
-        "src/me/feng3d/primitives/PlaneGeometryFactory.ts",
-        "src/me/feng3d/primitives/Object3DFactory.ts",
+        "src/me/feng3d/primitives/createPlane.ts",
+        "src/me/feng3d/primitives/createCamera.ts",
         "src/me/feng3d/primitives/PrimitiveType.ts",
         //临时变量
         "src/me/feng3d/utils/Temp.ts"

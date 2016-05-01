@@ -15,11 +15,31 @@ module me.feng3d {
         /**
          * 构建3D对象
          */
-        constructor(name?: string) {
+        constructor(name?: string, conponents: Component[] = null) {
+
             super();
 
             this.name = name || getClassName(this);
+            conponents && conponents.forEach(element => {
+                this.addComponent(element);
+            });
             this.getOrCreateComponentByClass(Space3D);
+        }
+
+        /**
+         * 创建
+         */
+        static createPrimitive(type: PrimitiveType): Object3D {
+
+            var object3D = new Object3D();
+            switch (type) {
+                case PrimitiveType.Plane:
+                    object3D.addComponent(primitives.createPlane());
+                    break;
+                default:
+                    throw `无法创建3D基元对象 ${type}`;
+            }
+            return object3D;
         }
     }
 }
