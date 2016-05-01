@@ -6,6 +6,32 @@ module me.feng3d {
     export class Space3D extends Component {
 
         /**
+         * 构建3D空间
+         * @param x X坐标
+         * @param y Y坐标
+         * @param z Z坐标
+         * @param rx X旋转
+         * @param ry Y旋转
+         * @param rz Z旋转
+         * @param sx X缩放
+         * @param sy Y缩放
+         * @param sz Z缩放
+         */
+        constructor(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1) {
+            super();
+            this._x = x;
+            this._y = y;
+            this._z = z;
+            this._rx = rx;
+            this._ry = ry;
+            this._rz = rz;
+            this._sx = sx;
+            this._sy = sy;
+            this._sz = sz;
+            this.updateTransform3D();
+        }
+
+        /**
          * X坐标
          */
         get x(): number { return this._x; }

@@ -38,6 +38,7 @@
         //
         "src/me/feng3d/core/Space3D.ts",
         "src/me/feng3d/core/Object3D.ts",
+        "src/me/feng3d/core/View3D.ts",
         //几何体
         "src/me/feng3d/geometry/GLAttribute.ts",
         "src/me/feng3d/geometry/Geometry.ts",
