@@ -33,6 +33,17 @@ module me.feng3d {
         }
 
         /**
+         * 节点名称
+         */
+        get name(): string {
+            return this.object3D.name;
+        }
+
+        set name(value: string) {
+            this.object3D.name = value;
+        }
+
+        /**
          * 添加3D对象生成节点
          */
         addObject3D(object3D: Object3D): this {
@@ -72,8 +83,6 @@ module me.feng3d {
             }
             for (var i = 0; i < this.children.length; i++) {
                 var element = this.children[i];
-                if (element.name == name)
-                    return element;
                 var target = element.find(name);
                 if (target != null)
                     return target;

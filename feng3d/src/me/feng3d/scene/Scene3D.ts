@@ -12,5 +12,15 @@ module me.feng3d {
         constructor() {
             super(null, null);
         }
+
+        /**
+         * 场景名称默认为root
+         */
+        get name(): string {
+            return "root";
+        }
+
+        set name(value: string) {
+        }
     }
 }
