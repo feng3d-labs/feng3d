@@ -61,6 +61,11 @@
         //渲染器
         "src/me/feng3d/render/Renderer.ts",
         "src/me/feng3d/render/ForwardRenderder.ts",
+        //材质
+        "src/me/feng3d/materials/Material.ts",
+        "src/me/feng3d/materials/ColorMaterial.ts",
+        //材质通道
+        "src/me/feng3d/materials/passes/MaterialPass.ts",
         //临时变量
         "src/me/feng3d/utils/Temp.ts"
     ]
