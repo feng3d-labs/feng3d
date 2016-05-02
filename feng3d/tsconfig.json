@@ -57,6 +57,8 @@
         "src/me/feng3d/primitives/createPlane.ts",
         "src/me/feng3d/primitives/createCube.ts",
         "src/me/feng3d/primitives/createCamera.ts",
+        //渲染器
+        "src/me/feng3d/render/Renderer.ts",
         //临时变量
         "src/me/feng3d/utils/Temp.ts"
     ]
