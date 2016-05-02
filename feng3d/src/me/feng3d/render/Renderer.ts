@@ -119,12 +119,12 @@ void main(void) {
 
             return shader;
         }
-
+        pUniform: WebGLUniformLocation
         private setMatrixUniforms() {
 
             var perspectiveMatrix = this.getPerspectiveMatrix();
-            var pUniform = this.gl.getUniformLocation(this.shaderProgram, "uPMatrix");
-            this.gl.uniformMatrix4fv(pUniform, false, new Float32Array(perspectiveMatrix.rawData));
+            this.pUniform = this.pUniform || this.gl.getUniformLocation(this.shaderProgram, "uPMatrix");
+            this.gl.uniformMatrix4fv(this.pUniform, false, new Float32Array(perspectiveMatrix.rawData));
         }
 
         private getPerspectiveMatrix(): Matrix3D {
@@ -138,7 +138,7 @@ void main(void) {
 
             return perspectiveMatrix;
         }
-
+        mvUniform: WebGLUniformLocation
         private drawObject3D(object3D: Object3D) {
 
             var object3DBuffer = object3DBufferManager.getBuffer(this.gl, object3D);
@@ -146,8 +146,8 @@ void main(void) {
             this.gl.vertexAttribPointer(this.vertexPositionAttribute, 3, this.gl.FLOAT, false, 0, 0);
 
             var mvMatrix = object3D.space3D.transform3D;
-            var mvUniform = this.gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
-            this.gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mvMatrix.rawData));
+            this.mvUniform = this.mvUniform || this.gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
+            this.gl.uniformMatrix4fv(this.mvUniform, false, new Float32Array(mvMatrix.rawData));
 
             this.setMatrixUniforms();
             this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, object3DBuffer.indexBuffer);

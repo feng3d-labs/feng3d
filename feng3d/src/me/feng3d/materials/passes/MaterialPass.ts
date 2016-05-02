@@ -5,5 +5,10 @@ module me.feng3d {
      */
     export class MaterialPass {
 
+
+
+
+
+
     }
 }
