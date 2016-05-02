@@ -150,13 +150,16 @@ void main(void) {
             this.gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mvMatrix.rawData));
 
             this.setMatrixUniforms();
-            this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, object3DBuffer.indexBuffer);
+            this.gl.drawElements(this.gl.TRIANGLES, object3DBuffer.count, this.gl.UNSIGNED_SHORT, 0);
         }
     }
 
     class Object3DBuffer {
 
         squareVerticesBuffer: WebGLBuffer;
+        indexBuffer: WebGLBuffer;
+        count: number;
     }
 
     class Object3DBufferManager {
@@ -179,12 +182,17 @@ void main(void) {
 
                 var geometry = object3D.getComponentByClass(Geometry);
                 var positionData = geometry.getVAData(GLAttribute.position);
-
                 // Create a buffer for the square's vertices.
                 var squareVerticesBuffer = buffer.squareVerticesBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, positionData, gl.STATIC_DRAW);
 
+                var indices = geometry.indices;
+                var indexBuffer = buffer.indexBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+                buffer.count = indices.length;
             }
 
             return buffer;

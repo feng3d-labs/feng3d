@@ -12,12 +12,12 @@ module me.feng3d {
         /** 顶点属性数据字典 */
         private vaDataDic = {};
 
-        private _indices: number[];
+        private _indices: Uint16Array;
 
         /**
 		 * 索引数据
 		 */
-        public get indices(): number[] {
+        public get indices(): Uint16Array {
 
             return this._indices;
         }
@@ -25,7 +25,7 @@ module me.feng3d {
 		/**
 		 * 更新顶点索引数据
 		 */
-        public set indices(value: number[]) {
+        public set indices(value: Uint16Array) {
 
             this._indices = value;
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_INDEX_DATA));

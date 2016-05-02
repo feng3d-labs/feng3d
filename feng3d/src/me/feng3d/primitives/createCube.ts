@@ -225,7 +225,7 @@ module me.feng3d.primitives {
 
     function buildIndices(segmentsW = 1, segmentsH = 1, segmentsD = 1) {
 
-        var indices: number[] = [];
+        var indices = new Uint16Array((segmentsW * segmentsH + segmentsW * segmentsD + segmentsH * segmentsD) * 12);
 
         var tl: number, tr: number, bl: number, br: number;
         var i: number, j: number, inc: number = 0;

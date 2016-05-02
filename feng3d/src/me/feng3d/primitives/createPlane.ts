@@ -131,9 +131,9 @@ module me.feng3d.primitives {
      * @param segmentsH 纵向分割数
      * @param yUp 正面朝向 true:Y+ false:Z+
      */
-    function buildIndices(segmentsW = 1, segmentsH = 1, yUp = true): number[] {
+    function buildIndices(segmentsW = 1, segmentsH = 1, yUp = true) {
 
-        var indices: number[] = [];
+        var indices = new Uint16Array(segmentsH * segmentsW * 6);
         var tw: number = segmentsW + 1;
 
         var numIndices = 0;
