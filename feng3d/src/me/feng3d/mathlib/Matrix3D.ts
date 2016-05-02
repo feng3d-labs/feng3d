@@ -299,6 +299,9 @@ module me.feng3d {
             if (vector.length - index < 16) {
                 throw new Error("vector参数数据长度不够！");
             }
+            if (transpose) {
+                this.transpose();
+            }
             for (var i = 0; i < 16; i++) {
                 this.rawData[i] = vector[index + i];
             }
