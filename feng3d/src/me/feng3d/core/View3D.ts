@@ -189,7 +189,7 @@ void main(void) {
                 // Create a buffer for the square's vertices.
                 var squareVerticesBuffer = this.buffer.squareVerticesBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionData), gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER, positionData, gl.STATIC_DRAW);
             }
 
             return this.buffer;

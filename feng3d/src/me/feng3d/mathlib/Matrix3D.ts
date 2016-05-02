@@ -24,7 +24,7 @@ module me.feng3d {
         /**
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
-        public rawData: Array<number>;
+        public rawData: Float32Array;
 
         /**
          * 一个保存显示对象在转换参照帧中的 3D 坐标 (x,y,z) 位置的 Vector3D 对象。
@@ -92,17 +92,20 @@ module me.feng3d {
          * 创建 Matrix3D 对象。
          * @param   datas    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
-        constructor(datas: Array<number> = null) {
-            if (datas) {
-                this.rawData = datas.concat();
+        constructor(datas: Float32Array | number[] = null) {
+
+            datas = datas || [//
+                1, 0, 0, 0,// 
+                0, 1, 0, 0,// 
+                0, 0, 1, 0,//
+                0, 0, 0, 1//
+            ];
+
+            if (datas instanceof Float32Array)
+                this.rawData = datas
+            else {
+                this.rawData = new Float32Array(datas);
             }
-            else
-                this.rawData = [//
-                    1, 0, 0, 0,// 
-                    0, 1, 0, 0,// 
-                    0, 0, 1, 0,//
-                    0, 0, 0, 1//
-                ];
         }
 
         /**
@@ -283,9 +286,7 @@ module me.feng3d {
          * @param   sourceMatrix3D      要从中复制数据的 Matrix3D 对象。
          */
         public copyFrom(sourceMatrix3D: Matrix3D) {
-            for (var i = 0; i < 16; i++) {
-                this.rawData[i] = sourceMatrix3D.rawData[i];
-            }
+            this.rawData.set(sourceMatrix3D.rawData);
         }
 
         /**
@@ -294,7 +295,7 @@ module me.feng3d {
          * @param   index       vector中的起始位置
          * @param   transpose   是否转置当前矩阵
          */
-        public copyRawDataFrom(vector: Array<number>, index: number = 0, transpose: boolean = false) {
+        public copyRawDataFrom(vector: Float32Array, index: number = 0, transpose: boolean = false) {
             if (vector.length - index < 16) {
                 throw new Error("vector参数数据长度不够！");
             }
@@ -355,7 +356,7 @@ module me.feng3d {
          * @param   dest    目标矩阵
          */
         public copyToMatrix3D(dest: Matrix3D) {
-            dest.rawData = this.rawData.slice(0);
+            dest.rawData.set(this.rawData);
         }
 
         /**

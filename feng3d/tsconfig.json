@@ -46,7 +46,7 @@
         //几何体
         "src/me/feng3d/geometry/GLAttribute.ts",
         "src/me/feng3d/geometry/Geometry.ts",
-        "src/me/feng3d/geometry/events/GeometryEvent.ts",
+        "src/me/feng3d/geometry/GeometryEvent.ts",
         //摄像机
         "src/me/feng3d/cameras/CameraEvent.ts",
         "src/me/feng3d/cameras/CoordinateSystem.ts",
@@ -55,8 +55,8 @@
         //几何体基元
         "src/me/feng3d/primitives/PrimitiveType.ts",
         "src/me/feng3d/primitives/createPlane.ts",
-        "src/me/feng3d/primitives/createCamera.ts",
         "src/me/feng3d/primitives/createCube.ts",
+        "src/me/feng3d/primitives/createCamera.ts",
         //临时变量
         "src/me/feng3d/utils/Temp.ts"
     ]

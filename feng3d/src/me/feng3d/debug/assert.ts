@@ -8,6 +8,6 @@ module me.feng3d {
 	 */
     export function assert(b: boolean, msg: string = "assert"): void {
         if (!b)
-            throw new Error(msg);
+            throw msg;
     }
 }

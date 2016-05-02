@@ -50,9 +50,9 @@ module me.feng3d.primitives {
      * @param segmentsH 纵向分割数
      * @param yUp 正面朝向 true:Y+ false:Z+
      */
-    function buildPosition(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true): number[] {
+    function buildPosition(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true) {
 
-        var vertexPositionData: number[] = [];
+        var vertexPositionData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
         var x: number, y: number;
         var positionIndex: number = 0;
         for (var yi: number = 0; yi <= segmentsH; ++yi) {
@@ -81,9 +81,9 @@ module me.feng3d.primitives {
      * @param segmentsH 纵向分割数
      * @param yUp 正面朝向 true:Y+ false:Z+
      */
-    function buildNormal(segmentsW = 1, segmentsH = 1, yUp = true): number[] {
+    function buildNormal(segmentsW = 1, segmentsH = 1, yUp = true) {
 
-        var vertexNormalData: number[] = [];
+        var vertexNormalData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
 
         var normalIndex: number = 0;
         for (var yi: number = 0; yi <= segmentsH; ++yi) {
@@ -110,9 +110,9 @@ module me.feng3d.primitives {
      * @param segmentsH 纵向分割数
      * @param yUp 正面朝向 true:Y+ false:Z+
      */
-    function buildTangent(segmentsW = 1, segmentsH = 1, yUp = true): number[] {
+    function buildTangent(segmentsW = 1, segmentsH = 1, yUp = true) {
 
-        var vertexTangentData: number[] = [];
+        var vertexTangentData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
         var tangentIndex: number = 0;
         for (var yi: number = 0; yi <= segmentsH; ++yi) {
             for (var xi: number = 0; xi <= segmentsW; ++xi) {
@@ -163,8 +163,8 @@ module me.feng3d.primitives {
      * @param segmentsW 横向分割数
      * @param segmentsH 纵向分割数
      */
-    function buildUVs(segmentsW = 1, segmentsH = 1): number[] {
-        var data: number[];
+    function buildUVs(segmentsW = 1, segmentsH = 1) {
+        var data = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 2);
         var stride: number = 2;
 
         var index: number = 0;

@@ -47,7 +47,7 @@ module me.feng3d {
 		 * @param data          顶点属性数据
          * @param stride        顶点数据步长
 		 */
-        public setVAData(vaId: string, data: number[], stride: number) {
+        public setVAData(vaId: string, data: Float32Array, stride: number) {
 
             var vaLen: number = this.getVAStride(vaId);
             this.vaDataDic[vaId] = data;
@@ -59,7 +59,7 @@ module me.feng3d {
 		 * @param vaId 数据类型编号
 		 * @return 顶点属性数据
 		 */
-        public getVAData(vaId: string): number[] {
+        public getVAData(vaId: string): Float32Array {
 
             this.dispatchEvent(new GeometryEvent(GeometryEvent.GET_VA_DATA, vaId));
             return this.vaDataDic[vaId];

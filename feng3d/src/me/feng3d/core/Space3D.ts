@@ -91,13 +91,13 @@ module me.feng3d {
         get transform3D(): Matrix3D {
             if (this.transform3DDirty)
                 this.updateTransform3D();
-            temp.matrix3D.rawData = this._transform3D.rawData.concat();
+            temp.matrix3D.rawData.set(this._transform3D.rawData);
             return temp.matrix3D;
         }
 
         set transform3D(value: Matrix3D) {
             this.transform3DDirty = false;
-            this._transform3D.rawData = value.rawData.concat();
+            this._transform3D.rawData.set(value.rawData);
             var vecs = this._transform3D.decompose();
             this.x = vecs[0].x;
             this.y = vecs[0].y;

@@ -4,7 +4,7 @@ module me.feng3d.primitives {
      * 创建立方几何体
      * @param width 宽度
      */
-    export function createCube(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true, elements = [GLAttribute.position, GLAttribute.uv, GLAttribute.normal, GLAttribute.tangent]): Geometry {
+    export function createCube(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true, elements = [GLAttribute.position, GLAttribute.uv, GLAttribute.normal, GLAttribute.tangent]) {
 
         var geometry = new Geometry();
         elements.forEach(element => {
@@ -36,9 +36,9 @@ module me.feng3d.primitives {
         return geometry;
     }
 
-    function buildPosition(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1): number[] {
+    function buildPosition(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1) {
 
-        var vertexPositionData: number[] = [];
+        var vertexPositionData = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 3);
 
         var i: number, j: number;
 
@@ -111,8 +111,8 @@ module me.feng3d.primitives {
         return vertexPositionData;
     }
 
-    function buildNormal(segmentsW = 1, segmentsH = 1, segmentsD = 1): number[] {
-        var vertexNormalData: number[] = [];
+    function buildNormal(segmentsW = 1, segmentsH = 1, segmentsD = 1) {
+        var vertexNormalData = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 3);
 
         var i: number, j: number;
 
@@ -163,12 +163,12 @@ module me.feng3d.primitives {
                 vertexNormalData[normalIndex++] = 0;
             }
         }
-        return vertexNormalData;
+        return new Float32Array(vertexNormalData);
     }
 
-    function buildTangent(segmentsW = 1, segmentsH = 1, segmentsD = 1): number[] {
+    function buildTangent(segmentsW = 1, segmentsH = 1, segmentsD = 1) {
 
-        var vertexTangentData: number[] = [];
+        var vertexTangentData = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 3);
 
         var i: number, j: number;
 
@@ -223,7 +223,7 @@ module me.feng3d.primitives {
         return vertexTangentData;
     }
 
-    function buildIndices(segmentsW = 1, segmentsH = 1, segmentsD = 1): number[] {
+    function buildIndices(segmentsW = 1, segmentsH = 1, segmentsD = 1) {
 
         var indices: number[] = [];
 
@@ -323,7 +323,7 @@ module me.feng3d.primitives {
 
     function buildUVs(segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true) {
         var i: number, j: number, uidx: number;
-        var data: number[] = [];
+        var data = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 2);
 
         var u_tile_dim: number, v_tile_dim: number;
         var u_tile_step: number, v_tile_step: number;
