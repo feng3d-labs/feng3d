@@ -30,6 +30,7 @@
         //基础工具
         "src/me/feng3d/utils/getClassName.ts",
         "src/me/feng3d/utils/StringUtils.ts",
+        "src/me/feng3d/utils/Map.ts",
         //
         "src/me/feng3d/mathlib/MathConsts.ts",
         "src/me/feng3d/mathlib/Rectangle.ts",
@@ -59,6 +60,7 @@
         "src/me/feng3d/primitives/createCamera.ts",
         //渲染器
         "src/me/feng3d/render/Renderer.ts",
+        "src/me/feng3d/render/ForwardRenderder.ts",
         //临时变量
         "src/me/feng3d/utils/Temp.ts"
     ]

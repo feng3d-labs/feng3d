@@ -161,23 +161,33 @@ void main(void) {
 
     class Object3DBufferManager {
 
-        buffer: Object3DBuffer;
+        map = new Map<WebGLRenderingContext, Map<Object3D, Object3DBuffer>>();
 
         getBuffer(gl: WebGLRenderingContext, object3D: Object3D) {
 
-            if (this.buffer == null) {
-                this.buffer = new Object3DBuffer();
+            var glMap = this.map.get(gl);
+            if (glMap == null) {
+                glMap = new Map<Object3D, Object3DBuffer>();
+                this.map.push(gl, glMap);
+            }
+
+            var buffer = glMap.get(object3D);
+
+            if (buffer == null) {
+                buffer = new Object3DBuffer();
+                glMap.push(object3D, buffer);
 
                 var geometry = object3D.getComponentByClass(Geometry);
                 var positionData = geometry.getVAData(GLAttribute.position);
 
                 // Create a buffer for the square's vertices.
-                var squareVerticesBuffer = this.buffer.squareVerticesBuffer = gl.createBuffer();
+                var squareVerticesBuffer = buffer.squareVerticesBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, positionData, gl.STATIC_DRAW);
+
             }
 
-            return this.buffer;
+            return buffer;
         }
     }
 
