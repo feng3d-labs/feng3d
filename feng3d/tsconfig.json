@@ -66,6 +66,10 @@
         "src/me/feng3d/materials/ColorMaterial.ts",
         //材质通道
         "src/me/feng3d/materials/passes/MaterialPass.ts",
+        //Context3D缓冲
+        "src/me/feng3d/core/buffer/Context3DBufferOwner.ts",
+        "src/me/feng3d/core/buffer/context3d/Context3DBuffer.ts",
+        "src/me/feng3d/core/buffer/events/Context3DBufferOwnerEvent.ts",
         //临时变量
         "src/me/feng3d/utils/Temp.ts"
     ]
