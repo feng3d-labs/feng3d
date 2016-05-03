@@ -91,8 +91,8 @@ module me.feng3d {
         get transform3D(): Matrix3D {
             if (this.transform3DDirty)
                 this.updateTransform3D();
-            temp.matrix3D.rawData.set(this._transform3D.rawData);
-            return temp.matrix3D;
+            tempMatrix3D.rawData.set(this._transform3D.rawData);
+            return tempMatrix3D;
         }
 
         set transform3D(value: Matrix3D) {
@@ -143,4 +143,9 @@ module me.feng3d {
         private _transform3D = new Matrix3D();
         private transform3DDirty: boolean;
     }
+    
+    /**
+     * 临时矩阵
+     */
+    var tempMatrix3D = new Matrix3D();
 }

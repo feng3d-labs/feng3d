@@ -101,7 +101,7 @@ module me.feng3d {
          * 更新投影矩阵
          */
         protected updateProjectionMatrix() {
-            var raw = temp.rawData;
+            var raw = tempRawData;
 
             this._yMax = this._near * this._focalLengthInv;
             this._xMax = this._yMax * this._aspectRatio;
@@ -153,4 +153,8 @@ module me.feng3d {
             this._projectionMatrix3DDirty = false;
         }
     }
+    /**
+     * 临时矩阵数据
+     */
+    var tempRawData = new Float32Array(16);
 }
