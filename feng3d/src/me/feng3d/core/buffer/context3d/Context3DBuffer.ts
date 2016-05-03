@@ -9,38 +9,14 @@ module me.feng3d {
         /** 3d缓存类型编号 */
         private _dataTypeId: string;
 
-        /** 数据脏了 */
-        protected _dataDirty: boolean = true;
-
-        /** 更新回调函数 */
-        protected _updateFunc: Function;
-
 		/**
 		 * 创建一个gl可执行的数据缓存
 		 * @param dataTypeId 		数据缓存编号
 		 * @param updateFunc 		更新回调函数
 		 */
-        constructor(dataTypeId: string, updateFunc: Function) {
+        constructor(dataTypeId: string) {
 
             this._dataTypeId = dataTypeId;
-            this._updateFunc = updateFunc;
-        }
-
-        /**
-		 * 使缓存无效
-		 */
-        public invalid() {
-            this._dataDirty = true;
-        }
-
-        /**
-		 * 运行更新回调函数
-		 */
-        protected doUpdateFunc() {
-            if (this._updateFunc != null && this._dataDirty) {
-                this._updateFunc(this);
-                this._dataDirty = false;
-            }
         }
 
 		/**

@@ -186,6 +186,8 @@ void main(void) {
                 var squareVerticesBuffer = buffer.squareVerticesBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, positionData, gl.STATIC_DRAW);
+                
+                var vaBuffer = new VABuffer(GLAttribute.position);
 
                 var indices = geometry.indices;
                 var indexBuffer = buffer.indexBuffer = gl.createBuffer();

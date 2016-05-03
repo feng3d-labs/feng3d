@@ -107,7 +107,7 @@ module me.feng3d {
 		 * @inheritDoc
 		 */
         public mapContext3DBuffer(dataTypeId: string, updateFunc: Function): Context3DBuffer {
-            var bufferCls: any = Context3DBufferTypeManager.getBufferClass(dataTypeId);
+            var bufferCls: any = context3DBufferTypeManager.getBufferClass(dataTypeId);
 
             var context3DBuffer: Context3DBuffer = new bufferCls(dataTypeId, updateFunc);
             this.bufferDic[dataTypeId] = context3DBuffer;
