@@ -100,7 +100,7 @@ module me.feng3d {
 		 */
         public markBufferDirty(dataTypeId: string) {
             var context3DBuffer: Context3DBuffer = this.bufferDic[dataTypeId];
-            context3DBuffer.invalid();
+            // context3DBuffer.invalid();
         }
 
 		/**

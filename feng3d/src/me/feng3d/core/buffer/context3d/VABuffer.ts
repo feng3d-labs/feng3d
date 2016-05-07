@@ -27,8 +27,8 @@ module me.feng3d {
 
             var buffer = context3DBufferCenter.getVABuffer(context3D, this.data, context3D.ARRAY_BUFFER);
 
-            this.vertexPositionAttribute = context3D.getAttribLocation(this.shaderProgram, "aVertexPosition");
-            this.gl.enableVertexAttribArray(this.vertexPositionAttribute);
+            // this.vertexPositionAttribute = context3D.getAttribLocation(this.shaderProgram, "aVertexPosition");
+            // this.gl.enableVertexAttribArray(this.vertexPositionAttribute);
         }
 
         /**
