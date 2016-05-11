@@ -4,18 +4,17 @@ module me.feng3d {
      * 渲染程序缓存
      * @author feng 2016-05-09
      */
-    export class ProgramBuffer extends Context3DBuffer{
+    export class ProgramBuffer extends Context3DBuffer {
 
         private shaderProgram: WebGLProgram;
         public vertexCode: string;
         public fragmentCode: string;
 
-        public doBuffer(gl: WebGLRenderingContext){
-            
-            if(this.shaderProgram != null)
-            {
-                var vertexShader = this.getShader(gl,this.vertexCode, 1);
-                var fragmentShader = this.getShader(gl,this.fragmentCode, 2);
+        public doBuffer(gl: WebGLRenderingContext) {
+
+            if (this.shaderProgram != null) {
+                var vertexShader = this.getShader(gl, this.vertexCode, 1);
+                var fragmentShader = this.getShader(gl, this.fragmentCode, 2);
 
                 // Create the shader program
 
@@ -23,7 +22,7 @@ module me.feng3d {
                 gl.attachShader(this.shaderProgram, vertexShader);
                 gl.attachShader(this.shaderProgram, fragmentShader);
                 gl.linkProgram(this.shaderProgram);
-                
+
                 // If creating the shader program failed, alert
 
                 if (!gl.getProgramParameter(this.shaderProgram, gl.LINK_STATUS)) {
@@ -32,20 +31,42 @@ module me.feng3d {
             }
 
             gl.useProgram(this.shaderProgram);
-
-            this.vertexPositionAttribute = gl.getAttribLocation(this.shaderProgram, "aVertexPosition");
-            gl.enableVertexAttribArray(this.vertexPositionAttribute);
         }
 
-        getAttributes(){
-            
+        getAttributes() {
+
             var attributeReg = /attribute\s+(\w+)\s+(\w+)/g;
             var result = attributeReg.exec(this.vertexCode);
-            var attribute = {type:result[1],name:result[1]}
-            
+
+            var attributes: ProgramAttribute[] = [];
+            while (result) {
+                var attribute = new ProgramAttribute();
+                attribute.type = result[1];
+                attribute.name = result[2];
+                result = attributeReg.exec(this.vertexCode);
+            }
+
+            return attributes;
         }
 
-        private getShader(gl: WebGLRenderingContext,theSource: string, type: number) {
+        getUniforms() {
+
+            var uniforms: ProgramUniform[] = [];
+
+            var uniformReg = /uniform\s+(\w+)\s+(\w+)/g;
+            var result = uniformReg.exec(this.vertexCode);
+
+            while (result) {
+                var attribute = new ProgramAttribute();
+                attribute.type = result[1];
+                attribute.name = result[2];
+                result = uniformReg.exec(this.vertexCode);
+            }
+
+            return uniforms;
+        }
+
+        private getShader(gl: WebGLRenderingContext, theSource: string, type: number) {
 
             // Now figure out what type of shader script we have,
             // based on its MIME type.
