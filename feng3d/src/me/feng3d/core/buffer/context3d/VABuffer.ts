@@ -37,8 +37,6 @@ module me.feng3d {
         bindBuffer(context3D: WebGLRenderingContext) {
 
 
-
-
         }
 
 		/**

@@ -6,10 +6,22 @@ module me.feng3d {
      */
     export class ProgramBuffer extends Context3DBuffer {
 
+        /**
+         * 渲染程序
+         */
         private shaderProgram: WebGLProgram;
+        /**
+         * 顶点渲染程序代码
+         */
         public vertexCode: string;
+        /**
+         * 片段渲染程序代码
+         */
         public fragmentCode: string;
 
+        /**
+         * 使用程序缓冲
+         */
         public doBuffer(gl: WebGLRenderingContext) {
 
             if (this.shaderProgram != null) {
@@ -33,6 +45,9 @@ module me.feng3d {
             gl.useProgram(this.shaderProgram);
         }
 
+        /**
+         * 获取程序属性列表
+         */
         getAttributes() {
 
             var attributeReg = /attribute\s+(\w+)\s+(\w+)/g;
@@ -49,6 +64,9 @@ module me.feng3d {
             return attributes;
         }
 
+        /**
+         * 获取程序常量列表
+         */
         getUniforms() {
 
             var uniforms: ProgramUniform[] = [];
@@ -66,6 +84,9 @@ module me.feng3d {
             return uniforms;
         }
 
+        /**
+         * 获取渲染程序
+         */
         private getShader(gl: WebGLRenderingContext, theSource: string, type: number) {
 
             // Now figure out what type of shader script we have,
@@ -99,6 +120,9 @@ module me.feng3d {
             return shader;
         }
 
+        /**
+         * 更新渲染程序
+         */
         public update(vertexCode: string, fragmentCode: string) {
             this.vertexCode = vertexCode;
             this.fragmentCode = fragmentCode;
