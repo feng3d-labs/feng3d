@@ -10,6 +10,17 @@ module me.feng3d {
          * 渲染程序
          */
         private shaderProgram: WebGLProgram;
+
+        /**
+         * 顶点渲染程序
+         */
+        private vertexShaderProgram: ShaderProgram;
+
+        /**
+         * 片段渲染程序
+         */
+        private fragementShaderProgram: ShaderProgram;
+
         /**
          * 顶点渲染程序代码
          */
@@ -25,11 +36,14 @@ module me.feng3d {
         public doBuffer(gl: WebGLRenderingContext) {
 
             if (this.shaderProgram != null) {
-                var vertexShader = this.getShader(gl, this.vertexCode, 1);
-                var fragmentShader = this.getShader(gl, this.fragmentCode, 2);
+
+                this.vertexShaderProgram = ShaderProgram.getInstance(this.vertexCode, ShaderType.VERTEX);
+                this.fragementShaderProgram = ShaderProgram.getInstance(this.fragmentCode, ShaderType.FRAGMENT);
+
+                var vertexShader = this.vertexShaderProgram.getShader(gl);
+                var fragmentShader = this.fragementShaderProgram.getShader(gl);
 
                 // Create the shader program
-
                 this.shaderProgram = gl.createProgram();
                 gl.attachShader(this.shaderProgram, vertexShader);
                 gl.attachShader(this.shaderProgram, fragmentShader);
@@ -43,81 +57,6 @@ module me.feng3d {
             }
 
             gl.useProgram(this.shaderProgram);
-        }
-
-        /**
-         * 获取程序属性列表
-         */
-        getAttributes() {
-
-            var attributeReg = /attribute\s+(\w+)\s+(\w+)/g;
-            var result = attributeReg.exec(this.vertexCode);
-
-            var attributes: ProgramAttribute[] = [];
-            while (result) {
-                var attribute = new ProgramAttribute();
-                attribute.type = result[1];
-                attribute.name = result[2];
-                result = attributeReg.exec(this.vertexCode);
-            }
-
-            return attributes;
-        }
-
-        /**
-         * 获取程序常量列表
-         */
-        getUniforms() {
-
-            var uniforms: ProgramUniform[] = [];
-
-            var uniformReg = /uniform\s+(\w+)\s+(\w+)/g;
-            var result = uniformReg.exec(this.vertexCode);
-
-            while (result) {
-                var attribute = new ProgramAttribute();
-                attribute.type = result[1];
-                attribute.name = result[2];
-                result = uniformReg.exec(this.vertexCode);
-            }
-
-            return uniforms;
-        }
-
-        /**
-         * 获取渲染程序
-         */
-        private getShader(gl: WebGLRenderingContext, theSource: string, type: number) {
-
-            // Now figure out what type of shader script we have,
-            // based on its MIME type.
-
-            var shader: WebGLShader;
-
-            if (type == 2) {
-                shader = gl.createShader(gl.FRAGMENT_SHADER);
-            } else if (type == 1) {
-                shader = gl.createShader(gl.VERTEX_SHADER);
-            } else {
-                return null;  // Unknown shader type
-            }
-
-            // Send the source to the shader object
-
-            gl.shaderSource(shader, theSource);
-
-            // Compile the shader program
-
-            gl.compileShader(shader);
-
-            // See if it compiled successfully
-
-            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                alert("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));
-                return null;
-            }
-
-            return shader;
         }
 
         /**
