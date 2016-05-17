@@ -6,8 +6,19 @@ module me.feng3d {
      */
     export class ProgramAttribute {
 
+        /**
+         * 属性名称
+         */
         name: string;
+        
+        /**
+         * 类型
+         */
         type: string;
+        
+        /**
+         * gpu地址？
+         */
         location: number;
     }
 }
