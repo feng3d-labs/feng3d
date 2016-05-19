@@ -14,7 +14,7 @@ module me.feng3d {
         /**
          * 渲染程序
          */
-        private shaderProgram: WebGLProgram;
+        public shaderProgram: WebGLProgram;
 
         /**
          * 顶点渲染程序
@@ -41,7 +41,7 @@ module me.feng3d {
          */
         public doBuffer(gl: WebGLRenderingContext) {
 
-            if (this.shaderProgram != null) {
+            if (this.shaderProgram == null) {
 
                 this.vertexShaderProgram = ShaderProgram.getInstance(this.code.vertexCode, ShaderType.VERTEX);
                 this.fragementShaderProgram = ShaderProgram.getInstance(this.code.fragmentCode, ShaderType.FRAGMENT);

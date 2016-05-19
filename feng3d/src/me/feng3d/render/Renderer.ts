@@ -47,6 +47,9 @@ void main(void) {
             this.initShaders();
         }
 
+        /**
+         * 初始化GL
+         */
         private initGL() {
             this.gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
             this.gl.clearDepth(1.0);                 // Clear everything
@@ -54,30 +57,15 @@ void main(void) {
             this.gl.depthFunc(this.gl.LEQUAL);            // Near things obscure far things
         }
 
+        /**
+         * 初始化渲染程序
+         */
         private initShaders() {
 
             var shaderProgramCode = new ShaderProgramCode(this.vertexShaderStr, this.fragmentShaderStr);
             this.programBuffer = shaderProgramCode.getProgramBuffer();
-
-            // this.programBuffer = new ProgramBuffer(this.vertexShaderStr, this.fragmentShaderStr);
-
-            var vertexShader = this.getShader(this.vertexShaderStr, 1);
-            var fragmentShader = this.getShader(this.fragmentShaderStr, 2);
-
-            // Create the shader program
-
-            this.shaderProgram = this.gl.createProgram();
-            this.gl.attachShader(this.shaderProgram, vertexShader);
-            this.gl.attachShader(this.shaderProgram, fragmentShader);
-            this.gl.linkProgram(this.shaderProgram);
-
-            // If creating the shader program failed, alert
-
-            if (!this.gl.getProgramParameter(this.shaderProgram, this.gl.LINK_STATUS)) {
-                alert("Unable to initialize the shader program.");
-            }
-
-            this.gl.useProgram(this.shaderProgram);
+            this.programBuffer.doBuffer(this.gl);
+            this.shaderProgram = this.programBuffer.shaderProgram;
 
             this.vertexPositionAttribute = this.gl.getAttribLocation(this.shaderProgram, "aVertexPosition");
             this.gl.enableVertexAttribArray(this.vertexPositionAttribute);
@@ -95,38 +83,6 @@ void main(void) {
             });
         }
 
-        private getShader(theSource: string, type: number) {
-
-            // Now figure out what type of shader script we have,
-            // based on its MIME type.
-
-            var shader: WebGLShader;
-
-            if (type == 2) {
-                shader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-            } else if (type == 1) {
-                shader = this.gl.createShader(this.gl.VERTEX_SHADER);
-            } else {
-                return null;  // Unknown shader type
-            }
-
-            // Send the source to the shader object
-
-            this.gl.shaderSource(shader, theSource);
-
-            // Compile the shader program
-
-            this.gl.compileShader(shader);
-
-            // See if it compiled successfully
-
-            if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-                alert("An error occurred compiling the shaders: " + this.gl.getShaderInfoLog(shader));
-                return null;
-            }
-
-            return shader;
-        }
         pUniform: WebGLUniformLocation
         private setMatrixUniforms() {
 
