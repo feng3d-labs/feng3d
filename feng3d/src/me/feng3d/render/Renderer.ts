@@ -56,7 +56,10 @@ void main(void) {
 
         private initShaders() {
 
-            this.programBuffer = new ProgramBuffer(this.vertexShaderStr, this.fragmentShaderStr);
+            var shaderProgramCode = new ShaderProgramCode(this.vertexShaderStr, this.fragmentShaderStr);
+            this.programBuffer = shaderProgramCode.getProgramBuffer();
+
+            // this.programBuffer = new ProgramBuffer(this.vertexShaderStr, this.fragmentShaderStr);
 
             var vertexShader = this.getShader(this.vertexShaderStr, 1);
             var fragmentShader = this.getShader(this.fragmentShaderStr, 2);

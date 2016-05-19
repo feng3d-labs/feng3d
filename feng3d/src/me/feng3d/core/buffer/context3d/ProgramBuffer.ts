@@ -7,6 +7,11 @@ module me.feng3d {
     export class ProgramBuffer extends Context3DBuffer {
 
         /**
+         * 渲染程序代码
+         */
+        private code: ShaderProgramCode;
+
+        /**
          * 渲染程序
          */
         private shaderProgram: WebGLProgram;
@@ -22,23 +27,13 @@ module me.feng3d {
         private fragementShaderProgram: ShaderProgram;
 
         /**
-         * 顶点渲染程序代码
+         * 创建渲染程序缓存
+         * @param code        渲染程序代码
          */
-        public vertexCode: string;
-        /**
-         * 片段渲染程序代码
-         */
-        public fragmentCode: string;
-
-        /**
-         * @param vertexCode        顶点渲染程序代码
-         * @param fragmentCode      片段渲染程序代码
-         */
-        constructor(vertexCode: string, fragmentCode: string) {
+        constructor(code: ShaderProgramCode) {
             super();
 
-            this.vertexCode = vertexCode;
-            this.fragmentCode = fragmentCode;
+            this.code = code;
         }
 
         /**
@@ -48,8 +43,8 @@ module me.feng3d {
 
             if (this.shaderProgram != null) {
 
-                this.vertexShaderProgram = ShaderProgram.getInstance(this.vertexCode, ShaderType.VERTEX);
-                this.fragementShaderProgram = ShaderProgram.getInstance(this.fragmentCode, ShaderType.FRAGMENT);
+                this.vertexShaderProgram = ShaderProgram.getInstance(this.code.vertexCode, ShaderType.VERTEX);
+                this.fragementShaderProgram = ShaderProgram.getInstance(this.code.fragmentCode, ShaderType.FRAGMENT);
 
                 var vertexShader = this.vertexShaderProgram.getShader(gl);
                 var fragmentShader = this.fragementShaderProgram.getShader(gl);
@@ -68,14 +63,6 @@ module me.feng3d {
             }
 
             gl.useProgram(this.shaderProgram);
-        }
-
-        /**
-         * 更新渲染程序
-         */
-        public update(vertexCode: string, fragmentCode: string) {
-            this.vertexCode = vertexCode;
-            this.fragmentCode = fragmentCode;
         }
     }
 }
