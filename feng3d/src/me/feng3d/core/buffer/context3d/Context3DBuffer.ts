@@ -11,12 +11,9 @@ module me.feng3d {
 
 		/**
 		 * 创建一个gl可执行的数据缓存
-		 * @param dataTypeId 		数据缓存编号
-		 * @param updateFunc 		更新回调函数
 		 */
-        constructor(dataTypeId: string) {
-
-            this._dataTypeId = dataTypeId;
+        constructor() {
+			
         }
 
 		/**

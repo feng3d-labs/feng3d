@@ -12,6 +12,8 @@ module me.feng3d {
         private scene: Scene3D;
         private camera: Object3D
 
+        private programBuffer:ProgramBuffer;
+
         vertexShaderStr = //
         `
 attribute vec3 aVertexPosition;
@@ -53,6 +55,9 @@ void main(void) {
         }
 
         private initShaders() {
+            
+            this.programBuffer = new ProgramBuffer()
+            
             var vertexShader = this.getShader(this.vertexShaderStr, 1);
             var fragmentShader = this.getShader(this.fragmentShaderStr, 2);
 

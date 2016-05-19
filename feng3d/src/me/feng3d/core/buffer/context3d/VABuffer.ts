@@ -17,7 +17,7 @@ module me.feng3d {
 		 * @param updateFunc 数据更新回调函数
 		 */
         constructor(dataTypeId: string) {
-            super(dataTypeId);
+            super();
         }
 
 		/**
