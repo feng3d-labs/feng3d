@@ -31,6 +31,17 @@ module me.feng3d {
         public fragmentCode: string;
 
         /**
+         * @param vertexCode        顶点渲染程序代码
+         * @param fragmentCode      片段渲染程序代码
+         */
+        constructor(vertexCode: string, fragmentCode: string) {
+            super();
+
+            this.vertexCode = vertexCode;
+            this.fragmentCode = fragmentCode;
+        }
+
+        /**
          * 使用程序缓冲
          */
         public doBuffer(gl: WebGLRenderingContext) {
