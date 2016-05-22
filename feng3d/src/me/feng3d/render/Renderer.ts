@@ -63,9 +63,10 @@ void main(void) {
         private initShaders() {
 
             var shaderProgramCode = new ShaderProgramCode(this.vertexShaderStr, this.fragmentShaderStr);
-            this.programBuffer = shaderProgramCode.getProgramBuffer();
-            this.programBuffer.doBuffer(this.gl);
+            this.programBuffer = shaderProgramCode.getProgramBuffer(this.gl);
+
             this.shaderProgram = this.programBuffer.shaderProgram;
+            this.gl.useProgram(this.shaderProgram);
 
             this.vertexPositionAttribute = this.gl.getAttribLocation(this.shaderProgram, "aVertexPosition");
             this.gl.enableVertexAttribArray(this.vertexPositionAttribute);

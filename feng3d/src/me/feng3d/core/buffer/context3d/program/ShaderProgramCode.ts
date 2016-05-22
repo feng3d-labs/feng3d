@@ -51,9 +51,9 @@ module me.feng3d {
         /**
          * 获取渲染程序缓冲
          */
-        getProgramBuffer() {
+        getProgramBuffer(gl: WebGLRenderingContext) {
 
-            var programBuffer = new ProgramBuffer(this);
+            var programBuffer = ProgramBuffer.getBuffer(this,gl);
             return programBuffer;
         }
     }

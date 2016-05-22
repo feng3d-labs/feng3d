@@ -4,7 +4,7 @@ module me.feng3d {
      * 渲染程序缓存
      * @author feng 2016-05-09
      */
-    export class ProgramBuffer extends Context3DBuffer {
+    export class ProgramBuffer {
 
         /**
          * 渲染程序代码
@@ -12,9 +12,11 @@ module me.feng3d {
         private code: ShaderProgramCode;
 
         /**
-         * 渲染程序
+         * webgl渲染上下文
          */
-        public shaderProgram: WebGLProgram;
+        private context3D: WebGLRenderingContext;
+
+        private _shaderProgram: WebGLProgram;
 
         /**
          * 顶点渲染程序
@@ -28,41 +30,57 @@ module me.feng3d {
 
         /**
          * 创建渲染程序缓存
-         * @param code        渲染程序代码
+         * @param code          渲染程序代码
+         * @param context3D     webgl渲染上下文
          */
-        constructor(code: ShaderProgramCode) {
-            super();
+        constructor(code: ShaderProgramCode, context3D: WebGLRenderingContext) {
 
             this.code = code;
+            this.context3D = context3D;
         }
 
         /**
-         * 使用程序缓冲
+         * 渲染程序
          */
-        public doBuffer(gl: WebGLRenderingContext) {
+        get shaderProgram(): WebGLProgram {
 
-            if (this.shaderProgram == null) {
-
-                this.vertexShaderProgram = ShaderProgram.getInstance(this.code.vertexCode, ShaderType.VERTEX);
-                this.fragementShaderProgram = ShaderProgram.getInstance(this.code.fragmentCode, ShaderType.FRAGMENT);
-
-                var vertexShader = this.vertexShaderProgram.getShader(gl);
-                var fragmentShader = this.fragementShaderProgram.getShader(gl);
-
-                // Create the shader program
-                this.shaderProgram = gl.createProgram();
-                gl.attachShader(this.shaderProgram, vertexShader);
-                gl.attachShader(this.shaderProgram, fragmentShader);
-                gl.linkProgram(this.shaderProgram);
-
-                // If creating the shader program failed, alert
-
-                if (!gl.getProgramParameter(this.shaderProgram, gl.LINK_STATUS)) {
-                    alert("Unable to initialize the shader program.");
-                }
+            if (this._shaderProgram == null) {
+                this.init();
             }
+            return this._shaderProgram;
+        }
 
-            gl.useProgram(this.shaderProgram);
+        /**
+         * 初始化
+         */
+        private init() {
+
+            this.vertexShaderProgram = ShaderProgram.getInstance(this.code.vertexCode, ShaderType.VERTEX);
+            this.fragementShaderProgram = ShaderProgram.getInstance(this.code.fragmentCode, ShaderType.FRAGMENT);
+
+            var vertexShader = this.vertexShaderProgram.getShader(this.context3D);
+            var fragmentShader = this.fragementShaderProgram.getShader(this.context3D);
+
+            // 创建渲染程序
+            var shaderProgram = this._shaderProgram = this.context3D.createProgram();
+            this.context3D.attachShader(shaderProgram, vertexShader);
+            this.context3D.attachShader(shaderProgram, fragmentShader);
+            this.context3D.linkProgram(shaderProgram);
+
+            // 渲染程序创建失败时给出弹框
+            if (!this.context3D.getProgramParameter(shaderProgram, this.context3D.LINK_STATUS)) {
+                alert("Unable to initialize the shader program.");
+            }
+        }
+
+        /**
+         * 获取渲染程序缓存
+         * @param code          渲染程序代码
+         * @param gl            webgl渲染上下文
+         */
+        static getBuffer(code: ShaderProgramCode, gl: WebGLRenderingContext) {
+            var programBuffer = new ProgramBuffer(code, gl);
+            return programBuffer;
         }
     }
 }
