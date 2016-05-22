@@ -74,21 +74,5 @@ module me.feng3d {
             return uniforms;
         }
 
-        /**
-         * 获取渲染程序
-         * @param gl 渲染上下文
-         */
-        getShader(gl: WebGLRenderingContext) {
-
-            var shader = gl.createShader(this.type);
-            gl.shaderSource(shader, this.code);
-            gl.compileShader(shader);
-            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                alert("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));
-                return null;
-            }
-
-            return shader;
-        }
     }
 }

@@ -50,6 +50,11 @@ module me.feng3d {
             return this._shaderProgram;
         }
 
+        getAttribLocations() {
+
+            this.code
+        }
+
         /**
          * 初始化
          */
@@ -58,7 +63,7 @@ module me.feng3d {
             this.vertexShaderProgram = ShaderProgram.getInstance(this.code.vertexCode, ShaderType.VERTEX);
             this.fragementShaderProgram = ShaderProgram.getInstance(this.code.fragmentCode, ShaderType.FRAGMENT);
 
-            var vertexShader = this.vertexShaderProgram.getShader(this.context3D);
+            var vertexShader = this.getShader(this.code.vertexCode, ShaderType.VERTEX);
             var fragmentShader = this.fragementShaderProgram.getShader(this.context3D);
 
             // 创建渲染程序
@@ -71,6 +76,23 @@ module me.feng3d {
             if (!this.context3D.getProgramParameter(shaderProgram, this.context3D.LINK_STATUS)) {
                 alert("Unable to initialize the shader program.");
             }
+        }
+
+        /**
+         * 获取渲染程序
+         * @param gl 渲染上下文
+         */
+        getShader(code: string, type: ShaderType) {
+
+            var shader = this.context3D.createShader(type);
+            this.context3D.shaderSource(shader, code);
+            this.context3D.compileShader(shader);
+            if (!this.context3D.getShaderParameter(shader, this.context3D.COMPILE_STATUS)) {
+                alert("An error occurred compiling the shaders: " + this.context3D.getShaderInfoLog(shader));
+                return null;
+            }
+
+            return shader;
         }
 
         /**

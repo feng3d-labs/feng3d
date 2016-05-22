@@ -6,7 +6,7 @@ module me.feng3d {
      */
     export class Renderer {
 
-        private gl: WebGLRenderingContext;
+        private context3D: WebGLRenderingContext;
         private shaderProgram: WebGLProgram;
         private vertexPositionAttribute: number;
         private scene: Scene3D;
@@ -32,15 +32,14 @@ void main(void) {
 
         /**
          * 构建渲染器
-         * @param gl    webgl渲染上下文
+         * @param context3D    webgl渲染上下文
          * @param scene 场景
          * @param camera 摄像机对象
          */
-        constructor(gl: WebGLRenderingContext, scene: Scene3D, camera: Object3D) {
-            this.gl = gl;
+        constructor(context3D: WebGLRenderingContext, scene: Scene3D, camera: Object3D) {
+            this.context3D = context3D;
             this.scene = scene;
             this.camera = camera;
-
 
             this.initGL();
 
@@ -51,10 +50,10 @@ void main(void) {
          * 初始化GL
          */
         private initGL() {
-            this.gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-            this.gl.clearDepth(1.0);                 // Clear everything
-            this.gl.enable(this.gl.DEPTH_TEST);           // Enable depth testing
-            this.gl.depthFunc(this.gl.LEQUAL);            // Near things obscure far things
+            this.context3D.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
+            this.context3D.clearDepth(1.0);                 // Clear everything
+            this.context3D.enable(this.context3D.DEPTH_TEST);           // Enable depth testing
+            this.context3D.depthFunc(this.context3D.LEQUAL);            // Near things obscure far things
         }
 
         /**
@@ -63,20 +62,22 @@ void main(void) {
         private initShaders() {
 
             var shaderProgramCode = new ShaderProgramCode(this.vertexShaderStr, this.fragmentShaderStr);
-            this.programBuffer = shaderProgramCode.getProgramBuffer(this.gl);
+            this.programBuffer = shaderProgramCode.getProgramBuffer(this.context3D);
 
             this.shaderProgram = this.programBuffer.shaderProgram;
-            this.gl.useProgram(this.shaderProgram);
+            this.context3D.useProgram(this.shaderProgram);
 
-            this.vertexPositionAttribute = this.gl.getAttribLocation(this.shaderProgram, "aVertexPosition");
-            this.gl.enableVertexAttribArray(this.vertexPositionAttribute);
+            this.programBuffer.getAttribLocations();
+
+            this.vertexPositionAttribute = this.context3D.getAttribLocation(this.shaderProgram, "aVertexPosition");
+            this.context3D.enableVertexAttribArray(this.vertexPositionAttribute);
         }
 
         /**
 		 * 渲染
 		 */
         public render() {
-            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+            this.context3D.clear(this.context3D.COLOR_BUFFER_BIT | this.context3D.DEPTH_BUFFER_BIT);
 
             var renderables = this.scene.getRenderables();
             renderables.forEach(element => {
@@ -88,8 +89,8 @@ void main(void) {
         private setMatrixUniforms() {
 
             var perspectiveMatrix = this.getPerspectiveMatrix();
-            this.pUniform = this.pUniform || this.gl.getUniformLocation(this.shaderProgram, "uPMatrix");
-            this.gl.uniformMatrix4fv(this.pUniform, false, new Float32Array(perspectiveMatrix.rawData));
+            this.pUniform = this.pUniform || this.context3D.getUniformLocation(this.shaderProgram, "uPMatrix");
+            this.context3D.uniformMatrix4fv(this.pUniform, false, new Float32Array(perspectiveMatrix.rawData));
         }
 
         private getPerspectiveMatrix(): Matrix3D {
@@ -106,17 +107,17 @@ void main(void) {
         mvUniform: WebGLUniformLocation
         private drawObject3D(object3D: Object3D) {
 
-            var object3DBuffer = object3DBufferManager.getBuffer(this.gl, object3D);
-            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object3DBuffer.squareVerticesBuffer);
-            this.gl.vertexAttribPointer(this.vertexPositionAttribute, 3, this.gl.FLOAT, false, 0, 0);
+            var object3DBuffer = object3DBufferManager.getBuffer(this.context3D, object3D);
+            this.context3D.bindBuffer(this.context3D.ARRAY_BUFFER, object3DBuffer.squareVerticesBuffer);
+            this.context3D.vertexAttribPointer(this.vertexPositionAttribute, 3, this.context3D.FLOAT, false, 0, 0);
 
             var mvMatrix = object3D.space3D.transform3D;
-            this.mvUniform = this.mvUniform || this.gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
-            this.gl.uniformMatrix4fv(this.mvUniform, false, new Float32Array(mvMatrix.rawData));
+            this.mvUniform = this.mvUniform || this.context3D.getUniformLocation(this.shaderProgram, "uMVMatrix");
+            this.context3D.uniformMatrix4fv(this.mvUniform, false, new Float32Array(mvMatrix.rawData));
 
             this.setMatrixUniforms();
-            this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, object3DBuffer.indexBuffer);
-            this.gl.drawElements(this.gl.TRIANGLES, object3DBuffer.count, this.gl.UNSIGNED_SHORT, 0);
+            this.context3D.bindBuffer(this.context3D.ELEMENT_ARRAY_BUFFER, object3DBuffer.indexBuffer);
+            this.context3D.drawElements(this.context3D.TRIANGLES, object3DBuffer.count, this.context3D.UNSIGNED_SHORT, 0);
         }
     }
 
