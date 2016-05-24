@@ -8,11 +8,11 @@ module me.feng3d {
 
         private context3D: WebGLRenderingContext;
         private shaderProgram: WebGLProgram;
-        private vertexPositionAttribute: number;
         private scene: Scene3D;
         private camera: Object3D
 
         private programBuffer: ProgramBuffer;
+        private attribLocations: ProgramAttributeLocation[];
 
         vertexShaderStr = //
         `
@@ -67,10 +67,7 @@ void main(void) {
             this.shaderProgram = this.programBuffer.shaderProgram;
             this.context3D.useProgram(this.shaderProgram);
 
-            this.programBuffer.getAttribLocations();
-
-            this.vertexPositionAttribute = this.context3D.getAttribLocation(this.shaderProgram, "aVertexPosition");
-            this.context3D.enableVertexAttribArray(this.vertexPositionAttribute);
+            this.attribLocations = this.programBuffer.getAttribLocations();
         }
 
         /**
@@ -109,7 +106,8 @@ void main(void) {
 
             var object3DBuffer = object3DBufferManager.getBuffer(this.context3D, object3D);
             this.context3D.bindBuffer(this.context3D.ARRAY_BUFFER, object3DBuffer.squareVerticesBuffer);
-            this.context3D.vertexAttribPointer(this.vertexPositionAttribute, 3, this.context3D.FLOAT, false, 0, 0);
+            this.context3D.vertexAttribPointer(this.attribLocations[0].location, 3, this.context3D.FLOAT, false, 0, 0);
+
 
             var mvMatrix = object3D.space3D.transform3D;
             this.mvUniform = this.mvUniform || this.context3D.getUniformLocation(this.shaderProgram, "uMVMatrix");

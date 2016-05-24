@@ -1,10 +1,9 @@
 module me.feng3d {
 
     /**
-     * 程序属性
-     * @author feng 2016-05-11
+     * 程序属性gpu地址
      */
-    export class ProgramAttribute {
+    export class ProgramAttributeLocation {
 
         /**
          * 属性名称
@@ -15,5 +14,10 @@ module me.feng3d {
          * 类型
          */
         type: string;
+
+        /**
+         * gpu地址？
+         */
+        location: number;
     }
 }

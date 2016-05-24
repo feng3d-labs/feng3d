@@ -53,8 +53,29 @@ module me.feng3d {
          */
         getProgramBuffer(gl: WebGLRenderingContext) {
 
-            var programBuffer = ProgramBuffer.getBuffer(this,gl);
+            var programBuffer = ProgramBuffer.getBuffer(this, gl);
             return programBuffer;
+        }
+
+        /**
+         * 获取程序属性列表
+         */
+        getAttributes() {
+
+            var code = this._vertexCode;
+            var attributeReg = /attribute\s+(\w+)\s+(\w+)/g;
+            var result = attributeReg.exec(code);
+
+            var attributes: ProgramAttribute[] = [];
+            while (result) {
+                var attribute = new ProgramAttribute();
+                attribute.type = result[1];
+                attribute.name = result[2];
+                attributes.push(attribute);
+                result = attributeReg.exec(code);
+            }
+
+            return attributes;
         }
     }
 

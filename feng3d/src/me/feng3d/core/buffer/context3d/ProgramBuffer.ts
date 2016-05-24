@@ -50,9 +50,27 @@ module me.feng3d {
             return this._shaderProgram;
         }
 
+        /**
+         * 获取属性gpu地址
+         */
         getAttribLocations() {
 
-            this.code
+            var attribLocations: ProgramAttributeLocation[] = [];
+
+            var attributes = this.code.getAttributes();
+            for (var i = 0; i < attributes.length; i++) {
+                var element = attributes[i];
+                var attributeLocation = new ProgramAttributeLocation();
+                attributeLocation.name = element.name;
+                attributeLocation.type = element.type;
+
+                //获取属性在gpu中地址
+                attributeLocation.location = this.context3D.getAttribLocation(this.shaderProgram, element.name);
+                this.context3D.enableVertexAttribArray(attributeLocation.location);
+
+                attribLocations.push(attributeLocation);
+            }
+            return attribLocations;
         }
 
         /**
@@ -64,8 +82,7 @@ module me.feng3d {
             this.fragementShaderProgram = ShaderProgram.getInstance(this.code.fragmentCode, ShaderType.FRAGMENT);
 
             var vertexShader = this.getShader(this.code.vertexCode, ShaderType.VERTEX);
-            var fragmentShader = this.fragementShaderProgram.getShader(this.context3D);
-
+            var fragmentShader = this.getShader(this.code.fragmentCode, ShaderType.FRAGMENT);
             // 创建渲染程序
             var shaderProgram = this._shaderProgram = this.context3D.createProgram();
             this.context3D.attachShader(shaderProgram, vertexShader);
@@ -80,9 +97,10 @@ module me.feng3d {
 
         /**
          * 获取渲染程序
-         * @param gl 渲染上下文
+         * @param code      渲染代码
+         * @param type      渲染代码类型
          */
-        getShader(code: string, type: ShaderType) {
+        private getShader(code: string, type: ShaderType) {
 
             var shader = this.context3D.createShader(type);
             this.context3D.shaderSource(shader, code);
@@ -97,11 +115,11 @@ module me.feng3d {
 
         /**
          * 获取渲染程序缓存
-         * @param code          渲染程序代码
-         * @param gl            webgl渲染上下文
+         * @param code                  渲染程序代码
+         * @param context3D             webgl渲染上下文
          */
-        static getBuffer(code: ShaderProgramCode, gl: WebGLRenderingContext) {
-            var programBuffer = new ProgramBuffer(code, gl);
+        static getBuffer(code: ShaderProgramCode, context3D: WebGLRenderingContext) {
+            var programBuffer = new ProgramBuffer(code, context3D);
             return programBuffer;
         }
     }
