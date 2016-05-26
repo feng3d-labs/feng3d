@@ -18,15 +18,10 @@ module me.feng3d {
             var buffer = glMap.get(object3D);
 
             if (buffer == null) {
-                buffer = new Object3DBuffer(context3D);
+                buffer = new Object3DBuffer(context3D, object3D);
                 glMap.push(object3D, buffer);
 
                 var geometry = object3D.getComponentByClass(Geometry);
-                var positionData = geometry.getVAData(GLAttribute.position);
-                // Create a buffer for the square's vertices.
-                var squareVerticesBuffer = buffer.squareVerticesBuffer = context3D.createBuffer();
-                context3D.bindBuffer(context3D.ARRAY_BUFFER, squareVerticesBuffer);
-                context3D.bufferData(context3D.ARRAY_BUFFER, positionData, context3D.STATIC_DRAW);
 
                 // var vaBuffer = new VABuffer(GLAttribute.position);
 
