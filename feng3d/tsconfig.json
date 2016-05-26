@@ -67,6 +67,7 @@
         "src/me/feng3d/core/buffer/context3d/Context3DBuffer.ts",
         "src/me/feng3d/core/buffer/context3d/VABuffer.ts",
         "src/me/feng3d/core/buffer/Object3DBuffer.ts",
+        "src/me/feng3d/core/buffer/GeometryBuffer.ts",
         "src/me/feng3d/core/buffer/Object3DBufferManager.ts",
         "src/me/feng3d/core/buffer/Context3DBufferOwner.ts",
         "src/me/feng3d/core/buffer/Context3DBufferTypeManager.ts",

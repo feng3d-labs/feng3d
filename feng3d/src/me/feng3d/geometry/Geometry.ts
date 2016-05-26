@@ -8,11 +8,18 @@ module me.feng3d {
 
         private _vaIdList: string[] = [];
         /** 顶点属性数据步长字典 */
-        private strideDic = {};
+        private strideDic = new Map<string, number>();
         /** 顶点属性数据字典 */
-        private vaDataDic = {};
+        private vaDataDic = new Map<string, Float32Array>();
 
         private _indices: Uint16Array;
+
+        public context3DBufferOwner: Context3DBufferOwner;
+
+        constructor() {
+            super();
+            this.context3DBufferOwner = new Context3DBufferOwner();
+        }
 
         /**
 		 * 索引数据
@@ -36,9 +43,9 @@ module me.feng3d {
 		 * @param vaId          顶点属性编号
 		 * @return 顶点属性步长
 		 */
-        public getVAStride(vaId: string): number {
+        public getVAStride(vaId: string) {
 
-            return this.strideDic[vaId];
+            return this.strideDic.get(vaId);
         }
 
 		/**
@@ -62,7 +69,7 @@ module me.feng3d {
         public getVAData(vaId: string): Float32Array {
 
             this.dispatchEvent(new GeometryEvent(GeometryEvent.GET_VA_DATA, vaId));
-            return this.vaDataDic[vaId];
+            return this.vaDataDic.get(vaId);
         }
 
         /**

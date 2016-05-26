@@ -11,4 +11,10 @@ module me.feng3d {
          */
         static GET_VABUFFER = "getVaBuffer";
     }
+
+    export class GetVaBufferEventData {
+
+        attribLocation: ProgramAttributeLocation;
+        vaBuffer: VABuffer;
+    }
 }

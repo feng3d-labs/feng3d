@@ -39,21 +39,23 @@ module me.feng3d {
             }
         }
 
+        /**
+         * 获取顶点缓冲列表
+         */
         getVaBuffers(attribLocations: ProgramAttributeLocation[]) {
 
             var vaBuffers: VABuffer[] = [];
             for (var i = 0; i < attribLocations.length; i++) {
                 var attribLocation = attribLocations[i];
 
-                var result: { vaBuffer: VABuffer } = { vaBuffer: null };
-                this.object3D.dispatchEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_VABUFFER, result));
-
-                var vaBuffer = new VABuffer(attribLocation.name);
-                vaBuffer.dataTypeId
+                //从Object3D中获取顶点缓冲
+                var eventData: GetVaBufferEventData = { attribLocation: attribLocation, vaBuffer: null };
+                this.object3D.dispatchEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_VABUFFER, eventData));
+                // assert(eventData.vaBuffer != null);
+                vaBuffers.push(eventData.vaBuffer);
             }
-            vaBuffers;
+            return vaBuffers;
         }
-
 
         /**
          * 激活属性
