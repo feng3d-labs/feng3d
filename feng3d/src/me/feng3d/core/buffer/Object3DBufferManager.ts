@@ -7,33 +7,33 @@ module me.feng3d {
 
         map = new Map<WebGLRenderingContext, Map<Object3D, Object3DBuffer>>();
 
-        getBuffer(gl: WebGLRenderingContext, object3D: Object3D) {
+        getBuffer(context3D: WebGLRenderingContext, object3D: Object3D) {
 
-            var glMap = this.map.get(gl);
+            var glMap = this.map.get(context3D);
             if (glMap == null) {
                 glMap = new Map<Object3D, Object3DBuffer>();
-                this.map.push(gl, glMap);
+                this.map.push(context3D, glMap);
             }
 
             var buffer = glMap.get(object3D);
 
             if (buffer == null) {
-                buffer = new Object3DBuffer();
+                buffer = new Object3DBuffer(context3D);
                 glMap.push(object3D, buffer);
 
                 var geometry = object3D.getComponentByClass(Geometry);
                 var positionData = geometry.getVAData(GLAttribute.position);
                 // Create a buffer for the square's vertices.
-                var squareVerticesBuffer = buffer.squareVerticesBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, positionData, gl.STATIC_DRAW);
+                var squareVerticesBuffer = buffer.squareVerticesBuffer = context3D.createBuffer();
+                context3D.bindBuffer(context3D.ARRAY_BUFFER, squareVerticesBuffer);
+                context3D.bufferData(context3D.ARRAY_BUFFER, positionData, context3D.STATIC_DRAW);
 
                 // var vaBuffer = new VABuffer(GLAttribute.position);
 
                 var indices = geometry.indices;
-                var indexBuffer = buffer.indexBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+                var indexBuffer = buffer.indexBuffer = context3D.createBuffer();
+                context3D.bindBuffer(context3D.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                context3D.bufferData(context3D.ELEMENT_ARRAY_BUFFER, indices, context3D.STATIC_DRAW);
 
                 buffer.count = indices.length;
             }
