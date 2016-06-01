@@ -33,7 +33,7 @@ module me.feng3d {
          */
         mapIndexBuffer(indices: Uint16Array) {
 
-            this.indexBuffer = new IndexBuffer(indices);
+            this.indexBuffer = { indices: indices };
         }
 
 		/**

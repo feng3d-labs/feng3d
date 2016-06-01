@@ -5,38 +5,15 @@ module me.feng3d {
      */
     export class IndexBuffer {
 
-        private _indices: Uint16Array;
-        private _indexBuffer: WebGLBuffer;
-
-        /**
-         * 构建顶点索引缓冲
-         */
-        constructor(indices: Uint16Array) {
-
-            this.indices = indices;
-        }
-
         /**
          * 索引数据
          */
-        get indices() {
+        indices: Uint16Array;
 
-            return this._indices;
-        }
+        getBuffer(context3D: WebGLRenderingContext) {
 
-        set indices(value: Uint16Array) {
-
-            this._indices = value;
-            this._indexBuffer = null;
-        }
-
-        /**
-         * 索引缓冲
-         */
-        get indexBuffer(): WebGLBuffer {
-
-            // return this._indexBuffer = this._indexBuffer || getIndexBuffer(this._indices);
-            return null;
+            var indexBuffer = context3DBufferCenter.getIndexBuffer(context3D, this.indices);
+            return indexBuffer;
         }
     }
 }
