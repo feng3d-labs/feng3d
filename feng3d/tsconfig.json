@@ -63,9 +63,11 @@
         //渲染器
         "src/me/feng3d/render/Renderer.ts",
         //Context3D缓冲
-        "src/me/feng3d/core/buffer/type/Context3DBufferType.ts",
+        "src/me/feng3d/core/buffer/Context3DBufferID.ts",
         "src/me/feng3d/core/buffer/context3d/Context3DBuffer.ts",
         "src/me/feng3d/core/buffer/context3d/VABuffer.ts",
+        "src/me/feng3d/core/buffer/context3d/IndexBuffer.ts",
+        //
         "src/me/feng3d/core/buffer/Object3DBuffer.ts",
         "src/me/feng3d/core/buffer/GeometryBuffer.ts",
         "src/me/feng3d/core/buffer/Object3DBufferManager.ts",

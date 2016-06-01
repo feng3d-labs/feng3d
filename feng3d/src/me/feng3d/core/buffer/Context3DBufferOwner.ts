@@ -5,6 +5,7 @@ module me.feng3d {
 	 * @author feng 2014-11-26
 	 */
     export class Context3DBufferOwner extends Component {
+        private indexBuffer: IndexBuffer;
         private _bufferDic;
         private _bufferList: Context3DBuffer[];
 		/**
@@ -25,6 +26,14 @@ module me.feng3d {
             super();
             this.childrenBufferOwner = [];
             this.initBuffers();
+        }
+
+        /**
+         * 映射顶点索引缓冲
+         */
+        mapIndexBuffer(indices: Uint16Array) {
+
+            this.indexBuffer = new IndexBuffer(indices);
         }
 
 		/**
