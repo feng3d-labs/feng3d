@@ -14,7 +14,8 @@ module me.feng3d {
 
         getBuffer(context3D: WebGLRenderingContext) {
 
-            var buffer = context3DBufferCenter.getVABuffer(context3D, this.data, this.size);
+            var buffer = context3DBufferCenter.getContext3DBufferSet(context3D)//
+                .getVABuffer(this.data, this.size);
             return buffer;
         }
     }

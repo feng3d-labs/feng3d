@@ -10,10 +10,11 @@ module me.feng3d {
          */
         indices: Uint16Array;
 
-        getBuffer(context3D: WebGLRenderingContext) {
+        // getBuffer(context3D: WebGLRenderingContext) {
 
-            var indexBuffer = context3DBufferCenter.getIndexBuffer(context3D, this.indices);
-            return indexBuffer;
-        }
+        //     var indexBuffer = context3DBufferCenter.getContext3DBufferSet(context3D)//
+        //         .getIndexBuffer(this.indices);
+        //     return indexBuffer;
+        // }
     }
 }
