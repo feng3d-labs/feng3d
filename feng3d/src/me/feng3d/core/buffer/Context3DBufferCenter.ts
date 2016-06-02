@@ -25,6 +25,8 @@ module me.feng3d {
             this.context3D = context3D;
         }
 
+        private indexbufferMap = new Map<Uint16Array, WebGLBuffer>();
+
         /**
          * 获取索引缓冲
          */
@@ -32,9 +34,19 @@ module me.feng3d {
 
             var context3D = this.context3D;
 
+            var indexBuffer = this.indexbufferMap.get(indices);
+            if (!indexBuffer) {
+
+                indexBuffer = context3D.createBuffer();
+                this.indexbufferMap.push(indices, indexBuffer);
+            }
+            if (getVersion(indexBuffer) != getVersion(indices)) {
+                context3D.bindBuffer(context3D.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                context3D.bufferData(context3D.ELEMENT_ARRAY_BUFFER, indices, context3D.STATIC_DRAW);
+                
+            }
+
             var indexBuffer = context3D.createBuffer();
-            context3D.bindBuffer(context3D.ELEMENT_ARRAY_BUFFER, indexBuffer);
-            context3D.bufferData(context3D.ELEMENT_ARRAY_BUFFER, indices, context3D.STATIC_DRAW);
 
             return indexBuffer;
         }
@@ -52,6 +64,10 @@ module me.feng3d {
 
             return buffer;
         }
+    }
+
+    class IndexBufferCenter {
+
     }
 
     /**

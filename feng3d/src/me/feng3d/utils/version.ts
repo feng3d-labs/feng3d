@@ -5,10 +5,8 @@ module me.feng3d {
      * @param object 对象
      */
     export function getVersion(object) {
-        if (typeof object != "object") {
-            throw `无法获取${object}的UID`;
-        }
 
+        assertObject(object);
         return ~~object[versionKey];
     }
 
@@ -18,9 +16,7 @@ module me.feng3d {
      */
     export function upgradeVersion(object) {
 
-        if (typeof object != "object") {
-            throw `无法获取${object}的版本号`;
-        }
+        assertObject(object);
         if (!object.hasOwnProperty(versionKey)) {
             Object.defineProperty(object, versionKey, {
                 value: 0,
@@ -30,6 +26,23 @@ module me.feng3d {
         }
 
         object[versionKey] = ~~object[versionKey] + 1;
+    }
+
+    /**
+     * 设置版本号
+     * @param object 对象
+     * @param version 版本号
+     */
+    export function setVersion(object, version: number) {
+
+        assertObject(object);
+        object[versionKey] = ~~version;
+    }
+
+    function assertObject(object) {
+        if (typeof object != "object") {
+            throw `无法获取${object}的UID`;
+        }
     }
 
     /**
