@@ -61,8 +61,8 @@ module me.feng3d {
 		 */
         public setVAData(vaId: string, data: Float32Array, stride: number) {
 
-            var vaLen: number = this.getVAStride(vaId);
-            this.vaDataDic[vaId] = data;
+            this.strideDic.push(vaId, stride)
+            this.vaDataDic.push(vaId, data);
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
         }
 
