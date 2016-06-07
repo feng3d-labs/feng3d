@@ -7,14 +7,24 @@ module me.feng3d {
     export class Context3DBufferEvent extends Event {
 
         /**
-         * 获取VaBuffer事件
+         * 获取AttributeBuffer
          */
-        static GET_VABUFFER = "getVaBuffer";
+        static GET_ATTRIBUTEBUFFER = "getAttributeBuffer";
     }
 
-    export class GetVaBufferEventData {
+    /**
+     * 获取AttributeBuffer事件数据
+     */
+    export class GetAttributeBufferEventData {
 
+        /**
+         * 程序属性地址
+         */
         attribLocation: ProgramAttributeLocation;
-        vaBuffer: VABuffer;
+
+        /**
+         * 属性缓冲
+         */
+        attributeBuffer: AttributeBuffer;
     }
 }

@@ -75,8 +75,8 @@ module me.feng3d {
             }
 
             if (!version.equal(data, buffer)) {
-                context3D.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, buffer);
-                context3D.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, data, WebGLRenderingContext.STATIC_DRAW);
+                context3D.bindBuffer(target, buffer);
+                context3D.bufferData(target, data, WebGLRenderingContext.STATIC_DRAW);
             }
 
             return buffer;

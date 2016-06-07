@@ -14,15 +14,18 @@ module me.feng3d {
 
         private _indices: Uint16Array;
 
-        /** 3d缓冲拥有者 */
-        public context3DBufferOwner: Context3DBufferOwner;
+        /**
+         * Context3D数据缓冲
+         */
+        get context3DBuffer(): Context3DBuffer {
+            return this.getOrCreateComponentByClass(Context3DBuffer);
+        }
 
         /**
 		 * 创建一个几何体
 		 */
         constructor() {
             super();
-            this.context3DBufferOwner = new Context3DBufferOwner();
         }
 
         /**
@@ -39,7 +42,7 @@ module me.feng3d {
         public set indices(value: Uint16Array) {
 
             this._indices = value;
-            this.context3DBufferOwner.mapIndexBuffer(value);
+            this.context3DBuffer.mapIndexBuffer(value);
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_INDEX_DATA));
         }
 

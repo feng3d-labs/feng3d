@@ -1,43 +1,33 @@
 module me.feng3d {
 
     /**
-	 * Context3D可执行的数据缓存
-	 * @author feng 2014-6-9
+	 * Context3D数据缓冲
+	 * @author feng 2016-6-7
 	 */
-    export abstract class Context3DBuffer {
-
-        /** 3d缓存类型编号 */
-        private _dataTypeId: string;
+    export class Context3DBuffer extends Component {
 
 		/**
-		 * 创建一个gl可执行的数据缓存
+		 * 创建Context3D数据缓冲
 		 */
         constructor() {
-			
+
+			super();
         }
 
 		/**
-		 * 缓存类型编号
+		 * 映射索引缓冲
 		 */
-        public get dataTypeId(): string {
-            return this._dataTypeId;
-        }
-
-        /**
-		 * 执行Context3DBuffer
-		 * <p><b>注：</b>该函数为虚函数</p>
-		 *
-		 * @param context3D		3d环境
-		 *
-		 * @see me.feng3d.core.buffer.Context3DCache
-		 */
-        public abstract doBuffer(context3D: WebGLRenderingContext);
+		mapIndexBuffer(value: Uint16Array) {
+			var indexBuffer = this.getOrCreateComponentByClass(IndexBuffer);
+			indexBuffer.indices = value;
+		}
 
 		/**
-		 * 字符串描述
+		 * 映射属性缓冲
 		 */
-        public toString(): string {
-            return `[${getClassName(this)} dataType="${this._dataTypeId}"]`;
-        }
+		mapAttributeBuffer(value: Uint16Array) {
+			var attributeBuffer = this.getOrCreateComponentByClass(AttributeBuffer);
+			attributeBuffer.data = value;
+		}
     }
 }

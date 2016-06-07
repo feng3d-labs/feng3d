@@ -4,7 +4,7 @@ module me.feng3d {
      * 材质
      * @author feng 2016-05-02
      */
-    export class Material extends Context3DBufferOwner {
+    export class Material extends Component {
 
 
         vertexShaderStr = //

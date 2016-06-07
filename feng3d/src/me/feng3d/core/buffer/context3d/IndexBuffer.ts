@@ -3,18 +3,22 @@ module me.feng3d {
     /**
      * 顶点索引缓冲
      */
-    export class IndexBuffer {
+    export class IndexBuffer extends Component {
 
         /**
          * 索引数据
          */
         indices: Uint16Array;
 
-        // getBuffer(context3D: WebGLRenderingContext) {
+        /**
+         * 获取缓冲
+         * @param context3D    3D渲染环境
+         */
+        getBuffer(context3D: WebGLRenderingContext) {
 
-        //     var indexBuffer = context3DBufferCenter.getContext3DBufferSet(context3D)//
-        //         .getIndexBuffer(this.indices);
-        //     return indexBuffer;
-        // }
+            var indexBuffer = Context3DBufferCenter.getInstance(context3D)//
+                .getIndexBuffer(this.indices);
+            return indexBuffer;
+        }
     }
 }
