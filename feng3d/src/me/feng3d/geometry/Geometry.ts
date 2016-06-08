@@ -66,6 +66,7 @@ module me.feng3d {
 
             this.strideDic.push(vaId, stride)
             this.vaDataDic.push(vaId, data);
+            this.context3DBuffer.mapAttributeBuffer(vaId,data,stride);
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
         }
 

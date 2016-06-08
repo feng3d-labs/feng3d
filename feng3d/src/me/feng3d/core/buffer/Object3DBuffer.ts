@@ -35,8 +35,14 @@ module me.feng3d {
 
             for (var i = 0; i < attribLocations.length; i++) {
                 var attribLocation = attribLocations[i];
-                this.activeAttribute(attribLocation);
+                var vaBuffer = vaBuffers[attribLocation.name];
+                vaBuffer.active(this.context3D, attribLocation.location);
             }
+
+            // for (var i = 0; i < attribLocations.length; i++) {
+            //     var attribLocation = attribLocations[i];
+            //     this.activeAttribute(attribLocation);
+            // }
         }
 
         /**
@@ -44,15 +50,15 @@ module me.feng3d {
          */
         getVaBuffers(attribLocations: ProgramAttributeLocation[]) {
 
-            var vaBuffers: AttributeBuffer[] = [];
+            var vaBuffers: { [key: string]: AttributeBuffer } = {};
             for (var i = 0; i < attribLocations.length; i++) {
                 var attribLocation = attribLocations[i];
 
                 //从Object3D中获取顶点缓冲
                 var eventData: GetAttributeBufferEventData = { attribLocation: attribLocation, attributeBuffer: null };
-                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData));
+                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData), Number.MAX_VALUE);
                 // assert(eventData.vaBuffer != null);
-                vaBuffers.push(eventData.attributeBuffer);
+                vaBuffers[attribLocation.name] = eventData.attributeBuffer;
             }
             return vaBuffers;
         }
