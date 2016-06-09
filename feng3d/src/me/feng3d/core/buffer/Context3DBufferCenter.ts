@@ -44,6 +44,7 @@ module me.feng3d {
 
         /**
          * 获取索引缓冲
+         * @param indices   索引数据
          */
         getIndexBuffer(indices: Uint16Array) {
 
