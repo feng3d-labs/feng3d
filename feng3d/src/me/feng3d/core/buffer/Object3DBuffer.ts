@@ -22,6 +22,40 @@ module me.feng3d {
         active(programBuffer: ProgramBuffer) {
 
             this.activeAttributes(programBuffer);
+            this.activeUniforms(programBuffer);
+        }
+
+        /**
+         * 激活常量
+         */
+        activeUniforms(programBuffer: ProgramBuffer) {
+
+            //             var mvMatrix = object3D.space3D.transform3D;
+            // this.mvUniform = this.mvUniform || this.context3D.getUniformLocation(this.shaderProgram, "uMVMatrix");
+            // this.context3D.uniformMatrix4fv(this.mvUniform, false, new Float32Array(mvMatrix.rawData));
+
+            var uniformLocations: ProgramUniformLocation[] = programBuffer.getUniformLocations();
+
+            var uniformBuffers = this.getUniformBuffers(uniformLocations);
+
+        }
+
+        /**
+         * 获取常量缓冲列表
+         */
+        getUniformBuffers(uniformLocations: ProgramUniformLocation[]) {
+
+            var uniformBuffers: { [key: string]: UniformBuffer } = {};
+            for (var i = 0; i < uniformLocations.length; i++) {
+                var uniformLocation = uniformLocations[i];
+
+                //从Object3D中获取常量缓冲
+                var eventData: GetUniformBufferEventData = { uniformLocation: uniformLocation, uniformBuffer: null };
+                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData), Number.MAX_VALUE);
+                assert(eventData.uniformBuffer != null);
+                uniformBuffers[uniformLocation.name] = eventData.uniformBuffer;
+            }
+            return uniformBuffers;
         }
 
         /**
@@ -31,11 +65,11 @@ module me.feng3d {
 
             var attribLocations: ProgramAttributeLocation[] = programBuffer.getAttribLocations();
 
-            var vaBuffers = this.getVaBuffers(attribLocations);
+            var attributeBuffers = this.getAttributeBuffers(attribLocations);
 
             for (var i = 0; i < attribLocations.length; i++) {
                 var attribLocation = attribLocations[i];
-                var vaBuffer = vaBuffers[attribLocation.name];
+                var vaBuffer = attributeBuffers[attribLocation.name];
                 vaBuffer.active(this.context3D, attribLocation.location);
             }
         }
@@ -43,9 +77,9 @@ module me.feng3d {
         /**
          * 获取顶点缓冲列表
          */
-        getVaBuffers(attribLocations: ProgramAttributeLocation[]) {
+        getAttributeBuffers(attribLocations: ProgramAttributeLocation[]) {
 
-            var vaBuffers: { [key: string]: AttributeBuffer } = {};
+            var attributeBuffers: { [key: string]: AttributeBuffer } = {};
             for (var i = 0; i < attribLocations.length; i++) {
                 var attribLocation = attribLocations[i];
 
@@ -53,9 +87,9 @@ module me.feng3d {
                 var eventData: GetAttributeBufferEventData = { attribLocation: attribLocation, attributeBuffer: null };
                 this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData), Number.MAX_VALUE);
                 assert(eventData.attributeBuffer != null);
-                vaBuffers[attribLocation.name] = eventData.attributeBuffer;
+                attributeBuffers[attribLocation.name] = eventData.attributeBuffer;
             }
-            return vaBuffers;
+            return attributeBuffers;
         }
     }
 }

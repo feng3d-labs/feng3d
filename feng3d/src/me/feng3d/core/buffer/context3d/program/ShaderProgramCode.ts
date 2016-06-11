@@ -77,6 +77,33 @@ module me.feng3d {
 
             return attributes;
         }
+
+        getUniforms() {
+
+            var uniforms: ProgramUniform[] = [];
+
+            var uniformReg = /uniform\s+(\w+)\s+(\w+)/g;
+            var result = uniformReg.exec(this._vertexCode);
+
+            while (result) {
+                var attribute = new ProgramAttribute();
+                attribute.type = result[1];
+                attribute.name = result[2];
+                result = uniformReg.exec(this._vertexCode);
+            }
+
+            uniformReg.lastIndex = 0;
+            var result = uniformReg.exec(this._fragmentCode);
+
+            while (result) {
+                var attribute = new ProgramAttribute();
+                attribute.type = result[1];
+                attribute.name = result[2];
+                result = uniformReg.exec(this._fragmentCode);
+            }
+
+            return uniforms;
+        }
     }
 
     /**

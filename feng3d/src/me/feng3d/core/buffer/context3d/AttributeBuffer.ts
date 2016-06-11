@@ -27,17 +27,6 @@ module me.feng3d {
         }
 
         /**
-         * 获取缓冲
-         * @param context3D    3D渲染环境
-         */
-        private getBuffer(context3D: WebGLRenderingContext) {
-
-            var buffer = Context3DBufferCenter.getInstance(context3D)//
-                .getVABuffer(this.data);
-            return buffer;
-        }
-
-        /**
          * 处理获取属性缓冲事件
          */
         private onGetAttributeBuffer(event: Context3DBufferEvent) {
@@ -52,7 +41,8 @@ module me.feng3d {
          */
         active(context3D: WebGLRenderingContext, location: number) {
 
-            var webGLBuffer = this.getBuffer(context3D);
+            var webGLBuffer = Context3DBufferCenter.getInstance(context3D)//
+                .getVABuffer(this.data);
 
             context3D.bindBuffer(context3D.ARRAY_BUFFER, webGLBuffer);
             context3D.vertexAttribPointer(location, this.size, context3D.FLOAT, false, 0, 0);
