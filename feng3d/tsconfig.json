@@ -88,6 +88,8 @@
         //材质
         "src/me/feng3d/materials/Material.ts",
         "src/me/feng3d/materials/ColorMaterial.ts",
+        "src/me/feng3d/materials/passes/MaterialPass.ts",
+        "src/me/feng3d/materials/passes/ColorPass.ts",
         //材质通道
         "src/me/feng3d/materials/passes/MaterialPass.ts"
     ]

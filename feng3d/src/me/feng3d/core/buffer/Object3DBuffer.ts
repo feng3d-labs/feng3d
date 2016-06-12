@@ -30,14 +30,14 @@ module me.feng3d {
          */
         activeUniforms(programBuffer: ProgramBuffer) {
 
-            //             var mvMatrix = object3D.space3D.transform3D;
-            // this.mvUniform = this.mvUniform || this.context3D.getUniformLocation(this.shaderProgram, "uMVMatrix");
-            // this.context3D.uniformMatrix4fv(this.mvUniform, false, new Float32Array(mvMatrix.rawData));
-
             var uniformLocations: ProgramUniformLocation[] = programBuffer.getUniformLocations();
 
             var uniformBuffers = this.getUniformBuffers(uniformLocations);
-
+            for (var i = 0; i < uniformLocations.length; i++) {
+                var uniformLocation = uniformLocations[i];
+                var uniformBuffer = uniformBuffers[uniformLocation.name];
+                uniformBuffer.active(this.context3D, uniformLocation.location);
+            }
         }
 
         /**
@@ -69,8 +69,8 @@ module me.feng3d {
 
             for (var i = 0; i < attribLocations.length; i++) {
                 var attribLocation = attribLocations[i];
-                var vaBuffer = attributeBuffers[attribLocation.name];
-                vaBuffer.active(this.context3D, attribLocation.location);
+                var attributeBuffer = attributeBuffers[attribLocation.name];
+                attributeBuffer.active(this.context3D, attribLocation.location);
             }
         }
 

@@ -45,6 +45,10 @@ module me.feng3d {
 			attributeBuffer.size = size;
 		}
 
+		mapUniformBuffer(uniformName: string, data) {
+
+		}
+
 		/**
 		 * 获取属性缓冲
 		 * @param attributeName		属性名称

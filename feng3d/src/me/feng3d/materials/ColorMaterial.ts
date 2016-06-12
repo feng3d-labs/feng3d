@@ -17,7 +17,5 @@ module me.feng3d {
             super();
             this.color = color;
         }
-
-
     }
 }
