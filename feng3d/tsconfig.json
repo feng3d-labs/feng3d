@@ -70,12 +70,9 @@
         //
         "src/me/feng3d/core/buffer/Object3DBuffer.ts",
         "src/me/feng3d/core/buffer/Object3DBufferManager.ts",
-        "src/me/feng3d/core/buffer/Context3DBufferTypeManager.ts",
         "src/me/feng3d/core/buffer/Context3DBufferCenter.ts",
         "src/me/feng3d/core/buffer/context3d/ProgramBuffer.ts",
         "src/me/feng3d/core/buffer/events/Context3DBufferEvent.ts",
-        //
-        "src/me/feng3d/core/buffer/type/Context3DBufferType.ts",
         //程序参数
         "src/me/feng3d/core/buffer/context3d/program/ProgramAttribute.ts",
         "src/me/feng3d/core/buffer/context3d/program/ProgramAttributeLocation.ts",
