@@ -20,5 +20,7 @@ module me.feng3d {
                 .getIndexBuffer(this.indices);
             return indexBuffer;
         }
+
+        
     }
 }

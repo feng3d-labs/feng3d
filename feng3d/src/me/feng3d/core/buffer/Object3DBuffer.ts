@@ -8,7 +8,6 @@ module me.feng3d {
         private context3D: WebGLRenderingContext;
         private object3D: Object3D;
         squareVerticesBuffer: WebGLBuffer;
-        indexBuffer: WebGLBuffer;
         count: number;
 
         constructor(context3D: WebGLRenderingContext, object3D: Object3D) {
@@ -51,7 +50,7 @@ module me.feng3d {
                 //从Object3D中获取顶点缓冲
                 var eventData: GetAttributeBufferEventData = { attribLocation: attribLocation, attributeBuffer: null };
                 this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData));
-                // assert(eventData.vaBuffer != null);
+                assert(eventData.attributeBuffer != null);
                 vaBuffers.push(eventData.attributeBuffer);
             }
             return vaBuffers;
@@ -74,6 +73,22 @@ module me.feng3d {
 
             this.context3D.bindBuffer(this.context3D.ARRAY_BUFFER, this.squareVerticesBuffer);
             this.context3D.vertexAttribPointer(attribLocation.location, 3, this.context3D.FLOAT, false, 0, 0);
+        }
+
+        /**
+         * 绘制
+         */
+        draw() {
+
+            //从Object3D中获取顶点缓冲
+            var eventData: GetIndexBufferEventData = { indexBuffer: null };
+            this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData));
+            assert(eventData.indexBuffer != null);
+            var indexBuffer = eventData.indexBuffer;
+            indexBuffer.getBuffer
+
+                this.context3D.bindBuffer(this.context3D.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            this.context3D.drawElements(this.context3D.TRIANGLES, this.count, this.context3D.UNSIGNED_SHORT, 0);
         }
     }
 }

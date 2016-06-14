@@ -10,6 +10,11 @@ module me.feng3d {
          * 获取AttributeBuffer
          */
         static GET_ATTRIBUTEBUFFER = "getAttributeBuffer";
+
+        /**
+         * 获取IndexBuffer
+         */
+        static GET_INDEXBUFFER = "getIndexBuffer";
     }
 
     /**
@@ -26,5 +31,16 @@ module me.feng3d {
          * 属性缓冲
          */
         attributeBuffer: AttributeBuffer;
+    }
+
+    /**
+     * 获取IndexBuffer事件数据
+     */
+    export class GetIndexBufferEventData {
+
+        /**
+         * 顶点索引缓冲
+         */
+        indexBuffer: IndexBuffer;
     }
 }
