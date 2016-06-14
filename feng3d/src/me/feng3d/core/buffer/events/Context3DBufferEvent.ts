@@ -23,14 +23,14 @@ module me.feng3d {
     export class GetAttributeBufferEventData {
 
         /**
-         * 程序属性地址
+         * 属性名称
          */
-        attribLocation: ProgramAttributeLocation;
+        name: string;
 
         /**
          * 属性缓冲
          */
-        attributeBuffer: AttributeBuffer;
+        buffer: AttributeBuffer;
     }
 
     /**
@@ -39,8 +39,8 @@ module me.feng3d {
     export class GetIndexBufferEventData {
 
         /**
-         * 顶点索引缓冲
+         * 索引缓冲
          */
-        indexBuffer: IndexBuffer;
+        buffer: IndexBuffer;
     }
 }

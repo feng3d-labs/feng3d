@@ -27,24 +27,27 @@ module me.feng3d {
         }
 
         /**
-         * 获取缓冲
-         * @param context3D    3D渲染环境
+         * 激活缓冲
+         * @param context3D     3D渲染环境
+         * @param location      缓冲gpu地址
          */
-        getBuffer(context3D: WebGLRenderingContext) {
+        public active(context3D: WebGLRenderingContext, location: number) {
 
-            var buffer = Context3DBufferCenter.getInstance(context3D)//
+            var squareVerticesBuffer = Context3DBufferCenter.getInstance(context3D)//
                 .getVABuffer(this.data);
-            return buffer;
+
+            context3D.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, squareVerticesBuffer);
+            context3D.vertexAttribPointer(location, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
         }
 
         /**
          * 处理获取属性缓冲事件
          */
-        onGetAttributeBuffer(event: Context3DBufferEvent) {
+        private onGetAttributeBuffer(event: Context3DBufferEvent) {
 
             var eventData: GetAttributeBufferEventData = event.data;
-            if (eventData.attribLocation.name == this.name)
-                eventData.attributeBuffer = this;
+            if (eventData.name == this.name)
+                eventData.buffer = this;
         }
     }
 }

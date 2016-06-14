@@ -55,20 +55,17 @@ module me.feng3d {
          */
         getAttribLocations() {
 
-            var attribLocations: ProgramAttributeLocation[] = [];
+            var attribLocations: { [name: string]: { type: string, location: number } } = {};
 
             var attributes = this.code.getAttributes();
             for (var i = 0; i < attributes.length; i++) {
                 var element = attributes[i];
-                var attributeLocation = new ProgramAttributeLocation();
-                attributeLocation.name = element.name;
-                attributeLocation.type = element.type;
 
                 //获取属性在gpu中地址
-                attributeLocation.location = this.context3D.getAttribLocation(this.shaderProgram, element.name);
-                this.context3D.enableVertexAttribArray(attributeLocation.location);
+                var location = this.context3D.getAttribLocation(this.shaderProgram, element.name);
+                this.context3D.enableVertexAttribArray(location);
 
-                attribLocations.push(attributeLocation);
+                attribLocations[element.name] = { type: element.type, location: location };
             }
             return attribLocations;
         }

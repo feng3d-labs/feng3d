@@ -8,7 +8,6 @@ module me.feng3d {
         private context3D: WebGLRenderingContext;
         private object3D: Object3D;
         squareVerticesBuffer: WebGLBuffer;
-        count: number;
 
         constructor(context3D: WebGLRenderingContext, object3D: Object3D) {
             this.context3D = context3D;
@@ -28,32 +27,31 @@ module me.feng3d {
          */
         activeAttributes(programBuffer: ProgramBuffer) {
 
-            var attribLocations: ProgramAttributeLocation[] = programBuffer.getAttribLocations();
+            var attribLocations: { [name: string]: { type: string, location: number, attributeBuffer?: AttributeBuffer } } = programBuffer.getAttribLocations();
 
-            var vaBuffers = this.getVaBuffers(attribLocations);
+            this.prepareAttributeBuffers(attribLocations);
 
-            for (var i = 0; i < attribLocations.length; i++) {
-                var attribLocation = attribLocations[i];
-                this.activeAttribute(attribLocation);
+            for (var name in attribLocations) {
+                if (attribLocations.hasOwnProperty(name)) {
+                    var element = attribLocations[name];
+                    element.attributeBuffer.active(this.context3D, element.location);
+                }
             }
         }
 
         /**
-         * 获取顶点缓冲列表
+         * 准备顶点缓冲列表
          */
-        getVaBuffers(attribLocations: ProgramAttributeLocation[]) {
+        prepareAttributeBuffers(attribLocations: { [name: string]: { attributeBuffer?: AttributeBuffer } }) {
 
-            var vaBuffers: AttributeBuffer[] = [];
-            for (var i = 0; i < attribLocations.length; i++) {
-                var attribLocation = attribLocations[i];
-
+            for (var name in attribLocations) {
                 //从Object3D中获取顶点缓冲
-                var eventData: GetAttributeBufferEventData = { attribLocation: attribLocation, attributeBuffer: null };
-                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData));
-                assert(eventData.attributeBuffer != null);
-                vaBuffers.push(eventData.attributeBuffer);
+                var eventData: GetAttributeBufferEventData = { name: name, buffer: null };
+                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData), Number.MAX_VALUE);
+                assert(eventData.buffer != null);
+
+                attribLocations[name].attributeBuffer = eventData.buffer;
             }
-            return vaBuffers;
         }
 
         /**
@@ -81,14 +79,10 @@ module me.feng3d {
         draw() {
 
             //从Object3D中获取顶点缓冲
-            var eventData: GetIndexBufferEventData = { indexBuffer: null };
-            this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData));
-            assert(eventData.indexBuffer != null);
-            var indexBuffer = eventData.indexBuffer;
-            indexBuffer.getBuffer
-
-                this.context3D.bindBuffer(this.context3D.ELEMENT_ARRAY_BUFFER, indexBuffer);
-            this.context3D.drawElements(this.context3D.TRIANGLES, this.count, this.context3D.UNSIGNED_SHORT, 0);
+            var eventData: GetIndexBufferEventData = { buffer: null };
+            this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_INDEXBUFFER, eventData), Number.MAX_VALUE);
+            assert(eventData.buffer != null);
+            var indexBuffer = eventData.buffer.draw(this.context3D)
         }
     }
 }

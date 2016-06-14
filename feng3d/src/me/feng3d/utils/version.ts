@@ -48,7 +48,11 @@ module me.feng3d {
          * 判断两个对象的版本号是否相等
          */
         equal(a: Object, b: Object) {
-            return this.getVersion(a) == this.getVersion(b);
+            var va = this.getVersion(a);
+            var vb = this.getVersion(b);
+            if (va == -1 && vb == -1)
+                return false;
+            return va == vb;
         }
 
         /**

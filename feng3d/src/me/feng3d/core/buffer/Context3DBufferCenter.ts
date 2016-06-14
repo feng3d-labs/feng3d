@@ -77,6 +77,12 @@ module me.feng3d {
             if (!version.equal(data, buffer)) {
                 context3D.bindBuffer(target, buffer);
                 context3D.bufferData(target, data, WebGLRenderingContext.STATIC_DRAW);
+                version.setVersion(buffer, version.getVersion(data));
+
+                //升级buffer和数据版本号一致
+                var dataVersion = Math.max(0, version.getVersion(data));
+                version.setVersion(data, dataVersion);
+                version.setVersion(buffer, dataVersion);
             }
 
             return buffer;

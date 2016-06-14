@@ -6,6 +6,8 @@ module me.feng3d {
 	 */
     export class Context3DBuffer extends Component {
 
+		private attributes: { [name: string]: AttributeBuffer } = {};
+
 		/**
 		 * 创建Context3D数据缓冲
 		 */
@@ -25,9 +27,21 @@ module me.feng3d {
 		/**
 		 * 映射属性缓冲
 		 */
-		mapAttributeBuffer(value: Uint16Array) {
-			var attributeBuffer = this.getOrCreateComponentByClass(AttributeBuffer);
+		mapAttributeBuffer(name: string, value: Uint16Array, stride: number) {
+			var attributeBuffer = this.getAttributeBuffer(name);
 			attributeBuffer.data = value;
+			attributeBuffer.size = stride;
+		}
+
+		private getAttributeBuffer(name: string) {
+
+			var attributeBuffer = this.attributes[name];
+			if (!attributeBuffer) {
+				attributeBuffer = new AttributeBuffer();
+				attributeBuffer.name = name;
+				this.addComponent(attributeBuffer);
+			}
+			return attributeBuffer;
 		}
     }
 }
