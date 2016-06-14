@@ -8,9 +8,9 @@ module me.feng3d {
 
         private _vaIdList: string[] = [];
         /** 顶点属性数据步长字典 */
-        private strideDic = new Map<string, number>();
+        private strideObj: { [key: string]: number; } = {};
         /** 顶点属性数据字典 */
-        private vaDataDic = new Map<string, Float32Array>();
+        private vaDataObj: { [key: string]: Float32Array; } = {};
 
         private _indices: Uint16Array;
 
@@ -53,7 +53,7 @@ module me.feng3d {
 		 */
         public getVAStride(vaId: string) {
 
-            return this.strideDic.get(vaId);
+            return this.strideObj[vaId];
         }
 
 		/**
@@ -64,9 +64,8 @@ module me.feng3d {
 		 */
         public setVAData(vaId: string, data: Float32Array, stride: number) {
 
-            this.strideDic.push(vaId, stride)
-            this.vaDataDic.push(vaId, data);
-            this.context3DBuffer.mapAttributeBuffer(vaId,data,stride);
+            this.strideObj[vaId] = stride;
+            this.vaDataObj[vaId] = data;
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
         }
 
@@ -78,7 +77,7 @@ module me.feng3d {
         public getVAData(vaId: string): Float32Array {
 
             this.dispatchEvent(new GeometryEvent(GeometryEvent.GET_VA_DATA, vaId));
-            return this.vaDataDic.get(vaId);
+            return this.vaDataObj[vaId];
         }
 
         /**

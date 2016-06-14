@@ -67,29 +67,22 @@
         "src/me/feng3d/core/buffer/context3d/Context3DBuffer.ts",
         "src/me/feng3d/core/buffer/context3d/AttributeBuffer.ts",
         "src/me/feng3d/core/buffer/context3d/IndexBuffer.ts",
-        "src/me/feng3d/core/buffer/context3d/UniformBuffer.ts",
         //
         "src/me/feng3d/core/buffer/Object3DBuffer.ts",
         "src/me/feng3d/core/buffer/Object3DBufferManager.ts",
-        "src/me/feng3d/core/buffer/Context3DBufferTypeManager.ts",
         "src/me/feng3d/core/buffer/Context3DBufferCenter.ts",
         "src/me/feng3d/core/buffer/context3d/ProgramBuffer.ts",
         "src/me/feng3d/core/buffer/events/Context3DBufferEvent.ts",
-        //
-        "src/me/feng3d/core/buffer/type/Context3DBufferType.ts",
         //程序参数
         "src/me/feng3d/core/buffer/context3d/program/ProgramAttribute.ts",
         "src/me/feng3d/core/buffer/context3d/program/ProgramAttributeLocation.ts",
         "src/me/feng3d/core/buffer/context3d/program/ProgramUniform.ts",
-        "src/me/feng3d/core/buffer/context3d/program/ProgramUniformLocation.ts",
         "src/me/feng3d/core/buffer/context3d/program/ShaderProgram.ts",
         "src/me/feng3d/core/buffer/context3d/program/ShaderType.ts",
         "src/me/feng3d/core/buffer/context3d/program/ShaderProgramCode.ts",
         //材质
         "src/me/feng3d/materials/Material.ts",
         "src/me/feng3d/materials/ColorMaterial.ts",
-        "src/me/feng3d/materials/passes/MaterialPass.ts",
-        "src/me/feng3d/materials/passes/ColorPass.ts",
         //材质通道
         "src/me/feng3d/materials/passes/MaterialPass.ts"
     ]

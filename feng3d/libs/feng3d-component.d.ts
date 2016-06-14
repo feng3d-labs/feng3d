@@ -145,10 +145,9 @@ declare module me.feng3d {
         /**
          * 派发子组件事件
          * <p>事件广播给子组件</p>
-         * @param event     事件
-         * @param depth     广播深度
+         * @param event
          */
-        dispatchChildrenEvent(event: Event, depth: number): void;
+        dispatchChildrenEvent(event: Event): void;
     }
 }
 declare module me.feng3d {
@@ -263,10 +262,9 @@ declare module me.feng3d {
         /**
          * 派发子组件事件
          * <p>事件广播给子组件</p>
-         * @param event     事件
-         * @param depth     广播深度
+         * @param event
          */
-        dispatchChildrenEvent(event: Event, depth?: number): void;
+        dispatchChildrenEvent(event: Event): void;
         /**
          * 派发移除子组件事件
          */

@@ -110,8 +110,8 @@ void main(void) {
             this.context3D.uniformMatrix4fv(this.mvUniform, false, new Float32Array(mvMatrix.rawData));
 
             this.setMatrixUniforms();
-            this.context3D.bindBuffer(this.context3D.ELEMENT_ARRAY_BUFFER, object3DBuffer.indexBuffer);
-            this.context3D.drawElements(this.context3D.TRIANGLES, object3DBuffer.count, this.context3D.UNSIGNED_SHORT, 0);
+
+            object3DBuffer.draw();
         }
     }
 }

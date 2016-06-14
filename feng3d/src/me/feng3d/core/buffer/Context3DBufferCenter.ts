@@ -44,7 +44,6 @@ module me.feng3d {
 
         /**
          * 获取索引缓冲
-         * @param indices   索引数据
          */
         getIndexBuffer(indices: Uint16Array) {
 
@@ -75,9 +74,8 @@ module me.feng3d {
                 this.bufferMap.push(data, buffer);
             }
 
-            context3D.bindBuffer(target, buffer);
-            version.setVersion(data, Math.max(version.getVersion(data), 0));
             if (!version.equal(data, buffer)) {
+                context3D.bindBuffer(target, buffer);
                 context3D.bufferData(target, data, WebGLRenderingContext.STATIC_DRAW);
             }
 

@@ -12,11 +12,9 @@ module me.feng3d {
         static GET_ATTRIBUTEBUFFER = "getAttributeBuffer";
 
         /**
-         * 获取UniformBuffer
+         * 获取IndexBuffer
          */
-        static GET_UNIFORMBUFFER = "getUniformBuffer";
-
-
+        static GET_INDEXBUFFER = "getIndexBuffer";
     }
 
     /**
@@ -36,18 +34,13 @@ module me.feng3d {
     }
 
     /**
-     * 获取UniformBuffer事件数据
+     * 获取IndexBuffer事件数据
      */
-    export class GetUniformBufferEventData {
+    export class GetIndexBufferEventData {
 
         /**
-         * 程序常数地址
+         * 顶点索引缓冲
          */
-        uniformLocation: ProgramUniformLocation;
-
-        /**
-         * 常数缓冲
-         */
-        uniformBuffer: UniformBuffer;
+        indexBuffer: IndexBuffer;
     }
 }

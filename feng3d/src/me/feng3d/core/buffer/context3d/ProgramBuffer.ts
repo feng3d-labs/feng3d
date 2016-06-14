@@ -73,25 +73,6 @@ module me.feng3d {
             return attribLocations;
         }
 
-        getUniformLocations() {
-
-            var uniformLocations: ProgramUniformLocation[] = [];
-            var uniforms = this.code.getUniforms();
-
-            for (var i = 0; i < uniforms.length; i++) {
-                var element = uniforms[i];
-                var uniformLocation = new ProgramUniformLocation();
-                uniformLocation.name = element.name;
-                uniformLocation.type = element.type;
-
-                //获取在gpu中地址
-                uniformLocation.location = this.context3D.getUniformLocation(this.shaderProgram, element.name);
-
-                uniformLocations.push(uniformLocation);
-            }
-            return uniformLocations;
-        }
-
         /**
          * 初始化
          */
