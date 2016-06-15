@@ -24,6 +24,7 @@ module me.feng3d {
                 this.addComponent(element);
             });
             this.getOrCreateComponentByClass(Space3D);
+            this.getOrCreateComponentByClass(Material);
         }
 
         /**

@@ -49,20 +49,10 @@ module me.feng3d {
         }
 
         /**
-         * 获取渲染程序缓冲
-         */
-        getProgramBuffer(gl: WebGLRenderingContext) {
-
-            var programBuffer = ProgramBuffer.getBuffer(this, gl);
-            return programBuffer;
-        }
-
-        /**
          * 获取程序属性列表
          */
-        getAttributes() {
+        static getAttributes(code: string) {
 
-            var code = this._vertexCode;
             var attributeReg = /attribute\s+(\w+)\s+(\w+)/g;
             var result = attributeReg.exec(code);
 

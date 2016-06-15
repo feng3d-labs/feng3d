@@ -11,24 +11,6 @@ module me.feng3d {
         private scene: Scene3D;
         private camera: Object3D
 
-        private programBuffer: ProgramBuffer;
-
-        vertexShaderStr = //
-        `
-attribute vec3 vaPosition;
-
-uniform mat4 uMVMatrix;
-uniform mat4 uPMatrix;
-
-void main(void) {
-    gl_Position = uPMatrix * uMVMatrix * vec4(vaPosition, 1.0);
-}`;
-        fragmentShaderStr = //
-        `
-void main(void) {
-    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-}`;
-
         /**
          * 构建渲染器
          * @param context3D    webgl渲染上下文
@@ -41,8 +23,6 @@ void main(void) {
             this.camera = camera;
 
             this.initGL();
-
-            this.initShaders();
         }
 
         /**
@@ -53,18 +33,6 @@ void main(void) {
             this.context3D.clearDepth(1.0);                 // Clear everything
             this.context3D.enable(this.context3D.DEPTH_TEST);           // Enable depth testing
             this.context3D.depthFunc(this.context3D.LEQUAL);            // Near things obscure far things
-        }
-
-        /**
-         * 初始化渲染程序
-         */
-        private initShaders() {
-
-            var shaderProgramCode = new ShaderProgramCode(this.vertexShaderStr, this.fragmentShaderStr);
-            this.programBuffer = shaderProgramCode.getProgramBuffer(this.context3D);
-
-            this.shaderProgram = this.programBuffer.shaderProgram;
-            this.context3D.useProgram(this.shaderProgram);
         }
 
         /**
@@ -83,7 +51,7 @@ void main(void) {
         private setMatrixUniforms() {
 
             var perspectiveMatrix = this.getPerspectiveMatrix();
-            this.pUniform = this.pUniform || this.context3D.getUniformLocation(this.shaderProgram, "uPMatrix");
+            this.pUniform = this.context3D.getUniformLocation(this.shaderProgram, "uPMatrix");
             this.context3D.uniformMatrix4fv(this.pUniform, false, new Float32Array(perspectiveMatrix.rawData));
         }
 
@@ -103,15 +71,17 @@ void main(void) {
 
             var object3DBuffer = object3DBufferManager.getBuffer(this.context3D, object3D);
 
-            object3DBuffer.active(this.programBuffer);
+            object3DBuffer.activeProgram();
+            this.shaderProgram = object3DBuffer.programBuffer.getShaderProgram(this.context3D);
 
             var mvMatrix = object3D.space3D.transform3D;
-            this.mvUniform = this.mvUniform || this.context3D.getUniformLocation(this.shaderProgram, "uMVMatrix");
+            this.mvUniform = this.context3D.getUniformLocation(this.shaderProgram, "uMVMatrix");
             this.context3D.uniformMatrix4fv(this.mvUniform, false, new Float32Array(mvMatrix.rawData));
 
             this.setMatrixUniforms();
 
-            object3DBuffer.draw();
+            object3DBuffer.active();
+
         }
     }
 }

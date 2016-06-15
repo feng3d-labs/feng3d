@@ -7,7 +7,11 @@ module me.feng3d {
 
         private context3D: WebGLRenderingContext;
         private object3D: Object3D;
-        squareVerticesBuffer: WebGLBuffer;
+
+        /**
+         * 渲染程序缓存
+         */
+        programBuffer: ProgramBuffer;
 
         constructor(context3D: WebGLRenderingContext, object3D: Object3D) {
             this.context3D = context3D;
@@ -17,17 +21,30 @@ module me.feng3d {
         /**
          * 激活缓冲
          */
-        active(programBuffer: ProgramBuffer) {
+        active() {
+            this.activeAttributes();
+            this.draw();
+        }
 
-            this.activeAttributes(programBuffer);
+        /**
+         * 激活程序
+         */
+        public activeProgram() {
+
+            //从Object3D中获取顶点缓冲
+            var eventData: GetProgramBufferEventData = { buffer: null };
+            this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_PROGRAMBUFFER, eventData), Number.MAX_VALUE);
+            assert(eventData.buffer != null);
+            this.programBuffer = eventData.buffer;
+            this.programBuffer.active(this.context3D);
         }
 
         /**
          * 激活属性
          */
-        activeAttributes(programBuffer: ProgramBuffer) {
+        private activeAttributes() {
 
-            var attribLocations: { [name: string]: { type: string, location: number, attributeBuffer?: AttributeBuffer } } = programBuffer.getAttribLocations();
+            var attribLocations: { [name: string]: { type: string, location: number, attributeBuffer?: AttributeBuffer } } = this.programBuffer.getAttribLocations(this.context3D);
 
             this.prepareAttributeBuffers(attribLocations);
 
@@ -42,7 +59,7 @@ module me.feng3d {
         /**
          * 准备顶点缓冲列表
          */
-        prepareAttributeBuffers(attribLocations: { [name: string]: { attributeBuffer?: AttributeBuffer } }) {
+        private prepareAttributeBuffers(attribLocations: { [name: string]: { attributeBuffer?: AttributeBuffer } }) {
 
             for (var name in attribLocations) {
                 //从Object3D中获取顶点缓冲
@@ -55,28 +72,9 @@ module me.feng3d {
         }
 
         /**
-         * 激活属性
-         */
-        activeAttribute(attribLocation: ProgramAttributeLocation) {
-
-            var squareVerticesBuffer = this.squareVerticesBuffer;
-            if (squareVerticesBuffer == null) {
-                var geometry = this.object3D.getComponentByClass(Geometry);
-                // Create a buffer for the square's vertices.
-                var positionData = geometry.getVAData(attribLocation.name);
-                squareVerticesBuffer = this.squareVerticesBuffer = this.context3D.createBuffer();
-                this.context3D.bindBuffer(this.context3D.ARRAY_BUFFER, squareVerticesBuffer);
-                this.context3D.bufferData(this.context3D.ARRAY_BUFFER, positionData, this.context3D.STATIC_DRAW);
-            }
-
-            this.context3D.bindBuffer(this.context3D.ARRAY_BUFFER, this.squareVerticesBuffer);
-            this.context3D.vertexAttribPointer(attribLocation.location, 3, this.context3D.FLOAT, false, 0, 0);
-        }
-
-        /**
          * 绘制
          */
-        draw() {
+        private draw() {
 
             //从Object3D中获取顶点缓冲
             var eventData: GetIndexBufferEventData = { buffer: null };
