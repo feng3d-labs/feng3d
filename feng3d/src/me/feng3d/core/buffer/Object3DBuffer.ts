@@ -22,8 +22,9 @@ module me.feng3d {
          * 激活缓冲
          */
         active() {
+            this.activeProgram();
             this.activeAttributes();
-            // this.activeUniforms();
+            this.activeUniforms();
             this.draw();
         }
 

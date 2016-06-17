@@ -47,49 +47,23 @@ module me.feng3d {
             });
         }
 
-        pUniform: WebGLUniformLocation
-        private setMatrixUniforms() {
-
-            var perspectiveMatrix = this.getPerspectiveMatrix();
-            this.pUniform = this.context3D.getUniformLocation(this.shaderProgram, Context3DBufferID.uPMatrix);
-            this.context3D.uniformMatrix4fv(this.pUniform, false, perspectiveMatrix.rawData);
-        }
-
-        private getPerspectiveMatrix(): Matrix3D {
-
-            var camSpace3D = this.camera.space3D;
-            var camera = this.camera.getComponentByClass(Camera);
-
-            var perspectiveMatrix = camSpace3D.transform3D.clone();
-            perspectiveMatrix.invert();
-            perspectiveMatrix.append(camera.projectionMatrix3D);
-
-            return perspectiveMatrix;
-        }
-        
         private drawObject3D(object3D: Object3D) {
 
             var context3DBuffer = object3D.getOrCreateComponentByClass(Context3DBuffer);
 
+            //模型矩阵
             var mvMatrix = object3D.space3D.transform3D;
             context3DBuffer.mapUniformBuffer(Context3DBufferID.uMVMatrix, mvMatrix);
 
-            var perspectiveMatrix = this.getPerspectiveMatrix();
+            //计算投影矩阵
+            var perspectiveMatrix = this.camera.space3D.transform3D.clone();
+            var camera = this.camera.getComponentByClass(Camera);
+            perspectiveMatrix.invert();
+            perspectiveMatrix.append(camera.projectionMatrix3D);
             context3DBuffer.mapUniformBuffer(Context3DBufferID.uPMatrix, perspectiveMatrix);
 
-
+            //绘制对象
             var object3DBuffer = object3DBufferManager.getBuffer(this.context3D, object3D);
-
-            object3DBuffer.activeProgram();
-            
-            this.shaderProgram = object3DBuffer.programBuffer.getShaderProgram(this.context3D);
-
-            // var mvMatrix = object3D.space3D.transform3D;
-            
-            object3DBuffer.activeUniforms();
-
-            // this.setMatrixUniforms();
-
             object3DBuffer.active();
 
         }
