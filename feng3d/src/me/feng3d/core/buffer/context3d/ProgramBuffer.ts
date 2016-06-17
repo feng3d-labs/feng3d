@@ -91,7 +91,7 @@ module me.feng3d {
 
             var attribLocations: { [name: string]: { type: string, location: number } } = {};
 
-            var attributes = this.getAttributes(this._vertexCode);
+            var attributes = ProgramBuffer.getAttributes(this._vertexCode);
             for (var i = 0; i < attributes.length; i++) {
                 var element = attributes[i];
 
@@ -110,8 +110,8 @@ module me.feng3d {
          */
         private init(context3D: WebGLRenderingContext) {
 
-            var vertexShader = this.getShader(context3D, this._vertexCode, ShaderType.VERTEX);
-            var fragmentShader = this.getShader(context3D, this._fragmentCode, ShaderType.FRAGMENT);
+            var vertexShader = this.getShader(context3D, this._vertexCode, WebGLRenderingContext.VERTEX_SHADER);
+            var fragmentShader = this.getShader(context3D, this._fragmentCode, WebGLRenderingContext.FRAGMENT_SHADER);
             // 创建渲染程序
             var shaderProgram = this._shaderProgram = context3D.createProgram();
             context3D.attachShader(shaderProgram, vertexShader);
@@ -120,7 +120,7 @@ module me.feng3d {
 
             // 渲染程序创建失败时给出弹框
             if (!context3D.getProgramParameter(shaderProgram, context3D.LINK_STATUS)) {
-                alert("Unable to initialize the shader program.");
+                alert("无法初始化渲染程序。");
             }
         }
 
@@ -135,7 +135,7 @@ module me.feng3d {
             context3D.shaderSource(shader, code);
             context3D.compileShader(shader);
             if (!context3D.getShaderParameter(shader, context3D.COMPILE_STATUS)) {
-                alert("An error occurred compiling the shaders: " + context3D.getShaderInfoLog(shader));
+                alert("编译渲染程序是发生错误: " + context3D.getShaderInfoLog(shader));
                 return null;
             }
 
@@ -145,7 +145,7 @@ module me.feng3d {
         /**
          * 获取程序属性列表
          */
-        private getAttributes(code: string) {
+        static getAttributes(code: string) {
 
             var attributeReg = /attribute\s+(\w+)\s+(\w+)/g;
             var result = attributeReg.exec(code);
@@ -162,7 +162,7 @@ module me.feng3d {
         /**
          * 获取程序常量列表
          */
-        private getUniforms(code: string) {
+        static getUniforms(code: string) {
 
             var uniforms: ProgramUniform[] = [];
 
