@@ -74,12 +74,9 @@
         "src/me/feng3d/core/buffer/context3d/ProgramBuffer.ts",
         "src/me/feng3d/core/buffer/events/Context3DBufferEvent.ts",
         //程序参数
-        "src/me/feng3d/core/buffer/context3d/program/ProgramAttribute.ts",
         "src/me/feng3d/core/buffer/context3d/program/ProgramAttributeLocation.ts",
         "src/me/feng3d/core/buffer/context3d/program/ProgramUniform.ts",
-        "src/me/feng3d/core/buffer/context3d/program/ShaderProgram.ts",
         "src/me/feng3d/core/buffer/context3d/program/ShaderType.ts",
-        "src/me/feng3d/core/buffer/context3d/program/ShaderProgramCode.ts",
         //材质
         "src/me/feng3d/materials/Material.ts",
         "src/me/feng3d/materials/ColorMaterial.ts",

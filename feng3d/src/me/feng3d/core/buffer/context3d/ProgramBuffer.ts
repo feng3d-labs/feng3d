@@ -12,16 +12,6 @@ module me.feng3d {
         private _shaderProgram: WebGLProgram;
 
         /**
-         * 顶点渲染程序
-         */
-        private vertexShaderProgram: ShaderProgram;
-
-        /**
-         * 片段渲染程序
-         */
-        private fragementShaderProgram: ShaderProgram;
-
-        /**
          * 创建渲染程序缓存
          * @param code          渲染程序代码
          * @param context3D     webgl渲染上下文
@@ -79,8 +69,6 @@ module me.feng3d {
 
         active(context3D: WebGLRenderingContext) {
 
-            var shaderProgramCode = new ShaderProgramCode(this._vertexCode, this._fragmentCode);
-
             var shaderProgram = this.getShaderProgram(context3D);
             context3D.useProgram(shaderProgram);
         }
@@ -103,7 +91,7 @@ module me.feng3d {
 
             var attribLocations: { [name: string]: { type: string, location: number } } = {};
 
-            var attributes = ShaderProgramCode.getAttributes(this._vertexCode);
+            var attributes = this.getAttributes(this._vertexCode);
             for (var i = 0; i < attributes.length; i++) {
                 var element = attributes[i];
 
@@ -121,9 +109,6 @@ module me.feng3d {
          * 初始化
          */
         private init(context3D: WebGLRenderingContext) {
-
-            this.vertexShaderProgram = ShaderProgram.getInstance(this._vertexCode, ShaderType.VERTEX);
-            this.fragementShaderProgram = ShaderProgram.getInstance(this._fragmentCode, ShaderType.FRAGMENT);
 
             var vertexShader = this.getShader(context3D, this._vertexCode, ShaderType.VERTEX);
             var fragmentShader = this.getShader(context3D, this._fragmentCode, ShaderType.FRAGMENT);
@@ -155,6 +140,43 @@ module me.feng3d {
             }
 
             return shader;
+        }
+
+        /**
+         * 获取程序属性列表
+         */
+        private getAttributes(code: string) {
+
+            var attributeReg = /attribute\s+(\w+)\s+(\w+)/g;
+            var result = attributeReg.exec(code);
+
+            var attributes: { type: string, name: string }[] = [];//属性{类型，名称}
+            while (result) {
+                attributes.push({ type: result[1], name: result[2] });
+                result = attributeReg.exec(code);
+            }
+
+            return attributes;
+        }
+
+        /**
+         * 获取程序常量列表
+         */
+        private getUniforms(code: string) {
+
+            var uniforms: ProgramUniform[] = [];
+
+            var uniformReg = /uniform\s+(\w+)\s+(\w+)/g;
+            var result = uniformReg.exec(code);
+
+            while (result) {
+                var attribute = new ProgramAttribute();
+                attribute.type = result[1];
+                attribute.name = result[2];
+                result = uniformReg.exec(code);
+            }
+
+            return uniforms;
         }
     }
 }
