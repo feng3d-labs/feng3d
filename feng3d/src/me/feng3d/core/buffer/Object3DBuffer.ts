@@ -23,7 +23,7 @@ module me.feng3d {
          */
         active() {
             this.activeAttributes();
-            this.activeUniforms();
+            // this.activeUniforms();
             this.draw();
         }
 
@@ -72,33 +72,35 @@ module me.feng3d {
             }
         }
 
+        /**
+         * 激活常量
+         */
         private activeUniforms() {
 
-            var uniforms: { [name: string]: { type: string, location?: WebGLUniformLocation } } = this.programBuffer.getUniforms(this.context3D);
+            var uniforms: { [name: string]: { type: string, location?: WebGLUniformLocation, buffer?: UniformBuffer } } = this.programBuffer.getUniforms(this.context3D);
 
-            // this.prepareUniformBuffers(uniforms);
+            this.prepareUniformBuffers(uniforms);
 
             for (var name in uniforms) {
                 if (uniforms.hasOwnProperty(name)) {
                     var element = uniforms[name];
-                    element
+                    element.buffer.active(this.context3D, element.location);
                 }
             }
-
         }
 
         /**
          * 准备顶点缓冲列表
          */
-        private prepareUniformBuffers(uniforms: { [name: string]: { attributeBuffer?: AttributeBuffer } }) {
+        private prepareUniformBuffers(uniforms: { [name: string]: { buffer?: UniformBuffer } }) {
 
             for (var name in uniforms) {
                 //从Object3D中获取顶点缓冲
-                var eventData: GetAttributeBufferEventData = { name: name, buffer: null };
-                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData), Number.MAX_VALUE);
+                var eventData: GetUniformBufferEventData = { name: name, buffer: null };
+                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_UNIFORMBUFFER, eventData), Number.MAX_VALUE);
                 assert(eventData.buffer != null);
 
-                uniforms[name].attributeBuffer = eventData.buffer;
+                uniforms[name].buffer = eventData.buffer;
             }
         }
 

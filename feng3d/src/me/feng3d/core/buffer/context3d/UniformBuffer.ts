@@ -10,6 +10,8 @@ module me.feng3d {
          */
         name: string;
 
+        matrix: Matrix3D;
+
         /**
          * 构建常量缓冲
          */
@@ -27,6 +29,16 @@ module me.feng3d {
             var eventData: GetUniformBufferEventData = event.data;
             if (eventData.name == this.name)
                 eventData.buffer = this;
+        }
+
+        /**
+         * 激活缓冲
+         * @param context3D     3D渲染环境
+         * @param location      缓冲gpu地址
+         */
+        public active(context3D: WebGLRenderingContext, location: WebGLUniformLocation) {
+
+            context3D.uniformMatrix4fv(location, false, this.matrix.rawData);
         }
     }
 }

@@ -51,8 +51,8 @@ module me.feng3d {
         private setMatrixUniforms() {
 
             var perspectiveMatrix = this.getPerspectiveMatrix();
-            this.pUniform = this.context3D.getUniformLocation(this.shaderProgram, "uPMatrix");
-            this.context3D.uniformMatrix4fv(this.pUniform, false, new Float32Array(perspectiveMatrix.rawData));
+            this.pUniform = this.context3D.getUniformLocation(this.shaderProgram, Context3DBufferID.uPMatrix);
+            this.context3D.uniformMatrix4fv(this.pUniform, false, perspectiveMatrix.rawData);
         }
 
         private getPerspectiveMatrix(): Matrix3D {
@@ -69,14 +69,23 @@ module me.feng3d {
         mvUniform: WebGLUniformLocation
         private drawObject3D(object3D: Object3D) {
 
+            var context3DBuffer = object3D.getOrCreateComponentByClass(Context3DBuffer);
+
+            var mvMatrix = object3D.space3D.transform3D;
+            context3DBuffer.mapUniformBuffer(Context3DBufferID.uMVMatrix, mvMatrix);
+
+            var perspectiveMatrix = this.getPerspectiveMatrix();
+            context3DBuffer.mapUniformBuffer(Context3DBufferID.uPMatrix, perspectiveMatrix);
+
+
             var object3DBuffer = object3DBufferManager.getBuffer(this.context3D, object3D);
 
             object3DBuffer.activeProgram();
             this.shaderProgram = object3DBuffer.programBuffer.getShaderProgram(this.context3D);
 
             var mvMatrix = object3D.space3D.transform3D;
-            this.mvUniform = this.context3D.getUniformLocation(this.shaderProgram, "uMVMatrix");
-            this.context3D.uniformMatrix4fv(this.mvUniform, false, new Float32Array(mvMatrix.rawData));
+            this.mvUniform = this.context3D.getUniformLocation(this.shaderProgram, Context3DBufferID.uMVMatrix);
+            this.context3D.uniformMatrix4fv(this.mvUniform, false, mvMatrix.rawData);
 
             this.setMatrixUniforms();
 

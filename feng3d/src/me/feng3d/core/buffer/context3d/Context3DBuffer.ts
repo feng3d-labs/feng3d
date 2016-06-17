@@ -7,6 +7,7 @@ module me.feng3d {
     export class Context3DBuffer extends Component {
 
 		private attributes: { [name: string]: AttributeBuffer } = {};
+		private uniforms: { [name: string]: UniformBuffer } = {};
 
 		/**
 		 * 创建Context3D数据缓冲
@@ -41,7 +42,7 @@ module me.feng3d {
 
 			var attributeBuffer = this.attributes[name];
 			if (!attributeBuffer) {
-				attributeBuffer = new AttributeBuffer();
+				attributeBuffer = this.attributes[name] = new AttributeBuffer();
 				attributeBuffer.name = name;
 				this.addComponent(attributeBuffer);
 			}
@@ -58,6 +59,30 @@ module me.feng3d {
 			var programBuffer = this.getOrCreateComponentByClass(ProgramBuffer);
 			programBuffer.vertexCode = vertexCode;
 			programBuffer.fragmentCode = fragmentCode;
+		}
+
+		/**
+		 * 映射常量缓冲
+		 */
+		mapUniformBuffer(name: string, data: Matrix3D) {
+
+			var uniformBuffer = this.getUniformBuffer(name);
+			uniformBuffer.matrix = data;
+		}
+
+		/**
+		 * 获取常量缓冲
+		 * @param name	属性名称
+		 */
+		private getUniformBuffer(name: string) {
+
+			var uniformBuffer = this.uniforms[name];
+			if (!uniformBuffer) {
+				uniformBuffer = this.uniforms[name] = new UniformBuffer();
+				uniformBuffer.name = name;
+				this.addComponent(uniformBuffer);
+			}
+			return uniformBuffer;
 		}
     }
 }
