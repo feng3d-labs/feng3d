@@ -17,9 +17,14 @@ module me.feng3d {
         static GET_INDEXBUFFER = "getIndexBuffer";
 
         /**
-         * 获取IndexBuffer
+         * 获取ProgramBuffer
          */
         static GET_PROGRAMBUFFER = "getProgramBuffer";
+
+        /**
+         * 获取UniformBuffer
+         */
+        static GET_UNIFORMBUFFER = "getUniformBuffer";
     }
 
     /**
@@ -58,5 +63,21 @@ module me.feng3d {
          * 渲染程序缓存
          */
         buffer: ProgramBuffer;
+    }
+    
+    /**
+     * 获取UniformBuffer事件数据
+     */
+    export class GetUniformBufferEventData {
+
+        /**
+         * 常量名称
+         */
+        name: string;
+
+        /**
+         * 常量缓存
+         */
+        buffer: UniformBuffer;
     }
 }

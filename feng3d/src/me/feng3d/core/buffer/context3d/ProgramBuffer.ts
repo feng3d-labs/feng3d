@@ -89,20 +89,34 @@ module me.feng3d {
          */
         getAttribLocations(context3D: WebGLRenderingContext) {
 
-            var attribLocations: { [name: string]: { type: string, location: number } } = {};
-
-            var attributes = ProgramBuffer.getAttributes(this._vertexCode);
-            for (var i = 0; i < attributes.length; i++) {
-                var element = attributes[i];
-
-                //获取属性在gpu中地址
-                var shaderProgram = this.getShaderProgram(context3D);
-                var location = context3D.getAttribLocation(shaderProgram, element.name);
-                context3D.enableVertexAttribArray(location);
-
-                attribLocations[element.name] = { type: element.type, location: location };
+            var attributes: { [name: string]: { type: string, location?: number } } = ProgramBuffer.getAttributes(this._vertexCode);
+            //获取属性在gpu中地址
+            var shaderProgram = this.getShaderProgram(context3D);
+            for (var name in attributes) {
+                if (attributes.hasOwnProperty(name)) {
+                    var element = attributes[name];
+                    element.location = context3D.getAttribLocation(shaderProgram, name);
+                    context3D.enableVertexAttribArray(element.location);
+                }
             }
-            return attribLocations;
+            return attributes;
+        }
+
+        /**
+         * 获取常量
+         */
+        getUniforms(context3D: WebGLRenderingContext) {
+
+            var uniforms: { [name: string]: { type: string, location?: WebGLUniformLocation } } = ProgramBuffer.getUniforms(this._vertexCode);
+            //获取属性在gpu中地址
+            var shaderProgram = this.getShaderProgram(context3D);
+            for (var name in uniforms) {
+                if (uniforms.hasOwnProperty(name)) {
+                    var element = uniforms[name];
+                    element.location = context3D.getUniformLocation(shaderProgram, name);
+                }
+            }
+            return uniforms;
         }
 
         /**
@@ -150,9 +164,9 @@ module me.feng3d {
             var attributeReg = /attribute\s+(\w+)\s+(\w+)/g;
             var result = attributeReg.exec(code);
 
-            var attributes: { type: string, name: string }[] = [];//属性{类型，名称}
+            var attributes: { [name: string]: { type: string } } = {};//属性{类型，名称}
             while (result) {
-                attributes.push({ type: result[1], name: result[2] });
+                attributes[result[2]] = { type: result[1] };
                 result = attributeReg.exec(code);
             }
 
@@ -164,15 +178,14 @@ module me.feng3d {
          */
         static getUniforms(code: string) {
 
-            var uniforms: ProgramUniform[] = [];
+            var uniforms: { [name: string]: { type: string } } = {};
 
             var uniformReg = /uniform\s+(\w+)\s+(\w+)/g;
             var result = uniformReg.exec(code);
 
             while (result) {
-                var attribute = new ProgramAttribute();
-                attribute.type = result[1];
-                attribute.name = result[2];
+
+                uniforms[result[2]] = { type: result[1] };
                 result = uniformReg.exec(code);
             }
 

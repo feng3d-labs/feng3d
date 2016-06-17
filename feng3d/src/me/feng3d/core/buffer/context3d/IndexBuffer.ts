@@ -14,8 +14,8 @@ module me.feng3d {
          * 索引缓冲
          */
         constructor() {
-            super();
 
+            super();
             this.addEventListener(Context3DBufferEvent.GET_INDEXBUFFER, this.onGetIndexBuffer, this)
         }
 
