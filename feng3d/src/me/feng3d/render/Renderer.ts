@@ -60,13 +60,13 @@ module me.feng3d {
             var camSpace3D = this.camera.space3D;
             var camera = this.camera.getComponentByClass(Camera);
 
-            var perspectiveMatrix = camSpace3D.transform3D;
+            var perspectiveMatrix = camSpace3D.transform3D.clone();
             perspectiveMatrix.invert();
             perspectiveMatrix.append(camera.projectionMatrix3D);
 
             return perspectiveMatrix;
         }
-        mvUniform: WebGLUniformLocation
+        
         private drawObject3D(object3D: Object3D) {
 
             var context3DBuffer = object3D.getOrCreateComponentByClass(Context3DBuffer);
@@ -81,13 +81,14 @@ module me.feng3d {
             var object3DBuffer = object3DBufferManager.getBuffer(this.context3D, object3D);
 
             object3DBuffer.activeProgram();
+            
             this.shaderProgram = object3DBuffer.programBuffer.getShaderProgram(this.context3D);
 
-            var mvMatrix = object3D.space3D.transform3D;
-            this.mvUniform = this.context3D.getUniformLocation(this.shaderProgram, Context3DBufferID.uMVMatrix);
-            this.context3D.uniformMatrix4fv(this.mvUniform, false, mvMatrix.rawData);
+            // var mvMatrix = object3D.space3D.transform3D;
+            
+            object3DBuffer.activeUniforms();
 
-            this.setMatrixUniforms();
+            // this.setMatrixUniforms();
 
             object3DBuffer.active();
 

@@ -86,13 +86,12 @@ module me.feng3d {
         set sz(value: number) { this._sz = value; this.invalidateTransform3D(); }
 
         /**
-         * 空间变换矩阵（此处返回的是公共的临时矩阵）
+         * 空间变换矩阵
          */
         get transform3D(): Matrix3D {
             if (this.transform3DDirty)
                 this.updateTransform3D();
-            tempMatrix3D.rawData.set(this._transform3D.rawData);
-            return tempMatrix3D;
+            return this._transform3D;
         }
 
         set transform3D(value: Matrix3D) {
@@ -143,9 +142,4 @@ module me.feng3d {
         private _transform3D = new Matrix3D();
         private transform3DDirty: boolean;
     }
-    
-    /**
-     * 临时矩阵
-     */
-    var tempMatrix3D = new Matrix3D();
 }

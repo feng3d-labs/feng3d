@@ -108,14 +108,6 @@ module me.feng3d {
         getUniforms(context3D: WebGLRenderingContext) {
 
             var uniforms: { [name: string]: { type: string, location?: WebGLUniformLocation } } = ProgramBuffer.getUniforms(this._vertexCode);
-            //获取属性在gpu中地址
-            var shaderProgram = this.getShaderProgram(context3D);
-            for (var name in uniforms) {
-                if (uniforms.hasOwnProperty(name)) {
-                    var element = uniforms[name];
-                    element.location = context3D.getUniformLocation(shaderProgram, name);
-                }
-            }
             return uniforms;
         }
 
