@@ -5,13 +5,35 @@ module me.feng3d {
      */
     export class Object3DBuffer {
 
+        /**
+         * 3D上下文
+         */
         private context3D: WebGLRenderingContext;
+
+        /**
+         * 渲染对象
+         */
         private object3D: Object3D;
+
+        /**
+         * 顶点索引缓冲
+         */
+        indexBuffer: IndexBuffer;
 
         /**
          * 渲染程序缓存
          */
         programBuffer: ProgramBuffer;
+
+        /**
+         * 属性数据列表
+         */
+        private attributes: { [name: string]: { type: string, location?: number, buffer?: AttributeBuffer } };
+
+        /**
+         * 常量数据列表
+         */
+        private uniforms: { [name: string]: { type: string, location?: WebGLUniformLocation, buffer?: UniformBuffer } };
 
         constructor(context3D: WebGLRenderingContext, object3D: Object3D) {
             this.context3D = context3D;
@@ -22,6 +44,7 @@ module me.feng3d {
          * 激活缓冲
          */
         active() {
+
             this.activeProgram();
             this.activeAttributes();
             this.activeUniforms();
@@ -41,24 +64,23 @@ module me.feng3d {
             this.programBuffer.active(this.context3D);
         }
 
-        private attributes: { [name: string]: { type: string, location?: number, buffer?: AttributeBuffer } };
-
         /**
          * 激活属性
          */
         private activeAttributes() {
 
             if (this.attributes == null) {
-
                 this.attributes = this.programBuffer.getAttribLocations(this.context3D);
-
                 this.prepareAttributeBuffers(this.attributes);
             }
 
             for (var name in this.attributes) {
                 if (this.attributes.hasOwnProperty(name)) {
                     var element = this.attributes[name];
-                    element.buffer.active(this.context3D, element.location);
+                    var squareVerticesBuffer = Context3DBufferCenter.getInstance(this.context3D)//
+                        .getVABuffer(element.buffer.data);
+                    this.context3D.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, squareVerticesBuffer);
+                    this.context3D.vertexAttribPointer(element.location, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
                 }
             }
         }
@@ -78,8 +100,6 @@ module me.feng3d {
             }
         }
 
-        private uniforms: { [name: string]: { type: string, location?: WebGLUniformLocation, buffer?: UniformBuffer } };
-
         /**
          * 激活常量
          */
@@ -97,9 +117,8 @@ module me.feng3d {
             for (var name in this.uniforms) {
                 if (this.uniforms.hasOwnProperty(name)) {
                     var element = this.uniforms[name];
-
                     var location = this.context3D.getUniformLocation(shaderProgram, name);
-                    element.buffer.active(this.context3D, location);
+                    this.context3D.uniformMatrix4fv(location, false, element.buffer.matrix.rawData);
                 }
             }
         }
@@ -119,18 +138,26 @@ module me.feng3d {
             }
         }
 
-
         /**
          * 绘制
          */
         private draw() {
 
-            //从Object3D中获取顶点缓冲
-            var eventData: GetIndexBufferEventData = { buffer: null };
-            this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_INDEXBUFFER, eventData), Number.MAX_VALUE);
-            assert(eventData.buffer != null);
-            var indexBuffer = eventData.buffer;
-            indexBuffer.draw(this.context3D);
+            if (this.indexBuffer == null) {
+
+                //从Object3D中获取顶点缓冲
+                var eventData: GetIndexBufferEventData = { buffer: null };
+                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_INDEXBUFFER, eventData), Number.MAX_VALUE);
+                assert(eventData.buffer != null);
+                this.indexBuffer = eventData.buffer;
+            }
+
+            var buffer = Context3DBufferCenter.getInstance(this.context3D)//
+                .getIndexBuffer(this.indexBuffer.indices);
+
+            var count = this.indexBuffer.indices.length;
+            this.context3D.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, buffer);
+            this.context3D.drawElements(WebGLRenderingContext.TRIANGLES, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
         }
     }
 }

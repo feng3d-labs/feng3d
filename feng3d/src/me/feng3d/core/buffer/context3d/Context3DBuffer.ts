@@ -91,7 +91,7 @@ module me.feng3d {
             var eventData: GetUniformBufferEventData = event.data;
 			eventData.buffer = eventData.buffer || this.uniforms[eventData.name];
         }
-		
+
 		/**
          * 处理获取缓冲事件
          */
@@ -112,20 +112,6 @@ module me.feng3d {
          * 索引数据
          */
         indices: Uint16Array;
-
-        /**
-         * 绘制
-         * @param context3D    3D渲染环境
-         */
-        draw(context3D: WebGLRenderingContext) {
-
-            var indexBuffer = Context3DBufferCenter.getInstance(context3D)//
-                .getIndexBuffer(this.indices);
-
-            var count = this.indices.length;
-            context3D.bindBuffer(context3D.ELEMENT_ARRAY_BUFFER, indexBuffer);
-            context3D.drawElements(context3D.TRIANGLES, count, context3D.UNSIGNED_SHORT, 0);
-        }
     }
 
 	/**
@@ -144,20 +130,6 @@ module me.feng3d {
 
         /** 与每个顶点关联的 32 位（4 字节）数据值的数量。 */
         size: number;
-
-        /**
-         * 激活缓冲
-         * @param context3D     3D渲染环境
-         * @param location      缓冲gpu地址
-         */
-        public active(context3D: WebGLRenderingContext, location: number) {
-
-            var squareVerticesBuffer = Context3DBufferCenter.getInstance(context3D)//
-                .getVABuffer(this.data);
-
-            context3D.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, squareVerticesBuffer);
-            context3D.vertexAttribPointer(location, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
-        }
     }
 
 	/**
@@ -170,16 +142,9 @@ module me.feng3d {
          */
         name: string;
 
+		/**
+		 * 矩阵数据
+		 */
         matrix: Matrix3D;
-
-        /**
-         * 激活缓冲
-         * @param context3D     3D渲染环境
-         * @param location      缓冲gpu地址
-         */
-        public active(context3D: WebGLRenderingContext, location: WebGLUniformLocation) {
-
-            context3D.uniformMatrix4fv(location, false, this.matrix.rawData);
-        }
     }
 }
