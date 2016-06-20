@@ -9,6 +9,11 @@ module me.feng3d {
         object3D: Object3D
 
         /**
+         * 顶点索引缓冲
+         */
+        indexBuffer: IndexBuffer;
+
+        /**
          * 渲染程序缓存
          */
         programBuffer: ProgramBuffer;
@@ -18,6 +23,14 @@ module me.feng3d {
          */
         attributes: { [name: string]: { type: string, buffer?: AttributeBuffer } };
 
+        /**
+         * 常量数据列表
+         */
+        uniforms: { [name: string]: { type: string, buffer?: UniformBuffer } };
+
+        /**
+         * 构建3D对象渲染数据
+         */
         constructor(object3D: Object3D) {
             this.object3D = object3D;
         }
@@ -28,11 +41,13 @@ module me.feng3d {
         prepare() {
 
             this.prepareProgram();
+            this.prepareIndex();
             this.prepareAttributes();
+            this.prepareUniforms();
         }
 
         /**
-         * 激活程序
+         * 准备程序
          */
         private prepareProgram() {
 
@@ -44,21 +59,47 @@ module me.feng3d {
         }
 
         /**
-         * 激活属性
+         * 准备索引
+         */
+        private prepareIndex() {
+
+            //从Object3D中获取顶点缓冲
+            var eventData: GetIndexBufferEventData = { buffer: null };
+            this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_INDEXBUFFER, eventData), Number.MAX_VALUE);
+            assert(eventData.buffer != null);
+            this.indexBuffer = eventData.buffer;
+        }
+
+        /**
+         * 准备属性
          */
         private prepareAttributes() {
 
-            if (this.attributes == null) {
+            this.attributes = this.programBuffer.getAttributes();
+            for (var name in this.attributes) {
+                //从Object3D中获取顶点缓冲
+                var eventData: GetAttributeBufferEventData = { name: name, buffer: null };
+                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData), Number.MAX_VALUE);
+                assert(eventData.buffer != null);
 
-                this.attributes = this.programBuffer.getAttributes();
-                for (var name in this.attributes) {
-                    //从Object3D中获取顶点缓冲
-                    var eventData: GetAttributeBufferEventData = { name: name, buffer: null };
-                    this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData), Number.MAX_VALUE);
-                    assert(eventData.buffer != null);
+                this.attributes[name].buffer = eventData.buffer;
+            }
+        }
 
-                    this.attributes[name].buffer = eventData.buffer;
-                }
+        /**
+         * 准备常量
+         */
+        private prepareUniforms() {
+
+            this.uniforms = this.programBuffer.getUniforms();
+
+            for (var name in this.uniforms) {
+                //从Object3D中获取顶点缓冲
+                var eventData: GetUniformBufferEventData = { name: name, buffer: null };
+                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_UNIFORMBUFFER, eventData), Number.MAX_VALUE);
+                assert(eventData.buffer != null);
+
+                this.uniforms[name].buffer = eventData.buffer;
             }
         }
     }

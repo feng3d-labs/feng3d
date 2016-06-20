@@ -93,9 +93,9 @@ module me.feng3d {
         /**
          * 获取常量
          */
-        getUniforms(context3D: WebGLRenderingContext) {
+        getUniforms() {
 
-            var uniforms: { [name: string]: { type: string, location?: WebGLUniformLocation } } = ProgramBuffer.getUniforms(this._vertexCode);
+            var uniforms: { [name: string]: { type: string } } = ProgramBuffer.getUniforms(this._vertexCode);
             return uniforms;
         }
 

@@ -17,16 +17,6 @@ module me.feng3d {
         private object3D: Object3D;
 
         /**
-         * 顶点索引缓冲
-         */
-        indexBuffer: IndexBuffer;
-
-        /**
-         * 常量数据列表
-         */
-        private uniforms: { [name: string]: { type: string, location?: WebGLUniformLocation, buffer?: UniformBuffer } };
-
-        /**
          * 渲染数据
          */
         private renderData: Object3DRenderData;
@@ -85,36 +75,17 @@ module me.feng3d {
          */
         activeUniforms() {
 
-            if (this.uniforms == null) {
-
-                this.uniforms = this.renderData.programBuffer.getUniforms(this.context3D);
-                this.prepareUniformBuffers(this.uniforms);
-            }
+            var uniforms = this.renderData.uniforms;
 
             //获取属性在gpu中地址
             var shaderProgram = this.renderData.programBuffer.getShaderProgram(this.context3D);
 
-            for (var name in this.uniforms) {
-                if (this.uniforms.hasOwnProperty(name)) {
-                    var element = this.uniforms[name];
+            for (var name in uniforms) {
+                if (uniforms.hasOwnProperty(name)) {
+                    var element = uniforms[name];
                     var location = this.context3D.getUniformLocation(shaderProgram, name);
                     this.context3D.uniformMatrix4fv(location, false, element.buffer.matrix.rawData);
                 }
-            }
-        }
-
-        /**
-         * 准备顶点缓冲列表
-         */
-        private prepareUniformBuffers(uniforms: { [name: string]: { buffer?: UniformBuffer } }) {
-
-            for (var name in uniforms) {
-                //从Object3D中获取顶点缓冲
-                var eventData: GetUniformBufferEventData = { name: name, buffer: null };
-                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_UNIFORMBUFFER, eventData), Number.MAX_VALUE);
-                assert(eventData.buffer != null);
-
-                uniforms[name].buffer = eventData.buffer;
             }
         }
 
@@ -123,19 +94,12 @@ module me.feng3d {
          */
         private draw() {
 
-            if (this.indexBuffer == null) {
-
-                //从Object3D中获取顶点缓冲
-                var eventData: GetIndexBufferEventData = { buffer: null };
-                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_INDEXBUFFER, eventData), Number.MAX_VALUE);
-                assert(eventData.buffer != null);
-                this.indexBuffer = eventData.buffer;
-            }
+            var indexBuffer = this.renderData.indexBuffer;
 
             var buffer = Context3DBufferCenter.getInstance(this.context3D)//
-                .getIndexBuffer(this.indexBuffer.indices);
+                .getIndexBuffer(indexBuffer.indices);
 
-            var count = this.indexBuffer.indices.length;
+            var count = indexBuffer.indices.length;
             this.context3D.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, buffer);
             this.context3D.drawElements(WebGLRenderingContext.TRIANGLES, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
         }
