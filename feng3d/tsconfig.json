@@ -65,9 +65,6 @@
         //Context3D缓冲
         "src/me/feng3d/core/buffer/Context3DBufferID.ts",
         "src/me/feng3d/core/buffer/context3d/Context3DBuffer.ts",
-        "src/me/feng3d/core/buffer/context3d/AttributeBuffer.ts",
-        "src/me/feng3d/core/buffer/context3d/IndexBuffer.ts",
-        "src/me/feng3d/core/buffer/context3d/UniformBuffer.ts",
         "src/me/feng3d/core/buffer/context3d/ProgramBuffer.ts",
         //
         "src/me/feng3d/core/buffer/Object3DBuffer.ts",

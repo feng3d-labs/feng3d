@@ -29,7 +29,12 @@ module me.feng3d {
     function createUID(object: any) {
 
         var className = getClassName(object);
-        var uid = className + "_" + ~~uidStart[className];
+        var uid = [//
+            className,
+            StringUtils.getString(~~uidStart[className], 8, "0", false),
+            Date.now()
+        ].join("-");
+
         uidStart[className] = ~~uidStart[className] + 1;
         return uid;
     }

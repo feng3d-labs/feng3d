@@ -4,33 +4,12 @@ module me.feng3d {
      * 渲染程序缓存
      * @author feng 2016-05-09
      */
-    export class ProgramBuffer extends Component {
+    export class ProgramBuffer{
 
         private _vertexCode: string;
         private _fragmentCode: string;
 
         private _shaderProgram: WebGLProgram;
-
-        /**
-         * 创建渲染程序缓存
-         * @param code          渲染程序代码
-         * @param context3D     webgl渲染上下文
-         */
-        constructor() {
-
-            super();
-
-            this.addEventListener(Context3DBufferEvent.GET_PROGRAMBUFFER, this.onGetProgramBuffer, this)
-        }
-
-        /**
-         * 处理获取缓冲事件
-         */
-        private onGetProgramBuffer(event: Context3DBufferEvent) {
-
-            var eventData: GetProgramBufferEventData = event.data;
-            eventData.buffer = this;
-        }
 
         /**
          * 顶点渲染程序代码
@@ -135,7 +114,7 @@ module me.feng3d {
          * @param code      渲染代码
          * @param type      渲染代码类型
          */
-        private getShader(context3D: WebGLRenderingContext, code: string, type: ShaderType) {
+        private getShader(context3D: WebGLRenderingContext, code: string, type: number) {
 
             var shader = context3D.createShader(type);
             context3D.shaderSource(shader, code);

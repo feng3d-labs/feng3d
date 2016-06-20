@@ -6,6 +6,8 @@ module me.feng3d {
 	 */
     export class Context3DBuffer extends Component {
 
+		private indexBuffer: IndexBuffer;
+		private programBuffer: ProgramBuffer;
 		private attributes: { [name: string]: AttributeBuffer } = {};
 		private uniforms: { [name: string]: UniformBuffer } = {};
 
@@ -15,13 +17,18 @@ module me.feng3d {
         constructor() {
 
 			super();
+
+            this.addEventListener(Context3DBufferEvent.GET_INDEXBUFFER, this.onGetIndexBuffer, this);
+			this.addEventListener(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, this.onGetAttributeBuffer, this);
+			this.addEventListener(Context3DBufferEvent.GET_UNIFORMBUFFER, this.onGetUniformBuffer, this);
+			this.addEventListener(Context3DBufferEvent.GET_PROGRAMBUFFER, this.onGetProgramBuffer, this)
         }
 
 		/**
 		 * 映射索引缓冲
 		 */
 		mapIndexBuffer(value: Uint16Array) {
-			var indexBuffer = this.getOrCreateComponentByClass(IndexBuffer);
+			var indexBuffer = this.indexBuffer = this.indexBuffer || new IndexBuffer();
 			indexBuffer.indices = value;
 		}
 
@@ -29,24 +36,11 @@ module me.feng3d {
 		 * 映射属性缓冲
 		 */
 		mapAttributeBuffer(name: string, value: Uint16Array, stride: number) {
-			var attributeBuffer = this.getAttributeBuffer(name);
+
+			var attributeBuffer = this.attributes[name] = this.attributes[name] || new AttributeBuffer();
+			attributeBuffer.name = name;
 			attributeBuffer.data = value;
 			attributeBuffer.size = stride;
-		}
-
-		/**
-		 * 获取属性缓冲
-		 * @param name	属性名称
-		 */
-		private getAttributeBuffer(name: string) {
-
-			var attributeBuffer = this.attributes[name];
-			if (!attributeBuffer) {
-				attributeBuffer = this.attributes[name] = new AttributeBuffer();
-				attributeBuffer.name = name;
-				this.addComponent(attributeBuffer);
-			}
-			return attributeBuffer;
 		}
 
 		/**
@@ -56,7 +50,7 @@ module me.feng3d {
          */
         mapProgramBuffer(vertexCode: string, fragmentCode: string) {
 
-			var programBuffer = this.getOrCreateComponentByClass(ProgramBuffer);
+			var programBuffer = this.programBuffer = this.programBuffer || new ProgramBuffer();
 			programBuffer.vertexCode = vertexCode;
 			programBuffer.fragmentCode = fragmentCode;
 		}
@@ -66,23 +60,126 @@ module me.feng3d {
 		 */
 		mapUniformBuffer(name: string, data: Matrix3D) {
 
-			var uniformBuffer = this.getUniformBuffer(name);
+			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformBuffer();
+			uniformBuffer.name = name;
 			uniformBuffer.matrix = data;
 		}
 
-		/**
-		 * 获取常量缓冲
-		 * @param name	属性名称
-		 */
-		private getUniformBuffer(name: string) {
+        /**
+         * 处理获取索引缓冲事件
+         */
+        private onGetIndexBuffer(event: Context3DBufferEvent) {
 
-			var uniformBuffer = this.uniforms[name];
-			if (!uniformBuffer) {
-				uniformBuffer = this.uniforms[name] = new UniformBuffer();
-				uniformBuffer.name = name;
-				this.addComponent(uniformBuffer);
-			}
-			return uniformBuffer;
-		}
+            var eventData: GetIndexBufferEventData = event.data;
+            eventData.buffer = eventData.buffer || this.indexBuffer;
+        }
+
+		/**
+         * 处理获取属性缓冲事件
+         */
+        private onGetAttributeBuffer(event: Context3DBufferEvent) {
+
+            var eventData: GetAttributeBufferEventData = event.data;
+			eventData.buffer = eventData.buffer || this.attributes[eventData.name];
+        }
+
+		/**
+         * 处理获取缓冲事件
+         */
+        private onGetUniformBuffer(event: Context3DBufferEvent) {
+
+            var eventData: GetUniformBufferEventData = event.data;
+			eventData.buffer = eventData.buffer || this.uniforms[eventData.name];
+        }
+		
+		/**
+         * 处理获取缓冲事件
+         */
+        private onGetProgramBuffer(event: Context3DBufferEvent) {
+
+            var eventData: GetProgramBufferEventData = event.data;
+            eventData.buffer = eventData.buffer || this.programBuffer;
+        }
+
+    }
+
+	/**
+	 * 索引缓冲
+	 */
+    export class IndexBuffer {
+
+        /**
+         * 索引数据
+         */
+        indices: Uint16Array;
+
+        /**
+         * 绘制
+         * @param context3D    3D渲染环境
+         */
+        draw(context3D: WebGLRenderingContext) {
+
+            var indexBuffer = Context3DBufferCenter.getInstance(context3D)//
+                .getIndexBuffer(this.indices);
+
+            var count = this.indices.length;
+            context3D.bindBuffer(context3D.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            context3D.drawElements(context3D.TRIANGLES, count, context3D.UNSIGNED_SHORT, 0);
+        }
+    }
+
+	/**
+	 * 属性缓冲
+	 * @author feng 2014-8-14
+	 */
+    export class AttributeBuffer {
+
+        /**
+         * 属性缓冲名称
+         */
+        name: string;
+
+        /** 顶点数据 */
+        data: Float32Array;
+
+        /** 与每个顶点关联的 32 位（4 字节）数据值的数量。 */
+        size: number;
+
+        /**
+         * 激活缓冲
+         * @param context3D     3D渲染环境
+         * @param location      缓冲gpu地址
+         */
+        public active(context3D: WebGLRenderingContext, location: number) {
+
+            var squareVerticesBuffer = Context3DBufferCenter.getInstance(context3D)//
+                .getVABuffer(this.data);
+
+            context3D.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, squareVerticesBuffer);
+            context3D.vertexAttribPointer(location, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
+        }
+    }
+
+	/**
+     * 常量缓冲
+     */
+    export class UniformBuffer {
+
+        /**
+         * 常量缓冲名称
+         */
+        name: string;
+
+        matrix: Matrix3D;
+
+        /**
+         * 激活缓冲
+         * @param context3D     3D渲染环境
+         * @param location      缓冲gpu地址
+         */
+        public active(context3D: WebGLRenderingContext, location: WebGLUniformLocation) {
+
+            context3D.uniformMatrix4fv(location, false, this.matrix.rawData);
+        }
     }
 }
