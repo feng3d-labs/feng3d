@@ -2,6 +2,7 @@ module me.feng3d {
 
     /**
      * 3D对象缓冲管理者
+     * @author feng 2016-06-20
      */
     export class Object3DBufferManager {
 

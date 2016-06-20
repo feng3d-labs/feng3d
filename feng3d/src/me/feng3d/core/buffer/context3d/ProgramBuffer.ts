@@ -4,7 +4,7 @@ module me.feng3d {
      * 渲染程序缓存
      * @author feng 2016-05-09
      */
-    export class ProgramBuffer{
+    export class ProgramBuffer {
 
         private _vertexCode: string;
         private _fragmentCode: string;
@@ -78,6 +78,15 @@ module me.feng3d {
                     context3D.enableVertexAttribArray(element.location);
                 }
             }
+            return attributes;
+        }
+
+        /**
+         * 获取属性列表
+         */
+        getAttributes() {
+
+            var attributes: { [name: string]: { type: string } } = ProgramBuffer.getAttributes(this._vertexCode);
             return attributes;
         }
 

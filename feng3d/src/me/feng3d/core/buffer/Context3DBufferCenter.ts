@@ -2,6 +2,7 @@ module me.feng3d {
 
     /**
      * 3D上下文缓冲中心
+     * @author feng 2016-06-20
      */
     export class Context3DBufferCenter {
 

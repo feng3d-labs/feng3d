@@ -2,6 +2,7 @@ module me.feng3d {
 
     /**
      * 3D对象缓冲
+     * @author feng 2016-06-20
      */
     export class Object3DBuffer {
 
@@ -21,29 +22,28 @@ module me.feng3d {
         indexBuffer: IndexBuffer;
 
         /**
-         * 渲染程序缓存
-         */
-        programBuffer: ProgramBuffer;
-
-        /**
-         * 属性数据列表
-         */
-        private attributes: { [name: string]: { type: string, location?: number, buffer?: AttributeBuffer } };
-
-        /**
          * 常量数据列表
          */
         private uniforms: { [name: string]: { type: string, location?: WebGLUniformLocation, buffer?: UniformBuffer } };
 
+        /**
+         * 渲染数据
+         */
+        private renderData: Object3DRenderData;
+
         constructor(context3D: WebGLRenderingContext, object3D: Object3D) {
             this.context3D = context3D;
             this.object3D = object3D;
+
+            this.renderData = new Object3DRenderData(object3D);
         }
 
         /**
          * 激活缓冲
          */
         active() {
+
+            this.renderData.prepare();
 
             this.activeProgram();
             this.activeAttributes();
@@ -56,12 +56,7 @@ module me.feng3d {
          */
         public activeProgram() {
 
-            //从Object3D中获取顶点缓冲
-            var eventData: GetProgramBufferEventData = { buffer: null };
-            this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_PROGRAMBUFFER, eventData), Number.MAX_VALUE);
-            assert(eventData.buffer != null);
-            this.programBuffer = eventData.buffer;
-            this.programBuffer.active(this.context3D);
+            this.renderData.programBuffer.active(this.context3D);
         }
 
         /**
@@ -69,34 +64,19 @@ module me.feng3d {
          */
         private activeAttributes() {
 
-            if (this.attributes == null) {
-                this.attributes = this.programBuffer.getAttribLocations(this.context3D);
-                this.prepareAttributeBuffers(this.attributes);
-            }
+            var attributes = this.renderData.attributes;
+            var locations = this.renderData.programBuffer.getAttribLocations(this.context3D);
 
-            for (var name in this.attributes) {
-                if (this.attributes.hasOwnProperty(name)) {
-                    var element = this.attributes[name];
+            for (var name in locations) {
+                if (locations.hasOwnProperty(name)) {
+                    var element = locations[name];
+                    var buffer = attributes[name].buffer;
+
                     var squareVerticesBuffer = Context3DBufferCenter.getInstance(this.context3D)//
-                        .getVABuffer(element.buffer.data);
+                        .getVABuffer(buffer.data);
                     this.context3D.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, squareVerticesBuffer);
                     this.context3D.vertexAttribPointer(element.location, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
                 }
-            }
-        }
-
-        /**
-         * 准备顶点缓冲列表
-         */
-        private prepareAttributeBuffers(attributes: { [name: string]: { buffer?: AttributeBuffer } }) {
-
-            for (var name in attributes) {
-                //从Object3D中获取顶点缓冲
-                var eventData: GetAttributeBufferEventData = { name: name, buffer: null };
-                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData), Number.MAX_VALUE);
-                assert(eventData.buffer != null);
-
-                attributes[name].buffer = eventData.buffer;
             }
         }
 
@@ -107,12 +87,12 @@ module me.feng3d {
 
             if (this.uniforms == null) {
 
-                this.uniforms = this.programBuffer.getUniforms(this.context3D);
+                this.uniforms = this.renderData.programBuffer.getUniforms(this.context3D);
                 this.prepareUniformBuffers(this.uniforms);
             }
 
             //获取属性在gpu中地址
-            var shaderProgram = this.programBuffer.getShaderProgram(this.context3D);
+            var shaderProgram = this.renderData.programBuffer.getShaderProgram(this.context3D);
 
             for (var name in this.uniforms) {
                 if (this.uniforms.hasOwnProperty(name)) {
