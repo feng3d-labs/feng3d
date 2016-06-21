@@ -46,13 +46,13 @@ module me.feng3d {
             return renderData;
         }
 
-        private renderBufferMap = new Map<WebGLRenderingContext, Object3DBuffer>();
+        private renderBufferMap = new Map<WebGLRenderingContext, Object3DRenderBuffer>();
 
         getRenderBuffer(context3D: WebGLRenderingContext) {
 
             var renderBuffer = this.renderBufferMap.get(context3D);
             if (!renderBuffer) {
-                renderBuffer = new Object3DBuffer(context3D, this);
+                renderBuffer = new Object3DRenderBuffer(context3D, this);
                 this.renderBufferMap.push(context3D, renderBuffer);
             }
             return renderBuffer;
