@@ -66,9 +66,9 @@
         "src/me/feng3d/core/buffer/Context3DBufferID.ts",
         "src/me/feng3d/core/buffer/context3d/Context3DBuffer.ts",
         "src/me/feng3d/core/buffer/context3d/ProgramBuffer.ts",
-        "src/me/feng3d/core/buffer/Object3DRenderData.ts",
+        "src/me/feng3d/core/buffer/RenderData.ts",
         //
-        "src/me/feng3d/core/buffer/Object3DRenderBuffer.ts",
+        "src/me/feng3d/core/buffer/RenderBuffer.ts",
         "src/me/feng3d/core/buffer/Context3DBufferCenter.ts",
         "src/me/feng3d/core/buffer/events/Context3DBufferEvent.ts",
         //材质

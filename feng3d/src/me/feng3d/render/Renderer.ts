@@ -63,7 +63,7 @@ module me.feng3d {
             context3DBuffer.mapUniformBuffer(Context3DBufferID.uPMatrix, perspectiveMatrix);
 
             //绘制对象
-            var renderData = Object3DRenderData.getInstance(object3D);
+            var renderData = RenderData.getInstance(object3D);
             var object3DBuffer = renderData.getRenderBuffer(this.context3D);
             object3DBuffer.active();
 

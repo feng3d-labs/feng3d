@@ -4,7 +4,7 @@ module me.feng3d {
      * 3D对象渲染数据
      * @author feng 2016-06-20
      */
-    export class Object3DRenderData {
+    export class RenderData {
 
         object3D: Object3D
 
@@ -31,7 +31,7 @@ module me.feng3d {
         /**
          * 渲染数据字典
          */
-        private static renderDataMap = new Map<Object3D, Object3DRenderData>();
+        private static renderDataMap = new Map<Object3D, RenderData>();
 
         /**
          * 获取3D对象渲染数据实例
@@ -40,19 +40,19 @@ module me.feng3d {
 
             var renderData = this.renderDataMap.get(object3D);
             if (!renderData) {
-                renderData = new Object3DRenderData(object3D);
+                renderData = new RenderData(object3D);
                 this.renderDataMap.push(object3D, renderData);
             }
             return renderData;
         }
 
-        private renderBufferMap = new Map<WebGLRenderingContext, Object3DRenderBuffer>();
+        private renderBufferMap = new Map<WebGLRenderingContext, RenderBuffer>();
 
         getRenderBuffer(context3D: WebGLRenderingContext) {
 
             var renderBuffer = this.renderBufferMap.get(context3D);
             if (!renderBuffer) {
-                renderBuffer = new Object3DRenderBuffer(context3D, this);
+                renderBuffer = new RenderBuffer(context3D, this);
                 this.renderBufferMap.push(context3D, renderBuffer);
             }
             return renderBuffer;

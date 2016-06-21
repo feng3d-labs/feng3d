@@ -4,7 +4,7 @@ module me.feng3d {
      * 3D对象缓冲
      * @author feng 2016-06-20
      */
-    export class Object3DRenderBuffer {
+    export class RenderBuffer {
 
         /**
          * 3D上下文
@@ -14,9 +14,9 @@ module me.feng3d {
         /**
          * 渲染数据
          */
-        private renderData: Object3DRenderData;
+        private renderData: RenderData;
 
-        constructor(context3D: WebGLRenderingContext, renderData: Object3DRenderData) {
+        constructor(context3D: WebGLRenderingContext, renderData: RenderData) {
 
             this.context3D = context3D;
             this.renderData = renderData;
