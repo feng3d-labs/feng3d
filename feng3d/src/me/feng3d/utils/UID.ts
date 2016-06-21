@@ -4,7 +4,7 @@ module me.feng3d {
      * 获取对象UID
      * @author feng 2016-05-08
      */
-    export function getUID(object: any) {
+    export function getUID(object: { __uid__?: string }) {
 
         if (typeof object != "object") {
             throw `无法获取${object}的UID`;
@@ -30,9 +30,9 @@ module me.feng3d {
 
         var className = getClassName(object);
         var uid = [//
-            className,
-            StringUtils.getString(~~uidStart[className], 8, "0", false),
-            Date.now()
+            className,//类名
+            StringUtils.getString(~~uidStart[className], 8, "0", false),//类id
+            Date.now(),//时间戳
         ].join("-");
 
         uidStart[className] = ~~uidStart[className] + 1;
@@ -42,7 +42,7 @@ module me.feng3d {
     /**
      * uid自增长编号
      */
-    var uidStart = {};
+    var uidStart: { [className: string]: number } = {};
 
     /**
      * uid属性名称

@@ -12,20 +12,14 @@ module me.feng3d {
         private context3D: WebGLRenderingContext;
 
         /**
-         * 渲染对象
-         */
-        private object3D: Object3D;
-
-        /**
          * 渲染数据
          */
         private renderData: Object3DRenderData;
 
-        constructor(context3D: WebGLRenderingContext, object3D: Object3D) {
-            this.context3D = context3D;
-            this.object3D = object3D;
+        constructor(context3D: WebGLRenderingContext, renderData: Object3DRenderData) {
 
-            this.renderData = new Object3DRenderData(object3D);
+            this.context3D = context3D;
+            this.renderData = renderData;
         }
 
         /**

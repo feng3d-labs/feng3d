@@ -29,6 +29,36 @@ module me.feng3d {
         uniforms: { [name: string]: { type: string, buffer?: UniformBuffer } };
 
         /**
+         * 渲染数据字典
+         */
+        private static renderDataMap = new Map<Object3D, Object3DRenderData>();
+
+        /**
+         * 获取3D对象渲染数据实例
+         */
+        static getInstance(object3D: Object3D) {
+
+            var renderData = this.renderDataMap.get(object3D);
+            if (!renderData) {
+                renderData = new Object3DRenderData(object3D);
+                this.renderDataMap.push(object3D, renderData);
+            }
+            return renderData;
+        }
+
+        private renderBufferMap = new Map<WebGLRenderingContext, Object3DBuffer>();
+
+        getRenderBuffer(context3D: WebGLRenderingContext) {
+
+            var renderBuffer = this.renderBufferMap.get(context3D);
+            if (!renderBuffer) {
+                renderBuffer = new Object3DBuffer(context3D, this);
+                this.renderBufferMap.push(context3D, renderBuffer);
+            }
+            return renderBuffer;
+        }
+
+        /**
          * 构建3D对象渲染数据
          */
         constructor(object3D: Object3D) {
