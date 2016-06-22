@@ -6,6 +6,9 @@ module me.feng3d {
      */
     export function getUID(object: { __uid__?: string }) {
 
+        //uid属性名称
+        var uidKey = "__uid__";
+
         if (typeof object != "object") {
             throw `无法获取${object}的UID`;
         }
@@ -43,9 +46,4 @@ module me.feng3d {
      * uid自增长编号
      */
     var uidStart: { [className: string]: number } = {};
-
-    /**
-     * uid属性名称
-     */
-    var uidKey = "__uid__";
 }
