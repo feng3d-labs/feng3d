@@ -57,10 +57,7 @@ module me.feng3d {
          */
         getShaderProgram(context3D: WebGLRenderingContext): WebGLProgram {
 
-            if (this._shaderProgram == null) {
-                this.init(context3D);
-            }
-            return this._shaderProgram;
+            return this._shaderProgram = this._shaderProgram || context3DPool.getWebGLProgram(context3D, this._vertexCode, this._fragmentCode);
         }
 
         /**
@@ -68,7 +65,7 @@ module me.feng3d {
          */
         getAttribLocations(context3D: WebGLRenderingContext) {
 
-            var attributes: { [name: string]: { type: string, location?: number } } = ProgramBuffer.getAttributes(this._vertexCode);
+            var attributes: { [name: string]: { type: string, location?: number } } = ShaderCodeUtils.getAttributes(this._vertexCode);
             //获取属性在gpu中地址
             var shaderProgram = this.getShaderProgram(context3D);
             for (var name in attributes) {
@@ -86,7 +83,7 @@ module me.feng3d {
          */
         getAttributes() {
 
-            var attributes: { [name: string]: { type: string } } = ProgramBuffer.getAttributes(this._vertexCode);
+            var attributes: { [name: string]: { type: string } } = ShaderCodeUtils.getAttributes(this._vertexCode);
             return attributes;
         }
 
@@ -95,80 +92,7 @@ module me.feng3d {
          */
         getUniforms() {
 
-            var uniforms: { [name: string]: { type: string } } = ProgramBuffer.getUniforms(this._vertexCode);
-            return uniforms;
-        }
-
-        /**
-         * 初始化
-         */
-        private init(context3D: WebGLRenderingContext) {
-
-            var vertexShader = this.getShader(context3D, this._vertexCode, WebGLRenderingContext.VERTEX_SHADER);
-            var fragmentShader = this.getShader(context3D, this._fragmentCode, WebGLRenderingContext.FRAGMENT_SHADER);
-            // 创建渲染程序
-            var shaderProgram = this._shaderProgram = context3D.createProgram();
-            context3D.attachShader(shaderProgram, vertexShader);
-            context3D.attachShader(shaderProgram, fragmentShader);
-            context3D.linkProgram(shaderProgram);
-
-            // 渲染程序创建失败时给出弹框
-            if (!context3D.getProgramParameter(shaderProgram, context3D.LINK_STATUS)) {
-                alert("无法初始化渲染程序。");
-            }
-        }
-
-        /**
-         * 获取渲染程序
-         * @param code      渲染代码
-         * @param type      渲染代码类型
-         */
-        private getShader(context3D: WebGLRenderingContext, code: string, type: number) {
-
-            var shader = context3D.createShader(type);
-            context3D.shaderSource(shader, code);
-            context3D.compileShader(shader);
-            if (!context3D.getShaderParameter(shader, context3D.COMPILE_STATUS)) {
-                alert("编译渲染程序是发生错误: " + context3D.getShaderInfoLog(shader));
-                return null;
-            }
-
-            return shader;
-        }
-
-        /**
-         * 获取程序属性列表
-         */
-        static getAttributes(code: string) {
-
-            var attributeReg = /attribute\s+(\w+)\s+(\w+)/g;
-            var result = attributeReg.exec(code);
-
-            var attributes: { [name: string]: { type: string } } = {};//属性{类型，名称}
-            while (result) {
-                attributes[result[2]] = { type: result[1] };
-                result = attributeReg.exec(code);
-            }
-
-            return attributes;
-        }
-
-        /**
-         * 获取程序常量列表
-         */
-        static getUniforms(code: string) {
-
-            var uniforms: { [name: string]: { type: string } } = {};
-
-            var uniformReg = /uniform\s+(\w+)\s+(\w+)/g;
-            var result = uniformReg.exec(code);
-
-            while (result) {
-
-                uniforms[result[2]] = { type: result[1] };
-                result = uniformReg.exec(code);
-            }
-
+            var uniforms: { [name: string]: { type: string } } = ShaderCodeUtils.getUniforms(this._vertexCode);
             return uniforms;
         }
     }

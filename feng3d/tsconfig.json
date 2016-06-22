@@ -39,6 +39,7 @@
         "src/me/feng3d/mathlib/Vector3D.ts",
         "src/me/feng3d/mathlib/Matrix3D.ts",
         //
+        "src/me/feng3d/core/Context3DPool.ts",
         "src/me/feng3d/core/Space3D.ts",
         "src/me/feng3d/core/Object3D.ts",
         "src/me/feng3d/core/View3D.ts",
@@ -66,6 +67,7 @@
         "src/me/feng3d/core/buffer/Context3DBufferID.ts",
         "src/me/feng3d/core/buffer/context3d/Context3DBuffer.ts",
         "src/me/feng3d/core/buffer/context3d/ProgramBuffer.ts",
+        "src/me/feng3d/core/buffer/context3d/ShaderCodeUtils.ts",
         "src/me/feng3d/core/buffer/RenderData.ts",
         //
         "src/me/feng3d/core/buffer/RenderBuffer.ts",
