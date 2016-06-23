@@ -39,7 +39,7 @@
         "src/me/feng3d/mathlib/Vector3D.ts",
         "src/me/feng3d/mathlib/Matrix3D.ts",
         //
-        "src/me/feng3d/core/Context3DPool.ts",
+        "src/me/feng3d/core/RenderBufferPool.ts",
         "src/me/feng3d/core/Space3D.ts",
         "src/me/feng3d/core/Object3D.ts",
         "src/me/feng3d/core/View3D.ts",
@@ -71,7 +71,6 @@
         "src/me/feng3d/core/buffer/RenderData.ts",
         //
         "src/me/feng3d/core/buffer/RenderBuffer.ts",
-        "src/me/feng3d/core/buffer/Context3DBufferCenter.ts",
         "src/me/feng3d/core/buffer/events/Context3DBufferEvent.ts",
         //材质
         "src/me/feng3d/materials/Material.ts",

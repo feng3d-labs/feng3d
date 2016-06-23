@@ -56,8 +56,8 @@ module me.feng3d {
                     var element = locations[name];
                     var buffer = attributes[name].buffer;
 
-                    var squareVerticesBuffer = Context3DBufferCenter.getInstance(this.context3D)//
-                        .getVABuffer(buffer.data);
+                    var squareVerticesBuffer = context3DPool.getVABuffer(this.context3D, buffer.data);
+
                     this.context3D.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, squareVerticesBuffer);
                     this.context3D.vertexAttribPointer(element.location, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
                 }
@@ -90,8 +90,7 @@ module me.feng3d {
 
             var indexBuffer = this.renderData.indexBuffer;
 
-            var buffer = Context3DBufferCenter.getInstance(this.context3D)//
-                .getIndexBuffer(indexBuffer.indices);
+            var buffer = context3DPool.getIndexBuffer(this.context3D, indexBuffer.indices);
 
             var count = indexBuffer.indices.length;
             this.context3D.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, buffer);

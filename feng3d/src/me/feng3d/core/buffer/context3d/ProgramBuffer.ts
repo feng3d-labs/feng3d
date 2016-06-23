@@ -9,8 +9,6 @@ module me.feng3d {
         private _vertexCode: string;
         private _fragmentCode: string;
 
-        private _shaderProgram: WebGLProgram;
-
         /**
          * 顶点渲染程序代码
          */
@@ -57,7 +55,7 @@ module me.feng3d {
          */
         getShaderProgram(context3D: WebGLRenderingContext): WebGLProgram {
 
-            return this._shaderProgram = this._shaderProgram || context3DPool.getWebGLProgram(context3D, this._vertexCode, this._fragmentCode);
+            return context3DPool.getWebGLProgram(context3D, this._vertexCode, this._fragmentCode);
         }
 
         /**
