@@ -44,20 +44,6 @@ module me.feng3d {
 
         }
 
-        active(context3D: WebGLRenderingContext) {
-
-            var shaderProgram = this.getShaderProgram(context3D);
-            context3D.useProgram(shaderProgram);
-        }
-
-        /**
-         * 渲染程序
-         */
-        getShaderProgram(context3D: WebGLRenderingContext): WebGLProgram {
-
-            return context3DPool.getWebGLProgram(context3D, this._vertexCode, this._fragmentCode);
-        }
-
         /**
          * 获取属性gpu地址
          */
@@ -65,7 +51,7 @@ module me.feng3d {
 
             var attributes: { [name: string]: { type: string, location?: number } } = ShaderCodeUtils.getAttributes(this._vertexCode);
             //获取属性在gpu中地址
-            var shaderProgram = this.getShaderProgram(context3D);
+            var shaderProgram = context3DPool.getWebGLProgram(context3D, this._vertexCode, this._fragmentCode);
             for (var name in attributes) {
                 if (attributes.hasOwnProperty(name)) {
                     var element = attributes[name];

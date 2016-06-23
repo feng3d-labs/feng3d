@@ -40,7 +40,9 @@ module me.feng3d {
          */
         public activeProgram() {
 
-            this.renderData.programBuffer.active(this.context3D);
+            var programBuffer = this.renderData.programBuffer;
+            var shaderProgram = context3DPool.getWebGLProgram(this.context3D, programBuffer.vertexCode, programBuffer.fragmentCode);
+            this.context3D.useProgram(shaderProgram);
         }
 
         /**
@@ -72,7 +74,8 @@ module me.feng3d {
             var uniforms = this.renderData.uniforms;
 
             //获取属性在gpu中地址
-            var shaderProgram = this.renderData.programBuffer.getShaderProgram(this.context3D);
+            var programBuffer = this.renderData.programBuffer;
+            var shaderProgram = context3DPool.getWebGLProgram(this.context3D, programBuffer.vertexCode, programBuffer.fragmentCode);
 
             for (var name in uniforms) {
                 if (uniforms.hasOwnProperty(name)) {
