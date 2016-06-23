@@ -51,8 +51,8 @@ module me.feng3d {
          */
         static getWebGLProgram(context3D: WebGLRenderingContext, vertexCode: string, fragmentCode: string) {
 
-            var vertexShader = ShaderCodeUtils.getVertexShader(context3D, vertexCode);
-            var fragmentShader = ShaderCodeUtils.getFragmentShader(context3D, fragmentCode);
+            var vertexShader = context3DPool.getVertexShader(context3D, vertexCode);
+            var fragmentShader = context3DPool.getFragmentShader(context3D, fragmentCode);
             // 创建渲染程序
             var shaderProgram = context3D.createProgram();
             context3D.attachShader(shaderProgram, vertexShader);
