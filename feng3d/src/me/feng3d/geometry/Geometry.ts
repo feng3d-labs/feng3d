@@ -4,7 +4,7 @@ module me.feng3d {
      * 几何体
      * @author feng 2016-04-28
      */
-    export class Geometry extends Component {
+    export class Geometry extends RenderDataHolder {
 
         private _vaIdList: string[] = [];
         /** 顶点属性数据步长字典 */
@@ -13,13 +13,6 @@ module me.feng3d {
         private vaDataObj: { [key: string]: Float32Array; } = {};
 
         private _indices: Uint16Array;
-
-        /**
-         * Context3D数据缓冲
-         */
-        get context3DBuffer(): Context3DBuffer {
-            return this.getOrCreateComponentByClass(Context3DBuffer);
-        }
 
         /**
 		 * 创建一个几何体
@@ -42,7 +35,7 @@ module me.feng3d {
         public set indices(value: Uint16Array) {
 
             this._indices = value;
-            this.context3DBuffer.mapIndexBuffer(value);
+            this.mapIndexBuffer(value);
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_INDEX_DATA));
         }
 
@@ -66,7 +59,7 @@ module me.feng3d {
 
             this.strideObj[vaId] = stride;
             this.vaDataObj[vaId] = data;
-            this.context3DBuffer.mapAttributeBuffer(vaId, data, stride);
+            this.mapAttributeBuffer(vaId, data, stride);
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
         }
 

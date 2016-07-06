@@ -1,15 +1,15 @@
 module me.feng3d {
 
     /**
-	 * Context3D数据缓冲
+	 * 渲染数据拥有者
 	 * @author feng 2016-6-7
 	 */
-    export class Context3DBuffer extends Component {
+    export class RenderDataHolder extends Component {
 
-		private indexBuffer: IndexBuffer;
+		private indexBuffer: IndexRenderData;
 		private programBuffer: ProgramBuffer;
-		private attributes: { [name: string]: AttributeBuffer } = {};
-		private uniforms: { [name: string]: UniformBuffer } = {};
+		private attributes: { [name: string]: AttributeRenderData } = {};
+		private uniforms: { [name: string]: UniformRenderData } = {};
 
 		/**
 		 * 创建Context3D数据缓冲
@@ -28,7 +28,7 @@ module me.feng3d {
 		 * 映射索引缓冲
 		 */
 		mapIndexBuffer(value: Uint16Array) {
-			var indexBuffer = this.indexBuffer = this.indexBuffer || new IndexBuffer();
+			var indexBuffer = this.indexBuffer = this.indexBuffer || new IndexRenderData();
 			indexBuffer.indices = value;
 		}
 
@@ -37,7 +37,7 @@ module me.feng3d {
 		 */
 		mapAttributeBuffer(name: string, value: Uint16Array, stride: number) {
 
-			var attributeBuffer = this.attributes[name] = this.attributes[name] || new AttributeBuffer();
+			var attributeBuffer = this.attributes[name] = this.attributes[name] || new AttributeRenderData();
 			attributeBuffer.name = name;
 			attributeBuffer.data = value;
 			attributeBuffer.size = stride;
@@ -60,7 +60,7 @@ module me.feng3d {
 		 */
 		mapUniformBuffer(name: string, data: Matrix3D) {
 
-			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformBuffer();
+			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformRenderData();
 			uniformBuffer.name = name;
 			uniformBuffer.matrix = data;
 		}
@@ -104,9 +104,9 @@ module me.feng3d {
     }
 
 	/**
-	 * 索引缓冲
+	 * 索引渲染数据
 	 */
-    export class IndexBuffer {
+    export class IndexRenderData {
 
         /**
          * 索引数据
@@ -115,30 +115,30 @@ module me.feng3d {
     }
 
 	/**
-	 * 属性缓冲
+	 * 属性渲染数据
 	 * @author feng 2014-8-14
 	 */
-    export class AttributeBuffer {
+    export class AttributeRenderData {
 
         /**
-         * 属性缓冲名称
+         * 属性名称
          */
         name: string;
 
-        /** 顶点数据 */
+        /** 属性数据 */
         data: Float32Array;
 
-        /** 与每个顶点关联的 32 位（4 字节）数据值的数量。 */
+        /** 属性数据长度 */
         size: number;
     }
 
 	/**
-     * 常量缓冲
+     * 常量渲染数据
      */
-    export class UniformBuffer {
+    export class UniformRenderData {
 
         /**
-         * 常量缓冲名称
+         * 常量名称
          */
         name: string;
 

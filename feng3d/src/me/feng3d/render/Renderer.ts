@@ -52,7 +52,7 @@ module me.feng3d {
          */
         private drawObject3D(object3D: Object3D) {
 
-            var context3DBuffer = object3D.getOrCreateComponentByClass(Context3DBuffer);
+            var context3DBuffer = object3D.getOrCreateComponentByClass(RenderDataHolder);
 
             //模型矩阵
             var mvMatrix = object3D.space3D.transform3D;

@@ -11,7 +11,7 @@ module me.feng3d {
         /**
          * 顶点索引缓冲
          */
-        indexBuffer: IndexBuffer;
+        indexBuffer: IndexRenderData;
 
         /**
          * 渲染程序缓存
@@ -21,12 +21,12 @@ module me.feng3d {
         /**
          * 属性数据列表
          */
-        attributes: { [name: string]: { type: string, buffer?: AttributeBuffer } };
+        attributes: { [name: string]: { type: string, buffer?: AttributeRenderData } };
 
         /**
          * 常量数据列表
          */
-        uniforms: { [name: string]: { type: string, buffer?: UniformBuffer } };
+        uniforms: { [name: string]: { type: string, buffer?: UniformRenderData } };
 
         /**
          * 渲染数据字典
