@@ -31,7 +31,7 @@ void main(void) {
         constructor() {
             super();
             this.pass = new MaterialPass();
-            this.mapProgramBuffer(this.vertexShaderStr, this.fragmentShaderStr);
+            this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
         }
     }
 }

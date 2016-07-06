@@ -7,9 +7,9 @@ module me.feng3d {
     export class RenderDataHolder extends Component {
 
 		private indexBuffer: IndexRenderData;
-		private programBuffer: ProgramBuffer;
+		private programBuffer: ProgramRenderData;
 		private attributes: { [name: string]: AttributeRenderData } = {};
-		private uniforms: { [name: string]: UniformRenderData } = {};
+		private uniforms: { [name: string]: UniformMatrix4fvRenderData } = {};
 
 		/**
 		 * 创建Context3D数据缓冲
@@ -48,22 +48,34 @@ module me.feng3d {
          * @param vertexCode        顶点渲染程序代码
          * @param fragmentCode      片段渲染程序代码
          */
-        mapProgramBuffer(vertexCode: string, fragmentCode: string) {
+        mapProgram(vertexCode: string, fragmentCode: string) {
 
-			var programBuffer = this.programBuffer = this.programBuffer || new ProgramBuffer();
+			var programBuffer = this.programBuffer = this.programBuffer || new ProgramRenderData();
 			programBuffer.vertexCode = vertexCode;
 			programBuffer.fragmentCode = fragmentCode;
 		}
 
 		/**
-		 * 映射常量缓冲
+		 * 映射常量4*4矩阵
 		 */
-		mapUniformBuffer(name: string, data: Matrix3D) {
+		mapUniformMatrix4fv(name: string, data: Matrix3D) {
 
-			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformRenderData();
+			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformMatrix4fvRenderData();
 			uniformBuffer.name = name;
 			uniformBuffer.matrix = data;
 		}
+
+		// /**
+		//  * 映射常量缓冲
+		//  */
+		// mapUniformBuffer(name: string, data: Matrix3D) {
+
+		// 	var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformRenderData();
+		// 	uniformBuffer.name = name;
+		// 	uniformBuffer.matrix = data;
+		// }
+
+
 
         /**
          * 处理获取索引缓冲事件
@@ -133,9 +145,9 @@ module me.feng3d {
     }
 
 	/**
-     * 常量渲染数据
+     * 常量4*4矩阵渲染数据
      */
-    export class UniformRenderData {
+    export class UniformMatrix4fvRenderData {
 
         /**
          * 常量名称

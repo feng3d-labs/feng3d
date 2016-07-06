@@ -16,7 +16,7 @@ module me.feng3d {
         /**
          * 渲染程序缓存
          */
-        programBuffer: ProgramBuffer;
+        programBuffer: ProgramRenderData;
 
         /**
          * 属性数据列表
@@ -26,7 +26,7 @@ module me.feng3d {
         /**
          * 常量数据列表
          */
-        uniforms: { [name: string]: { type: string, buffer?: UniformRenderData } };
+        uniforms: { [name: string]: { type: string, buffer?: UniformMatrix4fvRenderData } };
 
         /**
          * 渲染数据字典

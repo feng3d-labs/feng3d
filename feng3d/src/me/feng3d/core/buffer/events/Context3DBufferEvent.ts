@@ -62,7 +62,7 @@ module me.feng3d {
         /**
          * 渲染程序缓存
          */
-        buffer: ProgramBuffer;
+        buffer: ProgramRenderData;
     }
     
     /**
@@ -78,6 +78,6 @@ module me.feng3d {
         /**
          * 常量缓存
          */
-        buffer: UniformRenderData;
+        buffer: UniformMatrix4fvRenderData;
     }
 }

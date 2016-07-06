@@ -68,7 +68,7 @@
         "src/me/feng3d/primitives/createCamera.ts",
         //Context3D缓冲
         "src/me/feng3d/core/buffer/Context3DBufferID.ts",
-        "src/me/feng3d/core/buffer/context3d/ProgramBuffer.ts",
+        "src/me/feng3d/core/buffer/context3d/ProgramRenderData.ts",
         "src/me/feng3d/core/buffer/context3d/ShaderCodeUtils.ts",
         //
         "src/me/feng3d/core/buffer/events/Context3DBufferEvent.ts",

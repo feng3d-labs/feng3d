@@ -26,8 +26,8 @@ module me.feng3d {
             super();
             this.color = color;
             this.alpha = alpha;
-        }
 
-        
+            //  this.mapUniformBuffer();
+        }
     }
 }

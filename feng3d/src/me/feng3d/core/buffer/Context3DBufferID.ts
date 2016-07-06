@@ -1,7 +1,7 @@
 module me.feng3d {
 
     /**
-     * 3D缓冲编号
+     * 渲染数据编号
      * @author feng 2016-06-20
      */
     export class Context3DBufferID {
