@@ -105,7 +105,7 @@ module me.feng3d {
          */
         private prepareAttributes() {
 
-            this.attributes = this.programBuffer.getAttributes();
+            this.attributes = ShaderCodeUtils.getAttributes(this.programBuffer.vertexCode);
             for (var name in this.attributes) {
                 //从Object3D中获取顶点缓冲
                 var eventData: GetAttributeBufferEventData = { name: name, buffer: null };
@@ -121,7 +121,7 @@ module me.feng3d {
          */
         private prepareUniforms() {
 
-            this.uniforms = this.programBuffer.getUniforms();
+            this.uniforms = ShaderCodeUtils.getUniforms(this.programBuffer.vertexCode);
 
             for (var name in this.uniforms) {
                 //从Object3D中获取顶点缓冲

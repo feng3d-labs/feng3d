@@ -41,5 +41,23 @@ module me.feng3d {
 
             return uniforms;
         }
+
+        /**
+         * 获取属性gpu地址
+         */
+        static getAttribLocations(context3D: WebGLRenderingContext,vertexCode:string,fragmentCode:string) {
+
+            var attributes: { [name: string]: { type: string, location?: number } } = ShaderCodeUtils.getAttributes(vertexCode);
+            //获取属性在gpu中地址
+            var shaderProgram = context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
+            for (var name in attributes) {
+                if (attributes.hasOwnProperty(name)) {
+                    var element = attributes[name];
+                    element.location = context3D.getAttribLocation(shaderProgram, name);
+                    context3D.enableVertexAttribArray(element.location);
+                }
+            }
+            return attributes;
+        }
     }
 }

@@ -51,7 +51,7 @@ module me.feng3d {
         private activeAttributes() {
 
             var attributes = this.renderData.attributes;
-            var locations = this.renderData.programBuffer.getAttribLocations(this.context3D);
+            var locations = ShaderCodeUtils.getAttribLocations(this.context3D, this.renderData.programBuffer.vertexCode, this.renderData.programBuffer.fragmentCode);
 
             for (var name in locations) {
                 if (locations.hasOwnProperty(name)) {
