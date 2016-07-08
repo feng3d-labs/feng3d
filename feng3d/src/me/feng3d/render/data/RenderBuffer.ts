@@ -1,7 +1,7 @@
 module me.feng3d {
 
     /**
-     * 3D对象缓冲
+     * 渲染缓冲
      * @author feng 2016-06-20
      */
     export class RenderBuffer {
@@ -16,6 +16,11 @@ module me.feng3d {
          */
         private renderData: RenderData;
 
+        /**
+         * 构建渲染缓冲
+         * @param context3D     3D环境
+         * @param renderData    渲染数据
+         */
         constructor(context3D: WebGLRenderingContext, renderData: RenderData) {
 
             this.context3D = context3D;
@@ -69,7 +74,7 @@ module me.feng3d {
         /**
          * 激活常量
          */
-        activeUniforms() {
+        private activeUniforms() {
 
             var uniforms = this.renderData.uniforms;
 
