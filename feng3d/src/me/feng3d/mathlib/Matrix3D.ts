@@ -559,10 +559,10 @@ module me.feng3d {
         public recompose(components: Vector3D[]): void {
 
             this.identity();
+            this.appendScale(components[2].x, components[2].y, components[2].z);
             this.appendRotation(components[1].x * MathConsts.RADIANS_TO_DEGREES, Vector3D.X_AXIS);
             this.appendRotation(components[1].y * MathConsts.RADIANS_TO_DEGREES, Vector3D.Y_AXIS);
             this.appendRotation(components[1].z * MathConsts.RADIANS_TO_DEGREES, Vector3D.Z_AXIS);
-            this.appendScale(components[2].x, components[2].y, components[2].z);
             this.appendTranslation(components[0].x, components[0].y, components[0].z);
         }
 
