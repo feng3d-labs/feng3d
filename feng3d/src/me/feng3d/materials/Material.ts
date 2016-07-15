@@ -4,7 +4,7 @@ module me.feng3d {
      * 材质
      * @author feng 2016-05-02
      */
-    export class Material extends Component {
+    export class Material extends RenderDataHolder {
 
 
         vertexShaderStr = //
@@ -31,14 +31,7 @@ void main(void) {
         constructor() {
             super();
             this.pass = new MaterialPass();
-            this.context3DBuffer.mapProgramBuffer(this.vertexShaderStr, this.fragmentShaderStr);
-        }
-
-        /**
-         * Context3D数据缓冲
-         */
-        get context3DBuffer(): Context3DBuffer {
-            return this.getOrCreateComponentByClass(Context3DBuffer);
+            this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
         }
     }
 }

@@ -40,7 +40,7 @@ module me.feng3d {
         /**
          * 属性缓冲
          */
-        buffer: AttributeBuffer;
+        buffer: AttributeRenderData;
     }
 
     /**
@@ -51,7 +51,7 @@ module me.feng3d {
         /**
          * 索引缓冲
          */
-        buffer: IndexBuffer;
+        buffer: IndexRenderData;
     }
 
     /**
@@ -62,7 +62,7 @@ module me.feng3d {
         /**
          * 渲染程序缓存
          */
-        buffer: ProgramBuffer;
+        buffer: ProgramRenderData;
     }
     
     /**
@@ -78,6 +78,6 @@ module me.feng3d {
         /**
          * 常量缓存
          */
-        buffer: UniformBuffer;
+        buffer: UniformMatrix4fvRenderData;
     }
 }

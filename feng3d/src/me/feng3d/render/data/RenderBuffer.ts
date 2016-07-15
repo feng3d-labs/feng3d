@@ -1,7 +1,7 @@
 module me.feng3d {
 
     /**
-     * 3D对象缓冲
+     * 渲染缓冲
      * @author feng 2016-06-20
      */
     export class RenderBuffer {
@@ -16,6 +16,11 @@ module me.feng3d {
          */
         private renderData: RenderData;
 
+        /**
+         * 构建渲染缓冲
+         * @param context3D     3D环境
+         * @param renderData    渲染数据
+         */
         constructor(context3D: WebGLRenderingContext, renderData: RenderData) {
 
             this.context3D = context3D;
@@ -51,7 +56,7 @@ module me.feng3d {
         private activeAttributes() {
 
             var attributes = this.renderData.attributes;
-            var locations = this.renderData.programBuffer.getAttribLocations(this.context3D);
+            var locations = ShaderCodeUtils.getAttribLocations(this.context3D, this.renderData.programBuffer.vertexCode, this.renderData.programBuffer.fragmentCode);
 
             for (var name in locations) {
                 if (locations.hasOwnProperty(name)) {
@@ -69,7 +74,7 @@ module me.feng3d {
         /**
          * 激活常量
          */
-        activeUniforms() {
+        private activeUniforms() {
 
             var uniforms = this.renderData.uniforms;
 

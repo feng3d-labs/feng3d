@@ -52,18 +52,18 @@ module me.feng3d {
          */
         private drawObject3D(object3D: Object3D) {
 
-            var context3DBuffer = object3D.getOrCreateComponentByClass(Context3DBuffer);
+            var context3DBuffer = object3D.getOrCreateComponentByClass(RenderDataHolder);
 
             //模型矩阵
             var mvMatrix = object3D.space3D.transform3D;
-            context3DBuffer.mapUniformBuffer(Context3DBufferID.uMVMatrix, mvMatrix);
+            context3DBuffer.mapUniformMatrix4fv(RenderDataID.uMVMatrix, mvMatrix);
 
             //计算投影矩阵
             var perspectiveMatrix = this.camera.space3D.transform3D.clone();
             var camera = this.camera.getComponentByClass(Camera);
             perspectiveMatrix.invert();
             perspectiveMatrix.append(camera.projectionMatrix3D);
-            context3DBuffer.mapUniformBuffer(Context3DBufferID.uPMatrix, perspectiveMatrix);
+            context3DBuffer.mapUniformMatrix4fv(RenderDataID.uPMatrix, perspectiveMatrix);
 
             //绘制对象
             var renderData = RenderData.getInstance(object3D);

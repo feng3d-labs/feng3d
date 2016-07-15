@@ -11,22 +11,22 @@ module me.feng3d {
         /**
          * 顶点索引缓冲
          */
-        indexBuffer: IndexBuffer;
+        indexBuffer: IndexRenderData;
 
         /**
          * 渲染程序缓存
          */
-        programBuffer: ProgramBuffer;
+        programBuffer: ProgramRenderData;
 
         /**
          * 属性数据列表
          */
-        attributes: { [name: string]: { type: string, buffer?: AttributeBuffer } };
+        attributes: { [name: string]: { type: string, buffer?: AttributeRenderData } };
 
         /**
          * 常量数据列表
          */
-        uniforms: { [name: string]: { type: string, buffer?: UniformBuffer } };
+        uniforms: { [name: string]: { type: string, buffer?: UniformMatrix4fvRenderData } };
 
         /**
          * 渲染数据字典
@@ -105,7 +105,7 @@ module me.feng3d {
          */
         private prepareAttributes() {
 
-            this.attributes = this.programBuffer.getAttributes();
+            this.attributes = ShaderCodeUtils.getAttributes(this.programBuffer.vertexCode);
             for (var name in this.attributes) {
                 //从Object3D中获取顶点缓冲
                 var eventData: GetAttributeBufferEventData = { name: name, buffer: null };
@@ -121,7 +121,7 @@ module me.feng3d {
          */
         private prepareUniforms() {
 
-            this.uniforms = this.programBuffer.getUniforms();
+            this.uniforms = ShaderCodeUtils.getUniforms(this.programBuffer.vertexCode);
 
             for (var name in this.uniforms) {
                 //从Object3D中获取顶点缓冲

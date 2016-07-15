@@ -1,15 +1,15 @@
 module me.feng3d {
 
     /**
-	 * Context3D数据缓冲
+	 * 渲染数据拥有者
 	 * @author feng 2016-6-7
 	 */
-    export class Context3DBuffer extends Component {
+    export class RenderDataHolder extends Component {
 
-		private indexBuffer: IndexBuffer;
-		private programBuffer: ProgramBuffer;
-		private attributes: { [name: string]: AttributeBuffer } = {};
-		private uniforms: { [name: string]: UniformBuffer } = {};
+		private indexBuffer: IndexRenderData;
+		private programBuffer: ProgramRenderData;
+		private attributes: { [name: string]: AttributeRenderData } = {};
+		private uniforms: { [name: string]: UniformMatrix4fvRenderData } = {};
 
 		/**
 		 * 创建Context3D数据缓冲
@@ -28,7 +28,7 @@ module me.feng3d {
 		 * 映射索引缓冲
 		 */
 		mapIndexBuffer(value: Uint16Array) {
-			var indexBuffer = this.indexBuffer = this.indexBuffer || new IndexBuffer();
+			var indexBuffer = this.indexBuffer = this.indexBuffer || new IndexRenderData();
 			indexBuffer.indices = value;
 		}
 
@@ -37,7 +37,7 @@ module me.feng3d {
 		 */
 		mapAttributeBuffer(name: string, value: Uint16Array, stride: number) {
 
-			var attributeBuffer = this.attributes[name] = this.attributes[name] || new AttributeBuffer();
+			var attributeBuffer = this.attributes[name] = this.attributes[name] || new AttributeRenderData();
 			attributeBuffer.name = name;
 			attributeBuffer.data = value;
 			attributeBuffer.size = stride;
@@ -48,22 +48,34 @@ module me.feng3d {
          * @param vertexCode        顶点渲染程序代码
          * @param fragmentCode      片段渲染程序代码
          */
-        mapProgramBuffer(vertexCode: string, fragmentCode: string) {
+        mapProgram(vertexCode: string, fragmentCode: string) {
 
-			var programBuffer = this.programBuffer = this.programBuffer || new ProgramBuffer();
+			var programBuffer = this.programBuffer = this.programBuffer || new ProgramRenderData();
 			programBuffer.vertexCode = vertexCode;
 			programBuffer.fragmentCode = fragmentCode;
 		}
 
 		/**
-		 * 映射常量缓冲
+		 * 映射常量4*4矩阵
 		 */
-		mapUniformBuffer(name: string, data: Matrix3D) {
+		mapUniformMatrix4fv(name: string, data: Matrix3D) {
 
-			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformBuffer();
+			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformMatrix4fvRenderData();
 			uniformBuffer.name = name;
 			uniformBuffer.matrix = data;
 		}
+
+		// /**
+		//  * 映射常量缓冲
+		//  */
+		// mapUniformBuffer(name: string, data: Matrix3D) {
+
+		// 	var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformRenderData();
+		// 	uniformBuffer.name = name;
+		// 	uniformBuffer.matrix = data;
+		// }
+
+
 
         /**
          * 处理获取索引缓冲事件
@@ -101,50 +113,5 @@ module me.feng3d {
             eventData.buffer = eventData.buffer || this.programBuffer;
         }
 
-    }
-
-	/**
-	 * 索引缓冲
-	 */
-    export class IndexBuffer {
-
-        /**
-         * 索引数据
-         */
-        indices: Uint16Array;
-    }
-
-	/**
-	 * 属性缓冲
-	 * @author feng 2014-8-14
-	 */
-    export class AttributeBuffer {
-
-        /**
-         * 属性缓冲名称
-         */
-        name: string;
-
-        /** 顶点数据 */
-        data: Float32Array;
-
-        /** 与每个顶点关联的 32 位（4 字节）数据值的数量。 */
-        size: number;
-    }
-
-	/**
-     * 常量缓冲
-     */
-    export class UniformBuffer {
-
-        /**
-         * 常量缓冲名称
-         */
-        name: string;
-
-		/**
-		 * 矩阵数据
-		 */
-        matrix: Matrix3D;
     }
 }

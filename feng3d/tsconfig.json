@@ -38,8 +38,17 @@
         "src/me/feng3d/mathlib/Rectangle.ts",
         "src/me/feng3d/mathlib/Vector3D.ts",
         "src/me/feng3d/mathlib/Matrix3D.ts",
+        //渲染
+        "src/me/feng3d/render/data/RenderDataHolder.ts",
+        "src/me/feng3d/render/data/RenderData.ts",
+        "src/me/feng3d/render/data/RenderBuffer.ts",
+        "src/me/feng3d/render/data/RenderDataItems.ts",
+        "src/me/feng3d/render/utils/ShaderCodeUtils.ts",
+        "src/me/feng3d/render/utils/RenderBufferPool.ts",
+        "src/me/feng3d/render/events/Context3DBufferEvent.ts",
+        "src/me/feng3d/render/RenderDataID.ts",
+        "src/me/feng3d/render/Renderer.ts",
         //
-        "src/me/feng3d/core/RenderBufferPool.ts",
         "src/me/feng3d/core/Space3D.ts",
         "src/me/feng3d/core/Object3D.ts",
         "src/me/feng3d/core/View3D.ts",
@@ -61,17 +70,7 @@
         "src/me/feng3d/primitives/createPlane.ts",
         "src/me/feng3d/primitives/createCube.ts",
         "src/me/feng3d/primitives/createCamera.ts",
-        //渲染器
-        "src/me/feng3d/render/Renderer.ts",
-        //Context3D缓冲
-        "src/me/feng3d/core/buffer/Context3DBufferID.ts",
-        "src/me/feng3d/core/buffer/context3d/Context3DBuffer.ts",
-        "src/me/feng3d/core/buffer/context3d/ProgramBuffer.ts",
-        "src/me/feng3d/core/buffer/context3d/ShaderCodeUtils.ts",
-        "src/me/feng3d/core/buffer/RenderData.ts",
         //
-        "src/me/feng3d/core/buffer/RenderBuffer.ts",
-        "src/me/feng3d/core/buffer/events/Context3DBufferEvent.ts",
         //材质
         "src/me/feng3d/materials/Material.ts",
         "src/me/feng3d/materials/ColorMaterial.ts",
