@@ -13,7 +13,7 @@ module me.feng3d {
             if (obj.toString != null) {
                 str = obj.toString();
             } else {
-                obj = <string>obj;
+                str = <string>obj;
             }
 
             if (showLen != -1) {
