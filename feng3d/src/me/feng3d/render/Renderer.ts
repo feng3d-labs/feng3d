@@ -60,7 +60,7 @@ module me.feng3d {
 
             //计算投影矩阵
             var perspectiveMatrix = this.camera.space3D.transform3D.clone();
-            var camera = this.camera.getComponentByClass(Camera);
+            var camera = this.camera.getComponentByClass(PerspectiveLens);
             perspectiveMatrix.invert();
             perspectiveMatrix.append(camera.projectionMatrix3D);
             context3DBuffer.mapUniformMatrix4fv(RenderDataID.uPMatrix, perspectiveMatrix);

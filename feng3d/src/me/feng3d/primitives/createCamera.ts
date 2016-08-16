@@ -6,7 +6,7 @@ module me.feng3d.factory {
     export function createCamera(): Object3D {
 
         var camera = new Object3D();
-        camera.addComponent(new Camera());
+        camera.addComponent(new PerspectiveLens());
         return camera;
     }
 }

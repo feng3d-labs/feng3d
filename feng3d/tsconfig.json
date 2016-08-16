@@ -61,10 +61,11 @@
         "src/me/feng3d/geometry/Geometry.ts",
         "src/me/feng3d/geometry/GeometryEvent.ts",
         //摄像机
-        "src/me/feng3d/cameras/CameraEvent.ts",
-        "src/me/feng3d/cameras/CoordinateSystem.ts",
-        "src/me/feng3d/cameras/CameraBase.ts",
-        "src/me/feng3d/cameras/Camera.ts",
+        "src/me/feng3d/cameras/lenses/LensEvent.ts",
+        "src/me/feng3d/cameras/lenses/CoordinateSystem.ts",
+        "src/me/feng3d/cameras/lenses/LensBase.ts",
+        "src/me/feng3d/cameras/lenses/PerspectiveLens.ts",
+        "src/me/feng3d/cameras/Camera3D.ts",
         //几何体基元
         "src/me/feng3d/primitives/PrimitiveType.ts",
         "src/me/feng3d/primitives/createPlane.ts",

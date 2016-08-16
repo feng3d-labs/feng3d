@@ -4,7 +4,7 @@ module me.feng3d {
 	 * 摄像机镜头
 	 * @author feng 2014-10-14
 	 */
-	export abstract class CameraBase extends Component {
+	export abstract class LensBase extends Component {
 		protected _projectionMatrix3D: Matrix3D;
 		protected _scissorRect: Rectangle = new Rectangle();
 		protected _viewPort: Rectangle = new Rectangle();
@@ -133,7 +133,7 @@ module me.feng3d {
 		protected invalidateProjectionMatrix() {
 			this._projectionMatrix3DDirty = true;
 			this._unprojectionInvalid = true;
-			this.dispatchEvent(new CameraEvent(CameraEvent.MATRIX_CHANGED, this));
+			this.dispatchEvent(new LensEvent(LensEvent.MATRIX_CHANGED, this));
 		}
 
 		/**
