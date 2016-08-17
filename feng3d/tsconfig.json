@@ -38,6 +38,8 @@
         "src/me/feng3d/mathlib/Rectangle.ts",
         "src/me/feng3d/mathlib/Vector3D.ts",
         "src/me/feng3d/mathlib/Matrix3D.ts",
+        "src/me/feng3d/mathlib/Plane3D.ts",
+        "src/me/feng3d/mathlib/PlaneClassification.ts",
         //渲染
         "src/me/feng3d/render/data/RenderDataHolder.ts",
         "src/me/feng3d/render/data/RenderData.ts",
