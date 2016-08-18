@@ -21,6 +21,23 @@ module me.feng3d {
         }
 
         /**
+		 * 场景投影矩阵，世界空间转投影空间
+		 */
+        public get viewProjection(): Matrix3D {
+            if (this._viewProjectionDirty) {
+                var inverseSceneTransform = this.space3D.transform3D.clone();
+                inverseSceneTransform.invert();
+                //场景空间转摄像机空间
+                this._viewProjection.copyFrom(inverseSceneTransform);
+                //+摄像机空间转投影空间 = 场景空间转投影空间
+                this._viewProjection.append(this._lens.matrix);
+                this._viewProjectionDirty = false;
+            }
+
+            return this._viewProjection;
+        }
+
+        /**
 		 * 处理镜头变化事件
 		 */
         private onLensMatrixChanged(event: LensEvent): void {

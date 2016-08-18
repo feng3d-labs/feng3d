@@ -9,7 +9,7 @@ module me.feng3d {
         private context3D: WebGLRenderingContext;
         private shaderProgram: WebGLProgram;
         private scene: Scene3D;
-        private camera: Object3D
+        private camera: Camera3D
 
         /**
          * 构建渲染器
@@ -17,7 +17,7 @@ module me.feng3d {
          * @param scene 场景
          * @param camera 摄像机对象
          */
-        constructor(context3D: WebGLRenderingContext, scene: Scene3D, camera: Object3D) {
+        constructor(context3D: WebGLRenderingContext, scene: Scene3D, camera: Camera3D) {
             this.context3D = context3D;
             this.scene = scene;
             this.camera = camera;
@@ -58,12 +58,8 @@ module me.feng3d {
             var mvMatrix = object3D.space3D.transform3D;
             context3DBuffer.mapUniformMatrix4fv(RenderDataID.uMVMatrix, mvMatrix);
 
-            //计算投影矩阵
-            var perspectiveMatrix = this.camera.space3D.transform3D.clone();
-            var camera = this.camera.getComponentByClass(PerspectiveLens);
-            perspectiveMatrix.invert();
-            perspectiveMatrix.append(camera.projectionMatrix3D);
-            context3DBuffer.mapUniformMatrix4fv(RenderDataID.uPMatrix, perspectiveMatrix);
+            //场景投影矩阵
+            context3DBuffer.mapUniformMatrix4fv(RenderDataID.uPMatrix, this.camera.viewProjection);
 
             //绘制对象
             var renderData = RenderData.getInstance(object3D);

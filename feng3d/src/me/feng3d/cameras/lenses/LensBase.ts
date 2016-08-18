@@ -5,14 +5,14 @@ module me.feng3d {
 	 * @author feng 2014-10-14
 	 */
 	export abstract class LensBase extends Component {
-		protected _projectionMatrix3D: Matrix3D;
+		protected _matrix: Matrix3D;
 		protected _scissorRect: Rectangle = new Rectangle();
 		protected _viewPort: Rectangle = new Rectangle();
 		protected _near: number = 0.1;
 		protected _far: number = 3000;
 		protected _aspectRatio: number = 1;
 
-		protected _projectionMatrix3DDirty: boolean = true;
+		protected _matrixInvalid: boolean = true;
 
 		private _unprojection: Matrix3D;
 		private _unprojectionInvalid: boolean = true;
@@ -22,23 +22,23 @@ module me.feng3d {
 		 */
 		constructor() {
             super();
-			this._projectionMatrix3D = new Matrix3D();
+			this._matrix = new Matrix3D();
 		}
 
 		/**
 		 * 投影矩阵
 		 */
-		public get projectionMatrix3D(): Matrix3D {
-			if (this._projectionMatrix3DDirty) {
-				this.updateProjectionMatrix();
-				this._projectionMatrix3DDirty = false;
+		public get matrix(): Matrix3D {
+			if (this._matrixInvalid) {
+				this.updateMatrix();
+				this._matrixInvalid = false;
 			}
-			return this._projectionMatrix3D;
+			return this._matrix;
 		}
 
-		public set projectionMatrix3D(value: Matrix3D) {
-			this._projectionMatrix3D = value;
-			this.invalidateProjectionMatrix();
+		public set matrix(value: Matrix3D) {
+			this._matrix = value;
+			this.invalidateMatrix();
 		}
 
 		/**
@@ -52,7 +52,7 @@ module me.feng3d {
 			if (value == this._near)
 				return;
 			this._near = value;
-			this.invalidateProjectionMatrix();
+			this.invalidateMatrix();
 		}
 
 		/**
@@ -66,7 +66,7 @@ module me.feng3d {
 			if (value == this._far)
 				return;
 			this._far = value;
-			this.invalidateProjectionMatrix();
+			this.invalidateMatrix();
 		}
 
 		/**
@@ -80,7 +80,7 @@ module me.feng3d {
 			if (this._aspectRatio == value || (value * 0) != 0)
 				return;
 			this._aspectRatio = value;
-			this.invalidateProjectionMatrix();
+			this.invalidateMatrix();
 		}
 
 		/**
@@ -92,11 +92,10 @@ module me.feng3d {
 		public project(point3d: Vector3D, v: Vector3D = null): Vector3D {
 			if (!v)
 				v = new Vector3D();
-			this.projectionMatrix3D.transformVector(point3d, v);
+			this.matrix.transformVector(point3d, v);
 			v.x = v.x / v.w;
 			v.y = -v.y / v.w;
 
-			//z is unaffected by transform
 			v.z = point3d.z;
 
 			return v;
@@ -109,7 +108,7 @@ module me.feng3d {
 			if (this._unprojectionInvalid) {
                 if (this._unprojection == null)
 					this._unprojection = new Matrix3D();
-				this._unprojection.copyFrom(this.projectionMatrix3D);
+				this._unprojection.copyFrom(this.matrix);
 				this._unprojection.invert();
 				this._unprojectionInvalid = false;
 			}
@@ -130,8 +129,8 @@ module me.feng3d {
 		/**
 		 * 投影矩阵失效
 		 */
-		protected invalidateProjectionMatrix() {
-			this._projectionMatrix3DDirty = true;
+		protected invalidateMatrix() {
+			this._matrixInvalid = true;
 			this._unprojectionInvalid = true;
 			this.dispatchEvent(new LensEvent(LensEvent.MATRIX_CHANGED, this));
 		}
@@ -139,6 +138,6 @@ module me.feng3d {
 		/**
 		 * 更新投影矩阵
 		 */
-		protected abstract updateProjectionMatrix();
+		protected abstract updateMatrix();
 	}
 }

@@ -8,7 +8,7 @@ module me.feng3d {
 
         private gl: WebGLRenderingContext;
 
-        private _camera: Object3D;
+        private _camera: Camera3D;
 
         private _scene: Scene3D;
 
@@ -20,14 +20,14 @@ module me.feng3d {
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas, scene: Scene3D = null, camera: Object3D = null) {
+        constructor(canvas, scene: Scene3D = null, camera: Camera3D = null) {
 
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this.gl = canvas.getContext("experimental-webgl");
             this.gl || alert("Unable to initialize WebGL. Your browser may not support it.");
 
             this.scene = scene || new Scene3D();
-            this._camera = camera || factory.createCamera();
+            this._camera = camera || new Camera3D();
             this.renderer = new Renderer(this.gl, this.scene, this._camera);
 
             setInterval(this.drawScene.bind(this), 15);

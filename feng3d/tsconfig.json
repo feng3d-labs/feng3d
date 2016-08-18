@@ -72,7 +72,6 @@
         "src/me/feng3d/primitives/PrimitiveType.ts",
         "src/me/feng3d/primitives/createPlane.ts",
         "src/me/feng3d/primitives/createCube.ts",
-        "src/me/feng3d/primitives/createCamera.ts",
         //
         //材质
         "src/me/feng3d/materials/Material.ts",

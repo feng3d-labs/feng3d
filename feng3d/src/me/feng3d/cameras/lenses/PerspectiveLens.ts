@@ -40,7 +40,7 @@ module me.feng3d {
             this._focalLengthInv = Math.tan(this._fieldOfView * Math.PI / 360);
             this._focalLength = 1 / this._focalLengthInv;
 
-            this.invalidateProjectionMatrix();
+            this.invalidateMatrix();
         }
 
 		/**
@@ -59,7 +59,7 @@ module me.feng3d {
             this._focalLengthInv = 1 / this._focalLength;
             this._fieldOfView = Math.atan(this._focalLengthInv) * 360 / Math.PI;
 
-            this.invalidateProjectionMatrix();
+            this.invalidateMatrix();
         }
 
         public unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D {
@@ -75,7 +75,6 @@ module me.feng3d {
 
             this.unprojectionMatrix.transformVector(v, v);
 
-            //z is unaffected by transform
             v.z = sZ;
 
             return v;
@@ -94,13 +93,13 @@ module me.feng3d {
 
             this._coordinateSystem = value;
 
-            this.invalidateProjectionMatrix();
+            this.invalidateMatrix();
         }
 
         /**
          * 更新投影矩阵
          */
-        protected updateProjectionMatrix() {
+        protected updateMatrix() {
             var raw = tempRawData;
 
             this._yMax = this._near * this._focalLengthInv;
@@ -148,9 +147,9 @@ module me.feng3d {
             if (this._coordinateSystem == CoordinateSystem.RIGHT_HANDED)
                 raw[5] = -raw[5];
 
-            this._projectionMatrix3D.copyRawDataFrom(raw);
+            this._matrix.copyRawDataFrom(raw);
 
-            this._projectionMatrix3DDirty = false;
+            this._matrixInvalid = false;
         }
     }
     /**
