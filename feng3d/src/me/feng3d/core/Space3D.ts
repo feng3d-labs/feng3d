@@ -5,6 +5,8 @@ module me.feng3d {
      */
     export class Space3D extends Component {
 
+        private object3D: IComponent;
+
         /**
          * 构建3D空间
          * @param x X坐标
@@ -29,6 +31,7 @@ module me.feng3d {
             this._sy = sy;
             this._sz = sz;
             this.invalidateTransform3D();
+            this.addEventListener(ComponentEvent.BE_ADDED_COMPONENT, this.onBeAddedComponent, this)
         }
 
         /**
@@ -126,6 +129,11 @@ module me.feng3d {
          */
         protected invalidateTransform3D() {
             this.transform3DDirty = true;
+        }
+
+        private onBeAddedComponent(event: ComponentEvent) {
+
+            this.object3D = event.data.container;
         }
 
         //private
