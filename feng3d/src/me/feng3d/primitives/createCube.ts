@@ -2,7 +2,14 @@ module me.feng3d.primitives {
 
     /**
      * 创建立方几何体
-     * @param width 宽度
+     * @param   width           宽度
+     * @param   height          高度
+     * @param   depth           深度
+     * @param   segmentsW       宽度方向分割
+     * @param   segmentsH       高度方向分割
+     * @param   segmentsD       深度方向分割
+     * @param   tile6           是否为6块贴图
+     * @param   elements        需要生成数据的属性
      */
     export function createCube(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true, elements = [GLAttribute.position, GLAttribute.uv, GLAttribute.normal, GLAttribute.tangent]) {
 
@@ -36,6 +43,15 @@ module me.feng3d.primitives {
         return geometry;
     }
 
+    /**
+     * 构建坐标
+     * @param   width           宽度
+     * @param   height          高度
+     * @param   depth           深度
+     * @param   segmentsW       宽度方向分割
+     * @param   segmentsH       高度方向分割
+     * @param   segmentsD       深度方向分割
+     */
     function buildPosition(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1) {
 
         var vertexPositionData = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 3);
@@ -111,6 +127,12 @@ module me.feng3d.primitives {
         return vertexPositionData;
     }
 
+    /**
+     * 构建法线
+     * @param   segmentsW       宽度方向分割
+     * @param   segmentsH       高度方向分割
+     * @param   segmentsD       深度方向分割
+     */
     function buildNormal(segmentsW = 1, segmentsH = 1, segmentsD = 1) {
         var vertexNormalData = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 3);
 
@@ -166,6 +188,12 @@ module me.feng3d.primitives {
         return new Float32Array(vertexNormalData);
     }
 
+    /**
+     * 构建切线
+     * @param   segmentsW       宽度方向分割
+     * @param   segmentsH       高度方向分割
+     * @param   segmentsD       深度方向分割
+     */
     function buildTangent(segmentsW = 1, segmentsH = 1, segmentsD = 1) {
 
         var vertexTangentData = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 3);
@@ -223,6 +251,12 @@ module me.feng3d.primitives {
         return vertexTangentData;
     }
 
+    /**
+     * 构建索引
+     * @param   segmentsW       宽度方向分割
+     * @param   segmentsH       高度方向分割
+     * @param   segmentsD       深度方向分割
+     */
     function buildIndices(segmentsW = 1, segmentsH = 1, segmentsD = 1) {
 
         var indices = new Uint16Array((segmentsW * segmentsH + segmentsW * segmentsD + segmentsH * segmentsD) * 12);
@@ -321,6 +355,13 @@ module me.feng3d.primitives {
         return indices;
     }
 
+    /**
+     * 构建uv
+     * @param   segmentsW       宽度方向分割
+     * @param   segmentsH       高度方向分割
+     * @param   segmentsD       深度方向分割
+     * @param   tile6           是否为6块贴图
+     */
     function buildUVs(segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true) {
         var i: number, j: number, uidx: number;
         var data = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 2);

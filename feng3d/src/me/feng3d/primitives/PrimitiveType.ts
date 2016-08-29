@@ -5,7 +5,13 @@ module me.feng3d {
      * @author feng 2016-05-01
      */
     export enum PrimitiveType {
+        /**
+         * 平面
+         */
         Plane,
+        /**
+         * 立方体
+         */
         Cube
     }
 }
