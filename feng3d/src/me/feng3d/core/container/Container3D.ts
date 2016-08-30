@@ -42,6 +42,35 @@ module me.feng3d {
         }
 
         /**
+		 * 移出指定索引的子对象
+		 * @param childIndex	子对象索引
+		 * @return				被移除对象
+		 */
+        public removeChildAt(childIndex: number): Object3D {
+            var child: Object3D = this.getChildAt(childIndex);
+            this.removeChildInternal(childIndex, child);
+            return child;
+        }
+
+		/**
+		 * 获取子对象
+		 * @param index
+		 * @return
+		 */
+        public getChildAt(index: number): Object3D {
+            return this.children[index];
+        }
+
+        /**
+		 * 内部移除子对象
+		 * @param childIndex	移除子对象所在索引
+		 * @param child			移除子对象
+		 */
+        private removeChildInternal(childIndex: number, child: Object3D) {
+            this.children.splice(childIndex, 1);
+        }
+
+        /**
          * 处理被添加事件
          */
         private onBeAddedComponent(event: ComponentEvent): void {
