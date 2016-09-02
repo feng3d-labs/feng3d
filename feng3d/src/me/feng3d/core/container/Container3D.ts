@@ -4,22 +4,7 @@ module me.feng3d {
      * 3D容器组件
      * @author feng 2016-04-26
      */
-    export class Container3D extends Component {
-
-        /**
-         * 所属对象
-         */
-        private object3D: Object3D;
-
-        /**
-         * 父对象
-         */
-        private parent: Object3D = null;
-
-        /**
-         * 子对象列表
-         */
-        private children: Object3D[] = [];
+    export class Container3D extends Object3DComponent {
 
         /**
          * 获取父对象
@@ -57,7 +42,6 @@ module me.feng3d {
          */
         constructor() {
             super();
-            this.addEventListener(ComponentEvent.BE_ADDED_COMPONENT, this.onBeAddedComponent, this);
             this.addEventListener(Container3DEvent.ADDED, this.onAddedContainer3D, this);
             this.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
@@ -128,6 +112,19 @@ module me.feng3d {
             return this.children[index];
         }
 
+        //------------------------------------------
+        //@private
+        //------------------------------------------
+        /**
+         * 父对象
+         */
+        private parent: Object3D = null;
+
+        /**
+         * 子对象列表
+         */
+        private children: Object3D[] = [];
+
         /**
 		 * 内部移除子对象
 		 * @param childIndex	移除子对象所在索引
@@ -138,14 +135,6 @@ module me.feng3d {
             assert(-1 < childIndex && childIndex < this.children.length, "删除的子对象不存在或者索引越界！");
             this.children.splice(childIndex, 1);
             child.dispatchEvent(new Container3DEvent(Container3DEvent.REMOVED, { parent: this.object3D, child: child }));
-        }
-
-        /**
-         * 处理被添加事件
-         */
-        private onBeAddedComponent(event: ComponentEvent): void {
-
-            this.object3D = as(event.data.container, Object3D);
         }
 
         /**
