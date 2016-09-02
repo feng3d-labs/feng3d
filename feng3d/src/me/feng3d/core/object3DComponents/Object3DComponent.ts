@@ -12,7 +12,7 @@ module me.feng3d {
         public get object3D(): Object3D { return this._object3D; }
 
         /**
-         * 构建3D容器组件
+         * 构建3D对象组件
          */
         constructor() {
             super();
