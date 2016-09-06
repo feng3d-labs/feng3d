@@ -6,6 +6,7 @@ declare module me.feng3d {
     class ComponentEvent extends Event {
         /**
          * 添加子组件事件
+         * data = { container: IComponent, child: IComponent }
          */
         static ADDED_COMPONENT: string;
         /**
@@ -14,6 +15,7 @@ declare module me.feng3d {
         static BE_ADDED_COMPONENT: string;
         /**
          * 移除子组件事件
+         * data = { container: IComponent, child: IComponent }
          */
         static REMOVED_COMPONENT: string;
         /**
@@ -21,12 +23,8 @@ declare module me.feng3d {
          */
         static BE_REMOVED_COMPONENT: string;
         /**
-         * 数据
+         * 事件目标。
          */
-        data: {
-            container: IComponent;
-            child: IComponent;
-        };
         target: IComponent;
         /**
          * 构建组件事件
