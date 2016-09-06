@@ -39,6 +39,14 @@ module me.feng3d {
          */
         private updateSceneSpace3D() {
 
+            this.sceneSpace3DDirty = false;
+            var transform3D = this.object3D.space3D.transform3D.clone();
+            var parent = Container3D.getParent(this.object3D);
+            if (parent != null) {
+                var parentSceneTransform3D = parent.getComponentByClass(SceneSpace3D).sceneTransform3D;
+                transform3D.append(parentSceneTransform3D);
+            }
+            this.sceneSpace3D.transform3D = transform3D;
         }
     }
 }
