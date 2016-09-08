@@ -16,7 +16,7 @@ module me.feng3d {
          */
         constructor() {
             super();
-            this.addEventListener(ComponentEvent.BE_ADDED_COMPONENT, this.onBeAddedComponent, this);
+            this.addEventListener(ComponentEvent.ADDED_COMPONENT, this.onBeAddedComponent, this);
         }
 
         //------------------------------------------
@@ -29,7 +29,10 @@ module me.feng3d {
          */
         private onBeAddedComponent(event: ComponentEvent): void {
 
-            this._object3D = as(event.data.container, Object3D);
+            var data: { container: IComponent, child: IComponent } = event.data;
+            if (data.child == this) {
+                this._object3D = as(data.container, Object3D);
+            }
         }
     }
 }
