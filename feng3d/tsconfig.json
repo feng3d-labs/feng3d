@@ -38,6 +38,8 @@
         "src/me/feng3d/utils/Map.ts",
         "src/me/feng3d/utils/UID.ts",
         "src/me/feng3d/utils/Version.ts",
+        "src/me/feng3d/utils/is.ts",
+        "src/me/feng3d/utils/as.ts",
         //
         "src/me/feng3d/mathlib/MathConsts.ts",
         "src/me/feng3d/mathlib/Rectangle.ts",
@@ -59,6 +61,11 @@
         "src/me/feng3d/core/Space3D.ts",
         "src/me/feng3d/core/Object3D.ts",
         "src/me/feng3d/core/View3D.ts",
+        //3D对象组件
+        "src/me/feng3d/core/object3DComponents/Object3DComponent.ts",
+        "src/me/feng3d/core/object3DComponents/container/Container3D.ts",
+        "src/me/feng3d/core/object3DComponents/container/Container3DEvent.ts",
+        "src/me/feng3d/core/object3DComponents/SceneSpace3D.ts",
         //3D场景
         "src/me/feng3d/scene/Scene3DNode.ts",
         "src/me/feng3d/scene/Scene3D.ts",
