@@ -12,6 +12,7 @@ module me.feng3d {
         constructor() {
             super();
             this.sceneSpace3DDirty = true;
+            this.addEventListener(ComponentEvent.ADDED_COMPONENT, this.onBeAddedComponent, this);
         }
 
         /**
@@ -20,6 +21,16 @@ module me.feng3d {
         public get sceneTransform3D(): Matrix3D {
             this.sceneSpace3DDirty && this.updateSceneSpace3D();
             return this.sceneSpace3D.transform3D;
+        }
+
+
+        //------------------------------------------
+        //@protected
+        //------------------------------------------
+
+        protected onBeAddedComponent(event: ComponentEvent): void {
+
+            this.object3D
         }
 
         //------------------------------------------
