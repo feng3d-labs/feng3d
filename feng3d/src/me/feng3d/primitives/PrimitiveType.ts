@@ -12,6 +12,10 @@ module me.feng3d {
         /**
          * 立方体
          */
-        Cube
+        Cube,
+        /**
+         * 球体
+         */
+        Sphere
     }
 }
