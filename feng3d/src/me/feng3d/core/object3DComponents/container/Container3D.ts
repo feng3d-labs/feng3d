@@ -42,8 +42,6 @@ module me.feng3d {
          */
         constructor() {
             super();
-            this.addEventListener(Container3DEvent.ADDED, this.onAddedContainer3D, this);
-            this.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
 
         /**
@@ -65,7 +63,7 @@ module me.feng3d {
 
             assert(-1 < index && index <= this.children.length, "添加子对象的索引越界！");
             this.children.splice(index, 0, child);
-            child.dispatchEvent(new Container3DEvent(Container3DEvent.ADDED, { parent: this.object3D, child: child }));
+            child.dispatchEvent(new Container3DEvent(Container3DEvent.ADDED, { parent: this.object3D, child: child }, true));
         }
 
         /**
@@ -76,7 +74,8 @@ module me.feng3d {
         public removeChild(child: Object3D): number {
 
             var childIndex = this.children.indexOf(child);
-            this.removeChildInternal(childIndex, child);
+            assert(-1 < childIndex && childIndex < this.children.length, "删除的子对象不存在！");
+            this.removeChildAt(childIndex);
             return childIndex;
         }
 
@@ -98,7 +97,9 @@ module me.feng3d {
         public removeChildAt(childIndex: number): Object3D {
 
             var child: Object3D = this.children[childIndex];
-            this.removeChildInternal(childIndex, child);
+            assert(-1 < childIndex && childIndex < this.children.length, "删除的索引越界！");
+            this.children.splice(childIndex, 1);
+            child.dispatchEvent(new Container3DEvent(Container3DEvent.REMOVED, { parent: this.object3D, child: child }, true));
             return child;
         }
 
@@ -115,6 +116,29 @@ module me.feng3d {
         //------------------------------------------
         //@private
         //------------------------------------------
+
+        /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void {
+
+            //TODO 此处可以提供一个方法，向父组件中添加事件，当自身添加到父组件时自动添加监听，当自身从父组件移除时自动移除监听
+            this.object3D.addEventListener(Container3DEvent.ADDED, this.onAddedContainer3D, this);
+            this.object3D.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
+        }
+
+        /**
+         * 处理被移除组件事件
+         */
+        protected onBeRemovedComponent(event: ComponentEvent): void {
+
+            this.object3D.addEventListener(Container3DEvent.ADDED, this.onAddedContainer3D, this);
+            this.object3D.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
+        }
+
+        //------------------------------------------
+        //@private
+        //------------------------------------------
         /**
          * 父对象
          */
@@ -124,18 +148,6 @@ module me.feng3d {
          * 子对象列表
          */
         private children: Object3D[] = [];
-
-        /**
-		 * 内部移除子对象
-		 * @param childIndex	移除子对象所在索引
-		 * @param child			移除子对象
-		 */
-        private removeChildInternal(childIndex: number, child: Object3D) {
-
-            assert(-1 < childIndex && childIndex < this.children.length, "删除的子对象不存在或者索引越界！");
-            this.children.splice(childIndex, 1);
-            child.dispatchEvent(new Container3DEvent(Container3DEvent.REMOVED, { parent: this.object3D, child: child }));
-        }
 
         /**
          * 处理添加子对象事件

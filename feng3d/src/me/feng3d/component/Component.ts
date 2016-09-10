@@ -30,24 +30,10 @@ module me.feng3d {
          */
         protected initComponent(): void {
 
-            this.addEventListener(ComponentEvent.ADDED_COMPONENT, this.onAddedComponent, this, Number.MAX_VALUE);
-            this.addEventListener(ComponentEvent.REMOVED_COMPONENT, this.onRemovedComponent, this, Number.MAX_VALUE);
-        }
-
-        protected onAddedComponent(event: ComponentEvent): void {
-
-            var data: { container: IComponent, child: IComponent } = event.data;
-            if (data.child == this) {
-                this._parentComponent = data.container;
-            }
-        }
-
-        protected onRemovedComponent(event: ComponentEvent): void {
-
-            var data: { container: IComponent, child: IComponent } = event.data;
-            if (event.data.child == this) {
-                this._parentComponent = null;
-            }
+            //以最高优先级监听组件被添加，设置父组件
+            this.addEventListener(ComponentEvent.ADDED_COMPONENT, this._onAddedComponent, this, Number.MAX_VALUE);
+            //以最低优先级监听组件被删除，清空父组件
+            this.addEventListener(ComponentEvent.REMOVED_COMPONENT, this._onRemovedComponent, this, Number.MIN_VALUE);
         }
 
         /**
@@ -97,8 +83,8 @@ module me.feng3d {
             }
 
             this.components.splice(index, 0, component);
-
-            this.dispatchAddedEvent(component);
+            //派发添加组件事件
+            component.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONENT, { container: this, child: component }, true));
         }
 
 		/**
@@ -122,7 +108,8 @@ module me.feng3d {
             assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
             var component: IComponent = this.components.splice(index, 1)[0];
-            this.dispatchRemovedEvent(component);
+            //派发移除组件事件
+            component.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }, true));
             return component;
         }
 
@@ -288,29 +275,60 @@ module me.feng3d {
             });
         }
 
-        /**
-         * 派发移除子组件事件
-         */
-        private dispatchAddedEvent(component: IComponent): void {
+        //------------------------------------------
+        //@protected
+        //------------------------------------------
 
-            component.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONENT, { container: this, child: component }, true));
+        /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void {
+
         }
 
         /**
-         * 派发移除子组件事件
+         * 处理被移除组件事件
          */
-        private dispatchRemovedEvent(component: IComponent): void {
+        protected onBeRemovedComponent(event: ComponentEvent): void {
 
-            component.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }, true));
         }
 
         /**
          * 获取冒泡对象
          */
-        protected getBubbleTargets(event: Event): IEventDispatcher[] {
+        protected getBubbleTargets(event: Event = null): IEventDispatcher[] {
 
             return [this._parentComponent];
         }
+
+        //------------------------------------------
+        //@private
+        //------------------------------------------
+
+        /**
+         * 处理添加组件事件，此处为被添加，设置父组件
+         */
+        private _onAddedComponent(event: ComponentEvent): void {
+
+            var data: { container: IComponent, child: IComponent } = event.data;
+            if (data.child == this) {
+                this._parentComponent = data.container;
+                this.onBeAddedComponent(event);
+            }
+        }
+
+        /**
+         * 处理移除组件事件，此处为被移除，清空父组件
+         */
+        private _onRemovedComponent(event: ComponentEvent): void {
+
+            var data: { container: IComponent, child: IComponent } = event.data;
+            if (event.data.child == this) {
+                this.onBeRemovedComponent(event);
+                this._parentComponent = null;
+            }
+        }
+
     }
 
     /**

@@ -7,32 +7,20 @@ module me.feng3d {
     export class Object3DComponent extends Component {
 
         /**
+         * 父组件
+         */
+        protected _parentComponent: Object3D;
+
+        /**
          * 所属对象
          */
-        public get object3D(): Object3D { return this._object3D; }
+        public get object3D(): Object3D { return this._parentComponent; }
 
         /**
          * 构建3D对象组件
          */
         constructor() {
             super();
-            this.addEventListener(ComponentEvent.ADDED_COMPONENT, this.onBeAddedComponent, this);
-        }
-
-        //------------------------------------------
-        //@private
-        //------------------------------------------
-        private _object3D: Object3D;
-
-        /**
-         * 处理被添加事件
-         */
-        private onBeAddedComponent(event: ComponentEvent): void {
-
-            var data: { container: IComponent, child: IComponent } = event.data;
-            if (data.child == this) {
-                this._object3D = as(data.container, Object3D);
-            }
         }
     }
 }
