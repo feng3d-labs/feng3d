@@ -12,20 +12,20 @@ module me.feng3d.primitives {
 
         var geometry = new Geometry();
         
-        var list = buildGeometry(radius, segmentsW, segmentsH, yUp);
+        var geometryData = buildGeometry(radius, segmentsW, segmentsH, yUp);
         elements.forEach(element => {
             switch (element) {
                 case GLAttribute.position:
-                    var vertexPositionData = list[0];
+                    var vertexPositionData = geometryData[element];
                     geometry.setVAData(element, vertexPositionData, 3);
                     break;
                 case GLAttribute.normal:
-                    var vertexNormalData = list[1]
-                    geometry.setVAData(element, vertexNormalData, 3)
+                    var vertexNormalData = geometryData[element];
+                    geometry.setVAData(element, vertexNormalData, 3);
                     break;
                 case GLAttribute.tangent:
-                    var vertexTangentData = list[2]
-                    geometry.setVAData(element, vertexTangentData, 3)
+                    var vertexTangentData = geometryData[element];
+                    geometry.setVAData(element, vertexTangentData, 3);
                     break;
                 case GLAttribute.uv:
                     var uvData = buildUVs(segmentsW, segmentsH);
@@ -124,7 +124,11 @@ module me.feng3d.primitives {
                 index += 3;
             }
         }
-        return [vertexPositionData, vertexNormalData, vertexTangentData];
+        var result = {};
+        result[GLAttribute.position] = vertexPositionData;
+        result[GLAttribute.normal] = vertexNormalData;
+        result[GLAttribute.tangent] = vertexTangentData;
+        return result;
     }
 
     /**
