@@ -1,18 +1,19 @@
 module me.feng3d.primitives {
 
     /**
-     * 创建球形几何体
-     * @param radius 球体半径
+     * 创建胶囊几何体
+     * @param radius 胶囊体半径
+     * @param height 胶囊体高度
      * @param segmentsW 横向分割数
      * @param segmentsH 纵向分割数
      * @param yUp 正面朝向 true:Y+ false:Z+
      * @param elements 顶点元素列表
      */
-    export function createSphere(radius = 50, segmentsW = 16, segmentsH = 12, yUp = true, elements = [GLAttribute.position, GLAttribute.uv, GLAttribute.normal, GLAttribute.tangent]): Geometry {
+    export function createCapsule(radius = 50, height = 100, segmentsW = 16, segmentsH = 15, yUp = true, elements = [GLAttribute.position, GLAttribute.uv, GLAttribute.normal, GLAttribute.tangent]): Geometry {
 
         var geometry = new Geometry();
         
-        var geometryData = buildGeometry(radius, segmentsW, segmentsH, yUp);
+        var geometryData = buildGeometry(radius, height, segmentsW, segmentsH, yUp);
         elements.forEach(element => {
             switch (element) {
                 case GLAttribute.position:
@@ -32,7 +33,7 @@ module me.feng3d.primitives {
                     geometry.setVAData(element, uvData, 2);
                     break;
                 default:
-                    throw (`不支持为球体创建顶点属性 ${element}`);
+                    throw (`不支持为胶囊体创建顶点属性 ${element}`);
             }
         });
 
@@ -44,12 +45,13 @@ module me.feng3d.primitives {
 
     /**
      * 构建几何体数据
-     * @param radius 球体半径
+     * @param radius 胶囊体半径
+     * @param height 胶囊体高度
      * @param segmentsW 横向分割数
      * @param segmentsH 纵向分割数
      * @param yUp 正面朝向 true:Y+ false:Z+
      */
-    function buildGeometry(radius = 1, segmentsW = 1, segmentsH = 1, yUp = true) {
+    function buildGeometry(radius = 1, height = 1, segmentsW = 1, segmentsH = 1, yUp = true) {
 
         var vertexPositionData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
         var vertexNormalData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
@@ -71,6 +73,7 @@ module me.feng3d.primitives {
                 var y: number = ringradius * Math.sin(verangle);
                 var normLen: number = 1 / Math.sqrt(x*x + y*y + z*z);
                 var tanLen: number = Math.sqrt(y*y + x*x);
+                var offset: number = yi > segmentsH/2 ? height/2 : -height/2;
 
                 if (yUp) {
                     t1 = 0;
@@ -90,18 +93,18 @@ module me.feng3d.primitives {
                     vertexPositionData[index + 1] = vertexPositionData[startIndex + 1];
                     vertexPositionData[index + 2] = vertexPositionData[startIndex + 2];
 
-                    vertexNormalData[index] = vertexNormalData[startIndex] + x*normLen*0.5;
-                    vertexNormalData[index + 1] = vertexNormalData[startIndex + 1] + comp1*normLen*0.5;
-                    vertexNormalData[index + 2] = vertexNormalData[startIndex + 2] + comp2*normLen*0.5;
+                    vertexNormalData[index] = (vertexNormalData[startIndex] + x*normLen) * 0.5;
+                    vertexNormalData[index + 1] = (vertexNormalData[startIndex + 1] + comp1*normLen) * 0.5;
+                    vertexNormalData[index + 2] = (vertexNormalData[startIndex + 2] + comp2*normLen) * 0.5;
 
-                    vertexTangentData[index] = tanLen > .007 ? -y / tanLen : 1;
-                    vertexTangentData[index + 1] = t1;
-                    vertexTangentData[index + 2] = t2;
+                    vertexTangentData[index] = (vertexTangentData[startIndex] + tanLen > .007 ? -y / tanLen : 1) * 0.5;
+                    vertexTangentData[index + 1] = (vertexTangentData[startIndex + 1] + t1) * 0.5;
+                    vertexTangentData[index + 2] = (vertexTangentData[startIndex + 2] + t2) * 0.5;
                 }
                 else {
                     vertexPositionData[index] = x;
-                    vertexPositionData[index + 1] = comp1;
-                    vertexPositionData[index + 2] = comp2;
+                    vertexPositionData[index + 1] = yUp ? comp1 - offset : comp1;
+                    vertexPositionData[index + 2] = yUp ? comp2 : comp2 + offset;
 
                     vertexNormalData[index] = x * normLen;
                     vertexNormalData[index + 1] = comp1 * normLen;
@@ -130,7 +133,7 @@ module me.feng3d.primitives {
         result[GLAttribute.tangent] = vertexTangentData;
         return result;
     }
-
+    
     /**
      * 构建顶点索引
      * @param segmentsW 横向分割数

@@ -16,6 +16,10 @@ module me.feng3d {
         /**
          * 球体
          */
-        Sphere
+        Sphere,
+        /**
+         * 胶囊
+         */
+        Capsule
     }
 }

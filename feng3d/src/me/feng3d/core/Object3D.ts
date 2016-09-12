@@ -40,6 +40,12 @@ module me.feng3d {
                 case PrimitiveType.Cube:
                     object3D.addComponent(primitives.createCube());
                     break;
+                case PrimitiveType.Sphere:
+                    object3D.addComponent(primitives.createSphere());
+                    break;
+                case PrimitiveType.Capsule:
+                    object3D.addComponent(primitives.createCapsule());
+                    break;
                 default:
                     throw `无法创建3D基元对象 ${type}`;
             }
