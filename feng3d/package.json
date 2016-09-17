@@ -1,0 +1,22 @@
+{
+  "name": "feng3d",
+  "version": "1.0.0",
+  "description": "feng3d",
+  "main": "release/feng3d.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wardenfeng/feng3d-ts.git"
+  },
+  "keywords": [
+    "feng3d"
+  ],
+  "author": "feng",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wardenfeng/feng3d-ts/issues"
+  },
+  "homepage": "https://github.com/wardenfeng/feng3d-ts#readme"
+}
