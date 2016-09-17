@@ -165,8 +165,6 @@ module me.feng3d.primitives {
      */
     function buildUVs(segmentsW = 1, segmentsH = 1) {
         var data = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 2);
-        var stride: number = 2;
-
         var index: number = 0;
 
         for (var yi: number = 0; yi <= this._segmentsH; ++yi) {
