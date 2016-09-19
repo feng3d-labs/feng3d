@@ -20,6 +20,10 @@ module me.feng3d {
         /**
          * 胶囊
          */
-        Capsule
+        Capsule,
+        /**
+         * 圆柱体
+         */
+        Cylinder
     }
 }
