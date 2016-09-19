@@ -183,7 +183,7 @@ module me.feng3d {
          * 根据类定义获取组件
          * <p>如果存在多个则返回第一个</p>
          * @param cls				类定义
-         * @return
+         * @return                  返回指定类型组件
          */
         public getComponentByClass<T extends IComponent>(cls: new (...args) => T): T {
 
@@ -208,8 +208,8 @@ module me.feng3d {
         /**
          * 根据类定义获取或创建组件
          * <p>当不存在该类型对象时创建一个该组件并且添加到容器中</p>
-         * @param cls
-         * @return
+         * @param cls       类定义
+         * @return          返回与给出类定义一致的组件
          */
         public getOrCreateComponentByClass<T extends IComponent>(cls: new (...args) => T): T {
 

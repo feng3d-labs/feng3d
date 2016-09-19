@@ -105,8 +105,8 @@ module me.feng3d {
 
 		/**
 		 * 获取子对象
-		 * @param index
-		 * @return
+		 * @param index         子对象索引
+		 * @return              指定索引的子对象
 		 */
         public getChildAt(index: number): Object3D {
 
