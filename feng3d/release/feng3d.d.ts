@@ -315,8 +315,6 @@ declare module me.feng3d {
          * 初始化组件
          */
         protected initComponent(): void;
-        protected onAddedComponent(event: ComponentEvent): void;
-        protected onRemovedComponent(event: ComponentEvent): void;
         /**
          * 父组件
          */
@@ -382,7 +380,7 @@ declare module me.feng3d {
          * 根据类定义获取组件
          * <p>如果存在多个则返回第一个</p>
          * @param cls				类定义
-         * @return
+         * @return                  返回指定类型组件
          */
         getComponentByClass<T extends IComponent>(cls: new (...args) => T): T;
         /**
@@ -394,8 +392,8 @@ declare module me.feng3d {
         /**
          * 根据类定义获取或创建组件
          * <p>当不存在该类型对象时创建一个该组件并且添加到容器中</p>
-         * @param cls
-         * @return
+         * @param cls       类定义
+         * @return          返回与给出类定义一致的组件
          */
         getOrCreateComponentByClass<T extends IComponent>(cls: new (...args) => T): T;
         /**
@@ -424,17 +422,25 @@ declare module me.feng3d {
          */
         dispatchChildrenEvent(event: Event, depth?: number): void;
         /**
-         * 派发移除子组件事件
+         * 处理被添加组件事件
          */
-        private dispatchAddedEvent(component);
+        protected onBeAddedComponent(event: ComponentEvent): void;
         /**
-         * 派发移除子组件事件
+         * 处理被移除组件事件
          */
-        private dispatchRemovedEvent(component);
+        protected onBeRemovedComponent(event: ComponentEvent): void;
         /**
          * 获取冒泡对象
          */
-        protected getBubbleTargets(event: Event): IEventDispatcher[];
+        protected getBubbleTargets(event?: Event): IEventDispatcher[];
+        /**
+         * 处理添加组件事件，此处为被添加，设置父组件
+         */
+        private _onAddedComponent(event);
+        /**
+         * 处理移除组件事件，此处为被移除，清空父组件
+         */
+        private _onRemovedComponent(event);
     }
 }
 declare module me.feng3d {
@@ -1615,6 +1621,10 @@ declare module me.feng3d {
      */
     class Object3DComponent extends Component {
         /**
+         * 父组件
+         */
+        protected _parentComponent: Object3D;
+        /**
          * 所属对象
          */
         object3D: Object3D;
@@ -1622,11 +1632,6 @@ declare module me.feng3d {
          * 构建3D对象组件
          */
         constructor();
-        private _object3D;
-        /**
-         * 处理被添加事件
-         */
-        private onBeAddedComponent(event);
     }
 }
 declare module me.feng3d {
@@ -1686,10 +1691,18 @@ declare module me.feng3d {
         removeChildAt(childIndex: number): Object3D;
         /**
          * 获取子对象
-         * @param index
-         * @return
+         * @param index         子对象索引
+         * @return              指定索引的子对象
          */
         getChildAt(index: number): Object3D;
+        /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void;
+        /**
+         * 处理被移除组件事件
+         */
+        protected onBeRemovedComponent(event: ComponentEvent): void;
         /**
          * 父对象
          */
@@ -1698,12 +1711,6 @@ declare module me.feng3d {
          * 子对象列表
          */
         private children;
-        /**
-         * 内部移除子对象
-         * @param childIndex	移除子对象所在索引
-         * @param child			移除子对象
-         */
-        private removeChildInternal(childIndex, child);
         /**
          * 处理添加子对象事件
          */
@@ -1745,6 +1752,7 @@ declare module me.feng3d {
          * 场景空间变换矩阵
          */
         sceneTransform3D: Matrix3D;
+        protected onBeAddedComponent(event: ComponentEvent): void;
         /**
          * 相对场景空间
          */
@@ -2127,6 +2135,18 @@ declare module me.feng3d {
          * 立方体
          */
         Cube = 1,
+        /**
+         * 球体
+         */
+        Sphere = 2,
+        /**
+         * 胶囊
+         */
+        Capsule = 3,
+        /**
+         * 圆柱体
+         */
+        Cylinder = 4,
     }
 }
 declare module me.feng3d.primitives {
@@ -2154,6 +2174,35 @@ declare module me.feng3d.primitives {
      * @param   elements        需要生成数据的属性
      */
     function createCube(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean, elements?: string[]): Geometry;
+}
+declare module me.feng3d.primitives {
+    /**
+     * 创建球形几何体
+     * @param radius 球体半径
+     * @param segmentsW 横向分割数
+     * @param segmentsH 纵向分割数
+     * @param yUp 正面朝向 true:Y+ false:Z+
+     * @param elements 顶点元素列表
+     */
+    function createSphere(radius?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean, elements?: string[]): Geometry;
+}
+declare module me.feng3d.primitives {
+    /**
+     * 创建胶囊几何体
+     * @param radius 胶囊体半径
+     * @param height 胶囊体高度
+     * @param segmentsW 横向分割数
+     * @param segmentsH 纵向分割数
+     * @param yUp 正面朝向 true:Y+ false:Z+
+     * @param elements 顶点元素列表
+     */
+    function createCapsule(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean, elements?: string[]): Geometry;
+}
+declare module me.feng3d.primitives {
+    /**
+     * 创建圆柱体
+     */
+    function createCylinder(topRadius?: number, bottomRadius?: number, height?: number, segmentsW?: number, segmentsH?: number, topClosed?: boolean, bottomClosed?: boolean, surfaceClosed?: boolean, yUp?: boolean, elements?: string[]): Geometry;
 }
 declare module me.feng3d {
     /**
