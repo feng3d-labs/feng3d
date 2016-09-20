@@ -13,7 +13,7 @@
         "target": "es5",
         "noImplicitAny": false,
         "sourceMap": true,
-        "declaration": true,
+        "declaration": false,
         "out": "release/feng3d.js"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
