@@ -5,4 +5,4 @@
 * examples 测试项目
 
 ## 编译项目
-直接运行feng-ts目录[compile.cmd](compile.cmd) 或者使用 Ctrl+Shift+B 进行执行编译
+直接运行[compile.cmd](compile.cmd) 或者使用 Ctrl+Shift+B 进行执行编译
