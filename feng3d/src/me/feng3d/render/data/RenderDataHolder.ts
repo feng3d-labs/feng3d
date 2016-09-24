@@ -75,8 +75,6 @@ module me.feng3d {
 		// 	uniformBuffer.matrix = data;
 		// }
 
-
-
         /**
          * 处理获取索引缓冲事件
          */

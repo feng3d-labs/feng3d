@@ -61,4 +61,17 @@ module me.feng3d {
 		 */
         matrix: Matrix3D;
     }
+
+    export class Uniform4fRenderData {
+
+        /**
+         * 常量名称
+         */
+        name: string;
+
+        /**
+         * 
+         */
+        vec4: Vector3D;
+    }
 }

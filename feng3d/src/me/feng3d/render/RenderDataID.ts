@@ -20,5 +20,7 @@ module me.feng3d {
          * 投影矩阵
          */
         static uPMatrix = "uPMatrix";
+
+        
     }
 }

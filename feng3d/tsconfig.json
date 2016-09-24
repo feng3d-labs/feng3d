@@ -39,6 +39,7 @@
         "src/me/feng3d/utils/is.ts",
         "src/me/feng3d/utils/as.ts",
         //
+        "src/me/feng3d/mathlib/Color.ts",
         "src/me/feng3d/mathlib/MathConsts.ts",
         "src/me/feng3d/mathlib/Rectangle.ts",
         "src/me/feng3d/mathlib/Vector3D.ts",
