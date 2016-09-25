@@ -56,10 +56,10 @@ module me.feng3d {
 
             //模型矩阵
             var mvMatrix = object3D.space3D.transform3D;
-            context3DBuffer.mapUniformMatrix4fv(RenderDataID.uMVMatrix, mvMatrix);
+            context3DBuffer.mapUniform(RenderDataID.uMVMatrix, mvMatrix);
 
             //场景投影矩阵
-            context3DBuffer.mapUniformMatrix4fv(RenderDataID.uPMatrix, this.camera.viewProjection);
+            context3DBuffer.mapUniform(RenderDataID.uPMatrix, this.camera.viewProjection);
 
             //绘制对象
             var renderData = RenderData.getInstance(object3D);

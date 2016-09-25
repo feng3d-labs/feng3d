@@ -15,6 +15,24 @@ module me.feng3d {
          * 片段渲染程序代码
          */
         fragmentCode: string;
+
+        /**
+        * 获取程序常量列表
+        */
+        getUniforms() {
+
+            var vertexUniforms: { [name: string]: { type: string } } = ShaderCodeUtils.getUniforms(this.vertexCode);
+            var fragmentUniforms: { [name: string]: { type: string } } = ShaderCodeUtils.getUniforms(this.fragmentCode);
+            var uniforms = vertexUniforms;
+
+            for (var name in fragmentUniforms) {
+                if (fragmentUniforms.hasOwnProperty(name)) {
+                    var element = fragmentUniforms[name];
+                    uniforms[name] = element;
+                }
+            }
+            return uniforms;
+        }
     }
 
 	/**
@@ -39,17 +57,21 @@ module me.feng3d {
          */
         name: string;
 
-        /** 属性数据 */
+        /**
+         * 属性数据
+         */
         data: Float32Array;
 
-        /** 属性数据长度 */
+        /**
+         * 属性数据长度
+         */
         size: number;
     }
 
 	/**
-     * 常量4*4矩阵渲染数据
+     * 常量渲染数据
      */
-    export class UniformMatrix4fvRenderData {
+    export class UniformRenderData {
 
         /**
          * 常量名称
@@ -57,21 +79,8 @@ module me.feng3d {
         name: string;
 
 		/**
-		 * 矩阵数据
+		 * 数据
 		 */
-        matrix: Matrix3D;
-    }
-
-    export class Uniform4fRenderData {
-
-        /**
-         * 常量名称
-         */
-        name: string;
-
-        /**
-         * 
-         */
-        vec4: Vector3D;
+        data: Matrix3D | { x: number, y: number, z: number, w: number };
     }
 }

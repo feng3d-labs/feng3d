@@ -28,7 +28,7 @@ module me.feng3d {
         /**
          * 构建颜色
          */
-        constructor(color = 0xffcccccc) {
+        constructor(color = 0xffff0000) {
 
             this.color = color;
         }
@@ -50,5 +50,17 @@ module me.feng3d {
             this.b = (this._color & 0xff) / 0xff;
         }
 
+        get x(): number {
+            return this.r;
+        }
+        get y(): number {
+            return this.g;
+        }
+        get z(): number {
+            return this.b;
+        }
+        get w(): number {
+            return this.a;
+        }
     }
 }

@@ -18,6 +18,7 @@ void main(void) {
 }`;
         fragmentShaderStr = //
         `
+precision mediump float;
 uniform vec4 diffuseInput_fc_vector;
 void main(void) {
 
@@ -29,34 +30,17 @@ void main(void) {
          */
         private _color: Color;
 
-        /** 
-         * 漫反射颜色数据RGBA 
-         */
-        private diffuseInputData: number[] = [0, 0, 0, 0];
-
         /**
          * 构建颜色材质
          * @param color 颜色
          * @param alpha 透明的
          */
-        constructor(color: Color = null, alpha: number = 1) {
+        constructor(color: Color = null) {
 
             super();
             this.color = color || new Color();
-            this.alpha = alpha;
-            // this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
-            this.mapUniformMatrix4fv
-        }
-
-        /** 
-         * 漫反射alpha 
-         */
-        public get alpha(): number {
-            return this.diffuseInputData[3];
-        }
-
-        public set alpha(value: number) {
-            this.diffuseInputData[3] = value;
+            this.mapUniform(RenderDataID.diffuseInput_fc_vector, this._color);
+            this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
         }
 
         /** 

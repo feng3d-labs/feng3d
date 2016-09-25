@@ -48,7 +48,7 @@ module me.feng3d {
                     break;
                 case PrimitiveType.Cylinder:
                     object3D.addComponent(primitives.createCylinder());
-                    break;    
+                    break;
                 default:
                     throw `无法创建3D基元对象 ${type}`;
             }

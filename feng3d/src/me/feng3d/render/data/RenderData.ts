@@ -26,7 +26,7 @@ module me.feng3d {
         /**
          * 常量数据列表
          */
-        uniforms: { [name: string]: { type: string, buffer?: UniformMatrix4fvRenderData } };
+        uniforms: { [name: string]: { type: string, buffer?: UniformRenderData } };
 
         /**
          * 渲染数据字典
@@ -121,7 +121,7 @@ module me.feng3d {
          */
         private prepareUniforms() {
 
-            this.uniforms = ShaderCodeUtils.getUniforms(this.programBuffer.vertexCode);
+            this.uniforms = this.programBuffer.getUniforms();
 
             for (var name in this.uniforms) {
                 //从Object3D中获取顶点缓冲

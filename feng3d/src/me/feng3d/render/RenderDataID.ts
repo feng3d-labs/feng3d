@@ -21,6 +21,6 @@ module me.feng3d {
          */
         static uPMatrix = "uPMatrix";
 
-        
+        static diffuseInput_fc_vector = "diffuseInput_fc_vector";
     }
 }

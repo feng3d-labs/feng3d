@@ -84,9 +84,21 @@ module me.feng3d {
 
             for (var name in uniforms) {
                 if (uniforms.hasOwnProperty(name)) {
-                    var element = uniforms[name];
+                    var item = uniforms[name];
+                    var data = item.buffer.data;
+                    var type = item.type;
                     var location = this.context3D.getUniformLocation(shaderProgram, name);
-                    this.context3D.uniformMatrix4fv(location, false, element.buffer.matrix.rawData);
+                    switch (type) {
+                        case "mat4":
+                            this.context3D.uniformMatrix4fv(location, false, (<Matrix3D>data).rawData);
+                            break;
+                        case "vec4":
+                            var vec4 = <Color>data;
+                            this.context3D.uniform4f(location, vec4.x, vec4.y, vec4.z, vec4.w);
+                            break;
+                        default:
+                            throw `无法识别的uniform类型 ${type}`;
+                    }
                 }
             }
         }

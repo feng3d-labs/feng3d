@@ -9,7 +9,7 @@ module me.feng3d {
 		private indexBuffer: IndexRenderData;
 		private programBuffer: ProgramRenderData;
 		private attributes: { [name: string]: AttributeRenderData } = {};
-		private uniforms: { [name: string]: UniformMatrix4fvRenderData } = {};
+		private uniforms: { [name: string]: UniformRenderData } = {};
 
 		/**
 		 * 创建Context3D数据缓冲
@@ -58,22 +58,12 @@ module me.feng3d {
 		/**
 		 * 映射常量4*4矩阵
 		 */
-		mapUniformMatrix4fv(name: string, data: Matrix3D) {
+		mapUniform(name: string, data: Matrix3D | { x: number, y: number, z: number, w: number }) {
 
-			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformMatrix4fvRenderData();
+			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformRenderData();
 			uniformBuffer.name = name;
-			uniformBuffer.matrix = data;
+			uniformBuffer.data = data;
 		}
-
-		// /**
-		//  * 映射常量缓冲
-		//  */
-		// mapUniformBuffer(name: string, data: Matrix3D) {
-
-		// 	var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformRenderData();
-		// 	uniformBuffer.name = name;
-		// 	uniformBuffer.matrix = data;
-		// }
 
         /**
          * 处理获取索引缓冲事件
