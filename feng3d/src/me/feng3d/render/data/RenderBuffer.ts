@@ -93,7 +93,7 @@ module me.feng3d {
                             this.context3D.uniformMatrix4fv(location, false, (<Matrix3D>data).rawData);
                             break;
                         case "vec4":
-                            var vec4 = <Color>data;
+                            var vec4 = <Vec4>data;
                             this.context3D.uniform4f(location, vec4.x, vec4.y, vec4.z, vec4.w);
                             break;
                         default:

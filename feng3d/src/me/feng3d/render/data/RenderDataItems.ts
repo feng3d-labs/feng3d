@@ -81,6 +81,13 @@ module me.feng3d {
 		/**
 		 * 数据
 		 */
-        data: Matrix3D | { x: number, y: number, z: number, w: number };
+        data: Matrix3D | Vec4;
+    }
+
+    /**
+     * 渲染常量向量类型
+     */
+    export interface Vec4 {
+        x: number, y: number, z: number, w: number;
     }
 }
