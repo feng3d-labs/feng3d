@@ -28,7 +28,7 @@ module me.feng3d {
         /**
          * 构建颜色
          */
-        constructor(color = 0xffff0000) {
+        constructor(color = 0xffffffff) {
 
             this.color = color;
         }

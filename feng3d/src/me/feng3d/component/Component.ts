@@ -298,7 +298,9 @@ module me.feng3d {
          */
         protected getBubbleTargets(event: Event = null): IEventDispatcher[] {
 
-            return [this._parentComponent];
+            var bubbleTargets = super.getBubbleTargets(event);
+            bubbleTargets.push(this._parentComponent);
+            return bubbleTargets;
         }
 
         //------------------------------------------

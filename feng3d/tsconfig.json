@@ -57,11 +57,11 @@
         "src/me/feng3d/render/RenderDataID.ts",
         "src/me/feng3d/render/Renderer.ts",
         //
-        "src/me/feng3d/core/Space3D.ts",
         "src/me/feng3d/core/Object3D.ts",
         "src/me/feng3d/core/View3D.ts",
         //3D对象组件
         "src/me/feng3d/core/object3DComponents/Object3DComponent.ts",
+        "src/me/feng3d/core/Space3D.ts",
         "src/me/feng3d/core/object3DComponents/container/Container3D.ts",
         "src/me/feng3d/core/object3DComponents/container/Container3DEvent.ts",
         "src/me/feng3d/core/object3DComponents/SceneSpace3D.ts",
