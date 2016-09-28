@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
     /**
      * 3D空间
      * @author feng 2016-04-26

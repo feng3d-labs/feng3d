@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * 渲染缓冲
@@ -103,8 +103,7 @@ module me.feng3d {
             }
         }
 
-        /**
-         * 绘制
+        /**              
          */
         private draw() {
 

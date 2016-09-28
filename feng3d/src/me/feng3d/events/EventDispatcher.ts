@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
 	/**
 	 * 为了实现非flash原生显示列表的冒泡事件，自定义事件适配器

@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
 
 	/**
@@ -171,7 +171,7 @@ module me.feng3d {
 		 * <p>把顶点分为后面、前面、相交三类</p>
 		 * @param p			顶点
 		 * @return			顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
-		 * @see				me.feng3d.core.math.PlaneClassification
+		 * @see				feng3d.core.math.PlaneClassification
 		 */
         public classifyPoint(p: Vector3D, epsilon: number = 0.01): number {
             // check NaN

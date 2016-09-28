@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * 3D对象场景空间

@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * opengl顶点属性名称

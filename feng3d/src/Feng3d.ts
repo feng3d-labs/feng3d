@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
     /**
      * feng3d的版本号
      */

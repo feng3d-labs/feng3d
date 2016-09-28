@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
 	/**
 	 * 镜头事件

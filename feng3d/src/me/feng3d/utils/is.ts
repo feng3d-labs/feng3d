@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * 判断a对象是否为b类型
