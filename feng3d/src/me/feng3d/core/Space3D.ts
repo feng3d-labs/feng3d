@@ -1,9 +1,9 @@
-module me.feng3d {
+module feng3d {
     /**
      * 3D空间
      * @author feng 2016-04-26
      */
-    export class Space3D extends Component {
+    export class Space3D extends Object3DComponent {
 
         /**
          * 构建3D空间
@@ -98,15 +98,16 @@ module me.feng3d {
             this.transform3DDirty = false;
             this._transform3D.rawData.set(value.rawData);
             var vecs = this._transform3D.decompose();
-            this.x = vecs[0].x;
-            this.y = vecs[0].y;
-            this.z = vecs[0].z;
-            this.rx = vecs[1].x * MathConsts.RADIANS_TO_DEGREES;
-            this.ry = vecs[1].y * MathConsts.RADIANS_TO_DEGREES;
-            this.rz = vecs[1].z * MathConsts.RADIANS_TO_DEGREES;
-            this.sx = vecs[2].x;
-            this.sy = vecs[2].y;
-            this.sz = vecs[2].z;
+            this._x = vecs[0].x;
+            this._y = vecs[0].y;
+            this._z = vecs[0].z;
+            this._rx = vecs[1].x * MathConsts.RADIANS_TO_DEGREES;
+            this._ry = vecs[1].y * MathConsts.RADIANS_TO_DEGREES;
+            this._rz = vecs[1].z * MathConsts.RADIANS_TO_DEGREES;
+            this._sx = vecs[2].x;
+            this._sy = vecs[2].y;
+            this._sz = vecs[2].z;
+            this.invalidateTransform3D();
         }
 
         /**
@@ -125,7 +126,18 @@ module me.feng3d {
          * 使变换矩阵无效
          */
         protected invalidateTransform3D() {
+
             this.transform3DDirty = true;
+            this.notifyTransformChanged();
+        }
+
+        /**
+		 * 发出状态改变消息
+		 */
+        private notifyTransformChanged() {
+
+            var transformChanged = new Space3DEvent(Space3DEvent.TRANSFORM_CHANGED, this);
+            this.object3D && this.object3D.dispatchEvent(transformChanged);
         }
 
         //private
@@ -141,5 +153,41 @@ module me.feng3d {
 
         private _transform3D = new Matrix3D();
         private transform3DDirty: boolean;
+    }
+
+    /**
+	 * 3D对象事件(3D状态发生改变、位置、旋转、缩放)
+	 * @author feng 2014-3-31
+	 */
+    export class Space3DEvent extends Event {
+		/**
+		 * 平移
+		 */
+        public static POSITION_CHANGED: string = "positionChanged";
+
+		/**
+		 * 旋转
+		 */
+        public static ROTATION_CHANGED: string = "rotationChanged";
+
+		/**
+		 * 缩放
+		 */
+        public static SCALE_CHANGED: string = "scaleChanged";
+
+		/**
+		 * 变换
+		 */
+        public static TRANSFORM_CHANGED: string = "transformChanged";
+
+		/**
+		 * 变换已更新
+		 */
+        public static TRANSFORM_UPDATED: string = "transformUpdated";
+
+		/**
+		 * 发出事件的3D元素
+		 */
+        data: Space3D;
     }
 }

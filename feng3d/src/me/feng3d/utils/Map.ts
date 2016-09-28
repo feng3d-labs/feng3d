@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * 构建Map类代替Dictionary

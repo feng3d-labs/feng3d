@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
 	/**
 	 * 透视摄像机镜头

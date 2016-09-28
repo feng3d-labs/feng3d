@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * 3D容器组件
@@ -7,34 +7,11 @@ module me.feng3d {
     export class Container3D extends Object3DComponent {
 
         /**
-         * 获取父对象
-         * @param object3D  显示对象
-         * @return          父对象
+         * 父对象
          */
-        public static getParent(object3D: Object3D): Object3D {
-            var container3D = this.getContainer3D(object3D);
-            return container3D.parent;
-        }
+        public get parent() {
 
-        /**
-         * 获取容器
-         */
-        public static getContainer3D(object3D: Object3D): Container3D {
-            return object3D.getOrCreateComponentByClass(Container3D);
-        }
-
-        /**
-         * 移除对象
-         * @param   object3D    显示对象
-         */
-        public static removeChild(object3D: Object3D): void {
-
-            var parent = Container3D.getParent(object3D);
-            if (parent == null) {
-                return;
-            }
-            var parentContainer3D = this.getContainer3D(parent);
-            parentContainer3D.removeChild(object3D);
+            return this._parent;
         }
 
         /**
@@ -69,7 +46,7 @@ module me.feng3d {
         /**
          * 移除子对象
          * @param   child   子对象
-         * 
+         * @return			被移除子对象索引
          */
         public removeChild(child: Object3D): number {
 
@@ -113,9 +90,17 @@ module me.feng3d {
             return this.children[index];
         }
 
-        //------------------------------------------
-        //@private
-        //------------------------------------------
+        /**
+         * 获取子对象数量
+         */
+        public get numChildren(): number {
+            
+            return this.children.length;
+        }
+
+        /******************************************************************************************************************************
+         * @protected
+         ******************************************************************************************************************************/
 
         /**
          * 处理被添加组件事件
@@ -136,13 +121,14 @@ module me.feng3d {
             this.object3D.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
 
-        //------------------------------------------
-        //@private
-        //------------------------------------------
+        /******************************************************************************************************************************
+         * @private
+         ******************************************************************************************************************************/
+
         /**
          * 父对象
          */
-        private parent: Object3D = null;
+        private _parent: Object3D = null;
 
         /**
          * 子对象列表
@@ -155,7 +141,7 @@ module me.feng3d {
         private onAddedContainer3D(event: Container3DEvent): void {
 
             if (event.data.child == this.object3D) {
-                this.parent = event.data.parent;
+                this._parent = event.data.parent;
             }
         }
 
@@ -165,7 +151,7 @@ module me.feng3d {
         private onRemovedContainer3D(event: Container3DEvent): void {
 
             if (event.data.child == this.object3D) {
-                this.parent = null;
+                this._parent = null;
             }
         }
     }

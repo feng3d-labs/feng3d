@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * 渲染器
@@ -55,11 +55,12 @@ module me.feng3d {
             var context3DBuffer = object3D.getOrCreateComponentByClass(RenderDataHolder);
 
             //模型矩阵
-            var mvMatrix = object3D.space3D.transform3D;
-            context3DBuffer.mapUniformMatrix4fv(RenderDataID.uMVMatrix, mvMatrix);
+            var mvMatrix = object3D.sceneTransform3D;
+            context3DBuffer.mapUniform(RenderDataID.uMVMatrix, mvMatrix);
+            console.log(mvMatrix.rawData);
 
             //场景投影矩阵
-            context3DBuffer.mapUniformMatrix4fv(RenderDataID.uPMatrix, this.camera.viewProjection);
+            context3DBuffer.mapUniform(RenderDataID.uPMatrix, this.camera.viewProjection);
 
             //绘制对象
             var renderData = RenderData.getInstance(object3D);

@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * Context3D缓冲事件
@@ -64,7 +64,7 @@ module me.feng3d {
          */
         buffer: ProgramRenderData;
     }
-    
+
     /**
      * 获取UniformBuffer事件数据
      */
@@ -78,6 +78,6 @@ module me.feng3d {
         /**
          * 常量缓存
          */
-        buffer: UniformMatrix4fvRenderData;
+        buffer: UniformRenderData;
     }
 }

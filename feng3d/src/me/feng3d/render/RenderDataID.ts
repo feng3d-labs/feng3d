@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * 渲染数据编号
@@ -20,5 +20,7 @@ module me.feng3d {
          * 投影矩阵
          */
         static uPMatrix = "uPMatrix";
+
+        static diffuseInput_fc_vector = "diffuseInput_fc_vector";
     }
 }

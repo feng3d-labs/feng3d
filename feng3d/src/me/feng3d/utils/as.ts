@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * 如果a为b类型则返回，否则返回null

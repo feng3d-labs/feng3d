@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 	/**
 	 * 事件
 	 * @author feng 2014-5-7

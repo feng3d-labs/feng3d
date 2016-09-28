@@ -1,4 +1,4 @@
-module me.feng3d.primitives {
+module feng3d.primitives {
 
     /**
      * 创建立方几何体

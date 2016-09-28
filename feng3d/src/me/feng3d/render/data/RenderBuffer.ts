@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * 渲染缓冲
@@ -84,15 +84,26 @@ module me.feng3d {
 
             for (var name in uniforms) {
                 if (uniforms.hasOwnProperty(name)) {
-                    var element = uniforms[name];
+                    var item = uniforms[name];
+                    var data = item.buffer.data;
+                    var type = item.type;
                     var location = this.context3D.getUniformLocation(shaderProgram, name);
-                    this.context3D.uniformMatrix4fv(location, false, element.buffer.matrix.rawData);
+                    switch (type) {
+                        case "mat4":
+                            this.context3D.uniformMatrix4fv(location, false, (<Matrix3D>data).rawData);
+                            break;
+                        case "vec4":
+                            var vec4 = <Vec4>data;
+                            this.context3D.uniform4f(location, vec4.x, vec4.y, vec4.z, vec4.w);
+                            break;
+                        default:
+                            throw `无法识别的uniform类型 ${type}`;
+                    }
                 }
             }
         }
 
-        /**
-         * 绘制
+        /**              
          */
         private draw() {
 
@@ -102,7 +113,13 @@ module me.feng3d {
 
             var count = indexBuffer.indices.length;
             this.context3D.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, buffer);
-            this.context3D.drawElements(WebGLRenderingContext.TRIANGLES, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.POINTS, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.LINE_LOOP, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.LINE_STRIP, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.LINES, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            this.context3D.drawElements(RenderMode.TRIANGLES, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.TRIANGLE_STRIP, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.TRIANGLE_FAN, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
         }
     }
 }

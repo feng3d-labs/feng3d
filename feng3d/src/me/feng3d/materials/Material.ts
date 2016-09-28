@@ -1,4 +1,4 @@
-module me.feng3d {
+module feng3d {
 
     /**
      * 材质
@@ -22,13 +22,18 @@ void main(void) {
 void main(void) {
     gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }`;
-
         pass: MaterialPass;
+
+        /**
+         * 渲染模式
+         */
+        renderMode: RenderMode;
 
         /**
          * 构建材质
          */
         constructor() {
+
             super();
             this.pass = new MaterialPass();
             this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
