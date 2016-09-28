@@ -114,7 +114,13 @@ module me.feng3d {
 
             var count = indexBuffer.indices.length;
             this.context3D.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, buffer);
-            this.context3D.drawElements(WebGLRenderingContext.TRIANGLES, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.POINTS, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            this.context3D.drawElements(WebGLRenderingContext.LINE_LOOP, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.LINE_STRIP, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.LINES, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.TRIANGLES, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.TRIANGLE_STRIP, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            // this.context3D.drawElements(WebGLRenderingContext.TRIANGLE_FAN, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
         }
     }
 }
