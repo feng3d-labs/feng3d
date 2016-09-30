@@ -35,7 +35,7 @@ module feng3d {
 		/**
 		 * 映射属性缓冲
 		 */
-		mapAttributeBuffer(name: string, value: Uint16Array, stride: number) {
+		mapAttributeBuffer(name: string, value: Float32Array, stride: number) {
 
 			var attributeBuffer = this.attributes[name] = this.attributes[name] || new AttributeRenderData();
 			attributeBuffer.name = name;

@@ -4,6 +4,8 @@
     "version": "0.1.0",
     "command": "compile",
     "isShellCommand": true,
-    "args": ["."],
+    "args": [
+        "."
+    ],
     "showOutput": "always"
 }
