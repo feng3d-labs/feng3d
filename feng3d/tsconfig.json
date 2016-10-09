@@ -92,6 +92,9 @@
         "src/materials/Material.ts",
         "src/materials/ColorMaterial.ts",
         //材质通道
-        "src/materials/passes/MaterialPass.ts"
+        "src/materials/passes/MaterialPass.ts",
+        //镜头控制
+        "src/controllers/ControllerBase.ts",
+        "src/controllers/LookAtController.ts"
     ]
 }

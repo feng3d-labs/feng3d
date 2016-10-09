@@ -18,6 +18,9 @@ module feng3d {
             super();
             this._lens = lens || new PerspectiveLens();
             this._lens.addEventListener(LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
+            this.addEventListener(Space3DEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+
+            this.space3D.z = -1000;
         }
 
         /**
@@ -44,6 +47,10 @@ module feng3d {
 
             this._viewProjectionDirty = true;
             this.dispatchEvent(event);
+        }
+
+        private onSpaceTransformChanged(event: Space3DEvent): void {
+            this._viewProjectionDirty = true;
         }
     }
 }

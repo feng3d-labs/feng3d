@@ -73,5 +73,9 @@ module feng3d {
                 this.gl.viewport(0, 0, this.renderWidth, this.renderHeight);
             }
         }
+
+        public get camera(): Camera3D {
+            return this._camera;
+        }
     }
 }
