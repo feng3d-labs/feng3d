@@ -14,6 +14,17 @@ module feng3d {
 
         private renderer: Renderer;
 
+        private canvas: HTMLCanvasElement;
+
+        /**
+         * 绘制宽度
+         */
+        private renderWidth: number;
+        /**
+         * 绘制高度
+         */
+        private renderHeight: number;
+
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -23,8 +34,13 @@ module feng3d {
         constructor(canvas, scene: Scene3D = null, camera: Camera3D = null) {
 
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
-            this.gl = canvas.getContext("experimental-webgl");
+            this.canvas = canvas;
+            this.renderWidth = this.canvas.width;
+            this.renderHeight = this.canvas.height;
+
+            this.gl = this.canvas.getContext("experimental-webgl");
             this.gl || alert("Unable to initialize WebGL. Your browser may not support it.");
+            this.gl.viewport(0, 0, this.renderWidth, this.renderHeight);
 
             this.scene = scene || new Scene3D();
             this._camera = camera || new Camera3D();
@@ -44,7 +60,18 @@ module feng3d {
 
         private drawScene() {
 
+            this.resize();
             this.renderer.render();
+        }
+
+        private resize() {
+
+            if (this.renderWidth != this.canvas.width || this.renderHeight != this.canvas.height) {
+
+                this.renderWidth = this.canvas.width;
+                this.renderHeight = this.canvas.height;
+                this.gl.viewport(0, 0, this.renderWidth, this.renderHeight);
+            }
         }
     }
 }
