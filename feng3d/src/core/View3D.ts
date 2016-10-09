@@ -35,13 +35,10 @@ module feng3d {
 
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this.canvas = canvas;
-            this.renderWidth = this.canvas.width;
-            this.renderHeight = this.canvas.height;
 
             this.gl = this.canvas.getContext("experimental-webgl");
             this.gl || alert("Unable to initialize WebGL. Your browser may not support it.");
-            this.gl.viewport(0, 0, this.renderWidth, this.renderHeight);
-
+           
             this.scene = scene || new Scene3D();
             this._camera = camera || new Camera3D();
             this.renderer = new Renderer(this.gl, this.scene, this._camera);
