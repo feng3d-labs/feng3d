@@ -14,3 +14,6 @@
 * 使用命令 `npm install -g typescript` 安装 TypeScript
 * 使用命令 `npm install -g typings` 安装 Tpyings
 * 直接运行[compile.cmd](compile.cmd) 或者使用 Ctrl+Shift+B 进行执行编译
+
+## 交流
+QQ群：519732759
