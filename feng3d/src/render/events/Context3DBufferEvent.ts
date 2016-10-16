@@ -25,6 +25,11 @@ module feng3d {
          * 获取UniformBuffer
          */
         static GET_UNIFORMBUFFER = "getUniformBuffer";
+
+        /**
+         * 获取UniformBuffer
+         */
+        static GET_SHADERPARAM = "getShaderParam";
     }
 
     /**
@@ -80,4 +85,21 @@ module feng3d {
          */
         buffer: UniformRenderData;
     }
+
+    /**
+     * 获取ShaderParam事件数据
+     */
+    export class GetShaderParamEventData {
+
+        /**
+         * 参数名称
+         */
+        shaderParamID: ShaderParamID;
+
+        /**
+         * 参数数据
+         */
+        data: any;
+    }
+
 }
