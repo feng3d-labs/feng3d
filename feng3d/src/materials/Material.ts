@@ -6,7 +6,6 @@ module feng3d {
      */
     export class Material extends RenderDataHolder {
 
-
         vertexShaderStr = //
         `
 attribute vec3 vaPosition;
@@ -25,9 +24,9 @@ void main(void) {
         pass: MaterialPass;
 
         /**
-         * 渲染模式
-         */
-        renderMode: RenderMode;
+        * 渲染模式
+        */
+        renderMode = RenderMode.TRIANGLES;
 
         /**
          * 构建材质

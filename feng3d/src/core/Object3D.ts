@@ -13,6 +13,13 @@ module feng3d {
             return this.getOrCreateComponentByClass(Space3D);
         }
 
+        public set space3D(value: Space3D) {
+
+            assert(value != null, "3D空间不能为null");
+            this.removeComponent(this.space3D);
+            this.addComponent(value);
+        }
+
         /**
          * 容器
          */

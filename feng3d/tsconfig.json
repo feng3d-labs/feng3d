@@ -10,7 +10,7 @@
 // }
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es6",
         "noImplicitAny": false,
         "sourceMap": true,
         "declaration": true,
@@ -56,6 +56,7 @@
         "src/render/utils/RenderBufferPool.ts",
         "src/render/events/Context3DBufferEvent.ts",
         "src/render/RenderDataID.ts",
+        "src/render/ShaderParamID.ts",
         "src/render/Renderer.ts",
         //
         "src/core/Object3D.ts",
@@ -74,6 +75,9 @@
         "src/geometry/GLAttribute.ts",
         "src/geometry/Geometry.ts",
         "src/geometry/GeometryEvent.ts",
+        //几何体组件
+        "src/geometry/components/GeometryComponent.ts",
+        "src/geometry/components/SegmentGeometry.ts",
         //摄像机
         "src/cameras/lenses/LensEvent.ts",
         "src/cameras/lenses/CoordinateSystem.ts",
@@ -91,6 +95,7 @@
         //材质
         "src/materials/Material.ts",
         "src/materials/ColorMaterial.ts",
+        "src/materials/SegmentMaterial.ts",
         //材质通道
         "src/materials/passes/MaterialPass.ts",
         //镜头控制
