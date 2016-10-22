@@ -4,6 +4,6 @@
     "version": "0.1.0",
     "command": "call",
     "isShellCommand": true,
-    "args": ["node_modules/.bin/tsc"],
+    "args": ["tsc"],
     "showOutput": "always"
 }

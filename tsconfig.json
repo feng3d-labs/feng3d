@@ -1,13 +1,3 @@
-// {
-//     "compilerOptions": {
-//         "target": "es5",
-//         "noImplicitAny": false,
-//         "module": "amd",
-//         "removeComments": false,
-//         "outDir": "bin",
-//         "sourceMap": true
-//     }
-// }
 {
     "compilerOptions": {
         "target": "es6",
