@@ -1,4 +1,0 @@
-[submodule "node_modules"]
-	path = node_modules
-	url = https://git.oschina.net/wardenfeng/node_modules.git
-	branch = typescript
