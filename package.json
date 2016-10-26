@@ -1,6 +1,6 @@
 {
   "name": "feng3d",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "feng3d",
   "main": "release/feng3d.js",
   "scripts": {
