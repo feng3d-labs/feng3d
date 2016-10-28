@@ -1,8 +1,9 @@
 {
   "name": "feng3d",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "feng3d",
   "main": "release/feng3d.js",
+  "types": "./release/feng3d.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,7 +12,9 @@
     "url": "git+https://github.com/feng3dTS/feng3d-ts.git"
   },
   "keywords": [
-    "feng3d"
+    "feng3d",
+    "webgl",
+    "3d engine"
   ],
   "author": "feng",
   "license": "ISC",
