@@ -1,7 +1,7 @@
 {
   "name": "feng3d",
-  "version": "1.0.5",
-  "description": "feng3d",
+  "version": "1.0.7",
+  "description": "webgl 3d engine",
   "main": "release/feng3d.js",
   "types": "./release/feng3d.d.ts",
   "scripts": {
