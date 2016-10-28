@@ -5,7 +5,7 @@
     "command": "tsc",
     "isShellCommand": true,
     "args": [
-        "-w",
+        // "-w",
         "-p",
         "."
     ],

@@ -173,8 +173,8 @@ module feng3d {
          */
         public getComponentsByName(name: String): IComponent[] {
 
-            var filterResult = this.components.filter(function (item: IComponent, ...args): boolean {
-                return item.name == name;
+            var filterResult = this.components.filter(function (value: IComponent, index: number, array: IComponent[]): boolean {
+                return value.name == name;
             });
             return filterResult;
         }
@@ -185,7 +185,7 @@ module feng3d {
          * @param cls				类定义
          * @return                  返回指定类型组件
          */
-        public getComponentByClass<T extends IComponent>(cls: new (...args) => T): T {
+        public getComponentByClass<T extends IComponent>(cls: new () => T): T {
 
             var component = this.getComponentsByClass(cls)[0];
             return component;
@@ -196,10 +196,10 @@ module feng3d {
          * @param cls		类定义
          * @return			返回与给出类定义一致的组件
          */
-        public getComponentsByClass<T extends IComponent>(cls: new (...args) => T): T[] {
+        public getComponentsByClass<T extends IComponent>(cls: new () => T): T[] {
 
-            var filterResult: any = this.components.filter(function (item: T, ...args): boolean {
-                return item instanceof cls;
+            var filterResult: any = this.components.filter(function (value: IComponent, index: number, array: IComponent[]): boolean {
+                return value instanceof cls;
             });
 
             return filterResult;
@@ -211,7 +211,7 @@ module feng3d {
          * @param cls       类定义
          * @return          返回与给出类定义一致的组件
          */
-        public getOrCreateComponentByClass<T extends IComponent>(cls: new (...args) => T): T {
+        public getOrCreateComponentByClass<T extends IComponent>(cls: new () => T): T {
 
             var component = this.getComponentByClass(cls);
             if (component == null) {
@@ -269,9 +269,9 @@ module feng3d {
 
             if (depth == 0)
                 return;
-            this.components.forEach(function (item: IComponent, ...args): void {
-                item.dispatchEvent(event);
-                item.dispatchChildrenEvent(event, depth - 1)
+            this.components.forEach(function (value: IComponent, index: number, array: IComponent[]): void {
+                value.dispatchEvent(event);
+                value.dispatchChildrenEvent(event, depth - 1)
             });
         }
 
