@@ -518,8 +518,8 @@ var feng3d;
          * @return 					获取到的组件
          */
         getComponentsByName(name) {
-            var filterResult = this.components.filter(function (item, ...args) {
-                return item.name == name;
+            var filterResult = this.components.filter(function (value, index, array) {
+                return value.name == name;
             });
             return filterResult;
         }
@@ -539,8 +539,8 @@ var feng3d;
          * @return			返回与给出类定义一致的组件
          */
         getComponentsByClass(cls) {
-            var filterResult = this.components.filter(function (item, ...args) {
-                return item instanceof cls;
+            var filterResult = this.components.filter(function (value, index, array) {
+                return value instanceof cls;
             });
             return filterResult;
         }
@@ -597,9 +597,9 @@ var feng3d;
         dispatchChildrenEvent(event, depth = 1) {
             if (depth == 0)
                 return;
-            this.components.forEach(function (item, ...args) {
-                item.dispatchEvent(event);
-                item.dispatchChildrenEvent(event, depth - 1);
+            this.components.forEach(function (value, index, array) {
+                value.dispatchEvent(event);
+                value.dispatchChildrenEvent(event, depth - 1);
             });
         }
         //------------------------------------------
