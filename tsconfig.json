@@ -83,8 +83,9 @@
         //
         //材质
         "src/materials/Material.ts",
-        "src/materials/ColorMaterial.ts",
-        "src/materials/SegmentMaterial.ts",
+        "src/materials/components/MaterialComponent.ts",
+        "src/materials/components/ColorMaterial.ts",
+        "src/materials/components/SegmentMaterial.ts",
         //材质通道
         "src/materials/passes/MaterialPass.ts",
         //镜头控制

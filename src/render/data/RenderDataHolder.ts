@@ -29,7 +29,8 @@ module feng3d {
 		/**
 		 * 映射索引缓冲
 		 */
-		mapIndexBuffer(value: Uint16Array) {
+		public mapIndexBuffer(value: Uint16Array) {
+
 			var indexBuffer = this.indexBuffer = this.indexBuffer || new IndexRenderData();
 			indexBuffer.indices = value;
 		}
@@ -37,7 +38,7 @@ module feng3d {
 		/**
 		 * 映射属性缓冲
 		 */
-		mapAttributeBuffer(name: string, value: Float32Array, stride: number) {
+		public mapAttributeBuffer(name: string, value: Float32Array, stride: number) {
 
 			var attributeBuffer = this.attributes[name] = this.attributes[name] || new AttributeRenderData();
 			attributeBuffer.name = name;
@@ -50,7 +51,7 @@ module feng3d {
          * @param vertexCode        顶点渲染程序代码
          * @param fragmentCode      片段渲染程序代码
          */
-		mapProgram(vertexCode: string, fragmentCode: string) {
+		public mapProgram(vertexCode: string, fragmentCode: string) {
 
 			var programBuffer = this.programBuffer = this.programBuffer || new ProgramRenderData();
 			programBuffer.vertexCode = vertexCode;
@@ -60,7 +61,7 @@ module feng3d {
 		/**
 		 * 映射常量
 		 */
-		mapUniform(name: string, data: Matrix3D | Vec4) {
+		public mapUniform(name: string, data: Matrix3D | Vec4) {
 
 			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformRenderData();
 			uniformBuffer.name = name;
@@ -70,7 +71,7 @@ module feng3d {
 		/**
 		 * 映射渲染参数
 		 */
-		mapShaderParam(shaderParamID: ShaderParamID, param) {
+		public mapShaderParam(shaderParamID: ShaderParamID, param) {
 
 			this.shaderParams[shaderParamID] = param;
 		}

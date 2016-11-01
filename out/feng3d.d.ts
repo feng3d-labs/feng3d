@@ -2254,6 +2254,7 @@ declare module feng3d {
 declare module feng3d {
     /**
      * 几何体组件
+     * @author feng 2016-10-16
      */
     class GeometryComponent extends Component {
         /**
@@ -2591,6 +2592,26 @@ declare module feng3d {
         renderMode: RenderMode;
         /**
          * 构建材质
+         */
+        constructor();
+    }
+}
+declare module feng3d {
+    /**
+     * 材质组件
+     * @author feng 2016-11-01
+     */
+    class MaterialComponent extends Component {
+        /**
+         * 父组件
+         */
+        protected _parentComponent: Material;
+        /**
+         * 所属对象
+         */
+        readonly material: Material;
+        /**
+         * 构建材质组件
          */
         constructor();
     }

@@ -2,6 +2,7 @@ module feng3d {
 
     /**
      * 几何体组件
+     * @author feng 2016-10-16
      */
     export class GeometryComponent extends Component {
 
