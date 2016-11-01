@@ -1,9 +1,9 @@
 {
   "name": "feng3d",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "webgl 3d engine",
-  "main": "release/feng3d.js",
-  "types": "./release/feng3d.d.ts",
+  "main": "out/feng3d.js",
+  "types": "out/feng3d.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
