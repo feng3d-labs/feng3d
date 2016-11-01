@@ -113,6 +113,9 @@ module feng3d {
 
             var count = indexBuffer.indices.length;
             this.context3D.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, buffer);
+
+            this.context3D.lineWidth(1);
+
             this.context3D.drawElements(this.renderData.renderMode, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
         }
     }
