@@ -5461,7 +5461,7 @@ var feng3d;
      * 颜色材质
      * @author feng 2016-05-02
      */
-    class ColorMaterial extends feng3d.Material {
+    class ColorMaterial extends feng3d.MaterialComponent {
         /**
          * 构建颜色材质
          * @param color 颜色
@@ -5486,8 +5486,13 @@ void main(void) {
     gl_FragColor = diffuseInput_fc_vector;
 }`;
             this.color = color || new feng3d.Color();
-            this.mapUniform(feng3d.RenderDataID.diffuseInput_fc_vector, this._color);
-            this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
+        }
+        /**
+         * 处理被添加组件事件
+         */
+        onBeAddedComponent(event) {
+            this.material.mapUniform(feng3d.RenderDataID.diffuseInput_fc_vector, this._color);
+            this.material.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
         }
         /**
          * 颜色
@@ -5507,7 +5512,7 @@ var feng3d;
      * 线段材质
      * @author feng 2016-10-15
      */
-    class SegmentMaterial extends feng3d.Material {
+    class SegmentMaterial extends feng3d.MaterialComponent {
         /**
          * 构建颜色材质
          * @param color 颜色
@@ -5519,7 +5524,12 @@ var feng3d;
             * 渲染模式
             */
             this.renderMode = feng3d.RenderMode.LINES;
-            this.mapShaderParam(feng3d.ShaderParamID.renderMode, this.renderMode);
+        }
+        /**
+         * 处理被添加组件事件
+         */
+        onBeAddedComponent(event) {
+            this.material.mapShaderParam(feng3d.ShaderParamID.renderMode, this.renderMode);
         }
     }
     feng3d.SegmentMaterial = SegmentMaterial;

@@ -2621,7 +2621,7 @@ declare module feng3d {
      * 颜色材质
      * @author feng 2016-05-02
      */
-    class ColorMaterial extends Material {
+    class ColorMaterial extends MaterialComponent {
         vertexShaderStr: string;
         fragmentShaderStr: string;
         /**
@@ -2635,6 +2635,10 @@ declare module feng3d {
          */
         constructor(color?: Color);
         /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void;
+        /**
          * 颜色
          */
         color: Color;
@@ -2645,7 +2649,7 @@ declare module feng3d {
      * 线段材质
      * @author feng 2016-10-15
      */
-    class SegmentMaterial extends Material {
+    class SegmentMaterial extends MaterialComponent {
         /**
         * 渲染模式
         */
@@ -2656,6 +2660,10 @@ declare module feng3d {
          * @param alpha 透明的
          */
         constructor(color?: Color);
+        /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void;
     }
 }
 declare module feng3d {

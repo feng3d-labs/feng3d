@@ -4,7 +4,7 @@ module feng3d {
      * 颜色材质
      * @author feng 2016-05-02
      */
-    export class ColorMaterial extends Material {
+    export class ColorMaterial extends MaterialComponent {
 
         vertexShaderStr = //
         `
@@ -39,8 +39,15 @@ void main(void) {
 
             super();
             this.color = color || new Color();
-            this.mapUniform(RenderDataID.diffuseInput_fc_vector, this._color);
-            this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
+        }
+
+        /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void {
+
+            this.material.mapUniform(RenderDataID.diffuseInput_fc_vector, this._color);
+            this.material.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
         }
 
         /** 
