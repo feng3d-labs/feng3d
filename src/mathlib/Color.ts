@@ -118,22 +118,5 @@ module feng3d {
             }
             return str.toUpperCase();
         }
-
-        get x(): number {
-
-            return this.r;
-        }
-        get y(): number {
-
-            return this.g;
-        }
-        get z(): number {
-
-            return this.b;
-        }
-        get w(): number {
-
-            return this.a;
-        }
     }
 }

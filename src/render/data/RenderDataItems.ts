@@ -81,7 +81,7 @@ module feng3d {
 		/**
 		 * 数据
 		 */
-        data: Matrix3D | Vec4;
+        dataFunc: () => Matrix3D | Vec4;
     }
 
     /**

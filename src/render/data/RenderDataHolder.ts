@@ -61,11 +61,10 @@ module feng3d {
 		/**
 		 * 映射常量
 		 */
-		public mapUniform(name: string, data: Matrix3D | Vec4) {
+		public mapUniform(name: string, dataFunc: () => Matrix3D | Vec4) {
 
 			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformRenderData();
-			uniformBuffer.name = name;
-			uniformBuffer.data = data;
+			uniformBuffer.dataFunc = dataFunc;
 		}
 
 		/**

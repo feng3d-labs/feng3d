@@ -566,34 +566,61 @@ declare module feng3d {
      */
     class Color {
         /**
-         * 红色，0-1
+         * 红[0,1]
          */
         r: number;
         /**
-         * 绿色，0-1
+         * 绿[0,1]
          */
         g: number;
         /**
-         * 蓝色，0-1
+         * 蓝[0,1]
          */
         b: number;
         /**
-         * 透明度，0-1
+         * 透明度[0,1]
          */
         a: number;
-        private _color;
         /**
          * 构建颜色
+         * @param r     红[0,1]
+         * @param g     绿[0,1]
+         * @param b     蓝[0,1]
+         * @param a     透明度[0,1]
          */
-        constructor(color?: number);
+        constructor(r?: number, g?: number, b?: number, a?: number);
         /**
-         * 颜色值，32位整数值
+         * 从RGBA整型初始化颜色
+         * @param r     红[0,255]
+         * @param g     绿[0,255]
+         * @param b     蓝[0,255]
+         * @param a     透明度[0,255]
          */
-        color: number;
-        readonly x: number;
-        readonly y: number;
-        readonly z: number;
-        readonly w: number;
+        fromInts(r: number, g: number, b: number, a: number): void;
+        fromUnit(color: number, hasAlpha?: boolean): void;
+        /**
+         * 转换为数组
+         */
+        asArray(): number[];
+        /**
+         * 输出到数组
+         * @param array     数组
+         * @param index     存储在数组中的位置
+         */
+        toArray(array: number[], index?: number): Color;
+        /**
+         * 输出16进制字符串
+         */
+        toHexString(): string;
+        /**
+         * 输出字符串
+         */
+        toString(): string;
+        /**
+         * [0,15]数值转为16进制字符串
+         * param i  [0,15]数值
+         */
+        static ToHex(i: number): string;
     }
 }
 declare module feng3d {
@@ -1163,7 +1190,7 @@ declare module feng3d {
         /**
          * 映射常量
          */
-        mapUniform(name: string, data: Matrix3D | Vec4): void;
+        mapUniform(name: string, dataFunc: () => Matrix3D | Vec4): void;
         /**
          * 映射渲染参数
          */
@@ -1369,7 +1396,7 @@ declare module feng3d {
         /**
          * 数据
          */
-        data: Matrix3D | Vec4;
+        dataFunc: () => Matrix3D | Vec4;
     }
     /**
      * 渲染常量向量类型
@@ -1612,6 +1639,7 @@ declare module feng3d {
          * 绘制3D对象
          */
         private drawObject3D(object3D);
+        private getuPMatrix();
     }
 }
 declare module feng3d {
@@ -2010,6 +2038,7 @@ declare module feng3d {
          */
         readonly sceneTransform3D: Matrix3D;
         protected onBeAddedComponent(event: ComponentEvent): void;
+        private getuMVMatrix();
         /**
          * 使变换矩阵失效，场景变换矩阵也将失效
          */
@@ -2634,6 +2663,7 @@ declare module feng3d {
          * @param alpha 透明的
          */
         constructor(color?: Color);
+        private getDiffuseInputFcVector();
         /**
          * 颜色
          */

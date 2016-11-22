@@ -85,7 +85,7 @@ module feng3d {
             for (var name in uniforms) {
                 if (uniforms.hasOwnProperty(name)) {
                     var item = uniforms[name];
-                    var data = item.buffer.data;
+                    var data = item.buffer.dataFunc();
                     var type = item.type;
                     var location = this.context3D.getUniformLocation(shaderProgram, name);
                     switch (type) {

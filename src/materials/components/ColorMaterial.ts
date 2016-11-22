@@ -39,8 +39,13 @@ void main(void) {
 
             super();
             this.color = color || new Color();
-            this.mapUniform(RenderDataID.diffuseInput_fc_vector, this._color);
+            this.mapUniform(RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector);
             this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
+        }
+
+        private getDiffuseInputFcVector() {
+
+            return new Vector3D(this._color.r, this._color.g, this._color.b, this._color.a);
         }
 
         /** 
