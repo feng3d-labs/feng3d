@@ -35,7 +35,7 @@ module feng3d {
 
             var context3DBuffer = this.object3D.getOrCreateComponentByClass(RenderDataHolder);
 
-            context3DBuffer.mapUniform(RenderDataID.uMVMatrix, this.getuMVMatrix);
+            context3DBuffer.mapUniform(RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
         }
 
         private getuMVMatrix() {

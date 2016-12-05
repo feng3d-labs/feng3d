@@ -2790,7 +2790,7 @@ var feng3d;
         drawObject3D(object3D) {
             var context3DBuffer = object3D.getOrCreateComponentByClass(feng3d.RenderDataHolder);
             //场景投影矩阵
-            context3DBuffer.mapUniform(feng3d.RenderDataID.uPMatrix, this.getuPMatrix);
+            context3DBuffer.mapUniform(feng3d.RenderDataID.uPMatrix, this.getuPMatrix.bind(this));
             //绘制对象
             var renderData = feng3d.RenderData.getInstance(object3D);
             var object3DBuffer = renderData.getRenderBuffer(this.context3D);
@@ -2818,6 +2818,9 @@ var feng3d;
             conponents && conponents.forEach(element => {
                 this.addComponent(element);
             });
+            this.getOrCreateComponentByClass(feng3d.Container3D);
+            this.getOrCreateComponentByClass(feng3d.Space3D);
+            this.getOrCreateComponentByClass(feng3d.SceneSpace3D);
             this.getOrCreateComponentByClass(feng3d.Material);
         }
         /**
@@ -3422,7 +3425,7 @@ var feng3d;
         onBeAddedComponent(event) {
             this.object3D.addEventListener(feng3d.Space3DEvent.TRANSFORM_CHANGED, this.onTransformChanged, this);
             var context3DBuffer = this.object3D.getOrCreateComponentByClass(feng3d.RenderDataHolder);
-            context3DBuffer.mapUniform(feng3d.RenderDataID.uMVMatrix, this.getuMVMatrix);
+            context3DBuffer.mapUniform(feng3d.RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
         }
         getuMVMatrix() {
             return this.sceneTransform3D;
@@ -5502,7 +5505,7 @@ void main(void) {
     gl_FragColor = diffuseInput_fc_vector;
 }`;
             this.color = color || new feng3d.Color();
-            this.mapUniform(feng3d.RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector);
+            this.mapUniform(feng3d.RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector.bind(this));
             this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
         }
         getDiffuseInputFcVector() {

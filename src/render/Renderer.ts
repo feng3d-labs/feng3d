@@ -55,7 +55,7 @@ module feng3d {
             var context3DBuffer = object3D.getOrCreateComponentByClass(RenderDataHolder);
 
             //场景投影矩阵
-            context3DBuffer.mapUniform(RenderDataID.uPMatrix, this.getuPMatrix);
+            context3DBuffer.mapUniform(RenderDataID.uPMatrix, this.getuPMatrix.bind(this));
 
             //绘制对象
             var renderData = RenderData.getInstance(object3D);

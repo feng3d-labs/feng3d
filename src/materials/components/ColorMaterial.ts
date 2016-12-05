@@ -39,7 +39,7 @@ void main(void) {
 
             super();
             this.color = color || new Color();
-            this.mapUniform(RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector);
+            this.mapUniform(RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector.bind(this));
             this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
         }
 

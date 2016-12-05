@@ -48,6 +48,9 @@ module feng3d {
                 this.addComponent(element);
             });
 
+            this.getOrCreateComponentByClass(Container3D);
+            this.getOrCreateComponentByClass(Space3D);
+            this.getOrCreateComponentByClass(SceneSpace3D);
             this.getOrCreateComponentByClass(Material);
         }
 
