@@ -12,7 +12,7 @@ module feng3d.primitives {
     export function createCapsule(radius = 50, height = 100, segmentsW = 16, segmentsH = 15, yUp = true, elements = [GLAttribute.position, GLAttribute.uv, GLAttribute.normal, GLAttribute.tangent]): Geometry {
 
         var geometry = new Geometry();
-        
+
         var geometryData = buildGeometry(radius, height, segmentsW, segmentsH, yUp);
         elements.forEach(element => {
             switch (element) {
@@ -38,7 +38,7 @@ module feng3d.primitives {
         });
 
         var indices = buildIndices(segmentsW, segmentsH, yUp);
-        geometry.indices = indices;
+        geometry.setIndices(indices);
 
         return geometry;
     }
@@ -71,18 +71,18 @@ module feng3d.primitives {
                 var verangle: number = 2 * Math.PI * xi / segmentsW;
                 var x: number = ringradius * Math.cos(verangle);
                 var y: number = ringradius * Math.sin(verangle);
-                var normLen: number = 1 / Math.sqrt(x*x + y*y + z*z);
-                var tanLen: number = Math.sqrt(y*y + x*x);
-                var offset: number = yi > segmentsH/2 ? height/2 : -height/2;
+                var normLen: number = 1 / Math.sqrt(x * x + y * y + z * z);
+                var tanLen: number = Math.sqrt(y * y + x * x);
+                var offset: number = yi > segmentsH / 2 ? height / 2 : -height / 2;
 
                 if (yUp) {
                     t1 = 0;
-                    t2 = tanLen > .007 ? x/tanLen : 0;
+                    t2 = tanLen > .007 ? x / tanLen : 0;
                     comp1 = -z;
                     comp2 = y;
                 }
                 else {
-                    t1 = tanLen > .007 ? x/tanLen : 0;
+                    t1 = tanLen > .007 ? x / tanLen : 0;
                     t2 = 0;
                     comp1 = y;
                     comp2 = z;
@@ -93,9 +93,9 @@ module feng3d.primitives {
                     vertexPositionData[index + 1] = vertexPositionData[startIndex + 1];
                     vertexPositionData[index + 2] = vertexPositionData[startIndex + 2];
 
-                    vertexNormalData[index] = (vertexNormalData[startIndex] + x*normLen) * 0.5;
-                    vertexNormalData[index + 1] = (vertexNormalData[startIndex + 1] + comp1*normLen) * 0.5;
-                    vertexNormalData[index + 2] = (vertexNormalData[startIndex + 2] + comp2*normLen) * 0.5;
+                    vertexNormalData[index] = (vertexNormalData[startIndex] + x * normLen) * 0.5;
+                    vertexNormalData[index + 1] = (vertexNormalData[startIndex + 1] + comp1 * normLen) * 0.5;
+                    vertexNormalData[index + 2] = (vertexNormalData[startIndex + 2] + comp2 * normLen) * 0.5;
 
                     vertexTangentData[index] = (vertexTangentData[startIndex] + tanLen > .007 ? -y / tanLen : 1) * 0.5;
                     vertexTangentData[index + 1] = (vertexTangentData[startIndex + 1] + t1) * 0.5;
@@ -116,7 +116,7 @@ module feng3d.primitives {
                 }
 
                 if (xi > 0 && yi > 0) {
-               
+
                     if (yi == segmentsH) {
                         vertexPositionData[index] = vertexPositionData[startIndex];
                         vertexPositionData[index + 1] = vertexPositionData[startIndex + 1];
@@ -133,7 +133,7 @@ module feng3d.primitives {
         result[GLAttribute.tangent] = vertexTangentData;
         return result;
     }
-    
+
     /**
      * 构建顶点索引
      * @param segmentsW 横向分割数

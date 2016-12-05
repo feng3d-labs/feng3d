@@ -2071,22 +2071,6 @@ var feng3d;
             this.addEventListener(feng3d.Context3DBufferEvent.GET_SHADERPARAM, this.onGetShaderParam, this);
         }
         /**
-         * 映射索引缓冲
-         */
-        mapIndexBuffer(value) {
-            var indexBuffer = this.indexBuffer = this.indexBuffer || new feng3d.IndexRenderData();
-            indexBuffer.indices = value;
-        }
-        /**
-         * 映射属性缓冲
-         */
-        mapAttributeBuffer(name, value, stride) {
-            var attributeBuffer = this.attributes[name] = this.attributes[name] || new feng3d.AttributeRenderData();
-            attributeBuffer.name = name;
-            attributeBuffer.data = value;
-            attributeBuffer.size = stride;
-        }
-        /**
          * 映射程序缓冲
          * @param vertexCode        顶点渲染程序代码
          * @param fragmentCode      片段渲染程序代码
@@ -2343,10 +2327,9 @@ var feng3d;
         draw() {
             var indexBuffer = this.renderData.indexBuffer;
             var buffer = feng3d.context3DPool.getIndexBuffer(this.context3D, indexBuffer.indices);
-            var count = indexBuffer.indices.length;
-            this.context3D.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, buffer);
+            this.context3D.bindBuffer(indexBuffer.target, buffer);
             this.context3D.lineWidth(1);
-            this.context3D.drawElements(this.renderData.renderMode, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            this.context3D.drawElements(this.renderData.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
         }
     }
     feng3d.RenderBuffer = RenderBuffer;
@@ -2379,15 +2362,22 @@ var feng3d;
      * 索引渲染数据
      */
     class IndexRenderData {
+        constructor() {
+            /**
+             * 数据绑定目标，gl.ARRAY_BUFFER、gl.ELEMENT_ARRAY_BUFFER
+             */
+            this.target = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER;
+            /**
+             * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
+             */
+            this.type = WebGLRenderingContext.UNSIGNED_SHORT;
+            /**
+             * 索引偏移
+             */
+            this.offset = 0;
+        }
     }
     feng3d.IndexRenderData = IndexRenderData;
-    /**
-     * 属性渲染数据
-     * @author feng 2014-8-14
-     */
-    class AttributeRenderData {
-    }
-    feng3d.AttributeRenderData = AttributeRenderData;
     /**
      * 常量渲染数据
      */
@@ -3689,33 +3679,15 @@ var feng3d;
          */
         constructor() {
             super();
-            this._vaIdList = [];
-            /** 顶点属性数据步长字典 */
-            this.strideObj = {};
-            /** 顶点属性数据字典 */
-            this.vaDataObj = {};
-        }
-        /**
-         * 索引数据
-         */
-        get indices() {
-            return this._indices;
         }
         /**
          * 更新顶点索引数据
          */
-        set indices(value) {
-            this._indices = value;
-            this.mapIndexBuffer(value);
+        setIndices(indices) {
+            this.indexBuffer = new feng3d.IndexRenderData();
+            this.indexBuffer.indices = indices;
+            this.indexBuffer.count = indices.length;
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.CHANGED_INDEX_DATA));
-        }
-        /**
-         * 获取顶点属性步长(1-4)
-         * @param vaId          顶点属性编号
-         * @return 顶点属性步长
-         */
-        getVAStride(vaId) {
-            return this.strideObj[vaId];
         }
         /**
          * 设置顶点属性数据
@@ -3724,9 +3696,7 @@ var feng3d;
          * @param stride        顶点数据步长
          */
         setVAData(vaId, data, stride) {
-            this.strideObj[vaId] = stride;
-            this.vaDataObj[vaId] = data;
-            this.mapAttributeBuffer(vaId, data, stride);
+            this.attributes[vaId] = { data: data, stride: stride };
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.CHANGED_VA_DATA, vaId));
         }
         /**
@@ -3736,13 +3706,7 @@ var feng3d;
          */
         getVAData(vaId) {
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.GET_VA_DATA, vaId));
-            return this.vaDataObj[vaId];
-        }
-        /**
-         * 顶点属性编号列表
-         */
-        get vaIdList() {
-            return this._vaIdList;
+            return this.attributes[vaId];
         }
     }
     feng3d.Geometry = Geometry;
@@ -3834,7 +3798,7 @@ var feng3d;
                 positionData.set(element.positionData, i * segmentPositionStep);
             }
             this.geometry.setVAData(feng3d.GLAttribute.position, positionData, 3);
-            this.geometry.indices = indices;
+            this.geometry.setIndices(indices);
         }
         /**
          * 获取线段数据
@@ -4277,7 +4241,7 @@ var feng3d;
                 }
             });
             var indices = buildIndices(segmentsW, segmentsH, yUp);
-            geometry.indices = indices;
+            geometry.setIndices(indices);
             return geometry;
         }
         primitives.createPlane = createPlane;
@@ -4443,7 +4407,7 @@ var feng3d;
                 }
             });
             var indices = buildIndices(segmentsW, segmentsH, segmentsD);
-            geometry.indices = indices;
+            geometry.setIndices(indices);
             return geometry;
         }
         primitives.createCube = createCube;
@@ -4819,7 +4783,7 @@ var feng3d;
                 }
             });
             var indices = buildIndices(segmentsW, segmentsH, yUp);
-            geometry.indices = indices;
+            geometry.setIndices(indices);
             return geometry;
         }
         primitives.createSphere = createSphere;
@@ -4994,7 +4958,7 @@ var feng3d;
                 }
             });
             var indices = buildIndices(segmentsW, segmentsH, yUp);
-            geometry.indices = indices;
+            geometry.setIndices(indices);
             return geometry;
         }
         primitives.createCapsule = createCapsule;
@@ -5165,7 +5129,7 @@ var feng3d;
                 }
             });
             var indices = buildIndices(topRadius, bottomRadius, height, segmentsW, segmentsH, topClosed, bottomClosed, surfaceClosed);
-            geometry.indices = indices;
+            geometry.setIndices(indices);
             return geometry;
         }
         primitives.createCylinder = createCylinder;

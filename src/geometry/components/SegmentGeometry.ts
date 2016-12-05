@@ -43,7 +43,7 @@ module feng3d {
             }
 
             this.geometry.setVAData(GLAttribute.position, positionData, 3);
-            this.geometry.indices = indices;
+            this.geometry.setIndices(indices);
         }
 
         /**

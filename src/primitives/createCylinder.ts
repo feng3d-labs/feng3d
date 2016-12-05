@@ -37,7 +37,7 @@ module feng3d.primitives {
 
         var indices = buildIndices(topRadius, bottomRadius, height, segmentsW, segmentsH,
             topClosed, bottomClosed, surfaceClosed);
-        geometry.indices = indices;
+        geometry.setIndices(indices);
 
         return geometry;
     }

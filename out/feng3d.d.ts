@@ -1164,23 +1164,17 @@ declare module feng3d {
      * @author feng 2016-6-7
      */
     class RenderDataHolder extends Component {
-        private indexBuffer;
+        indexBuffer: IndexRenderData;
         private programBuffer;
-        private attributes;
+        attributes: {
+            [name: string]: AttributeRenderData;
+        };
         private uniforms;
         private shaderParams;
         /**
          * 创建Context3D数据缓冲
          */
         constructor();
-        /**
-         * 映射索引缓冲
-         */
-        mapIndexBuffer(value: Uint16Array): void;
-        /**
-         * 映射属性缓冲
-         */
-        mapAttributeBuffer(name: string, value: Float32Array, stride: number): void;
         /**
          * 映射程序缓冲
          * @param vertexCode        顶点渲染程序代码
@@ -1366,24 +1360,36 @@ declare module feng3d {
          * 索引数据
          */
         indices: Uint16Array;
+        /**
+         * 数据绑定目标，gl.ARRAY_BUFFER、gl.ELEMENT_ARRAY_BUFFER
+         */
+        target: number;
+        /**
+         * 渲染数量
+         */
+        count: number;
+        /**
+         * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
+         */
+        type: number;
+        /**
+         * 索引偏移
+         */
+        offset: number;
     }
     /**
      * 属性渲染数据
      * @author feng 2014-8-14
      */
-    class AttributeRenderData {
-        /**
-         * 属性名称
-         */
-        name: string;
+    interface AttributeRenderData {
         /**
          * 属性数据
          */
         data: Float32Array;
         /**
-         * 属性数据长度
+         * 数据步长
          */
-        size: number;
+        stride: number;
     }
     /**
      * 常量渲染数据
@@ -2210,29 +2216,14 @@ declare module feng3d {
      * @author feng 2016-04-28
      */
     class Geometry extends RenderDataHolder {
-        private _vaIdList;
-        /** 顶点属性数据步长字典 */
-        private strideObj;
-        /** 顶点属性数据字典 */
-        private vaDataObj;
-        private _indices;
         /**
          * 创建一个几何体
          */
         constructor();
         /**
-         * 索引数据
-         */
-        /**
          * 更新顶点索引数据
          */
-        indices: Uint16Array;
-        /**
-         * 获取顶点属性步长(1-4)
-         * @param vaId          顶点属性编号
-         * @return 顶点属性步长
-         */
-        getVAStride(vaId: string): number;
+        setIndices(indices: Uint16Array): void;
         /**
          * 设置顶点属性数据
          * @param vaId          顶点属性编号
@@ -2245,11 +2236,7 @@ declare module feng3d {
          * @param vaId 数据类型编号
          * @return 顶点属性数据
          */
-        getVAData(vaId: string): Float32Array;
-        /**
-         * 顶点属性编号列表
-         */
-        readonly vaIdList: string[];
+        getVAData(vaId: string): AttributeRenderData;
     }
 }
 declare module feng3d {

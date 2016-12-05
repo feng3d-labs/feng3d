@@ -44,18 +44,33 @@ module feng3d {
          * 索引数据
          */
         indices: Uint16Array;
+
+        /**
+         * 数据绑定目标，gl.ARRAY_BUFFER、gl.ELEMENT_ARRAY_BUFFER
+         */
+        target: number = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER;
+
+        /**
+         * 渲染数量
+         */
+        count: number;
+
+        /**
+         * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
+         */
+        type: number = WebGLRenderingContext.UNSIGNED_SHORT;
+
+        /**
+         * 索引偏移
+         */
+        offset: number = 0;
     }
 
 	/**
 	 * 属性渲染数据
 	 * @author feng 2014-8-14
 	 */
-    export class AttributeRenderData {
-
-        /**
-         * 属性名称
-         */
-        name: string;
+    export interface AttributeRenderData {
 
         /**
          * 属性数据
@@ -63,9 +78,9 @@ module feng3d {
         data: Float32Array;
 
         /**
-         * 属性数据长度
+         * 数据步长
          */
-        size: number;
+        stride: number;
     }
 
 	/**

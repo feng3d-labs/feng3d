@@ -6,9 +6,9 @@ module feng3d {
 	 */
 	export class RenderDataHolder extends Component {
 
-		private indexBuffer: IndexRenderData;
+		public indexBuffer: IndexRenderData;
 		private programBuffer: ProgramRenderData;
-		private attributes: { [name: string]: AttributeRenderData } = {};
+		public attributes: { [name: string]: AttributeRenderData } = {};
 		private uniforms: { [name: string]: UniformRenderData } = {};
 		private shaderParams: { [shaderParam: string]: any } = {};
 
@@ -24,26 +24,6 @@ module feng3d {
 			this.addEventListener(Context3DBufferEvent.GET_UNIFORMBUFFER, this.onGetUniformBuffer, this);
 			this.addEventListener(Context3DBufferEvent.GET_PROGRAMBUFFER, this.onGetProgramBuffer, this);
 			this.addEventListener(Context3DBufferEvent.GET_SHADERPARAM, this.onGetShaderParam, this);
-		}
-
-		/**
-		 * 映射索引缓冲
-		 */
-		public mapIndexBuffer(value: Uint16Array) {
-
-			var indexBuffer = this.indexBuffer = this.indexBuffer || new IndexRenderData();
-			indexBuffer.indices = value;
-		}
-
-		/**
-		 * 映射属性缓冲
-		 */
-		public mapAttributeBuffer(name: string, value: Float32Array, stride: number) {
-
-			var attributeBuffer = this.attributes[name] = this.attributes[name] || new AttributeRenderData();
-			attributeBuffer.name = name;
-			attributeBuffer.data = value;
-			attributeBuffer.size = stride;
 		}
 
 		/**
