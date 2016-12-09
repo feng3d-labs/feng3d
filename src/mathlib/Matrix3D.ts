@@ -526,6 +526,7 @@ module feng3d {
          * @param   pivotPoint  一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
          */
         public prependRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = new Vector3D()) {
+            
             var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
             this.prepend(rotationMat);
         }
@@ -537,6 +538,7 @@ module feng3d {
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
         public prependScale(xScale: number, yScale: number, zScale: number) {
+            
             var scaleMat = Matrix3D.createScaleMatrix3D(xScale, yScale, zScale);
             this.prepend(scaleMat);
         }
@@ -548,6 +550,7 @@ module feng3d {
          * @param   z   沿 z 轴的增量平移。
          */
         public prependTranslation(x: number, y: number, z: number) {
+            
             var translationMat = Matrix3D.createTranslationMatrix3D(x, y, z);
             this.prepend(translationMat);
         }
@@ -630,6 +633,67 @@ module feng3d {
             }
 
             return true;
+        }
+
+        /**
+         * 看向目标位置
+         * @param target    目标位置
+         * @param upAxis    向上朝向
+         */
+        public lookAt(target: Vector3D, upAxis: Vector3D = null): void {
+
+            //获取位移，缩放，在变换过程位移与缩放不变
+            var vec = this.decompose();
+            var position = vec[0];
+            var scale = vec[1];
+
+            //
+            var xAxis: Vector3D = new Vector3D();
+            var yAxis: Vector3D = new Vector3D();
+            var zAxis: Vector3D = new Vector3D();
+
+            upAxis = upAxis || Vector3D.Y_AXIS;
+
+            zAxis.x = target.x - this.position.x;
+            zAxis.y = target.y - this.position.y;
+            zAxis.z = target.z - this.position.z;
+            zAxis.normalize();
+
+            xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
+            xAxis.y = upAxis.z * zAxis.x - upAxis.x * zAxis.z;
+            xAxis.z = upAxis.x * zAxis.y - upAxis.y * zAxis.x;
+            xAxis.normalize();
+
+            if (xAxis.length < .05) {
+                xAxis.x = upAxis.y;
+                xAxis.y = upAxis.x;
+                xAxis.z = 0;
+                xAxis.normalize();
+            }
+
+            yAxis.x = zAxis.y * xAxis.z - zAxis.z * xAxis.y;
+            yAxis.y = zAxis.z * xAxis.x - zAxis.x * xAxis.z;
+            yAxis.z = zAxis.x * xAxis.y - zAxis.y * xAxis.x;
+
+            this.rawData[0] = scale.x * xAxis.x;
+            this.rawData[1] = scale.x * xAxis.y;
+            this.rawData[2] = scale.x * xAxis.z;
+            this.rawData[3] = 0;
+
+            this.rawData[4] = scale.y * yAxis.x;
+            this.rawData[5] = scale.y * yAxis.y;
+            this.rawData[6] = scale.y * yAxis.z;
+            this.rawData[7] = 0;
+
+            this.rawData[8] = scale.z * zAxis.x;
+            this.rawData[9] = scale.z * zAxis.y;
+            this.rawData[10] = scale.z * zAxis.z;
+            this.rawData[11] = 0;
+
+            this.rawData[12] = position.x;
+            this.rawData[13] = position.y;
+            this.rawData[14] = position.z;
+            this.rawData[15] = 1;
         }
 
         /**

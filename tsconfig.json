@@ -57,9 +57,7 @@
         "src/core/object3DComponents/container/Container3DEvent.ts",
         "src/core/object3DComponents/SceneSpace3D.ts",
         //3D场景
-        "src/scene/Scene3DNode.ts",
         "src/scene/Scene3D.ts",
-        "src/scene/Scene3DEvent.ts",
         //几何体
         "src/geometry/GLAttribute.ts",
         "src/geometry/Geometry.ts",

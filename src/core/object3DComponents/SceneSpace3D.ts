@@ -22,7 +22,7 @@ module feng3d {
         public get sceneTransform3D(): Matrix3D {
 
             this.sceneSpace3DDirty && this.updateSceneSpace3D();
-            return this.sceneSpace3D.transform3D;
+            return this.sceneSpace3D.matrix3d;
         }
 
         //------------------------------------------
@@ -31,7 +31,7 @@ module feng3d {
 
         protected onBeAddedComponent(event: ComponentEvent): void {
 
-            this.gameObject.addEventListener(Space3DEvent.TRANSFORM_CHANGED, this.onTransformChanged, this);
+            this.gameObject.addEventListener(TransfromEvent.TRANSFORM_CHANGED, this.onTransformChanged, this);
 
             var context3DBuffer = this.gameObject.getOrCreateComponentByClass(RenderDataHolder);
 
@@ -46,7 +46,7 @@ module feng3d {
         /**
 		 * 使变换矩阵失效，场景变换矩阵也将失效
 		 */
-        protected onTransformChanged(event: Space3DEvent) {
+        protected onTransformChanged(event: TransfromEvent) {
 
             this.notifySceneTransformChange();
         }
@@ -100,13 +100,13 @@ module feng3d {
         private updateSceneSpace3D() {
 
             this.sceneSpace3DDirty = false;
-            var transform3D = this.gameObject.transform.transform3D.clone();
+            var transform3D = this.gameObject.transform.matrix3d.clone();
             var parent = this.gameObject.parent;
             if (parent != null) {
                 var parentSceneTransform3D = parent.sceneTransform3D;
                 transform3D.append(parentSceneTransform3D);
             }
-            this.sceneSpace3D.transform3D = transform3D;
+            this.sceneSpace3D.matrix3d = transform3D;
         }
     }
 

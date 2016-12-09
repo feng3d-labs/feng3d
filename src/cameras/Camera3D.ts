@@ -18,7 +18,7 @@ module feng3d {
             super();
             this._lens = lens || new PerspectiveLens();
             this._lens.addEventListener(LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
-            this.addEventListener(Space3DEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.addEventListener(TransfromEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
         /**
@@ -26,7 +26,7 @@ module feng3d {
 		 */
         public get viewProjection(): Matrix3D {
             if (this._viewProjectionDirty) {
-                var inverseSceneTransform = this.transform.transform3D.clone();
+                var inverseSceneTransform = this.transform.matrix3d.clone();
                 inverseSceneTransform.invert();
                 //场景空间转摄像机空间
                 this._viewProjection.copyFrom(inverseSceneTransform);
@@ -47,7 +47,7 @@ module feng3d {
             this.dispatchEvent(event);
         }
 
-        private onSpaceTransformChanged(event: Space3DEvent): void {
+        private onSpaceTransformChanged(event: TransfromEvent): void {
             this._viewProjectionDirty = true;
         }
     }

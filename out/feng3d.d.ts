@@ -1004,6 +1004,12 @@ declare module feng3d {
          */
         compare(matrix3D: Matrix3D, precision?: number): boolean;
         /**
+         * 看向目标位置
+         * @param target    目标位置
+         * @param upAxis    向上朝向
+         */
+        lookAt(target: Vector3D, upAxis?: Vector3D): void;
+        /**
          * 以字符串返回矩阵的值
          */
         toString(): string;
@@ -1857,22 +1863,39 @@ declare module feng3d {
          */
         sz: number;
         /**
-         * 空间变换矩阵
+         * 位移
          */
-        transform3D: Matrix3D;
+        position: Vector3D;
         /**
-         * 更新变换矩阵
+         * 旋转
          */
-        private updateTransform3D();
+        rotation: Vector3D;
+        /**
+         * 缩放
+         */
+        scale: Vector3D;
+        /**
+         * 变换矩阵
+         */
+        matrix3d: Matrix3D;
+        /**
+         * 变换矩阵
+         */
+        private updateMatrix3D();
         /**
          * 使变换矩阵无效
          */
-        protected invalidateTransform3D(): void;
-        readonly inverseTransform: Matrix3D;
+        protected invalidateMatrix3D(): void;
+        readonly inverseMatrix3D: Matrix3D;
         /**
          * 发出状态改变消息
          */
-        private notifyTransformChanged();
+        private notifyMatrix3DChanged();
+        /**
+         * 看向目标位置
+         * @param target    目标位置
+         * @param upAxis    向上朝向
+         */
         lookAt(target: Vector3D, upAxis?: Vector3D): void;
         private _x;
         private _y;
@@ -1883,16 +1906,16 @@ declare module feng3d {
         private _sx;
         private _sy;
         private _sz;
-        private _transform3D;
-        private _transform3DDirty;
-        private _inverseTransform;
-        private _inverseTransformDirty;
+        private _matrix3D;
+        private _matrix3DDirty;
+        private _inverseMatrix3D;
+        private _inverseMatrix3DDirty;
     }
     /**
-     * 3D对象事件(3D状态发生改变、位置、旋转、缩放)
+     * 变换事件(3D状态发生改变、位置、旋转、缩放)
      * @author feng 2014-3-31
      */
-    class Space3DEvent extends Event {
+    class TransfromEvent extends Event {
         /**
          * 平移
          */
@@ -2048,7 +2071,7 @@ declare module feng3d {
         /**
          * 使变换矩阵失效，场景变换矩阵也将失效
          */
-        protected onTransformChanged(event: Space3DEvent): void;
+        protected onTransformChanged(event: TransfromEvent): void;
         /**
          * 通知场景变换改变
          */
@@ -2087,56 +2110,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 3D场景节点
-     */
-    class Scene3DNode extends EventDispatcher {
-        /**
-         * 父节点
-         */
-        parent: Scene3DNode;
-        /**
-         * 子节点列表
-         */
-        children: Scene3DNode[];
-        /**
-         * 3D对象
-         */
-        object3D: GameObject;
-        /**
-         * 构建3D场景节点
-         * @param object3D 3D对象
-         * @param parent 父节点
-         */
-        constructor(object3D: GameObject, parent: Scene3DNode);
-        /**
-         * 节点名称
-         */
-        name: string;
-        /**
-         * 添加3D对象生成节点
-         */
-        addObject3D(object3D: GameObject): this;
-        /**
-         * 移除3D对象节点
-         */
-        removeObject(object3D: GameObject): this;
-        /**
-         * 根据名称深度查找节点
-         * @param name 节点名称
-         */
-        find(name: string): Scene3DNode;
-        /**
-         * 是否可渲染
-         */
-        readonly renderable: boolean;
-        /**
-         * 获取可渲染对象列表
-         */
-        getRenderables(renderables?: GameObject[]): GameObject[];
-    }
-}
-declare module feng3d {
-    /**
      * 3D场景
      * @author feng 2016-05-01
      */
@@ -2158,33 +2131,6 @@ declare module feng3d {
         * 获取可渲染对象列表
         */
         getRenderables(): GameObject[];
-    }
-}
-declare module feng3d {
-    /**
-     * 3D场景事件
-     * author feng 2016-05-01
-     */
-    class Scene3DEvent extends Event {
-        /**
-         * 添加3D场景节点
-         */
-        static ADDED: string;
-        /**
-         * 删除3D场景节点
-         */
-        static REMOVED: string;
-        /**
-         * 数据
-         */
-        data: Scene3DNode;
-        /**
-         * 构建3D场景事件
-         * @param type 事件的类型，可以作为 Event.type 访问。
-         * @param data 携带数据
-         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
-         */
-        constructor(type: string, data?: Scene3DNode, bubbles?: boolean);
     }
 }
 declare module feng3d {
