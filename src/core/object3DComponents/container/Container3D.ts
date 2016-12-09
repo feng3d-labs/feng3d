@@ -26,7 +26,7 @@ module feng3d {
 		 * @param child		子对象
 		 * @return			新增的子对象
 		 */
-        public addChild(child: Object3D): void {
+        public addChild(child: GameObject): void {
 
             this.addChildAt(child, this.children.length);
         }
@@ -36,11 +36,11 @@ module feng3d {
          * @param   child   子对象
          * @param   index   添加到的位置
          */
-        public addChildAt(child: Object3D, index: number): void {
+        public addChildAt(child: GameObject, index: number): void {
 
             assert(-1 < index && index <= this.children.length, "添加子对象的索引越界！");
             this.children.splice(index, 0, child);
-            child.dispatchEvent(new Container3DEvent(Container3DEvent.ADDED, { parent: this.object3D, child: child }, true));
+            child.dispatchEvent(new Container3DEvent(Container3DEvent.ADDED, { parent: this.gameObject, child: child }, true));
         }
 
         /**
@@ -48,7 +48,7 @@ module feng3d {
          * @param   child   子对象
          * @return			被移除子对象索引
          */
-        public removeChild(child: Object3D): number {
+        public removeChild(child: GameObject): number {
 
             var childIndex = this.children.indexOf(child);
             assert(-1 < childIndex && childIndex < this.children.length, "删除的子对象不存在！");
@@ -61,7 +61,7 @@ module feng3d {
          * @param   child   子对象
          * @return  子对象位置
          */
-        public getChildIndex(child: Object3D): number {
+        public getChildIndex(child: GameObject): number {
 
             return this.children.indexOf(child);
         }
@@ -71,12 +71,12 @@ module feng3d {
 		 * @param childIndex	子对象索引
 		 * @return				被移除对象
 		 */
-        public removeChildAt(childIndex: number): Object3D {
+        public removeChildAt(childIndex: number): GameObject {
 
-            var child: Object3D = this.children[childIndex];
+            var child: GameObject = this.children[childIndex];
             assert(-1 < childIndex && childIndex < this.children.length, "删除的索引越界！");
             this.children.splice(childIndex, 1);
-            child.dispatchEvent(new Container3DEvent(Container3DEvent.REMOVED, { parent: this.object3D, child: child }, true));
+            child.dispatchEvent(new Container3DEvent(Container3DEvent.REMOVED, { parent: this.gameObject, child: child }, true));
             return child;
         }
 
@@ -85,7 +85,7 @@ module feng3d {
 		 * @param index         子对象索引
 		 * @return              指定索引的子对象
 		 */
-        public getChildAt(index: number): Object3D {
+        public getChildAt(index: number): GameObject {
 
             return this.children[index];
         }
@@ -108,8 +108,8 @@ module feng3d {
         protected onBeAddedComponent(event: ComponentEvent): void {
 
             //TODO 此处可以提供一个方法，向父组件中添加事件，当自身添加到父组件时自动添加监听，当自身从父组件移除时自动移除监听
-            this.object3D.addEventListener(Container3DEvent.ADDED, this.onAddedContainer3D, this);
-            this.object3D.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
+            this.gameObject.addEventListener(Container3DEvent.ADDED, this.onAddedContainer3D, this);
+            this.gameObject.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
 
         /**
@@ -117,8 +117,8 @@ module feng3d {
          */
         protected onBeRemovedComponent(event: ComponentEvent): void {
 
-            this.object3D.addEventListener(Container3DEvent.ADDED, this.onAddedContainer3D, this);
-            this.object3D.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
+            this.gameObject.addEventListener(Container3DEvent.ADDED, this.onAddedContainer3D, this);
+            this.gameObject.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
 
         /******************************************************************************************************************************
@@ -128,19 +128,19 @@ module feng3d {
         /**
          * 父对象
          */
-        private _parent: Object3D = null;
+        private _parent: GameObject = null;
 
         /**
          * 子对象列表
          */
-        private children: Object3D[] = [];
+        private children: GameObject[] = [];
 
         /**
          * 处理添加子对象事件
          */
         private onAddedContainer3D(event: Container3DEvent): void {
 
-            if (event.data.child == this.object3D) {
+            if (event.data.child == this.gameObject) {
                 this._parent = event.data.parent;
             }
         }
@@ -150,7 +150,7 @@ module feng3d {
          */
         private onRemovedContainer3D(event: Container3DEvent): void {
 
-            if (event.data.child == this.object3D) {
+            if (event.data.child == this.gameObject) {
                 this._parent = null;
             }
         }

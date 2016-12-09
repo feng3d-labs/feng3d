@@ -1,12 +1,12 @@
 module feng3d {
     /**
-     * 3D空间
+     * 变换
      * @author feng 2016-04-26
      */
-    export class Space3D extends Object3DComponent {
+    export class Transform extends Object3DComponent {
 
         /**
-         * 构建3D空间
+         * 构建变换
          * @param x X坐标
          * @param y Y坐标
          * @param z Z坐标
@@ -145,7 +145,7 @@ module feng3d {
 		 */
         private notifyTransformChanged() {
             var transformChanged = new Space3DEvent(Space3DEvent.TRANSFORM_CHANGED, this);
-            this.object3D && this.object3D.dispatchEvent(transformChanged);
+            this.gameObject && this.gameObject.dispatchEvent(transformChanged);
         }
 
         public lookAt(target: Vector3D, upAxis: Vector3D = null): void {
@@ -258,6 +258,6 @@ module feng3d {
 		/**
 		 * 发出事件的3D元素
 		 */
-        data: Space3D;
+        data: Transform;
     }
 }

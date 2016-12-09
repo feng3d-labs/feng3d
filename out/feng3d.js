@@ -2805,10 +2805,10 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 3D对象
+     * 游戏对象
      * @author feng 2016-04-26
      */
-    class Object3D extends feng3d.Component {
+    class GameObject extends feng3d.Component {
         /**
          * 构建3D对象
          */
@@ -2819,19 +2819,19 @@ var feng3d;
                 this.addComponent(element);
             });
             this.getOrCreateComponentByClass(feng3d.Container3D);
-            this.getOrCreateComponentByClass(feng3d.Space3D);
+            this.getOrCreateComponentByClass(feng3d.Transform);
             this.getOrCreateComponentByClass(feng3d.SceneSpace3D);
             this.getOrCreateComponentByClass(feng3d.Material);
         }
         /**
-         * 3D空间
+         * 变换
          */
-        get space3D() {
-            return this.getOrCreateComponentByClass(feng3d.Space3D);
+        get transform() {
+            return this.getOrCreateComponentByClass(feng3d.Transform);
         }
-        set space3D(value) {
+        set transform(value) {
             feng3d.assert(value != null, "3D空间不能为null");
-            this.removeComponent(this.space3D);
+            this.removeComponent(this.transform);
             this.addComponent(value);
         }
         /**
@@ -2914,7 +2914,7 @@ var feng3d;
          * 创建
          */
         static createPrimitive(type) {
-            var object3D = new Object3D();
+            var object3D = new GameObject();
             switch (type) {
                 case feng3d.PrimitiveType.Plane:
                     object3D.addComponent(feng3d.primitives.createPlane());
@@ -2937,7 +2937,7 @@ var feng3d;
             return object3D;
         }
     }
-    feng3d.Object3D = Object3D;
+    feng3d.GameObject = GameObject;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -3014,19 +3014,19 @@ var feng3d;
         /**
          * 所属对象
          */
-        get object3D() { return this._parentComponent; }
+        get gameObject() { return this._parentComponent; }
     }
     feng3d.Object3DComponent = Object3DComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
-     * 3D空间
+     * 变换
      * @author feng 2016-04-26
      */
-    class Space3D extends feng3d.Object3DComponent {
+    class Transform extends feng3d.Object3DComponent {
         /**
-         * 构建3D空间
+         * 构建变换
          * @param x X坐标
          * @param y Y坐标
          * @param z Z坐标
@@ -3162,7 +3162,7 @@ var feng3d;
          */
         notifyTransformChanged() {
             var transformChanged = new Space3DEvent(Space3DEvent.TRANSFORM_CHANGED, this);
-            this.object3D && this.object3D.dispatchEvent(transformChanged);
+            this.gameObject && this.gameObject.dispatchEvent(transformChanged);
         }
         lookAt(target, upAxis = null) {
             var xAxis = new feng3d.Vector3D();
@@ -3212,7 +3212,7 @@ var feng3d;
             }
         }
     }
-    feng3d.Space3D = Space3D;
+    feng3d.Transform = Transform;
     /**
      * 3D对象事件(3D状态发生改变、位置、旋转、缩放)
      * @author feng 2014-3-31
@@ -3287,7 +3287,7 @@ var feng3d;
         addChildAt(child, index) {
             feng3d.assert(-1 < index && index <= this.children.length, "添加子对象的索引越界！");
             this.children.splice(index, 0, child);
-            child.dispatchEvent(new feng3d.Container3DEvent(feng3d.Container3DEvent.ADDED, { parent: this.object3D, child: child }, true));
+            child.dispatchEvent(new feng3d.Container3DEvent(feng3d.Container3DEvent.ADDED, { parent: this.gameObject, child: child }, true));
         }
         /**
          * 移除子对象
@@ -3317,7 +3317,7 @@ var feng3d;
             var child = this.children[childIndex];
             feng3d.assert(-1 < childIndex && childIndex < this.children.length, "删除的索引越界！");
             this.children.splice(childIndex, 1);
-            child.dispatchEvent(new feng3d.Container3DEvent(feng3d.Container3DEvent.REMOVED, { parent: this.object3D, child: child }, true));
+            child.dispatchEvent(new feng3d.Container3DEvent(feng3d.Container3DEvent.REMOVED, { parent: this.gameObject, child: child }, true));
             return child;
         }
         /**
@@ -3342,21 +3342,21 @@ var feng3d;
          */
         onBeAddedComponent(event) {
             //TODO 此处可以提供一个方法，向父组件中添加事件，当自身添加到父组件时自动添加监听，当自身从父组件移除时自动移除监听
-            this.object3D.addEventListener(feng3d.Container3DEvent.ADDED, this.onAddedContainer3D, this);
-            this.object3D.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
+            this.gameObject.addEventListener(feng3d.Container3DEvent.ADDED, this.onAddedContainer3D, this);
+            this.gameObject.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
         /**
          * 处理被移除组件事件
          */
         onBeRemovedComponent(event) {
-            this.object3D.addEventListener(feng3d.Container3DEvent.ADDED, this.onAddedContainer3D, this);
-            this.object3D.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
+            this.gameObject.addEventListener(feng3d.Container3DEvent.ADDED, this.onAddedContainer3D, this);
+            this.gameObject.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
         /**
          * 处理添加子对象事件
          */
         onAddedContainer3D(event) {
-            if (event.data.child == this.object3D) {
+            if (event.data.child == this.gameObject) {
                 this._parent = event.data.parent;
             }
         }
@@ -3364,7 +3364,7 @@ var feng3d;
          * 处理删除子对象事件
          */
         onRemovedContainer3D(event) {
-            if (event.data.child == this.object3D) {
+            if (event.data.child == this.gameObject) {
                 this._parent = null;
             }
         }
@@ -3408,7 +3408,7 @@ var feng3d;
             /**
              * 相对场景空间
              */
-            this.sceneSpace3D = new feng3d.Space3D();
+            this.sceneSpace3D = new feng3d.Transform();
             this.sceneSpace3DDirty = true;
             this.addEventListener(feng3d.ComponentEvent.ADDED_COMPONENT, this.onBeAddedComponent, this);
         }
@@ -3423,8 +3423,8 @@ var feng3d;
         //@protected
         //------------------------------------------
         onBeAddedComponent(event) {
-            this.object3D.addEventListener(feng3d.Space3DEvent.TRANSFORM_CHANGED, this.onTransformChanged, this);
-            var context3DBuffer = this.object3D.getOrCreateComponentByClass(feng3d.RenderDataHolder);
+            this.gameObject.addEventListener(feng3d.Space3DEvent.TRANSFORM_CHANGED, this.onTransformChanged, this);
+            var context3DBuffer = this.gameObject.getOrCreateComponentByClass(feng3d.RenderDataHolder);
             context3DBuffer.mapUniform(feng3d.RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
         }
         getuMVMatrix() {
@@ -3443,10 +3443,10 @@ var feng3d;
             if (this.sceneSpace3DDirty)
                 return;
             var sceneTransformChanged = new SceneSpace3DEvent(SceneSpace3DEvent.SCENETRANSFORM_CHANGED, this);
-            this.object3D && this.object3D.dispatchEvent(sceneTransformChanged);
-            if (this.object3D && this.object3D) {
-                for (var i = 0; i < this.object3D.numChildren; i++) {
-                    var element = this.object3D.getChildAt(i);
+            this.gameObject && this.gameObject.dispatchEvent(sceneTransformChanged);
+            if (this.gameObject && this.gameObject) {
+                for (var i = 0; i < this.gameObject.numChildren; i++) {
+                    var element = this.gameObject.getChildAt(i);
                     element.notifySceneTransformChange();
                 }
             }
@@ -3463,8 +3463,8 @@ var feng3d;
          */
         updateSceneSpace3D() {
             this.sceneSpace3DDirty = false;
-            var transform3D = this.object3D.space3D.transform3D.clone();
-            var parent = this.object3D.parent;
+            var transform3D = this.gameObject.transform.transform3D.clone();
+            var parent = this.gameObject.parent;
             if (parent != null) {
                 var parentSceneTransform3D = parent.sceneTransform3D;
                 transform3D.append(parentSceneTransform3D);
@@ -3585,7 +3585,7 @@ var feng3d;
      * 3D场景
      * @author feng 2016-05-01
      */
-    class Scene3D extends feng3d.Object3D {
+    class Scene3D extends feng3d.GameObject {
         /**
          * 构造3D场景
          */
@@ -4135,7 +4135,7 @@ var feng3d;
      * 摄像机
      * @author feng 2016-08-16
      */
-    class Camera3D extends feng3d.Object3D {
+    class Camera3D extends feng3d.GameObject {
         /**
          * 创建一个摄像机
          * @param lens 摄像机镜头
@@ -4153,7 +4153,7 @@ var feng3d;
          */
         get viewProjection() {
             if (this._viewProjectionDirty) {
-                var inverseSceneTransform = this.space3D.transform3D.clone();
+                var inverseSceneTransform = this.transform.transform3D.clone();
                 inverseSceneTransform.invert();
                 //场景空间转摄像机空间
                 this._viewProjection.copyFrom(inverseSceneTransform);
@@ -5627,13 +5627,13 @@ var feng3d;
         update(interpolate = true) {
             if (this._targetObject) {
                 if (this._lookAtPosition) {
-                    this._targetObject.space3D.lookAt(this.lookAtPosition, this._upAxis);
+                    this._targetObject.transform.lookAt(this.lookAtPosition, this._upAxis);
                 }
                 else if (this._lookAtObject) {
-                    this._pos.x = this._lookAtObject.space3D.x;
-                    this._pos.y = this._lookAtObject.space3D.y;
-                    this._pos.z = this._lookAtObject.space3D.z;
-                    this._targetObject.space3D.lookAt(this._pos, this._upAxis);
+                    this._pos.x = this._lookAtObject.transform.x;
+                    this._pos.y = this._lookAtObject.transform.y;
+                    this._pos.z = this._lookAtObject.transform.z;
+                    this._targetObject.transform.lookAt(this._pos, this._upAxis);
                 }
             }
         }

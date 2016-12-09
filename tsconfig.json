@@ -4,7 +4,7 @@
         "noImplicitAny": false,
         "sourceMap": true,
         "declaration": true,
-        "outFile": "../libs/feng3d.js"
+        "outFile": "out/feng3d.js"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //
@@ -48,11 +48,11 @@
         "src/render/ShaderParamID.ts",
         "src/render/Renderer.ts",
         //
-        "src/core/Object3D.ts",
+        "src/core/GameObject.ts",
         "src/core/View3D.ts",
         //3D对象组件
         "src/core/object3DComponents/Object3DComponent.ts",
-        "src/core/Space3D.ts",
+        "src/core/object3DComponents/Transform.ts",
         "src/core/object3DComponents/container/Container3D.ts",
         "src/core/object3DComponents/container/Container3DEvent.ts",
         "src/core/object3DComponents/SceneSpace3D.ts",

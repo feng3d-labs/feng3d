@@ -1217,7 +1217,7 @@ declare module feng3d {
      * @author feng 2016-06-20
      */
     class RenderData {
-        object3D: Object3D;
+        object3D: GameObject;
         /**
          * 顶点索引缓冲
          */
@@ -1255,13 +1255,13 @@ declare module feng3d {
         /**
          * 获取3D对象渲染数据实例
          */
-        static getInstance(object3D: Object3D): RenderData;
+        static getInstance(object3D: GameObject): RenderData;
         private renderBufferMap;
         getRenderBuffer(context3D: WebGLRenderingContext): RenderBuffer;
         /**
          * 构建3D对象渲染数据
          */
-        constructor(object3D: Object3D);
+        constructor(object3D: GameObject);
         /**
          * 准备数据
          */
@@ -1650,14 +1650,14 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 3D对象
+     * 游戏对象
      * @author feng 2016-04-26
      */
-    class Object3D extends Component {
+    class GameObject extends Component {
         /**
-         * 3D空间
+         * 变换
          */
-        space3D: Space3D;
+        transform: Transform;
         /**
          * 容器
          */
@@ -1678,43 +1678,43 @@ declare module feng3d {
         /**
          * 父对象
          */
-        readonly parent: Object3D;
+        readonly parent: GameObject;
         /**
          * 添加子对象
          * @param child		子对象
          * @return			新增的子对象
          */
-        addChild(child: Object3D): void;
+        addChild(child: GameObject): void;
         /**
          * 添加子对象到指定位置
          * @param   child   子对象
          * @param   index   添加到的位置
          */
-        addChildAt(child: Object3D, index: number): void;
+        addChildAt(child: GameObject, index: number): void;
         /**
          * 移除子对象
          * @param   child   子对象
          * @return			被移除子对象索引
          */
-        removeChild(child: Object3D): number;
+        removeChild(child: GameObject): number;
         /**
          * 获取子对象索引
          * @param   child   子对象
          * @return  子对象位置
          */
-        getChildIndex(child: Object3D): number;
+        getChildIndex(child: GameObject): number;
         /**
          * 移出指定索引的子对象
          * @param childIndex	子对象索引
          * @return				被移除对象
          */
-        removeChildAt(childIndex: number): Object3D;
+        removeChildAt(childIndex: number): GameObject;
         /**
          * 获取子对象
          * @param index         子对象索引
          * @return              指定索引的子对象
          */
-        getChildAt(index: number): Object3D;
+        getChildAt(index: number): GameObject;
         /**
          * 获取子对象数量
          */
@@ -1736,7 +1736,7 @@ declare module feng3d {
         /**
          * 创建
          */
-        static createPrimitive(type: PrimitiveType): Object3D;
+        static createPrimitive(type: PrimitiveType): GameObject;
     }
 }
 declare module feng3d {
@@ -1790,11 +1790,11 @@ declare module feng3d {
         /**
          * 父组件
          */
-        protected _parentComponent: Object3D;
+        protected _parentComponent: GameObject;
         /**
          * 所属对象
          */
-        readonly object3D: Object3D;
+        readonly gameObject: GameObject;
         /**
          * 构建3D对象组件
          */
@@ -1803,12 +1803,12 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 3D空间
+     * 变换
      * @author feng 2016-04-26
      */
-    class Space3D extends Object3DComponent {
+    class Transform extends Object3DComponent {
         /**
-         * 构建3D空间
+         * 构建变换
          * @param x X坐标
          * @param y Y坐标
          * @param z Z坐标
@@ -1916,7 +1916,7 @@ declare module feng3d {
         /**
          * 发出事件的3D元素
          */
-        data: Space3D;
+        data: Transform;
     }
 }
 declare module feng3d {
@@ -1928,7 +1928,7 @@ declare module feng3d {
         /**
          * 父对象
          */
-        readonly parent: Object3D;
+        readonly parent: GameObject;
         /**
          * 构建3D容器组件
          */
@@ -1938,37 +1938,37 @@ declare module feng3d {
          * @param child		子对象
          * @return			新增的子对象
          */
-        addChild(child: Object3D): void;
+        addChild(child: GameObject): void;
         /**
          * 添加子对象到指定位置
          * @param   child   子对象
          * @param   index   添加到的位置
          */
-        addChildAt(child: Object3D, index: number): void;
+        addChildAt(child: GameObject, index: number): void;
         /**
          * 移除子对象
          * @param   child   子对象
          * @return			被移除子对象索引
          */
-        removeChild(child: Object3D): number;
+        removeChild(child: GameObject): number;
         /**
          * 获取子对象索引
          * @param   child   子对象
          * @return  子对象位置
          */
-        getChildIndex(child: Object3D): number;
+        getChildIndex(child: GameObject): number;
         /**
          * 移出指定索引的子对象
          * @param childIndex	子对象索引
          * @return				被移除对象
          */
-        removeChildAt(childIndex: number): Object3D;
+        removeChildAt(childIndex: number): GameObject;
         /**
          * 获取子对象
          * @param index         子对象索引
          * @return              指定索引的子对象
          */
-        getChildAt(index: number): Object3D;
+        getChildAt(index: number): GameObject;
         /**
          * 获取子对象数量
          */
@@ -2024,8 +2024,8 @@ declare module feng3d {
          * 事件数据
          */
         data: {
-            parent: Object3D;
-            child: Object3D;
+            parent: GameObject;
+            child: GameObject;
         };
     }
 }
@@ -2101,13 +2101,13 @@ declare module feng3d {
         /**
          * 3D对象
          */
-        object3D: Object3D;
+        object3D: GameObject;
         /**
          * 构建3D场景节点
          * @param object3D 3D对象
          * @param parent 父节点
          */
-        constructor(object3D: Object3D, parent: Scene3DNode);
+        constructor(object3D: GameObject, parent: Scene3DNode);
         /**
          * 节点名称
          */
@@ -2115,11 +2115,11 @@ declare module feng3d {
         /**
          * 添加3D对象生成节点
          */
-        addObject3D(object3D: Object3D): this;
+        addObject3D(object3D: GameObject): this;
         /**
          * 移除3D对象节点
          */
-        removeObject(object3D: Object3D): this;
+        removeObject(object3D: GameObject): this;
         /**
          * 根据名称深度查找节点
          * @param name 节点名称
@@ -2132,7 +2132,7 @@ declare module feng3d {
         /**
          * 获取可渲染对象列表
          */
-        getRenderables(renderables?: Object3D[]): Object3D[];
+        getRenderables(renderables?: GameObject[]): GameObject[];
     }
 }
 declare module feng3d {
@@ -2140,7 +2140,7 @@ declare module feng3d {
      * 3D场景
      * @author feng 2016-05-01
      */
-    class Scene3D extends Object3D {
+    class Scene3D extends GameObject {
         private _renderables;
         /**
          * 构造3D场景
@@ -2157,7 +2157,7 @@ declare module feng3d {
         /**
         * 获取可渲染对象列表
         */
-        getRenderables(): Object3D[];
+        getRenderables(): GameObject[];
     }
 }
 declare module feng3d {
@@ -2490,7 +2490,7 @@ declare module feng3d {
      * 摄像机
      * @author feng 2016-08-16
      */
-    class Camera3D extends Object3D {
+    class Camera3D extends GameObject {
         private _viewProjection;
         private _viewProjectionDirty;
         private _lens;
@@ -2692,29 +2692,29 @@ declare module feng3d {
 }
 declare module feng3d {
     class ControllerBase {
-        protected _targetObject: Object3D;
+        protected _targetObject: GameObject;
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(targetObject: Object3D);
+        constructor(targetObject: GameObject);
         /**
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        targetObject: Object3D;
+        targetObject: GameObject;
     }
 }
 declare module feng3d {
     class LookAtController extends ControllerBase {
         protected _lookAtPosition: Vector3D;
-        protected _lookAtObject: Object3D;
+        protected _lookAtObject: GameObject;
         protected _origin: Vector3D;
         protected _upAxis: Vector3D;
         private _pos;
-        constructor(targetObject?: Object3D, lookAtObject?: Object3D);
+        constructor(targetObject?: GameObject, lookAtObject?: GameObject);
         upAxis: Vector3D;
         lookAtPosition: Vector3D;
-        lookAtObject: Object3D;
+        lookAtObject: GameObject;
         update(interpolate?: boolean): void;
     }
 }

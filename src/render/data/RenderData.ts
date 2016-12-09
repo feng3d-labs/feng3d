@@ -6,7 +6,7 @@ module feng3d {
      */
     export class RenderData {
 
-        object3D: Object3D
+        object3D: GameObject
 
         /**
          * 顶点索引缓冲
@@ -36,12 +36,12 @@ module feng3d {
         /**
          * 渲染数据字典
          */
-        private static renderDataMap = new Map<Object3D, RenderData>();
+        private static renderDataMap = new Map<GameObject, RenderData>();
 
         /**
          * 获取3D对象渲染数据实例
          */
-        static getInstance(object3D: Object3D) {
+        static getInstance(object3D: GameObject) {
 
             var renderData = this.renderDataMap.get(object3D);
             if (!renderData) {
@@ -66,7 +66,7 @@ module feng3d {
         /**
          * 构建3D对象渲染数据
          */
-        constructor(object3D: Object3D) {
+        constructor(object3D: GameObject) {
             this.object3D = object3D;
         }
 

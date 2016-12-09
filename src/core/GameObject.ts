@@ -1,22 +1,22 @@
 module feng3d {
     /**
-     * 3D对象
+     * 游戏对象
      * @author feng 2016-04-26
      */
-    export class Object3D extends Component {
+    export class GameObject extends Component {
 
         /**
-         * 3D空间
+         * 变换
          */
-        public get space3D(): Space3D {
+        public get transform(): Transform {
 
-            return this.getOrCreateComponentByClass(Space3D);
+            return this.getOrCreateComponentByClass(Transform);
         }
 
-        public set space3D(value: Space3D) {
+        public set transform(value: Transform) {
 
             assert(value != null, "3D空间不能为null");
-            this.removeComponent(this.space3D);
+            this.removeComponent(this.transform);
             this.addComponent(value);
         }
 
@@ -49,7 +49,7 @@ module feng3d {
             });
 
             this.getOrCreateComponentByClass(Container3D);
-            this.getOrCreateComponentByClass(Space3D);
+            this.getOrCreateComponentByClass(Transform);
             this.getOrCreateComponentByClass(SceneSpace3D);
             this.getOrCreateComponentByClass(Material);
         }
@@ -69,42 +69,42 @@ module feng3d {
 		 * @param child		子对象
 		 * @return			新增的子对象
 		 */
-        public addChild(child: Object3D): void { this.container3D.addChild(child); }
+        public addChild(child: GameObject): void { this.container3D.addChild(child); }
 
         /**
          * 添加子对象到指定位置
          * @param   child   子对象
          * @param   index   添加到的位置
          */
-        public addChildAt(child: Object3D, index: number): void { this.container3D.addChildAt(child, index); }
+        public addChildAt(child: GameObject, index: number): void { this.container3D.addChildAt(child, index); }
 
         /**
          * 移除子对象
          * @param   child   子对象
          * @return			被移除子对象索引
          */
-        public removeChild(child: Object3D): number { return this.container3D.removeChild(child); }
+        public removeChild(child: GameObject): number { return this.container3D.removeChild(child); }
 
         /**
          * 获取子对象索引
          * @param   child   子对象
          * @return  子对象位置
          */
-        public getChildIndex(child: Object3D): number { return this.container3D.getChildIndex(child); }
+        public getChildIndex(child: GameObject): number { return this.container3D.getChildIndex(child); }
 
         /**
 		 * 移出指定索引的子对象
 		 * @param childIndex	子对象索引
 		 * @return				被移除对象
 		 */
-        public removeChildAt(childIndex: number): Object3D { return this.container3D.removeChildAt(childIndex); }
+        public removeChildAt(childIndex: number): GameObject { return this.container3D.removeChildAt(childIndex); }
 
         /**
 		 * 获取子对象
 		 * @param index         子对象索引
 		 * @return              指定索引的子对象
 		 */
-        public getChildAt(index: number): Object3D { return this.container3D.getChildAt(index); }
+        public getChildAt(index: number): GameObject { return this.container3D.getChildAt(index); }
 
         /**
          * 获取子对象数量
@@ -131,9 +131,9 @@ module feng3d {
         /**
          * 创建
          */
-        static createPrimitive(type: PrimitiveType): Object3D {
+        static createPrimitive(type: PrimitiveType): GameObject {
 
-            var object3D = new Object3D();
+            var object3D = new GameObject();
             switch (type) {
                 case PrimitiveType.Plane:
                     object3D.addComponent(primitives.createPlane());

@@ -1,11 +1,11 @@
 module feng3d {
     export class ControllerBase {
-        protected _targetObject: Object3D;
+        protected _targetObject: GameObject;
 
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(targetObject: Object3D) {
+        constructor(targetObject: GameObject) {
             this._targetObject = targetObject;
         }
 
@@ -16,11 +16,11 @@ module feng3d {
             throw new Error("Abstract method");
         }
 
-        public get targetObject(): Object3D {
+        public get targetObject(): GameObject {
             return this._targetObject;
         }
 
-        public set targetObject(val: Object3D) {
+        public set targetObject(val: GameObject) {
             if (this._targetObject == val)
                 return;
 

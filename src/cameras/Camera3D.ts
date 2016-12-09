@@ -4,7 +4,7 @@ module feng3d {
 	 * 摄像机
 	 * @author feng 2016-08-16
 	 */
-    export class Camera3D extends Object3D {
+    export class Camera3D extends GameObject {
 
         private _viewProjection: Matrix3D = new Matrix3D();
         private _viewProjectionDirty: Boolean = true;
@@ -26,7 +26,7 @@ module feng3d {
 		 */
         public get viewProjection(): Matrix3D {
             if (this._viewProjectionDirty) {
-                var inverseSceneTransform = this.space3D.transform3D.clone();
+                var inverseSceneTransform = this.transform.transform3D.clone();
                 inverseSceneTransform.invert();
                 //场景空间转摄像机空间
                 this._viewProjection.copyFrom(inverseSceneTransform);

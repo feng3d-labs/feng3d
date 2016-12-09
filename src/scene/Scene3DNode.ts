@@ -18,14 +18,14 @@ module feng3d {
         /**
          * 3D对象
          */
-        object3D: Object3D;
+        object3D: GameObject;
 
         /**
          * 构建3D场景节点
          * @param object3D 3D对象
          * @param parent 父节点
          */
-        constructor(object3D: Object3D, parent: Scene3DNode) {
+        constructor(object3D: GameObject, parent: Scene3DNode) {
 
             super();
             this.object3D = object3D;
@@ -46,7 +46,7 @@ module feng3d {
         /**
          * 添加3D对象生成节点
          */
-        addObject3D(object3D: Object3D): this {
+        addObject3D(object3D: GameObject): this {
 
             var child = new Scene3DNode(object3D, this);
             this.children.push(child);
@@ -57,7 +57,7 @@ module feng3d {
         /**
          * 移除3D对象节点
          */
-        removeObject(object3D: Object3D): this {
+        removeObject(object3D: GameObject): this {
 
             var deletedChild: Scene3DNode;
             for (var i = 0; i < this.children.length; i++) {
@@ -101,7 +101,7 @@ module feng3d {
         /**
          * 获取可渲染对象列表
          */
-        getRenderables(renderables: Object3D[] = null): Object3D[] {
+        getRenderables(renderables: GameObject[] = null): GameObject[] {
 
             renderables = renderables || [];
             this.renderable && renderables.push(this.object3D);

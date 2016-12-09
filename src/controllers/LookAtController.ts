@@ -1,12 +1,12 @@
 module feng3d {
     export class LookAtController extends ControllerBase {
         protected _lookAtPosition: Vector3D;
-        protected _lookAtObject: Object3D;
+        protected _lookAtObject: GameObject;
         protected _origin: Vector3D = new Vector3D(0.0, 0.0, 0.0);
         protected _upAxis: Vector3D = Vector3D.Y_AXIS;
         private _pos: Vector3D = new Vector3D();
 
-        constructor(targetObject: Object3D = null, lookAtObject: Object3D = null) {
+        constructor(targetObject: GameObject = null, lookAtObject: GameObject = null) {
             super(targetObject);
 
             if (lookAtObject)
@@ -31,11 +31,11 @@ module feng3d {
             this._lookAtPosition = val;
         }
 
-        public get lookAtObject(): Object3D {
+        public get lookAtObject(): GameObject {
             return this._lookAtObject;
         }
 
-        public set lookAtObject(value: Object3D) {
+        public set lookAtObject(value: GameObject) {
             if (this._lookAtObject == value)
                 return;
 
@@ -45,13 +45,13 @@ module feng3d {
         public update(interpolate: boolean = true): void {
             if (this._targetObject) {
                 if (this._lookAtPosition) {
-                    this._targetObject.space3D.lookAt(this.lookAtPosition, this._upAxis);
+                    this._targetObject.transform.lookAt(this.lookAtPosition, this._upAxis);
                 } 
                 else if (this._lookAtObject) {
-                    this._pos.x = this._lookAtObject.space3D.x;
-                    this._pos.y = this._lookAtObject.space3D.y;
-                    this._pos.z = this._lookAtObject.space3D.z;
-                    this._targetObject.space3D.lookAt(this._pos, this._upAxis);
+                    this._pos.x = this._lookAtObject.transform.x;
+                    this._pos.y = this._lookAtObject.transform.y;
+                    this._pos.z = this._lookAtObject.transform.z;
+                    this._targetObject.transform.lookAt(this._pos, this._upAxis);
                 }
             }
         }

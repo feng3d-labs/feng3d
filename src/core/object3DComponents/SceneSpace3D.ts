@@ -31,9 +31,9 @@ module feng3d {
 
         protected onBeAddedComponent(event: ComponentEvent): void {
 
-            this.object3D.addEventListener(Space3DEvent.TRANSFORM_CHANGED, this.onTransformChanged, this);
+            this.gameObject.addEventListener(Space3DEvent.TRANSFORM_CHANGED, this.onTransformChanged, this);
 
-            var context3DBuffer = this.object3D.getOrCreateComponentByClass(RenderDataHolder);
+            var context3DBuffer = this.gameObject.getOrCreateComponentByClass(RenderDataHolder);
 
             context3DBuffer.mapUniform(RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
         }
@@ -60,12 +60,12 @@ module feng3d {
                 return;
 
             var sceneTransformChanged = new SceneSpace3DEvent(SceneSpace3DEvent.SCENETRANSFORM_CHANGED, this);
-            this.object3D && this.object3D.dispatchEvent(sceneTransformChanged);
+            this.gameObject && this.gameObject.dispatchEvent(sceneTransformChanged);
 
-            if (this.object3D && this.object3D) {
+            if (this.gameObject && this.gameObject) {
 
-                for (var i = 0; i < this.object3D.numChildren; i++) {
-                    var element = this.object3D.getChildAt(i)
+                for (var i = 0; i < this.gameObject.numChildren; i++) {
+                    var element = this.gameObject.getChildAt(i)
                     element.notifySceneTransformChange();
                 }
             }
@@ -87,7 +87,7 @@ module feng3d {
         /**
          * 相对场景空间
          */
-        private sceneSpace3D: Space3D = new Space3D();
+        private sceneSpace3D: Transform = new Transform();
 
         /**
          * 场景空间是否变脏
@@ -100,8 +100,8 @@ module feng3d {
         private updateSceneSpace3D() {
 
             this.sceneSpace3DDirty = false;
-            var transform3D = this.object3D.space3D.transform3D.clone();
-            var parent = this.object3D.parent;
+            var transform3D = this.gameObject.transform.transform3D.clone();
+            var parent = this.gameObject.parent;
             if (parent != null) {
                 var parentSceneTransform3D = parent.sceneTransform3D;
                 transform3D.append(parentSceneTransform3D);
