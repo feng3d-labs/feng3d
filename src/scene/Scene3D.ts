@@ -14,8 +14,8 @@ module feng3d {
         constructor() {
 
             super("root");
-            this.addEventListener(Container3DEvent.ADDED, this.onAdded, this)
-            this.addEventListener(Container3DEvent.REMOVED, this.onRemoved, this)
+            this.transform.addEventListener(Container3DEvent.ADDED, this.onAdded, this)
+            this.transform.addEventListener(Container3DEvent.REMOVED, this.onRemoved, this)
         }
 
         /**
@@ -23,7 +23,7 @@ module feng3d {
          */
         private onAdded(event: Container3DEvent) {
 
-            this._renderables.push(event.data.child);
+            this._renderables.push(event.data.child.gameObject);
         }
 
         /**
@@ -32,7 +32,7 @@ module feng3d {
         private onRemoved(event: Container3DEvent) {
 
             var removedChild = event.data.child;
-            var index = this._renderables.indexOf(removedChild);
+            var index = this._renderables.indexOf(removedChild.gameObject);
             this._renderables.splice(index, 1);
         }
 

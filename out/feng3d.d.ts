@@ -1665,65 +1665,9 @@ declare module feng3d {
          */
         transform: Transform;
         /**
-         * 容器
-         */
-        private readonly container3D;
-        /**
          * 构建3D对象
          */
         constructor(name?: string, conponents?: Component[]);
-        /********************
-         *
-         * Container3D 组件中方法
-         *
-         *******************/
-        /**
-         * 父对象
-         */
-        readonly parent: GameObject;
-        /**
-         * 添加子对象
-         * @param child		子对象
-         * @return			新增的子对象
-         */
-        addChild(child: GameObject): void;
-        /**
-         * 添加子对象到指定位置
-         * @param   child   子对象
-         * @param   index   添加到的位置
-         */
-        addChildAt(child: GameObject, index: number): void;
-        /**
-         * 移除子对象
-         * @param   child   子对象
-         * @return			被移除子对象索引
-         */
-        removeChild(child: GameObject): number;
-        /**
-         * 获取子对象索引
-         * @param   child   子对象
-         * @return  子对象位置
-         */
-        getChildIndex(child: GameObject): number;
-        /**
-         * 移出指定索引的子对象
-         * @param childIndex	子对象索引
-         * @return				被移除对象
-         */
-        removeChildAt(childIndex: number): GameObject;
-        /**
-         * 获取子对象
-         * @param index         子对象索引
-         * @return              指定索引的子对象
-         */
-        getChildAt(index: number): GameObject;
-        /**
-         * 获取子对象数量
-         */
-        readonly numChildren: number;
-        /*********************
-         *
-         *********************/
         /**
          * 创建
          */
@@ -1822,6 +1766,14 @@ declare module feng3d {
         private _inverseGlobalMatrix3DDirty;
         private _inverseGlobalMatrix3D;
         /**
+         * 父对象
+         */
+        private _parent;
+        /**
+         * 子对象列表
+         */
+        private children;
+        /**
          * 构建变换
          * @param x X坐标
          * @param y Y坐标
@@ -1905,6 +1857,10 @@ declare module feng3d {
          */
         readonly inverseGlobalMatrix3D: Matrix3D;
         protected onBeAddedComponent(event: ComponentEvent): void;
+        /**
+         * 处理被移除组件事件
+         */
+        protected onBeRemovedComponent(event: ComponentEvent): void;
         private getuMVMatrix();
         /**
          * 变换矩阵
@@ -1935,6 +1891,58 @@ declare module feng3d {
          * @private
          */
         invalidateGlobalMatrix3D(): void;
+        /**
+         * 父对象
+         */
+        readonly parent: Transform;
+        /**
+         * 添加子对象
+         * @param child		子对象
+         * @return			新增的子对象
+         */
+        addChild(child: Transform): void;
+        /**
+         * 添加子对象到指定位置
+         * @param   child   子对象
+         * @param   index   添加到的位置
+         */
+        addChildAt(child: Transform, index: number): void;
+        /**
+         * 移除子对象
+         * @param   child   子对象
+         * @return			被移除子对象索引
+         */
+        removeChild(child: Transform): number;
+        /**
+         * 获取子对象索引
+         * @param   child   子对象
+         * @return  子对象位置
+         */
+        getChildIndex(child: Transform): number;
+        /**
+         * 移出指定索引的子对象
+         * @param childIndex	子对象索引
+         * @return				被移除对象
+         */
+        removeChildAt(childIndex: number): Transform;
+        /**
+         * 获取子对象
+         * @param index         子对象索引
+         * @return              指定索引的子对象
+         */
+        getChildAt(index: number): Transform;
+        /**
+         * 获取子对象数量
+         */
+        readonly numChildren: number;
+        /**
+         * 处理添加子对象事件
+         */
+        private onAddedContainer3D(event);
+        /**
+         * 处理删除子对象事件
+         */
+        private onRemovedContainer3D(event);
     }
     /**
      * 变换事件(3D状态发生改变、位置、旋转、缩放)
@@ -1980,92 +1988,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 3D容器组件
-     * @author feng 2016-04-26
-     */
-    class Container3D extends Object3DComponent {
-        /**
-         * 父对象
-         */
-        readonly parent: GameObject;
-        /**
-         * 构建3D容器组件
-         */
-        constructor();
-        /**
-         * 添加子对象
-         * @param child		子对象
-         * @return			新增的子对象
-         */
-        addChild(child: GameObject): void;
-        /**
-         * 添加子对象到指定位置
-         * @param   child   子对象
-         * @param   index   添加到的位置
-         */
-        addChildAt(child: GameObject, index: number): void;
-        /**
-         * 移除子对象
-         * @param   child   子对象
-         * @return			被移除子对象索引
-         */
-        removeChild(child: GameObject): number;
-        /**
-         * 获取子对象索引
-         * @param   child   子对象
-         * @return  子对象位置
-         */
-        getChildIndex(child: GameObject): number;
-        /**
-         * 移出指定索引的子对象
-         * @param childIndex	子对象索引
-         * @return				被移除对象
-         */
-        removeChildAt(childIndex: number): GameObject;
-        /**
-         * 获取子对象
-         * @param index         子对象索引
-         * @return              指定索引的子对象
-         */
-        getChildAt(index: number): GameObject;
-        /**
-         * 获取子对象数量
-         */
-        readonly numChildren: number;
-        /******************************************************************************************************************************
-         * @protected
-         ******************************************************************************************************************************/
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: ComponentEvent): void;
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: ComponentEvent): void;
-        /******************************************************************************************************************************
-         * @private
-         ******************************************************************************************************************************/
-        /**
-         * 父对象
-         */
-        private _parent;
-        /**
-         * 子对象列表
-         */
-        private children;
-        /**
-         * 处理添加子对象事件
-         */
-        private onAddedContainer3D(event);
-        /**
-         * 处理删除子对象事件
-         */
-        private onRemovedContainer3D(event);
-    }
-}
-declare module feng3d {
-    /**
      * 3D容器事件
      */
     class Container3DEvent extends Event {
@@ -2083,8 +2005,8 @@ declare module feng3d {
          * 事件数据
          */
         data: {
-            parent: GameObject;
-            child: GameObject;
+            parent: Transform;
+            child: Transform;
         };
     }
 }

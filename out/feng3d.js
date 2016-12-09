@@ -2867,7 +2867,6 @@ var feng3d;
             conponents && conponents.forEach(element => {
                 this.addComponent(element);
             });
-            this.getOrCreateComponentByClass(feng3d.Container3D);
             this.getOrCreateComponentByClass(feng3d.Transform);
             this.getOrCreateComponentByClass(feng3d.Material);
         }
@@ -2882,65 +2881,6 @@ var feng3d;
             this.removeComponent(this.transform);
             this.addComponent(value);
         }
-        /**
-         * 容器
-         */
-        get container3D() {
-            return this.getOrCreateComponentByClass(feng3d.Container3D);
-        }
-        /********************
-         *
-         * Container3D 组件中方法
-         *
-         *******************/
-        /**
-         * 父对象
-         */
-        get parent() { return this.container3D.parent; }
-        /**
-         * 添加子对象
-         * @param child		子对象
-         * @return			新增的子对象
-         */
-        addChild(child) { this.container3D.addChild(child); }
-        /**
-         * 添加子对象到指定位置
-         * @param   child   子对象
-         * @param   index   添加到的位置
-         */
-        addChildAt(child, index) { this.container3D.addChildAt(child, index); }
-        /**
-         * 移除子对象
-         * @param   child   子对象
-         * @return			被移除子对象索引
-         */
-        removeChild(child) { return this.container3D.removeChild(child); }
-        /**
-         * 获取子对象索引
-         * @param   child   子对象
-         * @return  子对象位置
-         */
-        getChildIndex(child) { return this.container3D.getChildIndex(child); }
-        /**
-         * 移出指定索引的子对象
-         * @param childIndex	子对象索引
-         * @return				被移除对象
-         */
-        removeChildAt(childIndex) { return this.container3D.removeChildAt(childIndex); }
-        /**
-         * 获取子对象
-         * @param index         子对象索引
-         * @return              指定索引的子对象
-         */
-        getChildAt(index) { return this.container3D.getChildAt(index); }
-        /**
-         * 获取子对象数量
-         */
-        get numChildren() { return this.container3D.numChildren; }
-        ;
-        /*********************
-         *
-         *********************/
         /**
          * 创建
          */
@@ -3087,6 +3027,14 @@ var feng3d;
              * 全局矩阵
              */
             this._globalMatrix3D = new feng3d.Matrix3D();
+            /**
+             * 父对象
+             */
+            this._parent = null;
+            /**
+             * 子对象列表
+             */
+            this.children = [];
             this._x = x;
             this._y = y;
             this._z = z;
@@ -3097,7 +3045,6 @@ var feng3d;
             this._sy = sy;
             this._sz = sz;
             this.invalidateMatrix3D();
-            this.addEventListener(feng3d.ComponentEvent.ADDED_COMPONENT, this.onBeAddedComponent, this);
         }
         /**
          * X坐标
@@ -3222,8 +3169,18 @@ var feng3d;
         //@protected
         //------------------------------------------
         onBeAddedComponent(event) {
+            this.gameObject.addEventListener(feng3d.Container3DEvent.ADDED, this.onAddedContainer3D, this);
+            this.gameObject.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
+            //
             var context3DBuffer = this.gameObject.getOrCreateComponentByClass(feng3d.RenderDataHolder);
             context3DBuffer.mapUniform(feng3d.RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
+        }
+        /**
+         * 处理被移除组件事件
+         */
+        onBeRemovedComponent(event) {
+            this.gameObject.addEventListener(feng3d.Container3DEvent.ADDED, this.onAddedContainer3D, this);
+            this.gameObject.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
         getuMVMatrix() {
             return this.globalMatrix3D;
@@ -3261,9 +3218,8 @@ var feng3d;
         updateGlobalMatrix3D() {
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);
-            var parent = this.gameObject.parent;
-            if (parent != null) {
-                var parentGlobalMatrix3D = parent.transform.globalMatrix3D;
+            if (this.parent != null) {
+                var parentGlobalMatrix3D = this.parent.globalMatrix3D;
                 this._globalMatrix3D.append(parentGlobalMatrix3D);
             }
         }
@@ -3291,11 +3247,94 @@ var feng3d;
             this._inverseGlobalMatrix3DDirty = true;
             this.notifySceneTransformChange();
             //
-            if (this.gameObject) {
-                for (var i = 0; i < this.gameObject.numChildren; i++) {
-                    var element = this.gameObject.getChildAt(i);
-                    element.transform.invalidateGlobalMatrix3D();
-                }
+            for (var i = 0; i < this.numChildren; i++) {
+                var element = this.getChildAt(i);
+                element.invalidateGlobalMatrix3D();
+            }
+        }
+        /**
+         * 父对象
+         */
+        get parent() {
+            return this._parent;
+        }
+        /**
+         * 添加子对象
+         * @param child		子对象
+         * @return			新增的子对象
+         */
+        addChild(child) {
+            this.addChildAt(child, this.children.length);
+        }
+        /**
+         * 添加子对象到指定位置
+         * @param   child   子对象
+         * @param   index   添加到的位置
+         */
+        addChildAt(child, index) {
+            feng3d.assert(-1 < index && index <= this.children.length, "添加子对象的索引越界！");
+            this.children.splice(index, 0, child);
+            child.dispatchEvent(new feng3d.Container3DEvent(feng3d.Container3DEvent.ADDED, { parent: this, child: child }, true));
+        }
+        /**
+         * 移除子对象
+         * @param   child   子对象
+         * @return			被移除子对象索引
+         */
+        removeChild(child) {
+            var childIndex = this.children.indexOf(child);
+            feng3d.assert(-1 < childIndex && childIndex < this.children.length, "删除的子对象不存在！");
+            this.removeChildAt(childIndex);
+            return childIndex;
+        }
+        /**
+         * 获取子对象索引
+         * @param   child   子对象
+         * @return  子对象位置
+         */
+        getChildIndex(child) {
+            return this.children.indexOf(child);
+        }
+        /**
+         * 移出指定索引的子对象
+         * @param childIndex	子对象索引
+         * @return				被移除对象
+         */
+        removeChildAt(childIndex) {
+            var child = this.children[childIndex];
+            feng3d.assert(-1 < childIndex && childIndex < this.children.length, "删除的索引越界！");
+            this.children.splice(childIndex, 1);
+            child.dispatchEvent(new feng3d.Container3DEvent(feng3d.Container3DEvent.REMOVED, { parent: this, child: child }, true));
+            return child;
+        }
+        /**
+         * 获取子对象
+         * @param index         子对象索引
+         * @return              指定索引的子对象
+         */
+        getChildAt(index) {
+            return this.children[index];
+        }
+        /**
+         * 获取子对象数量
+         */
+        get numChildren() {
+            return this.children.length;
+        }
+        /**
+         * 处理添加子对象事件
+         */
+        onAddedContainer3D(event) {
+            if (event.data.child == this) {
+                this._parent = event.data.parent;
+            }
+        }
+        /**
+         * 处理删除子对象事件
+         */
+        onRemovedContainer3D(event) {
+            if (event.data.child == this) {
+                this._parent = null;
             }
         }
     }
@@ -3344,136 +3383,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 3D容器组件
-     * @author feng 2016-04-26
-     */
-    class Container3D extends feng3d.Object3DComponent {
-        /**
-         * 构建3D容器组件
-         */
-        constructor() {
-            super();
-            /******************************************************************************************************************************
-             * @private
-             ******************************************************************************************************************************/
-            /**
-             * 父对象
-             */
-            this._parent = null;
-            /**
-             * 子对象列表
-             */
-            this.children = [];
-        }
-        /**
-         * 父对象
-         */
-        get parent() {
-            return this._parent;
-        }
-        /**
-         * 添加子对象
-         * @param child		子对象
-         * @return			新增的子对象
-         */
-        addChild(child) {
-            this.addChildAt(child, this.children.length);
-        }
-        /**
-         * 添加子对象到指定位置
-         * @param   child   子对象
-         * @param   index   添加到的位置
-         */
-        addChildAt(child, index) {
-            feng3d.assert(-1 < index && index <= this.children.length, "添加子对象的索引越界！");
-            this.children.splice(index, 0, child);
-            child.dispatchEvent(new feng3d.Container3DEvent(feng3d.Container3DEvent.ADDED, { parent: this.gameObject, child: child }, true));
-        }
-        /**
-         * 移除子对象
-         * @param   child   子对象
-         * @return			被移除子对象索引
-         */
-        removeChild(child) {
-            var childIndex = this.children.indexOf(child);
-            feng3d.assert(-1 < childIndex && childIndex < this.children.length, "删除的子对象不存在！");
-            this.removeChildAt(childIndex);
-            return childIndex;
-        }
-        /**
-         * 获取子对象索引
-         * @param   child   子对象
-         * @return  子对象位置
-         */
-        getChildIndex(child) {
-            return this.children.indexOf(child);
-        }
-        /**
-         * 移出指定索引的子对象
-         * @param childIndex	子对象索引
-         * @return				被移除对象
-         */
-        removeChildAt(childIndex) {
-            var child = this.children[childIndex];
-            feng3d.assert(-1 < childIndex && childIndex < this.children.length, "删除的索引越界！");
-            this.children.splice(childIndex, 1);
-            child.dispatchEvent(new feng3d.Container3DEvent(feng3d.Container3DEvent.REMOVED, { parent: this.gameObject, child: child }, true));
-            return child;
-        }
-        /**
-         * 获取子对象
-         * @param index         子对象索引
-         * @return              指定索引的子对象
-         */
-        getChildAt(index) {
-            return this.children[index];
-        }
-        /**
-         * 获取子对象数量
-         */
-        get numChildren() {
-            return this.children.length;
-        }
-        /******************************************************************************************************************************
-         * @protected
-         ******************************************************************************************************************************/
-        /**
-         * 处理被添加组件事件
-         */
-        onBeAddedComponent(event) {
-            //TODO 此处可以提供一个方法，向父组件中添加事件，当自身添加到父组件时自动添加监听，当自身从父组件移除时自动移除监听
-            this.gameObject.addEventListener(feng3d.Container3DEvent.ADDED, this.onAddedContainer3D, this);
-            this.gameObject.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
-        }
-        /**
-         * 处理被移除组件事件
-         */
-        onBeRemovedComponent(event) {
-            this.gameObject.addEventListener(feng3d.Container3DEvent.ADDED, this.onAddedContainer3D, this);
-            this.gameObject.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
-        }
-        /**
-         * 处理添加子对象事件
-         */
-        onAddedContainer3D(event) {
-            if (event.data.child == this.gameObject) {
-                this._parent = event.data.parent;
-            }
-        }
-        /**
-         * 处理删除子对象事件
-         */
-        onRemovedContainer3D(event) {
-            if (event.data.child == this.gameObject) {
-                this._parent = null;
-            }
-        }
-    }
-    feng3d.Container3D = Container3D;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 3D容器事件
      */
     class Container3DEvent extends feng3d.Event {
@@ -3503,21 +3412,21 @@ var feng3d;
         constructor() {
             super("root");
             this._renderables = [];
-            this.addEventListener(feng3d.Container3DEvent.ADDED, this.onAdded, this);
-            this.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemoved, this);
+            this.transform.addEventListener(feng3d.Container3DEvent.ADDED, this.onAdded, this);
+            this.transform.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemoved, this);
         }
         /**
          * 处理添加对象事件
          */
         onAdded(event) {
-            this._renderables.push(event.data.child);
+            this._renderables.push(event.data.child.gameObject);
         }
         /**
          * 处理添加对象事件
          */
         onRemoved(event) {
             var removedChild = event.data.child;
-            var index = this._renderables.indexOf(removedChild);
+            var index = this._renderables.indexOf(removedChild.gameObject);
             this._renderables.splice(index, 1);
         }
         /**
