@@ -29,14 +29,6 @@ module feng3d {
         }
 
         /**
-         * 场景空间
-         */
-        private get sceneSpace3D() {
-
-            return this.getOrCreateComponentByClass(SceneSpace3D);
-        }
-
-        /**
          * 构建3D对象
          */
         constructor(name?: string, conponents: Component[] = null) {
@@ -50,7 +42,6 @@ module feng3d {
 
             this.getOrCreateComponentByClass(Container3D);
             this.getOrCreateComponentByClass(Transform);
-            this.getOrCreateComponentByClass(SceneSpace3D);
             this.getOrCreateComponentByClass(Material);
         }
 
@@ -110,20 +101,6 @@ module feng3d {
          * 获取子对象数量
          */
         public get numChildren(): number { return this.container3D.numChildren; };
-
-        /*********************
-         * 
-         *********************/
-
-        /**
-         * 场景空间变换矩阵
-         */
-        public get sceneTransform3D(): Matrix3D { return this.sceneSpace3D.sceneTransform3D; }
-
-        /**
-		 * 通知场景变换改变
-		 */
-        public notifySceneTransformChange() { this.sceneSpace3D.notifySceneTransformChange(); }
 
         /*********************
          * 

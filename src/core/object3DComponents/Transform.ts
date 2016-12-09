@@ -5,6 +5,32 @@ module feng3d {
      */
     export class Transform extends Object3DComponent {
 
+        //private
+        private _x = 0;
+        private _y = 0;
+        private _z = 0;
+        private _rx = 0;
+        private _ry = 0;
+        private _rz = 0;
+        private _sx = 1;
+        private _sy = 1;
+        private _sz = 1;
+        //
+        private _matrix3D = new Matrix3D();
+        private _matrix3DDirty: boolean;
+        private _inverseMatrix3D = new Matrix3D();
+        private _inverseMatrix3DDirty: boolean;
+        /**
+         * 全局矩阵是否变脏
+         */
+        private _globalMatrix3DDirty: boolean;
+        /**
+         * 全局矩阵
+         */
+        private _globalMatrix3D: Matrix3D = new Matrix3D();
+        private _inverseGlobalMatrix3DDirty: boolean;
+        private _inverseGlobalMatrix3D: Matrix3D;
+
         /**
          * 构建变换
          * @param x X坐标
@@ -29,6 +55,8 @@ module feng3d {
             this._sy = sy;
             this._sz = sz;
             this.invalidateMatrix3D();
+
+            this.addEventListener(ComponentEvent.ADDED_COMPONENT, this.onBeAddedComponent, this);
         }
 
         /**
@@ -127,7 +155,65 @@ module feng3d {
             this._sx = vecs[2].x;
             this._sy = vecs[2].y;
             this._sz = vecs[2].z;
-            this.invalidateMatrix3D();
+
+            this.notifyMatrix3DChanged();
+            this.invalidateGlobalMatrix3D();
+        }
+
+        /**
+         * 逆变换矩阵
+         */
+        public get inverseMatrix3D(): Matrix3D {
+
+            if (this._inverseMatrix3DDirty) {
+                this._inverseMatrix3D.copyFrom(this.matrix3d);
+                this._inverseMatrix3D.invert();
+                this._inverseMatrix3DDirty = false;
+            }
+            return this._inverseMatrix3D;
+        }
+
+        /**
+         * 看向目标位置
+         * @param target    目标位置
+         * @param upAxis    向上朝向
+         */
+        public lookAt(target: Vector3D, upAxis: Vector3D = null): void {
+
+            this.matrix3d.lookAt(target, upAxis);
+            this.matrix3d = this.matrix3d;
+        }
+
+        /**
+         * 全局矩阵
+         */
+        public get globalMatrix3D(): Matrix3D {
+
+            this._globalMatrix3DDirty && this.updateGlobalMatrix3D();
+            return this._globalMatrix3D;
+        }
+
+        /**
+         * 逆全局矩阵
+         */
+        public get inverseGlobalMatrix3D(): Matrix3D {
+
+            this._inverseGlobalMatrix3DDirty && this.updateInverseGlobalMatrix3D();
+            return this._inverseGlobalMatrix3D;
+        }
+
+        //------------------------------------------
+        //@protected
+        //------------------------------------------
+        protected onBeAddedComponent(event: ComponentEvent): void {
+
+            var context3DBuffer = this.gameObject.getOrCreateComponentByClass(RenderDataHolder);
+            context3DBuffer.mapUniform(RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
+        }
+
+        private getuMVMatrix() {
+
+            return this.globalMatrix3D;
         }
 
         /**
@@ -147,54 +233,73 @@ module feng3d {
          * 使变换矩阵无效
          */
         protected invalidateMatrix3D() {
-            this._matrix3DDirty = true;
-            this._inverseMatrix3DDirty = true;
-            this.notifyMatrix3DChanged();
-        }
 
-        public get inverseMatrix3D(): Matrix3D {
-            if (this._inverseMatrix3DDirty) {
-                this._inverseMatrix3D.copyFrom(this.matrix3d);
-                this._inverseMatrix3D.invert();
-                this._inverseMatrix3DDirty = false;
-            }
-            return this._inverseMatrix3D;
+            this._matrix3DDirty = true;
+            this.notifyMatrix3DChanged();
+            //
+            this.invalidateGlobalMatrix3D();
         }
 
         /**
 		 * 发出状态改变消息
 		 */
         private notifyMatrix3DChanged() {
+
             var transformChanged = new TransfromEvent(TransfromEvent.TRANSFORM_CHANGED, this);
             this.gameObject && this.gameObject.dispatchEvent(transformChanged);
         }
 
         /**
-         * 看向目标位置
-         * @param target    目标位置
-         * @param upAxis    向上朝向
+         * 更新全局矩阵
          */
-        public lookAt(target: Vector3D, upAxis: Vector3D = null): void {
+        private updateGlobalMatrix3D() {
 
-            this.matrix3d.lookAt(target, upAxis);
-            this.matrix3d = this.matrix3d;
+            this._globalMatrix3DDirty = false;
+            this._globalMatrix3D.copyFrom(this.matrix3d);
+            var parent = this.gameObject.parent;
+            if (parent != null) {
+                var parentGlobalMatrix3D = parent.transform.globalMatrix3D;
+                this._globalMatrix3D.append(parentGlobalMatrix3D);
+            }
         }
 
-        //private
-        private _x = 0;
-        private _y = 0;
-        private _z = 0;
-        private _rx = 0;
-        private _ry = 0;
-        private _rz = 0;
-        private _sx = 1;
-        private _sy = 1;
-        private _sz = 1;
-        //
-        private _matrix3D = new Matrix3D();
-        private _matrix3DDirty: boolean;
-        private _inverseMatrix3D = new Matrix3D();
-        private _inverseMatrix3DDirty: boolean;
+        /**
+         * 更新逆全局矩阵
+         */
+        private updateInverseGlobalMatrix3D() {
+
+            this._inverseGlobalMatrix3DDirty = false;
+            this._inverseGlobalMatrix3D.copyFrom(this.globalMatrix3D);
+            this._inverseGlobalMatrix3D.invert();
+        }
+
+        /**
+		 * 通知全局变换改变
+		 */
+        private notifySceneTransformChange() {
+
+            var sceneTransformChanged = new TransfromEvent(TransfromEvent.SCENETRANSFORM_CHANGED, this);
+            this.gameObject && this.gameObject.dispatchEvent(sceneTransformChanged);
+        }
+
+        /**
+		 * 全局变换矩阵失效
+         * @private
+		 */
+        public invalidateGlobalMatrix3D() {
+
+            this._globalMatrix3DDirty = true;
+            this._inverseGlobalMatrix3DDirty = true;
+            this.notifySceneTransformChange();
+
+            //
+            if (this.gameObject) {
+                for (var i = 0; i < this.gameObject.numChildren; i++) {
+                    var element = this.gameObject.getChildAt(i)
+                    element.transform.invalidateGlobalMatrix3D();
+                }
+            }
+        }
     }
 
     /**
@@ -227,9 +332,25 @@ module feng3d {
 		 */
         public static TRANSFORM_UPDATED: string = "transformUpdated";
 
+        /**
+		 * 场景变换矩阵发生变化
+		 */
+        public static SCENETRANSFORM_CHANGED: string = "scenetransformChanged";
+
 		/**
 		 * 发出事件的3D元素
 		 */
         data: Transform;
+
+        /**
+		 * 创建一个作为参数传递给事件侦听器的 Event 对象。
+		 * @param type 事件的类型，可以作为 Event.type 访问。
+         * @param data 携带数据
+		 * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
+		 */
+        constructor(type: string, data: Transform, bubbles = false) {
+
+            super(type, data, bubbles);
+        }
     }
 }

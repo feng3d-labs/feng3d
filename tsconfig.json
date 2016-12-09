@@ -55,7 +55,6 @@
         "src/core/object3DComponents/Transform.ts",
         "src/core/object3DComponents/container/Container3D.ts",
         "src/core/object3DComponents/container/Container3DEvent.ts",
-        "src/core/object3DComponents/SceneSpace3D.ts",
         //3D场景
         "src/scene/Scene3D.ts",
         //几何体

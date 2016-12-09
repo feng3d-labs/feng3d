@@ -1669,10 +1669,6 @@ declare module feng3d {
          */
         private readonly container3D;
         /**
-         * 场景空间
-         */
-        private readonly sceneSpace3D;
-        /**
          * 构建3D对象
          */
         constructor(name?: string, conponents?: Component[]);
@@ -1725,17 +1721,6 @@ declare module feng3d {
          * 获取子对象数量
          */
         readonly numChildren: number;
-        /*********************
-         *
-         *********************/
-        /**
-         * 场景空间变换矩阵
-         */
-        readonly sceneTransform3D: Matrix3D;
-        /**
-         * 通知场景变换改变
-         */
-        notifySceneTransformChange(): void;
         /*********************
          *
          *********************/
@@ -1813,6 +1798,29 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Transform extends Object3DComponent {
+        private _x;
+        private _y;
+        private _z;
+        private _rx;
+        private _ry;
+        private _rz;
+        private _sx;
+        private _sy;
+        private _sz;
+        private _matrix3D;
+        private _matrix3DDirty;
+        private _inverseMatrix3D;
+        private _inverseMatrix3DDirty;
+        /**
+         * 全局矩阵是否变脏
+         */
+        private _globalMatrix3DDirty;
+        /**
+         * 全局矩阵
+         */
+        private _globalMatrix3D;
+        private _inverseGlobalMatrix3DDirty;
+        private _inverseGlobalMatrix3D;
         /**
          * 构建变换
          * @param x X坐标
@@ -1879,6 +1887,26 @@ declare module feng3d {
          */
         matrix3d: Matrix3D;
         /**
+         * 逆变换矩阵
+         */
+        readonly inverseMatrix3D: Matrix3D;
+        /**
+         * 看向目标位置
+         * @param target    目标位置
+         * @param upAxis    向上朝向
+         */
+        lookAt(target: Vector3D, upAxis?: Vector3D): void;
+        /**
+         * 全局矩阵
+         */
+        readonly globalMatrix3D: Matrix3D;
+        /**
+         * 逆全局矩阵
+         */
+        readonly inverseGlobalMatrix3D: Matrix3D;
+        protected onBeAddedComponent(event: ComponentEvent): void;
+        private getuMVMatrix();
+        /**
          * 变换矩阵
          */
         private updateMatrix3D();
@@ -1886,30 +1914,27 @@ declare module feng3d {
          * 使变换矩阵无效
          */
         protected invalidateMatrix3D(): void;
-        readonly inverseMatrix3D: Matrix3D;
         /**
          * 发出状态改变消息
          */
         private notifyMatrix3DChanged();
         /**
-         * 看向目标位置
-         * @param target    目标位置
-         * @param upAxis    向上朝向
+         * 更新全局矩阵
          */
-        lookAt(target: Vector3D, upAxis?: Vector3D): void;
-        private _x;
-        private _y;
-        private _z;
-        private _rx;
-        private _ry;
-        private _rz;
-        private _sx;
-        private _sy;
-        private _sz;
-        private _matrix3D;
-        private _matrix3DDirty;
-        private _inverseMatrix3D;
-        private _inverseMatrix3DDirty;
+        private updateGlobalMatrix3D();
+        /**
+         * 更新逆全局矩阵
+         */
+        private updateInverseGlobalMatrix3D();
+        /**
+         * 通知全局变换改变
+         */
+        private notifySceneTransformChange();
+        /**
+         * 全局变换矩阵失效
+         * @private
+         */
+        invalidateGlobalMatrix3D(): void;
     }
     /**
      * 变换事件(3D状态发生改变、位置、旋转、缩放)
@@ -1937,9 +1962,20 @@ declare module feng3d {
          */
         static TRANSFORM_UPDATED: string;
         /**
+         * 场景变换矩阵发生变化
+         */
+        static SCENETRANSFORM_CHANGED: string;
+        /**
          * 发出事件的3D元素
          */
         data: Transform;
+        /**
+         * 创建一个作为参数传递给事件侦听器的 Event 对象。
+         * @param type 事件的类型，可以作为 Event.type 访问。
+         * @param data 携带数据
+         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
+         */
+        constructor(type: string, data: Transform, bubbles?: boolean);
     }
 }
 declare module feng3d {
@@ -2050,62 +2086,6 @@ declare module feng3d {
             parent: GameObject;
             child: GameObject;
         };
-    }
-}
-declare module feng3d {
-    /**
-     * 3D对象场景空间
-     * @author feng 2016-09-02
-     */
-    class SceneSpace3D extends Object3DComponent {
-        /**
-         * 构建3D对象场景空间
-         */
-        constructor();
-        /**
-         * 场景空间变换矩阵
-         */
-        readonly sceneTransform3D: Matrix3D;
-        protected onBeAddedComponent(event: ComponentEvent): void;
-        private getuMVMatrix();
-        /**
-         * 使变换矩阵失效，场景变换矩阵也将失效
-         */
-        protected onTransformChanged(event: TransfromEvent): void;
-        /**
-         * 通知场景变换改变
-         */
-        notifySceneTransformChange(): void;
-        /**
-         * 场景变化失效
-         */
-        protected invalidateSceneTransform(): void;
-        /**
-         * 相对场景空间
-         */
-        private sceneSpace3D;
-        /**
-         * 场景空间是否变脏
-         */
-        private sceneSpace3DDirty;
-        /**
-         * 更新场景空间
-         */
-        private updateSceneSpace3D();
-    }
-    /**
-     * 3D对象事件(3D状态发生改变、位置、旋转、缩放)
-     * @author feng 2014-3-31
-     */
-    class SceneSpace3DEvent extends Event {
-        /**
-         * 场景变换矩阵发生变化
-         */
-        static SCENETRANSFORM_CHANGED: string;
-        /**
-         * 发出事件的3D元素
-         */
-        data: SceneSpace3D;
     }
 }
 declare module feng3d {
