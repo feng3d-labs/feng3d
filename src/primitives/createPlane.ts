@@ -37,7 +37,7 @@ module feng3d.primitives {
         });
 
         var indices = buildIndices(segmentsW, segmentsH, yUp);
-        geometry.indices = indices;
+        geometry.setIndices(indices);
 
         return geometry;
     }

@@ -6,14 +6,6 @@ module feng3d {
      */
     export class Geometry extends RenderDataHolder {
 
-        private _vaIdList: string[] = [];
-        /** 顶点属性数据步长字典 */
-        private strideObj: { [key: string]: number; } = {};
-        /** 顶点属性数据字典 */
-        private vaDataObj: { [key: string]: Float32Array; } = {};
-
-        private _indices: Uint16Array;
-
         /**
 		 * 创建一个几何体
 		 */
@@ -21,32 +13,15 @@ module feng3d {
             super();
         }
 
-        /**
-		 * 索引数据
-		 */
-        public get indices(): Uint16Array {
-
-            return this._indices;
-        }
-
 		/**
 		 * 更新顶点索引数据
 		 */
-        public set indices(value: Uint16Array) {
+        public setIndices(indices: Uint16Array) {
 
-            this._indices = value;
-            this.mapIndexBuffer(value);
+            this.indexBuffer = new IndexRenderData();
+            this.indexBuffer.indices = indices;
+            this.indexBuffer.count = indices.length;
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_INDEX_DATA));
-        }
-
-		/**
-		 * 获取顶点属性步长(1-4)
-		 * @param vaId          顶点属性编号
-		 * @return 顶点属性步长
-		 */
-        public getVAStride(vaId: string) {
-
-            return this.strideObj[vaId];
         }
 
 		/**
@@ -57,9 +32,7 @@ module feng3d {
 		 */
         public setVAData(vaId: string, data: Float32Array, stride: number) {
 
-            this.strideObj[vaId] = stride;
-            this.vaDataObj[vaId] = data;
-            this.mapAttributeBuffer(vaId, data, stride);
+            this.attributes[vaId] = { data: data, stride: stride };
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
         }
 
@@ -68,18 +41,10 @@ module feng3d {
 		 * @param vaId 数据类型编号
 		 * @return 顶点属性数据
 		 */
-        public getVAData(vaId: string): Float32Array {
+        public getVAData(vaId: string): AttributeRenderData {
 
             this.dispatchEvent(new GeometryEvent(GeometryEvent.GET_VA_DATA, vaId));
-            return this.vaDataObj[vaId];
-        }
-
-        /**
-         * 顶点属性编号列表
-         */
-        public get vaIdList(): string[] {
-
-            return this._vaIdList;
+            return this.attributes[vaId];
         }
     }
 }

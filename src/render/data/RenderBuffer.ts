@@ -85,7 +85,7 @@ module feng3d {
             for (var name in uniforms) {
                 if (uniforms.hasOwnProperty(name)) {
                     var item = uniforms[name];
-                    var data = item.buffer.data;
+                    var data = item.buffer.dataFunc();
                     var type = item.type;
                     var location = this.context3D.getUniformLocation(shaderProgram, name);
                     switch (type) {
@@ -108,15 +108,10 @@ module feng3d {
         private draw() {
 
             var indexBuffer = this.renderData.indexBuffer;
-
             var buffer = context3DPool.getIndexBuffer(this.context3D, indexBuffer.indices);
-
-            var count = indexBuffer.indices.length;
-            this.context3D.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, buffer);
-
+            this.context3D.bindBuffer(indexBuffer.target, buffer);
             this.context3D.lineWidth(1);
-
-            this.context3D.drawElements(this.renderData.renderMode, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            this.context3D.drawElements(this.renderData.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
         }
     }
 }

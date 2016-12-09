@@ -957,50 +957,98 @@ var feng3d;
     class Color {
         /**
          * 构建颜色
+         * @param r     红[0,1]
+         * @param g     绿[0,1]
+         * @param b     蓝[0,1]
+         * @param a     透明度[0,1]
          */
-        constructor(color = 0xffffffff) {
+        constructor(r = 1, g = 1, b = 1, a = 1) {
             /**
-             * 红色，0-1
+             * 红[0,1]
              */
             this.r = 1;
             /**
-             * 绿色，0-1
+             * 绿[0,1]
              */
             this.g = 1;
             /**
-             * 蓝色，0-1
+             * 蓝[0,1]
              */
             this.b = 1;
             /**
-             * 透明度，0-1
+             * 透明度[0,1]
              */
             this.a = 1;
-            this.color = color;
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
         }
         /**
-         * 颜色值，32位整数值
+         * 从RGBA整型初始化颜色
+         * @param r     红[0,255]
+         * @param g     绿[0,255]
+         * @param b     蓝[0,255]
+         * @param a     透明度[0,255]
          */
-        get color() {
-            return this._color;
+        fromInts(r, g, b, a) {
+            this.r = r / 0xff;
+            this.g = g / 0xff;
+            this.b = b / 0xff;
+            this.a = a / 0xff;
         }
-        set color(value) {
-            this._color = value;
-            this.a = ((this._color >> 24) & 0xff) / 0xff;
-            this.r = ((this._color >> 16) & 0xff) / 0xff;
-            this.g = ((this._color >> 8) & 0xff) / 0xff;
-            this.b = (this._color & 0xff) / 0xff;
+        fromUnit(color, hasAlpha = true) {
+            this.a = (hasAlpha ? (color >> 24) & 0xff : 0xff) / 0xff;
+            this.r = ((color >> 16) & 0xff) / 0xff;
+            this.r = ((color >> 8) & 0xff) / 0xff;
+            this.r = (color & 0xff) / 0xff;
         }
-        get x() {
-            return this.r;
+        /**
+         * 转换为数组
+         */
+        asArray() {
+            var result = [];
+            this.toArray(result);
+            return result;
         }
-        get y() {
-            return this.g;
+        /**
+         * 输出到数组
+         * @param array     数组
+         * @param index     存储在数组中的位置
+         */
+        toArray(array, index = 0) {
+            array[index] = this.r;
+            array[index + 1] = this.g;
+            array[index + 2] = this.b;
+            array[index + 3] = this.a;
+            return this;
         }
-        get z() {
-            return this.b;
+        /**
+         * 输出16进制字符串
+         */
+        toHexString() {
+            var intR = (this.r * 0xff) | 0;
+            var intG = (this.g * 0xff) | 0;
+            var intB = (this.b * 0xff) | 0;
+            var intA = (this.a * 0xff) | 0;
+            return "#" + Color.ToHex(intA) + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
         }
-        get w() {
-            return this.a;
+        /**
+         * 输出字符串
+         */
+        toString() {
+            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
+        }
+        /**
+         * [0,15]数值转为16进制字符串
+         * param i  [0,15]数值
+         */
+        static ToHex(i) {
+            var str = i.toString(16);
+            if (i <= 0xf) {
+                return ("0" + str).toUpperCase();
+            }
+            return str.toUpperCase();
         }
     }
     feng3d.Color = Color;
@@ -2023,22 +2071,6 @@ var feng3d;
             this.addEventListener(feng3d.Context3DBufferEvent.GET_SHADERPARAM, this.onGetShaderParam, this);
         }
         /**
-         * 映射索引缓冲
-         */
-        mapIndexBuffer(value) {
-            var indexBuffer = this.indexBuffer = this.indexBuffer || new feng3d.IndexRenderData();
-            indexBuffer.indices = value;
-        }
-        /**
-         * 映射属性缓冲
-         */
-        mapAttributeBuffer(name, value, stride) {
-            var attributeBuffer = this.attributes[name] = this.attributes[name] || new feng3d.AttributeRenderData();
-            attributeBuffer.name = name;
-            attributeBuffer.data = value;
-            attributeBuffer.size = stride;
-        }
-        /**
          * 映射程序缓冲
          * @param vertexCode        顶点渲染程序代码
          * @param fragmentCode      片段渲染程序代码
@@ -2051,10 +2083,9 @@ var feng3d;
         /**
          * 映射常量
          */
-        mapUniform(name, data) {
+        mapUniform(name, dataFunc) {
             var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new feng3d.UniformRenderData();
-            uniformBuffer.name = name;
-            uniformBuffer.data = data;
+            uniformBuffer.dataFunc = dataFunc;
         }
         /**
          * 映射渲染参数
@@ -2274,7 +2305,7 @@ var feng3d;
             for (var name in uniforms) {
                 if (uniforms.hasOwnProperty(name)) {
                     var item = uniforms[name];
-                    var data = item.buffer.data;
+                    var data = item.buffer.dataFunc();
                     var type = item.type;
                     var location = this.context3D.getUniformLocation(shaderProgram, name);
                     switch (type) {
@@ -2296,10 +2327,9 @@ var feng3d;
         draw() {
             var indexBuffer = this.renderData.indexBuffer;
             var buffer = feng3d.context3DPool.getIndexBuffer(this.context3D, indexBuffer.indices);
-            var count = indexBuffer.indices.length;
-            this.context3D.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, buffer);
+            this.context3D.bindBuffer(indexBuffer.target, buffer);
             this.context3D.lineWidth(1);
-            this.context3D.drawElements(this.renderData.renderMode, count, WebGLRenderingContext.UNSIGNED_SHORT, 0);
+            this.context3D.drawElements(this.renderData.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
         }
     }
     feng3d.RenderBuffer = RenderBuffer;
@@ -2332,15 +2362,22 @@ var feng3d;
      * 索引渲染数据
      */
     class IndexRenderData {
+        constructor() {
+            /**
+             * 数据绑定目标，gl.ARRAY_BUFFER、gl.ELEMENT_ARRAY_BUFFER
+             */
+            this.target = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER;
+            /**
+             * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
+             */
+            this.type = WebGLRenderingContext.UNSIGNED_SHORT;
+            /**
+             * 索引偏移
+             */
+            this.offset = 0;
+        }
     }
     feng3d.IndexRenderData = IndexRenderData;
-    /**
-     * 属性渲染数据
-     * @author feng 2014-8-14
-     */
-    class AttributeRenderData {
-    }
-    feng3d.AttributeRenderData = AttributeRenderData;
     /**
      * 常量渲染数据
      */
@@ -2752,15 +2789,15 @@ var feng3d;
          */
         drawObject3D(object3D) {
             var context3DBuffer = object3D.getOrCreateComponentByClass(feng3d.RenderDataHolder);
-            //模型矩阵
-            var mvMatrix = object3D.sceneTransform3D;
-            context3DBuffer.mapUniform(feng3d.RenderDataID.uMVMatrix, mvMatrix);
             //场景投影矩阵
-            context3DBuffer.mapUniform(feng3d.RenderDataID.uPMatrix, this.camera.viewProjection);
+            context3DBuffer.mapUniform(feng3d.RenderDataID.uPMatrix, this.getuPMatrix.bind(this));
             //绘制对象
             var renderData = feng3d.RenderData.getInstance(object3D);
             var object3DBuffer = renderData.getRenderBuffer(this.context3D);
             object3DBuffer.active();
+        }
+        getuPMatrix() {
+            return this.camera.viewProjection;
         }
     }
     feng3d.Renderer = Renderer;
@@ -2781,6 +2818,9 @@ var feng3d;
             conponents && conponents.forEach(element => {
                 this.addComponent(element);
             });
+            this.getOrCreateComponentByClass(feng3d.Container3D);
+            this.getOrCreateComponentByClass(feng3d.Space3D);
+            this.getOrCreateComponentByClass(feng3d.SceneSpace3D);
             this.getOrCreateComponentByClass(feng3d.Material);
         }
         /**
@@ -3384,6 +3424,11 @@ var feng3d;
         //------------------------------------------
         onBeAddedComponent(event) {
             this.object3D.addEventListener(feng3d.Space3DEvent.TRANSFORM_CHANGED, this.onTransformChanged, this);
+            var context3DBuffer = this.object3D.getOrCreateComponentByClass(feng3d.RenderDataHolder);
+            context3DBuffer.mapUniform(feng3d.RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
+        }
+        getuMVMatrix() {
+            return this.sceneTransform3D;
         }
         /**
          * 使变换矩阵失效，场景变换矩阵也将失效
@@ -3637,33 +3682,15 @@ var feng3d;
          */
         constructor() {
             super();
-            this._vaIdList = [];
-            /** 顶点属性数据步长字典 */
-            this.strideObj = {};
-            /** 顶点属性数据字典 */
-            this.vaDataObj = {};
-        }
-        /**
-         * 索引数据
-         */
-        get indices() {
-            return this._indices;
         }
         /**
          * 更新顶点索引数据
          */
-        set indices(value) {
-            this._indices = value;
-            this.mapIndexBuffer(value);
+        setIndices(indices) {
+            this.indexBuffer = new feng3d.IndexRenderData();
+            this.indexBuffer.indices = indices;
+            this.indexBuffer.count = indices.length;
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.CHANGED_INDEX_DATA));
-        }
-        /**
-         * 获取顶点属性步长(1-4)
-         * @param vaId          顶点属性编号
-         * @return 顶点属性步长
-         */
-        getVAStride(vaId) {
-            return this.strideObj[vaId];
         }
         /**
          * 设置顶点属性数据
@@ -3672,9 +3699,7 @@ var feng3d;
          * @param stride        顶点数据步长
          */
         setVAData(vaId, data, stride) {
-            this.strideObj[vaId] = stride;
-            this.vaDataObj[vaId] = data;
-            this.mapAttributeBuffer(vaId, data, stride);
+            this.attributes[vaId] = { data: data, stride: stride };
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.CHANGED_VA_DATA, vaId));
         }
         /**
@@ -3684,13 +3709,7 @@ var feng3d;
          */
         getVAData(vaId) {
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.GET_VA_DATA, vaId));
-            return this.vaDataObj[vaId];
-        }
-        /**
-         * 顶点属性编号列表
-         */
-        get vaIdList() {
-            return this._vaIdList;
+            return this.attributes[vaId];
         }
     }
     feng3d.Geometry = Geometry;
@@ -3782,7 +3801,7 @@ var feng3d;
                 positionData.set(element.positionData, i * segmentPositionStep);
             }
             this.geometry.setVAData(feng3d.GLAttribute.position, positionData, 3);
-            this.geometry.indices = indices;
+            this.geometry.setIndices(indices);
         }
         /**
          * 获取线段数据
@@ -4225,7 +4244,7 @@ var feng3d;
                 }
             });
             var indices = buildIndices(segmentsW, segmentsH, yUp);
-            geometry.indices = indices;
+            geometry.setIndices(indices);
             return geometry;
         }
         primitives.createPlane = createPlane;
@@ -4391,7 +4410,7 @@ var feng3d;
                 }
             });
             var indices = buildIndices(segmentsW, segmentsH, segmentsD);
-            geometry.indices = indices;
+            geometry.setIndices(indices);
             return geometry;
         }
         primitives.createCube = createCube;
@@ -4767,7 +4786,7 @@ var feng3d;
                 }
             });
             var indices = buildIndices(segmentsW, segmentsH, yUp);
-            geometry.indices = indices;
+            geometry.setIndices(indices);
             return geometry;
         }
         primitives.createSphere = createSphere;
@@ -4942,7 +4961,7 @@ var feng3d;
                 }
             });
             var indices = buildIndices(segmentsW, segmentsH, yUp);
-            geometry.indices = indices;
+            geometry.setIndices(indices);
             return geometry;
         }
         primitives.createCapsule = createCapsule;
@@ -5113,7 +5132,7 @@ var feng3d;
                 }
             });
             var indices = buildIndices(topRadius, bottomRadius, height, segmentsW, segmentsH, topClosed, bottomClosed, surfaceClosed);
-            geometry.indices = indices;
+            geometry.setIndices(indices);
             return geometry;
         }
         primitives.createCylinder = createCylinder;
@@ -5491,8 +5510,11 @@ void main(void) {
          * 处理被添加组件事件
          */
         onBeAddedComponent(event) {
-            this.material.mapUniform(feng3d.RenderDataID.diffuseInput_fc_vector, this._color);
+            this.material.mapUniform(feng3d.RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector.bind(this));
             this.material.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
+        }
+        getDiffuseInputFcVector() {
+            return new feng3d.Vector3D(this._color.r, this._color.g, this._color.b, this._color.a);
         }
         /**
          * 颜色

@@ -6,9 +6,9 @@ module feng3d {
 	 */
 	export class RenderDataHolder extends Component {
 
-		private indexBuffer: IndexRenderData;
+		public indexBuffer: IndexRenderData;
 		private programBuffer: ProgramRenderData;
-		private attributes: { [name: string]: AttributeRenderData } = {};
+		public attributes: { [name: string]: AttributeRenderData } = {};
 		private uniforms: { [name: string]: UniformRenderData } = {};
 		private shaderParams: { [shaderParam: string]: any } = {};
 
@@ -27,26 +27,6 @@ module feng3d {
 		}
 
 		/**
-		 * 映射索引缓冲
-		 */
-		public mapIndexBuffer(value: Uint16Array) {
-
-			var indexBuffer = this.indexBuffer = this.indexBuffer || new IndexRenderData();
-			indexBuffer.indices = value;
-		}
-
-		/**
-		 * 映射属性缓冲
-		 */
-		public mapAttributeBuffer(name: string, value: Float32Array, stride: number) {
-
-			var attributeBuffer = this.attributes[name] = this.attributes[name] || new AttributeRenderData();
-			attributeBuffer.name = name;
-			attributeBuffer.data = value;
-			attributeBuffer.size = stride;
-		}
-
-		/**
 		 * 映射程序缓冲
          * @param vertexCode        顶点渲染程序代码
          * @param fragmentCode      片段渲染程序代码
@@ -61,11 +41,10 @@ module feng3d {
 		/**
 		 * 映射常量
 		 */
-		public mapUniform(name: string, data: Matrix3D | Vec4) {
+		public mapUniform(name: string, dataFunc: () => Matrix3D | Vec4) {
 
 			var uniformBuffer = this.uniforms[name] = this.uniforms[name] || new UniformRenderData();
-			uniformBuffer.name = name;
-			uniformBuffer.data = data;
+			uniformBuffer.dataFunc = dataFunc;
 		}
 
 		/**

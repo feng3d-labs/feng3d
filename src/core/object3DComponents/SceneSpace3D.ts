@@ -32,6 +32,15 @@ module feng3d {
         protected onBeAddedComponent(event: ComponentEvent): void {
 
             this.object3D.addEventListener(Space3DEvent.TRANSFORM_CHANGED, this.onTransformChanged, this);
+
+            var context3DBuffer = this.object3D.getOrCreateComponentByClass(RenderDataHolder);
+
+            context3DBuffer.mapUniform(RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
+        }
+
+        private getuMVMatrix() {
+
+            return this.sceneTransform3D;
         }
 
         /**

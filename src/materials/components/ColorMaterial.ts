@@ -46,8 +46,13 @@ void main(void) {
          */
         protected onBeAddedComponent(event: ComponentEvent): void {
 
-            this.material.mapUniform(RenderDataID.diffuseInput_fc_vector, this._color);
+            this.material.mapUniform(RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector.bind(this));
             this.material.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
+        }
+
+        private getDiffuseInputFcVector() {
+
+            return new Vector3D(this._color.r, this._color.g, this._color.b, this._color.a);
         }
 
         /** 

@@ -566,34 +566,61 @@ declare module feng3d {
      */
     class Color {
         /**
-         * 红色，0-1
+         * 红[0,1]
          */
         r: number;
         /**
-         * 绿色，0-1
+         * 绿[0,1]
          */
         g: number;
         /**
-         * 蓝色，0-1
+         * 蓝[0,1]
          */
         b: number;
         /**
-         * 透明度，0-1
+         * 透明度[0,1]
          */
         a: number;
-        private _color;
         /**
          * 构建颜色
+         * @param r     红[0,1]
+         * @param g     绿[0,1]
+         * @param b     蓝[0,1]
+         * @param a     透明度[0,1]
          */
-        constructor(color?: number);
+        constructor(r?: number, g?: number, b?: number, a?: number);
         /**
-         * 颜色值，32位整数值
+         * 从RGBA整型初始化颜色
+         * @param r     红[0,255]
+         * @param g     绿[0,255]
+         * @param b     蓝[0,255]
+         * @param a     透明度[0,255]
          */
-        color: number;
-        readonly x: number;
-        readonly y: number;
-        readonly z: number;
-        readonly w: number;
+        fromInts(r: number, g: number, b: number, a: number): void;
+        fromUnit(color: number, hasAlpha?: boolean): void;
+        /**
+         * 转换为数组
+         */
+        asArray(): number[];
+        /**
+         * 输出到数组
+         * @param array     数组
+         * @param index     存储在数组中的位置
+         */
+        toArray(array: number[], index?: number): Color;
+        /**
+         * 输出16进制字符串
+         */
+        toHexString(): string;
+        /**
+         * 输出字符串
+         */
+        toString(): string;
+        /**
+         * [0,15]数值转为16进制字符串
+         * param i  [0,15]数值
+         */
+        static ToHex(i: number): string;
     }
 }
 declare module feng3d {
@@ -1137,23 +1164,17 @@ declare module feng3d {
      * @author feng 2016-6-7
      */
     class RenderDataHolder extends Component {
-        private indexBuffer;
+        indexBuffer: IndexRenderData;
         private programBuffer;
-        private attributes;
+        attributes: {
+            [name: string]: AttributeRenderData;
+        };
         private uniforms;
         private shaderParams;
         /**
          * 创建Context3D数据缓冲
          */
         constructor();
-        /**
-         * 映射索引缓冲
-         */
-        mapIndexBuffer(value: Uint16Array): void;
-        /**
-         * 映射属性缓冲
-         */
-        mapAttributeBuffer(name: string, value: Float32Array, stride: number): void;
         /**
          * 映射程序缓冲
          * @param vertexCode        顶点渲染程序代码
@@ -1163,7 +1184,7 @@ declare module feng3d {
         /**
          * 映射常量
          */
-        mapUniform(name: string, data: Matrix3D | Vec4): void;
+        mapUniform(name: string, dataFunc: () => Matrix3D | Vec4): void;
         /**
          * 映射渲染参数
          */
@@ -1339,24 +1360,36 @@ declare module feng3d {
          * 索引数据
          */
         indices: Uint16Array;
+        /**
+         * 数据绑定目标，gl.ARRAY_BUFFER、gl.ELEMENT_ARRAY_BUFFER
+         */
+        target: number;
+        /**
+         * 渲染数量
+         */
+        count: number;
+        /**
+         * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
+         */
+        type: number;
+        /**
+         * 索引偏移
+         */
+        offset: number;
     }
     /**
      * 属性渲染数据
      * @author feng 2014-8-14
      */
-    class AttributeRenderData {
-        /**
-         * 属性名称
-         */
-        name: string;
+    interface AttributeRenderData {
         /**
          * 属性数据
          */
         data: Float32Array;
         /**
-         * 属性数据长度
+         * 数据步长
          */
-        size: number;
+        stride: number;
     }
     /**
      * 常量渲染数据
@@ -1369,7 +1402,7 @@ declare module feng3d {
         /**
          * 数据
          */
-        data: Matrix3D | Vec4;
+        dataFunc: () => Matrix3D | Vec4;
     }
     /**
      * 渲染常量向量类型
@@ -1612,6 +1645,7 @@ declare module feng3d {
          * 绘制3D对象
          */
         private drawObject3D(object3D);
+        private getuPMatrix();
     }
 }
 declare module feng3d {
@@ -2010,6 +2044,7 @@ declare module feng3d {
          */
         readonly sceneTransform3D: Matrix3D;
         protected onBeAddedComponent(event: ComponentEvent): void;
+        private getuMVMatrix();
         /**
          * 使变换矩阵失效，场景变换矩阵也将失效
          */
@@ -2181,29 +2216,14 @@ declare module feng3d {
      * @author feng 2016-04-28
      */
     class Geometry extends RenderDataHolder {
-        private _vaIdList;
-        /** 顶点属性数据步长字典 */
-        private strideObj;
-        /** 顶点属性数据字典 */
-        private vaDataObj;
-        private _indices;
         /**
          * 创建一个几何体
          */
         constructor();
         /**
-         * 索引数据
-         */
-        /**
          * 更新顶点索引数据
          */
-        indices: Uint16Array;
-        /**
-         * 获取顶点属性步长(1-4)
-         * @param vaId          顶点属性编号
-         * @return 顶点属性步长
-         */
-        getVAStride(vaId: string): number;
+        setIndices(indices: Uint16Array): void;
         /**
          * 设置顶点属性数据
          * @param vaId          顶点属性编号
@@ -2216,11 +2236,7 @@ declare module feng3d {
          * @param vaId 数据类型编号
          * @return 顶点属性数据
          */
-        getVAData(vaId: string): Float32Array;
-        /**
-         * 顶点属性编号列表
-         */
-        readonly vaIdList: string[];
+        getVAData(vaId: string): AttributeRenderData;
     }
 }
 declare module feng3d {
@@ -2638,6 +2654,7 @@ declare module feng3d {
          * 处理被添加组件事件
          */
         protected onBeAddedComponent(event: ComponentEvent): void;
+        private getDiffuseInputFcVector();
         /**
          * 颜色
          */
