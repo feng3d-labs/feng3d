@@ -2016,6 +2016,7 @@ declare module feng3d {
      * @author feng 2016-12-12
      */
     class Mesh extends Object3DComponent {
+        private _geometry;
         /**
          * 几何体
          */

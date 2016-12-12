@@ -6,9 +6,21 @@ module feng3d {
      */
     export class Mesh extends Object3DComponent {
 
+        private _geometry: Geometry;
+
         /**
          * 几何体
          */
-        public geometry: Geometry;
+        public get geometry(): Geometry {
+
+            return this._geometry;
+        }
+
+        public set geometry(value: Geometry) {
+
+            this._geometry = value;
+            this.addComponent(this._geometry);
+        }
+
     }
 }

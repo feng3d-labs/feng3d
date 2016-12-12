@@ -526,7 +526,7 @@ module feng3d {
          * @param   pivotPoint  一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
          */
         public prependRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = new Vector3D()) {
-            
+
             var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
             this.prepend(rotationMat);
         }
@@ -538,7 +538,7 @@ module feng3d {
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
         public prependScale(xScale: number, yScale: number, zScale: number) {
-            
+
             var scaleMat = Matrix3D.createScaleMatrix3D(xScale, yScale, zScale);
             this.prepend(scaleMat);
         }
@@ -550,7 +550,7 @@ module feng3d {
          * @param   z   沿 z 轴的增量平移。
          */
         public prependTranslation(x: number, y: number, z: number) {
-            
+
             var translationMat = Matrix3D.createTranslationMatrix3D(x, y, z);
             this.prepend(translationMat);
         }
@@ -645,7 +645,7 @@ module feng3d {
             //获取位移，缩放，在变换过程位移与缩放不变
             var vec = this.decompose();
             var position = vec[0];
-            var scale = vec[1];
+            var scale = vec[2];
 
             //
             var xAxis: Vector3D = new Vector3D();

@@ -1821,7 +1821,7 @@ var feng3d;
             //获取位移，缩放，在变换过程位移与缩放不变
             var vec = this.decompose();
             var position = vec[0];
-            var scale = vec[1];
+            var scale = vec[2];
             //
             var xAxis = new feng3d.Vector3D();
             var yAxis = new feng3d.Vector3D();
@@ -2897,25 +2897,33 @@ var feng3d;
          */
         static createPrimitive(type) {
             var object3D = new Object3D();
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
+            var geometry = feng3d.primitives.createCube();
             switch (type) {
                 case feng3d.PrimitiveType.Plane:
-                    object3D.addComponent(feng3d.primitives.createPlane());
+                    object3D.name = "plane";
+                    geometry = feng3d.primitives.createPlane();
                     break;
                 case feng3d.PrimitiveType.Cube:
-                    object3D.addComponent(feng3d.primitives.createCube());
+                    object3D.name = "cube";
+                    geometry = feng3d.primitives.createCube();
                     break;
                 case feng3d.PrimitiveType.Sphere:
-                    object3D.addComponent(feng3d.primitives.createSphere());
+                    object3D.name = "sphere";
+                    geometry = feng3d.primitives.createSphere();
                     break;
                 case feng3d.PrimitiveType.Capsule:
-                    object3D.addComponent(feng3d.primitives.createCapsule());
+                    object3D.name = "capsule";
+                    geometry = feng3d.primitives.createCapsule();
                     break;
                 case feng3d.PrimitiveType.Cylinder:
-                    object3D.addComponent(feng3d.primitives.createCylinder());
+                    object3D.name = "cylinder";
+                    geometry = feng3d.primitives.createCylinder();
                     break;
                 default:
                     throw `无法创建3D基元对象 ${type}`;
             }
+            mesh.geometry = geometry;
             return object3D;
         }
         /**
@@ -3407,6 +3415,16 @@ var feng3d;
      * @author feng 2016-12-12
      */
     class Mesh extends feng3d.Object3DComponent {
+        /**
+         * 几何体
+         */
+        get geometry() {
+            return this._geometry;
+        }
+        set geometry(value) {
+            this._geometry = value;
+            this.addComponent(this._geometry);
+        }
     }
     feng3d.Mesh = Mesh;
 })(feng3d || (feng3d = {}));

@@ -55,25 +55,33 @@ module feng3d {
         static createPrimitive(type: PrimitiveType): Object3D {
 
             var object3D = new Object3D();
+            var mesh = object3D.getOrCreateComponentByClass(Mesh);
+            var geometry = primitives.createCube();
             switch (type) {
                 case PrimitiveType.Plane:
-                    object3D.addComponent(primitives.createPlane());
+                    object3D.name = "plane";
+                    geometry = primitives.createPlane();
                     break;
                 case PrimitiveType.Cube:
-                    object3D.addComponent(primitives.createCube());
+                    object3D.name = "cube";
+                    geometry = primitives.createCube();
                     break;
                 case PrimitiveType.Sphere:
-                    object3D.addComponent(primitives.createSphere());
+                    object3D.name = "sphere";
+                    geometry = primitives.createSphere();
                     break;
                 case PrimitiveType.Capsule:
-                    object3D.addComponent(primitives.createCapsule());
+                    object3D.name = "capsule";
+                    geometry = primitives.createCapsule();
                     break;
                 case PrimitiveType.Cylinder:
-                    object3D.addComponent(primitives.createCylinder());
+                    object3D.name = "cylinder";
+                    geometry = primitives.createCylinder();
                     break;
                 default:
                     throw `无法创建3D基元对象 ${type}`;
             }
+            mesh.geometry = geometry;
             return object3D;
         }
 
