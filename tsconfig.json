@@ -63,8 +63,8 @@
         "src/geometry/Geometry.ts",
         "src/geometry/GeometryEvent.ts",
         //几何体组件
+        "src/geometry/SegmentGeometry.ts",
         "src/geometry/components/GeometryComponent.ts",
-        "src/geometry/components/SegmentGeometry.ts",
         //摄像机
         "src/cameras/lenses/LensEvent.ts",
         "src/cameras/lenses/CoordinateSystem.ts",
@@ -78,14 +78,16 @@
         "src/primitives/createSphere.ts",
         "src/primitives/createCapsule.ts",
         "src/primitives/createCylinder.ts",
-        //
         //材质
         "src/materials/Material.ts",
+        "src/materials/ColorMaterial.ts",
+        "src/materials/SegmentMaterial.ts",
         "src/materials/components/MaterialComponent.ts",
-        "src/materials/components/ColorMaterial.ts",
-        "src/materials/components/SegmentMaterial.ts",
         //材质通道
         "src/materials/passes/MaterialPass.ts",
+        //灯光
+        "src/light/LightType.ts",
+        "src/light/Light.ts",
         //镜头控制
         "src/controllers/ControllerBase.ts",
         "src/controllers/LookAtController.ts"

@@ -2145,26 +2145,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 几何体组件
-     * @author feng 2016-10-16
-     */
-    class GeometryComponent extends Component {
-        /**
-         * 父组件
-         */
-        protected _parentComponent: Geometry;
-        /**
-         * 所属对象
-         */
-        readonly geometry: Geometry;
-        /**
-         * 构建几何体组件
-         */
-        constructor();
-    }
-}
-declare module feng3d {
-    /**
      * 线段组件
      * @author feng 2016-10-16
      */
@@ -2221,6 +2201,26 @@ declare module feng3d {
          * 坐标数据
          */
         readonly positionData: number[];
+    }
+}
+declare module feng3d {
+    /**
+     * 几何体组件
+     * @author feng 2016-10-16
+     */
+    class GeometryComponent extends Component {
+        /**
+         * 父组件
+         */
+        protected _parentComponent: Geometry;
+        /**
+         * 所属对象
+         */
+        readonly geometry: Geometry;
+        /**
+         * 构建几何体组件
+         */
+        constructor();
     }
 }
 declare module feng3d {
@@ -2498,26 +2498,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 材质组件
-     * @author feng 2016-11-01
-     */
-    class MaterialComponent extends Component {
-        /**
-         * 父组件
-         */
-        protected _parentComponent: Material;
-        /**
-         * 所属对象
-         */
-        readonly material: Material;
-        /**
-         * 构建材质组件
-         */
-        constructor();
-    }
-}
-declare module feng3d {
-    /**
      * 颜色材质
      * @author feng 2016-05-02
      */
@@ -2558,6 +2538,26 @@ declare module feng3d {
          * 处理被添加组件事件
          */
         protected onBeAddedComponent(event: ComponentEvent): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 材质组件
+     * @author feng 2016-11-01
+     */
+    class MaterialComponent extends Component {
+        /**
+         * 父组件
+         */
+        protected _parentComponent: Material;
+        /**
+         * 所属对象
+         */
+        readonly material: Material;
+        /**
+         * 构建材质组件
+         */
+        constructor();
     }
 }
 declare module feng3d {

@@ -3593,26 +3593,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 几何体组件
-     * @author feng 2016-10-16
-     */
-    class GeometryComponent extends feng3d.Component {
-        /**
-         * 构建几何体组件
-         */
-        constructor() {
-            super();
-        }
-        /**
-         * 所属对象
-         */
-        get geometry() { return this._parentComponent; }
-    }
-    feng3d.GeometryComponent = GeometryComponent;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 线段组件
      * @author feng 2016-10-16
      */
@@ -3704,6 +3684,26 @@ var feng3d;
         }
     }
     feng3d.Segment = Segment;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 几何体组件
+     * @author feng 2016-10-16
+     */
+    class GeometryComponent extends feng3d.Component {
+        /**
+         * 构建几何体组件
+         */
+        constructor() {
+            super();
+        }
+        /**
+         * 所属对象
+         */
+        get geometry() { return this._parentComponent; }
+    }
+    feng3d.GeometryComponent = GeometryComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -5315,26 +5315,6 @@ void main(void) {
 var feng3d;
 (function (feng3d) {
     /**
-     * 材质组件
-     * @author feng 2016-11-01
-     */
-    class MaterialComponent extends feng3d.Component {
-        /**
-         * 构建材质组件
-         */
-        constructor() {
-            super();
-        }
-        /**
-         * 所属对象
-         */
-        get material() { return this._parentComponent; }
-    }
-    feng3d.MaterialComponent = MaterialComponent;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 颜色材质
      * @author feng 2016-05-02
      */
@@ -5408,6 +5388,26 @@ var feng3d;
         }
     }
     feng3d.SegmentMaterial = SegmentMaterial;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 材质组件
+     * @author feng 2016-11-01
+     */
+    class MaterialComponent extends feng3d.Component {
+        /**
+         * 构建材质组件
+         */
+        constructor() {
+            super();
+        }
+        /**
+         * 所属对象
+         */
+        get material() { return this._parentComponent; }
+    }
+    feng3d.MaterialComponent = MaterialComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
