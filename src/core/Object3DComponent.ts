@@ -14,7 +14,7 @@ module feng3d {
         /**
          * 所属对象
          */
-        public get gameObject(): Object3D { return this._parentComponent; }
+        public get object3D(): Object3D { return this._parentComponent; }
 
         /**
          * 构建3D对象组件

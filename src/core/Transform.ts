@@ -29,7 +29,7 @@ module feng3d {
          */
         private _globalMatrix3D: Matrix3D = new Matrix3D();
         private _inverseGlobalMatrix3DDirty: boolean;
-        private _inverseGlobalMatrix3D: Matrix3D;
+        private _inverseGlobalMatrix3D: Matrix3D = new Matrix3D();
 
         /**
          * 构建变换
@@ -206,7 +206,7 @@ module feng3d {
         protected onBeAddedComponent(event: ComponentEvent): void {
 
             //
-            var context3DBuffer = this.gameObject.getOrCreateComponentByClass(RenderDataHolder);
+            var context3DBuffer = this.object3D.getOrCreateComponentByClass(RenderDataHolder);
             context3DBuffer.mapUniform(RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
         }
 
@@ -252,7 +252,7 @@ module feng3d {
         private notifyMatrix3DChanged() {
 
             var transformChanged = new TransfromEvent(TransfromEvent.TRANSFORM_CHANGED, this);
-            this.gameObject && this.gameObject.dispatchEvent(transformChanged);
+            this.object3D && this.object3D.dispatchEvent(transformChanged);
         }
 
         /**
@@ -262,8 +262,8 @@ module feng3d {
 
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);
-            if (this.gameObject.parent != null) {
-                var parentGlobalMatrix3D = this.gameObject.parent.transform.globalMatrix3D;
+            if (this.object3D.parent != null) {
+                var parentGlobalMatrix3D = this.object3D.parent.transform.globalMatrix3D;
                 this._globalMatrix3D.append(parentGlobalMatrix3D);
             }
         }
@@ -284,7 +284,7 @@ module feng3d {
         private notifySceneTransformChange() {
 
             var sceneTransformChanged = new TransfromEvent(TransfromEvent.SCENETRANSFORM_CHANGED, this);
-            this.gameObject && this.gameObject.dispatchEvent(sceneTransformChanged);
+            this.object3D && this.object3D.dispatchEvent(sceneTransformChanged);
         }
 
         /**
@@ -298,9 +298,9 @@ module feng3d {
             this.notifySceneTransformChange();
 
             //
-            if (this.gameObject) {
-                for (var i = 0; i < this.gameObject.numChildren; i++) {
-                    var element = this.gameObject.getChildAt(i)
+            if (this.object3D) {
+                for (var i = 0; i < this.object3D.numChildren; i++) {
+                    var element = this.object3D.getChildAt(i)
                     element.transform.invalidateGlobalMatrix3D();
                 }
             }

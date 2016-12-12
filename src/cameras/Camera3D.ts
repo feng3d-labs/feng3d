@@ -4,7 +4,7 @@ module feng3d {
 	 * 摄像机
 	 * @author feng 2016-08-16
 	 */
-    export class Camera3D extends Object3D {
+    export class Camera3D extends Object3DComponent {
 
         private _viewProjection: Matrix3D = new Matrix3D();
         private _viewProjectionDirty: Boolean = true;
@@ -18,16 +18,15 @@ module feng3d {
             super();
             this._lens = lens || new PerspectiveLens();
             this._lens.addEventListener(LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
-            this.addEventListener(TransfromEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
         /**
 		 * 场景投影矩阵，世界空间转投影空间
 		 */
         public get viewProjection(): Matrix3D {
+
             if (this._viewProjectionDirty) {
-                var inverseSceneTransform = this.transform.matrix3d.clone();
-                inverseSceneTransform.invert();
+                var inverseSceneTransform = this.object3D ? this.object3D.transform.inverseGlobalMatrix3D : new Matrix3D();
                 //场景空间转摄像机空间
                 this._viewProjection.copyFrom(inverseSceneTransform);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
@@ -36,6 +35,22 @@ module feng3d {
             }
 
             return this._viewProjection;
+        }
+
+        /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void {
+
+            this.object3D.addEventListener(TransfromEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+        }
+
+        /**
+         * 处理被移除组件事件
+         */
+        protected onBeRemovedComponent(event: ComponentEvent): void {
+
+            this.object3D.removeEventListener(TransfromEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
         /**

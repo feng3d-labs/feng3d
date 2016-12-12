@@ -1790,7 +1790,7 @@ declare module feng3d {
         /**
          * 所属对象
          */
-        readonly gameObject: Object3D;
+        readonly object3D: Object3D;
         /**
          * 构建3D对象组件
          */
@@ -2366,7 +2366,7 @@ declare module feng3d {
      * 摄像机
      * @author feng 2016-08-16
      */
-    class Camera3D extends Object3D {
+    class Camera3D extends Object3DComponent {
         private _viewProjection;
         private _viewProjectionDirty;
         private _lens;
@@ -2379,6 +2379,14 @@ declare module feng3d {
          * 场景投影矩阵，世界空间转投影空间
          */
         readonly viewProjection: Matrix3D;
+        /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void;
+        /**
+         * 处理被移除组件事件
+         */
+        protected onBeRemovedComponent(event: ComponentEvent): void;
         /**
          * 处理镜头变化事件
          */

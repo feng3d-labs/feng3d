@@ -3088,7 +3088,7 @@ var feng3d;
         /**
          * 所属对象
          */
-        get gameObject() { return this._parentComponent; }
+        get object3D() { return this._parentComponent; }
     }
     feng3d.Object3DComponent = Object3DComponent;
 })(feng3d || (feng3d = {}));
@@ -3130,6 +3130,7 @@ var feng3d;
              * 全局矩阵
              */
             this._globalMatrix3D = new feng3d.Matrix3D();
+            this._inverseGlobalMatrix3D = new feng3d.Matrix3D();
             this._x = x;
             this._y = y;
             this._z = z;
@@ -3265,7 +3266,7 @@ var feng3d;
         //------------------------------------------
         onBeAddedComponent(event) {
             //
-            var context3DBuffer = this.gameObject.getOrCreateComponentByClass(feng3d.RenderDataHolder);
+            var context3DBuffer = this.object3D.getOrCreateComponentByClass(feng3d.RenderDataHolder);
             context3DBuffer.mapUniform(feng3d.RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
         }
         /**
@@ -3301,7 +3302,7 @@ var feng3d;
          */
         notifyMatrix3DChanged() {
             var transformChanged = new TransfromEvent(TransfromEvent.TRANSFORM_CHANGED, this);
-            this.gameObject && this.gameObject.dispatchEvent(transformChanged);
+            this.object3D && this.object3D.dispatchEvent(transformChanged);
         }
         /**
          * 更新全局矩阵
@@ -3309,8 +3310,8 @@ var feng3d;
         updateGlobalMatrix3D() {
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);
-            if (this.gameObject.parent != null) {
-                var parentGlobalMatrix3D = this.gameObject.parent.transform.globalMatrix3D;
+            if (this.object3D.parent != null) {
+                var parentGlobalMatrix3D = this.object3D.parent.transform.globalMatrix3D;
                 this._globalMatrix3D.append(parentGlobalMatrix3D);
             }
         }
@@ -3327,7 +3328,7 @@ var feng3d;
          */
         notifySceneTransformChange() {
             var sceneTransformChanged = new TransfromEvent(TransfromEvent.SCENETRANSFORM_CHANGED, this);
-            this.gameObject && this.gameObject.dispatchEvent(sceneTransformChanged);
+            this.object3D && this.object3D.dispatchEvent(sceneTransformChanged);
         }
         /**
          * 全局变换矩阵失效
@@ -3338,9 +3339,9 @@ var feng3d;
             this._inverseGlobalMatrix3DDirty = true;
             this.notifySceneTransformChange();
             //
-            if (this.gameObject) {
-                for (var i = 0; i < this.gameObject.numChildren; i++) {
-                    var element = this.gameObject.getChildAt(i);
+            if (this.object3D) {
+                for (var i = 0; i < this.object3D.numChildren; i++) {
+                    var element = this.object3D.getChildAt(i);
                     element.transform.invalidateGlobalMatrix3D();
                 }
             }
@@ -3982,7 +3983,7 @@ var feng3d;
      * 摄像机
      * @author feng 2016-08-16
      */
-    class Camera3D extends feng3d.Object3D {
+    class Camera3D extends feng3d.Object3DComponent {
         /**
          * 创建一个摄像机
          * @param lens 摄像机镜头
@@ -3993,15 +3994,13 @@ var feng3d;
             this._viewProjectionDirty = true;
             this._lens = lens || new feng3d.PerspectiveLens();
             this._lens.addEventListener(feng3d.LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
-            this.addEventListener(feng3d.TransfromEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
         /**
          * 场景投影矩阵，世界空间转投影空间
          */
         get viewProjection() {
             if (this._viewProjectionDirty) {
-                var inverseSceneTransform = this.transform.matrix3d.clone();
-                inverseSceneTransform.invert();
+                var inverseSceneTransform = this.object3D ? this.object3D.transform.inverseGlobalMatrix3D : new feng3d.Matrix3D();
                 //场景空间转摄像机空间
                 this._viewProjection.copyFrom(inverseSceneTransform);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
@@ -4009,6 +4008,18 @@ var feng3d;
                 this._viewProjectionDirty = false;
             }
             return this._viewProjection;
+        }
+        /**
+         * 处理被添加组件事件
+         */
+        onBeAddedComponent(event) {
+            this.object3D.addEventListener(feng3d.TransfromEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+        }
+        /**
+         * 处理被移除组件事件
+         */
+        onBeRemovedComponent(event) {
+            this.object3D.removeEventListener(feng3d.TransfromEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
         /**
          * 处理镜头变化事件
