@@ -2861,7 +2861,7 @@ var feng3d;
         /**
          * 构建3D对象
          */
-        constructor(name, conponents = null) {
+        constructor(name) {
             super();
             /**
              * 父对象
@@ -2872,25 +2872,24 @@ var feng3d;
              */
             this.children = [];
             this.name = name || feng3d.getClassName(this);
-            conponents && conponents.forEach(element => {
-                this.addComponent(element);
-            });
-            this.getOrCreateComponentByClass(feng3d.Transform);
-            this.getOrCreateComponentByClass(feng3d.Material);
             //
-            this.addEventListener(feng3d.Container3DEvent.ADDED, this.onAddedContainer3D, this);
-            this.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
+            this.transform = new feng3d.Transform();
+            this.getOrCreateComponentByClass(feng3d.MeshRenderer);
+            //
+            this.addEventListener(feng3d.Object3DEvent.ADDED, this.onAddedContainer3D, this);
+            this.addEventListener(feng3d.Object3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
         /**
          * 变换
          */
         get transform() {
-            return this.getOrCreateComponentByClass(feng3d.Transform);
+            return this._transform;
         }
         set transform(value) {
             feng3d.assert(value != null, "3D空间不能为null");
-            this.removeComponent(this.transform);
-            this.addComponent(value);
+            this._transform && this.removeComponent(this._transform);
+            this._transform = value;
+            this._transform && this.addComponent(this._transform);
         }
         /**
          * 创建
@@ -2948,7 +2947,7 @@ var feng3d;
         addChildAt(child, index) {
             feng3d.assert(-1 < index && index <= this.children.length, "添加子对象的索引越界！");
             this.children.splice(index, 0, child);
-            child.dispatchEvent(new feng3d.Container3DEvent(feng3d.Container3DEvent.ADDED, { parent: this, child: child }, true));
+            child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.ADDED, { parent: this, child: child }, true));
         }
         /**
          * 移除子对象
@@ -2978,7 +2977,7 @@ var feng3d;
             var child = this.children[childIndex];
             feng3d.assert(-1 < childIndex && childIndex < this.children.length, "删除的索引越界！");
             this.children.splice(childIndex, 1);
-            child.dispatchEvent(new feng3d.Container3DEvent(feng3d.Container3DEvent.REMOVED, { parent: this, child: child }, true));
+            child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.REMOVED, { parent: this, child: child }, true));
             return child;
         }
         /**
@@ -3392,21 +3391,21 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 3D容器事件
+     * 3D对象事件
      */
-    class Container3DEvent extends feng3d.Event {
+    class Object3DEvent extends feng3d.Event {
     }
     /**
      * 添加了子对象
      * data={parent: Object3D, child: Object3D}
      */
-    Container3DEvent.ADDED = "added";
+    Object3DEvent.ADDED = "added";
     /**
      * 删除了子对象
      * data={parent: Object3D, child: Object3D}
      */
-    Container3DEvent.REMOVED = "removed";
-    feng3d.Container3DEvent = Container3DEvent;
+    Object3DEvent.REMOVED = "removed";
+    feng3d.Object3DEvent = Object3DEvent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -3422,8 +3421,9 @@ var feng3d;
             return this._geometry;
         }
         set geometry(value) {
+            this._geometry && this.removeComponent(this._geometry);
             this._geometry = value;
-            this.addComponent(this._geometry);
+            this._geometry && this.addComponent(this._geometry);
         }
     }
     feng3d.Mesh = Mesh;
@@ -3435,6 +3435,21 @@ var feng3d;
      * @author feng 2016-12-12
      */
     class MeshRenderer extends feng3d.Object3DComponent {
+        constructor() {
+            super();
+            this.material = new feng3d.Material();
+        }
+        /**
+         * 材质
+         */
+        get material() {
+            return this._material;
+        }
+        set material(value) {
+            this._material && this.removeComponent(this._material);
+            this._material = value;
+            this._material && this.addComponent(this._material);
+        }
     }
     feng3d.MeshRenderer = MeshRenderer;
 })(feng3d || (feng3d = {}));
@@ -3451,8 +3466,8 @@ var feng3d;
         constructor() {
             super("root");
             this._renderables = [];
-            this.addEventListener(feng3d.Container3DEvent.ADDED, this.onAdded, this);
-            this.addEventListener(feng3d.Container3DEvent.REMOVED, this.onRemoved, this);
+            this.addEventListener(feng3d.Object3DEvent.ADDED, this.onAdded, this);
+            this.addEventListener(feng3d.Object3DEvent.REMOVED, this.onRemoved, this);
         }
         /**
          * 处理添加对象事件
@@ -3600,7 +3615,7 @@ var feng3d;
      * 线段组件
      * @author feng 2016-10-16
      */
-    class SegmentGeometry extends feng3d.GeometryComponent {
+    class SegmentGeometry extends feng3d.Geometry {
         constructor() {
             super(...arguments);
             /**
@@ -3632,8 +3647,8 @@ var feng3d;
                 indices.set([i * 2, i * 2 + 1], i * 2);
                 positionData.set(element.positionData, i * segmentPositionStep);
             }
-            this.geometry.setVAData(feng3d.GLAttribute.position, positionData, 3);
-            this.geometry.setIndices(indices);
+            this.setVAData(feng3d.GLAttribute.position, positionData, 3);
+            this.setIndices(indices);
         }
         /**
          * 获取线段数据
@@ -5312,7 +5327,7 @@ var feng3d;
      * 颜色材质
      * @author feng 2016-05-02
      */
-    class ColorMaterial extends feng3d.MaterialComponent {
+    class ColorMaterial extends feng3d.Material {
         /**
          * 构建颜色材质
          * @param color 颜色
@@ -5337,16 +5352,8 @@ void main(void) {
     gl_FragColor = diffuseInput_fc_vector;
 }`;
             this.color = color || new feng3d.Color();
-        }
-        /**
-         * 处理被添加组件事件
-         */
-        onBeAddedComponent(event) {
-            this.material.mapUniform(feng3d.RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector.bind(this));
-            this.material.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
-        }
-        getDiffuseInputFcVector() {
-            return new feng3d.Vector3D(this._color.r, this._color.g, this._color.b, this._color.a);
+            this.mapUniform(feng3d.RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector.bind(this));
+            this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
         }
         /**
          * 颜色
@@ -5357,6 +5364,9 @@ void main(void) {
         set color(value) {
             this._color = value;
         }
+        getDiffuseInputFcVector() {
+            return new feng3d.Vector3D(this._color.r, this._color.g, this._color.b, this._color.a);
+        }
     }
     feng3d.ColorMaterial = ColorMaterial;
 })(feng3d || (feng3d = {}));
@@ -5366,7 +5376,7 @@ var feng3d;
      * 线段材质
      * @author feng 2016-10-15
      */
-    class SegmentMaterial extends feng3d.MaterialComponent {
+    class SegmentMaterial extends feng3d.Material {
         /**
          * 构建颜色材质
          * @param color 颜色
@@ -5383,7 +5393,7 @@ var feng3d;
          * 处理被添加组件事件
          */
         onBeAddedComponent(event) {
-            this.material.mapShaderParam(feng3d.ShaderParamID.renderMode, this.renderMode);
+            this.mapShaderParam(feng3d.ShaderParamID.renderMode, this.renderMode);
         }
     }
     feng3d.SegmentMaterial = SegmentMaterial;

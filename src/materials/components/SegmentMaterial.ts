@@ -4,7 +4,7 @@ module feng3d {
 	 * 线段材质
 	 * @author feng 2016-10-15
 	 */
-    export class SegmentMaterial extends MaterialComponent {
+    export class SegmentMaterial extends Material {
 
         /**
         * 渲染模式
@@ -26,7 +26,7 @@ module feng3d {
          */
         protected onBeAddedComponent(event: ComponentEvent): void {
 
-            this.material.mapShaderParam(ShaderParamID.renderMode, this.renderMode);
+            this.mapShaderParam(ShaderParamID.renderMode, this.renderMode);
         }
     }
 }

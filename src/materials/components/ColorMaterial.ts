@@ -4,7 +4,7 @@ module feng3d {
      * 颜色材质
      * @author feng 2016-05-02
      */
-    export class ColorMaterial extends MaterialComponent {
+    export class ColorMaterial extends Material {
 
         vertexShaderStr = //
         `
@@ -25,35 +25,7 @@ void main(void) {
     gl_FragColor = diffuseInput_fc_vector;
 }`;
 
-        /**
-         * 颜色
-         */
         private _color: Color;
-
-        /**
-         * 构建颜色材质
-         * @param color 颜色
-         * @param alpha 透明的
-         */
-        constructor(color: Color = null) {
-
-            super();
-            this.color = color || new Color();
-        }
-
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: ComponentEvent): void {
-
-            this.material.mapUniform(RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector.bind(this));
-            this.material.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
-        }
-
-        private getDiffuseInputFcVector() {
-
-            return new Vector3D(this._color.r, this._color.g, this._color.b, this._color.a);
-        }
 
         /** 
          * 颜色 
@@ -64,6 +36,24 @@ void main(void) {
 
         public set color(value: Color) {
             this._color = value;
+        }
+
+        /**
+         * 构建颜色材质
+         * @param color 颜色
+         * @param alpha 透明的
+         */
+        constructor(color: Color = null) {
+
+            super();
+            this.color = color || new Color();
+            this.mapUniform(RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector.bind(this));
+            this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
+        }
+
+        private getDiffuseInputFcVector() {
+
+            return new Vector3D(this._color.r, this._color.g, this._color.b, this._color.a);
         }
     }
 }

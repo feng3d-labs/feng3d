@@ -1,9 +1,9 @@
 module feng3d {
 
     /**
-     * 3D容器事件
+     * 3D对象事件
      */
-    export class Container3DEvent extends Event {
+    export class Object3DEvent extends Event {
 
         /**
          * 添加了子对象

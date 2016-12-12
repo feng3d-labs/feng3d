@@ -1660,6 +1660,7 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Object3D extends Component {
+        private _transform;
         /**
          * 父对象
          */
@@ -1675,7 +1676,7 @@ declare module feng3d {
         /**
          * 构建3D对象
          */
-        constructor(name?: string, conponents?: Component[]);
+        constructor(name?: string);
         /**
          * 创建
          */
@@ -1988,9 +1989,9 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 3D容器事件
+     * 3D对象事件
      */
-    class Container3DEvent extends Event {
+    class Object3DEvent extends Event {
         /**
          * 添加了子对象
          * data={parent: Object3D, child: Object3D}
@@ -2029,6 +2030,12 @@ declare module feng3d {
      * @author feng 2016-12-12
      */
     class MeshRenderer extends Object3DComponent {
+        private _material;
+        /**
+         * 材质
+         */
+        material: Material;
+        constructor();
     }
 }
 declare module feng3d {
@@ -2161,7 +2168,7 @@ declare module feng3d {
      * 线段组件
      * @author feng 2016-10-16
      */
-    class SegmentGeometry extends GeometryComponent {
+    class SegmentGeometry extends Geometry {
         /**
          * 几何体是否变脏
          */
@@ -2506,28 +2513,21 @@ declare module feng3d {
      * 颜色材质
      * @author feng 2016-05-02
      */
-    class ColorMaterial extends MaterialComponent {
+    class ColorMaterial extends Material {
         vertexShaderStr: string;
         fragmentShaderStr: string;
+        private _color;
         /**
          * 颜色
          */
-        private _color;
+        color: Color;
         /**
          * 构建颜色材质
          * @param color 颜色
          * @param alpha 透明的
          */
         constructor(color?: Color);
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: ComponentEvent): void;
         private getDiffuseInputFcVector();
-        /**
-         * 颜色
-         */
-        color: Color;
     }
 }
 declare module feng3d {
@@ -2535,7 +2535,7 @@ declare module feng3d {
      * 线段材质
      * @author feng 2016-10-15
      */
-    class SegmentMaterial extends MaterialComponent {
+    class SegmentMaterial extends Material {
         /**
         * 渲染模式
         */

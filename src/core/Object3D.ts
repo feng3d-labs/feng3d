@@ -5,6 +5,7 @@ module feng3d {
      */
     export class Object3D extends Component {
 
+        private _transform: Transform;
         /**
          * 父对象
          */
@@ -20,33 +21,31 @@ module feng3d {
          */
         public get transform(): Transform {
 
-            return this.getOrCreateComponentByClass(Transform);
+            return this._transform;
         }
 
         public set transform(value: Transform) {
 
             assert(value != null, "3D空间不能为null");
-            this.removeComponent(this.transform);
-            this.addComponent(value);
+            this._transform && this.removeComponent(this._transform);
+            this._transform = value;
+            this._transform && this.addComponent(this._transform);
         }
 
         /**
          * 构建3D对象
          */
-        constructor(name?: string, conponents: Component[] = null) {
+        constructor(name?: string) {
 
             super();
 
             this.name = name || getClassName(this);
-            conponents && conponents.forEach(element => {
-                this.addComponent(element);
-            });
-
-            this.getOrCreateComponentByClass(Transform);
-            this.getOrCreateComponentByClass(Material);
             //
-            this.addEventListener(Container3DEvent.ADDED, this.onAddedContainer3D, this);
-            this.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
+            this.transform = new Transform();
+            this.getOrCreateComponentByClass(MeshRenderer);
+            //
+            this.addEventListener(Object3DEvent.ADDED, this.onAddedContainer3D, this);
+            this.addEventListener(Object3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
 
         /**
@@ -113,7 +112,7 @@ module feng3d {
 
             assert(-1 < index && index <= this.children.length, "添加子对象的索引越界！");
             this.children.splice(index, 0, child);
-            child.dispatchEvent(new Container3DEvent(Container3DEvent.ADDED, { parent: this, child: child }, true));
+            child.dispatchEvent(new Object3DEvent(Object3DEvent.ADDED, { parent: this, child: child }, true));
         }
 
         /**
@@ -149,7 +148,7 @@ module feng3d {
             var child: Object3D = this.children[childIndex];
             assert(-1 < childIndex && childIndex < this.children.length, "删除的索引越界！");
             this.children.splice(childIndex, 1);
-            child.dispatchEvent(new Container3DEvent(Container3DEvent.REMOVED, { parent: this, child: child }, true));
+            child.dispatchEvent(new Object3DEvent(Object3DEvent.REMOVED, { parent: this, child: child }, true));
             return child;
         }
 
@@ -174,7 +173,7 @@ module feng3d {
         /**
          * 处理添加子对象事件
          */
-        private onAddedContainer3D(event: Container3DEvent): void {
+        private onAddedContainer3D(event: Object3DEvent): void {
 
             if (event.data.child == this) {
                 this._parent = event.data.parent;
@@ -184,7 +183,7 @@ module feng3d {
         /**
          * 处理删除子对象事件
          */
-        private onRemovedContainer3D(event: Container3DEvent): void {
+        private onRemovedContainer3D(event: Object3DEvent): void {
 
             if (event.data.child == this) {
                 this._parent = null;

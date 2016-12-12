@@ -18,8 +18,9 @@ module feng3d {
 
         public set geometry(value: Geometry) {
 
+            this._geometry && this.removeComponent(this._geometry);
             this._geometry = value;
-            this.addComponent(this._geometry);
+            this._geometry && this.addComponent(this._geometry);
         }
 
     }

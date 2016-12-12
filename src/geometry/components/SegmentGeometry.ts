@@ -4,7 +4,7 @@ module feng3d {
      * 线段组件
      * @author feng 2016-10-16
      */
-    export class SegmentGeometry extends GeometryComponent {
+    export class SegmentGeometry extends Geometry {
 
         /**
          * 几何体是否变脏
@@ -42,8 +42,8 @@ module feng3d {
                 positionData.set(element.positionData, i * segmentPositionStep);
             }
 
-            this.geometry.setVAData(GLAttribute.position, positionData, 3);
-            this.geometry.setIndices(indices);
+            this.setVAData(GLAttribute.position, positionData, 3);
+            this.setIndices(indices);
         }
 
         /**

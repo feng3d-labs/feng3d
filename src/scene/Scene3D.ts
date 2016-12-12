@@ -14,14 +14,14 @@ module feng3d {
         constructor() {
 
             super("root");
-            this.addEventListener(Container3DEvent.ADDED, this.onAdded, this)
-            this.addEventListener(Container3DEvent.REMOVED, this.onRemoved, this)
+            this.addEventListener(Object3DEvent.ADDED, this.onAdded, this)
+            this.addEventListener(Object3DEvent.REMOVED, this.onRemoved, this)
         }
 
         /**
          * 处理添加对象事件
          */
-        private onAdded(event: Container3DEvent) {
+        private onAdded(event: Object3DEvent) {
 
             this._renderables.push(event.data.child);
         }
@@ -29,7 +29,7 @@ module feng3d {
         /**
          * 处理添加对象事件
          */
-        private onRemoved(event: Container3DEvent) {
+        private onRemoved(event: Object3DEvent) {
 
             var removedChild = event.data.child;
             var index = this._renderables.indexOf(removedChild);
