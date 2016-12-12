@@ -20,6 +20,6 @@ module feng3d {
         /**
          * 事件数据
          */
-        data: { parent: Transform, child: Transform };
+        data: { parent: GameObject, child: GameObject };
     }
 }

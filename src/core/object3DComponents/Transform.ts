@@ -32,16 +32,6 @@ module feng3d {
         private _inverseGlobalMatrix3D: Matrix3D;
 
         /**
-         * 父对象
-         */
-        private _parent: Transform = null;
-
-        /**
-         * 子对象列表
-         */
-        private children: Transform[] = [];
-
-        /**
          * 构建变换
          * @param x X坐标
          * @param y Y坐标
@@ -215,8 +205,6 @@ module feng3d {
         //------------------------------------------
         protected onBeAddedComponent(event: ComponentEvent): void {
 
-            this.gameObject.addEventListener(Container3DEvent.ADDED, this.onAddedContainer3D, this);
-            this.gameObject.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
             //
             var context3DBuffer = this.gameObject.getOrCreateComponentByClass(RenderDataHolder);
             context3DBuffer.mapUniform(RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
@@ -227,8 +215,6 @@ module feng3d {
          */
         protected onBeRemovedComponent(event: ComponentEvent): void {
 
-            this.gameObject.addEventListener(Container3DEvent.ADDED, this.onAddedContainer3D, this);
-            this.gameObject.addEventListener(Container3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
 
         private getuMVMatrix() {
@@ -276,8 +262,8 @@ module feng3d {
 
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);
-            if (this.parent != null) {
-                var parentGlobalMatrix3D = this.parent.globalMatrix3D;
+            if (this.gameObject.parent != null) {
+                var parentGlobalMatrix3D = this.gameObject.parent.transform.globalMatrix3D;
                 this._globalMatrix3D.append(parentGlobalMatrix3D);
             }
         }
@@ -312,114 +298,11 @@ module feng3d {
             this.notifySceneTransformChange();
 
             //
-            for (var i = 0; i < this.numChildren; i++) {
-                var element = this.getChildAt(i)
-                element.invalidateGlobalMatrix3D();
-            }
-        }
-
-        /**
-         * 父对象
-         */
-        public get parent() {
-
-            return this._parent;
-        }
-
-        /**
-		 * 添加子对象
-		 * @param child		子对象
-		 * @return			新增的子对象
-		 */
-        public addChild(child: Transform): void {
-
-            this.addChildAt(child, this.children.length);
-        }
-
-        /**
-         * 添加子对象到指定位置
-         * @param   child   子对象
-         * @param   index   添加到的位置
-         */
-        public addChildAt(child: Transform, index: number): void {
-
-            assert(-1 < index && index <= this.children.length, "添加子对象的索引越界！");
-            this.children.splice(index, 0, child);
-            child.dispatchEvent(new Container3DEvent(Container3DEvent.ADDED, { parent: this, child: child }, true));
-        }
-
-        /**
-         * 移除子对象
-         * @param   child   子对象
-         * @return			被移除子对象索引
-         */
-        public removeChild(child: Transform): number {
-
-            var childIndex = this.children.indexOf(child);
-            assert(-1 < childIndex && childIndex < this.children.length, "删除的子对象不存在！");
-            this.removeChildAt(childIndex);
-            return childIndex;
-        }
-
-        /**
-         * 获取子对象索引
-         * @param   child   子对象
-         * @return  子对象位置
-         */
-        public getChildIndex(child: Transform): number {
-
-            return this.children.indexOf(child);
-        }
-
-        /**
-		 * 移出指定索引的子对象
-		 * @param childIndex	子对象索引
-		 * @return				被移除对象
-		 */
-        public removeChildAt(childIndex: number): Transform {
-
-            var child: Transform = this.children[childIndex];
-            assert(-1 < childIndex && childIndex < this.children.length, "删除的索引越界！");
-            this.children.splice(childIndex, 1);
-            child.dispatchEvent(new Container3DEvent(Container3DEvent.REMOVED, { parent: this, child: child }, true));
-            return child;
-        }
-
-		/**
-		 * 获取子对象
-		 * @param index         子对象索引
-		 * @return              指定索引的子对象
-		 */
-        public getChildAt(index: number): Transform {
-
-            return this.children[index];
-        }
-
-        /**
-         * 获取子对象数量
-         */
-        public get numChildren(): number {
-
-            return this.children.length;
-        }
-
-        /**
-         * 处理添加子对象事件
-         */
-        private onAddedContainer3D(event: Container3DEvent): void {
-
-            if (event.data.child == this) {
-                this._parent = event.data.parent;
-            }
-        }
-
-        /**
-         * 处理删除子对象事件
-         */
-        private onRemovedContainer3D(event: Container3DEvent): void {
-
-            if (event.data.child == this) {
-                this._parent = null;
+            if (this.gameObject) {
+                for (var i = 0; i < this.gameObject.numChildren; i++) {
+                    var element = this.gameObject.getChildAt(i)
+                    element.transform.invalidateGlobalMatrix3D();
+                }
             }
         }
     }
