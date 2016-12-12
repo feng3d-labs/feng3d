@@ -4,7 +4,7 @@ module feng3d {
 	 * 摄像机
 	 * @author feng 2016-08-16
 	 */
-    export class Camera3D extends GameObject {
+    export class Camera3D extends Object3D {
 
         private _viewProjection: Matrix3D = new Matrix3D();
         private _viewProjectionDirty: Boolean = true;

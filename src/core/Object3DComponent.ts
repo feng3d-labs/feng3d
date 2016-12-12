@@ -9,12 +9,12 @@ module feng3d {
         /**
          * 父组件
          */
-        protected _parentComponent: GameObject;
+        protected _parentComponent: Object3D;
 
         /**
          * 所属对象
          */
-        public get gameObject(): GameObject { return this._parentComponent; }
+        public get gameObject(): Object3D { return this._parentComponent; }
 
         /**
          * 构建3D对象组件

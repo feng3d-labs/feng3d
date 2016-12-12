@@ -1,12 +1,12 @@
 module feng3d {
     export class LookAtController extends ControllerBase {
         protected _lookAtPosition: Vector3D;
-        protected _lookAtObject: GameObject;
+        protected _lookAtObject: Object3D;
         protected _origin: Vector3D = new Vector3D(0.0, 0.0, 0.0);
         protected _upAxis: Vector3D = Vector3D.Y_AXIS;
         private _pos: Vector3D = new Vector3D();
 
-        constructor(targetObject: GameObject = null, lookAtObject: GameObject = null) {
+        constructor(targetObject: Object3D = null, lookAtObject: Object3D = null) {
             super(targetObject);
 
             if (lookAtObject)
@@ -31,11 +31,11 @@ module feng3d {
             this._lookAtPosition = val;
         }
 
-        public get lookAtObject(): GameObject {
+        public get lookAtObject(): Object3D {
             return this._lookAtObject;
         }
 
-        public set lookAtObject(value: GameObject) {
+        public set lookAtObject(value: Object3D) {
             if (this._lookAtObject == value)
                 return;
 

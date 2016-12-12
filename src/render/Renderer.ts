@@ -50,7 +50,7 @@ module feng3d {
         /**
          * 绘制3D对象
          */
-        private drawObject3D(object3D: GameObject) {
+        private drawObject3D(object3D: Object3D) {
 
             var context3DBuffer = object3D.getOrCreateComponentByClass(RenderDataHolder);
 

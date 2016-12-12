@@ -3,17 +3,17 @@ module feng3d {
      * 游戏对象
      * @author feng 2016-04-26
      */
-    export class GameObject extends Component {
+    export class Object3D extends Component {
 
         /**
          * 父对象
          */
-        private _parent: GameObject = null;
+        private _parent: Object3D = null;
 
         /**
          * 子对象列表
          */
-        private children: GameObject[] = [];
+        private children: Object3D[] = [];
 
         /**
          * 变换
@@ -52,9 +52,9 @@ module feng3d {
         /**
          * 创建
          */
-        static createPrimitive(type: PrimitiveType): GameObject {
+        static createPrimitive(type: PrimitiveType): Object3D {
 
-            var object3D = new GameObject();
+            var object3D = new Object3D();
             switch (type) {
                 case PrimitiveType.Plane:
                     object3D.addComponent(primitives.createPlane());
@@ -91,7 +91,7 @@ module feng3d {
 		 * @param child		子对象
 		 * @return			新增的子对象
 		 */
-        public addChild(child: GameObject): void {
+        public addChild(child: Object3D): void {
 
             this.addChildAt(child, this.children.length);
         }
@@ -101,7 +101,7 @@ module feng3d {
          * @param   child   子对象
          * @param   index   添加到的位置
          */
-        public addChildAt(child: GameObject, index: number): void {
+        public addChildAt(child: Object3D, index: number): void {
 
             assert(-1 < index && index <= this.children.length, "添加子对象的索引越界！");
             this.children.splice(index, 0, child);
@@ -113,7 +113,7 @@ module feng3d {
          * @param   child   子对象
          * @return			被移除子对象索引
          */
-        public removeChild(child: GameObject): number {
+        public removeChild(child: Object3D): number {
 
             var childIndex = this.children.indexOf(child);
             assert(-1 < childIndex && childIndex < this.children.length, "删除的子对象不存在！");
@@ -126,7 +126,7 @@ module feng3d {
          * @param   child   子对象
          * @return  子对象位置
          */
-        public getChildIndex(child: GameObject): number {
+        public getChildIndex(child: Object3D): number {
 
             return this.children.indexOf(child);
         }
@@ -136,9 +136,9 @@ module feng3d {
 		 * @param childIndex	子对象索引
 		 * @return				被移除对象
 		 */
-        public removeChildAt(childIndex: number): GameObject {
+        public removeChildAt(childIndex: number): Object3D {
 
-            var child: GameObject = this.children[childIndex];
+            var child: Object3D = this.children[childIndex];
             assert(-1 < childIndex && childIndex < this.children.length, "删除的索引越界！");
             this.children.splice(childIndex, 1);
             child.dispatchEvent(new Container3DEvent(Container3DEvent.REMOVED, { parent: this, child: child }, true));
@@ -150,7 +150,7 @@ module feng3d {
 		 * @param index         子对象索引
 		 * @return              指定索引的子对象
 		 */
-        public getChildAt(index: number): GameObject {
+        public getChildAt(index: number): Object3D {
 
             return this.children[index];
         }

@@ -48,12 +48,14 @@
         "src/render/ShaderParamID.ts",
         "src/render/Renderer.ts",
         //
-        "src/core/GameObject.ts",
+        "src/core/Object3D.ts",
         "src/core/View3D.ts",
         //3D对象组件
-        "src/core/object3DComponents/Object3DComponent.ts",
-        "src/core/object3DComponents/Transform.ts",
-        "src/core/object3DComponents/container/Container3DEvent.ts",
+        "src/core/Object3DComponent.ts",
+        "src/core/Transform.ts",
+        "src/core/Object3DEvent.ts",
+        "src/core/Mesh.ts",
+        "src/core/MeshRenderer.ts",
         //3D场景
         "src/scene/Scene3D.ts",
         //几何体

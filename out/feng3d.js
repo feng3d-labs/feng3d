@@ -2857,7 +2857,7 @@ var feng3d;
      * 游戏对象
      * @author feng 2016-04-26
      */
-    class GameObject extends feng3d.Component {
+    class Object3D extends feng3d.Component {
         /**
          * 构建3D对象
          */
@@ -2896,7 +2896,7 @@ var feng3d;
          * 创建
          */
         static createPrimitive(type) {
-            var object3D = new GameObject();
+            var object3D = new Object3D();
             switch (type) {
                 case feng3d.PrimitiveType.Plane:
                     object3D.addComponent(feng3d.primitives.createPlane());
@@ -3004,7 +3004,7 @@ var feng3d;
             }
         }
     }
-    feng3d.GameObject = GameObject;
+    feng3d.Object3D = Object3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -3403,10 +3403,30 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 网格
+     * @author feng 2016-12-12
+     */
+    class Mesh extends feng3d.Object3DComponent {
+    }
+    feng3d.Mesh = Mesh;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 网格渲染器
+     * @author feng 2016-12-12
+     */
+    class MeshRenderer extends feng3d.Object3DComponent {
+    }
+    feng3d.MeshRenderer = MeshRenderer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 3D场景
      * @author feng 2016-05-01
      */
-    class Scene3D extends feng3d.GameObject {
+    class Scene3D extends feng3d.Object3D {
         /**
          * 构造3D场景
          */
@@ -3929,7 +3949,7 @@ var feng3d;
      * 摄像机
      * @author feng 2016-08-16
      */
-    class Camera3D extends feng3d.GameObject {
+    class Camera3D extends feng3d.Object3D {
         /**
          * 创建一个摄像机
          * @param lens 摄像机镜头
