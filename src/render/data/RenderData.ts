@@ -75,6 +75,8 @@ module feng3d {
          */
         prepare() {
 
+            this.object3D.activate(this);
+            //
             this.prepareProgram();
             this.prepareIndex();
             this.prepareAttributes();

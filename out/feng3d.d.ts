@@ -1170,6 +1170,7 @@ declare module feng3d {
      * @author feng 2016-6-7
      */
     class RenderDataHolder extends Component {
+        private _subRenderDataHolders;
         indexBuffer: IndexRenderData;
         private programBuffer;
         attributes: {
@@ -1215,6 +1216,27 @@ declare module feng3d {
          * 处理获取缓冲事件
          */
         private onGetShaderParam(event);
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData: RenderData): void;
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData: RenderData): void;
+        /**
+         * 添加组件到指定位置
+         * @param component		被添加的组件
+         * @param index			插入的位置
+         */
+        addComponentAt(component: IComponent, index: number): void;
+        /**
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
+         */
+        removeComponentAt(index: number): IComponent;
     }
 }
 declare module feng3d {
@@ -1658,7 +1680,7 @@ declare module feng3d {
      * 游戏对象
      * @author feng 2016-04-26
      */
-    class Object3D extends Component {
+    class Object3D extends RenderDataHolder {
         private _transform;
         /**
          * 父对象

@@ -6,6 +6,9 @@ module feng3d {
 	 */
 	export class RenderDataHolder extends Component {
 
+		//
+		private _subRenderDataHolders: RenderDataHolder[] = [];
+		//
 		public indexBuffer: IndexRenderData;
 		private programBuffer: ProgramRenderData;
 		public attributes: { [name: string]: AttributeRenderData } = {};
@@ -102,5 +105,61 @@ module feng3d {
 			}
 		}
 
+		/**
+		 * 激活
+		 * @param renderData	渲染数据
+		 */
+		public activate(renderData: RenderData) {
+
+			this._subRenderDataHolders.forEach(element => {
+				element.activate(renderData);
+			});
+		}
+
+		/**
+		 * 释放
+		 * @param renderData	渲染数据
+		 */
+		public deactivate(renderData: RenderData) {
+
+			this._subRenderDataHolders.forEach(element => {
+				element.deactivate(renderData);
+			});
+		}
+
+		/**
+		 * 添加组件到指定位置
+		 * @param component		被添加的组件
+		 * @param index			插入的位置
+		 */
+		public addComponentAt(component: IComponent, index: number): void {
+
+			super.addComponentAt(component, index);
+			if (component != null && is(component, RenderDataHolder)) {
+				var renderDataHolder: RenderDataHolder = as(component, RenderDataHolder);
+				var index = this._subRenderDataHolders.indexOf(renderDataHolder);
+				if (index == -1) {
+					this._subRenderDataHolders.splice(index, 0, renderDataHolder);
+				}
+			}
+		}
+
+		/**
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
+         */
+		public removeComponentAt(index: number): IComponent {
+
+			var component = this.components[index];
+			if (component != null && is(component, RenderDataHolder)) {
+				var renderDataHolder: RenderDataHolder = as(component, RenderDataHolder);
+				var index = this._subRenderDataHolders.indexOf(renderDataHolder);
+				if (index != -1) {
+					this._subRenderDataHolders.splice(index, 1);
+				}
+			}
+
+			return super.removeComponentAt(index);
+		}
 	}
 }

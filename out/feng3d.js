@@ -2110,6 +2110,8 @@ var feng3d;
          */
         constructor() {
             super();
+            //
+            this._subRenderDataHolders = [];
             this.attributes = {};
             this.uniforms = {};
             this.shaderParams = {};
@@ -2179,6 +2181,54 @@ var feng3d;
                 eventData.data = this.shaderParams[eventData.shaderParamID];
             }
         }
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData) {
+            this._subRenderDataHolders.forEach(element => {
+                element.activate(renderData);
+            });
+        }
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData) {
+            this._subRenderDataHolders.forEach(element => {
+                element.deactivate(renderData);
+            });
+        }
+        /**
+         * 添加组件到指定位置
+         * @param component		被添加的组件
+         * @param index			插入的位置
+         */
+        addComponentAt(component, index) {
+            super.addComponentAt(component, index);
+            if (component != null && feng3d.is(component, RenderDataHolder)) {
+                var renderDataHolder = feng3d.as(component, RenderDataHolder);
+                var index = this._subRenderDataHolders.indexOf(renderDataHolder);
+                if (index == -1) {
+                    this._subRenderDataHolders.splice(index, 0, renderDataHolder);
+                }
+            }
+        }
+        /**
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
+         */
+        removeComponentAt(index) {
+            var component = this.components[index];
+            if (component != null && feng3d.is(component, RenderDataHolder)) {
+                var renderDataHolder = feng3d.as(component, RenderDataHolder);
+                var index = this._subRenderDataHolders.indexOf(renderDataHolder);
+                if (index != -1) {
+                    this._subRenderDataHolders.splice(index, 1);
+                }
+            }
+            return super.removeComponentAt(index);
+        }
     }
     feng3d.RenderDataHolder = RenderDataHolder;
 })(feng3d || (feng3d = {}));
@@ -2223,6 +2273,8 @@ var feng3d;
          * 准备数据
          */
         prepare() {
+            this.object3D.activate(this);
+            //
             this.prepareProgram();
             this.prepareIndex();
             this.prepareAttributes();
@@ -2853,7 +2905,7 @@ var feng3d;
      * 游戏对象
      * @author feng 2016-04-26
      */
-    class Object3D extends feng3d.Component {
+    class Object3D extends feng3d.RenderDataHolder {
         /**
          * 构建3D对象
          */
