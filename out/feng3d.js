@@ -2210,12 +2210,6 @@ var feng3d;
             }
             return renderBuffer;
         }
-        /**
-         * 准备数据
-         */
-        prepare() {
-            this.object3D.activate(this);
-        }
     }
     /**
      * 渲染数据字典
@@ -2243,7 +2237,6 @@ var feng3d;
          * 激活缓冲
          */
         active() {
-            this.renderData.prepare();
             this.activeProgram();
             this.activeAttributes();
             this.activeUniforms();
@@ -2437,7 +2430,6 @@ var feng3d;
          * @return  渲染程序
          */
         getWebGLProgram(context3D, vertexCode, fragmentCode) {
-            var shaderCode = [vertexCode, fragmentCode].join("\n--- shaderCode ---\n");
             return this.getContext3DBufferPool(context3D).getWebGLProgram(vertexCode, fragmentCode);
         }
         /**
@@ -2702,6 +2694,7 @@ var feng3d;
             //绘制对象
             var renderData = feng3d.RenderData.getInstance(object3D);
             this.camera.activate(renderData);
+            object3D.activate(renderData);
             var object3DBuffer = renderData.getRenderBuffer(this.context3D);
             object3DBuffer.active();
         }

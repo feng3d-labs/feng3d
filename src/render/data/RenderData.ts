@@ -69,13 +69,5 @@ module feng3d {
         constructor(object3D: Object3D) {
             this.object3D = object3D;
         }
-
-        /**
-         * 准备数据
-         */
-        prepare() {
-
-            this.object3D.activate(this);
-        }
     }
 }

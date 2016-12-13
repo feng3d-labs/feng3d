@@ -1244,10 +1244,6 @@ declare module feng3d {
          * 构建3D对象渲染数据
          */
         constructor(object3D: Object3D);
-        /**
-         * 准备数据
-         */
-        prepare(): void;
     }
 }
 declare module feng3d {

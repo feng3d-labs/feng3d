@@ -25,7 +25,6 @@ module feng3d {
          */
         getWebGLProgram(context3D: WebGLRenderingContext, vertexCode: string, fragmentCode: string): WebGLProgram {
 
-            var shaderCode = [vertexCode, fragmentCode].join("\n--- shaderCode ---\n");
             return this.getContext3DBufferPool(context3D).getWebGLProgram(vertexCode, fragmentCode);
         }
 

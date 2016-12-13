@@ -56,6 +56,9 @@ module feng3d {
             var renderData = RenderData.getInstance(object3D);
 
             this.camera.activate(renderData);
+            object3D.activate(renderData);
+
+            // renderData.draw(this.context3D);
 
             var object3DBuffer = renderData.getRenderBuffer(this.context3D);
             object3DBuffer.active();

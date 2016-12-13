@@ -32,8 +32,6 @@ module feng3d {
          */
         active() {
 
-            this.renderData.prepare();
-
             this.activeProgram();
             this.activeAttributes();
             this.activeUniforms();
@@ -101,7 +99,7 @@ module feng3d {
             }
         }
 
-        /**              
+        /**
          */
         private draw() {
 
