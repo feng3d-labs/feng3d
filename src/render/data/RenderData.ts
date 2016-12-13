@@ -21,12 +21,12 @@ module feng3d {
         /**
          * 属性数据列表
          */
-        attributes: { [name: string]: { type: string, buffer?: AttributeRenderData } };
+        attributes: { [name: string]: AttributeRenderData } = {};
 
         /**
          * 常量数据列表
          */
-        uniforms: { [name: string]: { type: string, buffer?: UniformRenderData } };
+        uniforms: { [name: string]: Matrix3D | Vec4; } = {};
 
         /**
          * 渲染模式
@@ -53,7 +53,7 @@ module feng3d {
 
         private renderBufferMap = new Map<WebGLRenderingContext, RenderBuffer>();
 
-        getRenderBuffer(context3D: WebGLRenderingContext) {
+        public getRenderBuffer(context3D: WebGLRenderingContext) {
 
             var renderBuffer = this.renderBufferMap.get(context3D);
             if (!renderBuffer) {
@@ -76,70 +76,6 @@ module feng3d {
         prepare() {
 
             this.object3D.activate(this);
-            //
-            this.prepareProgram();
-            this.prepareAttributes();
-            this.prepareUniforms();
-            this.prepareShaderParams();
-        }
-
-        /**
-         * 准备程序
-         */
-        private prepareProgram() {
-
-            //从Object3D中获取程序数据
-            var eventData: GetProgramBufferEventData = { buffer: null };
-            this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_PROGRAMBUFFER, eventData), Number.MAX_VALUE);
-            assert(eventData.buffer != null);
-            this.programBuffer = eventData.buffer;
-        }
-
-        /**
-         * 准备属性
-         */
-        private prepareAttributes() {
-
-            this.attributes = ShaderCodeUtils.getAttributes(this.programBuffer.vertexCode);
-            for (var name in this.attributes) {
-                //从Object3D中获取顶点属性数据
-                var eventData: GetAttributeBufferEventData = { name: name, buffer: null };
-                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, eventData), Number.MAX_VALUE);
-                assert(eventData.buffer != null);
-
-                this.attributes[name].buffer = eventData.buffer;
-            }
-        }
-
-        /**
-         * 准备常量
-         */
-        private prepareUniforms() {
-
-            this.uniforms = this.programBuffer.getUniforms();
-
-            for (var name in this.uniforms) {
-                //从Object3D中获取常量数据
-                var eventData: GetUniformBufferEventData = { name: name, buffer: null };
-                this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_UNIFORMBUFFER, eventData), Number.MAX_VALUE);
-                assert(eventData.buffer != null);
-
-                this.uniforms[name].buffer = eventData.buffer;
-            }
-        }
-
-        /**
-         * 准备常量
-         */
-        private prepareShaderParams() {
-
-            //从Object3D中获取渲染参数
-            var eventData: GetShaderParamEventData = { shaderParamID: ShaderParamID.renderMode, data: null };
-            this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_SHADERPARAM, eventData), Number.MAX_VALUE);
-            if (eventData.data != null) {
-
-                this.renderMode = eventData.data;
-            }
         }
     }
 }

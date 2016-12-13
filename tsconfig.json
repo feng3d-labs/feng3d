@@ -43,7 +43,6 @@
         "src/render/data/RenderDataItems.ts",
         "src/render/utils/ShaderCodeUtils.ts",
         "src/render/utils/RenderBufferPool.ts",
-        "src/render/events/Context3DBufferEvent.ts",
         "src/render/RenderDataID.ts",
         "src/render/ShaderParamID.ts",
         "src/render/Renderer.ts",

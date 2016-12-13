@@ -6,6 +6,8 @@ module feng3d {
      */
     export class Material extends RenderDataHolder {
 
+        protected programBuffer: ProgramRenderData;
+
         vertexShaderStr = //
         `
 attribute vec3 vaPosition;
@@ -50,7 +52,32 @@ void main(void) {
 
             super();
             this.pass = new MaterialPassBase();
-            this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
+
+            this.programBuffer = new ProgramRenderData();
+            this.programBuffer.vertexCode = this.vertexShaderStr;
+            this.programBuffer.fragmentCode = this.fragmentShaderStr;
+        }
+
+        /**
+		 * 激活
+		 * @param renderData	渲染数据
+		 */
+        public activate(renderData: RenderData) {
+
+            //
+            super.activate(renderData);
+            //
+            renderData.programBuffer = this.programBuffer;
+        }
+
+        /**
+		 * 释放
+		 * @param renderData	渲染数据
+		 */
+        public deactivate(renderData: RenderData) {
+
+            renderData.programBuffer = null;
+            super.deactivate(renderData);
         }
     }
 }

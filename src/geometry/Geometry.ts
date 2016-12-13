@@ -10,6 +10,10 @@ module feng3d {
          * 索引数据
          */
         public indexBuffer: IndexRenderData;
+        /**
+         * 顶点数据
+         */
+        public attributes: { [name: string]: AttributeRenderData } = {};
 
         /**
 		 * 创建一个几何体
@@ -25,6 +29,12 @@ module feng3d {
         public activate(renderData: RenderData) {
 
             renderData.indexBuffer = this.indexBuffer;
+            //
+            var attributesNames = Object.getOwnPropertyNames(this.attributes);
+            attributesNames.forEach(element => {
+                renderData.attributes[element] = this.attributes[element];
+            });
+            //
             super.activate(renderData);
         }
 
@@ -35,6 +45,11 @@ module feng3d {
         public deactivate(renderData: RenderData) {
 
             renderData.indexBuffer = null;
+            //
+            var attributesNames = Object.getOwnPropertyNames(this.attributes);
+            attributesNames.forEach(element => {
+                delete renderData.attributes[element];
+            });
             super.deactivate(renderData);
         }
 

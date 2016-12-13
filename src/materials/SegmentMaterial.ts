@@ -20,11 +20,25 @@ module feng3d {
         }
 
         /**
-         * 处理被添加组件事件
+         * 激活
+         * @param renderData	渲染数据
          */
-        protected onBeAddedComponent(event: ComponentEvent): void {
+        public activate(renderData: RenderData) {
 
-            this.mapShaderParam(ShaderParamID.renderMode, this.renderMode);
+            //
+            renderData.renderMode = this.renderMode;
+            //
+            super.activate(renderData);
+        }
+
+        /**
+		 * 释放
+		 * @param renderData	渲染数据
+		 */
+        public deactivate(renderData: RenderData) {
+
+            renderData.renderMode = RenderMode.DEFAULT;
+            super.deactivate(renderData);
         }
     }
 }

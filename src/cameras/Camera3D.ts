@@ -66,16 +66,26 @@ module feng3d {
             this._viewProjectionDirty = true;
         }
 
-        public activate1(renderDataHolder: RenderDataHolder) {
+        /**
+		 * 激活
+		 * @param renderData	渲染数据
+		 */
+        public activate(renderData: RenderData) {
 
-            //场景投影矩阵
-            renderDataHolder.mapUniform(RenderDataID.uPMatrix, this.getuPMatrix.bind(this));
+            //
+            renderData.uniforms[RenderDataID.uPMatrix] = this.viewProjection;
+            //
+            super.activate(renderData);
         }
 
-        private getuPMatrix() {
+        /**
+		 * 释放
+		 * @param renderData	渲染数据
+		 */
+        public deactivate(renderData: RenderData) {
 
-            return this.viewProjection;
+            delete renderData.uniforms[RenderDataID.uPMatrix];
+            super.deactivate(renderData);
         }
-
     }
 }

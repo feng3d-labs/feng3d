@@ -47,13 +47,33 @@ void main(void) {
 
             super();
             this.color = color || new Color();
-            this.mapUniform(RenderDataID.diffuseInput_fc_vector, this.getDiffuseInputFcVector.bind(this));
-            this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
+
+            this.programBuffer = new ProgramRenderData();
+            this.programBuffer.vertexCode = this.vertexShaderStr;
+            this.programBuffer.fragmentCode = this.fragmentShaderStr;
         }
 
-        private getDiffuseInputFcVector() {
+        /**
+		 * 激活
+		 * @param renderData	渲染数据
+		 */
+        public activate(renderData: RenderData) {
 
-            return new Vector3D(this._color.r, this._color.g, this._color.b, this._color.a);
+            renderData.programBuffer = this.programBuffer;
+            renderData.uniforms[RenderDataID.diffuseInput_fc_vector] = new Vector3D(this._color.r, this._color.g, this._color.b, this._color.a);
+            //
+            super.activate(renderData);
+        }
+
+        /**
+		 * 释放
+		 * @param renderData	渲染数据
+		 */
+        public deactivate(renderData: RenderData) {
+
+            renderData.programBuffer = null;
+            delete renderData.uniforms[RenderDataID.diffuseInput_fc_vector];
+            super.deactivate(renderData);
         }
     }
 }

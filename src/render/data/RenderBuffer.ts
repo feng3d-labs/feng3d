@@ -61,7 +61,7 @@ module feng3d {
             for (var name in locations) {
                 if (locations.hasOwnProperty(name)) {
                     var element = locations[name];
-                    var buffer = attributes[name].buffer;
+                    var buffer = attributes[name];
 
                     var squareVerticesBuffer = context3DPool.getVABuffer(this.context3D, buffer.data);
 
@@ -84,21 +84,19 @@ module feng3d {
 
             for (var name in uniforms) {
                 if (uniforms.hasOwnProperty(name)) {
-                    var item = uniforms[name];
-                    var data = item.buffer.dataFunc();
-                    var type = item.type;
+                    var data = uniforms[name];
                     var location = this.context3D.getUniformLocation(shaderProgram, name);
-                    switch (type) {
-                        case "mat4":
-                            this.context3D.uniformMatrix4fv(location, false, (<Matrix3D>data).rawData);
-                            break;
-                        case "vec4":
-                            var vec4 = <Vec4>data;
-                            this.context3D.uniform4f(location, vec4.x, vec4.y, vec4.z, vec4.w);
-                            break;
-                        default:
-                            throw `无法识别的uniform类型 ${type}`;
+
+                    if (as(data, Matrix3D) != null) {
+                        var mat4: Matrix3D = as(data, Matrix3D);
+                        this.context3D.uniformMatrix4fv(location, false, (<Matrix3D>data).rawData);
+                    } else if (as(data, Vector3D) != null) {
+                        var vec4: Vector3D = as(data, Vector3D);
+                        this.context3D.uniform4f(location, vec4.x, vec4.y, vec4.z, vec4.w);
+                    } else {
+                        throw `无法识别的uniform类型 ${name} ${uniforms[name]}`;
                     }
+
                 }
             }
         }

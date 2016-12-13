@@ -52,12 +52,11 @@ module feng3d {
          */
         private drawObject3D(object3D: Object3D) {
 
-            var renderDataHolder = object3D.getOrCreateComponentByClass(RenderDataHolder);
-
-            this.camera.activate1(renderDataHolder);
-
             //绘制对象
             var renderData = RenderData.getInstance(object3D);
+
+            this.camera.activate(renderData);
+
             var object3DBuffer = renderData.getRenderBuffer(this.context3D);
             object3DBuffer.active();
         }

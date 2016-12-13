@@ -1152,6 +1152,7 @@ declare module feng3d {
      * @author feng 2016-09-28
      */
     enum RenderMode {
+        DEFAULT,
         /**
          * 点渲染
          */
@@ -1171,46 +1172,10 @@ declare module feng3d {
      */
     class RenderDataHolder extends Component {
         private _subRenderDataHolders;
-        private programBuffer;
-        attributes: {
-            [name: string]: AttributeRenderData;
-        };
-        private uniforms;
-        private shaderParams;
         /**
          * 创建Context3D数据缓冲
          */
         constructor();
-        /**
-         * 映射程序缓冲
-         * @param vertexCode        顶点渲染程序代码
-         * @param fragmentCode      片段渲染程序代码
-         */
-        mapProgram(vertexCode: string, fragmentCode: string): void;
-        /**
-         * 映射常量
-         */
-        mapUniform(name: string, dataFunc: () => Matrix3D | Vec4): void;
-        /**
-         * 映射渲染参数
-         */
-        mapShaderParam(shaderParamID: ShaderParamID, param: any): void;
-        /**
-         * 处理获取属性缓冲事件
-         */
-        private onGetAttributeBuffer(event);
-        /**
-         * 处理获取缓冲事件
-         */
-        private onGetUniformBuffer(event);
-        /**
-         * 处理获取缓冲事件
-         */
-        private onGetProgramBuffer(event);
-        /**
-         * 处理获取缓冲事件
-         */
-        private onGetShaderParam(event);
         /**
          * 激活
          * @param renderData	渲染数据
@@ -1253,19 +1218,13 @@ declare module feng3d {
          * 属性数据列表
          */
         attributes: {
-            [name: string]: {
-                type: string;
-                buffer?: AttributeRenderData;
-            };
+            [name: string]: AttributeRenderData;
         };
         /**
          * 常量数据列表
          */
         uniforms: {
-            [name: string]: {
-                type: string;
-                buffer?: UniformRenderData;
-            };
+            [name: string]: Matrix3D | Vec4;
         };
         /**
          * 渲染模式
@@ -1289,22 +1248,6 @@ declare module feng3d {
          * 准备数据
          */
         prepare(): void;
-        /**
-         * 准备程序
-         */
-        private prepareProgram();
-        /**
-         * 准备属性
-         */
-        private prepareAttributes();
-        /**
-         * 准备常量
-         */
-        private prepareUniforms();
-        /**
-         * 准备常量
-         */
-        private prepareShaderParams();
     }
 }
 declare module feng3d {
@@ -1411,19 +1354,6 @@ declare module feng3d {
         stride: number;
     }
     /**
-     * 常量渲染数据
-     */
-    class UniformRenderData {
-        /**
-         * 常量名称
-         */
-        name: string;
-        /**
-         * 数据
-         */
-        dataFunc: () => Matrix3D | Vec4;
-    }
-    /**
      * 渲染常量向量类型
      */
     interface Vec4 {
@@ -1516,78 +1446,6 @@ declare module feng3d {
      * 3D环境对象池
      */
     var context3DPool: RenderBufferPool;
-}
-declare module feng3d {
-    /**
-     * Context3D缓冲事件
-     * @author feng 2016-05-26
-     */
-    class Context3DBufferEvent extends Event {
-        /**
-         * 获取AttributeBuffer
-         */
-        static GET_ATTRIBUTEBUFFER: string;
-        /**
-         * 获取ProgramBuffer
-         */
-        static GET_PROGRAMBUFFER: string;
-        /**
-         * 获取UniformBuffer
-         */
-        static GET_UNIFORMBUFFER: string;
-        /**
-         * 获取UniformBuffer
-         */
-        static GET_SHADERPARAM: string;
-    }
-    /**
-     * 获取AttributeBuffer事件数据
-     */
-    class GetAttributeBufferEventData {
-        /**
-         * 属性名称
-         */
-        name: string;
-        /**
-         * 属性缓冲
-         */
-        buffer: AttributeRenderData;
-    }
-    /**
-     * 获取ProgramBuffer事件数据
-     */
-    class GetProgramBufferEventData {
-        /**
-         * 渲染程序缓存
-         */
-        buffer: ProgramRenderData;
-    }
-    /**
-     * 获取UniformBuffer事件数据
-     */
-    class GetUniformBufferEventData {
-        /**
-         * 常量名称
-         */
-        name: string;
-        /**
-         * 常量缓存
-         */
-        buffer: UniformRenderData;
-    }
-    /**
-     * 获取ShaderParam事件数据
-     */
-    class GetShaderParamEventData {
-        /**
-         * 参数名称
-         */
-        shaderParamID: ShaderParamID;
-        /**
-         * 参数数据
-         */
-        data: any;
-    }
 }
 declare module feng3d {
     /**
@@ -1908,12 +1766,6 @@ declare module feng3d {
          * 逆全局矩阵
          */
         readonly inverseGlobalMatrix3D: Matrix3D;
-        protected onBeAddedComponent(event: ComponentEvent): void;
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: ComponentEvent): void;
-        private getuMVMatrix();
         /**
          * 变换矩阵
          */
@@ -1943,6 +1795,16 @@ declare module feng3d {
          * @private
          */
         invalidateGlobalMatrix3D(): void;
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData: RenderData): void;
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData: RenderData): void;
     }
     /**
      * 变换事件(3D状态发生改变、位置、旋转、缩放)
@@ -2095,6 +1957,12 @@ declare module feng3d {
          * 索引数据
          */
         indexBuffer: IndexRenderData;
+        /**
+         * 顶点数据
+         */
+        attributes: {
+            [name: string]: AttributeRenderData;
+        };
         /**
          * 创建一个几何体
          */
@@ -2405,8 +2273,16 @@ declare module feng3d {
          */
         private onLensMatrixChanged(event);
         private onSpaceTransformChanged(event);
-        activate1(renderDataHolder: RenderDataHolder): void;
-        private getuPMatrix();
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData: RenderData): void;
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData: RenderData): void;
     }
 }
 declare module feng3d {
@@ -2498,6 +2374,7 @@ declare module feng3d {
      * @author feng 2016-05-02
      */
     class Material extends RenderDataHolder {
+        protected programBuffer: ProgramRenderData;
         vertexShaderStr: string;
         fragmentShaderStr: string;
         private _pass;
@@ -2513,6 +2390,16 @@ declare module feng3d {
          * 构建材质
          */
         constructor();
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData: RenderData): void;
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData: RenderData): void;
     }
 }
 declare module feng3d {
@@ -2534,7 +2421,16 @@ declare module feng3d {
          * @param alpha 透明的
          */
         constructor(color?: Color);
-        private getDiffuseInputFcVector();
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData: RenderData): void;
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData: RenderData): void;
     }
 }
 declare module feng3d {
@@ -2552,9 +2448,15 @@ declare module feng3d {
          */
         constructor();
         /**
-         * 处理被添加组件事件
+         * 激活
+         * @param renderData	渲染数据
          */
-        protected onBeAddedComponent(event: ComponentEvent): void;
+        activate(renderData: RenderData): void;
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData: RenderData): void;
     }
 }
 declare module feng3d {

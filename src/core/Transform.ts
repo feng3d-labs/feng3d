@@ -200,28 +200,6 @@ module feng3d {
             return this._inverseGlobalMatrix3D;
         }
 
-        //------------------------------------------
-        //@protected
-        //------------------------------------------
-        protected onBeAddedComponent(event: ComponentEvent): void {
-
-            //
-            var context3DBuffer = this.object3D.getOrCreateComponentByClass(RenderDataHolder);
-            context3DBuffer.mapUniform(RenderDataID.uMVMatrix, this.getuMVMatrix.bind(this));
-        }
-
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: ComponentEvent): void {
-
-        }
-
-        private getuMVMatrix() {
-
-            return this.globalMatrix3D;
-        }
-
         /**
          * 变换矩阵
          */
@@ -304,6 +282,28 @@ module feng3d {
                     element.transform.invalidateGlobalMatrix3D();
                 }
             }
+        }
+
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        public activate(renderData: RenderData) {
+
+            //
+            renderData.uniforms[RenderDataID.uMVMatrix] = this.globalMatrix3D;
+            //
+            super.activate(renderData);
+        }
+
+        /**
+		 * 释放
+		 * @param renderData	渲染数据
+		 */
+        public deactivate(renderData: RenderData) {
+
+            delete renderData.uniforms[RenderDataID.uMVMatrix];
+            super.deactivate(renderData);
         }
     }
 

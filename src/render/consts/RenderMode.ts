@@ -5,6 +5,7 @@ module feng3d {
      * @author feng 2016-09-28
      */
     export enum RenderMode {
+        DEFAULT = WebGLRenderingContext.TRIANGLES,
         /**
          * 点渲染
          */

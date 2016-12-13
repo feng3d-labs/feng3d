@@ -83,22 +83,6 @@ module feng3d {
         stride: number;
     }
 
-	/**
-     * 常量渲染数据
-     */
-    export class UniformRenderData {
-
-        /**
-         * 常量名称
-         */
-        name: string;
-
-		/**
-		 * 数据
-		 */
-        dataFunc: () => Matrix3D | Vec4;
-    }
-
     /**
      * 渲染常量向量类型
      */
