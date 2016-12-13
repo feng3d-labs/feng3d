@@ -78,7 +78,6 @@ module feng3d {
             this.object3D.activate(this);
             //
             this.prepareProgram();
-            this.prepareIndex();
             this.prepareAttributes();
             this.prepareUniforms();
             this.prepareShaderParams();
@@ -94,18 +93,6 @@ module feng3d {
             this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_PROGRAMBUFFER, eventData), Number.MAX_VALUE);
             assert(eventData.buffer != null);
             this.programBuffer = eventData.buffer;
-        }
-
-        /**
-         * 准备索引
-         */
-        private prepareIndex() {
-
-            //从Object3D中获取顶点索引数据
-            var eventData: GetIndexBufferEventData = { buffer: null };
-            this.object3D.dispatchChildrenEvent(new Context3DBufferEvent(Context3DBufferEvent.GET_INDEXBUFFER, eventData), Number.MAX_VALUE);
-            assert(eventData.buffer != null);
-            this.indexBuffer = eventData.buffer;
         }
 
         /**

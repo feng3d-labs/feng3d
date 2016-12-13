@@ -12,11 +12,6 @@ module feng3d {
         static GET_ATTRIBUTEBUFFER = "getAttributeBuffer";
 
         /**
-         * 获取IndexBuffer
-         */
-        static GET_INDEXBUFFER = "getIndexBuffer";
-
-        /**
          * 获取ProgramBuffer
          */
         static GET_PROGRAMBUFFER = "getProgramBuffer";
@@ -46,17 +41,6 @@ module feng3d {
          * 属性缓冲
          */
         buffer: AttributeRenderData;
-    }
-
-    /**
-     * 获取IndexBuffer事件数据
-     */
-    export class GetIndexBufferEventData {
-
-        /**
-         * 索引缓冲
-         */
-        buffer: IndexRenderData;
     }
 
     /**

@@ -1171,7 +1171,6 @@ declare module feng3d {
      */
     class RenderDataHolder extends Component {
         private _subRenderDataHolders;
-        indexBuffer: IndexRenderData;
         private programBuffer;
         attributes: {
             [name: string]: AttributeRenderData;
@@ -1196,10 +1195,6 @@ declare module feng3d {
          * 映射渲染参数
          */
         mapShaderParam(shaderParamID: ShaderParamID, param: any): void;
-        /**
-         * 处理获取索引缓冲事件
-         */
-        private onGetIndexBuffer(event);
         /**
          * 处理获取属性缓冲事件
          */
@@ -1298,10 +1293,6 @@ declare module feng3d {
          * 准备程序
          */
         private prepareProgram();
-        /**
-         * 准备索引
-         */
-        private prepareIndex();
         /**
          * 准备属性
          */
@@ -1537,10 +1528,6 @@ declare module feng3d {
          */
         static GET_ATTRIBUTEBUFFER: string;
         /**
-         * 获取IndexBuffer
-         */
-        static GET_INDEXBUFFER: string;
-        /**
          * 获取ProgramBuffer
          */
         static GET_PROGRAMBUFFER: string;
@@ -1565,15 +1552,6 @@ declare module feng3d {
          * 属性缓冲
          */
         buffer: AttributeRenderData;
-    }
-    /**
-     * 获取IndexBuffer事件数据
-     */
-    class GetIndexBufferEventData {
-        /**
-         * 索引缓冲
-         */
-        buffer: IndexRenderData;
     }
     /**
      * 获取ProgramBuffer事件数据
@@ -1803,7 +1781,7 @@ declare module feng3d {
      * 3D对象组件
      * @author feng 2016-09-02
      */
-    class Object3DComponent extends Component {
+    class Object3DComponent extends RenderDataHolder {
         /**
          * 父组件
          */
@@ -2114,9 +2092,23 @@ declare module feng3d {
      */
     class Geometry extends RenderDataHolder {
         /**
+         * 索引数据
+         */
+        indexBuffer: IndexRenderData;
+        /**
          * 创建一个几何体
          */
         constructor();
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData: RenderData): void;
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData: RenderData): void;
         /**
          * 更新顶点索引数据
          */
@@ -2413,7 +2405,7 @@ declare module feng3d {
          */
         private onLensMatrixChanged(event);
         private onSpaceTransformChanged(event);
-        activate(renderDataHolder: RenderDataHolder): void;
+        activate1(renderDataHolder: RenderDataHolder): void;
         private getuPMatrix();
     }
 }

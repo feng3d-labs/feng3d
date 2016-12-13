@@ -7,10 +7,35 @@ module feng3d {
     export class Geometry extends RenderDataHolder {
 
         /**
+         * 索引数据
+         */
+        public indexBuffer: IndexRenderData;
+
+        /**
 		 * 创建一个几何体
 		 */
         constructor() {
             super();
+        }
+
+		/**
+		 * 激活
+		 * @param renderData	渲染数据
+		 */
+        public activate(renderData: RenderData) {
+
+            renderData.indexBuffer = this.indexBuffer;
+            super.activate(renderData);
+        }
+
+        /**
+		 * 释放
+		 * @param renderData	渲染数据
+		 */
+        public deactivate(renderData: RenderData) {
+
+            renderData.indexBuffer = null;
+            super.deactivate(renderData);
         }
 
 		/**

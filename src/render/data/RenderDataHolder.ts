@@ -9,7 +9,6 @@ module feng3d {
 		//
 		private _subRenderDataHolders: RenderDataHolder[] = [];
 		//
-		public indexBuffer: IndexRenderData;
 		private programBuffer: ProgramRenderData;
 		public attributes: { [name: string]: AttributeRenderData } = {};
 		private uniforms: { [name: string]: UniformRenderData } = {};
@@ -22,7 +21,6 @@ module feng3d {
 
 			super();
 
-			this.addEventListener(Context3DBufferEvent.GET_INDEXBUFFER, this.onGetIndexBuffer, this);
 			this.addEventListener(Context3DBufferEvent.GET_ATTRIBUTEBUFFER, this.onGetAttributeBuffer, this);
 			this.addEventListener(Context3DBufferEvent.GET_UNIFORMBUFFER, this.onGetUniformBuffer, this);
 			this.addEventListener(Context3DBufferEvent.GET_PROGRAMBUFFER, this.onGetProgramBuffer, this);
@@ -56,15 +54,6 @@ module feng3d {
 		public mapShaderParam(shaderParamID: ShaderParamID, param) {
 
 			this.shaderParams[shaderParamID] = param;
-		}
-
-        /**
-         * 处理获取索引缓冲事件
-         */
-		private onGetIndexBuffer(event: Context3DBufferEvent) {
-
-			var eventData: GetIndexBufferEventData = event.data;
-			eventData.buffer = eventData.buffer || this.indexBuffer;
 		}
 
 		/**

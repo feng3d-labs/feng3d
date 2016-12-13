@@ -54,7 +54,7 @@ module feng3d {
 
             var renderDataHolder = object3D.getOrCreateComponentByClass(RenderDataHolder);
 
-            this.camera.activate(renderDataHolder);
+            this.camera.activate1(renderDataHolder);
 
             //绘制对象
             var renderData = RenderData.getInstance(object3D);

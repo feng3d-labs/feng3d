@@ -4,7 +4,7 @@ module feng3d {
      * 3D对象组件
      * @author feng 2016-09-02
      */
-    export class Object3DComponent extends Component {
+    export class Object3DComponent extends RenderDataHolder {
 
         /**
          * 父组件

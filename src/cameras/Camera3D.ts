@@ -66,7 +66,7 @@ module feng3d {
             this._viewProjectionDirty = true;
         }
 
-        public activate(renderDataHolder: RenderDataHolder) {
+        public activate1(renderDataHolder: RenderDataHolder) {
 
             //场景投影矩阵
             renderDataHolder.mapUniform(RenderDataID.uPMatrix, this.getuPMatrix.bind(this));

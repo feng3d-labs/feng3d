@@ -2115,7 +2115,6 @@ var feng3d;
             this.attributes = {};
             this.uniforms = {};
             this.shaderParams = {};
-            this.addEventListener(feng3d.Context3DBufferEvent.GET_INDEXBUFFER, this.onGetIndexBuffer, this);
             this.addEventListener(feng3d.Context3DBufferEvent.GET_ATTRIBUTEBUFFER, this.onGetAttributeBuffer, this);
             this.addEventListener(feng3d.Context3DBufferEvent.GET_UNIFORMBUFFER, this.onGetUniformBuffer, this);
             this.addEventListener(feng3d.Context3DBufferEvent.GET_PROGRAMBUFFER, this.onGetProgramBuffer, this);
@@ -2143,13 +2142,6 @@ var feng3d;
          */
         mapShaderParam(shaderParamID, param) {
             this.shaderParams[shaderParamID] = param;
-        }
-        /**
-         * 处理获取索引缓冲事件
-         */
-        onGetIndexBuffer(event) {
-            var eventData = event.data;
-            eventData.buffer = eventData.buffer || this.indexBuffer;
         }
         /**
          * 处理获取属性缓冲事件
@@ -2276,7 +2268,6 @@ var feng3d;
             this.object3D.activate(this);
             //
             this.prepareProgram();
-            this.prepareIndex();
             this.prepareAttributes();
             this.prepareUniforms();
             this.prepareShaderParams();
@@ -2290,16 +2281,6 @@ var feng3d;
             this.object3D.dispatchChildrenEvent(new feng3d.Context3DBufferEvent(feng3d.Context3DBufferEvent.GET_PROGRAMBUFFER, eventData), Number.MAX_VALUE);
             feng3d.assert(eventData.buffer != null);
             this.programBuffer = eventData.buffer;
-        }
-        /**
-         * 准备索引
-         */
-        prepareIndex() {
-            //从Object3D中获取顶点索引数据
-            var eventData = { buffer: null };
-            this.object3D.dispatchChildrenEvent(new feng3d.Context3DBufferEvent(feng3d.Context3DBufferEvent.GET_INDEXBUFFER, eventData), Number.MAX_VALUE);
-            feng3d.assert(eventData.buffer != null);
-            this.indexBuffer = eventData.buffer;
         }
         /**
          * 准备属性
@@ -2763,10 +2744,6 @@ var feng3d;
      */
     Context3DBufferEvent.GET_ATTRIBUTEBUFFER = "getAttributeBuffer";
     /**
-     * 获取IndexBuffer
-     */
-    Context3DBufferEvent.GET_INDEXBUFFER = "getIndexBuffer";
-    /**
      * 获取ProgramBuffer
      */
     Context3DBufferEvent.GET_PROGRAMBUFFER = "getProgramBuffer";
@@ -2785,12 +2762,6 @@ var feng3d;
     class GetAttributeBufferEventData {
     }
     feng3d.GetAttributeBufferEventData = GetAttributeBufferEventData;
-    /**
-     * 获取IndexBuffer事件数据
-     */
-    class GetIndexBufferEventData {
-    }
-    feng3d.GetIndexBufferEventData = GetIndexBufferEventData;
     /**
      * 获取ProgramBuffer事件数据
      */
@@ -2890,7 +2861,7 @@ var feng3d;
          */
         drawObject3D(object3D) {
             var renderDataHolder = object3D.getOrCreateComponentByClass(feng3d.RenderDataHolder);
-            this.camera.activate(renderDataHolder);
+            this.camera.activate1(renderDataHolder);
             //绘制对象
             var renderData = feng3d.RenderData.getInstance(object3D);
             var object3DBuffer = renderData.getRenderBuffer(this.context3D);
@@ -3126,7 +3097,7 @@ var feng3d;
      * 3D对象组件
      * @author feng 2016-09-02
      */
-    class Object3DComponent extends feng3d.Component {
+    class Object3DComponent extends feng3d.RenderDataHolder {
         /**
          * 构建3D对象组件
          */
@@ -3578,6 +3549,22 @@ var feng3d;
          */
         constructor() {
             super();
+        }
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData) {
+            renderData.indexBuffer = this.indexBuffer;
+            super.activate(renderData);
+        }
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData) {
+            renderData.indexBuffer = null;
+            super.deactivate(renderData);
         }
         /**
          * 更新顶点索引数据
@@ -4079,7 +4066,7 @@ var feng3d;
         onSpaceTransformChanged(event) {
             this._viewProjectionDirty = true;
         }
-        activate(renderDataHolder) {
+        activate1(renderDataHolder) {
             //场景投影矩阵
             renderDataHolder.mapUniform(feng3d.RenderDataID.uPMatrix, this.getuPMatrix.bind(this));
         }
