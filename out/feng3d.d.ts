@@ -1651,7 +1651,6 @@ declare module feng3d {
          * 绘制3D对象
          */
         private drawObject3D(object3D);
-        private getuPMatrix();
     }
 }
 declare module feng3d {
@@ -2392,6 +2391,8 @@ declare module feng3d {
          */
         private onLensMatrixChanged(event);
         private onSpaceTransformChanged(event);
+        activate(renderDataHolder: RenderDataHolder): void;
+        private getuPMatrix();
     }
 }
 declare module feng3d {
@@ -2485,11 +2486,15 @@ declare module feng3d {
     class Material extends RenderDataHolder {
         vertexShaderStr: string;
         fragmentShaderStr: string;
-        pass: MaterialPass;
+        private _pass;
         /**
         * 渲染模式
         */
         renderMode: RenderMode;
+        /**
+         * 渲染通道
+         */
+        pass: MaterialPassBase;
         /**
          * 构建材质
          */
@@ -2529,11 +2534,9 @@ declare module feng3d {
         */
         renderMode: RenderMode;
         /**
-         * 构建颜色材质
-         * @param color 颜色
-         * @param alpha 透明的
+         * 构建线段材质
          */
-        constructor(color?: Color);
+        constructor();
         /**
          * 处理被添加组件事件
          */
@@ -2563,8 +2566,94 @@ declare module feng3d {
 declare module feng3d {
     /**
      * 材质通道
+     * @author feng 2016-05-02
      */
-    class MaterialPass {
+    class MaterialPassBase extends Component {
+    }
+}
+declare module feng3d {
+    /**
+     * 线段材质通道
+     * @author feng 2016-05-02
+     */
+    class SegmentPass extends MaterialPassBase {
+        render(): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 灯光类型
+     * @author feng 2016-12-12
+     */
+    enum LightType {
+        /**
+         * 点光
+         */
+        Point = 0,
+        /**
+         * 方向光
+         */
+        Directional = 1,
+        /**
+         * 聚光灯
+         */
+        Spot = 2,
+    }
+}
+declare module feng3d {
+    /**
+     * 灯光
+     * @author feng 2016-12-12
+     */
+    class Light extends Object3DComponent {
+        /**
+         * 灯光类型
+         */
+        type: LightType;
+        /**
+         * 颜色
+         */
+        color: Color;
+        /**
+         * 镜面反射反射率
+         */
+        specular: number;
+        /**
+         * 漫反射率
+         */
+        diffuse: number;
+    }
+}
+declare module feng3d {
+    /**
+     * 方向光源
+     * @author feng 2016-12-13
+     */
+    class DirectionalLight extends Light {
+        /**
+         * 构建
+         */
+        constructor();
+    }
+}
+declare module feng3d {
+    /**
+     * 点光源
+     * @author feng 2016-12-13
+     */
+    class PointLight extends Light {
+        /**
+         * 最小半径
+         */
+        radius: number;
+        /**
+         * 可照射最大距离
+         */
+        fallOff: number;
+        /**
+         * 构建
+         */
+        constructor();
     }
 }
 declare module feng3d {

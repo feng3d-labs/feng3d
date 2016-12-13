@@ -2837,16 +2837,12 @@ var feng3d;
          * 绘制3D对象
          */
         drawObject3D(object3D) {
-            var context3DBuffer = object3D.getOrCreateComponentByClass(feng3d.RenderDataHolder);
-            //场景投影矩阵
-            context3DBuffer.mapUniform(feng3d.RenderDataID.uPMatrix, this.getuPMatrix.bind(this));
+            var renderDataHolder = object3D.getOrCreateComponentByClass(feng3d.RenderDataHolder);
+            this.camera.activate(renderDataHolder);
             //绘制对象
             var renderData = feng3d.RenderData.getInstance(object3D);
             var object3DBuffer = renderData.getRenderBuffer(this.context3D);
             object3DBuffer.active();
-        }
-        getuPMatrix() {
-            return this.camera.viewProjection;
         }
     }
     feng3d.Renderer = Renderer;
@@ -4030,6 +4026,13 @@ var feng3d;
         }
         onSpaceTransformChanged(event) {
             this._viewProjectionDirty = true;
+        }
+        activate(renderDataHolder) {
+            //场景投影矩阵
+            renderDataHolder.mapUniform(feng3d.RenderDataID.uPMatrix, this.getuPMatrix.bind(this));
+        }
+        getuPMatrix() {
+            return this.viewProjection;
         }
     }
     feng3d.Camera3D = Camera3D;
@@ -5306,8 +5309,19 @@ void main(void) {
             * 渲染模式
             */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
-            this.pass = new feng3d.MaterialPass();
+            this.pass = new feng3d.MaterialPassBase();
             this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
+        }
+        /**
+         * 渲染通道
+         */
+        get pass() {
+            return this._pass;
+        }
+        set pass(value) {
+            this._pass && this.removeComponent(this._pass);
+            this._pass = value;
+            this._pass && this.addComponent(this._pass);
         }
     }
     feng3d.Material = Material;
@@ -5369,11 +5383,9 @@ var feng3d;
      */
     class SegmentMaterial extends feng3d.Material {
         /**
-         * 构建颜色材质
-         * @param color 颜色
-         * @param alpha 透明的
+         * 构建线段材质
          */
-        constructor(color = null) {
+        constructor() {
             super();
             /**
             * 渲染模式
@@ -5413,10 +5425,89 @@ var feng3d;
 (function (feng3d) {
     /**
      * 材质通道
+     * @author feng 2016-05-02
      */
-    class MaterialPass {
+    class MaterialPassBase extends feng3d.Component {
     }
-    feng3d.MaterialPass = MaterialPass;
+    feng3d.MaterialPassBase = MaterialPassBase;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 线段材质通道
+     * @author feng 2016-05-02
+     */
+    class SegmentPass extends feng3d.MaterialPassBase {
+        render() {
+        }
+    }
+    feng3d.SegmentPass = SegmentPass;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 灯光类型
+     * @author feng 2016-12-12
+     */
+    (function (LightType) {
+        /**
+         * 点光
+         */
+        LightType[LightType["Point"] = 0] = "Point";
+        /**
+         * 方向光
+         */
+        LightType[LightType["Directional"] = 1] = "Directional";
+        /**
+         * 聚光灯
+         */
+        LightType[LightType["Spot"] = 2] = "Spot";
+    })(feng3d.LightType || (feng3d.LightType = {}));
+    var LightType = feng3d.LightType;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 灯光
+     * @author feng 2016-12-12
+     */
+    class Light extends feng3d.Object3DComponent {
+    }
+    feng3d.Light = Light;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 方向光源
+     * @author feng 2016-12-13
+     */
+    class DirectionalLight extends feng3d.Light {
+        /**
+         * 构建
+         */
+        constructor() {
+            super();
+            this.type = feng3d.LightType.Directional;
+        }
+    }
+    feng3d.DirectionalLight = DirectionalLight;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 点光源
+     * @author feng 2016-12-13
+     */
+    class PointLight extends feng3d.Light {
+        /**
+         * 构建
+         */
+        constructor() {
+            super();
+            this.type = feng3d.LightType.Point;
+        }
+    }
+    feng3d.PointLight = PointLight;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

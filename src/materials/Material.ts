@@ -21,7 +21,7 @@ void main(void) {
 void main(void) {
     gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }`;
-        pass: MaterialPass;
+        private _pass: MaterialPassBase;
 
         /**
         * 渲染模式
@@ -29,12 +29,27 @@ void main(void) {
         renderMode = RenderMode.TRIANGLES;
 
         /**
+         * 渲染通道
+         */
+        public get pass(): MaterialPassBase {
+
+            return this._pass;
+        }
+
+        public set pass(value: MaterialPassBase) {
+
+            this._pass && this.removeComponent(this._pass);
+            this._pass = value;
+            this._pass && this.addComponent(this._pass);
+        }
+
+        /**
          * 构建材质
          */
         constructor() {
 
             super();
-            this.pass = new MaterialPass();
+            this.pass = new MaterialPassBase();
             this.mapProgram(this.vertexShaderStr, this.fragmentShaderStr);
         }
     }

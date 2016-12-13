@@ -84,10 +84,13 @@
         "src/materials/SegmentMaterial.ts",
         "src/materials/components/MaterialComponent.ts",
         //材质通道
-        "src/materials/passes/MaterialPass.ts",
+        "src/materials/passes/MaterialPassBase.ts",
+        "src/materials/passes/SegmentPass.ts",
         //灯光
         "src/light/LightType.ts",
         "src/light/Light.ts",
+        "src/light/DirectionalLight.ts",
+        "src/light/PointLight.ts",
         //镜头控制
         "src/controllers/ControllerBase.ts",
         "src/controllers/LookAtController.ts"

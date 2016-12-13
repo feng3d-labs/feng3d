@@ -65,5 +65,17 @@ module feng3d {
         private onSpaceTransformChanged(event: TransfromEvent): void {
             this._viewProjectionDirty = true;
         }
+
+        public activate(renderDataHolder: RenderDataHolder) {
+
+            //场景投影矩阵
+            renderDataHolder.mapUniform(RenderDataID.uPMatrix, this.getuPMatrix.bind(this));
+        }
+
+        private getuPMatrix() {
+
+            return this.viewProjection;
+        }
+
     }
 }

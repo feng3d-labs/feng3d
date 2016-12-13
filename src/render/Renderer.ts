@@ -52,20 +52,14 @@ module feng3d {
          */
         private drawObject3D(object3D: Object3D) {
 
-            var context3DBuffer = object3D.getOrCreateComponentByClass(RenderDataHolder);
+            var renderDataHolder = object3D.getOrCreateComponentByClass(RenderDataHolder);
 
-            //场景投影矩阵
-            context3DBuffer.mapUniform(RenderDataID.uPMatrix, this.getuPMatrix.bind(this));
+            this.camera.activate(renderDataHolder);
 
             //绘制对象
             var renderData = RenderData.getInstance(object3D);
             var object3DBuffer = renderData.getRenderBuffer(this.context3D);
             object3DBuffer.active();
-        }
-
-        private getuPMatrix() {
-
-            return this.camera.viewProjection;
         }
     }
 }

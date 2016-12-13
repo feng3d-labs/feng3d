@@ -12,11 +12,9 @@ module feng3d {
         renderMode = RenderMode.LINES;
 
         /**
-         * 构建颜色材质
-         * @param color 颜色
-         * @param alpha 透明的
+         * 构建线段材质
          */
-        constructor(color: Color = null) {
+        constructor() {
 
             super();
         }

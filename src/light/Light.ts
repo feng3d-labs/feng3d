@@ -15,5 +15,15 @@ module feng3d {
          * 颜色
          */
         public color: Color;
+
+        /**
+         * 镜面反射反射率
+         */
+        public specular: number;
+
+        /**
+         * 漫反射率
+         */
+        public diffuse: number;
     }
 }
