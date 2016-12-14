@@ -1167,6 +1167,22 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 渲染参数
+     * @author feng 2016-12-14
+     */
+    class ShaderParams {
+        /**
+         * 渲染模式
+         */
+        renderMode: RenderMode;
+        /**
+         * 重置
+         */
+        reset(): void;
+    }
+}
+declare module feng3d {
+    /**
      * 渲染数据拥有者
      * @author feng 2016-6-7
      */
@@ -1226,9 +1242,9 @@ declare module feng3d {
             [name: string]: Matrix3D | Vector3D;
         };
         /**
-         * 渲染模式
+         * 渲染参数
          */
-        renderMode: RenderMode;
+        shaderParams: ShaderParams;
         /**
          * 绘制
          */

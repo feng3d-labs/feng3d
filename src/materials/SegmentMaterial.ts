@@ -26,7 +26,7 @@ module feng3d {
         public activate(renderData: RenderAtomic) {
 
             //
-            renderData.renderMode = this.renderMode;
+            renderData.shaderParams.renderMode = this.renderMode;
             //
             super.activate(renderData);
         }
@@ -37,7 +37,7 @@ module feng3d {
 		 */
         public deactivate(renderData: RenderAtomic) {
 
-            renderData.renderMode = RenderMode.DEFAULT;
+            renderData.shaderParams.renderMode = RenderMode.DEFAULT;
             super.deactivate(renderData);
         }
     }

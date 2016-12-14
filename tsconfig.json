@@ -37,8 +37,9 @@
         "src/mathlib/PlaneClassification.ts",
         //渲染
         "src/render/consts/RenderMode.ts",
+        "src/render/data/ShaderParams.ts",
         "src/render/data/RenderDataHolder.ts",
-        "src/render/data/RenderData.ts",
+        "src/render/data/RenderAtomic.ts",
         "src/render/data/RenderDataItems.ts",
         "src/render/utils/ShaderCodeUtils.ts",
         "src/render/utils/RenderBufferPool.ts",

@@ -27,9 +27,9 @@ module feng3d {
         public uniforms: { [name: string]: Matrix3D | Vector3D; } = {};
 
         /**
-         * 渲染模式
+         * 渲染参数
          */
-        public renderMode = RenderMode.TRIANGLES;
+        public shaderParams = new ShaderParams();
 
         /**
          * 绘制  
@@ -111,7 +111,7 @@ module feng3d {
             var buffer = context3DPool.getIndexBuffer(context3D, indexBuffer.indices);
             context3D.bindBuffer(indexBuffer.target, buffer);
             context3D.lineWidth(1);
-            context3D.drawElements(this.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+            context3D.drawElements(this.shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
         }
     }
 }

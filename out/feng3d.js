@@ -2102,6 +2102,33 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 渲染参数
+     * @author feng 2016-12-14
+     */
+    class ShaderParams {
+        constructor() {
+            /**
+             * 渲染模式
+             */
+            this.renderMode = feng3d.RenderMode.TRIANGLES;
+        }
+        /**
+         * 重置
+         */
+        reset() {
+            defaultShaderParams = defaultShaderParams || new ShaderParams();
+            var propertyNames = Object.getOwnPropertyNames(this);
+            propertyNames.forEach(name => {
+                this[name] = defaultShaderParams[name];
+            });
+        }
+    }
+    feng3d.ShaderParams = ShaderParams;
+    var defaultShaderParams;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 渲染数据拥有者
      * @author feng 2016-6-7
      */
@@ -2182,9 +2209,9 @@ var feng3d;
              */
             this.uniforms = {};
             /**
-             * 渲染模式
+             * 渲染参数
              */
-            this.renderMode = feng3d.RenderMode.TRIANGLES;
+            this.shaderParams = new feng3d.ShaderParams();
         }
         /**
          * 绘制
@@ -2252,7 +2279,7 @@ var feng3d;
             var buffer = feng3d.context3DPool.getIndexBuffer(context3D, indexBuffer.indices);
             context3D.bindBuffer(indexBuffer.target, buffer);
             context3D.lineWidth(1);
-            context3D.drawElements(this.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+            context3D.drawElements(this.shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
         }
     }
     feng3d.RenderAtomic = RenderAtomic;
@@ -5278,7 +5305,7 @@ var feng3d;
          */
         activate(renderData) {
             //
-            renderData.renderMode = this.renderMode;
+            renderData.shaderParams.renderMode = this.renderMode;
             //
             super.activate(renderData);
         }
@@ -5287,7 +5314,7 @@ var feng3d;
          * @param renderData	渲染数据
          */
         deactivate(renderData) {
-            renderData.renderMode = feng3d.RenderMode.DEFAULT;
+            renderData.shaderParams.renderMode = feng3d.RenderMode.DEFAULT;
             super.deactivate(renderData);
         }
     }
