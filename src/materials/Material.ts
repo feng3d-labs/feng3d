@@ -62,7 +62,7 @@ void main(void) {
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderData) {
+        public activate(renderData: RenderAtomic) {
 
             //
             super.activate(renderData);
@@ -74,7 +74,7 @@ void main(void) {
 		 * 释放
 		 * @param renderData	渲染数据
 		 */
-        public deactivate(renderData: RenderData) {
+        public deactivate(renderData: RenderAtomic) {
 
             renderData.programBuffer = null;
             super.deactivate(renderData);

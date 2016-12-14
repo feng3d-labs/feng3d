@@ -26,7 +26,7 @@ module feng3d {
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderData) {
+        public activate(renderData: RenderAtomic) {
 
             renderData.indexBuffer = this.indexBuffer;
             //
@@ -42,7 +42,7 @@ module feng3d {
 		 * 释放
 		 * @param renderData	渲染数据
 		 */
-        public deactivate(renderData: RenderData) {
+        public deactivate(renderData: RenderAtomic) {
 
             renderData.indexBuffer = null;
             //

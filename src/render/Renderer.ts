@@ -6,60 +6,32 @@ module feng3d {
      */
     export class Renderer {
 
-        private context3D: WebGLRenderingContext;
-        private shaderProgram: WebGLProgram;
-        private scene: Scene3D;
-        private camera: Camera3D
-        private renderData = new RenderData();
-
-        /**
-         * 构建渲染器
-         * @param context3D    webgl渲染上下文
-         * @param scene 场景
-         * @param camera 摄像机对象
-         */
-        constructor(context3D: WebGLRenderingContext, scene: Scene3D, camera: Camera3D) {
-            this.context3D = context3D;
-            this.scene = scene;
-            this.camera = camera;
-
-            this.initGL();
-        }
-
-        /**
-         * 初始化GL
-         */
-        private initGL() {
-            this.context3D.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-            this.context3D.clearDepth(1.0);                 // Clear everything
-            this.context3D.enable(this.context3D.DEPTH_TEST);           // Enable depth testing
-            this.context3D.depthFunc(this.context3D.LEQUAL);            // Near things obscure far things
-        }
+        private renderData = new RenderAtomic();
 
         /**
 		 * 渲染
 		 */
-        public render() {
-            this.context3D.clear(this.context3D.COLOR_BUFFER_BIT | this.context3D.DEPTH_BUFFER_BIT);
+        public render(context3D: WebGLRenderingContext, scene: Scene3D, camera: Camera3D) {
+            context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
 
             //绘制对象
-            this.camera.activate(this.renderData);
+            camera.activate(this.renderData);
 
-            var renderables = this.scene.getRenderables();
+            var renderables = scene.getRenderables();
             renderables.forEach(element => {
-                this.drawObject3D(element);
+                this.drawObject3D(element, context3D);
             });
 
-            this.camera.deactivate(this.renderData);
+            camera.deactivate(this.renderData);
         }
 
         /**
          * 绘制3D对象
          */
-        private drawObject3D(object3D: Object3D) {
+        private drawObject3D(object3D: Object3D, context3D: WebGLRenderingContext) {
 
             object3D.activate(this.renderData);
-            this.renderData.draw(this.context3D);
+            this.renderData.draw(context3D);
             object3D.deactivate(this.renderData);
         }
     }

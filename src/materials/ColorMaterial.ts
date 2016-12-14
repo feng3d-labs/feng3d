@@ -57,7 +57,7 @@ void main(void) {
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderData) {
+        public activate(renderData: RenderAtomic) {
 
             renderData.programBuffer = this.programBuffer;
             renderData.uniforms[RenderDataID.diffuseInput_fc_vector] = new Vector3D(this._color.r, this._color.g, this._color.b, this._color.a);
@@ -69,7 +69,7 @@ void main(void) {
 		 * 释放
 		 * @param renderData	渲染数据
 		 */
-        public deactivate(renderData: RenderData) {
+        public deactivate(renderData: RenderAtomic) {
 
             renderData.programBuffer = null;
             delete renderData.uniforms[RenderDataID.diffuseInput_fc_vector];

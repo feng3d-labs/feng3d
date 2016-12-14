@@ -70,7 +70,7 @@ module feng3d {
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderData) {
+        public activate(renderData: RenderAtomic) {
 
             //
             renderData.uniforms[RenderDataID.uPMatrix] = this.viewProjection;
@@ -82,7 +82,7 @@ module feng3d {
 		 * 释放
 		 * @param renderData	渲染数据
 		 */
-        public deactivate(renderData: RenderData) {
+        public deactivate(renderData: RenderAtomic) {
 
             delete renderData.uniforms[RenderDataID.uPMatrix];
             super.deactivate(renderData);

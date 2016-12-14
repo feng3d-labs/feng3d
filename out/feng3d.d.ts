@@ -1180,12 +1180,12 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderData): void;
+        activate(renderData: RenderAtomic): void;
         /**
          * 释放
          * @param renderData	渲染数据
          */
-        deactivate(renderData: RenderData): void;
+        deactivate(renderData: RenderAtomic): void;
         /**
          * 添加组件到指定位置
          * @param component		被添加的组件
@@ -1201,10 +1201,10 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 3D对象渲染数据
+     * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      * @author feng 2016-06-20
      */
-    class RenderData {
+    class RenderAtomic {
         /**
          * 顶点索引缓冲
          */
@@ -1229,53 +1229,25 @@ declare module feng3d {
          * 渲染模式
          */
         renderMode: RenderMode;
-        private renderBufferMap;
-        getRenderBuffer(context3D: WebGLRenderingContext): RenderBuffer;
         /**
          * 绘制
          */
         draw(context3D: WebGLRenderingContext): void;
-    }
-}
-declare module feng3d {
-    /**
-     * 渲染缓冲
-     * @author feng 2016-06-20
-     */
-    class RenderBuffer {
         /**
-         * 3D上下文
-         */
-        private context3D;
-        /**
-         * 渲染数据
-         */
-        private renderData;
-        /**
-         * 构建渲染缓冲
-         * @param context3D     3D环境
-         * @param renderData    渲染数据
-         */
-        constructor(context3D: WebGLRenderingContext, renderData: RenderData);
-        /**
-         * 激活缓冲
-         */
-        active(): void;
-        /**
-         * 激活程序
-         */
-        activeProgram(): void;
+        * 激活程序
+        */
+        private activeProgram(context3D);
         /**
          * 激活属性
          */
-        private activeAttributes();
+        private activeAttributes(context3D);
         /**
          * 激活常量
          */
-        private activeUniforms();
+        private activeUniforms(context3D);
         /**
          */
-        private draw();
+        private dodraw(context3D);
     }
 }
 declare module feng3d {
@@ -1464,30 +1436,15 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class Renderer {
-        private context3D;
-        private shaderProgram;
-        private scene;
-        private camera;
         private renderData;
-        /**
-         * 构建渲染器
-         * @param context3D    webgl渲染上下文
-         * @param scene 场景
-         * @param camera 摄像机对象
-         */
-        constructor(context3D: WebGLRenderingContext, scene: Scene3D, camera: Camera3D);
-        /**
-         * 初始化GL
-         */
-        private initGL();
         /**
          * 渲染
          */
-        render(): void;
+        render(context3D: WebGLRenderingContext, scene: Scene3D, camera: Camera3D): void;
         /**
          * 绘制3D对象
          */
-        private drawObject3D(object3D);
+        private drawObject3D(object3D, context3D);
     }
 }
 declare module feng3d {
@@ -1577,7 +1534,7 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class View3D {
-        private context3d;
+        private context3D;
         private _camera;
         private _scene;
         private renderer;
@@ -1597,6 +1554,10 @@ declare module feng3d {
          * @param camera    摄像机
          */
         constructor(canvas: any, scene?: Scene3D, camera?: Camera3D);
+        /**
+         * 初始化GL
+         */
+        private initGL();
         /** 3d场景 */
         scene: Scene3D;
         /**
@@ -1778,12 +1739,12 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderData): void;
+        activate(renderData: RenderAtomic): void;
         /**
          * 释放
          * @param renderData	渲染数据
          */
-        deactivate(renderData: RenderData): void;
+        deactivate(renderData: RenderAtomic): void;
     }
     /**
      * 变换事件(3D状态发生改变、位置、旋转、缩放)
@@ -1950,12 +1911,12 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderData): void;
+        activate(renderData: RenderAtomic): void;
         /**
          * 释放
          * @param renderData	渲染数据
          */
-        deactivate(renderData: RenderData): void;
+        deactivate(renderData: RenderAtomic): void;
         /**
          * 更新顶点索引数据
          */
@@ -2256,12 +2217,12 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderData): void;
+        activate(renderData: RenderAtomic): void;
         /**
          * 释放
          * @param renderData	渲染数据
          */
-        deactivate(renderData: RenderData): void;
+        deactivate(renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -2373,12 +2334,12 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderData): void;
+        activate(renderData: RenderAtomic): void;
         /**
          * 释放
          * @param renderData	渲染数据
          */
-        deactivate(renderData: RenderData): void;
+        deactivate(renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -2404,12 +2365,12 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderData): void;
+        activate(renderData: RenderAtomic): void;
         /**
          * 释放
          * @param renderData	渲染数据
          */
-        deactivate(renderData: RenderData): void;
+        deactivate(renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -2430,12 +2391,12 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderData): void;
+        activate(renderData: RenderAtomic): void;
         /**
          * 释放
          * @param renderData	渲染数据
          */
-        deactivate(renderData: RenderData): void;
+        deactivate(renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {

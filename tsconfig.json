@@ -39,7 +39,6 @@
         "src/render/consts/RenderMode.ts",
         "src/render/data/RenderDataHolder.ts",
         "src/render/data/RenderData.ts",
-        "src/render/data/RenderBuffer.ts",
         "src/render/data/RenderDataItems.ts",
         "src/render/utils/ShaderCodeUtils.ts",
         "src/render/utils/RenderBufferPool.ts",
