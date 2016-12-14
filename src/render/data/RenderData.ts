@@ -6,8 +6,6 @@ module feng3d {
      */
     export class RenderData {
 
-        object3D: Object3D
-
         /**
          * 顶点索引缓冲
          */
@@ -26,30 +24,12 @@ module feng3d {
         /**
          * 常量数据列表
          */
-        uniforms: { [name: string]: Matrix3D | Vec4; } = {};
+        uniforms: { [name: string]: Matrix3D | Vector3D; } = {};
 
         /**
          * 渲染模式
          */
         renderMode = RenderMode.TRIANGLES;
-
-        /**
-         * 渲染数据字典
-         */
-        private static renderDataMap = new Map<Object3D, RenderData>();
-
-        /**
-         * 获取3D对象渲染数据实例
-         */
-        static getInstance(object3D: Object3D) {
-
-            var renderData = this.renderDataMap.get(object3D);
-            if (!renderData) {
-                renderData = new RenderData(object3D);
-                this.renderDataMap.push(object3D, renderData);
-            }
-            return renderData;
-        }
 
         private renderBufferMap = new Map<WebGLRenderingContext, RenderBuffer>();
 
@@ -64,10 +44,12 @@ module feng3d {
         }
 
         /**
-         * 构建3D对象渲染数据
+         * 绘制  
          */
-        constructor(object3D: Object3D) {
-            this.object3D = object3D;
+        public draw(context3D: WebGLRenderingContext) {
+
+            var object3DBuffer = this.getRenderBuffer(context3D);
+            object3DBuffer.active();
         }
     }
 }

@@ -10,6 +10,7 @@ module feng3d {
         private shaderProgram: WebGLProgram;
         private scene: Scene3D;
         private camera: Camera3D
+        private renderData = new RenderData();
 
         /**
          * 构建渲染器
@@ -41,10 +42,15 @@ module feng3d {
         public render() {
             this.context3D.clear(this.context3D.COLOR_BUFFER_BIT | this.context3D.DEPTH_BUFFER_BIT);
 
+            //绘制对象
+            this.camera.activate(this.renderData);
+
             var renderables = this.scene.getRenderables();
             renderables.forEach(element => {
                 this.drawObject3D(element);
             });
+
+            this.camera.deactivate(this.renderData);
         }
 
         /**
@@ -52,16 +58,9 @@ module feng3d {
          */
         private drawObject3D(object3D: Object3D) {
 
-            //绘制对象
-            var renderData = RenderData.getInstance(object3D);
-
-            this.camera.activate(renderData);
-            object3D.activate(renderData);
-
-            // renderData.draw(this.context3D);
-
-            var object3DBuffer = renderData.getRenderBuffer(this.context3D);
-            object3DBuffer.active();
+            object3D.activate(this.renderData);
+            this.renderData.draw(this.context3D);
+            object3D.deactivate(this.renderData);
         }
     }
 }

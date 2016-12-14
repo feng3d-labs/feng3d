@@ -82,11 +82,4 @@ module feng3d {
          */
         stride: number;
     }
-
-    /**
-     * 渲染常量向量类型
-     */
-    export interface Vec4 {
-        x: number, y: number, z: number, w: number;
-    }
 }

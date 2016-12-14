@@ -30,7 +30,7 @@ module feng3d {
         /**
          * 激活缓冲
          */
-        active() {
+        public active() {
 
             this.activeProgram();
             this.activeAttributes();

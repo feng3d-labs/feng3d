@@ -2172,10 +2172,7 @@ var feng3d;
      * @author feng 2016-06-20
      */
     class RenderData {
-        /**
-         * 构建3D对象渲染数据
-         */
-        constructor(object3D) {
+        constructor() {
             /**
              * 属性数据列表
              */
@@ -2189,18 +2186,6 @@ var feng3d;
              */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
             this.renderBufferMap = new feng3d.Map();
-            this.object3D = object3D;
-        }
-        /**
-         * 获取3D对象渲染数据实例
-         */
-        static getInstance(object3D) {
-            var renderData = this.renderDataMap.get(object3D);
-            if (!renderData) {
-                renderData = new RenderData(object3D);
-                this.renderDataMap.push(object3D, renderData);
-            }
-            return renderData;
         }
         getRenderBuffer(context3D) {
             var renderBuffer = this.renderBufferMap.get(context3D);
@@ -2210,11 +2195,14 @@ var feng3d;
             }
             return renderBuffer;
         }
+        /**
+         * 绘制
+         */
+        draw(context3D) {
+            var object3DBuffer = this.getRenderBuffer(context3D);
+            object3DBuffer.active();
+        }
     }
-    /**
-     * 渲染数据字典
-     */
-    RenderData.renderDataMap = new feng3d.Map();
     feng3d.RenderData = RenderData;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -2663,6 +2651,7 @@ var feng3d;
          * @param camera 摄像机对象
          */
         constructor(context3D, scene, camera) {
+            this.renderData = new feng3d.RenderData();
             this.context3D = context3D;
             this.scene = scene;
             this.camera = camera;
@@ -2682,21 +2671,21 @@ var feng3d;
          */
         render() {
             this.context3D.clear(this.context3D.COLOR_BUFFER_BIT | this.context3D.DEPTH_BUFFER_BIT);
+            //绘制对象
+            this.camera.activate(this.renderData);
             var renderables = this.scene.getRenderables();
             renderables.forEach(element => {
                 this.drawObject3D(element);
             });
+            this.camera.deactivate(this.renderData);
         }
         /**
          * 绘制3D对象
          */
         drawObject3D(object3D) {
-            //绘制对象
-            var renderData = feng3d.RenderData.getInstance(object3D);
-            this.camera.activate(renderData);
-            object3D.activate(renderData);
-            var object3DBuffer = renderData.getRenderBuffer(this.context3D);
-            object3DBuffer.active();
+            object3D.activate(this.renderData);
+            this.renderData.draw(this.context3D);
+            object3D.deactivate(this.renderData);
         }
     }
     feng3d.Renderer = Renderer;

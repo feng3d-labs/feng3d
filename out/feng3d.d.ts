@@ -1205,7 +1205,6 @@ declare module feng3d {
      * @author feng 2016-06-20
      */
     class RenderData {
-        object3D: Object3D;
         /**
          * 顶点索引缓冲
          */
@@ -1224,26 +1223,18 @@ declare module feng3d {
          * 常量数据列表
          */
         uniforms: {
-            [name: string]: Matrix3D | Vec4;
+            [name: string]: Matrix3D | Vector3D;
         };
         /**
          * 渲染模式
          */
         renderMode: RenderMode;
-        /**
-         * 渲染数据字典
-         */
-        private static renderDataMap;
-        /**
-         * 获取3D对象渲染数据实例
-         */
-        static getInstance(object3D: Object3D): RenderData;
         private renderBufferMap;
         getRenderBuffer(context3D: WebGLRenderingContext): RenderBuffer;
         /**
-         * 构建3D对象渲染数据
+         * 绘制
          */
-        constructor(object3D: Object3D);
+        draw(context3D: WebGLRenderingContext): void;
     }
 }
 declare module feng3d {
@@ -1348,15 +1339,6 @@ declare module feng3d {
          * 数据步长
          */
         stride: number;
-    }
-    /**
-     * 渲染常量向量类型
-     */
-    interface Vec4 {
-        x: number;
-        y: number;
-        z: number;
-        w: number;
     }
 }
 declare module feng3d {
@@ -1486,6 +1468,7 @@ declare module feng3d {
         private shaderProgram;
         private scene;
         private camera;
+        private renderData;
         /**
          * 构建渲染器
          * @param context3D    webgl渲染上下文
