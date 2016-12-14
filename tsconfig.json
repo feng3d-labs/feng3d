@@ -17,6 +17,10 @@
         "src/component/event/ComponentEvent.ts",
         "src/component/IComponent.ts",
         "src/component/Component.ts",
+        //加载模块
+        "src/net/Loader.ts",
+        "src/net/LoaderEvent.ts",
+        "src/net/LoaderDataFormat.ts",
         //
         "src/debug/assert.ts",
         //基础工具

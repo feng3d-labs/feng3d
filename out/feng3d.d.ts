@@ -445,6 +445,124 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 加载类
+     * @author feng 2016-12-14
+     */
+    class Loader extends EventDispatcher {
+        private request;
+        private image;
+        /**
+         * 数据类型
+         */
+        dataFormat: string;
+        private url;
+        /**
+         * 已加载的字节数
+         */
+        bytesLoaded: number;
+        /**
+         * 文件中压缩的字节数
+         */
+        bytesTotal: number;
+        /**
+         * 加载内容
+         */
+        content: any;
+        /**
+         * 加载资源
+         * @param url   路径
+         */
+        load(url: string): void;
+        /**
+         * 加载文本
+         * @param url   路径
+         */
+        loadText(url: string): void;
+        /**
+         * 加载二进制
+         * @param url   路径
+         */
+        loadBinary(url: string): void;
+        /**
+         * 加载图片
+         * @param url   路径
+         */
+        loadImage(url: string): void;
+        /**
+         * 使用XMLHttpRequest加载
+         */
+        private xmlHttpRequestLoad();
+        /**
+         * 请求进度回调
+         */
+        private onRequestProgress(event);
+        /**
+         * 请求状态变化回调
+         */
+        private onRequestReadystatechange(ev);
+        /**
+         * 加载图片完成回调
+         */
+        private onImageLoad(event);
+        /**
+         * 加载图片出错回调
+         */
+        private onImageError(event);
+    }
+}
+declare module feng3d {
+    /**
+     * 加载事件
+     * @author feng 2016-12-14
+     */
+    class LoaderEvent extends Event {
+        /**
+         * 加载进度发生改变时调度。
+         */
+        static PROGRESS: string;
+        /**
+         * 加载完成后调度。
+         */
+        static COMPLETE: string;
+        /**
+         * 加载出错时调度。
+         */
+        static ERROR: string;
+        /**
+         * 加载类
+         */
+        data: Loader;
+        /**
+         * 创建一个作为参数传递给事件侦听器的 Event 对象。
+         * @param type 事件的类型，可以作为 Event.type 访问。
+         * @param data 加载类
+         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
+         */
+        constructor(type: string, data?: Loader, bubbles?: boolean);
+    }
+}
+declare module feng3d {
+    /**
+     * 加载数据类型
+     * @author feng 2016-12-14
+     */
+    class LoaderDataFormat {
+        /**
+         * 以原始二进制数据形式接收下载的数据。
+         */
+        static BINARY: string;
+        /**
+         * 以文本形式接收已下载的数据。
+         */
+        static TEXT: string;
+        /**
+         * 图片数据
+         */
+        static IMAGE: string;
+    }
+}
+declare module feng3d {
+    /**
      * 断言
      * @b			判定为真的表达式
      * @msg			在表达式为假时将输出的错误信息
