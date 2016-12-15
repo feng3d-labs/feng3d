@@ -1344,9 +1344,9 @@ declare module feng3d {
          */
         indexBuffer: IndexRenderData;
         /**
-         * 渲染程序缓存
+         * 渲染程序名称（路径）
          */
-        programBuffer: ProgramRenderData;
+        shaderName: string;
         /**
          * 属性数据列表
          */
@@ -2392,9 +2392,7 @@ declare module feng3d {
      * @author feng 2016-05-02
      */
     class Material extends RenderDataHolder {
-        protected programBuffer: ProgramRenderData;
-        vertexShaderStr: string;
-        fragmentShaderStr: string;
+        protected shaderName: string;
         private _pass;
         /**
         * 渲染模式
@@ -2426,9 +2424,6 @@ declare module feng3d {
      * @author feng 2016-05-02
      */
     class ColorMaterial extends Material {
-        vertexShaderStr: string;
-        fragmentShaderStr: string;
-        private _color;
         /**
          * 颜色
          */

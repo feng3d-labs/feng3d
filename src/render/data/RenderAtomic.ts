@@ -12,9 +12,9 @@ module feng3d {
         public indexBuffer: IndexRenderData;
 
         /**
-         * 渲染程序缓存
+         * 渲染程序名称（路径）
          */
-        public programBuffer: ProgramRenderData;
+        public shaderName: string;
 
         /**
          * 属性数据列表
@@ -36,8 +36,10 @@ module feng3d {
          */
         public draw(context3D: WebGLRenderingContext) {
 
+            var programBuffer = getProgramBuffer(this.shaderName);
+            if (programBuffer == null || programBuffer.fragmentCode == null || programBuffer.vertexCode == null)
+                return;
             //渲染程序
-            var programBuffer = this.programBuffer;
             var shaderProgram = context3DPool.getWebGLProgram(context3D, programBuffer.vertexCode, programBuffer.fragmentCode);
             context3D.useProgram(shaderProgram);
             //
@@ -45,7 +47,6 @@ module feng3d {
             activeUniforms(context3D, shaderProgram, this.uniforms);
             dodraw(context3D, this.shaderParams, this.indexBuffer);
         }
-
     }
 
     /**
@@ -121,5 +122,32 @@ module feng3d {
             default:
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
+    }
+
+    //
+    var shaderMap: { [name: string]: ProgramRenderData } = {};
+
+    function getProgramBuffer(shaderName: string): ProgramRenderData {
+
+        if (shaderName == null)
+            return null;
+
+        if (shaderMap[shaderName])
+            return shaderMap[shaderName];
+
+        //
+        var programRenderData = new ProgramRenderData();
+        var shaderLoader = new Loader();
+        shaderLoader.addEventListener(LoaderEvent.COMPLETE, function (event: LoaderEvent): void {
+            programRenderData.vertexCode = event.data.content;
+        }, null)
+        shaderLoader.loadText("feng3d/shaders/" + shaderName + ".vertex.glslx");
+        var shaderLoader1 = new Loader();
+        shaderLoader1.addEventListener(LoaderEvent.COMPLETE, function (event: LoaderEvent): void {
+            programRenderData.fragmentCode = event.data.content;
+        }, null)
+        shaderLoader1.loadText("feng3d/shaders/" + shaderName + ".fragment.glslx");
+        shaderMap[shaderName] = programRenderData;
+        return programRenderData;
     }
 }

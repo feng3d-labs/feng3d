@@ -6,23 +6,8 @@ module feng3d {
      */
     export class Material extends RenderDataHolder {
 
-        protected programBuffer: ProgramRenderData;
+        protected shaderName: string = "default";
 
-        vertexShaderStr = //
-        `
-attribute vec3 vaPosition;
-
-uniform mat4 uMVMatrix;
-uniform mat4 uPMatrix;
-
-void main(void) {
-    gl_Position = uPMatrix * uMVMatrix * vec4(vaPosition, 1.0);
-}`;
-        fragmentShaderStr = //
-        `
-void main(void) {
-    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-}`;
         private _pass: MaterialPassBase;
 
         /**
@@ -52,10 +37,6 @@ void main(void) {
 
             super();
             this.pass = new MaterialPassBase();
-
-            this.programBuffer = new ProgramRenderData();
-            this.programBuffer.vertexCode = this.vertexShaderStr;
-            this.programBuffer.fragmentCode = this.fragmentShaderStr;
         }
 
         /**
@@ -67,7 +48,7 @@ void main(void) {
             //
             super.activate(renderData);
             //
-            renderData.programBuffer = this.programBuffer;
+            renderData.shaderName = this.shaderName;
         }
 
         /**
@@ -76,7 +57,7 @@ void main(void) {
 		 */
         public deactivate(renderData: RenderAtomic) {
 
-            renderData.programBuffer = null;
+            renderData.shaderName = null;
             super.deactivate(renderData);
         }
     }
