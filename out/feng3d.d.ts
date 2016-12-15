@@ -1367,21 +1367,6 @@ declare module feng3d {
          * 绘制
          */
         draw(context3D: WebGLRenderingContext): void;
-        /**
-        * 激活程序
-        */
-        private activeProgram(context3D);
-        /**
-         * 激活属性
-         */
-        private activeAttributes(context3D);
-        /**
-         * 激活常量
-         */
-        private activeUniforms(context3D);
-        /**
-         */
-        private dodraw(context3D);
     }
 }
 declare module feng3d {
@@ -1398,14 +1383,6 @@ declare module feng3d {
          * 片段渲染程序代码
          */
         fragmentCode: string;
-        /**
-        * 获取程序常量列表
-        */
-        getUniforms(): {
-            [name: string]: {
-                type: string;
-            };
-        };
     }
     /**
      * 索引渲染数据
@@ -1445,39 +1422,6 @@ declare module feng3d {
          * 数据步长
          */
         stride: number;
-    }
-}
-declare module feng3d {
-    /**
-     * 渲染代码工具
-     * @author feng 2016-06-22
-     */
-    class ShaderCodeUtils {
-        /**
-         * 获取程序属性列表
-         */
-        static getAttributes(code: string): {
-            [name: string]: {
-                type: string;
-            };
-        };
-        /**
-         * 获取程序常量列表
-         */
-        static getUniforms(code: string): {
-            [name: string]: {
-                type: string;
-            };
-        };
-        /**
-         * 获取属性gpu地址
-         */
-        static getAttribLocations(context3D: WebGLRenderingContext, vertexCode: string, fragmentCode: string): {
-            [name: string]: {
-                type: string;
-                location?: number;
-            };
-        };
     }
 }
 declare module feng3d {

@@ -36,82 +36,90 @@ module feng3d {
          */
         public draw(context3D: WebGLRenderingContext) {
 
-            this.activeProgram(context3D);
-            this.activeAttributes(context3D);
-            this.activeUniforms(context3D);
-            this.dodraw(context3D);
-        }
-
-        /**
-        * 激活程序
-        */
-        private activeProgram(context3D: WebGLRenderingContext) {
-
+            //渲染程序
             var programBuffer = this.programBuffer;
             var shaderProgram = context3DPool.getWebGLProgram(context3D, programBuffer.vertexCode, programBuffer.fragmentCode);
             context3D.useProgram(shaderProgram);
+            //
+            activeAttributes(context3D, shaderProgram, this.attributes);
+            activeUniforms(context3D, shaderProgram, this.uniforms);
+            dodraw(context3D, this.shaderParams, this.indexBuffer);
         }
 
-        /**
-         * 激活属性
-         */
-        private activeAttributes(context3D: WebGLRenderingContext) {
+    }
 
-            var attributes = this.attributes;
-            var locations = ShaderCodeUtils.getAttribLocations(context3D, this.programBuffer.vertexCode, this.programBuffer.fragmentCode);
+    /**
+     * 激活属性
+     */
+    function activeAttributes(context3D: WebGLRenderingContext, shaderProgram: WebGLProgram, attributes: { [name: string]: AttributeRenderData }) {
 
-            for (var name in locations) {
-                if (locations.hasOwnProperty(name)) {
-                    var element = locations[name];
-                    var buffer = attributes[name];
-
-                    var squareVerticesBuffer = context3DPool.getVABuffer(context3D, buffer.data);
-
-                    context3D.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, squareVerticesBuffer);
-                    context3D.vertexAttribPointer(element.location, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
-                }
-            }
+        var numAttributes = context3D.getProgramParameter(shaderProgram, context3D.ACTIVE_ATTRIBUTES);
+        var i = 0;
+        while (i < numAttributes) {
+            var activeInfo = context3D.getActiveAttrib(shaderProgram, i++);
+            var buffer = attributes[activeInfo.name];
+            setContext3DAttribute(context3D, shaderProgram, activeInfo, buffer.data);
         }
+    }
 
-        /**
-         * 激活常量
-         */
-        private activeUniforms(context3D: WebGLRenderingContext) {
+    /**
+     * 激活常量
+     */
+    function activeUniforms(context3D: WebGLRenderingContext, shaderProgram: WebGLProgram, uniforms: { [name: string]: Matrix3D | Vector3D; }) {
 
-            var uniforms = this.uniforms;
-
-            //获取属性在gpu中地址
-            var programBuffer = this.programBuffer;
-            var shaderProgram = context3DPool.getWebGLProgram(context3D, programBuffer.vertexCode, programBuffer.fragmentCode);
-
-            for (var name in uniforms) {
-                if (uniforms.hasOwnProperty(name)) {
-                    var data = uniforms[name];
-                    var location = context3D.getUniformLocation(shaderProgram, name);
-
-                    if (as(data, Matrix3D) != null) {
-                        var mat4: Matrix3D = as(data, Matrix3D);
-                        context3D.uniformMatrix4fv(location, false, (<Matrix3D>data).rawData);
-                    } else if (as(data, Vector3D) != null) {
-                        var vec4: Vector3D = as(data, Vector3D);
-                        context3D.uniform4f(location, vec4.x, vec4.y, vec4.z, vec4.w);
-                    } else {
-                        throw `无法识别的uniform类型 ${name} ${uniforms[name]}`;
-                    }
-
-                }
-            }
+        var numUniforms = context3D.getProgramParameter(shaderProgram, context3D.ACTIVE_UNIFORMS);
+        var i = 0;
+        while (i < numUniforms) {
+            var activeInfo = context3D.getActiveUniform(shaderProgram, i++);
+            var data = uniforms[activeInfo.name];
+            setContext3DUniform(context3D, shaderProgram, activeInfo, data);
         }
+    }
 
-        /**
-         */
-        private dodraw(context3D: WebGLRenderingContext) {
+    /**
+     */
+    function dodraw(context3D: WebGLRenderingContext, shaderParams: ShaderParams, indexBuffer: IndexRenderData) {
 
-            var indexBuffer = this.indexBuffer;
-            var buffer = context3DPool.getIndexBuffer(context3D, indexBuffer.indices);
-            context3D.bindBuffer(indexBuffer.target, buffer);
-            context3D.lineWidth(1);
-            context3D.drawElements(this.shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+        var buffer = context3DPool.getIndexBuffer(context3D, indexBuffer.indices);
+        context3D.bindBuffer(indexBuffer.target, buffer);
+        context3D.lineWidth(1);
+        context3D.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+    }
+
+    /**
+     * 设置环境属性数据
+     */
+    function setContext3DAttribute(context3D: WebGLRenderingContext, shaderProgram: WebGLProgram, activeInfo: WebGLActiveInfo, data) {
+
+        var location = context3D.getAttribLocation(shaderProgram, activeInfo.name);
+        context3D.enableVertexAttribArray(location);
+        //
+        var squareVerticesBuffer = context3DPool.getVABuffer(context3D, data);
+        context3D.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, squareVerticesBuffer);
+        switch (activeInfo.type) {
+            case WebGLRenderingContext.FLOAT_VEC3:
+                context3D.vertexAttribPointer(location, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
+                break;
+            default:
+                throw `无法识别的attribute类型 ${activeInfo.name} ${data}`;
+        }
+    }
+
+    /**
+     * 设置环境Uniform数据
+     */
+    function setContext3DUniform(context3D: WebGLRenderingContext, shaderProgram: WebGLProgram, activeInfo: WebGLActiveInfo, data) {
+
+        var location = context3D.getUniformLocation(shaderProgram, activeInfo.name);
+        switch (activeInfo.type) {
+            case WebGLRenderingContext.FLOAT_MAT4:
+                context3D.uniformMatrix4fv(location, false, data.rawData);
+                break;
+            case WebGLRenderingContext.FLOAT_VEC4:
+                context3D.uniform4f(location, data.x, data.y, data.z, data.w);
+                break;
+            default:
+                throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
     }
 }

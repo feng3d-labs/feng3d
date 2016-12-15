@@ -15,24 +15,6 @@ module feng3d {
          * 片段渲染程序代码
          */
         fragmentCode: string;
-
-        /**
-        * 获取程序常量列表
-        */
-        getUniforms() {
-
-            var vertexUniforms: { [name: string]: { type: string } } = ShaderCodeUtils.getUniforms(this.vertexCode);
-            var fragmentUniforms: { [name: string]: { type: string } } = ShaderCodeUtils.getUniforms(this.fragmentCode);
-            var uniforms = vertexUniforms;
-
-            for (var name in fragmentUniforms) {
-                if (fragmentUniforms.hasOwnProperty(name)) {
-                    var element = fragmentUniforms[name];
-                    uniforms[name] = element;
-                }
-            }
-            return uniforms;
-        }
     }
 
 	/**
