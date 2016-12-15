@@ -1,23 +1,6 @@
 module feng3d {
 
 	/**
-     * 渲染程序数据
-     * @author feng 2016-05-09
-     */
-    export class ProgramRenderData {
-
-        /**
-         * 顶点渲染程序代码
-         */
-        vertexCode: string;
-
-        /**
-         * 片段渲染程序代码
-         */
-        fragmentCode: string;
-    }
-
-	/**
 	 * 索引渲染数据
 	 */
     export class IndexRenderData {

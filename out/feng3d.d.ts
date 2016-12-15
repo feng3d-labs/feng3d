@@ -562,6 +562,34 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    class ShaderLoader extends EventDispatcher {
+        private request;
+        private shaderName;
+        /**
+         * 顶点渲染程序代码
+         */
+        vertexCode: string;
+        /**
+         * 片段渲染程序代码
+         */
+        fragmentCode: string;
+        readonly isOk: boolean;
+        /**
+         * 加载渲染程序
+         * @param url   路径
+         */
+        constructor(shaderName: string);
+        /**
+         * 顶点着色器加载完成
+         */
+        private onVertexComplete(event);
+        /**
+         * 片段着色器加载完成
+         */
+        private onFragmentComplete(event);
+    }
+}
+declare module feng3d {
     /**
      * 断言
      * @b			判定为真的表达式
@@ -1370,20 +1398,6 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    /**
-     * 渲染程序数据
-     * @author feng 2016-05-09
-     */
-    class ProgramRenderData {
-        /**
-         * 顶点渲染程序代码
-         */
-        vertexCode: string;
-        /**
-         * 片段渲染程序代码
-         */
-        fragmentCode: string;
-    }
     /**
      * 索引渲染数据
      */

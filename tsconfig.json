@@ -21,6 +21,7 @@
         "src/net/Loader.ts",
         "src/net/LoaderEvent.ts",
         "src/net/LoaderDataFormat.ts",
+        "src/net/ShaderLoader.ts",
         //
         "src/debug/assert.ts",
         //基础工具

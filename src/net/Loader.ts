@@ -81,7 +81,7 @@ module feng3d {
         private xmlHttpRequestLoad() {
 
             this.request = new XMLHttpRequest();
-            this.request.open('Get', this.url, true)
+            this.request.open('Get', this.url, true);
             this.request.responseType = this.dataFormat == LoaderDataFormat.BINARY ? "arraybuffer" : "";
             this.request.onreadystatechange = this.onRequestReadystatechange.bind(this);
             this.request.onprogress = this.onRequestProgress.bind(this);

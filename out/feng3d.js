@@ -816,6 +816,42 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    class ShaderLoader extends feng3d.EventDispatcher {
+        /**
+         * 加载渲染程序
+         * @param url   路径
+         */
+        constructor(shaderName) {
+            super();
+            this.shaderName = shaderName;
+            //
+            var shaderLoader = new feng3d.Loader();
+            shaderLoader.addEventListener(feng3d.LoaderEvent.COMPLETE, this.onVertexComplete, this);
+            shaderLoader.loadText("feng3d/shaders/" + shaderName + ".vertex.glslx");
+            var shaderLoader1 = new feng3d.Loader();
+            shaderLoader1.addEventListener(feng3d.LoaderEvent.COMPLETE, this.onFragmentComplete, this);
+            shaderLoader1.loadText("feng3d/shaders/" + shaderName + ".fragment.glslx");
+        }
+        get isOk() {
+            return this.vertexCode != null && this.fragmentCode != null;
+        }
+        /**
+         * 顶点着色器加载完成
+         */
+        onVertexComplete(event) {
+            this.vertexCode = event.data.content;
+        }
+        /**
+         * 片段着色器加载完成
+         */
+        onFragmentComplete(event) {
+            this.fragmentCode = event.data.content;
+        }
+    }
+    feng3d.ShaderLoader = ShaderLoader;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 断言
      * @b			判定为真的表达式
@@ -2371,11 +2407,11 @@ var feng3d;
          * 绘制
          */
         draw(context3D) {
-            var programBuffer = getProgramBuffer(this.shaderName);
-            if (programBuffer == null || programBuffer.fragmentCode == null || programBuffer.vertexCode == null)
+            var shaderLoader = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new feng3d.ShaderLoader(this.shaderName);
+            if (shaderLoader == null || shaderLoader.fragmentCode == null || shaderLoader.vertexCode == null)
                 return;
             //渲染程序
-            var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, programBuffer.vertexCode, programBuffer.fragmentCode);
+            var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, shaderLoader.vertexCode, shaderLoader.fragmentCode);
             context3D.useProgram(shaderProgram);
             //
             activeAttributes(context3D, shaderProgram, this.attributes);
@@ -2451,36 +2487,9 @@ var feng3d;
     }
     //
     var shaderMap = {};
-    function getProgramBuffer(shaderName) {
-        if (shaderName == null)
-            return null;
-        if (shaderMap[shaderName])
-            return shaderMap[shaderName];
-        //
-        var programRenderData = new feng3d.ProgramRenderData();
-        var shaderLoader = new feng3d.Loader();
-        shaderLoader.addEventListener(feng3d.LoaderEvent.COMPLETE, function (event) {
-            programRenderData.vertexCode = event.data.content;
-        }, null);
-        shaderLoader.loadText("feng3d/shaders/" + shaderName + ".vertex.glslx");
-        var shaderLoader1 = new feng3d.Loader();
-        shaderLoader1.addEventListener(feng3d.LoaderEvent.COMPLETE, function (event) {
-            programRenderData.fragmentCode = event.data.content;
-        }, null);
-        shaderLoader1.loadText("feng3d/shaders/" + shaderName + ".fragment.glslx");
-        shaderMap[shaderName] = programRenderData;
-        return programRenderData;
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 渲染程序数据
-     * @author feng 2016-05-09
-     */
-    class ProgramRenderData {
-    }
-    feng3d.ProgramRenderData = ProgramRenderData;
     /**
      * 索引渲染数据
      */

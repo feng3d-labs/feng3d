@@ -36,11 +36,11 @@ module feng3d {
          */
         public draw(context3D: WebGLRenderingContext) {
 
-            var programBuffer = getProgramBuffer(this.shaderName);
-            if (programBuffer == null || programBuffer.fragmentCode == null || programBuffer.vertexCode == null)
+            var shaderLoader = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new ShaderLoader(this.shaderName);
+            if (shaderLoader == null || shaderLoader.fragmentCode == null || shaderLoader.vertexCode == null)
                 return;
             //渲染程序
-            var shaderProgram = context3DPool.getWebGLProgram(context3D, programBuffer.vertexCode, programBuffer.fragmentCode);
+            var shaderProgram = context3DPool.getWebGLProgram(context3D, shaderLoader.vertexCode, shaderLoader.fragmentCode);
             context3D.useProgram(shaderProgram);
             //
             activeAttributes(context3D, shaderProgram, this.attributes);
@@ -125,29 +125,5 @@ module feng3d {
     }
 
     //
-    var shaderMap: { [name: string]: ProgramRenderData } = {};
-
-    function getProgramBuffer(shaderName: string): ProgramRenderData {
-
-        if (shaderName == null)
-            return null;
-
-        if (shaderMap[shaderName])
-            return shaderMap[shaderName];
-
-        //
-        var programRenderData = new ProgramRenderData();
-        var shaderLoader = new Loader();
-        shaderLoader.addEventListener(LoaderEvent.COMPLETE, function (event: LoaderEvent): void {
-            programRenderData.vertexCode = event.data.content;
-        }, null)
-        shaderLoader.loadText("feng3d/shaders/" + shaderName + ".vertex.glslx");
-        var shaderLoader1 = new Loader();
-        shaderLoader1.addEventListener(LoaderEvent.COMPLETE, function (event: LoaderEvent): void {
-            programRenderData.fragmentCode = event.data.content;
-        }, null)
-        shaderLoader1.loadText("feng3d/shaders/" + shaderName + ".fragment.glslx");
-        shaderMap[shaderName] = programRenderData;
-        return programRenderData;
-    }
+    var shaderMap: { [name: string]: ShaderLoader } = {};
 }
