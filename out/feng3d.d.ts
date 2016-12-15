@@ -562,7 +562,12 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    /**
+     * 着色器加载器
+     * @author feng 2016-12-15
+     */
     class ShaderLoader extends EventDispatcher {
+        static shadersRoot: string;
         private request;
         private shaderName;
         /**

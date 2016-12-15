@@ -816,6 +816,10 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 着色器加载器
+     * @author feng 2016-12-15
+     */
     class ShaderLoader extends feng3d.EventDispatcher {
         /**
          * 加载渲染程序
@@ -827,10 +831,10 @@ var feng3d;
             //
             var shaderLoader = new feng3d.Loader();
             shaderLoader.addEventListener(feng3d.LoaderEvent.COMPLETE, this.onVertexComplete, this);
-            shaderLoader.loadText("feng3d/shaders/" + shaderName + ".vertex.glslx");
+            shaderLoader.loadText(ShaderLoader.shadersRoot + shaderName + ".vertex.glsl");
             var shaderLoader1 = new feng3d.Loader();
             shaderLoader1.addEventListener(feng3d.LoaderEvent.COMPLETE, this.onFragmentComplete, this);
-            shaderLoader1.loadText("feng3d/shaders/" + shaderName + ".fragment.glslx");
+            shaderLoader1.loadText(ShaderLoader.shadersRoot + shaderName + ".fragment.glsl");
         }
         get isOk() {
             return this.vertexCode != null && this.fragmentCode != null;
@@ -848,6 +852,7 @@ var feng3d;
             this.fragmentCode = event.data.content;
         }
     }
+    ShaderLoader.shadersRoot = "feng3d/shaders/";
     feng3d.ShaderLoader = ShaderLoader;
 })(feng3d || (feng3d = {}));
 var feng3d;

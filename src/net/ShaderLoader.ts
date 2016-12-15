@@ -1,6 +1,12 @@
 module feng3d {
 
+    /**
+     * 着色器加载器
+     * @author feng 2016-12-15
+     */
     export class ShaderLoader extends EventDispatcher {
+
+        public static shadersRoot = "feng3d/shaders/";
 
         private request: XMLHttpRequest;
 
@@ -32,10 +38,10 @@ module feng3d {
             //
             var shaderLoader = new Loader();
             shaderLoader.addEventListener(LoaderEvent.COMPLETE, this.onVertexComplete, this)
-            shaderLoader.loadText("feng3d/shaders/" + shaderName + ".vertex.glslx");
+            shaderLoader.loadText(ShaderLoader.shadersRoot + shaderName + ".vertex.glsl");
             var shaderLoader1 = new Loader();
             shaderLoader1.addEventListener(LoaderEvent.COMPLETE, this.onFragmentComplete, this)
-            shaderLoader1.loadText("feng3d/shaders/" + shaderName + ".fragment.glslx");
+            shaderLoader1.loadText(ShaderLoader.shadersRoot + shaderName + ".fragment.glsl");
         }
 
         /**
