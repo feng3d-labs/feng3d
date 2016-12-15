@@ -2413,7 +2413,7 @@ var feng3d;
          */
         draw(context3D) {
             var shaderLoader = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new feng3d.ShaderLoader(this.shaderName);
-            if (shaderLoader == null || shaderLoader.fragmentCode == null || shaderLoader.vertexCode == null)
+            if (!shaderLoader.isOk)
                 return;
             //渲染程序
             var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, shaderLoader.vertexCode, shaderLoader.fragmentCode);

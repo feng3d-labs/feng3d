@@ -37,7 +37,7 @@ module feng3d {
         public draw(context3D: WebGLRenderingContext) {
 
             var shaderLoader = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new ShaderLoader(this.shaderName);
-            if (shaderLoader == null || shaderLoader.fragmentCode == null || shaderLoader.vertexCode == null)
+            if (!shaderLoader.isOk)
                 return;
             //渲染程序
             var shaderProgram = context3DPool.getWebGLProgram(context3D, shaderLoader.vertexCode, shaderLoader.fragmentCode);
