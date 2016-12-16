@@ -528,17 +528,6 @@ declare module feng3d {
          * 加载出错时调度。
          */
         static ERROR: string;
-        /**
-         * 加载类
-         */
-        data: Loader;
-        /**
-         * 创建一个作为参数传递给事件侦听器的 Event 对象。
-         * @param type 事件的类型，可以作为 Event.type 访问。
-         * @param data 加载类
-         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
-         */
-        constructor(type: string, data?: Loader, bubbles?: boolean);
     }
 }
 declare module feng3d {
@@ -562,37 +551,6 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    /**
-     * 着色器加载器
-     * @author feng 2016-12-15
-     */
-    class ShaderLoader extends EventDispatcher {
-        static shadersRoot: string;
-        private request;
-        private shaderName;
-        /**
-         * 顶点渲染程序代码
-         */
-        vertexCode: string;
-        /**
-         * 片段渲染程序代码
-         */
-        fragmentCode: string;
-        readonly isOk: boolean;
-        /**
-         * 加载渲染程序
-         * @param url   路径
-         */
-        constructor(shaderName: string);
-        /**
-         * 顶点着色器加载完成
-         */
-        private onVertexComplete(event);
-        /**
-         * 片段着色器加载完成
-         */
-        private onFragmentComplete(event);
-    }
 }
 declare module feng3d {
     /**
@@ -709,6 +667,15 @@ declare module feng3d {
      * 如果a为b类型则返回，否则返回null
      */
     function as(a: any, b: Function): any;
+}
+declare module feng3d {
+    /**
+     * 渲染代码库
+     * @author feng 2016-12-16
+     */
+    class ShaderLib {
+        static getShaderCode(shaderName: string): string;
+    }
 }
 declare module feng3d {
     /**
@@ -1403,6 +1370,22 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    /**
+     * 渲染程序
+     */
+    class ShaderData {
+        private shaderName;
+        /**
+         * 顶点渲染程序代码
+         */
+        vertexCode: string;
+        /**
+         * 片段渲染程序代码
+         */
+        fragmentCode: string;
+        readonly isOk: boolean;
+        constructor(shaderName: string);
+    }
     /**
      * 索引渲染数据
      */

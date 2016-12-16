@@ -1,5 +1,35 @@
 module feng3d {
 
+    /**
+     * 渲染程序
+     */
+    export class ShaderData {
+
+        private shaderName: string;
+
+        /**
+         * 顶点渲染程序代码
+         */
+        public vertexCode: string;
+
+        /**
+         * 片段渲染程序代码
+         */
+        public fragmentCode: string;
+
+        public get isOk() {
+
+            this.vertexCode = this.vertexCode || ShaderLib.getShaderCode(this.shaderName + ".vertex.glsl");
+            this.fragmentCode = this.fragmentCode || ShaderLib.getShaderCode(this.shaderName + ".fragment.glsl");
+
+            return this.vertexCode != null && this.fragmentCode != null;
+        }
+
+        constructor(shaderName: string) {
+            this.shaderName = shaderName;
+        }
+    }
+
 	/**
 	 * 索引渲染数据
 	 */

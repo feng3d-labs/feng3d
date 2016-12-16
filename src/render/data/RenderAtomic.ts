@@ -36,7 +36,7 @@ module feng3d {
          */
         public draw(context3D: WebGLRenderingContext) {
 
-            var shaderLoader = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new ShaderLoader(this.shaderName);
+            var shaderLoader = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new ShaderData(this.shaderName);
             if (!shaderLoader.isOk)
                 return;
             //渲染程序
@@ -125,5 +125,5 @@ module feng3d {
     }
 
     //
-    var shaderMap: { [name: string]: ShaderLoader } = {};
+    var shaderMap: { [name: string]: ShaderData } = {};
 }

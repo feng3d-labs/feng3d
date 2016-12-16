@@ -768,15 +768,6 @@ var feng3d;
      * @author feng 2016-12-14
      */
     class LoaderEvent extends feng3d.Event {
-        /**
-         * 创建一个作为参数传递给事件侦听器的 Event 对象。
-         * @param type 事件的类型，可以作为 Event.type 访问。
-         * @param data 加载类
-         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
-         */
-        constructor(type, data = null, bubbles = false) {
-            super(type, data, bubbles);
-        }
     }
     /**
      * 加载进度发生改变时调度。
@@ -813,47 +804,6 @@ var feng3d;
      */
     LoaderDataFormat.IMAGE = "image";
     feng3d.LoaderDataFormat = LoaderDataFormat;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 着色器加载器
-     * @author feng 2016-12-15
-     */
-    class ShaderLoader extends feng3d.EventDispatcher {
-        /**
-         * 加载渲染程序
-         * @param url   路径
-         */
-        constructor(shaderName) {
-            super();
-            this.shaderName = shaderName;
-            //
-            var shaderLoader = new feng3d.Loader();
-            shaderLoader.addEventListener(feng3d.LoaderEvent.COMPLETE, this.onVertexComplete, this);
-            shaderLoader.loadText(ShaderLoader.shadersRoot + shaderName + ".vertex.glsl");
-            var shaderLoader1 = new feng3d.Loader();
-            shaderLoader1.addEventListener(feng3d.LoaderEvent.COMPLETE, this.onFragmentComplete, this);
-            shaderLoader1.loadText(ShaderLoader.shadersRoot + shaderName + ".fragment.glsl");
-        }
-        get isOk() {
-            return this.vertexCode != null && this.fragmentCode != null;
-        }
-        /**
-         * 顶点着色器加载完成
-         */
-        onVertexComplete(event) {
-            this.vertexCode = event.data.content;
-        }
-        /**
-         * 片段着色器加载完成
-         */
-        onFragmentComplete(event) {
-            this.fragmentCode = event.data.content;
-        }
-    }
-    ShaderLoader.shadersRoot = "feng3d/shaders/";
-    feng3d.ShaderLoader = ShaderLoader;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -1142,6 +1092,107 @@ var feng3d;
         return a;
     }
     feng3d.as = as;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 渲染代码库
+     * @author feng 2016-12-16
+     */
+    class ShaderLib {
+        static getShaderCode(shaderName) {
+            if (shaderMap[shaderName])
+                return shaderMap[shaderName];
+            getShaderLoader(shaderName);
+            return null;
+        }
+    }
+    feng3d.ShaderLib = ShaderLib;
+    /**
+     * 渲染代码字典
+     */
+    var shaderMap = {};
+    /**
+     * 渲染代码加载器字典
+     */
+    var shaderLoaderMap = {};
+    function getShaderLoader(shaderName) {
+        var shaderLoader = shaderLoaderMap[shaderName];
+        if (shaderLoader == null) {
+            shaderLoader = new ShaderLoader();
+            shaderLoader.addEventListener(feng3d.LoaderEvent.COMPLETE, function (event) {
+                shaderMap[shaderLoader.shaderName] = shaderLoader.shaderCode;
+                delete shaderLoaderMap[shaderLoader.shaderName];
+            }, null, Number.MAX_VALUE);
+            shaderLoader.loadText(shaderName);
+        }
+        return shaderLoader;
+    }
+    /**
+     * 着色器加载器
+     * @author feng 2016-12-15
+     */
+    class ShaderLoader extends feng3d.EventDispatcher {
+        /**
+         * 加载shader
+         * @param url   路径
+         */
+        loadText(shaderName) {
+            this.shaderName = shaderName;
+            var url = ShaderLoader.shadersRoot + this.shaderName;
+            var loader = new feng3d.Loader();
+            loader.addEventListener(feng3d.LoaderEvent.COMPLETE, this.onComplete, this);
+            loader.loadText(url);
+        }
+        /**
+         * shader加载完成
+         */
+        onComplete(event) {
+            //#include 正则表达式
+            var includeRegExp = /#include<(.+)>/g;
+            //
+            this.shaderCode = event.data.content;
+            var match = includeRegExp.exec(this.shaderCode);
+            this.subShaders = {};
+            while (match != null) {
+                var subShaderName = match[1];
+                var subShaderCode = ShaderLib.getShaderCode(subShaderName);
+                if (subShaderCode) {
+                    this.shaderCode.replace(match[0], subShaderCode);
+                }
+                else {
+                    var subShaderLoader = getShaderLoader(subShaderName);
+                    subShaderLoader.addEventListener(feng3d.LoaderEvent.COMPLETE, this.onSubComplete, this);
+                }
+                this.subShaders[subShaderName] = match;
+                match = includeRegExp.exec(this.shaderCode);
+            }
+            this.check();
+        }
+        /**
+         * subShader加载完成
+         */
+        onSubComplete(event) {
+            var shaderLoader = event.data;
+            var match = this.subShaders[shaderLoader.shaderName];
+            this.shaderCode.replace(match[0], shaderLoader.shaderCode);
+            delete this.subShaders[shaderLoader.shaderName];
+            //
+            this.check();
+        }
+        /**
+         * 检查是否加载完成
+         */
+        check() {
+            if (Object.getOwnPropertyNames(this.subShaders).length == 0) {
+                this.dispatchEvent(new feng3d.LoaderEvent(feng3d.LoaderEvent.COMPLETE, this));
+            }
+        }
+    }
+    /**
+     * shader根路径
+     */
+    ShaderLoader.shadersRoot = "feng3d/shaders/";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -2412,7 +2463,7 @@ var feng3d;
          * 绘制
          */
         draw(context3D) {
-            var shaderLoader = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new feng3d.ShaderLoader(this.shaderName);
+            var shaderLoader = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new feng3d.ShaderData(this.shaderName);
             if (!shaderLoader.isOk)
                 return;
             //渲染程序
@@ -2495,6 +2546,20 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 渲染程序
+     */
+    class ShaderData {
+        constructor(shaderName) {
+            this.shaderName = shaderName;
+        }
+        get isOk() {
+            this.vertexCode = this.vertexCode || feng3d.ShaderLib.getShaderCode(this.shaderName + ".vertex.glsl");
+            this.fragmentCode = this.fragmentCode || feng3d.ShaderLib.getShaderCode(this.shaderName + ".fragment.glsl");
+            return this.vertexCode != null && this.fragmentCode != null;
+        }
+    }
+    feng3d.ShaderData = ShaderData;
     /**
      * 索引渲染数据
      */

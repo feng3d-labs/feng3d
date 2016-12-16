@@ -32,6 +32,7 @@
         "src/utils/Version.ts",
         "src/utils/is.ts",
         "src/utils/as.ts",
+        "src/utils/ShaderLib.ts",
         //
         "src/mathlib/Color.ts",
         "src/mathlib/MathConsts.ts",
