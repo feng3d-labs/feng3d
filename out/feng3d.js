@@ -1113,7 +1113,7 @@ var feng3d;
          * 应用ShaderMacro
          */
         static applyMacro(shaderCode, macro) {
-            var macroNames = Object.getOwnPropertyNames(macro);
+            var macroNames = Object.keys(macro);
             macroNames = macroNames.sort();
             var macroHeader = "";
             macroNames.forEach(macroName => {
@@ -1214,7 +1214,7 @@ var feng3d;
          * 检查是否加载完成
          */
         check() {
-            if (Object.getOwnPropertyNames(this.subShaders).length == 0) {
+            if (Object.keys(this.subShaders).length == 0) {
                 this.dispatchEvent(new feng3d.LoaderEvent(feng3d.LoaderEvent.COMPLETE, this));
             }
         }
@@ -2393,7 +2393,7 @@ var feng3d;
          */
         reset() {
             defaultShaderParams = defaultShaderParams || new ShaderParams();
-            var propertyNames = Object.getOwnPropertyNames(this);
+            var propertyNames = Object.keys(this);
             propertyNames.forEach(name => {
                 this[name] = defaultShaderParams[name];
             });
@@ -3607,7 +3607,7 @@ var feng3d;
         activate(renderData) {
             renderData.indexBuffer = this.indexBuffer;
             //
-            var attributesNames = Object.getOwnPropertyNames(this.attributes);
+            var attributesNames = Object.keys(this.attributes);
             attributesNames.forEach(element => {
                 renderData.attributes[element] = this.attributes[element];
             });
@@ -3621,7 +3621,7 @@ var feng3d;
         deactivate(renderData) {
             renderData.indexBuffer = null;
             //
-            var attributesNames = Object.getOwnPropertyNames(this.attributes);
+            var attributesNames = Object.keys(this.attributes);
             attributesNames.forEach(element => {
                 delete renderData.attributes[element];
             });

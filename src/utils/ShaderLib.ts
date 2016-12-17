@@ -22,7 +22,7 @@ module feng3d {
          */
         public static applyMacro(shaderCode: string, macro: Object) {
 
-            var macroNames = Object.getOwnPropertyNames(macro);
+            var macroNames = Object.keys(macro);
             macroNames = macroNames.sort();
             var macroHeader = "";
             macroNames.forEach(macroName => {
@@ -148,7 +148,7 @@ module feng3d {
          * 检查是否加载完成
          */
         private check() {
-            if (Object.getOwnPropertyNames(this.subShaders).length == 0) {
+            if (Object.keys(this.subShaders).length == 0) {
                 this.dispatchEvent(new LoaderEvent(LoaderEvent.COMPLETE, this));
             }
         }

@@ -30,7 +30,7 @@ module feng3d {
 
             renderData.indexBuffer = this.indexBuffer;
             //
-            var attributesNames = Object.getOwnPropertyNames(this.attributes);
+            var attributesNames = Object.keys(this.attributes);
             attributesNames.forEach(element => {
                 renderData.attributes[element] = this.attributes[element];
             });
@@ -46,7 +46,7 @@ module feng3d {
 
             renderData.indexBuffer = null;
             //
-            var attributesNames = Object.getOwnPropertyNames(this.attributes);
+            var attributesNames = Object.keys(this.attributes);
             attributesNames.forEach(element => {
                 delete renderData.attributes[element];
             });

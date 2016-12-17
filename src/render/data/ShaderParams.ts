@@ -17,7 +17,7 @@ module feng3d {
         public reset() {
 
             defaultShaderParams = defaultShaderParams || new ShaderParams();
-            var propertyNames = Object.getOwnPropertyNames(this);
+            var propertyNames = Object.keys(this);
             propertyNames.forEach(name => {
                 this[name] = defaultShaderParams[name];
             });
