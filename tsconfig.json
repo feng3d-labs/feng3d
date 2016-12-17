@@ -21,7 +21,6 @@
         "src/net/Loader.ts",
         "src/net/LoaderEvent.ts",
         "src/net/LoaderDataFormat.ts",
-        "src/net/ShaderLoader.ts",
         //
         "src/debug/assert.ts",
         //基础工具
@@ -51,6 +50,7 @@
         "src/render/RenderDataID.ts",
         "src/render/ShaderParamID.ts",
         "src/render/Renderer.ts",
+        "src/render/ShaderMacro.ts",
         //
         "src/core/Object3D.ts",
         "src/core/View3D.ts",

@@ -6,12 +6,41 @@ module feng3d {
      */
     export class ShaderLib {
 
+        /**
+         * 获取shaderCode
+         */
         public static getShaderCode(shaderName: string) {
 
             if (shaderMap[shaderName])
                 return shaderMap[shaderName];
             getShaderLoader(shaderName);
             return null;
+        }
+
+        /**
+         * 应用ShaderMacro
+         */
+        public static applyMacro(shaderCode: string, macro: Object) {
+
+            var macroNames = Object.getOwnPropertyNames(macro);
+            macroNames = macroNames.sort();
+            var macroHeader = "";
+            macroNames.forEach(macroName => {
+                var value = macro[macroName];
+                var valueType = typeof value;
+                switch (valueType) {
+                    case "number":
+                    case "string":
+                        macroHeader += `#define ${macroName} ${value}\n`;
+                        break;
+                    case "boolean":
+                        value && (macroHeader += `#define ${macroName}\n`);
+                        break;
+                    default:
+                        throw new Error(`unknown shaderMacro(${macroName}) type ${valueType}`);
+                }
+            });
+            return macroHeader + shaderCode;
         }
     }
 
@@ -25,6 +54,9 @@ module feng3d {
      */
     var shaderLoaderMap: { [shaderName: string]: ShaderLoader } = {};
 
+    /**
+     * 获取shader加载器
+     */
     function getShaderLoader(shaderName: string) {
 
         var shaderLoader = shaderLoaderMap[shaderName];
@@ -67,7 +99,7 @@ module feng3d {
         public loadText(shaderName: string) {
 
             this.shaderName = shaderName;
-            var url = ShaderLoader.shadersRoot + this.shaderName;
+            var url = ShaderLoader.shadersRoot + this.shaderName + ".glsl";
             var loader = new Loader();
             loader.addEventListener(LoaderEvent.COMPLETE, this.onComplete, this);
             loader.loadText(url);
@@ -88,7 +120,7 @@ module feng3d {
                 var subShaderName = match[1];
                 var subShaderCode = ShaderLib.getShaderCode(subShaderName);
                 if (subShaderCode) {
-                    this.shaderCode.replace(match[0], subShaderCode);
+                    this.shaderCode = this.shaderCode.replace(match[0], subShaderCode);
                 } else {
                     var subShaderLoader = getShaderLoader(subShaderName);
                     subShaderLoader.addEventListener(LoaderEvent.COMPLETE, this.onSubComplete, this)
@@ -106,7 +138,7 @@ module feng3d {
 
             var shaderLoader: ShaderLoader = event.data;
             var match = this.subShaders[shaderLoader.shaderName];
-            this.shaderCode.replace(match[0], shaderLoader.shaderCode);
+            this.shaderCode = this.shaderCode.replace(match[0], shaderLoader.shaderCode);
             delete this.subShaders[shaderLoader.shaderName];
             //
             this.check();

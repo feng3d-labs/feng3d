@@ -20,7 +20,6 @@ module feng3d {
 
             super();
             this.color = color || new Color();
-            this.shaderName = "color";
         }
 
         /**
@@ -30,6 +29,7 @@ module feng3d {
         public activate(renderData: RenderAtomic) {
 
             renderData.uniforms[RenderDataID.diffuseInput_fc_vector] = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
+            renderData.fragmentMacro.ENABLE_COLOR = true;
             //
             super.activate(renderData);
         }
@@ -41,6 +41,7 @@ module feng3d {
         public deactivate(renderData: RenderAtomic) {
 
             delete renderData.uniforms[RenderDataID.diffuseInput_fc_vector];
+            delete renderData.fragmentMacro.ENABLE_COLOR;
             super.deactivate(renderData);
         }
     }

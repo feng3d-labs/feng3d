@@ -1100,11 +1100,38 @@ var feng3d;
      * @author feng 2016-12-16
      */
     class ShaderLib {
+        /**
+         * 获取shaderCode
+         */
         static getShaderCode(shaderName) {
             if (shaderMap[shaderName])
                 return shaderMap[shaderName];
             getShaderLoader(shaderName);
             return null;
+        }
+        /**
+         * 应用ShaderMacro
+         */
+        static applyMacro(shaderCode, macro) {
+            var macroNames = Object.getOwnPropertyNames(macro);
+            macroNames = macroNames.sort();
+            var macroHeader = "";
+            macroNames.forEach(macroName => {
+                var value = macro[macroName];
+                var valueType = typeof value;
+                switch (valueType) {
+                    case "number":
+                    case "string":
+                        macroHeader += `#define ${macroName} ${value}\n`;
+                        break;
+                    case "boolean":
+                        value && (macroHeader += `#define ${macroName}\n`);
+                        break;
+                    default:
+                        throw new Error(`unknown shaderMacro(${macroName}) type ${valueType}`);
+                }
+            });
+            return macroHeader + shaderCode;
         }
     }
     feng3d.ShaderLib = ShaderLib;
@@ -1116,6 +1143,9 @@ var feng3d;
      * 渲染代码加载器字典
      */
     var shaderLoaderMap = {};
+    /**
+     * 获取shader加载器
+     */
     function getShaderLoader(shaderName) {
         var shaderLoader = shaderLoaderMap[shaderName];
         if (shaderLoader == null) {
@@ -1139,7 +1169,7 @@ var feng3d;
          */
         loadText(shaderName) {
             this.shaderName = shaderName;
-            var url = ShaderLoader.shadersRoot + this.shaderName;
+            var url = ShaderLoader.shadersRoot + this.shaderName + ".glsl";
             var loader = new feng3d.Loader();
             loader.addEventListener(feng3d.LoaderEvent.COMPLETE, this.onComplete, this);
             loader.loadText(url);
@@ -1158,7 +1188,7 @@ var feng3d;
                 var subShaderName = match[1];
                 var subShaderCode = ShaderLib.getShaderCode(subShaderName);
                 if (subShaderCode) {
-                    this.shaderCode.replace(match[0], subShaderCode);
+                    this.shaderCode = this.shaderCode.replace(match[0], subShaderCode);
                 }
                 else {
                     var subShaderLoader = getShaderLoader(subShaderName);
@@ -1175,7 +1205,7 @@ var feng3d;
         onSubComplete(event) {
             var shaderLoader = event.data;
             var match = this.subShaders[shaderLoader.shaderName];
-            this.shaderCode.replace(match[0], shaderLoader.shaderCode);
+            this.shaderCode = this.shaderCode.replace(match[0], shaderLoader.shaderCode);
             delete this.subShaders[shaderLoader.shaderName];
             //
             this.check();
@@ -2458,16 +2488,27 @@ var feng3d;
              * 渲染参数
              */
             this.shaderParams = new feng3d.ShaderParams();
+            /**
+             * 顶点宏
+             */
+            this.vertexMacro = {};
+            /**
+             * 片段宏
+             */
+            this.fragmentMacro = {};
         }
         /**
          * 绘制
          */
         draw(context3D) {
-            var shaderLoader = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new feng3d.ShaderData(this.shaderName);
-            if (!shaderLoader.isOk)
+            var shaderData = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new feng3d.ShaderData(this.shaderName);
+            if (!shaderData.isOk)
                 return;
+            //应用宏
+            var vertexCode = feng3d.ShaderLib.applyMacro(shaderData.vertexCode, this.vertexMacro);
+            var fragmentCode = feng3d.ShaderLib.applyMacro(shaderData.fragmentCode, this.fragmentMacro);
             //渲染程序
-            var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, shaderLoader.vertexCode, shaderLoader.fragmentCode);
+            var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);
             //
             activeAttributes(context3D, shaderProgram, this.attributes);
@@ -2554,8 +2595,8 @@ var feng3d;
             this.shaderName = shaderName;
         }
         get isOk() {
-            this.vertexCode = this.vertexCode || feng3d.ShaderLib.getShaderCode(this.shaderName + ".vertex.glsl");
-            this.fragmentCode = this.fragmentCode || feng3d.ShaderLib.getShaderCode(this.shaderName + ".fragment.glsl");
+            this.vertexCode = this.vertexCode || feng3d.ShaderLib.getShaderCode(this.shaderName + ".vertex");
+            this.fragmentCode = this.fragmentCode || feng3d.ShaderLib.getShaderCode(this.shaderName + ".fragment");
             return this.vertexCode != null && this.fragmentCode != null;
         }
     }
@@ -5416,7 +5457,6 @@ var feng3d;
         constructor(color = null) {
             super();
             this.color = color || new feng3d.Color();
-            this.shaderName = "color";
         }
         /**
          * 激活
@@ -5424,6 +5464,7 @@ var feng3d;
          */
         activate(renderData) {
             renderData.uniforms[feng3d.RenderDataID.diffuseInput_fc_vector] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
+            renderData.fragmentMacro.ENABLE_COLOR = true;
             //
             super.activate(renderData);
         }
@@ -5433,6 +5474,7 @@ var feng3d;
          */
         deactivate(renderData) {
             delete renderData.uniforms[feng3d.RenderDataID.diffuseInput_fc_vector];
+            delete renderData.fragmentMacro.ENABLE_COLOR;
             super.deactivate(renderData);
         }
     }
@@ -5454,6 +5496,7 @@ var feng3d;
             * 渲染模式
             */
             this.renderMode = feng3d.RenderMode.LINES;
+            this.shaderName = "segment";
         }
         /**
          * 激活

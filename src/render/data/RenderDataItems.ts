@@ -19,8 +19,8 @@ module feng3d {
 
         public get isOk() {
 
-            this.vertexCode = this.vertexCode || ShaderLib.getShaderCode(this.shaderName + ".vertex.glsl");
-            this.fragmentCode = this.fragmentCode || ShaderLib.getShaderCode(this.shaderName + ".fragment.glsl");
+            this.vertexCode = this.vertexCode || ShaderLib.getShaderCode(this.shaderName + ".vertex");
+            this.fragmentCode = this.fragmentCode || ShaderLib.getShaderCode(this.shaderName + ".fragment");
 
             return this.vertexCode != null && this.fragmentCode != null;
         }

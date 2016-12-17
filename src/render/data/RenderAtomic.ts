@@ -32,15 +32,28 @@ module feng3d {
         public shaderParams = new ShaderParams();
 
         /**
+         * 顶点宏
+         */
+        public vertexMacro: VertexMacro = {};
+
+        /**
+         * 片段宏
+         */
+        public fragmentMacro: FragmentMacro = <any>{};
+
+        /**
          * 绘制  
          */
         public draw(context3D: WebGLRenderingContext) {
 
-            var shaderLoader = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new ShaderData(this.shaderName);
-            if (!shaderLoader.isOk)
+            var shaderData = shaderMap[this.shaderName] = shaderMap[this.shaderName] || new ShaderData(this.shaderName);
+            if (!shaderData.isOk)
                 return;
+            //应用宏
+            var vertexCode = ShaderLib.applyMacro(shaderData.vertexCode, this.vertexMacro);
+            var fragmentCode = ShaderLib.applyMacro(shaderData.fragmentCode, this.fragmentMacro);
             //渲染程序
-            var shaderProgram = context3DPool.getWebGLProgram(context3D, shaderLoader.vertexCode, shaderLoader.fragmentCode);
+            var shaderProgram = context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);
             //
             activeAttributes(context3D, shaderProgram, this.attributes);

@@ -551,8 +551,6 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-}
-declare module feng3d {
     /**
      * 断言
      * @b			判定为真的表达式
@@ -674,7 +672,14 @@ declare module feng3d {
      * @author feng 2016-12-16
      */
     class ShaderLib {
+        /**
+         * 获取shaderCode
+         */
         static getShaderCode(shaderName: string): string;
+        /**
+         * 应用ShaderMacro
+         */
+        static applyMacro(shaderCode: string, macro: Object): string;
     }
 }
 declare module feng3d {
@@ -1364,6 +1369,14 @@ declare module feng3d {
          */
         shaderParams: ShaderParams;
         /**
+         * 顶点宏
+         */
+        vertexMacro: VertexMacro;
+        /**
+         * 片段宏
+         */
+        fragmentMacro: FragmentMacro;
+        /**
          * 绘制
          */
         draw(context3D: WebGLRenderingContext): void;
@@ -1525,6 +1538,21 @@ declare module feng3d {
          * 绘制3D对象
          */
         private drawObject3D(object3D, context3D);
+    }
+}
+declare module feng3d {
+    /**
+     * 顶点宏
+     * @author feng 2016-12-17
+     */
+    interface VertexMacro {
+    }
+    /**
+     * 片段宏
+     * @author feng 2016-12-17
+     */
+    interface FragmentMacro {
+        ENABLE_COLOR: boolean;
     }
 }
 declare module feng3d {
