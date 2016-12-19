@@ -104,6 +104,7 @@
         "src/light/PointLight.ts",
         //镜头控制
         "src/controllers/ControllerBase.ts",
-        "src/controllers/LookAtController.ts"
+        "src/controllers/LookAtController.ts",
+        "src/controllers/FPSController.ts"
     ]
 }
