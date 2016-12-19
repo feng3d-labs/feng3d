@@ -3075,7 +3075,7 @@ declare module feng3d {
          * 上次鼠标位置
          */
         private preMousePoint;
-        constructor(transform: Transform);
+        constructor(transform?: Transform);
         target: Transform;
         /**
          * 初始化

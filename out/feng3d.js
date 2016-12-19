@@ -6278,7 +6278,7 @@ var feng3d;
      * @author feng 2016-12-19
      */
     class FPSController extends feng3d.ControllerBase {
-        constructor(transform) {
+        constructor(transform = null) {
             super(transform);
             /**
              * 按键记录
@@ -6328,6 +6328,8 @@ var feng3d;
          * 手动应用更新到目标3D对象
          */
         update(interpolate = true) {
+            if (this.target == null)
+                return;
             //计算加速度
             var accelerationVec = new feng3d.Vector3D();
             for (var key in this.keyDirectionDic) {
@@ -6357,6 +6359,8 @@ var feng3d;
          * 处理鼠标移动事件
          */
         onMouseMove(event) {
+            if (this.target == null)
+                return;
             if (this.preMousePoint == null) {
                 this.preMousePoint = { x: event.clientX, y: event.clientY };
                 return;

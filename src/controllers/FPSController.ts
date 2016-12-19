@@ -31,7 +31,7 @@ module feng3d {
          */
         private preMousePoint: { x: number, y: number };
 
-        constructor(transform: Transform) {
+        constructor(transform: Transform = null) {
             super(transform);
             this.init();
         }
@@ -76,6 +76,9 @@ module feng3d {
          */
         public update(interpolate: boolean = true): void {
 
+            if (this.target == null)
+                return;
+
             //计算加速度
             var accelerationVec = new Vector3D();
             for (var key in this.keyDirectionDic) {
@@ -106,6 +109,9 @@ module feng3d {
          * 处理鼠标移动事件
          */
         private onMouseMove(event: MouseEvent) {
+
+            if (this.target == null)
+                return;
 
             if (this.preMousePoint == null) {
                 this.preMousePoint = { x: event.clientX, y: event.clientY };
