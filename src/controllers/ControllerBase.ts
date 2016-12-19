@@ -1,12 +1,16 @@
 module feng3d {
     export class ControllerBase {
-        protected _targetObject: Object3D;
+
+        /**
+         * 控制对象
+         */
+        protected _target: Transform;
 
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(targetObject: Object3D) {
-            this._targetObject = targetObject;
+        constructor(target: Transform) {
+            this.target = target;
         }
 
         /**
@@ -16,15 +20,12 @@ module feng3d {
             throw new Error("Abstract method");
         }
 
-        public get targetObject(): Object3D {
-            return this._targetObject;
+        public get target(): Transform {
+            return this._target;
         }
 
-        public set targetObject(val: Object3D) {
-            if (this._targetObject == val)
-                return;
-
-            this._targetObject = val;
+        public set target(val: Transform) {
+            this._target = val;
         }
     }
 }

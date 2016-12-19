@@ -6204,8 +6204,8 @@ var feng3d;
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(targetObject) {
-            this._targetObject = targetObject;
+        constructor(target) {
+            this.target = target;
         }
         /**
          * 手动应用更新到目标3D对象
@@ -6213,13 +6213,11 @@ var feng3d;
         update(interpolate = true) {
             throw new Error("Abstract method");
         }
-        get targetObject() {
-            return this._targetObject;
+        get target() {
+            return this._target;
         }
-        set targetObject(val) {
-            if (this._targetObject == val)
-                return;
-            this._targetObject = val;
+        set target(val) {
+            this._target = val;
         }
     }
     feng3d.ControllerBase = ControllerBase;
@@ -6227,8 +6225,8 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     class LookAtController extends feng3d.ControllerBase {
-        constructor(targetObject = null, lookAtObject = null) {
-            super(targetObject);
+        constructor(target = null, lookAtObject = null) {
+            super(target);
             this._origin = new feng3d.Vector3D(0.0, 0.0, 0.0);
             this._upAxis = feng3d.Vector3D.Y_AXIS;
             this._pos = new feng3d.Vector3D();
@@ -6258,19 +6256,163 @@ var feng3d;
             this._lookAtObject = value;
         }
         update(interpolate = true) {
-            if (this._targetObject) {
+            if (this._target) {
                 if (this._lookAtPosition) {
-                    this._targetObject.transform.lookAt(this.lookAtPosition, this._upAxis);
+                    this._target.lookAt(this.lookAtPosition, this._upAxis);
                 }
                 else if (this._lookAtObject) {
-                    this._pos.x = this._lookAtObject.transform.x;
-                    this._pos.y = this._lookAtObject.transform.y;
-                    this._pos.z = this._lookAtObject.transform.z;
-                    this._targetObject.transform.lookAt(this._pos, this._upAxis);
+                    this._pos.x = this._lookAtObject.x;
+                    this._pos.y = this._lookAtObject.y;
+                    this._pos.z = this._lookAtObject.z;
+                    this._target.lookAt(this._pos, this._upAxis);
                 }
             }
         }
     }
     feng3d.LookAtController = LookAtController;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * FPS模式控制器
+     * @author feng 2016-12-19
+     */
+    class FPSController extends feng3d.ControllerBase {
+        constructor(transform) {
+            super(transform);
+            /**
+             * 按键记录
+             */
+            this.keyDownDic = {};
+            /**
+             * 按键方向字典
+             */
+            this.keyDirectionDic = {};
+            /**
+             * 加速度
+             */
+            this.acceleration = 0.2;
+            this.init();
+        }
+        get target() {
+            return this._target;
+        }
+        set target(value) {
+            if (this._target != null) {
+                window.removeEventListener("keydown", this.onKeydown.bind(this));
+                window.removeEventListener("keyup", this.onKeyup.bind(this));
+                window.removeEventListener("mousemove", this.onMouseMove.bind(this));
+            }
+            this._target = value;
+            if (this._target != null) {
+                window.addEventListener("keydown", this.onKeydown.bind(this));
+                window.addEventListener("keyup", this.onKeyup.bind(this));
+                window.addEventListener("mousemove", this.onMouseMove.bind(this));
+                this.preMousePoint = null;
+                this.velocity = new feng3d.Vector3D();
+                this.keyDownDic = {};
+            }
+        }
+        /**
+         * 初始化
+         */
+        init() {
+            this.keyDirectionDic["a"] = new feng3d.Vector3D(-1, 0, 0); //左
+            this.keyDirectionDic["d"] = new feng3d.Vector3D(1, 0, 0); //右
+            this.keyDirectionDic["w"] = new feng3d.Vector3D(0, 0, 1); //前
+            this.keyDirectionDic["s"] = new feng3d.Vector3D(0, 0, -1); //后
+            this.keyDirectionDic["e"] = new feng3d.Vector3D(0, 1, 0); //上
+            this.keyDirectionDic["q"] = new feng3d.Vector3D(0, -1, 0); //下
+        }
+        /**
+         * 手动应用更新到目标3D对象
+         */
+        update(interpolate = true) {
+            //计算加速度
+            var accelerationVec = new feng3d.Vector3D();
+            for (var key in this.keyDirectionDic) {
+                if (this.keyDownDic[key] == true) {
+                    var element = this.keyDirectionDic[key];
+                    accelerationVec.incrementBy(element);
+                }
+            }
+            accelerationVec.scaleBy(this.acceleration);
+            //计算速度
+            this.velocity.incrementBy(accelerationVec);
+            var right = this.target.matrix3d.right;
+            var up = this.target.matrix3d.up;
+            var forward = this.target.matrix3d.forward;
+            right.scaleBy(this.velocity.x);
+            up.scaleBy(this.velocity.y);
+            forward.scaleBy(this.velocity.z);
+            //计算位移
+            var displacement = right.clone();
+            displacement.incrementBy(up);
+            displacement.incrementBy(forward);
+            this.target.x += displacement.x;
+            this.target.y += displacement.y;
+            this.target.z += displacement.z;
+        }
+        /**
+         * 处理鼠标移动事件
+         */
+        onMouseMove(event) {
+            if (this.preMousePoint == null) {
+                this.preMousePoint = { x: event.clientX, y: event.clientY };
+                return;
+            }
+            //计算旋转
+            var offsetPoint = { x: event.clientX - this.preMousePoint.x, y: event.clientY - this.preMousePoint.y };
+            offsetPoint.x *= 0.15;
+            offsetPoint.y *= 0.15;
+            var matrix3d = this.target.matrix3d;
+            var right = matrix3d.right;
+            var position = matrix3d.position;
+            matrix3d.appendRotation(offsetPoint.y, right, position);
+            matrix3d.appendRotation(offsetPoint.x, feng3d.Vector3D.Y_AXIS, position);
+            this.target.matrix3d = matrix3d;
+            //
+            this.preMousePoint = { x: event.clientX, y: event.clientY };
+        }
+        /**
+         * 键盘按下事件
+         */
+        onKeydown(event) {
+            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            if (this.keyDirectionDic[boardKey] == null)
+                return;
+            if (!this.keyDownDic[boardKey])
+                this.stopDirectionVelocity(this.keyDirectionDic[boardKey]);
+            this.keyDownDic[boardKey] = true;
+        }
+        /**
+         * 键盘弹起事件
+         */
+        onKeyup(event) {
+            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            if (this.keyDirectionDic[boardKey] == null)
+                return;
+            this.keyDownDic[boardKey] = false;
+            this.stopDirectionVelocity(this.keyDirectionDic[boardKey]);
+        }
+        /**
+         * 停止xyz方向运动
+         * @param direction     停止运动的方向
+         */
+        stopDirectionVelocity(direction) {
+            if (direction == null)
+                return;
+            if (direction.x != 0) {
+                this.velocity.x = 0;
+            }
+            if (direction.y != 0) {
+                this.velocity.y = 0;
+            }
+            if (direction.z != 0) {
+                this.velocity.z = 0;
+            }
+        }
+    }
+    feng3d.FPSController = FPSController;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

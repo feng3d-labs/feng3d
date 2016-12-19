@@ -4,7 +4,7 @@ module feng3d {
      * FPS模式控制器
      * @author feng 2016-12-19
      */
-    export class FPSController {
+    export class FPSController extends ControllerBase {
 
         /**
          * 按键记录
@@ -24,12 +24,7 @@ module feng3d {
         /**
          * 速度
          */
-        private velocity = new Vector3D();
-
-        /**
-         * 控制对象
-         */
-        private _target: Transform;
+        private velocity: Vector3D;
 
         /**
          * 上次鼠标位置
@@ -37,11 +32,11 @@ module feng3d {
         private preMousePoint: { x: number, y: number };
 
         constructor(transform: Transform) {
-            this._target = transform;
+            super(transform);
             this.init();
         }
 
-        public get target() {
+        public get target(): Transform {
             return this._target;
         }
 
@@ -58,7 +53,7 @@ module feng3d {
                 window.addEventListener("keyup", this.onKeyup.bind(this));
                 window.addEventListener("mousemove", this.onMouseMove.bind(this));
                 this.preMousePoint = null;
-                this.velocity.setTo(0, 0, 0);
+                this.velocity = new Vector3D();
                 this.keyDownDic = {};
             }
         }
@@ -84,7 +79,7 @@ module feng3d {
             //计算加速度
             var accelerationVec = new Vector3D();
             for (var key in this.keyDirectionDic) {
-                if (this.keyDirectionDic.hasOwnProperty(key)) {
+                if (this.keyDownDic[key] == true) {
                     var element = this.keyDirectionDic[key];
                     accelerationVec.incrementBy(element);
                 }
@@ -104,7 +99,7 @@ module feng3d {
             displacement.incrementBy(forward);
             this.target.x += displacement.x;
             this.target.y += displacement.y;
-            this.target.z += displacement.x;
+            this.target.z += displacement.z;
         }
 
         /**
@@ -113,11 +108,13 @@ module feng3d {
         private onMouseMove(event: MouseEvent) {
 
             if (this.preMousePoint == null) {
-                this.preMousePoint = { x: event.clientX, y: event.clientX };
+                this.preMousePoint = { x: event.clientX, y: event.clientY };
                 return;
             }
             //计算旋转
             var offsetPoint = { x: event.clientX - this.preMousePoint.x, y: event.clientY - this.preMousePoint.y };
+            offsetPoint.x *= 0.15;
+            offsetPoint.y *= 0.15;
             var matrix3d = this.target.matrix3d;
             var right = matrix3d.right;
             var position = matrix3d.position;
@@ -125,7 +122,7 @@ module feng3d {
             matrix3d.appendRotation(offsetPoint.x, Vector3D.Y_AXIS, position);
             this.target.matrix3d = matrix3d;
             //
-            this.preMousePoint = { x: event.clientX, y: event.clientX };
+            this.preMousePoint = { x: event.clientX, y: event.clientY };
         }
 
         /**
@@ -133,9 +130,13 @@ module feng3d {
 		 */
         private onKeydown(event: KeyboardEvent): void {
 
-            if (!this.keyDownDic[event.keyCode])
-                this.stopDirectionVelocity(this.keyDirectionDic[event.keyCode]);
-            this.keyDownDic[event.keyCode] = true;
+            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            if (this.keyDirectionDic[boardKey] == null)
+                return;
+
+            if (!this.keyDownDic[boardKey])
+                this.stopDirectionVelocity(this.keyDirectionDic[boardKey]);
+            this.keyDownDic[boardKey] = true;
         }
 
 		/**
@@ -143,8 +144,12 @@ module feng3d {
 		 */
         private onKeyup(event: KeyboardEvent): void {
 
-            this.keyDownDic[event.keyCode] = false;
-            this.stopDirectionVelocity(this.keyDirectionDic[event.keyCode]);
+            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            if (this.keyDirectionDic[boardKey] == null)
+                return;
+
+            this.keyDownDic[boardKey] = false;
+            this.stopDirectionVelocity(this.keyDirectionDic[boardKey]);
         }
 
         /**

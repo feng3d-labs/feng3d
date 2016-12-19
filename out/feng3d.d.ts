@@ -3020,29 +3020,87 @@ declare module feng3d {
 }
 declare module feng3d {
     class ControllerBase {
-        protected _targetObject: Object3D;
+        /**
+         * 控制对象
+         */
+        protected _target: Transform;
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(targetObject: Object3D);
+        constructor(target: Transform);
         /**
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        targetObject: Object3D;
+        target: Transform;
     }
 }
 declare module feng3d {
     class LookAtController extends ControllerBase {
         protected _lookAtPosition: Vector3D;
-        protected _lookAtObject: Object3D;
+        protected _lookAtObject: Transform;
         protected _origin: Vector3D;
         protected _upAxis: Vector3D;
         private _pos;
-        constructor(targetObject?: Object3D, lookAtObject?: Object3D);
+        constructor(target?: Transform, lookAtObject?: Transform);
         upAxis: Vector3D;
         lookAtPosition: Vector3D;
-        lookAtObject: Object3D;
+        lookAtObject: Transform;
         update(interpolate?: boolean): void;
+    }
+}
+declare module feng3d {
+    /**
+     * FPS模式控制器
+     * @author feng 2016-12-19
+     */
+    class FPSController extends ControllerBase {
+        /**
+         * 按键记录
+         */
+        private keyDownDic;
+        /**
+         * 按键方向字典
+         */
+        private keyDirectionDic;
+        /**
+         * 加速度
+         */
+        private acceleration;
+        /**
+         * 速度
+         */
+        private velocity;
+        /**
+         * 上次鼠标位置
+         */
+        private preMousePoint;
+        constructor(transform: Transform);
+        target: Transform;
+        /**
+         * 初始化
+         */
+        private init();
+        /**
+         * 手动应用更新到目标3D对象
+         */
+        update(interpolate?: boolean): void;
+        /**
+         * 处理鼠标移动事件
+         */
+        private onMouseMove(event);
+        /**
+         * 键盘按下事件
+         */
+        private onKeydown(event);
+        /**
+         * 键盘弹起事件
+         */
+        private onKeyup(event);
+        /**
+         * 停止xyz方向运动
+         * @param direction     停止运动的方向
+         */
+        private stopDirectionVelocity(direction);
     }
 }
