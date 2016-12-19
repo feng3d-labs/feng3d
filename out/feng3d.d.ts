@@ -157,6 +157,45 @@ declare module feng3d {
         protected getBubbleTargets(event: Event): IEventDispatcher[];
     }
 }
+declare module feng3d {
+    /**
+     * 鼠标键盘输入，处理js事件中this关键字问题
+     * @author feng 2016-12-19
+     */
+    class MouseKeyInput extends EventDispatcher {
+        /**
+         * 构建
+         */
+        constructor();
+        /**
+         * 初始化
+         */
+        private init();
+        /**
+         * 键盘按下事件
+         */
+        private onMouseKey(event);
+    }
+    /**
+     * 鼠标事件类型
+     */
+    var $mouseKeyType: {
+        "click": string;
+        "dblclick": string;
+        "mousedown": string;
+        "mousemove": string;
+        "mouseout": string;
+        "mouseover": string;
+        "mouseup": string;
+        "keydown": string;
+        "keypress": string;
+        "keyup": string;
+    };
+    /**
+     * 鼠标键盘输入
+     */
+    var $mouseKeyInput: MouseKeyInput;
+}
 declare module feng3d.shortcut {
     /**
      * 按键捕获

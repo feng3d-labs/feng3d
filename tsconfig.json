@@ -13,6 +13,8 @@
         "src/events/Event.ts",
         "src/events/IEventDispatcher.ts",
         "src/events/EventDispatcher.ts",
+        //
+        "src/base/MouseKeyInput.ts",
         //快捷键模块
         "src/shortcut/handle/KeyCapture.ts",
         "src/shortcut/handle/KeyState.ts",

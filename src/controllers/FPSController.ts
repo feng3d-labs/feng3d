@@ -43,15 +43,15 @@ module feng3d {
         public set target(value: Transform) {
 
             if (this._target != null) {
-                window.removeEventListener("keydown", this.onKeydown.bind(this));
-                window.removeEventListener("keyup", this.onKeyup.bind(this));
-                window.removeEventListener("mousemove", this.onMouseMove.bind(this));
+                $mouseKeyInput.removeEventListener("keydown", this.onKeydown, this);
+                $mouseKeyInput.removeEventListener("keyup", this.onKeyup, this);
+                $mouseKeyInput.removeEventListener("mousemove", this.onMouseMove, this);
             }
             this._target = value;
             if (this._target != null) {
-                window.addEventListener("keydown", this.onKeydown.bind(this));
-                window.addEventListener("keyup", this.onKeyup.bind(this));
-                window.addEventListener("mousemove", this.onMouseMove.bind(this));
+                $mouseKeyInput.addEventListener("keydown", this.onKeydown, this);
+                $mouseKeyInput.addEventListener("keyup", this.onKeyup, this);
+                $mouseKeyInput.addEventListener("mousemove", this.onMouseMove, this);
                 this.preMousePoint = null;
                 this.velocity = new Vector3D();
                 this.keyDownDic = {};
@@ -108,17 +108,18 @@ module feng3d {
         /**
          * 处理鼠标移动事件
          */
-        private onMouseMove(event: MouseEvent) {
+        private onMouseMove(event: Event) {
 
+            var mouseEvent: MouseEvent = event.data;
             if (this.target == null)
                 return;
 
             if (this.preMousePoint == null) {
-                this.preMousePoint = { x: event.clientX, y: event.clientY };
+                this.preMousePoint = { x: mouseEvent.clientX, y: mouseEvent.clientY };
                 return;
             }
             //计算旋转
-            var offsetPoint = { x: event.clientX - this.preMousePoint.x, y: event.clientY - this.preMousePoint.y };
+            var offsetPoint = { x: mouseEvent.clientX - this.preMousePoint.x, y: mouseEvent.clientY - this.preMousePoint.y };
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
             var matrix3d = this.target.matrix3d;
@@ -128,15 +129,16 @@ module feng3d {
             matrix3d.appendRotation(offsetPoint.x, Vector3D.Y_AXIS, position);
             this.target.matrix3d = matrix3d;
             //
-            this.preMousePoint = { x: event.clientX, y: event.clientY };
+            this.preMousePoint = { x: mouseEvent.clientX, y: mouseEvent.clientY };
         }
 
         /**
 		 * 键盘按下事件
 		 */
-        private onKeydown(event: KeyboardEvent): void {
+        private onKeydown(event: Event): void {
 
-            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            var keyboardEvent: KeyboardEvent = event.data;
+            var boardKey = String.fromCharCode(keyboardEvent.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
 
@@ -148,9 +150,10 @@ module feng3d {
 		/**
 		 * 键盘弹起事件
 		 */
-        private onKeyup(event: KeyboardEvent): void {
+        private onKeyup(event: Event): void {
 
-            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            var keyboardEvent: KeyboardEvent = event.data;
+            var boardKey = String.fromCharCode(keyboardEvent.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
 

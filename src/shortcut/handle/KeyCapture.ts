@@ -7,9 +7,9 @@ module feng3d.shortcut {
 	export class KeyCapture {
 		/**
 		 * 键盘按键字典 （补充常量，a-z以及鼠标按键不必再次列出）
-		 * 例如 boardKeyDic[Keyboard.CONTROL] = "ctrl";
+		 * 例如 boardKeyDic[17] = "ctrl";
 		 */
-		private boardKeyDic: {};
+		private boardKeyDic: { [keyCode: number]: string };
 
 		/**
 		 * 捕获的按键字典
@@ -112,7 +112,7 @@ module feng3d.shortcut {
 		 */
 		private getBoardKey(keyCode: number): string {
 
-			var boardKey: string = this.boardKeyDic[keyCode];
+			var boardKey = this.boardKeyDic[keyCode];
 			if (boardKey == null && 65 <= keyCode && keyCode <= 90) {
 				boardKey = String.fromCharCode(keyCode).toLocaleLowerCase();
 			}
