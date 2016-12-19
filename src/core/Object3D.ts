@@ -1,6 +1,6 @@
 module feng3d {
     /**
-     * 游戏对象
+     * 3D对象
      * @author feng 2016-04-26
      */
     export class Object3D extends RenderDataHolder {
@@ -47,43 +47,6 @@ module feng3d {
             this.addEventListener(Object3DEvent.ADDED, this.onAddedContainer3D, this);
             this.addEventListener(Object3DEvent.REMOVED, this.onRemovedContainer3D, this);
         }
-
-        /**
-         * 创建
-         */
-        static createPrimitive(type: PrimitiveType): Object3D {
-
-            var object3D = new Object3D();
-            var mesh = object3D.getOrCreateComponentByClass(Mesh);
-            var geometry = primitives.createCube();
-            switch (type) {
-                case PrimitiveType.Plane:
-                    object3D.name = "plane";
-                    geometry = primitives.createPlane();
-                    break;
-                case PrimitiveType.Cube:
-                    object3D.name = "cube";
-                    geometry = primitives.createCube();
-                    break;
-                case PrimitiveType.Sphere:
-                    object3D.name = "sphere";
-                    geometry = primitives.createSphere();
-                    break;
-                case PrimitiveType.Capsule:
-                    object3D.name = "capsule";
-                    geometry = primitives.createCapsule();
-                    break;
-                case PrimitiveType.Cylinder:
-                    object3D.name = "cylinder";
-                    geometry = primitives.createCylinder();
-                    break;
-                default:
-                    throw `无法创建3D基元对象 ${type}`;
-            }
-            mesh.geometry = geometry;
-            return object3D;
-        }
-
 
         /**
          * 父对象

@@ -3538,7 +3538,7 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 游戏对象
+     * 3D对象
      * @author feng 2016-04-26
      */
     class Object3D extends feng3d.RenderDataHolder {
@@ -3574,40 +3574,6 @@ var feng3d;
             this._transform && this.removeComponent(this._transform);
             this._transform = value;
             this._transform && this.addComponent(this._transform);
-        }
-        /**
-         * 创建
-         */
-        static createPrimitive(type) {
-            var object3D = new Object3D();
-            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
-            var geometry = feng3d.primitives.createCube();
-            switch (type) {
-                case feng3d.PrimitiveType.Plane:
-                    object3D.name = "plane";
-                    geometry = feng3d.primitives.createPlane();
-                    break;
-                case feng3d.PrimitiveType.Cube:
-                    object3D.name = "cube";
-                    geometry = feng3d.primitives.createCube();
-                    break;
-                case feng3d.PrimitiveType.Sphere:
-                    object3D.name = "sphere";
-                    geometry = feng3d.primitives.createSphere();
-                    break;
-                case feng3d.PrimitiveType.Capsule:
-                    object3D.name = "capsule";
-                    geometry = feng3d.primitives.createCapsule();
-                    break;
-                case feng3d.PrimitiveType.Cylinder:
-                    object3D.name = "cylinder";
-                    geometry = feng3d.primitives.createCylinder();
-                    break;
-                default:
-                    throw `无法创建3D基元对象 ${type}`;
-            }
-            mesh.geometry = geometry;
-            return object3D;
         }
         /**
          * 父对象
@@ -6481,5 +6447,64 @@ var feng3d;
         }
     }
     feng3d.FPSController = FPSController;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 3D对象工厂
+     * @author feng 2016-12-19
+     */
+    class Object3DFactory {
+        /**
+         * 创建平面
+         */
+        createPlane() {
+            var object3D = new feng3d.Object3D("plane");
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
+            mesh.geometry = feng3d.primitives.createPlane();
+            return object3D;
+        }
+        /**
+         * 创建立方体
+         */
+        createCube() {
+            var object3D = new feng3d.Object3D("cube");
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
+            mesh.geometry = feng3d.primitives.createCube();
+            return object3D;
+        }
+        /**
+         * 创建球体
+         */
+        createSphere() {
+            var object3D = new feng3d.Object3D("sphere");
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
+            mesh.geometry = feng3d.primitives.createSphere();
+            return object3D;
+        }
+        /**
+         * 创建胶囊
+         */
+        createCapsule() {
+            var object3D = new feng3d.Object3D("capsule");
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
+            mesh.geometry = feng3d.primitives.createCapsule();
+            return object3D;
+        }
+        /**
+         * 创建圆柱体
+         */
+        createCylinder() {
+            var object3D = new feng3d.Object3D("cylinder");
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
+            mesh.geometry = feng3d.primitives.createCylinder();
+            return object3D;
+        }
+    }
+    feng3d.Object3DFactory = Object3DFactory;
+    /**
+     * 3D对象工厂
+     */
+    feng3d.$object3DFactory = new Object3DFactory();
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

@@ -204,7 +204,7 @@ declare module feng3d.shortcut {
     class KeyCapture {
         /**
          * 键盘按键字典 （补充常量，a-z以及鼠标按键不必再次列出）
-         * 例如 boardKeyDic[Keyboard.CONTROL] = "ctrl";
+         * 例如 boardKeyDic[17] = "ctrl";
          */
         private boardKeyDic;
         /**
@@ -1999,7 +1999,7 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 游戏对象
+     * 3D对象
      * @author feng 2016-04-26
      */
     class Object3D extends RenderDataHolder {
@@ -2020,10 +2020,6 @@ declare module feng3d {
          * 构建3D对象
          */
         constructor(name?: string);
-        /**
-         * 创建
-         */
-        static createPrimitive(type: PrimitiveType): Object3D;
         /**
          * 父对象
          */
@@ -3142,4 +3138,36 @@ declare module feng3d {
          */
         private stopDirectionVelocity(direction);
     }
+}
+declare module feng3d {
+    /**
+     * 3D对象工厂
+     * @author feng 2016-12-19
+     */
+    class Object3DFactory {
+        /**
+         * 创建平面
+         */
+        createPlane(): Object3D;
+        /**
+         * 创建立方体
+         */
+        createCube(): Object3D;
+        /**
+         * 创建球体
+         */
+        createSphere(): Object3D;
+        /**
+         * 创建胶囊
+         */
+        createCapsule(): Object3D;
+        /**
+         * 创建圆柱体
+         */
+        createCylinder(): Object3D;
+    }
+    /**
+     * 3D对象工厂
+     */
+    var $object3DFactory: Object3DFactory;
 }

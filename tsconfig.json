@@ -107,6 +107,8 @@
         //镜头控制
         "src/controllers/ControllerBase.ts",
         "src/controllers/LookAtController.ts",
-        "src/controllers/FPSController.ts"
+        "src/controllers/FPSController.ts",
+        //
+        "src/factory/Object3DFactory.ts"
     ]
 }
