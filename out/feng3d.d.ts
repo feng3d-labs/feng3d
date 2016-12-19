@@ -157,6 +157,409 @@ declare module feng3d {
         protected getBubbleTargets(event: Event): IEventDispatcher[];
     }
 }
+declare module feng3d.shortcut {
+    /**
+     * 按键捕获
+     * @author feng 2016-4-26
+     */
+    class KeyCapture {
+        /**
+         * 键盘按键字典 （补充常量，a-z以及鼠标按键不必再次列出）
+         * 例如 boardKeyDic[Keyboard.CONTROL] = "ctrl";
+         */
+        private boardKeyDic;
+        /**
+         * 捕获的按键字典
+         */
+        private mouseKeyDic;
+        /**
+         * 快捷键环境
+         */
+        private shortCutContext;
+        /**
+         * 按键状态
+         */
+        private keyState;
+        /**
+         * 构建
+         * @param stage		舞台
+         */
+        constructor(shortCutContext: ShortCutContext);
+        /**
+         * 默认支持按键
+         */
+        private defaultSupportKeys();
+        /**
+         * 鼠标事件
+         */
+        private onMouseOnce(event);
+        /**
+         * 鼠标事件
+         */
+        private onMousewheel(event);
+        /**
+         * 键盘按下事件
+         */
+        private onKeydown(event);
+        /**
+         * 键盘弹起事件
+         */
+        private onKeyup(event);
+        /**
+         * 获取键盘按键名称
+         */
+        private getBoardKey(keyCode);
+    }
+}
+declare module feng3d.shortcut {
+    /**
+     * 按键状态
+     * @author feng 2016-4-26
+     */
+    class KeyState extends EventDispatcher {
+        /**
+         * 按键状态{key:键名称,value:是否按下}
+         */
+        private keyStateDic;
+        /**
+         * 构建
+         */
+        constructor();
+        /**
+         * 按下键
+         * @param key 	键名称
+         * @param data	携带数据
+         */
+        pressKey(key: string, data?: Object): void;
+        /**
+         * 释放键
+         * @param key	键名称
+         * @param data	携带数据
+         */
+        releaseKey(key: string, data?: Object): void;
+        /**
+         * 获取按键状态
+         * @param key 按键名称
+         */
+        getKeyState(key: string): Boolean;
+    }
+}
+declare module feng3d.shortcut {
+    /**
+     * 快捷键捕获
+     * @author feng 2016-4-26
+     */
+    class ShortCutCapture {
+        /**
+         * 快捷键环境
+         */
+        private shortCutContext;
+        /**
+         * 快捷键
+         */
+        private key;
+        /**
+         * 要执行的命令名称
+         */
+        private command;
+        /**
+         * 可执行的状态命令
+         */
+        private stateCommand;
+        /**
+         * 快捷键处于活动状态的条件
+         */
+        private when;
+        /**
+         * 按键状态
+         */
+        private keyState;
+        /**
+         * 按键列表
+         */
+        private keys;
+        /**
+         * 状态列表
+         */
+        private states;
+        /**
+         * 命令列表
+         */
+        private commands;
+        /**
+         * 命令列表
+         */
+        private stateCommands;
+        /**
+         * 构建快捷键捕获
+         * @param shortCutContext		快捷键环境
+         * @param key					快捷键
+         * @param command				要执行的命令名称
+         * @param stateCommand			可执行的状态命令
+         * @param when					快捷键处于活动状态的条件
+         */
+        constructor(shortCutContext: ShortCutContext, key: string, command?: string, stateCommand?: string, when?: string);
+        /**
+         * 初始化
+         */
+        private init();
+        /**
+         * 处理捕获事件
+         */
+        private onCapture(event);
+        /**
+         * 派发命令
+         */
+        private dispatchCommands(commands, data);
+        /**
+         * 执行状态命令
+         */
+        private executeStateCommands(stateCommands);
+        /**
+         * 检测快捷键是否处于活跃状态
+         */
+        private checkActivityStates(states);
+        /**
+         * 获取是否处于指定状态中（支持一个！取反）
+         * @param state 状态名称
+         */
+        private getState(state);
+        /**
+         * 检测是否按下给出的键
+         * @param keys 按键数组
+         */
+        private checkActivityKeys(keys);
+        /**
+         * 获取按键状态（true：按下状态，false：弹起状态）
+         */
+        private getKeyValue(key);
+        /**
+         * 获取状态列表
+         * @param when		状态字符串
+         */
+        private getStates(when);
+        /**
+         * 获取键列表
+         * @param key		快捷键
+         */
+        private getKeys(key);
+        /**
+         * 获取命令列表
+         * @param command	命令
+         */
+        private getCommands(command);
+        /**
+         * 获取状态命令列表
+         * @param stateCommand	状态命令
+         */
+        private getStateCommand(stateCommand);
+        /**
+         * 销毁
+         */
+        destroy(): void;
+    }
+}
+/**
+ * 按键
+ * @author feng 2016-6-6
+ */
+declare class Key {
+    /**
+     * 是否取反
+     */
+    not: Boolean;
+    /**
+     * 状态名称
+     */
+    key: string;
+    constructor(key: string);
+}
+/**
+ * 状态
+ * @author feng 2016-6-6
+ */
+declare class State {
+    /**
+     * 是否取反
+     */
+    not: Boolean;
+    /**
+     * 状态名称
+     */
+    state: string;
+    constructor(state: string);
+}
+/**
+ * 状态命令
+ * @author feng 2016-6-6
+ */
+declare class StateCommand {
+    /**
+     * 是否取反
+     */
+    not: Boolean;
+    /**
+     * 状态名称
+     */
+    state: string;
+    constructor(state: string);
+}
+declare module feng3d.shortcut {
+    /**
+     * 快捷键环境
+     * @author feng 2016-6-6
+     */
+    class ShortCutContext {
+        /**
+         * 命令派发器
+         */
+        commandDispatcher: IEventDispatcher;
+        /**
+         * 按键状态
+         */
+        keyState: KeyState;
+        /**
+         * 状态字典
+         */
+        stateDic: {};
+        /**
+         * 按键捕获
+         */
+        keyCapture: KeyCapture;
+        /**
+         * 捕获字典
+         */
+        captureDic: {};
+        /**
+         * 构建快捷键环境
+         * @param stage 舞台
+         */
+        constructor();
+        /**
+         * 初始化快捷键模块
+         */
+        init(): void;
+        /**
+         * 添加快捷键
+         * @param shortcuts		快捷键列表
+         */
+        addShortCuts(shortcuts: any[]): void;
+        /**
+         * 删除快捷键
+         * @param shortcuts		快捷键列表
+         */
+        removeShortCuts(shortcuts: any[]): void;
+        /**
+         * 移除所有快捷键
+         */
+        removeAllShortCuts(): void;
+        /**
+         * 激活状态
+         * @param state 状态名称
+         */
+        activityState(state: string): void;
+        /**
+         * 取消激活状态
+         * @param state 状态名称
+         */
+        deactivityState(state: string): void;
+        /**
+         * 获取状态
+         * @param state 状态名称
+         */
+        getState(state: string): Boolean;
+        /**
+         * 获取快捷键唯一字符串
+         */
+        private getShortcutUniqueKey(shortcut);
+    }
+}
+declare module feng3d.shortcut {
+    /**
+     * 快捷键命令事件
+     * @author feng 2016-4-27
+     */
+    class ShortCutEvent extends Event {
+        /**
+         * 携带数据
+         */
+        data: Object;
+        /**
+         * 构建
+         * @param command		命令名称
+         */
+        constructor(command: string, data?: Object);
+    }
+}
+declare module feng3d.shortcut {
+    /**
+     * 初始化快捷键模块
+     * @author feng 2016-4-26
+     *
+     * <pre>
+var shortcuts:Array = [ //
+//在按下key1时触发命令command1
+    {key: "key1", command: "command1", when: ""}, //
+     //在按下key1时触发状态命令改变stateCommand1为激活状态
+    {key: "key1", stateCommand: "stateCommand1", when: "state1"}, //
+     //处于state1状态时按下key1触发命令command1
+    {key: "key1", command: "command1", when: "state1"}, //
+    //处于state1状态不处于state2时按下key1与没按下key2触发command1与command2，改变stateCommand1为激活状态，stateCommand2为非激活状态
+    {key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
+    ];
+//添加快捷键
+ShortCut.addShortCuts(shortcuts);
+//监听命令
+ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
+{
+    trace("接受到命令：" + e.type);
+});
+     * </pre>
+     */
+    class ShortCut {
+        /**
+         * 命令派发器
+         */
+        static commandDispatcher: IEventDispatcher;
+        /**
+         * 快捷键环境
+         */
+        private static shortcutContext;
+        /**
+         * 初始化快捷键模块
+         */
+        static init(): void;
+        /**
+         * 添加快捷键
+         * @param shortcuts		快捷键列表
+         */
+        static addShortCuts(shortcuts: any[]): void;
+        /**
+         * 删除快捷键
+         * @param shortcuts		快捷键列表
+         */
+        static removeShortCuts(shortcuts: any[]): void;
+        /**
+         * 移除所有快捷键
+         */
+        static removeAllShortCuts(): void;
+        /**
+         * 激活状态
+         * @param state 状态名称
+         */
+        static activityState(state: string): void;
+        /**
+         * 取消激活状态
+         * @param state 状态名称
+         */
+        static deactivityState(state: string): void;
+        /**
+         * 获取状态
+         * @param state 状态名称
+         */
+        static getState(state: string): Boolean;
+    }
+}
 declare module feng3d {
     /**
      * 组件事件
