@@ -55,6 +55,16 @@ module feng3d {
             mesh.geometry = primitives.createCylinder();
             return object3D;
         }
+
+        /**
+         * 创建天空盒
+         */
+        public createSkyBox() {
+            var object3D = new Object3D("skyBox");
+            object3D.getOrCreateComponentByClass(Mesh).geometry = primitives.createSkyBox();
+            object3D.getOrCreateComponentByClass(MeshRenderer).material = new SkyBoxMaterial();
+            return object3D;
+        }
     }
 
     /**
