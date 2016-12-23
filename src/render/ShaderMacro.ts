@@ -15,5 +15,6 @@ module feng3d {
     export interface FragmentMacro {
 
         ENABLE_COLOR: boolean;
+        DIFFUSE_INPUT_TYPE: 0 | 1 | 2;
     }
 }

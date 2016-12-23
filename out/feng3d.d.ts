@@ -1801,7 +1801,7 @@ declare module feng3d {
             [name: string]: AttributeRenderData;
         };
         /**
-         * 常量数据列表
+         * 常量数据（包含纹理）列表
          */
         uniforms: {
             [name: string]: Matrix3D | Vector3D;
@@ -1995,6 +1995,7 @@ declare module feng3d {
      */
     interface FragmentMacro {
         ENABLE_COLOR: boolean;
+        DIFFUSE_INPUT_TYPE: 0 | 1 | 2;
     }
 }
 declare module feng3d {
@@ -2854,6 +2855,12 @@ declare module feng3d.primitives {
      */
     function createCylinder(topRadius?: number, bottomRadius?: number, height?: number, segmentsW?: number, segmentsH?: number, topClosed?: boolean, bottomClosed?: boolean, surfaceClosed?: boolean, yUp?: boolean, elements?: string[]): Geometry;
 }
+declare module feng3d.primitives {
+    /**
+     * 创建天空盒
+     */
+    function createSkyBox(): Geometry;
+}
 declare module feng3d {
     /**
      * 材质
@@ -2942,6 +2949,14 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 天空盒材质
+     * @author feng 2016-12-20
+     */
+    class SkyBoxMaterial extends Material {
+    }
+}
+declare module feng3d {
+    /**
      * 材质组件
      * @author feng 2016-11-01
      */
@@ -2962,6 +2977,25 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 纹理材质
+     * @author feng 2016-12-23
+     */
+    class TextureMaterial extends Material {
+        texture: Texture2D;
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData: RenderAtomic): void;
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData: RenderAtomic): void;
+    }
+}
+declare module feng3d {
+    /**
      * 材质通道
      * @author feng 2016-05-02
      */
@@ -2975,6 +3009,16 @@ declare module feng3d {
      */
     class SegmentPass extends MaterialPassBase {
         render(): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 2D纹理
+     * @author feng 2016-12-20
+     */
+    class Texture2D {
+        autoGenerateMip: boolean;
+        pixels?: ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
     }
 }
 declare module feng3d {
@@ -3165,6 +3209,10 @@ declare module feng3d {
          * 创建圆柱体
          */
         createCylinder(): Object3D;
+        /**
+         * 创建天空盒
+         */
+        createSkyBox(): Object3D;
     }
     /**
      * 3D对象工厂

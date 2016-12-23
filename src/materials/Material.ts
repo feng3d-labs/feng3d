@@ -49,6 +49,7 @@ module feng3d {
             super.activate(renderData);
             //
             renderData.shaderName = this.shaderName;
+            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
         }
 
         /**
@@ -58,6 +59,7 @@ module feng3d {
         public deactivate(renderData: RenderAtomic) {
 
             renderData.shaderName = null;
+            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
             super.deactivate(renderData);
         }
     }

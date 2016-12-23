@@ -3112,7 +3112,7 @@ var feng3d;
              */
             this.attributes = {};
             /**
-             * 常量数据列表
+             * 常量数据（包含纹理）列表
              */
             this.uniforms = {};
             /**
@@ -3208,6 +3208,27 @@ var feng3d;
                 break;
             case WebGLRenderingContext.FLOAT_VEC4:
                 context3D.uniform4f(location, data.x, data.y, data.z, data.w);
+                break;
+            case WebGLRenderingContext.SAMPLER_2D:
+                var image = data;
+                var texture = context3D.createTexture(); // Create a texture object
+                if (!texture) {
+                    console.log('Failed to create the texture object');
+                    return false;
+                }
+                context3D.pixelStorei(WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+                // Enable texture unit0
+                context3D.activeTexture(WebGLRenderingContext.TEXTURE0);
+                // Bind the texture object to the target
+                context3D.bindTexture(WebGLRenderingContext.TEXTURE_2D, texture);
+                // Set the texture parameters
+                context3D.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
+                // Set the texture image
+                context3D.texImage2D(WebGLRenderingContext.TEXTURE_2D, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, image);
+                // Set the texture unit 0 to the sampler
+                context3D.uniform1i(location, 0);
+                break;
+            case WebGLRenderingContext.SAMPLER_CUBE:
                 break;
             default:
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
@@ -5990,6 +6011,42 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var primitives;
+    (function (primitives) {
+        /**
+         * 创建天空盒
+         */
+        function createSkyBox() {
+            var geometry = new feng3d.Geometry();
+            //八个顶点，32个number
+            var vertexPositionData = new Float32Array([
+                -1, 1, -1,
+                1, 1, -1,
+                1, 1, 1,
+                -1, 1, 1,
+                -1, -1, -1,
+                1, -1, -1,
+                1, -1, 1,
+                -1, -1, 1 //
+            ]);
+            geometry.setVAData(feng3d.GLAttribute.position, vertexPositionData, 3);
+            //6个面，12个三角形，36个顶点索引
+            var indices = new Uint16Array([
+                0, 1, 2, 2, 3, 0,
+                6, 5, 4, 4, 7, 6,
+                2, 6, 7, 7, 3, 2,
+                4, 5, 1, 1, 0, 4,
+                4, 0, 3, 3, 7, 4,
+                2, 1, 5, 5, 6, 2 //
+            ]);
+            geometry.setIndices(indices);
+            return geometry;
+        }
+        primitives.createSkyBox = createSkyBox;
+    })(primitives = feng3d.primitives || (feng3d.primitives = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 材质
      * @author feng 2016-05-02
@@ -6027,6 +6084,7 @@ var feng3d;
             super.activate(renderData);
             //
             renderData.shaderName = this.shaderName;
+            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
         }
         /**
          * 释放
@@ -6034,6 +6092,7 @@ var feng3d;
          */
         deactivate(renderData) {
             renderData.shaderName = null;
+            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
             super.deactivate(renderData);
         }
     }
@@ -6060,10 +6119,10 @@ var feng3d;
          * @param renderData	渲染数据
          */
         activate(renderData) {
-            renderData.uniforms[feng3d.RenderDataID.diffuseInput_fc_vector] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
-            renderData.fragmentMacro.ENABLE_COLOR = true;
-            //
             super.activate(renderData);
+            //
+            renderData.uniforms[feng3d.RenderDataID.diffuseInput_fc_vector] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
+            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 1;
         }
         /**
          * 释放
@@ -6071,7 +6130,7 @@ var feng3d;
          */
         deactivate(renderData) {
             delete renderData.uniforms[feng3d.RenderDataID.diffuseInput_fc_vector];
-            delete renderData.fragmentMacro.ENABLE_COLOR;
+            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
             super.deactivate(renderData);
         }
     }
@@ -6119,6 +6178,16 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 天空盒材质
+     * @author feng 2016-12-20
+     */
+    class SkyBoxMaterial extends feng3d.Material {
+    }
+    feng3d.SkyBoxMaterial = SkyBoxMaterial;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 材质组件
      * @author feng 2016-11-01
      */
@@ -6135,6 +6204,33 @@ var feng3d;
         get material() { return this._parentComponent; }
     }
     feng3d.MaterialComponent = MaterialComponent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 纹理材质
+     * @author feng 2016-12-23
+     */
+    class TextureMaterial extends feng3d.Material {
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData) {
+            super.activate(renderData);
+            //
+            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 2;
+        }
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData) {
+            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
+            super.deactivate(renderData);
+        }
+    }
+    feng3d.TextureMaterial = TextureMaterial;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6157,6 +6253,16 @@ var feng3d;
         }
     }
     feng3d.SegmentPass = SegmentPass;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 2D纹理
+     * @author feng 2016-12-20
+     */
+    class Texture2D {
+    }
+    feng3d.Texture2D = Texture2D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6498,6 +6604,15 @@ var feng3d;
             var object3D = new feng3d.Object3D("cylinder");
             var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
             mesh.geometry = feng3d.primitives.createCylinder();
+            return object3D;
+        }
+        /**
+         * 创建天空盒
+         */
+        createSkyBox() {
+            var object3D = new feng3d.Object3D("skyBox");
+            object3D.getOrCreateComponentByClass(feng3d.Mesh).geometry = feng3d.primitives.createSkyBox();
+            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SkyBoxMaterial();
             return object3D;
         }
     }

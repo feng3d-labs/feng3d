@@ -22,7 +22,7 @@ module feng3d {
         public attributes: { [name: string]: AttributeRenderData } = {};
 
         /**
-         * 常量数据列表
+         * 常量数据（包含纹理）列表
          */
         public uniforms: { [name: string]: Matrix3D | Vector3D; } = {};
 
@@ -131,6 +131,33 @@ module feng3d {
                 break;
             case WebGLRenderingContext.FLOAT_VEC4:
                 context3D.uniform4f(location, data.x, data.y, data.z, data.w);
+                break;
+            case WebGLRenderingContext.SAMPLER_2D:
+
+                var image: HTMLImageElement = data;
+
+                var texture = context3D.createTexture();   // Create a texture object
+                if (!texture) {
+                    console.log('Failed to create the texture object');
+                    return false;
+                }
+
+                context3D.pixelStorei(WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+                // Enable texture unit0
+                context3D.activeTexture(WebGLRenderingContext.TEXTURE0);
+                // Bind the texture object to the target
+                context3D.bindTexture(WebGLRenderingContext.TEXTURE_2D, texture);
+
+                // Set the texture parameters
+                context3D.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
+                // Set the texture image
+                context3D.texImage2D(WebGLRenderingContext.TEXTURE_2D, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, image);
+
+                // Set the texture unit 0 to the sampler
+                context3D.uniform1i(location, 0);
+
+                break;
+            case WebGLRenderingContext.SAMPLER_CUBE:
                 break;
             default:
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
