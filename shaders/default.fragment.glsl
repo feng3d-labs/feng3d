@@ -6,7 +6,7 @@ precision mediump float;
 
 #if DIFFUSE_INPUT_TYPE == 2
     uniform sampler2D texture_fs;
-    varying vec2 v_TexCoord;
+    varying vec2 uv_v;
 #endif
 
 void main(void) {

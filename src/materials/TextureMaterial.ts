@@ -31,6 +31,8 @@ module feng3d {
             super.activate(renderData);
             //
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 2;
+            renderData.fragmentMacro.NEED_UV++;
+            renderData.fragmentMacro.NEED_UV_V++;
         }
 
         /**
@@ -40,6 +42,8 @@ module feng3d {
         public deactivate(renderData: RenderAtomic) {
 
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
+            renderData.fragmentMacro.NEED_UV--;
+            renderData.fragmentMacro.NEED_UV_V--;
             super.deactivate(renderData);
         }
     }

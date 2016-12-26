@@ -3126,7 +3126,7 @@ var feng3d;
             /**
              * 片段宏
              */
-            this.fragmentMacro = {};
+            this.fragmentMacro = new feng3d.FragmentMacro();
         }
         /**
          * 绘制
@@ -3136,7 +3136,7 @@ var feng3d;
             if (!shaderData.isOk)
                 return;
             //应用宏
-            var vertexCode = feng3d.ShaderLib.applyMacro(shaderData.vertexCode, this.vertexMacro);
+            var vertexCode = feng3d.ShaderLib.applyMacro(shaderData.vertexCode, this.fragmentMacro);
             var fragmentCode = feng3d.ShaderLib.applyMacro(shaderData.fragmentCode, this.fragmentMacro);
             //渲染程序
             var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
@@ -3192,6 +3192,9 @@ var feng3d;
         switch (activeInfo.type) {
             case WebGLRenderingContext.FLOAT_VEC3:
                 context3D.vertexAttribPointer(location, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
+                break;
+            case WebGLRenderingContext.FLOAT_VEC2:
+                context3D.vertexAttribPointer(location, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
                 break;
             default:
                 throw `无法识别的attribute类型 ${activeInfo.name} ${data}`;
@@ -3556,6 +3559,23 @@ var feng3d;
         }
     }
     feng3d.Renderer = Renderer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 片段宏
+     * @author feng 2016-12-17
+     */
+    class FragmentMacro {
+        constructor() {
+            this.DIFFUSE_INPUT_TYPE = 0;
+            /** 是否需要属性uv */
+            this.NEED_UV = 0;
+            /** 是否需要变量uv */
+            this.NEED_UV_V = 0;
+        }
+    }
+    feng3d.FragmentMacro = FragmentMacro;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6233,6 +6253,8 @@ var feng3d;
             super.activate(renderData);
             //
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 2;
+            renderData.fragmentMacro.NEED_UV++;
+            renderData.fragmentMacro.NEED_UV_V++;
         }
         /**
          * 释放
@@ -6240,6 +6262,8 @@ var feng3d;
          */
         deactivate(renderData) {
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
+            renderData.fragmentMacro.NEED_UV--;
+            renderData.fragmentMacro.NEED_UV_V--;
             super.deactivate(renderData);
         }
     }
@@ -6281,14 +6305,14 @@ var feng3d;
         activate(renderData) {
             super.activate(renderData);
             //
-            renderData.uniforms[feng3d.RenderDataID.diffuseInput_fc_vector] = this.pixels;
+            renderData.uniforms[feng3d.RenderDataID.texture_fs] = this.pixels;
         }
         /**
          * 释放
          * @param renderData	渲染数据
          */
         deactivate(renderData) {
-            renderData.uniforms[feng3d.RenderDataID.diffuseInput_fc_vector] = null;
+            renderData.uniforms[feng3d.RenderDataID.texture_fs] = null;
             //
             super.deactivate(renderData);
         }

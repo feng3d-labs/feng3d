@@ -1994,9 +1994,12 @@ declare module feng3d {
      * 片段宏
      * @author feng 2016-12-17
      */
-    interface FragmentMacro {
-        ENABLE_COLOR: boolean;
+    class FragmentMacro {
         DIFFUSE_INPUT_TYPE: 0 | 1 | 2;
+        /** 是否需要属性uv */
+        NEED_UV: number;
+        /** 是否需要变量uv */
+        NEED_UV_V: number;
     }
 }
 declare module feng3d {

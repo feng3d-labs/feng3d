@@ -39,7 +39,7 @@ module feng3d {
         /**
          * 片段宏
          */
-        public fragmentMacro: FragmentMacro = <any>{};
+        public fragmentMacro = new FragmentMacro();
 
         /**
          * 绘制  
@@ -50,7 +50,7 @@ module feng3d {
             if (!shaderData.isOk)
                 return;
             //应用宏
-            var vertexCode = ShaderLib.applyMacro(shaderData.vertexCode, this.vertexMacro);
+            var vertexCode = ShaderLib.applyMacro(shaderData.vertexCode, this.fragmentMacro);
             var fragmentCode = ShaderLib.applyMacro(shaderData.fragmentCode, this.fragmentMacro);
             //渲染程序
             var shaderProgram = context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
@@ -113,6 +113,9 @@ module feng3d {
         switch (activeInfo.type) {
             case WebGLRenderingContext.FLOAT_VEC3:
                 context3D.vertexAttribPointer(location, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
+                break;
+            case WebGLRenderingContext.FLOAT_VEC2:
+                context3D.vertexAttribPointer(location, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
                 break;
             default:
                 throw `无法识别的attribute类型 ${activeInfo.name} ${data}`;

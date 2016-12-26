@@ -18,7 +18,7 @@ module feng3d {
 
             super.activate(renderData);
             //
-            renderData.uniforms[RenderDataID.diffuseInput_fc_vector] = this.pixels;
+            renderData.uniforms[RenderDataID.texture_fs] = this.pixels;
         }
 
         /**
@@ -27,7 +27,7 @@ module feng3d {
 		 */
         public deactivate(renderData: RenderAtomic) {
 
-            renderData.uniforms[RenderDataID.diffuseInput_fc_vector] = null;
+            renderData.uniforms[RenderDataID.texture_fs] = null;
             //
             super.deactivate(renderData);
         }
