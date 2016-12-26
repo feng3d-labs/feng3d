@@ -3506,6 +3506,7 @@ var feng3d;
      */
     RenderDataID.uPMatrix = "uPMatrix";
     RenderDataID.diffuseInput_fc_vector = "diffuseInput_fc_vector";
+    RenderDataID.texture_fs = "texture_fs";
     feng3d.RenderDataID = RenderDataID;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -6212,6 +6213,18 @@ var feng3d;
      * @author feng 2016-12-23
      */
     class TextureMaterial extends feng3d.Material {
+        get texture() {
+            return this._texture;
+        }
+        set texture(value) {
+            if (this._texture != null) {
+                this.removeComponent(this._texture);
+            }
+            this._texture = value;
+            if (this._texture != null) {
+                this.addComponent(this._texture);
+            }
+        }
         /**
          * 激活
          * @param renderData	渲染数据
@@ -6260,7 +6273,25 @@ var feng3d;
      * 2D纹理
      * @author feng 2016-12-20
      */
-    class Texture2D {
+    class Texture2D extends feng3d.RenderDataHolder {
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData) {
+            super.activate(renderData);
+            //
+            renderData.uniforms[feng3d.RenderDataID.diffuseInput_fc_vector] = this.pixels;
+        }
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData) {
+            renderData.uniforms[feng3d.RenderDataID.diffuseInput_fc_vector] = null;
+            //
+            super.deactivate(renderData);
+        }
     }
     feng3d.Texture2D = Texture2D;
 })(feng3d || (feng3d = {}));

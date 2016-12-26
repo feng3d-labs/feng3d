@@ -24,7 +24,7 @@ module feng3d {
         /**
          * 常量数据（包含纹理）列表
          */
-        public uniforms: { [name: string]: Matrix3D | Vector3D; } = {};
+        public uniforms: { [name: string]: Matrix3D | Vector3D | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement; } = {};
 
         /**
          * 渲染参数
@@ -79,7 +79,7 @@ module feng3d {
     /**
      * 激活常量
      */
-    function activeUniforms(context3D: WebGLRenderingContext, shaderProgram: WebGLProgram, uniforms: { [name: string]: Matrix3D | Vector3D; }) {
+    function activeUniforms(context3D: WebGLRenderingContext, shaderProgram: WebGLProgram, uniforms: { [name: string]: Matrix3D | Vector3D | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement; }) {
 
         var numUniforms = context3D.getProgramParameter(shaderProgram, context3D.ACTIVE_UNIFORMS);
         var i = 0;

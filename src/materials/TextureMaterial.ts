@@ -6,7 +6,21 @@ module feng3d {
      */
     export class TextureMaterial extends Material {
 
-        public texture: Texture2D;
+        private _texture: Texture2D;
+
+        public get texture() {
+            return this._texture;
+        }
+
+        public set texture(value: Texture2D) {
+            if (this._texture != null) {
+                this.removeComponent(this._texture);
+            }
+            this._texture = value;
+            if (this._texture != null) {
+                this.addComponent(this._texture);
+            }
+        }
 
         /**
 		 * 激活

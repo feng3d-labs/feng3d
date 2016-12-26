@@ -1804,7 +1804,7 @@ declare module feng3d {
          * 常量数据（包含纹理）列表
          */
         uniforms: {
-            [name: string]: Matrix3D | Vector3D;
+            [name: string]: Matrix3D | Vector3D | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
         };
         /**
          * 渲染参数
@@ -1951,6 +1951,7 @@ declare module feng3d {
          */
         static uPMatrix: string;
         static diffuseInput_fc_vector: string;
+        static texture_fs: string;
     }
 }
 declare module feng3d {
@@ -2981,6 +2982,7 @@ declare module feng3d {
      * @author feng 2016-12-23
      */
     class TextureMaterial extends Material {
+        private _texture;
         texture: Texture2D;
         /**
          * 激活
@@ -3016,9 +3018,19 @@ declare module feng3d {
      * 2D纹理
      * @author feng 2016-12-20
      */
-    class Texture2D {
+    class Texture2D extends RenderDataHolder {
         autoGenerateMip: boolean;
         pixels?: ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData: RenderAtomic): void;
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {

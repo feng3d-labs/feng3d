@@ -22,5 +22,7 @@ module feng3d {
         static uPMatrix = "uPMatrix";
 
         static diffuseInput_fc_vector = "diffuseInput_fc_vector";
+
+        static texture_fs = "texture_fs";
     }
 }
