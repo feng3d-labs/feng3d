@@ -68,6 +68,15 @@ module feng3d {
         }
 
         /**
+         * 获取顶点属性缓冲
+         * @param data  数据 
+         */
+        getTexture(context3D: WebGLRenderingContext, data: TextureInfo): WebGLBuffer {
+
+            return this.getContext3DBufferPool(context3D).getTexture(data);
+        }
+
+        /**
          * 3D环境缓冲池
          */
         private context3DBufferPools: { [context3DUID: string]: Context3DBufferPool } = {};
@@ -141,6 +150,22 @@ module feng3d {
         getVABuffer(data: Float32Array): WebGLBuffer {
             var buffer = this.getBuffer(data, WebGLRenderingContext.ARRAY_BUFFER);
             return buffer;
+        }
+
+        /**
+         * 获取顶点属性缓冲
+         * @param data  数据 
+         */
+        getTexture(data: TextureInfo) {
+
+            var context3D = this.context3D;
+            var texture = context3D.createTexture();   // Create a texture object
+            // Bind the texture object to the target
+            context3D.bindTexture(data.textureType, texture);
+            // Set the texture image
+            context3D.texImage2D(data.textureType, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, data.pixels);
+
+            return texture;
         }
 
         /**

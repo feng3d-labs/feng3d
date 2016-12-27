@@ -1804,7 +1804,7 @@ declare module feng3d {
          * 常量数据（包含纹理）列表
          */
         uniforms: {
-            [name: string]: Matrix3D | Vector3D | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
+            [name: string]: Matrix3D | Vector3D | TextureInfo;
         };
         /**
          * 渲染参数
@@ -1922,6 +1922,11 @@ declare module feng3d {
          * @param data  数据
          */
         getVABuffer(context3D: WebGLRenderingContext, data: Float32Array): WebGLBuffer;
+        /**
+         * 获取顶点属性缓冲
+         * @param data  数据
+         */
+        getTexture(context3D: WebGLRenderingContext, data: TextureInfo): WebGLBuffer;
         /**
          * 3D环境缓冲池
          */
@@ -2985,8 +2990,10 @@ declare module feng3d {
      * @author feng 2016-12-23
      */
     class TextureMaterial extends Material {
-        private _texture;
-        texture: Texture2D;
+        /**
+         * 纹理数据
+         */
+        texture: TextureInfo;
         /**
          * 激活
          * @param renderData	渲染数据
@@ -3018,22 +3025,20 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 纹理信息
+     * @author feng 2016-12-20
+     */
+    class TextureInfo {
+        textureType: number;
+        autoGenerateMip: boolean;
+        pixels?: ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
+    }
+    /**
      * 2D纹理
      * @author feng 2016-12-20
      */
-    class Texture2D extends RenderDataHolder {
-        autoGenerateMip: boolean;
-        pixels?: ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData: RenderAtomic): void;
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData: RenderAtomic): void;
+    class Texture2D extends TextureInfo {
+        constructor();
     }
 }
 declare module feng3d {

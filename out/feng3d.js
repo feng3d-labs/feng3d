@@ -3213,21 +3213,15 @@ var feng3d;
                 context3D.uniform4f(location, data.x, data.y, data.z, data.w);
                 break;
             case WebGLRenderingContext.SAMPLER_2D:
-                var image = data;
-                var texture = context3D.createTexture(); // Create a texture object
-                if (!texture) {
-                    console.log('Failed to create the texture object');
-                    return false;
-                }
-                context3D.pixelStorei(WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+                var textureData = data;
+                var texture = feng3d.context3DPool.getTexture(context3D, textureData);
                 // Enable texture unit0
                 context3D.activeTexture(WebGLRenderingContext.TEXTURE0);
                 // Bind the texture object to the target
-                context3D.bindTexture(WebGLRenderingContext.TEXTURE_2D, texture);
+                context3D.bindTexture(data.textureType, texture);
+                context3D.pixelStorei(WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
                 // Set the texture parameters
-                context3D.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
-                // Set the texture image
-                context3D.texImage2D(WebGLRenderingContext.TEXTURE_2D, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, image);
+                context3D.texParameteri(data.textureType, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
                 // Set the texture unit 0 to the sampler
                 context3D.uniform1i(location, 0);
                 break;
@@ -3339,6 +3333,13 @@ var feng3d;
         getVABuffer(context3D, data) {
             return this.getContext3DBufferPool(context3D).getVABuffer(data);
         }
+        /**
+         * 获取顶点属性缓冲
+         * @param data  数据
+         */
+        getTexture(context3D, data) {
+            return this.getContext3DBufferPool(context3D).getTexture(data);
+        }
     }
     feng3d.RenderBufferPool = RenderBufferPool;
     /**
@@ -3404,6 +3405,19 @@ var feng3d;
         getVABuffer(data) {
             var buffer = this.getBuffer(data, WebGLRenderingContext.ARRAY_BUFFER);
             return buffer;
+        }
+        /**
+         * 获取顶点属性缓冲
+         * @param data  数据
+         */
+        getTexture(data) {
+            var context3D = this.context3D;
+            var texture = context3D.createTexture(); // Create a texture object
+            // Bind the texture object to the target
+            context3D.bindTexture(data.textureType, texture);
+            // Set the texture image
+            context3D.texImage2D(data.textureType, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, data.pixels);
+            return texture;
         }
         /**
          * 获取缓冲
@@ -6233,18 +6247,6 @@ var feng3d;
      * @author feng 2016-12-23
      */
     class TextureMaterial extends feng3d.Material {
-        get texture() {
-            return this._texture;
-        }
-        set texture(value) {
-            if (this._texture != null) {
-                this.removeComponent(this._texture);
-            }
-            this._texture = value;
-            if (this._texture != null) {
-                this.addComponent(this._texture);
-            }
-        }
         /**
          * 激活
          * @param renderData	渲染数据
@@ -6255,6 +6257,7 @@ var feng3d;
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 2;
             renderData.fragmentMacro.NEED_UV++;
             renderData.fragmentMacro.NEED_UV_V++;
+            renderData.uniforms[feng3d.RenderDataID.texture_fs] = this.texture;
         }
         /**
          * 释放
@@ -6264,6 +6267,7 @@ var feng3d;
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
             renderData.fragmentMacro.NEED_UV--;
             renderData.fragmentMacro.NEED_UV_V--;
+            renderData.uniforms[feng3d.RenderDataID.texture_fs] = null;
             super.deactivate(renderData);
         }
     }
@@ -6294,27 +6298,20 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 纹理信息
+     * @author feng 2016-12-20
+     */
+    class TextureInfo {
+    }
+    feng3d.TextureInfo = TextureInfo;
+    /**
      * 2D纹理
      * @author feng 2016-12-20
      */
-    class Texture2D extends feng3d.RenderDataHolder {
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData) {
-            super.activate(renderData);
-            //
-            renderData.uniforms[feng3d.RenderDataID.texture_fs] = this.pixels;
-        }
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData) {
-            renderData.uniforms[feng3d.RenderDataID.texture_fs] = null;
-            //
-            super.deactivate(renderData);
+    class Texture2D extends TextureInfo {
+        constructor() {
+            super();
+            this.textureType = WebGLRenderingContext.TEXTURE_2D;
         }
     }
     feng3d.Texture2D = Texture2D;

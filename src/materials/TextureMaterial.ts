@@ -6,21 +6,10 @@ module feng3d {
      */
     export class TextureMaterial extends Material {
 
-        private _texture: Texture2D;
-
-        public get texture() {
-            return this._texture;
-        }
-
-        public set texture(value: Texture2D) {
-            if (this._texture != null) {
-                this.removeComponent(this._texture);
-            }
-            this._texture = value;
-            if (this._texture != null) {
-                this.addComponent(this._texture);
-            }
-        }
+        /**
+         * 纹理数据
+         */
+        public texture: TextureInfo;
 
         /**
 		 * 激活
@@ -33,6 +22,7 @@ module feng3d {
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 2;
             renderData.fragmentMacro.NEED_UV++;
             renderData.fragmentMacro.NEED_UV_V++;
+            renderData.uniforms[RenderDataID.texture_fs] = this.texture;
         }
 
         /**
@@ -44,6 +34,7 @@ module feng3d {
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
             renderData.fragmentMacro.NEED_UV--;
             renderData.fragmentMacro.NEED_UV_V--;
+            renderData.uniforms[RenderDataID.texture_fs] = null
             super.deactivate(renderData);
         }
     }
