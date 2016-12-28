@@ -291,7 +291,7 @@ module feng3d {
         public activate(renderData: RenderAtomic) {
 
             //
-            renderData.uniforms[RenderDataID.uMVMatrix] = this.globalMatrix3D;
+            renderData.uniforms[RenderDataID.u_modelMatrix] = this.globalMatrix3D;
             //
             super.activate(renderData);
         }
@@ -302,7 +302,7 @@ module feng3d {
 		 */
         public deactivate(renderData: RenderAtomic) {
 
-            delete renderData.uniforms[RenderDataID.uMVMatrix];
+            delete renderData.uniforms[RenderDataID.u_modelMatrix];
             super.deactivate(renderData);
         }
     }

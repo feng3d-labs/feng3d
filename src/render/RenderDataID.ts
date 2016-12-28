@@ -14,15 +14,24 @@ module feng3d {
         /**
          * 模型矩阵
          */
-        static uMVMatrix = "uMVMatrix";
+        static u_modelMatrix = "u_modelMatrix";
 
         /**
-         * 投影矩阵
+         * 世界投影矩阵
          */
-        static uPMatrix = "uPMatrix";
+        static u_viewProjection = "u_viewProjection";
 
-        static diffuseInput_fc_vector = "diffuseInput_fc_vector";
+        static u_diffuseInput = "u_diffuseInput";
 
-        static texture_fs = "texture_fs";
+        static s_texture = "s_texture";
+        /**
+         * 天空盒纹理
+         */
+        static s_skyboxTexture = "s_skyboxTexture";
+
+        /**
+         * 摄像机矩阵
+         */
+        static u_cameraMatrix = "u_cameraMatrix";
     }
 }

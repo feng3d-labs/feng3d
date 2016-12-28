@@ -1,8 +1,8 @@
-attribute vec3 vaPosition;
+attribute vec3 a_position;
 
-uniform mat4 uMVMatrix;
-uniform mat4 uPMatrix;
+uniform mat4 u_modelMatrix;
+uniform mat4 u_viewProjection;
 
 void main(void) {
-    gl_Position = uPMatrix * uMVMatrix * vec4(vaPosition, 1.0);
+    gl_Position = u_viewProjection * u_modelMatrix * vec4(a_position, 1.0);
 }

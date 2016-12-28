@@ -92,18 +92,20 @@
         "src/primitives/createCapsule.ts",
         "src/primitives/createCylinder.ts",
         "src/primitives/createSkyBox.ts",
+        //
+        "src/textures/TextureInfo.ts",
+        "src/textures/Texture2D.ts",
+        "src/textures/TextureCube.ts",
         //材质
         "src/materials/Material.ts",
         "src/materials/ColorMaterial.ts",
         "src/materials/SegmentMaterial.ts",
-        "src/materials/SkyBoxMaterial.ts",
         "src/materials/components/MaterialComponent.ts",
         "src/materials/TextureMaterial.ts",
+        "src/materials/SkyBoxMaterial.ts",
         //材质通道
         "src/materials/passes/MaterialPassBase.ts",
         "src/materials/passes/SegmentPass.ts",
-        //
-        "src/textures/Texture2D.ts",
         //灯光
         "src/light/LightType.ts",
         "src/light/Light.ts",

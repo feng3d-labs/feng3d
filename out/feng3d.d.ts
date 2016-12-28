@@ -1950,13 +1950,21 @@ declare module feng3d {
         /**
          * 模型矩阵
          */
-        static uMVMatrix: string;
+        static u_modelMatrix: string;
         /**
-         * 投影矩阵
+         * 世界投影矩阵
          */
-        static uPMatrix: string;
-        static diffuseInput_fc_vector: string;
-        static texture_fs: string;
+        static u_viewProjection: string;
+        static u_diffuseInput: string;
+        static s_texture: string;
+        /**
+         * 天空盒纹理
+         */
+        static s_skyboxTexture: string;
+        /**
+         * 摄像机矩阵
+         */
+        static u_cameraMatrix: string;
     }
 }
 declare module feng3d {
@@ -2148,6 +2156,10 @@ declare module feng3d {
          * 构建3D对象组件
          */
         constructor();
+        /**
+         * 全局矩阵
+         */
+        readonly globalMatrix3d: Matrix3D;
     }
 }
 declare module feng3d {
@@ -2428,19 +2440,19 @@ declare module feng3d {
         /**
          * 坐标
          */
-        static position: string;
+        static a_position: string;
         /**
          * 法线
          */
-        static normal: string;
+        static a_normal: string;
         /**
          * 切线
          */
-        static tangent: string;
+        static a_tangent: string;
         /**
          * uv（纹理坐标）
          */
-        static uv: string;
+        static a_uv: string;
     }
 }
 declare module feng3d {
@@ -2872,6 +2884,37 @@ declare module feng3d.primitives {
 }
 declare module feng3d {
     /**
+     * 纹理信息
+     * @author feng 2016-12-20
+     */
+    class TextureInfo {
+        textureType: number;
+        autoGenerateMip: boolean;
+        pixels: HTMLImageElement | HTMLImageElement[];
+    }
+}
+declare module feng3d {
+    /**
+     * 2D纹理
+     * @author feng 2016-12-20
+     */
+    class Texture2D extends TextureInfo {
+        pixels: HTMLImageElement;
+        constructor();
+    }
+}
+declare module feng3d {
+    /**
+     * 立方体纹理
+     * @author feng 2016-12-28
+     */
+    class TextureCube extends TextureInfo {
+        pixels: HTMLImageElement[];
+        constructor();
+    }
+}
+declare module feng3d {
+    /**
      * 材质
      * @author feng 2016-05-02
      */
@@ -2958,14 +3001,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 天空盒材质
-     * @author feng 2016-12-20
-     */
-    class SkyBoxMaterial extends Material {
-    }
-}
-declare module feng3d {
-    /**
      * 材质组件
      * @author feng 2016-11-01
      */
@@ -3008,6 +3043,26 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 天空盒材质
+     * @author feng 2016-12-20
+     */
+    class SkyBoxMaterial extends Material {
+        skyBoxTextureCube: TextureCube;
+        constructor();
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData: RenderAtomic): void;
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData: RenderAtomic): void;
+    }
+}
+declare module feng3d {
+    /**
      * 材质通道
      * @author feng 2016-05-02
      */
@@ -3021,24 +3076,6 @@ declare module feng3d {
      */
     class SegmentPass extends MaterialPassBase {
         render(): void;
-    }
-}
-declare module feng3d {
-    /**
-     * 纹理信息
-     * @author feng 2016-12-20
-     */
-    class TextureInfo {
-        textureType: number;
-        autoGenerateMip: boolean;
-        pixels?: ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
-    }
-    /**
-     * 2D纹理
-     * @author feng 2016-12-20
-     */
-    class Texture2D extends TextureInfo {
-        constructor();
     }
 }
 declare module feng3d {

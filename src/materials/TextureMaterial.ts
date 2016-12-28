@@ -22,7 +22,7 @@ module feng3d {
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 2;
             renderData.fragmentMacro.NEED_UV++;
             renderData.fragmentMacro.NEED_UV_V++;
-            renderData.uniforms[RenderDataID.texture_fs] = this.texture;
+            renderData.uniforms[RenderDataID.s_texture] = this.texture;
         }
 
         /**
@@ -34,7 +34,7 @@ module feng3d {
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
             renderData.fragmentMacro.NEED_UV--;
             renderData.fragmentMacro.NEED_UV_V--;
-            renderData.uniforms[RenderDataID.texture_fs] = null
+            renderData.uniforms[RenderDataID.s_texture] = null
             super.deactivate(renderData);
         }
     }

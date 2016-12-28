@@ -1,12 +1,12 @@
 precision mediump float;
 
 #if DIFFUSE_INPUT_TYPE == 1
-    uniform vec4 diffuseInput_fc_vector;
+    uniform vec4 u_diffuseInput;
 #endif
 
 #if DIFFUSE_INPUT_TYPE == 2
-    uniform sampler2D texture_fs;
-    varying vec2 uv_v;
+    uniform sampler2D s_texture;
+    varying vec2 v_uv;
 #endif
 
 void main(void) {
@@ -16,11 +16,11 @@ void main(void) {
     #endif
 
     #if DIFFUSE_INPUT_TYPE == 1
-        gl_FragColor = diffuseInput_fc_vector;
+        gl_FragColor = u_diffuseInput;
     #endif
 
     #if DIFFUSE_INPUT_TYPE == 2
-        gl_FragColor = texture2D(texture_fs, uv_v);
+        gl_FragColor = texture2D(s_texture, v_uv);
     #endif
 
 }

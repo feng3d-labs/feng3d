@@ -73,7 +73,8 @@ module feng3d {
         public activate(renderData: RenderAtomic) {
 
             //
-            renderData.uniforms[RenderDataID.uPMatrix] = this.viewProjection;
+            renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
+            renderData.uniforms[RenderDataID.u_cameraMatrix] = this.globalMatrix3d;
             //
             super.activate(renderData);
         }
@@ -84,7 +85,8 @@ module feng3d {
 		 */
         public deactivate(renderData: RenderAtomic) {
 
-            delete renderData.uniforms[RenderDataID.uPMatrix];
+            delete renderData.uniforms[RenderDataID.u_viewProjection];
+            delete renderData.uniforms[RenderDataID.u_cameraMatrix];
             super.deactivate(renderData);
         }
     }

@@ -3517,13 +3517,21 @@ var feng3d;
     /**
      * 模型矩阵
      */
-    RenderDataID.uMVMatrix = "uMVMatrix";
+    RenderDataID.u_modelMatrix = "u_modelMatrix";
     /**
-     * 投影矩阵
+     * 世界投影矩阵
      */
-    RenderDataID.uPMatrix = "uPMatrix";
-    RenderDataID.diffuseInput_fc_vector = "diffuseInput_fc_vector";
-    RenderDataID.texture_fs = "texture_fs";
+    RenderDataID.u_viewProjection = "u_viewProjection";
+    RenderDataID.u_diffuseInput = "u_diffuseInput";
+    RenderDataID.s_texture = "s_texture";
+    /**
+     * 天空盒纹理
+     */
+    RenderDataID.s_skyboxTexture = "s_skyboxTexture";
+    /**
+     * 摄像机矩阵
+     */
+    RenderDataID.u_cameraMatrix = "u_cameraMatrix";
     feng3d.RenderDataID = RenderDataID;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -3805,6 +3813,12 @@ var feng3d;
          * 所属对象
          */
         get object3D() { return this._parentComponent; }
+        /**
+         * 全局矩阵
+         */
+        get globalMatrix3d() {
+            return this.object3D ? this.object3D.transform.globalMatrix3D : new feng3d.Matrix3D();
+        }
     }
     feng3d.Object3DComponent = Object3DComponent;
 })(feng3d || (feng3d = {}));
@@ -4052,7 +4066,7 @@ var feng3d;
          */
         activate(renderData) {
             //
-            renderData.uniforms[feng3d.RenderDataID.uMVMatrix] = this.globalMatrix3D;
+            renderData.uniforms[feng3d.RenderDataID.u_modelMatrix] = this.globalMatrix3D;
             //
             super.activate(renderData);
         }
@@ -4061,7 +4075,7 @@ var feng3d;
          * @param renderData	渲染数据
          */
         deactivate(renderData) {
-            delete renderData.uniforms[feng3d.RenderDataID.uMVMatrix];
+            delete renderData.uniforms[feng3d.RenderDataID.u_modelMatrix];
             super.deactivate(renderData);
         }
     }
@@ -4221,19 +4235,19 @@ var feng3d;
     /**
      * 坐标
      */
-    GLAttribute.position = "vaPosition";
+    GLAttribute.a_position = "a_position";
     /**
      * 法线
      */
-    GLAttribute.normal = "vaNormal";
+    GLAttribute.a_normal = "a_normal";
     /**
      * 切线
      */
-    GLAttribute.tangent = "vaTangent";
+    GLAttribute.a_tangent = "a_tangent";
     /**
      * uv（纹理坐标）
      */
-    GLAttribute.uv = "vaUV";
+    GLAttribute.a_uv = "a_uv";
     feng3d.GLAttribute = GLAttribute;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -4377,7 +4391,7 @@ var feng3d;
                 indices.set([i * 2, i * 2 + 1], i * 2);
                 positionData.set(element.positionData, i * segmentPositionStep);
             }
-            this.setVAData(feng3d.GLAttribute.position, positionData, 3);
+            this.setVAData(feng3d.GLAttribute.a_position, positionData, 3);
             this.setIndices(indices);
         }
         /**
@@ -4786,7 +4800,8 @@ var feng3d;
          */
         activate(renderData) {
             //
-            renderData.uniforms[feng3d.RenderDataID.uPMatrix] = this.viewProjection;
+            renderData.uniforms[feng3d.RenderDataID.u_viewProjection] = this.viewProjection;
+            renderData.uniforms[feng3d.RenderDataID.u_cameraMatrix] = this.globalMatrix3d;
             //
             super.activate(renderData);
         }
@@ -4795,7 +4810,8 @@ var feng3d;
          * @param renderData	渲染数据
          */
         deactivate(renderData) {
-            delete renderData.uniforms[feng3d.RenderDataID.uPMatrix];
+            delete renderData.uniforms[feng3d.RenderDataID.u_viewProjection];
+            delete renderData.uniforms[feng3d.RenderDataID.u_cameraMatrix];
             super.deactivate(renderData);
         }
     }
@@ -4844,23 +4860,23 @@ var feng3d;
          * @param yUp 正面朝向 true:Y+ false:Z+
          * @param elements 顶点元素列表
          */
-        function createPlane(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true, elements = [feng3d.GLAttribute.position, feng3d.GLAttribute.uv, feng3d.GLAttribute.normal, feng3d.GLAttribute.tangent]) {
+        function createPlane(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true, elements = [feng3d.GLAttribute.a_position, feng3d.GLAttribute.a_uv, feng3d.GLAttribute.a_normal, feng3d.GLAttribute.a_tangent]) {
             var geometry = new feng3d.Geometry();
             elements.forEach(element => {
                 switch (element) {
-                    case feng3d.GLAttribute.position:
+                    case feng3d.GLAttribute.a_position:
                         var vertexPositionData = buildPosition(width, height, segmentsW, segmentsH, yUp);
                         geometry.setVAData(element, vertexPositionData, 3);
                         break;
-                    case feng3d.GLAttribute.normal:
+                    case feng3d.GLAttribute.a_normal:
                         var vertexNormalData = buildNormal(segmentsW, segmentsH, yUp);
                         geometry.setVAData(element, vertexNormalData, 3);
                         break;
-                    case feng3d.GLAttribute.tangent:
+                    case feng3d.GLAttribute.a_tangent:
                         var vertexTangentData = buildTangent(segmentsW, segmentsH, yUp);
                         geometry.setVAData(element, vertexTangentData, 3);
                         break;
-                    case feng3d.GLAttribute.uv:
+                    case feng3d.GLAttribute.a_uv:
                         var uvData = buildUVs(segmentsW, segmentsH);
                         geometry.setVAData(element, uvData, 2);
                         break;
@@ -5010,23 +5026,23 @@ var feng3d;
          * @param   tile6           是否为6块贴图
          * @param   elements        需要生成数据的属性
          */
-        function createCube(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true, elements = [feng3d.GLAttribute.position, feng3d.GLAttribute.uv, feng3d.GLAttribute.normal, feng3d.GLAttribute.tangent]) {
+        function createCube(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true, elements = [feng3d.GLAttribute.a_position, feng3d.GLAttribute.a_uv, feng3d.GLAttribute.a_normal, feng3d.GLAttribute.a_tangent]) {
             var geometry = new feng3d.Geometry();
             elements.forEach(element => {
                 switch (element) {
-                    case feng3d.GLAttribute.position:
+                    case feng3d.GLAttribute.a_position:
                         var vertexPositionData = buildPosition(width, height, depth, segmentsW, segmentsH, segmentsD);
                         geometry.setVAData(element, vertexPositionData, 3);
                         break;
-                    case feng3d.GLAttribute.normal:
+                    case feng3d.GLAttribute.a_normal:
                         var vertexNormalData = buildNormal(segmentsW, segmentsH, segmentsD);
                         geometry.setVAData(element, vertexNormalData, 3);
                         break;
-                    case feng3d.GLAttribute.tangent:
+                    case feng3d.GLAttribute.a_tangent:
                         var vertexTangentData = buildTangent(segmentsW, segmentsH, segmentsD);
                         geometry.setVAData(element, vertexTangentData, 3);
                         break;
-                    case feng3d.GLAttribute.uv:
+                    case feng3d.GLAttribute.a_uv:
                         var uvData = buildUVs(segmentsW, segmentsH, segmentsD, tile6);
                         geometry.setVAData(element, uvData, 2);
                         break;
@@ -5385,24 +5401,24 @@ var feng3d;
          * @param yUp 正面朝向 true:Y+ false:Z+
          * @param elements 顶点元素列表
          */
-        function createSphere(radius = 50, segmentsW = 16, segmentsH = 12, yUp = true, elements = [feng3d.GLAttribute.position, feng3d.GLAttribute.uv, feng3d.GLAttribute.normal, feng3d.GLAttribute.tangent]) {
+        function createSphere(radius = 50, segmentsW = 16, segmentsH = 12, yUp = true, elements = [feng3d.GLAttribute.a_position, feng3d.GLAttribute.a_uv, feng3d.GLAttribute.a_normal, feng3d.GLAttribute.a_tangent]) {
             var geometry = new feng3d.Geometry();
             var geometryData = buildGeometry(radius, segmentsW, segmentsH, yUp);
             elements.forEach(element => {
                 switch (element) {
-                    case feng3d.GLAttribute.position:
+                    case feng3d.GLAttribute.a_position:
                         var vertexPositionData = geometryData[element];
                         geometry.setVAData(element, vertexPositionData, 3);
                         break;
-                    case feng3d.GLAttribute.normal:
+                    case feng3d.GLAttribute.a_normal:
                         var vertexNormalData = geometryData[element];
                         geometry.setVAData(element, vertexNormalData, 3);
                         break;
-                    case feng3d.GLAttribute.tangent:
+                    case feng3d.GLAttribute.a_tangent:
                         var vertexTangentData = geometryData[element];
                         geometry.setVAData(element, vertexTangentData, 3);
                         break;
-                    case feng3d.GLAttribute.uv:
+                    case feng3d.GLAttribute.a_uv:
                         var uvData = buildUVs(segmentsW, segmentsH);
                         geometry.setVAData(element, uvData, 2);
                         break;
@@ -5485,9 +5501,9 @@ var feng3d;
                 }
             }
             var result = {};
-            result[feng3d.GLAttribute.position] = vertexPositionData;
-            result[feng3d.GLAttribute.normal] = vertexNormalData;
-            result[feng3d.GLAttribute.tangent] = vertexTangentData;
+            result[feng3d.GLAttribute.a_position] = vertexPositionData;
+            result[feng3d.GLAttribute.a_normal] = vertexNormalData;
+            result[feng3d.GLAttribute.a_tangent] = vertexTangentData;
             return result;
         }
         /**
@@ -5560,24 +5576,24 @@ var feng3d;
          * @param yUp 正面朝向 true:Y+ false:Z+
          * @param elements 顶点元素列表
          */
-        function createCapsule(radius = 50, height = 100, segmentsW = 16, segmentsH = 15, yUp = true, elements = [feng3d.GLAttribute.position, feng3d.GLAttribute.uv, feng3d.GLAttribute.normal, feng3d.GLAttribute.tangent]) {
+        function createCapsule(radius = 50, height = 100, segmentsW = 16, segmentsH = 15, yUp = true, elements = [feng3d.GLAttribute.a_position, feng3d.GLAttribute.a_uv, feng3d.GLAttribute.a_normal, feng3d.GLAttribute.a_tangent]) {
             var geometry = new feng3d.Geometry();
             var geometryData = buildGeometry(radius, height, segmentsW, segmentsH, yUp);
             elements.forEach(element => {
                 switch (element) {
-                    case feng3d.GLAttribute.position:
+                    case feng3d.GLAttribute.a_position:
                         var vertexPositionData = geometryData[element];
                         geometry.setVAData(element, vertexPositionData, 3);
                         break;
-                    case feng3d.GLAttribute.normal:
+                    case feng3d.GLAttribute.a_normal:
                         var vertexNormalData = geometryData[element];
                         geometry.setVAData(element, vertexNormalData, 3);
                         break;
-                    case feng3d.GLAttribute.tangent:
+                    case feng3d.GLAttribute.a_tangent:
                         var vertexTangentData = geometryData[element];
                         geometry.setVAData(element, vertexTangentData, 3);
                         break;
-                    case feng3d.GLAttribute.uv:
+                    case feng3d.GLAttribute.a_uv:
                         var uvData = buildUVs(segmentsW, segmentsH);
                         geometry.setVAData(element, uvData, 2);
                         break;
@@ -5662,9 +5678,9 @@ var feng3d;
                 }
             }
             var result = {};
-            result[feng3d.GLAttribute.position] = vertexPositionData;
-            result[feng3d.GLAttribute.normal] = vertexNormalData;
-            result[feng3d.GLAttribute.tangent] = vertexTangentData;
+            result[feng3d.GLAttribute.a_position] = vertexPositionData;
+            result[feng3d.GLAttribute.a_normal] = vertexNormalData;
+            result[feng3d.GLAttribute.a_tangent] = vertexTangentData;
             return result;
         }
         /**
@@ -5731,24 +5747,24 @@ var feng3d;
         /**
          * 创建圆柱体
          */
-        function createCylinder(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true, elements = [feng3d.GLAttribute.position, feng3d.GLAttribute.uv, feng3d.GLAttribute.normal, feng3d.GLAttribute.tangent]) {
+        function createCylinder(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true, elements = [feng3d.GLAttribute.a_position, feng3d.GLAttribute.a_uv, feng3d.GLAttribute.a_normal, feng3d.GLAttribute.a_tangent]) {
             var geometry = new feng3d.Geometry();
             var geometryData = buildGeometry(topRadius, bottomRadius, height, segmentsW, segmentsH, topClosed, bottomClosed, surfaceClosed, yUp);
             elements.forEach(element => {
                 switch (element) {
-                    case feng3d.GLAttribute.position:
+                    case feng3d.GLAttribute.a_position:
                         var vertexPositionData = geometryData[element];
                         geometry.setVAData(element, vertexPositionData, 3);
                         break;
-                    case feng3d.GLAttribute.normal:
+                    case feng3d.GLAttribute.a_normal:
                         var vertexNormalData = geometryData[element];
                         geometry.setVAData(element, vertexNormalData, 3);
                         break;
-                    case feng3d.GLAttribute.tangent:
+                    case feng3d.GLAttribute.a_tangent:
                         var vertexTangentData = geometryData[element];
                         geometry.setVAData(element, vertexTangentData, 3);
                         break;
-                    case feng3d.GLAttribute.uv:
+                    case feng3d.GLAttribute.a_uv:
                         var uvData = buildUVs(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed);
                         geometry.setVAData(element, uvData, 2);
                         break;
@@ -5922,9 +5938,9 @@ var feng3d;
                 }
             }
             var result = {};
-            result[feng3d.GLAttribute.position] = vertexPositionData;
-            result[feng3d.GLAttribute.normal] = vertexNormalData;
-            result[feng3d.GLAttribute.tangent] = vertexTangentData;
+            result[feng3d.GLAttribute.a_position] = vertexPositionData;
+            result[feng3d.GLAttribute.a_normal] = vertexNormalData;
+            result[feng3d.GLAttribute.a_tangent] = vertexTangentData;
             return result;
             function addVertex(px, py, pz, nx, ny, nz, tx, ty, tz) {
                 vertexPositionData[index] = px;
@@ -6064,7 +6080,7 @@ var feng3d;
                 1, -1, 1,
                 -1, -1, 1 //
             ]);
-            geometry.setVAData(feng3d.GLAttribute.position, vertexPositionData, 3);
+            geometry.setVAData(feng3d.GLAttribute.a_position, vertexPositionData, 3);
             //6个面，12个三角形，36个顶点索引
             var indices = new Uint16Array([
                 0, 1, 2, 2, 3, 0,
@@ -6079,6 +6095,44 @@ var feng3d;
         }
         primitives.createSkyBox = createSkyBox;
     })(primitives = feng3d.primitives || (feng3d.primitives = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 纹理信息
+     * @author feng 2016-12-20
+     */
+    class TextureInfo {
+    }
+    feng3d.TextureInfo = TextureInfo;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 2D纹理
+     * @author feng 2016-12-20
+     */
+    class Texture2D extends feng3d.TextureInfo {
+        constructor() {
+            super();
+            this.textureType = WebGLRenderingContext.TEXTURE_2D;
+        }
+    }
+    feng3d.Texture2D = Texture2D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 立方体纹理
+     * @author feng 2016-12-28
+     */
+    class TextureCube extends feng3d.TextureInfo {
+        constructor() {
+            super();
+            this.textureType = WebGLRenderingContext.TEXTURE_CUBE_MAP;
+        }
+    }
+    feng3d.TextureCube = TextureCube;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6156,7 +6210,7 @@ var feng3d;
         activate(renderData) {
             super.activate(renderData);
             //
-            renderData.uniforms[feng3d.RenderDataID.diffuseInput_fc_vector] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
+            renderData.uniforms[feng3d.RenderDataID.u_diffuseInput] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 1;
         }
         /**
@@ -6164,7 +6218,7 @@ var feng3d;
          * @param renderData	渲染数据
          */
         deactivate(renderData) {
-            delete renderData.uniforms[feng3d.RenderDataID.diffuseInput_fc_vector];
+            delete renderData.uniforms[feng3d.RenderDataID.u_diffuseInput];
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
             super.deactivate(renderData);
         }
@@ -6213,16 +6267,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 天空盒材质
-     * @author feng 2016-12-20
-     */
-    class SkyBoxMaterial extends feng3d.Material {
-    }
-    feng3d.SkyBoxMaterial = SkyBoxMaterial;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 材质组件
      * @author feng 2016-11-01
      */
@@ -6257,7 +6301,7 @@ var feng3d;
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 2;
             renderData.fragmentMacro.NEED_UV++;
             renderData.fragmentMacro.NEED_UV_V++;
-            renderData.uniforms[feng3d.RenderDataID.texture_fs] = this.texture;
+            renderData.uniforms[feng3d.RenderDataID.s_texture] = this.texture;
         }
         /**
          * 释放
@@ -6267,11 +6311,42 @@ var feng3d;
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
             renderData.fragmentMacro.NEED_UV--;
             renderData.fragmentMacro.NEED_UV_V--;
-            renderData.uniforms[feng3d.RenderDataID.texture_fs] = null;
+            renderData.uniforms[feng3d.RenderDataID.s_texture] = null;
             super.deactivate(renderData);
         }
     }
     feng3d.TextureMaterial = TextureMaterial;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 天空盒材质
+     * @author feng 2016-12-20
+     */
+    class SkyBoxMaterial extends feng3d.Material {
+        constructor() {
+            super();
+            this.shaderName = "skybox";
+        }
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData) {
+            super.activate(renderData);
+            //
+            renderData.uniforms[feng3d.RenderDataID.s_skyboxTexture] = this.skyBoxTextureCube;
+        }
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData) {
+            renderData.uniforms[feng3d.RenderDataID.s_skyboxTexture] = null;
+            super.deactivate(renderData);
+        }
+    }
+    feng3d.SkyBoxMaterial = SkyBoxMaterial;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6294,27 +6369,6 @@ var feng3d;
         }
     }
     feng3d.SegmentPass = SegmentPass;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 纹理信息
-     * @author feng 2016-12-20
-     */
-    class TextureInfo {
-    }
-    feng3d.TextureInfo = TextureInfo;
-    /**
-     * 2D纹理
-     * @author feng 2016-12-20
-     */
-    class Texture2D extends TextureInfo {
-        constructor() {
-            super();
-            this.textureType = WebGLRenderingContext.TEXTURE_2D;
-        }
-    }
-    feng3d.Texture2D = Texture2D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

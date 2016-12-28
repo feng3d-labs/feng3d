@@ -9,25 +9,25 @@ module feng3d.primitives {
      * @param yUp 正面朝向 true:Y+ false:Z+
      * @param elements 顶点元素列表
      */
-    export function createPlane(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true, elements = [GLAttribute.position, GLAttribute.uv, GLAttribute.normal, GLAttribute.tangent]): Geometry {
+    export function createPlane(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true, elements = [GLAttribute.a_position, GLAttribute.a_uv, GLAttribute.a_normal, GLAttribute.a_tangent]): Geometry {
 
         var geometry = new Geometry();
 
         elements.forEach(element => {
             switch (element) {
-                case GLAttribute.position:
+                case GLAttribute.a_position:
                     var vertexPositionData = buildPosition(width, height, segmentsW, segmentsH, yUp);
                     geometry.setVAData(element, vertexPositionData, 3);
                     break;
-                case GLAttribute.normal:
+                case GLAttribute.a_normal:
                     var vertexNormalData = buildNormal(segmentsW, segmentsH, yUp);
                     geometry.setVAData(element, vertexNormalData, 3)
                     break;
-                case GLAttribute.tangent:
+                case GLAttribute.a_tangent:
                     var vertexTangentData = buildTangent(segmentsW, segmentsH, yUp);
                     geometry.setVAData(element, vertexTangentData, 3)
                     break;
-                case GLAttribute.uv:
+                case GLAttribute.a_uv:
                     var uvData = buildUVs(segmentsW, segmentsH);
                     geometry.setVAData(element, uvData, 2);
                     break;

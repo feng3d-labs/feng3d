@@ -42,7 +42,7 @@ module feng3d {
                 positionData.set(element.positionData, i * segmentPositionStep);
             }
 
-            this.setVAData(GLAttribute.position, positionData, 3);
+            this.setVAData(GLAttribute.a_position, positionData, 3);
             this.setIndices(indices);
         }
 

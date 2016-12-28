@@ -30,7 +30,7 @@ module feng3d {
 
             super.activate(renderData);
             //
-            renderData.uniforms[RenderDataID.diffuseInput_fc_vector] = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
+            renderData.uniforms[RenderDataID.u_diffuseInput] = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 1;
         }
 
@@ -40,7 +40,7 @@ module feng3d {
 		 */
         public deactivate(renderData: RenderAtomic) {
 
-            delete renderData.uniforms[RenderDataID.diffuseInput_fc_vector];
+            delete renderData.uniforms[RenderDataID.u_diffuseInput];
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
             super.deactivate(renderData);
         }

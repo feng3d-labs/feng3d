@@ -8,21 +8,21 @@ module feng3d {
         /**
          * 坐标
          */
-        static position = "vaPosition";
+        static a_position = "a_position";
 
         /**
          * 法线
          */
-        static normal = "vaNormal";
+        static a_normal = "a_normal";
 
         /**
          * 切线
          */
-        static tangent = "vaTangent";
+        static a_tangent = "a_tangent";
 
         /**
          * uv（纹理坐标）
          */
-        static uv = "vaUV";
+        static a_uv = "a_uv";
     }
 }

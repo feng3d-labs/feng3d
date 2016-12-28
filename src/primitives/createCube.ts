@@ -11,24 +11,24 @@ module feng3d.primitives {
      * @param   tile6           是否为6块贴图
      * @param   elements        需要生成数据的属性
      */
-    export function createCube(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true, elements = [GLAttribute.position, GLAttribute.uv, GLAttribute.normal, GLAttribute.tangent]) {
+    export function createCube(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true, elements = [GLAttribute.a_position, GLAttribute.a_uv, GLAttribute.a_normal, GLAttribute.a_tangent]) {
 
         var geometry = new Geometry();
         elements.forEach(element => {
             switch (element) {
-                case GLAttribute.position:
+                case GLAttribute.a_position:
                     var vertexPositionData = buildPosition(width, height, depth, segmentsW, segmentsH, segmentsD);
                     geometry.setVAData(element, vertexPositionData, 3);
                     break;
-                case GLAttribute.normal:
+                case GLAttribute.a_normal:
                     var vertexNormalData = buildNormal(segmentsW, segmentsH, segmentsD);
                     geometry.setVAData(element, vertexNormalData, 3)
                     break;
-                case GLAttribute.tangent:
+                case GLAttribute.a_tangent:
                     var vertexTangentData = buildTangent(segmentsW, segmentsH, segmentsD);
                     geometry.setVAData(element, vertexTangentData, 3)
                     break;
-                case GLAttribute.uv:
+                case GLAttribute.a_uv:
                     var uvData = buildUVs(segmentsW, segmentsH, segmentsD, tile6);
                     geometry.setVAData(element, uvData, 2);
                     break;

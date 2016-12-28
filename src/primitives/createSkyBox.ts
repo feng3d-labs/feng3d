@@ -17,7 +17,7 @@ module feng3d.primitives {
             1, -1, 1,//
             -1, -1, 1 //
         ]);
-        geometry.setVAData(GLAttribute.position, vertexPositionData, 3);
+        geometry.setVAData(GLAttribute.a_position, vertexPositionData, 3);
 
         //6个面，12个三角形，36个顶点索引
         var indices = new Uint16Array([ //

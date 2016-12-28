@@ -8,26 +8,26 @@ module feng3d.primitives {
      * @param yUp 正面朝向 true:Y+ false:Z+
      * @param elements 顶点元素列表
      */
-    export function createSphere(radius = 50, segmentsW = 16, segmentsH = 12, yUp = true, elements = [GLAttribute.position, GLAttribute.uv, GLAttribute.normal, GLAttribute.tangent]): Geometry {
+    export function createSphere(radius = 50, segmentsW = 16, segmentsH = 12, yUp = true, elements = [GLAttribute.a_position, GLAttribute.a_uv, GLAttribute.a_normal, GLAttribute.a_tangent]): Geometry {
 
         var geometry = new Geometry();
 
         var geometryData = buildGeometry(radius, segmentsW, segmentsH, yUp);
         elements.forEach(element => {
             switch (element) {
-                case GLAttribute.position:
+                case GLAttribute.a_position:
                     var vertexPositionData = geometryData[element];
                     geometry.setVAData(element, vertexPositionData, 3);
                     break;
-                case GLAttribute.normal:
+                case GLAttribute.a_normal:
                     var vertexNormalData = geometryData[element];
                     geometry.setVAData(element, vertexNormalData, 3);
                     break;
-                case GLAttribute.tangent:
+                case GLAttribute.a_tangent:
                     var vertexTangentData = geometryData[element];
                     geometry.setVAData(element, vertexTangentData, 3);
                     break;
-                case GLAttribute.uv:
+                case GLAttribute.a_uv:
                     var uvData = buildUVs(segmentsW, segmentsH);
                     geometry.setVAData(element, uvData, 2);
                     break;
@@ -125,9 +125,9 @@ module feng3d.primitives {
             }
         }
         var result = {};
-        result[GLAttribute.position] = vertexPositionData;
-        result[GLAttribute.normal] = vertexNormalData;
-        result[GLAttribute.tangent] = vertexTangentData;
+        result[GLAttribute.a_position] = vertexPositionData;
+        result[GLAttribute.a_normal] = vertexNormalData;
+        result[GLAttribute.a_tangent] = vertexTangentData;
         return result;
     }
 

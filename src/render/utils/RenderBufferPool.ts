@@ -163,7 +163,7 @@ module feng3d {
             // Bind the texture object to the target
             context3D.bindTexture(data.textureType, texture);
             // Set the texture image
-            context3D.texImage2D(data.textureType, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, data.pixels);
+            context3D.texImage2D(data.textureType, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, <HTMLImageElement>data.pixels);
 
             return texture;
         }
