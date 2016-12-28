@@ -1752,6 +1752,7 @@ declare module feng3d {
      * @author feng 2016-6-7
      */
     class RenderDataHolder extends Component {
+        protected shaderName: string;
         private _subRenderDataHolders;
         /**
          * 创建Context3D数据缓冲
@@ -1785,7 +1786,7 @@ declare module feng3d {
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      * @author feng 2016-06-20
      */
-    class RenderAtomic {
+    class RenderAtomic implements IRenderData {
         /**
          * 顶点索引缓冲
          */
@@ -1811,13 +1812,9 @@ declare module feng3d {
          */
         shaderParams: ShaderParams;
         /**
-         * 顶点宏
+         * 着色器宏定义
          */
-        vertexMacro: VertexMacro;
-        /**
-         * 片段宏
-         */
-        fragmentMacro: FragmentMacro;
+        shaderMacro: ShaderMacro;
         /**
          * 绘制
          */
@@ -1879,6 +1876,42 @@ declare module feng3d {
          * 数据步长
          */
         stride: number;
+    }
+}
+declare module feng3d {
+    /**
+     * 渲染所需数据
+     * @author feng 2016-12-28
+     */
+    interface IRenderData {
+        /**
+         * 顶点索引缓冲
+         */
+        indexBuffer?: IndexRenderData;
+        /**
+         * 渲染程序名称（路径）
+         */
+        shaderName?: string;
+        /**
+         * 属性数据列表
+         */
+        attributes?: {
+            [name: string]: AttributeRenderData;
+        };
+        /**
+         * 常量数据（包含纹理）列表
+         */
+        uniforms?: {
+            [name: string]: Matrix3D | Vector3D | TextureInfo;
+        };
+        /**
+         * 渲染参数
+         */
+        shaderParams?: ShaderParams;
+        /**
+         * 着色器宏定义
+         */
+        shaderMacro?: ShaderMacro;
     }
 }
 declare module feng3d {
@@ -2002,16 +2035,10 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 顶点宏
+     * 着色器宏定义
      * @author feng 2016-12-17
      */
-    interface VertexMacro {
-    }
-    /**
-     * 片段宏
-     * @author feng 2016-12-17
-     */
-    class FragmentMacro {
+    class ShaderMacro {
         DIFFUSE_INPUT_TYPE: 0 | 1 | 2;
         /** 是否需要属性uv */
         NEED_UV: number;
@@ -2927,16 +2954,10 @@ declare module feng3d {
      * @author feng 2016-05-02
      */
     class Material extends RenderDataHolder {
-        protected shaderName: string;
-        private _pass;
         /**
         * 渲染模式
         */
         renderMode: RenderMode;
-        /**
-         * 渲染通道
-         */
-        pass: MaterialPassBase;
         /**
          * 构建材质
          */
@@ -3068,23 +3089,6 @@ declare module feng3d {
          * @param renderData	渲染数据
          */
         deactivate(renderData: RenderAtomic): void;
-    }
-}
-declare module feng3d {
-    /**
-     * 材质通道
-     * @author feng 2016-05-02
-     */
-    class MaterialPassBase extends Component {
-    }
-}
-declare module feng3d {
-    /**
-     * 线段材质通道
-     * @author feng 2016-05-02
-     */
-    class SegmentPass extends MaterialPassBase {
-        render(): void;
     }
 }
 declare module feng3d {

@@ -3120,13 +3120,9 @@ var feng3d;
              */
             this.shaderParams = new feng3d.ShaderParams();
             /**
-             * 顶点宏
+             * 着色器宏定义
              */
-            this.vertexMacro = {};
-            /**
-             * 片段宏
-             */
-            this.fragmentMacro = new feng3d.FragmentMacro();
+            this.shaderMacro = new feng3d.ShaderMacro();
         }
         /**
          * 绘制
@@ -3136,10 +3132,8 @@ var feng3d;
             if (!shaderData.isOk)
                 return;
             //应用宏
-            // var vertexCode = shaderData.vertexCode;
-            // var fragmentCode = shaderData.fragmentCode;
-            var vertexCode = feng3d.ShaderLib.applyMacro(shaderData.vertexCode, this.fragmentMacro);
-            var fragmentCode = feng3d.ShaderLib.applyMacro(shaderData.fragmentCode, this.fragmentMacro);
+            var vertexCode = feng3d.ShaderLib.applyMacro(shaderData.vertexCode, this.shaderMacro);
+            var fragmentCode = feng3d.ShaderLib.applyMacro(shaderData.fragmentCode, this.shaderMacro);
             //渲染程序
             var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);
@@ -3610,10 +3604,10 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 片段宏
+     * 着色器宏定义
      * @author feng 2016-12-17
      */
-    class FragmentMacro {
+    class ShaderMacro {
         constructor() {
             this.DIFFUSE_INPUT_TYPE = 0;
             /** 是否需要属性uv */
@@ -3622,7 +3616,7 @@ var feng3d;
             this.NEED_UV_V = 0;
         }
     }
-    feng3d.FragmentMacro = FragmentMacro;
+    feng3d.ShaderMacro = ShaderMacro;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6178,23 +6172,11 @@ var feng3d;
          */
         constructor() {
             super();
-            this.shaderName = "default";
             /**
             * 渲染模式
             */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
-            this.pass = new feng3d.MaterialPassBase();
-        }
-        /**
-         * 渲染通道
-         */
-        get pass() {
-            return this._pass;
-        }
-        set pass(value) {
-            this._pass && this.removeComponent(this._pass);
-            this._pass = value;
-            this._pass && this.addComponent(this._pass);
+            this.shaderName = "default";
         }
         /**
          * 激活
@@ -6205,7 +6187,7 @@ var feng3d;
             super.activate(renderData, camera);
             //
             renderData.shaderName = this.shaderName;
-            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
+            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
         }
         /**
          * 释放
@@ -6213,7 +6195,7 @@ var feng3d;
          */
         deactivate(renderData) {
             renderData.shaderName = null;
-            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
+            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
             super.deactivate(renderData);
         }
     }
@@ -6243,7 +6225,7 @@ var feng3d;
             super.activate(renderData, camera);
             //
             renderData.uniforms[feng3d.RenderDataID.u_diffuseInput] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
-            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 1;
+            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 1;
         }
         /**
          * 释放
@@ -6251,7 +6233,7 @@ var feng3d;
          */
         deactivate(renderData) {
             delete renderData.uniforms[feng3d.RenderDataID.u_diffuseInput];
-            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
+            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
             super.deactivate(renderData);
         }
     }
@@ -6330,9 +6312,9 @@ var feng3d;
         activate(renderData, camera) {
             super.activate(renderData, camera);
             //
-            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 2;
-            renderData.fragmentMacro.NEED_UV++;
-            renderData.fragmentMacro.NEED_UV_V++;
+            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 2;
+            renderData.shaderMacro.NEED_UV++;
+            renderData.shaderMacro.NEED_UV_V++;
             renderData.uniforms[feng3d.RenderDataID.s_texture] = this.texture;
         }
         /**
@@ -6340,9 +6322,9 @@ var feng3d;
          * @param renderData	渲染数据
          */
         deactivate(renderData) {
-            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
-            renderData.fragmentMacro.NEED_UV--;
-            renderData.fragmentMacro.NEED_UV_V--;
+            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
+            renderData.shaderMacro.NEED_UV--;
+            renderData.shaderMacro.NEED_UV_V--;
             renderData.uniforms[feng3d.RenderDataID.s_texture] = null;
             super.deactivate(renderData);
         }
@@ -6385,28 +6367,6 @@ var feng3d;
         }
     }
     feng3d.SkyBoxMaterial = SkyBoxMaterial;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 材质通道
-     * @author feng 2016-05-02
-     */
-    class MaterialPassBase extends feng3d.Component {
-    }
-    feng3d.MaterialPassBase = MaterialPassBase;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 线段材质通道
-     * @author feng 2016-05-02
-     */
-    class SegmentPass extends feng3d.MaterialPassBase {
-        render() {
-        }
-    }
-    feng3d.SegmentPass = SegmentPass;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

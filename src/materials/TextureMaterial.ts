@@ -19,9 +19,9 @@ module feng3d {
 
             super.activate(renderData, camera);
             //
-            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 2;
-            renderData.fragmentMacro.NEED_UV++;
-            renderData.fragmentMacro.NEED_UV_V++;
+            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 2;
+            renderData.shaderMacro.NEED_UV++;
+            renderData.shaderMacro.NEED_UV_V++;
             renderData.uniforms[RenderDataID.s_texture] = this.texture;
         }
 
@@ -31,9 +31,9 @@ module feng3d {
 		 */
         public deactivate(renderData: RenderAtomic) {
 
-            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
-            renderData.fragmentMacro.NEED_UV--;
-            renderData.fragmentMacro.NEED_UV_V--;
+            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
+            renderData.shaderMacro.NEED_UV--;
+            renderData.shaderMacro.NEED_UV_V--;
             renderData.uniforms[RenderDataID.s_texture] = null
             super.deactivate(renderData);
         }

@@ -6,6 +6,8 @@ module feng3d {
 	 */
     export class RenderDataHolder extends Component {
 
+        protected shaderName: string;
+
         //
         private _subRenderDataHolders: RenderDataHolder[] = [];
 

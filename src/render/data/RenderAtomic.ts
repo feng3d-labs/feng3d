@@ -4,7 +4,7 @@ module feng3d {
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      * @author feng 2016-06-20
      */
-    export class RenderAtomic {
+    export class RenderAtomic implements IRenderData {
 
         /**
          * 顶点索引缓冲
@@ -32,14 +32,9 @@ module feng3d {
         public shaderParams = new ShaderParams();
 
         /**
-         * 顶点宏
+         * 着色器宏定义
          */
-        public vertexMacro: VertexMacro = {};
-
-        /**
-         * 片段宏
-         */
-        public fragmentMacro = new FragmentMacro();
+        public shaderMacro = new ShaderMacro();
 
         /**
          * 绘制  
@@ -50,8 +45,8 @@ module feng3d {
             if (!shaderData.isOk)
                 return;
             //应用宏
-            var vertexCode = ShaderLib.applyMacro(shaderData.vertexCode, this.fragmentMacro);
-            var fragmentCode = ShaderLib.applyMacro(shaderData.fragmentCode, this.fragmentMacro);
+            var vertexCode = ShaderLib.applyMacro(shaderData.vertexCode, this.shaderMacro);
+            var fragmentCode = ShaderLib.applyMacro(shaderData.fragmentCode, this.shaderMacro);
             //渲染程序
             var shaderProgram = context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);

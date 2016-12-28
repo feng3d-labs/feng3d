@@ -6,29 +6,10 @@ module feng3d {
      */
     export class Material extends RenderDataHolder {
 
-        protected shaderName: string = "default";
-
-        private _pass: MaterialPassBase;
-
         /**
         * 渲染模式
         */
         renderMode = RenderMode.TRIANGLES;
-
-        /**
-         * 渲染通道
-         */
-        public get pass(): MaterialPassBase {
-
-            return this._pass;
-        }
-
-        public set pass(value: MaterialPassBase) {
-
-            this._pass && this.removeComponent(this._pass);
-            this._pass = value;
-            this._pass && this.addComponent(this._pass);
-        }
 
         /**
          * 构建材质
@@ -36,7 +17,7 @@ module feng3d {
         constructor() {
 
             super();
-            this.pass = new MaterialPassBase();
+            this.shaderName = "default";
         }
 
         /**
@@ -49,7 +30,7 @@ module feng3d {
             super.activate(renderData, camera);
             //
             renderData.shaderName = this.shaderName;
-            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
+            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
         }
 
         /**
@@ -59,7 +40,7 @@ module feng3d {
         public deactivate(renderData: RenderAtomic) {
 
             renderData.shaderName = null;
-            renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
+            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
             super.deactivate(renderData);
         }
     }
