@@ -17,7 +17,7 @@ module feng3d {
         constructor() {
 
             super();
-            this.shaderName = "segment";
+            this.renderData.shaderName = "segment";
         }
 
         /**

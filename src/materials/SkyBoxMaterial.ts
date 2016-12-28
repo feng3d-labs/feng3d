@@ -11,7 +11,7 @@ module feng3d {
 
         constructor(images: HTMLImageElement[]) {
             super();
-            this.shaderName = "skybox";
+            this.renderData.shaderName = "skybox";
             this.skyBoxSize = new Vector3D();
             this.skyBoxTextureCube = new TextureCube(images);
         }

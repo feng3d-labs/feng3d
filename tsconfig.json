@@ -57,6 +57,7 @@
         "src/render/data/RenderDataItems.ts",
         "src/render/data/IRenderData.ts",
         "src/render/utils/RenderBufferPool.ts",
+        "src/render/utils/RenderDataUtil.ts",
         "src/render/RenderDataID.ts",
         "src/render/ShaderParamID.ts",
         "src/render/Renderer.ts",

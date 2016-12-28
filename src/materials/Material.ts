@@ -17,7 +17,7 @@ module feng3d {
         constructor() {
 
             super();
-            this.shaderName = "default";
+            this.renderData.shaderName = "default";
         }
 
         /**
@@ -29,7 +29,6 @@ module feng3d {
             //
             super.activate(renderData, camera);
             //
-            renderData.shaderName = this.shaderName;
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
         }
 
@@ -39,7 +38,6 @@ module feng3d {
 		 */
         public deactivate(renderData: RenderAtomic) {
 
-            renderData.shaderName = null;
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
             super.deactivate(renderData);
         }

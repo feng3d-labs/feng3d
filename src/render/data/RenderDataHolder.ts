@@ -6,7 +6,7 @@ module feng3d {
 	 */
     export class RenderDataHolder extends Component {
 
-        protected shaderName: string;
+        protected renderData: IRenderData = <any>{};
 
         //
         private _subRenderDataHolders: RenderDataHolder[] = [];
@@ -25,6 +25,8 @@ module feng3d {
 		 */
         public activate(renderData: RenderAtomic, camera: Camera3D) {
 
+            RenderDataUtil.active(renderData, this.renderData)
+
             this._subRenderDataHolders.forEach(element => {
                 element.activate(renderData, camera);
             });
@@ -35,6 +37,8 @@ module feng3d {
 		 * @param renderData	渲染数据
 		 */
         public deactivate(renderData: RenderAtomic) {
+
+            RenderDataUtil.deactivate(renderData, this.renderData)
 
             this._subRenderDataHolders.forEach(element => {
                 element.deactivate(renderData);

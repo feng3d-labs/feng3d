@@ -1752,7 +1752,7 @@ declare module feng3d {
      * @author feng 2016-6-7
      */
     class RenderDataHolder extends Component {
-        protected shaderName: string;
+        protected renderData: IRenderData;
         private _subRenderDataHolders;
         /**
          * 创建Context3D数据缓冲
@@ -1786,7 +1786,7 @@ declare module feng3d {
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      * @author feng 2016-06-20
      */
-    class RenderAtomic implements IRenderData {
+    class RenderAtomic {
         /**
          * 顶点索引缓冲
          */
@@ -1815,10 +1815,6 @@ declare module feng3d {
          * 着色器宏定义
          */
         shaderMacro: ShaderMacro;
-        /**
-         * 绘制
-         */
-        draw(context3D: WebGLRenderingContext): void;
     }
 }
 declare module feng3d {
@@ -1879,40 +1875,6 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    /**
-     * 渲染所需数据
-     * @author feng 2016-12-28
-     */
-    interface IRenderData {
-        /**
-         * 顶点索引缓冲
-         */
-        indexBuffer?: IndexRenderData;
-        /**
-         * 渲染程序名称（路径）
-         */
-        shaderName?: string;
-        /**
-         * 属性数据列表
-         */
-        attributes?: {
-            [name: string]: AttributeRenderData;
-        };
-        /**
-         * 常量数据（包含纹理）列表
-         */
-        uniforms?: {
-            [name: string]: Matrix3D | Vector3D | TextureInfo;
-        };
-        /**
-         * 渲染参数
-         */
-        shaderParams?: ShaderParams;
-        /**
-         * 着色器宏定义
-         */
-        shaderMacro?: ShaderMacro;
-    }
 }
 declare module feng3d {
     /**
@@ -1969,6 +1931,26 @@ declare module feng3d {
      * 3D环境对象池
      */
     var context3DPool: RenderBufferPool;
+}
+declare module feng3d {
+    /**
+     * 渲染数据工具
+     * @author feng 2016-05-02
+     */
+    class RenderDataUtil {
+        /**
+         * 激活渲染数据
+         * @param renderAtomic  渲染原子
+         * @param renderData    包含渲染数据的对象
+         */
+        static active(renderAtomic: RenderAtomic, renderData: IRenderData): void;
+        /**
+         * 释放渲染数据
+         * @param renderAtomic  渲染原子
+         * @param renderData    包含渲染数据的对象
+         */
+        static deactivate(renderAtomic: RenderAtomic, renderData: IRenderData): void;
+    }
 }
 declare module feng3d {
     /**
@@ -2031,6 +2013,12 @@ declare module feng3d {
          * 绘制3D对象
          */
         private drawObject3D(object3D, context3D, camera);
+    }
+    /**
+     * 渲染所需数据
+     * @author feng 2016-12-28
+     */
+    interface IRenderData extends RenderAtomic {
     }
 }
 declare module feng3d {
