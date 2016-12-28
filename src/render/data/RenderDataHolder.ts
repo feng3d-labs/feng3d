@@ -21,10 +21,10 @@ module feng3d {
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderAtomic) {
+        public activate(renderData: RenderAtomic, camera: Camera3D) {
 
             this._subRenderDataHolders.forEach(element => {
-                element.activate(renderData);
+                element.activate(renderData, camera);
             });
         }
 

@@ -33,5 +33,9 @@ module feng3d {
          * 摄像机矩阵
          */
         static u_cameraMatrix = "u_cameraMatrix";
+        /**
+         * 天空盒尺寸
+         */
+        static u_skyBoxSize = "u_skyBoxSize";
     }
 }

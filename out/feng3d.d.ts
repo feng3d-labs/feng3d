@@ -1761,7 +1761,7 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic): void;
+        activate(renderData: RenderAtomic, camera: Camera3D): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -1965,6 +1965,10 @@ declare module feng3d {
          * 摄像机矩阵
          */
         static u_cameraMatrix: string;
+        /**
+         * 天空盒尺寸
+         */
+        static u_skyBoxSize: string;
     }
 }
 declare module feng3d {
@@ -1993,7 +1997,7 @@ declare module feng3d {
         /**
          * 绘制3D对象
          */
-        private drawObject3D(object3D, context3D);
+        private drawObject3D(object3D, context3D, camera);
     }
 }
 declare module feng3d {
@@ -2307,7 +2311,7 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic): void;
+        activate(renderData: RenderAtomic, camera: Camera3D): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -2479,7 +2483,7 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic): void;
+        activate(renderData: RenderAtomic, camera: Camera3D): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -2765,6 +2769,10 @@ declare module feng3d {
          */
         constructor(lens?: LensBase);
         /**
+         * 镜头
+         */
+        readonly lens: LensBase;
+        /**
          * 场景投影矩阵，世界空间转投影空间
          */
         readonly viewProjection: Matrix3D;
@@ -2785,7 +2793,7 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic): void;
+        activate(renderData: RenderAtomic, camera: Camera3D): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -2910,7 +2918,7 @@ declare module feng3d {
      */
     class TextureCube extends TextureInfo {
         pixels: HTMLImageElement[];
-        constructor();
+        constructor(images: HTMLImageElement[]);
     }
 }
 declare module feng3d {
@@ -2937,7 +2945,7 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic): void;
+        activate(renderData: RenderAtomic, camera: Camera3D): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -2965,7 +2973,7 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic): void;
+        activate(renderData: RenderAtomic, camera: Camera3D): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -2991,7 +2999,7 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic): void;
+        activate(renderData: RenderAtomic, camera: Camera3D): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -3033,7 +3041,7 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic): void;
+        activate(renderData: RenderAtomic, camera: Camera3D): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -3048,12 +3056,13 @@ declare module feng3d {
      */
     class SkyBoxMaterial extends Material {
         skyBoxTextureCube: TextureCube;
-        constructor();
+        private skyBoxSize;
+        constructor(images: HTMLImageElement[]);
         /**
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic): void;
+        activate(renderData: RenderAtomic, camera: Camera3D): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -3269,7 +3278,7 @@ declare module feng3d {
         /**
          * 创建天空盒
          */
-        createSkyBox(): Object3D;
+        createSkyBox(images: HTMLImageElement[]): Object3D;
     }
     /**
      * 3D对象工厂

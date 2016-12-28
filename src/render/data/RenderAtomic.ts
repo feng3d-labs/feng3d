@@ -132,26 +132,28 @@ module feng3d {
             case WebGLRenderingContext.FLOAT_MAT4:
                 context3D.uniformMatrix4fv(location, false, data.rawData);
                 break;
+            case WebGLRenderingContext.FLOAT_VEC3:
+                context3D.uniform3f(location, data.x, data.y, data.z);
+                break;
             case WebGLRenderingContext.FLOAT_VEC4:
                 context3D.uniform4f(location, data.x, data.y, data.z, data.w);
                 break;
             case WebGLRenderingContext.SAMPLER_2D:
+            case WebGLRenderingContext.SAMPLER_CUBE:
 
-                var textureData: TextureInfo = data;
+                var textureData: TextureInfo = <TextureInfo>data;
                 var texture = context3DPool.getTexture(context3D, textureData);
 
                 // Enable texture unit0
                 context3D.activeTexture(WebGLRenderingContext.TEXTURE0);
                 // Bind the texture object to the target
-                context3D.bindTexture(data.textureType, texture);
+                context3D.bindTexture(textureData.textureType, texture);
 
                 context3D.pixelStorei(WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
                 // Set the texture parameters
-                context3D.texParameteri(data.textureType, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
+                context3D.texParameteri(textureData.textureType, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
                 // Set the texture unit 0 to the sampler
                 context3D.uniform1i(location, 0);
-                break;
-            case WebGLRenderingContext.SAMPLER_CUBE:
                 break;
             default:
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;

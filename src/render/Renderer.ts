@@ -15,11 +15,11 @@ module feng3d {
             context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
 
             //绘制对象
-            camera.activate(this.renderData);
+            camera.activate(this.renderData, camera);
 
             var renderables = scene.getRenderables();
             renderables.forEach(element => {
-                this.drawObject3D(element, context3D);
+                this.drawObject3D(element, context3D, camera);
             });
 
             camera.deactivate(this.renderData);
@@ -28,9 +28,9 @@ module feng3d {
         /**
          * 绘制3D对象
          */
-        private drawObject3D(object3D: Object3D, context3D: WebGLRenderingContext) {
+        private drawObject3D(object3D: Object3D, context3D: WebGLRenderingContext, camera: Camera3D) {
 
-            object3D.activate(this.renderData);
+            object3D.activate(this.renderData, camera);
             this.renderData.draw(context3D);
             object3D.deactivate(this.renderData);
         }

@@ -8,9 +8,10 @@ module feng3d {
 
         public pixels: HTMLImageElement[];
 
-        constructor() {
+        constructor(images: HTMLImageElement[]) {
             super();
             this.textureType = WebGLRenderingContext.TEXTURE_CUBE_MAP;
+            this.pixels = images;
         }
     }
 }

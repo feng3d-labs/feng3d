@@ -26,9 +26,9 @@ module feng3d {
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderAtomic) {
+        public activate(renderData: RenderAtomic, camera: Camera3D) {
 
-            super.activate(renderData);
+            super.activate(renderData, camera);
             //
             renderData.uniforms[RenderDataID.u_diffuseInput] = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 1;

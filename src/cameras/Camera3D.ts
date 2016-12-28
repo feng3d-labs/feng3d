@@ -21,6 +21,14 @@ module feng3d {
         }
 
         /**
+         * 镜头
+         */
+        public get lens() {
+
+            return this._lens;
+        }
+
+        /**
 		 * 场景投影矩阵，世界空间转投影空间
 		 */
         public get viewProjection(): Matrix3D {
@@ -70,13 +78,13 @@ module feng3d {
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderAtomic) {
+        public activate(renderData: RenderAtomic, camera: Camera3D) {
 
             //
             renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
             renderData.uniforms[RenderDataID.u_cameraMatrix] = this.globalMatrix3d;
             //
-            super.activate(renderData);
+            super.activate(renderData, camera);
         }
 
         /**

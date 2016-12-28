@@ -152,19 +152,36 @@ module feng3d {
             return buffer;
         }
 
+        private textureBuffer = new Map<any, WebGLTexture>();
+
         /**
          * 获取顶点属性缓冲
          * @param data  数据 
          */
         getTexture(data: TextureInfo) {
 
+            var buffer = this.textureBuffer.get(data.pixels);
+            if (buffer != null) {
+                return buffer;
+            }
+
             var context3D = this.context3D;
             var texture = context3D.createTexture();   // Create a texture object
             // Bind the texture object to the target
             context3D.bindTexture(data.textureType, texture);
-            // Set the texture image
-            context3D.texImage2D(data.textureType, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, <HTMLImageElement>data.pixels);
-
+            if (data.textureType == WebGLRenderingContext.TEXTURE_2D) {
+                // Set the texture image
+                context3D.texImage2D(data.textureType, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, <HTMLImageElement>data.pixels);
+            } else if (data.textureType == WebGLRenderingContext.TEXTURE_CUBE_MAP) {
+                var faces = [
+                    WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Y, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                    WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_X, WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Y, WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                ];
+                for (var i = 0; i < faces.length; i++) {
+                    context3D.texImage2D(faces[i], 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, data.pixels[i])
+                }
+            }
+            this.textureBuffer.push(data.pixels, texture);
             return texture;
         }
 

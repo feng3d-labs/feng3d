@@ -288,12 +288,12 @@ module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        public activate(renderData: RenderAtomic) {
+        public activate(renderData: RenderAtomic, camera: Camera3D) {
 
             //
             renderData.uniforms[RenderDataID.u_modelMatrix] = this.globalMatrix3D;
             //
-            super.activate(renderData);
+            super.activate(renderData, camera);
         }
 
         /**

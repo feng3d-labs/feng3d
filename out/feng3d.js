@@ -3052,9 +3052,9 @@ var feng3d;
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData) {
+        activate(renderData, camera) {
             this._subRenderDataHolders.forEach(element => {
-                element.activate(renderData);
+                element.activate(renderData, camera);
             });
         }
         /**
@@ -3136,6 +3136,8 @@ var feng3d;
             if (!shaderData.isOk)
                 return;
             //应用宏
+            // var vertexCode = shaderData.vertexCode;
+            // var fragmentCode = shaderData.fragmentCode;
             var vertexCode = feng3d.ShaderLib.applyMacro(shaderData.vertexCode, this.fragmentMacro);
             var fragmentCode = feng3d.ShaderLib.applyMacro(shaderData.fragmentCode, this.fragmentMacro);
             //渲染程序
@@ -3209,23 +3211,25 @@ var feng3d;
             case WebGLRenderingContext.FLOAT_MAT4:
                 context3D.uniformMatrix4fv(location, false, data.rawData);
                 break;
+            case WebGLRenderingContext.FLOAT_VEC3:
+                context3D.uniform3f(location, data.x, data.y, data.z);
+                break;
             case WebGLRenderingContext.FLOAT_VEC4:
                 context3D.uniform4f(location, data.x, data.y, data.z, data.w);
                 break;
             case WebGLRenderingContext.SAMPLER_2D:
+            case WebGLRenderingContext.SAMPLER_CUBE:
                 var textureData = data;
                 var texture = feng3d.context3DPool.getTexture(context3D, textureData);
                 // Enable texture unit0
                 context3D.activeTexture(WebGLRenderingContext.TEXTURE0);
                 // Bind the texture object to the target
-                context3D.bindTexture(data.textureType, texture);
+                context3D.bindTexture(textureData.textureType, texture);
                 context3D.pixelStorei(WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
                 // Set the texture parameters
-                context3D.texParameteri(data.textureType, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
+                context3D.texParameteri(textureData.textureType, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
                 // Set the texture unit 0 to the sampler
                 context3D.uniform1i(location, 0);
-                break;
-            case WebGLRenderingContext.SAMPLER_CUBE:
                 break;
             default:
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
@@ -3351,6 +3355,7 @@ var feng3d;
          * @param context3D         3D环境
          */
         constructor(context3D) {
+            this.textureBuffer = new feng3d.Map();
             /** 渲染程序对象池 */
             this.webGLProgramPool = {};
             /** 顶点渲染程序对象池 */
@@ -3411,12 +3416,28 @@ var feng3d;
          * @param data  数据
          */
         getTexture(data) {
+            var buffer = this.textureBuffer.get(data.pixels);
+            if (buffer != null) {
+                return buffer;
+            }
             var context3D = this.context3D;
             var texture = context3D.createTexture(); // Create a texture object
             // Bind the texture object to the target
             context3D.bindTexture(data.textureType, texture);
-            // Set the texture image
-            context3D.texImage2D(data.textureType, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, data.pixels);
+            if (data.textureType == WebGLRenderingContext.TEXTURE_2D) {
+                // Set the texture image
+                context3D.texImage2D(data.textureType, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, data.pixels);
+            }
+            else if (data.textureType == WebGLRenderingContext.TEXTURE_CUBE_MAP) {
+                var faces = [
+                    WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Y, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                    WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_X, WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Y, WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                ];
+                for (var i = 0; i < faces.length; i++) {
+                    context3D.texImage2D(faces[i], 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, data.pixels[i]);
+                }
+            }
+            this.textureBuffer.push(data.pixels, texture);
             return texture;
         }
         /**
@@ -3532,6 +3553,10 @@ var feng3d;
      * 摄像机矩阵
      */
     RenderDataID.u_cameraMatrix = "u_cameraMatrix";
+    /**
+     * 天空盒尺寸
+     */
+    RenderDataID.u_skyBoxSize = "u_skyBoxSize";
     feng3d.RenderDataID = RenderDataID;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -3564,18 +3589,18 @@ var feng3d;
         render(context3D, scene, camera) {
             context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
             //绘制对象
-            camera.activate(this.renderData);
+            camera.activate(this.renderData, camera);
             var renderables = scene.getRenderables();
             renderables.forEach(element => {
-                this.drawObject3D(element, context3D);
+                this.drawObject3D(element, context3D, camera);
             });
             camera.deactivate(this.renderData);
         }
         /**
          * 绘制3D对象
          */
-        drawObject3D(object3D, context3D) {
-            object3D.activate(this.renderData);
+        drawObject3D(object3D, context3D, camera) {
+            object3D.activate(this.renderData, camera);
             this.renderData.draw(context3D);
             object3D.deactivate(this.renderData);
         }
@@ -4064,11 +4089,11 @@ var feng3d;
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData) {
+        activate(renderData, camera) {
             //
             renderData.uniforms[feng3d.RenderDataID.u_modelMatrix] = this.globalMatrix3D;
             //
-            super.activate(renderData);
+            super.activate(renderData, camera);
         }
         /**
          * 释放
@@ -4271,7 +4296,7 @@ var feng3d;
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData) {
+        activate(renderData, camera) {
             renderData.indexBuffer = this.indexBuffer;
             //
             var attributesNames = Object.keys(this.attributes);
@@ -4279,7 +4304,7 @@ var feng3d;
                 renderData.attributes[element] = this.attributes[element];
             });
             //
-            super.activate(renderData);
+            super.activate(renderData, camera);
         }
         /**
          * 释放
@@ -4759,6 +4784,12 @@ var feng3d;
             this._lens.addEventListener(feng3d.LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
         }
         /**
+         * 镜头
+         */
+        get lens() {
+            return this._lens;
+        }
+        /**
          * 场景投影矩阵，世界空间转投影空间
          */
         get viewProjection() {
@@ -4798,12 +4829,12 @@ var feng3d;
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData) {
+        activate(renderData, camera) {
             //
             renderData.uniforms[feng3d.RenderDataID.u_viewProjection] = this.viewProjection;
             renderData.uniforms[feng3d.RenderDataID.u_cameraMatrix] = this.globalMatrix3d;
             //
-            super.activate(renderData);
+            super.activate(renderData, camera);
         }
         /**
          * 释放
@@ -6127,9 +6158,10 @@ var feng3d;
      * @author feng 2016-12-28
      */
     class TextureCube extends feng3d.TextureInfo {
-        constructor() {
+        constructor(images) {
             super();
             this.textureType = WebGLRenderingContext.TEXTURE_CUBE_MAP;
+            this.pixels = images;
         }
     }
     feng3d.TextureCube = TextureCube;
@@ -6168,9 +6200,9 @@ var feng3d;
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData) {
+        activate(renderData, camera) {
             //
-            super.activate(renderData);
+            super.activate(renderData, camera);
             //
             renderData.shaderName = this.shaderName;
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
@@ -6207,8 +6239,8 @@ var feng3d;
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData) {
-            super.activate(renderData);
+        activate(renderData, camera) {
+            super.activate(renderData, camera);
             //
             renderData.uniforms[feng3d.RenderDataID.u_diffuseInput] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 1;
@@ -6247,11 +6279,11 @@ var feng3d;
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData) {
+        activate(renderData, camera) {
             //
             renderData.shaderParams.renderMode = this.renderMode;
             //
-            super.activate(renderData);
+            super.activate(renderData, camera);
         }
         /**
          * 释放
@@ -6295,8 +6327,8 @@ var feng3d;
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData) {
-            super.activate(renderData);
+        activate(renderData, camera) {
+            super.activate(renderData, camera);
             //
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 2;
             renderData.fragmentMacro.NEED_UV++;
@@ -6324,25 +6356,31 @@ var feng3d;
      * @author feng 2016-12-20
      */
     class SkyBoxMaterial extends feng3d.Material {
-        constructor() {
+        constructor(images) {
             super();
             this.shaderName = "skybox";
+            this.skyBoxSize = new feng3d.Vector3D();
+            this.skyBoxTextureCube = new feng3d.TextureCube(images);
         }
         /**
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData) {
-            super.activate(renderData);
+        activate(renderData, camera) {
+            super.activate(renderData, camera);
+            //
+            this.skyBoxSize.x = this.skyBoxSize.y = this.skyBoxSize.z = camera.lens.far / Math.sqrt(3);
             //
             renderData.uniforms[feng3d.RenderDataID.s_skyboxTexture] = this.skyBoxTextureCube;
+            renderData.uniforms[feng3d.RenderDataID.u_skyBoxSize] = this.skyBoxSize;
         }
         /**
          * 释放
          * @param renderData	渲染数据
          */
         deactivate(renderData) {
-            renderData.uniforms[feng3d.RenderDataID.s_skyboxTexture] = null;
+            delete renderData.uniforms[feng3d.RenderDataID.s_skyboxTexture];
+            delete renderData.uniforms[feng3d.RenderDataID.u_skyBoxSize];
             super.deactivate(renderData);
         }
     }
@@ -6715,10 +6753,10 @@ var feng3d;
         /**
          * 创建天空盒
          */
-        createSkyBox() {
+        createSkyBox(images) {
             var object3D = new feng3d.Object3D("skyBox");
             object3D.getOrCreateComponentByClass(feng3d.Mesh).geometry = feng3d.primitives.createSkyBox();
-            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SkyBoxMaterial();
+            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SkyBoxMaterial(images);
             return object3D;
         }
     }

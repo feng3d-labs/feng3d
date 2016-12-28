@@ -59,10 +59,10 @@ module feng3d {
         /**
          * 创建天空盒
          */
-        public createSkyBox() {
+        public createSkyBox(images: HTMLImageElement[]) {
             var object3D = new Object3D("skyBox");
             object3D.getOrCreateComponentByClass(Mesh).geometry = primitives.createSkyBox();
-            object3D.getOrCreateComponentByClass(MeshRenderer).material = new SkyBoxMaterial();
+            object3D.getOrCreateComponentByClass(MeshRenderer).material = new SkyBoxMaterial(images);
             return object3D;
         }
     }

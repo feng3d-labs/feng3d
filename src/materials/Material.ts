@@ -43,10 +43,10 @@ module feng3d {
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderAtomic) {
+        public activate(renderData: RenderAtomic, camera: Camera3D) {
 
             //
-            super.activate(renderData);
+            super.activate(renderData, camera);
             //
             renderData.shaderName = this.shaderName;
             renderData.fragmentMacro.DIFFUSE_INPUT_TYPE = 0;
