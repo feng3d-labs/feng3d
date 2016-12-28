@@ -1740,10 +1740,6 @@ declare module feng3d {
          * 渲染模式
          */
         renderMode: RenderMode;
-        /**
-         * 重置
-         */
-        reset(): void;
     }
 }
 declare module feng3d {
@@ -1752,12 +1748,16 @@ declare module feng3d {
      * @author feng 2016-6-7
      */
     class RenderDataHolder extends Component {
-        protected renderData: IRenderData;
+        protected renderData: RenderData;
         private _subRenderDataHolders;
         /**
          * 创建Context3D数据缓冲
          */
         constructor();
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(camera: Camera3D): void;
         /**
          * 激活
          * @param renderData	渲染数据
@@ -1815,6 +1815,12 @@ declare module feng3d {
          * 着色器宏定义
          */
         shaderMacro: ShaderMacro;
+    }
+    /**
+     * 渲染所需数据
+     * @author feng 2016-12-28
+     */
+    class RenderData extends RenderAtomic {
     }
 }
 declare module feng3d {
@@ -1943,13 +1949,13 @@ declare module feng3d {
          * @param renderAtomic  渲染原子
          * @param renderData    包含渲染数据的对象
          */
-        static active(renderAtomic: RenderAtomic, renderData: IRenderData): void;
+        static active(renderAtomic: RenderAtomic, renderData: RenderData): void;
         /**
          * 释放渲染数据
          * @param renderAtomic  渲染原子
          * @param renderData    包含渲染数据的对象
          */
-        static deactivate(renderAtomic: RenderAtomic, renderData: IRenderData): void;
+        static deactivate(renderAtomic: RenderAtomic, renderData: RenderData): void;
     }
 }
 declare module feng3d {
@@ -2004,7 +2010,7 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class Renderer {
-        private renderData;
+        private renderAtomic;
         /**
          * 渲染
          */
@@ -2013,12 +2019,6 @@ declare module feng3d {
          * 绘制3D对象
          */
         private drawObject3D(object3D, context3D, camera);
-    }
-    /**
-     * 渲染所需数据
-     * @author feng 2016-12-28
-     */
-    interface IRenderData extends RenderAtomic {
     }
 }
 declare module feng3d {
@@ -2327,11 +2327,6 @@ declare module feng3d {
          * @param renderData	渲染数据
          */
         activate(renderData: RenderAtomic, camera: Camera3D): void;
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData: RenderAtomic): void;
     }
     /**
      * 变换事件(3D状态发生改变、位置、旋转、缩放)
@@ -2809,11 +2804,6 @@ declare module feng3d {
          * @param renderData	渲染数据
          */
         activate(renderData: RenderAtomic, camera: Camera3D): void;
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -2997,23 +2987,9 @@ declare module feng3d {
      */
     class SegmentMaterial extends Material {
         /**
-        * 渲染模式
-        */
-        renderMode: RenderMode;
-        /**
          * 构建线段材质
          */
         constructor();
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData: RenderAtomic, camera: Camera3D): void;
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -3072,11 +3048,6 @@ declare module feng3d {
          * @param renderData	渲染数据
          */
         activate(renderData: RenderAtomic, camera: Camera3D): void;
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {

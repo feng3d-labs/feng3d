@@ -26,19 +26,8 @@ module feng3d {
             //
             this.skyBoxSize.x = this.skyBoxSize.y = this.skyBoxSize.z = camera.lens.far / Math.sqrt(3);
             //
-            renderData.uniforms[RenderDataID.s_skyboxTexture] = this.skyBoxTextureCube;
-            renderData.uniforms[RenderDataID.u_skyBoxSize] = this.skyBoxSize;
-        }
-
-        /**
-		 * 释放
-		 * @param renderData	渲染数据
-		 */
-        public deactivate(renderData: RenderAtomic) {
-
-            delete renderData.uniforms[RenderDataID.s_skyboxTexture];
-            delete renderData.uniforms[RenderDataID.u_skyBoxSize];
-            super.deactivate(renderData);
+           this. renderData.uniforms[RenderDataID.s_skyboxTexture] = this.skyBoxTextureCube;
+            this.renderData.uniforms[RenderDataID.u_skyBoxSize] = this.skyBoxSize;
         }
     }
 }

@@ -291,19 +291,9 @@ module feng3d {
         public activate(renderData: RenderAtomic, camera: Camera3D) {
 
             //
-            renderData.uniforms[RenderDataID.u_modelMatrix] = this.globalMatrix3D;
+            this.renderData.uniforms[RenderDataID.u_modelMatrix] = this.globalMatrix3D;
             //
             super.activate(renderData, camera);
-        }
-
-        /**
-		 * 释放
-		 * @param renderData	渲染数据
-		 */
-        public deactivate(renderData: RenderAtomic) {
-
-            delete renderData.uniforms[RenderDataID.u_modelMatrix];
-            super.deactivate(renderData);
         }
     }
 

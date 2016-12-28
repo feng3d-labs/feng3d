@@ -36,4 +36,10 @@ module feng3d {
          */
         public shaderMacro = new ShaderMacro();
     }
+
+    /**
+     * 渲染所需数据
+     * @author feng 2016-12-28
+     */
+    export class RenderData extends RenderAtomic { }
 }

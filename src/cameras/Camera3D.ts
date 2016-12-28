@@ -81,21 +81,10 @@ module feng3d {
         public activate(renderData: RenderAtomic, camera: Camera3D) {
 
             //
-            renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
-            renderData.uniforms[RenderDataID.u_cameraMatrix] = this.globalMatrix3d;
+            this.renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
+            this.renderData.uniforms[RenderDataID.u_cameraMatrix] = this.globalMatrix3d;
             //
             super.activate(renderData, camera);
-        }
-
-        /**
-		 * 释放
-		 * @param renderData	渲染数据
-		 */
-        public deactivate(renderData: RenderAtomic) {
-
-            delete renderData.uniforms[RenderDataID.u_viewProjection];
-            delete renderData.uniforms[RenderDataID.u_cameraMatrix];
-            super.deactivate(renderData);
         }
     }
 }

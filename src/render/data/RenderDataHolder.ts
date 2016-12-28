@@ -6,7 +6,7 @@ module feng3d {
 	 */
     export class RenderDataHolder extends Component {
 
-        protected renderData: IRenderData = <any>{};
+        protected renderData = new RenderData();
 
         //
         private _subRenderDataHolders: RenderDataHolder[] = [];
@@ -17,6 +17,16 @@ module feng3d {
         constructor() {
 
             super();
+        }
+
+		/**
+		 * 更新渲染数据
+		 */
+        public updateRenderData(camera: Camera3D) {
+
+            this._subRenderDataHolders.forEach(element => {
+                element.updateRenderData(camera);
+            });
         }
 
 		/**

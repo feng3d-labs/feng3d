@@ -6,7 +6,7 @@ module feng3d {
      */
     export class Renderer {
 
-        private renderData = new RenderAtomic();
+        private renderAtomic = new RenderAtomic();
 
         /**
 		 * 渲染
@@ -15,14 +15,14 @@ module feng3d {
             context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
 
             //绘制对象
-            camera.activate(this.renderData, camera);
+            camera.activate(this.renderAtomic, camera);
 
             var renderables = scene.getRenderables();
             renderables.forEach(element => {
                 this.drawObject3D(element, context3D, camera);
             });
 
-            camera.deactivate(this.renderData);
+            camera.deactivate(this.renderAtomic);
         }
 
         /**
@@ -30,23 +30,24 @@ module feng3d {
          */
         private drawObject3D(object3D: Object3D, context3D: WebGLRenderingContext, camera: Camera3D) {
 
-            object3D.activate(this.renderData, camera);
+            object3D.updateRenderData(camera);
+            object3D.activate(this.renderAtomic, camera);
             //
-            var shaderData = shaderMap[this.renderData.shaderName] = shaderMap[this.renderData.shaderName] || new ShaderData(this.renderData.shaderName);
+            var shaderData = shaderMap[this.renderAtomic.shaderName] = shaderMap[this.renderAtomic.shaderName] || new ShaderData(this.renderAtomic.shaderName);
             if (!shaderData.isOk)
                 return;
             //应用宏
-            var vertexCode = ShaderLib.applyMacro(shaderData.vertexCode, this.renderData.shaderMacro);
-            var fragmentCode = ShaderLib.applyMacro(shaderData.fragmentCode, this.renderData.shaderMacro);
+            var vertexCode = ShaderLib.applyMacro(shaderData.vertexCode, this.renderAtomic.shaderMacro);
+            var fragmentCode = ShaderLib.applyMacro(shaderData.fragmentCode, this.renderAtomic.shaderMacro);
             //渲染程序
             var shaderProgram = context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);
             //
-            activeAttributes(context3D, shaderProgram, this.renderData.attributes);
-            activeUniforms(context3D, shaderProgram, this.renderData.uniforms);
-            dodraw(context3D, this.renderData.shaderParams, this.renderData.indexBuffer);
+            activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
+            activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
+            dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer);
             //
-            object3D.deactivate(this.renderData);
+            object3D.deactivate(this.renderAtomic);
         }
     }
 
@@ -147,12 +148,6 @@ module feng3d {
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
     }
-
-    /**
-     * 渲染所需数据
-     * @author feng 2016-12-28
-     */
-    export interface IRenderData extends RenderAtomic { }
 
     //
     var shaderMap: { [name: string]: ShaderData } = {};

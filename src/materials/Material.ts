@@ -30,6 +30,8 @@ module feng3d {
             super.activate(renderData, camera);
             //
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
+            //
+            renderData.shaderParams.renderMode = this.renderMode;
         }
 
         /**
@@ -39,6 +41,8 @@ module feng3d {
         public deactivate(renderData: RenderAtomic) {
 
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
+            //
+            renderData.shaderParams.renderMode = RenderMode.DEFAULT;
             super.deactivate(renderData);
         }
     }
