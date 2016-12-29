@@ -1741,28 +1741,29 @@ var feng3d;
             return null;
         }
         /**
-         * 应用ShaderMacro
+         * 获取ShaderMacro代码
          */
-        static applyMacro(shaderCode, macro) {
-            var macroNames = Object.keys(macro);
-            macroNames = macroNames.sort();
+        static getMacroCode(macro) {
             var macroHeader = "";
+            var macroNames = Object.keys(macro.valueMacros);
+            macroNames = macroNames.sort();
             macroNames.forEach(macroName => {
-                var value = macro[macroName];
-                var valueType = typeof value;
-                switch (valueType) {
-                    case "number":
-                    case "string":
-                        macroHeader += `#define ${macroName} ${value}\n`;
-                        break;
-                    case "boolean":
-                        value && (macroHeader += `#define ${macroName}\n`);
-                        break;
-                    default:
-                        throw new Error(`unknown shaderMacro(${macroName}) type ${valueType}`);
-                }
+                var value = macro.valueMacros[macroName];
+                macroHeader += `#define ${macroName} ${value}\n`;
             });
-            return macroHeader + shaderCode;
+            macroNames = Object.keys(macro.boolMacros);
+            macroNames = macroNames.sort();
+            macroNames.forEach(macroName => {
+                var value = macro.boolMacros[macroName];
+                value && (macroHeader += `#define ${macroName}\n`);
+            });
+            macroNames = Object.keys(macro.addMacros);
+            macroNames = macroNames.sort();
+            macroNames.forEach(macroName => {
+                var value = macro.addMacros[macroName];
+                macroHeader += `#define ${macroName} ${value}\n`;
+            });
+            return macroHeader;
         }
     }
     feng3d.ShaderLib = ShaderLib;
@@ -3427,6 +3428,16 @@ var feng3d;
             for (var shaderParamName in renderData.shaderParams) {
                 renderAtomic.shaderParams[shaderParamName] = renderData.shaderParams[shaderParamName];
             }
+            //ShaderMacro
+            for (var boolMacroName in renderData.shaderMacro.boolMacros) {
+                renderAtomic.shaderMacro.boolMacros[boolMacroName] = renderAtomic.shaderMacro.boolMacros[boolMacroName] || renderData.shaderMacro.boolMacros[boolMacroName];
+            }
+            for (var valueMacroName in renderData.shaderMacro.valueMacros) {
+                renderAtomic.shaderMacro.valueMacros[valueMacroName] = renderData.shaderMacro.valueMacros[valueMacroName];
+            }
+            for (var addMacroName in renderData.shaderMacro.addMacros) {
+                renderAtomic.shaderMacro.addMacros[addMacroName] = renderAtomic.shaderMacro.addMacros[addMacroName] + renderData.shaderMacro.addMacros[addMacroName];
+            }
         }
         /**
          * 释放渲染数据
@@ -3444,6 +3455,16 @@ var feng3d;
             }
             for (var shaderParamName in renderData.shaderParams) {
                 delete renderAtomic.shaderParams[shaderParamName];
+            }
+            //ShaderMacro
+            for (var boolMacroName in renderData.shaderMacro.boolMacros) {
+                delete renderAtomic.shaderMacro.boolMacros[boolMacroName];
+            }
+            for (var valueMacroName in renderData.shaderMacro.valueMacros) {
+                delete renderAtomic.shaderMacro.valueMacros[valueMacroName];
+            }
+            for (var addMacroName in renderData.shaderMacro.addMacros) {
+                renderAtomic.shaderMacro.addMacros[addMacroName] = renderAtomic.shaderMacro.addMacros[addMacroName] - renderData.shaderMacro.addMacros[addMacroName];
             }
         }
     }
@@ -3533,9 +3554,11 @@ var feng3d;
             var shaderData = shaderMap[this.renderAtomic.shaderName] = shaderMap[this.renderAtomic.shaderName] || new feng3d.ShaderData(this.renderAtomic.shaderName);
             if (!shaderData.isOk)
                 return;
+            var vertexCode = shaderData.vertexCode;
+            var fragmentCode = shaderData.fragmentCode;
             //应用宏
-            var vertexCode = feng3d.ShaderLib.applyMacro(shaderData.vertexCode, this.renderAtomic.shaderMacro);
-            var fragmentCode = feng3d.ShaderLib.applyMacro(shaderData.fragmentCode, this.renderAtomic.shaderMacro);
+            vertexCode = feng3d.ShaderLib.getMacroCode(this.renderAtomic.shaderMacro) + vertexCode;
+            fragmentCode = feng3d.ShaderLib.getMacroCode(this.renderAtomic.shaderMacro) + fragmentCode;
             //渲染程序
             var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);
@@ -3644,14 +3667,48 @@ var feng3d;
      */
     class ShaderMacro {
         constructor() {
-            this.DIFFUSE_INPUT_TYPE = 0;
+            /**
+             * 值类型宏
+             */
+            this.valueMacros = new ValueMacros();
+            /**
+             * Boolean类型宏
+             */
+            this.boolMacros = new BoolMacros();
+            /**
+             * 递增类型宏
+             */
+            this.addMacros = new IAddMacros();
+        }
+    }
+    feng3d.ShaderMacro = ShaderMacro;
+    /**
+     * 值类型宏
+     * 没有默认值
+     */
+    class ValueMacros {
+    }
+    feng3d.ValueMacros = ValueMacros;
+    /**
+     * Boolean类型宏
+     * 没有默认值
+     */
+    class BoolMacros {
+    }
+    feng3d.BoolMacros = BoolMacros;
+    /**
+     * 递增类型宏
+     * 所有默认值为0
+     */
+    class IAddMacros {
+        constructor() {
             /** 是否需要属性uv */
             this.NEED_UV = 0;
             /** 是否需要变量uv */
             this.NEED_UV_V = 0;
         }
     }
-    feng3d.ShaderMacro = ShaderMacro;
+    feng3d.IAddMacros = IAddMacros;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6167,24 +6224,8 @@ var feng3d;
             super.updateRenderData(camera);
             //
             this.renderData.shaderParams.renderMode = this.renderMode;
-        }
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData) {
             //
-            super.activate(renderData);
-            //
-            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
-        }
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData) {
-            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
-            super.deactivate(renderData);
+            this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 0;
         }
     }
     feng3d.Material = Material;
@@ -6211,23 +6252,8 @@ var feng3d;
         updateRenderData(camera) {
             super.updateRenderData(camera);
             this.renderData.uniforms[feng3d.RenderDataID.u_diffuseInput] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
-        }
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData) {
-            super.activate(renderData);
             //
-            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 1;
-        }
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData) {
-            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
-            super.deactivate(renderData);
+            this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 1;
         }
     }
     feng3d.ColorMaterial = ColorMaterial;
@@ -6283,27 +6309,9 @@ var feng3d;
         updateRenderData(camera) {
             super.updateRenderData(camera);
             this.renderData.uniforms[feng3d.RenderDataID.s_texture] = this.texture;
-        }
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData) {
-            super.activate(renderData);
-            //
-            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 2;
-            renderData.shaderMacro.NEED_UV++;
-            renderData.shaderMacro.NEED_UV_V++;
-        }
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData) {
-            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
-            renderData.shaderMacro.NEED_UV--;
-            renderData.shaderMacro.NEED_UV_V--;
-            super.deactivate(renderData);
+            this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 2;
+            this.renderData.shaderMacro.addMacros.NEED_UV = 1;
+            this.renderData.shaderMacro.addMacros.NEED_UV_V = 1;
         }
     }
     feng3d.TextureMaterial = TextureMaterial;

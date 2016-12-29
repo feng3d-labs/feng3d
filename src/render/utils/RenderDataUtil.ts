@@ -25,6 +25,16 @@ module feng3d {
             for (var shaderParamName in renderData.shaderParams) {
                 renderAtomic.shaderParams[shaderParamName] = renderData.shaderParams[shaderParamName];
             }
+            //ShaderMacro
+            for (var boolMacroName in renderData.shaderMacro.boolMacros) {
+                renderAtomic.shaderMacro.boolMacros[boolMacroName] = renderAtomic.shaderMacro.boolMacros[boolMacroName] || renderData.shaderMacro.boolMacros[boolMacroName];
+            }
+            for (var valueMacroName in renderData.shaderMacro.valueMacros) {
+                renderAtomic.shaderMacro.valueMacros[valueMacroName] = renderData.shaderMacro.valueMacros[valueMacroName];
+            }
+            for (var addMacroName in renderData.shaderMacro.addMacros) {
+                renderAtomic.shaderMacro.addMacros[addMacroName] = renderAtomic.shaderMacro.addMacros[addMacroName] + renderData.shaderMacro.addMacros[addMacroName];
+            }
         }
 
         /**
@@ -45,6 +55,16 @@ module feng3d {
             }
             for (var shaderParamName in renderData.shaderParams) {
                 delete renderAtomic.shaderParams[shaderParamName];
+            }
+            //ShaderMacro
+            for (var boolMacroName in renderData.shaderMacro.boolMacros) {
+                delete renderAtomic.shaderMacro.boolMacros[boolMacroName];
+            }
+            for (var valueMacroName in renderData.shaderMacro.valueMacros) {
+                delete renderAtomic.shaderMacro.valueMacros[valueMacroName];
+            }
+            for (var addMacroName in renderData.shaderMacro.addMacros) {
+                renderAtomic.shaderMacro.addMacros[addMacroName] = renderAtomic.shaderMacro.addMacros[addMacroName] - renderData.shaderMacro.addMacros[addMacroName];
             }
         }
     }

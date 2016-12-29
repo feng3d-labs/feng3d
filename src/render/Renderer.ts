@@ -37,9 +37,11 @@ module feng3d {
             var shaderData = shaderMap[this.renderAtomic.shaderName] = shaderMap[this.renderAtomic.shaderName] || new ShaderData(this.renderAtomic.shaderName);
             if (!shaderData.isOk)
                 return;
+            var vertexCode = shaderData.vertexCode;
+            var fragmentCode = shaderData.fragmentCode;
             //应用宏
-            var vertexCode = ShaderLib.applyMacro(shaderData.vertexCode, this.renderAtomic.shaderMacro);
-            var fragmentCode = ShaderLib.applyMacro(shaderData.fragmentCode, this.renderAtomic.shaderMacro);
+            vertexCode = ShaderLib.getMacroCode(this.renderAtomic.shaderMacro) + vertexCode;
+            fragmentCode = ShaderLib.getMacroCode(this.renderAtomic.shaderMacro) + fragmentCode;
             //渲染程序
             var shaderProgram = context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);

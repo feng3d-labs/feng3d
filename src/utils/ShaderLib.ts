@@ -18,29 +18,31 @@ module feng3d {
         }
 
         /**
-         * 应用ShaderMacro
+         * 获取ShaderMacro代码
          */
-        public static applyMacro(shaderCode: string, macro: Object) {
+        public static getMacroCode(macro: ShaderMacro) {
 
-            var macroNames = Object.keys(macro);
-            macroNames = macroNames.sort();
             var macroHeader = "";
+            var macroNames = Object.keys(macro.valueMacros);
+            macroNames = macroNames.sort();
             macroNames.forEach(macroName => {
-                var value = macro[macroName];
-                var valueType = typeof value;
-                switch (valueType) {
-                    case "number":
-                    case "string":
-                        macroHeader += `#define ${macroName} ${value}\n`;
-                        break;
-                    case "boolean":
-                        value && (macroHeader += `#define ${macroName}\n`);
-                        break;
-                    default:
-                        throw new Error(`unknown shaderMacro(${macroName}) type ${valueType}`);
-                }
+                var value = macro.valueMacros[macroName];
+                macroHeader += `#define ${macroName} ${value}\n`;
             });
-            return macroHeader + shaderCode;
+            macroNames = Object.keys(macro.boolMacros);
+            macroNames = macroNames.sort();
+            macroNames.forEach(macroName => {
+                var value = macro.boolMacros[macroName];
+                value && (macroHeader += `#define ${macroName}\n`);
+            });
+
+            macroNames = Object.keys(macro.addMacros);
+            macroNames = macroNames.sort();
+            macroNames.forEach(macroName => {
+                var value = macro.addMacros[macroName];
+                macroHeader += `#define ${macroName} ${value}\n`;
+            });
+            return macroHeader;
         }
     }
 

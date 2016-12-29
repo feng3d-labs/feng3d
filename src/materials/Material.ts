@@ -27,28 +27,8 @@ module feng3d {
             super.updateRenderData(camera);
             //
             this.renderData.shaderParams.renderMode = this.renderMode;
-        }
-
-        /**
-		 * 激活
-		 * @param renderData	渲染数据
-		 */
-        public activate(renderData: RenderAtomic) {
-
             //
-            super.activate(renderData);
-            //
-            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
-        }
-
-        /**
-		 * 释放
-		 * @param renderData	渲染数据
-		 */
-        public deactivate(renderData: RenderAtomic) {
-
-            renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
-            super.deactivate(renderData);
+            this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 0;
         }
     }
 }

@@ -1119,9 +1119,9 @@ declare module feng3d {
          */
         static getShaderCode(shaderName: string): string;
         /**
-         * 应用ShaderMacro
+         * 获取ShaderMacro代码
          */
-        static applyMacro(shaderCode: string, macro: Object): string;
+        static getMacroCode(macro: ShaderMacro): string;
     }
 }
 declare module feng3d {
@@ -2027,7 +2027,37 @@ declare module feng3d {
      * @author feng 2016-12-17
      */
     class ShaderMacro {
+        /**
+         * 值类型宏
+         */
+        valueMacros: ValueMacros;
+        /**
+         * Boolean类型宏
+         */
+        boolMacros: BoolMacros;
+        /**
+         * 递增类型宏
+         */
+        addMacros: IAddMacros;
+    }
+    /**
+     * 值类型宏
+     * 没有默认值
+     */
+    class ValueMacros {
         DIFFUSE_INPUT_TYPE: 0 | 1 | 2;
+    }
+    /**
+     * Boolean类型宏
+     * 没有默认值
+     */
+    class BoolMacros {
+    }
+    /**
+     * 递增类型宏
+     * 所有默认值为0
+     */
+    class IAddMacros {
         /** 是否需要属性uv */
         NEED_UV: number;
         /** 是否需要变量uv */
@@ -2922,16 +2952,6 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(camera: Camera3D): void;
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData: RenderAtomic): void;
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -2954,16 +2974,6 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(camera: Camera3D): void;
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData: RenderAtomic): void;
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -3012,16 +3022,6 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(camera: Camera3D): void;
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData: RenderAtomic): void;
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
