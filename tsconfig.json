@@ -116,6 +116,7 @@
         "src/controllers/FPSController.ts",
         //地形
         "src/terrain/TerrainGeometry.ts",
+        "src/terrain/TerrainMaterial.ts",
         //
         "src/factory/Object3DFactory.ts"
     ]

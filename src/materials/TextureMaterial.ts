@@ -9,7 +9,7 @@ module feng3d {
         /**
          * 纹理数据
          */
-        public texture: TextureInfo;
+        public texture: Texture2D;
 
         /**
 		 * 更新渲染数据
