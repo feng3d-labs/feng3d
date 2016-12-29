@@ -17,16 +17,16 @@ module feng3d {
         }
 
         /**
-		 * 激活
-		 * @param renderData	渲染数据
+		 * 更新渲染数据
 		 */
-        public activate(renderData: RenderAtomic, camera: Camera3D) {
+        public updateRenderData(camera: Camera3D) {
+            
+            super.updateRenderData(camera);
 
-            super.activate(renderData, camera);
             //
             this.skyBoxSize.x = this.skyBoxSize.y = this.skyBoxSize.z = camera.lens.far / Math.sqrt(3);
             //
-           this. renderData.uniforms[RenderDataID.s_skyboxTexture] = this.skyBoxTextureCube;
+            this.renderData.uniforms[RenderDataID.s_skyboxTexture] = this.skyBoxTextureCube;
             this.renderData.uniforms[RenderDataID.u_skyBoxSize] = this.skyBoxSize;
         }
     }

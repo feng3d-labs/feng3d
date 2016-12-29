@@ -33,12 +33,12 @@ module feng3d {
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderAtomic, camera: Camera3D) {
+        public activate(renderData: RenderAtomic) {
 
             RenderDataUtil.active(renderData, this.renderData)
 
             this._subRenderDataHolders.forEach(element => {
-                element.activate(renderData, camera);
+                element.activate(renderData);
             });
         }
 

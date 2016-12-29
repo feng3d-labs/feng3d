@@ -3009,22 +3009,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 渲染参数
-     * @author feng 2016-12-14
-     */
-    class ShaderParams {
-        constructor() {
-            /**
-             * 渲染模式
-             */
-            this.renderMode = feng3d.RenderMode.TRIANGLES;
-        }
-    }
-    feng3d.ShaderParams = ShaderParams;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 渲染数据拥有者
      * @author feng 2016-6-7
      */
@@ -3050,10 +3034,10 @@ var feng3d;
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData, camera) {
+        activate(renderData) {
             feng3d.RenderDataUtil.active(renderData, this.renderData);
             this._subRenderDataHolders.forEach(element => {
-                element.activate(renderData, camera);
+                element.activate(renderData);
             });
         }
         /**
@@ -3118,7 +3102,7 @@ var feng3d;
             /**
              * 渲染参数
              */
-            this.shaderParams = new feng3d.ShaderParams();
+            this.shaderParams = {};
             /**
              * 着色器宏定义
              */
@@ -3433,8 +3417,15 @@ var feng3d;
          */
         static active(renderAtomic, renderData) {
             renderData.shaderName && (renderAtomic.shaderName = renderData.shaderName);
+            renderData.indexBuffer && (renderAtomic.indexBuffer = renderData.indexBuffer);
+            for (var attributeName in renderData.attributes) {
+                renderAtomic.attributes[attributeName] = renderData.attributes[attributeName];
+            }
             for (var uniformName in renderData.uniforms) {
                 renderAtomic.uniforms[uniformName] = renderData.uniforms[uniformName];
+            }
+            for (var shaderParamName in renderData.shaderParams) {
+                renderAtomic.shaderParams[shaderParamName] = renderData.shaderParams[shaderParamName];
             }
         }
         /**
@@ -3444,8 +3435,15 @@ var feng3d;
          */
         static deactivate(renderAtomic, renderData) {
             renderData.shaderName && (renderAtomic.shaderName = null);
+            renderData.indexBuffer && (renderAtomic.indexBuffer = null);
+            for (var attributeName in renderData.attributes) {
+                delete renderAtomic.attributes[attributeName];
+            }
             for (var uniformName in renderData.uniforms) {
                 delete renderAtomic.uniforms[uniformName];
+            }
+            for (var shaderParamName in renderData.shaderParams) {
+                delete renderAtomic.shaderParams[shaderParamName];
             }
         }
     }
@@ -3516,8 +3514,9 @@ var feng3d;
          */
         render(context3D, scene, camera) {
             context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
+            camera.updateRenderData(camera);
             //绘制对象
-            camera.activate(this.renderAtomic, camera);
+            camera.activate(this.renderAtomic);
             var renderables = scene.getRenderables();
             renderables.forEach(element => {
                 this.drawObject3D(element, context3D, camera);
@@ -3529,7 +3528,7 @@ var feng3d;
          */
         drawObject3D(object3D, context3D, camera) {
             object3D.updateRenderData(camera);
-            object3D.activate(this.renderAtomic, camera);
+            object3D.activate(this.renderAtomic);
             //
             var shaderData = shaderMap[this.renderAtomic.shaderName] = shaderMap[this.renderAtomic.shaderName] || new feng3d.ShaderData(this.renderAtomic.shaderName);
             if (!shaderData.isOk)
@@ -4116,14 +4115,11 @@ var feng3d;
             }
         }
         /**
-         * 激活
-         * @param renderData	渲染数据
+         * 更新渲染数据
          */
-        activate(renderData, camera) {
-            //
+        updateRenderData(camera) {
+            super.updateRenderData(camera);
             this.renderData.uniforms[feng3d.RenderDataID.u_modelMatrix] = this.globalMatrix3D;
-            //
-            super.activate(renderData, camera);
         }
     }
     feng3d.Transform = Transform;
@@ -4309,45 +4305,14 @@ var feng3d;
          */
         constructor() {
             super();
-            /**
-             * 顶点数据
-             */
-            this.attributes = {};
-        }
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData, camera) {
-            renderData.indexBuffer = this.indexBuffer;
-            //
-            var attributesNames = Object.keys(this.attributes);
-            attributesNames.forEach(element => {
-                renderData.attributes[element] = this.attributes[element];
-            });
-            //
-            super.activate(renderData, camera);
-        }
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData) {
-            renderData.indexBuffer = null;
-            //
-            var attributesNames = Object.keys(this.attributes);
-            attributesNames.forEach(element => {
-                delete renderData.attributes[element];
-            });
-            super.deactivate(renderData);
         }
         /**
          * 更新顶点索引数据
          */
         setIndices(indices) {
-            this.indexBuffer = new feng3d.IndexRenderData();
-            this.indexBuffer.indices = indices;
-            this.indexBuffer.count = indices.length;
+            this.renderData.indexBuffer = new feng3d.IndexRenderData();
+            this.renderData.indexBuffer.indices = indices;
+            this.renderData.indexBuffer.count = indices.length;
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.CHANGED_INDEX_DATA));
         }
         /**
@@ -4357,7 +4322,7 @@ var feng3d;
          * @param stride        顶点数据步长
          */
         setVAData(vaId, data, stride) {
-            this.attributes[vaId] = { data: data, stride: stride };
+            this.renderData.attributes[vaId] = { data: data, stride: stride };
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.CHANGED_VA_DATA, vaId));
         }
         /**
@@ -4367,7 +4332,7 @@ var feng3d;
          */
         getVAData(vaId) {
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.GET_VA_DATA, vaId));
-            return this.attributes[vaId];
+            return this.renderData.attributes[vaId];
         }
     }
     feng3d.Geometry = Geometry;
@@ -4848,15 +4813,13 @@ var feng3d;
             this._viewProjectionDirty = true;
         }
         /**
-         * 激活
-         * @param renderData	渲染数据
+         * 更新渲染数据
          */
-        activate(renderData, camera) {
+        updateRenderData(camera) {
+            super.updateRenderData(camera);
             //
             this.renderData.uniforms[feng3d.RenderDataID.u_viewProjection] = this.viewProjection;
             this.renderData.uniforms[feng3d.RenderDataID.u_cameraMatrix] = this.globalMatrix3d;
-            //
-            super.activate(renderData, camera);
         }
     }
     feng3d.Camera3D = Camera3D;
@@ -6198,16 +6161,22 @@ var feng3d;
             this.renderData.shaderName = "default";
         }
         /**
+         * 更新渲染数据
+         */
+        updateRenderData(camera) {
+            super.updateRenderData(camera);
+            //
+            this.renderData.shaderParams.renderMode = this.renderMode;
+        }
+        /**
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData, camera) {
+        activate(renderData) {
             //
-            super.activate(renderData, camera);
+            super.activate(renderData);
             //
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
-            //
-            renderData.shaderParams.renderMode = this.renderMode;
         }
         /**
          * 释放
@@ -6215,8 +6184,6 @@ var feng3d;
          */
         deactivate(renderData) {
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
-            //
-            renderData.shaderParams.renderMode = feng3d.RenderMode.DEFAULT;
             super.deactivate(renderData);
         }
     }
@@ -6239,13 +6206,19 @@ var feng3d;
             this.color = color || new feng3d.Color();
         }
         /**
+         * 更新渲染数据
+         */
+        updateRenderData(camera) {
+            super.updateRenderData(camera);
+            this.renderData.uniforms[feng3d.RenderDataID.u_diffuseInput] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
+        }
+        /**
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData, camera) {
-            super.activate(renderData, camera);
+        activate(renderData) {
+            super.activate(renderData);
             //
-            this.renderData.uniforms[feng3d.RenderDataID.u_diffuseInput] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 1;
         }
         /**
@@ -6305,16 +6278,22 @@ var feng3d;
      */
     class TextureMaterial extends feng3d.Material {
         /**
+         * 更新渲染数据
+         */
+        updateRenderData(camera) {
+            super.updateRenderData(camera);
+            this.renderData.uniforms[feng3d.RenderDataID.s_texture] = this.texture;
+        }
+        /**
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData, camera) {
-            super.activate(renderData, camera);
+        activate(renderData) {
+            super.activate(renderData);
             //
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 2;
             renderData.shaderMacro.NEED_UV++;
             renderData.shaderMacro.NEED_UV_V++;
-            this.renderData.uniforms[feng3d.RenderDataID.s_texture] = this.texture;
         }
         /**
          * 释放
@@ -6343,11 +6322,10 @@ var feng3d;
             this.skyBoxTextureCube = new feng3d.TextureCube(images);
         }
         /**
-         * 激活
-         * @param renderData	渲染数据
+         * 更新渲染数据
          */
-        activate(renderData, camera) {
-            super.activate(renderData, camera);
+        updateRenderData(camera) {
+            super.updateRenderData(camera);
             //
             this.skyBoxSize.x = this.skyBoxSize.y = this.skyBoxSize.z = camera.lens.far / Math.sqrt(3);
             //

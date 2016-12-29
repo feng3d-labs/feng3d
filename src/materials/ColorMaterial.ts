@@ -23,14 +23,21 @@ module feng3d {
         }
 
         /**
+		 * 更新渲染数据
+		 */
+        public updateRenderData(camera: Camera3D) {
+            super.updateRenderData(camera);
+            this.renderData.uniforms[RenderDataID.u_diffuseInput] = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
+        }
+
+        /**
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderAtomic, camera: Camera3D) {
+        public activate(renderData: RenderAtomic) {
 
-            super.activate(renderData, camera);
+            super.activate(renderData);
             //
-            this.renderData.uniforms[RenderDataID.u_diffuseInput] = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 1;
         }
 

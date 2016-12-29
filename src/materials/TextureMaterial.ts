@@ -12,17 +12,26 @@ module feng3d {
         public texture: TextureInfo;
 
         /**
+		 * 更新渲染数据
+		 */
+        public updateRenderData(camera: Camera3D) {
+
+            super.updateRenderData(camera);
+
+            this.renderData.uniforms[RenderDataID.s_texture] = this.texture;
+        }
+
+        /**
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderAtomic, camera: Camera3D) {
+        public activate(renderData: RenderAtomic) {
 
-            super.activate(renderData, camera);
+            super.activate(renderData);
             //
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 2;
             renderData.shaderMacro.NEED_UV++;
             renderData.shaderMacro.NEED_UV_V++;
-            this.renderData.uniforms[RenderDataID.s_texture] = this.texture;
         }
 
         /**

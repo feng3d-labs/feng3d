@@ -14,8 +14,9 @@ module feng3d {
         public render(context3D: WebGLRenderingContext, scene: Scene3D, camera: Camera3D) {
             context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
 
+            camera.updateRenderData(camera);
             //绘制对象
-            camera.activate(this.renderAtomic, camera);
+            camera.activate(this.renderAtomic);
 
             var renderables = scene.getRenderables();
             renderables.forEach(element => {
@@ -31,7 +32,7 @@ module feng3d {
         private drawObject3D(object3D: Object3D, context3D: WebGLRenderingContext, camera: Camera3D) {
 
             object3D.updateRenderData(camera);
-            object3D.activate(this.renderAtomic, camera);
+            object3D.activate(this.renderAtomic);
             //
             var shaderData = shaderMap[this.renderAtomic.shaderName] = shaderMap[this.renderAtomic.shaderName] || new ShaderData(this.renderAtomic.shaderName);
             if (!shaderData.isOk)

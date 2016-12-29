@@ -75,16 +75,13 @@ module feng3d {
         }
 
         /**
-		 * 激活
-		 * @param renderData	渲染数据
+		 * 更新渲染数据
 		 */
-        public activate(renderData: RenderAtomic, camera: Camera3D) {
-
+        public updateRenderData(camera: Camera3D) {
+            super.updateRenderData(camera);
             //
             this.renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
             this.renderData.uniforms[RenderDataID.u_cameraMatrix] = this.globalMatrix3d;
-            //
-            super.activate(renderData, camera);
         }
     }
 }

@@ -21,17 +21,24 @@ module feng3d {
         }
 
         /**
+		 * 更新渲染数据
+		 */
+        public updateRenderData(camera: Camera3D) {
+            super.updateRenderData(camera);
+            //
+            this.renderData.shaderParams.renderMode = this.renderMode;
+        }
+
+        /**
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderAtomic, camera: Camera3D) {
+        public activate(renderData: RenderAtomic) {
 
             //
-            super.activate(renderData, camera);
+            super.activate(renderData);
             //
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
-            //
-            renderData.shaderParams.renderMode = this.renderMode;
         }
 
         /**
@@ -41,8 +48,6 @@ module feng3d {
         public deactivate(renderData: RenderAtomic) {
 
             renderData.shaderMacro.DIFFUSE_INPUT_TYPE = 0;
-            //
-            renderData.shaderParams.renderMode = RenderMode.DEFAULT;
             super.deactivate(renderData);
         }
     }

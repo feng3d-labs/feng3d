@@ -1735,7 +1735,7 @@ declare module feng3d {
      * 渲染参数
      * @author feng 2016-12-14
      */
-    class ShaderParams {
+    interface ShaderParams {
         /**
          * 渲染模式
          */
@@ -1762,7 +1762,7 @@ declare module feng3d {
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic, camera: Camera3D): void;
+        activate(renderData: RenderAtomic): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -2323,10 +2323,9 @@ declare module feng3d {
          */
         invalidateGlobalMatrix3D(): void;
         /**
-         * 激活
-         * @param renderData	渲染数据
+         * 更新渲染数据
          */
-        activate(renderData: RenderAtomic, camera: Camera3D): void;
+        updateRenderData(camera: Camera3D): void;
     }
     /**
      * 变换事件(3D状态发生改变、位置、旋转、缩放)
@@ -2476,29 +2475,9 @@ declare module feng3d {
      */
     class Geometry extends RenderDataHolder {
         /**
-         * 索引数据
-         */
-        indexBuffer: IndexRenderData;
-        /**
-         * 顶点数据
-         */
-        attributes: {
-            [name: string]: AttributeRenderData;
-        };
-        /**
          * 创建一个几何体
          */
         constructor();
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData: RenderAtomic, camera: Camera3D): void;
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData: RenderAtomic): void;
         /**
          * 更新顶点索引数据
          */
@@ -2800,10 +2779,9 @@ declare module feng3d {
         private onLensMatrixChanged(event);
         private onSpaceTransformChanged(event);
         /**
-         * 激活
-         * @param renderData	渲染数据
+         * 更新渲染数据
          */
-        activate(renderData: RenderAtomic, camera: Camera3D): void;
+        updateRenderData(camera: Camera3D): void;
     }
 }
 declare module feng3d {
@@ -2941,10 +2919,14 @@ declare module feng3d {
          */
         constructor();
         /**
+         * 更新渲染数据
+         */
+        updateRenderData(camera: Camera3D): void;
+        /**
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic, camera: Camera3D): void;
+        activate(renderData: RenderAtomic): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -2969,10 +2951,14 @@ declare module feng3d {
          */
         constructor(color?: Color);
         /**
+         * 更新渲染数据
+         */
+        updateRenderData(camera: Camera3D): void;
+        /**
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic, camera: Camera3D): void;
+        activate(renderData: RenderAtomic): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -3023,10 +3009,14 @@ declare module feng3d {
          */
         texture: TextureInfo;
         /**
+         * 更新渲染数据
+         */
+        updateRenderData(camera: Camera3D): void;
+        /**
          * 激活
          * @param renderData	渲染数据
          */
-        activate(renderData: RenderAtomic, camera: Camera3D): void;
+        activate(renderData: RenderAtomic): void;
         /**
          * 释放
          * @param renderData	渲染数据
@@ -3044,10 +3034,9 @@ declare module feng3d {
         private skyBoxSize;
         constructor(images: HTMLImageElement[]);
         /**
-         * 激活
-         * @param renderData	渲染数据
+         * 更新渲染数据
          */
-        activate(renderData: RenderAtomic, camera: Camera3D): void;
+        updateRenderData(camera: Camera3D): void;
     }
 }
 declare module feng3d {

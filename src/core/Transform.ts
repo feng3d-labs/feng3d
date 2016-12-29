@@ -284,16 +284,12 @@ module feng3d {
             }
         }
 
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        public activate(renderData: RenderAtomic, camera: Camera3D) {
-
-            //
+		/**
+		 * 更新渲染数据
+		 */
+        public updateRenderData(camera: Camera3D) {
+            super.updateRenderData(camera);
             this.renderData.uniforms[RenderDataID.u_modelMatrix] = this.globalMatrix3D;
-            //
-            super.activate(renderData, camera);
         }
     }
 

@@ -29,7 +29,7 @@ module feng3d {
         /**
          * 渲染参数
          */
-        public shaderParams = new ShaderParams();
+        public shaderParams: ShaderParams = <any>{};
 
         /**
          * 着色器宏定义
