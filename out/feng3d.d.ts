@@ -2909,8 +2909,37 @@ declare module feng3d {
      * @author feng 2016-12-20
      */
     class TextureInfo {
+        /**
+         * 纹理类型
+         */
         textureType: number;
-        autoGenerateMip: boolean;
+        /**
+         * 内部格式
+         */
+        internalformat: number;
+        /**
+         * 格式
+         */
+        format: number;
+        /**
+         * 数据类型
+         */
+        type: number;
+        /**
+         * 是否生成mipmap
+         */
+        generateMipmap: boolean;
+        /**
+         * 图片y轴向
+         */
+        flipY: number;
+        minFilter: number;
+        magFilter: number;
+        wrapS: number;
+        wrapT: number;
+        /**
+         * 图片数据
+         */
         pixels: HTMLImageElement | HTMLImageElement[];
     }
 }
@@ -3199,6 +3228,55 @@ declare module feng3d {
          * @param direction     停止运动的方向
          */
         private stopDirectionVelocity(direction);
+    }
+}
+declare module feng3d {
+    /**
+     * 地形几何体
+     * @author feng 2016-04-28
+     */
+    class TerrainGeometry extends Geometry {
+        private _segmentsW;
+        private _segmentsH;
+        private _width;
+        private _height;
+        private _depth;
+        private _heightMap;
+        private _minElevation;
+        private _maxElevation;
+        protected _geomDirty: boolean;
+        protected _uvDirty: boolean;
+        /**
+         * 创建高度地形 拥有segmentsW*segmentsH个顶点
+         * @param    heightMap	高度图
+         * @param    width	地形宽度
+         * @param    height	地形高度
+         * @param    depth	地形深度
+         * @param    segmentsW	x轴上网格段数
+         * @param    segmentsH	y轴上网格段数
+         * @param    maxElevation	最大地形高度
+         * @param    minElevation	最小地形高度
+         */
+        constructor(heightMap: ImageData, width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, maxElevation?: number, minElevation?: number);
+        /**
+         * 创建顶点坐标
+         */
+        private buildGeometry();
+        /**
+         * 创建uv坐标
+         */
+        private buildUVs();
+        /**
+         * 获取位置在（x，z）处的高度y值
+         * @param x x坐标
+         * @param z z坐标
+         * @return 高度
+         */
+        getHeightAt(x: number, z: number): number;
+        /**
+         * 获取像素值
+         */
+        private getPixel(imageData, u, v);
     }
 }
 declare module feng3d {

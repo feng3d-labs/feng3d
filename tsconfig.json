@@ -114,6 +114,8 @@
         "src/controllers/ControllerBase.ts",
         "src/controllers/LookAtController.ts",
         "src/controllers/FPSController.ts",
+        //地形
+        "src/terrain/TerrainGeometry.ts",
         //
         "src/factory/Object3DFactory.ts"
     ]

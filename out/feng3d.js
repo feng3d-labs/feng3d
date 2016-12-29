@@ -1908,8 +1908,8 @@ var feng3d;
         fromUnit(color, hasAlpha = true) {
             this.a = (hasAlpha ? (color >> 24) & 0xff : 0xff) / 0xff;
             this.r = ((color >> 16) & 0xff) / 0xff;
-            this.r = ((color >> 8) & 0xff) / 0xff;
-            this.r = (color & 0xff) / 0xff;
+            this.g = ((color >> 8) & 0xff) / 0xff;
+            this.b = (color & 0xff) / 0xff;
         }
         /**
          * 转换为数组
@@ -3236,6 +3236,9 @@ var feng3d;
          * @param context3D         3D环境
          */
         constructor(context3D) {
+            /**
+             * 纹理缓冲
+             */
             this.textureBuffer = new feng3d.Map();
             /** 渲染程序对象池 */
             this.webGLProgramPool = {};
@@ -3296,29 +3299,32 @@ var feng3d;
          * 获取顶点属性缓冲
          * @param data  数据
          */
-        getTexture(data) {
-            var buffer = this.textureBuffer.get(data.pixels);
+        getTexture(textureInfo) {
+            var buffer = this.textureBuffer.get(textureInfo.pixels);
             if (buffer != null) {
                 return buffer;
             }
             var context3D = this.context3D;
             var texture = context3D.createTexture(); // Create a texture object
-            // Bind the texture object to the target
-            context3D.bindTexture(data.textureType, texture);
-            if (data.textureType == WebGLRenderingContext.TEXTURE_2D) {
-                // Set the texture image
-                context3D.texImage2D(data.textureType, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, data.pixels);
+            //绑定纹理
+            context3D.bindTexture(textureInfo.textureType, texture);
+            if (textureInfo.textureType == WebGLRenderingContext.TEXTURE_2D) {
+                //设置纹理图片
+                context3D.texImage2D(textureInfo.textureType, 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, textureInfo.pixels);
             }
-            else if (data.textureType == WebGLRenderingContext.TEXTURE_CUBE_MAP) {
+            else if (textureInfo.textureType == WebGLRenderingContext.TEXTURE_CUBE_MAP) {
                 var faces = [
                     WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Y, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Z,
                     WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_X, WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Y, WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Z
                 ];
                 for (var i = 0; i < faces.length; i++) {
-                    context3D.texImage2D(faces[i], 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, data.pixels[i]);
+                    context3D.texImage2D(faces[i], 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, textureInfo.pixels[i]);
                 }
             }
-            this.textureBuffer.push(data.pixels, texture);
+            if (textureInfo.generateMipmap) {
+                context3D.generateMipmap(textureInfo.textureType);
+            }
+            this.textureBuffer.push(textureInfo.pixels, texture);
             return texture;
         }
         /**
@@ -3640,16 +3646,20 @@ var feng3d;
                 break;
             case WebGLRenderingContext.SAMPLER_2D:
             case WebGLRenderingContext.SAMPLER_CUBE:
-                var textureData = data;
-                var texture = feng3d.context3DPool.getTexture(context3D, textureData);
-                // Enable texture unit0
+                var textureInfo = data;
+                var texture = feng3d.context3DPool.getTexture(context3D, textureInfo);
+                //激活纹理编号
                 context3D.activeTexture(WebGLRenderingContext.TEXTURE0);
-                // Bind the texture object to the target
-                context3D.bindTexture(textureData.textureType, texture);
-                context3D.pixelStorei(WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
-                // Set the texture parameters
-                context3D.texParameteri(textureData.textureType, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
-                // Set the texture unit 0 to the sampler
+                //绑定纹理
+                context3D.bindTexture(textureInfo.textureType, texture);
+                //设置图片y轴方向
+                context3D.pixelStorei(WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL, textureInfo.flipY);
+                //设置纹理参数
+                context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_MIN_FILTER, textureInfo.minFilter);
+                context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_MAG_FILTER, textureInfo.magFilter);
+                context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_WRAP_S, textureInfo.wrapS);
+                context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_WRAP_T, textureInfo.wrapT);
+                //设置纹理所在采样编号
                 context3D.uniform1i(location, 0);
                 break;
             default:
@@ -6167,6 +6177,28 @@ var feng3d;
      * @author feng 2016-12-20
      */
     class TextureInfo {
+        constructor() {
+            /**
+             * 内部格式
+             */
+            this.internalformat = WebGLRenderingContext.RGB;
+            /**
+             * 格式
+             */
+            this.format = WebGLRenderingContext.RGB;
+            /**
+             * 数据类型
+             */
+            this.type = WebGLRenderingContext.UNSIGNED_BYTE;
+            /**
+             * 图片y轴向
+             */
+            this.flipY = 1;
+            this.minFilter = WebGLRenderingContext.LINEAR;
+            this.magFilter = WebGLRenderingContext.NEAREST;
+            this.wrapS = WebGLRenderingContext.CLAMP_TO_EDGE;
+            this.wrapT = WebGLRenderingContext.CLAMP_TO_EDGE;
+        }
     }
     feng3d.TextureInfo = TextureInfo;
 })(feng3d || (feng3d = {}));
@@ -6632,6 +6664,152 @@ var feng3d;
         }
     }
     feng3d.FPSController = FPSController;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 地形几何体
+     * @author feng 2016-04-28
+     */
+    class TerrainGeometry extends feng3d.Geometry {
+        /**
+         * 创建高度地形 拥有segmentsW*segmentsH个顶点
+         * @param    heightMap	高度图
+         * @param    width	地形宽度
+         * @param    height	地形高度
+         * @param    depth	地形深度
+         * @param    segmentsW	x轴上网格段数
+         * @param    segmentsH	y轴上网格段数
+         * @param    maxElevation	最大地形高度
+         * @param    minElevation	最小地形高度
+         */
+        constructor(heightMap, width = 1000, height = 100, depth = 1000, segmentsW = 30, segmentsH = 30, maxElevation = 255, minElevation = 0) {
+            super();
+            this._geomDirty = true;
+            this._uvDirty = true;
+            this._heightMap = heightMap;
+            this._segmentsW = segmentsW;
+            this._segmentsH = segmentsH;
+            this._width = width;
+            this._height = height;
+            this._depth = depth;
+            this._maxElevation = maxElevation;
+            this._minElevation = minElevation;
+            console.log(this._heightMap.data.length);
+            this.buildUVs();
+            this.buildGeometry();
+        }
+        /**
+         * 创建顶点坐标
+         */
+        buildGeometry() {
+            var x, z;
+            var numInds = 0;
+            var base = 0;
+            //一排顶点数据
+            var tw = this._segmentsW + 1;
+            //总顶点数量
+            var numVerts = (this._segmentsH + 1) * tw;
+            //一个格子所占高度图X轴像素数
+            var uDiv = (this._heightMap.width - 1) / this._segmentsW;
+            //一个格子所占高度图Y轴像素数
+            var vDiv = (this._heightMap.height - 1) / this._segmentsH;
+            var u, v;
+            var y;
+            var vertices = new Float32Array(numVerts * 3);
+            var indices = new Uint16Array(this._segmentsH * this._segmentsW * 6);
+            numVerts = 0;
+            var col;
+            var cols = [];
+            for (var zi = 0; zi <= this._segmentsH; ++zi) {
+                for (var xi = 0; xi <= this._segmentsW; ++xi) {
+                    //顶点坐标
+                    x = (xi / this._segmentsW - .5) * this._width;
+                    z = (zi / this._segmentsH - .5) * this._depth;
+                    //格子对应高度图uv坐标
+                    u = xi * uDiv;
+                    v = (this._segmentsH - zi) * vDiv;
+                    //获取颜色值
+                    col = this.getPixel(this._heightMap, u, v) & 0xff;
+                    //计算高度值
+                    y = (col > this._maxElevation) ? (this._maxElevation / 0xff) * this._height : ((col < this._minElevation) ? (this._minElevation / 0xff) * this._height : (col / 0xff) * this._height);
+                    cols.push(this.getPixel(this._heightMap, u, v));
+                    //保存顶点坐标
+                    vertices[numVerts++] = x;
+                    vertices[numVerts++] = y;
+                    vertices[numVerts++] = z;
+                    if (xi != this._segmentsW && zi != this._segmentsH) {
+                        //增加 一个顶点同时 生成一个格子或两个三角形
+                        base = xi + zi * tw;
+                        indices[numInds++] = base;
+                        indices[numInds++] = base + tw;
+                        indices[numInds++] = base + tw + 1;
+                        indices[numInds++] = base;
+                        indices[numInds++] = base + tw + 1;
+                        indices[numInds++] = base + 1;
+                    }
+                }
+            }
+            console.log(cols);
+            this.setVAData(feng3d.GLAttribute.a_position, vertices, 3);
+            this.setIndices(indices);
+        }
+        /**
+         * 创建uv坐标
+         */
+        buildUVs() {
+            var numUvs = (this._segmentsH + 1) * (this._segmentsW + 1) * 2;
+            var uvs = new Float32Array(numUvs);
+            numUvs = 0;
+            //计算每个顶点的uv坐标
+            for (var yi = 0; yi <= this._segmentsH; ++yi) {
+                for (var xi = 0; xi <= this._segmentsW; ++xi) {
+                    uvs[numUvs++] = xi / this._segmentsW;
+                    uvs[numUvs++] = 1 - yi / this._segmentsH;
+                }
+            }
+            this.setVAData(feng3d.GLAttribute.a_uv, uvs, 2);
+        }
+        /**
+         * 获取位置在（x，z）处的高度y值
+         * @param x x坐标
+         * @param z z坐标
+         * @return 高度
+         */
+        getHeightAt(x, z) {
+            //得到高度图中的值
+            var u = (x / this._width + .5) * (this._heightMap.width - 1);
+            var v = (-z / this._depth + .5) * (this._heightMap.height - 1);
+            var col = this.getPixel(this._heightMap, u, v) & 0xff;
+            var h;
+            if (col > this._maxElevation) {
+                h = (this._maxElevation / 0xff) * this._height;
+            }
+            else if (col < this._minElevation) {
+                h = (this._minElevation / 0xff) * this._height;
+            }
+            else {
+                h = (col / 0xff) * this._height;
+            }
+            return h;
+        }
+        /**
+         * 获取像素值
+         */
+        getPixel(imageData, u, v) {
+            //取整
+            u = ~~u;
+            v = ~~v;
+            var index = (v * imageData.width + u) * 4;
+            var data = imageData.data;
+            var red = data[index]; //红色色深
+            var green = data[index + 1]; //绿色色深
+            var blue = data[index + 2]; //蓝色色深
+            var alpha = data[index + 3]; //透明度
+            return blue;
+        }
+    }
+    feng3d.TerrainGeometry = TerrainGeometry;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
