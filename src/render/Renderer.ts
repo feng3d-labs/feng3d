@@ -133,18 +133,20 @@ module feng3d {
             case WebGLRenderingContext.SAMPLER_2D:
             case WebGLRenderingContext.SAMPLER_CUBE:
 
-                var textureData: TextureInfo = <TextureInfo>data;
-                var texture = context3DPool.getTexture(context3D, textureData);
-
-                // Enable texture unit0
+                var textureInfo = <TextureInfo>data;
+                var texture = context3DPool.getTexture(context3D, textureInfo);
+                //激活纹理编号
                 context3D.activeTexture(WebGLRenderingContext.TEXTURE0);
-                // Bind the texture object to the target
-                context3D.bindTexture(textureData.textureType, texture);
-
-                context3D.pixelStorei(WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
-                // Set the texture parameters
-                context3D.texParameteri(textureData.textureType, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
-                // Set the texture unit 0 to the sampler
+                //绑定纹理
+                context3D.bindTexture(textureInfo.textureType, texture);
+                //设置图片y轴方向
+                context3D.pixelStorei(WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL, textureInfo.flipY);
+                //设置纹理参数
+                context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_MIN_FILTER, textureInfo.minFilter);
+                context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_MAG_FILTER, textureInfo.magFilter);
+                context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_WRAP_S, textureInfo.wrapS);
+                context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_WRAP_T, textureInfo.wrapT);
+                //设置纹理所在采样编号
                 context3D.uniform1i(location, 0);
                 break;
             default:

@@ -106,7 +106,7 @@ module feng3d {
          * @param fragmentCode  片段着色器代码
          * @return  渲染程序
          */
-        getWebGLProgram(vertexCode: string, fragmentCode: string): WebGLProgram {
+        public getWebGLProgram(vertexCode: string, fragmentCode: string): WebGLProgram {
 
             //获取3D环境唯一标识符
             var shaderCode = [vertexCode, fragmentCode].join("\n--- shaderCode ---\n");
@@ -119,7 +119,7 @@ module feng3d {
          * @param vertexCode        顶点渲染代码
          * @return                  顶点渲染程序
          */
-        getVertexShader(vertexCode: string) {
+        public getVertexShader(vertexCode: string) {
 
             return this.vertexShaderPool[vertexCode] = this.vertexShaderPool[vertexCode] || getVertexShader(this.context3D, vertexCode);
         }
@@ -129,7 +129,7 @@ module feng3d {
          * @param fragmentCode      顶点渲染代码
          * @return                  顶点渲染程序
          */
-        getFragmentShader(fragmentCode: string) {
+        public getFragmentShader(fragmentCode: string) {
 
             return this.fragmentShaderPool[fragmentCode] = this.fragmentShaderPool[fragmentCode] || getFragmentShader(this.context3D, fragmentCode);
         }
@@ -137,7 +137,7 @@ module feng3d {
         /**
          * 获取索引缓冲
          */
-        getIndexBuffer(indices: Uint16Array) {
+        public getIndexBuffer(indices: Uint16Array) {
 
             var indexBuffer = this.getBuffer(indices, WebGLRenderingContext.ELEMENT_ARRAY_BUFFER);
             return indexBuffer;
@@ -147,41 +147,41 @@ module feng3d {
          * 获取顶点属性缓冲
          * @param data  数据 
          */
-        getVABuffer(data: Float32Array): WebGLBuffer {
+        public getVABuffer(data: Float32Array): WebGLBuffer {
             var buffer = this.getBuffer(data, WebGLRenderingContext.ARRAY_BUFFER);
             return buffer;
         }
-
-        private textureBuffer = new Map<any, WebGLTexture>();
 
         /**
          * 获取顶点属性缓冲
          * @param data  数据 
          */
-        getTexture(data: TextureInfo) {
+        public getTexture(textureInfo: TextureInfo) {
 
-            var buffer = this.textureBuffer.get(data.pixels);
+            var buffer = this.textureBuffer.get(textureInfo.pixels);
             if (buffer != null) {
                 return buffer;
             }
-
             var context3D = this.context3D;
             var texture = context3D.createTexture();   // Create a texture object
-            // Bind the texture object to the target
-            context3D.bindTexture(data.textureType, texture);
-            if (data.textureType == WebGLRenderingContext.TEXTURE_2D) {
-                // Set the texture image
-                context3D.texImage2D(data.textureType, 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, <HTMLImageElement>data.pixels);
-            } else if (data.textureType == WebGLRenderingContext.TEXTURE_CUBE_MAP) {
+            //绑定纹理
+            context3D.bindTexture(textureInfo.textureType, texture);
+            if (textureInfo.textureType == WebGLRenderingContext.TEXTURE_2D) {
+                //设置纹理图片
+                context3D.texImage2D(textureInfo.textureType, 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, <HTMLImageElement>textureInfo.pixels);
+            } else if (textureInfo.textureType == WebGLRenderingContext.TEXTURE_CUBE_MAP) {
                 var faces = [
                     WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Y, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Z,
                     WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_X, WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Y, WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Z
                 ];
                 for (var i = 0; i < faces.length; i++) {
-                    context3D.texImage2D(faces[i], 0, WebGLRenderingContext.RGB, WebGLRenderingContext.RGB, WebGLRenderingContext.UNSIGNED_BYTE, data.pixels[i])
+                    context3D.texImage2D(faces[i], 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, textureInfo.pixels[i])
                 }
             }
-            this.textureBuffer.push(data.pixels, texture);
+            if (textureInfo.generateMipmap) {
+                context3D.generateMipmap(textureInfo.textureType);
+            }
+            this.textureBuffer.push(textureInfo.pixels, texture);
             return texture;
         }
 
@@ -208,6 +208,11 @@ module feng3d {
 
             return buffer;
         }
+
+        /**
+         * 纹理缓冲
+         */
+        private textureBuffer = new Map<any, WebGLTexture>();
 
         /** 渲染程序对象池 */
         private webGLProgramPool: { [shaderCode: string]: WebGLProgram } = {};
