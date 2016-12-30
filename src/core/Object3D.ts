@@ -16,6 +16,8 @@ module feng3d {
          */
         private children: Object3D[] = [];
 
+        private _scene: Scene3D;
+
         /**
          * 变换
          */
@@ -53,6 +55,14 @@ module feng3d {
         public get parent() {
 
             return this._parent;
+        }
+
+        /**
+         * 场景
+         */
+        public get scene() {
+
+            return this._scene;
         }
 
         /**
@@ -139,6 +149,10 @@ module feng3d {
 
             if (event.data.child == this) {
                 this._parent = event.data.parent;
+                if (this._parent.scene) {
+                    this._scene = this._parent.scene;
+                    // this.dispatchEvent(new Object3DEvent(Object3DEvent.ADDED_TO_SCENE, this));
+                }
             }
         }
 
@@ -149,6 +163,9 @@ module feng3d {
 
             if (event.data.child == this) {
                 this._parent = null;
+                if(this._scene){
+                    this._scene = null;
+                }
             }
         }
     }
