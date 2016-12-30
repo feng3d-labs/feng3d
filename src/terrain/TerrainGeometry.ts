@@ -40,7 +40,6 @@ module feng3d {
             this._maxElevation = maxElevation;
             this._minElevation = minElevation;
 
-            console.log(this._heightMap.data.length)
             this.buildUVs();
             this.buildGeometry();
         }
@@ -70,7 +69,6 @@ module feng3d {
 
             numVerts = 0;
             var col: number;
-            var cols = [];
             for (var zi: number = 0; zi <= this._segmentsH; ++zi) {
                 for (var xi: number = 0; xi <= this._segmentsW; ++xi) {
                     //顶点坐标
@@ -84,7 +82,7 @@ module feng3d {
                     col = this.getPixel(this._heightMap, u, v) & 0xff;
                     //计算高度值
                     y = (col > this._maxElevation) ? (this._maxElevation / 0xff) * this._height : ((col < this._minElevation) ? (this._minElevation / 0xff) * this._height : (col / 0xff) * this._height);
-                    cols.push(this.getPixel(this._heightMap, u, v));
+
                     //保存顶点坐标
                     vertices[numVerts++] = x;
                     vertices[numVerts++] = y;
@@ -102,7 +100,6 @@ module feng3d {
                     }
                 }
             }
-            console.log(cols);
             this.setVAData(GLAttribute.a_position, vertices, 3)
             this.setIndices(indices);
         }
