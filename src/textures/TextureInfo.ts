@@ -26,7 +26,7 @@ module feng3d {
         /**
          * 是否生成mipmap
          */
-        public generateMipmap: boolean;
+        public generateMipmap: boolean = true;
 
         /**
          * 图片y轴向

@@ -8,9 +8,10 @@ module feng3d {
 
         public pixels: HTMLImageElement;
 
-        constructor() {
+        constructor(pixels: HTMLImageElement) {
             super();
             this.textureType = WebGLRenderingContext.TEXTURE_2D;
+            this.pixels = pixels;
         }
     }
 }

@@ -31,6 +31,7 @@ module feng3d {
          */
         private drawObject3D(object3D: Object3D, context3D: WebGLRenderingContext, camera: Camera3D) {
 
+            samplerIndex = 0;
             object3D.updateRenderData(camera);
             object3D.activate(this.renderAtomic);
             //
@@ -53,6 +54,8 @@ module feng3d {
             object3D.deactivate(this.renderAtomic);
         }
     }
+
+    var samplerIndex = 0;
 
     /**
      * 激活属性
@@ -136,7 +139,7 @@ module feng3d {
                 var textureInfo = <TextureInfo>data;
                 var texture = context3DPool.getTexture(context3D, textureInfo);
                 //激活纹理编号
-                context3D.activeTexture(WebGLRenderingContext.TEXTURE0);
+                context3D.activeTexture(WebGLRenderingContext["TEXTURE" + samplerIndex]);
                 //绑定纹理
                 context3D.bindTexture(textureInfo.textureType, texture);
                 //设置图片y轴方向
@@ -147,7 +150,8 @@ module feng3d {
                 context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_WRAP_S, textureInfo.wrapS);
                 context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_WRAP_T, textureInfo.wrapT);
                 //设置纹理所在采样编号
-                context3D.uniform1i(location, 0);
+                context3D.uniform1i(location, samplerIndex);
+                samplerIndex++;
                 break;
             default:
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;

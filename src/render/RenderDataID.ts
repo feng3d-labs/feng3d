@@ -23,6 +23,9 @@ module feng3d {
 
         static u_diffuseInput = "u_diffuseInput";
 
+        /**
+         * 漫反射贴图
+         */
         static s_texture = "s_texture";
         /**
          * 天空盒纹理
@@ -37,5 +40,27 @@ module feng3d {
          * 天空盒尺寸
          */
         static u_skyBoxSize = "u_skyBoxSize";
+
+        /**
+         * 地形混合贴图
+         */
+        static s_blendTexture = "s_blendTexture";
+
+        /**
+         * 地形块贴图1
+         */
+        static s_splatTexture1 = "s_splatTexture1";
+        /**
+         * 地形块贴图2
+         */
+        static s_splatTexture2 = "s_splatTexture2";
+        /**
+         * 地形块贴图3
+         */
+        static s_splatTexture3 = "s_splatTexture3";
+        /**
+         * 地形块重复次数
+         */
+        static u_splatRepeats = "u_splatRepeats";
     }
 }

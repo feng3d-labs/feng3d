@@ -3497,6 +3497,9 @@ var feng3d;
      */
     RenderDataID.u_viewProjection = "u_viewProjection";
     RenderDataID.u_diffuseInput = "u_diffuseInput";
+    /**
+     * 漫反射贴图
+     */
     RenderDataID.s_texture = "s_texture";
     /**
      * 天空盒纹理
@@ -3510,6 +3513,26 @@ var feng3d;
      * 天空盒尺寸
      */
     RenderDataID.u_skyBoxSize = "u_skyBoxSize";
+    /**
+     * 地形混合贴图
+     */
+    RenderDataID.s_blendTexture = "s_blendTexture";
+    /**
+     * 地形块贴图1
+     */
+    RenderDataID.s_splatTexture1 = "s_splatTexture1";
+    /**
+     * 地形块贴图2
+     */
+    RenderDataID.s_splatTexture2 = "s_splatTexture2";
+    /**
+     * 地形块贴图3
+     */
+    RenderDataID.s_splatTexture3 = "s_splatTexture3";
+    /**
+     * 地形块重复次数
+     */
+    RenderDataID.u_splatRepeats = "u_splatRepeats";
     feng3d.RenderDataID = RenderDataID;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -3554,6 +3577,7 @@ var feng3d;
          * 绘制3D对象
          */
         drawObject3D(object3D, context3D, camera) {
+            samplerIndex = 0;
             object3D.updateRenderData(camera);
             object3D.activate(this.renderAtomic);
             //
@@ -3577,6 +3601,7 @@ var feng3d;
         }
     }
     feng3d.Renderer = Renderer;
+    var samplerIndex = 0;
     /**
      * 激活属性
      */
@@ -3649,7 +3674,7 @@ var feng3d;
                 var textureInfo = data;
                 var texture = feng3d.context3DPool.getTexture(context3D, textureInfo);
                 //激活纹理编号
-                context3D.activeTexture(WebGLRenderingContext.TEXTURE0);
+                context3D.activeTexture(WebGLRenderingContext["TEXTURE" + samplerIndex]);
                 //绑定纹理
                 context3D.bindTexture(textureInfo.textureType, texture);
                 //设置图片y轴方向
@@ -3660,7 +3685,8 @@ var feng3d;
                 context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_WRAP_S, textureInfo.wrapS);
                 context3D.texParameteri(textureInfo.textureType, WebGLRenderingContext.TEXTURE_WRAP_T, textureInfo.wrapT);
                 //设置纹理所在采样编号
-                context3D.uniform1i(location, 0);
+                context3D.uniform1i(location, samplerIndex);
+                samplerIndex++;
                 break;
             default:
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
@@ -6191,6 +6217,10 @@ var feng3d;
              */
             this.type = WebGLRenderingContext.UNSIGNED_BYTE;
             /**
+             * 是否生成mipmap
+             */
+            this.generateMipmap = true;
+            /**
              * 图片y轴向
              */
             this.flipY = 1;
@@ -6209,9 +6239,10 @@ var feng3d;
      * @author feng 2016-12-20
      */
     class Texture2D extends feng3d.TextureInfo {
-        constructor() {
+        constructor(pixels) {
             super();
             this.textureType = WebGLRenderingContext.TEXTURE_2D;
+            this.pixels = pixels;
         }
     }
     feng3d.Texture2D = Texture2D;
@@ -6810,6 +6841,35 @@ var feng3d;
         }
     }
     feng3d.TerrainGeometry = TerrainGeometry;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 地形材质
+     * @author feng 2016-04-28
+     */
+    class TerrainMaterial extends feng3d.Material {
+        /**
+         * 构建材质
+         */
+        constructor() {
+            super();
+            this.renderData.shaderName = "terrain";
+        }
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(camera) {
+            super.updateRenderData(camera);
+            this.renderData.uniforms[feng3d.RenderDataID.s_texture] = this.diffuseTexture;
+            this.renderData.uniforms[feng3d.RenderDataID.s_blendTexture] = this.blendTexture;
+            this.renderData.uniforms[feng3d.RenderDataID.s_splatTexture1] = this.splatTexture1;
+            this.renderData.uniforms[feng3d.RenderDataID.s_splatTexture2] = this.splatTexture2;
+            this.renderData.uniforms[feng3d.RenderDataID.s_splatTexture3] = this.splatTexture3;
+            this.renderData.uniforms[feng3d.RenderDataID.u_splatRepeats] = this.splatRepeats;
+        }
+    }
+    feng3d.TerrainMaterial = TerrainMaterial;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

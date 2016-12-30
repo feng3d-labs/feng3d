@@ -1977,6 +1977,9 @@ declare module feng3d {
          */
         static u_viewProjection: string;
         static u_diffuseInput: string;
+        /**
+         * 漫反射贴图
+         */
         static s_texture: string;
         /**
          * 天空盒纹理
@@ -1990,6 +1993,26 @@ declare module feng3d {
          * 天空盒尺寸
          */
         static u_skyBoxSize: string;
+        /**
+         * 地形混合贴图
+         */
+        static s_blendTexture: string;
+        /**
+         * 地形块贴图1
+         */
+        static s_splatTexture1: string;
+        /**
+         * 地形块贴图2
+         */
+        static s_splatTexture2: string;
+        /**
+         * 地形块贴图3
+         */
+        static s_splatTexture3: string;
+        /**
+         * 地形块重复次数
+         */
+        static u_splatRepeats: string;
     }
 }
 declare module feng3d {
@@ -2950,7 +2973,7 @@ declare module feng3d {
      */
     class Texture2D extends TextureInfo {
         pixels: HTMLImageElement;
-        constructor();
+        constructor(pixels: HTMLImageElement);
     }
 }
 declare module feng3d {
@@ -3046,7 +3069,7 @@ declare module feng3d {
         /**
          * 纹理数据
          */
-        texture: TextureInfo;
+        texture: Texture2D;
         /**
          * 更新渲染数据
          */
@@ -3277,6 +3300,28 @@ declare module feng3d {
          * 获取像素值
          */
         private getPixel(imageData, u, v);
+    }
+}
+declare module feng3d {
+    /**
+     * 地形材质
+     * @author feng 2016-04-28
+     */
+    class TerrainMaterial extends Material {
+        diffuseTexture: Texture2D;
+        splatTexture1: Texture2D;
+        splatTexture2: Texture2D;
+        splatTexture3: Texture2D;
+        blendTexture: Texture2D;
+        splatRepeats: Vector3D;
+        /**
+         * 构建材质
+         */
+        constructor();
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(camera: Camera3D): void;
     }
 }
 declare module feng3d {
