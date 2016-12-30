@@ -42,7 +42,6 @@ module feng3d {
             this.name = name || getClassName(this);
             //
             this.transform = new Transform();
-            this.getOrCreateComponentByClass(MeshRenderer);
             //
             this.addEventListener(Object3DEvent.ADDED, this.onAddedContainer3D, this);
             this.addEventListener(Object3DEvent.REMOVED, this.onRemovedContainer3D, this);

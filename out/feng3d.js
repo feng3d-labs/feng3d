@@ -3569,7 +3569,10 @@ var feng3d;
             camera.activate(this.renderAtomic);
             var renderables = scene.getRenderables();
             renderables.forEach(element => {
-                this.drawObject3D(element, context3D, camera);
+                element.updateRenderData(camera);
+                element.activate(this.renderAtomic);
+                this.drawObject3D(element, context3D, camera); //
+                element.deactivate(this.renderAtomic);
             });
             camera.deactivate(this.renderAtomic);
         }
@@ -3577,13 +3580,13 @@ var feng3d;
          * 绘制3D对象
          */
         drawObject3D(object3D, context3D, camera) {
-            samplerIndex = 0;
-            object3D.updateRenderData(camera);
-            object3D.activate(this.renderAtomic);
+            if (!this.renderAtomic.shaderName)
+                return;
             //
             var shaderData = shaderMap[this.renderAtomic.shaderName] = shaderMap[this.renderAtomic.shaderName] || new feng3d.ShaderData(this.renderAtomic.shaderName);
             if (!shaderData.isOk)
                 return;
+            samplerIndex = 0;
             var vertexCode = shaderData.vertexCode;
             var fragmentCode = shaderData.fragmentCode;
             //应用宏
@@ -3596,8 +3599,6 @@ var feng3d;
             activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
             activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
             dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer);
-            //
-            object3D.deactivate(this.renderAtomic);
         }
     }
     feng3d.Renderer = Renderer;
@@ -3769,7 +3770,6 @@ var feng3d;
             this.name = name || feng3d.getClassName(this);
             //
             this.transform = new feng3d.Transform();
-            this.getOrCreateComponentByClass(feng3d.MeshRenderer);
             //
             this.addEventListener(feng3d.Object3DEvent.ADDED, this.onAddedContainer3D, this);
             this.addEventListener(feng3d.Object3DEvent.REMOVED, this.onRemovedContainer3D, this);
@@ -6726,7 +6726,6 @@ var feng3d;
             this._depth = depth;
             this._maxElevation = maxElevation;
             this._minElevation = minElevation;
-            console.log(this._heightMap.data.length);
             this.buildUVs();
             this.buildGeometry();
         }
@@ -6751,7 +6750,6 @@ var feng3d;
             var indices = new Uint16Array(this._segmentsH * this._segmentsW * 6);
             numVerts = 0;
             var col;
-            var cols = [];
             for (var zi = 0; zi <= this._segmentsH; ++zi) {
                 for (var xi = 0; xi <= this._segmentsW; ++xi) {
                     //顶点坐标
@@ -6764,7 +6762,6 @@ var feng3d;
                     col = this.getPixel(this._heightMap, u, v) & 0xff;
                     //计算高度值
                     y = (col > this._maxElevation) ? (this._maxElevation / 0xff) * this._height : ((col < this._minElevation) ? (this._minElevation / 0xff) * this._height : (col / 0xff) * this._height);
-                    cols.push(this.getPixel(this._heightMap, u, v));
                     //保存顶点坐标
                     vertices[numVerts++] = x;
                     vertices[numVerts++] = y;
@@ -6781,7 +6778,6 @@ var feng3d;
                     }
                 }
             }
-            console.log(cols);
             this.setVAData(feng3d.GLAttribute.a_position, vertices, 3);
             this.setIndices(indices);
         }
@@ -6885,6 +6881,7 @@ var feng3d;
             var object3D = new feng3d.Object3D("plane");
             var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
             mesh.geometry = feng3d.primitives.createPlane();
+            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
             return object3D;
         }
         /**
@@ -6894,6 +6891,7 @@ var feng3d;
             var object3D = new feng3d.Object3D("cube");
             var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
             mesh.geometry = feng3d.primitives.createCube();
+            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
             return object3D;
         }
         /**
@@ -6903,6 +6901,7 @@ var feng3d;
             var object3D = new feng3d.Object3D("sphere");
             var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
             mesh.geometry = feng3d.primitives.createSphere();
+            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
             return object3D;
         }
         /**
@@ -6912,6 +6911,7 @@ var feng3d;
             var object3D = new feng3d.Object3D("capsule");
             var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
             mesh.geometry = feng3d.primitives.createCapsule();
+            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
             return object3D;
         }
         /**
@@ -6921,6 +6921,7 @@ var feng3d;
             var object3D = new feng3d.Object3D("cylinder");
             var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
             mesh.geometry = feng3d.primitives.createCylinder();
+            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
             return object3D;
         }
         /**

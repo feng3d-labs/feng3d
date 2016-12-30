@@ -20,7 +20,10 @@ module feng3d {
 
             var renderables = scene.getRenderables();
             renderables.forEach(element => {
-                this.drawObject3D(element, context3D, camera);
+                element.updateRenderData(camera);
+                element.activate(this.renderAtomic);
+                this.drawObject3D(element, context3D, camera);            //
+                element.deactivate(this.renderAtomic);
             });
 
             camera.deactivate(this.renderAtomic);
@@ -31,13 +34,14 @@ module feng3d {
          */
         private drawObject3D(object3D: Object3D, context3D: WebGLRenderingContext, camera: Camera3D) {
 
-            samplerIndex = 0;
-            object3D.updateRenderData(camera);
-            object3D.activate(this.renderAtomic);
+
+            if (!this.renderAtomic.shaderName)
+                return;
             //
             var shaderData = shaderMap[this.renderAtomic.shaderName] = shaderMap[this.renderAtomic.shaderName] || new ShaderData(this.renderAtomic.shaderName);
             if (!shaderData.isOk)
                 return;
+            samplerIndex = 0;
             var vertexCode = shaderData.vertexCode;
             var fragmentCode = shaderData.fragmentCode;
             //应用宏
@@ -50,8 +54,6 @@ module feng3d {
             activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
             activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
             dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer);
-            //
-            object3D.deactivate(this.renderAtomic);
         }
     }
 

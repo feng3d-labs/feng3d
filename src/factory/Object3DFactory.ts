@@ -13,6 +13,7 @@ module feng3d {
             var object3D = new Object3D("plane");
             var mesh = object3D.getOrCreateComponentByClass(Mesh);
             mesh.geometry = primitives.createPlane();
+            object3D.getOrCreateComponentByClass(MeshRenderer);
             return object3D;
         }
 
@@ -23,6 +24,7 @@ module feng3d {
             var object3D = new Object3D("cube");
             var mesh = object3D.getOrCreateComponentByClass(Mesh);
             mesh.geometry = primitives.createCube();
+            object3D.getOrCreateComponentByClass(MeshRenderer);
             return object3D;
         }
 
@@ -33,6 +35,7 @@ module feng3d {
             var object3D = new Object3D("sphere");
             var mesh = object3D.getOrCreateComponentByClass(Mesh);
             mesh.geometry = primitives.createSphere();
+            object3D.getOrCreateComponentByClass(MeshRenderer);
             return object3D;
         }
 
@@ -43,6 +46,7 @@ module feng3d {
             var object3D = new Object3D("capsule");
             var mesh = object3D.getOrCreateComponentByClass(Mesh);
             mesh.geometry = primitives.createCapsule();
+            object3D.getOrCreateComponentByClass(MeshRenderer);
             return object3D;
         }
 
@@ -53,6 +57,7 @@ module feng3d {
             var object3D = new Object3D("cylinder");
             var mesh = object3D.getOrCreateComponentByClass(Mesh);
             mesh.geometry = primitives.createCylinder();
+            object3D.getOrCreateComponentByClass(MeshRenderer);
             return object3D;
         }
 
