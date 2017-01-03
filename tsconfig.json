@@ -35,6 +35,7 @@
         //基础工具
         "src/utils/getClassName.ts",
         "src/utils/StringUtils.ts",
+        "src/utils/ArrayUtils.ts",
         "src/utils/Map.ts",
         "src/utils/UID.ts",
         "src/utils/Version.ts",
@@ -69,7 +70,7 @@
         "src/core/Object3DComponent.ts",
         "src/core/Transform.ts",
         "src/core/Object3DEvent.ts",
-        "src/core/Mesh.ts",
+        "src/core/MeshFilter.ts",
         "src/core/MeshRenderer.ts",
         //3D场景
         "src/scene/Scene3D.ts",

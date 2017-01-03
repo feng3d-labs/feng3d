@@ -19,6 +19,14 @@ module feng3d {
         private _scene: Scene3D;
 
         /**
+         * 唯一标识符
+         */
+        public get uid() {
+
+            return getUID(this);
+        }
+
+        /**
          * 变换
          */
         public get transform(): Transform {
@@ -41,7 +49,7 @@ module feng3d {
 
             super();
 
-            this.name = name || getClassName(this);
+            this.name = name || this.uid;
             //
             this.transform = new Transform();
             //
@@ -85,13 +93,13 @@ module feng3d {
                 return;
 
             if (this._scene) {
-                this.dispatchEvent(new Object3DEvent(Object3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
-                this._scene.dispatchEvent(new Object3DEvent(Object3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
+                this.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
+                this._scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
             }
             this._scene = value;
             if (this._scene) {
-                this.dispatchEvent(new Object3DEvent(Object3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
-                this._scene.dispatchEvent(new Object3DEvent(Object3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
+                this.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
+                this._scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
             }
             this._children.forEach(child => {
                 child._setScene(this._scene);

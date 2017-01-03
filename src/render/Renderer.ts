@@ -18,7 +18,7 @@ module feng3d {
             //绘制对象
             camera.activate(this.renderAtomic);
 
-            var renderables = scene.getRenderables();
+            var renderables = scene.renderables;
             renderables.forEach(element => {
                 element.updateRenderData(camera);
                 element.activate(this.renderAtomic);

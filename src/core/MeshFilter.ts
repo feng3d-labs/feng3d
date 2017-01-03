@@ -4,7 +4,7 @@ module feng3d {
      * 网格
      * @author feng 2016-12-12
      */
-    export class Mesh extends Object3DComponent {
+    export class MeshFilter extends Object3DComponent {
 
         private _geometry: Geometry;
 
@@ -22,6 +22,5 @@ module feng3d {
             this._geometry = value;
             this._geometry && this.addComponent(this._geometry);
         }
-
     }
 }

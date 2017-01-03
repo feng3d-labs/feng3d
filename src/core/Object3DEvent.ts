@@ -16,16 +16,6 @@ module feng3d {
         static REMOVED: string = "removed";
 
         /**
-         * 添加到舞台，当Object3D的scene属性被设置是由Object3D与Scene3D分别派发不冒泡事件
-         */
-        static ADDED_TO_SCENE: string = "addedToScene";
-
-        /**
-         * 从舞台移除，当Object3D的scene属性被清空时由Object3D与Scene3D分别派发不冒泡事件
-         */
-        static REMOVED_FROM_SCENE: string = "removedFromScene";
-
-        /**
          * 事件数据
          */
         data: IObject3DEventData;
@@ -46,20 +36,12 @@ module feng3d {
      */
     export interface IObject3DEventData {
         /**
-         * 父容器（ADDED，REMOVED）
+         * 父容器
          */
         parent?: Object3D;
         /**
-         * 子对象（ADDED，REMOVED）
+         * 子对象
          */
         child?: Object3D;
-        /**
-         * 3d对象（ADDED_TO_SCENE，REMOVED_FROM_SCENE）
-         */
-        object3d?: Object3D;
-        /**
-         * 场景（ADDED_TO_SCENE，REMOVED_FROM_SCENE）
-         */
-        scene?: Scene3D;
     }
 }

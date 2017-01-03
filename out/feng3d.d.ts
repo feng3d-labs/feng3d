@@ -1022,13 +1022,30 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 数组工具
+     * @author feng 2017-01-03
+     */
+    class ArrayUtils {
+        /**
+         * 删除数据元素
+         * @param source    数组源数据
+         * @param item      被删除数据
+         * @param all       是否删除所有相同数据
+         */
+        static removeItem<T>(source: T[], item: T, all?: boolean): {
+            deleteIndexs: number[];
+            length: number;
+        };
+    }
+}
+declare module feng3d {
+    /**
      * 构建Map类代替Dictionary
+     * @author feng 2017-01-03
      */
     class Map<K, V> {
-        /**
-         * key,value组合列表
-         */
-        private list;
+        private keyMap;
+        private valueMap;
         /**
          * 删除
          */
@@ -1049,10 +1066,6 @@ declare module feng3d {
          * 清理字典
          */
         clear(): void;
-        /**
-         * 通过key获取(key,value)组合
-         */
-        private _getKV(k);
     }
 }
 declare module feng3d {
@@ -2104,6 +2117,10 @@ declare module feng3d {
         private _children;
         private _scene;
         /**
+         * 唯一标识符
+         */
+        readonly uid: any;
+        /**
          * 变换
          */
         transform: Transform;
@@ -2443,14 +2460,6 @@ declare module feng3d {
          */
         static REMOVED: string;
         /**
-         * 添加到舞台，当Object3D的scene属性被设置是由Object3D与Scene3D分别派发不冒泡事件
-         */
-        static ADDED_TO_SCENE: string;
-        /**
-         * 从舞台移除，当Object3D的scene属性被清空时由Object3D与Scene3D分别派发不冒泡事件
-         */
-        static REMOVED_FROM_SCENE: string;
-        /**
          * 事件数据
          */
         data: IObject3DEventData;
@@ -2467,21 +2476,13 @@ declare module feng3d {
      */
     interface IObject3DEventData {
         /**
-         * 父容器（ADDED，REMOVED）
+         * 父容器
          */
         parent?: Object3D;
         /**
-         * 子对象（ADDED，REMOVED）
+         * 子对象
          */
         child?: Object3D;
-        /**
-         * 3d对象（ADDED_TO_SCENE，REMOVED_FROM_SCENE）
-         */
-        object3d?: Object3D;
-        /**
-         * 场景（ADDED_TO_SCENE，REMOVED_FROM_SCENE）
-         */
-        scene?: Scene3D;
     }
 }
 declare module feng3d {
@@ -2489,7 +2490,7 @@ declare module feng3d {
      * 网格
      * @author feng 2016-12-12
      */
-    class Mesh extends Object3DComponent {
+    class MeshFilter extends Object3DComponent {
         private _geometry;
         /**
          * 几何体
@@ -2518,6 +2519,15 @@ declare module feng3d {
      */
     class Scene3D extends Object3D {
         private _renderables;
+        private _lights;
+        /**
+         * 渲染列表
+         */
+        readonly renderables: Object3D[];
+        /**
+         * 灯光列表
+         */
+        readonly lights: Light[];
         /**
          * 构造3D场景
          */
@@ -2527,13 +2537,67 @@ declare module feng3d {
          */
         private onAddedToScene(event);
         /**
-         * 处理添加对象事件
+         * 处理移除对象事件
          */
         private onRemovedFromScene(event);
         /**
-        * 获取可渲染对象列表
-        */
-        getRenderables(): Object3D[];
+         * 处理添加灯光事件
+         */
+        private onAddedLightToScene(event);
+        /**
+         * 处理移除灯光事件
+         */
+        private onRemovedLightFromScene(event);
+    }
+    /**
+     * 舞台事件
+     * @author feng 2016-01-03
+     */
+    class Scene3DEvent extends Event {
+        /**
+         * 当Object3D的scene属性被设置是由Object3D与Scene3D分别派发不冒泡事件
+         */
+        static ADDED_TO_SCENE: string;
+        /**
+         * 当Object3D的scene属性被清空时由Object3D与Scene3D分别派发不冒泡事件
+         */
+        static REMOVED_FROM_SCENE: string;
+        /**
+         * 当拥有Light的Object3D添加到Scene3D或者Light添加到场景中的Object3D时派发不冒泡事件
+         */
+        static ADDED_LIGHT_TO_SCENE: string;
+        /**
+         * 当拥有Light的Object3D从Scene3D中移除或者Light从场景中的Object3D移除时派发不冒泡事件
+         */
+        static REMOVED_LIGHT_FROM_SCENE: string;
+        /**
+         * 事件数据
+         */
+        data: IScene3DEventData;
+        /**
+         * 创建一个作为参数传递给事件侦听器的 Event 对象。
+         * @param type 事件的类型，可以作为 Event.type 访问。
+         * @param data 携带数据
+         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
+         */
+        constructor(type: string, data?: IScene3DEventData, bubbles?: boolean);
+    }
+    /**
+     * 3D对象事件数据
+     */
+    interface IScene3DEventData {
+        /**
+         * 3d对象
+         */
+        object3d?: Object3D;
+        /**
+         * 场景
+         */
+        scene?: Scene3D;
+        /**
+         * 灯光
+         */
+        light?: Light;
     }
 }
 declare module feng3d {
@@ -3171,6 +3235,22 @@ declare module feng3d {
          * 漫反射率
          */
         diffuse: number;
+        /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void;
+        /**
+         * 处理被移除组件事件
+         */
+        protected onBeRemovedComponent(event: ComponentEvent): void;
+        /**
+         * 处理添加到场景事件
+         */
+        private onAddedToScene(event);
+        /**
+         * 处理从场景移除事件
+         */
+        private onRemovedFromScene(event);
     }
 }
 declare module feng3d {

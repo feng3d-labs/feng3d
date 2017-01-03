@@ -1502,87 +1502,79 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 数组工具
+     * @author feng 2017-01-03
+     */
+    class ArrayUtils {
+        /**
+         * 删除数据元素
+         * @param source    数组源数据
+         * @param item      被删除数据
+         * @param all       是否删除所有相同数据
+         */
+        static removeItem(source, item, all = false) {
+            var deleteIndexs = [];
+            var index = source.indexOf(item);
+            while (index != -1) {
+                source.splice(index, 1);
+                deleteIndexs.push(index);
+                all || (index = -1);
+            }
+            return { deleteIndexs: deleteIndexs, length: source.length };
+        }
+    }
+    feng3d.ArrayUtils = ArrayUtils;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 构建Map类代替Dictionary
+     * @author feng 2017-01-03
      */
     class Map {
         constructor() {
-            /**
-             * key,value组合列表
-             */
-            this.list = [];
+            this.keyMap = {};
+            this.valueMap = {};
         }
         /**
          * 删除
          */
         delete(k) {
-            for (var i = 0; i < this.list.length; i++) {
-                var element = this.list[i];
-                if (element.k == k) {
-                    this.list.splice(i, 1);
-                    break;
-                }
-            }
+            delete this.keyMap[feng3d.getUID(k)];
+            delete this.valueMap[feng3d.getUID(k)];
         }
         /**
          * 添加映射
          */
         push(k, v) {
-            var target = this._getKV(k);
-            if (target != null)
-                target.v = v;
-            else {
-                target = new KV(k, v);
-                this.list.push(target);
-            }
+            this.keyMap[feng3d.getUID(k)] = k;
+            this.valueMap[feng3d.getUID(k)] = v;
         }
         /**
          * 通过key获取value
          */
         get(k) {
-            var target = this._getKV(k);
-            if (target != null)
-                return target.v;
-            return null;
+            return this.valueMap[feng3d.getUID(k)];
         }
         /**
          * 获取键列表
          */
         getKeys() {
             var keys = [];
-            this.list.forEach(kv => {
-                keys.push(kv.k);
-            });
+            for (var key in this.keyMap) {
+                keys.push(this.keyMap[key]);
+            }
             return keys;
         }
         /**
          * 清理字典
          */
         clear() {
-            this.list.length = 0;
-        }
-        /**
-         * 通过key获取(key,value)组合
-         */
-        _getKV(k) {
-            var target;
-            this.list.forEach(kv => {
-                if (kv.k == k) {
-                    target = kv;
-                }
-            });
-            return target;
+            this.keyMap = {};
+            this.valueMap = {};
         }
     }
     feng3d.Map = Map;
-    /**
-     * key,value组合
-     */
-    class KV {
-        constructor(k, v) {
-            this.k = k;
-            this.v = v;
-        }
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -3567,7 +3559,7 @@ var feng3d;
             camera.updateRenderData(camera);
             //绘制对象
             camera.activate(this.renderAtomic);
-            var renderables = scene.getRenderables();
+            var renderables = scene.renderables;
             renderables.forEach(element => {
                 element.updateRenderData(camera);
                 element.activate(this.renderAtomic);
@@ -3767,12 +3759,18 @@ var feng3d;
              * 子对象列表
              */
             this._children = [];
-            this.name = name || feng3d.getClassName(this);
+            this.name = name || this.uid;
             //
             this.transform = new feng3d.Transform();
             //
             this.addEventListener(feng3d.Object3DEvent.ADDED, this.onAdded, this);
             this.addEventListener(feng3d.Object3DEvent.REMOVED, this.onRemoved, this);
+        }
+        /**
+         * 唯一标识符
+         */
+        get uid() {
+            return feng3d.getUID(this);
         }
         /**
          * 变换
@@ -3813,13 +3811,13 @@ var feng3d;
             if (this._scene == value)
                 return;
             if (this._scene) {
-                this.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
-                this._scene.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
+                this.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
+                this._scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
             }
             this._scene = value;
             if (this._scene) {
-                this.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
-                this._scene.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
+                this.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
+                this._scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
             }
             this._children.forEach(child => {
                 child._setScene(this._scene);
@@ -4314,14 +4312,6 @@ var feng3d;
      * 删除了子对象，当child被parent移除时派发冒泡事件
      */
     Object3DEvent.REMOVED = "removed";
-    /**
-     * 添加到舞台，当Object3D的scene属性被设置是由Object3D与Scene3D分别派发不冒泡事件
-     */
-    Object3DEvent.ADDED_TO_SCENE = "addedToScene";
-    /**
-     * 从舞台移除，当Object3D的scene属性被清空时由Object3D与Scene3D分别派发不冒泡事件
-     */
-    Object3DEvent.REMOVED_FROM_SCENE = "removedFromScene";
     feng3d.Object3DEvent = Object3DEvent;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -4330,7 +4320,7 @@ var feng3d;
      * 网格
      * @author feng 2016-12-12
      */
-    class Mesh extends feng3d.Object3DComponent {
+    class MeshFilter extends feng3d.Object3DComponent {
         /**
          * 几何体
          */
@@ -4343,7 +4333,7 @@ var feng3d;
             this._geometry && this.addComponent(this._geometry);
         }
     }
-    feng3d.Mesh = Mesh;
+    feng3d.MeshFilter = MeshFilter;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -4383,8 +4373,23 @@ var feng3d;
         constructor() {
             super("root");
             this._renderables = [];
-            this.addEventListener(feng3d.Object3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.addEventListener(feng3d.Object3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            this._lights = [];
+            this.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.addEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            this.addEventListener(Scene3DEvent.ADDED_LIGHT_TO_SCENE, this.onAddedLightToScene, this);
+            this.addEventListener(Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, this.onRemovedLightFromScene, this);
+        }
+        /**
+         * 渲染列表
+         */
+        get renderables() {
+            return this._renderables;
+        }
+        /**
+         * 灯光列表
+         */
+        get lights() {
+            return this._lights;
         }
         /**
          * 处理添加对象事件
@@ -4393,21 +4398,57 @@ var feng3d;
             this._renderables.push(event.data.object3d);
         }
         /**
-         * 处理添加对象事件
+         * 处理移除对象事件
          */
         onRemovedFromScene(event) {
-            var removedChild = event.data.object3d;
-            var index = this._renderables.indexOf(removedChild);
-            this._renderables.splice(index, 1);
+            feng3d.ArrayUtils.removeItem(this._renderables, event.data.object3d);
         }
         /**
-        * 获取可渲染对象列表
-        */
-        getRenderables() {
-            return this._renderables;
+         * 处理添加灯光事件
+         */
+        onAddedLightToScene(event) {
+            this._lights.push(event.data.light);
+        }
+        /**
+         * 处理移除灯光事件
+         */
+        onRemovedLightFromScene(event) {
+            feng3d.ArrayUtils.removeItem(this._lights, event.data.light);
         }
     }
     feng3d.Scene3D = Scene3D;
+    /**
+     * 舞台事件
+     * @author feng 2016-01-03
+     */
+    class Scene3DEvent extends feng3d.Event {
+        /**
+         * 创建一个作为参数传递给事件侦听器的 Event 对象。
+         * @param type 事件的类型，可以作为 Event.type 访问。
+         * @param data 携带数据
+         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
+         */
+        constructor(type, data = null, bubbles = false) {
+            super(type, data, bubbles);
+        }
+    }
+    /**
+     * 当Object3D的scene属性被设置是由Object3D与Scene3D分别派发不冒泡事件
+     */
+    Scene3DEvent.ADDED_TO_SCENE = "addedToScene";
+    /**
+     * 当Object3D的scene属性被清空时由Object3D与Scene3D分别派发不冒泡事件
+     */
+    Scene3DEvent.REMOVED_FROM_SCENE = "removedFromScene";
+    /**
+     * 当拥有Light的Object3D添加到Scene3D或者Light添加到场景中的Object3D时派发不冒泡事件
+     */
+    Scene3DEvent.ADDED_LIGHT_TO_SCENE = "addedLightToScene";
+    /**
+     * 当拥有Light的Object3D从Scene3D中移除或者Light从场景中的Object3D移除时派发不冒泡事件
+     */
+    Scene3DEvent.REMOVED_LIGHT_FROM_SCENE = "removedLightFromScene";
+    feng3d.Scene3DEvent = Scene3DEvent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6483,6 +6524,38 @@ var feng3d;
      * @author feng 2016-12-12
      */
     class Light extends feng3d.Object3DComponent {
+        /**
+         * 处理被添加组件事件
+         */
+        onBeAddedComponent(event) {
+            this.object3D.addEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.object3D.addEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            if (this.object3D.scene) {
+                this.object3D.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_LIGHT_TO_SCENE, { light: this }));
+            }
+        }
+        /**
+         * 处理被移除组件事件
+         */
+        onBeRemovedComponent(event) {
+            this.object3D.removeEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.object3D.removeEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            if (this.object3D.scene) {
+                this.object3D.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, { light: this }));
+            }
+        }
+        /**
+         * 处理添加到场景事件
+         */
+        onAddedToScene(event) {
+            event.data.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_LIGHT_TO_SCENE, { light: this }));
+        }
+        /**
+         * 处理从场景移除事件
+         */
+        onRemovedFromScene(event) {
+            event.data.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, { light: this }));
+        }
     }
     feng3d.Light = Light;
 })(feng3d || (feng3d = {}));
@@ -6927,7 +7000,7 @@ var feng3d;
          */
         createPlane() {
             var object3D = new feng3d.Object3D("plane");
-            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.MeshFilter);
             mesh.geometry = feng3d.primitives.createPlane();
             object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
             return object3D;
@@ -6937,7 +7010,7 @@ var feng3d;
          */
         createCube() {
             var object3D = new feng3d.Object3D("cube");
-            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.MeshFilter);
             mesh.geometry = feng3d.primitives.createCube();
             object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
             return object3D;
@@ -6947,7 +7020,7 @@ var feng3d;
          */
         createSphere() {
             var object3D = new feng3d.Object3D("sphere");
-            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.MeshFilter);
             mesh.geometry = feng3d.primitives.createSphere();
             object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
             return object3D;
@@ -6957,7 +7030,7 @@ var feng3d;
          */
         createCapsule() {
             var object3D = new feng3d.Object3D("capsule");
-            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.MeshFilter);
             mesh.geometry = feng3d.primitives.createCapsule();
             object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
             return object3D;
@@ -6967,7 +7040,7 @@ var feng3d;
          */
         createCylinder() {
             var object3D = new feng3d.Object3D("cylinder");
-            var mesh = object3D.getOrCreateComponentByClass(feng3d.Mesh);
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.MeshFilter);
             mesh.geometry = feng3d.primitives.createCylinder();
             object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
             return object3D;
@@ -6977,7 +7050,7 @@ var feng3d;
          */
         createSkyBox(images) {
             var object3D = new feng3d.Object3D("skyBox");
-            object3D.getOrCreateComponentByClass(feng3d.Mesh).geometry = feng3d.primitives.createSkyBox();
+            object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = feng3d.primitives.createSkyBox();
             object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SkyBoxMaterial(images);
             return object3D;
         }
