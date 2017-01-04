@@ -19,12 +19,30 @@ module feng3d {
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData() {
+        public updateRenderData(object3D: Object3D) {
 
             this.camera.updateRenderData(this);
             for (var i = 0; i < this.lights.length; i++) {
                 this.lights[i].updateRenderData(this);
             }
+        }
+
+        /**
+		 * 激活
+		 * @param renderData	渲染数据
+		 */
+        public activate(renderData: RenderAtomic) {
+
+            this.camera.activate(renderData);
+        }
+
+        /**
+		 * 释放
+		 * @param renderData	渲染数据
+		 */
+        public deactivate(renderData: RenderAtomic) {
+
+            this.camera.deactivate(renderData);
         }
 
         /**

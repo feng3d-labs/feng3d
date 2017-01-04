@@ -98,8 +98,6 @@ module feng3d {
             this._renderContext.clear();
             this._renderContext.camera = camera;
             this._renderContext.lights = this._lights;
-            //更新环境
-            this._renderContext.updateRenderData();
             //
             context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
             var renderables = this.renderers;

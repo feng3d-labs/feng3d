@@ -12,15 +12,16 @@ precision mediump float;
 void main(void) {
 
     #if DIFFUSE_INPUT_TYPE == 0
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
     #endif
 
     #if DIFFUSE_INPUT_TYPE == 1
-        gl_FragColor = u_diffuseInput;
+        vec4 finalColor = u_diffuseInput;
     #endif
 
     #if DIFFUSE_INPUT_TYPE == 2
-        gl_FragColor = texture2D(s_texture, v_uv);
+        vec4 finalColor = texture2D(s_texture, v_uv);
     #endif
 
+    gl_FragColor = finalColor;
 }

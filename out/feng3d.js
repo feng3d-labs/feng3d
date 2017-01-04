@@ -3597,11 +3597,25 @@ var feng3d;
         /**
          * 更新渲染数据
          */
-        updateRenderData() {
+        updateRenderData(object3D) {
             this.camera.updateRenderData(this);
             for (var i = 0; i < this.lights.length; i++) {
                 this.lights[i].updateRenderData(this);
             }
+        }
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData) {
+            this.camera.activate(renderData);
+        }
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData) {
+            this.camera.deactivate(renderData);
         }
         /**
          * 清理
@@ -4225,15 +4239,16 @@ var feng3d;
          */
         draw(context3D, renderContext) {
             //更新数据
+            renderContext.updateRenderData(this.object3D);
             this.object3D.updateRenderData(renderContext);
             //收集数据
-            renderContext.camera.activate(this._renderAtomic);
+            renderContext.activate(this._renderAtomic);
             this.object3D.activate(this._renderAtomic);
             //绘制
             this.drawObject3D(context3D); //
             //释放数据
             this.object3D.deactivate(this._renderAtomic);
-            renderContext.camera.deactivate(this._renderAtomic);
+            renderContext.deactivate(this._renderAtomic);
         }
         /**
          * 绘制3D对象
@@ -4485,8 +4500,6 @@ var feng3d;
             this._renderContext.clear();
             this._renderContext.camera = camera;
             this._renderContext.lights = this._lights;
-            //更新环境
-            this._renderContext.updateRenderData();
             //
             context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
             var renderables = this.renderers;

@@ -15,15 +15,16 @@ module feng3d {
         public draw(context3D: WebGLRenderingContext, renderContext: RenderContext) {
 
             //更新数据
+            renderContext.updateRenderData(this.object3D);
             this.object3D.updateRenderData(renderContext);
             //收集数据
-            renderContext.camera.activate(this._renderAtomic);
+            renderContext.activate(this._renderAtomic);
             this.object3D.activate(this._renderAtomic);
             //绘制
             this.drawObject3D(context3D);            //
             //释放数据
             this.object3D.deactivate(this._renderAtomic);
-            renderContext.camera.deactivate(this._renderAtomic);
+            renderContext.deactivate(this._renderAtomic);
         }
 
         /**

@@ -2089,7 +2089,17 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(): void;
+        updateRenderData(object3D: Object3D): void;
+        /**
+         * 激活
+         * @param renderData	渲染数据
+         */
+        activate(renderData: RenderAtomic): void;
+        /**
+         * 释放
+         * @param renderData	渲染数据
+         */
+        deactivate(renderData: RenderAtomic): void;
         /**
          * 清理
          */
