@@ -12,24 +12,24 @@ module feng3d {
         /**
 		 * 渲染
 		 */
-        public draw(context3D: WebGLRenderingContext, camera: Camera3D) {
+        public draw(context3D: WebGLRenderingContext, renderContext: RenderContext) {
 
             //更新数据
-            this.object3D.updateRenderData(camera);
+            this.object3D.updateRenderData(renderContext);
             //收集数据
-            camera.activate(this._renderAtomic);
+            renderContext.camera.activate(this._renderAtomic);
             this.object3D.activate(this._renderAtomic);
             //绘制
-            this.drawObject3D(context3D, camera);            //
+            this.drawObject3D(context3D);            //
             //释放数据
             this.object3D.deactivate(this._renderAtomic);
-            camera.deactivate(this._renderAtomic);
+            renderContext.camera.deactivate(this._renderAtomic);
         }
 
         /**
          * 绘制3D对象
          */
-        private drawObject3D(context3D: WebGLRenderingContext, camera: Camera3D) {
+        private drawObject3D(context3D: WebGLRenderingContext) {
 
             if (!this._renderAtomic.vertexCode || !this._renderAtomic.fragmentCode)
                 return;

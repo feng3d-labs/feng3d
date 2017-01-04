@@ -22,10 +22,10 @@ module feng3d {
 		/**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(camera: Camera3D) {
+        public updateRenderData(renderContext: RenderContext) {
 
             this._subRenderDataHolders.forEach(element => {
-                element.updateRenderData(camera);
+                element.updateRenderData(renderContext);
             });
         }
 

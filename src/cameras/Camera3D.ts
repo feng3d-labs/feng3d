@@ -77,8 +77,8 @@ module feng3d {
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(camera: Camera3D) {
-            super.updateRenderData(camera);
+        public updateRenderData(renderContext: RenderContext) {
+            super.updateRenderData(renderContext);
             //
             this.renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
             this.renderData.uniforms[RenderDataID.u_cameraMatrix] = this.globalMatrix3d;

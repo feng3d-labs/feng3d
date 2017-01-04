@@ -3018,9 +3018,9 @@ var feng3d;
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera) {
+        updateRenderData(renderContext) {
             this._subRenderDataHolders.forEach(element => {
-                element.updateRenderData(camera);
+                element.updateRenderData(renderContext);
             });
         }
         /**
@@ -3584,6 +3584,38 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 渲染环境
+     * @author feng 2017-01-04
+     */
+    class RenderContext {
+        constructor() {
+            /**
+             * 灯光
+             */
+            this.lights = [];
+        }
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData() {
+            this.camera.updateRenderData(this);
+            for (var i = 0; i < this.lights.length; i++) {
+                this.lights[i].updateRenderData(this);
+            }
+        }
+        /**
+         * 清理
+         */
+        clear() {
+            this.camera = null;
+            this.lights.length = 0;
+        }
+    }
+    feng3d.RenderContext = RenderContext;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 3D对象
      * @author feng 2016-04-26
      */
@@ -4082,8 +4114,8 @@ var feng3d;
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera) {
-            super.updateRenderData(camera);
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
             this.renderData.uniforms[feng3d.RenderDataID.u_modelMatrix] = this.globalMatrix3D;
         }
     }
@@ -4191,22 +4223,22 @@ var feng3d;
         /**
          * 渲染
          */
-        draw(context3D, camera) {
+        draw(context3D, renderContext) {
             //更新数据
-            this.object3D.updateRenderData(camera);
+            this.object3D.updateRenderData(renderContext);
             //收集数据
-            camera.activate(this._renderAtomic);
+            renderContext.camera.activate(this._renderAtomic);
             this.object3D.activate(this._renderAtomic);
             //绘制
-            this.drawObject3D(context3D, camera); //
+            this.drawObject3D(context3D); //
             //释放数据
             this.object3D.deactivate(this._renderAtomic);
-            camera.deactivate(this._renderAtomic);
+            renderContext.camera.deactivate(this._renderAtomic);
         }
         /**
          * 绘制3D对象
          */
-        drawObject3D(context3D, camera) {
+        drawObject3D(context3D) {
             if (!this._renderAtomic.vertexCode || !this._renderAtomic.fragmentCode)
                 return;
             samplerIndex = 0;
@@ -4386,15 +4418,16 @@ var feng3d;
          */
         constructor() {
             super("root");
+            this._renderContext = new feng3d.RenderContext();
             this._object3Ds = [];
             this._renderers = [];
             this._lights = [];
-            this.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.addEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            this.addEventListener(Scene3DEvent.ADDED_RENDERER_TO_SCENE, this.onAddedRendererToScene, this);
-            this.addEventListener(Scene3DEvent.REMOVED_RENDERER_FROM_SCENE, this.onRemovedRendererFromScene, this);
-            this.addEventListener(Scene3DEvent.ADDED_LIGHT_TO_SCENE, this.onAddedLightToScene, this);
-            this.addEventListener(Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, this.onRemovedLightFromScene, this);
+            this.addEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.addEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            this.addEventListener(feng3d.Scene3DEvent.ADDED_RENDERER_TO_SCENE, this.onAddedRendererToScene, this);
+            this.addEventListener(feng3d.Scene3DEvent.REMOVED_RENDERER_FROM_SCENE, this.onRemovedRendererFromScene, this);
+            this.addEventListener(feng3d.Scene3DEvent.ADDED_LIGHT_TO_SCENE, this.onAddedLightToScene, this);
+            this.addEventListener(feng3d.Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, this.onRemovedLightFromScene, this);
         }
         /**
          * 渲染列表
@@ -4448,17 +4481,26 @@ var feng3d;
          * 渲染
          */
         draw(context3D, camera) {
+            //初始化渲染环境
+            this._renderContext.clear();
+            this._renderContext.camera = camera;
+            this._renderContext.lights = this._lights;
+            //更新环境
+            this._renderContext.updateRenderData();
+            //
             context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
-            camera.updateRenderData(camera);
             var renderables = this.renderers;
             renderables.forEach(element => {
-                element.draw(context3D, camera);
+                element.draw(context3D, this._renderContext);
             });
         }
     }
     feng3d.Scene3D = Scene3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
-     * 舞台事件
+     * 3D场景事件
      * @author feng 2016-01-03
      */
     class Scene3DEvent extends feng3d.Event {
@@ -5045,8 +5087,8 @@ var feng3d;
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera) {
-            super.updateRenderData(camera);
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
             //
             this.renderData.uniforms[feng3d.RenderDataID.u_viewProjection] = this.viewProjection;
             this.renderData.uniforms[feng3d.RenderDataID.u_cameraMatrix] = this.globalMatrix3d;
@@ -6423,8 +6465,8 @@ var feng3d;
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera) {
-            super.updateRenderData(camera);
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
             //
             this.renderData.shaderParams.renderMode = this.renderMode;
             //
@@ -6455,8 +6497,8 @@ var feng3d;
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera) {
-            super.updateRenderData(camera);
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
             this.renderData.uniforms[feng3d.RenderDataID.u_diffuseInput] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
             //
             this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 1;
@@ -6512,8 +6554,8 @@ var feng3d;
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera) {
-            super.updateRenderData(camera);
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
             this.renderData.uniforms[feng3d.RenderDataID.s_texture] = this.texture;
             this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 2;
             this.renderData.shaderMacro.addMacros.NEED_UV = 1;
@@ -6538,10 +6580,10 @@ var feng3d;
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera) {
-            super.updateRenderData(camera);
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
             //
-            this.skyBoxSize.x = this.skyBoxSize.y = this.skyBoxSize.z = camera.lens.far / Math.sqrt(3);
+            this.skyBoxSize.x = this.skyBoxSize.y = this.skyBoxSize.z = renderContext.camera.lens.far / Math.sqrt(3);
             //
             this.renderData.uniforms[feng3d.RenderDataID.s_skyboxTexture] = this.skyBoxTextureCube;
             this.renderData.uniforms[feng3d.RenderDataID.u_skyBoxSize] = this.skyBoxSize;
@@ -7030,8 +7072,8 @@ var feng3d;
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera) {
-            super.updateRenderData(camera);
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
             this.renderData.uniforms[feng3d.RenderDataID.s_texture] = this.diffuseTexture;
             this.renderData.uniforms[feng3d.RenderDataID.s_blendTexture] = this.blendTexture;
             this.renderData.uniforms[feng3d.RenderDataID.s_splatTexture1] = this.splatTexture1;

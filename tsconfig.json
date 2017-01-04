@@ -62,6 +62,7 @@
         "src/render/RenderDataID.ts",
         "src/render/ShaderParamID.ts",
         "src/render/ShaderMacro.ts",
+        "src/render/RenderContext.ts",
         //
         "src/core/Object3D.ts",
         "src/core/View3D.ts",
@@ -74,6 +75,7 @@
         "src/core/MeshRenderer.ts",
         //3D场景
         "src/scene/Scene3D.ts",
+        "src/scene/Scene3DEvent.ts",
         //几何体
         "src/geometry/GLAttribute.ts",
         "src/geometry/Geometry.ts",

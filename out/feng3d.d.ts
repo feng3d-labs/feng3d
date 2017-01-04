@@ -1770,7 +1770,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera: Camera3D): void;
+        updateRenderData(renderContext: RenderContext): void;
         /**
          * 激活
          * @param renderData	渲染数据
@@ -2074,6 +2074,30 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 渲染环境
+     * @author feng 2017-01-04
+     */
+    class RenderContext {
+        /**
+         * 摄像机
+         */
+        camera: Camera3D;
+        /**
+         * 灯光
+         */
+        lights: Light[];
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(): void;
+        /**
+         * 清理
+         */
+        clear(): void;
+    }
+}
+declare module feng3d {
+    /**
      * 3D对象
      * @author feng 2016-04-26
      */
@@ -2373,7 +2397,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera: Camera3D): void;
+        updateRenderData(renderContext: RenderContext): void;
     }
     /**
      * 变换事件(3D状态发生改变、位置、旋转、缩放)
@@ -2480,11 +2504,11 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(context3D: WebGLRenderingContext, camera: Camera3D): void;
+        draw(context3D: WebGLRenderingContext, renderContext: RenderContext): void;
         /**
          * 绘制3D对象
          */
-        private drawObject3D(context3D, camera);
+        private drawObject3D(context3D);
     }
 }
 declare module feng3d {
@@ -2523,6 +2547,7 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class Scene3D extends Object3D {
+        private _renderContext;
         private _object3Ds;
         private _renderers;
         private _lights;
@@ -2567,8 +2592,10 @@ declare module feng3d {
          */
         draw(context3D: WebGLRenderingContext, camera: Camera3D): void;
     }
+}
+declare module feng3d {
     /**
-     * 舞台事件
+     * 3D场景事件
      * @author feng 2016-01-03
      */
     class Scene3DEvent extends Event {
@@ -2966,7 +2993,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera: Camera3D): void;
+        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
@@ -3139,7 +3166,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera: Camera3D): void;
+        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
@@ -3161,7 +3188,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera: Camera3D): void;
+        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
@@ -3209,7 +3236,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera: Camera3D): void;
+        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
@@ -3224,7 +3251,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera: Camera3D): void;
+        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
@@ -3473,7 +3500,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(camera: Camera3D): void;
+        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {

@@ -14,9 +14,9 @@ module feng3d {
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(camera: Camera3D) {
+        public updateRenderData(renderContext: RenderContext) {
 
-            super.updateRenderData(camera);
+            super.updateRenderData(renderContext);
 
             this.renderData.uniforms[RenderDataID.s_texture] = this.texture;
             this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 2;
