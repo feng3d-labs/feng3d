@@ -21,7 +21,7 @@ module feng3d {
         constructor() {
 
             super();
-            this.renderData.shaderName = "terrain";
+            this.shaderName = "terrain";
         }
 
         /**

@@ -31,15 +31,11 @@ module feng3d {
          */
         private drawObject3D(context3D: WebGLRenderingContext, camera: Camera3D) {
 
-            if (!this._renderAtomic.shaderName)
-                return;
-            //
-            var shaderData = shaderMap[this._renderAtomic.shaderName] = shaderMap[this._renderAtomic.shaderName] || new ShaderData(this._renderAtomic.shaderName);
-            if (!shaderData.isOk)
+            if (!this._renderAtomic.vertexCode || !this._renderAtomic.fragmentCode)
                 return;
             samplerIndex = 0;
-            var vertexCode = shaderData.vertexCode;
-            var fragmentCode = shaderData.fragmentCode;
+            var vertexCode = this._renderAtomic.vertexCode;
+            var fragmentCode = this._renderAtomic.fragmentCode;
             //应用宏
             vertexCode = ShaderLib.getMacroCode(this._renderAtomic.shaderMacro) + vertexCode;
             fragmentCode = ShaderLib.getMacroCode(this._renderAtomic.shaderMacro) + fragmentCode;
@@ -155,7 +151,4 @@ module feng3d {
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
     }
-
-    //
-    var shaderMap: { [name: string]: ShaderData } = {};
 }

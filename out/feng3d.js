@@ -3114,21 +3114,8 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 渲染程序
-     */
-    class ShaderData {
-        constructor(shaderName) {
-            this.shaderName = shaderName;
-        }
-        get isOk() {
-            this.vertexCode = this.vertexCode || feng3d.ShaderLib.getShaderCode(this.shaderName + ".vertex");
-            this.fragmentCode = this.fragmentCode || feng3d.ShaderLib.getShaderCode(this.shaderName + ".fragment");
-            return this.vertexCode != null && this.fragmentCode != null;
-        }
-    }
-    feng3d.ShaderData = ShaderData;
-    /**
      * 索引渲染数据
+     * @author feng 2017-01-04
      */
     class IndexRenderData {
         constructor() {
@@ -3415,7 +3402,8 @@ var feng3d;
          * @param renderData    包含渲染数据的对象
          */
         static active(renderAtomic, renderData) {
-            renderData.shaderName && (renderAtomic.shaderName = renderData.shaderName);
+            renderData.vertexCode && (renderAtomic.vertexCode = renderData.vertexCode);
+            renderData.fragmentCode && (renderAtomic.fragmentCode = renderData.fragmentCode);
             renderData.indexBuffer && (renderAtomic.indexBuffer = renderData.indexBuffer);
             for (var attributeName in renderData.attributes) {
                 renderAtomic.attributes[attributeName] = renderData.attributes[attributeName];
@@ -3443,7 +3431,8 @@ var feng3d;
          * @param renderData    包含渲染数据的对象
          */
         static deactivate(renderAtomic, renderData) {
-            renderData.shaderName && (renderAtomic.shaderName = null);
+            renderData.vertexCode && (renderAtomic.vertexCode = null);
+            renderData.fragmentCode && (renderAtomic.fragmentCode = null);
             renderData.indexBuffer && (renderAtomic.indexBuffer = null);
             for (var attributeName in renderData.attributes) {
                 delete renderAtomic.attributes[attributeName];
@@ -4196,7 +4185,8 @@ var feng3d;
     class Renderer extends feng3d.Object3DComponent {
         constructor() {
             super(...arguments);
-            this.renderAtomic = new feng3d.RenderAtomic();
+            /** 渲染原子 */
+            this._renderAtomic = new feng3d.RenderAtomic();
         }
         /**
          * 渲染
@@ -4205,37 +4195,33 @@ var feng3d;
             //更新数据
             this.object3D.updateRenderData(camera);
             //收集数据
-            camera.activate(this.renderAtomic);
-            this.object3D.activate(this.renderAtomic);
+            camera.activate(this._renderAtomic);
+            this.object3D.activate(this._renderAtomic);
             //绘制
             this.drawObject3D(context3D, camera); //
             //释放数据
-            this.object3D.deactivate(this.renderAtomic);
-            camera.deactivate(this.renderAtomic);
+            this.object3D.deactivate(this._renderAtomic);
+            camera.deactivate(this._renderAtomic);
         }
         /**
          * 绘制3D对象
          */
         drawObject3D(context3D, camera) {
-            if (!this.renderAtomic.shaderName)
-                return;
-            //
-            var shaderData = shaderMap[this.renderAtomic.shaderName] = shaderMap[this.renderAtomic.shaderName] || new feng3d.ShaderData(this.renderAtomic.shaderName);
-            if (!shaderData.isOk)
+            if (!this._renderAtomic.vertexCode || !this._renderAtomic.fragmentCode)
                 return;
             samplerIndex = 0;
-            var vertexCode = shaderData.vertexCode;
-            var fragmentCode = shaderData.fragmentCode;
+            var vertexCode = this._renderAtomic.vertexCode;
+            var fragmentCode = this._renderAtomic.fragmentCode;
             //应用宏
-            vertexCode = feng3d.ShaderLib.getMacroCode(this.renderAtomic.shaderMacro) + vertexCode;
-            fragmentCode = feng3d.ShaderLib.getMacroCode(this.renderAtomic.shaderMacro) + fragmentCode;
+            vertexCode = feng3d.ShaderLib.getMacroCode(this._renderAtomic.shaderMacro) + vertexCode;
+            fragmentCode = feng3d.ShaderLib.getMacroCode(this._renderAtomic.shaderMacro) + fragmentCode;
             //渲染程序
             var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);
             //
-            activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
-            activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
-            dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer);
+            activeAttributes(context3D, shaderProgram, this._renderAtomic.attributes);
+            activeUniforms(context3D, shaderProgram, this._renderAtomic.uniforms);
+            dodraw(context3D, this._renderAtomic.shaderParams, this._renderAtomic.indexBuffer);
         }
     }
     feng3d.Renderer = Renderer;
@@ -4330,8 +4316,6 @@ var feng3d;
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
     }
-    //
-    var shaderMap = {};
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6431,7 +6415,10 @@ var feng3d;
             * 渲染模式
             */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
-            this.renderData.shaderName = "default";
+            /**
+             * 渲染程序名称
+             */
+            this.shaderName = "default";
         }
         /**
          * 更新渲染数据
@@ -6442,6 +6429,9 @@ var feng3d;
             this.renderData.shaderParams.renderMode = this.renderMode;
             //
             this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 0;
+            //
+            this.renderData.vertexCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".vertex");
+            this.renderData.fragmentCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".fragment");
         }
     }
     feng3d.Material = Material;
@@ -6486,7 +6476,7 @@ var feng3d;
          */
         constructor() {
             super();
-            this.renderData.shaderName = "segment";
+            this.shaderName = "segment";
             this.renderMode = feng3d.RenderMode.LINES;
         }
     }
@@ -6541,7 +6531,7 @@ var feng3d;
     class SkyBoxMaterial extends feng3d.Material {
         constructor(images) {
             super();
-            this.renderData.shaderName = "skybox";
+            this.shaderName = "skybox";
             this.skyBoxSize = new feng3d.Vector3D();
             this.skyBoxTextureCube = new feng3d.TextureCube(images);
         }
@@ -7035,7 +7025,7 @@ var feng3d;
          */
         constructor() {
             super();
-            this.renderData.shaderName = "terrain";
+            this.shaderName = "terrain";
         }
         /**
          * 更新渲染数据

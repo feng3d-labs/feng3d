@@ -11,7 +11,7 @@ module feng3d {
 
         constructor(images: HTMLImageElement[]) {
             super();
-            this.renderData.shaderName = "skybox";
+            this.shaderName = "skybox";
             this.skyBoxSize = new Vector3D();
             this.skyBoxTextureCube = new TextureCube(images);
         }
@@ -20,7 +20,7 @@ module feng3d {
 		 * 更新渲染数据
 		 */
         public updateRenderData(camera: Camera3D) {
-            
+
             super.updateRenderData(camera);
 
             //

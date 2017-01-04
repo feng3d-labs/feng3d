@@ -12,7 +12,7 @@ module feng3d {
         constructor() {
 
             super();
-            this.renderData.shaderName = "segment";
+            this.shaderName = "segment";
             this.renderMode = RenderMode.LINES;
         }
     }

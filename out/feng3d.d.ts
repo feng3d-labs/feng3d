@@ -1805,9 +1805,13 @@ declare module feng3d {
          */
         indexBuffer: IndexRenderData;
         /**
-         * 渲染程序名称（路径）
+         * 顶点渲染程序代码
          */
-        shaderName: string;
+        vertexCode: string;
+        /**
+         * 片段渲染程序代码
+         */
+        fragmentCode: string;
         /**
          * 属性数据列表
          */
@@ -1838,23 +1842,8 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 渲染程序
-     */
-    class ShaderData {
-        private shaderName;
-        /**
-         * 顶点渲染程序代码
-         */
-        vertexCode: string;
-        /**
-         * 片段渲染程序代码
-         */
-        fragmentCode: string;
-        readonly isOk: boolean;
-        constructor(shaderName: string);
-    }
-    /**
      * 索引渲染数据
+     * @author feng 2017-01-04
      */
     class IndexRenderData {
         /**
@@ -2486,7 +2475,8 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class Renderer extends Object3DComponent {
-        private renderAtomic;
+        /** 渲染原子 */
+        private _renderAtomic;
         /**
          * 渲染
          */
@@ -3137,7 +3127,11 @@ declare module feng3d {
         /**
         * 渲染模式
         */
-        renderMode: RenderMode;
+        protected renderMode: RenderMode;
+        /**
+         * 渲染程序名称
+         */
+        protected shaderName: string;
         /**
          * 构建材质
          */

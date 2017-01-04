@@ -12,9 +12,14 @@ module feng3d {
         public indexBuffer: IndexRenderData;
 
         /**
-         * 渲染程序名称（路径）
+         * 顶点渲染程序代码
          */
-        public shaderName: string;
+        public vertexCode: string;
+
+        /**
+         * 片段渲染程序代码
+         */
+        public fragmentCode: string;
 
         /**
          * 属性数据列表

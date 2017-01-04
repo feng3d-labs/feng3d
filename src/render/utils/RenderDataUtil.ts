@@ -13,7 +13,8 @@ module feng3d {
          */
         public static active(renderAtomic: RenderAtomic, renderData: RenderData) {
 
-            renderData.shaderName && (renderAtomic.shaderName = renderData.shaderName);
+            renderData.vertexCode && (renderAtomic.vertexCode = renderData.vertexCode);
+            renderData.fragmentCode && (renderAtomic.fragmentCode = renderData.fragmentCode);
             renderData.indexBuffer && (renderAtomic.indexBuffer = renderData.indexBuffer);
 
             for (var attributeName in renderData.attributes) {
@@ -44,7 +45,8 @@ module feng3d {
          */
         public static deactivate(renderAtomic: RenderAtomic, renderData: RenderData) {
 
-            renderData.shaderName && (renderAtomic.shaderName = null);
+            renderData.vertexCode && (renderAtomic.vertexCode = null);
+            renderData.fragmentCode && (renderAtomic.fragmentCode = null);
             renderData.indexBuffer && (renderAtomic.indexBuffer = null);
 
             for (var attributeName in renderData.attributes) {
