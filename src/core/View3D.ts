@@ -6,11 +6,10 @@ module feng3d {
      */
     export class View3D {
 
-        private context3D: WebGLRenderingContext;
+        private _context3D: WebGLRenderingContext;
         private _camera: Camera3D;
         private _scene: Scene3D;
-        private renderer: Renderer;
-        private canvas: HTMLCanvasElement;
+        private _canvas: HTMLCanvasElement;
 
         /**
          * 绘制宽度
@@ -30,15 +29,14 @@ module feng3d {
         constructor(canvas, scene: Scene3D = null, camera: Camera3D = null) {
 
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
-            this.canvas = canvas;
+            this._canvas = canvas;
 
-            this.context3D = this.canvas.getContext("experimental-webgl");
-            this.context3D || alert("Unable to initialize WebGL. Your browser may not support it.");
+            this._context3D = this._canvas.getContext("experimental-webgl");
+            this._context3D || alert("Unable to initialize WebGL. Your browser may not support it.");
             this.initGL();
 
             this.scene = scene || new Scene3D();
             this.camera = camera || new Camera3D();
-            this.renderer = new Renderer();
 
             setInterval(this.drawScene.bind(this), 15);
         }
@@ -48,10 +46,10 @@ module feng3d {
          */
         private initGL() {
 
-            this.context3D.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-            this.context3D.clearDepth(1.0);                 // Clear everything
-            this.context3D.enable(this.context3D.DEPTH_TEST);           // Enable depth testing
-            this.context3D.depthFunc(this.context3D.LEQUAL);            // Near things obscure far things
+            this._context3D.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
+            this._context3D.clearDepth(1.0);                 // Clear everything
+            this._context3D.enable(this._context3D.DEPTH_TEST);           // Enable depth testing
+            this._context3D.depthFunc(this._context3D.LEQUAL);            // Near things obscure far things
         }
 
         /** 3d场景 */
@@ -69,7 +67,7 @@ module feng3d {
         private drawScene() {
 
             this.resize();
-            this.renderer.render(this.context3D, this._scene, this._camera);
+            this._scene.draw(this._context3D, this._camera);
         }
 
         /**
@@ -77,11 +75,11 @@ module feng3d {
          */
         private resize() {
 
-            if (this.renderWidth != this.canvas.width || this.renderHeight != this.canvas.height) {
+            if (this.renderWidth != this._canvas.width || this.renderHeight != this._canvas.height) {
 
-                this.renderWidth = this.canvas.width;
-                this.renderHeight = this.canvas.height;
-                this.context3D.viewport(0, 0, this.renderWidth, this.renderHeight);
+                this.renderWidth = this._canvas.width;
+                this.renderHeight = this._canvas.height;
+                this._context3D.viewport(0, 0, this.renderWidth, this.renderHeight);
             }
         }
 

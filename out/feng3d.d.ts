@@ -2042,23 +2042,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 渲染器
-     * @author feng 2016-05-01
-     */
-    class Renderer {
-        private renderAtomic;
-        /**
-         * 渲染
-         */
-        render(context3D: WebGLRenderingContext, scene: Scene3D, camera: Camera3D): void;
-        /**
-         * 绘制3D对象
-         */
-        private drawObject3D(object3D, context3D, camera);
-    }
-}
-declare module feng3d {
-    /**
      * 着色器宏定义
      * @author feng 2016-12-17
      */
@@ -2194,11 +2177,10 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class View3D {
-        private context3D;
+        private _context3D;
         private _camera;
         private _scene;
-        private renderer;
-        private canvas;
+        private _canvas;
         /**
          * 绘制宽度
          */
@@ -2500,16 +2482,49 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 渲染器
+     * @author feng 2016-05-01
+     */
+    class Renderer extends Object3DComponent {
+        private renderAtomic;
+        /**
+         * 渲染
+         */
+        draw(context3D: WebGLRenderingContext, camera: Camera3D): void;
+        /**
+         * 绘制3D对象
+         */
+        private drawObject3D(context3D, camera);
+    }
+}
+declare module feng3d {
+    /**
      * 网格渲染器
      * @author feng 2016-12-12
      */
-    class MeshRenderer extends Object3DComponent {
+    class MeshRenderer extends Renderer {
         private _material;
         /**
          * 材质
          */
         material: Material;
         constructor();
+        /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void;
+        /**
+         * 处理被移除组件事件
+         */
+        protected onBeRemovedComponent(event: ComponentEvent): void;
+        /**
+         * 处理添加到场景事件
+         */
+        private onAddedToScene(event);
+        /**
+         * 处理从场景移除事件
+         */
+        private onRemovedFromScene(event);
     }
 }
 declare module feng3d {
@@ -2518,12 +2533,13 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class Scene3D extends Object3D {
-        private _renderables;
+        private _object3Ds;
+        private _renderers;
         private _lights;
         /**
          * 渲染列表
          */
-        readonly renderables: Object3D[];
+        readonly renderers: MeshRenderer[];
         /**
          * 灯光列表
          */
@@ -2541,6 +2557,14 @@ declare module feng3d {
          */
         private onRemovedFromScene(event);
         /**
+         * 处理添加对象事件
+         */
+        private onAddedRendererToScene(event);
+        /**
+         * 处理移除对象事件
+         */
+        private onRemovedRendererFromScene(event);
+        /**
          * 处理添加灯光事件
          */
         private onAddedLightToScene(event);
@@ -2548,6 +2572,10 @@ declare module feng3d {
          * 处理移除灯光事件
          */
         private onRemovedLightFromScene(event);
+        /**
+         * 渲染
+         */
+        draw(context3D: WebGLRenderingContext, camera: Camera3D): void;
     }
     /**
      * 舞台事件
@@ -2570,6 +2598,14 @@ declare module feng3d {
          * 当拥有Light的Object3D从Scene3D中移除或者Light从场景中的Object3D移除时派发不冒泡事件
          */
         static REMOVED_LIGHT_FROM_SCENE: string;
+        /**
+         * 当拥有Renderer的Object3D添加到Scene3D或者Renderer添加到场景中的Object3D时派发不冒泡事件
+         */
+        static ADDED_RENDERER_TO_SCENE: string;
+        /**
+         * 当拥有Renderer的Object3D从Scene3D中移除或者Renderer从场景中的Object3D移除时派发不冒泡事件
+         */
+        static REMOVED_RENDERER_FROM_SCENE: string;
         /**
          * 事件数据
          */
@@ -2598,6 +2634,10 @@ declare module feng3d {
          * 灯光
          */
         light?: Light;
+        /**
+         * 渲染器
+         */
+        renderer?: MeshRenderer;
     }
 }
 declare module feng3d {

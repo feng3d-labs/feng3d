@@ -61,7 +61,6 @@
         "src/render/utils/RenderDataUtil.ts",
         "src/render/RenderDataID.ts",
         "src/render/ShaderParamID.ts",
-        "src/render/Renderer.ts",
         "src/render/ShaderMacro.ts",
         //
         "src/core/Object3D.ts",
@@ -71,6 +70,7 @@
         "src/core/Transform.ts",
         "src/core/Object3DEvent.ts",
         "src/core/MeshFilter.ts",
+        "src/render/Renderer.ts",
         "src/core/MeshRenderer.ts",
         //3D场景
         "src/scene/Scene3D.ts",

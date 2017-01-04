@@ -4,56 +4,52 @@ module feng3d {
      * 渲染器
      * @author feng 2016-05-01
      */
-    export class Renderer {
+    export class Renderer extends Object3DComponent {
 
-        private renderAtomic = new RenderAtomic();
+        /** 渲染原子 */
+        private _renderAtomic = new RenderAtomic();
 
         /**
 		 * 渲染
 		 */
-        public render(context3D: WebGLRenderingContext, scene: Scene3D, camera: Camera3D) {
-            context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
+        public draw(context3D: WebGLRenderingContext, camera: Camera3D) {
 
-            camera.updateRenderData(camera);
-            //绘制对象
-            camera.activate(this.renderAtomic);
-
-            var renderables = scene.renderables;
-            renderables.forEach(element => {
-                element.updateRenderData(camera);
-                element.activate(this.renderAtomic);
-                this.drawObject3D(element, context3D, camera);            //
-                element.deactivate(this.renderAtomic);
-            });
-
-            camera.deactivate(this.renderAtomic);
+            //更新数据
+            this.object3D.updateRenderData(camera);
+            //收集数据
+            camera.activate(this._renderAtomic);
+            this.object3D.activate(this._renderAtomic);
+            //绘制
+            this.drawObject3D(context3D, camera);            //
+            //释放数据
+            this.object3D.deactivate(this._renderAtomic);
+            camera.deactivate(this._renderAtomic);
         }
 
         /**
          * 绘制3D对象
          */
-        private drawObject3D(object3D: Object3D, context3D: WebGLRenderingContext, camera: Camera3D) {
+        private drawObject3D(context3D: WebGLRenderingContext, camera: Camera3D) {
 
-
-            if (!this.renderAtomic.shaderName)
+            if (!this._renderAtomic.shaderName)
                 return;
             //
-            var shaderData = shaderMap[this.renderAtomic.shaderName] = shaderMap[this.renderAtomic.shaderName] || new ShaderData(this.renderAtomic.shaderName);
+            var shaderData = shaderMap[this._renderAtomic.shaderName] = shaderMap[this._renderAtomic.shaderName] || new ShaderData(this._renderAtomic.shaderName);
             if (!shaderData.isOk)
                 return;
             samplerIndex = 0;
             var vertexCode = shaderData.vertexCode;
             var fragmentCode = shaderData.fragmentCode;
             //应用宏
-            vertexCode = ShaderLib.getMacroCode(this.renderAtomic.shaderMacro) + vertexCode;
-            fragmentCode = ShaderLib.getMacroCode(this.renderAtomic.shaderMacro) + fragmentCode;
+            vertexCode = ShaderLib.getMacroCode(this._renderAtomic.shaderMacro) + vertexCode;
+            fragmentCode = ShaderLib.getMacroCode(this._renderAtomic.shaderMacro) + fragmentCode;
             //渲染程序
             var shaderProgram = context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);
             //
-            activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
-            activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
-            dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer);
+            activeAttributes(context3D, shaderProgram, this._renderAtomic.attributes);
+            activeUniforms(context3D, shaderProgram, this._renderAtomic.uniforms);
+            dodraw(context3D, this._renderAtomic.shaderParams, this._renderAtomic.indexBuffer);
         }
     }
 

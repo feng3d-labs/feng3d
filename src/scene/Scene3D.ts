@@ -6,15 +6,16 @@ module feng3d {
      */
     export class Scene3D extends Object3D {
 
-        private _renderables: Object3D[] = [];
+        private _object3Ds: Object3D[] = [];
+        private _renderers: MeshRenderer[] = [];
         private _lights: Light[] = [];
 
         /**
          * 渲染列表
          */
-        public get renderables() {
+        public get renderers() {
 
-            return this._renderables;
+            return this._renderers;
         }
 
         /**
@@ -33,6 +34,8 @@ module feng3d {
             super("root");
             this.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
             this.addEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            this.addEventListener(Scene3DEvent.ADDED_RENDERER_TO_SCENE, this.onAddedRendererToScene, this);
+            this.addEventListener(Scene3DEvent.REMOVED_RENDERER_FROM_SCENE, this.onRemovedRendererFromScene, this);
             this.addEventListener(Scene3DEvent.ADDED_LIGHT_TO_SCENE, this.onAddedLightToScene, this);
             this.addEventListener(Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, this.onRemovedLightFromScene, this);
         }
@@ -42,7 +45,7 @@ module feng3d {
          */
         private onAddedToScene(event: Scene3DEvent) {
 
-            this._renderables.push(event.data.object3d);
+            this._object3Ds.push(event.data.object3d);
         }
 
         /**
@@ -50,7 +53,23 @@ module feng3d {
          */
         private onRemovedFromScene(event: Scene3DEvent) {
 
-            ArrayUtils.removeItem(this._renderables, event.data.object3d);
+            ArrayUtils.removeItem(this._object3Ds, event.data.object3d);
+        }
+
+        /**
+         * 处理添加对象事件
+         */
+        private onAddedRendererToScene(event: Scene3DEvent) {
+
+            this._renderers.push(event.data.renderer);
+        }
+
+        /**
+         * 处理移除对象事件
+         */
+        private onRemovedRendererFromScene(event: Scene3DEvent) {
+
+            ArrayUtils.removeItem(this._renderers, event.data.renderer);
         }
 
         /**
@@ -67,6 +86,21 @@ module feng3d {
         private onRemovedLightFromScene(event: Scene3DEvent) {
 
             ArrayUtils.removeItem(this._lights, event.data.light);
+        }
+
+        /**
+		 * 渲染
+		 */
+        public draw(context3D: WebGLRenderingContext, camera: Camera3D) {
+
+            context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
+            camera.updateRenderData(camera);
+
+            var renderables = this.renderers;
+            renderables.forEach(element => {
+                element.draw(context3D, camera);
+            });
+
         }
     }
 
@@ -95,6 +129,16 @@ module feng3d {
          * 当拥有Light的Object3D从Scene3D中移除或者Light从场景中的Object3D移除时派发不冒泡事件
          */
         static REMOVED_LIGHT_FROM_SCENE: string = "removedLightFromScene";
+
+        /**
+         * 当拥有Renderer的Object3D添加到Scene3D或者Renderer添加到场景中的Object3D时派发不冒泡事件
+         */
+        static ADDED_RENDERER_TO_SCENE: string = "addedRendererToScene";
+
+        /**
+         * 当拥有Renderer的Object3D从Scene3D中移除或者Renderer从场景中的Object3D移除时派发不冒泡事件
+         */
+        static REMOVED_RENDERER_FROM_SCENE: string = "removedRendererFromScene";
 
         /**
          * 事件数据
@@ -131,5 +175,10 @@ module feng3d {
          * 灯光
          */
         light?: Light;
+
+        /**
+         * 渲染器
+         */
+        renderer?: MeshRenderer;
     }
 }
