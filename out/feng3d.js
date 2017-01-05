@@ -3611,6 +3611,10 @@ var feng3d;
              * 是否需要变量法线
              */
             this.V_NORMAL_NEED = 0;
+            /**
+             * 是否需要摄像机矩阵
+             */
+            this.U_CAMERAmATRIX_NEED = 0;
         }
     }
     feng3d.IAddMacros = IAddMacros;
@@ -3645,10 +3649,12 @@ var feng3d;
             //收集点光源数据
             var pointLightPositions = [];
             var pointLightDiffuses = [];
+            var pointLightSpeculars = [];
             for (var i = 0; i < pointLights.length; i++) {
                 light = pointLights[i];
                 pointLightPositions.push(light.position);
                 pointLightDiffuses.push(light.color.toVector3D());
+                pointLightSpeculars.push(light.color.toVector3D());
             }
             //设置点光源数据
             this.renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
@@ -3656,9 +3662,11 @@ var feng3d;
                 this.renderData.shaderMacro.addMacros.A_NORMAL_NEED = 1;
                 this.renderData.shaderMacro.addMacros.V_NORMAL_NEED = 1;
                 this.renderData.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
+                this.renderData.shaderMacro.addMacros.U_CAMERAmATRIX_NEED = 1;
                 //
                 this.renderData.uniforms[feng3d.RenderDataID.u_pointLightPositions] = pointLightPositions;
                 this.renderData.uniforms[feng3d.RenderDataID.u_pointLightDiffuses] = pointLightDiffuses;
+                this.renderData.uniforms[feng3d.RenderDataID.u_pointLightSpeculars] = pointLightSpeculars;
             }
         }
         /**
@@ -4359,8 +4367,16 @@ var feng3d;
         var i = 0;
         while (i < numUniforms) {
             var activeInfo = context3D.getActiveUniform(shaderProgram, i++);
-            var data = getUniformData(uniforms, activeInfo.name);
-            setContext3DUniform(context3D, shaderProgram, activeInfo, data);
+            if (activeInfo.size > 1) {
+                //处理数组
+                var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
+                for (var j = 0; j < activeInfo.size; j++) {
+                    setContext3DUniform(context3D, shaderProgram, { name: baseName + `[${j}]`, type: activeInfo.type }, uniforms[baseName][j]);
+                }
+            }
+            else {
+                setContext3DUniform(context3D, shaderProgram, activeInfo, uniforms[activeInfo.name]);
+            }
         }
     }
     /**
@@ -4428,14 +4444,6 @@ var feng3d;
             default:
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
-    }
-    /**
-     * 获取数据
-     */
-    function getUniformData(object, attribute) {
-        var value = eval(`object.${attribute}`);
-        feng3d.assert(value != null);
-        return value;
     }
 })(feng3d || (feng3d = {}));
 var feng3d;

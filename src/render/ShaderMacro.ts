@@ -66,5 +66,9 @@ module feng3d {
          * 是否需要变量法线
          */
         V_NORMAL_NEED: number = 0;
+        /**
+         * 是否需要摄像机矩阵
+         */
+        U_CAMERAmATRIX_NEED: number = 0;
     }
 }

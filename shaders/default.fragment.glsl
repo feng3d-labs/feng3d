@@ -20,6 +20,10 @@ precision mediump float;
     varying vec3 v_normal;
 #endif
 
+#if U_CAMERAmATRIX_NEED > 0
+    uniform mat4 u_cameraMatrix;
+#endif
+
 #include<modules/pointLightShading.declare>
 
 void main(void) {
