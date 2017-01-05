@@ -27,6 +27,14 @@ module feng3d {
         public diffuse: number;
 
         /**
+         * 灯光位置
+         */
+        public get position() {
+
+            return this.object3D.transform.globalPosition;
+        }
+
+        /**
          * 处理被添加组件事件
          */
         protected onBeAddedComponent(event: ComponentEvent): void {

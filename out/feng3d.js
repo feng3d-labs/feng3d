@@ -1924,6 +1924,12 @@ var feng3d;
             return this;
         }
         /**
+         * 输出为向量
+         */
+        toVector3D() {
+            return new feng3d.Vector3D(this.r, this.g, this.b, this.a);
+        }
+        /**
          * 输出16进制字符串
          */
         toHexString() {
@@ -3514,6 +3520,18 @@ var feng3d;
      * 地形块重复次数
      */
     RenderDataID.u_splatRepeats = "u_splatRepeats";
+    /**
+     * 点光源位置数组
+     */
+    RenderDataID.u_pointLightPositions = "u_pointLightPositions";
+    /**
+     * 点光源漫反射颜色数组
+     */
+    RenderDataID.u_pointLightDiffuses = "u_pointLightDiffuses";
+    /**
+     * 点光源镜面反射颜色数组
+     */
+    RenderDataID.u_pointLightSpeculars = "u_pointLightSpeculars";
     feng3d.RenderDataID = RenderDataID;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -3615,15 +3633,32 @@ var feng3d;
          * 更新渲染数据
          */
         updateRenderData(object3D) {
+            var pointLights = [];
             this.camera.updateRenderData(this);
+            var light;
             for (var i = 0; i < this.lights.length; i++) {
-                this.lights[i].updateRenderData(this);
+                light = this.lights[i];
+                light.updateRenderData(this);
+                if (light.type == feng3d.LightType.Point)
+                    pointLights.push(light);
             }
-            this.renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = this.lights.length;
-            if (this.lights.length > 0) {
+            //收集点光源数据
+            var pointLightPositions = [];
+            var pointLightDiffuses = [];
+            for (var i = 0; i < pointLights.length; i++) {
+                light = pointLights[i];
+                pointLightPositions.push(light.position);
+                pointLightDiffuses.push(light.color.toVector3D());
+            }
+            //设置点光源数据
+            this.renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
+            if (pointLights.length > 0) {
                 this.renderData.shaderMacro.addMacros.A_NORMAL_NEED = 1;
                 this.renderData.shaderMacro.addMacros.V_NORMAL_NEED = 1;
                 this.renderData.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
+                //
+                this.renderData.uniforms[feng3d.RenderDataID.u_pointLightPositions] = pointLightPositions;
+                this.renderData.uniforms[feng3d.RenderDataID.u_pointLightDiffuses] = pointLightDiffuses;
             }
         }
         /**
@@ -4024,6 +4059,12 @@ var feng3d;
         get scale() { return new feng3d.Vector3D(this.sx, this.sy, this.sz); }
         set scale(value) { this._sx = value.x; this._sy = value.y; this._sz = value.z; this.invalidateMatrix3D(); }
         /**
+         * 全局坐标
+         */
+        get globalPosition() {
+            return this.globalMatrix3D.position;
+        }
+        /**
          * 变换矩阵
          */
         get matrix3d() {
@@ -4318,7 +4359,7 @@ var feng3d;
         var i = 0;
         while (i < numUniforms) {
             var activeInfo = context3D.getActiveUniform(shaderProgram, i++);
-            var data = uniforms[activeInfo.name];
+            var data = getUniformData(uniforms, activeInfo.name);
             setContext3DUniform(context3D, shaderProgram, activeInfo, data);
         }
     }
@@ -4387,6 +4428,14 @@ var feng3d;
             default:
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
+    }
+    /**
+     * 获取数据
+     */
+    function getUniformData(object, attribute) {
+        var value = eval(`object.${attribute}`);
+        feng3d.assert(value != null);
+        return value;
     }
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -6658,6 +6707,12 @@ var feng3d;
      * @author feng 2016-12-12
      */
     class Light extends feng3d.Object3DComponent {
+        /**
+         * 灯光位置
+         */
+        get position() {
+            return this.object3D.transform.globalPosition;
+        }
         /**
          * 处理被添加组件事件
          */

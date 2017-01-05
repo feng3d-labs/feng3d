@@ -9,8 +9,8 @@
     //渲染点光源
     vec4 pointLightShading(vec4 diffuseColor,vec3 normal){
 
-        vec3 pointLightPosition = vec3(0.0,0.0,0.0);
-        vec3 pointLightDiffuses = vec3(1.0,0.0,0.0);
+        vec3 pointLightPosition = u_pointLightPositions[0];
+        vec3 pointLightDiffuses = u_pointLightDiffuses[0];
         vec3 pointLightSpecular = vec3(0.0,1.0,0.0);
 
         //光照方向

@@ -62,5 +62,17 @@ module feng3d {
          * 地形块重复次数
          */
         static u_splatRepeats = "u_splatRepeats";
+        /**
+         * 点光源位置数组
+         */
+        static u_pointLightPositions = "u_pointLightPositions";
+        /**
+         * 点光源漫反射颜色数组
+         */
+        static u_pointLightDiffuses = "u_pointLightDiffuses";
+        /**
+         * 点光源镜面反射颜色数组
+         */
+        static u_pointLightSpeculars = "u_pointLightSpeculars";
     }
 }

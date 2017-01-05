@@ -86,6 +86,14 @@ module feng3d {
         }
 
         /**
+         * 输出为向量
+         */
+        public toVector3D() {
+
+            return new Vector3D(this.r, this.g, this.b, this.a);
+        }
+
+        /**
          * 输出16进制字符串
          */
         public toHexString(): string {

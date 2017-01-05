@@ -1187,6 +1187,10 @@ declare module feng3d {
          */
         toArray(array: number[], index?: number): Color;
         /**
+         * 输出为向量
+         */
+        toVector3D(): Vector3D;
+        /**
          * 输出16进制字符串
          */
         toHexString(): string;
@@ -1822,7 +1826,7 @@ declare module feng3d {
          * 常量数据（包含纹理）列表
          */
         uniforms: {
-            [name: string]: Matrix3D | Vector3D | TextureInfo;
+            [name: string]: Matrix3D | Vector3D | TextureInfo | Vector3D[];
         };
         /**
          * 渲染参数
@@ -2015,6 +2019,18 @@ declare module feng3d {
          * 地形块重复次数
          */
         static u_splatRepeats: string;
+        /**
+         * 点光源位置数组
+         */
+        static u_pointLightPositions: string;
+        /**
+         * 点光源漫反射颜色数组
+         */
+        static u_pointLightDiffuses: string;
+        /**
+         * 点光源镜面反射颜色数组
+         */
+        static u_pointLightSpeculars: string;
     }
 }
 declare module feng3d {
@@ -2374,6 +2390,10 @@ declare module feng3d {
          * 缩放
          */
         scale: Vector3D;
+        /**
+         * 全局坐标
+         */
+        readonly globalPosition: Vector3D;
         /**
          * 变换矩阵
          */
@@ -3327,6 +3347,10 @@ declare module feng3d {
          * 漫反射率
          */
         diffuse: number;
+        /**
+         * 灯光位置
+         */
+        readonly position: Vector3D;
         /**
          * 处理被添加组件事件
          */

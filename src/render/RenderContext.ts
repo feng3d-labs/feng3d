@@ -23,15 +23,32 @@ module feng3d {
 		 */
         public updateRenderData(object3D: Object3D) {
 
+            var pointLights: Light[] = [];
             this.camera.updateRenderData(this);
+            var light: Light;
             for (var i = 0; i < this.lights.length; i++) {
-                this.lights[i].updateRenderData(this);
+                light = this.lights[i];
+                light.updateRenderData(this);
+                if (light.type == LightType.Point)
+                    pointLights.push(light);
             }
-            this.renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = this.lights.length;
-            if (this.lights.length > 0) {
+            //收集点光源数据
+            var pointLightPositions: Vector3D[] = [];
+            var pointLightDiffuses: Vector3D[] = [];
+            for (var i = 0; i < pointLights.length; i++) {
+                light = pointLights[i];
+                pointLightPositions.push(light.position);
+                pointLightDiffuses.push(light.color.toVector3D());
+            }
+            //设置点光源数据
+            this.renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
+            if (pointLights.length > 0) {
                 this.renderData.shaderMacro.addMacros.A_NORMAL_NEED = 1;
                 this.renderData.shaderMacro.addMacros.V_NORMAL_NEED = 1;
                 this.renderData.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
+                //
+                this.renderData.uniforms[RenderDataID.u_pointLightPositions] = pointLightPositions;
+                this.renderData.uniforms[RenderDataID.u_pointLightDiffuses] = pointLightDiffuses;
             }
         }
 

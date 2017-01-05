@@ -69,13 +69,13 @@ module feng3d {
     /**
      * 激活常量
      */
-    function activeUniforms(context3D: WebGLRenderingContext, shaderProgram: WebGLProgram, uniforms: { [name: string]: Matrix3D | Vector3D | TextureInfo; }) {
+    function activeUniforms(context3D: WebGLRenderingContext, shaderProgram: WebGLProgram, uniforms: { [name: string]: Matrix3D | Vector3D | TextureInfo | Vector3D[]; }) {
 
         var numUniforms = context3D.getProgramParameter(shaderProgram, context3D.ACTIVE_UNIFORMS);
         var i = 0;
         while (i < numUniforms) {
             var activeInfo = context3D.getActiveUniform(shaderProgram, i++);
-            var data = uniforms[activeInfo.name];
+            var data = getUniformData(uniforms, activeInfo.name);
             setContext3DUniform(context3D, shaderProgram, activeInfo, data);
         }
     }
@@ -151,5 +151,15 @@ module feng3d {
             default:
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
+    }
+
+    /**
+     * 获取数据
+     */
+    function getUniformData(object: Object, attribute: string) {
+
+        var value = eval(`object.${attribute}`);
+        assert(value != null)
+        return value;
     }
 }

@@ -130,6 +130,14 @@ module feng3d {
         set scale(value: Vector3D) { this._sx = value.x; this._sy = value.y; this._sz = value.z; this.invalidateMatrix3D(); }
 
         /**
+         * 全局坐标
+         */
+        get globalPosition() {
+
+            return this.globalMatrix3D.position;
+        }
+
+        /**
          * 变换矩阵
          */
         get matrix3d(): Matrix3D {
