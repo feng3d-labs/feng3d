@@ -6,6 +6,8 @@ module feng3d {
      */
     export class RenderContext {
 
+        protected renderData = new RenderData();
+
         /**
          * 摄像机
          */
@@ -25,6 +27,12 @@ module feng3d {
             for (var i = 0; i < this.lights.length; i++) {
                 this.lights[i].updateRenderData(this);
             }
+            this.renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = this.lights.length;
+            if (this.lights.length > 0) {
+                this.renderData.shaderMacro.addMacros.A_NORMAL_NEED = 1;
+                this.renderData.shaderMacro.addMacros.V_NORMAL_NEED = 1;
+                this.renderData.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
+            }
         }
 
         /**
@@ -33,6 +41,7 @@ module feng3d {
 		 */
         public activate(renderData: RenderAtomic) {
 
+            RenderDataUtil.active(renderData, this.renderData);
             this.camera.activate(renderData);
         }
 
@@ -42,6 +51,7 @@ module feng3d {
 		 */
         public deactivate(renderData: RenderAtomic) {
 
+            RenderDataUtil.deactivate(renderData, this.renderData);
             this.camera.deactivate(renderData);
         }
 
@@ -51,7 +61,7 @@ module feng3d {
         public clear() {
 
             this.camera = null;
-            this.lights.length = 0;
+            this.lights = [];
         }
     }
 }

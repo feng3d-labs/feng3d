@@ -3573,10 +3573,26 @@ var feng3d;
      */
     class IAddMacros {
         constructor() {
-            /** 是否需要属性uv */
-            this.NEED_UV = 0;
-            /** 是否需要变量uv */
-            this.NEED_UV_V = 0;
+            /**
+             * 是否需要属性uv
+             */
+            this.A_UV_NEED = 0;
+            /**
+             * 是否需要变量uv
+             */
+            this.V_UV_NEED = 0;
+            /**
+             * 是否需要变量全局坐标
+             */
+            this.V_GLOBAL_POSITION_NEED = 0;
+            /**
+             * 是否需要属性法线
+             */
+            this.A_NORMAL_NEED = 0;
+            /**
+             * 是否需要变量法线
+             */
+            this.V_NORMAL_NEED = 0;
         }
     }
     feng3d.IAddMacros = IAddMacros;
@@ -3589,6 +3605,7 @@ var feng3d;
      */
     class RenderContext {
         constructor() {
+            this.renderData = new feng3d.RenderData();
             /**
              * 灯光
              */
@@ -3602,12 +3619,19 @@ var feng3d;
             for (var i = 0; i < this.lights.length; i++) {
                 this.lights[i].updateRenderData(this);
             }
+            this.renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = this.lights.length;
+            if (this.lights.length > 0) {
+                this.renderData.shaderMacro.addMacros.A_NORMAL_NEED = 1;
+                this.renderData.shaderMacro.addMacros.V_NORMAL_NEED = 1;
+                this.renderData.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
+            }
         }
         /**
          * 激活
          * @param renderData	渲染数据
          */
         activate(renderData) {
+            feng3d.RenderDataUtil.active(renderData, this.renderData);
             this.camera.activate(renderData);
         }
         /**
@@ -3615,6 +3639,7 @@ var feng3d;
          * @param renderData	渲染数据
          */
         deactivate(renderData) {
+            feng3d.RenderDataUtil.deactivate(renderData, this.renderData);
             this.camera.deactivate(renderData);
         }
         /**
@@ -3622,7 +3647,7 @@ var feng3d;
          */
         clear() {
             this.camera = null;
-            this.lights.length = 0;
+            this.lights = [];
         }
     }
     feng3d.RenderContext = RenderContext;
@@ -6571,8 +6596,8 @@ var feng3d;
             super.updateRenderData(renderContext);
             this.renderData.uniforms[feng3d.RenderDataID.s_texture] = this.texture;
             this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 2;
-            this.renderData.shaderMacro.addMacros.NEED_UV = 1;
-            this.renderData.shaderMacro.addMacros.NEED_UV_V = 1;
+            this.renderData.shaderMacro.addMacros.A_UV_NEED = 1;
+            this.renderData.shaderMacro.addMacros.V_UV_NEED = 1;
         }
     }
     feng3d.TextureMaterial = TextureMaterial;

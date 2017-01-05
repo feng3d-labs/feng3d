@@ -6,8 +6,21 @@ precision mediump float;
 
 #if DIFFUSE_INPUT_TYPE == 2
     uniform sampler2D s_texture;
+#endif
+
+#if V_UV_NEED > 0
     varying vec2 v_uv;
 #endif
+
+#if V_GLOBAL_POSITION_NEED > 0
+    varying vec3 v_globalPosition;
+#endif
+
+#if V_NORMAL_NEED > 0
+    varying vec3 v_normal;
+#endif
+
+#include<modules/pointLightShading.declare>
 
 void main(void) {
 
@@ -22,6 +35,8 @@ void main(void) {
     #if DIFFUSE_INPUT_TYPE == 2
         vec4 finalColor = texture2D(s_texture, v_uv);
     #endif
+
+    #include<modules/pointLightShading.main>
 
     gl_FragColor = finalColor;
 }

@@ -2054,6 +2054,10 @@ declare module feng3d {
      */
     class ValueMacros {
         DIFFUSE_INPUT_TYPE: 0 | 1 | 2;
+        /**
+         * 点光源数量
+         */
+        NUM_POINTLIGHT: number;
     }
     /**
      * Boolean类型宏
@@ -2066,10 +2070,26 @@ declare module feng3d {
      * 所有默认值为0
      */
     class IAddMacros {
-        /** 是否需要属性uv */
-        NEED_UV: number;
-        /** 是否需要变量uv */
-        NEED_UV_V: number;
+        /**
+         * 是否需要属性uv
+         */
+        A_UV_NEED: number;
+        /**
+         * 是否需要变量uv
+         */
+        V_UV_NEED: number;
+        /**
+         * 是否需要变量全局坐标
+         */
+        V_GLOBAL_POSITION_NEED: number;
+        /**
+         * 是否需要属性法线
+         */
+        A_NORMAL_NEED: number;
+        /**
+         * 是否需要变量法线
+         */
+        V_NORMAL_NEED: number;
     }
 }
 declare module feng3d {
@@ -2078,6 +2098,7 @@ declare module feng3d {
      * @author feng 2017-01-04
      */
     class RenderContext {
+        protected renderData: RenderData;
         /**
          * 摄像机
          */
