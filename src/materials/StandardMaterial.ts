@@ -6,25 +6,27 @@ module feng3d {
      */
     export class StandardMaterial extends Material {
 
+        public difuseTexture: Texture2D;
+
         /**
          * 基本颜色
          */
-        public baseColor: Color;
+        public baseColor: Color = new Color(1, 1, 1, 1);
 
         /**
          * 反射率
          */
-        public reflectance: number;
+        public reflectance: number = 1.0;
 
         /**
          * 粗糙度
          */
-        public roughness: number;
+        public roughness: number = 1.0;
 
         /**
          * 金属度
          */
-        public metalic: number;
+        public metalic: number = 1.0;
 
         /**
          * 构建

@@ -67,13 +67,13 @@ module feng3d {
          */
         static u_pointLightPositions = "u_pointLightPositions";
         /**
-         * 点光源漫反射颜色数组
+         * 点光源颜色数组
          */
-        static u_pointLightDiffuses = "u_pointLightDiffuses";
+        static u_pointLightColors = "u_pointLightColors";
         /**
-         * 点光源镜面反射颜色数组
+         * 点光源光照强度数组
          */
-        static u_pointLightSpeculars = "u_pointLightSpeculars";
+        static u_pointLightIntensitys = "u_pointLightIntensitys";
 
         /**
          * 基本颜色

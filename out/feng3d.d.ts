@@ -1826,7 +1826,7 @@ declare module feng3d {
          * 常量数据（包含纹理）列表
          */
         uniforms: {
-            [name: string]: number | Matrix3D | Vector3D | TextureInfo | Vector3D[];
+            [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[];
         };
         /**
          * 渲染参数
@@ -2024,13 +2024,13 @@ declare module feng3d {
          */
         static u_pointLightPositions: string;
         /**
-         * 点光源漫反射颜色数组
+         * 点光源颜色数组
          */
-        static u_pointLightDiffuses: string;
+        static u_pointLightColors: string;
         /**
-         * 点光源镜面反射颜色数组
+         * 点光源光照强度数组
          */
-        static u_pointLightSpeculars: string;
+        static u_pointLightIntensitys: string;
         /**
          * 基本颜色
          */
@@ -3332,6 +3332,7 @@ declare module feng3d {
      * @author feng 2016-05-02
      */
     class StandardMaterial extends Material {
+        difuseTexture: Texture2D;
         /**
          * 基本颜色
          */
@@ -3393,13 +3394,9 @@ declare module feng3d {
          */
         color: Color;
         /**
-         * 镜面反射反射率
+         * 光照强度
          */
-        specular: number;
-        /**
-         * 漫反射率
-         */
-        diffuse: number;
+        intensity: number;
         /**
          * 灯光位置
          */

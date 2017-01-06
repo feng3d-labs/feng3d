@@ -2,47 +2,79 @@
     //点光源位置列表
     uniform vec3 u_pointLightPositions[NUM_POINTLIGHT];
     //点光源漫反射颜色
-    uniform vec3 u_pointLightDiffuses[NUM_POINTLIGHT];
+    uniform vec3 u_pointLightColors[NUM_POINTLIGHT];
     //点光源镜面反射颜色
-    uniform vec3 u_pointLightSpeculars[NUM_POINTLIGHT];
+    uniform float u_pointLightIntensitys[NUM_POINTLIGHT];
+    //反射率
+    uniform float u_reflectance;
+    //粗糙度
+    uniform float u_roughness;
+    //金属度
+    uniform float u_metalic;
 
-    //获取光源的漫反射颜色
-    vec4 diffusePerLight(vec3 normal,vec3 lightDir,vec3 lightDiffuse){
+    float normalDistributionGGX(float NdotH,float alphaG){
 
-        //计算反射强度
-        float dot = clamp(dot(normal,lightDir),0.0,1.0);
-        vec4 lightColor = vec4((lightDiffuse.xyz * dot).xyz,1.0);
-        return lightColor;
+        float alphaG2 = alphaG * alphaG;
+        float d = NdotH * NdotH * (alphaG2 - 1.0) + 1.0; 
+        return alphaG2 / (3.1415926 * d * d);
     }
 
-    //获取光源的镜面反射颜色
-    vec4 specularPerLight(vec3 normal,vec3 lightDir,vec3 lightSpecular){
+    float smithVisibility(float dot,float alphaG){
 
-        vec3 viewDir = normalize(v_globalPosition - u_cameraMatrix[3].xyz);
-        //计算反射强度
-        float reflectance = clamp(dot(normal,normalize(lightDir - viewDir)),0.0,1.0);
-        reflectance = pow(reflectance,5.0);
+        float tanSquared = (1.0 - dot * dot) / (dot * dot);
+        return 2.0 / (1.0 + sqrt(1.0 + alphaG * alphaG * tanSquared));
+    }
 
-        vec4 lightColor = vec4((lightSpecular.xyz * reflectance).xyz,1.0);
-        return lightColor; 
+    vec3 calculateLight(vec3 normal,vec3 viewDir,vec3 lightDir,vec3 lightColor,float lightIntensity,vec3 baseColor,vec3 reflectance,float roughness){
+
+        //BRDF = D(h) * F(1, h) * V(l, v, h) / (4 * dot(n, l) * dot(n, v));
+
+        vec3 halfVec = normalize(lightDir + viewDir);
+        float NdotL = clamp(dot(normal,lightDir),0.0,1.0);
+        float NdotH = clamp(dot(normal,halfVec),0.0,1.0);
+        float NdotV = max(abs(dot(normal,viewDir)),0.000001);
+        
+        float alphaG = max(roughness * roughness,0.0005);
+
+        //F(v,h)
+        vec3 F = reflectance;
+
+        //D(h)
+        float D = normalDistributionGGX(NdotH,alphaG);
+
+        //V(l,h)
+        float V = smithVisibility(NdotL,alphaG) * smithVisibility(NdotV,alphaG) / (4.0 * NdotL * NdotV);
+
+        vec3 specular = max(0.0, D * V) * 3.1415926 * F;
+        
+        return (baseColor + specular) * NdotL * lightColor * lightIntensity;
     }
 
     //渲染点光源
-    vec4 pointLightShading(vec3 normal){
+    vec4 pointLightShading(vec3 normal,vec4 baseColor){
 
-        vec3 pointLightSpecular = vec3(0.0,1.0,0.0);
+        float reflectance = u_reflectance;
+        float roughness = u_roughness;
+        float metalic = u_metalic;
 
-        vec4 lightColor = vec4(0.0,0.0,0.0,0.0);
+        reflectance = mix(0.0,0.5,reflectance);
+        vec3 realBaseColor = (1.0 - metalic) * baseColor.xyz;
+        vec3 realReflectance = mix(vec3(reflectance),baseColor.xyz,metalic);
+
+        vec4 totalLightColor = vec3(0.0,0.0,0.0);
         for(int i = 0;i<NUM_POINTLIGHT;i++){
             //光照方向
-            vec3 pointLightDir = u_pointLightPositions[i] - v_globalPosition;
-            pointLightDir = normalize(pointLightDir);
-            //光照漫反射
-            lightColor = lightColor + diffusePerLight(normal,pointLightDir,u_pointLightDiffuses[i]);
-            //光照镜面反射
-            lightColor = lightColor + specularPerLight(normal,pointLightDir,u_pointLightSpeculars[i]);
+            vec3 lightDir = normalize(u_pointLightPositions[i] - v_globalPosition);
+            //视线方向
+            vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_globalPosition);
+            //灯光颜色
+            vec3 lightColor = u_pointLightColors[i];
+            //灯光强度
+            float lightIntensity = u_pointLightIntensitys[i];
+
+            totalLightColor = totalLightColor + calculateLight(normal,viewDir,lightDir,lightColor,lightIntensity,realBaseColor,realReflectance,roughness);
         }
         
-        return lightColor;
+        return vec4(totalLightColor,0);
     }
 #endif

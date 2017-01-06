@@ -3525,13 +3525,13 @@ var feng3d;
      */
     RenderDataID.u_pointLightPositions = "u_pointLightPositions";
     /**
-     * 点光源漫反射颜色数组
+     * 点光源颜色数组
      */
-    RenderDataID.u_pointLightDiffuses = "u_pointLightDiffuses";
+    RenderDataID.u_pointLightColors = "u_pointLightColors";
     /**
-     * 点光源镜面反射颜色数组
+     * 点光源光照强度数组
      */
-    RenderDataID.u_pointLightSpeculars = "u_pointLightSpeculars";
+    RenderDataID.u_pointLightIntensitys = "u_pointLightIntensitys";
     /**
      * 基本颜色
      */
@@ -3665,12 +3665,12 @@ var feng3d;
             //收集点光源数据
             var pointLightPositions = [];
             var pointLightDiffuses = [];
-            var pointLightSpeculars = [];
+            var pointLightIntensitys = [];
             for (var i = 0; i < pointLights.length; i++) {
                 light = pointLights[i];
                 pointLightPositions.push(light.position);
                 pointLightDiffuses.push(light.color.toVector3D());
-                pointLightSpeculars.push(light.color.toVector3D());
+                pointLightIntensitys.push(light.intensity);
             }
             //设置点光源数据
             this.renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
@@ -3681,8 +3681,8 @@ var feng3d;
                 this.renderData.shaderMacro.addMacros.U_CAMERAmATRIX_NEED = 1;
                 //
                 this.renderData.uniforms[feng3d.RenderDataID.u_pointLightPositions] = pointLightPositions;
-                this.renderData.uniforms[feng3d.RenderDataID.u_pointLightDiffuses] = pointLightDiffuses;
-                this.renderData.uniforms[feng3d.RenderDataID.u_pointLightSpeculars] = pointLightSpeculars;
+                this.renderData.uniforms[feng3d.RenderDataID.u_pointLightColors] = pointLightDiffuses;
+                this.renderData.uniforms[feng3d.RenderDataID.u_pointLightIntensitys] = pointLightIntensitys;
             }
         }
         /**
@@ -6717,6 +6717,22 @@ var feng3d;
          */
         constructor() {
             super();
+            /**
+             * 基本颜色
+             */
+            this.baseColor = new feng3d.Color(1, 1, 1, 1);
+            /**
+             * 反射率
+             */
+            this.reflectance = 1.0;
+            /**
+             * 粗糙度
+             */
+            this.roughness = 1.0;
+            /**
+             * 金属度
+             */
+            this.metalic = 1.0;
             this.shaderName = "standard";
         }
         /**

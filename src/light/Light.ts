@@ -17,14 +17,9 @@ module feng3d {
         public color: Color;
 
         /**
-         * 镜面反射反射率
+         * 光照强度
          */
-        public specular: number;
-
-        /**
-         * 漫反射率
-         */
-        public diffuse: number;
+        public intensity: number;
 
         /**
          * 灯光位置
