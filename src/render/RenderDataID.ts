@@ -74,5 +74,25 @@ module feng3d {
          * 点光源镜面反射颜色数组
          */
         static u_pointLightSpeculars = "u_pointLightSpeculars";
+
+        /**
+         * 基本颜色
+         */
+        static u_baseColor = "u_baseColor";
+
+        /**
+         * 反射率
+         */
+        static u_reflectance = "u_reflectance";
+
+        /**
+         * 粗糙度
+         */
+        static u_roughness = "u_roughness";
+
+        /**
+         * 金属度
+         */
+        static u_metalic = "u_metalic";
     }
 }

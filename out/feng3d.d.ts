@@ -1826,7 +1826,7 @@ declare module feng3d {
          * 常量数据（包含纹理）列表
          */
         uniforms: {
-            [name: string]: Matrix3D | Vector3D | TextureInfo | Vector3D[];
+            [name: string]: number | Matrix3D | Vector3D | TextureInfo | Vector3D[];
         };
         /**
          * 渲染参数
@@ -2031,6 +2031,22 @@ declare module feng3d {
          * 点光源镜面反射颜色数组
          */
         static u_pointLightSpeculars: string;
+        /**
+         * 基本颜色
+         */
+        static u_baseColor: string;
+        /**
+         * 反射率
+         */
+        static u_reflectance: string;
+        /**
+         * 粗糙度
+         */
+        static u_roughness: string;
+        /**
+         * 金属度
+         */
+        static u_metalic: string;
     }
 }
 declare module feng3d {
@@ -3303,6 +3319,42 @@ declare module feng3d {
         skyBoxTextureCube: TextureCube;
         private skyBoxSize;
         constructor(images: HTMLImageElement[]);
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 标准材质
+     * @author feng 2016-05-02
+     */
+    class StandardMaterial extends Material {
+        /**
+         * 基本颜色
+         */
+        baseColor: Color;
+        /**
+         * 反射率
+         */
+        reflectance: number;
+        /**
+         * 粗糙度
+         */
+        roughness: number;
+        /**
+         * 金属度
+         */
+        metalic: number;
+        /**
+         * 是否接受光照
+         */
+        enableLight: boolean;
+        /**
+         * 构建
+         */
+        constructor();
         /**
          * 更新渲染数据
          */

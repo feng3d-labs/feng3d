@@ -3532,6 +3532,22 @@ var feng3d;
      * 点光源镜面反射颜色数组
      */
     RenderDataID.u_pointLightSpeculars = "u_pointLightSpeculars";
+    /**
+     * 基本颜色
+     */
+    RenderDataID.u_baseColor = "u_baseColor";
+    /**
+     * 反射率
+     */
+    RenderDataID.u_reflectance = "u_reflectance";
+    /**
+     * 粗糙度
+     */
+    RenderDataID.u_roughness = "u_roughness";
+    /**
+     * 金属度
+     */
+    RenderDataID.u_metalic = "u_metalic";
     feng3d.RenderDataID = RenderDataID;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -6587,6 +6603,7 @@ var feng3d;
          */
         constructor(color = null) {
             super();
+            this.shaderName = "color";
             this.color = color || new feng3d.Color();
         }
         /**
@@ -6685,6 +6702,37 @@ var feng3d;
         }
     }
     feng3d.SkyBoxMaterial = SkyBoxMaterial;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 标准材质
+     * @author feng 2016-05-02
+     */
+    class StandardMaterial extends feng3d.Material {
+        /**
+         * 构建
+         */
+        constructor() {
+            super();
+            /**
+             * 是否接受光照
+             */
+            this.enableLight = true;
+            this.shaderName = "standard";
+        }
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
+            this.renderData.uniforms[feng3d.RenderDataID.u_baseColor] = this.baseColor.toVector3D();
+            this.renderData.uniforms[feng3d.RenderDataID.u_reflectance] = this.reflectance;
+            this.renderData.uniforms[feng3d.RenderDataID.u_roughness] = this.roughness;
+            this.renderData.uniforms[feng3d.RenderDataID.u_metalic] = this.metalic;
+        }
+    }
+    feng3d.StandardMaterial = StandardMaterial;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

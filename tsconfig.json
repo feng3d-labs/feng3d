@@ -108,6 +108,7 @@
         "src/materials/components/MaterialComponent.ts",
         "src/materials/TextureMaterial.ts",
         "src/materials/SkyBoxMaterial.ts",
+        "src/materials/StandardMaterial.ts",
         //灯光
         "src/light/LightType.ts",
         "src/light/Light.ts",

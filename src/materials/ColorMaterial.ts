@@ -19,6 +19,7 @@ module feng3d {
         constructor(color: Color = null) {
 
             super();
+            this.shaderName = "color";
             this.color = color || new Color();
         }
 
