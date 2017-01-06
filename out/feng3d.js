@@ -4471,7 +4471,7 @@ var feng3d;
     class MeshRenderer extends feng3d.Renderer {
         constructor() {
             super();
-            this.material = new feng3d.Material();
+            this.material = new feng3d.ColorMaterial();
         }
         /**
          * 材质
@@ -6568,10 +6568,6 @@ var feng3d;
             * 渲染模式
             */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
-            /**
-             * 渲染程序名称
-             */
-            this.shaderName = "default";
         }
         /**
          * 更新渲染数据
@@ -6583,8 +6579,10 @@ var feng3d;
             //
             this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 0;
             //
-            this.renderData.vertexCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".vertex");
-            this.renderData.fragmentCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".fragment");
+            if (this.shaderName) {
+                this.renderData.vertexCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".vertex");
+                this.renderData.fragmentCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".fragment");
+            }
         }
     }
     feng3d.Material = Material;
@@ -6663,6 +6661,10 @@ var feng3d;
      * @author feng 2016-12-23
      */
     class TextureMaterial extends feng3d.Material {
+        constructor() {
+            super();
+            this.shaderName = "texture";
+        }
         /**
          * 更新渲染数据
          */
@@ -6715,10 +6717,6 @@ var feng3d;
          */
         constructor() {
             super();
-            /**
-             * 是否接受光照
-             */
-            this.enableLight = true;
             this.shaderName = "standard";
         }
         /**

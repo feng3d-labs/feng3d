@@ -11,6 +11,11 @@ module feng3d {
          */
         public texture: Texture2D;
 
+        constructor() {
+            super();
+            this.shaderName = "texture";
+        }
+
         /**
 		 * 更新渲染数据
 		 */

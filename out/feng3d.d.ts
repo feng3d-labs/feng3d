@@ -3227,7 +3227,7 @@ declare module feng3d {
         */
         protected renderMode: RenderMode;
         /**
-         * 渲染程序名称
+         * 着色器名称
          */
         protected shaderName: string;
         /**
@@ -3304,6 +3304,7 @@ declare module feng3d {
          * 纹理数据
          */
         texture: Texture2D;
+        constructor();
         /**
          * 更新渲染数据
          */
@@ -3347,10 +3348,6 @@ declare module feng3d {
          * 金属度
          */
         metalic: number;
-        /**
-         * 是否接受光照
-         */
-        enableLight: boolean;
         /**
          * 构建
          */

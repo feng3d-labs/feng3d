@@ -20,7 +20,7 @@
 
         vec3 viewDir = normalize(v_globalPosition - u_cameraMatrix[3].xyz);
         //计算反射强度
-        float reflectance = clamp(dot(normal,normalize(lightDir + viewDir)),0.0,1.0);
+        float reflectance = clamp(dot(normal,normalize(lightDir - viewDir)),0.0,1.0);
         reflectance = pow(reflectance,5.0);
 
         vec4 lightColor = vec4((lightSpecular.xyz * reflectance).xyz,1.0);

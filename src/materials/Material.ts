@@ -10,10 +10,11 @@ module feng3d {
         * 渲染模式
         */
         protected renderMode = RenderMode.TRIANGLES;
+
         /**
-         * 渲染程序名称
+         * 着色器名称
          */
-        protected shaderName = "default";
+        protected shaderName: string;
 
         /**
          * 构建材质
@@ -33,8 +34,10 @@ module feng3d {
             //
             this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 0;
             //
-            this.renderData.vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
-            this.renderData.fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");
+            if (this.shaderName) {
+                this.renderData.vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
+                this.renderData.fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");
+            }
         }
     }
 }

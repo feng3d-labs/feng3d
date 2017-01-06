@@ -27,11 +27,6 @@ module feng3d {
         public metalic: number;
 
         /**
-         * 是否接受光照
-         */
-        public enableLight: boolean = true;
-
-        /**
          * 构建
          */
         constructor() {
