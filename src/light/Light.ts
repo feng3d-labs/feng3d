@@ -14,12 +14,12 @@ module feng3d {
         /**
          * 颜色
          */
-        public color: Color;
+        public color: Color = new Color();
 
         /**
          * 光照强度
          */
-        public intensity: number;
+        public intensity: number = 1;
 
         /**
          * 灯光位置

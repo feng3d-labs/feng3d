@@ -6,7 +6,7 @@ varying vec3 v_normal;
 
 uniform mat4 u_cameraMatrix;
 //基本颜色
-uniform vec3 u_baseColor;
+uniform vec4 u_baseColor;
 
 #include<modules/pointLightShading.declare>
 

@@ -61,7 +61,7 @@
         vec3 realBaseColor = (1.0 - metalic) * baseColor.xyz;
         vec3 realReflectance = mix(vec3(reflectance),baseColor.xyz,metalic);
 
-        vec4 totalLightColor = vec3(0.0,0.0,0.0);
+        vec3 totalLightColor = vec3(0.0,0.0,0.0);
         for(int i = 0;i<NUM_POINTLIGHT;i++){
             //光照方向
             vec3 lightDir = normalize(u_pointLightPositions[i] - v_globalPosition);
@@ -75,6 +75,6 @@
             totalLightColor = totalLightColor + calculateLight(normal,viewDir,lightDir,lightColor,lightIntensity,realBaseColor,realReflectance,roughness);
         }
         
-        return vec4(totalLightColor,0);
+        return vec4(totalLightColor,0.0);
     }
 #endif

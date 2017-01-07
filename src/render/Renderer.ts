@@ -75,7 +75,7 @@ module feng3d {
         var i = 0;
         while (i < numUniforms) {
             var activeInfo = context3D.getActiveUniform(shaderProgram, i++);
-            if (activeInfo.size > 1) {
+            if (activeInfo.name.indexOf("[") != -1) {
                 //处理数组
                 var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
                 for (var j = 0; j < activeInfo.size; j++) {
@@ -128,6 +128,9 @@ module feng3d {
         switch (activeInfo.type) {
             case WebGLRenderingContext.FLOAT_MAT4:
                 context3D.uniformMatrix4fv(location, false, data.rawData);
+                break;
+            case WebGLRenderingContext.FLOAT:
+                context3D.uniform1f(location, data);
                 break;
             case WebGLRenderingContext.FLOAT_VEC3:
                 context3D.uniform3f(location, data.x, data.y, data.z);
