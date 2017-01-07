@@ -1,3 +1,7 @@
+//参考资料
+//http://blog.csdn.net/leonwei/article/details/44539217
+//https://github.com/mcleary/pbr/blob/master/shaders/phong_pbr_frag.glsl
+
 #if NUM_POINTLIGHT > 0
     //点光源位置列表
     uniform vec3 u_pointLightPositions[NUM_POINTLIGHT];

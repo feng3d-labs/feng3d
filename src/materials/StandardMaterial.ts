@@ -3,6 +3,7 @@ module feng3d {
     /**
      * 标准材质
      * @author feng 2016-05-02
+     * @see 物理渲染-基于物理的光照模型 http://blog.csdn.net/leonwei/article/details/44539217
      */
     export class StandardMaterial extends Material {
 
