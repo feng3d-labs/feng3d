@@ -12,6 +12,12 @@
     //金属度
     uniform float u_metalic;
 
+    vec3 fresnelSchlick(float VdotH,vec3 reflectance){
+
+        return reflectance + (1.0 - reflectance) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
+        // return reflectance;
+    }
+
     float normalDistributionGGX(float NdotH,float alphaG){
 
         float alphaG2 = alphaG * alphaG;
@@ -33,11 +39,12 @@
         float NdotL = clamp(dot(normal,lightDir),0.0,1.0);
         float NdotH = clamp(dot(normal,halfVec),0.0,1.0);
         float NdotV = max(abs(dot(normal,viewDir)),0.000001);
+        float VdotH = clamp(dot(viewDir, halfVec),0.0,1.0);
         
         float alphaG = max(roughness * roughness,0.0005);
 
         //F(v,h)
-        vec3 F = reflectance;
+        vec3 F = fresnelSchlick(VdotH, reflectance);
 
         //D(h)
         float D = normalDistributionGGX(NdotH,alphaG);
@@ -51,15 +58,15 @@
     }
 
     //渲染点光源
-    vec4 pointLightShading(vec3 normal,vec4 baseColor){
+    vec3 pointLightShading(vec3 normal,vec3 baseColor){
 
         float reflectance = u_reflectance;
         float roughness = u_roughness;
         float metalic = u_metalic;
 
         reflectance = mix(0.0,0.5,reflectance);
-        vec3 realBaseColor = (1.0 - metalic) * baseColor.xyz;
-        vec3 realReflectance = mix(vec3(reflectance),baseColor.xyz,metalic);
+        vec3 realBaseColor = (1.0 - metalic) * baseColor;
+        vec3 realReflectance = mix(vec3(reflectance),baseColor,metalic);
 
         vec3 totalLightColor = vec3(0.0,0.0,0.0);
         for(int i = 0;i<NUM_POINTLIGHT;i++){
@@ -75,6 +82,6 @@
             totalLightColor = totalLightColor + calculateLight(normal,viewDir,lightDir,lightColor,lightIntensity,realBaseColor,realReflectance,roughness);
         }
         
-        return vec4(totalLightColor,0.0);
+        return totalLightColor;
     }
 #endif
