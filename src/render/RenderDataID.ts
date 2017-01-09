@@ -94,5 +94,15 @@ module feng3d {
          * 金属度
          */
         static u_metalic = "u_metalic";
+
+        /**
+         * 粒子速度
+         */
+        static a_particleVelocity = "a_particleVelocity";
+
+        /**
+         * 粒子起始位置
+         */
+        static a_particlePosition = "a_particlePosition";
     }
 }

@@ -2047,6 +2047,14 @@ declare module feng3d {
          * 金属度
          */
         static u_metalic: string;
+        /**
+         * 粒子速度
+         */
+        static a_particleVelocity: string;
+        /**
+         * 粒子起始位置
+         */
+        static a_particlePosition: string;
     }
 }
 declare module feng3d {
@@ -2778,6 +2786,18 @@ declare module feng3d {
          * @return 顶点属性数据
          */
         getVAData(vaId: string): AttributeRenderData;
+        /**
+         * 顶点数量
+         */
+        readonly numVertex: number;
+        /**
+         * 附加几何体
+         */
+        addGeometry(geometry: Geometry): void;
+        /**
+         * 克隆一个几何体
+         */
+        clone(): Geometry;
     }
 }
 declare module feng3d {
@@ -3330,6 +3350,7 @@ declare module feng3d {
     /**
      * 标准材质
      * @author feng 2016-05-02
+     * @see 物理渲染-基于物理的光照模型 http://blog.csdn.net/leonwei/article/details/44539217
      */
     class StandardMaterial extends Material {
         difuseTexture: Texture2D;
@@ -3357,6 +3378,15 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 粒子材质（为了使用独立的着色器，暂时设置粒子材质）
+     * @author feng 2017-01-09
+     */
+    class ParticleMaterial extends Material {
+        constructor();
     }
 }
 declare module feng3d {
@@ -3610,6 +3640,134 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 粒子动画
+     * @author feng 2017-01-09
+     */
+    class ParticleAnimator extends Object3DComponent {
+        /**
+         * 是否正在播放
+         */
+        isPlaying: boolean;
+        /**
+         * 粒子时间
+         */
+        time: number;
+        /**
+         * 播放速度
+         */
+        playbackSpeed: number;
+        /**
+         * 粒子数量
+         */
+        numParticles: number;
+        /**
+         * 生成粒子动画数据
+         */
+        private generateAnimationSubGeometries(geometry);
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 粒子属性
+     * @author feng 2014-11-13
+     */
+    class ParticleProperties {
+        /**
+         * 索引
+         */
+        index: number;
+        /**
+         * 粒子总数
+         */
+        total: number;
+        /**
+         * 开始时间
+         */
+        startTime: number;
+        /**
+         * 持续时间
+         */
+        duration: number;
+        /**
+         * 延迟周期
+         */
+        delay: number;
+    }
+}
+declare module feng3d {
+    /**
+     * 粒子动画组件
+     * @author feng 2017-01-09
+     */
+    class ParticleAnimatorComponent extends RenderDataHolder {
+        /**
+         * 单个粒子数据
+         */
+        protected data: Float32Array;
+        /**
+         * 粒子属性数据编号
+         */
+        protected vaID: string;
+        /**
+         * 粒子属性长度
+         */
+        protected vaLength: number;
+        /**
+         * 创建粒子属性
+         * @param numParticles              粒子数量
+         * @param vertexNumPerParticle      一个粒子的顶点数
+         */
+        generatePropertyOfOneParticle(numParticles: number, vertexNumPerParticle: number): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 粒子速度组件
+     * @author feng 2017-01-09
+     */
+    class ParticlePositionComponent extends ParticleAnimatorComponent {
+        /**
+         * 速度
+         */
+        velocity: Vector3D;
+        constructor();
+        /**
+         * 创建粒子属性
+         * @param numParticles              粒子数量
+         * @param vertexNumPerParticle      一个粒子的顶点数
+         */
+        generatePropertyOfOneParticle(numParticles: number, vertexNumPerParticle: number): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 粒子速度组件
+     * @author feng 2017-01-09
+     */
+    class ParticleVelocityComponent extends ParticleAnimatorComponent {
+        /**
+         * 速度
+         */
+        velocity: Vector3D;
+        constructor();
+        /**
+         * 创建粒子属性
+         * @param numParticles              粒子数量
+         * @param vertexNumPerParticle      一个粒子的顶点数
+         */
+        generatePropertyOfOneParticle(numParticles: number, vertexNumPerParticle: number): void;
+    }
+}
+declare module feng3d {
+    /**
      * 3D对象工厂
      * @author feng 2016-12-19
      */
@@ -3638,6 +3796,7 @@ declare module feng3d {
          * 创建天空盒
          */
         createSkyBox(images: HTMLImageElement[]): Object3D;
+        createParticle(): Object3D;
     }
     /**
      * 3D对象工厂

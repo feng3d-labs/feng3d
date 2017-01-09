@@ -70,6 +70,14 @@ module feng3d {
             object3D.getOrCreateComponentByClass(MeshRenderer).material = new SkyBoxMaterial(images);
             return object3D;
         }
+
+        public createParticle() {
+            var object3D = new Object3D("particle");
+            object3D.getOrCreateComponentByClass(MeshRenderer).material = new ParticleMaterial();
+            var particleAnimator = object3D.getOrCreateComponentByClass(ParticleAnimator);
+            particleAnimator.addComponent(new ParticlePositionComponent());
+            return object3D;
+        }
     }
 
     /**
