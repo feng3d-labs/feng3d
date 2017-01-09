@@ -14,7 +14,12 @@ module feng3d {
         /**
          * 粒子时间
          */
-        public time: number;
+        public time: number = 0;
+
+        /**
+         * 起始时间
+         */
+        public startTime: number = 0;
 
         /**
          * 播放速度
@@ -24,7 +29,7 @@ module feng3d {
         /**
 		 * 粒子数量
 		 */
-        public numParticles: number = 100;
+        public numParticles: number = 1000;
 
         private isDirty = true;
 
@@ -47,9 +52,14 @@ module feng3d {
 
             if (this.isDirty) {
 
+                this.startTime = getTimer();
                 this.generateAnimationSubGeometries(<ParticleGeometry>this.object3D.getOrCreateComponentByClass(MeshFilter).geometry);
                 this.isDirty = false;
             }
+
+            this.time = (getTimer() - this.startTime) % 3000;
+            this.renderData.uniforms[RenderDataID.u_particleTime] = this.time;
+
             super.updateRenderData(renderContext);
         }
     }

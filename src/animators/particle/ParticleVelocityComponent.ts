@@ -25,12 +25,12 @@ module feng3d {
 		 */
         public generatePropertyOfOneParticle(numParticles: number, vertexNumPerParticle: number) {
 
-            var baseVelocity = 10;
+            var baseVelocity = 1;
             this.data = new Float32Array(numParticles * vertexNumPerParticle * this.vaLength);
             for (var i = 0; i < numParticles; i++) {
-                var x = Math.random() * baseVelocity;
-                var y = Math.random() * baseVelocity;
-                var z = Math.random() * baseVelocity;
+                var x = (Math.random() - 0.5) * baseVelocity;
+                var y = (Math.random() - 0.5) * baseVelocity;
+                var z = (Math.random() - 0.5) * baseVelocity;
                 var index = i * vertexNumPerParticle * this.vaLength;
                 for (var j = 0; j < vertexNumPerParticle; j++) {
                     this.data[index + j * this.vaLength] = x;

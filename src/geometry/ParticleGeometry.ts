@@ -9,7 +9,7 @@ module feng3d {
         /**
          * 粒子数量
          */
-        public numParticle = 100;
+        private _numParticle = 1;
 
         /**
          * 单个粒子几何体
@@ -21,6 +21,23 @@ module feng3d {
         constructor() {
             super();
             this.elementGeometry = primitives.createPlane(10, 10, 1, 1, false);
+        }
+
+        /**
+         * 粒子数量
+         */
+        public get numParticle() {
+
+            return this._numParticle;
+        }
+
+        public set numParticle(value: number) {
+
+            if (this._numParticle != value) {
+
+                this._numParticle = value;
+                this.isDirty = true;
+            }
         }
 
         /**

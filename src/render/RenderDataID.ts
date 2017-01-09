@@ -104,5 +104,10 @@ module feng3d {
          * 粒子起始位置
          */
         static a_particlePosition = "a_particlePosition";
+
+        /**
+         * 粒子时间
+         */
+        static u_particleTime = "u_particleTime";
     }
 }

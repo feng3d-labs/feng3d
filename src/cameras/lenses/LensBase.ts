@@ -9,7 +9,7 @@ module feng3d {
 		protected _scissorRect: Rectangle = new Rectangle();
 		protected _viewPort: Rectangle = new Rectangle();
 		protected _near: number = 0.1;
-		protected _far: number = 3000;
+		protected _far: number = Number.MAX_VALUE;
 		protected _aspectRatio: number = 1;
 
 		protected _matrixInvalid: boolean = true;
@@ -21,7 +21,7 @@ module feng3d {
 		 * 创建一个摄像机镜头
 		 */
 		constructor() {
-            super();
+			super();
 			this._matrix = new Matrix3D();
 		}
 
@@ -106,7 +106,7 @@ module feng3d {
 		 */
 		public get unprojectionMatrix(): Matrix3D {
 			if (this._unprojectionInvalid) {
-                if (this._unprojection == null)
+				if (this._unprojection == null)
 					this._unprojection = new Matrix3D();
 				this._unprojection.copyFrom(this.matrix);
 				this._unprojection.invert();

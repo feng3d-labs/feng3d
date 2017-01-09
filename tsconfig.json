@@ -33,6 +33,7 @@
         //
         "src/debug/assert.ts",
         //基础工具
+        "src/utils/gettimer.ts",
         "src/utils/getClassName.ts",
         "src/utils/StringUtils.ts",
         "src/utils/ArrayUtils.ts",

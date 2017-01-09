@@ -1003,6 +1003,12 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 获取时间，毫秒为单位
+     */
+    function getTimer(): number;
+}
+declare module feng3d {
+    /**
      * 获取对象的类名
      * @author feng 2016-4-24
      */
@@ -2055,6 +2061,10 @@ declare module feng3d {
          * 粒子起始位置
          */
         static a_particlePosition: string;
+        /**
+         * 粒子时间
+         */
+        static u_particleTime: string;
     }
 }
 declare module feng3d {
@@ -2841,13 +2851,17 @@ declare module feng3d {
         /**
          * 粒子数量
          */
-        numParticle: number;
+        private _numParticle;
         /**
          * 单个粒子几何体
          */
         elementGeometry: Geometry;
         private isDirty;
         constructor();
+        /**
+         * 粒子数量
+         */
+        numParticle: number;
         /**
          * 更新渲染数据
          */
@@ -3678,6 +3692,10 @@ declare module feng3d {
          * 粒子时间
          */
         time: number;
+        /**
+         * 起始时间
+         */
+        startTime: number;
         /**
          * 播放速度
          */
