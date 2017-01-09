@@ -24,19 +24,20 @@ module feng3d {
         /**
 		 * 粒子数量
 		 */
-        public numParticles: number = 1000;
+        public numParticles: number = 100;
+
+        private isDirty = true;
 
         /**
 		 * 生成粒子动画数据
 		 */
-        private generateAnimationSubGeometries(geometry: Geometry) {
+        private generateAnimationSubGeometries(geometry: ParticleGeometry) {
 
-            var vertexNumPerParticle = 1;
+            geometry.numParticle = this.numParticles;
             var components = this.getComponentsByClass(ParticleAnimatorComponent);
             components.forEach(element => {
-                element.generatePropertyOfOneParticle(this.numParticles, vertexNumPerParticle);
+                element.generatePropertyOfOneParticle(this.numParticles, geometry.elementGeometry.numVertex);
             });
-
         }
 
         /**
@@ -44,7 +45,11 @@ module feng3d {
 		 */
         public updateRenderData(renderContext: RenderContext) {
 
-            this.generateAnimationSubGeometries(null);
+            if (this.isDirty) {
+
+                this.generateAnimationSubGeometries(<ParticleGeometry>this.object3D.getOrCreateComponentByClass(MeshFilter).geometry);
+                this.isDirty = false;
+            }
             super.updateRenderData(renderContext);
         }
     }

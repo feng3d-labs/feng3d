@@ -81,6 +81,7 @@
         "src/geometry/Geometry.ts",
         "src/geometry/GeometryEvent.ts",
         //几何体组件
+        "src/geometry/ParticleGeometry.ts",
         "src/geometry/SegmentGeometry.ts",
         "src/geometry/components/GeometryComponent.ts",
         //摄像机

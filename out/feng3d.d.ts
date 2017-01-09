@@ -2798,6 +2798,10 @@ declare module feng3d {
          * 克隆一个几何体
          */
         clone(): Geometry;
+        /**
+         * 从一个几何体中克隆数据
+         */
+        cloneFrom(geometry: Geometry): void;
     }
 }
 declare module feng3d {
@@ -2826,6 +2830,28 @@ declare module feng3d {
          * 构建几何体事件
          */
         constructor(type: string, data?: any, bubbles?: boolean);
+    }
+}
+declare module feng3d {
+    /**
+     * 粒子几何体
+     * @author feng 2016-04-28
+     */
+    class ParticleGeometry extends Geometry {
+        /**
+         * 粒子数量
+         */
+        numParticle: number;
+        /**
+         * 单个粒子几何体
+         */
+        elementGeometry: Geometry;
+        private isDirty;
+        constructor();
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
@@ -3660,6 +3686,7 @@ declare module feng3d {
          * 粒子数量
          */
         numParticles: number;
+        private isDirty;
         /**
          * 生成粒子动画数据
          */

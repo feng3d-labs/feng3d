@@ -102,5 +102,14 @@ module feng3d {
             geometry.renderData.attributes = this.renderData.attributes;
             return geometry;
         }
+
+        /**
+         * 从一个几何体中克隆数据
+         */
+        public cloneFrom(geometry: Geometry) {
+
+            this.renderData.indexBuffer = geometry.renderData.indexBuffer;
+            this.renderData.attributes = geometry.renderData.attributes;
+        }
     }
 }

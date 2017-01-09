@@ -4777,6 +4777,13 @@ var feng3d;
             geometry.renderData.attributes = this.renderData.attributes;
             return geometry;
         }
+        /**
+         * 从一个几何体中克隆数据
+         */
+        cloneFrom(geometry) {
+            this.renderData.indexBuffer = geometry.renderData.indexBuffer;
+            this.renderData.attributes = geometry.renderData.attributes;
+        }
     }
     feng3d.Geometry = Geometry;
 })(feng3d || (feng3d = {}));
@@ -4807,6 +4814,38 @@ var feng3d;
      */
     GeometryEvent.CHANGED_INDEX_DATA = "changedIndexData";
     feng3d.GeometryEvent = GeometryEvent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子几何体
+     * @author feng 2016-04-28
+     */
+    class ParticleGeometry extends feng3d.Geometry {
+        constructor() {
+            super();
+            /**
+             * 粒子数量
+             */
+            this.numParticle = 100;
+            this.isDirty = true;
+            this.elementGeometry = feng3d.primitives.createPlane(10, 10, 1, 1, false);
+        }
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
+            if (this.isDirty) {
+                this.cloneFrom(feng3d.primitives.createPlane(10, 10, 1, 1, false));
+                for (var i = 1; i < this.numParticle; i++) {
+                    this.addGeometry(this.elementGeometry);
+                }
+                this.isDirty = false;
+            }
+        }
+    }
+    feng3d.ParticleGeometry = ParticleGeometry;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6819,7 +6858,7 @@ var feng3d;
         constructor() {
             super();
             this.shaderName = "particle";
-            this.renderMode = feng3d.RenderMode.POINTS;
+            // this.renderMode = RenderMode.POINTS;
         }
     }
     feng3d.ParticleMaterial = ParticleMaterial;
@@ -7350,23 +7389,27 @@ var feng3d;
             /**
              * 粒子数量
              */
-            this.numParticles = 1000;
+            this.numParticles = 100;
+            this.isDirty = true;
         }
         /**
          * 生成粒子动画数据
          */
         generateAnimationSubGeometries(geometry) {
-            var vertexNumPerParticle = 1;
+            geometry.numParticle = this.numParticles;
             var components = this.getComponentsByClass(feng3d.ParticleAnimatorComponent);
             components.forEach(element => {
-                element.generatePropertyOfOneParticle(this.numParticles, vertexNumPerParticle);
+                element.generatePropertyOfOneParticle(this.numParticles, geometry.elementGeometry.numVertex);
             });
         }
         /**
          * 更新渲染数据
          */
         updateRenderData(renderContext) {
-            this.generateAnimationSubGeometries(null);
+            if (this.isDirty) {
+                this.generateAnimationSubGeometries(this.object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry);
+                this.isDirty = false;
+            }
             super.updateRenderData(renderContext);
         }
     }
@@ -7553,6 +7596,7 @@ var feng3d;
         }
         createParticle() {
             var object3D = new feng3d.Object3D("particle");
+            object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = new feng3d.ParticleGeometry();
             object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.ParticleMaterial();
             var particleAnimator = object3D.getOrCreateComponentByClass(feng3d.ParticleAnimator);
             particleAnimator.addComponent(new feng3d.ParticlePositionComponent());

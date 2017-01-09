@@ -9,7 +9,7 @@ module feng3d {
         constructor() {
             super();
             this.shaderName = "particle";
-            this.renderMode = RenderMode.POINTS;
+            // this.renderMode = RenderMode.POINTS;
         }
     }
 }
