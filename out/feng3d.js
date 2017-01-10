@@ -3915,8 +3915,12 @@ var feng3d;
         constructor(canvas, scene = null, camera = null) {
             feng3d.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
-            this._context3D = this._canvas.getContext("experimental-webgl");
-            this._context3D || alert("Unable to initialize WebGL. Your browser may not support it.");
+            this._context3D = this._canvas.getContext("webgl2");
+            if (this._context3D == null) {
+                alert("浏览器不支持 WebGL2!");
+                window.location.href = "https://wardenfeng.github.io/#!blogs/2017/01/10/1.md";
+                return;
+            }
             this.initGL();
             this.scene = scene || new feng3d.Scene3D();
             this.camera = camera || new feng3d.Camera3D();
