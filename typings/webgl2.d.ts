@@ -283,270 +283,270 @@ interface WebGL2RenderingContext extends WebGLRenderingContext {
 
     /* Buffer objects */
     // WebGL1:
-    bufferData(GLenum target, GLsizeiptr size, GLenum usage);
-    bufferData(GLenum target, ArrayBuffer? srcData, GLenum usage);
-    bufferData(GLenum target, ArrayBufferView srcData, GLenum usage);
-    bufferSubData(GLenum target, GLintptr dstByteOffset, BufferDataSource srcData);
+    bufferData(target: GLenum, size: GLsizeiptr, usage: GLenum);
+    bufferData(target: GLenum, ArrayBuffer? srcData, usage: GLenum);
+    bufferData(target: GLenum, srcData: ArrayBufferView, usage: GLenum);
+    bufferSubData(target: GLenum, dstByteOffset: GLintptr, srcData: BufferDataSource);
     // WebGL2:
-    bufferData(GLenum target, ArrayBufferView srcData, GLenum usage, GLuint srcOffset,
-        optional GLuint length = 0);
-    bufferSubData(GLenum target, GLintptr dstByteOffset, ArrayBufferView srcData,
-        GLuint srcOffset, optional GLuint length = 0);
+    bufferData(target: GLenum, srcData: ArrayBufferView, usage: GLenum, srcOffset: GLuint,
+        optional length:GLuint = 0);
+    bufferSubData(target: GLenum, dstByteOffset: GLintptr, srcData: ArrayBufferView,
+        srcOffset: GLuint, optional length:GLuint = 0);
 
-    copyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset,
-        GLintptr writeOffset, GLsizeiptr size);
+    copyBufferSubData(readTarget: GLenum, writeTarget: GLenum, readOffset: GLintptr,
+        writeOffset: GLintptr, size: GLsizeiptr);
     // MapBufferRange, in particular its read-only and write-only modes,
     // can not be exposed safely to JavaScript. GetBufferSubData
     // replaces it for the purpose of fetching data back from the GPU.
-    getBufferSubData(GLenum target, GLintptr srcByteOffset, ArrayBufferView dstBuffer,
-        optional GLuint dstOffset = 0, optional GLuint length = 0);
+    getBufferSubData(target: GLenum, srcByteOffset: GLintptr, dstBuffer: ArrayBufferView,
+        optional dstOffset:GLuint = 0, optional length:GLuint = 0);
 
     /* Framebuffer objects */
-    blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0,
-        GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
-    framebufferTextureLayer(GLenum target, GLenum attachment, WebGLTexture? texture, GLint level,
-        GLint layer);
-    invalidateFramebuffer(GLenum target, sequence < GLenum>attachments);
-    invalidateSubFramebuffer(GLenum target, sequence < GLenum>attachments,
-        GLint x, GLint y, GLsizei width, GLsizei height);
-    readBuffer(GLenum src);
+    blitFramebuffer(srcX0: GLint, srcY0: GLint, srcX1: GLint, srcY1: GLint, dstX0: GLint, dstY0: GLint,
+        dstX1: GLint, dstY1: GLint, GLbitfield mask, filter: GLenum);
+    framebufferTextureLayer(target: GLenum, attachment: GLenum, WebGLTexture? texture, level: GLint,
+        layer: GLint);
+    invalidateFramebuffer(target: GLenum, sequence < GLenum>attachments);
+    invalidateSubFramebuffer(target: GLenum, sequence < GLenum>attachments,
+        x: GLint, y: GLint, GLsizei width, GLsizei height);
+    readBuffer(src: GLenum);
 
 /* Renderbuffer objects */
-any getInternalformatParameter(GLenum target, GLenum internalformat, GLenum pname);
-renderbufferStorageMultisample(GLenum target, GLsizei samples, GLenum internalformat,
+any getInternalformatParameter(target:GLenum, internalformat:GLenum, pname:GLenum);
+renderbufferStorageMultisample(target:GLenum, GLsizei samples, internalformat:GLenum,
     GLsizei width, GLsizei height);
 
 /* Texture objects */
-texStorage2D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width,
+texStorage2D(target:GLenum, GLsizei levels, internalformat:GLenum, GLsizei width,
     GLsizei height);
-texStorage3D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width,
+texStorage3D(target:GLenum, GLsizei levels, internalformat:GLenum, GLsizei width,
     GLsizei height, GLsizei depth);
 
 // WebGL1 legacy entrypoints:
-texImage2D(GLenum target, GLint level, GLint internalformat,
-    GLsizei width, GLsizei height, GLint border, GLenum format,
-    GLenum type, ArrayBufferView ? pixels);
-texImage2D(GLenum target, GLint level, GLint internalformat,
-    GLenum format, GLenum type, TexImageSource source); // May throw DOMException
+texImage2D(target:GLenum, level:GLint, internalformat:GLint,
+    GLsizei width, GLsizei height, border:GLint, format:GLenum,
+    type:GLenum, ArrayBufferView ? pixels);
+texImage2D(target:GLenum, level:GLint, internalformat:GLint,
+    format:GLenum, type:GLenum, TexImageSource source); // May throw DOMException
 
-texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+texSubImage2D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint,
     GLsizei width, GLsizei height,
-    GLenum format, GLenum type, ArrayBufferView ? pixels);
-texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-    GLenum format, GLenum type, TexImageSource source); // May throw DOMException
+    format:GLenum, type:GLenum, ArrayBufferView ? pixels);
+texSubImage2D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint,
+    format:GLenum, type:GLenum, TexImageSource source); // May throw DOMException
 
 // WebGL2 entrypoints:
-texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
-    GLint border, GLenum format, GLenum type, GLintptr pboOffset);
-texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
-    GLint border, GLenum format, GLenum type,
+texImage2D(target:GLenum, level:GLint, internalformat:GLint, GLsizei width, GLsizei height,
+    border:GLint, format:GLenum, type:GLenum, pboOffset:GLintptr);
+texImage2D(target:GLenum, level:GLint, internalformat:GLint, GLsizei width, GLsizei height,
+    border:GLint, format:GLenum, type:GLenum,
     TexImageSource source); // May throw DOMException
-texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
-    GLint border, GLenum format, GLenum type, ArrayBufferView srcData,
-    GLuint srcOffset);
+texImage2D(target:GLenum, level:GLint, internalformat:GLint, GLsizei width, GLsizei height,
+    border:GLint, format:GLenum, type:GLenum, srcData:ArrayBufferView,
+    srcOffset:GLuint);
 
-texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
-    GLsizei depth, GLint border, GLenum format, GLenum type, GLintptr pboOffset);
-texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
-    GLsizei depth, GLint border, GLenum format, GLenum type,
+texImage3D(target:GLenum, level:GLint, internalformat:GLint, GLsizei width, GLsizei height,
+    GLsizei depth, border:GLint, format:GLenum, type:GLenum, pboOffset:GLintptr);
+texImage3D(target:GLenum, level:GLint, internalformat:GLint, GLsizei width, GLsizei height,
+    GLsizei depth, border:GLint, format:GLenum, type:GLenum,
     TexImageSource source); // May throw DOMException
-texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
-    GLsizei depth, GLint border, GLenum format, GLenum type, ArrayBufferView ? srcData);
-texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
-    GLsizei depth, GLint border, GLenum format, GLenum type, ArrayBufferView srcData,
-    GLuint srcOffset);
+texImage3D(target:GLenum, level:GLint, internalformat:GLint, GLsizei width, GLsizei height,
+    GLsizei depth, border:GLint, format:GLenum, type:GLenum, ArrayBufferView ? srcData);
+texImage3D(target:GLenum, level:GLint, internalformat:GLint, GLsizei width, GLsizei height,
+    GLsizei depth, border:GLint, format:GLenum, type:GLenum, srcData:ArrayBufferView,
+    srcOffset:GLuint);
 
-texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-    GLsizei height, GLenum format, GLenum type, GLintptr pboOffset);
-texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-    GLsizei height, GLenum format, GLenum type,
+texSubImage2D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, GLsizei width,
+    GLsizei height, format:GLenum, type:GLenum, pboOffset:GLintptr);
+texSubImage2D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, GLsizei width,
+    GLsizei height, format:GLenum, type:GLenum,
     TexImageSource source); // May throw DOMException
-texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-    GLsizei height, GLenum format, GLenum type, ArrayBufferView srcData,
-    GLuint srcOffset);
+texSubImage2D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, GLsizei width,
+    GLsizei height, format:GLenum, type:GLenum, srcData:ArrayBufferView,
+    srcOffset:GLuint);
 
-texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
-    GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,
-    GLintptr pboOffset);
-texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
-    GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,
+texSubImage3D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, zoffset:GLint,
+    GLsizei width, GLsizei height, GLsizei depth, format:GLenum, type:GLenum,
+    pboOffset:GLintptr);
+texSubImage3D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, zoffset:GLint,
+    GLsizei width, GLsizei height, GLsizei depth, format:GLenum, type:GLenum,
     TexImageSource source); // May throw DOMException
-texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
-    GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,
-    ArrayBufferView ? srcData, optional GLuint srcOffset = 0);
+texSubImage3D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, zoffset:GLint,
+    GLsizei width, GLsizei height, GLsizei depth, format:GLenum, type:GLenum,
+    ArrayBufferView ? srcData, optional srcOffset:GLuint = 0);
 
-copyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
-    GLint x, GLint y, GLsizei width, GLsizei height);
+copyTexSubImage3D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, zoffset:GLint,
+    x:GLint, y:GLint, GLsizei width, GLsizei height);
 
-compressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
-    GLsizei height, GLint border, GLsizei imageSize, GLintptr offset);
-compressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
-    GLsizei height, GLint border, ArrayBufferView srcData,
-    optional GLuint srcOffset = 0, optional GLuint srcLengthOverride = 0);
+compressedTexImage2D(target:GLenum, level:GLint, internalformat:GLenum, GLsizei width,
+    GLsizei height, border:GLint, GLsizei imageSize, offset:GLintptr);
+compressedTexImage2D(target:GLenum, level:GLint, internalformat:GLenum, GLsizei width,
+    GLsizei height, border:GLint, srcData:ArrayBufferView,
+    optional srcOffset:GLuint = 0, optional srcLengthOverride:GLuint = 0);
 
-compressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
-    GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, GLintptr offset);
-compressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
-    GLsizei height, GLsizei depth, GLint border, ArrayBufferView srcData,
-    optional GLuint srcOffset = 0, optional GLuint srcLengthOverride = 0);
+compressedTexImage3D(target:GLenum, level:GLint, internalformat:GLenum, GLsizei width,
+    GLsizei height, GLsizei depth, border:GLint, GLsizei imageSize, offset:GLintptr);
+compressedTexImage3D(target:GLenum, level:GLint, internalformat:GLenum, GLsizei width,
+    GLsizei height, GLsizei depth, border:GLint, srcData:ArrayBufferView,
+    optional srcOffset:GLuint = 0, optional srcLengthOverride:GLuint = 0);
 
-compressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-    GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, GLintptr offset);
-compressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-    GLsizei width, GLsizei height, GLenum format,
-    ArrayBufferView srcData,
-    optional GLuint srcOffset = 0,
-    optional GLuint srcLengthOverride = 0);
+compressedTexSubImage2D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint,
+    GLsizei width, GLsizei height, format:GLenum, GLsizei imageSize, offset:GLintptr);
+compressedTexSubImage2D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint,
+    GLsizei width, GLsizei height, format:GLenum,
+    srcData:ArrayBufferView,
+    optional srcOffset:GLuint = 0,
+    optional srcLengthOverride:GLuint = 0);
 
-compressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-    GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
-    GLenum format, GLsizei imageSize, GLintptr offset);
-compressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-    GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
-    GLenum format, ArrayBufferView srcData,
-    optional GLuint srcOffset = 0,
-    optional GLuint srcLengthOverride = 0);
+compressedTexSubImage3D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint,
+    zoffset:GLint, GLsizei width, GLsizei height, GLsizei depth,
+    format:GLenum, GLsizei imageSize, offset:GLintptr);
+compressedTexSubImage3D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint,
+    zoffset:GLint, GLsizei width, GLsizei height, GLsizei depth,
+    format:GLenum, srcData:ArrayBufferView,
+    optional srcOffset:GLuint = 0,
+    optional srcLengthOverride:GLuint = 0);
 
 /* Programs and shaders */
-[WebGLHandlesContextLoss] GLint getFragDataLocation(WebGLProgram program, DOMString name);
+[WebGLHandlesContextLoss] getFragDataLocation: GLint(WebGLProgram program, DOMString name);
 
 /* Uniforms */
-uniform1ui(WebGLUniformLocation ? location, GLuint v0);
-uniform2ui(WebGLUniformLocation ? location, GLuint v0, GLuint v1);
-uniform3ui(WebGLUniformLocation ? location, GLuint v0, GLuint v1, GLuint v2);
-uniform4ui(WebGLUniformLocation ? location, GLuint v0, GLuint v1, GLuint v2, GLuint v3);
+uniform1ui(WebGLUniformLocation ? location, v0:GLuint);
+uniform2ui(WebGLUniformLocation ? location, v0:GLuint, v1:GLuint);
+uniform3ui(WebGLUniformLocation ? location, v0:GLuint, v1:GLuint, v2:GLuint);
+uniform4ui(WebGLUniformLocation ? location, v0:GLuint, v1:GLuint, v2:GLuint, v3:GLuint);
 
-uniform1fv(WebGLUniformLocation ? location, Float32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
-uniform2fv(WebGLUniformLocation ? location, Float32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
-uniform3fv(WebGLUniformLocation ? location, Float32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
-uniform4fv(WebGLUniformLocation ? location, Float32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
+uniform1fv(WebGLUniformLocation ? location, Float32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
+uniform2fv(WebGLUniformLocation ? location, Float32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
+uniform3fv(WebGLUniformLocation ? location, Float32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
+uniform4fv(WebGLUniformLocation ? location, Float32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
 
-uniform1iv(WebGLUniformLocation ? location, Int32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
-uniform2iv(WebGLUniformLocation ? location, Int32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
-uniform3iv(WebGLUniformLocation ? location, Int32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
-uniform4iv(WebGLUniformLocation ? location, Int32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
+uniform1iv(WebGLUniformLocation ? location, Int32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
+uniform2iv(WebGLUniformLocation ? location, Int32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
+uniform3iv(WebGLUniformLocation ? location, Int32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
+uniform4iv(WebGLUniformLocation ? location, Int32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
 
-uniform1uiv(WebGLUniformLocation ? location, Uint32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
-uniform2uiv(WebGLUniformLocation ? location, Uint32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
-uniform3uiv(WebGLUniformLocation ? location, Uint32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
-uniform4uiv(WebGLUniformLocation ? location, Uint32List data, optional GLuint srcOffset = 0,
-    optional GLuint srcLength = 0);
+uniform1uiv(WebGLUniformLocation ? location, Uint32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
+uniform2uiv(WebGLUniformLocation ? location, Uint32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
+uniform3uiv(WebGLUniformLocation ? location, Uint32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
+uniform4uiv(WebGLUniformLocation ? location, Uint32List data, optional srcOffset:GLuint = 0,
+    optional srcLength:GLuint = 0);
 
 uniformMatrix2fv(WebGLUniformLocation ? location, GLboolean transpose, Float32List data,
-    optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
+    optional srcOffset:GLuint = 0, optional srcLength:GLuint = 0);
 uniformMatrix3x2fv(WebGLUniformLocation ? location, GLboolean transpose, Float32List data,
-    optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
+    optional srcOffset:GLuint = 0, optional srcLength:GLuint = 0);
 uniformMatrix4x2fv(WebGLUniformLocation ? location, GLboolean transpose, Float32List data,
-    optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
+    optional srcOffset:GLuint = 0, optional srcLength:GLuint = 0);
 
 uniformMatrix2x3fv(WebGLUniformLocation ? location, GLboolean transpose, Float32List data,
-    optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
+    optional srcOffset:GLuint = 0, optional srcLength:GLuint = 0);
 uniformMatrix3fv(WebGLUniformLocation ? location, GLboolean transpose, Float32List data,
-    optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
+    optional srcOffset:GLuint = 0, optional srcLength:GLuint = 0);
 uniformMatrix4x3fv(WebGLUniformLocation ? location, GLboolean transpose, Float32List data,
-    optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
+    optional srcOffset:GLuint = 0, optional srcLength:GLuint = 0);
 
 uniformMatrix2x4fv(WebGLUniformLocation ? location, GLboolean transpose, Float32List data,
-    optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
+    optional srcOffset:GLuint = 0, optional srcLength:GLuint = 0);
 uniformMatrix3x4fv(WebGLUniformLocation ? location, GLboolean transpose, Float32List data,
-    optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
+    optional srcOffset:GLuint = 0, optional srcLength:GLuint = 0);
 uniformMatrix4fv(WebGLUniformLocation ? location, GLboolean transpose, Float32List data,
-    optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
+    optional srcOffset:GLuint = 0, optional srcLength:GLuint = 0);
 
 /* Vertex attribs */
-vertexAttribI4i(GLuint index, GLint x, GLint y, GLint z, GLint w);
-vertexAttribI4iv(GLuint index, Int32List values);
-vertexAttribI4ui(GLuint index, GLuint x, GLuint y, GLuint z, GLuint w);
-vertexAttribI4uiv(GLuint index, Uint32List values);
-vertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, GLintptr offset);
+vertexAttribI4i(index:GLuint, x:GLint, y:GLint, z:GLint, w:GLint);
+vertexAttribI4iv(index:GLuint, Int32List values);
+vertexAttribI4ui(index:GLuint, x:GLuint, y:GLuint, z:GLuint, w:GLuint);
+vertexAttribI4uiv(index:GLuint, Uint32List values);
+vertexAttribIPointer(index:GLuint, size:GLint, type:GLenum, GLsizei stride, offset:GLintptr);
 
 /* Writing to the drawing buffer */
-vertexAttribDivisor(GLuint index, GLuint divisor);
-drawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instanceCount);
-drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, GLintptr offset, GLsizei instanceCount);
-drawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, GLintptr offset);
+vertexAttribDivisor(index:GLuint, divisor:GLuint);
+drawArraysInstanced(mode:GLenum, first:GLint, GLsizei count, GLsizei instanceCount);
+drawElementsInstanced(mode:GLenum, GLsizei count, type:GLenum, offset:GLintptr, GLsizei instanceCount);
+drawRangeElements(mode:GLenum, start:GLuint, end:GLuint, GLsizei count, type:GLenum, offset:GLintptr);
 
 /* Reading back pixels */
 // WebGL1:
-readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
+readPixels(x:GLint, y:GLint, GLsizei width, GLsizei height, format:GLenum, type:GLenum,
     ArrayBufferView ? dstData);
 // WebGL2:
-readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
-    GLintptr offset);
-readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
-    ArrayBufferView dstData, GLuint dstOffset);
+readPixels(x:GLint, y:GLint, GLsizei width, GLsizei height, format:GLenum, type:GLenum,
+    offset:GLintptr);
+readPixels(x:GLint, y:GLint, GLsizei width, GLsizei height, format:GLenum, type:GLenum,
+    dstData:ArrayBufferView, dstOffset:GLuint);
 
 /* Multiple Render Targets */
 drawBuffers(sequence < GLenum > buffers);
 
-clearBufferfv(GLenum buffer, GLint drawbuffer, Float32List values,
-    optional GLuint srcOffset = 0);
-clearBufferiv(GLenum buffer, GLint drawbuffer, Int32List values,
-    optional GLuint srcOffset = 0);
-clearBufferuiv(GLenum buffer, GLint drawbuffer, Uint32List values,
-    optional GLuint srcOffset = 0);
+clearBufferfv(buffer:GLenum, drawbuffer:GLint, Float32List values,
+    optional srcOffset:GLuint = 0);
+clearBufferiv(buffer:GLenum, drawbuffer:GLint, Int32List values,
+    optional srcOffset:GLuint = 0);
+clearBufferuiv(buffer:GLenum, drawbuffer:GLint, Uint32List values,
+    optional srcOffset:GLuint = 0);
 
-clearBufferfi(GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil);
+clearBufferfi(buffer:GLenum, drawbuffer:GLint, GLfloat depth, stencil:GLint);
 
 /* Query Objects */
 WebGLQuery ? createQuery();
 deleteQuery(WebGLQuery ? query);
 [WebGLHandlesContextLoss] GLboolean isQuery(WebGLQuery ? query);
-beginQuery(GLenum target, WebGLQuery query);
-endQuery(GLenum target);
-WebGLQuery ? getQuery(GLenum target, GLenum pname);
-any getQueryParameter(WebGLQuery query, GLenum pname);
+beginQuery(target:GLenum, WebGLQuery query);
+endQuery(target:GLenum);
+WebGLQuery ? getQuery(target:GLenum, pname:GLenum);
+any getQueryParameter(WebGLQuery query, pname:GLenum);
 
 /* Sampler Objects */
 WebGLSampler ? createSampler();
 deleteSampler(WebGLSampler ? sampler);
 [WebGLHandlesContextLoss] GLboolean isSampler(WebGLSampler ? sampler);
-bindSampler(GLuint unit, WebGLSampler ? sampler);
-samplerParameteri(WebGLSampler sampler, GLenum pname, GLint param);
-samplerParameterf(WebGLSampler sampler, GLenum pname, GLfloat param);
-any getSamplerParameter(WebGLSampler sampler, GLenum pname);
+bindSampler(unit:GLuint, WebGLSampler ? sampler);
+samplerParameteri(WebGLSampler sampler, pname:GLenum, param:GLint);
+samplerParameterf(WebGLSampler sampler, pname:GLenum, GLfloat param);
+any getSamplerParameter(WebGLSampler sampler, pname:GLenum);
 
 /* Sync objects */
-WebGLSync ? fenceSync(GLenum condition, GLbitfield flags);
+WebGLSync ? fenceSync(condition:GLenum, GLbitfield flags);
 [WebGLHandlesContextLoss] GLboolean isSync(WebGLSync ? sync);
 deleteSync(WebGLSync ? sync);
-GLenum clientWaitSync(WebGLSync sync, GLbitfield flags, GLuint64 timeout);
+clientWaitSync: GLenum(WebGLSync sync, GLbitfield flags, GLuint64 timeout);
 waitSync(WebGLSync sync, GLbitfield flags, GLint64 timeout);
-any getSyncParameter(WebGLSync sync, GLenum pname);
+any getSyncParameter(WebGLSync sync, pname:GLenum);
 
 /* Transform Feedback */
 WebGLTransformFeedback ? createTransformFeedback();
 deleteTransformFeedback(WebGLTransformFeedback ? tf);
 [WebGLHandlesContextLoss] GLboolean isTransformFeedback(WebGLTransformFeedback ? tf);
-bindTransformFeedback(GLenum target, WebGLTransformFeedback ? tf);
-beginTransformFeedback(GLenum primitiveMode);
+bindTransformFeedback(target:GLenum, WebGLTransformFeedback ? tf);
+beginTransformFeedback(primitiveMode:GLenum);
 endTransformFeedback();
-transformFeedbackVaryings(WebGLProgram program, sequence < DOMString > varyings, GLenum bufferMode);
-WebGLActiveInfo ? getTransformFeedbackVarying(WebGLProgram program, GLuint index);
+transformFeedbackVaryings(WebGLProgram program, sequence < DOMString > varyings, bufferMode:GLenum);
+WebGLActiveInfo ? getTransformFeedbackVarying(WebGLProgram program, index:GLuint);
 pauseTransformFeedback();
 resumeTransformFeedback();
 
 /* Uniform Buffer Objects and Transform Feedback Buffers */
-bindBufferBase(GLenum target, GLuint index, WebGLBuffer ? buffer);
-bindBufferRange(GLenum target, GLuint index, WebGLBuffer ? buffer, GLintptr offset, GLsizeiptr size);
-any getIndexedParameter(GLenum target, GLuint index);
+bindBufferBase(target:GLenum, index:GLuint, WebGLBuffer ? buffer);
+bindBufferRange(target:GLenum, index:GLuint, WebGLBuffer ? buffer, offset:GLintptr, size:GLsizeiptr);
+any getIndexedParameter(target:GLenum, index:GLuint);
 sequence<GLuint>? getUniformIndices(WebGLProgram program, sequence < DOMString > uniformNames);
-any getActiveUniforms(WebGLProgram program, sequence < GLuint > uniformIndices, GLenum pname);
-GLuint getUniformBlockIndex(WebGLProgram program, DOMString uniformBlockName);
-any getActiveUniformBlockParameter(WebGLProgram program, GLuint uniformBlockIndex, GLenum pname);
-DOMString ? getActiveUniformBlockName(WebGLProgram program, GLuint uniformBlockIndex);
-uniformBlockBinding(WebGLProgram program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
+any getActiveUniforms(WebGLProgram program, sequence < GLuint > uniformIndices, pname:GLenum);
+getUniformBlockIndex: GLuint(WebGLProgram program, DOMString uniformBlockName);
+any getActiveUniformBlockParameter(WebGLProgram program, uniformBlockIndex:GLuint, pname:GLenum);
+DOMString ? getActiveUniformBlockName(WebGLProgram program, uniformBlockIndex:GLuint);
+uniformBlockBinding(WebGLProgram program, uniformBlockIndex:GLuint, uniformBlockBinding:GLuint);
 
 /* Vertex Array Objects */
 WebGLVertexArrayObject ? createVertexArray();
