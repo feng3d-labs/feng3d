@@ -493,15 +493,9 @@ interface WebGL2RenderingContext extends WebGLRenderingContext {
  * webgl 2.0 API
  * @author feng 2017-01-10
  */
-declare interface Context3D extends WebGL2RenderingContext { }
-
-/**
- * webgl 2.0 API
- * @author feng 2017-01-10
- */
-declare var Context3D: {
-    prototype: Context3D;
-    new (): Context3D;
+declare var WebGL2RenderingContext: {
+    prototype: WebGL2RenderingContext;
+    new (): WebGL2RenderingContext;
     // WebGL1:
     readonly ACTIVE_ATTRIBUTES: number;
     readonly ACTIVE_TEXTURE: number;
