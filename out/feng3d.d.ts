@@ -1881,7 +1881,7 @@ declare module feng3d {
      * 属性渲染数据
      * @author feng 2014-8-14
      */
-    interface AttributeRenderData {
+    class AttributeRenderData {
         /**
          * 属性数据
          */
@@ -1890,6 +1890,11 @@ declare module feng3d {
          * 数据步长
          */
         stride: number;
+        /**
+         * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
+         */
+        divisor: number;
+        constructor(data: Float32Array, stride: number, divisor?: number);
     }
 }
 declare module feng3d {
@@ -1911,35 +1916,35 @@ declare module feng3d {
          * @param fragmentCode  片段着色器代码
          * @return  渲染程序
          */
-        getWebGLProgram(context3D: WebGLRenderingContext, vertexCode: string, fragmentCode: string): WebGLProgram;
+        getWebGLProgram(context3D: WebGL2RenderingContext, vertexCode: string, fragmentCode: string): WebGLProgram;
         /**
          * 获取顶点渲染程序
          * @param context3D         3D环境
          * @param vertexCode        顶点渲染代码
          * @return                  顶点渲染程序
          */
-        getVertexShader(context3D: WebGLRenderingContext, vertexCode: string): WebGLShader;
+        getVertexShader(context3D: WebGL2RenderingContext, vertexCode: string): WebGLShader;
         /**
          * 获取顶点渲染程序
          * @param context3D         3D环境
          * @param fragmentCode      顶点渲染代码
          * @return                  顶点渲染程序
          */
-        getFragmentShader(context3D: WebGLRenderingContext, fragmentCode: string): WebGLShader;
+        getFragmentShader(context3D: WebGL2RenderingContext, fragmentCode: string): WebGLShader;
         /**
          * 获取索引缓冲
          */
-        getIndexBuffer(context3D: WebGLRenderingContext, indices: Uint16Array): WebGLBuffer;
+        getIndexBuffer(context3D: WebGL2RenderingContext, indices: Uint16Array): WebGLBuffer;
         /**
          * 获取顶点属性缓冲
          * @param data  数据
          */
-        getVABuffer(context3D: WebGLRenderingContext, data: Float32Array): WebGLBuffer;
+        getVABuffer(context3D: WebGL2RenderingContext, data: Float32Array): WebGLBuffer;
         /**
          * 获取顶点属性缓冲
          * @param data  数据
          */
-        getTexture(context3D: WebGLRenderingContext, data: TextureInfo): WebGLBuffer;
+        getTexture(context3D: WebGL2RenderingContext, data: TextureInfo): WebGLBuffer;
         /**
          * 3D环境缓冲池
          */
@@ -2593,7 +2598,7 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(context3D: WebGLRenderingContext, renderContext: RenderContext): void;
+        draw(context3D: WebGL2RenderingContext, renderContext: RenderContext): void;
         /**
          * 绘制3D对象
          */
@@ -2679,7 +2684,7 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(context3D: WebGLRenderingContext, camera: Camera3D): void;
+        draw(context3D: WebGL2RenderingContext, camera: Camera3D): void;
     }
 }
 declare module feng3d {

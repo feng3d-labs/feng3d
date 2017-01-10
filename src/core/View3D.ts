@@ -6,7 +6,7 @@ module feng3d {
      */
     export class View3D {
 
-        private _context3D: WebGLRenderingContext;
+        private _context3D: WebGL2RenderingContext;
         private _camera: Camera3D;
         private _scene: Scene3D;
         private _canvas: HTMLCanvasElement;

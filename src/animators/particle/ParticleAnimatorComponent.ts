@@ -38,7 +38,7 @@ module feng3d {
 
             super.updateRenderData(renderContext);
 
-            this.renderData.attributes[this.vaID] = { data: this.data, stride: this.vaLength };
+            this.renderData.attributes[this.vaID] = new AttributeRenderData(this.data, this.vaLength, 1);
         }
     }
 }

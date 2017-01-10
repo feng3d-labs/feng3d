@@ -13,15 +13,15 @@ module feng3d {
         /**
          * 内部格式
          */
-        public internalformat: number = WebGLRenderingContext.RGB;
+        public internalformat: number = WebGL2RenderingContext.RGB;
         /**
          * 格式
          */
-        public format: number = WebGLRenderingContext.RGB;
+        public format: number = WebGL2RenderingContext.RGB;
         /**
          * 数据类型
          */
-        public type: number = WebGLRenderingContext.UNSIGNED_BYTE;
+        public type: number = WebGL2RenderingContext.UNSIGNED_BYTE;
 
         /**
          * 是否生成mipmap
@@ -33,12 +33,12 @@ module feng3d {
          */
         public flipY = 1;
 
-        public minFilter = WebGLRenderingContext.LINEAR;
+        public minFilter = WebGL2RenderingContext.LINEAR;
 
-        public magFilter = WebGLRenderingContext.NEAREST;
+        public magFilter = WebGL2RenderingContext.NEAREST;
 
-        public wrapS = WebGLRenderingContext.CLAMP_TO_EDGE;
-        public wrapT = WebGLRenderingContext.CLAMP_TO_EDGE;
+        public wrapS = WebGL2RenderingContext.CLAMP_TO_EDGE;
+        public wrapT = WebGL2RenderingContext.CLAMP_TO_EDGE;
 
         /**
          * 图片数据

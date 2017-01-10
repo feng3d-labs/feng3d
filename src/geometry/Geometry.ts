@@ -32,7 +32,7 @@ module feng3d {
 		 */
         public setVAData(vaId: string, data: Float32Array, stride: number) {
 
-            this.renderData.attributes[vaId] = { data: data, stride: stride };
+            this.renderData.attributes[vaId] = new AttributeRenderData(data, stride);
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
         }
 
