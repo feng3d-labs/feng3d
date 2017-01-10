@@ -1,11 +1,32 @@
 //参考 
 //https://www.khronos.org/registry/webgl/specs/latest/2.0/
 //https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/webgl-ext/index.d.ts
+//使用工具  
+//http://regexr.com/
 
 interface HTMLCanvasElement {
     getContext(contextId: "webgl2"): WebGL2RenderingContext;
 }
 
+declare type BufferDataSource = ArrayBufferView | ArrayBuffer;
+declare type TexImageSource = ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
+declare type DOMString = string;
+declare type Float32List = Float32Array | number[];
+declare type Int32List = Int32Array | number[];
+declare type Uint32List = Int32Array | number[];
+declare type GLuint64 = number;
+declare type GLint64 = number;
+
+declare interface WebGLQuery extends WebGLObject { }
+declare interface WebGLSampler extends WebGLObject { }
+declare interface WebGLSync extends WebGLObject { }
+declare interface WebGLTransformFeedback extends WebGLObject { }
+declare interface WebGLVertexArrayObject extends WebGLObject { }
+
+/**
+ * webgl 2.0 API
+ * @author feng 2017-01-10
+ */
 interface WebGL2RenderingContext extends WebGLRenderingContext {
     READ_BUFFER: number;
     UNPACK_ROW_LENGTH: number;
