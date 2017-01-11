@@ -5,16 +5,16 @@ module feng3d {
      * @author feng 2016-09-28
      */
     export enum RenderMode {
-        DEFAULT = WebGL2RenderingContext.TRIANGLES,
+        DEFAULT = Context3D.TRIANGLES,
         /**
          * 点渲染
          */
-        POINTS = WebGL2RenderingContext.POINTS,
-        LINE_LOOP = WebGL2RenderingContext.LINE_LOOP,
-        LINE_STRIP = WebGL2RenderingContext.LINE_STRIP,
-        LINES = WebGL2RenderingContext.LINES,
-        TRIANGLES = WebGL2RenderingContext.TRIANGLES,
-        TRIANGLE_STRIP = WebGL2RenderingContext.TRIANGLE_STRIP,
-        TRIANGLE_FAN = WebGL2RenderingContext.TRIANGLE_FAN
+        POINTS = Context3D.POINTS,
+        LINE_LOOP = Context3D.LINE_LOOP,
+        LINE_STRIP = Context3D.LINE_STRIP,
+        LINES = Context3D.LINES,
+        TRIANGLES = Context3D.TRIANGLES,
+        TRIANGLE_STRIP = Context3D.TRIANGLE_STRIP,
+        TRIANGLE_FAN = Context3D.TRIANGLE_FAN
     }
 }

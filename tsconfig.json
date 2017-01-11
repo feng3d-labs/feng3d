@@ -8,9 +8,10 @@
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //
-        "typings/webgl2.d.ts",
+        "typings/index.d.ts",
         //
         "src/Feng3d.ts",
+        "src/Context3D.ts",
         //事件模块
         "src/events/Event.ts",
         "src/events/IEventDispatcher.ts",

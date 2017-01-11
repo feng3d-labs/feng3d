@@ -92,7 +92,7 @@ module feng3d {
         /**
 		 * 渲染
 		 */
-        public draw(context3D: WebGL2RenderingContext, camera: Camera3D) {
+        public draw(context3D: Context3D, camera: Camera3D) {
 
             //初始化渲染环境
             this._renderContext.clear();

@@ -6,7 +6,7 @@ module feng3d {
      */
     export class View3D {
 
-        private _context3D: WebGL2RenderingContext;
+        private _context3D: Context3D;
         private _camera: Camera3D;
         private _scene: Scene3D;
         private _canvas: HTMLCanvasElement;
@@ -32,12 +32,6 @@ module feng3d {
             this._canvas = canvas;
 
             this._context3D = this._canvas.getContext("webgl2");
-            if (this._context3D == null) {
-
-                alert("浏览器不支持 WebGL2!");
-                window.location.href = "https://wardenfeng.github.io/#!blogs/2017/01/10/1.md";
-                return;
-            }
 
             this.initGL();
 

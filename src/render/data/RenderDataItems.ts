@@ -14,7 +14,7 @@ module feng3d {
         /**
          * 数据绑定目标，gl.ARRAY_BUFFER、gl.ELEMENT_ARRAY_BUFFER
          */
-        target: number = WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER;
+        target: number = Context3D.ELEMENT_ARRAY_BUFFER;
 
         /**
          * 渲染数量
@@ -24,7 +24,7 @@ module feng3d {
         /**
          * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
          */
-        type: number = WebGL2RenderingContext.UNSIGNED_SHORT;
+        type: number = Context3D.UNSIGNED_SHORT;
 
         /**
          * 索引偏移

@@ -6,6 +6,18 @@ var feng3d;
      */
     var $REVISION = "0.0.0";
     console.log(`Feng3D version ${$REVISION}`);
+    try {
+        WebGL2RenderingContext;
+    }
+    catch (error) {
+        alert("浏览器不支持 WebGL2!");
+        window.location.href = "https://wardenfeng.github.io/#!blogs/2017/01/10/1.md";
+    }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    ;
+    feng3d.Context3D = WebGL2RenderingContext;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -3001,17 +3013,17 @@ var feng3d;
      * @author feng 2016-09-28
      */
     (function (RenderMode) {
-        RenderMode[RenderMode["DEFAULT"] = WebGL2RenderingContext.TRIANGLES] = "DEFAULT";
+        RenderMode[RenderMode["DEFAULT"] = feng3d.Context3D.TRIANGLES] = "DEFAULT";
         /**
          * 点渲染
          */
-        RenderMode[RenderMode["POINTS"] = WebGL2RenderingContext.POINTS] = "POINTS";
-        RenderMode[RenderMode["LINE_LOOP"] = WebGL2RenderingContext.LINE_LOOP] = "LINE_LOOP";
-        RenderMode[RenderMode["LINE_STRIP"] = WebGL2RenderingContext.LINE_STRIP] = "LINE_STRIP";
-        RenderMode[RenderMode["LINES"] = WebGL2RenderingContext.LINES] = "LINES";
-        RenderMode[RenderMode["TRIANGLES"] = WebGL2RenderingContext.TRIANGLES] = "TRIANGLES";
-        RenderMode[RenderMode["TRIANGLE_STRIP"] = WebGL2RenderingContext.TRIANGLE_STRIP] = "TRIANGLE_STRIP";
-        RenderMode[RenderMode["TRIANGLE_FAN"] = WebGL2RenderingContext.TRIANGLE_FAN] = "TRIANGLE_FAN";
+        RenderMode[RenderMode["POINTS"] = feng3d.Context3D.POINTS] = "POINTS";
+        RenderMode[RenderMode["LINE_LOOP"] = feng3d.Context3D.LINE_LOOP] = "LINE_LOOP";
+        RenderMode[RenderMode["LINE_STRIP"] = feng3d.Context3D.LINE_STRIP] = "LINE_STRIP";
+        RenderMode[RenderMode["LINES"] = feng3d.Context3D.LINES] = "LINES";
+        RenderMode[RenderMode["TRIANGLES"] = feng3d.Context3D.TRIANGLES] = "TRIANGLES";
+        RenderMode[RenderMode["TRIANGLE_STRIP"] = feng3d.Context3D.TRIANGLE_STRIP] = "TRIANGLE_STRIP";
+        RenderMode[RenderMode["TRIANGLE_FAN"] = feng3d.Context3D.TRIANGLE_FAN] = "TRIANGLE_FAN";
     })(feng3d.RenderMode || (feng3d.RenderMode = {}));
     var RenderMode = feng3d.RenderMode;
 })(feng3d || (feng3d = {}));
@@ -3138,11 +3150,11 @@ var feng3d;
             /**
              * 数据绑定目标，gl.ARRAY_BUFFER、gl.ELEMENT_ARRAY_BUFFER
              */
-            this.target = WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER;
+            this.target = feng3d.Context3D.ELEMENT_ARRAY_BUFFER;
             /**
              * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
              */
-            this.type = WebGL2RenderingContext.UNSIGNED_SHORT;
+            this.type = feng3d.Context3D.UNSIGNED_SHORT;
             /**
              * 索引偏移
              */
@@ -3291,7 +3303,7 @@ var feng3d;
          * 获取索引缓冲
          */
         getIndexBuffer(indices) {
-            var indexBuffer = this.getBuffer(indices, WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER);
+            var indexBuffer = this.getBuffer(indices, feng3d.Context3D.ELEMENT_ARRAY_BUFFER);
             return indexBuffer;
         }
         /**
@@ -3299,7 +3311,7 @@ var feng3d;
          * @param data  数据
          */
         getVABuffer(data) {
-            var buffer = this.getBuffer(data, WebGL2RenderingContext.ARRAY_BUFFER);
+            var buffer = this.getBuffer(data, feng3d.Context3D.ARRAY_BUFFER);
             return buffer;
         }
         /**
@@ -3315,14 +3327,14 @@ var feng3d;
             var texture = context3D.createTexture(); // Create a texture object
             //绑定纹理
             context3D.bindTexture(textureInfo.textureType, texture);
-            if (textureInfo.textureType == WebGL2RenderingContext.TEXTURE_2D) {
+            if (textureInfo.textureType == feng3d.Context3D.TEXTURE_2D) {
                 //设置纹理图片
                 context3D.texImage2D(textureInfo.textureType, 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, textureInfo.pixels);
             }
-            else if (textureInfo.textureType == WebGL2RenderingContext.TEXTURE_CUBE_MAP) {
+            else if (textureInfo.textureType == feng3d.Context3D.TEXTURE_CUBE_MAP) {
                 var faces = [
-                    WebGL2RenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X, WebGL2RenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Y, WebGL2RenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                    WebGL2RenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_X, WebGL2RenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Y, WebGL2RenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                    feng3d.Context3D.TEXTURE_CUBE_MAP_POSITIVE_X, feng3d.Context3D.TEXTURE_CUBE_MAP_POSITIVE_Y, feng3d.Context3D.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                    feng3d.Context3D.TEXTURE_CUBE_MAP_NEGATIVE_X, feng3d.Context3D.TEXTURE_CUBE_MAP_NEGATIVE_Y, feng3d.Context3D.TEXTURE_CUBE_MAP_NEGATIVE_Z
                 ];
                 for (var i = 0; i < faces.length; i++) {
                     context3D.texImage2D(faces[i], 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, textureInfo.pixels[i]);
@@ -3344,7 +3356,7 @@ var feng3d;
             var buffer = this.bufferMap[dataUID] = this.bufferMap[dataUID] || context3D.createBuffer();
             if (!feng3d.version.equal(data, buffer)) {
                 context3D.bindBuffer(target, buffer);
-                context3D.bufferData(target, data, WebGL2RenderingContext.STATIC_DRAW);
+                context3D.bufferData(target, data, feng3d.Context3D.STATIC_DRAW);
                 feng3d.version.setVersion(buffer, feng3d.version.getVersion(data));
                 //升级buffer和数据版本号一致
                 var dataVersion = Math.max(0, feng3d.version.getVersion(data));
@@ -3382,7 +3394,7 @@ var feng3d;
      * @return                  顶点渲染程序
      */
     function getVertexShader(context3D, vertexCode) {
-        var shader = context3D.createShader(WebGL2RenderingContext.VERTEX_SHADER);
+        var shader = context3D.createShader(feng3d.Context3D.VERTEX_SHADER);
         shader = compileShader(context3D, shader, vertexCode);
         return shader;
     }
@@ -3393,7 +3405,7 @@ var feng3d;
      * @return                  片段渲染程序
      */
     function getFragmentShader(context3D, fragmentCode) {
-        var shader = context3D.createShader(WebGL2RenderingContext.FRAGMENT_SHADER);
+        var shader = context3D.createShader(feng3d.Context3D.FRAGMENT_SHADER);
         shader = compileShader(context3D, shader, fragmentCode);
         return shader;
     }
@@ -3928,11 +3940,6 @@ var feng3d;
             feng3d.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
             this._context3D = this._canvas.getContext("webgl2");
-            if (this._context3D == null) {
-                alert("浏览器不支持 WebGL2!");
-                window.location.href = "https://wardenfeng.github.io/#!blogs/2017/01/10/1.md";
-                return;
-            }
             this.initGL();
             this.scene = scene || new feng3d.Scene3D();
             this.camera = camera || new feng3d.Camera3D();
@@ -4448,13 +4455,13 @@ var feng3d;
         context3D.enableVertexAttribArray(location);
         //
         var squareVerticesBuffer = feng3d.context3DPool.getVABuffer(context3D, buffer.data);
-        context3D.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, squareVerticesBuffer);
+        context3D.bindBuffer(feng3d.Context3D.ARRAY_BUFFER, squareVerticesBuffer);
         switch (activeInfo.type) {
-            case WebGL2RenderingContext.FLOAT_VEC3:
-                context3D.vertexAttribPointer(location, 3, WebGL2RenderingContext.FLOAT, false, 0, 0);
+            case feng3d.Context3D.FLOAT_VEC3:
+                context3D.vertexAttribPointer(location, 3, feng3d.Context3D.FLOAT, false, 0, 0);
                 break;
-            case WebGL2RenderingContext.FLOAT_VEC2:
-                context3D.vertexAttribPointer(location, 2, WebGL2RenderingContext.FLOAT, false, 0, 0);
+            case feng3d.Context3D.FLOAT_VEC2:
+                context3D.vertexAttribPointer(location, 2, feng3d.Context3D.FLOAT, false, 0, 0);
                 break;
             default:
                 throw `无法识别的attribute类型 ${activeInfo.name} ${buffer.data}`;
@@ -4468,33 +4475,33 @@ var feng3d;
     function setContext3DUniform(context3D, shaderProgram, activeInfo, data) {
         var location = context3D.getUniformLocation(shaderProgram, activeInfo.name);
         switch (activeInfo.type) {
-            case WebGL2RenderingContext.FLOAT_MAT4:
+            case feng3d.Context3D.FLOAT_MAT4:
                 context3D.uniformMatrix4fv(location, false, data.rawData);
                 break;
-            case WebGL2RenderingContext.FLOAT:
+            case feng3d.Context3D.FLOAT:
                 context3D.uniform1f(location, data);
                 break;
-            case WebGL2RenderingContext.FLOAT_VEC3:
+            case feng3d.Context3D.FLOAT_VEC3:
                 context3D.uniform3f(location, data.x, data.y, data.z);
                 break;
-            case WebGL2RenderingContext.FLOAT_VEC4:
+            case feng3d.Context3D.FLOAT_VEC4:
                 context3D.uniform4f(location, data.x, data.y, data.z, data.w);
                 break;
-            case WebGL2RenderingContext.SAMPLER_2D:
-            case WebGL2RenderingContext.SAMPLER_CUBE:
+            case feng3d.Context3D.SAMPLER_2D:
+            case feng3d.Context3D.SAMPLER_CUBE:
                 var textureInfo = data;
                 var texture = feng3d.context3DPool.getTexture(context3D, textureInfo);
                 //激活纹理编号
-                context3D.activeTexture(WebGL2RenderingContext["TEXTURE" + samplerIndex]);
+                context3D.activeTexture(feng3d.Context3D["TEXTURE" + samplerIndex]);
                 //绑定纹理
                 context3D.bindTexture(textureInfo.textureType, texture);
                 //设置图片y轴方向
-                context3D.pixelStorei(WebGL2RenderingContext.UNPACK_FLIP_Y_WEBGL, textureInfo.flipY);
+                context3D.pixelStorei(feng3d.Context3D.UNPACK_FLIP_Y_WEBGL, textureInfo.flipY);
                 //设置纹理参数
-                context3D.texParameteri(textureInfo.textureType, WebGL2RenderingContext.TEXTURE_MIN_FILTER, textureInfo.minFilter);
-                context3D.texParameteri(textureInfo.textureType, WebGL2RenderingContext.TEXTURE_MAG_FILTER, textureInfo.magFilter);
-                context3D.texParameteri(textureInfo.textureType, WebGL2RenderingContext.TEXTURE_WRAP_S, textureInfo.wrapS);
-                context3D.texParameteri(textureInfo.textureType, WebGL2RenderingContext.TEXTURE_WRAP_T, textureInfo.wrapT);
+                context3D.texParameteri(textureInfo.textureType, feng3d.Context3D.TEXTURE_MIN_FILTER, textureInfo.minFilter);
+                context3D.texParameteri(textureInfo.textureType, feng3d.Context3D.TEXTURE_MAG_FILTER, textureInfo.magFilter);
+                context3D.texParameteri(textureInfo.textureType, feng3d.Context3D.TEXTURE_WRAP_S, textureInfo.wrapS);
+                context3D.texParameteri(textureInfo.textureType, feng3d.Context3D.TEXTURE_WRAP_T, textureInfo.wrapT);
                 //设置纹理所在采样编号
                 context3D.uniform1i(location, samplerIndex);
                 samplerIndex++;
@@ -6639,15 +6646,15 @@ var feng3d;
             /**
              * 内部格式
              */
-            this.internalformat = WebGL2RenderingContext.RGB;
+            this.internalformat = feng3d.Context3D.RGB;
             /**
              * 格式
              */
-            this.format = WebGL2RenderingContext.RGB;
+            this.format = feng3d.Context3D.RGB;
             /**
              * 数据类型
              */
-            this.type = WebGL2RenderingContext.UNSIGNED_BYTE;
+            this.type = feng3d.Context3D.UNSIGNED_BYTE;
             /**
              * 是否生成mipmap
              */
@@ -6656,10 +6663,10 @@ var feng3d;
              * 图片y轴向
              */
             this.flipY = 1;
-            this.minFilter = WebGL2RenderingContext.LINEAR;
-            this.magFilter = WebGL2RenderingContext.NEAREST;
-            this.wrapS = WebGL2RenderingContext.CLAMP_TO_EDGE;
-            this.wrapT = WebGL2RenderingContext.CLAMP_TO_EDGE;
+            this.minFilter = feng3d.Context3D.LINEAR;
+            this.magFilter = feng3d.Context3D.NEAREST;
+            this.wrapS = feng3d.Context3D.CLAMP_TO_EDGE;
+            this.wrapT = feng3d.Context3D.CLAMP_TO_EDGE;
         }
     }
     feng3d.TextureInfo = TextureInfo;
@@ -6673,7 +6680,7 @@ var feng3d;
     class Texture2D extends feng3d.TextureInfo {
         constructor(pixels) {
             super();
-            this.textureType = WebGL2RenderingContext.TEXTURE_2D;
+            this.textureType = feng3d.Context3D.TEXTURE_2D;
             this.pixels = pixels;
         }
     }
@@ -6688,7 +6695,7 @@ var feng3d;
     class TextureCube extends feng3d.TextureInfo {
         constructor(images) {
             super();
-            this.textureType = WebGL2RenderingContext.TEXTURE_CUBE_MAP;
+            this.textureType = feng3d.Context3D.TEXTURE_CUBE_MAP;
             this.pixels = images;
         }
     }
