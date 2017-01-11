@@ -9,6 +9,29 @@ module feng3d {
         /** 渲染原子 */
         private _renderAtomic = new RenderAtomic();
 
+        private _material: Material;
+
+        /**
+         * 材质
+         */
+        public get material(): Material {
+
+            return this._material;
+        }
+
+        public set material(value: Material) {
+
+            this._material && this.removeComponent(this._material);
+            this._material = value;
+            this._material && this.addComponent(this._material);
+        }
+
+        constructor() {
+
+            super();
+            this.material = new ColorMaterial();
+        }
+
         /**
 		 * 渲染
 		 */

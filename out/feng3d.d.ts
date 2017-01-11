@@ -3170,6 +3170,12 @@ declare module feng3d {
     class Renderer extends Object3DComponent {
         /** 渲染原子 */
         private _renderAtomic;
+        private _material;
+        /**
+         * 材质
+         */
+        material: Material;
+        constructor();
         /**
          * 渲染
          */
@@ -3186,12 +3192,6 @@ declare module feng3d {
      * @author feng 2016-12-12
      */
     class MeshRenderer extends Renderer {
-        private _material;
-        /**
-         * 材质
-         */
-        material: Material;
-        constructor();
         /**
          * 处理被添加组件事件
          */

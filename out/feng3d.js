@@ -4366,9 +4366,21 @@ var feng3d;
      */
     class Renderer extends feng3d.Object3DComponent {
         constructor() {
-            super(...arguments);
+            super();
             /** 渲染原子 */
             this._renderAtomic = new feng3d.RenderAtomic();
+            this.material = new feng3d.ColorMaterial();
+        }
+        /**
+         * 材质
+         */
+        get material() {
+            return this._material;
+        }
+        set material(value) {
+            this._material && this.removeComponent(this._material);
+            this._material = value;
+            this._material && this.addComponent(this._material);
         }
         /**
          * 渲染
@@ -4525,21 +4537,6 @@ var feng3d;
      * @author feng 2016-12-12
      */
     class MeshRenderer extends feng3d.Renderer {
-        constructor() {
-            super();
-            this.material = new feng3d.ColorMaterial();
-        }
-        /**
-         * 材质
-         */
-        get material() {
-            return this._material;
-        }
-        set material(value) {
-            this._material && this.removeComponent(this._material);
-            this._material = value;
-            this._material && this.addComponent(this._material);
-        }
         /**
          * 处理被添加组件事件
          */
@@ -6915,7 +6912,7 @@ var feng3d;
         constructor() {
             super();
             this.shaderName = "particle";
-            // this.renderMode = RenderMode.POINTS;
+            this.renderMode = feng3d.RenderMode.POINTS;
         }
     }
     feng3d.ParticleMaterial = ParticleMaterial;
@@ -7658,7 +7655,7 @@ var feng3d;
         }
         createParticle() {
             var object3D = new feng3d.Object3D("particle");
-            object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = feng3d.primitives.createCube(1, 1, 1, 1, 1, 1);
+            object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = feng3d.primitives.createCube(10, 10, 10, 1, 1, 1);
             object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.ParticleMaterial();
             var particleAnimator = object3D.getOrCreateComponentByClass(feng3d.ParticleAnimator);
             particleAnimator.addComponent(new feng3d.ParticlePositionComponent());
