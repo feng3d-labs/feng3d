@@ -4542,34 +4542,55 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext): void;
+        /**
+         * 收集粒子数据
+         * @param particle      粒子
+         */
+        private collectionParticle(particle);
     }
 }
 declare module feng3d {
     /**
-     * 粒子属性
+     * 粒子
      * @author feng 2014-11-13
      */
-    class ParticleProperties {
+    class Particle {
         /**
          * 索引
          */
         index: number;
         /**
-         * 粒子总数
+         * 出生时间
          */
-        total: number;
+        birthTime: number;
         /**
-         * 开始时间
+         * 寿命
          */
-        startTime: number;
+        lifetime: number;
         /**
-         * 持续时间
+         * 位移
          */
-        duration: number;
+        position: Vector3D;
         /**
-         * 延迟周期
+         * 旋转
          */
-        delay: number;
+        rotation: Vector3D;
+        /**
+         * 缩放
+         */
+        scale: Vector3D;
+        /**
+         * 速度
+         */
+        velocity: Vector3D;
+        /**
+         * 加速度
+         */
+        acceleration: Vector3D;
+        /**
+         * 颜色
+         */
+        color: Color;
     }
 }
 declare module feng3d {
@@ -4577,29 +4598,13 @@ declare module feng3d {
      * 粒子动画组件
      * @author feng 2017-01-09
      */
-    class ParticleAnimatorComponent extends RenderDataHolder {
-        /**
-         * 单个粒子数据
-         */
-        protected data: Float32Array;
-        /**
-         * 粒子属性数据编号
-         */
-        protected vaID: string;
-        /**
-         * 粒子属性长度
-         */
-        protected vaLength: number;
+    class ParticleAnimatorComponent extends Component {
         /**
          * 创建粒子属性
+         * @param particle                  粒子
          * @param numParticles              粒子数量
-         * @param vertexNumPerParticle      一个粒子的顶点数
          */
-        generatePropertyOfOneParticle(numParticles: number): void;
-        /**
-         * 更新渲染数据
-         */
-        updateRenderData(renderContext: RenderContext): void;
+        generatePropertyOfOneParticle(particle: Particle, numParticles: number): void;
     }
 }
 declare module feng3d {
@@ -4609,15 +4614,11 @@ declare module feng3d {
      */
     class ParticlePositionComponent extends ParticleAnimatorComponent {
         /**
-         * 速度
-         */
-        velocity: Vector3D;
-        constructor();
-        /**
          * 创建粒子属性
+         * @param particle                  粒子
          * @param numParticles              粒子数量
          */
-        generatePropertyOfOneParticle(numParticles: number): void;
+        generatePropertyOfOneParticle(particle: Particle, numParticles: number): void;
     }
 }
 declare module feng3d {
@@ -4627,15 +4628,11 @@ declare module feng3d {
      */
     class ParticleVelocityComponent extends ParticleAnimatorComponent {
         /**
-         * 速度
-         */
-        velocity: Vector3D;
-        constructor();
-        /**
          * 创建粒子属性
+         * @param particle                  粒子
          * @param numParticles              粒子数量
          */
-        generatePropertyOfOneParticle(numParticles: number): void;
+        generatePropertyOfOneParticle(particle: Particle, numParticles: number): void;
     }
 }
 declare module feng3d {

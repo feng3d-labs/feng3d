@@ -7,34 +7,17 @@ module feng3d {
     export class ParticlePositionComponent extends ParticleAnimatorComponent {
 
         /**
-         * 速度
-         */
-        public velocity: Vector3D = new Vector3D();
-
-        constructor() {
-
-            super();
-            this.vaID = RenderDataID.a_particlePosition;
-            this.vaLength = 3;
-        }
-
-        /**
 		 * 创建粒子属性
+         * @param particle                  粒子
          * @param numParticles              粒子数量
 		 */
-        public generatePropertyOfOneParticle(numParticles: number) {
+        public generatePropertyOfOneParticle(particle: Particle, numParticles: number) {
 
             var baseRange = 100;
-            this.data = new Float32Array(numParticles * this.vaLength);
-            for (var i = 0; i < numParticles; i++) {
-                var x = Math.random() * baseRange;
-                var y = Math.random() * baseRange;
-                var z = Math.random() * baseRange;
-                var index = i * this.vaLength;
-                this.data[index] = x;
-                this.data[index + 1] = y;
-                this.data[index + 2] = z;
-            }
+            var x = Math.random() * baseRange;
+            var y = Math.random() * baseRange;
+            var z = Math.random() * baseRange;
+            particle.position = new Vector3D(x, y, z);
         }
     }
 }

@@ -39,9 +39,15 @@ module feng3d {
         private generateAnimationSubGeometries() {
 
             var components = this.getComponentsByClass(ParticleAnimatorComponent);
-            components.forEach(element => {
-                element.generatePropertyOfOneParticle(this.numParticles);
-            });
+
+            for (var i = 0; i < this.numParticles; i++) {
+                var particle = new Particle();
+                particle.index = i;
+                components.forEach(element => {
+                    element.generatePropertyOfOneParticle(particle, this.numParticles);
+                });
+                this.collectionParticle(particle);
+            }
         }
 
         /**
@@ -61,6 +67,38 @@ module feng3d {
             this.renderData.instanceCount = this.numParticles;
 
             super.updateRenderData(renderContext);
+        }
+
+        /**
+         * 收集粒子数据
+         * @param particle      粒子
+         */
+        private collectionParticle(particle: Particle) {
+
+            var attributes = this.renderData.attributes;
+            var attributeRenderData: AttributeRenderData;
+            var vector3DData: Float32Array;
+            if (particle.position) {
+                attributeRenderData = attributes[RenderDataID.a_particlePosition];
+                if (!attributeRenderData) {
+                    attributeRenderData = attributes[RenderDataID.a_particlePosition] = new AttributeRenderData(new Float32Array(this.numParticles * 3), 3, 1)
+                }
+                vector3DData = attributes[RenderDataID.a_particlePosition].data;
+                vector3DData[particle.index * 3] = particle.position.x;
+                vector3DData[particle.index * 3 + 1] = particle.position.y;
+                vector3DData[particle.index * 3 + 2] = particle.position.z;
+            }
+
+            if (particle.velocity) {
+                attributeRenderData = attributes[RenderDataID.a_particleVelocity];
+                if (!attributeRenderData) {
+                    attributeRenderData = attributes[RenderDataID.a_particleVelocity] = new AttributeRenderData(new Float32Array(this.numParticles * 3), 3, 1)
+                }
+                vector3DData = attributeRenderData.data;
+                vector3DData[particle.index * 3] = particle.velocity.x;
+                vector3DData[particle.index * 3 + 1] = particle.velocity.y;
+                vector3DData[particle.index * 3 + 2] = particle.velocity.z;
+            }
         }
     }
 }
