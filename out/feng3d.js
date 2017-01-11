@@ -3595,6 +3595,10 @@ var feng3d;
      * 粒子时间
      */
     RenderDataID.u_particleTime = "u_particleTime";
+    /**
+     * 点大小
+     */
+    RenderDataID.u_PointSize = "u_PointSize";
     feng3d.RenderDataID = RenderDataID;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -4887,7 +4891,7 @@ var feng3d;
          */
         updateGeometry() {
             this.geometryDirty = false;
-            var positionStep = 6;
+            var positionStep = 3;
             var numPoints = this._points.length;
             var indices = new Uint16Array(numPoints);
             var positionData = new Float32Array(numPoints * positionStep);
@@ -6840,7 +6844,16 @@ var feng3d;
          */
         constructor() {
             super();
+            this.pointSize = 1;
             this.shaderName = "point";
+            this.renderMode = feng3d.RenderMode.POINTS;
+        }
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
+            this.renderData.uniforms[feng3d.RenderDataID.u_PointSize] = this.pointSize;
         }
     }
     feng3d.PointMaterial = PointMaterial;

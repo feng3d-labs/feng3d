@@ -109,5 +109,10 @@ module feng3d {
          * 粒子时间
          */
         static u_particleTime = "u_particleTime";
+
+        /**
+         * 点大小
+         */
+        static u_PointSize = "u_PointSize";
     }
 }

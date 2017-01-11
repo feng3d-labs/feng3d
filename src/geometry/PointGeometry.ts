@@ -35,7 +35,7 @@ module feng3d {
 
             this.geometryDirty = false;
 
-            var positionStep = 6;
+            var positionStep = 3;
             var numPoints = this._points.length;
             var indices = new Uint16Array(numPoints);
             var positionData = new Float32Array(numPoints * positionStep);

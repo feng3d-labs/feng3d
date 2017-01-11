@@ -2645,6 +2645,10 @@ declare module feng3d {
          * 粒子时间
          */
         static u_particleTime: string;
+        /**
+         * 点大小
+         */
+        static u_PointSize: string;
     }
 }
 declare module feng3d {
@@ -3939,10 +3943,15 @@ declare module feng3d {
      * @author feng 2017-01-11
      */
     class PointMaterial extends Material {
+        pointSize: number;
         /**
          * 构建颜色材质
          */
         constructor();
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
