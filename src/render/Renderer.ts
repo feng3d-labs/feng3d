@@ -46,7 +46,7 @@ module feng3d {
             //
             activeAttributes(context3D, shaderProgram, this._renderAtomic.attributes);
             activeUniforms(context3D, shaderProgram, this._renderAtomic.uniforms);
-            dodraw(context3D, this._renderAtomic.shaderParams, this._renderAtomic.indexBuffer);
+            dodraw(context3D, this._renderAtomic.shaderParams, this._renderAtomic.indexBuffer, this._renderAtomic.instanceCount);
         }
     }
 
@@ -88,12 +88,18 @@ module feng3d {
 
     /**
      */
-    function dodraw(context3D: Context3D, shaderParams: ShaderParams, indexBuffer: IndexRenderData) {
+    function dodraw(context3D: Context3D, shaderParams: ShaderParams, indexBuffer: IndexRenderData, instanceCount: number = 1) {
 
+        instanceCount = ~~instanceCount;
         var buffer = context3DPool.getIndexBuffer(context3D, indexBuffer.indices);
         context3D.bindBuffer(indexBuffer.target, buffer);
         context3D.lineWidth(1);
-        context3D.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+        if (instanceCount > 1) {
+            context3D.drawElementsInstanced(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset, instanceCount)
+        }
+        else {
+            context3D.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+        }
     }
 
     /**
@@ -116,8 +122,8 @@ module feng3d {
             default:
                 throw `无法识别的attribute类型 ${activeInfo.name} ${buffer.data}`;
         }
-        // if (buffer.divisor > 0)
-        //     context3D.vertexAttribDivisor(location, buffer.divisor);
+        if (buffer.divisor > 0)
+            context3D.vertexAttribDivisor(location, buffer.divisor);
     }
 
     /**

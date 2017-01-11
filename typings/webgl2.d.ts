@@ -299,6 +299,8 @@ interface WebGL2RenderingContext extends WebGLRenderingContext {
 
     /* Buffer objects */
     // WebGL1:
+    bufferData(target: GLenum, srcData: GLsizeiptr | ArrayBuffer | ArrayBufferView, usage: GLenum);
+    
     bufferData(target: GLenum, size: GLsizeiptr, usage: GLenum);
     bufferData(target: GLenum, srcData: ArrayBuffer, usage: GLenum);
     bufferData(target: GLenum, srcData: ArrayBufferView, usage: GLenum);

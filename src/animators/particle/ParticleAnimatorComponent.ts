@@ -26,7 +26,7 @@ module feng3d {
          * @param numParticles              粒子数量
          * @param vertexNumPerParticle      一个粒子的顶点数
 		 */
-        public generatePropertyOfOneParticle(numParticles: number, vertexNumPerParticle: number) {
+        public generatePropertyOfOneParticle(numParticles: number) {
 
             throw onerror("必须在子类中实现该函数");
         }

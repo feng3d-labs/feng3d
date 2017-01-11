@@ -16,7 +16,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    ;
     feng3d.Context3D = WebGL2RenderingContext;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -3445,6 +3444,7 @@ var feng3d;
             renderData.vertexCode && (renderAtomic.vertexCode = renderData.vertexCode);
             renderData.fragmentCode && (renderAtomic.fragmentCode = renderData.fragmentCode);
             renderData.indexBuffer && (renderAtomic.indexBuffer = renderData.indexBuffer);
+            renderData.instanceCount && (renderAtomic.instanceCount = renderData.instanceCount);
             for (var attributeName in renderData.attributes) {
                 renderAtomic.attributes[attributeName] = renderData.attributes[attributeName];
             }
@@ -3474,6 +3474,7 @@ var feng3d;
             renderData.vertexCode && (renderAtomic.vertexCode = null);
             renderData.fragmentCode && (renderAtomic.fragmentCode = null);
             renderData.indexBuffer && (renderAtomic.indexBuffer = null);
+            renderData.instanceCount && (delete renderAtomic.instanceCount);
             for (var attributeName in renderData.attributes) {
                 delete renderAtomic.attributes[attributeName];
             }
@@ -4403,7 +4404,7 @@ var feng3d;
             //
             activeAttributes(context3D, shaderProgram, this._renderAtomic.attributes);
             activeUniforms(context3D, shaderProgram, this._renderAtomic.uniforms);
-            dodraw(context3D, this._renderAtomic.shaderParams, this._renderAtomic.indexBuffer);
+            dodraw(context3D, this._renderAtomic.shaderParams, this._renderAtomic.indexBuffer, this._renderAtomic.instanceCount);
         }
     }
     feng3d.Renderer = Renderer;
@@ -4441,11 +4442,17 @@ var feng3d;
     }
     /**
      */
-    function dodraw(context3D, shaderParams, indexBuffer) {
+    function dodraw(context3D, shaderParams, indexBuffer, instanceCount = 1) {
+        instanceCount = ~~instanceCount;
         var buffer = feng3d.context3DPool.getIndexBuffer(context3D, indexBuffer.indices);
         context3D.bindBuffer(indexBuffer.target, buffer);
         context3D.lineWidth(1);
-        context3D.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+        if (instanceCount > 1) {
+            context3D.drawElementsInstanced(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset, instanceCount);
+        }
+        else {
+            context3D.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+        }
     }
     /**
      * 设置环境属性数据
@@ -4466,8 +4473,8 @@ var feng3d;
             default:
                 throw `无法识别的attribute类型 ${activeInfo.name} ${buffer.data}`;
         }
-        // if (buffer.divisor > 0)
-        //     context3D.vertexAttribDivisor(location, buffer.divisor);
+        if (buffer.divisor > 0)
+            context3D.vertexAttribDivisor(location, buffer.divisor);
     }
     /**
      * 设置环境Uniform数据
@@ -7453,11 +7460,10 @@ var feng3d;
         /**
          * 生成粒子动画数据
          */
-        generateAnimationSubGeometries(geometry) {
-            geometry.numParticle = this.numParticles;
+        generateAnimationSubGeometries() {
             var components = this.getComponentsByClass(feng3d.ParticleAnimatorComponent);
             components.forEach(element => {
-                element.generatePropertyOfOneParticle(this.numParticles, geometry.elementGeometry.numVertex);
+                element.generatePropertyOfOneParticle(this.numParticles);
             });
         }
         /**
@@ -7466,11 +7472,12 @@ var feng3d;
         updateRenderData(renderContext) {
             if (this.isDirty) {
                 this.startTime = feng3d.getTimer();
-                this.generateAnimationSubGeometries(this.object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry);
+                this.generateAnimationSubGeometries();
                 this.isDirty = false;
             }
             this.time = (feng3d.getTimer() - this.startTime) % 3000;
             this.renderData.uniforms[feng3d.RenderDataID.u_particleTime] = this.time;
+            this.renderData.instanceCount = this.numParticles;
             super.updateRenderData(renderContext);
         }
     }
@@ -7498,7 +7505,7 @@ var feng3d;
          * @param numParticles              粒子数量
          * @param vertexNumPerParticle      一个粒子的顶点数
          */
-        generatePropertyOfOneParticle(numParticles, vertexNumPerParticle) {
+        generatePropertyOfOneParticle(numParticles) {
             throw onerror("必须在子类中实现该函数");
         }
         /**
@@ -7530,21 +7537,18 @@ var feng3d;
         /**
          * 创建粒子属性
          * @param numParticles              粒子数量
-         * @param vertexNumPerParticle      一个粒子的顶点数
          */
-        generatePropertyOfOneParticle(numParticles, vertexNumPerParticle) {
+        generatePropertyOfOneParticle(numParticles) {
             var baseRange = 100;
-            this.data = new Float32Array(numParticles * vertexNumPerParticle * this.vaLength);
+            this.data = new Float32Array(numParticles * this.vaLength);
             for (var i = 0; i < numParticles; i++) {
                 var x = Math.random() * baseRange;
                 var y = Math.random() * baseRange;
                 var z = Math.random() * baseRange;
-                var index = i * vertexNumPerParticle * this.vaLength;
-                for (var j = 0; j < vertexNumPerParticle; j++) {
-                    this.data[index + j * this.vaLength] = x;
-                    this.data[index + j * this.vaLength + 1] = y;
-                    this.data[index + j * this.vaLength + 2] = z;
-                }
+                var index = i * this.vaLength;
+                this.data[index] = x;
+                this.data[index + 1] = y;
+                this.data[index + 2] = z;
             }
         }
     }
@@ -7569,21 +7573,18 @@ var feng3d;
         /**
          * 创建粒子属性
          * @param numParticles              粒子数量
-         * @param vertexNumPerParticle      一个粒子的顶点数
          */
-        generatePropertyOfOneParticle(numParticles, vertexNumPerParticle) {
+        generatePropertyOfOneParticle(numParticles) {
             var baseVelocity = 1;
-            this.data = new Float32Array(numParticles * vertexNumPerParticle * this.vaLength);
+            this.data = new Float32Array(numParticles * this.vaLength);
             for (var i = 0; i < numParticles; i++) {
                 var x = (Math.random() - 0.5) * baseVelocity;
                 var y = (Math.random() - 0.5) * baseVelocity;
                 var z = (Math.random() - 0.5) * baseVelocity;
-                var index = i * vertexNumPerParticle * this.vaLength;
-                for (var j = 0; j < vertexNumPerParticle; j++) {
-                    this.data[index + j * this.vaLength] = x;
-                    this.data[index + j * this.vaLength + 1] = y;
-                    this.data[index + j * this.vaLength + 2] = z;
-                }
+                var index = i * this.vaLength;
+                this.data[index] = x;
+                this.data[index + 1] = y;
+                this.data[index + 2] = z;
             }
         }
     }
@@ -7657,7 +7658,7 @@ var feng3d;
         }
         createParticle() {
             var object3D = new feng3d.Object3D("particle");
-            object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = new feng3d.ParticleGeometry();
+            object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = feng3d.primitives.createCube(1, 1, 1, 1, 1, 1);
             object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.ParticleMaterial();
             var particleAnimator = object3D.getOrCreateComponentByClass(feng3d.ParticleAnimator);
             particleAnimator.addComponent(new feng3d.ParticlePositionComponent());

@@ -40,6 +40,11 @@ module feng3d {
          * 着色器宏定义
          */
         public shaderMacro = new ShaderMacro();
+
+        /**
+         * 渲染实例数量
+         */
+        public instanceCount: number;
     }
 
     /**

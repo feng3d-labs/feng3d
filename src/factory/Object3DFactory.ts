@@ -73,7 +73,7 @@ module feng3d {
 
         public createParticle() {
             var object3D = new Object3D("particle");
-            object3D.getOrCreateComponentByClass(MeshFilter).geometry = new ParticleGeometry();
+            object3D.getOrCreateComponentByClass(MeshFilter).geometry = primitives.createCube(1, 1, 1, 1, 1, 1);
             object3D.getOrCreateComponentByClass(MeshRenderer).material = new ParticleMaterial();
             var particleAnimator = object3D.getOrCreateComponentByClass(ParticleAnimator);
             particleAnimator.addComponent(new ParticlePositionComponent());

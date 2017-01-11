@@ -7,8 +7,7 @@ declare module feng3d {
      * 使用较短的Context3D代替WebGLRenderingContext或者WebGL2RenderingContext
      * @author feng 2017-01-10
      */
-    interface Context3D extends WebGL2RenderingContext {
-    }
+    type Context3D = WebGL2RenderingContext;
     var Context3D: {
         new (): WebGL2RenderingContext;
         prototype: WebGL2RenderingContext;
@@ -2414,6 +2413,10 @@ declare module feng3d {
          * 着色器宏定义
          */
         shaderMacro: ShaderMacro;
+        /**
+         * 渲染实例数量
+         */
+        instanceCount: number;
     }
     /**
      * 渲染所需数据
@@ -4285,7 +4288,7 @@ declare module feng3d {
         /**
          * 生成粒子动画数据
          */
-        private generateAnimationSubGeometries(geometry);
+        private generateAnimationSubGeometries();
         /**
          * 更新渲染数据
          */
@@ -4343,7 +4346,7 @@ declare module feng3d {
          * @param numParticles              粒子数量
          * @param vertexNumPerParticle      一个粒子的顶点数
          */
-        generatePropertyOfOneParticle(numParticles: number, vertexNumPerParticle: number): void;
+        generatePropertyOfOneParticle(numParticles: number): void;
         /**
          * 更新渲染数据
          */
@@ -4364,9 +4367,8 @@ declare module feng3d {
         /**
          * 创建粒子属性
          * @param numParticles              粒子数量
-         * @param vertexNumPerParticle      一个粒子的顶点数
          */
-        generatePropertyOfOneParticle(numParticles: number, vertexNumPerParticle: number): void;
+        generatePropertyOfOneParticle(numParticles: number): void;
     }
 }
 declare module feng3d {
@@ -4383,9 +4385,8 @@ declare module feng3d {
         /**
          * 创建粒子属性
          * @param numParticles              粒子数量
-         * @param vertexNumPerParticle      一个粒子的顶点数
          */
-        generatePropertyOfOneParticle(numParticles: number, vertexNumPerParticle: number): void;
+        generatePropertyOfOneParticle(numParticles: number): void;
     }
 }
 declare module feng3d {

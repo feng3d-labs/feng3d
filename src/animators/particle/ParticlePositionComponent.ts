@@ -21,22 +21,19 @@ module feng3d {
         /**
 		 * 创建粒子属性
          * @param numParticles              粒子数量
-         * @param vertexNumPerParticle      一个粒子的顶点数
 		 */
-        public generatePropertyOfOneParticle(numParticles: number, vertexNumPerParticle: number) {
+        public generatePropertyOfOneParticle(numParticles: number) {
 
             var baseRange = 100;
-            this.data = new Float32Array(numParticles * vertexNumPerParticle * this.vaLength);
+            this.data = new Float32Array(numParticles * this.vaLength);
             for (var i = 0; i < numParticles; i++) {
                 var x = Math.random() * baseRange;
                 var y = Math.random() * baseRange;
                 var z = Math.random() * baseRange;
-                var index = i * vertexNumPerParticle * this.vaLength;
-                for (var j = 0; j < vertexNumPerParticle; j++) {
-                    this.data[index + j * this.vaLength] = x;
-                    this.data[index + j * this.vaLength + 1] = y;
-                    this.data[index + j * this.vaLength + 2] = z;
-                }
+                var index = i * this.vaLength;
+                this.data[index] = x;
+                this.data[index + 1] = y;
+                this.data[index + 2] = z;
             }
         }
     }

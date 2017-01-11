@@ -36,12 +36,11 @@ module feng3d {
         /**
 		 * 生成粒子动画数据
 		 */
-        private generateAnimationSubGeometries(geometry: ParticleGeometry) {
+        private generateAnimationSubGeometries() {
 
-            geometry.numParticle = this.numParticles;
             var components = this.getComponentsByClass(ParticleAnimatorComponent);
             components.forEach(element => {
-                element.generatePropertyOfOneParticle(this.numParticles, geometry.elementGeometry.numVertex);
+                element.generatePropertyOfOneParticle(this.numParticles);
             });
         }
 
@@ -53,12 +52,13 @@ module feng3d {
             if (this.isDirty) {
 
                 this.startTime = getTimer();
-                this.generateAnimationSubGeometries(<ParticleGeometry>this.object3D.getOrCreateComponentByClass(MeshFilter).geometry);
+                this.generateAnimationSubGeometries();
                 this.isDirty = false;
             }
 
             this.time = (getTimer() - this.startTime) % 3000;
             this.renderData.uniforms[RenderDataID.u_particleTime] = this.time;
+            this.renderData.instanceCount = this.numParticles;
 
             super.updateRenderData(renderContext);
         }

@@ -16,6 +16,7 @@ module feng3d {
             renderData.vertexCode && (renderAtomic.vertexCode = renderData.vertexCode);
             renderData.fragmentCode && (renderAtomic.fragmentCode = renderData.fragmentCode);
             renderData.indexBuffer && (renderAtomic.indexBuffer = renderData.indexBuffer);
+            renderData.instanceCount && (renderAtomic.instanceCount = renderData.instanceCount);
 
             for (var attributeName in renderData.attributes) {
                 renderAtomic.attributes[attributeName] = renderData.attributes[attributeName];
@@ -48,6 +49,7 @@ module feng3d {
             renderData.vertexCode && (renderAtomic.vertexCode = null);
             renderData.fragmentCode && (renderAtomic.fragmentCode = null);
             renderData.indexBuffer && (renderAtomic.indexBuffer = null);
+            renderData.instanceCount && (delete renderAtomic.instanceCount);
 
             for (var attributeName in renderData.attributes) {
                 delete renderAtomic.attributes[attributeName];
