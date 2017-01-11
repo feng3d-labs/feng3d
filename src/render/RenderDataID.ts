@@ -96,16 +96,6 @@ module feng3d {
         static u_metalic = "u_metalic";
 
         /**
-         * 粒子速度
-         */
-        static a_particleVelocity = "a_particleVelocity";
-
-        /**
-         * 粒子起始位置
-         */
-        static a_particlePosition = "a_particlePosition";
-
-        /**
          * 粒子时间
          */
         static u_particleTime = "u_particleTime";

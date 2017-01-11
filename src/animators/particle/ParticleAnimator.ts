@@ -41,7 +41,7 @@ module feng3d {
             var components = this.getComponentsByClass(ParticleAnimatorComponent);
 
             for (var i = 0; i < this.numParticles; i++) {
-                var particle = new Particle();
+                var particle = <any>{};
                 particle.index = i;
                 components.forEach(element => {
                     element.generatePropertyOfOneParticle(particle, this.numParticles);
@@ -75,29 +75,47 @@ module feng3d {
          */
         private collectionParticle(particle: Particle) {
 
-            var attributes = this.renderData.attributes;
-            var attributeRenderData: AttributeRenderData;
-            var vector3DData: Float32Array;
-            if (particle.position) {
-                attributeRenderData = attributes[RenderDataID.a_particlePosition];
-                if (!attributeRenderData) {
-                    attributeRenderData = attributes[RenderDataID.a_particlePosition] = new AttributeRenderData(new Float32Array(this.numParticles * 3), 3, 1)
-                }
-                vector3DData = attributes[RenderDataID.a_particlePosition].data;
-                vector3DData[particle.index * 3] = particle.position.x;
-                vector3DData[particle.index * 3 + 1] = particle.position.y;
-                vector3DData[particle.index * 3 + 2] = particle.position.z;
+            for (var attribute in particle) {
+                this.collectionParticleAttribute("a_particle_" + attribute, particle.index, particle[attribute]);
             }
+        }
 
-            if (particle.velocity) {
-                attributeRenderData = attributes[RenderDataID.a_particleVelocity];
+        /**
+         * 收集粒子属性数据
+         * @param attributeID       属性编号
+         * @param index             粒子编号
+         * @param data              属性数据      
+         */
+        private collectionParticleAttribute(attributeID: string, index: number, data: Vector3D | number | Color) {
+
+            var attributes = this.renderData.attributes;
+            var attributeRenderData = attributes[attributeID];
+            var vector3DData: Float32Array;
+            if (typeof data == "number") {
                 if (!attributeRenderData) {
-                    attributeRenderData = attributes[RenderDataID.a_particleVelocity] = new AttributeRenderData(new Float32Array(this.numParticles * 3), 3, 1)
+                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(this.numParticles), 1, 1)
                 }
                 vector3DData = attributeRenderData.data;
-                vector3DData[particle.index * 3] = particle.velocity.x;
-                vector3DData[particle.index * 3 + 1] = particle.velocity.y;
-                vector3DData[particle.index * 3 + 2] = particle.velocity.z;
+                vector3DData[index] = data;
+            } else if (data instanceof Vector3D) {
+                if (!attributeRenderData) {
+                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(this.numParticles * 3), 3, 1)
+                }
+                vector3DData = attributeRenderData.data;
+                vector3DData[index * 3] = data.x;
+                vector3DData[index * 3 + 1] = data.y;
+                vector3DData[index * 3 + 2] = data.z;
+            } else if (data instanceof Color) {
+                if (!attributeRenderData) {
+                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(this.numParticles * 4), 4, 1)
+                }
+                vector3DData = attributeRenderData.data;
+                vector3DData[index * 4] = data.r;
+                vector3DData[index * 4 + 1] = data.g;
+                vector3DData[index * 4 + 2] = data.b;
+                vector3DData[index * 4 + 2] = data.a;
+            } else {
+                throw new Error(`无法处理${getClassName(data)}粒子属性`);
             }
         }
     }

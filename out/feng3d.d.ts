@@ -2634,14 +2634,6 @@ declare module feng3d {
          */
         static u_metalic: string;
         /**
-         * 粒子速度
-         */
-        static a_particleVelocity: string;
-        /**
-         * 粒子起始位置
-         */
-        static a_particlePosition: string;
-        /**
          * 粒子时间
          */
         static u_particleTime: string;
@@ -4547,14 +4539,22 @@ declare module feng3d {
          * @param particle      粒子
          */
         private collectionParticle(particle);
+        /**
+         * 收集粒子属性数据
+         * @param attributeID       属性编号
+         * @param index             粒子编号
+         * @param data              属性数据
+         */
+        private collectionParticleAttribute(attributeID, index, data);
     }
 }
 declare module feng3d {
     /**
      * 粒子
+     * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性，例如
      * @author feng 2014-11-13
      */
-    class Particle {
+    interface Particle {
         /**
          * 索引
          */

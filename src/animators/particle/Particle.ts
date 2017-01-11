@@ -2,53 +2,54 @@ module feng3d {
 
 	/**
 	 * 粒子
+	 * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性，例如
 	 * @author feng 2014-11-13
 	 */
-	export class Particle {
+	export interface Particle {
 
 		/**
 		 * 索引
 		 */
-		public index: number;
+		index: number;
 
 		/**
 		 * 出生时间
 		 */
-		public birthTime: number;
+		birthTime: number;
 
 		/**
 		 * 寿命
 		 */
-		public lifetime: number;
+		lifetime: number;
 
 		/**
 		 * 位移
 		 */
-		public position: Vector3D;
+		position: Vector3D;
 
 		/**
 		 * 旋转
 		 */
-		public rotation: Vector3D;
+		rotation: Vector3D;
 
 		/**
 		 * 缩放
 		 */
-		public scale: Vector3D;
+		scale: Vector3D;
 
 		/**
 		 * 速度
 		 */
-		public velocity: Vector3D;
+		velocity: Vector3D;
 
 		/**
 		 * 加速度
 		 */
-		public acceleration: Vector3D;
+		acceleration: Vector3D;
 
 		/**
 		 * 颜色
 		 */
-		public color: Color;
+		color: Color;
 	}
 }
