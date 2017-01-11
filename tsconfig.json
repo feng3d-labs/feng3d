@@ -97,12 +97,12 @@
         "src/cameras/Camera3D.ts",
         //几何体基元
         "src/primitives/PrimitiveType.ts",
-        "src/primitives/createPlane.ts",
-        "src/primitives/createCube.ts",
-        "src/primitives/createSphere.ts",
-        "src/primitives/createCapsule.ts",
-        "src/primitives/createCylinder.ts",
-        "src/primitives/createSkyBox.ts",
+        "src/primitives/PlaneGeometry.ts",
+        "src/primitives/CubeGeometry.ts",
+        "src/primitives/SphereGeometry.ts",
+        "src/primitives/CapsuleGeometry.ts",
+        "src/primitives/CylinderGeometry.ts",
+        "src/primitives/SkyBoxGeometry.ts",
         //
         "src/textures/TextureInfo.ts",
         "src/textures/Texture2D.ts",

@@ -12,7 +12,7 @@ module feng3d {
         public createPlane() {
             var object3D = new Object3D("plane");
             var mesh = object3D.getOrCreateComponentByClass(MeshFilter);
-            mesh.geometry = primitives.createPlane();
+            mesh.geometry = new PlaneGeometry();
             object3D.getOrCreateComponentByClass(MeshRenderer);
             return object3D;
         }
@@ -23,7 +23,7 @@ module feng3d {
         public createCube() {
             var object3D = new Object3D("cube");
             var mesh = object3D.getOrCreateComponentByClass(MeshFilter);
-            mesh.geometry = primitives.createCube();
+            mesh.geometry = new CubeGeometry();
             object3D.getOrCreateComponentByClass(MeshRenderer);
             return object3D;
         }
@@ -34,7 +34,7 @@ module feng3d {
         public createSphere() {
             var object3D = new Object3D("sphere");
             var mesh = object3D.getOrCreateComponentByClass(MeshFilter);
-            mesh.geometry = primitives.createSphere();
+            mesh.geometry = new SphereGeometry();
             object3D.getOrCreateComponentByClass(MeshRenderer);
             return object3D;
         }
@@ -45,7 +45,7 @@ module feng3d {
         public createCapsule() {
             var object3D = new Object3D("capsule");
             var mesh = object3D.getOrCreateComponentByClass(MeshFilter);
-            mesh.geometry = primitives.createCapsule();
+            mesh.geometry = new CapsuleGeometry();
             object3D.getOrCreateComponentByClass(MeshRenderer);
             return object3D;
         }
@@ -56,7 +56,7 @@ module feng3d {
         public createCylinder() {
             var object3D = new Object3D("cylinder");
             var mesh = object3D.getOrCreateComponentByClass(MeshFilter);
-            mesh.geometry = primitives.createCylinder();
+            mesh.geometry = new CylinderGeometry();
             object3D.getOrCreateComponentByClass(MeshRenderer);
             return object3D;
         }
@@ -66,7 +66,7 @@ module feng3d {
          */
         public createSkyBox(images: HTMLImageElement[]) {
             var object3D = new Object3D("skyBox");
-            object3D.getOrCreateComponentByClass(MeshFilter).geometry = primitives.createSkyBox();
+            object3D.getOrCreateComponentByClass(MeshFilter).geometry = new SkyBoxGeometry();
             object3D.getOrCreateComponentByClass(MeshRenderer).material = new SkyBoxMaterial(images);
             return object3D;
         }

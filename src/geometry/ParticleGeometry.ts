@@ -20,7 +20,7 @@ module feng3d {
 
         constructor() {
             super();
-            this.elementGeometry = primitives.createPlane(10, 10, 1, 1, false);
+            this.elementGeometry = new PlaneGeometry(10, 10, 1, 1, false);
         }
 
         /**
@@ -48,7 +48,7 @@ module feng3d {
             super.updateRenderData(renderContext);
 
             if (this.isDirty) {
-                this.cloneFrom(primitives.createPlane(10, 10, 1, 1, false));
+                this.cloneFrom(new PlaneGeometry(10, 10, 1, 1, false));
                 for (var i = 1; i < this.numParticle; i++) {
                     this.addGeometry(this.elementGeometry);
                 }

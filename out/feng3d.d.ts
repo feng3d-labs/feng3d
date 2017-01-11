@@ -3792,66 +3792,241 @@ declare module feng3d {
         Cylinder = 4,
     }
 }
-declare module feng3d.primitives {
+declare module feng3d {
     /**
-     * 创建平面几何体
-     * @param width 宽度
-     * @param height 高度
-     * @param segmentsW 横向分割数
-     * @param segmentsH 纵向分割数
-     * @param yUp 正面朝向 true:Y+ false:Z+
-     * @param elements 顶点元素列表
+     * 立方体几何体
+     * @author feng 2016-09-12
      */
-    function createPlane(width?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean, elements?: string[]): Geometry;
+    class PlaneGeometry extends Geometry {
+        /**
+         * 创建平面几何体
+         * @param width 宽度
+         * @param height 高度
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        constructor(width?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
+        /**
+         * 构建顶点坐标
+         * @param width 宽度
+         * @param height 高度
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        private buildPosition(width?, height?, segmentsW?, segmentsH?, yUp?);
+        /**
+         * 构建顶点法线
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        private buildNormal(segmentsW?, segmentsH?, yUp?);
+        /**
+         * 构建顶点切线
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        private buildTangent(segmentsW?, segmentsH?, yUp?);
+        /**
+         * 构建顶点索引
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        private buildIndices(segmentsW?, segmentsH?, yUp?);
+        /**
+         * 构建uv
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         */
+        private buildUVs(segmentsW?, segmentsH?);
+    }
 }
-declare module feng3d.primitives {
+declare module feng3d {
     /**
-     * 创建立方几何体
-     * @param   width           宽度
-     * @param   height          高度
-     * @param   depth           深度
-     * @param   segmentsW       宽度方向分割
-     * @param   segmentsH       高度方向分割
-     * @param   segmentsD       深度方向分割
-     * @param   tile6           是否为6块贴图
-     * @param   elements        需要生成数据的属性
+     * 立方体几何体
+     * @author feng 2016-09-12
      */
-    function createCube(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean, elements?: string[]): Geometry;
+    class CubeGeometry extends Geometry {
+        /**
+         * 创建立方几何体
+         * @param   width           宽度
+         * @param   height          高度
+         * @param   depth           深度
+         * @param   segmentsW       宽度方向分割
+         * @param   segmentsH       高度方向分割
+         * @param   segmentsD       深度方向分割
+         * @param   tile6           是否为6块贴图
+         */
+        constructor(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean);
+        /**
+         * 构建坐标
+         * @param   width           宽度
+         * @param   height          高度
+         * @param   depth           深度
+         * @param   segmentsW       宽度方向分割
+         * @param   segmentsH       高度方向分割
+         * @param   segmentsD       深度方向分割
+         */
+        private buildPosition(width?, height?, depth?, segmentsW?, segmentsH?, segmentsD?);
+        /**
+         * 构建法线
+         * @param   segmentsW       宽度方向分割
+         * @param   segmentsH       高度方向分割
+         * @param   segmentsD       深度方向分割
+         */
+        private buildNormal(segmentsW?, segmentsH?, segmentsD?);
+        /**
+         * 构建切线
+         * @param   segmentsW       宽度方向分割
+         * @param   segmentsH       高度方向分割
+         * @param   segmentsD       深度方向分割
+         */
+        private buildTangent(segmentsW?, segmentsH?, segmentsD?);
+        /**
+         * 构建索引
+         * @param   segmentsW       宽度方向分割
+         * @param   segmentsH       高度方向分割
+         * @param   segmentsD       深度方向分割
+         */
+        private buildIndices(segmentsW?, segmentsH?, segmentsD?);
+        /**
+         * 构建uv
+         * @param   segmentsW       宽度方向分割
+         * @param   segmentsH       高度方向分割
+         * @param   segmentsD       深度方向分割
+         * @param   tile6           是否为6块贴图
+         */
+        private buildUVs(segmentsW?, segmentsH?, segmentsD?, tile6?);
+    }
 }
-declare module feng3d.primitives {
+declare module feng3d {
     /**
-     * 创建球形几何体
-     * @param radius 球体半径
-     * @param segmentsW 横向分割数
-     * @param segmentsH 纵向分割数
-     * @param yUp 正面朝向 true:Y+ false:Z+
-     * @param elements 顶点元素列表
+     * 球体几何体
+     * @author DawnKing 2016-09-12
      */
-    function createSphere(radius?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean, elements?: string[]): Geometry;
+    class SphereGeometry extends Geometry {
+        /**
+         * 创建球形几何体
+         * @param radius 球体半径
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        constructor(radius?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
+        /**
+         * 构建几何体数据
+         * @param radius 球体半径
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        private buildGeometry(radius?, segmentsW?, segmentsH?, yUp?);
+        /**
+         * 构建顶点索引
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        private buildIndices(segmentsW?, segmentsH?, yUp?);
+        /**
+         * 构建uv
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         */
+        private buildUVs(segmentsW?, segmentsH?);
+    }
 }
-declare module feng3d.primitives {
+declare module feng3d {
     /**
-     * 创建胶囊几何体
-     * @param radius 胶囊体半径
-     * @param height 胶囊体高度
-     * @param segmentsW 横向分割数
-     * @param segmentsH 纵向分割数
-     * @param yUp 正面朝向 true:Y+ false:Z+
-     * @param elements 顶点元素列表
+     * 胶囊体几何体
+     * @author DawnKing 2016-09-12
      */
-    function createCapsule(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean, elements?: string[]): Geometry;
+    class CapsuleGeometry extends Geometry {
+        /**
+         * 创建胶囊几何体
+         * @param radius 胶囊体半径
+         * @param height 胶囊体高度
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        constructor(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
+        /**
+         * 构建几何体数据
+         * @param radius 胶囊体半径
+         * @param height 胶囊体高度
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        private buildGeometry(radius?, height?, segmentsW?, segmentsH?, yUp?);
+        /**
+         * 构建顶点索引
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        buildIndices(segmentsW?: number, segmentsH?: number, yUp?: boolean): void;
+        /**
+         * 构建uv
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         */
+        private buildUVs(segmentsW?, segmentsH?);
+    }
 }
-declare module feng3d.primitives {
+declare module feng3d {
     /**
-     * 创建圆柱体
+     * 圆柱体几何体
+     * @author DawnKing 2016-09-12
      */
-    function createCylinder(topRadius?: number, bottomRadius?: number, height?: number, segmentsW?: number, segmentsH?: number, topClosed?: boolean, bottomClosed?: boolean, surfaceClosed?: boolean, yUp?: boolean, elements?: string[]): Geometry;
+    class CylinderGeometry extends Geometry {
+        /**
+         * 创建圆柱体
+         */
+        constructor(topRadius?: number, bottomRadius?: number, height?: number, segmentsW?: number, segmentsH?: number, topClosed?: boolean, bottomClosed?: boolean, surfaceClosed?: boolean, yUp?: boolean);
+        /**
+         * 计算几何体顶点数
+         */
+        private getNumVertices(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed);
+        /**
+         * 计算几何体三角形数量
+         */
+        private getNumTriangles(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed);
+        /**
+         * 构建几何体数据
+         */
+        private buildGeometry(topRadius?, bottomRadius?, height?, segmentsW?, segmentsH?, topClosed?, bottomClosed?, surfaceClosed?, yUp?);
+        /**
+         * 构建顶点索引
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         * @param yUp 正面朝向 true:Y+ false:Z+
+         */
+        private buildIndices(topRadius?, bottomRadius?, height?, segmentsW?, segmentsH?, topClosed?, bottomClosed?, surfaceClosed?);
+        /**
+         * 构建uv
+         * @param segmentsW 横向分割数
+         * @param segmentsH 纵向分割数
+         */
+        private buildUVs(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed);
+    }
 }
-declare module feng3d.primitives {
+declare module feng3d {
     /**
-     * 创建天空盒
+     * 天空盒几何体
+     * @author feng 2016-09-12
      */
-    function createSkyBox(): Geometry;
+    class SkyBoxGeometry extends Geometry {
+        /**
+         * 创建天空盒
+         */
+        constructor();
+    }
 }
 declare module feng3d {
     /**
