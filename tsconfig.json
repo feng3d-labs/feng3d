@@ -85,6 +85,7 @@
         "src/geometry/Geometry.ts",
         "src/geometry/GeometryEvent.ts",
         //几何体组件
+        "src/geometry/PointGeometry.ts",
         "src/geometry/ParticleGeometry.ts",
         "src/geometry/SegmentGeometry.ts",
         "src/geometry/components/GeometryComponent.ts",
@@ -108,6 +109,7 @@
         "src/textures/TextureCube.ts",
         //材质
         "src/materials/Material.ts",
+        "src/materials/PointMaterial.ts",
         "src/materials/ColorMaterial.ts",
         "src/materials/SegmentMaterial.ts",
         "src/materials/components/MaterialComponent.ts",

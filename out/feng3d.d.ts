@@ -3424,6 +3424,59 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 点几何体
+     * @author feng 2017-01-11
+     */
+    class PointGeometry extends Geometry {
+        /**
+         * 几何体是否变脏
+         */
+        private geometryDirty;
+        private _points;
+        constructor();
+        /**
+         * 添加点
+         * @param point		点数据
+         */
+        addPoint(point: Point, needUpdateGeometry?: boolean): void;
+        /**
+         * 更新几何体
+         */
+        updateGeometry(): void;
+        /**
+         * 获取线段数据
+         * @param index 		线段索引
+         * @return				线段数据
+         */
+        getPoint(index: number): Point;
+        /**
+         * 移除所有线段
+         */
+        removeAllPoints(): void;
+        /**
+         * 线段列表
+         */
+        readonly points: Point[];
+    }
+    /**
+     * 点
+     * @author feng 2016-10-16
+     */
+    class Point {
+        position: Vector3D;
+        /**
+         * 创建点
+         * @param position 坐标
+         */
+        constructor(position: Vector3D);
+        /**
+         * 坐标
+         */
+        readonly positionData: number[];
+    }
+}
+declare module feng3d {
+    /**
      * 粒子几何体
      * @author feng 2016-04-28
      */
@@ -3878,6 +3931,18 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 颜色材质
+     * @author feng 2017-01-11
+     */
+    class PointMaterial extends Material {
+        /**
+         * 构建颜色材质
+         */
+        constructor();
     }
 }
 declare module feng3d {

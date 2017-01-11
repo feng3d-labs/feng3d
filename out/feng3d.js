@@ -4860,6 +4860,94 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 点几何体
+     * @author feng 2017-01-11
+     */
+    class PointGeometry extends feng3d.Geometry {
+        constructor() {
+            super();
+            /**
+             * 几何体是否变脏
+             */
+            this.geometryDirty = false;
+            this._points = [];
+            this.addPoint(new Point(new feng3d.Vector3D(0, 0, 0)));
+        }
+        /**
+         * 添加点
+         * @param point		点数据
+         */
+        addPoint(point, needUpdateGeometry = true) {
+            this._points.push(point);
+            this.geometryDirty = true;
+            this.updateGeometry();
+        }
+        /**
+         * 更新几何体
+         */
+        updateGeometry() {
+            this.geometryDirty = false;
+            var positionStep = 6;
+            var numPoints = this._points.length;
+            var indices = new Uint16Array(numPoints);
+            var positionData = new Float32Array(numPoints * positionStep);
+            for (var i = 0; i < numPoints; i++) {
+                var element = this._points[i];
+                indices[i] = i;
+                positionData.set(element.positionData, i * positionStep);
+            }
+            this.setVAData(feng3d.GLAttribute.a_position, positionData, positionStep);
+            this.setIndices(indices);
+        }
+        /**
+         * 获取线段数据
+         * @param index 		线段索引
+         * @return				线段数据
+         */
+        getPoint(index) {
+            if (index < this._points.length)
+                return this._points[index];
+            return null;
+        }
+        /**
+         * 移除所有线段
+         */
+        removeAllPoints() {
+            this.points.length = 0;
+            this.geometryDirty = true;
+        }
+        /**
+         * 线段列表
+         */
+        get points() {
+            return this._points;
+        }
+    }
+    feng3d.PointGeometry = PointGeometry;
+    /**
+     * 点
+     * @author feng 2016-10-16
+     */
+    class Point {
+        /**
+         * 创建点
+         * @param position 坐标
+         */
+        constructor(position) {
+            this.position = position;
+        }
+        /**
+         * 坐标
+         */
+        get positionData() {
+            return [this.position.x, this.position.y, this.position.z];
+        }
+    }
+    feng3d.Point = Point;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 粒子几何体
      * @author feng 2016-04-28
      */
@@ -6744,6 +6832,23 @@ var feng3d;
 (function (feng3d) {
     /**
      * 颜色材质
+     * @author feng 2017-01-11
+     */
+    class PointMaterial extends feng3d.Material {
+        /**
+         * 构建颜色材质
+         */
+        constructor() {
+            super();
+            this.shaderName = "point";
+        }
+    }
+    feng3d.PointMaterial = PointMaterial;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 颜色材质
      * @author feng 2016-05-02
      */
     class ColorMaterial extends feng3d.Material {
@@ -7655,7 +7760,7 @@ var feng3d;
         }
         createParticle() {
             var object3D = new feng3d.Object3D("particle");
-            object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = feng3d.primitives.createCube(10, 10, 10, 1, 1, 1);
+            object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = new feng3d.PointGeometry();
             object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.ParticleMaterial();
             var particleAnimator = object3D.getOrCreateComponentByClass(feng3d.ParticleAnimator);
             particleAnimator.addComponent(new feng3d.ParticlePositionComponent());
