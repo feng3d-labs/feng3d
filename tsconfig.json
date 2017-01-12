@@ -131,12 +131,12 @@
         "src/terrain/TerrainMaterial.ts",
         //粒子动画
         "src/animators/particle/Particle.ts",
+        "src/animators/particle/ParticleGlobal.ts",
         "src/animators/particle/ParticleAnimator.ts",
         "src/animators/particle/ParticleComponent.ts",
         "src/animators/particle/ParticleEmission.ts",
         "src/animators/particle/ParticlePosition.ts",
         "src/animators/particle/ParticleVelocity.ts",
-        "src/animators/particle/ParticleAcceleration.ts",
         //
         "src/factory/Object3DFactory.ts"
     ]

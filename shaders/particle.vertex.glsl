@@ -1,3 +1,5 @@
+//根据是否提供(a_particle_position)数据自动定义 #define D_(a_particle_position)
+
 precision mediump float;
 
 attribute vec3 a_position;
@@ -11,7 +13,10 @@ attribute vec3 a_particle_velocity;
 attribute vec4 a_particle_color;
 
 uniform float u_particleTime;
-uniform vec3 u_particleAcceleration;
+
+#ifdef D_u_particle_acceleration
+    uniform vec3 u_particle_acceleration;
+#endif
 
 varying vec4 v_particle_color;
 
@@ -22,18 +27,30 @@ void main(void) {
     float pTime = u_particleTime - a_particle_birthTime;
     if(pTime > 0.0){
 
-        position = position + a_particle_position;
+        vec3 pPosition = vec3(0.0,0.0,0.0);
+        vec3 pVelocity = vec3(0.0,0.0,0.0);
 
-        vec3 velocity = a_particle_velocity;
+        #ifdef D_a_particle_position
+            pPosition = pPosition + a_particle_position;
+        #endif
 
-        velocity = velocity + u_particleAcceleration * pTime;
+        #ifdef D_a_particle_velocity
+            pVelocity = pVelocity + a_particle_velocity;
+        #endif
+
+        #ifdef D_u_particle_acceleration
+            pVelocity = pVelocity + u_particle_acceleration * pTime;
+        #endif
         
-        position = position + velocity * pTime;
+        #ifdef D_a_particle_color
+            v_particle_color = a_particle_color;
+        #endif
+
+        pPosition = pPosition + pVelocity * pTime;
+        position = position + pPosition;
     }
     
     vec4 globalPosition = u_modelMatrix * vec4(position, 1.0);
     gl_Position = u_viewProjection * globalPosition;
     gl_PointSize = 1.0;
-
-    v_particle_color = a_particle_color;
 }

@@ -44,6 +44,19 @@ module feng3d {
         public generateFunctions: ({ generate: (particle: Particle) => void, priority: number })[] = [];
 
         /**
+         * 粒子全局属性，作用于所有粒子元素
+         */
+        public particleGlobal: ParticleGlobal = <any>{};
+
+        private autoRenderDataHolder: ParticleRenderDataHolder;
+
+        constructor() {
+            super();
+            this.autoRenderDataHolder = new ParticleRenderDataHolder();
+            this.addComponent(this.autoRenderDataHolder);
+        }
+
+        /**
 		 * 生成粒子
 		 */
         private generateParticles() {
@@ -64,7 +77,7 @@ module feng3d {
                 generateFunctions.forEach(element => {
                     element.generate(particle);
                 });
-                this.collectionParticle(particle);
+                this.autoRenderDataHolder.collectionParticle(particle);
             }
         }
 
@@ -84,19 +97,39 @@ module feng3d {
             this.renderData.uniforms[RenderDataID.u_particleTime] = this.time;
             this.renderData.instanceCount = this.numParticles;
 
-            this.updateMocaro();
-
+            this.autoRenderDataHolder.update(this.particleGlobal);
             super.updateRenderData(renderContext);
         }
+    }
+
+    class ParticleRenderDataHolder extends RenderDataHolder {
 
         /**
          * 收集粒子数据
          * @param particle      粒子
          */
-        private collectionParticle(particle: Particle) {
+        public collectionParticle(particle: Particle) {
 
             for (var attribute in particle) {
-                this.collectionParticleAttribute("a_particle_" + attribute, particle.index, particle[attribute]);
+                this.collectionParticleAttribute(attribute, particle);
+            }
+        }
+
+        public update(particleGlobal: ParticleGlobal) {
+
+            this.renderData.uniforms = {};
+            //更新常量数据
+            for (var uniform in particleGlobal) {
+                this.renderData.uniforms["u_particle_" + uniform] = particleGlobal[uniform];
+            }
+
+            //更新宏定义
+            var boolMacros = this.renderData.shaderMacro.boolMacros = <any>{};
+            for (var attribute in this.renderData.attributes) {
+                boolMacros["D_" + attribute] = true;
+            }
+            for (var uniform in particleGlobal) {
+                boolMacros["D_u_particle_" + uniform] = true;
             }
         }
 
@@ -106,20 +139,25 @@ module feng3d {
          * @param index             粒子编号
          * @param data              属性数据      
          */
-        private collectionParticleAttribute(attributeID: string, index: number, data: Vector3D | number | Color) {
+        private collectionParticleAttribute(attribute: string, particle: Particle) {
 
+            var attributeID = "a_particle_" + attribute;
+            var data = particle[attribute];
+            var index = particle.index;
+            var numParticles = particle.total;
+            //
             var attributes = this.renderData.attributes;
             var attributeRenderData = attributes[attributeID];
             var vector3DData: Float32Array;
             if (typeof data == "number") {
                 if (!attributeRenderData) {
-                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(this.numParticles), 1, 1)
+                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles), 1, 1)
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index] = data;
             } else if (data instanceof Vector3D) {
                 if (!attributeRenderData) {
-                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(this.numParticles * 3), 3, 1)
+                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 3), 3, 1)
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index * 3] = data.x;
@@ -127,7 +165,7 @@ module feng3d {
                 vector3DData[index * 3 + 2] = data.z;
             } else if (data instanceof Color) {
                 if (!attributeRenderData) {
-                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(this.numParticles * 4), 4, 1)
+                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 4), 4, 1)
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index * 4] = data.r;
@@ -137,11 +175,6 @@ module feng3d {
             } else {
                 throw new Error(`无法处理${getClassName(data)}粒子属性`);
             }
-        }
-
-        private updateMocaro() {
-
-            this.renderData.attributes
         }
     }
 }

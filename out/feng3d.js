@@ -3611,10 +3611,6 @@ var feng3d;
      */
     RenderDataID.u_particleTime = "u_particleTime";
     /**
-     * 粒子加速度
-     */
-    RenderDataID.u_particleAcceleration = "u_particleAcceleration";
-    /**
      * 点大小
      */
     RenderDataID.u_PointSize = "u_PointSize";
@@ -7487,7 +7483,7 @@ var feng3d;
      */
     class ParticleAnimator extends feng3d.Object3DComponent {
         constructor() {
-            super(...arguments);
+            super();
             /**
              * 粒子时间
              */
@@ -7513,6 +7509,12 @@ var feng3d;
              * 生成粒子函数列表，优先级越高先执行
              */
             this.generateFunctions = [];
+            /**
+             * 粒子全局属性，作用于所有粒子元素
+             */
+            this.particleGlobal = {};
+            this.autoRenderDataHolder = new ParticleRenderDataHolder();
+            this.addComponent(this.autoRenderDataHolder);
         }
         /**
          * 生成粒子
@@ -7533,7 +7535,7 @@ var feng3d;
                 generateFunctions.forEach(element => {
                     element.generate(particle);
                 });
-                this.collectionParticle(particle);
+                this.autoRenderDataHolder.collectionParticle(particle);
             }
         }
         /**
@@ -7548,16 +7550,34 @@ var feng3d;
             this.time = ((feng3d.getTimer() - this.startTime) / 1000) % this.cycle;
             this.renderData.uniforms[feng3d.RenderDataID.u_particleTime] = this.time;
             this.renderData.instanceCount = this.numParticles;
-            this.updateMocaro();
+            this.autoRenderDataHolder.update(this.particleGlobal);
             super.updateRenderData(renderContext);
         }
+    }
+    feng3d.ParticleAnimator = ParticleAnimator;
+    class ParticleRenderDataHolder extends feng3d.RenderDataHolder {
         /**
          * 收集粒子数据
          * @param particle      粒子
          */
         collectionParticle(particle) {
             for (var attribute in particle) {
-                this.collectionParticleAttribute("a_particle_" + attribute, particle.index, particle[attribute]);
+                this.collectionParticleAttribute(attribute, particle);
+            }
+        }
+        update(particleGlobal) {
+            this.renderData.uniforms = {};
+            //更新常量数据
+            for (var uniform in particleGlobal) {
+                this.renderData.uniforms["u_particle_" + uniform] = particleGlobal[uniform];
+            }
+            //更新宏定义
+            var boolMacros = this.renderData.shaderMacro.boolMacros = {};
+            for (var attribute in this.renderData.attributes) {
+                boolMacros["D_" + attribute] = true;
+            }
+            for (var uniform in particleGlobal) {
+                boolMacros["D_u_particle_" + uniform] = true;
             }
         }
         /**
@@ -7566,20 +7586,25 @@ var feng3d;
          * @param index             粒子编号
          * @param data              属性数据
          */
-        collectionParticleAttribute(attributeID, index, data) {
+        collectionParticleAttribute(attribute, particle) {
+            var attributeID = "a_particle_" + attribute;
+            var data = particle[attribute];
+            var index = particle.index;
+            var numParticles = particle.total;
+            //
             var attributes = this.renderData.attributes;
             var attributeRenderData = attributes[attributeID];
             var vector3DData;
             if (typeof data == "number") {
                 if (!attributeRenderData) {
-                    attributeRenderData = attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(this.numParticles), 1, 1);
+                    attributeRenderData = attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(numParticles), 1, 1);
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index] = data;
             }
             else if (data instanceof feng3d.Vector3D) {
                 if (!attributeRenderData) {
-                    attributeRenderData = attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(this.numParticles * 3), 3, 1);
+                    attributeRenderData = attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(numParticles * 3), 3, 1);
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index * 3] = data.x;
@@ -7588,7 +7613,7 @@ var feng3d;
             }
             else if (data instanceof feng3d.Color) {
                 if (!attributeRenderData) {
-                    attributeRenderData = attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(this.numParticles * 4), 4, 1);
+                    attributeRenderData = attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(numParticles * 4), 4, 1);
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index * 4] = data.r;
@@ -7600,11 +7625,7 @@ var feng3d;
                 throw new Error(`无法处理${feng3d.getClassName(data)}粒子属性`);
             }
         }
-        updateMocaro() {
-            this.renderData.attributes;
-        }
     }
-    feng3d.ParticleAnimator = ParticleAnimator;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -7732,29 +7753,6 @@ var feng3d;
         }
     }
     feng3d.ParticleVelocity = ParticleVelocity;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 粒子加速度组件
-     * @author feng 2017-01-09
-     */
-    class ParticleAcceleration extends feng3d.ParticleComponent {
-        constructor() {
-            super();
-            /**
-             * 加速度
-             */
-            this.acceleration = new feng3d.Vector3D(0, -9.8, 0);
-        }
-        /**
-         * 更新渲染数据
-         */
-        updateRenderData(renderContext) {
-            this.renderData.uniforms[feng3d.RenderDataID.u_particleAcceleration] = this.acceleration;
-        }
-    }
-    feng3d.ParticleAcceleration = ParticleAcceleration;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

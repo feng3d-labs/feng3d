@@ -2650,10 +2650,6 @@ declare module feng3d {
          */
         static u_particleTime: string;
         /**
-         * 粒子加速度
-         */
-        static u_particleAcceleration: string;
-        /**
          * 点大小
          */
         static u_PointSize: string;
@@ -4518,8 +4514,9 @@ declare module feng3d {
 declare module feng3d {
     /**
      * 粒子
-     * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性，例如
-     * @author feng 2014-11-13
+     * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性,并且属性值不为空时会自动添加 "#define D_a_particle_${attribute}"
+     * 例如：position 对应 a_particle_position 与 #define D_a_particle_position
+     * @author feng 2017-01-12
      */
     interface Particle {
         /**
@@ -4566,6 +4563,20 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 粒子
+     * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性,并且属性值不为空时会自动添加 "#define D_a_particle_${attribute}"
+     * 例如：position 对应 a_particle_position 与 #define D_a_particle_position
+     * @author feng 2017-01-12
+     */
+    interface ParticleGlobal {
+        /**
+         * 加速度
+         */
+        acceleration: Vector3D;
+    }
+}
+declare module feng3d {
+    /**
      * 粒子动画
      * @author feng 2017-01-09
      */
@@ -4603,6 +4614,12 @@ declare module feng3d {
             priority: number;
         })[];
         /**
+         * 粒子全局属性，作用于所有粒子元素
+         */
+        particleGlobal: ParticleGlobal;
+        private autoRenderDataHolder;
+        constructor();
+        /**
          * 生成粒子
          */
         private generateParticles();
@@ -4610,19 +4627,6 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext): void;
-        /**
-         * 收集粒子数据
-         * @param particle      粒子
-         */
-        private collectionParticle(particle);
-        /**
-         * 收集粒子属性数据
-         * @param attributeID       属性编号
-         * @param index             粒子编号
-         * @param data              属性数据
-         */
-        private collectionParticleAttribute(attributeID, index, data);
-        private updateMocaro();
     }
 }
 declare module feng3d {
@@ -4698,23 +4702,6 @@ declare module feng3d {
          * @param particle                  粒子
          */
         generateParticle(particle: Particle): void;
-    }
-}
-declare module feng3d {
-    /**
-     * 粒子加速度组件
-     * @author feng 2017-01-09
-     */
-    class ParticleAcceleration extends ParticleComponent {
-        /**
-         * 加速度
-         */
-        acceleration: Vector3D;
-        constructor();
-        /**
-         * 更新渲染数据
-         */
-        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
