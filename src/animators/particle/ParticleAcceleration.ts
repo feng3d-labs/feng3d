@@ -7,19 +7,21 @@ module feng3d {
     export class ParticleAcceleration extends ParticleComponent {
 
         /**
-		 * 创建粒子属性
-         * @param particle                  粒子
-         * @param numParticles              粒子数量
+         * 加速度
+         */
+        acceleration = new Vector3D(0, -9.8, 0);
+
+        constructor() {
+
+            super();
+        }
+
+        /**
+		 * 更新渲染数据
 		 */
-        public generatePropertyOfOneParticle(particle: Particle, numParticles: number) {
+        public updateRenderData(renderContext: RenderContext) {
 
-            var baseVelocity = 1000;
-
-            var x = (Math.random() - 0.5) * baseVelocity;
-            var y = (Math.random() - 0.5) * baseVelocity;
-            var z = (Math.random() - 0.5) * baseVelocity;
-
-            particle.velocity = new Vector3D(x, y, z);
+            this.renderData.uniforms[RenderDataID.u_particleAcceleration] = this.acceleration;
         }
     }
 }

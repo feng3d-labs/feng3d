@@ -6,16 +6,12 @@ module feng3d {
      */
     export class ParticleComponent extends RenderDataHolder {
 
-        protected attributeRenderData: AttributeRenderData;
-
         /**
 		 * 创建粒子属性
          * @param particle                  粒子
-         * @param numParticles              粒子数量
 		 */
-        public generatePropertyOfOneParticle(particle: Particle, numParticles: number) {
+        public generateParticle(particle: Particle) {
 
-            throw onerror("必须在子类中实现该函数");
         }
     }
 }

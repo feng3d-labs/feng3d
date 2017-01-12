@@ -13,6 +13,11 @@ module feng3d {
 		index: number;
 
 		/**
+		 * 粒子总数量
+		 */
+		total: number;
+
+		/**
 		 * 出生时间
 		 */
 		birthTime: number;

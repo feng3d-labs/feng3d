@@ -5,22 +5,27 @@ attribute vec3 a_position;
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 
-attribute float a_particleBirthTime;
-attribute vec3 a_particlePosition;
-attribute vec3 a_particleVelocity;
+attribute float a_particle_birthTime;
+attribute vec3 a_particle_position;
+attribute vec3 a_particle_velocity;
 
 uniform float u_particleTime;
+uniform vec3 u_particleAcceleration;
 
 void main(void) {
 
     vec3 position = a_position;
 
-    float pTime = u_particleTime - a_particleBirthTime;
+    float pTime = u_particleTime - a_particle_birthTime;
     if(pTime > 0.0){
 
-        position = position + a_particlePosition;
+        position = position + a_particle_position;
+
+        vec3 velocity = a_particle_velocity;
+
+        velocity = velocity + u_particleAcceleration * pTime;
         
-        position = position + a_particleVelocity * pTime;
+        position = position + velocity * pTime;
     }
     
     vec4 globalPosition = u_modelMatrix * vec4(position, 1.0);

@@ -20,24 +20,19 @@ module feng3d {
 
         private numParticles;
 
-        constructor() {
-
-            super();
-            this.renderData.attributes[RenderDataID.a_particleBirthTime] = this.attributeRenderData = new AttributeRenderData(null, 1, 1);
-        }
+        private birthTimes: number[];
 
         /**
 		 * 创建粒子属性
          * @param particle                  粒子
-         * @param numParticles              粒子数量
 		 */
-        public generatePropertyOfOneParticle(particle: Particle, numParticles: number) {
+        public generateParticle(particle: Particle) {
 
-            if (this.numParticles != numParticles)
+            if (this.numParticles != particle.total)
                 this.isDirty = true;
-            this.numParticles = numParticles;
+            this.numParticles = particle.total;
 
-            particle.birthTime = this.getBirthTimeArray(numParticles)[particle.index];
+            particle.birthTime = this.getBirthTimeArray(particle.total)[particle.index];
         }
 
         /**
@@ -49,10 +44,10 @@ module feng3d {
 
                 this.isDirty = false;
 
-                var birthTimes = new Float32Array(numParticles);
+                var birthTimes: number[] = [];
                 var bursts = this.bursts.concat();
                 //按时间降序排列
-                bursts.sort((a: { time: number; }, b: { time: number; }) => { return a.time - b.time });
+                bursts.sort((a: { time: number; }, b: { time: number; }) => { return b.time - a.time });
                 var index = 0;
                 var time = 0;//以秒为单位
                 var i = 0;
@@ -69,10 +64,10 @@ module feng3d {
                     birthTimes[index++] = time;
                     time += timeStep;
                 }
-                this.attributeRenderData.data = birthTimes;
+                this.birthTimes = birthTimes;
             }
 
-            return this.attributeRenderData.data;
+            return this.birthTimes;
         }
     }
 }
