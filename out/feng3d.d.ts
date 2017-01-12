@@ -4502,6 +4502,51 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 粒子
+     * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性，例如
+     * @author feng 2014-11-13
+     */
+    interface Particle {
+        /**
+         * 索引
+         */
+        index: number;
+        /**
+         * 出生时间
+         */
+        birthTime: number;
+        /**
+         * 寿命
+         */
+        lifetime: number;
+        /**
+         * 位移
+         */
+        position: Vector3D;
+        /**
+         * 旋转
+         */
+        rotation: Vector3D;
+        /**
+         * 缩放
+         */
+        scale: Vector3D;
+        /**
+         * 速度
+         */
+        velocity: Vector3D;
+        /**
+         * 加速度
+         */
+        acceleration: Vector3D;
+        /**
+         * 颜色
+         */
+        color: Color;
+    }
+}
+declare module feng3d {
+    /**
      * 粒子动画
      * @author feng 2017-01-09
      */
@@ -4551,55 +4596,56 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 粒子
-     * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性，例如
-     * @author feng 2014-11-13
-     */
-    interface Particle {
-        /**
-         * 索引
-         */
-        index: number;
-        /**
-         * 出生时间
-         */
-        birthTime: number;
-        /**
-         * 寿命
-         */
-        lifetime: number;
-        /**
-         * 位移
-         */
-        position: Vector3D;
-        /**
-         * 旋转
-         */
-        rotation: Vector3D;
-        /**
-         * 缩放
-         */
-        scale: Vector3D;
-        /**
-         * 速度
-         */
-        velocity: Vector3D;
-        /**
-         * 加速度
-         */
-        acceleration: Vector3D;
-        /**
-         * 颜色
-         */
-        color: Color;
-    }
-}
-declare module feng3d {
-    /**
      * 粒子动画组件
      * @author feng 2017-01-09
      */
-    class ParticleAnimatorComponent extends Component {
+    class ParticleComponent extends Component {
+        /**
+         * 创建粒子属性
+         * @param particle                  粒子
+         * @param numParticles              粒子数量
+         */
+        generatePropertyOfOneParticle(particle: Particle, numParticles: number): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 粒子发射器
+     * @author feng 2017-01-09
+     */
+    class ParticleEmission extends ParticleComponent {
+        /**
+         * 发射率，每秒发射粒子数量
+         */
+        rate: number;
+        /**
+         * 爆发，在time时刻额外喷射particles粒子
+         */
+        bursts: {
+            time: number;
+            particles: number;
+        }[];
+        private birthTimes;
+        isDirty: boolean;
+        private numParticles;
+        /**
+         * 创建粒子属性
+         * @param particle                  粒子
+         * @param numParticles              粒子数量
+         */
+        generatePropertyOfOneParticle(particle: Particle, numParticles: number): void;
+        /**
+         * 获取出生时间数组
+         */
+        private getBirthTimeArray(numParticles);
+    }
+}
+declare module feng3d {
+    /**
+     * 粒子速度组件
+     * @author feng 2017-01-09
+     */
+    class ParticlePosition extends ParticleComponent {
         /**
          * 创建粒子属性
          * @param particle                  粒子
@@ -4613,21 +4659,7 @@ declare module feng3d {
      * 粒子速度组件
      * @author feng 2017-01-09
      */
-    class ParticlePositionComponent extends ParticleAnimatorComponent {
-        /**
-         * 创建粒子属性
-         * @param particle                  粒子
-         * @param numParticles              粒子数量
-         */
-        generatePropertyOfOneParticle(particle: Particle, numParticles: number): void;
-    }
-}
-declare module feng3d {
-    /**
-     * 粒子速度组件
-     * @author feng 2017-01-09
-     */
-    class ParticleVelocityComponent extends ParticleAnimatorComponent {
+    class ParticleVelocity extends ParticleComponent {
         /**
          * 创建粒子属性
          * @param particle                  粒子

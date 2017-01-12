@@ -76,8 +76,8 @@ module feng3d {
             object3D.getOrCreateComponentByClass(MeshFilter).geometry = new PointGeometry();
             object3D.getOrCreateComponentByClass(MeshRenderer).material = new ParticleMaterial();
             var particleAnimator = object3D.getOrCreateComponentByClass(ParticleAnimator);
-            particleAnimator.addComponent(new ParticlePositionComponent());
-            particleAnimator.addComponent(new ParticleVelocityComponent());
+            particleAnimator.addComponent(new ParticlePosition());
+            particleAnimator.addComponent(new ParticleVelocity());
             return object3D;
         }
     }

@@ -4473,6 +4473,9 @@ var feng3d;
         var squareVerticesBuffer = feng3d.context3DPool.getVABuffer(context3D, buffer.data);
         context3D.bindBuffer(feng3d.Context3D.ARRAY_BUFFER, squareVerticesBuffer);
         switch (activeInfo.type) {
+            case feng3d.Context3D.FLOAT:
+                context3D.vertexAttribPointer(location, 1, feng3d.Context3D.FLOAT, false, 0, 0);
+                break;
             case feng3d.Context3D.FLOAT_VEC3:
                 context3D.vertexAttribPointer(location, 3, feng3d.Context3D.FLOAT, false, 0, 0);
                 break;
@@ -7478,7 +7481,7 @@ var feng3d;
          * 生成粒子动画数据
          */
         generateAnimationSubGeometries() {
-            var components = this.getComponentsByClass(feng3d.ParticleAnimatorComponent);
+            var components = this.getComponentsByClass(feng3d.ParticleComponent);
             for (var i = 0; i < this.numParticles; i++) {
                 var particle = {};
                 particle.index = i;
@@ -7497,7 +7500,7 @@ var feng3d;
                 this.generateAnimationSubGeometries();
                 this.isDirty = false;
             }
-            this.time = (feng3d.getTimer() - this.startTime) % 3000;
+            this.time = ((feng3d.getTimer() - this.startTime) / 1000) % 3;
             this.renderData.uniforms[feng3d.RenderDataID.u_particleTime] = this.time;
             this.renderData.instanceCount = this.numParticles;
             super.updateRenderData(renderContext);
@@ -7560,7 +7563,7 @@ var feng3d;
      * 粒子动画组件
      * @author feng 2017-01-09
      */
-    class ParticleAnimatorComponent extends feng3d.Component {
+    class ParticleComponent extends feng3d.Component {
         /**
          * 创建粒子属性
          * @param particle                  粒子
@@ -7570,7 +7573,69 @@ var feng3d;
             throw onerror("必须在子类中实现该函数");
         }
     }
-    feng3d.ParticleAnimatorComponent = ParticleAnimatorComponent;
+    feng3d.ParticleComponent = ParticleComponent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子发射器
+     * @author feng 2017-01-09
+     */
+    class ParticleEmission extends feng3d.ParticleComponent {
+        constructor() {
+            super(...arguments);
+            /**
+             * 发射率，每秒发射粒子数量
+             */
+            this.rate = 10;
+            /**
+             * 爆发，在time时刻额外喷射particles粒子
+             */
+            this.bursts = [];
+            this.isDirty = true;
+        }
+        /**
+         * 创建粒子属性
+         * @param particle                  粒子
+         * @param numParticles              粒子数量
+         */
+        generatePropertyOfOneParticle(particle, numParticles) {
+            if (this.numParticles != numParticles)
+                this.isDirty = true;
+            this.numParticles = numParticles;
+            particle.birthTime = this.getBirthTimeArray(numParticles)[particle.index];
+        }
+        /**
+         * 获取出生时间数组
+         */
+        getBirthTimeArray(numParticles) {
+            if (this.isDirty) {
+                this.isDirty = false;
+                var birthTimes = [];
+                var bursts = this.bursts.concat();
+                //按时间降序排列
+                bursts.sort((a, b) => { return a.time - b.time; });
+                var index = 0;
+                var time = 0; //以秒为单位
+                var i = 0;
+                while (index < numParticles) {
+                    while (bursts.length > 0 && bursts[bursts.length - 1].time <= time) {
+                        var burst = bursts.pop();
+                        for (i = 0; i < burst.particles; i++) {
+                            birthTimes[index++] = burst.time;
+                        }
+                    }
+                    for (i = 0; i < this.rate; i++) {
+                        birthTimes[index++] = time;
+                    }
+                    time++;
+                }
+                this.birthTimes = birthTimes;
+            }
+            return this.birthTimes;
+        }
+    }
+    feng3d.ParticleEmission = ParticleEmission;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -7578,7 +7643,7 @@ var feng3d;
      * 粒子速度组件
      * @author feng 2017-01-09
      */
-    class ParticlePositionComponent extends feng3d.ParticleAnimatorComponent {
+    class ParticlePosition extends feng3d.ParticleComponent {
         /**
          * 创建粒子属性
          * @param particle                  粒子
@@ -7592,7 +7657,7 @@ var feng3d;
             particle.position = new feng3d.Vector3D(x, y, z);
         }
     }
-    feng3d.ParticlePositionComponent = ParticlePositionComponent;
+    feng3d.ParticlePosition = ParticlePosition;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -7600,21 +7665,21 @@ var feng3d;
      * 粒子速度组件
      * @author feng 2017-01-09
      */
-    class ParticleVelocityComponent extends feng3d.ParticleAnimatorComponent {
+    class ParticleVelocity extends feng3d.ParticleComponent {
         /**
          * 创建粒子属性
          * @param particle                  粒子
          * @param numParticles              粒子数量
          */
         generatePropertyOfOneParticle(particle, numParticles) {
-            var baseVelocity = 1;
+            var baseVelocity = 1000;
             var x = (Math.random() - 0.5) * baseVelocity;
             var y = (Math.random() - 0.5) * baseVelocity;
             var z = (Math.random() - 0.5) * baseVelocity;
             particle.velocity = new feng3d.Vector3D(x, y, z);
         }
     }
-    feng3d.ParticleVelocityComponent = ParticleVelocityComponent;
+    feng3d.ParticleVelocity = ParticleVelocity;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -7687,8 +7752,8 @@ var feng3d;
             object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = new feng3d.PointGeometry();
             object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.ParticleMaterial();
             var particleAnimator = object3D.getOrCreateComponentByClass(feng3d.ParticleAnimator);
-            particleAnimator.addComponent(new feng3d.ParticlePositionComponent());
-            particleAnimator.addComponent(new feng3d.ParticleVelocityComponent());
+            particleAnimator.addComponent(new feng3d.ParticlePosition());
+            particleAnimator.addComponent(new feng3d.ParticleVelocity());
             return object3D;
         }
     }

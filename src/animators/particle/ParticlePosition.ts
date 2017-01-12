@@ -4,7 +4,7 @@ module feng3d {
      * 粒子速度组件
      * @author feng 2017-01-09
      */
-    export class ParticleVelocityComponent extends ParticleAnimatorComponent {
+    export class ParticlePosition extends ParticleComponent {
 
         /**
 		 * 创建粒子属性
@@ -13,13 +13,11 @@ module feng3d {
 		 */
         public generatePropertyOfOneParticle(particle: Particle, numParticles: number) {
 
-            var baseVelocity = 1;
-
-            var x = (Math.random() - 0.5) * baseVelocity;
-            var y = (Math.random() - 0.5) * baseVelocity;
-            var z = (Math.random() - 0.5) * baseVelocity;
-
-            particle.velocity = new Vector3D(x, y, z);
+            var baseRange = 100;
+            var x = Math.random() * baseRange;
+            var y = Math.random() * baseRange;
+            var z = Math.random() * baseRange;
+            particle.position = new Vector3D(x, y, z);
         }
     }
 }

@@ -4,7 +4,7 @@ module feng3d {
      * 粒子动画组件
      * @author feng 2017-01-09
      */
-    export class ParticleAnimatorComponent extends Component {
+    export class ParticleComponent extends Component {
 
         /**
 		 * 创建粒子属性

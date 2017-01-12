@@ -136,6 +136,9 @@ module feng3d {
         var squareVerticesBuffer = context3DPool.getVABuffer(context3D, buffer.data);
         context3D.bindBuffer(Context3D.ARRAY_BUFFER, squareVerticesBuffer);
         switch (activeInfo.type) {
+            case Context3D.FLOAT:
+                context3D.vertexAttribPointer(location, 1, Context3D.FLOAT, false, 0, 0);
+                break;
             case Context3D.FLOAT_VEC3:
                 context3D.vertexAttribPointer(location, 3, Context3D.FLOAT, false, 0, 0);
                 break;

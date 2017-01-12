@@ -38,7 +38,7 @@ module feng3d {
 		 */
         private generateAnimationSubGeometries() {
 
-            var components = this.getComponentsByClass(ParticleAnimatorComponent);
+            var components = this.getComponentsByClass(ParticleComponent);
 
             for (var i = 0; i < this.numParticles; i++) {
                 var particle = <any>{};
@@ -62,7 +62,7 @@ module feng3d {
                 this.isDirty = false;
             }
 
-            this.time = (getTimer() - this.startTime) % 3000;
+            this.time = ((getTimer() - this.startTime) / 1000) % 3;
             this.renderData.uniforms[RenderDataID.u_particleTime] = this.time;
             this.renderData.instanceCount = this.numParticles;
 
