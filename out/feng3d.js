@@ -5154,7 +5154,7 @@ var feng3d;
             this._scissorRect = new feng3d.Rectangle();
             this._viewPort = new feng3d.Rectangle();
             this._near = 0.1;
-            this._far = Number.MAX_VALUE;
+            this._far = 10000;
             this._aspectRatio = 1;
             this._matrixInvalid = true;
             this._unprojectionInvalid = true;

@@ -9,7 +9,7 @@ module feng3d {
 		protected _scissorRect: Rectangle = new Rectangle();
 		protected _viewPort: Rectangle = new Rectangle();
 		protected _near: number = 0.1;
-		protected _far: number = Number.MAX_VALUE;
+		protected _far: number = 10000;
 		protected _aspectRatio: number = 1;
 
 		protected _matrixInvalid: boolean = true;
