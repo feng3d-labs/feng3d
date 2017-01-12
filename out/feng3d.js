@@ -1962,6 +1962,18 @@ var feng3d;
             return "#" + Color.ToHex(intA) + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
         }
         /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        mix(color, rate = 0.5) {
+            this.r = this.r * (1 - rate) + color.r * rate;
+            this.g = this.g * (1 - rate) + color.g * rate;
+            this.b = this.b * (1 - rate) + color.b * rate;
+            this.a = this.a * (1 - rate) + color.a * rate;
+            return this;
+        }
+        /**
          * 输出字符串
          */
         toString() {
@@ -4490,11 +4502,14 @@ var feng3d;
             case feng3d.Context3D.FLOAT:
                 context3D.vertexAttribPointer(location, 1, feng3d.Context3D.FLOAT, false, 0, 0);
                 break;
+            case feng3d.Context3D.FLOAT_VEC2:
+                context3D.vertexAttribPointer(location, 2, feng3d.Context3D.FLOAT, false, 0, 0);
+                break;
             case feng3d.Context3D.FLOAT_VEC3:
                 context3D.vertexAttribPointer(location, 3, feng3d.Context3D.FLOAT, false, 0, 0);
                 break;
-            case feng3d.Context3D.FLOAT_VEC2:
-                context3D.vertexAttribPointer(location, 2, feng3d.Context3D.FLOAT, false, 0, 0);
+            case feng3d.Context3D.FLOAT_VEC4:
+                context3D.vertexAttribPointer(location, 4, feng3d.Context3D.FLOAT, false, 0, 0);
                 break;
             default:
                 throw `无法识别的attribute类型 ${activeInfo.name} ${buffer.data}`;
@@ -7494,18 +7509,29 @@ var feng3d;
              */
             this.cycle = 10000;
             this.isDirty = true;
+            /**
+             * 生成粒子函数列表，优先级越高先执行
+             */
+            this.generateFunctions = [];
         }
         /**
-         * 生成粒子动画数据
+         * 生成粒子
          */
-        generateAnimationSubGeometries() {
+        generateParticles() {
+            var generateFunctions = this.generateFunctions.concat();
             var components = this.getComponentsByClass(feng3d.ParticleComponent);
+            components.forEach(element => {
+                generateFunctions.push({ generate: element.generateParticle.bind(element), priority: element.priority });
+            });
+            //按优先级排序，优先级越高先执行
+            generateFunctions.sort((a, b) => { return b.priority - a.priority; });
+            //
             for (var i = 0; i < this.numParticles; i++) {
                 var particle = {};
                 particle.index = i;
                 particle.total = this.numParticles;
-                components.forEach(element => {
-                    element.generatePropertyOfOneParticle(particle);
+                generateFunctions.forEach(element => {
+                    element.generate(particle);
                 });
                 this.collectionParticle(particle);
             }
@@ -7516,12 +7542,13 @@ var feng3d;
         updateRenderData(renderContext) {
             if (this.isDirty) {
                 this.startTime = feng3d.getTimer();
-                this.generateAnimationSubGeometries();
+                this.generateParticles();
                 this.isDirty = false;
             }
             this.time = ((feng3d.getTimer() - this.startTime) / 1000) % this.cycle;
             this.renderData.uniforms[feng3d.RenderDataID.u_particleTime] = this.time;
             this.renderData.instanceCount = this.numParticles;
+            this.updateMocaro();
             super.updateRenderData(renderContext);
         }
         /**
@@ -7573,6 +7600,9 @@ var feng3d;
                 throw new Error(`无法处理${feng3d.getClassName(data)}粒子属性`);
             }
         }
+        updateMocaro() {
+            this.renderData.attributes;
+        }
     }
     feng3d.ParticleAnimator = ParticleAnimator;
 })(feng3d || (feng3d = {}));
@@ -7583,11 +7613,18 @@ var feng3d;
      * @author feng 2017-01-09
      */
     class ParticleComponent extends feng3d.RenderDataHolder {
+        constructor() {
+            super(...arguments);
+            /**
+             * 优先级
+             */
+            this.priority = 0;
+        }
         /**
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generatePropertyOfOneParticle(particle) {
+        generateParticle(particle) {
         }
     }
     feng3d.ParticleComponent = ParticleComponent;
@@ -7600,7 +7637,7 @@ var feng3d;
      */
     class ParticleEmission extends feng3d.ParticleComponent {
         constructor() {
-            super(...arguments);
+            super();
             /**
              * 发射率，每秒发射粒子数量
              */
@@ -7610,12 +7647,13 @@ var feng3d;
              */
             this.bursts = [];
             this.isDirty = true;
+            this.priority = Number.MAX_VALUE;
         }
         /**
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generatePropertyOfOneParticle(particle) {
+        generateParticle(particle) {
             if (this.numParticles != particle.total)
                 this.isDirty = true;
             this.numParticles = particle.total;
@@ -7663,7 +7701,7 @@ var feng3d;
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generatePropertyOfOneParticle(particle) {
+        generateParticle(particle) {
             var baseRange = 100;
             var x = (Math.random() - 0.5) * baseRange;
             var y = (Math.random() - 0.5) * baseRange;
@@ -7685,7 +7723,7 @@ var feng3d;
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generatePropertyOfOneParticle(particle) {
+        generateParticle(particle) {
             var baseVelocity = 100;
             var x = (Math.random() - 0.5) * baseVelocity;
             var y = baseVelocity;

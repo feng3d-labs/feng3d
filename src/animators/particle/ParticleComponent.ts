@@ -7,6 +7,11 @@ module feng3d {
     export class ParticleComponent extends RenderDataHolder {
 
         /**
+         * 优先级
+         */
+        priority: number = 0;
+
+        /**
 		 * 创建粒子属性
          * @param particle                  粒子
 		 */

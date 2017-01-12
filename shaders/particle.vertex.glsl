@@ -8,9 +8,12 @@ uniform mat4 u_viewProjection;
 attribute float a_particle_birthTime;
 attribute vec3 a_particle_position;
 attribute vec3 a_particle_velocity;
+attribute vec4 a_particle_color;
 
 uniform float u_particleTime;
 uniform vec3 u_particleAcceleration;
+
+varying vec4 v_particle_color;
 
 void main(void) {
 
@@ -31,4 +34,6 @@ void main(void) {
     vec4 globalPosition = u_modelMatrix * vec4(position, 1.0);
     gl_Position = u_viewProjection * globalPosition;
     gl_PointSize = 1.0;
+
+    v_particle_color = a_particle_color;
 }

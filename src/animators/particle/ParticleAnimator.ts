@@ -39,18 +39,30 @@ module feng3d {
         private isDirty = true;
 
         /**
+         * 生成粒子函数列表，优先级越高先执行
+         */
+        public generateFunctions: ({ generate: (particle: Particle) => void, priority: number })[] = [];
+
+        /**
 		 * 生成粒子
 		 */
         private generateParticles() {
 
-            var components = this.getComponentsByClass(ParticleComponent);
+            var generateFunctions = this.generateFunctions.concat();
 
+            var components = this.getComponentsByClass(ParticleComponent);
+            components.forEach(element => {
+                generateFunctions.push({ generate: element.generateParticle.bind(element), priority: element.priority });
+            });
+            //按优先级排序，优先级越高先执行
+            generateFunctions.sort((a: { priority: number; }, b: { priority: number; }) => { return b.priority - a.priority; })
+            //
             for (var i = 0; i < this.numParticles; i++) {
                 var particle = <Particle>{};
                 particle.index = i;
                 particle.total = this.numParticles;
-                components.forEach(element => {
-                    element.generateParticle(particle);
+                generateFunctions.forEach(element => {
+                    element.generate(particle);
                 });
                 this.collectionParticle(particle);
             }
@@ -71,6 +83,8 @@ module feng3d {
             this.time = ((getTimer() - this.startTime) / 1000) % this.cycle;
             this.renderData.uniforms[RenderDataID.u_particleTime] = this.time;
             this.renderData.instanceCount = this.numParticles;
+
+            this.updateMocaro();
 
             super.updateRenderData(renderContext);
         }
@@ -123,6 +137,11 @@ module feng3d {
             } else {
                 throw new Error(`无法处理${getClassName(data)}粒子属性`);
             }
+        }
+
+        private updateMocaro() {
+
+            this.renderData.attributes
         }
     }
 }

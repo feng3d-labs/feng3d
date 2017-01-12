@@ -1773,6 +1773,12 @@ declare module feng3d {
          */
         toHexString(): string;
         /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        mix(color: Color, rate?: number): this;
+        /**
          * 输出字符串
          */
         toString(): string;
@@ -4590,9 +4596,16 @@ declare module feng3d {
         cycle: number;
         private isDirty;
         /**
-         * 生成粒子动画数据
+         * 生成粒子函数列表，优先级越高先执行
          */
-        private generateAnimationSubGeometries();
+        generateFunctions: ({
+            generate: (particle: Particle) => void;
+            priority: number;
+        })[];
+        /**
+         * 生成粒子
+         */
+        private generateParticles();
         /**
          * 更新渲染数据
          */
@@ -4609,6 +4622,7 @@ declare module feng3d {
          * @param data              属性数据
          */
         private collectionParticleAttribute(attributeID, index, data);
+        private updateMocaro();
     }
 }
 declare module feng3d {
@@ -4618,10 +4632,14 @@ declare module feng3d {
      */
     class ParticleComponent extends RenderDataHolder {
         /**
+         * 优先级
+         */
+        priority: number;
+        /**
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generatePropertyOfOneParticle(particle: Particle): void;
+        generateParticle(particle: Particle): void;
     }
 }
 declare module feng3d {
@@ -4644,11 +4662,12 @@ declare module feng3d {
         isDirty: boolean;
         private numParticles;
         private birthTimes;
+        constructor();
         /**
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generatePropertyOfOneParticle(particle: Particle): void;
+        generateParticle(particle: Particle): void;
         /**
          * 获取出生时间数组
          */
@@ -4665,7 +4684,7 @@ declare module feng3d {
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generatePropertyOfOneParticle(particle: Particle): void;
+        generateParticle(particle: Particle): void;
     }
 }
 declare module feng3d {
@@ -4678,7 +4697,7 @@ declare module feng3d {
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generatePropertyOfOneParticle(particle: Particle): void;
+        generateParticle(particle: Particle): void;
     }
 }
 declare module feng3d {

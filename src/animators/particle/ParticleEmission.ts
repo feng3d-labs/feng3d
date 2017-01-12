@@ -22,6 +22,11 @@ module feng3d {
 
         private birthTimes: number[];
 
+        constructor() {
+            super();
+            this.priority = Number.MAX_VALUE;
+        }
+
         /**
 		 * 创建粒子属性
          * @param particle                  粒子

@@ -139,11 +139,14 @@ module feng3d {
             case Context3D.FLOAT:
                 context3D.vertexAttribPointer(location, 1, Context3D.FLOAT, false, 0, 0);
                 break;
+            case Context3D.FLOAT_VEC2:
+                context3D.vertexAttribPointer(location, 2, Context3D.FLOAT, false, 0, 0);
+                break;
             case Context3D.FLOAT_VEC3:
                 context3D.vertexAttribPointer(location, 3, Context3D.FLOAT, false, 0, 0);
                 break;
-            case Context3D.FLOAT_VEC2:
-                context3D.vertexAttribPointer(location, 2, Context3D.FLOAT, false, 0, 0);
+            case Context3D.FLOAT_VEC4:
+                context3D.vertexAttribPointer(location, 4, Context3D.FLOAT, false, 0, 0);
                 break;
             default:
                 throw `无法识别的attribute类型 ${activeInfo.name} ${buffer.data}`;

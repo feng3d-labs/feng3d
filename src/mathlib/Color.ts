@@ -107,6 +107,20 @@ module feng3d {
         }
 
         /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        public mix(color: Color, rate: number = 0.5) {
+
+            this.r = this.r * (1 - rate) + color.r * rate;
+            this.g = this.g * (1 - rate) + color.g * rate;
+            this.b = this.b * (1 - rate) + color.b * rate;
+            this.a = this.a * (1 - rate) + color.a * rate;
+            return this;
+        }
+
+        /**
          * 输出字符串
          */
         public toString(): string {
@@ -126,5 +140,6 @@ module feng3d {
             }
             return str.toUpperCase();
         }
+
     }
 }
