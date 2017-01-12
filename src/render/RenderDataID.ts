@@ -104,5 +104,21 @@ module feng3d {
          * 点大小
          */
         static u_PointSize = "u_PointSize";
+
+        /**
+         * 粒子出生时间
+         */
+        static a_particleBirthTime = "a_particleBirthTime";
+
+        /**
+         * 粒子起始位置
+         */
+        static a_particlePosition = "a_particlePosition";
+
+        /**
+         * 粒子速度
+         */
+        static a_particleVelocity = "a_particleVelocity";
+
     }
 }

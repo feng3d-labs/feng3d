@@ -53,11 +53,23 @@ module feng3d {
          */
         divisor: number;
 
-        constructor(data: Float32Array, stride: number, divisor: number = 0) {
+        constructor(data: Float32Array = null, stride: number = 3, divisor: number = 0) {
 
             this.data = data;
             this.stride = stride;
             this.divisor = divisor;
+        }
+
+        /**
+         * 获取或创建数据
+         * @param num   数据数量
+         */
+        getOrCreateData(num: number) {
+
+            if (this.data == null || this.data.length != num * this.stride) {
+                this.data = new Float32Array(num * this.stride);
+            }
+            return this.data;
         }
     }
 }

@@ -16,11 +16,15 @@ module feng3d {
          */
         public bursts: { time: number, particles: number }[] = [];
 
-        private birthTimes: number[];
-
         public isDirty = true;
 
         private numParticles;
+
+        constructor() {
+
+            super();
+            this.renderData.attributes[RenderDataID.a_particleBirthTime] = this.attributeRenderData = new AttributeRenderData(null, 1, 1);
+        }
 
         /**
 		 * 创建粒子属性
@@ -45,13 +49,14 @@ module feng3d {
 
                 this.isDirty = false;
 
-                var birthTimes: number[] = [];
+                var birthTimes = new Float32Array(numParticles);
                 var bursts = this.bursts.concat();
                 //按时间降序排列
                 bursts.sort((a: { time: number; }, b: { time: number; }) => { return a.time - b.time });
                 var index = 0;
                 var time = 0;//以秒为单位
                 var i = 0;
+                var timeStep = 1 / this.rate;
                 while (index < numParticles) {
 
                     while (bursts.length > 0 && bursts[bursts.length - 1].time <= time) {
@@ -61,15 +66,13 @@ module feng3d {
                         }
                     }
 
-                    for (i = 0; i < this.rate; i++) {
-                        birthTimes[index++] = time;
-                    }
-                    time++;
+                    birthTimes[index++] = time;
+                    time += timeStep;
                 }
-                this.birthTimes = birthTimes;
+                this.attributeRenderData.data = birthTimes;
             }
 
-            return this.birthTimes;
+            return this.attributeRenderData.data;
         }
     }
 }
