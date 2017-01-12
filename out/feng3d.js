@@ -17,6 +17,7 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     feng3d.Context3D = WebGL2RenderingContext;
+    feng3d.contextId = "webgl2";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -3936,7 +3937,7 @@ var feng3d;
         constructor(canvas, scene = null, camera = null) {
             feng3d.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
-            this._context3D = this._canvas.getContext("webgl2");
+            this._context3D = this._canvas.getContext(feng3d.contextId);
             this.initGL();
             this.scene = scene || new feng3d.Scene3D();
             this.camera = camera || new feng3d.Camera3D();

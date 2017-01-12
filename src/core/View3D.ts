@@ -31,7 +31,7 @@ module feng3d {
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
 
-            this._context3D = this._canvas.getContext("webgl2");
+            this._context3D = <Context3D>this._canvas.getContext(contextId);
 
             this.initGL();
 

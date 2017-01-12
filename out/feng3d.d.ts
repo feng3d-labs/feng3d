@@ -570,6 +570,7 @@ declare module feng3d {
         readonly TIMEOUT_IGNORED: number;
         readonly MAX_CLIENT_WAIT_TIMEOUT_WEBGL: number;
     };
+    var contextId: string;
 }
 declare module feng3d {
     /**

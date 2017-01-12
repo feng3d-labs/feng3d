@@ -10,8 +10,10 @@ module feng3d {
     //webgl 1
     // export type Context3D = WebGLRenderingContext;
     // export var Context3D = WebGLRenderingContext;
+    // export var contextId = "webgl";
 
     //webgl 2
     export type Context3D = WebGL2RenderingContext;
     export var Context3D = WebGL2RenderingContext;
+    export var contextId = "webgl2";
 }
