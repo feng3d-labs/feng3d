@@ -137,6 +137,8 @@
         "src/animators/particle/ParticleEmission.ts",
         "src/animators/particle/ParticlePosition.ts",
         "src/animators/particle/ParticleVelocity.ts",
+        //解析
+        "src/parsers/OBJParser.ts",
         //
         "src/factory/Object3DFactory.ts"
     ]
