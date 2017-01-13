@@ -139,6 +139,7 @@
         "src/animators/particle/ParticleVelocity.ts",
         //解析
         "src/parsers/OBJParser.ts",
+        "src/parsers/MtlParser.ts",
         //
         "src/factory/Object3DFactory.ts"
     ]

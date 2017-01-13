@@ -7757,6 +7757,84 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * Obj模型解析器
+     * @author feng 2017-01-13
+     */
+    class OBJParser {
+        constructor() {
+            this.mtlReg = /mtllib\s+([\w.]+)/;
+            this.objReg = /o\s+([\w]+)/;
+            this.vertexReg = /v\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/;
+            this.usemtlReg = /usemtl\s+([\w.]+)/;
+            this.faceReg = /f\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
+        }
+        parser(context) {
+            var objData = { mtls: [], objs: [] };
+            var lines = context.split("\n").reverse();
+            do {
+                var line = lines.pop();
+                this.parserLine(line, objData);
+            } while (line);
+            currentObj = null;
+            currentSubObj = null;
+            return objData;
+        }
+        createOBJ(name) {
+            var obj = {
+                name: name,
+                vertex: [],
+                subObjs: []
+            };
+            return obj;
+        }
+        createSubObj(material) {
+            var subObj = {
+                material: material,
+                faces: []
+            };
+            return subObj;
+        }
+        parserLine(line, objData) {
+            if (!line)
+                return;
+            line = line.trim();
+            if (!line.length)
+                return;
+            if (line.charAt(0) == "#")
+                return;
+            var result;
+            if ((result = this.mtlReg.exec(line)) && result[0] == line) {
+                objData.mtls.push(result[1]);
+            }
+            else if ((result = this.objReg.exec(line)) && result[0] == line) {
+                currentObj = this.createOBJ(result[1]);
+                objData.objs.push(currentObj);
+            }
+            else if ((result = this.vertexReg.exec(line)) && result[0] == line) {
+                currentObj.vertex.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
+            }
+            else if ((result = this.usemtlReg.exec(line)) && result[0] == line) {
+                currentSubObj = this.createSubObj(result[1]);
+                currentObj.subObjs.push(currentSubObj);
+            }
+            else if ((result = this.faceReg.exec(line)) && result[0] == line) {
+                currentSubObj.faces.push({
+                    vertexIndices: [parseInt(result[1]), parseInt(result[2]), parseInt(result[3]), parseInt(result[4])]
+                });
+            }
+            else {
+                throw new Error(`无法解析${line}`);
+            }
+        }
+    }
+    feng3d.OBJParser = OBJParser;
+    //
+    var currentObj;
+    var currentSubObj;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 3D对象工厂
      * @author feng 2016-12-19
      */

@@ -1,19 +1,23 @@
 module feng3d {
 
-    type SubOBJ = {
-        material: string,
+    type Face = {
         vertexIndices: number[];
     };
 
+    type SubOBJ = {
+        material: string;
+        faces: Face[];
+    };
+
     type OBJ = {
-        name: string,
-        vertex: number[],
-        subObjs: SubOBJ[]
+        name: string;
+        vertex: number[];
+        subObjs: SubOBJ[];
     };
 
     type OBJData = {
-        mtls: string[],
-        objs: OBJ[]
+        mtls: string[];
+        objs: OBJ[];
     }
 
 	/**
@@ -55,7 +59,7 @@ module feng3d {
 
             var subObj = {
                 material: material,
-                vertexIndices: []
+                faces: []
             };
             return subObj;
         }
@@ -81,7 +85,9 @@ module feng3d {
                 currentSubObj = this.createSubObj(result[1]);
                 currentObj.subObjs.push(currentSubObj);
             } else if ((result = this.faceReg.exec(line)) && result[0] == line) {
-                currentSubObj.vertexIndices.push(parseInt(result[1]), parseInt(result[2]), parseInt(result[3]), parseInt(result[4]));
+                currentSubObj.faces.push({
+                    vertexIndices: [parseInt(result[1]), parseInt(result[2]), parseInt(result[3]), parseInt(result[4])]
+                });
             } else {
                 throw new Error(`无法解析${line}`);
             }

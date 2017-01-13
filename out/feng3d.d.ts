@@ -4706,6 +4706,35 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * Obj模型解析器
+     * @author feng 2017-01-13
+     */
+    class OBJParser {
+        mtlReg: RegExp;
+        objReg: RegExp;
+        vertexReg: RegExp;
+        usemtlReg: RegExp;
+        faceReg: RegExp;
+        parser(context: string): {
+            mtls: string[];
+            objs: {
+                name: string;
+                vertex: number[];
+                subObjs: {
+                    material: string;
+                    faces: {
+                        vertexIndices: number[];
+                    }[];
+                }[];
+            }[];
+        };
+        private createOBJ(name);
+        private createSubObj(material);
+        private parserLine(line, objData);
+    }
+}
+declare module feng3d {
+    /**
      * 3D对象工厂
      * @author feng 2016-12-19
      */
