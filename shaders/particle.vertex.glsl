@@ -8,17 +8,25 @@ uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 
 attribute float a_particle_birthTime;
-attribute vec3 a_particle_position;
-attribute vec3 a_particle_velocity;
-attribute vec4 a_particle_color;
+
+#ifdef D_a_particle_position
+    attribute vec3 a_particle_position;
+#endif
+
+#ifdef D_a_particle_velocity
+    attribute vec3 a_particle_velocity;
+#endif
+
+#ifdef D_a_particle_color
+    attribute vec4 a_particle_color;
+    varying vec4 v_particle_color;
+#endif
 
 uniform float u_particleTime;
 
 #ifdef D_u_particle_acceleration
     uniform vec3 u_particle_acceleration;
 #endif
-
-varying vec4 v_particle_color;
 
 void main(void) {
 
