@@ -7761,76 +7761,132 @@ var feng3d;
      * @author feng 2017-01-13
      */
     class OBJParser {
-        constructor() {
-            this.mtlReg = /mtllib\s+([\w.]+)/;
-            this.objReg = /o\s+([\w]+)/;
-            this.vertexReg = /v\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/;
-            this.usemtlReg = /usemtl\s+([\w.]+)/;
-            this.faceReg = /f\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
-        }
-        parser(context) {
+        static parser(context) {
             var objData = { mtls: [], objs: [] };
             var lines = context.split("\n").reverse();
             do {
                 var line = lines.pop();
-                this.parserLine(line, objData);
+                parserLine(line, objData);
             } while (line);
             currentObj = null;
             currentSubObj = null;
             return objData;
         }
-        createOBJ(name) {
-            var obj = {
-                name: name,
-                vertex: [],
-                subObjs: []
-            };
-            return obj;
-        }
-        createSubObj(material) {
-            var subObj = {
-                material: material,
-                faces: []
-            };
-            return subObj;
-        }
-        parserLine(line, objData) {
-            if (!line)
-                return;
-            line = line.trim();
-            if (!line.length)
-                return;
-            if (line.charAt(0) == "#")
-                return;
-            var result;
-            if ((result = this.mtlReg.exec(line)) && result[0] == line) {
-                objData.mtls.push(result[1]);
-            }
-            else if ((result = this.objReg.exec(line)) && result[0] == line) {
-                currentObj = this.createOBJ(result[1]);
-                objData.objs.push(currentObj);
-            }
-            else if ((result = this.vertexReg.exec(line)) && result[0] == line) {
-                currentObj.vertex.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
-            }
-            else if ((result = this.usemtlReg.exec(line)) && result[0] == line) {
-                currentSubObj = this.createSubObj(result[1]);
-                currentObj.subObjs.push(currentSubObj);
-            }
-            else if ((result = this.faceReg.exec(line)) && result[0] == line) {
-                currentSubObj.faces.push({
-                    vertexIndices: [parseInt(result[1]), parseInt(result[2]), parseInt(result[3]), parseInt(result[4])]
-                });
-            }
-            else {
-                throw new Error(`无法解析${line}`);
-            }
-        }
     }
     feng3d.OBJParser = OBJParser;
+    var mtlReg = /mtllib\s+([\w.]+)/;
+    var objReg = /o\s+([\w]+)/;
+    var vertexReg = /v\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/;
+    var usemtlReg = /usemtl\s+([\w.]+)/;
+    var faceReg = /f\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
     //
     var currentObj;
     var currentSubObj;
+    function parserLine(line, objData) {
+        if (!line)
+            return;
+        line = line.trim();
+        if (!line.length)
+            return;
+        if (line.charAt(0) == "#")
+            return;
+        var result;
+        if ((result = mtlReg.exec(line)) && result[0] == line) {
+            objData.mtls.push(result[1]);
+        }
+        else if ((result = objReg.exec(line)) && result[0] == line) {
+            currentObj = {
+                name: result[1],
+                vertex: [],
+                subObjs: []
+            };
+            objData.objs.push(currentObj);
+        }
+        else if ((result = vertexReg.exec(line)) && result[0] == line) {
+            currentObj.vertex.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
+        }
+        else if ((result = usemtlReg.exec(line)) && result[0] == line) {
+            currentSubObj = {
+                material: result[1],
+                faces: []
+            };
+            currentObj.subObjs.push(currentSubObj);
+        }
+        else if ((result = faceReg.exec(line)) && result[0] == line) {
+            currentSubObj.faces.push({
+                vertexIndices: [parseInt(result[1]), parseInt(result[2]), parseInt(result[3]), parseInt(result[4])]
+            });
+        }
+        else {
+            throw new Error(`无法解析${line}`);
+        }
+    }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Obj模型Mtl解析器
+     * @author feng 2017-01-13
+     */
+    class MtlParser {
+        static parser(context) {
+            var mtl = { materials: [] };
+            var lines = context.split("\n").reverse();
+            do {
+                var line = lines.pop();
+                parserLine(line, mtl);
+            } while (line);
+            return mtl;
+        }
+    }
+    feng3d.MtlParser = MtlParser;
+    var newmtlReg = /newmtl\s+([\w.]+)/;
+    var kaReg = /Ka\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/;
+    var kdReg = /Kd\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/;
+    var ksReg = /Ks\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/;
+    var nsReg = /Ns\s+([\d.]+)/;
+    var niReg = /Ni\s+([\d.]+)/;
+    var dReg = /d\s+([\d.]+)/;
+    var illumReg = /illum\s+([\d]+)/;
+    var currentMaterial;
+    function parserLine(line, mtl) {
+        if (!line)
+            return;
+        line = line.trim();
+        if (!line.length)
+            return;
+        if (line.charAt(0) == "#")
+            return;
+        var result;
+        if ((result = newmtlReg.exec(line)) && result[0] == line) {
+            currentMaterial = { name: result[1], ka: [], kd: [], ks: [], ns: 0, ni: 0, d: 0, illum: 0 };
+            mtl.materials.push(currentMaterial);
+        }
+        else if ((result = kaReg.exec(line)) && result[0] == line) {
+            currentMaterial.ka = [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])];
+        }
+        else if ((result = kdReg.exec(line)) && result[0] == line) {
+            currentMaterial.kd = [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])];
+        }
+        else if ((result = ksReg.exec(line)) && result[0] == line) {
+            currentMaterial.ks = [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])];
+        }
+        else if ((result = nsReg.exec(line)) && result[0] == line) {
+            currentMaterial.ns = parseFloat(result[1]);
+        }
+        else if ((result = niReg.exec(line)) && result[0] == line) {
+            currentMaterial.ni = parseFloat(result[1]);
+        }
+        else if ((result = dReg.exec(line)) && result[0] == line) {
+            currentMaterial.d = parseFloat(result[1]);
+        }
+        else if ((result = illumReg.exec(line)) && result[0] == line) {
+            currentMaterial.illum = parseFloat(result[1]);
+        }
+        else {
+            throw new Error(`无法解析${line}`);
+        }
+    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

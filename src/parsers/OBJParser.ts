@@ -26,75 +26,64 @@ module feng3d {
 	 */
     export class OBJParser {
 
-        mtlReg = /mtllib\s+([\w.]+)/;
-        objReg = /o\s+([\w]+)/;
-        vertexReg = /v\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/;
-        usemtlReg = /usemtl\s+([\w.]+)/;
-        faceReg = /f\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
-
-        parser(context: string) {
+        static parser(context: string) {
 
             var objData: OBJData = { mtls: [], objs: [] };
             var lines = context.split("\n").reverse();
             do {
                 var line = lines.pop();
-                this.parserLine(line, objData);
+                parserLine(line, objData);
             } while (line);
             currentObj = null;
             currentSubObj = null;
             return objData;
         }
 
-        private createOBJ(name: string) {
-
-            var obj: OBJ = {
-                name: name,
-                vertex: [],
-                subObjs: []
-            };
-            return obj;
-        }
-
-        private createSubObj(material: string) {
-
-            var subObj = {
-                material: material,
-                faces: []
-            };
-            return subObj;
-        }
-
-        private parserLine(line: string, objData: OBJData) {
-            if (!line)
-                return;
-            line = line.trim();
-            if (!line.length)
-                return;
-            if (line.charAt(0) == "#")
-                return;
-
-            var result: RegExpExecArray;
-            if ((result = this.mtlReg.exec(line)) && result[0] == line) {
-                objData.mtls.push(result[1]);
-            } else if ((result = this.objReg.exec(line)) && result[0] == line) {
-                currentObj = this.createOBJ(result[1]);
-                objData.objs.push(currentObj);
-            } else if ((result = this.vertexReg.exec(line)) && result[0] == line) {
-                currentObj.vertex.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
-            } else if ((result = this.usemtlReg.exec(line)) && result[0] == line) {
-                currentSubObj = this.createSubObj(result[1]);
-                currentObj.subObjs.push(currentSubObj);
-            } else if ((result = this.faceReg.exec(line)) && result[0] == line) {
-                currentSubObj.faces.push({
-                    vertexIndices: [parseInt(result[1]), parseInt(result[2]), parseInt(result[3]), parseInt(result[4])]
-                });
-            } else {
-                throw new Error(`无法解析${line}`);
-            }
-        }
 
     }
+    var mtlReg = /mtllib\s+([\w.]+)/;
+    var objReg = /o\s+([\w]+)/;
+    var vertexReg = /v\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/;
+    var usemtlReg = /usemtl\s+([\w.]+)/;
+    var faceReg = /f\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
+
     //
     var currentObj: OBJ;
     var currentSubObj: SubOBJ;
+
+    function parserLine(line: string, objData: OBJData) {
+        if (!line)
+            return;
+        line = line.trim();
+        if (!line.length)
+            return;
+        if (line.charAt(0) == "#")
+            return;
+
+        var result: RegExpExecArray;
+        if ((result = mtlReg.exec(line)) && result[0] == line) {
+            objData.mtls.push(result[1]);
+        } else if ((result = objReg.exec(line)) && result[0] == line) {
+            currentObj = {
+                name: result[1],
+                vertex: [],
+                subObjs: []
+            };
+            objData.objs.push(currentObj);
+        } else if ((result = vertexReg.exec(line)) && result[0] == line) {
+            currentObj.vertex.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
+        } else if ((result = usemtlReg.exec(line)) && result[0] == line) {
+            currentSubObj = {
+                material: result[1],
+                faces: []
+            };
+            currentObj.subObjs.push(currentSubObj);
+        } else if ((result = faceReg.exec(line)) && result[0] == line) {
+            currentSubObj.faces.push({
+                vertexIndices: [parseInt(result[1]), parseInt(result[2]), parseInt(result[3]), parseInt(result[4])]
+            });
+        } else {
+            throw new Error(`无法解析${line}`);
+        }
+    }
 }

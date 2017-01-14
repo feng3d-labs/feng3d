@@ -4710,12 +4710,7 @@ declare module feng3d {
      * @author feng 2017-01-13
      */
     class OBJParser {
-        mtlReg: RegExp;
-        objReg: RegExp;
-        vertexReg: RegExp;
-        usemtlReg: RegExp;
-        faceReg: RegExp;
-        parser(context: string): {
+        static parser(context: string): {
             mtls: string[];
             objs: {
                 name: string;
@@ -4728,9 +4723,26 @@ declare module feng3d {
                 }[];
             }[];
         };
-        private createOBJ(name);
-        private createSubObj(material);
-        private parserLine(line, objData);
+    }
+}
+declare module feng3d {
+    /**
+     * Obj模型Mtl解析器
+     * @author feng 2017-01-13
+     */
+    class MtlParser {
+        static parser(context: string): {
+            materials: {
+                name: string;
+                ka: number[];
+                kd: number[];
+                ks: number[];
+                ns: number;
+                ni: number;
+                d: number;
+                illum: number;
+            }[];
+        };
     }
 }
 declare module feng3d {
