@@ -1,23 +1,23 @@
 module feng3d {
 
-    type Face = {
+    export type OBJ_Face = {
         vertexIndices: number[];
     };
 
-    type SubOBJ = {
+    export type OBJ_SubOBJ = {
         material: string;
-        faces: Face[];
+        faces: OBJ_Face[];
     };
 
-    type OBJ = {
+    export type OBJ_OBJ = {
         name: string;
         vertex: number[];
-        subObjs: SubOBJ[];
+        subObjs: OBJ_SubOBJ[];
     };
 
-    type OBJData = {
-        mtls: string[];
-        objs: OBJ[];
+    export type OBJ_OBJData = {
+        mtl: string;
+        objs: OBJ_OBJ[];
     }
 
 	/**
@@ -28,7 +28,7 @@ module feng3d {
 
         static parser(context: string) {
 
-            var objData: OBJData = { mtls: [], objs: [] };
+            var objData: OBJ_OBJData = { mtl: null, objs: [] };
             var lines = context.split("\n").reverse();
             do {
                 var line = lines.pop();
@@ -48,10 +48,10 @@ module feng3d {
     var faceReg = /f\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
 
     //
-    var currentObj: OBJ;
-    var currentSubObj: SubOBJ;
+    var currentObj: OBJ_OBJ;
+    var currentSubObj: OBJ_SubOBJ;
 
-    function parserLine(line: string, objData: OBJData) {
+    function parserLine(line: string, objData: OBJ_OBJData) {
         if (!line)
             return;
         line = line.trim();
@@ -62,7 +62,7 @@ module feng3d {
 
         var result: RegExpExecArray;
         if ((result = mtlReg.exec(line)) && result[0] == line) {
-            objData.mtls.push(result[1]);
+            objData.mtl = result[1];
         } else if ((result = objReg.exec(line)) && result[0] == line) {
             currentObj = {
                 name: result[1],

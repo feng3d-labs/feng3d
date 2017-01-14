@@ -7762,7 +7762,7 @@ var feng3d;
      */
     class OBJParser {
         static parser(context) {
-            var objData = { mtls: [], objs: [] };
+            var objData = { mtl: null, objs: [] };
             var lines = context.split("\n").reverse();
             do {
                 var line = lines.pop();
@@ -7792,7 +7792,7 @@ var feng3d;
             return;
         var result;
         if ((result = mtlReg.exec(line)) && result[0] == line) {
-            objData.mtls.push(result[1]);
+            objData.mtl = result[1];
         }
         else if ((result = objReg.exec(line)) && result[0] == line) {
             currentObj = {

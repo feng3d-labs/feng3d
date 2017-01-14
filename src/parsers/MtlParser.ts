@@ -1,6 +1,6 @@
 module feng3d {
 
-    type Material = {
+    export type Mtl_Material = {
         name: string;
         ka: number[];
         kd: number[];
@@ -10,7 +10,7 @@ module feng3d {
         d: number;
         illum: number;
     };
-    type Mtl = { materials: Material[] }
+    export type Mtl_Mtl = { materials: Mtl_Material[] }
 
 	/**
 	 * Obj模型Mtl解析器
@@ -20,7 +20,7 @@ module feng3d {
 
         static parser(context: string) {
 
-            var mtl: Mtl = { materials: [] };
+            var mtl: Mtl_Mtl = { materials: [] };
             var lines = context.split("\n").reverse();
             do {
                 var line = lines.pop();
@@ -39,9 +39,9 @@ module feng3d {
     var niReg = /Ni\s+([\d.]+)/;
     var dReg = /d\s+([\d.]+)/;
     var illumReg = /illum\s+([\d]+)/;
-    var currentMaterial: Material;
+    var currentMaterial: Mtl_Material;
 
-    function parserLine(line: string, mtl: Mtl) {
+    function parserLine(line: string, mtl: Mtl_Mtl) {
         if (!line)
             return;
         line = line.trim();

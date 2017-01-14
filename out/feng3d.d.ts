@@ -4705,13 +4705,29 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    type OBJ_Face = {
+        vertexIndices: number[];
+    };
+    type OBJ_SubOBJ = {
+        material: string;
+        faces: OBJ_Face[];
+    };
+    type OBJ_OBJ = {
+        name: string;
+        vertex: number[];
+        subObjs: OBJ_SubOBJ[];
+    };
+    type OBJ_OBJData = {
+        mtl: string;
+        objs: OBJ_OBJ[];
+    };
     /**
      * Obj模型解析器
      * @author feng 2017-01-13
      */
     class OBJParser {
         static parser(context: string): {
-            mtls: string[];
+            mtl: string;
             objs: {
                 name: string;
                 vertex: number[];
@@ -4726,6 +4742,19 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    type Mtl_Material = {
+        name: string;
+        ka: number[];
+        kd: number[];
+        ks: number[];
+        ns: number;
+        ni: number;
+        d: number;
+        illum: number;
+    };
+    type Mtl_Mtl = {
+        materials: Mtl_Material[];
+    };
     /**
      * Obj模型Mtl解析器
      * @author feng 2017-01-13
