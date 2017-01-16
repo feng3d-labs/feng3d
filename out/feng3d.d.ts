@@ -4705,20 +4705,49 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    /**
+     * 面数据
+     */
     type OBJ_Face = {
+        /** 顶点索引 */
         vertexIndices: number[];
+        /** uv索引 */
+        uvIndices?: number[];
+        /** 法线索引 */
+        normalIndices?: number[];
     };
+    /**
+     * 子对象
+     */
     type OBJ_SubOBJ = {
-        material: string;
+        /** 材质名称 */
+        material?: string;
+        /**  */
+        g?: string;
+        /** 面列表 */
         faces: OBJ_Face[];
     };
+    /**
+     * 对象
+     */
     type OBJ_OBJ = {
         name: string;
+        /** 顶点坐标 */
         vertex: number[];
+        /** 顶点法线 */
+        vn: number[];
+        /** 顶点uv */
+        vt: number[];
+        /** 子对象 */
         subObjs: OBJ_SubOBJ[];
     };
+    /**
+     * Obj模型数据
+     */
     type OBJ_OBJData = {
+        /** mtl文件路径 */
         mtl: string;
+        /** 模型列表 */
         objs: OBJ_OBJ[];
     };
     /**
@@ -4731,10 +4760,15 @@ declare module feng3d {
             objs: {
                 name: string;
                 vertex: number[];
+                vn: number[];
+                vt: number[];
                 subObjs: {
-                    material: string;
+                    material?: string;
+                    g?: string;
                     faces: {
                         vertexIndices: number[];
+                        uvIndices?: number[];
+                        normalIndices?: number[];
                     }[];
                 }[];
             }[];

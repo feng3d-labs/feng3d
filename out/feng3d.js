@@ -7774,11 +7774,24 @@ var feng3d;
         }
     }
     feng3d.OBJParser = OBJParser;
+    /** mtl正则 */
     var mtlReg = /mtllib\s+([\w.]+)/;
+    /** 对象名称正则 */
     var objReg = /o\s+([\w]+)/;
+    /** 顶点坐标正则 */
     var vertexReg = /v\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/;
+    /** 顶点法线正则 */
+    var vnReg = /vn\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/;
+    /** 顶点uv正则 */
+    var vtReg = /vt\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/;
+    /** 使用材质正则 */
     var usemtlReg = /usemtl\s+([\w.]+)/;
-    var faceReg = /f\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
+    /** 面正则 vertex */
+    var faceVReg = /f\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
+    /** 面正则 vertex/uv/normal */
+    var faceVUNReg = /f\s+(\d+)\/(\d+)\/(\d+)\s+(\d+)\/(\d+)\/(\d+)\s+(\d+)\/(\d+)\/(\d+)/;
+    var gReg = /g\s+(\w+)/;
+    var sReg = /s\s+(\w+)/;
     //
     var currentObj;
     var currentSubObj;
@@ -7795,26 +7808,48 @@ var feng3d;
             objData.mtl = result[1];
         }
         else if ((result = objReg.exec(line)) && result[0] == line) {
-            currentObj = {
-                name: result[1],
-                vertex: [],
-                subObjs: []
-            };
+            currentObj = { name: result[1], vertex: [], subObjs: [], vn: [], vt: [] };
             objData.objs.push(currentObj);
         }
         else if ((result = vertexReg.exec(line)) && result[0] == line) {
+            if (currentObj == null) {
+                currentObj = { name: "", vertex: [], subObjs: [], vn: [], vt: [] };
+                objData.objs.push(currentObj);
+            }
             currentObj.vertex.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
         }
-        else if ((result = usemtlReg.exec(line)) && result[0] == line) {
-            currentSubObj = {
-                material: result[1],
-                faces: []
-            };
-            currentObj.subObjs.push(currentSubObj);
+        else if ((result = vnReg.exec(line)) && result[0] == line) {
+            currentObj.vn.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
         }
-        else if ((result = faceReg.exec(line)) && result[0] == line) {
+        else if ((result = vtReg.exec(line)) && result[0] == line) {
+            currentObj.vt.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
+        }
+        else if ((result = gReg.exec(line)) && result[0] == line) {
+            if (currentSubObj == null) {
+                currentSubObj = { faces: [] };
+                currentObj.subObjs.push(currentSubObj);
+            }
+            currentSubObj.g = result[1];
+        }
+        else if ((result = sReg.exec(line)) && result[0] == line) {
+        }
+        else if ((result = usemtlReg.exec(line)) && result[0] == line) {
+            if (currentObj == null) {
+                currentSubObj = { faces: [] };
+                currentObj.subObjs.push(currentSubObj);
+            }
+            currentSubObj.material = result[1];
+        }
+        else if ((result = faceVReg.exec(line)) && result[0] == line) {
             currentSubObj.faces.push({
                 vertexIndices: [parseInt(result[1]), parseInt(result[2]), parseInt(result[3]), parseInt(result[4])]
+            });
+        }
+        else if ((result = faceVUNReg.exec(line)) && result[0] == line) {
+            currentSubObj.faces.push({
+                vertexIndices: [parseInt(result[1]), parseInt(result[4]), parseInt(result[7])],
+                uvIndices: [parseInt(result[2]), parseInt(result[5]), parseInt(result[8])],
+                normalIndices: [parseInt(result[3]), parseInt(result[6]), parseInt(result[9])]
             });
         }
         else {
