@@ -7830,7 +7830,7 @@ var feng3d;
      */
     class MtlParser {
         static parser(context) {
-            var mtl = { materials: [] };
+            var mtl = {};
             var lines = context.split("\n").reverse();
             do {
                 var line = lines.pop();
@@ -7860,7 +7860,7 @@ var feng3d;
         var result;
         if ((result = newmtlReg.exec(line)) && result[0] == line) {
             currentMaterial = { name: result[1], ka: [], kd: [], ks: [], ns: 0, ni: 0, d: 0, illum: 0 };
-            mtl.materials.push(currentMaterial);
+            mtl[currentMaterial.name] = currentMaterial;
         }
         else if ((result = kaReg.exec(line)) && result[0] == line) {
             currentMaterial.ka = [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])];

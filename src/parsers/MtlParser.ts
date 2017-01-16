@@ -10,7 +10,7 @@ module feng3d {
         d: number;
         illum: number;
     };
-    export type Mtl_Mtl = { materials: Mtl_Material[] }
+    export type Mtl_Mtl = { [name: string]: Mtl_Material }
 
 	/**
 	 * Obj模型Mtl解析器
@@ -20,7 +20,7 @@ module feng3d {
 
         static parser(context: string) {
 
-            var mtl: Mtl_Mtl = { materials: [] };
+            var mtl: Mtl_Mtl = {};
             var lines = context.split("\n").reverse();
             do {
                 var line = lines.pop();
@@ -53,7 +53,7 @@ module feng3d {
         var result: RegExpExecArray;
         if ((result = newmtlReg.exec(line)) && result[0] == line) {
             currentMaterial = { name: result[1], ka: [], kd: [], ks: [], ns: 0, ni: 0, d: 0, illum: 0 };
-            mtl.materials.push(currentMaterial);
+            mtl[currentMaterial.name] = currentMaterial;
         } else if ((result = kaReg.exec(line)) && result[0] == line) {
             currentMaterial.ka = [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])];
         } else if ((result = kdReg.exec(line)) && result[0] == line) {

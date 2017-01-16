@@ -4753,7 +4753,7 @@ declare module feng3d {
         illum: number;
     };
     type Mtl_Mtl = {
-        materials: Mtl_Material[];
+        [name: string]: Mtl_Material;
     };
     /**
      * Obj模型Mtl解析器
@@ -4761,7 +4761,7 @@ declare module feng3d {
      */
     class MtlParser {
         static parser(context: string): {
-            materials: {
+            [name: string]: {
                 name: string;
                 ka: number[];
                 kd: number[];
@@ -4770,7 +4770,7 @@ declare module feng3d {
                 ni: number;
                 d: number;
                 illum: number;
-            }[];
+            };
         };
     }
 }
