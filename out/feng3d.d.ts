@@ -4810,6 +4810,137 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * Obj模型解析者
+     */
+    class OBJParser1 {
+        /** 字符串数据 */
+        private _textData;
+        /** 当前读取到的位置 */
+        private _charIndex;
+        /** 刚才读取到的位置 */
+        private _oldIndex;
+        /** 字符串数据长度 */
+        private _stringLength;
+        /** 当前解析的对象 */
+        private _currentObject;
+        /** 当前组 */
+        private _currentGroup;
+        /** 当前材质组 */
+        private _currentMaterialGroup;
+        /** 对象组列表 */
+        private _objects;
+        /** 材质编号列表 */
+        private _materialIDs;
+        /** 最后的材质编号 */
+        private _lastMtlID;
+        /** object索引 */
+        private _objectIndex;
+        /** 真实索引列表 */
+        private _realIndices;
+        /** 顶点索引 */
+        private _vertexIndex;
+        /** 顶点坐标数据 */
+        private _vertices;
+        /** 顶点法线数据 */
+        private _vertexNormals;
+        /** uv数据 */
+        private _uvs;
+        /** 缩放尺度 */
+        private _scale;
+        /**  */
+        private _mtlLib;
+        private mtl;
+        /** 材质库是否已加载 */
+        private _mtlLibLoaded;
+        /** 活动材质编号 */
+        private _activeMaterialID;
+        /**
+         * 创建Obj模型解析对象
+         * @param scale 缩放比例
+         */
+        constructor(scale?: number);
+        /**
+         * 判断是否支持解析
+         * @param extension 文件类型
+         * @return
+         */
+        static supportsType(extension: string): boolean;
+        /**
+         * 判断是否支持该数据的解析
+         * @param data 需要解析的数据
+         * @return
+         */
+        static supportsData(content: string): boolean;
+        protected parse(content: string): void;
+        /**
+         * 解析行
+         */
+        private parseLine(trunk);
+        /**
+         * 创建对象组
+         * @param trunk 包含材料标记的数据块和它的参数
+         */
+        private createObject(trunk);
+        /**
+         * 创建一个组
+         * @param trunk 包含材料标记的数据块和它的参数
+         */
+        private createGroup(trunk);
+        /**
+         * 创建材质组
+         * @param trunk 包含材料标记的数据块和它的参数
+         */
+        private createMaterialGroup(trunk);
+        /**
+         * 解析顶点坐标数据
+         * @param trunk 坐标数据
+         */
+        private parseVertex(trunk);
+        /**
+         * 解析uv
+         * @param trunk uv数据
+         */
+        private parseUV(trunk);
+        /**
+         * 解析顶点法线
+         * @param trunk 法线数据
+         */
+        private parseVertexNormal(trunk);
+        /**
+         * 解析面
+         * @param trunk 面数据
+         */
+        private parseFace(trunk);
+        /**
+         * This is a hack around negative face coords
+         */
+        private parseIndex(index, length);
+        /**
+         * 解析材质数据
+         * @param data 材质数据
+         */
+        parseMtl(data: string): void;
+        private parseMapKdString(trunk);
+    }
+    /**
+     * 顶点
+     */
+    class Vertex {
+        x: number;
+        y: number;
+        z: number;
+        /**
+         *
+         * @param x X轴坐标
+         * @param y Y轴坐标
+         * @param z Z轴坐标
+         * @param index 顶点索引
+         */
+        constructor(x?: number, y?: number, z?: number);
+    }
+}
+declare module feng3d {
+    /**
      * 3D对象工厂
      * @author feng 2016-12-19
      */

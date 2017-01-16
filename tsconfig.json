@@ -140,6 +140,7 @@
         //解析
         "src/parsers/OBJParser.ts",
         "src/parsers/MtlParser.ts",
+        "src/parsers/OBJParser1.ts",
         //
         "src/factory/Object3DFactory.ts"
     ]
