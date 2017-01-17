@@ -4850,72 +4850,41 @@ declare module feng3d {
      * Obj模型解析者
      */
     class OBJParser1 {
-        private parse(content);
-        /**
-         * 解析行
-         */
-        private parseLine(trunk);
-        /**
-         * 创建对象组
-         * @param trunk 包含材料标记的数据块和它的参数
-         */
-        private createObject(trunk);
-        /**
-         * 创建一个组
-         * @param trunk 包含材料标记的数据块和它的参数
-         */
-        private createGroup(trunk);
-        /**
-         * 创建材质组
-         * @param trunk 包含材料标记的数据块和它的参数
-         */
-        private createMaterialGroup(trunk);
-        /**
-         * 解析顶点坐标数据
-         * @param trunk 坐标数据
-         */
-        private parseVertex(trunk);
-        /**
-         * 解析uv
-         * @param trunk uv数据
-         */
-        private parseUV(trunk);
-        /**
-         * 解析顶点法线
-         * @param trunk 法线数据
-         */
-        private parseVertexNormal(trunk);
-        /**
-         * 解析面
-         * @param trunk 面数据
-         */
-        private parseFace(trunk);
-        /**
-         * This is a hack around negative face coords
-         */
-        private parseIndex(index, length);
-        /**
-         * 解析材质数据
-         * @param data 材质数据
-         */
-        parseMtl(data: string): void;
-        private parseMapKdString(trunk);
-    }
-    /**
-     * 顶点
-     */
-    class Vertex {
-        x: number;
-        y: number;
-        z: number;
-        /**
-         *
-         * @param x X轴坐标
-         * @param y Y轴坐标
-         * @param z Z轴坐标
-         * @param index 顶点索引
-         */
-        constructor(x?: number, y?: number, z?: number);
+        static parse(content: string): {
+            objects: {
+                name?: string;
+                groups: {
+                    name?: string;
+                    materialID?: string;
+                    materialGroups: {
+                        url?: string;
+                        faces: {
+                            vertexIndices: number[];
+                            uvIndices: number[];
+                            normalIndices: number[];
+                            indexIds: string[];
+                        }[];
+                    }[];
+                }[];
+            }[];
+            materialIDs: string[];
+            lastMtlID?: string;
+            vertices: {
+                x: number;
+                y: number;
+                z: number;
+            }[];
+            vertexNormals: {
+                x: number;
+                y: number;
+                z: number;
+            }[];
+            uvs: {
+                u: number;
+                v: number;
+            }[];
+            mtl?: string;
+        };
     }
 }
 declare module feng3d {
