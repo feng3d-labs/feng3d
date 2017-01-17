@@ -3,33 +3,33 @@ module feng3d {
     class ObjData {
 
         /** 对象组列表 */
-        _objects: ObjectGroup[] = [];
+        objects: ObjectGroup[] = [];
         /** 材质编号列表 */
-        _materialIDs: string[] = [];
+        materialIDs: string[] = [];
         /** 最后的材质编号 */
-        _lastMtlID: string;
+        lastMtlID: string;
         /** 顶点坐标数据 */
-        _vertices: Vertex[] = [];
+        vertices: Vertex[] = [];
         /** 顶点法线数据 */
-        _vertexNormals: Vertex[] = [];
+        vertexNormals: Vertex[] = [];
         /** uv数据 */
-        _uvs: UV[] = [];
+        uvs: UV[] = [];
         /** */
         mtl: string;
     }
 
     /** 当前解析的对象 */
-    var _currentObject: ObjectGroup;
+    var currentObject: ObjectGroup;
     /** 当前组 */
-    var _currentGroup: Group;
+    var currentGroup: Group;
     /** 当前材质组 */
-    var _currentMaterialGroup: MaterialGroup;
+    var currentMaterialGroup: MaterialGroup;
     /**  */
-    var _mtlLib: boolean;
+    var mtlLib: boolean;
     /** 材质库是否已加载 */
-    var _mtlLibLoaded: boolean = true;
+    var mtlLibLoaded: boolean = true;
     /** 活动材质编号 */
-    var _activeMaterialID: string = "";
+    var activeMaterialID: string = "";
 
     var objData: ObjData;
 
@@ -86,8 +86,8 @@ module feng3d {
         private parseLine(trunk) {
             switch (trunk[0]) {
                 case "mtllib":
-                    _mtlLib = true;
-                    _mtlLibLoaded = false;
+                    mtlLib = true;
+                    mtlLibLoaded = false;
                     objData.mtl = trunk[1];
                     break;
                 case "g":
@@ -97,13 +97,13 @@ module feng3d {
                     this.createObject(trunk);
                     break;
                 case "usemtl":
-                    if (_mtlLib) {
+                    if (mtlLib) {
                         if (!trunk[1])
                             trunk[1] = "def000";
-                        objData._materialIDs.push(trunk[1]);
-                        _activeMaterialID = trunk[1];
-                        if (_currentGroup)
-                            _currentGroup.materialID = _activeMaterialID;
+                        objData.materialIDs.push(trunk[1]);
+                        activeMaterialID = trunk[1];
+                        if (currentGroup)
+                            currentGroup.materialID = activeMaterialID;
                     }
                     break;
                 case "v":
@@ -125,12 +125,12 @@ module feng3d {
 		 * @param trunk 包含材料标记的数据块和它的参数
 		 */
         private createObject(trunk) {
-            _currentGroup = null;
-            _currentMaterialGroup = null;
-            objData._objects.push(_currentObject = new ObjectGroup());
+            currentGroup = null;
+            currentMaterialGroup = null;
+            objData.objects.push(currentObject = new ObjectGroup());
 
             if (trunk)
-                _currentObject.name = trunk[1];
+                currentObject.name = trunk[1];
         }
 
 		/**
@@ -138,15 +138,15 @@ module feng3d {
 		 * @param trunk 包含材料标记的数据块和它的参数
 		 */
         private createGroup(trunk) {
-            if (!_currentObject)
+            if (!currentObject)
                 this.createObject(null);
-            _currentGroup = new Group();
+            currentGroup = new Group();
 
-            _currentGroup.materialID = _activeMaterialID;
+            currentGroup.materialID = activeMaterialID;
 
             if (trunk)
-                _currentGroup.name = trunk[1];
-            _currentObject.groups.push(_currentGroup);
+                currentGroup.name = trunk[1];
+            currentObject.groups.push(currentGroup);
 
             this.createMaterialGroup(null);
         }
@@ -156,10 +156,10 @@ module feng3d {
 		 * @param trunk 包含材料标记的数据块和它的参数
 		 */
         private createMaterialGroup(trunk) {
-            _currentMaterialGroup = new MaterialGroup();
+            currentMaterialGroup = new MaterialGroup();
             if (trunk)
-                _currentMaterialGroup.url = trunk[1];
-            _currentGroup.materialGroups.push(_currentMaterialGroup);
+                currentMaterialGroup.url = trunk[1];
+            currentGroup.materialGroups.push(currentMaterialGroup);
         }
 
 		/**
@@ -175,10 +175,10 @@ module feng3d {
                     if (!isNaN(val))
                         nTrunk.push(val);
                 }
-                objData._vertices.push(new Vertex(nTrunk[0], nTrunk[1], -nTrunk[2]));
+                objData.vertices.push({ x: nTrunk[0], y: nTrunk[1], z: -nTrunk[2] });
             }
             else
-                objData._vertices.push(new Vertex(parseFloat(trunk[1]), parseFloat(trunk[2]), -parseFloat(trunk[3])));
+                objData.vertices.push({ x: parseFloat(trunk[1]), y: parseFloat(trunk[2]), z: -parseFloat(trunk[3]) });
         }
 
 		/**
@@ -195,11 +195,11 @@ module feng3d {
                     if (!isNaN(val))
                         nTrunk.push(val);
                 }
-                objData._uvs.push(new UV(nTrunk[0], 1 - nTrunk[1]));
+                objData.uvs.push({ u: nTrunk[0], v: 1 - nTrunk[1] });
 
             }
             else
-                objData._uvs.push(new UV(parseFloat(trunk[1]), 1 - parseFloat(trunk[2])));
+                objData.uvs.push({ u: parseFloat(trunk[1]), v: 1 - parseFloat(trunk[2]) });
 
         }
 
@@ -217,11 +217,11 @@ module feng3d {
                     if (!isNaN(val))
                         nTrunk.push(val);
                 }
-                objData._vertexNormals.push(new Vertex(nTrunk[0], nTrunk[1], -nTrunk[2]));
+                objData.vertexNormals.push({ x: nTrunk[0], y: nTrunk[1], z: -nTrunk[2] });
 
             }
             else
-                objData._vertexNormals.push(new Vertex(parseFloat(trunk[1]), parseFloat(trunk[2]), -parseFloat(trunk[3])));
+                objData.vertexNormals.push({ x: parseFloat(trunk[1]), y: parseFloat(trunk[2]), z: -parseFloat(trunk[3]) });
         }
 
 		/**
@@ -230,9 +230,9 @@ module feng3d {
 		 */
         private parseFace(trunk) {
             var len: number = trunk.length;
-            var face: FaceData = new FaceData();
+            var face: FaceData = { vertexIndices: [], uvIndices: [], normalIndices: [], indexIds: [] };
 
-            if (!_currentGroup)
+            if (!currentGroup)
                 this.createGroup(null);
 
             var indices;
@@ -241,15 +241,15 @@ module feng3d {
                     continue;
                 //解析单个面数据，分离出顶点坐标左右、uv索引、法线索引
                 indices = trunk[i].split("/");
-                face.vertexIndices.push(this.parseIndex(parseInt(indices[0]), objData._vertices.length));
+                face.vertexIndices.push(this.parseIndex(parseInt(indices[0]), objData.vertices.length));
                 if (indices[1] && String(indices[1]).length > 0)
-                    face.uvIndices.push(this.parseIndex(parseInt(indices[1]), objData._uvs.length));
+                    face.uvIndices.push(this.parseIndex(parseInt(indices[1]), objData.uvs.length));
                 if (indices[2] && String(indices[2]).length > 0)
-                    face.normalIndices.push(this.parseIndex(parseInt(indices[2]), objData._vertexNormals.length));
+                    face.normalIndices.push(this.parseIndex(parseInt(indices[2]), objData.vertexNormals.length));
                 face.indexIds.push(trunk[i]);
             }
 
-            _currentMaterialGroup.faces.push(face);
+            currentMaterialGroup.faces.push(face);
         }
 
 		/**
@@ -305,8 +305,8 @@ module feng3d {
                             trunk[0] = trunk[0].substring(1, trunk[0].length);
 
                         if (j == 0) {
-                            objData._lastMtlID = trunk.join("");
-                            objData._lastMtlID = (objData._lastMtlID == "") ? "def000" : objData._lastMtlID;
+                            objData.lastMtlID = trunk.join("");
+                            objData.lastMtlID = (objData.lastMtlID == "") ? "def000" : objData.lastMtlID;
 
                         }
                         else {
@@ -354,7 +354,7 @@ module feng3d {
                 }
             }
 
-            _mtlLibLoaded = true;
+            mtlLibLoaded = true;
         }
 
         private parseMapKdString(trunk): string {
@@ -425,55 +425,37 @@ module feng3d {
     /**
      * 面数据
      */
-    class FaceData {
+    export type FaceData = {
         /** 顶点坐标索引数组 */
-        public vertexIndices: number[] = [];
+        vertexIndices: number[];
         /** 顶点uv索引数组 */
-        public uvIndices: number[] = [];
+        uvIndices: number[];
         /** 顶点法线索引数组 */
-        public normalIndices: number[] = [];
+        normalIndices: number[];
         /** 顶点Id(原本该值存放了顶点索引、uv索引、发现索引，已经被解析为上面3个数组，剩下的就当做ID使用) */
-        public indexIds: string[] = []; // 
+        indexIds: string[]; // 
     }
 
     /**
      * 顶点
      */
-    export class Vertex {
+    export type Vertex = {
+        /** X轴坐标 */
         x: number;
+        /** Y轴坐标 */
         y: number;
+        /** Z轴坐标 */
         z: number;
-
-		/**
-		 *
-		 * @param x X轴坐标
-		 * @param y Y轴坐标
-		 * @param z Z轴坐标
-		 * @param index 顶点索引
-		 */
-        constructor(x: number = 0, y: number = 0, z: number = 0) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
     }
 
     /**
-     * Texture coordinates value object.
+     * UV
      */
-    class UV {
+    export type UV = {
+        /** 纹理横向坐标 */
         u: number;
+        /** 纹理纵向坐标 */
         v: number;
-		/**
-		 * Creates a new <code>UV</code> object.
-		 *
-		 * @param    u        [optional]    The horizontal coordinate of the texture value. Defaults to 0.
-		 * @param    v        [optional]    The vertical coordinate of the texture value. Defaults to 0.
-		 */
-        constructor(u: number = 0, v: number = 0) {
-            this.u = u;
-            this.v = v;
-        }
     }
 }
 
