@@ -1474,19 +1474,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 获取对象的类名
-     * @author feng 2016-4-24
-     */
-    function getClassName(value) {
-        var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
-        var className = prototype.constructor.name;
-        return className;
-    }
-    feng3d.getClassName = getClassName;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     class StringUtils {
         /**
          * 获取字符串
@@ -1600,49 +1587,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 获取对象UID
-     * @author feng 2016-05-08
-     */
-    function getUID(object) {
-        //uid属性名称
-        var uidKey = "__uid__";
-        if (typeof object != "object") {
-            throw `无法获取${object}的UID`;
-        }
-        if (object.hasOwnProperty(uidKey)) {
-            return object[uidKey];
-        }
-        var uid = createUID(object);
-        Object.defineProperty(object, uidKey, {
-            value: uid,
-            enumerable: false,
-            writable: false
-        });
-        return uid;
-    }
-    feng3d.getUID = getUID;
-    /**
-     * 创建对象的UID
-     * @param object 对象
-     */
-    function createUID(object) {
-        var className = feng3d.getClassName(object);
-        var uid = [
-            className,
-            feng3d.StringUtils.getString(~~uidStart[className], 8, "0", false),
-            Date.now(),
-        ].join("-");
-        uidStart[className] = ~~uidStart[className] + 1;
-        return uid;
-    }
-    /**
-     * uid自增长编号
-     */
-    var uidStart = {};
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     class Version {
         /**
          * 获取对象版本
@@ -1725,18 +1669,180 @@ var feng3d;
         return false;
     }
     feng3d.is = is;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     /**
      * 如果a为b类型则返回，否则返回null
      */
     function as(a, b) {
-        if (!feng3d.is(a, b))
+        if (!is(a, b))
             return null;
         return a;
     }
     feng3d.as = as;
+    /**
+     * 获取对象UID
+     * @author feng 2016-05-08
+     */
+    function getUID(object) {
+        //uid属性名称
+        var uidKey = "__uid__";
+        if (typeof object != "object") {
+            throw `无法获取${object}的UID`;
+        }
+        if (object.hasOwnProperty(uidKey)) {
+            return object[uidKey];
+        }
+        var uid = createUID(object);
+        Object.defineProperty(object, uidKey, {
+            value: uid,
+            enumerable: false,
+            writable: false
+        });
+        return uid;
+        /**
+         * 创建对象的UID
+         * @param object 对象
+         */
+        function createUID(object) {
+            var className = getClassName(object);
+            var uid = [
+                className,
+                feng3d.StringUtils.getString(~~uidStart[className], 8, "0", false),
+                Date.now(),
+            ].join("-");
+            uidStart[className] = ~~uidStart[className] + 1;
+            return uid;
+        }
+    }
+    feng3d.getUID = getUID;
+    /**
+     * uid自增长编号
+     */
+    var uidStart = {};
+    /**
+     * 获取对象的类名
+     * @author feng 2016-4-24
+     */
+    function getClassName(value) {
+        var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
+        var className = prototype.constructor.name;
+        return className;
+    }
+    feng3d.getClassName = getClassName;
+    /**
+     * 是否为基础类型
+     * @param object    对象
+     */
+    function isBaseType(object) {
+        return typeof object == "number" || typeof object == "boolean" || typeof object == "string";
+    }
+    feng3d.isBaseType = isBaseType;
+    /**
+     * （浅）克隆
+     * @param source        源数据
+     * @returns             克隆数据
+     */
+    function clone(source) {
+        if (isBaseType(source))
+            return source;
+        var prototype = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
+        var target = new prototype.constructor();
+        for (var attribute in source) {
+            target[attribute] = source[attribute];
+        }
+        return target;
+    }
+    feng3d.clone = clone;
+    /**
+     * 合并数据
+     * @param source        源数据
+     * @param mergeData     合并数据
+     * @param createNew     是否合并为新对象，默认为false
+     * @returns             如果createNew为true时返回新对象，否则返回源数据
+     */
+    function merge(source, mergeData, createNew = false) {
+        if (isBaseType(mergeData))
+            return mergeData;
+        var target = createNew ? clone(source) : source;
+        for (var mergeAttribute in mergeData) {
+            target[mergeAttribute] = merge(source[mergeAttribute], mergeData[mergeAttribute], createNew);
+        }
+        return target;
+    }
+    feng3d.merge = merge;
+    /**
+     * 观察对象
+     * @param object        被观察的对象
+     * @param onChanged     属性值变化回调函数
+     */
+    function watchObject(object, onChanged = null) {
+        if (isBaseType(object))
+            return;
+        for (var key in object) {
+            watch(object, key, onChanged);
+        }
+    }
+    feng3d.watchObject = watchObject;
+    /**
+     * 观察对象中属性
+     * @param object        被观察的对象
+     * @param attribute     被观察的属性
+     * @param onChanged     属性值变化回调函数
+     */
+    function watch(object, attribute, onChanged = null) {
+        if (isBaseType(object))
+            return;
+        if (!object.orig) {
+            Object.defineProperty(object, "orig", {
+                value: {},
+                enumerable: false,
+                writable: false,
+                configurable: true
+            });
+        }
+        object.orig[attribute] = object[attribute];
+        Object.defineProperty(object, attribute, {
+            get: function () {
+                return this.orig[attribute];
+            },
+            set: function (value) {
+                if (onChanged) {
+                    onChanged(this, attribute, this.orig[attribute], value);
+                }
+                this.orig[attribute] = value;
+            }
+        });
+    }
+    feng3d.watch = watch;
+    /**
+     * 取消观察对象
+     * @param object        被观察的对象
+     */
+    function unwatchObject(object) {
+        if (isBaseType(object))
+            return;
+        if (!object.orig)
+            return;
+        for (var key in object.orig) {
+            unwatch(object, key);
+        }
+        delete object.orig;
+    }
+    feng3d.unwatchObject = unwatchObject;
+    /**
+     * 取消观察对象中属性
+     * @param object        被观察的对象
+     * @param attribute     被观察的属性
+     */
+    function unwatch(object, attribute) {
+        if (isBaseType(object))
+            return;
+        Object.defineProperty(object, attribute, {
+            value: object.orig[attribute],
+            enumerable: true,
+            writable: true
+        });
+    }
+    feng3d.unwatch = unwatch;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -38,8 +38,7 @@ module feng3d {
 	 */
     export class OBJParser1 {
 
-
-        protected parse(content: string) {
+        private parse(content: string) {
 
             objData = new ObjData();
 

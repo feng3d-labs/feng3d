@@ -1580,13 +1580,6 @@ declare module feng3d {
     function getTimer(): number;
 }
 declare module feng3d {
-    /**
-     * 获取对象的类名
-     * @author feng 2016-4-24
-     */
-    function getClassName(value: any): string;
-}
-declare module feng3d {
     class StringUtils {
         /**
          * 获取字符串
@@ -1647,15 +1640,6 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    /**
-     * 获取对象UID
-     * @author feng 2016-05-08
-     */
-    function getUID(object: {
-        __uid__?: string;
-    }): any;
-}
-declare module feng3d {
     class Version {
         /**
          * 获取对象版本
@@ -1692,12 +1676,65 @@ declare module feng3d {
      * 判断a对象是否为b类型
      */
     function is(a: any, b: Function): boolean;
-}
-declare module feng3d {
     /**
      * 如果a为b类型则返回，否则返回null
      */
     function as(a: any, b: Function): any;
+    /**
+     * 获取对象UID
+     * @author feng 2016-05-08
+     */
+    function getUID(object: {
+        __uid__?: string;
+    }): any;
+    /**
+     * 获取对象的类名
+     * @author feng 2016-4-24
+     */
+    function getClassName(value: any): string;
+    /**
+     * 是否为基础类型
+     * @param object    对象
+     */
+    function isBaseType(object: any): boolean;
+    /**
+     * （浅）克隆
+     * @param source        源数据
+     * @returns             克隆数据
+     */
+    function clone<T>(source: T): T;
+    /**
+     * 合并数据
+     * @param source        源数据
+     * @param mergeData     合并数据
+     * @param createNew     是否合并为新对象，默认为false
+     * @returns             如果createNew为true时返回新对象，否则返回源数据
+     */
+    function merge<T>(source: T, mergeData: Object, createNew?: boolean): T;
+    /**
+     * 观察对象
+     * @param object        被观察的对象
+     * @param onChanged     属性值变化回调函数
+     */
+    function watchObject(object: any, onChanged?: (object: any, attribute: string, oldValue: any, newValue: any) => void): void;
+    /**
+     * 观察对象中属性
+     * @param object        被观察的对象
+     * @param attribute     被观察的属性
+     * @param onChanged     属性值变化回调函数
+     */
+    function watch(object: any, attribute: string, onChanged?: (object: any, attribute: string, oldValue: any, newValue: any) => void): void;
+    /**
+     * 取消观察对象
+     * @param object        被观察的对象
+     */
+    function unwatchObject(object: any): void;
+    /**
+     * 取消观察对象中属性
+     * @param object        被观察的对象
+     * @param attribute     被观察的属性
+     */
+    function unwatch(object: any, attribute: string): void;
 }
 declare module feng3d {
     /**
@@ -4813,65 +4850,7 @@ declare module feng3d {
      * Obj模型解析者
      */
     class OBJParser1 {
-        /** 字符串数据 */
-        private _textData;
-        /** 当前读取到的位置 */
-        private _charIndex;
-        /** 刚才读取到的位置 */
-        private _oldIndex;
-        /** 字符串数据长度 */
-        private _stringLength;
-        /** 当前解析的对象 */
-        private _currentObject;
-        /** 当前组 */
-        private _currentGroup;
-        /** 当前材质组 */
-        private _currentMaterialGroup;
-        /** 对象组列表 */
-        private _objects;
-        /** 材质编号列表 */
-        private _materialIDs;
-        /** 最后的材质编号 */
-        private _lastMtlID;
-        /** object索引 */
-        private _objectIndex;
-        /** 真实索引列表 */
-        private _realIndices;
-        /** 顶点索引 */
-        private _vertexIndex;
-        /** 顶点坐标数据 */
-        private _vertices;
-        /** 顶点法线数据 */
-        private _vertexNormals;
-        /** uv数据 */
-        private _uvs;
-        /** 缩放尺度 */
-        private _scale;
-        /**  */
-        private _mtlLib;
-        private mtl;
-        /** 材质库是否已加载 */
-        private _mtlLibLoaded;
-        /** 活动材质编号 */
-        private _activeMaterialID;
-        /**
-         * 创建Obj模型解析对象
-         * @param scale 缩放比例
-         */
-        constructor(scale?: number);
-        /**
-         * 判断是否支持解析
-         * @param extension 文件类型
-         * @return
-         */
-        static supportsType(extension: string): boolean;
-        /**
-         * 判断是否支持该数据的解析
-         * @param data 需要解析的数据
-         * @return
-         */
-        static supportsData(content: string): boolean;
-        protected parse(content: string): void;
+        private parse(content);
         /**
          * 解析行
          */
