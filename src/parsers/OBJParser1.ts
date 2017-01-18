@@ -3,7 +3,7 @@ module feng3d {
     /**
      * 顶点
      */
-    type Vertex = {
+    export type Vertex = {
         /** X轴坐标 */
         x: number;
         /** Y轴坐标 */
@@ -15,7 +15,7 @@ module feng3d {
     /**
      * UV
      */
-    type UV = {
+    export type UV = {
         /** 纹理横向坐标 */
         u: number;
         /** 纹理纵向坐标 */
@@ -25,7 +25,7 @@ module feng3d {
     /**
      * 面数据
      */
-    type FaceData = {
+    export type FaceData = {
         /** 顶点坐标索引数组 */
         vertexIndices: number[];
         /** 顶点uv索引数组 */
@@ -39,25 +39,24 @@ module feng3d {
     /**
      * 材质组
      */
-    type MaterialGroup = {
-        url?: string;
+    export type MaterialGroup = {
         faces: FaceData[];
     }
 
-    type Group = {
+    export type Group = {
         name?: string;
         materialID?: string;
         materialGroups: MaterialGroup[];
     }
 
-    type ObjectGroup = {
+    export type ObjectGroup = {
         /** 对象名 */
         name?: string;
         /** 组列表（子网格列表） */
         groups: Group[];
     }
 
-    type ObjData = {
+    export type ObjData = {
 
         /** 对象组列表 */
         objects: ObjectGroup[];
@@ -121,6 +120,100 @@ module feng3d {
             }
             return objData;
         }
+
+        /**
+         * 解析材质数据
+         * @param data 材质数据
+         */
+        static parseMtl(data: string) {
+            var materialDefinitions = data.split('newmtl');
+            var lines;
+            var trunk;
+            var j: number;
+
+            var useSpecular: boolean;
+            var useColor: boolean;
+            var diffuseColor: number;
+            var ambientColor: number;
+            var specularColor: number;
+            var specular: number;
+            var alpha: number;
+            var mapkd: string;
+
+            for (var i: number = 0; i < materialDefinitions.length; ++i) {
+
+                lines = materialDefinitions[i].split('\r').join("").split('\n');
+
+                if (lines.length == 1)
+                    lines = materialDefinitions[i].split(String.fromCharCode(13));
+
+                diffuseColor = ambientColor = specularColor = 0xFFFFFF;
+                specular = 0;
+                useSpecular = false;
+                useColor = false;
+                alpha = 1;
+                mapkd = "";
+
+                for (j = 0; j < lines.length; ++j) {
+                    lines[j] = lines[j].replace(/\s+$/, "");
+
+                    if (lines[j].substring(0, 1) != "#" && (j == 0 || lines[j] != "")) {
+                        trunk = lines[j].split(" ");
+
+                        if (String(trunk[0]).charCodeAt(0) == 9 || String(trunk[0]).charCodeAt(0) == 32)
+                            trunk[0] = trunk[0].substring(1, trunk[0].length);
+
+                        if (j == 0) {
+                            objData.lastMtlID = trunk.join("");
+                            objData.lastMtlID = (objData.lastMtlID == "") ? "def000" : objData.lastMtlID;
+                        }
+                        else {
+
+                            switch (trunk[0]) {
+
+                                case "Ka":
+                                    if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3])))
+                                        ambientColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
+                                    break;
+
+                                case "Ks":
+                                    if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3]))) {
+                                        specularColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
+                                        useSpecular = true;
+                                    }
+                                    break;
+
+                                case "Ns":
+                                    if (trunk[1] && !isNaN(Number(trunk[1])))
+                                        specular = Number(trunk[1]) * 0.001;
+                                    if (specular == 0)
+                                        useSpecular = false;
+                                    break;
+
+                                case "Kd":
+                                    if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3]))) {
+                                        diffuseColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
+                                        useColor = true;
+                                    }
+                                    break;
+
+                                case "tr":
+                                case "d":
+                                    if (trunk[1] && !isNaN(Number(trunk[1])))
+                                        alpha = Number(trunk[1]);
+                                    break;
+
+                                case "map_Kd":
+                                    mapkd = parseMapKdString(trunk);
+                                    mapkd = mapkd.replace(/\\/g, "/");
+                            }
+                        }
+                    }
+                }
+            }
+
+            mtlLibLoaded = true;
+        }
     }
 
     /** 当前解析的对象 */
@@ -149,10 +242,10 @@ module feng3d {
                 objData.mtl = trunk[1];
                 break;
             case "g":
-                this.createGroup(trunk);
+                createGroup(trunk);
                 break;
             case "o":
-                this.createObject(trunk);
+                createObject(trunk);
                 break;
             case "usemtl":
                 if (mtlLib) {
@@ -165,16 +258,16 @@ module feng3d {
                 }
                 break;
             case "v":
-                this.parseVertex(trunk);
+                parseVertex(trunk);
                 break;
             case "vt":
-                this.parseUV(trunk);
+                parseUV(trunk);
                 break;
             case "vn":
-                this.parseVertexNormal(trunk);
+                parseVertexNormal(trunk);
                 break;
             case "f":
-                this.parseFace(trunk);
+                parseFace(trunk);
         }
     }
 
@@ -197,7 +290,7 @@ module feng3d {
      */
     function createGroup(trunk) {
         if (!currentObject)
-            this.createObject(null);
+            createObject(null);
         currentGroup = { materialGroups: [] };
 
         currentGroup.materialID = activeMaterialID;
@@ -206,17 +299,15 @@ module feng3d {
             currentGroup.name = trunk[1];
         currentObject.groups.push(currentGroup);
 
-        this.createMaterialGroup(null);
+        createMaterialGroup();
     }
 
     /**
      * 创建材质组
      * @param trunk 包含材料标记的数据块和它的参数
      */
-    function createMaterialGroup(trunk) {
+    function createMaterialGroup() {
         currentMaterialGroup = { faces: [] };
-        if (trunk)
-            currentMaterialGroup.url = trunk[1];
         currentGroup.materialGroups.push(currentMaterialGroup);
     }
 
@@ -291,7 +382,7 @@ module feng3d {
         var face: FaceData = { vertexIndices: [], uvIndices: [], normalIndices: [], indexIds: [] };
 
         if (!currentGroup)
-            this.createGroup(null);
+            createGroup(null);
 
         var indices;
         for (var i: number = 1; i < len; ++i) {
@@ -299,11 +390,11 @@ module feng3d {
                 continue;
             //解析单个面数据，分离出顶点坐标左右、uv索引、法线索引
             indices = trunk[i].split("/");
-            face.vertexIndices.push(this.parseIndex(parseInt(indices[0]), objData.vertices.length));
+            face.vertexIndices.push(parseIndex(parseInt(indices[0]), objData.vertices.length));
             if (indices[1] && String(indices[1]).length > 0)
-                face.uvIndices.push(this.parseIndex(parseInt(indices[1]), objData.uvs.length));
+                face.uvIndices.push(parseIndex(parseInt(indices[1]), objData.uvs.length));
             if (indices[2] && String(indices[2]).length > 0)
-                face.normalIndices.push(this.parseIndex(parseInt(indices[2]), objData.vertexNormals.length));
+                face.normalIndices.push(parseIndex(parseInt(indices[2]), objData.vertexNormals.length));
             face.indexIds.push(trunk[i]);
         }
 
@@ -318,100 +409,6 @@ module feng3d {
             return index + length + 1;
         else
             return index;
-    }
-
-    /**
-     * 解析材质数据
-     * @param data 材质数据
-     */
-    function parseMtl(data: string) {
-        var materialDefinitions = data.split('newmtl');
-        var lines;
-        var trunk;
-        var j: number;
-
-        var useSpecular: boolean;
-        var useColor: boolean;
-        var diffuseColor: number;
-        var ambientColor: number;
-        var specularColor: number;
-        var specular: number;
-        var alpha: number;
-        var mapkd: string;
-
-        for (var i: number = 0; i < materialDefinitions.length; ++i) {
-
-            lines = materialDefinitions[i].split('\r').join("").split('\n');
-
-            if (lines.length == 1)
-                lines = materialDefinitions[i].split(String.fromCharCode(13));
-
-            diffuseColor = ambientColor = specularColor = 0xFFFFFF;
-            specular = 0;
-            useSpecular = false;
-            useColor = false;
-            alpha = 1;
-            mapkd = "";
-
-            for (j = 0; j < lines.length; ++j) {
-                lines[j] = lines[j].replace(/\s+$/, "");
-
-                if (lines[j].substring(0, 1) != "#" && (j == 0 || lines[j] != "")) {
-                    trunk = lines[j].split(" ");
-
-                    if (String(trunk[0]).charCodeAt(0) == 9 || String(trunk[0]).charCodeAt(0) == 32)
-                        trunk[0] = trunk[0].substring(1, trunk[0].length);
-
-                    if (j == 0) {
-                        objData.lastMtlID = trunk.join("");
-                        objData.lastMtlID = (objData.lastMtlID == "") ? "def000" : objData.lastMtlID;
-                    }
-                    else {
-
-                        switch (trunk[0]) {
-
-                            case "Ka":
-                                if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3])))
-                                    ambientColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
-                                break;
-
-                            case "Ks":
-                                if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3]))) {
-                                    specularColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
-                                    useSpecular = true;
-                                }
-                                break;
-
-                            case "Ns":
-                                if (trunk[1] && !isNaN(Number(trunk[1])))
-                                    specular = Number(trunk[1]) * 0.001;
-                                if (specular == 0)
-                                    useSpecular = false;
-                                break;
-
-                            case "Kd":
-                                if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3]))) {
-                                    diffuseColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
-                                    useColor = true;
-                                }
-                                break;
-
-                            case "tr":
-                            case "d":
-                                if (trunk[1] && !isNaN(Number(trunk[1])))
-                                    alpha = Number(trunk[1]);
-                                break;
-
-                            case "map_Kd":
-                                mapkd = this.parseMapKdString(trunk);
-                                mapkd = mapkd.replace(/\\/g, "/");
-                        }
-                    }
-                }
-            }
-        }
-
-        mtlLibLoaded = true;
     }
 
     function parseMapKdString(trunk): string {

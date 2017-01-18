@@ -4851,6 +4851,72 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 顶点
+     */
+    type Vertex = {
+        /** X轴坐标 */
+        x: number;
+        /** Y轴坐标 */
+        y: number;
+        /** Z轴坐标 */
+        z: number;
+    };
+    /**
+     * UV
+     */
+    type UV = {
+        /** 纹理横向坐标 */
+        u: number;
+        /** 纹理纵向坐标 */
+        v: number;
+    };
+    /**
+     * 面数据
+     */
+    type FaceData = {
+        /** 顶点坐标索引数组 */
+        vertexIndices: number[];
+        /** 顶点uv索引数组 */
+        uvIndices: number[];
+        /** 顶点法线索引数组 */
+        normalIndices: number[];
+        /** 顶点Id(原本该值存放了顶点索引、uv索引、发现索引，已经被解析为上面3个数组，剩下的就当做ID使用) */
+        indexIds: string[];
+    };
+    /**
+     * 材质组
+     */
+    type MaterialGroup = {
+        faces: FaceData[];
+    };
+    type Group = {
+        name?: string;
+        materialID?: string;
+        materialGroups: MaterialGroup[];
+    };
+    type ObjectGroup = {
+        /** 对象名 */
+        name?: string;
+        /** 组列表（子网格列表） */
+        groups: Group[];
+    };
+    type ObjData = {
+        /** 对象组列表 */
+        objects: ObjectGroup[];
+        /** 材质编号列表 */
+        materialIDs: string[];
+        /** 最后的材质编号 */
+        lastMtlID?: string;
+        /** 顶点坐标数据 */
+        vertices: Vertex[];
+        /** 顶点法线数据 */
+        vertexNormals: Vertex[];
+        /** uv数据 */
+        uvs: UV[];
+        /** */
+        mtl?: string;
+    };
+    /**
      * Obj模型解析者
      */
     class OBJParser1 {
@@ -4861,7 +4927,6 @@ declare module feng3d {
                     name?: string;
                     materialID?: string;
                     materialGroups: {
-                        url?: string;
                         faces: {
                             vertexIndices: number[];
                             uvIndices: number[];
@@ -4889,6 +4954,11 @@ declare module feng3d {
             }[];
             mtl?: string;
         };
+        /**
+         * 解析材质数据
+         * @param data 材质数据
+         */
+        static parseMtl(data: string): void;
     }
 }
 declare module feng3d {
