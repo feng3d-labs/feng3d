@@ -12,7 +12,12 @@ module feng3d {
         /**
          * 基本颜色
          */
-        public baseColor: Color = new Color(1, 1, 1, 1);
+        public baseColor = new Color(1, 1, 1, 1);
+
+        /**
+         * 环境颜色
+         */
+        public ambientColor = new Color(0, 0, 0, 1);
 
         /**
          * 反射率

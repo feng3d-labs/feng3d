@@ -4269,6 +4269,10 @@ declare module feng3d {
          */
         baseColor: Color;
         /**
+         * 环境颜色
+         */
+        ambientColor: Color;
+        /**
          * 反射率
          */
         reflectance: number;

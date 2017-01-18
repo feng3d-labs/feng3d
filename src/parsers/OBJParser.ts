@@ -131,10 +131,8 @@ module feng3d {
         } else if ((result = sReg.exec(line)) && result[0] == line) {
 
         } else if ((result = usemtlReg.exec(line)) && result[0] == line) {
-            if (currentObj == null) {
-                currentSubObj = { faces: [] };
-                currentObj.subObjs.push(currentSubObj);
-            }
+            currentSubObj = { faces: [] };
+            currentObj.subObjs.push(currentSubObj);
             currentSubObj.material = result[1];
         } else if ((result = faceVReg.exec(line)) && result[0] == line) {
             currentSubObj.faces.push({
