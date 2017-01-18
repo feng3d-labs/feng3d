@@ -8091,7 +8091,6 @@ var feng3d;
                 lines = materialDefinitions[i].split('\r').join("").split('\n');
                 if (lines.length == 1)
                     lines = materialDefinitions[i].split(String.fromCharCode(13));
-                // var material: Mtl1_Material = {};
                 diffuseColor = [1, 1, 1];
                 ambientColor = [1, 1, 1];
                 specularColor = [1, 1, 1];
@@ -8362,6 +8361,86 @@ var feng3d;
         url = url.replace(/\s+$/, "");
         return url;
     }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    class ObjLoader extends feng3d.Loader {
+        /**
+         * 加载资源
+         * @param url   路径
+         */
+        load(url, completed = null) {
+            this.url = url;
+            this.completed = completed;
+            var loader = new feng3d.Loader();
+            loader.addEventListener(feng3d.LoaderEvent.COMPLETE, function (e) {
+                var objData = this.objData = feng3d.OBJParser.parser(e.data.content);
+                var mtl = objData.mtl;
+                if (mtl) {
+                    var mtlRoot = url.substring(0, url.lastIndexOf("/") + 1);
+                    var mtlLoader = new feng3d.Loader();
+                    mtlLoader.loadText(mtlRoot + mtl);
+                    mtlLoader.addEventListener(feng3d.LoaderEvent.COMPLETE, function (e) {
+                        var mtlData = this.mtlData = feng3d.MtlParser.parser(e.data.content);
+                        this.createObj();
+                    }, this);
+                }
+                else {
+                    this.createObj();
+                }
+            }, this);
+            loader.loadText(url);
+        }
+        createObj() {
+            var object = new feng3d.Object3D();
+            var objData = this.objData;
+            var objs = objData.objs;
+            for (var i = 0; i < objs.length; i++) {
+                var obj = objs[i];
+                var object3D = this.createSubObj(obj);
+                object.addChild(object3D);
+            }
+            if (this.completed) {
+                this.completed(object);
+            }
+        }
+        createSubObj(obj) {
+            var object3D = new feng3d.Object3D(obj.name);
+            var vertex = new Float32Array(obj.vertex);
+            var subObjs = obj.subObjs;
+            for (var i = 0; i < subObjs.length; i++) {
+                var materialObj = this.createMaterialObj(vertex, subObjs[i]);
+                object3D.addChild(materialObj);
+            }
+            return object3D;
+        }
+        createMaterialObj(vertex, subObj) {
+            var object3D = new feng3d.Object3D();
+            var mesh = object3D.getOrCreateComponentByClass(feng3d.MeshFilter);
+            var geometry = mesh.geometry = new feng3d.Geometry();
+            geometry.setVAData(feng3d.GLAttribute.a_position, vertex, 3);
+            var faces = subObj.faces;
+            var indices = [];
+            for (var i = 0; i < faces.length; i++) {
+                var vertexIndices = faces[i].vertexIndices;
+                indices.push(vertexIndices[0] - 1, vertexIndices[1] - 1, vertexIndices[2] - 1);
+                if (vertexIndices.length == 4) {
+                    indices.push(vertexIndices[2] - 1, vertexIndices[3] - 1, vertexIndices[0] - 1);
+                }
+            }
+            geometry.setIndices(new Uint16Array(indices));
+            var material = object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.ColorMaterial();
+            if (this.mtlData && this.mtlData[subObj.material]) {
+                var materialInfo = this.mtlData[subObj.material];
+                var kd = materialInfo.kd;
+                material.color.r = kd[0];
+                material.color.g = kd[1];
+                material.color.b = kd[2];
+            }
+            return object3D;
+        }
+    }
+    feng3d.ObjLoader = ObjLoader;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -1469,7 +1469,7 @@ declare module feng3d {
          * 数据类型
          */
         dataFormat: string;
-        private url;
+        protected url: string;
         /**
          * 已加载的字节数
          */
@@ -4916,16 +4916,6 @@ declare module feng3d {
         /** */
         mtl?: string;
     };
-    type Mtl1_Material = {
-        name: string;
-        ka: number[];
-        kd: number[];
-        ks: number[];
-        ns: number;
-        ni: number;
-        d: number;
-        illum: number;
-    };
     /**
      * Obj模型解析者
      */
@@ -4969,6 +4959,21 @@ declare module feng3d {
          * @param data 材质数据
          */
         static parseMtl(data: string): void;
+    }
+}
+declare module feng3d {
+    class ObjLoader extends Loader {
+        objData: OBJ_OBJData;
+        mtlData: Mtl_Mtl;
+        completed: (object3D: Object3D) => void;
+        /**
+         * 加载资源
+         * @param url   路径
+         */
+        load(url: string, completed?: (object3D: Object3D) => void): void;
+        private createObj();
+        private createSubObj(obj);
+        private createMaterialObj(vertex, subObj);
     }
 }
 declare module feng3d {

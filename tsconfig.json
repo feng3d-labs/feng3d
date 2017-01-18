@@ -135,9 +135,11 @@
         "src/animators/particle/ParticlePosition.ts",
         "src/animators/particle/ParticleVelocity.ts",
         //解析
-        "src/parsers/OBJParser.ts",
-        "src/parsers/MtlParser.ts",
-        "src/parsers/OBJParser1.ts",
+        "src/assets/parsers/OBJParser.ts",
+        "src/assets/parsers/MtlParser.ts",
+        "src/assets/parsers/OBJParser1.ts",
+        //
+        "src/assets/loader/ObjLoader.ts",
         //
         "src/factory/Object3DFactory.ts"
     ]

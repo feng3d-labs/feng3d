@@ -14,7 +14,7 @@ module feng3d {
          */
         public dataFormat: string;
 
-        private url: string;
+        protected url: string;
 
         /**
          * 已加载的字节数
