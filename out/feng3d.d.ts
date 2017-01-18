@@ -4862,6 +4862,26 @@ declare module feng3d {
                 position: number[];
                 rotation: number[];
             }[];
+            meshs: {
+                shader: string;
+                numverts: number;
+                verts: {
+                    index: number;
+                    u: number;
+                    v: number;
+                    startWeight: number;
+                    countWeight: number;
+                }[];
+                numtris: number;
+                tris: number[];
+                numweights: number;
+                weights: {
+                    index: number;
+                    joint: number;
+                    bias: number;
+                    pos: number[];
+                }[];
+            }[];
         };
     }
 }
