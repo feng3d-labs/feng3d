@@ -138,6 +138,7 @@
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MtlParser.ts",
         "src/assets/parsers/MD5MeshParser.ts",
+        "src/assets/parsers/MD5AnimParser.ts",
         //
         "src/assets/loader/ObjLoader.ts",
         "src/assets/loader/MD5Loader.ts",

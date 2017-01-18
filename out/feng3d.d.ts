@@ -4886,6 +4886,36 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    class MD5AnimParser {
+        static parse(context: string): {
+            MD5Version: number;
+            commandline: string;
+            numFrames: number;
+            numJoints: number;
+            frameRate: number;
+            numAnimatedComponents: number;
+            hierarchy: {
+                name: string;
+                parentIndex: number;
+                flags: number;
+                startIndex: number;
+            }[];
+            bounds: {
+                min: number[];
+                max: number[];
+            }[];
+            baseframe: {
+                position: number[];
+                orientation: number[];
+            }[];
+            frame: {
+                index: number;
+                components: number[];
+            }[];
+        };
+    }
+}
+declare module feng3d {
     /**
      * Obj模型加载类
      * @author feng 2017-01-18
@@ -4916,6 +4946,7 @@ declare module feng3d {
          * @param url   路径
          */
         load(url: string, completed?: (object3D: Object3D) => void): void;
+        loadAnim(url: string, completed?: (object3D: Object3D) => void): void;
         private createObj();
     }
 }
