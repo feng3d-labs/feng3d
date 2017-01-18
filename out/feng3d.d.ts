@@ -4916,6 +4916,16 @@ declare module feng3d {
         /** */
         mtl?: string;
     };
+    type Mtl1_Material = {
+        name: string;
+        ka: number[];
+        kd: number[];
+        ks: number[];
+        ns: number;
+        ni: number;
+        d: number;
+        illum: number;
+    };
     /**
      * Obj模型解析者
      */

@@ -133,9 +133,9 @@ module feng3d {
 
             var useSpecular: boolean;
             var useColor: boolean;
-            var diffuseColor: number;
-            var ambientColor: number;
-            var specularColor: number;
+            var diffuseColor: number[];
+            var ambientColor: number[];
+            var specularColor: number[];
             var specular: number;
             var alpha: number;
             var mapkd: string;
@@ -147,7 +147,9 @@ module feng3d {
                 if (lines.length == 1)
                     lines = materialDefinitions[i].split(String.fromCharCode(13));
 
-                diffuseColor = ambientColor = specularColor = 0xFFFFFF;
+                diffuseColor = [1, 1, 1];
+                ambientColor = [1, 1, 1];
+                specularColor = [1, 1, 1];
                 specular = 0;
                 useSpecular = false;
                 useColor = false;
@@ -173,12 +175,12 @@ module feng3d {
 
                                 case "Ka":
                                     if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3])))
-                                        ambientColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
+                                        ambientColor = [trunk[1], trunk[2], trunk[3]];
                                     break;
 
                                 case "Ks":
                                     if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3]))) {
-                                        specularColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
+                                        specularColor = [trunk[1], trunk[2], trunk[3]];
                                         useSpecular = true;
                                     }
                                     break;
@@ -192,7 +194,7 @@ module feng3d {
 
                                 case "Kd":
                                     if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3]))) {
-                                        diffuseColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
+                                        diffuseColor = [trunk[1], trunk[2], trunk[3]];
                                         useColor = true;
                                     }
                                     break;

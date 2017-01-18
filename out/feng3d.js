@@ -8091,7 +8091,10 @@ var feng3d;
                 lines = materialDefinitions[i].split('\r').join("").split('\n');
                 if (lines.length == 1)
                     lines = materialDefinitions[i].split(String.fromCharCode(13));
-                diffuseColor = ambientColor = specularColor = 0xFFFFFF;
+                // var material: Mtl1_Material = {};
+                diffuseColor = [1, 1, 1];
+                ambientColor = [1, 1, 1];
+                specularColor = [1, 1, 1];
                 specular = 0;
                 useSpecular = false;
                 useColor = false;
@@ -8111,11 +8114,11 @@ var feng3d;
                             switch (trunk[0]) {
                                 case "Ka":
                                     if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3])))
-                                        ambientColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
+                                        ambientColor = [trunk[1], trunk[2], trunk[3]];
                                     break;
                                 case "Ks":
                                     if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3]))) {
-                                        specularColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
+                                        specularColor = [trunk[1], trunk[2], trunk[3]];
                                         useSpecular = true;
                                     }
                                     break;
@@ -8127,7 +8130,7 @@ var feng3d;
                                     break;
                                 case "Kd":
                                     if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3]))) {
-                                        diffuseColor = trunk[1] * 255 << 16 | trunk[2] * 255 << 8 | trunk[3] * 255;
+                                        diffuseColor = [trunk[1], trunk[2], trunk[3]];
                                         useColor = true;
                                     }
                                     break;
