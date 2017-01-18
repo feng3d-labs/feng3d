@@ -4850,118 +4850,26 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    /**
-     * 顶点
-     */
-    type Vertex = {
-        /** X轴坐标 */
-        x: number;
-        /** Y轴坐标 */
-        y: number;
-        /** Z轴坐标 */
-        z: number;
-    };
-    /**
-     * UV
-     */
-    type UV = {
-        /** 纹理横向坐标 */
-        u: number;
-        /** 纹理纵向坐标 */
-        v: number;
-    };
-    /**
-     * 面数据
-     */
-    type FaceData = {
-        /** 顶点坐标索引数组 */
-        vertexIndices: number[];
-        /** 顶点uv索引数组 */
-        uvIndices: number[];
-        /** 顶点法线索引数组 */
-        normalIndices: number[];
-        /** 顶点Id(原本该值存放了顶点索引、uv索引、发现索引，已经被解析为上面3个数组，剩下的就当做ID使用) */
-        indexIds: string[];
-    };
-    /**
-     * 材质组
-     */
-    type MaterialGroup = {
-        faces: FaceData[];
-    };
-    type Group = {
-        name?: string;
-        materialID?: string;
-        materialGroups: MaterialGroup[];
-    };
-    type ObjectGroup = {
-        /** 对象名 */
-        name?: string;
-        /** 组列表（子网格列表） */
-        groups: Group[];
-    };
-    type ObjData = {
-        /** 对象组列表 */
-        objects: ObjectGroup[];
-        /** 材质编号列表 */
-        materialIDs: string[];
-        /** 最后的材质编号 */
-        lastMtlID?: string;
-        /** 顶点坐标数据 */
-        vertices: Vertex[];
-        /** 顶点法线数据 */
-        vertexNormals: Vertex[];
-        /** uv数据 */
-        uvs: UV[];
-        /** */
-        mtl?: string;
-    };
-    /**
-     * Obj模型解析者
-     */
-    class OBJParser1 {
-        static parse(content: string): {
-            objects: {
-                name?: string;
-                groups: {
-                    name?: string;
-                    materialID?: string;
-                    materialGroups: {
-                        faces: {
-                            vertexIndices: number[];
-                            uvIndices: number[];
-                            normalIndices: number[];
-                            indexIds: string[];
-                        }[];
-                    }[];
-                }[];
+    class MD5MeshParser {
+        static parse(context: string): {
+            MD5Version: number;
+            commandline: string;
+            numJoints: number;
+            numMeshes: number;
+            joints: {
+                name: string;
+                parentIndex: number;
+                position: number[];
+                rotation: number[];
             }[];
-            materialIDs: string[];
-            lastMtlID?: string;
-            vertices: {
-                x: number;
-                y: number;
-                z: number;
-            }[];
-            vertexNormals: {
-                x: number;
-                y: number;
-                z: number;
-            }[];
-            uvs: {
-                u: number;
-                v: number;
-            }[];
-            mtl?: string;
         };
-        /**
-         * 解析材质数据
-         * @param data 材质数据
-         */
-        static parseMtl(data: string): void;
     }
 }
 declare module feng3d {
+    /**
+     * Obj模型加载类
+     * @author feng 2017-01-18
+     */
     class ObjLoader extends Loader {
         objData: OBJ_OBJData;
         mtlData: Mtl_Mtl;
@@ -4974,6 +4882,21 @@ declare module feng3d {
         private createObj();
         private createSubObj(obj);
         private createMaterialObj(vertex, subObj);
+    }
+}
+declare module feng3d {
+    /**
+     * MD5模型加载类
+     * @author feng 2017-01-18
+     */
+    class MD5Loader extends Loader {
+        completed: (object3D: Object3D) => void;
+        /**
+         * 加载资源
+         * @param url   路径
+         */
+        load(url: string, completed?: (object3D: Object3D) => void): void;
+        private createObj();
     }
 }
 declare module feng3d {

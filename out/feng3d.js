@@ -8033,337 +8033,79 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * Obj模型解析者
-     */
-    class OBJParser1 {
-        static parse(content) {
-            objData = { objects: [], materialIDs: [], vertices: [], vertexNormals: [], uvs: [] };
-            //单行数据
-            var line;
-            //换行符
-            var creturn = String.fromCharCode(10);
-            var trunk;
-            //删除注释
-            content = content.replace(/\\[\r\n]+\s*/gm, ' ');
-            if (content.indexOf(creturn) == -1)
-                creturn = String.fromCharCode(13);
-            /** 字符串数据长度 */
-            var stringLength = content.length;
-            /** 当前读取到的位置 */
-            var charIndex = content.indexOf(creturn, 0);
-            /** 刚才读取到的位置 */
-            var oldIndex = 0;
-            //判断是否解析完毕与是否还有时间
-            while (charIndex < stringLength) {
-                charIndex = content.indexOf(creturn, oldIndex);
-                if (charIndex == -1)
-                    charIndex = stringLength;
-                //获取单行数据 整理数据格式
-                line = content.substring(oldIndex, charIndex);
-                line = line.split('\r').join("");
-                line = line.replace("  ", " ");
-                trunk = line.split(" ");
-                oldIndex = charIndex + 1;
-                //解析该行数据
-                parseLine(trunk);
-            }
-            return objData;
-        }
-        /**
-         * 解析材质数据
-         * @param data 材质数据
-         */
-        static parseMtl(data) {
-            var materialDefinitions = data.split('newmtl');
-            var lines;
-            var trunk;
-            var j;
-            var useSpecular;
-            var useColor;
-            var diffuseColor;
-            var ambientColor;
-            var specularColor;
-            var specular;
-            var alpha;
-            var mapkd;
-            for (var i = 0; i < materialDefinitions.length; ++i) {
-                lines = materialDefinitions[i].split('\r').join("").split('\n');
-                if (lines.length == 1)
-                    lines = materialDefinitions[i].split(String.fromCharCode(13));
-                diffuseColor = [1, 1, 1];
-                ambientColor = [1, 1, 1];
-                specularColor = [1, 1, 1];
-                specular = 0;
-                useSpecular = false;
-                useColor = false;
-                alpha = 1;
-                mapkd = "";
-                for (j = 0; j < lines.length; ++j) {
-                    lines[j] = lines[j].replace(/\s+$/, "");
-                    if (lines[j].substring(0, 1) != "#" && (j == 0 || lines[j] != "")) {
-                        trunk = lines[j].split(" ");
-                        if (String(trunk[0]).charCodeAt(0) == 9 || String(trunk[0]).charCodeAt(0) == 32)
-                            trunk[0] = trunk[0].substring(1, trunk[0].length);
-                        if (j == 0) {
-                            objData.lastMtlID = trunk.join("");
-                            objData.lastMtlID = (objData.lastMtlID == "") ? "def000" : objData.lastMtlID;
-                        }
-                        else {
-                            switch (trunk[0]) {
-                                case "Ka":
-                                    if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3])))
-                                        ambientColor = [trunk[1], trunk[2], trunk[3]];
-                                    break;
-                                case "Ks":
-                                    if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3]))) {
-                                        specularColor = [trunk[1], trunk[2], trunk[3]];
-                                        useSpecular = true;
-                                    }
-                                    break;
-                                case "Ns":
-                                    if (trunk[1] && !isNaN(Number(trunk[1])))
-                                        specular = Number(trunk[1]) * 0.001;
-                                    if (specular == 0)
-                                        useSpecular = false;
-                                    break;
-                                case "Kd":
-                                    if (trunk[1] && !isNaN(Number(trunk[1])) && trunk[2] && !isNaN(Number(trunk[2])) && trunk[3] && !isNaN(Number(trunk[3]))) {
-                                        diffuseColor = [trunk[1], trunk[2], trunk[3]];
-                                        useColor = true;
-                                    }
-                                    break;
-                                case "tr":
-                                case "d":
-                                    if (trunk[1] && !isNaN(Number(trunk[1])))
-                                        alpha = Number(trunk[1]);
-                                    break;
-                                case "map_Kd":
-                                    mapkd = parseMapKdString(trunk);
-                                    mapkd = mapkd.replace(/\\/g, "/");
-                            }
-                        }
-                    }
-                }
-            }
-            mtlLibLoaded = true;
+    class MD5MeshParser {
+        static parse(context) {
+            var md5Mesh = {};
+            var lines = context.split("\n").reverse();
+            do {
+                var line = lines.pop();
+                parserLine(line, md5Mesh);
+            } while (line);
+            return md5Mesh;
         }
     }
-    feng3d.OBJParser1 = OBJParser1;
-    /** 当前解析的对象 */
-    var currentObject;
-    /** 当前组 */
-    var currentGroup;
-    /** 当前材质组 */
-    var currentMaterialGroup;
-    /**  */
-    var mtlLib;
-    /** 材质库是否已加载 */
-    var mtlLibLoaded = true;
-    /** 活动材质编号 */
-    var activeMaterialID = "";
-    var objData;
+    feng3d.MD5MeshParser = MD5MeshParser;
+    var MD5VersionReg = /MD5Version\s+(\d+)/;
+    var commandlineReg = /commandline\s+"([\w\s/.-]+)"/;
+    var numJointsReg = /numJoints\s+(\d+)/;
+    var numMeshesReg = /numMeshes\s+(\d+)/;
+    var jointsStartReg = /joints\s+{/;
+    var jointsReg = /"(\w+)"\s+([-\d]+)\s+\(\s+([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)\s+\)\s+\(\s+([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)\s+\)(\s+\/\/(\s+\w+)?)?/;
+    var endBlockReg = /}/;
     /**
-     * 解析行
+     * 状态
      */
-    function parseLine(trunk) {
-        switch (trunk[0]) {
-            case "mtllib":
-                mtlLib = true;
-                mtlLibLoaded = false;
-                objData.mtl = trunk[1];
-                break;
-            case "g":
-                createGroup(trunk);
-                break;
-            case "o":
-                createObject(trunk);
-                break;
-            case "usemtl":
-                if (mtlLib) {
-                    if (!trunk[1])
-                        trunk[1] = "def000";
-                    objData.materialIDs.push(trunk[1]);
-                    activeMaterialID = trunk[1];
-                    if (currentGroup)
-                        currentGroup.materialID = activeMaterialID;
-                }
-                break;
-            case "v":
-                parseVertex(trunk);
-                break;
-            case "vt":
-                parseUV(trunk);
-                break;
-            case "vn":
-                parseVertexNormal(trunk);
-                break;
-            case "f":
-                parseFace(trunk);
+    var State;
+    (function (State) {
+        /** 读取关节 */
+        State[State["joints"] = 0] = "joints";
+    })(State || (State = {}));
+    /** 当前处于状态 */
+    var states = [];
+    function parserLine(line, md5Mesh) {
+        if (!line)
+            return;
+        line = line.trim();
+        if (!line.length)
+            return;
+        var result;
+        if ((result = MD5VersionReg.exec(line)) && result[0] == line) {
+            md5Mesh.MD5Version = parseInt(result[1]);
         }
-    }
-    /**
-     * 创建对象组
-     * @param trunk 包含材料标记的数据块和它的参数
-     */
-    function createObject(trunk) {
-        currentGroup = null;
-        currentMaterialGroup = null;
-        objData.objects.push(currentObject = { groups: [] });
-        if (trunk)
-            currentObject.name = trunk[1];
-    }
-    /**
-     * 创建一个组
-     * @param trunk 包含材料标记的数据块和它的参数
-     */
-    function createGroup(trunk) {
-        if (!currentObject)
-            createObject(null);
-        currentGroup = { materialGroups: [] };
-        currentGroup.materialID = activeMaterialID;
-        if (trunk)
-            currentGroup.name = trunk[1];
-        currentObject.groups.push(currentGroup);
-        createMaterialGroup();
-    }
-    /**
-     * 创建材质组
-     * @param trunk 包含材料标记的数据块和它的参数
-     */
-    function createMaterialGroup() {
-        currentMaterialGroup = { faces: [] };
-        currentGroup.materialGroups.push(currentMaterialGroup);
-    }
-    /**
-     * 解析顶点坐标数据
-     * @param trunk 坐标数据
-     */
-    function parseVertex(trunk) {
-        if (trunk.length > 4) {
-            var nTrunk = [];
-            var val;
-            for (var i = 1; i < trunk.length; ++i) {
-                val = parseFloat(trunk[i]);
-                if (!isNaN(val))
-                    nTrunk.push(val);
-            }
-            objData.vertices.push({ x: nTrunk[0], y: nTrunk[1], z: -nTrunk[2] });
+        else if ((result = commandlineReg.exec(line)) && result[0] == line) {
+            md5Mesh.commandline = result[1];
         }
-        else
-            objData.vertices.push({ x: parseFloat(trunk[1]), y: parseFloat(trunk[2]), z: -parseFloat(trunk[3]) });
-    }
-    /**
-     * 解析uv
-     * @param trunk uv数据
-     */
-    function parseUV(trunk) {
-        if (trunk.length > 3) {
-            var nTrunk = [];
-            var val;
-            //获取有效数字
-            for (var i = 1; i < trunk.length; ++i) {
-                val = parseFloat(trunk[i]);
-                if (!isNaN(val))
-                    nTrunk.push(val);
-            }
-            objData.uvs.push({ u: nTrunk[0], v: 1 - nTrunk[1] });
+        else if ((result = numJointsReg.exec(line)) && result[0] == line) {
+            md5Mesh.numJoints = parseInt(result[1]);
         }
-        else
-            objData.uvs.push({ u: parseFloat(trunk[1]), v: 1 - parseFloat(trunk[2]) });
-    }
-    /**
-     * 解析顶点法线
-     * @param trunk 法线数据
-     */
-    function parseVertexNormal(trunk) {
-        if (trunk.length > 4) {
-            var nTrunk = [];
-            var val;
-            //获取有效数字
-            for (var i = 1; i < trunk.length; ++i) {
-                val = parseFloat(trunk[i]);
-                if (!isNaN(val))
-                    nTrunk.push(val);
-            }
-            objData.vertexNormals.push({ x: nTrunk[0], y: nTrunk[1], z: -nTrunk[2] });
+        else if ((result = numMeshesReg.exec(line)) && result[0] == line) {
+            md5Mesh.numMeshes = parseInt(result[1]);
         }
-        else
-            objData.vertexNormals.push({ x: parseFloat(trunk[1]), y: parseFloat(trunk[2]), z: -parseFloat(trunk[3]) });
-    }
-    /**
-     * 解析面
-     * @param trunk 面数据
-     */
-    function parseFace(trunk) {
-        var len = trunk.length;
-        var face = { vertexIndices: [], uvIndices: [], normalIndices: [], indexIds: [] };
-        if (!currentGroup)
-            createGroup(null);
-        var indices;
-        for (var i = 1; i < len; ++i) {
-            if (trunk[i] == "")
-                continue;
-            //解析单个面数据，分离出顶点坐标左右、uv索引、法线索引
-            indices = trunk[i].split("/");
-            face.vertexIndices.push(parseIndex(parseInt(indices[0]), objData.vertices.length));
-            if (indices[1] && String(indices[1]).length > 0)
-                face.uvIndices.push(parseIndex(parseInt(indices[1]), objData.uvs.length));
-            if (indices[2] && String(indices[2]).length > 0)
-                face.normalIndices.push(parseIndex(parseInt(indices[2]), objData.vertexNormals.length));
-            face.indexIds.push(trunk[i]);
+        else if ((result = jointsStartReg.exec(line)) && result[0] == line) {
+            states.push(State.joints);
+            md5Mesh.joints = [];
         }
-        currentMaterialGroup.faces.push(face);
-    }
-    /**
-     * This is a hack around negative face coords
-     */
-    function parseIndex(index, length) {
-        if (index < 0)
-            return index + length + 1;
-        else
-            return index;
-    }
-    function parseMapKdString(trunk) {
-        var url = "";
-        var i;
-        var breakflag;
-        for (i = 1; i < trunk.length;) {
-            switch (trunk[i]) {
-                case "-blendu":
-                case "-blendv":
-                case "-cc":
-                case "-clamp":
-                case "-texres":
-                    i += 2; //Skip ahead 1 attribute
-                    break;
-                case "-mm":
-                    i += 3; //Skip ahead 2 attributes
-                    break;
-                case "-o":
-                case "-s":
-                case "-t":
-                    i += 4; //Skip ahead 3 attributes
-                    continue;
-                default:
-                    breakflag = true;
-                    break;
-            }
-            if (breakflag)
-                break;
+        else if ((result = jointsReg.exec(line)) && result[0] == line) {
+            md5Mesh.joints.push({
+                name: result[1], parentIndex: parseInt(result[2]),
+                position: [parseFloat(result[3]), parseFloat(result[4]), parseFloat(result[5])],
+                rotation: [parseFloat(result[3]), parseFloat(result[4]), parseFloat(result[5])]
+            });
         }
-        //Reconstruct URL/filename
-        for (i; i < trunk.length; i++) {
-            url += trunk[i];
-            url += " ";
+        else if ((result = endBlockReg.exec(line)) && result[0] == line) {
+            states.pop();
         }
-        //Remove the extraneous space and/or newline from the right side
-        url = url.replace(/\s+$/, "");
-        return url;
+        else {
+            throw new Error(`无法解析${line}`);
+        }
     }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * Obj模型加载类
+     * @author feng 2017-01-18
+     */
     class ObjLoader extends feng3d.Loader {
         /**
          * 加载资源
@@ -8441,6 +8183,36 @@ var feng3d;
         }
     }
     feng3d.ObjLoader = ObjLoader;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * MD5模型加载类
+     * @author feng 2017-01-18
+     */
+    class MD5Loader extends feng3d.Loader {
+        /**
+         * 加载资源
+         * @param url   路径
+         */
+        load(url, completed = null) {
+            this.url = url;
+            this.completed = completed;
+            var loader = new feng3d.Loader();
+            loader.addEventListener(feng3d.LoaderEvent.COMPLETE, function (e) {
+                var objData = this.objData = feng3d.MD5MeshParser.parse(e.data.content);
+                this.createObj();
+            }, this);
+            loader.loadText(url);
+        }
+        createObj() {
+            var object = new feng3d.Object3D();
+            if (this.completed) {
+                this.completed(object);
+            }
+        }
+    }
+    feng3d.MD5Loader = MD5Loader;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
