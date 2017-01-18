@@ -137,7 +137,6 @@
         //解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MtlParser.ts",
-        "src/assets/parsers/OBJParser1.ts",
         //
         "src/assets/loader/ObjLoader.ts",
         //
