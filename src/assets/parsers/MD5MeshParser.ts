@@ -3,7 +3,7 @@ module feng3d {
     /**
      * 关节权重数据
      */
-    type MD5_Weight = {
+    export type MD5_Weight = {
         /** weight 序号 */
         index: number;
         /** 对应的Joint的序号 */
@@ -14,7 +14,7 @@ module feng3d {
         pos: number[];
     }
 
-    type MD5_Vertex = {
+    export type MD5_Vertex = {
         /** 顶点索引 */
         index: number;
         /** 纹理坐标u */
@@ -27,7 +27,7 @@ module feng3d {
         countWeight: number;
     }
 
-    type MD5_Mesh = {
+    export type MD5_Mesh = {
         shader: string;
         numverts: number;
         verts: MD5_Vertex[];
@@ -37,7 +37,7 @@ module feng3d {
         weights: MD5_Weight[];
     }
 
-    type MD5_Joint = {
+    export type MD5_Joint = {
         name: string;
         parentIndex: number;
         position: number[];
@@ -45,7 +45,7 @@ module feng3d {
         rotation: number[];
     }
 
-    type MD5MeshData = {
+    export type MD5MeshData = {
         MD5Version: number;
         commandline: string;
         numJoints: number;
