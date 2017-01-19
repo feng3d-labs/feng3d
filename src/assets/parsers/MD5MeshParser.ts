@@ -58,6 +58,8 @@ module feng3d {
 
         static parse(context: string) {
 
+            //
+
             var md5MeshData = <MD5MeshData>{};
             var lines = context.split("\n").reverse();
             do {
@@ -122,7 +124,7 @@ module feng3d {
             md5MeshData.joints.push({
                 name: result[1], parentIndex: parseInt(result[2]),
                 position: [parseFloat(result[3]), parseFloat(result[4]), parseFloat(result[5])],
-                rotation: [parseFloat(result[3]), parseFloat(result[4]), parseFloat(result[5])]
+                rotation: [parseFloat(result[6]), parseFloat(result[7]), parseFloat(result[8])]
             });
         } else if ((result = endBlockReg.exec(line)) && result[0] == line) {
             var exitState = states.pop();

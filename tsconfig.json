@@ -49,6 +49,7 @@
         "src/mathlib/Rectangle.ts",
         "src/mathlib/Vector3D.ts",
         "src/mathlib/Matrix3D.ts",
+        "src/mathlib/Quaternion.ts",
         "src/mathlib/Plane3D.ts",
         "src/mathlib/PlaneClassification.ts",
         //渲染
@@ -136,6 +137,8 @@
         "src/animators/particle/ParticlePosition.ts",
         "src/animators/particle/ParticleVelocity.ts",
         //骨骼动画
+        "src/animators/skeleton/SkeletonJoint.ts",
+        "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonAnimator.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",

@@ -2220,6 +2220,128 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * A Quaternion object which can be used to represent rotations.
+     */
+    class Quaternion {
+        /**
+         * The x value of the quaternion.
+         */
+        x: number;
+        /**
+         * The y value of the quaternion.
+         */
+        y: number;
+        /**
+         * The z value of the quaternion.
+         */
+        z: number;
+        /**
+         * The w value of the quaternion.
+         */
+        w: number;
+        /**
+         * Creates a new Quaternion object.
+         * @param x The x value of the quaternion.
+         * @param y The y value of the quaternion.
+         * @param z The z value of the quaternion.
+         * @param w The w value of the quaternion.
+         */
+        constructor(x?: number, y?: number, z?: number, w?: number);
+        /**
+         * Returns the magnitude of the quaternion object.
+         */
+        readonly magnitude: number;
+        /**
+         * Fills the quaternion object with the result from a multiplication of two quaternion objects.
+         *
+         * @param    qa    The first quaternion in the multiplication.
+         * @param    qb    The second quaternion in the multiplication.
+         */
+        multiply(qa: Quaternion, qb: Quaternion): void;
+        multiplyVector(vector: Vector3D, target?: Quaternion): Quaternion;
+        /**
+         * Fills the quaternion object with values representing the given rotation around a vector.
+         *
+         * @param    axis    The axis around which to rotate
+         * @param    angle    The angle in radians of the rotation.
+         */
+        fromAxisAngle(axis: Vector3D, angle: number): void;
+        /**
+         * Spherically interpolates between two quaternions, providing an interpolation between rotations with constant angle change rate.
+         * @param qa The first quaternion to interpolate.
+         * @param qb The second quaternion to interpolate.
+         * @param t The interpolation weight, a value between 0 and 1.
+         */
+        slerp(qa: Quaternion, qb: Quaternion, t: number): void;
+        /**
+         * 线性求插值
+         * @param qa 第一个四元素
+         * @param qb 第二个四元素
+         * @param t 权重
+         */
+        lerp(qa: Quaternion, qb: Quaternion, t: number): void;
+        /**
+         * Fills the quaternion object with values representing the given euler rotation.
+         *
+         * @param    ax        The angle in radians of the rotation around the ax axis.
+         * @param    ay        The angle in radians of the rotation around the ay axis.
+         * @param    az        The angle in radians of the rotation around the az axis.
+         */
+        fromEulerAngles(ax: number, ay: number, az: number): void;
+        /**
+         * Fills a target Vector3D object with the Euler angles that form the rotation represented by this quaternion.
+         * @param target An optional Vector3D object to contain the Euler angles. If not provided, a new object is created.
+         * @return The Vector3D containing the Euler angles.
+         */
+        toEulerAngles(target?: Vector3D): Vector3D;
+        /**
+         * Normalises the quaternion object.
+         */
+        normalize(val?: number): void;
+        /**
+         * Used to trace the values of a quaternion.
+         *
+         * @return A string representation of the quaternion object.
+         */
+        toString(): string;
+        /**
+         * Converts the quaternion to a Matrix3D object representing an equivalent rotation.
+         * @param target An optional Matrix3D container to store the transformation in. If not provided, a new object is created.
+         * @return A Matrix3D object representing an equivalent rotation.
+         */
+        toMatrix3D(target?: Matrix3D): Matrix3D;
+        /**
+         * Extracts a quaternion rotation matrix out of a given Matrix3D object.
+         * @param matrix The Matrix3D out of which the rotation will be extracted.
+         */
+        fromMatrix(matrix: Matrix3D): void;
+        /**
+         * Converts the quaternion to a Vector.&lt;number&gt; matrix representation of a rotation equivalent to this quaternion.
+         * @param target The Vector.&lt;number&gt; to contain the raw matrix data.
+         * @param exclude4thRow If true, the last row will be omitted, and a 4x3 matrix will be generated instead of a 4x4.
+         */
+        toRawData(target: number[], exclude4thRow?: boolean): void;
+        /**
+         * Clones the quaternion.
+         * @return An exact duplicate of the current Quaternion.
+         */
+        clone(): Quaternion;
+        /**
+         * Rotates a point.
+         * @param vector The Vector3D object to be rotated.
+         * @param target An optional Vector3D object that will contain the rotated coordinates. If not provided, a new object will be created.
+         * @return A Vector3D object containing the rotated point.
+         */
+        rotatePoint(vector: Vector3D, target?: Vector3D): Vector3D;
+        /**
+         * Copies the data from a quaternion into this instance.
+         * @param q The quaternion to copy from.
+         */
+        copyFrom(q: Quaternion): void;
+    }
+}
+declare module feng3d {
+    /**
      * 3d面
      */
     class Plane3D {
@@ -3392,6 +3514,14 @@ declare module feng3d {
          * uv（纹理坐标）
          */
         static a_uv: string;
+        /**
+         * 关节索引
+         */
+        static a_jointindex: string;
+        /**
+         * 关节权重
+         */
+        static a_jointweight: string;
     }
 }
 declare module feng3d {
@@ -4305,6 +4435,15 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 粒子材质（为了使用独立的着色器，暂时设置粒子材质）
+     * @author feng 2017-01-09
+     */
+    class SkeletonAnimatorMaterial extends Material {
+        constructor();
+    }
+}
+declare module feng3d {
+    /**
      * 灯光类型
      * @author feng 2016-12-12
      */
@@ -4747,6 +4886,64 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 骨骼关节数据
+     * @author feng 2014-5-20
+     */
+    class SkeletonJoint {
+        /** 父关节索引 （-1说明本身是总父节点，这个序号其实就是行号了，譬如上面”origin“节点的序号就是0，无父节点； "body"节点序号是1，父节点序号是0，也就是说父节点是”origin“）*/
+        parentIndex: number;
+        /** 关节名字 */
+        name: string;
+        /** 位移 */
+        position: Vector3D;
+        /** 旋转 */
+        rotation: Quaternion;
+        private _matrix;
+        readonly matrix: Matrix3D;
+    }
+}
+declare module feng3d {
+    /**
+     * 骨骼数据
+     * @author feng 2014-5-20
+     */
+    class Skeleton extends Component {
+        /** 骨骼关节数据列表 */
+        joints: SkeletonJoint[];
+        constructor();
+        readonly numJoints: number;
+    }
+}
+declare module feng3d {
+    /**
+     * 骨骼动画
+     * @author feng 2017-01-19
+     */
+    class SkeletonAnimator extends Object3DComponent {
+        /**
+         * 是否正在播放
+         */
+        isPlaying: boolean;
+        /**
+         * 动画时间
+         */
+        time: number;
+        /**
+         * 起始时间
+         */
+        startTime: number;
+        /**
+         * 播放速度
+         */
+        playbackSpeed: number;
+        /**
+         * 骨骼
+         */
+        skeleton: Skeleton;
+    }
+}
+declare module feng3d {
+    /**
      * 面数据
      */
     type OBJ_Face = {
@@ -4850,6 +5047,55 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    /**
+     * 关节权重数据
+     */
+    type MD5_Weight = {
+        /** weight 序号 */
+        index: number;
+        /** 对应的Joint的序号 */
+        joint: number;
+        /** 作用比例 */
+        bias: number;
+        /** 位置值 */
+        pos: number[];
+    };
+    type MD5_Vertex = {
+        /** 顶点索引 */
+        index: number;
+        /** 纹理坐标u */
+        u: number;
+        /** 纹理坐标v */
+        v: number;
+        /** weight的起始序号 */
+        startWeight: number;
+        /** weight总数 */
+        countWeight: number;
+    };
+    type MD5_Mesh = {
+        shader: string;
+        numverts: number;
+        verts: MD5_Vertex[];
+        numtris: number;
+        tris: number[];
+        numweights: number;
+        weights: MD5_Weight[];
+    };
+    type MD5_Joint = {
+        name: string;
+        parentIndex: number;
+        position: number[];
+        /** 旋转数据 */
+        rotation: number[];
+    };
+    type MD5MeshData = {
+        MD5Version: number;
+        commandline: string;
+        numJoints: number;
+        numMeshes: number;
+        joints: MD5_Joint[];
+        meshs: MD5_Mesh[];
+    };
     class MD5MeshParser {
         static parse(context: string): {
             MD5Version: number;
@@ -4948,6 +5194,25 @@ declare module feng3d {
         load(url: string, completed?: (object3D: Object3D) => void): void;
         loadAnim(url: string, completed?: (object3D: Object3D) => void): void;
         private createObj();
+        private _maxJointCount;
+        private _skeleton;
+        private createMD5Mesh(md5MeshData);
+        /**
+         * 计算最大关节数量
+         */
+        private calculateMaxJointCount(md5MeshData);
+        /**
+         * 计算0权重关节数量
+         * @param vertex 顶点数据
+         * @param weights 关节权重数组
+         * @return
+         */
+        private countZeroWeightJoints(vertex, weights);
+        private createSkeleton(joints);
+        /** 旋转四元素 */
+        private _rotationQuat;
+        private createSkeletonJoint(joint);
+        private createGeometry(md5Mesh);
     }
 }
 declare module feng3d {

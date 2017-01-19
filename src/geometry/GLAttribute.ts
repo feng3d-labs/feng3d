@@ -24,5 +24,15 @@ module feng3d {
          * uv（纹理坐标）
          */
         static a_uv = "a_uv";
+
+        /**
+         * 关节索引
+         */
+        static a_jointindex = "a_jointindex";
+
+        /**
+         * 关节权重
+         */
+        static a_jointweight = "a_jointweight";
     }
 }
