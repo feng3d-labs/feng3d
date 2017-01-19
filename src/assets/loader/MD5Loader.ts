@@ -7,6 +7,7 @@ module feng3d {
     export class MD5Loader extends Loader {
 
         completed: (object3D: Object3D) => void;
+        animCompleted: (object3D: Object3D) => void;
 
         /**
          * 加载资源
@@ -34,26 +35,18 @@ module feng3d {
         public loadAnim(url: string, completed: (object3D: Object3D) => void = null) {
 
             this.url = url
-            this.completed = completed;
+            this.animCompleted = completed;
 
             var loader = new Loader();
             loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent) {
 
-                var objData = this.objData = MD5AnimParser.parse(e.data.content);
+                var objData = MD5AnimParser.parse(e.data.content);
 
-                this.createObj();
+                this.createAnimator();
             }, this)
             loader.loadText(url);
         }
 
-        private createObj() {
-
-            var object = new Object3D();
-
-            if (this.completed) {
-                this.completed(object);
-            }
-        }
         private _maxJointCount: number;
         private _skeleton: Skeleton;
         private createMD5Mesh(md5MeshData: MD5MeshData) {
@@ -62,7 +55,6 @@ module feng3d {
 
             //顶点最大关节关联数
             this._maxJointCount = this.calculateMaxJointCount(md5MeshData);
-            this._maxJointCount = 4;
 
             this._skeleton = this.createSkeleton(md5MeshData.joints);
             var skeletonAnimator = new SkeletonAnimator();
@@ -186,7 +178,7 @@ module feng3d {
             //关节权重数据
             var jointWeights: number[] = [];
             jointWeights.length = len * this._maxJointCount;
-            var l: number;
+            var l: number = 0;
             //0权重个数
             var nonZeroWeights: number;
 
@@ -238,9 +230,23 @@ module feng3d {
             geometry.setVAData(GLAttribute.a_position, new Float32Array(vertices), 3);
             geometry.setVAData(GLAttribute.a_uv, new Float32Array(uvs), 2);
             //更新关节索引与权重索引
-            geometry.setVAData(GLAttribute.a_jointindex, new Float32Array(jointIndices), 4);
-            geometry.setVAData(GLAttribute.a_jointweight, new Float32Array(jointWeights), 4);
+            geometry.setVAData(GLAttribute.a_jointindex, new Float32Array(jointIndices), this._maxJointCount);
+            geometry.setVAData(GLAttribute.a_jointweight, new Float32Array(jointWeights), this._maxJointCount);
             return geometry;
         }
+
+        private createAnimator(md5AnimData: MD5AnimData) {
+
+            var object = new Object3D();
+
+            var _clip = new SkeletonClipNode();
+            // this.translateClip();
+
+            if (this.completed) {
+                this.completed(object);
+            }
+        }
+
+
     }
 }

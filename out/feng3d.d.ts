@@ -4944,6 +4944,112 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 关节pose
+     * @author feng 2014-5-20
+     */
+    class JointPose {
+        /** 旋转信息 */
+        orientation: Quaternion;
+        /** 位移信息 */
+        translation: Vector3D;
+        constructor();
+        /**
+         * Converts the transformation to a Matrix3D representation.
+         *
+         * @param target An optional target matrix to store the transformation. If not provided, it will create a new instance.
+         * @return The transformation matrix of the pose.
+         */
+        toMatrix3D(target?: Matrix3D): Matrix3D;
+    }
+}
+declare module feng3d {
+    /**
+     * 骨骼pose
+     * @author feng 2014-5-20
+     */
+    class SkeletonPose {
+        /** 关节pose列表 */
+        jointPoses: JointPose[];
+        readonly numJointPoses: number;
+        constructor();
+    }
+}
+declare module feng3d {
+    /**
+     * 动画剪辑节点基类(用于控制动画播放，包含每帧持续时间，是否循环播放等)
+     * @author feng 2014-5-20
+     */
+    class AnimationClipNodeBase {
+        protected _looping: boolean;
+        protected _totalDuration: number;
+        protected _lastFrame: number;
+        protected _stitchDirty: boolean;
+        protected _stitchFinalFrame: boolean;
+        protected _numFrames: number;
+        protected _durations: number[];
+        protected _totalDelta: Vector3D;
+        /** 是否稳定帧率 */
+        fixedFrameRate: boolean;
+        /**
+         * 持续时间列表（ms）
+         */
+        readonly durations: number[];
+        /**
+         * 总坐标偏移量
+         */
+        readonly totalDelta: Vector3D;
+        /**
+         * 是否循环播放
+         */
+        looping: boolean;
+        /**
+         * 是否过渡结束帧
+         */
+        stitchFinalFrame: boolean;
+        /**
+         * 总持续时间
+         */
+        readonly totalDuration: number;
+        /**
+         * 最后帧数
+         */
+        readonly lastFrame: number;
+        /**
+         * 更新动画播放控制状态
+         */
+        protected updateStitch(): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 骨骼动画节点（一般用于一个动画的帧列表）
+     * 包含基于时间的动画数据作为单独的骨架构成。
+     * @author feng 2014-5-20
+     */
+    class SkeletonClipNode extends AnimationClipNodeBase {
+        private _frames;
+        /**
+         * 创建骨骼动画节点
+         */
+        constructor();
+        /**
+         * 骨骼姿势动画帧列表
+         */
+        readonly frames: SkeletonPose[];
+        /**
+         * 添加帧到动画
+         * @param skeletonPose 骨骼姿势
+         * @param duration 持续时间
+         */
+        addFrame(skeletonPose: SkeletonPose, duration: number): void;
+        /**
+         * @inheritDoc
+         */
+        protected updateStitch(): void;
+    }
+}
+declare module feng3d {
+    /**
      * 面数据
      */
     type OBJ_Face = {
@@ -5132,6 +5238,56 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    /**
+     * 帧数据
+     */
+    type MD5_Frame = {
+        index: number;
+        components: number[];
+    };
+    /**
+     * 基础帧数据
+     */
+    type MD5_BaseFrame = {
+        /** 位置 */
+        position: number[];
+        /** 方向 */
+        orientation: number[];
+    };
+    /**
+     * 包围盒信息
+     */
+    type MD5_Bounds = {
+        /** 最小坐标 */
+        min: number[];
+        /** 最大坐标 */
+        max: number[];
+    };
+    /**
+     * 层级数据
+     */
+    type MD5_HierarchyData = {
+        /** Joint 名字 */
+        name: string;
+        /** 父节点序号 */
+        parentIndex: number;
+        /** flag */
+        flags: number;
+        /** 影响的帧数据起始索引 */
+        startIndex: number;
+    };
+    type MD5AnimData = {
+        MD5Version: number;
+        commandline: string;
+        numFrames: number;
+        numJoints: number;
+        frameRate: number;
+        numAnimatedComponents: number;
+        hierarchy: MD5_HierarchyData[];
+        bounds: MD5_Bounds[];
+        baseframe: MD5_BaseFrame[];
+        frame: MD5_Frame[];
+    };
     class MD5AnimParser {
         static parse(context: string): {
             MD5Version: number;
@@ -5187,13 +5343,13 @@ declare module feng3d {
      */
     class MD5Loader extends Loader {
         completed: (object3D: Object3D) => void;
+        animCompleted: (object3D: Object3D) => void;
         /**
          * 加载资源
          * @param url   路径
          */
         load(url: string, completed?: (object3D: Object3D) => void): void;
         loadAnim(url: string, completed?: (object3D: Object3D) => void): void;
-        private createObj();
         private _maxJointCount;
         private _skeleton;
         private createMD5Mesh(md5MeshData);
@@ -5213,6 +5369,7 @@ declare module feng3d {
         private _rotationQuat;
         private createSkeletonJoint(joint);
         private createGeometry(md5Mesh);
+        private createAnimator(md5AnimData);
     }
 }
 declare module feng3d {

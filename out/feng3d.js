@@ -8252,6 +8252,201 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 关节pose
+     * @author feng 2014-5-20
+     */
+    class JointPose {
+        constructor() {
+            /** 旋转信息 */
+            this.orientation = new feng3d.Quaternion();
+            /** 位移信息 */
+            this.translation = new feng3d.Vector3D();
+        }
+        /**
+         * Converts the transformation to a Matrix3D representation.
+         *
+         * @param target An optional target matrix to store the transformation. If not provided, it will create a new instance.
+         * @return The transformation matrix of the pose.
+         */
+        toMatrix3D(target = null) {
+            if (target == null)
+                target = new feng3d.Matrix3D();
+            this.orientation.toMatrix3D(target);
+            target.appendTranslation(this.translation.x, this.translation.y, this.translation.z);
+            return target;
+        }
+    }
+    feng3d.JointPose = JointPose;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 骨骼pose
+     * @author feng 2014-5-20
+     */
+    class SkeletonPose {
+        constructor() {
+            this.jointPoses = [];
+        }
+        get numJointPoses() {
+            return this.jointPoses.length;
+        }
+    }
+    feng3d.SkeletonPose = SkeletonPose;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画剪辑节点基类(用于控制动画播放，包含每帧持续时间，是否循环播放等)
+     * @author feng 2014-5-20
+     */
+    class AnimationClipNodeBase {
+        constructor() {
+            this._looping = true;
+            this._totalDuration = 0;
+            this._stitchDirty = true;
+            this._stitchFinalFrame = false;
+            this._numFrames = 0;
+            this._durations = [];
+            this._totalDelta = new feng3d.Vector3D();
+            /** 是否稳定帧率 */
+            this.fixedFrameRate = true;
+        }
+        /**
+         * 持续时间列表（ms）
+         */
+        get durations() {
+            return this._durations;
+        }
+        /**
+         * 总坐标偏移量
+         */
+        get totalDelta() {
+            if (this._stitchDirty)
+                this.updateStitch();
+            return this._totalDelta;
+        }
+        /**
+         * 是否循环播放
+         */
+        get looping() {
+            return this._looping;
+        }
+        set looping(value) {
+            if (this._looping == value)
+                return;
+            this._looping = value;
+            this._stitchDirty = true;
+        }
+        /**
+         * 是否过渡结束帧
+         */
+        get stitchFinalFrame() {
+            return this._stitchFinalFrame;
+        }
+        set stitchFinalFrame(value) {
+            if (this._stitchFinalFrame == value)
+                return;
+            this._stitchFinalFrame = value;
+            this._stitchDirty = true;
+        }
+        /**
+         * 总持续时间
+         */
+        get totalDuration() {
+            if (this._stitchDirty)
+                this.updateStitch();
+            return this._totalDuration;
+        }
+        /**
+         * 最后帧数
+         */
+        get lastFrame() {
+            if (this._stitchDirty)
+                this.updateStitch();
+            return this._lastFrame;
+        }
+        /**
+         * 更新动画播放控制状态
+         */
+        updateStitch() {
+            this._stitchDirty = false;
+            this._lastFrame = (this._looping && this._stitchFinalFrame) ? this._numFrames : this._numFrames - 1;
+            this._totalDuration = 0;
+            this._totalDelta.x = 0;
+            this._totalDelta.y = 0;
+            this._totalDelta.z = 0;
+        }
+    }
+    feng3d.AnimationClipNodeBase = AnimationClipNodeBase;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 骨骼动画节点（一般用于一个动画的帧列表）
+     * 包含基于时间的动画数据作为单独的骨架构成。
+     * @author feng 2014-5-20
+     */
+    class SkeletonClipNode extends feng3d.AnimationClipNodeBase {
+        /**
+         * 创建骨骼动画节点
+         */
+        constructor() {
+            super();
+            this._frames = [];
+        }
+        /**
+         * 骨骼姿势动画帧列表
+         */
+        get frames() {
+            return this._frames;
+        }
+        /**
+         * 添加帧到动画
+         * @param skeletonPose 骨骼姿势
+         * @param duration 持续时间
+         */
+        addFrame(skeletonPose, duration) {
+            this._frames.push(skeletonPose);
+            this._durations.push(duration);
+            this._totalDuration += duration;
+            this._numFrames = this._durations.length;
+            this._stitchDirty = true;
+        }
+        /**
+         * @inheritDoc
+         */
+        updateStitch() {
+            super.updateStitch();
+            var i = this._numFrames - 1;
+            var p1, p2, delta;
+            while (i--) {
+                this._totalDuration += this._durations[i];
+                p1 = this._frames[i].jointPoses[0].translation;
+                p2 = this._frames[i + 1].jointPoses[0].translation;
+                delta = p2.subtract(p1);
+                this._totalDelta.x += delta.x;
+                this._totalDelta.y += delta.y;
+                this._totalDelta.z += delta.z;
+            }
+            if (this._stitchFinalFrame && this._looping) {
+                this._totalDuration += this._durations[this._numFrames - 1];
+                if (this._numFrames > 1) {
+                    p1 = this._frames[0].jointPoses[0].translation;
+                    p2 = this._frames[1].jointPoses[0].translation;
+                    delta = p2.subtract(p1);
+                    this._totalDelta.x += delta.x;
+                    this._totalDelta.y += delta.y;
+                    this._totalDelta.z += delta.z;
+                }
+            }
+        }
+    }
+    feng3d.SkeletonClipNode = SkeletonClipNode;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * Obj模型解析器
      * @author feng 2017-01-13
      */
@@ -8790,25 +8985,18 @@ var feng3d;
         }
         loadAnim(url, completed = null) {
             this.url = url;
-            this.completed = completed;
+            this.animCompleted = completed;
             var loader = new feng3d.Loader();
             loader.addEventListener(feng3d.LoaderEvent.COMPLETE, function (e) {
-                var objData = this.objData = feng3d.MD5AnimParser.parse(e.data.content);
-                this.createObj();
+                var objData = feng3d.MD5AnimParser.parse(e.data.content);
+                this.createAnimator();
             }, this);
             loader.loadText(url);
-        }
-        createObj() {
-            var object = new feng3d.Object3D();
-            if (this.completed) {
-                this.completed(object);
-            }
         }
         createMD5Mesh(md5MeshData) {
             var object3D = new feng3d.Object3D();
             //顶点最大关节关联数
             this._maxJointCount = this.calculateMaxJointCount(md5MeshData);
-            this._maxJointCount = 4;
             this._skeleton = this.createSkeleton(md5MeshData.joints);
             var skeletonAnimator = new feng3d.SkeletonAnimator();
             skeletonAnimator.skeleton = this._skeleton;
@@ -8913,7 +9101,7 @@ var feng3d;
             //关节权重数据
             var jointWeights = [];
             jointWeights.length = len * this._maxJointCount;
-            var l;
+            var l = 0;
             //0权重个数
             var nonZeroWeights;
             for (var i = 0; i < len; ++i) {
@@ -8958,9 +9146,17 @@ var feng3d;
             geometry.setVAData(feng3d.GLAttribute.a_position, new Float32Array(vertices), 3);
             geometry.setVAData(feng3d.GLAttribute.a_uv, new Float32Array(uvs), 2);
             //更新关节索引与权重索引
-            geometry.setVAData(feng3d.GLAttribute.a_jointindex, new Float32Array(jointIndices), 4);
-            geometry.setVAData(feng3d.GLAttribute.a_jointweight, new Float32Array(jointWeights), 4);
+            geometry.setVAData(feng3d.GLAttribute.a_jointindex, new Float32Array(jointIndices), this._maxJointCount);
+            geometry.setVAData(feng3d.GLAttribute.a_jointweight, new Float32Array(jointWeights), this._maxJointCount);
             return geometry;
+        }
+        createAnimator(md5AnimData) {
+            var object = new feng3d.Object3D();
+            var _clip = new feng3d.SkeletonClipNode();
+            // this.translateClip();
+            if (this.completed) {
+                this.completed(object);
+            }
         }
     }
     feng3d.MD5Loader = MD5Loader;
