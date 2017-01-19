@@ -6,13 +6,14 @@ module feng3d {
      */
     export class MD5Loader extends Loader {
 
-        completed: (object3D: Object3D) => void;
+        completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void;
+        animCompleted: (skeletonClipNode: SkeletonClipNode) => void;
 
         /**
          * 加载资源
          * @param url   路径
          */
-        public load(url: string, completed: (object3D: Object3D) => void = null) {
+        public load(url: string, completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void = null) {
 
             this.url = url
             this.completed = completed;
@@ -20,6 +21,16 @@ module feng3d {
             //初始化 旋转四元素
             this._rotationQuat = new Quaternion();
             this._rotationQuat.fromAxisAngle(Vector3D.X_AXIS, -Math.PI * .5);
+
+            //初始化旋转四元素
+            this._animRotationQuat = new Quaternion();
+            var t1: Quaternion = new Quaternion();
+            var t2: Quaternion = new Quaternion();
+
+            t1.fromAxisAngle(Vector3D.X_AXIS, -Math.PI * .5);
+            t2.fromAxisAngle(Vector3D.Y_AXIS, -Math.PI * .5);
+
+            this._animRotationQuat.multiply(t2, t1);
 
             var loader = new Loader();
             loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent) {
@@ -31,29 +42,21 @@ module feng3d {
             loader.loadText(url);
         }
 
-        public loadAnim(url: string, completed: (object3D: Object3D) => void = null) {
+        public loadAnim(url: string, completed: (object3D: SkeletonClipNode) => void = null) {
 
             this.url = url
-            this.completed = completed;
+            this.animCompleted = completed;
 
             var loader = new Loader();
             loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent) {
 
-                var objData = this.objData = MD5AnimParser.parse(e.data.content);
+                var objData = MD5AnimParser.parse(e.data.content);
 
-                this.createObj();
+                this.createAnimator(objData);
             }, this)
             loader.loadText(url);
         }
 
-        private createObj() {
-
-            var object = new Object3D();
-
-            if (this.completed) {
-                this.completed(object);
-            }
-        }
         private _maxJointCount: number;
         private _skeleton: Skeleton;
         private createMD5Mesh(md5MeshData: MD5MeshData) {
@@ -62,7 +65,6 @@ module feng3d {
 
             //顶点最大关节关联数
             this._maxJointCount = this.calculateMaxJointCount(md5MeshData);
-            this._maxJointCount = 4;
 
             this._skeleton = this.createSkeleton(md5MeshData.joints);
             var skeletonAnimator = new SkeletonAnimator();
@@ -80,7 +82,7 @@ module feng3d {
             }
 
             if (this.completed) {
-                this.completed(object3D);
+                this.completed(object3D, skeletonAnimator);
             }
         }
 
@@ -140,6 +142,9 @@ module feng3d {
         }
         /** 旋转四元素 */
         private _rotationQuat: Quaternion;
+        /** 旋转四元素 */
+        private _animRotationQuat: Quaternion;
+
         private createSkeletonJoint(joint: MD5_Joint) {
             var skeletonJoint = new SkeletonJoint();
             skeletonJoint.name = joint.name;
@@ -186,7 +191,7 @@ module feng3d {
             //关节权重数据
             var jointWeights: number[] = [];
             jointWeights.length = len * this._maxJointCount;
-            var l: number;
+            var l: number = 0;
             //0权重个数
             var nonZeroWeights: number;
 
@@ -238,9 +243,100 @@ module feng3d {
             geometry.setVAData(GLAttribute.a_position, new Float32Array(vertices), 3);
             geometry.setVAData(GLAttribute.a_uv, new Float32Array(uvs), 2);
             //更新关节索引与权重索引
-            geometry.setVAData(GLAttribute.a_jointindex, new Float32Array(jointIndices), 4);
-            geometry.setVAData(GLAttribute.a_jointweight, new Float32Array(jointWeights), 4);
+            geometry.setVAData(GLAttribute.a_jointindex, new Float32Array(jointIndices), this._maxJointCount);
+            geometry.setVAData(GLAttribute.a_jointweight, new Float32Array(jointWeights), this._maxJointCount);
             return geometry;
         }
+
+        private createAnimator(md5AnimData: MD5AnimData) {
+
+            var object = new Object3D();
+
+            var _clip = new SkeletonClipNode();
+            for (var i: number = 0; i < md5AnimData.numFrames; ++i)
+                _clip.addFrame(this.translatePose(md5AnimData, md5AnimData.frame[i]), 1000 / md5AnimData.frameRate);
+
+            if (this.animCompleted) {
+                this.animCompleted(_clip);
+            }
+        }
+
+		/**
+		 * 将一个关键帧数据转换为SkeletonPose
+		 * @param frameData 帧数据
+		 * @return 包含帧数据的SkeletonPose对象
+		 */
+        private translatePose(md5AnimData: MD5AnimData, frameData: MD5_Frame): SkeletonPose {
+            var hierarchy: MD5_HierarchyData;
+            var pose: JointPose;
+            var base: MD5_BaseFrame;
+            var flags: number;
+            var j: number;
+            //偏移量
+            var translate: Vector3D = new Vector3D();
+            //旋转四元素
+            var orientation: Quaternion = new Quaternion();
+            var components: number[] = frameData.components;
+            //骨骼pose数据
+            var skelPose: SkeletonPose = new SkeletonPose();
+            //骨骼pose列表
+            var jointPoses: JointPose[] = skelPose.jointPoses;
+
+            for (var i: number = 0; i < md5AnimData.numJoints; ++i) {
+                //通过原始帧数据与层级数据计算出当前骨骼pose数据
+                j = 0;
+                //层级数据
+                hierarchy = md5AnimData.hierarchy[i];
+                //基础帧数据
+                base = md5AnimData.baseframe[i];
+                //层级标记
+                flags = hierarchy.flags;
+                translate.x = base.position[0];
+                translate.y = base.position[1];
+                translate.z = base.position[2];
+                orientation.x = base.orientation[0];
+                orientation.y = base.orientation[1];
+                orientation.z = base.orientation[2];
+
+                //调整位移与角度数据
+                if (flags & 1)
+                    translate.x = components[hierarchy.startIndex + (j++)];
+                if (flags & 2)
+                    translate.y = components[hierarchy.startIndex + (j++)];
+                if (flags & 4)
+                    translate.z = components[hierarchy.startIndex + (j++)];
+                if (flags & 8)
+                    orientation.x = components[hierarchy.startIndex + (j++)];
+                if (flags & 16)
+                    orientation.y = components[hierarchy.startIndex + (j++)];
+                if (flags & 32)
+                    orientation.z = components[hierarchy.startIndex + (j++)];
+
+                //计算四元素w值
+                var w: number = 1 - orientation.x * orientation.x - orientation.y * orientation.y - orientation.z * orientation.z;
+                orientation.w = w < 0 ? 0 : -Math.sqrt(w);
+
+                //创建关节pose数据
+                pose = new JointPose();
+                if (hierarchy.parentIndex < 0) {
+                    pose.orientation.multiply(this._animRotationQuat, orientation);
+                    pose.translation = this._animRotationQuat.rotatePoint(translate);
+                }
+                else {
+                    pose.orientation.copyFrom(orientation);
+                    pose.translation.x = translate.x;
+                    pose.translation.y = translate.y;
+                    pose.translation.z = translate.z;
+                }
+                pose.orientation.y = -pose.orientation.y;
+                pose.orientation.z = -pose.orientation.z;
+                pose.translation.x = -pose.translation.x;
+
+                jointPoses[i] = pose;
+            }
+
+            return skelPose;
+        }
+
     }
 }

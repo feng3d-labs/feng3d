@@ -30,5 +30,7 @@ module feng3d {
          * 骨骼
          */
         public skeleton: Skeleton;
+
+        public animations: SkeletonClipNode[] = [];
     }
 }

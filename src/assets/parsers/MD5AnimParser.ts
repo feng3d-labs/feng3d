@@ -3,7 +3,7 @@ module feng3d {
     /**
      * 帧数据
      */
-    type MD5_Frame = {
+    export type MD5_Frame = {
         index: number;
         components: number[];
     }
@@ -11,7 +11,7 @@ module feng3d {
     /**
      * 基础帧数据
      */
-    type MD5_BaseFrame = {
+    export type MD5_BaseFrame = {
         /** 位置 */
         position: number[];
         /** 方向 */
@@ -21,7 +21,7 @@ module feng3d {
     /**
      * 包围盒信息
      */
-    type MD5_Bounds = {
+    export type MD5_Bounds = {
         /** 最小坐标 */
         min: number[];
         /** 最大坐标 */
@@ -31,7 +31,7 @@ module feng3d {
     /**
      * 层级数据
      */
-    type MD5_HierarchyData = {
+    export type MD5_HierarchyData = {
         /** Joint 名字 */
         name: string;
         /** 父节点序号 */
@@ -42,7 +42,7 @@ module feng3d {
         startIndex: number;
     }
 
-    type MD5AnimData = {
+    export type MD5AnimData = {
         MD5Version: number;
         commandline: string;
         numFrames: number;
