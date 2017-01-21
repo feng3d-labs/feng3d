@@ -4912,6 +4912,47 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * Dispatched to notify changes in an animation state's state.
+     */
+    class AnimationStateEvent extends Event {
+        /**
+         * Dispatched when a non-looping clip node inside an animation state reaches the end of its timeline.
+         */
+        static PLAYBACK_COMPLETE: string;
+        static TRANSITION_COMPLETE: string;
+        private _animator;
+        private _animationState;
+        private _animationNode;
+        /**
+         * Create a new <code>AnimatonStateEvent</code>
+         *
+         * @param type The event type.
+         * @param animator The animation state object that is the subject of this event.
+         * @param animationNode The animation node inside the animation state from which the event originated.
+         */
+        constructor(type: string, animator: AnimatorBase, animationState: IAnimationState, animationNode: AnimationNodeBase);
+        /**
+         * The animator object that is the subject of this event.
+         */
+        readonly animator: AnimatorBase;
+        /**
+         * The animation state object that is the subject of this event.
+         */
+        readonly animationState: IAnimationState;
+        /**
+         * The animation node inside the animation state from which the event originated.
+         */
+        readonly animationNode: AnimationNodeBase;
+        /**
+         * Clones the event.
+         *
+         * @return An exact duplicate of the current object.
+         */
+        clone(): Event;
+    }
+}
+declare module feng3d {
+    /**
      * 动画事件
      * @author feng 2014-5-27
      */
@@ -5183,6 +5224,114 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 动画集合基类
+     * @author feng 2014-5-20
+     */
+    abstract class AnimationSetBase extends Component {
+        private _usesCPU;
+        /** 动画节点列表 */
+        private _animations;
+        /** 动画名称列表 */
+        private _animationNames;
+        /** 动画字典 */
+        private _animationDictionary;
+        /**
+         * 创建一个动画集合基类
+         */
+        constructor();
+        /**
+         * 初始化Context3d缓存
+         */
+        protected initBuffers(): void;
+        /**
+         * 是否使用CPU
+         */
+        readonly usesCPU: boolean;
+        /**
+         * Returns a vector of animation state objects that make up the contents of the animation data set.
+         */
+        readonly animations: AnimationNodeBase[];
+        /**
+         * 添加动画
+         * @param node 动画节点
+         */
+        addAnimation(node: AnimationNodeBase): void;
+        /**
+         * 获取动画节点
+         * @param name 动画名称
+         * @return 动画节点
+         */
+        getAnimation(animationName: string): AnimationNodeBase;
+        /**
+         * 是否有某动画
+         * @param name 动画名称
+         */
+        hasAnimation(animationName: string): boolean;
+        /**
+         * 重置使用GPU
+         */
+        resetGPUCompatibility(): void;
+        /**
+         * 取消使用GPU
+         */
+        cancelGPUCompatibility(): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 淡入淡出变换接口
+     * @author feng 2015-9-18
+     */
+    interface IAnimationTransition {
+        /**
+         * 获取动画变换节点
+         * @param animator				动画
+         * @param startNode				开始节点
+         * @param endNode				结束节点
+         * @param startTime				开始时间
+         * @return						动画变换节点
+         */
+        getAnimationNode(animator: AnimatorBase, startNode: AnimationNodeBase, endNode: AnimationNodeBase, startTime: number): AnimationNodeBase;
+    }
+}
+declare module feng3d {
+    /**
+     * 骨骼动画集合
+     * @author feng 2014-5-20
+     */
+    class SkeletonAnimationSet extends AnimationSetBase implements IAnimationSet {
+        private _jointsPerVertex;
+        private _numJoints;
+        /**
+         * 创建一个骨骼动画集合
+         * @param jointsPerVertex 每个顶点关联关节的数量
+         */
+        constructor(jointsPerVertex?: number);
+        /**
+         * 每个顶点关联关节的数量
+         */
+        readonly jointsPerVertex: number;
+        /**
+         * 设置关节数量
+         */
+        numJoints: number;
+    }
+}
+declare module feng3d {
+    /**
+     * 骨骼动画状态接口
+     * @author feng 2015-9-18
+     */
+    interface ISkeletonAnimationState extends IAnimationState {
+        /**
+         * 获取骨骼姿势
+         * @param skeleton		骨骼
+         */
+        getSkeletonPose(skeleton: Skeleton): SkeletonPose;
+    }
+}
+declare module feng3d {
+    /**
      * 骨骼关节数据
      * @author feng 2014-5-20
      */
@@ -5196,7 +5345,10 @@ declare module feng3d {
         /** 旋转 */
         rotation: Quaternion;
         private _matrix;
+        private _invertMatrix;
         readonly matrix: Matrix3D;
+        readonly invertMatrix: Matrix3D;
+        readonly inverseBindPose: Float32Array;
     }
 }
 declare module feng3d {
@@ -5214,31 +5366,70 @@ declare module feng3d {
 declare module feng3d {
     /**
      * 骨骼动画
-     * @author feng 2017-01-19
+     * @author feng 2014-5-27
      */
-    class SkeletonAnimator extends Object3DComponent {
+    class SkeletonAnimator extends AnimatorBase {
+        private _globalMatrices;
+        private _globalPose;
+        private _globalPropertiesDirty;
+        private _numJoints;
+        private _skeleton;
+        private _forceCPU;
+        private _jointsPerVertex;
+        private _activeSkeletonState;
         /**
-         * 是否正在播放
+         * 当前骨骼姿势的全局矩阵
+         * @see #globalPose
          */
-        isPlaying: boolean;
+        readonly globalMatrices: number[];
         /**
-         * 动画时间
+         * 当前全局骨骼姿势
          */
-        time: number;
-        /**
-         * 起始时间
-         */
-        startTime: number;
-        /**
-         * 播放速度
-         */
-        playbackSpeed: number;
+        readonly globalPose: SkeletonPose;
         /**
          * 骨骼
          */
-        skeleton: Skeleton;
-        animations: SkeletonClipNode[];
-        animation: SkeletonClipNode;
+        readonly skeleton: Skeleton;
+        /**
+         * 是否强行使用cpu
+         */
+        readonly forceCPU: boolean;
+        /**
+         * 创建一个骨骼动画类
+         * @param animationSet 动画集合
+         * @param skeleton 骨骼
+         * @param forceCPU 是否强行使用cpu
+         */
+        constructor(animationSet: SkeletonAnimationSet, skeleton: Skeleton, forceCPU?: boolean);
+        /**
+         * 播放动画
+         * @param name 动作名称
+         * @param offset 偏移量
+         */
+        play(name: string, transition?: IAnimationTransition, offset?: number): void;
+        /**
+         * @inheritDoc
+         */
+        setRenderState(renderable: any, camera: Camera3D): void;
+        /**
+         * @inheritDoc
+         */
+        protected updateDeltaTime(dt: number): void;
+        /**
+         * 更新骨骼全局变换矩阵
+         */
+        private updateGlobalProperties();
+        /**
+         * 本地转换到全局姿势
+         * @param sourcePose 原姿势
+         * @param targetPose 目标姿势
+         * @param skeleton 骨骼
+         */
+        protected localToGlobalPose(sourcePose: SkeletonPose, targetPose: SkeletonPose, skeleton: Skeleton): void;
+        /**
+         * 处理动画变换完成时间
+         */
+        private onTransitionComplete(event);
     }
 }
 declare module feng3d {

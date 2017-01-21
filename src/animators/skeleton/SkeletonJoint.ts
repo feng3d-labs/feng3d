@@ -17,6 +17,7 @@ module feng3d {
         public rotation: Quaternion;
 
         private _matrix: Matrix3D;
+        private _invertMatrix: Matrix3D;
 
         public get matrix() {
 
@@ -26,6 +27,18 @@ module feng3d {
                 this._matrix.appendTranslation(this.position.x, this.position.y, this.position.z);
             }
             return this._matrix;
+        }
+
+        public get invertMatrix() {
+            if (!this._invertMatrix) {
+                this._invertMatrix = this.matrix.clone();
+                this._invertMatrix.invert();
+            }
+            return this._invertMatrix;
+        }
+
+        public get inverseBindPose() {
+            return this.invertMatrix.rawData;
         }
     }
 }

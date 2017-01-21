@@ -139,13 +139,18 @@
         "src/animators/particle/ParticlePosition.ts",
         "src/animators/particle/ParticleVelocity.ts",
         //
+        "src/animators/events/AnimationStateEvent.ts",
         "src/animators/events/AnimatorEvent.ts",
         "src/animators/IAnimationState.ts",
         "src/animators/IAnimationSet.ts",
         "src/animators/AnimationNodeBase.ts",
         "src/animators/AnimationStateBase.ts",
         "src/animators/AnimatorBase.ts",
+        "src/animators/AnimationSetBase.ts",
+        "src/animators/transitions/IAnimationTransition.ts",
         //骨骼动画
+        "src/animators/skeleton/SkeletonAnimationSet.ts",
+        "src/animators/skeleton/ISkeletonAnimationState.ts",
         "src/animators/skeleton/SkeletonJoint.ts",
         "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonAnimator.ts",
