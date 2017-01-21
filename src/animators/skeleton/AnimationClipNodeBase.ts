@@ -5,7 +5,7 @@ module feng3d {
 	 * 动画剪辑节点基类(用于控制动画播放，包含每帧持续时间，是否循环播放等)
 	 * @author feng 2014-5-20
 	 */
-    export class AnimationClipNodeBase {
+    export class AnimationClipNodeBase extends AnimationNodeBase {
         protected _looping: boolean = true;
         protected _totalDuration: number = 0;
         protected _lastFrame: number;

@@ -32,5 +32,9 @@ module feng3d {
         public skeleton: Skeleton;
 
         public animations: SkeletonClipNode[] = [];
+
+        public animation: SkeletonClipNode;
+
+        
     }
 }

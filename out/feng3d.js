@@ -89,6 +89,10 @@ var feng3d;
             return this._currentTarget;
         }
     }
+    /**
+     * [广播事件] 进入新的一帧,监听此事件将会在下一帧开始时触发一次回调。这是一个广播事件，可以在任何一个显示对象上监听，无论它是否在显示列表中。
+     */
+    Event.ENTER_FRAME = "enterFrame";
     feng3d.Event = Event;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -375,6 +379,55 @@ var feng3d;
      * 事件监听中心
      */
     var $listernerCenter = new ListenerCenter();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 心跳计时器
+     */
+    class SystemTicker extends feng3d.EventDispatcher {
+        /**
+         * @private
+         */
+        constructor() {
+            feng3d.$feng3dStartTime = Date.now();
+            super();
+            if (feng3d.$ticker) {
+                throw "心跳计时器为单例";
+            }
+            this.init();
+        }
+        init() {
+            var requestAnimationFrame = window["requestAnimationFrame"] ||
+                window["webkitRequestAnimationFrame"] ||
+                window["mozRequestAnimationFrame"] ||
+                window["oRequestAnimationFrame"] ||
+                window["msRequestAnimationFrame"];
+            if (!requestAnimationFrame) {
+                requestAnimationFrame = function (callback) {
+                    return window.setTimeout(callback, 1000 / 60);
+                };
+            }
+            requestAnimationFrame.call(window, onTick);
+            function onTick() {
+                feng3d.$ticker.update();
+                requestAnimationFrame.call(window, onTick);
+            }
+        }
+        /**
+         * @private
+         * 执行一次刷新
+         */
+        update() {
+            this.dispatchEvent(new feng3d.Event(feng3d.Event.ENTER_FRAME));
+        }
+    }
+    feng3d.SystemTicker = SystemTicker;
+    /**
+     * 心跳计时器单例
+     */
+    feng3d.$ticker = new SystemTicker();
+    feng3d.$feng3dStartTime = -1;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -8189,6 +8242,322 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 动画事件
+     * @author feng 2014-5-27
+     */
+    class AnimatorEvent extends feng3d.Event {
+        /**
+         * 创建一个动画时间
+         * @param type			事件类型
+         * @param data			事件数据
+         * @param bubbles		是否冒泡
+         */
+        constructor(type, data = null, bubbles = false) {
+            super(type, data, bubbles);
+        }
+    }
+    /** 开始播放动画 */
+    AnimatorEvent.START = "start";
+    /** 继续播放动画 */
+    AnimatorEvent.PLAY = "play";
+    /** 停止播放动画 */
+    AnimatorEvent.STOP = "stop";
+    /** 周期完成 */
+    AnimatorEvent.CYCLE_COMPLETE = "cycle_complete";
+    feng3d.AnimatorEvent = AnimatorEvent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画节点基类
+     * @author feng 2014-5-20
+     */
+    class AnimationNodeBase extends feng3d.Component {
+        /**
+         * 创建一个动画节点基类
+         */
+        constructor() {
+            super();
+        }
+        /**
+         * 状态类
+         */
+        get stateClass() {
+            return this._stateClass;
+        }
+    }
+    feng3d.AnimationNodeBase = AnimationNodeBase;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画状态基类
+     * @author feng 2015-9-18
+     */
+    class AnimationStateBase {
+        /**
+         * 创建动画状态基类
+         * @param animator				动画
+         * @param animationNode			动画节点
+         */
+        constructor(animator, animationNode) {
+            this._rootDelta = new feng3d.Vector3D();
+            this._positionDeltaDirty = true;
+            this._animator = animator;
+            this._animationNode = animationNode;
+        }
+        /**
+         * @inheritDoc
+         */
+        get positionDelta() {
+            if (this._positionDeltaDirty)
+                this.updatePositionDelta();
+            return this._rootDelta;
+        }
+        /**
+         * @inheritDoc
+         */
+        offset(startTime) {
+            this._startTime = startTime;
+            this._positionDeltaDirty = true;
+        }
+        /**
+         * @inheritDoc
+         */
+        update(time) {
+            if (this._time == time - this._startTime)
+                return;
+            this.updateTime(time);
+        }
+        /**
+         * @inheritDoc
+         */
+        phase(value) {
+        }
+        /**
+         * 更新时间
+         * @param time		当前时间
+         */
+        updateTime(time) {
+            this._time = time - this._startTime;
+            this._positionDeltaDirty = true;
+        }
+        /**
+         * 位置偏移
+         */
+        updatePositionDelta() {
+        }
+    }
+    feng3d.AnimationStateBase = AnimationStateBase;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画基类
+     * @author feng 2014-5-27
+     */
+    class AnimatorBase extends feng3d.Component {
+        /**
+         * 创建一个动画基类
+         * @param animationSet
+         */
+        constructor(animationSet) {
+            super();
+            this._autoUpdate = true;
+            /** 播放速度 */
+            this._playbackSpeed = 1;
+            this._animationStates = {};
+            /**
+             * 是否更新位置
+             * @see me.feng3d.animators.base.states.IAnimationState#positionDelta
+             */
+            this.updatePosition = true;
+            this._animationSet = animationSet;
+            this.initBuffers();
+        }
+        /**
+         * 初始化Context3d缓存
+         */
+        initBuffers() {
+        }
+        /**
+         * 获取动画状态
+         * @param node		动画节点
+         * @return			动画状态
+         */
+        getAnimationState(node) {
+            var cls = node.stateClass;
+            var className = feng3d.getClassName(cls);
+            if (this._animationStates[className] == null)
+                this._animationStates[className] = new cls(this, node);
+            return this._animationStates[className];
+        }
+        /**
+         * 根据名字获取动画状态
+         * @param name			动作名称
+         * @return				动画状态
+         */
+        getAnimationStateByName(name) {
+            return this.getAnimationState(this._animationSet.getAnimation(name));
+        }
+        /**
+         * 绝对时间（游戏时间）
+         * @see #time
+         * @see #playbackSpeed
+         */
+        get absoluteTime() {
+            return this._absoluteTime;
+        }
+        /**
+         * 动画设置
+         */
+        get animationSet() {
+            return this._animationSet;
+        }
+        /**
+         * 活动的动画状态
+         */
+        get activeState() {
+            return this._activeState;
+        }
+        /**
+         * 活动的动画节点
+         */
+        get activeAnimation() {
+            return this._animationSet.getAnimation(this._activeAnimationName);
+        }
+        /**
+         * 活动的动作名
+         */
+        get activeAnimationName() {
+            return this._activeAnimationName;
+        }
+        /**
+         * 是否自动更新，当值为true时，动画将会随时间播放
+         * @see #time
+         * @see #update()
+         */
+        get autoUpdate() {
+            return this._autoUpdate;
+        }
+        set autoUpdate(value) {
+            if (this._autoUpdate == value)
+                return;
+            this._autoUpdate = value;
+            if (this._autoUpdate)
+                this.start();
+            else
+                this.stop();
+        }
+        /**
+         * 动画时间
+         */
+        get time() {
+            return this._time;
+        }
+        set time(value) {
+            if (this._time == value)
+                return;
+            this.update(value);
+        }
+        /**
+         * 设置当前活动状态的动画剪辑的播放进度(0,1)
+         * @param	播放进度。 0：动画起点，1：动画终点。
+         */
+        phase(value) {
+            this._activeState.phase(value);
+        }
+        /**
+         * The amount by which passed time should be scaled. Used to slow down or speed up animations. Defaults to 1.
+         */
+        /**
+         * 播放速度
+         * <p>默认为1，表示正常速度</p>
+         */
+        get playbackSpeed() {
+            return this._playbackSpeed;
+        }
+        set playbackSpeed(value) {
+            this._playbackSpeed = value;
+        }
+        /**
+         * 开始动画，当自动更新为true时有效
+         * @see #autoUpdate
+         */
+        start() {
+            if (this._isPlaying || !this._autoUpdate)
+                return;
+            this._time = this._absoluteTime = feng3d.getTimer();
+            this._isPlaying = true;
+            if (!feng3d.$ticker.hasEventListener(feng3d.Event.ENTER_FRAME))
+                feng3d.$ticker.addEventListener(feng3d.Event.ENTER_FRAME, this.onEnterFrame, this);
+            if (!this.hasEventListener(feng3d.AnimatorEvent.START))
+                return;
+            this.dispatchEvent(new feng3d.AnimatorEvent(feng3d.AnimatorEvent.START, this));
+        }
+        /**
+         * 暂停播放动画
+         * @see #time
+         * @see #update()
+         */
+        stop() {
+            if (!this._isPlaying)
+                return;
+            this._isPlaying = false;
+            if (feng3d.$ticker.hasEventListener(feng3d.Event.ENTER_FRAME))
+                feng3d.$ticker.removeEventListener(feng3d.Event.ENTER_FRAME, this.onEnterFrame, this);
+            if (!this.hasEventListener(feng3d.AnimatorEvent.STOP))
+                return;
+            this.dispatchEvent(new feng3d.AnimatorEvent(feng3d.AnimatorEvent.STOP, this));
+        }
+        /**
+         * 更新动画
+         * @param time			动画时间
+         *
+         * @see #stop()
+         * @see #autoUpdate
+         */
+        update(time) {
+            var dt = (time - this._time) * this.playbackSpeed;
+            this.updateDeltaTime(dt);
+            this._time = time;
+        }
+        /**
+         * 重置动画
+         * @param name			动画名称
+         * @param offset		动画时间偏移
+         */
+        reset(name, offset = 0) {
+            this.getAnimationState(this._animationSet.getAnimation(name)).offset(offset + this._absoluteTime);
+        }
+        /**
+         * 更新偏移时间
+         * @private
+         */
+        updateDeltaTime(dt) {
+            this._absoluteTime += dt;
+            this._activeState.update(this._absoluteTime);
+        }
+        /**
+         * 自动更新动画时帧更新事件
+         */
+        onEnterFrame(event = null) {
+            this.update(feng3d.getTimer());
+        }
+        /**
+         * 派发动画播放完成一周期事件
+         * @private
+         */
+        dispatchCycleEvent() {
+            if (this.hasEventListener(feng3d.AnimatorEvent.CYCLE_COMPLETE))
+                this.dispatchEvent(new feng3d.AnimatorEvent(feng3d.AnimatorEvent.CYCLE_COMPLETE, this));
+        }
+    }
+    feng3d.AnimatorBase = AnimatorBase;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 骨骼关节数据
      * @author feng 2014-5-20
      */
@@ -8301,8 +8670,9 @@ var feng3d;
      * 动画剪辑节点基类(用于控制动画播放，包含每帧持续时间，是否循环播放等)
      * @author feng 2014-5-20
      */
-    class AnimationClipNodeBase {
+    class AnimationClipNodeBase extends feng3d.AnimationNodeBase {
         constructor() {
+            super(...arguments);
             this._looping = true;
             this._totalDuration = 0;
             this._stitchDirty = true;

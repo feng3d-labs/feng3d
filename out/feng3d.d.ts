@@ -578,6 +578,10 @@ declare module feng3d {
      * @author feng 2014-5-7
      */
     class Event {
+        /**
+         * [广播事件] 进入新的一帧,监听此事件将会在下一帧开始时触发一次回调。这是一个广播事件，可以在任何一个显示对象上监听，无论它是否在显示列表中。
+         */
+        static ENTER_FRAME: string;
         private _type;
         private _bubbles;
         private _target;
@@ -728,6 +732,28 @@ declare module feng3d {
          */
         protected getBubbleTargets(event: Event): IEventDispatcher[];
     }
+}
+declare module feng3d {
+    /**
+     * 心跳计时器
+     */
+    class SystemTicker extends EventDispatcher {
+        /**
+         * @private
+         */
+        constructor();
+        private init();
+        /**
+         * @private
+         * 执行一次刷新
+         */
+        update(): void;
+    }
+    /**
+     * 心跳计时器单例
+     */
+    var $ticker: SystemTicker;
+    var $feng3dStartTime: number;
 }
 declare module feng3d {
     /**
@@ -4886,6 +4912,277 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 动画事件
+     * @author feng 2014-5-27
+     */
+    class AnimatorEvent extends Event {
+        /** 开始播放动画 */
+        static START: string;
+        /** 继续播放动画 */
+        static PLAY: string;
+        /** 停止播放动画 */
+        static STOP: string;
+        /** 周期完成 */
+        static CYCLE_COMPLETE: string;
+        /**
+         * 创建一个动画时间
+         * @param type			事件类型
+         * @param data			事件数据
+         * @param bubbles		是否冒泡
+         */
+        constructor(type: string, data?: any, bubbles?: boolean);
+    }
+}
+declare module feng3d {
+    /**
+     * 动画状态接口
+     * @author feng 2015-9-18
+     */
+    interface IAnimationState {
+        /**
+         * 位置偏移
+         */
+        positionDelta: Vector3D;
+        /**
+         * 设置一个新的开始时间
+         * @param startTime		开始时间
+         */
+        offset(startTime: number): any;
+        /**
+         * 更新
+         * @param time		当前时间
+         */
+        update(time: number): any;
+        /**
+         * 设置动画的播放进度(0,1)
+         * @param	播放进度。 0：动画起点，1：动画终点。
+         */
+        phase(value: number): any;
+    }
+}
+declare module feng3d {
+    /**
+     * 提供动画数据集合的接口
+     * @author feng 2015-9-18
+     */
+    interface IAnimationSet {
+        /**
+         * 检查是否有该动作名称
+         * @param name			动作名称
+         */
+        hasAnimation(name: string): boolean;
+        /**
+         * 获取动画节点
+         * @param name			动作名称
+         */
+        getAnimation(name: string): AnimationNodeBase;
+        /**
+         * 判断是否使用CPU计算
+         * @private
+         */
+        usesCPU: boolean;
+        /**
+         * 取消使用GPU计算
+         * @private
+         */
+        cancelGPUCompatibility(): any;
+    }
+}
+declare module feng3d {
+    /**
+     * 动画节点基类
+     * @author feng 2014-5-20
+     */
+    class AnimationNodeBase extends Component {
+        protected _stateClass: any;
+        /**
+         * 状态类
+         */
+        readonly stateClass: any;
+        /**
+         * 创建一个动画节点基类
+         */
+        constructor();
+    }
+}
+declare module feng3d {
+    /**
+     * 动画状态基类
+     * @author feng 2015-9-18
+     */
+    class AnimationStateBase implements IAnimationState {
+        protected _animationNode: AnimationNodeBase;
+        protected _rootDelta: Vector3D;
+        protected _positionDeltaDirty: boolean;
+        protected _time: number;
+        protected _startTime: number;
+        protected _animator: AnimatorBase;
+        /**
+         * @inheritDoc
+         */
+        readonly positionDelta: Vector3D;
+        /**
+         * 创建动画状态基类
+         * @param animator				动画
+         * @param animationNode			动画节点
+         */
+        constructor(animator: AnimatorBase, animationNode: AnimationNodeBase);
+        /**
+         * @inheritDoc
+         */
+        offset(startTime: number): void;
+        /**
+         * @inheritDoc
+         */
+        update(time: number): void;
+        /**
+         * @inheritDoc
+         */
+        phase(value: number): void;
+        /**
+         * 更新时间
+         * @param time		当前时间
+         */
+        protected updateTime(time: number): void;
+        /**
+         * 位置偏移
+         */
+        protected updatePositionDelta(): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 动画基类
+     * @author feng 2014-5-27
+     */
+    abstract class AnimatorBase extends Component {
+        /** 是否正在播放动画 */
+        private _isPlaying;
+        private _autoUpdate;
+        private _time;
+        /** 播放速度 */
+        private _playbackSpeed;
+        protected _animationSet: IAnimationSet;
+        protected _activeNode: AnimationNodeBase;
+        protected _activeState: IAnimationState;
+        protected _activeAnimationName: string;
+        /** 当前动画时间 */
+        protected _absoluteTime: number;
+        private _animationStates;
+        /**
+         * 是否更新位置
+         * @see me.feng3d.animators.base.states.IAnimationState#positionDelta
+         */
+        updatePosition: boolean;
+        /**
+         * 创建一个动画基类
+         * @param animationSet
+         */
+        constructor(animationSet: IAnimationSet);
+        /**
+         * 初始化Context3d缓存
+         */
+        protected initBuffers(): void;
+        /**
+         * 获取动画状态
+         * @param node		动画节点
+         * @return			动画状态
+         */
+        getAnimationState(node: AnimationNodeBase): AnimationStateBase;
+        /**
+         * 根据名字获取动画状态
+         * @param name			动作名称
+         * @return				动画状态
+         */
+        getAnimationStateByName(name: string): AnimationStateBase;
+        /**
+         * 绝对时间（游戏时间）
+         * @see #time
+         * @see #playbackSpeed
+         */
+        readonly absoluteTime: number;
+        /**
+         * 动画设置
+         */
+        readonly animationSet: IAnimationSet;
+        /**
+         * 活动的动画状态
+         */
+        readonly activeState: IAnimationState;
+        /**
+         * 活动的动画节点
+         */
+        readonly activeAnimation: AnimationNodeBase;
+        /**
+         * 活动的动作名
+         */
+        readonly activeAnimationName: string;
+        /**
+         * 是否自动更新，当值为true时，动画将会随时间播放
+         * @see #time
+         * @see #update()
+         */
+        autoUpdate: boolean;
+        /**
+         * 动画时间
+         */
+        time: number;
+        /**
+         * 设置当前活动状态的动画剪辑的播放进度(0,1)
+         * @param	播放进度。 0：动画起点，1：动画终点。
+         */
+        phase(value: number): void;
+        /**
+         * The amount by which passed time should be scaled. Used to slow down or speed up animations. Defaults to 1.
+         */
+        /**
+         * 播放速度
+         * <p>默认为1，表示正常速度</p>
+         */
+        playbackSpeed: number;
+        /**
+         * 开始动画，当自动更新为true时有效
+         * @see #autoUpdate
+         */
+        start(): void;
+        /**
+         * 暂停播放动画
+         * @see #time
+         * @see #update()
+         */
+        stop(): void;
+        /**
+         * 更新动画
+         * @param time			动画时间
+         *
+         * @see #stop()
+         * @see #autoUpdate
+         */
+        update(time: number): void;
+        /**
+         * 重置动画
+         * @param name			动画名称
+         * @param offset		动画时间偏移
+         */
+        reset(name: string, offset?: number): void;
+        /**
+         * 更新偏移时间
+         * @private
+         */
+        protected updateDeltaTime(dt: number): void;
+        /**
+         * 自动更新动画时帧更新事件
+         */
+        private onEnterFrame(event?);
+        /**
+         * 派发动画播放完成一周期事件
+         * @private
+         */
+        dispatchCycleEvent(): void;
+    }
+}
+declare module feng3d {
+    /**
      * 骨骼关节数据
      * @author feng 2014-5-20
      */
@@ -4941,6 +5238,7 @@ declare module feng3d {
          */
         skeleton: Skeleton;
         animations: SkeletonClipNode[];
+        animation: SkeletonClipNode;
     }
 }
 declare module feng3d {
@@ -4980,7 +5278,7 @@ declare module feng3d {
      * 动画剪辑节点基类(用于控制动画播放，包含每帧持续时间，是否循环播放等)
      * @author feng 2014-5-20
      */
-    class AnimationClipNodeBase {
+    class AnimationClipNodeBase extends AnimationNodeBase {
         protected _looping: boolean;
         protected _totalDuration: number;
         protected _lastFrame: number;
