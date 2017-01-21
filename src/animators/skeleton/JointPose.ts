@@ -10,21 +10,15 @@ module feng3d {
         /** 位移信息 */
         public translation: Vector3D = new Vector3D();
 
-        constructor() {
-        }
+        private _matrix3D: Matrix3D;
 
-		/**
-		 * Converts the transformation to a Matrix3D representation.
-		 *
-		 * @param target An optional target matrix to store the transformation. If not provided, it will create a new instance.
-		 * @return The transformation matrix of the pose.
-		 */
-        public toMatrix3D(target: Matrix3D = null): Matrix3D {
-            if (target == null)
-                target = new Matrix3D();
-            this.orientation.toMatrix3D(target);
-            target.appendTranslation(this.translation.x, this.translation.y, this.translation.z);
-            return target;
+        public get matrix3D(): Matrix3D {
+
+            if (this._matrix3D == null) {
+                this._matrix3D = this.orientation.toMatrix3D();
+                this._matrix3D.appendTranslation(this.translation.x, this.translation.y, this.translation.z);
+            }
+            return this._matrix3D;
         }
     }
 }
