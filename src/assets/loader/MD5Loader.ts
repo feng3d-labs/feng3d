@@ -67,8 +67,7 @@ module feng3d {
             this._maxJointCount = this.calculateMaxJointCount(md5MeshData);
 
             this._skeleton = this.createSkeleton(md5MeshData.joints);
-            var skeletonAnimator = new SkeletonAnimator();
-            skeletonAnimator.skeleton = this._skeleton;
+            var skeletonAnimator = new SkeletonAnimator(null, this._skeleton);
 
             for (var i = 0; i < md5MeshData.meshs.length; i++) {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
@@ -156,12 +155,12 @@ module feng3d {
             var t: number = 1 - quat.x * quat.x - quat.y * quat.y - quat.z * quat.z;
             quat.w = t < 0 ? 0 : -Math.sqrt(t);
             //
-            skeletonJoint.position = new Vector3D(-position[0], position[1], position[2]);
-            skeletonJoint.position = this._rotationQuat.rotatePoint(skeletonJoint.position);
+            skeletonJoint.translation = new Vector3D(-position[0], position[1], position[2]);
+            skeletonJoint.translation = this._rotationQuat.rotatePoint(skeletonJoint.translation);
             //
             var rotQuat: Quaternion = new Quaternion();
             rotQuat.multiply(this._rotationQuat, quat);
-            skeletonJoint.rotation = rotQuat;
+            skeletonJoint.orientation = rotQuat;
             return skeletonJoint;
         }
 
@@ -214,7 +213,7 @@ module feng3d {
                 for (var j: number = 0; j < vertex.countWeight; ++j) {
                     weight = weights[vertex.startWeight + j];
                     if (weight.bias > 0) {
-                        bindPose = this._skeleton.joints[weight.joint].matrix;
+                        bindPose = this._skeleton.joints[weight.joint].matrix3D;
                         pos = bindPose.transformVector(new Vector3D(weight.pos[0], weight.pos[1], weight.pos[2]));
                         vertices[v1] += (-pos.x) * weight.bias;
                         vertices[v2] += pos.y * weight.bias;
@@ -318,6 +317,8 @@ module feng3d {
 
                 //创建关节pose数据
                 pose = new JointPose();
+                pose.name = hierarchy.name;
+                pose.parentIndex = hierarchy.parentIndex;
                 if (hierarchy.parentIndex < 0) {
                     pose.orientation.multiply(this._animRotationQuat, orientation);
                     pose.translation = this._animRotationQuat.rotatePoint(translate);

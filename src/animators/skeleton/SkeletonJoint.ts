@@ -12,33 +12,33 @@ module feng3d {
         public name: string;
 
         /** 位移 */
-        public position: Vector3D;
+        public translation: Vector3D;
         /** 旋转 */
-        public rotation: Quaternion;
+        public orientation: Quaternion;
 
-        private _matrix: Matrix3D;
-        private _invertMatrix: Matrix3D;
+        private _matrix3D: Matrix3D;
+        private _invertMatrix3D: Matrix3D;
 
-        public get matrix() {
+        public get matrix3D() {
 
-            if (!this._matrix) {
+            if (!this._matrix3D) {
 
-                this._matrix = this.rotation.toMatrix3D();
-                this._matrix.appendTranslation(this.position.x, this.position.y, this.position.z);
+                this._matrix3D = this.orientation.toMatrix3D();
+                this._matrix3D.appendTranslation(this.translation.x, this.translation.y, this.translation.z);
             }
-            return this._matrix;
+            return this._matrix3D;
         }
 
-        public get invertMatrix() {
-            if (!this._invertMatrix) {
-                this._invertMatrix = this.matrix.clone();
-                this._invertMatrix.invert();
+        public get invertMatrix3D() {
+            if (!this._invertMatrix3D) {
+                this._invertMatrix3D = this.matrix3D.clone();
+                this._invertMatrix3D.invert();
             }
-            return this._invertMatrix;
+            return this._invertMatrix3D;
         }
 
         public get inverseBindPose() {
-            return this.invertMatrix.rawData;
+            return this.invertMatrix3D.rawData;
         }
     }
 }

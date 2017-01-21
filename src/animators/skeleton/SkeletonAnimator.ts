@@ -144,7 +144,7 @@ module feng3d {
             for (var i: number = 0; i < this._numJoints; ++i) {
                 //计算关节全局变换矩阵(通过初始状态 关节逆矩阵与全局变换矩阵 计算 当前状态的关节矩阵)
                 var globalMatrix = globalPoses[i].matrix3D;
-                globalMatrix.append(joints[i].invertMatrix);
+                globalMatrix.append(joints[i].invertMatrix3D);
                 this._globalMatrices[i] = globalMatrix;
             }
         }

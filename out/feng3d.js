@@ -8786,23 +8786,7 @@ var feng3d;
                 this._animationSet.cancelGPUCompatibility();
             animationSet.numJoints = this._skeleton.numJoints;
             this._numJoints = this._skeleton.numJoints;
-            this._globalMatrices.length = this._numJoints * 12;
-            //初始化骨骼变换矩阵
-            var j;
-            for (var i = 0; i < this._numJoints; ++i) {
-                this._globalMatrices[j++] = 1;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 1;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 1;
-                this._globalMatrices[j++] = 0;
-            }
+            this._globalMatrices.length = this._numJoints;
         }
         /**
          * 当前骨骼姿势的全局矩阵
@@ -8886,88 +8870,14 @@ var feng3d;
             this._globalPropertiesDirty = false;
             //获取全局骨骼姿势
             this.localToGlobalPose(this._activeSkeletonState.getSkeletonPose(this._skeleton), this._globalPose, this._skeleton);
-            //姿势变换矩阵
-            //矩阵偏移量
-            var mtxOffset;
             var globalPoses = this._globalPose.jointPoses;
-            var raw;
-            var ox, oy, oz, ow;
-            var xy2, xz2, xw2;
-            var yz2, yw2, zw2;
-            var n11, n12, n13;
-            var n21, n22, n23;
-            var n31, n32, n33;
-            var m11, m12, m13, m14;
-            var m21, m22, m23, m24;
-            var m31, m32, m33, m34;
             var joints = this._skeleton.joints;
-            var pose;
-            var quat;
-            var vec;
-            var t;
             //遍历每个关节
             for (var i = 0; i < this._numJoints; ++i) {
-                //读取关节全局姿势数据
-                pose = globalPoses[i];
-                quat = pose.orientation;
-                vec = pose.translation;
-                ox = quat.x;
-                oy = quat.y;
-                oz = quat.z;
-                ow = quat.w;
-                //计算关节的全局变换矩阵
-                xy2 = (t = 2.0 * ox) * oy;
-                xz2 = t * oz;
-                xw2 = t * ow;
-                yz2 = (t = 2.0 * oy) * oz;
-                yw2 = t * ow;
-                zw2 = 2.0 * oz * ow;
-                yz2 = 2.0 * oy * oz;
-                yw2 = 2.0 * oy * ow;
-                zw2 = 2.0 * oz * ow;
-                ox *= ox;
-                oy *= oy;
-                oz *= oz;
-                ow *= ow;
-                //保存关节的全局变换矩阵
-                n11 = (t = ox - oy) - oz + ow;
-                n12 = xy2 - zw2;
-                n13 = xz2 + yw2;
-                n21 = xy2 + zw2;
-                n22 = -t - oz + ow;
-                n23 = yz2 - xw2;
-                n31 = xz2 - yw2;
-                n32 = yz2 + xw2;
-                n33 = -ox - oy + oz + ow;
-                //初始状态 下关节的 逆矩阵
-                raw = joints[i].inverseBindPose;
-                m11 = raw[0];
-                m12 = raw[4];
-                m13 = raw[8];
-                m14 = raw[12];
-                m21 = raw[1];
-                m22 = raw[5];
-                m23 = raw[9];
-                m24 = raw[13];
-                m31 = raw[2];
-                m32 = raw[6];
-                m33 = raw[10];
-                m34 = raw[14];
                 //计算关节全局变换矩阵(通过初始状态 关节逆矩阵与全局变换矩阵 计算 当前状态的关节矩阵)
-                this._globalMatrices[mtxOffset] = n11 * m11 + n12 * m21 + n13 * m31;
-                this._globalMatrices[mtxOffset + 1] = n11 * m12 + n12 * m22 + n13 * m32;
-                this._globalMatrices[mtxOffset + 2] = n11 * m13 + n12 * m23 + n13 * m33;
-                this._globalMatrices[mtxOffset + 3] = n11 * m14 + n12 * m24 + n13 * m34 + vec.x;
-                this._globalMatrices[mtxOffset + 4] = n21 * m11 + n22 * m21 + n23 * m31;
-                this._globalMatrices[mtxOffset + 5] = n21 * m12 + n22 * m22 + n23 * m32;
-                this._globalMatrices[mtxOffset + 6] = n21 * m13 + n22 * m23 + n23 * m33;
-                this._globalMatrices[mtxOffset + 7] = n21 * m14 + n22 * m24 + n23 * m34 + vec.y;
-                this._globalMatrices[mtxOffset + 8] = n31 * m11 + n32 * m21 + n33 * m31;
-                this._globalMatrices[mtxOffset + 9] = n31 * m12 + n32 * m22 + n33 * m32;
-                this._globalMatrices[mtxOffset + 10] = n31 * m13 + n32 * m23 + n33 * m33;
-                this._globalMatrices[mtxOffset + 11] = n31 * m14 + n32 * m24 + n33 * m34 + vec.z;
-                //跳到下个矩阵位置
-                mtxOffset = mtxOffset + 12;
+                var globalMatrix = globalPoses[i].matrix3D;
+                globalMatrix.append(joints[i].invertMatrix);
+                this._globalMatrices[i] = globalMatrix;
             }
         }
         /**
@@ -9095,18 +9005,22 @@ var feng3d;
             /** 位移信息 */
             this.translation = new feng3d.Vector3D();
         }
-        /**
-         * Converts the transformation to a Matrix3D representation.
-         *
-         * @param target An optional target matrix to store the transformation. If not provided, it will create a new instance.
-         * @return The transformation matrix of the pose.
-         */
-        toMatrix3D(target = null) {
-            if (target == null)
-                target = new feng3d.Matrix3D();
-            this.orientation.toMatrix3D(target);
-            target.appendTranslation(this.translation.x, this.translation.y, this.translation.z);
-            return target;
+        get matrix() {
+            if (!this._matrix) {
+                this._matrix = this.orientation.toMatrix3D();
+                this._matrix.appendTranslation(this.translation.x, this.translation.y, this.translation.z);
+            }
+            return this._matrix;
+        }
+        get invertMatrix() {
+            if (!this._invertMatrix) {
+                this._invertMatrix = this.matrix.clone();
+                this._invertMatrix.invert();
+            }
+            return this._invertMatrix;
+        }
+        get inverseBindPose() {
+            return this.invertMatrix.rawData;
         }
     }
     feng3d.JointPose = JointPose;
@@ -9839,7 +9753,7 @@ var feng3d;
             //顶点最大关节关联数
             this._maxJointCount = this.calculateMaxJointCount(md5MeshData);
             this._skeleton = this.createSkeleton(md5MeshData.joints);
-            var skeletonAnimator = new feng3d.SkeletonAnimator();
+            var skeletonAnimator = new feng3d.SkeletonAnimator(null);
             skeletonAnimator.skeleton = this._skeleton;
             for (var i = 0; i < md5MeshData.meshs.length; i++) {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
@@ -10053,6 +9967,8 @@ var feng3d;
                 orientation.w = w < 0 ? 0 : -Math.sqrt(w);
                 //创建关节pose数据
                 pose = new feng3d.JointPose();
+                pose.name = hierarchy.name;
+                pose.parentIndex = hierarchy.parentIndex;
                 if (hierarchy.parentIndex < 0) {
                     pose.orientation.multiply(this._animRotationQuat, orientation);
                     pose.translation = this._animRotationQuat.rotatePoint(translate);

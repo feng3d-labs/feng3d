@@ -5381,7 +5381,7 @@ declare module feng3d {
          * 当前骨骼姿势的全局矩阵
          * @see #globalPose
          */
-        readonly globalMatrices: number[];
+        readonly globalMatrices: Matrix3D[];
         /**
          * 当前全局骨骼姿势
          */
@@ -5438,18 +5438,19 @@ declare module feng3d {
      * @author feng 2014-5-20
      */
     class JointPose {
+        /** Joint 名字 */
+        name: string;
+        /** 父节点序号 */
+        parentIndex: number;
         /** 旋转信息 */
         orientation: Quaternion;
         /** 位移信息 */
         translation: Vector3D;
-        constructor();
-        /**
-         * Converts the transformation to a Matrix3D representation.
-         *
-         * @param target An optional target matrix to store the transformation. If not provided, it will create a new instance.
-         * @return The transformation matrix of the pose.
-         */
-        toMatrix3D(target?: Matrix3D): Matrix3D;
+        private _matrix;
+        private _invertMatrix;
+        readonly matrix: Matrix3D;
+        readonly invertMatrix: Matrix3D;
+        readonly inverseBindPose: Float32Array;
     }
 }
 declare module feng3d {
