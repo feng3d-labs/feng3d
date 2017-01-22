@@ -18,20 +18,6 @@ module feng3d {
             this.url = url
             this.completed = completed;
 
-            //初始化 旋转四元素
-            this._rotationQuat = new Quaternion();
-            this._rotationQuat.fromAxisAngle(Vector3D.X_AXIS, -Math.PI * .5);
-
-            //初始化旋转四元素
-            this._animRotationQuat = new Quaternion();
-            var t1: Quaternion = new Quaternion();
-            var t2: Quaternion = new Quaternion();
-
-            t1.fromAxisAngle(Vector3D.X_AXIS, -Math.PI * .5);
-            t2.fromAxisAngle(Vector3D.Y_AXIS, -Math.PI * .5);
-
-            this._animRotationQuat.multiply(t2, t1);
-
             var loader = new Loader();
             loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent) {
 
@@ -57,17 +43,17 @@ module feng3d {
             loader.loadText(url);
         }
 
-        private _maxJointCount: number;
         private _skeleton: Skeleton;
         private createMD5Mesh(md5MeshData: MD5MeshData) {
 
             var object3D = new Object3D();
 
             //顶点最大关节关联数
-            this._maxJointCount = this.calculateMaxJointCount(md5MeshData);
+            var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
+            assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
 
             this._skeleton = this.createSkeleton(md5MeshData.joints);
-            var skeletonAnimator = new SkeletonAnimator(null, this._skeleton);
+            var skeletonAnimator = new SkeletonAnimator(new SkeletonAnimationSet(), this._skeleton);
 
             for (var i = 0; i < md5MeshData.meshs.length; i++) {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
@@ -139,10 +125,6 @@ module feng3d {
             }
             return skeleton;
         }
-        /** 旋转四元素 */
-        private _rotationQuat: Quaternion;
-        /** 旋转四元素 */
-        private _animRotationQuat: Quaternion;
 
         private createSkeletonJoint(joint: MD5_Joint) {
             var skeletonJoint = new SkeletonJoint();
@@ -156,11 +138,9 @@ module feng3d {
             quat.w = t < 0 ? 0 : -Math.sqrt(t);
             //
             skeletonJoint.translation = new Vector3D(-position[0], position[1], position[2]);
-            skeletonJoint.translation = this._rotationQuat.rotatePoint(skeletonJoint.translation);
+            skeletonJoint.translation = skeletonJoint.translation;
             //
-            var rotQuat: Quaternion = new Quaternion();
-            rotQuat.multiply(this._rotationQuat, quat);
-            skeletonJoint.orientation = rotQuat;
+            skeletonJoint.orientation = quat;
             return skeletonJoint;
         }
 
@@ -186,17 +166,17 @@ module feng3d {
             vertices.length = len * 3;
             //关节索引数据
             var jointIndices: number[] = [];
-            jointIndices.length = len * this._maxJointCount;
+            jointIndices.length = len * 4;
             //关节权重数据
             var jointWeights: number[] = [];
-            jointWeights.length = len * this._maxJointCount;
+            jointWeights.length = len * 4;
             var l: number = 0;
             //0权重个数
             var nonZeroWeights: number;
 
             for (var i: number = 0; i < len; ++i) {
                 vertex = vertexData[i];
-                v1 = vertex.index * 3;
+                v1 = i * 3;
                 v2 = v1 + 1;
                 v3 = v1 + 2;
                 vertices[v1] = vertices[v2] = vertices[v3] = 0;
@@ -208,27 +188,26 @@ module feng3d {
 				 * weight[indexN].pos -> weight.pos;
 				 * weight[indexN].bias -> weight.bias;
 				 */
-
                 nonZeroWeights = 0;
-                for (var j: number = 0; j < vertex.countWeight; ++j) {
-                    weight = weights[vertex.startWeight + j];
-                    if (weight.bias > 0) {
-                        bindPose = this._skeleton.joints[weight.joint].matrix3D;
-                        pos = bindPose.transformVector(new Vector3D(weight.pos[0], weight.pos[1], weight.pos[2]));
-                        vertices[v1] += (-pos.x) * weight.bias;
-                        vertices[v2] += pos.y * weight.bias;
-                        vertices[v3] += pos.z * weight.bias;
+                for (var j = 0; j < 8; ++j) {
+                    if (j < vertex.countWeight) {
+                        weight = weights[vertex.startWeight + j];
+                        if (weight.bias > 0) {
+                            bindPose = this._skeleton.joints[weight.joint].matrix3D;
+                            pos = bindPose.transformVector(new Vector3D(-weight.pos[0], weight.pos[1], weight.pos[2]));
+                            vertices[v1] += pos.x * weight.bias;
+                            vertices[v2] += pos.y * weight.bias;
+                            vertices[v3] += pos.z * weight.bias;
 
-                        // indices need to be multiplied by 3 (amount of matrix registers)
-                        jointIndices[l] = weight.joint * 3;
-                        jointWeights[l++] = weight.bias;
-                        ++nonZeroWeights;
+                            // indices need to be multiplied by 3 (amount of matrix registers)
+                            jointIndices[l] = weight.joint * 3;
+                            jointWeights[l++] = weight.bias;
+                            ++nonZeroWeights;
+                        }
+                    } else {
+                        jointIndices[l] = 0;
+                        jointWeights[l++] = 0;
                     }
-                }
-
-                for (j = nonZeroWeights; j < this._maxJointCount; ++j) {
-                    jointIndices[l] = 0;
-                    jointWeights[l++] = 0;
                 }
 
                 v1 = vertex.index << 1;
@@ -242,8 +221,8 @@ module feng3d {
             geometry.setVAData(GLAttribute.a_position, new Float32Array(vertices), 3);
             geometry.setVAData(GLAttribute.a_uv, new Float32Array(uvs), 2);
             //更新关节索引与权重索引
-            geometry.setVAData(GLAttribute.a_jointindex, new Float32Array(jointIndices), this._maxJointCount);
-            geometry.setVAData(GLAttribute.a_jointweight, new Float32Array(jointWeights), this._maxJointCount);
+            geometry.setVAData(GLAttribute.a_jointindex, new Float32Array(jointIndices), 4);
+            geometry.setVAData(GLAttribute.a_jointweight, new Float32Array(jointWeights), 4);
             return geometry;
         }
 
@@ -319,16 +298,12 @@ module feng3d {
                 pose = new JointPose();
                 pose.name = hierarchy.name;
                 pose.parentIndex = hierarchy.parentIndex;
-                if (hierarchy.parentIndex < 0) {
-                    pose.orientation.multiply(this._animRotationQuat, orientation);
-                    pose.translation = this._animRotationQuat.rotatePoint(translate);
-                }
-                else {
-                    pose.orientation.copyFrom(orientation);
-                    pose.translation.x = translate.x;
-                    pose.translation.y = translate.y;
-                    pose.translation.z = translate.z;
-                }
+
+                pose.orientation.copyFrom(orientation);
+                pose.translation.x = translate.x;
+                pose.translation.y = translate.y;
+                pose.translation.z = translate.z;
+
                 pose.orientation.y = -pose.orientation.y;
                 pose.orientation.z = -pose.orientation.z;
                 pose.translation.x = -pose.translation.x;

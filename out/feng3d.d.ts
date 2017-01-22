@@ -4719,6 +4719,165 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 提供动画数据集合的接口
+     * @author feng 2015-9-18
+     */
+    interface IAnimationSet {
+        /**
+         * 检查是否有该动作名称
+         * @param name			动作名称
+         */
+        hasAnimation(name: string): boolean;
+        /**
+         * 获取动画节点
+         * @param name			动作名称
+         */
+        getAnimation(name: string): AnimationNodeBase;
+        /**
+         * 判断是否使用CPU计算
+         * @private
+         */
+        usesCPU: boolean;
+        /**
+         * 取消使用GPU计算
+         * @private
+         */
+        cancelGPUCompatibility(): any;
+    }
+}
+declare module feng3d {
+    /**
+     * 动画状态接口
+     * @author feng 2015-9-18
+     */
+    interface IAnimationState {
+        /**
+         * 位置偏移
+         */
+        positionDelta: Vector3D;
+        /**
+         * 设置一个新的开始时间
+         * @param startTime		开始时间
+         */
+        offset(startTime: number): any;
+        /**
+         * 更新
+         * @param time		当前时间
+         */
+        update(time: number): any;
+        /**
+         * 设置动画的播放进度(0,1)
+         * @param	播放进度。 0：动画起点，1：动画终点。
+         */
+        phase(value: number): any;
+    }
+}
+declare module feng3d {
+    /**
+     * 动画状态基类
+     * @author feng 2015-9-18
+     */
+    class AnimationStateBase implements IAnimationState {
+        protected _animationNode: AnimationNodeBase;
+        protected _rootDelta: Vector3D;
+        protected _positionDeltaDirty: boolean;
+        protected _time: number;
+        protected _startTime: number;
+        protected _animator: AnimatorBase;
+        /**
+         * @inheritDoc
+         */
+        readonly positionDelta: Vector3D;
+        /**
+         * 创建动画状态基类
+         * @param animator				动画
+         * @param animationNode			动画节点
+         */
+        constructor(animator: AnimatorBase, animationNode: AnimationNodeBase);
+        /**
+         * @inheritDoc
+         */
+        offset(startTime: number): void;
+        /**
+         * @inheritDoc
+         */
+        update(time: number): void;
+        /**
+         * @inheritDoc
+         */
+        phase(value: number): void;
+        /**
+         * 更新时间
+         * @param time		当前时间
+         */
+        protected updateTime(time: number): void;
+        /**
+         * 位置偏移
+         */
+        protected updatePositionDelta(): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 动画剪辑状态
+     * @author feng 2015-9-18
+     */
+    class AnimationClipState extends AnimationStateBase {
+        private _animationClipNode;
+        protected _blendWeight: number;
+        protected _currentFrame: number;
+        protected _nextFrame: number;
+        protected _oldFrame: number;
+        protected _timeDir: number;
+        protected _framesDirty: boolean;
+        /**
+         * 混合权重	(0[当前帧],1[下一帧])
+         * @see #currentFrame
+         * @see #nextFrame
+         */
+        readonly blendWeight: number;
+        /**
+         * 当前帧
+         */
+        readonly currentFrame: number;
+        /**
+         * 下一帧
+         */
+        readonly nextFrame: number;
+        /**
+         * 创建一个帧动画状态
+         * @param animator				动画
+         * @param animationClipNode		帧动画节点
+         */
+        constructor(animator: AnimatorBase, animationClipNode: AnimationClipNodeBase);
+        /**
+         * @inheritDoc
+         */
+        update(time: number): void;
+        /**
+         * @inheritDoc
+         */
+        phase(value: number): void;
+        /**
+         * @inheritDoc
+         */
+        protected updateTime(time: number): void;
+        /**
+         * 更新帧，计算当前帧、下一帧与混合权重
+         *
+         * @see #currentFrame
+         * @see #nextFrame
+         * @see #blendWeight
+         */
+        protected updateFrames(): void;
+        /**
+         * 通知播放完成
+         */
+        private notifyPlaybackComplete();
+    }
+}
+declare module feng3d {
+    /**
      * 粒子
      * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性,并且属性值不为空时会自动添加 "#define D_a_particle_${attribute}"
      * 例如：position 对应 a_particle_position 与 #define D_a_particle_position
@@ -4976,61 +5135,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 动画状态接口
-     * @author feng 2015-9-18
-     */
-    interface IAnimationState {
-        /**
-         * 位置偏移
-         */
-        positionDelta: Vector3D;
-        /**
-         * 设置一个新的开始时间
-         * @param startTime		开始时间
-         */
-        offset(startTime: number): any;
-        /**
-         * 更新
-         * @param time		当前时间
-         */
-        update(time: number): any;
-        /**
-         * 设置动画的播放进度(0,1)
-         * @param	播放进度。 0：动画起点，1：动画终点。
-         */
-        phase(value: number): any;
-    }
-}
-declare module feng3d {
-    /**
-     * 提供动画数据集合的接口
-     * @author feng 2015-9-18
-     */
-    interface IAnimationSet {
-        /**
-         * 检查是否有该动作名称
-         * @param name			动作名称
-         */
-        hasAnimation(name: string): boolean;
-        /**
-         * 获取动画节点
-         * @param name			动作名称
-         */
-        getAnimation(name: string): AnimationNodeBase;
-        /**
-         * 判断是否使用CPU计算
-         * @private
-         */
-        usesCPU: boolean;
-        /**
-         * 取消使用GPU计算
-         * @private
-         */
-        cancelGPUCompatibility(): any;
-    }
-}
-declare module feng3d {
-    /**
      * 动画节点基类
      * @author feng 2014-5-20
      */
@@ -5044,51 +5148,6 @@ declare module feng3d {
          * 创建一个动画节点基类
          */
         constructor();
-    }
-}
-declare module feng3d {
-    /**
-     * 动画状态基类
-     * @author feng 2015-9-18
-     */
-    class AnimationStateBase implements IAnimationState {
-        protected _animationNode: AnimationNodeBase;
-        protected _rootDelta: Vector3D;
-        protected _positionDeltaDirty: boolean;
-        protected _time: number;
-        protected _startTime: number;
-        protected _animator: AnimatorBase;
-        /**
-         * @inheritDoc
-         */
-        readonly positionDelta: Vector3D;
-        /**
-         * 创建动画状态基类
-         * @param animator				动画
-         * @param animationNode			动画节点
-         */
-        constructor(animator: AnimatorBase, animationNode: AnimationNodeBase);
-        /**
-         * @inheritDoc
-         */
-        offset(startTime: number): void;
-        /**
-         * @inheritDoc
-         */
-        update(time: number): void;
-        /**
-         * @inheritDoc
-         */
-        phase(value: number): void;
-        /**
-         * 更新时间
-         * @param time		当前时间
-         */
-        protected updateTime(time: number): void;
-        /**
-         * 位置偏移
-         */
-        protected updatePositionDelta(): void;
     }
 }
 declare module feng3d {
@@ -5216,6 +5275,10 @@ declare module feng3d {
          */
         private onEnterFrame(event?);
         /**
+         * 应用位置偏移量
+         */
+        private applyPositionDelta();
+        /**
          * 派发动画播放完成一周期事件
          * @private
          */
@@ -5341,13 +5404,13 @@ declare module feng3d {
         /** 关节名字 */
         name: string;
         /** 位移 */
-        position: Vector3D;
+        translation: Vector3D;
         /** 旋转 */
-        rotation: Quaternion;
-        private _matrix;
-        private _invertMatrix;
-        readonly matrix: Matrix3D;
-        readonly invertMatrix: Matrix3D;
+        orientation: Quaternion;
+        private _matrix3D;
+        private _invertMatrix3D;
+        readonly matrix3D: Matrix3D;
+        readonly invertMatrix3D: Matrix3D;
         readonly inverseBindPose: Float32Array;
     }
 }
@@ -5381,7 +5444,7 @@ declare module feng3d {
          * 当前骨骼姿势的全局矩阵
          * @see #globalPose
          */
-        readonly globalMatrices: Matrix3D[];
+        readonly globalMatrices: number[];
         /**
          * 当前全局骨骼姿势
          */
@@ -5446,10 +5509,10 @@ declare module feng3d {
         orientation: Quaternion;
         /** 位移信息 */
         translation: Vector3D;
-        private _matrix;
-        private _invertMatrix;
-        readonly matrix: Matrix3D;
-        readonly invertMatrix: Matrix3D;
+        private _matrix3D;
+        private _invertMatrix3D;
+        readonly matrix3D: Matrix3D;
+        readonly invertMatrix3D: Matrix3D;
         readonly inverseBindPose: Float32Array;
     }
 }
@@ -5537,6 +5600,56 @@ declare module feng3d {
          * @inheritDoc
          */
         protected updateStitch(): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 骨骼剪辑状态
+     * @author feng 2015-9-18
+     */
+    class SkeletonClipState extends AnimationClipState implements ISkeletonAnimationState {
+        private _rootPos;
+        private _frames;
+        private _skeletonClipNode;
+        private _skeletonPose;
+        private _skeletonPoseDirty;
+        private _currentPose;
+        private _nextPose;
+        /**
+         * 当前骨骼姿势
+         */
+        readonly currentPose: SkeletonPose;
+        /**
+         * 下个姿势
+         */
+        readonly nextPose: SkeletonPose;
+        /**
+         * 创建骨骼剪辑状态实例
+         * @param animator				动画
+         * @param skeletonClipNode		骨骼剪辑节点
+         */
+        constructor(animator: AnimatorBase, skeletonClipNode: SkeletonClipNode);
+        /**
+         * @inheritDoc
+         */
+        getSkeletonPose(skeleton: Skeleton): SkeletonPose;
+        /**
+         * @inheritDoc
+         */
+        protected updateTime(time: number): void;
+        /**
+         * @inheritDoc
+         */
+        protected updateFrames(): void;
+        /**
+         * 更新骨骼姿势
+         * @param skeleton 骨骼
+         */
+        private updateSkeletonPose(skeleton);
+        /**
+         * @inheritDoc
+         */
+        protected updatePositionDelta(): void;
     }
 }
 declare module feng3d {
@@ -5841,7 +5954,6 @@ declare module feng3d {
          */
         load(url: string, completed?: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void): void;
         loadAnim(url: string, completed?: (object3D: SkeletonClipNode) => void): void;
-        private _maxJointCount;
         private _skeleton;
         private createMD5Mesh(md5MeshData);
         /**
@@ -5856,10 +5968,6 @@ declare module feng3d {
          */
         private countZeroWeightJoints(vertex, weights);
         private createSkeleton(joints);
-        /** 旋转四元素 */
-        private _rotationQuat;
-        /** 旋转四元素 */
-        private _animRotationQuat;
         private createSkeletonJoint(joint);
         private createGeometry(md5Mesh);
         private createAnimator(md5AnimData);

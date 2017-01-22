@@ -7963,6 +7963,207 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 动画状态基类
+     * @author feng 2015-9-18
+     */
+    class AnimationStateBase {
+        /**
+         * 创建动画状态基类
+         * @param animator				动画
+         * @param animationNode			动画节点
+         */
+        constructor(animator, animationNode) {
+            this._rootDelta = new feng3d.Vector3D();
+            this._positionDeltaDirty = true;
+            this._time = 0;
+            this._startTime = 0;
+            this._animator = animator;
+            this._animationNode = animationNode;
+        }
+        /**
+         * @inheritDoc
+         */
+        get positionDelta() {
+            if (this._positionDeltaDirty)
+                this.updatePositionDelta();
+            return this._rootDelta;
+        }
+        /**
+         * @inheritDoc
+         */
+        offset(startTime) {
+            this._startTime = startTime;
+            this._positionDeltaDirty = true;
+        }
+        /**
+         * @inheritDoc
+         */
+        update(time) {
+            if (this._time == time - this._startTime)
+                return;
+            this.updateTime(time);
+        }
+        /**
+         * @inheritDoc
+         */
+        phase(value) {
+        }
+        /**
+         * 更新时间
+         * @param time		当前时间
+         */
+        updateTime(time) {
+            this._time = time - this._startTime;
+            this._positionDeltaDirty = true;
+        }
+        /**
+         * 位置偏移
+         */
+        updatePositionDelta() {
+        }
+    }
+    feng3d.AnimationStateBase = AnimationStateBase;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画剪辑状态
+     * @author feng 2015-9-18
+     */
+    class AnimationClipState extends feng3d.AnimationStateBase {
+        /**
+         * 创建一个帧动画状态
+         * @param animator				动画
+         * @param animationClipNode		帧动画节点
+         */
+        constructor(animator, animationClipNode) {
+            super(animator, animationClipNode);
+            this._currentFrame = 0;
+            this._framesDirty = true;
+            this._animationClipNode = animationClipNode;
+        }
+        /**
+         * 混合权重	(0[当前帧],1[下一帧])
+         * @see #currentFrame
+         * @see #nextFrame
+         */
+        get blendWeight() {
+            if (this._framesDirty)
+                this.updateFrames();
+            return this._blendWeight;
+        }
+        /**
+         * 当前帧
+         */
+        get currentFrame() {
+            if (this._framesDirty)
+                this.updateFrames();
+            return this._currentFrame;
+        }
+        /**
+         * 下一帧
+         */
+        get nextFrame() {
+            if (this._framesDirty)
+                this.updateFrames();
+            return this._nextFrame;
+        }
+        /**
+         * @inheritDoc
+         */
+        update(time) {
+            if (!this._animationClipNode.looping) {
+                if (time > this._startTime + this._animationClipNode.totalDuration)
+                    time = this._startTime + this._animationClipNode.totalDuration;
+                else if (time < this._startTime)
+                    time = this._startTime;
+            }
+            if (this._time == time - this._startTime)
+                return;
+            this.updateTime(time);
+        }
+        /**
+         * @inheritDoc
+         */
+        phase(value) {
+            var time = value * this._animationClipNode.totalDuration + this._startTime;
+            if (this._time == time - this._startTime)
+                return;
+            this.updateTime(time);
+        }
+        /**
+         * @inheritDoc
+         */
+        updateTime(time) {
+            this._framesDirty = true;
+            this._timeDir = (time - this._startTime > this._time) ? 1 : -1;
+            super.updateTime(time);
+        }
+        /**
+         * 更新帧，计算当前帧、下一帧与混合权重
+         *
+         * @see #currentFrame
+         * @see #nextFrame
+         * @see #blendWeight
+         */
+        updateFrames() {
+            this._framesDirty = false;
+            var looping = this._animationClipNode.looping;
+            var totalDuration = this._animationClipNode.totalDuration;
+            var lastFrame = this._animationClipNode.lastFrame;
+            var time = this._time;
+            //trace("time", time, totalDuration)
+            if (looping && (time >= totalDuration || time < 0)) {
+                time %= totalDuration;
+                if (time < 0)
+                    time += totalDuration;
+            }
+            if (!looping && time >= totalDuration) {
+                this.notifyPlaybackComplete();
+                this._currentFrame = lastFrame;
+                this._nextFrame = lastFrame;
+                this._blendWeight = 0;
+            }
+            else if (!looping && time <= 0) {
+                this._currentFrame = 0;
+                this._nextFrame = 0;
+                this._blendWeight = 0;
+            }
+            else if (this._animationClipNode.fixedFrameRate) {
+                var t = time / totalDuration * lastFrame;
+                this._currentFrame = ~~t;
+                this._blendWeight = t - this._currentFrame;
+                this._nextFrame = this._currentFrame + 1;
+            }
+            else {
+                this._currentFrame = 0;
+                this._nextFrame = 0;
+                var dur = 0, frameTime;
+                var durations = this._animationClipNode.durations;
+                do {
+                    frameTime = dur;
+                    dur += durations[this.nextFrame];
+                    this._currentFrame = this._nextFrame++;
+                } while (time > dur);
+                if (this._currentFrame == lastFrame) {
+                    this._currentFrame = 0;
+                    this._nextFrame = 1;
+                }
+                this._blendWeight = (time - frameTime) / durations[this._currentFrame];
+            }
+        }
+        /**
+         * 通知播放完成
+         */
+        notifyPlaybackComplete() {
+            this._animationClipNode.dispatchEvent(new feng3d.AnimationStateEvent(feng3d.AnimationStateEvent.PLAYBACK_COMPLETE, this._animator, this, this._animationClipNode));
+        }
+    }
+    feng3d.AnimationClipState = AnimationClipState;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 粒子动画
      * @author feng 2017-01-09
      */
@@ -8344,68 +8545,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 动画状态基类
-     * @author feng 2015-9-18
-     */
-    class AnimationStateBase {
-        /**
-         * 创建动画状态基类
-         * @param animator				动画
-         * @param animationNode			动画节点
-         */
-        constructor(animator, animationNode) {
-            this._rootDelta = new feng3d.Vector3D();
-            this._positionDeltaDirty = true;
-            this._animator = animator;
-            this._animationNode = animationNode;
-        }
-        /**
-         * @inheritDoc
-         */
-        get positionDelta() {
-            if (this._positionDeltaDirty)
-                this.updatePositionDelta();
-            return this._rootDelta;
-        }
-        /**
-         * @inheritDoc
-         */
-        offset(startTime) {
-            this._startTime = startTime;
-            this._positionDeltaDirty = true;
-        }
-        /**
-         * @inheritDoc
-         */
-        update(time) {
-            if (this._time == time - this._startTime)
-                return;
-            this.updateTime(time);
-        }
-        /**
-         * @inheritDoc
-         */
-        phase(value) {
-        }
-        /**
-         * 更新时间
-         * @param time		当前时间
-         */
-        updateTime(time) {
-            this._time = time - this._startTime;
-            this._positionDeltaDirty = true;
-        }
-        /**
-         * 位置偏移
-         */
-        updatePositionDelta() {
-        }
-    }
-    feng3d.AnimationStateBase = AnimationStateBase;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 动画基类
      * @author feng 2014-5-27
      */
@@ -8417,8 +8556,11 @@ var feng3d;
         constructor(animationSet) {
             super();
             this._autoUpdate = true;
+            this._time = 0;
             /** 播放速度 */
             this._playbackSpeed = 1;
+            /** 当前动画时间 */
+            this._absoluteTime = 0;
             this._animationStates = {};
             /**
              * 是否更新位置
@@ -8590,12 +8732,24 @@ var feng3d;
         updateDeltaTime(dt) {
             this._absoluteTime += dt;
             this._activeState.update(this._absoluteTime);
+            if (this.updatePosition)
+                this.applyPositionDelta();
         }
         /**
          * 自动更新动画时帧更新事件
          */
         onEnterFrame(event = null) {
             this.update(feng3d.getTimer());
+        }
+        /**
+         * 应用位置偏移量
+         */
+        applyPositionDelta() {
+            var delta = this._activeState.positionDelta;
+            var dist = delta.length;
+            var len;
+            if (dist > 0) {
+            }
         }
         /**
          * 派发动画播放完成一周期事件
@@ -8725,22 +8879,22 @@ var feng3d;
             /** 父关节索引 （-1说明本身是总父节点，这个序号其实就是行号了，譬如上面”origin“节点的序号就是0，无父节点； "body"节点序号是1，父节点序号是0，也就是说父节点是”origin“）*/
             this.parentIndex = -1;
         }
-        get matrix() {
-            if (!this._matrix) {
-                this._matrix = this.rotation.toMatrix3D();
-                this._matrix.appendTranslation(this.position.x, this.position.y, this.position.z);
+        get matrix3D() {
+            if (!this._matrix3D) {
+                this._matrix3D = this.orientation.toMatrix3D();
+                this._matrix3D.appendTranslation(this.translation.x, this.translation.y, this.translation.z);
             }
-            return this._matrix;
+            return this._matrix3D;
         }
-        get invertMatrix() {
-            if (!this._invertMatrix) {
-                this._invertMatrix = this.matrix.clone();
-                this._invertMatrix.invert();
+        get invertMatrix3D() {
+            if (!this._invertMatrix3D) {
+                this._invertMatrix3D = this.matrix3D.clone();
+                this._invertMatrix3D.invert();
             }
-            return this._invertMatrix;
+            return this._invertMatrix3D;
         }
         get inverseBindPose() {
-            return this.invertMatrix.rawData;
+            return this.invertMatrix3D.rawData;
         }
     }
     feng3d.SkeletonJoint = SkeletonJoint;
@@ -8786,7 +8940,23 @@ var feng3d;
                 this._animationSet.cancelGPUCompatibility();
             animationSet.numJoints = this._skeleton.numJoints;
             this._numJoints = this._skeleton.numJoints;
-            this._globalMatrices.length = this._numJoints;
+            this._globalMatrices.length = this._numJoints * 12;
+            //初始化骨骼变换矩阵
+            var j;
+            for (var i = 0; i < this._numJoints; ++i) {
+                this._globalMatrices[j++] = 1;
+                this._globalMatrices[j++] = 0;
+                this._globalMatrices[j++] = 0;
+                this._globalMatrices[j++] = 0;
+                this._globalMatrices[j++] = 0;
+                this._globalMatrices[j++] = 1;
+                this._globalMatrices[j++] = 0;
+                this._globalMatrices[j++] = 0;
+                this._globalMatrices[j++] = 0;
+                this._globalMatrices[j++] = 0;
+                this._globalMatrices[j++] = 1;
+                this._globalMatrices[j++] = 0;
+            }
         }
         /**
          * 当前骨骼姿势的全局矩阵
@@ -8862,6 +9032,7 @@ var feng3d;
             super.updateDeltaTime(dt);
             //invalidate pose matrices
             this._globalPropertiesDirty = true;
+            this.updateGlobalProperties();
         }
         /**
          * 更新骨骼全局变换矩阵
@@ -8870,14 +9041,88 @@ var feng3d;
             this._globalPropertiesDirty = false;
             //获取全局骨骼姿势
             this.localToGlobalPose(this._activeSkeletonState.getSkeletonPose(this._skeleton), this._globalPose, this._skeleton);
+            //姿势变换矩阵
+            //矩阵偏移量
+            var mtxOffset = 0;
             var globalPoses = this._globalPose.jointPoses;
+            var raw;
+            var ox, oy, oz, ow;
+            var xy2, xz2, xw2;
+            var yz2, yw2, zw2;
+            var n11, n12, n13;
+            var n21, n22, n23;
+            var n31, n32, n33;
+            var m11, m12, m13, m14;
+            var m21, m22, m23, m24;
+            var m31, m32, m33, m34;
             var joints = this._skeleton.joints;
+            var pose;
+            var quat;
+            var vec;
+            var t;
             //遍历每个关节
             for (var i = 0; i < this._numJoints; ++i) {
+                //读取关节全局姿势数据
+                pose = globalPoses[i];
+                quat = pose.orientation;
+                vec = pose.translation;
+                ox = quat.x;
+                oy = quat.y;
+                oz = quat.z;
+                ow = quat.w;
+                //计算关节的全局变换矩阵
+                xy2 = (t = 2.0 * ox) * oy;
+                xz2 = t * oz;
+                xw2 = t * ow;
+                yz2 = (t = 2.0 * oy) * oz;
+                yw2 = t * ow;
+                zw2 = 2.0 * oz * ow;
+                yz2 = 2.0 * oy * oz;
+                yw2 = 2.0 * oy * ow;
+                zw2 = 2.0 * oz * ow;
+                ox *= ox;
+                oy *= oy;
+                oz *= oz;
+                ow *= ow;
+                //保存关节的全局变换矩阵
+                n11 = (t = ox - oy) - oz + ow;
+                n12 = xy2 - zw2;
+                n13 = xz2 + yw2;
+                n21 = xy2 + zw2;
+                n22 = -t - oz + ow;
+                n23 = yz2 - xw2;
+                n31 = xz2 - yw2;
+                n32 = yz2 + xw2;
+                n33 = -ox - oy + oz + ow;
+                //初始状态 下关节的 逆矩阵
+                raw = joints[i].inverseBindPose;
+                m11 = raw[0];
+                m12 = raw[4];
+                m13 = raw[8];
+                m14 = raw[12];
+                m21 = raw[1];
+                m22 = raw[5];
+                m23 = raw[9];
+                m24 = raw[13];
+                m31 = raw[2];
+                m32 = raw[6];
+                m33 = raw[10];
+                m34 = raw[14];
                 //计算关节全局变换矩阵(通过初始状态 关节逆矩阵与全局变换矩阵 计算 当前状态的关节矩阵)
-                var globalMatrix = globalPoses[i].matrix3D;
-                globalMatrix.append(joints[i].invertMatrix);
-                this._globalMatrices[i] = globalMatrix;
+                this._globalMatrices[mtxOffset] = n11 * m11 + n12 * m21 + n13 * m31;
+                this._globalMatrices[mtxOffset + 1] = n11 * m12 + n12 * m22 + n13 * m32;
+                this._globalMatrices[mtxOffset + 2] = n11 * m13 + n12 * m23 + n13 * m33;
+                this._globalMatrices[mtxOffset + 3] = n11 * m14 + n12 * m24 + n13 * m34 + vec.x;
+                this._globalMatrices[mtxOffset + 4] = n21 * m11 + n22 * m21 + n23 * m31;
+                this._globalMatrices[mtxOffset + 5] = n21 * m12 + n22 * m22 + n23 * m32;
+                this._globalMatrices[mtxOffset + 6] = n21 * m13 + n22 * m23 + n23 * m33;
+                this._globalMatrices[mtxOffset + 7] = n21 * m14 + n22 * m24 + n23 * m34 + vec.y;
+                this._globalMatrices[mtxOffset + 8] = n31 * m11 + n32 * m21 + n33 * m31;
+                this._globalMatrices[mtxOffset + 9] = n31 * m12 + n32 * m22 + n33 * m32;
+                this._globalMatrices[mtxOffset + 10] = n31 * m13 + n32 * m23 + n33 * m33;
+                this._globalMatrices[mtxOffset + 11] = n31 * m14 + n32 * m24 + n33 * m34 + vec.z;
+                //跳到下个矩阵位置
+                mtxOffset = mtxOffset + 12;
             }
         }
         /**
@@ -9005,22 +9250,22 @@ var feng3d;
             /** 位移信息 */
             this.translation = new feng3d.Vector3D();
         }
-        get matrix() {
-            if (!this._matrix) {
-                this._matrix = this.orientation.toMatrix3D();
-                this._matrix.appendTranslation(this.translation.x, this.translation.y, this.translation.z);
+        get matrix3D() {
+            if (!this._matrix3D) {
+                this._matrix3D = this.orientation.toMatrix3D();
+                this._matrix3D.appendTranslation(this.translation.x, this.translation.y, this.translation.z);
             }
-            return this._matrix;
+            return this._matrix3D;
         }
-        get invertMatrix() {
-            if (!this._invertMatrix) {
-                this._invertMatrix = this.matrix.clone();
-                this._invertMatrix.invert();
+        get invertMatrix3D() {
+            if (!this._invertMatrix3D) {
+                this._invertMatrix3D = this.matrix3D.clone();
+                this._invertMatrix3D.invert();
             }
-            return this._invertMatrix;
+            return this._invertMatrix3D;
         }
         get inverseBindPose() {
-            return this.invertMatrix.rawData;
+            return this.invertMatrix3D.rawData;
         }
     }
     feng3d.JointPose = JointPose;
@@ -9142,6 +9387,7 @@ var feng3d;
         constructor() {
             super();
             this._frames = [];
+            this._stateClass = feng3d.SkeletonClipState;
         }
         /**
          * 骨骼姿势动画帧列表
@@ -9191,6 +9437,157 @@ var feng3d;
         }
     }
     feng3d.SkeletonClipNode = SkeletonClipNode;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 骨骼剪辑状态
+     * @author feng 2015-9-18
+     */
+    class SkeletonClipState extends feng3d.AnimationClipState {
+        /**
+         * 创建骨骼剪辑状态实例
+         * @param animator				动画
+         * @param skeletonClipNode		骨骼剪辑节点
+         */
+        constructor(animator, skeletonClipNode) {
+            super(animator, skeletonClipNode);
+            this._rootPos = new feng3d.Vector3D();
+            this._skeletonPose = new feng3d.SkeletonPose();
+            this._skeletonPoseDirty = true;
+            this._skeletonClipNode = skeletonClipNode;
+            this._frames = this._skeletonClipNode.frames;
+        }
+        /**
+         * 当前骨骼姿势
+         */
+        get currentPose() {
+            if (this._framesDirty)
+                this.updateFrames();
+            return this._currentPose;
+        }
+        /**
+         * 下个姿势
+         */
+        get nextPose() {
+            if (this._framesDirty)
+                this.updateFrames();
+            return this._nextPose;
+        }
+        /**
+         * @inheritDoc
+         */
+        getSkeletonPose(skeleton) {
+            if (this._skeletonPoseDirty)
+                this.updateSkeletonPose(skeleton);
+            return this._skeletonPose;
+        }
+        /**
+         * @inheritDoc
+         */
+        updateTime(time) {
+            this._skeletonPoseDirty = true;
+            super.updateTime(time);
+        }
+        /**
+         * @inheritDoc
+         */
+        updateFrames() {
+            super.updateFrames();
+            this._currentPose = this._frames[this._currentFrame];
+            if (this._skeletonClipNode.looping && this._nextFrame >= this._skeletonClipNode.lastFrame) {
+                this._nextPose = this._frames[0];
+                this._animator.dispatchCycleEvent();
+            }
+            else
+                this._nextPose = this._frames[this._nextFrame];
+        }
+        /**
+         * 更新骨骼姿势
+         * @param skeleton 骨骼
+         */
+        updateSkeletonPose(skeleton) {
+            this._skeletonPoseDirty = false;
+            if (!this._skeletonClipNode.totalDuration)
+                return;
+            if (this._framesDirty)
+                this.updateFrames();
+            var currentPose = this._currentPose.jointPoses;
+            var nextPose = this._nextPose.jointPoses;
+            var numJoints = skeleton.numJoints;
+            var p1, p2;
+            var pose1, pose2;
+            var showPoses = this._skeletonPose.jointPoses;
+            var showPose;
+            var tr;
+            //调整当前显示关节姿势数量
+            if (showPoses.length != numJoints)
+                showPoses.length = numJoints;
+            if ((numJoints != currentPose.length) || (numJoints != nextPose.length))
+                throw new Error("joint counts don't match!");
+            for (var i = 0; i < numJoints; ++i) {
+                showPose = showPoses[i];
+                if (showPose == null)
+                    showPose = showPoses[i] = new feng3d.JointPose();
+                pose1 = currentPose[i];
+                pose2 = nextPose[i];
+                p1 = pose1.translation;
+                p2 = pose2.translation;
+                //根据前后两个关节姿势计算出当前显示关节姿势
+                showPose.orientation.lerp(pose1.orientation, pose2.orientation, this._blendWeight);
+                //计算显示的关节位置
+                if (i > 0) {
+                    tr = showPose.translation;
+                    tr.x = p1.x + this._blendWeight * (p2.x - p1.x);
+                    tr.y = p1.y + this._blendWeight * (p2.y - p1.y);
+                    tr.z = p1.z + this._blendWeight * (p2.z - p1.z);
+                }
+            }
+        }
+        /**
+         * @inheritDoc
+         */
+        updatePositionDelta() {
+            this._positionDeltaDirty = false;
+            if (this._framesDirty)
+                this.updateFrames();
+            var p1, p2, p3;
+            var totalDelta = this._skeletonClipNode.totalDelta;
+            //跳过最后，重置位置
+            if ((this._timeDir > 0 && this._nextFrame < this._oldFrame) || (this._timeDir < 0 && this._nextFrame > this._oldFrame)) {
+                this._rootPos.x -= totalDelta.x * this._timeDir;
+                this._rootPos.y -= totalDelta.y * this._timeDir;
+                this._rootPos.z -= totalDelta.z * this._timeDir;
+            }
+            /** 保存骨骼根节点原位置 */
+            var dx = this._rootPos.x;
+            var dy = this._rootPos.y;
+            var dz = this._rootPos.z;
+            //计算骨骼根节点位置
+            if (this._skeletonClipNode.stitchFinalFrame && this._nextFrame == this._skeletonClipNode.lastFrame) {
+                p1 = this._frames[0].jointPoses[0].translation;
+                p2 = this._frames[1].jointPoses[0].translation;
+                p3 = this._currentPose.jointPoses[0].translation;
+                this._rootPos.x = p3.x + p1.x + this._blendWeight * (p2.x - p1.x);
+                this._rootPos.y = p3.y + p1.y + this._blendWeight * (p2.y - p1.y);
+                this._rootPos.z = p3.z + p1.z + this._blendWeight * (p2.z - p1.z);
+            }
+            else {
+                p1 = this._currentPose.jointPoses[0].translation;
+                p2 = this._frames[this._nextFrame].jointPoses[0].translation; //cover the instances where we wrap the pose but still want the final frame translation values
+                this._rootPos.x = p1.x + this._blendWeight * (p2.x - p1.x);
+                this._rootPos.y = p1.y + this._blendWeight * (p2.y - p1.y);
+                this._rootPos.z = p1.z + this._blendWeight * (p2.z - p1.z);
+            }
+            //计算骨骼根节点偏移量
+            this._rootDelta.x = this._rootPos.x - dx;
+            this._rootDelta.y = this._rootPos.y - dy;
+            this._rootDelta.z = this._rootPos.z - dz;
+            //保存旧帧编号
+            this._oldFrame = this._nextFrame;
+        }
+    }
+    feng3d.SkeletonClipState = SkeletonClipState;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9721,16 +10118,6 @@ var feng3d;
         load(url, completed = null) {
             this.url = url;
             this.completed = completed;
-            //初始化 旋转四元素
-            this._rotationQuat = new feng3d.Quaternion();
-            this._rotationQuat.fromAxisAngle(feng3d.Vector3D.X_AXIS, -Math.PI * .5);
-            //初始化旋转四元素
-            this._animRotationQuat = new feng3d.Quaternion();
-            var t1 = new feng3d.Quaternion();
-            var t2 = new feng3d.Quaternion();
-            t1.fromAxisAngle(feng3d.Vector3D.X_AXIS, -Math.PI * .5);
-            t2.fromAxisAngle(feng3d.Vector3D.Y_AXIS, -Math.PI * .5);
-            this._animRotationQuat.multiply(t2, t1);
             var loader = new feng3d.Loader();
             loader.addEventListener(feng3d.LoaderEvent.COMPLETE, function (e) {
                 var objData = feng3d.MD5MeshParser.parse(e.data.content);
@@ -9751,10 +10138,10 @@ var feng3d;
         createMD5Mesh(md5MeshData) {
             var object3D = new feng3d.Object3D();
             //顶点最大关节关联数
-            this._maxJointCount = this.calculateMaxJointCount(md5MeshData);
+            var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
+            feng3d.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
             this._skeleton = this.createSkeleton(md5MeshData.joints);
-            var skeletonAnimator = new feng3d.SkeletonAnimator(null);
-            skeletonAnimator.skeleton = this._skeleton;
+            var skeletonAnimator = new feng3d.SkeletonAnimator(new feng3d.SkeletonAnimationSet(), this._skeleton);
             for (var i = 0; i < md5MeshData.meshs.length; i++) {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
                 var skeletonObject3D = new feng3d.Object3D();
@@ -9825,12 +10212,10 @@ var feng3d;
             var t = 1 - quat.x * quat.x - quat.y * quat.y - quat.z * quat.z;
             quat.w = t < 0 ? 0 : -Math.sqrt(t);
             //
-            skeletonJoint.position = new feng3d.Vector3D(-position[0], position[1], position[2]);
-            skeletonJoint.position = this._rotationQuat.rotatePoint(skeletonJoint.position);
+            skeletonJoint.translation = new feng3d.Vector3D(-position[0], position[1], position[2]);
+            skeletonJoint.translation = skeletonJoint.translation;
             //
-            var rotQuat = new feng3d.Quaternion();
-            rotQuat.multiply(this._rotationQuat, quat);
-            skeletonJoint.rotation = rotQuat;
+            skeletonJoint.orientation = quat;
             return skeletonJoint;
         }
         createGeometry(md5Mesh) {
@@ -9852,16 +10237,16 @@ var feng3d;
             vertices.length = len * 3;
             //关节索引数据
             var jointIndices = [];
-            jointIndices.length = len * this._maxJointCount;
+            jointIndices.length = len * 4;
             //关节权重数据
             var jointWeights = [];
-            jointWeights.length = len * this._maxJointCount;
+            jointWeights.length = len * 4;
             var l = 0;
             //0权重个数
             var nonZeroWeights;
             for (var i = 0; i < len; ++i) {
                 vertex = vertexData[i];
-                v1 = vertex.index * 3;
+                v1 = i * 3;
                 v2 = v1 + 1;
                 v3 = v1 + 2;
                 vertices[v1] = vertices[v2] = vertices[v3] = 0;
@@ -9873,23 +10258,25 @@ var feng3d;
                  * weight[indexN].bias -> weight.bias;
                  */
                 nonZeroWeights = 0;
-                for (var j = 0; j < vertex.countWeight; ++j) {
-                    weight = weights[vertex.startWeight + j];
-                    if (weight.bias > 0) {
-                        bindPose = this._skeleton.joints[weight.joint].matrix;
-                        pos = bindPose.transformVector(new feng3d.Vector3D(weight.pos[0], weight.pos[1], weight.pos[2]));
-                        vertices[v1] += (-pos.x) * weight.bias;
-                        vertices[v2] += pos.y * weight.bias;
-                        vertices[v3] += pos.z * weight.bias;
-                        // indices need to be multiplied by 3 (amount of matrix registers)
-                        jointIndices[l] = weight.joint * 3;
-                        jointWeights[l++] = weight.bias;
-                        ++nonZeroWeights;
+                for (var j = 0; j < 8; ++j) {
+                    if (j < vertex.countWeight) {
+                        weight = weights[vertex.startWeight + j];
+                        if (weight.bias > 0) {
+                            bindPose = this._skeleton.joints[weight.joint].matrix3D;
+                            pos = bindPose.transformVector(new feng3d.Vector3D(-weight.pos[0], weight.pos[1], weight.pos[2]));
+                            vertices[v1] += pos.x * weight.bias;
+                            vertices[v2] += pos.y * weight.bias;
+                            vertices[v3] += pos.z * weight.bias;
+                            // indices need to be multiplied by 3 (amount of matrix registers)
+                            jointIndices[l] = weight.joint * 3;
+                            jointWeights[l++] = weight.bias;
+                            ++nonZeroWeights;
+                        }
                     }
-                }
-                for (j = nonZeroWeights; j < this._maxJointCount; ++j) {
-                    jointIndices[l] = 0;
-                    jointWeights[l++] = 0;
+                    else {
+                        jointIndices[l] = 0;
+                        jointWeights[l++] = 0;
+                    }
                 }
                 v1 = vertex.index << 1;
                 uvs[v1++] = vertex.u;
@@ -9901,8 +10288,8 @@ var feng3d;
             geometry.setVAData(feng3d.GLAttribute.a_position, new Float32Array(vertices), 3);
             geometry.setVAData(feng3d.GLAttribute.a_uv, new Float32Array(uvs), 2);
             //更新关节索引与权重索引
-            geometry.setVAData(feng3d.GLAttribute.a_jointindex, new Float32Array(jointIndices), this._maxJointCount);
-            geometry.setVAData(feng3d.GLAttribute.a_jointweight, new Float32Array(jointWeights), this._maxJointCount);
+            geometry.setVAData(feng3d.GLAttribute.a_jointindex, new Float32Array(jointIndices), 4);
+            geometry.setVAData(feng3d.GLAttribute.a_jointweight, new Float32Array(jointWeights), 4);
             return geometry;
         }
         createAnimator(md5AnimData) {
@@ -9969,16 +10356,10 @@ var feng3d;
                 pose = new feng3d.JointPose();
                 pose.name = hierarchy.name;
                 pose.parentIndex = hierarchy.parentIndex;
-                if (hierarchy.parentIndex < 0) {
-                    pose.orientation.multiply(this._animRotationQuat, orientation);
-                    pose.translation = this._animRotationQuat.rotatePoint(translate);
-                }
-                else {
-                    pose.orientation.copyFrom(orientation);
-                    pose.translation.x = translate.x;
-                    pose.translation.y = translate.y;
-                    pose.translation.z = translate.z;
-                }
+                pose.orientation.copyFrom(orientation);
+                pose.translation.x = translate.x;
+                pose.translation.y = translate.y;
+                pose.translation.z = translate.z;
                 pose.orientation.y = -pose.orientation.y;
                 pose.orientation.z = -pose.orientation.z;
                 pose.translation.x = -pose.translation.x;

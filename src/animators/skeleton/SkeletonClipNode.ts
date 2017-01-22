@@ -13,6 +13,7 @@ module feng3d {
 		 */
         constructor() {
             super();
+            this._stateClass = SkeletonClipState;
         }
 
 		/**

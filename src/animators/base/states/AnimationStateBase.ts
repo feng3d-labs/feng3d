@@ -9,8 +9,8 @@ module feng3d {
         protected _rootDelta: Vector3D = new Vector3D();
         protected _positionDeltaDirty: boolean = true;
 
-        protected _time: number;
-        protected _startTime: number;
+        protected _time: number = 0;
+        protected _startTime: number = 0;
         protected _animator: AnimatorBase;
 
 		/**

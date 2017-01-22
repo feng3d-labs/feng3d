@@ -130,6 +130,11 @@
         //地形
         "src/terrain/TerrainGeometry.ts",
         "src/terrain/TerrainMaterial.ts",
+        //
+        "src/animators/base/IAnimationSet.ts",
+        "src/animators/base/states/IAnimationState.ts",
+        "src/animators/base/states/AnimationStateBase.ts",
+        "src/animators/base/states/AnimationClipState.ts",
         //粒子动画
         "src/animators/particle/Particle.ts",
         "src/animators/particle/ParticleGlobal.ts",
@@ -141,10 +146,7 @@
         //
         "src/animators/events/AnimationStateEvent.ts",
         "src/animators/events/AnimatorEvent.ts",
-        "src/animators/IAnimationState.ts",
-        "src/animators/IAnimationSet.ts",
         "src/animators/AnimationNodeBase.ts",
-        "src/animators/AnimationStateBase.ts",
         "src/animators/AnimatorBase.ts",
         "src/animators/AnimationSetBase.ts",
         "src/animators/transitions/IAnimationTransition.ts",
@@ -158,6 +160,7 @@
         "src/animators/skeleton/SkeletonPose.ts",
         "src/animators/skeleton/AnimationClipNodeBase.ts",
         "src/animators/skeleton/SkeletonClipNode.ts",
+        "src/animators/skeleton/SkeletonClipState.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MtlParser.ts",

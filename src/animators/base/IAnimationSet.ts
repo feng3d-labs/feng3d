@@ -1,8 +1,5 @@
 module feng3d {
 
-
-
-
 	/**
 	 * 提供动画数据集合的接口
 	 * @author feng 2015-9-18

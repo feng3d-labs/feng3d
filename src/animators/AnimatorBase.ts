@@ -9,7 +9,7 @@ module feng3d {
         /** 是否正在播放动画 */
         private _isPlaying: boolean;
         private _autoUpdate: boolean = true;
-        private _time: number;
+        private _time: number = 0;
         /** 播放速度 */
         private _playbackSpeed: number = 1;
 
@@ -18,7 +18,7 @@ module feng3d {
         protected _activeState: IAnimationState;
         protected _activeAnimationName: string;
         /** 当前动画时间 */
-        protected _absoluteTime: number;
+        protected _absoluteTime: number = 0;
         private _animationStates = {};
 
 		/**
@@ -236,6 +236,9 @@ module feng3d {
             this._absoluteTime += dt;
 
             this._activeState.update(this._absoluteTime);
+
+            if (this.updatePosition)
+                this.applyPositionDelta();
         }
 
 		/**
@@ -243,6 +246,17 @@ module feng3d {
 		 */
         private onEnterFrame(event: Event = null) {
             this.update(getTimer());
+        }
+        
+        /**
+		 * 应用位置偏移量
+		 */
+        private applyPositionDelta() {
+            var delta: Vector3D = this._activeState.positionDelta;
+            var dist: number = delta.length;
+            var len: number;
+            if (dist > 0) {
+            }
         }
 
 		/**
