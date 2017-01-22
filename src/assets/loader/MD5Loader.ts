@@ -153,7 +153,6 @@ module feng3d {
             var geometry = new Geometry();
 
             var len: number = vertexData.length;
-            var v1: number, v2: number, v3: number;
             var vertex: MD5_Vertex;
             var weight: MD5_Weight;
             var bindPose: Matrix3D;
@@ -170,16 +169,10 @@ module feng3d {
             //关节权重数据
             var jointWeights: number[] = [];
             jointWeights.length = len * 4;
-            var l: number = 0;
-            //0权重个数
-            var nonZeroWeights: number;
 
             for (var i: number = 0; i < len; ++i) {
                 vertex = vertexData[i];
-                v1 = i * 3;
-                v2 = v1 + 1;
-                v3 = v1 + 2;
-                vertices[v1] = vertices[v2] = vertices[v3] = 0;
+                vertices[i * 3] = vertices[i * 3 + 1] = vertices[i * 3 + 2] = 0;
 
 				/**
 				 * 参考 http://blog.csdn.net/summerhust/article/details/17421213
@@ -188,31 +181,46 @@ module feng3d {
 				 * weight[indexN].pos -> weight.pos;
 				 * weight[indexN].bias -> weight.bias;
 				 */
-                nonZeroWeights = 0;
+                var weightJoints = [];
+                var weightBiass = [];
                 for (var j = 0; j < 8; ++j) {
                     if (j < vertex.countWeight) {
                         weight = weights[vertex.startWeight + j];
                         if (weight.bias > 0) {
                             bindPose = this._skeleton.joints[weight.joint].matrix3D;
                             pos = bindPose.transformVector(new Vector3D(-weight.pos[0], weight.pos[1], weight.pos[2]));
-                            vertices[v1] += pos.x * weight.bias;
-                            vertices[v2] += pos.y * weight.bias;
-                            vertices[v3] += pos.z * weight.bias;
+                            vertices[i * 3] += pos.x * weight.bias;
+                            vertices[i * 3 + 1] += pos.y * weight.bias;
+                            vertices[i * 3 + 2] += pos.z * weight.bias;
 
-                            // indices need to be multiplied by 3 (amount of matrix registers)
-                            jointIndices[l] = weight.joint * 3;
-                            jointWeights[l++] = weight.bias;
-                            ++nonZeroWeights;
+                            weightJoints[j] = weight.joint;
+                            weightBiass[j] = weight.bias;
                         }
-                    } else {
-                        jointIndices[l] = 0;
-                        jointWeights[l++] = 0;
                     }
                 }
 
-                v1 = vertex.index << 1;
-                uvs[v1++] = vertex.u;
-                uvs[v1] = vertex.v;
+                for (j = 0; j < 4; j++) {
+
+                    jointIndices[i * 4 + j] = compressIndices(weightJoints[j * 2], weightJoints[j * 2 + 1]);
+                    jointWeights[i * 4 + j] = compressWeights(jointWeights[j * 2], jointWeights[j * 2 + 1]);
+                }
+
+                uvs[vertex.index * 2] = vertex.u;
+                uvs[vertex.index * 2 + 1] = vertex.v;
+            }
+
+            //底四位存第一个值，高4位存第二个值 （1234，5678）->(56781234)
+            assert(compressIndices(1234, 5678) == 56781234);
+            function compressIndices(index0: number, index1: number) {
+
+                return index0 + index1 * 10000;
+            }
+
+            //放大1000倍取整，底四位存第一个值，高4位存第二个值 (0.12341,0.567896)->05670123
+            assert(compressWeights(0.12341, 0.567896) == 5670123);
+            function compressWeights(weight0: number, weight1: number) {
+
+                return ~~(weight0 * 1000) + (~~(weight1 * 1000)) * 10000;
             }
 
             //更新索引数据
