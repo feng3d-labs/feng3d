@@ -2838,6 +2838,10 @@ declare module feng3d {
          * 点大小
          */
         static u_PointSize: string;
+        /**
+         * 骨骼全局矩阵
+         */
+        static u_skeletonGlobalMatriices: string;
     }
 }
 declare module feng3d {
@@ -2880,6 +2884,10 @@ declare module feng3d {
          * 点光源数量
          */
         NUM_POINTLIGHT: number;
+        /**
+         * 骨骼关节数量
+         */
+        NUM_SKELETONJOINT: number;
     }
     /**
      * Boolean类型宏

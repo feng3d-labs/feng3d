@@ -30,6 +30,11 @@ module feng3d {
          * 点光源数量
          */
         NUM_POINTLIGHT: number;
+
+        /**
+         * 骨骼关节数量
+         */
+        NUM_SKELETONJOINT: number;
     }
 
     /**

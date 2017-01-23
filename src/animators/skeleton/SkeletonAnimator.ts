@@ -71,7 +71,7 @@ module feng3d {
             this._globalMatrices.length = this._numJoints * 12;
 
             //初始化骨骼变换矩阵
-            var j: number;
+            var j: number = 0;
             for (var i: number = 0; i < this._numJoints; ++i) {
                 this._globalMatrices[j++] = 1;
                 this._globalMatrices[j++] = 0;
@@ -133,6 +133,8 @@ module feng3d {
 
             super.updateRenderData(renderContext);
 
+            this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this._numJoints;
+            this.renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
         }
 
 		/**

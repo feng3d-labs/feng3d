@@ -4073,6 +4073,10 @@ var feng3d;
      * 点大小
      */
     RenderDataID.u_PointSize = "u_PointSize";
+    /**
+     * 骨骼全局矩阵
+     */
+    RenderDataID.u_skeletonGlobalMatriices = "u_skeletonGlobalMatriices";
     feng3d.RenderDataID = RenderDataID;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -8943,7 +8947,7 @@ var feng3d;
             this._numJoints = this._skeleton.numJoints;
             this._globalMatrices.length = this._numJoints * 12;
             //初始化骨骼变换矩阵
-            var j;
+            var j = 0;
             for (var i = 0; i < this._numJoints; ++i) {
                 this._globalMatrices[j++] = 1;
                 this._globalMatrices[j++] = 0;
@@ -9023,6 +9027,8 @@ var feng3d;
          */
         updateRenderData(renderContext) {
             super.updateRenderData(renderContext);
+            this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this._numJoints;
+            this.renderData.uniforms[feng3d.RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
         }
         /**
          * @inheritDoc

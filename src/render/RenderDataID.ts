@@ -104,5 +104,10 @@ module feng3d {
          * 点大小
          */
         static u_PointSize = "u_PointSize";
+
+        /**
+         * 骨骼全局矩阵
+         */
+        static u_skeletonGlobalMatriices = "u_skeletonGlobalMatriices";
     }
 }
