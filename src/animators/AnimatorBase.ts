@@ -4,7 +4,7 @@ module feng3d {
 	 * 动画基类
 	 * @author feng 2014-5-27
 	 */
-    export abstract class AnimatorBase extends Component {
+    export abstract class AnimatorBase extends RenderDataHolder {
 
         /** 是否正在播放动画 */
         private _isPlaying: boolean;
@@ -247,7 +247,7 @@ module feng3d {
         private onEnterFrame(event: Event = null) {
             this.update(getTimer());
         }
-        
+
         /**
 		 * 应用位置偏移量
 		 */

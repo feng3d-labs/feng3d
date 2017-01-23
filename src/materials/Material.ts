@@ -32,8 +32,6 @@ module feng3d {
             //
             this.renderData.shaderParams.renderMode = this.renderMode;
             //
-            this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 0;
-            //
             if (this.shaderName) {
                 this.renderData.vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
                 this.renderData.fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");

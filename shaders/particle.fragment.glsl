@@ -1,9 +1,14 @@
+#version 300 es
 precision mediump float;
 
-varying vec4 v_particle_color;
+//此处将填充宏定义
+#define macros
+
+in vec4 v_particle_color;
+
+out vec4 o_fragColor;
 
 void main(void) {
-   
-    gl_FragColor = vec4(1.0,1.0,1.0,1.0);
-    gl_FragColor = v_particle_color;
+
+    o_fragColor = v_particle_color;
 }

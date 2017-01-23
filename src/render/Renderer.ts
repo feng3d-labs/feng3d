@@ -61,8 +61,9 @@ module feng3d {
             var vertexCode = this._renderAtomic.vertexCode;
             var fragmentCode = this._renderAtomic.fragmentCode;
             //应用宏
-            vertexCode = ShaderLib.getMacroCode(this._renderAtomic.shaderMacro) + vertexCode;
-            fragmentCode = ShaderLib.getMacroCode(this._renderAtomic.shaderMacro) + fragmentCode;
+            var shaderMacro = ShaderLib.getMacroCode(this._renderAtomic.shaderMacro);
+            vertexCode = vertexCode.replace(/#define\s+macros/, shaderMacro);
+            fragmentCode = fragmentCode.replace(/#define\s+macros/, shaderMacro);
             //渲染程序
             var shaderProgram = context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);

@@ -1,14 +1,20 @@
+#version 300 es
 precision mediump float;
 
-varying vec2 v_uv;
-varying vec3 v_globalPosition;
-varying vec3 v_normal;
+//此处将填充宏定义
+#define macros
+
+in vec2 v_uv;
+in vec3 v_globalPosition;
+in vec3 v_normal;
 
 uniform mat4 u_cameraMatrix;
 //基本颜色
 uniform vec4 u_baseColor;
 
 #include<modules/pointLightShading.declare>
+
+out vec4 o_fragColor;
 
 void main(void) {
 
@@ -17,5 +23,5 @@ void main(void) {
     //渲染灯光
     #include<modules/pointLightShading.main>
 
-    gl_FragColor = finalColor;
+    o_fragColor = finalColor;
 }

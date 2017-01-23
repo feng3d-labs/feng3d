@@ -126,6 +126,15 @@ module feng3d {
                 this.reset(name, offset);
         }
 
+        /**
+		 * 更新渲染数据
+		 */
+        public updateRenderData(renderContext: RenderContext) {
+
+            super.updateRenderData(renderContext);
+
+        }
+
 		/**
 		 * @inheritDoc
 		 */
@@ -143,7 +152,6 @@ module feng3d {
 
             //invalidate pose matrices
             this._globalPropertiesDirty = true;
-            this.updateGlobalProperties();
         }
 
 		/**

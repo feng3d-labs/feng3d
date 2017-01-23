@@ -1,7 +1,9 @@
-attribute vec3 a_position;
-attribute vec2 a_uv;
+#version 300 es
 
-varying vec2 v_uv;
+in vec3 a_position;
+in vec2 a_uv;
+
+out vec2 v_uv;
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 

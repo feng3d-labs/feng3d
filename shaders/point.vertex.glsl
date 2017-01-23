@@ -1,4 +1,6 @@
-attribute vec3 a_position;
+#version 300 es
+
+in vec3 a_position;
 
 uniform float u_PointSize;
 

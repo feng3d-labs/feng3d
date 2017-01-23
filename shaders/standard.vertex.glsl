@@ -1,14 +1,19 @@
+#version 300 es
+
+//此处将填充宏定义
+#define macros
+
 //坐标属性
-attribute vec3 a_position;
-attribute vec2 a_uv;
-attribute vec3 a_normal;
+in vec3 a_position;
+in vec2 a_uv;
+in vec3 a_normal;
 
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 
-varying vec2 v_uv;
-varying vec3 v_globalPosition;
-varying vec3 v_normal;
+out vec2 v_uv;
+out vec3 v_globalPosition;
+out vec3 v_normal;
 
 void main(void) {
 

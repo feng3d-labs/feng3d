@@ -6,9 +6,24 @@ module feng3d {
      */
     export class SkeletonAnimatorMaterial extends Material {
 
+        /**
+         * 纹理数据
+         */
+        public texture: Texture2D;
+
         constructor() {
             super();
             this.shaderName = "skeleton";
+        }
+
+        /**
+		 * 更新渲染数据
+		 */
+        public updateRenderData(renderContext: RenderContext) {
+
+            super.updateRenderData(renderContext);
+
+            this.renderData.uniforms[RenderDataID.s_texture] = this.texture;
         }
     }
 }

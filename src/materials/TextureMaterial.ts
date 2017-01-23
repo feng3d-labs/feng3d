@@ -24,9 +24,6 @@ module feng3d {
             super.updateRenderData(renderContext);
 
             this.renderData.uniforms[RenderDataID.s_texture] = this.texture;
-            this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 2;
-            this.renderData.shaderMacro.addMacros.A_UV_NEED = 1;
-            this.renderData.shaderMacro.addMacros.V_UV_NEED = 1;
         }
     }
 }

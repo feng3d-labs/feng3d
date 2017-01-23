@@ -1,11 +1,12 @@
-attribute vec3 a_position;
+#version 300 es
+
+in vec3 a_position;
+in vec2 a_uv;
 
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 
-attribute vec2 a_uv;
-
-varying vec2 v_uv;
+out vec2 v_uv;
 
 void main(void) {
 

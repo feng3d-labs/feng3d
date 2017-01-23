@@ -4886,8 +4886,9 @@ var feng3d;
             var vertexCode = this._renderAtomic.vertexCode;
             var fragmentCode = this._renderAtomic.fragmentCode;
             //应用宏
-            vertexCode = feng3d.ShaderLib.getMacroCode(this._renderAtomic.shaderMacro) + vertexCode;
-            fragmentCode = feng3d.ShaderLib.getMacroCode(this._renderAtomic.shaderMacro) + fragmentCode;
+            var shaderMacro = feng3d.ShaderLib.getMacroCode(this._renderAtomic.shaderMacro);
+            vertexCode = vertexCode.replace(/#define\s+macros/, shaderMacro);
+            fragmentCode = fragmentCode.replace(/#define\s+macros/, shaderMacro);
             //渲染程序
             var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);
@@ -7219,8 +7220,6 @@ var feng3d;
             //
             this.renderData.shaderParams.renderMode = this.renderMode;
             //
-            this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 0;
-            //
             if (this.shaderName) {
                 this.renderData.vertexCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".vertex");
                 this.renderData.fragmentCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".fragment");
@@ -7278,8 +7277,6 @@ var feng3d;
         updateRenderData(renderContext) {
             super.updateRenderData(renderContext);
             this.renderData.uniforms[feng3d.RenderDataID.u_diffuseInput] = new feng3d.Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
-            //
-            this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 1;
         }
     }
     feng3d.ColorMaterial = ColorMaterial;
@@ -7339,9 +7336,6 @@ var feng3d;
         updateRenderData(renderContext) {
             super.updateRenderData(renderContext);
             this.renderData.uniforms[feng3d.RenderDataID.s_texture] = this.texture;
-            this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 2;
-            this.renderData.shaderMacro.addMacros.A_UV_NEED = 1;
-            this.renderData.shaderMacro.addMacros.V_UV_NEED = 1;
         }
     }
     feng3d.TextureMaterial = TextureMaterial;
@@ -7446,6 +7440,13 @@ var feng3d;
         constructor() {
             super();
             this.shaderName = "skeleton";
+        }
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
+            this.renderData.uniforms[feng3d.RenderDataID.s_texture] = this.texture;
         }
     }
     feng3d.SkeletonAnimatorMaterial = SkeletonAnimatorMaterial;
@@ -8548,7 +8549,7 @@ var feng3d;
      * 动画基类
      * @author feng 2014-5-27
      */
-    class AnimatorBase extends feng3d.Component {
+    class AnimatorBase extends feng3d.RenderDataHolder {
         /**
          * 创建一个动画基类
          * @param animationSet
@@ -9018,6 +9019,12 @@ var feng3d;
                 this.reset(name, offset);
         }
         /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext) {
+            super.updateRenderData(renderContext);
+        }
+        /**
          * @inheritDoc
          */
         setRenderState(renderable, camera) {
@@ -9032,7 +9039,6 @@ var feng3d;
             super.updateDeltaTime(dt);
             //invalidate pose matrices
             this._globalPropertiesDirty = true;
-            this.updateGlobalProperties();
         }
         /**
          * 更新骨骼全局变换矩阵
@@ -10243,8 +10249,6 @@ var feng3d;
             for (var i = 0; i < len; ++i) {
                 vertex = vertexData[i];
                 vertices[i * 3] = vertices[i * 3 + 1] = vertices[i * 3 + 2] = 0;
-                jointIndices[i * 4] = jointIndices[i * 4 + 1] = jointIndices[i * 4 + 2] = jointIndices[i * 4 + 3] = 0;
-                jointWeights[i * 4] = jointWeights[i * 4 + 1] = jointWeights[i * 4 + 2] = jointWeights[i * 4 + 3] = 0;
                 /**
                  * 参考 http://blog.csdn.net/summerhust/article/details/17421213
                  * VertexPos = (MJ-0 * weight[index0].pos * weight[index0].bias) + ... + (MJ-N * weight[indexN].pos * weight[indexN].bias)

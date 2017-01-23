@@ -29,8 +29,6 @@ module feng3d {
         public updateRenderData(renderContext: RenderContext) {
             super.updateRenderData(renderContext);
             this.renderData.uniforms[RenderDataID.u_diffuseInput] = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
-            //
-            this.renderData.shaderMacro.valueMacros.DIFFUSE_INPUT_TYPE = 1;
         }
     }
 }

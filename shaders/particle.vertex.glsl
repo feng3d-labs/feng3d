@@ -1,25 +1,29 @@
-//根据是否提供(a_particle_position)数据自动定义 #define D_(a_particle_position)
-
+#version 300 es
 precision mediump float;
 
-attribute vec3 a_position;
+//根据是否提供(a_particle_position)数据自动定义 #define D_(a_particle_position)
+
+//此处将填充宏定义
+#define macros
+
+in vec3 a_position;
 
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 
-attribute float a_particle_birthTime;
+in float a_particle_birthTime;
 
 #ifdef D_a_particle_position
-    attribute vec3 a_particle_position;
+    in vec3 a_particle_position;
 #endif
 
 #ifdef D_a_particle_velocity
-    attribute vec3 a_particle_velocity;
+    in vec3 a_particle_velocity;
 #endif
 
 #ifdef D_a_particle_color
-    attribute vec4 a_particle_color;
-    varying vec4 v_particle_color;
+    in vec4 a_particle_color;
+    out vec4 v_particle_color;
 #endif
 
 uniform float u_particleTime;

@@ -2876,7 +2876,6 @@ declare module feng3d {
      * 没有默认值
      */
     class ValueMacros {
-        DIFFUSE_INPUT_TYPE: 0 | 1 | 2;
         /**
          * 点光源数量
          */
@@ -4465,7 +4464,15 @@ declare module feng3d {
      * @author feng 2017-01-09
      */
     class SkeletonAnimatorMaterial extends Material {
+        /**
+         * 纹理数据
+         */
+        texture: Texture2D;
         constructor();
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
@@ -5155,7 +5162,7 @@ declare module feng3d {
      * 动画基类
      * @author feng 2014-5-27
      */
-    abstract class AnimatorBase extends Component {
+    abstract class AnimatorBase extends RenderDataHolder {
         /** 是否正在播放动画 */
         private _isPlaying;
         private _autoUpdate;
@@ -5470,6 +5477,10 @@ declare module feng3d {
          * @param offset 偏移量
          */
         play(name: string, transition?: IAnimationTransition, offset?: number): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext): void;
         /**
          * @inheritDoc
          */

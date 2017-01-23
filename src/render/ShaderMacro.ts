@@ -26,7 +26,6 @@ module feng3d {
      */
     export class ValueMacros {
 
-        DIFFUSE_INPUT_TYPE: 0 | 1 | 2;
         /** 
          * 点光源数量
          */
