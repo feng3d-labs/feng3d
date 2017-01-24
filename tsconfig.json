@@ -131,7 +131,6 @@
         "src/terrain/TerrainGeometry.ts",
         "src/terrain/TerrainMaterial.ts",
         //
-        "src/animators/base/IAnimationSet.ts",
         "src/animators/base/states/IAnimationState.ts",
         "src/animators/base/states/AnimationStateBase.ts",
         "src/animators/base/states/AnimationClipState.ts",

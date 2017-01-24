@@ -8,6 +8,6 @@ module feng3d {
 		 * 获取骨骼姿势
 		 * @param skeleton		骨骼
 		 */
-        getSkeletonPose(skeleton: Skeleton): SkeletonPose;
+        getSkeletonPose(): SkeletonPose;
     }
 }

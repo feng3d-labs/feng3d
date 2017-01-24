@@ -4742,24 +4742,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 提供动画数据集合的接口
-     * @author feng 2015-9-18
-     */
-    interface IAnimationSet {
-        /**
-         * 检查是否有该动作名称
-         * @param name			动作名称
-         */
-        hasAnimation(name: string): boolean;
-        /**
-         * 获取动画节点
-         * @param name			动作名称
-         */
-        getAnimation(name: string): AnimationNodeBase;
-    }
-}
-declare module feng3d {
-    /**
      * 动画状态接口
      * @author feng 2015-9-18
      */
@@ -5175,7 +5157,7 @@ declare module feng3d {
         private _time;
         /** 播放速度 */
         private _playbackSpeed;
-        protected _animationSet: IAnimationSet;
+        protected _animationSet: AnimationSetBase;
         protected _activeNode: AnimationNodeBase;
         protected _activeState: IAnimationState;
         protected _activeAnimationName: string;
@@ -5184,14 +5166,13 @@ declare module feng3d {
         private _animationStates;
         /**
          * 是否更新位置
-         * @see me.feng3d.animators.base.states.IAnimationState#positionDelta
          */
         updatePosition: boolean;
         /**
          * 创建一个动画基类
          * @param animationSet
          */
-        constructor(animationSet: IAnimationSet);
+        constructor(animationSet: AnimationSetBase);
         /**
          * 初始化Context3d缓存
          */
@@ -5203,48 +5184,9 @@ declare module feng3d {
          */
         getAnimationState(node: AnimationNodeBase): AnimationStateBase;
         /**
-         * 根据名字获取动画状态
-         * @param name			动作名称
-         * @return				动画状态
-         */
-        getAnimationStateByName(name: string): AnimationStateBase;
-        /**
-         * 绝对时间（游戏时间）
-         * @see #time
-         * @see #playbackSpeed
-         */
-        readonly absoluteTime: number;
-        /**
-         * 动画设置
-         */
-        readonly animationSet: IAnimationSet;
-        /**
-         * 活动的动画状态
-         */
-        readonly activeState: IAnimationState;
-        /**
-         * 活动的动画节点
-         */
-        readonly activeAnimation: AnimationNodeBase;
-        /**
-         * 活动的动作名
-         */
-        readonly activeAnimationName: string;
-        /**
-         * 是否自动更新，当值为true时，动画将会随时间播放
-         * @see #time
-         * @see #update()
-         */
-        autoUpdate: boolean;
-        /**
          * 动画时间
          */
         time: number;
-        /**
-         * 设置当前活动状态的动画剪辑的播放进度(0,1)
-         * @param	播放进度。 0：动画起点，1：动画终点。
-         */
-        phase(value: number): void;
         /**
          * The amount by which passed time should be scaled. Used to slow down or speed up animations. Defaults to 1.
          */
@@ -5272,12 +5214,6 @@ declare module feng3d {
          * @see #autoUpdate
          */
         update(time: number): void;
-        /**
-         * 重置动画
-         * @param name			动画名称
-         * @param offset		动画时间偏移
-         */
-        reset(name: string, offset?: number): void;
         /**
          * 更新偏移时间
          * @private
@@ -5375,7 +5311,7 @@ declare module feng3d {
      * 骨骼动画集合
      * @author feng 2014-5-20
      */
-    class SkeletonAnimationSet extends AnimationSetBase implements IAnimationSet {
+    class SkeletonAnimationSet extends AnimationSetBase {
         /**
          * 创建一个骨骼动画集合
          * @param jointsPerVertex 每个顶点关联关节的数量
@@ -5393,7 +5329,7 @@ declare module feng3d {
          * 获取骨骼姿势
          * @param skeleton		骨骼
          */
-        getSkeletonPose(skeleton: Skeleton): SkeletonPose;
+        getSkeletonPose(): SkeletonPose;
     }
 }
 declare module feng3d {
@@ -5457,6 +5393,11 @@ declare module feng3d {
          * @param forceCPU 是否强行使用cpu
          */
         constructor(animationSet: SkeletonAnimationSet, skeleton: Skeleton, forceCPU?: boolean);
+        /**
+         * 添加动画
+         * @param node 动画节点
+         */
+        addAnimation(node: AnimationNodeBase): void;
         /**
          * 播放动画
          * @param name 动作名称
@@ -5617,7 +5558,7 @@ declare module feng3d {
         /**
          * @inheritDoc
          */
-        getSkeletonPose(skeleton: Skeleton): SkeletonPose;
+        getSkeletonPose(): SkeletonPose;
         /**
          * @inheritDoc
          */
@@ -5630,7 +5571,7 @@ declare module feng3d {
          * 更新骨骼姿势
          * @param skeleton 骨骼
          */
-        private updateSkeletonPose(skeleton);
+        private updateSkeletonPose();
         /**
          * @inheritDoc
          */

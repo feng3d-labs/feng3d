@@ -4,7 +4,7 @@ module feng3d {
 	 * 骨骼动画集合
 	 * @author feng 2014-5-20
 	 */
-    export class SkeletonAnimationSet extends AnimationSetBase implements IAnimationSet {
+    export class SkeletonAnimationSet extends AnimationSetBase {
 
 		/**
 		 * 创建一个骨骼动画集合

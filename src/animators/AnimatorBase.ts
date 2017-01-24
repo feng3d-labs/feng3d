@@ -13,7 +13,7 @@ module feng3d {
         /** 播放速度 */
         private _playbackSpeed: number = 1;
 
-        protected _animationSet: IAnimationSet;
+        protected _animationSet: AnimationSetBase;
         protected _activeNode: AnimationNodeBase;
         protected _activeState: IAnimationState;
         protected _activeAnimationName: string;
@@ -23,7 +23,6 @@ module feng3d {
 
 		/**
 		 * 是否更新位置
-		 * @see me.feng3d.animators.base.states.IAnimationState#positionDelta
 		 */
         public updatePosition: boolean = true;
 
@@ -31,7 +30,7 @@ module feng3d {
 		 * 创建一个动画基类
 		 * @param animationSet
 		 */
-        constructor(animationSet: IAnimationSet) {
+        constructor(animationSet: AnimationSetBase) {
             super();
             this._animationSet = animationSet;
             this.initBuffers();
@@ -59,73 +58,6 @@ module feng3d {
         }
 
 		/**
-		 * 根据名字获取动画状态
-		 * @param name			动作名称
-		 * @return				动画状态
-		 */
-        public getAnimationStateByName(name: string): AnimationStateBase {
-            return this.getAnimationState(this._animationSet.getAnimation(name));
-        }
-
-		/**
-		 * 绝对时间（游戏时间）
-		 * @see #time
-		 * @see #playbackSpeed
-		 */
-        public get absoluteTime(): number {
-            return this._absoluteTime;
-        }
-
-		/**
-		 * 动画设置
-		 */
-        public get animationSet(): IAnimationSet {
-            return this._animationSet;
-        }
-
-		/**
-		 * 活动的动画状态
-		 */
-        public get activeState(): IAnimationState {
-            return this._activeState;
-        }
-
-		/**
-		 * 活动的动画节点
-		 */
-        public get activeAnimation(): AnimationNodeBase {
-            return this._animationSet.getAnimation(this._activeAnimationName);
-        }
-
-		/**
-		 * 活动的动作名
-		 */
-        public get activeAnimationName(): string {
-            return this._activeAnimationName;
-        }
-
-		/**
-		 * 是否自动更新，当值为true时，动画将会随时间播放
-		 * @see #time
-		 * @see #update()
-		 */
-        public get autoUpdate(): boolean {
-            return this._autoUpdate;
-        }
-
-        public set autoUpdate(value: boolean) {
-            if (this._autoUpdate == value)
-                return;
-
-            this._autoUpdate = value;
-
-            if (this._autoUpdate)
-                this.start();
-            else
-                this.stop();
-        }
-
-		/**
 		 * 动画时间
 		 */
         public get time(): number {
@@ -137,14 +69,6 @@ module feng3d {
                 return;
 
             this.update(value);
-        }
-
-		/**
-		 * 设置当前活动状态的动画剪辑的播放进度(0,1)
-		 * @param	播放进度。 0：动画起点，1：动画终点。
-		 */
-        public phase(value: number) {
-            this._activeState.phase(value);
         }
 
 		/**
@@ -183,7 +107,6 @@ module feng3d {
             this.dispatchEvent(new AnimatorEvent(AnimatorEvent.START, this));
         }
 
-
 		/**
 		 * 暂停播放动画
 		 * @see #time
@@ -217,15 +140,6 @@ module feng3d {
             this.updateDeltaTime(dt);
 
             this._time = time;
-        }
-
-		/**
-		 * 重置动画
-		 * @param name			动画名称
-		 * @param offset		动画时间偏移
-		 */
-        public reset(name: string, offset: number = 0) {
-            this.getAnimationState(this._animationSet.getAnimation(name)).offset(offset + this._absoluteTime);
         }
 
 		/**

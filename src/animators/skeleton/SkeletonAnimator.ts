@@ -43,6 +43,14 @@ module feng3d {
         }
 
 		/**
+		 * 添加动画
+		 * @param node 动画节点
+		 */
+        public addAnimation(node: AnimationNodeBase) {
+            this._animationSet.addAnimation(node);
+        }
+
+		/**
 		 * 播放动画
 		 * @param name 动作名称
 		 * @param offset 偏移量
@@ -64,10 +72,6 @@ module feng3d {
             }
 
             this.start();
-
-            //使用时间偏移量处理特殊情况
-            if (!isNaN(offset))
-                this.reset(name, offset);
         }
 
         /**
@@ -97,7 +101,7 @@ module feng3d {
             this._globalPropertiesDirty = false;
 
             //获取全局骨骼姿势
-            var currentSkeletonPose = this._activeSkeletonState.getSkeletonPose(this._skeleton);
+            var currentSkeletonPose = this._activeSkeletonState.getSkeletonPose();
             var globalMatrix3Ds = currentSkeletonPose.globalMatrix3Ds;
 
             //姿势变换矩阵

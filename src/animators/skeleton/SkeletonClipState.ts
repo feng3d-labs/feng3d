@@ -47,9 +47,9 @@ module feng3d {
 		/**
 		 * @inheritDoc
 		 */
-        public getSkeletonPose(skeleton: Skeleton): SkeletonPose {
+        public getSkeletonPose(): SkeletonPose {
             if (this._skeletonPoseDirty)
-                this.updateSkeletonPose(skeleton);
+                this.updateSkeletonPose();
 
             return this._skeletonPose;
         }
@@ -68,7 +68,7 @@ module feng3d {
 		 */
         protected updateFrames() {
             super.updateFrames();
-            
+
             this._currentPose = this._frames[this._currentFrame];
 
             if (this._skeletonClipNode.looping && this._nextFrame >= this._skeletonClipNode.lastFrame) {
@@ -83,7 +83,7 @@ module feng3d {
 		 * 更新骨骼姿势
 		 * @param skeleton 骨骼
 		 */
-        private updateSkeletonPose(skeleton: Skeleton) {
+        private updateSkeletonPose() {
             this._skeletonPoseDirty = false;
 
             if (!this._skeletonClipNode.totalDuration)
@@ -94,26 +94,19 @@ module feng3d {
 
             var currentPose: JointPose[] = this._currentPose.jointPoses;
             var nextPose: JointPose[] = this._nextPose.jointPoses;
-            var numJoints: number = skeleton.numJoints;
+            var numJoints: number = this._currentPose.numJointPoses;
             var p1: Vector3D, p2: Vector3D;
             var pose1: JointPose, pose2: JointPose;
             var showPoses: JointPose[] = this._skeletonPose.jointPoses;
             var showPose: JointPose;
             var tr: Vector3D;
 
-            //调整当前显示关节姿势数量
-            if (showPoses.length != numJoints)
-                showPoses.length = numJoints;
-
-            if ((numJoints != currentPose.length) || (numJoints != nextPose.length))
-                throw new Error("joint counts don't match!");
-
             for (var i: number = 0; i < numJoints; ++i) {
                 pose1 = currentPose[i];
                 pose2 = nextPose[i];
                 //
                 showPose = showPoses[i];
-                if (showPose == null){
+                if (showPose == null) {
                     showPose = showPoses[i] = new JointPose();
                     showPose.name = pose1.name;
                     showPose.parentIndex = pose1.parentIndex;

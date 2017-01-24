@@ -8577,7 +8577,6 @@ var feng3d;
             this._animationStates = {};
             /**
              * 是否更新位置
-             * @see me.feng3d.animators.base.states.IAnimationState#positionDelta
              */
             this.updatePosition = true;
             this._animationSet = animationSet;
@@ -8601,63 +8600,6 @@ var feng3d;
             return this._animationStates[className];
         }
         /**
-         * 根据名字获取动画状态
-         * @param name			动作名称
-         * @return				动画状态
-         */
-        getAnimationStateByName(name) {
-            return this.getAnimationState(this._animationSet.getAnimation(name));
-        }
-        /**
-         * 绝对时间（游戏时间）
-         * @see #time
-         * @see #playbackSpeed
-         */
-        get absoluteTime() {
-            return this._absoluteTime;
-        }
-        /**
-         * 动画设置
-         */
-        get animationSet() {
-            return this._animationSet;
-        }
-        /**
-         * 活动的动画状态
-         */
-        get activeState() {
-            return this._activeState;
-        }
-        /**
-         * 活动的动画节点
-         */
-        get activeAnimation() {
-            return this._animationSet.getAnimation(this._activeAnimationName);
-        }
-        /**
-         * 活动的动作名
-         */
-        get activeAnimationName() {
-            return this._activeAnimationName;
-        }
-        /**
-         * 是否自动更新，当值为true时，动画将会随时间播放
-         * @see #time
-         * @see #update()
-         */
-        get autoUpdate() {
-            return this._autoUpdate;
-        }
-        set autoUpdate(value) {
-            if (this._autoUpdate == value)
-                return;
-            this._autoUpdate = value;
-            if (this._autoUpdate)
-                this.start();
-            else
-                this.stop();
-        }
-        /**
          * 动画时间
          */
         get time() {
@@ -8667,13 +8609,6 @@ var feng3d;
             if (this._time == value)
                 return;
             this.update(value);
-        }
-        /**
-         * 设置当前活动状态的动画剪辑的播放进度(0,1)
-         * @param	播放进度。 0：动画起点，1：动画终点。
-         */
-        phase(value) {
-            this._activeState.phase(value);
         }
         /**
          * The amount by which passed time should be scaled. Used to slow down or speed up animations. Defaults to 1.
@@ -8729,14 +8664,6 @@ var feng3d;
             var dt = (time - this._time) * this.playbackSpeed;
             this.updateDeltaTime(dt);
             this._time = time;
-        }
-        /**
-         * 重置动画
-         * @param name			动画名称
-         * @param offset		动画时间偏移
-         */
-        reset(name, offset = 0) {
-            this.getAnimationState(this._animationSet.getAnimation(name)).offset(offset + this._absoluteTime);
         }
         /**
          * 更新偏移时间
@@ -8955,6 +8882,13 @@ var feng3d;
             return this._skeleton;
         }
         /**
+         * 添加动画
+         * @param node 动画节点
+         */
+        addAnimation(node) {
+            this._animationSet.addAnimation(node);
+        }
+        /**
          * 播放动画
          * @param name 动作名称
          * @param offset 偏移量
@@ -8972,9 +8906,6 @@ var feng3d;
                 this._activeSkeletonState = this._activeState;
             }
             this.start();
-            //使用时间偏移量处理特殊情况
-            if (!isNaN(offset))
-                this.reset(name, offset);
         }
         /**
          * 更新渲染数据
@@ -8997,7 +8928,7 @@ var feng3d;
         updateGlobalProperties() {
             this._globalPropertiesDirty = false;
             //获取全局骨骼姿势
-            var currentSkeletonPose = this._activeSkeletonState.getSkeletonPose(this._skeleton);
+            var currentSkeletonPose = this._activeSkeletonState.getSkeletonPose();
             var globalMatrix3Ds = currentSkeletonPose.globalMatrix3Ds;
             //姿势变换矩阵
             var joints = this._skeleton.joints;
@@ -9272,9 +9203,9 @@ var feng3d;
         /**
          * @inheritDoc
          */
-        getSkeletonPose(skeleton) {
+        getSkeletonPose() {
             if (this._skeletonPoseDirty)
-                this.updateSkeletonPose(skeleton);
+                this.updateSkeletonPose();
             return this._skeletonPose;
         }
         /**
@@ -9301,7 +9232,7 @@ var feng3d;
          * 更新骨骼姿势
          * @param skeleton 骨骼
          */
-        updateSkeletonPose(skeleton) {
+        updateSkeletonPose() {
             this._skeletonPoseDirty = false;
             if (!this._skeletonClipNode.totalDuration)
                 return;
@@ -9309,17 +9240,12 @@ var feng3d;
                 this.updateFrames();
             var currentPose = this._currentPose.jointPoses;
             var nextPose = this._nextPose.jointPoses;
-            var numJoints = skeleton.numJoints;
+            var numJoints = this._currentPose.numJointPoses;
             var p1, p2;
             var pose1, pose2;
             var showPoses = this._skeletonPose.jointPoses;
             var showPose;
             var tr;
-            //调整当前显示关节姿势数量
-            if (showPoses.length != numJoints)
-                showPoses.length = numJoints;
-            if ((numJoints != currentPose.length) || (numJoints != nextPose.length))
-                throw new Error("joint counts don't match!");
             for (var i = 0; i < numJoints; ++i) {
                 pose1 = currentPose[i];
                 pose2 = nextPose[i];
