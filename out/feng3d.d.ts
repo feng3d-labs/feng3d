@@ -5539,9 +5539,8 @@ declare module feng3d {
         translation: Vector3D;
         private _matrix3D;
         private _invertMatrix3D;
-        readonly matrix3D: Matrix3D;
+        matrix3D: Matrix3D;
         readonly invertMatrix3D: Matrix3D;
-        readonly inverseBindPose: Float32Array;
         invalid(): void;
     }
 }

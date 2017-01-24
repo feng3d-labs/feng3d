@@ -17,6 +17,10 @@ module feng3d {
         private _matrix3D: Matrix3D;
         private _invertMatrix3D: Matrix3D;
 
+        public set matrix3D(value:Matrix3D){
+            this._matrix3D = value;
+        }
+
         public get matrix3D() {
 
             if (!this._matrix3D) {
@@ -33,10 +37,6 @@ module feng3d {
                 this._invertMatrix3D.invert();
             }
             return this._invertMatrix3D;
-        }
-
-        public get inverseBindPose() {
-            return this.invertMatrix3D.rawData;
         }
 
         public invalid() {

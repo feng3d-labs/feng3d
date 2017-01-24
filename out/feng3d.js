@@ -9077,13 +9077,6 @@ var feng3d;
             var joint;
             var parentPose;
             var pose;
-            var or;
-            var tr;
-            var gTra;
-            var gOri;
-            var x1, y1, z1, w1;
-            var x2, y2, z2, w2;
-            var x3, y3, z3;
             //初始化全局骨骼姿势长度
             if (globalPoses.length != len)
                 globalPoses.length = len;
@@ -9097,65 +9090,18 @@ var feng3d;
                 parentIndex = joint.parentIndex;
                 pose = jointPoses[i];
                 //
+                pose.invalid();
                 globalJointPose.invalid();
-                //世界方向偏移
-                gOri = globalJointPose.orientation;
-                //全局位置偏移
-                gTra = globalJointPose.translation;
                 //计算全局骨骼的 方向偏移与位置偏移
                 if (parentIndex < 0) {
-                    //处理跟骨骼(直接赋值)
-                    tr = pose.translation;
-                    or = pose.orientation;
-                    gOri.x = or.x;
-                    gOri.y = or.y;
-                    gOri.z = or.z;
-                    gOri.w = or.w;
-                    gTra.x = tr.x;
-                    gTra.y = tr.y;
-                    gTra.z = tr.z;
+                    globalJointPose.matrix3D = pose.matrix3D.clone();
                 }
                 else {
-                    //处理其他骨骼
                     //找到父骨骼全局姿势
                     parentPose = globalPoses[parentIndex];
-                    or = parentPose.orientation;
-                    tr = pose.translation;
-                    //提取父姿势的世界方向数据
-                    x2 = or.x;
-                    y2 = or.y;
-                    z2 = or.z;
-                    w2 = or.w;
-                    //提取当前姿势相对父姿势的位置数据
-                    x3 = tr.x;
-                    y3 = tr.y;
-                    z3 = tr.z;
-                    //计算当前姿势相对父姿势在全局中的位置偏移方向(有点没搞懂，我只能这么说如果一定要我来计算的话，我一定能做出来)
-                    w1 = -x2 * x3 - y2 * y3 - z2 * z3;
-                    x1 = w2 * x3 + y2 * z3 - z2 * y3;
-                    y1 = w2 * y3 - x2 * z3 + z2 * x3;
-                    z1 = w2 * z3 + x2 * y3 - y2 * x3;
-                    //计算当前骨骼全局姿势的位置数据（父姿势的世界坐标加上当前姿势相对父姿势转换为全局的坐标变化量）
-                    tr = parentPose.translation;
-                    gTra.x = -w1 * x2 + x1 * w2 - y1 * z2 + z1 * y2 + tr.x;
-                    gTra.y = -w1 * y2 + x1 * z2 + y1 * w2 - z1 * x2 + tr.y;
-                    gTra.z = -w1 * z2 - x1 * y2 + y1 * x2 + z1 * w2 + tr.z;
-                    //提取父姿势的世界方向数据
-                    x1 = or.x;
-                    y1 = or.y;
-                    z1 = or.z;
-                    w1 = or.w;
-                    //提取当前姿势相对父姿势的方向数据
-                    or = pose.orientation;
-                    x2 = or.x;
-                    y2 = or.y;
-                    z2 = or.z;
-                    w2 = or.w;
-                    //根据父姿势的世界方向数据与当前姿势的方向数据计算当前姿势的世界方向数据
-                    gOri.w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2;
-                    gOri.x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2;
-                    gOri.y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2;
-                    gOri.z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2;
+                    var globalMatrix3D = pose.matrix3D.clone();
+                    globalMatrix3D.append(parentPose.matrix3D);
+                    globalJointPose.matrix3D = globalMatrix3D;
                 }
             }
         }
@@ -9188,6 +9134,9 @@ var feng3d;
             /** 位移信息 */
             this.translation = new feng3d.Vector3D();
         }
+        set matrix3D(value) {
+            this._matrix3D = value;
+        }
         get matrix3D() {
             if (!this._matrix3D) {
                 this._matrix3D = this.orientation.toMatrix3D();
@@ -9201,9 +9150,6 @@ var feng3d;
                 this._invertMatrix3D.invert();
             }
             return this._invertMatrix3D;
-        }
-        get inverseBindPose() {
-            return this.invertMatrix3D.rawData;
         }
         invalid() {
             this._matrix3D = null;
