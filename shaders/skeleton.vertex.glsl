@@ -16,7 +16,7 @@ in vec4 a_jointweight1;
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 
-uniform vec4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT*3];
+uniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];
 
 out vec2 v_uv;
 
@@ -46,11 +46,14 @@ void main(void) {
     vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);
     for(int i = 0; i < 8; i++){
 
-        totalPosition.x += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3]) * jointweights[i];
-        totalPosition.y += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3 + 1]) * jointweights[i];
-        totalPosition.z += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3 + 2]) * jointweights[i];
+        totalPosition += u_skeletonGlobalMatriices[jointIndics[i]] * position * jointweights[i];
+
+        // totalPosition.x += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3]) * jointweights[i];
+        // totalPosition.y += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3 + 1]) * jointweights[i];
+        // totalPosition.z += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3 + 2]) * jointweights[i];
     }
     position = totalPosition;
+    position.w = 1.0;
 
     vec4 globalPosition = u_modelMatrix * position;
     gl_Position = u_viewProjection * globalPosition;

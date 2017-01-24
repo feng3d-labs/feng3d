@@ -2595,7 +2595,7 @@ declare module feng3d {
          * 常量数据（包含纹理）列表
          */
         uniforms: {
-            [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[];
+            [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[];
         };
         /**
          * 渲染参数

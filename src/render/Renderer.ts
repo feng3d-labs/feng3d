@@ -92,7 +92,7 @@ module feng3d {
     /**
      * 激活常量
      */
-    function activeUniforms(context3D: Context3D, shaderProgram: WebGLProgram, uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[]; }) {
+    function activeUniforms(context3D: Context3D, shaderProgram: WebGLProgram, uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[]; }) {
 
         var numUniforms = context3D.getProgramParameter(shaderProgram, context3D.ACTIVE_UNIFORMS);
         var i = 0;

@@ -29,7 +29,7 @@ module feng3d {
         /**
          * 常量数据（包含纹理）列表
          */
-        public uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[]; } = {};
+        public uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[] } = {};
 
         /**
          * 渲染参数

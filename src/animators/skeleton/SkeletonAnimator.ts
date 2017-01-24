@@ -142,8 +142,17 @@ module feng3d {
                 data[i * 3 + 1] = new Vector3D(vec[i * 12 + 4], vec[i * 12 + 5], vec[i * 12 + 6], vec[i * 12 + 7]);
                 data[i * 3 + 2] = new Vector3D(vec[i * 12 + 8], vec[i * 12 + 9], vec[i * 12 + 10], vec[i * 12 + 11]);
             }
+            var matrixData: Matrix3D[] = [];
+            for (var i = 0; i < this._numJoints; i++) {
+                matrixData[i] = new Matrix3D([
+                    vec[i * 12], vec[i * 12 + 4], vec[i * 12 + 8], 0,
+                    vec[i * 12 + 1], vec[i * 12 + 5], vec[i * 12 + 9], 0,
+                    vec[i * 12 + 2], vec[i * 12 + 6], vec[i * 12 + 10], 0,
+                    vec[i * 12 + 3], vec[i * 12 + 7], vec[i * 12 + 11], 1
+                ]);
+            }
 
-            this.renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = data;
+            this.renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = matrixData;
         }
 
 		/**
