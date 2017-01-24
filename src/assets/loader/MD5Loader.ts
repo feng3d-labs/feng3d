@@ -164,11 +164,15 @@ module feng3d {
             var vertices: number[] = [];
             vertices.length = len * 3;
             //关节索引数据
-            var jointIndices: number[] = [];
-            jointIndices.length = len * 4;
+            var jointIndices0: number[] = [];
+            jointIndices0.length = len * 4;
+            var jointIndices1: number[] = [];
+            jointIndices1.length = len * 4;
             //关节权重数据
-            var jointWeights: number[] = [];
-            jointWeights.length = len * 4;
+            var jointWeights0: number[] = [];
+            jointWeights0.length = len * 4;
+            var jointWeights1: number[] = [];
+            jointWeights1.length = len * 4;
 
             for (var i: number = 0; i < len; ++i) {
                 vertex = vertexData[i];
@@ -184,6 +188,8 @@ module feng3d {
                 var weightJoints = [];
                 var weightBiass = [];
                 for (var j = 0; j < 8; ++j) {
+                    weightJoints[j] = 0;
+                    weightBiass[j] = 0;
                     if (j < vertex.countWeight) {
                         weight = weights[vertex.startWeight + j];
                         if (weight.bias > 0) {
@@ -199,28 +205,26 @@ module feng3d {
                     }
                 }
 
-                for (j = 0; j < 4; j++) {
-
-                    jointIndices[i * 4 + j] = compressIndices(weightJoints[j * 2], weightJoints[j * 2 + 1]);
-                    jointWeights[i * 4 + j] = compressWeights(weightBiass[j * 2], weightBiass[j * 2 + 1]);
-                }
+                jointIndices0[i * 4] = weightJoints[0];
+                jointIndices0[i * 4 + 1] = weightJoints[1];
+                jointIndices0[i * 4 + 2] = weightJoints[2];
+                jointIndices0[i * 4 + 3] = weightJoints[3];
+                jointIndices1[i * 4] = weightJoints[4];
+                jointIndices1[i * 4 + 1] = weightJoints[5];
+                jointIndices1[i * 4 + 2] = weightJoints[6];
+                jointIndices1[i * 4 + 3] = weightJoints[7];
+                //
+                jointWeights0[i * 4] = weightBiass[0];
+                jointWeights0[i * 4 + 1] = weightBiass[1];
+                jointWeights0[i * 4 + 2] = weightBiass[2];
+                jointWeights0[i * 4 + 3] = weightBiass[3];
+                jointWeights1[i * 4] = weightBiass[4];
+                jointWeights1[i * 4 + 1] = weightBiass[5];
+                jointWeights1[i * 4 + 2] = weightBiass[6];
+                jointWeights1[i * 4 + 3] = weightBiass[7];
 
                 uvs[vertex.index * 2] = vertex.u;
                 uvs[vertex.index * 2 + 1] = vertex.v;
-            }
-
-            //底四位存第一个值，高4位存第二个值 （1234，5678）->(56781234)
-            assert(compressIndices(1234, 5678) == 56781234);
-            function compressIndices(index0: number, index1: number) {
-
-                return index0 + index1 * 10000;
-            }
-
-            //放大1000倍取整，底四位存第一个值，高4位存第二个值 (0.12341,0.567896)->05670123
-            assert(compressWeights(0.12341, 0.567896) == 5670123);
-            function compressWeights(weight0: number, weight1: number) {
-
-                return ~~(weight0 * 1000) + (~~(weight1 * 1000)) * 10000;
             }
 
             //更新索引数据
@@ -229,8 +233,10 @@ module feng3d {
             geometry.setVAData(GLAttribute.a_position, new Float32Array(vertices), 3);
             geometry.setVAData(GLAttribute.a_uv, new Float32Array(uvs), 2);
             //更新关节索引与权重索引
-            geometry.setVAData(GLAttribute.a_jointindex, new Float32Array(jointIndices), 4);
-            geometry.setVAData(GLAttribute.a_jointweight, new Float32Array(jointWeights), 4);
+            geometry.setVAData(GLAttribute.a_jointindex0, new Float32Array(jointIndices0), 4);
+            geometry.setVAData(GLAttribute.a_jointweight0, new Float32Array(jointWeights0), 4);
+            geometry.setVAData(GLAttribute.a_jointindex1, new Float32Array(jointIndices1), 4);
+            geometry.setVAData(GLAttribute.a_jointweight1, new Float32Array(jointWeights1), 4);
             return geometry;
         }
 

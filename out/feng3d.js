@@ -5219,11 +5219,19 @@ var feng3d;
     /**
      * 关节索引
      */
-    GLAttribute.a_jointindex = "a_jointindex";
+    GLAttribute.a_jointindex0 = "a_jointindex0";
     /**
      * 关节权重
      */
-    GLAttribute.a_jointweight = "a_jointweight";
+    GLAttribute.a_jointweight0 = "a_jointweight0";
+    /**
+     * 关节索引
+     */
+    GLAttribute.a_jointindex1 = "a_jointindex1";
+    /**
+     * 关节权重
+     */
+    GLAttribute.a_jointweight1 = "a_jointweight1";
     feng3d.GLAttribute = GLAttribute;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -10161,8 +10169,7 @@ var feng3d;
             feng3d.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
             this._skeleton = this.createSkeleton(md5MeshData.joints);
             var skeletonAnimator = new feng3d.SkeletonAnimator(new feng3d.SkeletonAnimationSet(), this._skeleton);
-            // for (var i = 0; i < md5MeshData.meshs.length; i++) {
-            for (var i = 0; i < 1; i++) {
+            for (var i = 0; i < md5MeshData.meshs.length; i++) {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
                 var skeletonObject3D = new feng3d.Object3D();
                 skeletonObject3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = geometry;
@@ -10255,11 +10262,15 @@ var feng3d;
             var vertices = [];
             vertices.length = len * 3;
             //关节索引数据
-            var jointIndices = [];
-            jointIndices.length = len * 4;
+            var jointIndices0 = [];
+            jointIndices0.length = len * 4;
+            var jointIndices1 = [];
+            jointIndices1.length = len * 4;
             //关节权重数据
-            var jointWeights = [];
-            jointWeights.length = len * 4;
+            var jointWeights0 = [];
+            jointWeights0.length = len * 4;
+            var jointWeights1 = [];
+            jointWeights1.length = len * 4;
             for (var i = 0; i < len; ++i) {
                 vertex = vertexData[i];
                 vertices[i * 3] = vertices[i * 3 + 1] = vertices[i * 3 + 2] = 0;
@@ -10273,6 +10284,8 @@ var feng3d;
                 var weightJoints = [];
                 var weightBiass = [];
                 for (var j = 0; j < 8; ++j) {
+                    weightJoints[j] = 0;
+                    weightBiass[j] = 0;
                     if (j < vertex.countWeight) {
                         weight = weights[vertex.startWeight + j];
                         if (weight.bias > 0) {
@@ -10286,22 +10299,25 @@ var feng3d;
                         }
                     }
                 }
-                for (j = 0; j < 4; j++) {
-                    jointIndices[i * 4 + j] = compressIndices(weightJoints[j * 2], weightJoints[j * 2 + 1]);
-                    jointWeights[i * 4 + j] = compressWeights(weightBiass[j * 2], weightBiass[j * 2 + 1]);
-                }
+                jointIndices0[i * 4] = weightJoints[0];
+                jointIndices0[i * 4 + 1] = weightJoints[1];
+                jointIndices0[i * 4 + 2] = weightJoints[2];
+                jointIndices0[i * 4 + 3] = weightJoints[3];
+                jointIndices1[i * 4] = weightJoints[4];
+                jointIndices1[i * 4 + 1] = weightJoints[5];
+                jointIndices1[i * 4 + 2] = weightJoints[6];
+                jointIndices1[i * 4 + 3] = weightJoints[7];
+                //
+                jointWeights0[i * 4] = weightBiass[0];
+                jointWeights0[i * 4 + 1] = weightBiass[1];
+                jointWeights0[i * 4 + 2] = weightBiass[2];
+                jointWeights0[i * 4 + 3] = weightBiass[3];
+                jointWeights1[i * 4] = weightBiass[4];
+                jointWeights1[i * 4 + 1] = weightBiass[5];
+                jointWeights1[i * 4 + 2] = weightBiass[6];
+                jointWeights1[i * 4 + 3] = weightBiass[7];
                 uvs[vertex.index * 2] = vertex.u;
                 uvs[vertex.index * 2 + 1] = vertex.v;
-            }
-            //底四位存第一个值，高4位存第二个值 （1234，5678）->(56781234)
-            feng3d.assert(compressIndices(1234, 5678) == 56781234);
-            function compressIndices(index0, index1) {
-                return index0 + index1 * 10000;
-            }
-            //放大1000倍取整，底四位存第一个值，高4位存第二个值 (0.12341,0.567896)->05670123
-            feng3d.assert(compressWeights(0.12341, 0.567896) == 5670123);
-            function compressWeights(weight0, weight1) {
-                return ~~(weight0 * 1000) + (~~(weight1 * 1000)) * 10000;
             }
             //更新索引数据
             geometry.setIndices(new Uint16Array(indices));
@@ -10309,8 +10325,10 @@ var feng3d;
             geometry.setVAData(feng3d.GLAttribute.a_position, new Float32Array(vertices), 3);
             geometry.setVAData(feng3d.GLAttribute.a_uv, new Float32Array(uvs), 2);
             //更新关节索引与权重索引
-            geometry.setVAData(feng3d.GLAttribute.a_jointindex, new Float32Array(jointIndices), 4);
-            geometry.setVAData(feng3d.GLAttribute.a_jointweight, new Float32Array(jointWeights), 4);
+            geometry.setVAData(feng3d.GLAttribute.a_jointindex0, new Float32Array(jointIndices0), 4);
+            geometry.setVAData(feng3d.GLAttribute.a_jointweight0, new Float32Array(jointWeights0), 4);
+            geometry.setVAData(feng3d.GLAttribute.a_jointindex1, new Float32Array(jointIndices1), 4);
+            geometry.setVAData(feng3d.GLAttribute.a_jointweight1, new Float32Array(jointWeights1), 4);
             return geometry;
         }
         createAnimator(md5AnimData) {

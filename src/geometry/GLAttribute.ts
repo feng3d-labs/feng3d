@@ -28,11 +28,21 @@ module feng3d {
         /**
          * 关节索引
          */
-        static a_jointindex = "a_jointindex";
+        static a_jointindex0 = "a_jointindex0";
 
         /**
          * 关节权重
          */
-        static a_jointweight = "a_jointweight";
+        static a_jointweight0 = "a_jointweight0";
+
+        /**
+         * 关节索引
+         */
+        static a_jointindex1 = "a_jointindex1";
+
+        /**
+         * 关节权重
+         */
+        static a_jointweight1 = "a_jointweight1";
     }
 }

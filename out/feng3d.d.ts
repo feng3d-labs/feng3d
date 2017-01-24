@@ -3550,11 +3550,19 @@ declare module feng3d {
         /**
          * 关节索引
          */
-        static a_jointindex: string;
+        static a_jointindex0: string;
         /**
          * 关节权重
          */
-        static a_jointweight: string;
+        static a_jointweight0: string;
+        /**
+         * 关节索引
+         */
+        static a_jointindex1: string;
+        /**
+         * 关节权重
+         */
+        static a_jointweight1: string;
     }
 }
 declare module feng3d {

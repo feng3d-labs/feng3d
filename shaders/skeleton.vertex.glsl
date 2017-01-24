@@ -7,8 +7,11 @@ precision mediump float;
 in vec3 a_position;
 in vec2 a_uv;
 
-in vec4 a_jointindex;
-in vec4 a_jointweight;
+in vec4 a_jointindex0;
+in vec4 a_jointweight0;
+
+in vec4 a_jointindex1;
+in vec4 a_jointweight1;
 
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
@@ -20,24 +23,24 @@ out vec2 v_uv;
 void main(void) {
 
     int jointIndics[8];
-    jointIndics[0] = int(a_jointindex.x) % 10000;
-    jointIndics[1] = int(a_jointindex.x) / 10000;
-    jointIndics[2] = int(a_jointindex.y) % 10000;
-    jointIndics[3] = int(a_jointindex.y) / 10000;
-    jointIndics[4] = int(a_jointindex.z) % 10000;
-    jointIndics[5] = int(a_jointindex.z) / 10000;
-    jointIndics[6] = int(a_jointindex.w) % 10000;
-    jointIndics[7] = int(a_jointindex.w) / 10000;
+    jointIndics[0] = int(a_jointindex0.x);
+    jointIndics[1] = int(a_jointindex0.y);
+    jointIndics[2] = int(a_jointindex0.z);
+    jointIndics[3] = int(a_jointindex0.w);
+    jointIndics[4] = int(a_jointindex1.x);
+    jointIndics[5] = int(a_jointindex1.y);
+    jointIndics[6] = int(a_jointindex1.z);
+    jointIndics[7] = int(a_jointindex1.w);
 
     float jointweights[8];
-    jointweights[0] = float(int(a_jointweight.x) % 10000) / 1000.0;
-    jointweights[1] = float(int(a_jointweight.x) / 10000) / 1000.0;
-    jointweights[2] = float(int(a_jointweight.y) % 10000) / 1000.0;
-    jointweights[3] = float(int(a_jointweight.y) / 10000) / 1000.0;
-    jointweights[4] = float(int(a_jointweight.z) % 10000) / 1000.0;
-    jointweights[5] = float(int(a_jointweight.z) / 10000) / 1000.0;
-    jointweights[6] = float(int(a_jointweight.w) % 10000) / 1000.0;
-    jointweights[7] = float(int(a_jointweight.w) / 10000) / 1000.0;
+    jointweights[0] = a_jointweight0.x;
+    jointweights[1] = a_jointweight0.y;
+    jointweights[2] = a_jointweight0.z;
+    jointweights[3] = a_jointweight0.w;
+    jointweights[4] = a_jointweight1.x;
+    jointweights[5] = a_jointweight1.y;
+    jointweights[6] = a_jointweight1.z;
+    jointweights[7] = a_jointweight1.w;
 
     vec4 position = vec4(a_position,1.0);
     vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);
