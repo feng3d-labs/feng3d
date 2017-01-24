@@ -8564,9 +8564,8 @@ var feng3d;
     class AnimatorBase extends feng3d.RenderDataHolder {
         /**
          * 创建一个动画基类
-         * @param animationSet
          */
-        constructor(animationSet) {
+        constructor() {
             super();
             this._autoUpdate = true;
             this._time = 0;
@@ -8579,7 +8578,6 @@ var feng3d;
              * 是否更新位置
              */
             this.updatePosition = true;
-            this._animationSet = animationSet;
             this.initBuffers();
         }
         /**
@@ -8705,99 +8703,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 动画集合基类
-     * @author feng 2014-5-20
-     */
-    class AnimationSetBase extends feng3d.Component {
-        /**
-         * 创建一个动画集合基类
-         */
-        constructor() {
-            super();
-            /** 动画节点列表 */
-            this._animations = [];
-            /** 动画名称列表 */
-            this._animationNames = [];
-            /** 动画字典 */
-            this._animationDictionary = {};
-            this.initBuffers();
-        }
-        /**
-         * 初始化Context3d缓存
-         */
-        initBuffers() {
-        }
-        /**
-         * 是否使用CPU
-         */
-        get usesCPU() {
-            return this._usesCPU;
-        }
-        /**
-         * Returns a vector of animation state objects that make up the contents of the animation data set.
-         */
-        get animations() {
-            return this._animations;
-        }
-        /**
-         * 添加动画
-         * @param node 动画节点
-         */
-        addAnimation(node) {
-            this._animationDictionary[node.name] = node;
-            this._animations.push(node);
-            this._animationNames.push(node.name);
-        }
-        /**
-         * 获取动画节点
-         * @param name 动画名称
-         * @return 动画节点
-         */
-        getAnimation(animationName) {
-            return this._animationDictionary[animationName];
-        }
-        /**
-         * 是否有某动画
-         * @param name 动画名称
-         */
-        hasAnimation(animationName) {
-            return this._animationDictionary[animationName] != null;
-        }
-        /**
-         * 重置使用GPU
-         */
-        resetGPUCompatibility() {
-            this._usesCPU = false;
-        }
-        /**
-         * 取消使用GPU
-         */
-        cancelGPUCompatibility() {
-            this._usesCPU = true;
-        }
-    }
-    feng3d.AnimationSetBase = AnimationSetBase;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 骨骼动画集合
-     * @author feng 2014-5-20
-     */
-    class SkeletonAnimationSet extends feng3d.AnimationSetBase {
-        /**
-         * 创建一个骨骼动画集合
-         * @param jointsPerVertex 每个顶点关联关节的数量
-         */
-        constructor() {
-            super();
-        }
-    }
-    feng3d.SkeletonAnimationSet = SkeletonAnimationSet;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 骨骼关节数据
      * @author feng 2014-5-20
      */
@@ -8856,15 +8761,13 @@ var feng3d;
     class SkeletonAnimator extends feng3d.AnimatorBase {
         /**
          * 创建一个骨骼动画类
-         * @param animationSet 动画集合
-         * @param skeleton 骨骼
-         * @param forceCPU 是否强行使用cpu
          */
-        constructor(animationSet, skeleton, forceCPU = false) {
-            super(animationSet);
+        constructor(skeleton) {
+            super();
+            /** 动画节点列表 */
+            this.animations = [];
             this._globalMatrices = [];
-            this._skeleton = skeleton;
-            this._numJoints = this._skeleton.numJoints;
+            this.skeleton = skeleton;
         }
         /**
          * 当前骨骼姿势的全局矩阵
@@ -8876,35 +8779,19 @@ var feng3d;
             return this._globalMatrices;
         }
         /**
-         * 骨骼
-         */
-        get skeleton() {
-            return this._skeleton;
-        }
-        /**
-         * 添加动画
-         * @param node 动画节点
-         */
-        addAnimation(node) {
-            this._animationSet.addAnimation(node);
-        }
-        /**
          * 播放动画
          * @param name 动作名称
-         * @param offset 偏移量
          */
-        play(name, transition = null, offset = NaN) {
-            if (this._activeAnimationName != name) {
-                this._activeAnimationName = name;
-                this._activeNode = this._animationSet.getAnimation(name);
-                this._activeState = this.getAnimationState(this._activeNode);
-                if (this.updatePosition) {
-                    //this.update straight away to this.reset position deltas
-                    this._activeState.update(this._absoluteTime);
-                    this._activeState.positionDelta;
-                }
-                this._activeSkeletonState = this._activeState;
+        play() {
+            if (!this._activeNode)
+                this._activeNode = this.animations[0];
+            this._activeState = this.getAnimationState(this._activeNode);
+            if (this.updatePosition) {
+                //this.update straight away to this.reset position deltas
+                this._activeState.update(this._absoluteTime);
+                this._activeState.positionDelta;
             }
+            this._activeSkeletonState = this._activeState;
             this.start();
         }
         /**
@@ -8912,7 +8799,7 @@ var feng3d;
          */
         updateRenderData(renderContext) {
             super.updateRenderData(renderContext);
-            this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this._numJoints;
+            this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this.skeleton.numJoints;
             this.renderData.uniforms[feng3d.RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
         }
         /**
@@ -8931,9 +8818,9 @@ var feng3d;
             var currentSkeletonPose = this._activeSkeletonState.getSkeletonPose();
             var globalMatrix3Ds = currentSkeletonPose.globalMatrix3Ds;
             //姿势变换矩阵
-            var joints = this._skeleton.joints;
+            var joints = this.skeleton.joints;
             //遍历每个关节
-            for (var i = 0; i < this._numJoints; ++i) {
+            for (var i = 0; i < this.skeleton.numJoints; ++i) {
                 var inverseMatrix3D = joints[i].invertMatrix3D;
                 var matrix3D = globalMatrix3Ds[i].clone();
                 matrix3D.prepend(inverseMatrix3D);
@@ -9868,7 +9755,7 @@ var feng3d;
             var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
             feng3d.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
             this._skeleton = this.createSkeleton(md5MeshData.joints);
-            var skeletonAnimator = new feng3d.SkeletonAnimator(new feng3d.SkeletonAnimationSet(), this._skeleton);
+            var skeletonAnimator = new feng3d.SkeletonAnimator(this._skeleton);
             for (var i = 0; i < md5MeshData.meshs.length; i++) {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
                 var skeletonObject3D = new feng3d.Object3D();

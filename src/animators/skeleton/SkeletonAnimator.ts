@@ -4,11 +4,16 @@ module feng3d {
 	 * @author feng 2014-5-27
 	 */
     export class SkeletonAnimator extends AnimatorBase {
+        /** 动画节点列表 */
+        public animations: AnimationNodeBase[] = [];
+
         private _globalMatrices: Matrix3D[] = [];
         private _globalPropertiesDirty: boolean;
-        private _numJoints: number;
 
-        private _skeleton: Skeleton;
+		/**
+		 * 骨骼
+		 */
+        public skeleton: Skeleton;
         private _activeSkeletonState: ISkeletonAnimationState;
 
 		/**
@@ -23,53 +28,31 @@ module feng3d {
         }
 
 		/**
-		 * 骨骼
-		 */
-        public get skeleton(): Skeleton {
-            return this._skeleton;
-        }
-
-		/**
 		 * 创建一个骨骼动画类
-		 * @param animationSet 动画集合
-		 * @param skeleton 骨骼
-		 * @param forceCPU 是否强行使用cpu
 		 */
-        constructor(animationSet: SkeletonAnimationSet, skeleton: Skeleton, forceCPU: boolean = false) {
-            super(animationSet);
+        constructor(skeleton: Skeleton) {
+            super();
 
-            this._skeleton = skeleton;
-            this._numJoints = this._skeleton.numJoints;
-        }
-
-		/**
-		 * 添加动画
-		 * @param node 动画节点
-		 */
-        public addAnimation(node: AnimationNodeBase) {
-            this._animationSet.addAnimation(node);
+            this.skeleton = skeleton;
         }
 
 		/**
 		 * 播放动画
 		 * @param name 动作名称
-		 * @param offset 偏移量
 		 */
-        public play(name: string, transition: IAnimationTransition = null, offset: number = NaN) {
-            if (this._activeAnimationName != name) {
-                this._activeAnimationName = name;
+        public play() {
 
-                this._activeNode = this._animationSet.getAnimation(name);
-                this._activeState = this.getAnimationState(this._activeNode);
+            if (!this._activeNode)
+                this._activeNode = this.animations[0];
+            this._activeState = this.getAnimationState(this._activeNode);
 
-                if (this.updatePosition) {
-                    //this.update straight away to this.reset position deltas
-                    this._activeState.update(this._absoluteTime);
-                    this._activeState.positionDelta;
-                }
-
-                this._activeSkeletonState = this._activeState as ISkeletonAnimationState;
+            if (this.updatePosition) {
+                //this.update straight away to this.reset position deltas
+                this._activeState.update(this._absoluteTime);
+                this._activeState.positionDelta;
             }
+
+            this._activeSkeletonState = this._activeState as ISkeletonAnimationState;
 
             this.start();
         }
@@ -81,7 +64,7 @@ module feng3d {
 
             super.updateRenderData(renderContext);
 
-            this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this._numJoints;
+            this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this.skeleton.numJoints;
             this.renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
         }
 
@@ -105,10 +88,10 @@ module feng3d {
             var globalMatrix3Ds = currentSkeletonPose.globalMatrix3Ds;
 
             //姿势变换矩阵
-            var joints: SkeletonJoint[] = this._skeleton.joints;
+            var joints: SkeletonJoint[] = this.skeleton.joints;
 
             //遍历每个关节
-            for (var i: number = 0; i < this._numJoints; ++i) {
+            for (var i: number = 0; i < this.skeleton.numJoints; ++i) {
 
                 var inverseMatrix3D: Matrix3D = joints[i].invertMatrix3D;
                 var matrix3D: Matrix3D = globalMatrix3Ds[i].clone();

@@ -13,10 +13,8 @@ module feng3d {
         /** 播放速度 */
         private _playbackSpeed: number = 1;
 
-        protected _animationSet: AnimationSetBase;
         protected _activeNode: AnimationNodeBase;
         protected _activeState: IAnimationState;
-        protected _activeAnimationName: string;
         /** 当前动画时间 */
         protected _absoluteTime: number = 0;
         private _animationStates = {};
@@ -28,11 +26,9 @@ module feng3d {
 
 		/**
 		 * 创建一个动画基类
-		 * @param animationSet
 		 */
-        constructor(animationSet: AnimationSetBase) {
+        constructor() {
             super();
-            this._animationSet = animationSet;
             this.initBuffers();
         }
 

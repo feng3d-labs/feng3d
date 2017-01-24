@@ -5157,10 +5157,8 @@ declare module feng3d {
         private _time;
         /** 播放速度 */
         private _playbackSpeed;
-        protected _animationSet: AnimationSetBase;
         protected _activeNode: AnimationNodeBase;
         protected _activeState: IAnimationState;
-        protected _activeAnimationName: string;
         /** 当前动画时间 */
         protected _absoluteTime: number;
         private _animationStates;
@@ -5170,9 +5168,8 @@ declare module feng3d {
         updatePosition: boolean;
         /**
          * 创建一个动画基类
-         * @param animationSet
          */
-        constructor(animationSet: AnimationSetBase);
+        constructor();
         /**
          * 初始化Context3d缓存
          */
@@ -5236,91 +5233,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 动画集合基类
-     * @author feng 2014-5-20
-     */
-    abstract class AnimationSetBase extends Component {
-        private _usesCPU;
-        /** 动画节点列表 */
-        private _animations;
-        /** 动画名称列表 */
-        private _animationNames;
-        /** 动画字典 */
-        private _animationDictionary;
-        /**
-         * 创建一个动画集合基类
-         */
-        constructor();
-        /**
-         * 初始化Context3d缓存
-         */
-        protected initBuffers(): void;
-        /**
-         * 是否使用CPU
-         */
-        readonly usesCPU: boolean;
-        /**
-         * Returns a vector of animation state objects that make up the contents of the animation data set.
-         */
-        readonly animations: AnimationNodeBase[];
-        /**
-         * 添加动画
-         * @param node 动画节点
-         */
-        addAnimation(node: AnimationNodeBase): void;
-        /**
-         * 获取动画节点
-         * @param name 动画名称
-         * @return 动画节点
-         */
-        getAnimation(animationName: string): AnimationNodeBase;
-        /**
-         * 是否有某动画
-         * @param name 动画名称
-         */
-        hasAnimation(animationName: string): boolean;
-        /**
-         * 重置使用GPU
-         */
-        resetGPUCompatibility(): void;
-        /**
-         * 取消使用GPU
-         */
-        cancelGPUCompatibility(): void;
-    }
-}
-declare module feng3d {
-    /**
-     * 淡入淡出变换接口
-     * @author feng 2015-9-18
-     */
-    interface IAnimationTransition {
-        /**
-         * 获取动画变换节点
-         * @param animator				动画
-         * @param startNode				开始节点
-         * @param endNode				结束节点
-         * @param startTime				开始时间
-         * @return						动画变换节点
-         */
-        getAnimationNode(animator: AnimatorBase, startNode: AnimationNodeBase, endNode: AnimationNodeBase, startTime: number): AnimationNodeBase;
-    }
-}
-declare module feng3d {
-    /**
-     * 骨骼动画集合
-     * @author feng 2014-5-20
-     */
-    class SkeletonAnimationSet extends AnimationSetBase {
-        /**
-         * 创建一个骨骼动画集合
-         * @param jointsPerVertex 每个顶点关联关节的数量
-         */
-        constructor();
-    }
-}
-declare module feng3d {
-    /**
      * 骨骼动画状态接口
      * @author feng 2015-9-18
      */
@@ -5372,10 +5284,14 @@ declare module feng3d {
      * @author feng 2014-5-27
      */
     class SkeletonAnimator extends AnimatorBase {
+        /** 动画节点列表 */
+        animations: AnimationNodeBase[];
         private _globalMatrices;
         private _globalPropertiesDirty;
-        private _numJoints;
-        private _skeleton;
+        /**
+         * 骨骼
+         */
+        skeleton: Skeleton;
         private _activeSkeletonState;
         /**
          * 当前骨骼姿势的全局矩阵
@@ -5383,27 +5299,14 @@ declare module feng3d {
          */
         readonly globalMatrices: Matrix3D[];
         /**
-         * 骨骼
-         */
-        readonly skeleton: Skeleton;
-        /**
          * 创建一个骨骼动画类
-         * @param animationSet 动画集合
-         * @param skeleton 骨骼
-         * @param forceCPU 是否强行使用cpu
          */
-        constructor(animationSet: SkeletonAnimationSet, skeleton: Skeleton, forceCPU?: boolean);
-        /**
-         * 添加动画
-         * @param node 动画节点
-         */
-        addAnimation(node: AnimationNodeBase): void;
+        constructor(skeleton: Skeleton);
         /**
          * 播放动画
          * @param name 动作名称
-         * @param offset 偏移量
          */
-        play(name: string, transition?: IAnimationTransition, offset?: number): void;
+        play(): void;
         /**
          * 更新渲染数据
          */

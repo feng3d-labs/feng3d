@@ -147,10 +147,7 @@
         "src/animators/events/AnimatorEvent.ts",
         "src/animators/AnimationNodeBase.ts",
         "src/animators/AnimatorBase.ts",
-        "src/animators/AnimationSetBase.ts",
-        "src/animators/transitions/IAnimationTransition.ts",
         //骨骼动画
-        "src/animators/skeleton/SkeletonAnimationSet.ts",
         "src/animators/skeleton/ISkeletonAnimationState.ts",
         "src/animators/skeleton/SkeletonJoint.ts",
         "src/animators/skeleton/Skeleton.ts",

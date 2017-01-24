@@ -53,7 +53,7 @@ module feng3d {
             assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
 
             this._skeleton = this.createSkeleton(md5MeshData.joints);
-            var skeletonAnimator = new SkeletonAnimator(new SkeletonAnimationSet(), this._skeleton);
+            var skeletonAnimator = new SkeletonAnimator(this._skeleton);
 
             for (var i = 0; i < md5MeshData.meshs.length; i++) {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
