@@ -5435,6 +5435,7 @@ declare module feng3d {
         readonly matrix3D: Matrix3D;
         readonly invertMatrix3D: Matrix3D;
         readonly inverseBindPose: Float32Array;
+        invalid(): void;
     }
 }
 declare module feng3d {
@@ -5456,7 +5457,6 @@ declare module feng3d {
      */
     class SkeletonAnimator extends AnimatorBase {
         private _globalMatrices;
-        private matrix3Ds;
         private _globalPose;
         private _globalPropertiesDirty;
         private _numJoints;
@@ -5468,7 +5468,7 @@ declare module feng3d {
          * 当前骨骼姿势的全局矩阵
          * @see #globalPose
          */
-        readonly globalMatrices: number[];
+        readonly globalMatrices: Matrix3D[];
         /**
          * 当前全局骨骼姿势
          */
@@ -5542,6 +5542,7 @@ declare module feng3d {
         readonly matrix3D: Matrix3D;
         readonly invertMatrix3D: Matrix3D;
         readonly inverseBindPose: Float32Array;
+        invalid(): void;
     }
 }
 declare module feng3d {

@@ -8909,6 +8909,10 @@ var feng3d;
         get inverseBindPose() {
             return this.invertMatrix3D.rawData;
         }
+        invalid() {
+            this._matrix3D = null;
+            this._invertMatrix3D = null;
+        }
     }
     feng3d.SkeletonJoint = SkeletonJoint;
 })(feng3d || (feng3d = {}));
@@ -8945,7 +8949,6 @@ var feng3d;
         constructor(animationSet, skeleton, forceCPU = false) {
             super(animationSet);
             this._globalMatrices = [];
-            this.matrix3Ds = [];
             this._globalPose = new feng3d.SkeletonPose();
             this._skeleton = skeleton;
             this._forceCPU = forceCPU;
@@ -8954,23 +8957,6 @@ var feng3d;
                 this._animationSet.cancelGPUCompatibility();
             animationSet.numJoints = this._skeleton.numJoints;
             this._numJoints = this._skeleton.numJoints;
-            this._globalMatrices.length = this._numJoints * 12;
-            //初始化骨骼变换矩阵
-            var j = 0;
-            for (var i = 0; i < this._numJoints; ++i) {
-                this._globalMatrices[j++] = 1;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 1;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 1;
-                this._globalMatrices[j++] = 0;
-            }
         }
         /**
          * 当前骨骼姿势的全局矩阵
@@ -9037,8 +9023,7 @@ var feng3d;
         updateRenderData(renderContext) {
             super.updateRenderData(renderContext);
             this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this._numJoints;
-            var vec = this.globalMatrices;
-            this.renderData.uniforms[feng3d.RenderDataID.u_skeletonGlobalMatriices] = this.matrix3Ds;
+            this.renderData.uniforms[feng3d.RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
         }
         /**
          * @inheritDoc
@@ -9073,7 +9058,7 @@ var feng3d;
                 var inverseMatrix3D = joints[i].invertMatrix3D;
                 var matrix3D = pose.matrix3D.clone();
                 matrix3D.prepend(inverseMatrix3D);
-                this.matrix3Ds[i] = matrix3D;
+                this._globalMatrices[i] = matrix3D;
             }
         }
         /**
@@ -9111,6 +9096,8 @@ var feng3d;
                 joint = joints[i];
                 parentIndex = joint.parentIndex;
                 pose = jointPoses[i];
+                //
+                globalJointPose.invalid();
                 //世界方向偏移
                 gOri = globalJointPose.orientation;
                 //全局位置偏移
@@ -9217,6 +9204,10 @@ var feng3d;
         }
         get inverseBindPose() {
             return this.invertMatrix3D.rawData;
+        }
+        invalid() {
+            this._matrix3D = null;
+            this._invertMatrix3D = null;
         }
     }
     feng3d.JointPose = JointPose;

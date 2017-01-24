@@ -38,5 +38,11 @@ module feng3d {
         public get inverseBindPose() {
             return this.invertMatrix3D.rawData;
         }
+
+        public invalid() {
+
+            this._matrix3D = null;
+            this._invertMatrix3D = null;
+        }
     }
 }

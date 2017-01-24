@@ -4,8 +4,7 @@ module feng3d {
 	 * @author feng 2014-5-27
 	 */
     export class SkeletonAnimator extends AnimatorBase {
-        private _globalMatrices: number[] = [];
-        private matrix3Ds:Matrix3D[] = [];
+        private _globalMatrices: Matrix3D[] = [];
         private _globalPose: SkeletonPose = new SkeletonPose();
         private _globalPropertiesDirty: boolean;
         private _numJoints: number;
@@ -19,7 +18,7 @@ module feng3d {
 		 * 当前骨骼姿势的全局矩阵
 		 * @see #globalPose
 		 */
-        public get globalMatrices(): number[] {
+        public get globalMatrices(): Matrix3D[] {
             if (this._globalPropertiesDirty)
                 this.updateGlobalProperties();
 
@@ -68,25 +67,6 @@ module feng3d {
 
             animationSet.numJoints = this._skeleton.numJoints;
             this._numJoints = this._skeleton.numJoints;
-
-            this._globalMatrices.length = this._numJoints * 12;
-
-            //初始化骨骼变换矩阵
-            var j: number = 0;
-            for (var i: number = 0; i < this._numJoints; ++i) {
-                this._globalMatrices[j++] = 1;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 1;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 0;
-                this._globalMatrices[j++] = 1;
-                this._globalMatrices[j++] = 0;
-            }
         }
 
 		/**
@@ -135,9 +115,7 @@ module feng3d {
             super.updateRenderData(renderContext);
 
             this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this._numJoints;
-
-            var vec: number[] = this.globalMatrices;
-            this.renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.matrix3Ds;
+            this.renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
         }
 
 		/**
@@ -180,7 +158,7 @@ module feng3d {
                 var inverseMatrix3D: Matrix3D = joints[i].invertMatrix3D;
                 var matrix3D: Matrix3D = pose.matrix3D.clone();
                 matrix3D.prepend(inverseMatrix3D);
-                this.matrix3Ds[i] = matrix3D;
+                this._globalMatrices[i] = matrix3D;
             }
         }
 
@@ -223,6 +201,8 @@ module feng3d {
                 parentIndex = joint.parentIndex;
                 pose = jointPoses[i];
 
+                //
+                globalJointPose.invalid();
                 //世界方向偏移
                 gOri = globalJointPose.orientation;
                 //全局位置偏移
