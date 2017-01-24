@@ -15,9 +15,6 @@ module feng3d {
         /** 停止播放动画 */
         public static STOP: string = "stop";
 
-        /** 周期完成 */
-        public static CYCLE_COMPLETE: string = "cycle_complete";
-
 		/**
 		 * 创建一个动画时间
 		 * @param type			事件类型

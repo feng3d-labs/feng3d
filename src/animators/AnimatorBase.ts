@@ -14,7 +14,7 @@ module feng3d {
         private _playbackSpeed: number = 1;
 
         protected _activeNode: AnimationNodeBase;
-        protected _activeState: IAnimationState;
+        protected _activeState: AnimationStateBase;
         /** 当前动画时间 */
         protected _absoluteTime: number = 0;
         private _animationStates = {};
@@ -29,14 +29,6 @@ module feng3d {
 		 */
         constructor() {
             super();
-            this.initBuffers();
-        }
-
-		/**
-		 * 初始化Context3d缓存
-		 */
-        protected initBuffers() {
-
         }
 
 		/**
@@ -167,15 +159,6 @@ module feng3d {
             var len: number;
             if (dist > 0) {
             }
-        }
-
-		/**
-		 * 派发动画播放完成一周期事件
-		 * @private
-		 */
-        public dispatchCycleEvent() {
-            if (this.hasEventListener(AnimatorEvent.CYCLE_COMPLETE))
-                this.dispatchEvent(new AnimatorEvent(AnimatorEvent.CYCLE_COMPLETE, this));
         }
     }
 }

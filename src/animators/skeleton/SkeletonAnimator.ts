@@ -14,7 +14,7 @@ module feng3d {
 		 * 骨骼
 		 */
         public skeleton: Skeleton;
-        private _activeSkeletonState: ISkeletonAnimationState;
+        private _activeSkeletonState: SkeletonClipState;
 
 		/**
 		 * 当前骨骼姿势的全局矩阵
@@ -52,7 +52,7 @@ module feng3d {
                 this._activeState.positionDelta;
             }
 
-            this._activeSkeletonState = this._activeState as ISkeletonAnimationState;
+            this._activeSkeletonState = <SkeletonClipState>this._activeState;
 
             this.start();
         }

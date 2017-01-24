@@ -4,7 +4,7 @@ module feng3d {
 	 * 动画状态基类
 	 * @author feng 2015-9-18
 	 */
-    export class AnimationStateBase implements IAnimationState {
+    export class AnimationStateBase {
         protected _animationNode: AnimationNodeBase;
         protected _rootDelta: Vector3D = new Vector3D();
         protected _positionDeltaDirty: boolean = true;

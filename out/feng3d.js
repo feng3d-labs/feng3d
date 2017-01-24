@@ -8529,8 +8529,6 @@ var feng3d;
     AnimatorEvent.PLAY = "play";
     /** 停止播放动画 */
     AnimatorEvent.STOP = "stop";
-    /** 周期完成 */
-    AnimatorEvent.CYCLE_COMPLETE = "cycle_complete";
     feng3d.AnimatorEvent = AnimatorEvent;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -8578,12 +8576,6 @@ var feng3d;
              * 是否更新位置
              */
             this.updatePosition = true;
-            this.initBuffers();
-        }
-        /**
-         * 初始化Context3d缓存
-         */
-        initBuffers() {
         }
         /**
          * 获取动画状态
@@ -8688,14 +8680,6 @@ var feng3d;
             var len;
             if (dist > 0) {
             }
-        }
-        /**
-         * 派发动画播放完成一周期事件
-         * @private
-         */
-        dispatchCycleEvent() {
-            if (this.hasEventListener(feng3d.AnimatorEvent.CYCLE_COMPLETE))
-                this.dispatchEvent(new feng3d.AnimatorEvent(feng3d.AnimatorEvent.CYCLE_COMPLETE, this));
         }
     }
     feng3d.AnimatorBase = AnimatorBase;
@@ -9110,7 +9094,6 @@ var feng3d;
             this._currentPose = this._frames[this._currentFrame];
             if (this._skeletonClipNode.looping && this._nextFrame >= this._skeletonClipNode.lastFrame) {
                 this._nextPose = this._frames[0];
-                this._animator.dispatchCycleEvent();
             }
             else
                 this._nextPose = this._frames[this._nextFrame];

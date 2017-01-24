@@ -3,7 +3,7 @@ module feng3d {
 	 * 骨骼剪辑状态
 	 * @author feng 2015-9-18
 	 */
-    export class SkeletonClipState extends AnimationClipState implements ISkeletonAnimationState {
+    export class SkeletonClipState extends AnimationClipState {
         private _rootPos: Vector3D = new Vector3D();
         private _frames: SkeletonPose[];
         private _skeletonClipNode: SkeletonClipNode;
@@ -73,7 +73,6 @@ module feng3d {
 
             if (this._skeletonClipNode.looping && this._nextFrame >= this._skeletonClipNode.lastFrame) {
                 this._nextPose = this._frames[0];
-                <SkeletonAnimator><any>this._animator.dispatchCycleEvent();
             }
             else
                 this._nextPose = this._frames[this._nextFrame];

@@ -4742,37 +4742,10 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 动画状态接口
-     * @author feng 2015-9-18
-     */
-    interface IAnimationState {
-        /**
-         * 位置偏移
-         */
-        positionDelta: Vector3D;
-        /**
-         * 设置一个新的开始时间
-         * @param startTime		开始时间
-         */
-        offset(startTime: number): any;
-        /**
-         * 更新
-         * @param time		当前时间
-         */
-        update(time: number): any;
-        /**
-         * 设置动画的播放进度(0,1)
-         * @param	播放进度。 0：动画起点，1：动画终点。
-         */
-        phase(value: number): any;
-    }
-}
-declare module feng3d {
-    /**
      * 动画状态基类
      * @author feng 2015-9-18
      */
-    class AnimationStateBase implements IAnimationState {
+    class AnimationStateBase {
         protected _animationNode: AnimationNodeBase;
         protected _rootDelta: Vector3D;
         protected _positionDeltaDirty: boolean;
@@ -5084,7 +5057,7 @@ declare module feng3d {
          * @param animator The animation state object that is the subject of this event.
          * @param animationNode The animation node inside the animation state from which the event originated.
          */
-        constructor(type: string, animator: AnimatorBase, animationState: IAnimationState, animationNode: AnimationNodeBase);
+        constructor(type: string, animator: AnimatorBase, animationState: AnimationStateBase, animationNode: AnimationNodeBase);
         /**
          * The animator object that is the subject of this event.
          */
@@ -5092,7 +5065,7 @@ declare module feng3d {
         /**
          * The animation state object that is the subject of this event.
          */
-        readonly animationState: IAnimationState;
+        readonly animationState: AnimationStateBase;
         /**
          * The animation node inside the animation state from which the event originated.
          */
@@ -5117,8 +5090,6 @@ declare module feng3d {
         static PLAY: string;
         /** 停止播放动画 */
         static STOP: string;
-        /** 周期完成 */
-        static CYCLE_COMPLETE: string;
         /**
          * 创建一个动画时间
          * @param type			事件类型
@@ -5158,7 +5129,7 @@ declare module feng3d {
         /** 播放速度 */
         private _playbackSpeed;
         protected _activeNode: AnimationNodeBase;
-        protected _activeState: IAnimationState;
+        protected _activeState: AnimationStateBase;
         /** 当前动画时间 */
         protected _absoluteTime: number;
         private _animationStates;
@@ -5170,10 +5141,6 @@ declare module feng3d {
          * 创建一个动画基类
          */
         constructor();
-        /**
-         * 初始化Context3d缓存
-         */
-        protected initBuffers(): void;
         /**
          * 获取动画状态
          * @param node		动画节点
@@ -5224,24 +5191,6 @@ declare module feng3d {
          * 应用位置偏移量
          */
         private applyPositionDelta();
-        /**
-         * 派发动画播放完成一周期事件
-         * @private
-         */
-        dispatchCycleEvent(): void;
-    }
-}
-declare module feng3d {
-    /**
-     * 骨骼动画状态接口
-     * @author feng 2015-9-18
-     */
-    interface ISkeletonAnimationState extends IAnimationState {
-        /**
-         * 获取骨骼姿势
-         * @param skeleton		骨骼
-         */
-        getSkeletonPose(): SkeletonPose;
     }
 }
 declare module feng3d {
@@ -5436,7 +5385,7 @@ declare module feng3d {
      * 骨骼剪辑状态
      * @author feng 2015-9-18
      */
-    class SkeletonClipState extends AnimationClipState implements ISkeletonAnimationState {
+    class SkeletonClipState extends AnimationClipState {
         private _rootPos;
         private _frames;
         private _skeletonClipNode;

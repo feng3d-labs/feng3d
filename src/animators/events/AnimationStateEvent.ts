@@ -12,7 +12,7 @@ module feng3d {
         public static TRANSITION_COMPLETE: string = "transitionComplete";
 
         private _animator: AnimatorBase;
-        private _animationState: IAnimationState;
+        private _animationState: AnimationStateBase;
         private _animationNode: AnimationNodeBase;
 
 		/**
@@ -22,7 +22,7 @@ module feng3d {
 		 * @param animator The animation state object that is the subject of this event.
 		 * @param animationNode The animation node inside the animation state from which the event originated.
 		 */
-        constructor(type: string, animator: AnimatorBase, animationState: IAnimationState, animationNode: AnimationNodeBase) {
+        constructor(type: string, animator: AnimatorBase, animationState: AnimationStateBase, animationNode: AnimationNodeBase) {
             super(type, false, false);
 
             this._animator = animator;
@@ -40,7 +40,7 @@ module feng3d {
 		/**
 		 * The animation state object that is the subject of this event.
 		 */
-        public get animationState(): IAnimationState {
+        public get animationState(): AnimationStateBase {
             return this._animationState;
         }
 

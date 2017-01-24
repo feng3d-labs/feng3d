@@ -131,7 +131,6 @@
         "src/terrain/TerrainGeometry.ts",
         "src/terrain/TerrainMaterial.ts",
         //
-        "src/animators/base/states/IAnimationState.ts",
         "src/animators/base/states/AnimationStateBase.ts",
         "src/animators/base/states/AnimationClipState.ts",
         //粒子动画
@@ -148,7 +147,6 @@
         "src/animators/AnimationNodeBase.ts",
         "src/animators/AnimatorBase.ts",
         //骨骼动画
-        "src/animators/skeleton/ISkeletonAnimationState.ts",
         "src/animators/skeleton/SkeletonJoint.ts",
         "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonAnimator.ts",
