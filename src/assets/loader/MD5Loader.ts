@@ -202,7 +202,7 @@ module feng3d {
                 for (j = 0; j < 4; j++) {
 
                     jointIndices[i * 4 + j] = compressIndices(weightJoints[j * 2], weightJoints[j * 2 + 1]);
-                    jointWeights[i * 4 + j] = compressWeights(jointWeights[j * 2], jointWeights[j * 2 + 1]);
+                    jointWeights[i * 4 + j] = compressWeights(weightBiass[j * 2], weightBiass[j * 2 + 1]);
                 }
 
                 uvs[vertex.index * 2] = vertex.u;

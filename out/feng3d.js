@@ -9028,7 +9028,14 @@ var feng3d;
         updateRenderData(renderContext) {
             super.updateRenderData(renderContext);
             this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this._numJoints;
-            this.renderData.uniforms[feng3d.RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
+            var vec = this.globalMatrices;
+            var data = [];
+            for (var i = 0; i < this._numJoints; i++) {
+                data[i * 3] = new feng3d.Vector3D(vec[i * 12], vec[i * 12 + 1], vec[i * 12 + 2], vec[i * 12 + 3]);
+                data[i * 3 + 1] = new feng3d.Vector3D(vec[i * 12 + 4], vec[i * 12 + 5], vec[i * 12 + 6], vec[i * 12 + 7]);
+                data[i * 3 + 2] = new feng3d.Vector3D(vec[i * 12 + 8], vec[i * 12 + 9], vec[i * 12 + 10], vec[i * 12 + 11]);
+            }
+            this.renderData.uniforms[feng3d.RenderDataID.u_skeletonGlobalMatriices] = data;
         }
         /**
          * @inheritDoc
@@ -10154,7 +10161,8 @@ var feng3d;
             feng3d.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
             this._skeleton = this.createSkeleton(md5MeshData.joints);
             var skeletonAnimator = new feng3d.SkeletonAnimator(new feng3d.SkeletonAnimationSet(), this._skeleton);
-            for (var i = 0; i < md5MeshData.meshs.length; i++) {
+            // for (var i = 0; i < md5MeshData.meshs.length; i++) {
+            for (var i = 0; i < 1; i++) {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
                 var skeletonObject3D = new feng3d.Object3D();
                 skeletonObject3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = geometry;
@@ -10280,7 +10288,7 @@ var feng3d;
                 }
                 for (j = 0; j < 4; j++) {
                     jointIndices[i * 4 + j] = compressIndices(weightJoints[j * 2], weightJoints[j * 2 + 1]);
-                    jointWeights[i * 4 + j] = compressWeights(jointWeights[j * 2], jointWeights[j * 2 + 1]);
+                    jointWeights[i * 4 + j] = compressWeights(weightBiass[j * 2], weightBiass[j * 2 + 1]);
                 }
                 uvs[vertex.index * 2] = vertex.u;
                 uvs[vertex.index * 2 + 1] = vertex.v;

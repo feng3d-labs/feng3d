@@ -42,14 +42,12 @@ void main(void) {
     vec4 position = vec4(a_position,1.0);
     vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);
     for(int i = 0; i < 8; i++){
-    // for(int i = 0; i < 1; i++){
-    //     jointweights[i] = 1.0;
 
         totalPosition.x += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3]) * jointweights[i];
         totalPosition.y += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3 + 1]) * jointweights[i];
         totalPosition.z += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3 + 2]) * jointweights[i];
     }
-    // position = totalPosition;
+    position = totalPosition;
 
     vec4 globalPosition = u_modelMatrix * position;
     gl_Position = u_viewProjection * globalPosition;

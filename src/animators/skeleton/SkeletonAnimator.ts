@@ -134,7 +134,16 @@ module feng3d {
             super.updateRenderData(renderContext);
 
             this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this._numJoints;
-            this.renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
+
+            var vec: number[] = this.globalMatrices;
+            var data: Vector3D[] = [];
+            for (var i = 0; i < this._numJoints; i++) {
+                data[i * 3] = new Vector3D(vec[i * 12], vec[i * 12 + 1], vec[i * 12 + 2], vec[i * 12 + 3]);
+                data[i * 3 + 1] = new Vector3D(vec[i * 12 + 4], vec[i * 12 + 5], vec[i * 12 + 6], vec[i * 12 + 7]);
+                data[i * 3 + 2] = new Vector3D(vec[i * 12 + 8], vec[i * 12 + 9], vec[i * 12 + 10], vec[i * 12 + 11]);
+            }
+
+            this.renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = data;
         }
 
 		/**
