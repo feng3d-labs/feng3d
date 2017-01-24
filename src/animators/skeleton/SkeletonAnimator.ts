@@ -10,8 +10,6 @@ module feng3d {
         private _numJoints: number;
 
         private _skeleton: Skeleton;
-        private _forceCPU: boolean;
-        private _jointsPerVertex: number;
         private _activeSkeletonState: ISkeletonAnimationState;
 
 		/**
@@ -43,13 +41,6 @@ module feng3d {
         }
 
 		/**
-		 * 是否强行使用cpu
-		 */
-        public get forceCPU(): boolean {
-            return this._forceCPU;
-        }
-
-		/**
 		 * 创建一个骨骼动画类
 		 * @param animationSet 动画集合
 		 * @param skeleton 骨骼
@@ -59,13 +50,6 @@ module feng3d {
             super(animationSet);
 
             this._skeleton = skeleton;
-            this._forceCPU = forceCPU;
-            this._jointsPerVertex = animationSet.jointsPerVertex;
-
-            if (this._forceCPU || this._jointsPerVertex > 4)
-                this._animationSet.cancelGPUCompatibility();
-
-            animationSet.numJoints = this._skeleton.numJoints;
             this._numJoints = this._skeleton.numJoints;
         }
 
@@ -106,15 +90,6 @@ module feng3d {
 
             this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this._numJoints;
             this.renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
-        }
-
-		/**
-		 * @inheritDoc
-		 */
-        public setRenderState(renderable, camera: Camera3D) {
-            //检查全局变换矩阵
-            if (this._globalPropertiesDirty)
-                this.updateGlobalProperties();
         }
 
 		/**
@@ -163,13 +138,8 @@ module feng3d {
             var globalJointPose: JointPose;
             var len: number = sourcePose.numJointPoses;
             var jointPoses: JointPose[] = sourcePose.jointPoses;
-            var joint: SkeletonJoint;
             var parentPose: JointPose;
             var pose: JointPose;
-
-            //初始化全局骨骼姿势长度
-            if (globalPoses.length != len)
-                globalPoses.length = len;
 
             for (var i: number = 0; i < len; ++i) {
                 //初始化单个全局骨骼姿势
@@ -178,10 +148,6 @@ module feng3d {
                 }
                 globalJointPose = globalPoses[i];
                 pose = jointPoses[i];
-
-                //
-                pose.invalid();
-                globalJointPose.invalid();
 
                 //计算全局骨骼的 方向偏移与位置偏移
                 if (pose.parentIndex < 0) {
@@ -198,6 +164,5 @@ module feng3d {
                 }
             }
         }
-
     }
 }

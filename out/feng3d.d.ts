@@ -4756,16 +4756,6 @@ declare module feng3d {
          * @param name			动作名称
          */
         getAnimation(name: string): AnimationNodeBase;
-        /**
-         * 判断是否使用CPU计算
-         * @private
-         */
-        usesCPU: boolean;
-        /**
-         * 取消使用GPU计算
-         * @private
-         */
-        cancelGPUCompatibility(): any;
     }
 }
 declare module feng3d {
@@ -5386,21 +5376,11 @@ declare module feng3d {
      * @author feng 2014-5-20
      */
     class SkeletonAnimationSet extends AnimationSetBase implements IAnimationSet {
-        private _jointsPerVertex;
-        private _numJoints;
         /**
          * 创建一个骨骼动画集合
          * @param jointsPerVertex 每个顶点关联关节的数量
          */
-        constructor(jointsPerVertex?: number);
-        /**
-         * 每个顶点关联关节的数量
-         */
-        readonly jointsPerVertex: number;
-        /**
-         * 设置关节数量
-         */
-        numJoints: number;
+        constructor();
     }
 }
 declare module feng3d {
@@ -5461,8 +5441,6 @@ declare module feng3d {
         private _globalPropertiesDirty;
         private _numJoints;
         private _skeleton;
-        private _forceCPU;
-        private _jointsPerVertex;
         private _activeSkeletonState;
         /**
          * 当前骨骼姿势的全局矩阵
@@ -5477,10 +5455,6 @@ declare module feng3d {
          * 骨骼
          */
         readonly skeleton: Skeleton;
-        /**
-         * 是否强行使用cpu
-         */
-        readonly forceCPU: boolean;
         /**
          * 创建一个骨骼动画类
          * @param animationSet 动画集合
@@ -5498,10 +5472,6 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext): void;
-        /**
-         * @inheritDoc
-         */
-        setRenderState(renderable: any, camera: Camera3D): void;
         /**
          * @inheritDoc
          */
@@ -5548,8 +5518,11 @@ declare module feng3d {
     class SkeletonPose {
         /** 关节pose列表 */
         jointPoses: JointPose[];
+        private _globalMatrix3Ds;
         readonly numJointPoses: number;
         constructor();
+        readonly globalMatrix3Ds: Matrix3D[];
+        invalid(): void;
     }
 }
 declare module feng3d {

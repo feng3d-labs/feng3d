@@ -16,17 +16,5 @@ module feng3d {
 		 * @param name			动作名称
 		 */
 		getAnimation(name: string): AnimationNodeBase;
-
-		/**
-		 * 判断是否使用CPU计算
-		 * @private
-		 */
-		usesCPU: boolean;
-
-		/**
-		 * 取消使用GPU计算
-		 * @private
-		 */
-		cancelGPUCompatibility();
 	}
 }

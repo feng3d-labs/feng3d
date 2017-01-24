@@ -8862,21 +8862,8 @@ var feng3d;
          * 创建一个骨骼动画集合
          * @param jointsPerVertex 每个顶点关联关节的数量
          */
-        constructor(jointsPerVertex = 4) {
+        constructor() {
             super();
-            this._jointsPerVertex = jointsPerVertex;
-        }
-        /**
-         * 每个顶点关联关节的数量
-         */
-        get jointsPerVertex() {
-            return this._jointsPerVertex;
-        }
-        /**
-         * 设置关节数量
-         */
-        set numJoints(value) {
-            this._numJoints = value;
         }
     }
     feng3d.SkeletonAnimationSet = SkeletonAnimationSet;
@@ -8951,11 +8938,6 @@ var feng3d;
             this._globalMatrices = [];
             this._globalPose = new feng3d.SkeletonPose();
             this._skeleton = skeleton;
-            this._forceCPU = forceCPU;
-            this._jointsPerVertex = animationSet.jointsPerVertex;
-            if (this._forceCPU || this._jointsPerVertex > 4)
-                this._animationSet.cancelGPUCompatibility();
-            animationSet.numJoints = this._skeleton.numJoints;
             this._numJoints = this._skeleton.numJoints;
         }
         /**
@@ -8980,12 +8962,6 @@ var feng3d;
          */
         get skeleton() {
             return this._skeleton;
-        }
-        /**
-         * 是否强行使用cpu
-         */
-        get forceCPU() {
-            return this._forceCPU;
         }
         /**
          * 播放动画
@@ -9016,14 +8992,6 @@ var feng3d;
             super.updateRenderData(renderContext);
             this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this._numJoints;
             this.renderData.uniforms[feng3d.RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
-        }
-        /**
-         * @inheritDoc
-         */
-        setRenderState(renderable, camera) {
-            //检查全局变换矩阵
-            if (this._globalPropertiesDirty)
-                this.updateGlobalProperties();
         }
         /**
          * @inheritDoc
@@ -9064,12 +9032,8 @@ var feng3d;
             var globalJointPose;
             var len = sourcePose.numJointPoses;
             var jointPoses = sourcePose.jointPoses;
-            var joint;
             var parentPose;
             var pose;
-            //初始化全局骨骼姿势长度
-            if (globalPoses.length != len)
-                globalPoses.length = len;
             for (var i = 0; i < len; ++i) {
                 //初始化单个全局骨骼姿势
                 if (globalPoses[i] == null) {
@@ -9077,9 +9041,6 @@ var feng3d;
                 }
                 globalJointPose = globalPoses[i];
                 pose = jointPoses[i];
-                //
-                pose.invalid();
-                globalJointPose.invalid();
                 //计算全局骨骼的 方向偏移与位置偏移
                 if (pose.parentIndex < 0) {
                     globalJointPose.matrix3D = pose.matrix3D.clone();
@@ -9145,6 +9106,22 @@ var feng3d;
         }
         get numJointPoses() {
             return this.jointPoses.length;
+        }
+        get globalMatrix3Ds() {
+            if (!this._globalMatrix3Ds) {
+                var matrix3Ds = this._globalMatrix3Ds = [];
+                for (var i = 0; i < this.jointPoses.length; i++) {
+                    var jointPose = this.jointPoses[i];
+                    matrix3Ds[i] = jointPose.matrix3D.clone();
+                    if (jointPose.parentIndex >= 0) {
+                        matrix3Ds[i].append(matrix3Ds[jointPose.parentIndex]);
+                    }
+                }
+            }
+            return this._globalMatrix3Ds;
+        }
+        invalid() {
+            this._globalMatrix3Ds = null;
         }
     }
     feng3d.SkeletonPose = SkeletonPose;
@@ -9409,6 +9386,7 @@ var feng3d;
                     tr.y = p1.y + this._blendWeight * (p2.y - p1.y);
                     tr.z = p1.z + this._blendWeight * (p2.z - p1.z);
                 }
+                showPose.invalid();
             }
         }
         /**

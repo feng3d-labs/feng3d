@@ -131,6 +131,7 @@ module feng3d {
                     tr.y = p1.y + this._blendWeight * (p2.y - p1.y);
                     tr.z = p1.z + this._blendWeight * (p2.z - p1.z);
                 }
+                showPose.invalid();
             }
         }
 
