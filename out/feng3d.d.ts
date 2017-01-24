@@ -5437,7 +5437,6 @@ declare module feng3d {
      */
     class SkeletonAnimator extends AnimatorBase {
         private _globalMatrices;
-        private _globalPose;
         private _globalPropertiesDirty;
         private _numJoints;
         private _skeleton;
@@ -5447,10 +5446,6 @@ declare module feng3d {
          * @see #globalPose
          */
         readonly globalMatrices: Matrix3D[];
-        /**
-         * 当前全局骨骼姿势
-         */
-        readonly globalPose: SkeletonPose;
         /**
          * 骨骼
          */
@@ -5480,13 +5475,6 @@ declare module feng3d {
          * 更新骨骼全局变换矩阵
          */
         private updateGlobalProperties();
-        /**
-         * 本地转换到全局姿势
-         * @param sourcePose 原姿势
-         * @param targetPose 目标姿势
-         * @param skeleton 骨骼
-         */
-        protected localToGlobalPose(sourcePose: SkeletonPose, targetPose: SkeletonPose): void;
     }
 }
 declare module feng3d {

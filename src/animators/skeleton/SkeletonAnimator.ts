@@ -5,7 +5,6 @@ module feng3d {
 	 */
     export class SkeletonAnimator extends AnimatorBase {
         private _globalMatrices: Matrix3D[] = [];
-        private _globalPose: SkeletonPose = new SkeletonPose();
         private _globalPropertiesDirty: boolean;
         private _numJoints: number;
 
@@ -21,16 +20,6 @@ module feng3d {
                 this.updateGlobalProperties();
 
             return this._globalMatrices;
-        }
-
-		/**
-		 * 当前全局骨骼姿势
-		 */
-        public get globalPose(): SkeletonPose {
-            if (this._globalPropertiesDirty)
-                this.updateGlobalProperties();
-
-            return this._globalPose;
         }
 
 		/**
@@ -108,60 +97,19 @@ module feng3d {
             this._globalPropertiesDirty = false;
 
             //获取全局骨骼姿势
-            this.localToGlobalPose(this._activeSkeletonState.getSkeletonPose(this._skeleton), this._globalPose);
+            var currentSkeletonPose = this._activeSkeletonState.getSkeletonPose(this._skeleton);
+            var globalMatrix3Ds = currentSkeletonPose.globalMatrix3Ds;
 
             //姿势变换矩阵
-            var globalPoses: JointPose[] = this._globalPose.jointPoses;
             var joints: SkeletonJoint[] = this._skeleton.joints;
-            var pose: JointPose;
 
             //遍历每个关节
             for (var i: number = 0; i < this._numJoints; ++i) {
-                //读取关节全局姿势数据
-                pose = globalPoses[i];
 
                 var inverseMatrix3D: Matrix3D = joints[i].invertMatrix3D;
-                var matrix3D: Matrix3D = pose.matrix3D.clone();
+                var matrix3D: Matrix3D = globalMatrix3Ds[i].clone();
                 matrix3D.prepend(inverseMatrix3D);
                 this._globalMatrices[i] = matrix3D;
-            }
-        }
-
-		/**
-		 * 本地转换到全局姿势
-		 * @param sourcePose 原姿势
-		 * @param targetPose 目标姿势
-		 * @param skeleton 骨骼
-		 */
-        protected localToGlobalPose(sourcePose: SkeletonPose, targetPose: SkeletonPose) {
-            var globalPoses: JointPose[] = targetPose.jointPoses;
-            var globalJointPose: JointPose;
-            var len: number = sourcePose.numJointPoses;
-            var jointPoses: JointPose[] = sourcePose.jointPoses;
-            var parentPose: JointPose;
-            var pose: JointPose;
-
-            for (var i: number = 0; i < len; ++i) {
-                //初始化单个全局骨骼姿势
-                if (globalPoses[i] == null) {
-                    globalPoses[i] = new JointPose();
-                }
-                globalJointPose = globalPoses[i];
-                pose = jointPoses[i];
-
-                //计算全局骨骼的 方向偏移与位置偏移
-                if (pose.parentIndex < 0) {
-
-                    globalJointPose.matrix3D = pose.matrix3D.clone();
-                }
-                else {
-                    //找到父骨骼全局姿势
-                    parentPose = globalPoses[pose.parentIndex];
-
-                    var globalMatrix3D = pose.matrix3D.clone();
-                    globalMatrix3D.append(parentPose.matrix3D);
-                    globalJointPose.matrix3D = globalMatrix3D;
-                }
             }
         }
     }

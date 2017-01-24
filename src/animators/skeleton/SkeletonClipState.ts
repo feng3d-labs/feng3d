@@ -133,6 +133,7 @@ module feng3d {
                 }
                 showPose.invalid();
             }
+            this._skeletonPose.invalid();
         }
 
 		/**
