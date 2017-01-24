@@ -5516,11 +5516,7 @@ declare module feng3d {
          * @param targetPose 目标姿势
          * @param skeleton 骨骼
          */
-        protected localToGlobalPose(sourcePose: SkeletonPose, targetPose: SkeletonPose, skeleton: Skeleton): void;
-        /**
-         * 处理动画变换完成时间
-         */
-        private onTransitionComplete(event);
+        protected localToGlobalPose(sourcePose: SkeletonPose, targetPose: SkeletonPose): void;
     }
 }
 declare module feng3d {

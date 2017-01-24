@@ -109,11 +109,15 @@ module feng3d {
                 throw new Error("joint counts don't match!");
 
             for (var i: number = 0; i < numJoints; ++i) {
-                showPose = showPoses[i];
-                if (showPose == null)
-                    showPose = showPoses[i] = new JointPose();
                 pose1 = currentPose[i];
                 pose2 = nextPose[i];
+                //
+                showPose = showPoses[i];
+                if (showPose == null){
+                    showPose = showPoses[i] = new JointPose();
+                    showPose.name = pose1.name;
+                    showPose.parentIndex = pose1.parentIndex;
+                }
                 p1 = pose1.translation;
                 p2 = pose2.translation;
 

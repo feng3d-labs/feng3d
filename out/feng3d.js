@@ -8995,15 +8995,7 @@ var feng3d;
         play(name, transition = null, offset = NaN) {
             if (this._activeAnimationName != name) {
                 this._activeAnimationName = name;
-                if (!this._animationSet.hasAnimation(name))
-                    throw new Error("Animation root node " + name + " not found!");
-                if (transition && this._activeNode) {
-                    //setup the transition
-                    this._activeNode = transition.getAnimationNode(this, this._activeNode, this._animationSet.getAnimation(name), this._absoluteTime);
-                    this._activeNode.addEventListener(feng3d.AnimationStateEvent.TRANSITION_COMPLETE, this.onTransitionComplete, this);
-                }
-                else
-                    this._activeNode = this._animationSet.getAnimation(name);
+                this._activeNode = this._animationSet.getAnimation(name);
                 this._activeState = this.getAnimationState(this._activeNode);
                 if (this.updatePosition) {
                     //this.update straight away to this.reset position deltas
@@ -9046,7 +9038,7 @@ var feng3d;
         updateGlobalProperties() {
             this._globalPropertiesDirty = false;
             //获取全局骨骼姿势
-            this.localToGlobalPose(this._activeSkeletonState.getSkeletonPose(this._skeleton), this._globalPose, this._skeleton);
+            this.localToGlobalPose(this._activeSkeletonState.getSkeletonPose(this._skeleton), this._globalPose);
             //姿势变换矩阵
             var globalPoses = this._globalPose.jointPoses;
             var joints = this._skeleton.joints;
@@ -9067,13 +9059,11 @@ var feng3d;
          * @param targetPose 目标姿势
          * @param skeleton 骨骼
          */
-        localToGlobalPose(sourcePose, targetPose, skeleton) {
+        localToGlobalPose(sourcePose, targetPose) {
             var globalPoses = targetPose.jointPoses;
             var globalJointPose;
-            var joints = skeleton.joints;
             var len = sourcePose.numJointPoses;
             var jointPoses = sourcePose.jointPoses;
-            var parentIndex;
             var joint;
             var parentPose;
             var pose;
@@ -9086,35 +9076,20 @@ var feng3d;
                     globalPoses[i] = new feng3d.JointPose();
                 }
                 globalJointPose = globalPoses[i];
-                joint = joints[i];
-                parentIndex = joint.parentIndex;
                 pose = jointPoses[i];
                 //
                 pose.invalid();
                 globalJointPose.invalid();
                 //计算全局骨骼的 方向偏移与位置偏移
-                if (parentIndex < 0) {
+                if (pose.parentIndex < 0) {
                     globalJointPose.matrix3D = pose.matrix3D.clone();
                 }
                 else {
                     //找到父骨骼全局姿势
-                    parentPose = globalPoses[parentIndex];
+                    parentPose = globalPoses[pose.parentIndex];
                     var globalMatrix3D = pose.matrix3D.clone();
                     globalMatrix3D.append(parentPose.matrix3D);
                     globalJointPose.matrix3D = globalMatrix3D;
-                }
-            }
-        }
-        /**
-         * 处理动画变换完成时间
-         */
-        onTransitionComplete(event) {
-            if (event.type == feng3d.AnimationStateEvent.TRANSITION_COMPLETE) {
-                event.animationNode.removeEventListener(feng3d.AnimationStateEvent.TRANSITION_COMPLETE, this.onTransitionComplete, this);
-                if (this._activeState == event.animationState) {
-                    this._activeNode = this._animationSet.getAnimation(this._activeAnimationName);
-                    this._activeState = this.getAnimationState(this._activeNode);
-                    this._activeSkeletonState = this._activeState;
                 }
             }
         }
@@ -9414,11 +9389,15 @@ var feng3d;
             if ((numJoints != currentPose.length) || (numJoints != nextPose.length))
                 throw new Error("joint counts don't match!");
             for (var i = 0; i < numJoints; ++i) {
-                showPose = showPoses[i];
-                if (showPose == null)
-                    showPose = showPoses[i] = new feng3d.JointPose();
                 pose1 = currentPose[i];
                 pose2 = nextPose[i];
+                //
+                showPose = showPoses[i];
+                if (showPose == null) {
+                    showPose = showPoses[i] = new feng3d.JointPose();
+                    showPose.name = pose1.name;
+                    showPose.parentIndex = pose1.parentIndex;
+                }
                 p1 = pose1.translation;
                 p2 = pose2.translation;
                 //根据前后两个关节姿势计算出当前显示关节姿势
