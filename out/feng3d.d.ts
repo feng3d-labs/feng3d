@@ -5456,6 +5456,7 @@ declare module feng3d {
      */
     class SkeletonAnimator extends AnimatorBase {
         private _globalMatrices;
+        private matrix3Ds;
         private _globalPose;
         private _globalPropertiesDirty;
         private _numJoints;
