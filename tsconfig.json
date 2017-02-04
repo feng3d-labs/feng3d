@@ -146,6 +146,8 @@
         "src/animators/events/AnimatorEvent.ts",
         "src/animators/AnimationNodeBase.ts",
         "src/animators/AnimatorBase.ts",
+        "src/animators/AnimationPlayer.ts",
+        "src/animators/AnimationClipPlayer.ts",
         //骨骼动画
         "src/animators/skeleton/SkeletonJoint.ts",
         "src/animators/skeleton/Skeleton.ts",
