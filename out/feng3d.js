@@ -8687,6 +8687,79 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 动画播放器
+     * @author feng 2017-01-04
+     */
+    class AnimationPlayer {
+        constructor() {
+            this._time = 0;
+            this.preTime = 0;
+            this._isPlaying = false;
+            /**
+             * 播放速度
+             */
+            this.playbackSpeed = 1;
+        }
+        /**
+         * 动画时间
+         */
+        get time() {
+            return this._time;
+        }
+        set time(value) {
+            this._time = value;
+        }
+        /**
+         * 开始
+         */
+        start() {
+            this.time = 0;
+            this.continue();
+        }
+        /**
+         * 停止
+         */
+        stop() {
+            this.pause();
+        }
+        /**
+         * 继续
+         */
+        continue() {
+            this._isPlaying;
+            this.preTime = feng3d.getTimer();
+            feng3d.$ticker.addEventListener(feng3d.Event.ENTER_FRAME, this.onEnterFrame, this);
+        }
+        /**
+         * 暂停
+         */
+        pause() {
+            feng3d.$ticker.removeEventListener(feng3d.Event.ENTER_FRAME, this.onEnterFrame, this);
+        }
+        /**
+         * 自动更新动画时帧更新事件
+         */
+        onEnterFrame(event) {
+            var currentTime = feng3d.getTimer();
+            this.time = this.time + (currentTime - this.preTime) * this.playbackSpeed;
+            this.preTime = feng3d.getTimer();
+        }
+    }
+    feng3d.AnimationPlayer = AnimationPlayer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 帧动画播放器
+     * @author feng 2017-01-04
+     */
+    class AnimationClipPlayer extends feng3d.AnimationPlayer {
+    }
+    feng3d.AnimationClipPlayer = AnimationClipPlayer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 骨骼关节数据
      * @author feng 2014-5-20
      */
