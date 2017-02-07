@@ -4260,6 +4260,23 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 圆锥体
+     * @author feng 2017-02-07
+     */
+    class ConeGeometry extends CylinderGeometry {
+        /**
+         * 创建圆锥体
+         * @param radius 底部半径
+         * @param height 高度
+         * @param segmentsW
+         * @param segmentsH
+         * @param yUp
+         */
+        constructor(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, closed?: boolean, yUp?: boolean);
+    }
+}
+declare module feng3d {
+    /**
      * 天空盒几何体
      * @author feng 2016-09-12
      */
@@ -5840,44 +5857,91 @@ declare module feng3d {
      * @author feng 2017-02-06
      */
     class Trident extends Object3D {
-        constructor(length?: number, showLetters?: boolean);
-        private buildTrident(length, showLetters);
+        constructor(length?: number);
+        private buildTrident(length);
     }
 }
 declare module feng3d {
     /**
-     * 3D对象工厂
-     * @author feng 2016-12-19
+     * 平面3D对象
+     * @author feng 2017-02-06
      */
-    class Object3DFactory {
+    class PlaneObject3D extends Object3D {
         /**
-         * 创建平面
+         * 构建3D对象
          */
-        createPlane(): Object3D;
-        /**
-         * 创建立方体
-         */
-        createCube(): Object3D;
-        /**
-         * 创建球体
-         */
-        createSphere(): Object3D;
-        /**
-         * 创建胶囊
-         */
-        createCapsule(): Object3D;
-        /**
-         * 创建圆柱体
-         */
-        createCylinder(): Object3D;
-        /**
-         * 创建天空盒
-         */
-        createSkyBox(images: HTMLImageElement[]): Object3D;
-        createParticle(): Object3D;
+        constructor(name?: string);
     }
+}
+declare module feng3d {
     /**
-     * 3D对象工厂
+     * 立方体3D对象
+     * @author feng 2017-02-06
      */
-    var $object3DFactory: Object3DFactory;
+    class CubeObject3D extends Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(name?: string);
+    }
+}
+declare module feng3d {
+    /**
+     * 球体3D对象
+     * @author feng 2017-02-06
+     */
+    class SphereObject3D extends Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(name?: string);
+    }
+}
+declare module feng3d {
+    /**
+     * 胶囊体3D对象
+     * @author feng 2017-02-06
+     */
+    class CapsuleObject3D extends Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(name?: string);
+    }
+}
+declare module feng3d {
+    /**
+     * 圆柱体3D对象
+     * @author feng 2017-02-06
+     */
+    class CylinderObject3D extends Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(name?: string);
+    }
+}
+declare module feng3d {
+    /**
+     * 天空盒3D对象
+     * @author feng 2017-02-06
+     */
+    class SkyBoxObject3D extends Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(images: HTMLImageElement[], name?: string);
+    }
+}
+declare module feng3d {
+    /**
+     * 天空盒3D对象
+     * @author feng 2017-02-06
+     */
+    class ParticleObject3D extends Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(name?: string);
+    }
 }

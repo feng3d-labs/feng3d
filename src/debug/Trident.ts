@@ -6,12 +6,12 @@ module feng3d {
      */
     export class Trident extends Object3D {
 
-        constructor(length = 100, showLetters = true) {
+        constructor(length = 100) {
             super();
-            this.buildTrident(Math.abs((length == 0) ? 10 : length), showLetters);
+            this.buildTrident(Math.abs((length == 0) ? 10 : length));
         }
 
-        private buildTrident(length: number, showLetters: boolean) {
+        private buildTrident(length: number) {
             var scaleH: number = length / 10;
             var scaleW: number = length / 20;
             var scl1: number = scaleW * 1.5;
@@ -41,7 +41,6 @@ module feng3d {
 
             var groundGridObject3D = new Object3D("GroundGrid");
             groundGridObject3D.getOrCreateComponentByClass(MeshRenderer).material = new SegmentMaterial();
-            groundGridObject3D.transform.y = -50;
             var segmentGeometry = new SegmentGeometry();
             var geometry = groundGridObject3D.getOrCreateComponentByClass(Geometry);
             geometry.addComponent(segmentGeometry);

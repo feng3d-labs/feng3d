@@ -7154,6 +7154,27 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 圆锥体
+     * @author feng 2017-02-07
+     */
+    class ConeGeometry extends feng3d.CylinderGeometry {
+        /**
+         * 创建圆锥体
+         * @param radius 底部半径
+         * @param height 高度
+         * @param segmentsW
+         * @param segmentsH
+         * @param yUp
+         */
+        constructor(radius = 50, height = 100, segmentsW = 16, segmentsH = 1, closed = true, yUp = true) {
+            super(0, radius, height, segmentsW, segmentsH, false, closed, true, yUp);
+        }
+    }
+    feng3d.ConeGeometry = ConeGeometry;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 天空盒几何体
      * @author feng 2016-09-12
      */
@@ -10107,11 +10128,11 @@ var feng3d;
      * @author feng 2017-02-06
      */
     class Trident extends feng3d.Object3D {
-        constructor(length = 100, showLetters = true) {
+        constructor(length = 100) {
             super();
-            this.buildTrident(Math.abs((length == 0) ? 10 : length), showLetters);
+            this.buildTrident(Math.abs((length == 0) ? 10 : length));
         }
-        buildTrident(length, showLetters) {
+        buildTrident(length) {
             var scaleH = length / 10;
             var scaleW = length / 20;
             var scl1 = scaleW * 1.5;
@@ -10137,7 +10158,6 @@ var feng3d;
             ];
             var groundGridObject3D = new feng3d.Object3D("GroundGrid");
             groundGridObject3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
-            groundGridObject3D.transform.y = -50;
             var segmentGeometry = new feng3d.SegmentGeometry();
             var geometry = groundGridObject3D.getOrCreateComponentByClass(feng3d.Geometry);
             geometry.addComponent(segmentGeometry);
@@ -10154,83 +10174,135 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 3D对象工厂
-     * @author feng 2016-12-19
+     * 平面3D对象
+     * @author feng 2017-02-06
      */
-    class Object3DFactory {
+    class PlaneObject3D extends feng3d.Object3D {
         /**
-         * 创建平面
+         * 构建3D对象
          */
-        createPlane() {
-            var object3D = new feng3d.Object3D("plane");
-            var mesh = object3D.getOrCreateComponentByClass(feng3d.MeshFilter);
+        constructor(name = "plane") {
+            super(name);
+            var mesh = this.getOrCreateComponentByClass(feng3d.MeshFilter);
             mesh.geometry = new feng3d.PlaneGeometry();
-            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
-            return object3D;
-        }
-        /**
-         * 创建立方体
-         */
-        createCube() {
-            var object3D = new feng3d.Object3D("cube");
-            var mesh = object3D.getOrCreateComponentByClass(feng3d.MeshFilter);
-            mesh.geometry = new feng3d.CubeGeometry();
-            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
-            return object3D;
-        }
-        /**
-         * 创建球体
-         */
-        createSphere() {
-            var object3D = new feng3d.Object3D("sphere");
-            var mesh = object3D.getOrCreateComponentByClass(feng3d.MeshFilter);
-            mesh.geometry = new feng3d.SphereGeometry();
-            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
-            return object3D;
-        }
-        /**
-         * 创建胶囊
-         */
-        createCapsule() {
-            var object3D = new feng3d.Object3D("capsule");
-            var mesh = object3D.getOrCreateComponentByClass(feng3d.MeshFilter);
-            mesh.geometry = new feng3d.CapsuleGeometry();
-            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
-            return object3D;
-        }
-        /**
-         * 创建圆柱体
-         */
-        createCylinder() {
-            var object3D = new feng3d.Object3D("cylinder");
-            var mesh = object3D.getOrCreateComponentByClass(feng3d.MeshFilter);
-            mesh.geometry = new feng3d.CylinderGeometry();
-            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer);
-            return object3D;
-        }
-        /**
-         * 创建天空盒
-         */
-        createSkyBox(images) {
-            var object3D = new feng3d.Object3D("skyBox");
-            object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = new feng3d.SkyBoxGeometry();
-            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SkyBoxMaterial(images);
-            return object3D;
-        }
-        createParticle() {
-            var object3D = new feng3d.Object3D("particle");
-            object3D.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = new feng3d.PointGeometry();
-            object3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.ParticleMaterial();
-            var particleAnimator = object3D.getOrCreateComponentByClass(feng3d.ParticleAnimator);
-            particleAnimator.addComponent(new feng3d.ParticlePosition());
-            particleAnimator.addComponent(new feng3d.ParticleVelocity());
-            return object3D;
+            this.getOrCreateComponentByClass(feng3d.MeshRenderer);
         }
     }
-    feng3d.Object3DFactory = Object3DFactory;
+    feng3d.PlaneObject3D = PlaneObject3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
-     * 3D对象工厂
+     * 立方体3D对象
+     * @author feng 2017-02-06
      */
-    feng3d.$object3DFactory = new Object3DFactory();
+    class CubeObject3D extends feng3d.Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(name = "cube") {
+            super(name);
+            var mesh = this.getOrCreateComponentByClass(feng3d.MeshFilter);
+            mesh.geometry = new feng3d.CubeGeometry();
+            this.getOrCreateComponentByClass(feng3d.MeshRenderer);
+        }
+    }
+    feng3d.CubeObject3D = CubeObject3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 球体3D对象
+     * @author feng 2017-02-06
+     */
+    class SphereObject3D extends feng3d.Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(name = "sphere") {
+            super(name);
+            var mesh = this.getOrCreateComponentByClass(feng3d.MeshFilter);
+            mesh.geometry = new feng3d.SphereGeometry();
+            this.getOrCreateComponentByClass(feng3d.MeshRenderer);
+        }
+    }
+    feng3d.SphereObject3D = SphereObject3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 胶囊体3D对象
+     * @author feng 2017-02-06
+     */
+    class CapsuleObject3D extends feng3d.Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(name = "capsule") {
+            super(name);
+            var mesh = this.getOrCreateComponentByClass(feng3d.MeshFilter);
+            mesh.geometry = new feng3d.CapsuleGeometry();
+            this.getOrCreateComponentByClass(feng3d.MeshRenderer);
+        }
+    }
+    feng3d.CapsuleObject3D = CapsuleObject3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 圆柱体3D对象
+     * @author feng 2017-02-06
+     */
+    class CylinderObject3D extends feng3d.Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(name = "cylinder") {
+            super(name);
+            var mesh = this.getOrCreateComponentByClass(feng3d.MeshFilter);
+            mesh.geometry = new feng3d.CylinderGeometry();
+            this.getOrCreateComponentByClass(feng3d.MeshRenderer);
+        }
+    }
+    feng3d.CylinderObject3D = CylinderObject3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 天空盒3D对象
+     * @author feng 2017-02-06
+     */
+    class SkyBoxObject3D extends feng3d.Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(images, name = "skyBox") {
+            super(name);
+            this.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = new feng3d.SkyBoxGeometry();
+            this.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SkyBoxMaterial(images);
+        }
+    }
+    feng3d.SkyBoxObject3D = SkyBoxObject3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 天空盒3D对象
+     * @author feng 2017-02-06
+     */
+    class ParticleObject3D extends feng3d.Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(name = "particle") {
+            super(name);
+            this.getOrCreateComponentByClass(feng3d.MeshFilter).geometry = new feng3d.PointGeometry();
+            this.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.ParticleMaterial();
+            var particleAnimator = this.getOrCreateComponentByClass(feng3d.ParticleAnimator);
+            particleAnimator.addComponent(new feng3d.ParticlePosition());
+            particleAnimator.addComponent(new feng3d.ParticleVelocity());
+        }
+    }
+    feng3d.ParticleObject3D = ParticleObject3D;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

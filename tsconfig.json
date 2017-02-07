@@ -170,6 +170,12 @@
         //
         "src/debug/Trident.ts",
         //
-        "src/factory/Object3DFactory.ts"
+        "src/factory/PlaneObject3D.ts",
+        "src/factory/CubeObject3D.ts",
+        "src/factory/SphereObject3D.ts",
+        "src/factory/CapsuleObject3D.ts",
+        "src/factory/CylinderObject3D.ts",
+        "src/factory/SkyBoxObject3D.ts",
+        "src/factory/ParticleObject3D.ts"
     ]
 }
