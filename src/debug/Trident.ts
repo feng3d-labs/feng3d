@@ -26,25 +26,28 @@ module feng3d {
             this.addChild(this.xLine);
             //
             this.yLine = new SegmentObject3D();
-            this.yLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, length, 0), 0xff0000, 0x00ff00));
+            this.yLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, length, 0), 0xff0000, 0xff0000));
             this.addChild(this.yLine);
             //
             this.zLine = new SegmentObject3D();
-            this.zLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, 0, length), 0xff0000, 0x0000ff));
+            this.zLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, 0, length), 0xff0000, 0xff0000));
             this.addChild(this.zLine);
             //
-            this.xArrow = new ConeObject3D();
+            this.xArrow = new ConeObject3D(5, 18);
             this.xArrow.transform.x = length;
             this.xArrow.transform.rz = -90;
+            this.xArrow.colorMaterial.color = new Color(1, 0, 0);
             this.addChild(this.xArrow);
             //
-            this.yArrow = new ConeObject3D();
+            this.yArrow = new ConeObject3D(5, 18);
             this.yArrow.transform.y = length;
+            this.yArrow.colorMaterial.color = new Color(0, 1, 0);
             this.addChild(this.yArrow);
             //
-            this.zArrow = new ConeObject3D();
+            this.zArrow = new ConeObject3D(5, 18);
             this.zArrow.transform.z = length;
             this.zArrow.transform.rx = 90;
+            this.zArrow.colorMaterial.color = new Color(0, 0, 1);
             this.addChild(this.zArrow);
         }
     }

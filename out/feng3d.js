@@ -10138,25 +10138,28 @@ var feng3d;
             this.addChild(this.xLine);
             //
             this.yLine = new feng3d.SegmentObject3D();
-            this.yLine.segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, length, 0), 0xff0000, 0x00ff00));
+            this.yLine.segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, length, 0), 0xff0000, 0xff0000));
             this.addChild(this.yLine);
             //
             this.zLine = new feng3d.SegmentObject3D();
-            this.zLine.segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, 0, length), 0xff0000, 0x0000ff));
+            this.zLine.segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, 0, length), 0xff0000, 0xff0000));
             this.addChild(this.zLine);
             //
-            this.xArrow = new feng3d.ConeObject3D();
+            this.xArrow = new feng3d.ConeObject3D(5, 18);
             this.xArrow.transform.x = length;
             this.xArrow.transform.rz = -90;
+            this.xArrow.colorMaterial.color = new feng3d.Color(1, 0, 0);
             this.addChild(this.xArrow);
             //
-            this.yArrow = new feng3d.ConeObject3D();
+            this.yArrow = new feng3d.ConeObject3D(5, 18);
             this.yArrow.transform.y = length;
+            this.yArrow.colorMaterial.color = new feng3d.Color(0, 1, 0);
             this.addChild(this.yArrow);
             //
-            this.zArrow = new feng3d.ConeObject3D();
+            this.zArrow = new feng3d.ConeObject3D(5, 18);
             this.zArrow.transform.z = length;
             this.zArrow.transform.rx = 90;
+            this.zArrow.colorMaterial.color = new feng3d.Color(0, 0, 1);
             this.addChild(this.zArrow);
         }
     }
@@ -10267,11 +10270,11 @@ var feng3d;
         /**
          * 构建3D对象
          */
-        constructor(name = "cone") {
+        constructor(radius = 50, height = 100, name = "cone") {
             super(name);
             var mesh = this.getOrCreateComponentByClass(feng3d.MeshFilter);
-            mesh.geometry = new feng3d.ConeGeometry();
-            this.getOrCreateComponentByClass(feng3d.MeshRenderer);
+            mesh.geometry = new feng3d.ConeGeometry(radius, height);
+            this.colorMaterial = this.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.ColorMaterial;
         }
     }
     feng3d.ConeObject3D = ConeObject3D;

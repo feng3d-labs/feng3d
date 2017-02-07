@@ -5933,10 +5933,11 @@ declare module feng3d {
      * @author feng 2017-02-06
      */
     class ConeObject3D extends Object3D {
+        colorMaterial: ColorMaterial;
         /**
          * 构建3D对象
          */
-        constructor(name?: string);
+        constructor(radius?: number, height?: number, name?: string);
     }
 }
 declare module feng3d {
