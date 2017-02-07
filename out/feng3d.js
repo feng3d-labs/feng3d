@@ -4848,21 +4848,9 @@ var feng3d;
      */
     class Renderer extends feng3d.Object3DComponent {
         constructor() {
-            super();
+            super(...arguments);
             /** 渲染原子 */
-            this._renderAtomic = new feng3d.RenderAtomic();
-            this.material = new feng3d.ColorMaterial();
-        }
-        /**
-         * 材质
-         */
-        get material() {
-            return this._material;
-        }
-        set material(value) {
-            this._material && this.removeComponent(this._material);
-            this._material = value;
-            this._material && this.addComponent(this._material);
+            this.renderAtomic = new feng3d.RenderAtomic();
         }
         /**
          * 渲染
@@ -4872,34 +4860,41 @@ var feng3d;
             renderContext.updateRenderData(this.object3D);
             this.object3D.updateRenderData(renderContext);
             //收集数据
-            renderContext.activate(this._renderAtomic);
-            this.object3D.activate(this._renderAtomic);
+            renderContext.activate(this.renderAtomic);
+            this.object3D.activate(this.renderAtomic);
             //绘制
             this.drawObject3D(context3D); //
             //释放数据
-            this.object3D.deactivate(this._renderAtomic);
-            renderContext.deactivate(this._renderAtomic);
+            this.object3D.deactivate(this.renderAtomic);
+            renderContext.deactivate(this.renderAtomic);
         }
         /**
          * 绘制3D对象
          */
         drawObject3D(context3D) {
-            if (!this._renderAtomic.vertexCode || !this._renderAtomic.fragmentCode)
+            var shaderProgram = this.activeShaderProgram(context3D, this.renderAtomic.vertexCode, this.renderAtomic.fragmentCode);
+            if (!shaderProgram)
                 return;
             samplerIndex = 0;
-            var vertexCode = this._renderAtomic.vertexCode;
-            var fragmentCode = this._renderAtomic.fragmentCode;
+            //
+            activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
+            activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
+            dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer, this.renderAtomic.instanceCount);
+        }
+        /**
+         * 激活渲染程序
+         */
+        activeShaderProgram(context3D, vertexCode, fragmentCode) {
+            if (!vertexCode || !fragmentCode)
+                return null;
             //应用宏
-            var shaderMacro = feng3d.ShaderLib.getMacroCode(this._renderAtomic.shaderMacro);
+            var shaderMacro = feng3d.ShaderLib.getMacroCode(this.renderAtomic.shaderMacro);
             vertexCode = vertexCode.replace(/#define\s+macros/, shaderMacro);
             fragmentCode = fragmentCode.replace(/#define\s+macros/, shaderMacro);
             //渲染程序
             var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);
-            //
-            activeAttributes(context3D, shaderProgram, this._renderAtomic.attributes);
-            activeUniforms(context3D, shaderProgram, this._renderAtomic.uniforms);
-            dodraw(context3D, this._renderAtomic.shaderParams, this._renderAtomic.indexBuffer, this._renderAtomic.instanceCount);
+            return shaderProgram;
         }
     }
     feng3d.Renderer = Renderer;
@@ -5026,6 +5021,21 @@ var feng3d;
      * @author feng 2016-12-12
      */
     class MeshRenderer extends feng3d.Renderer {
+        constructor() {
+            super();
+            this.material = new feng3d.ColorMaterial();
+        }
+        /**
+         * 材质
+         */
+        get material() {
+            return this._material;
+        }
+        set material(value) {
+            this._material && this.removeComponent(this._material);
+            this._material = value;
+            this._material && this.addComponent(this._material);
+        }
         /**
          * 处理被添加组件事件
          */
@@ -5060,6 +5070,28 @@ var feng3d;
         }
     }
     feng3d.MeshRenderer = MeshRenderer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 鼠标拾取渲染器
+     * @author feng 2017-02-06
+     */
+    class MouseRenderer extends feng3d.Renderer {
+        constructor() {
+            super(...arguments);
+            this.shaderName = "mouse";
+        }
+        /**
+         * 激活渲染程序
+         */
+        activeShaderProgram(context3D, vertexCode, fragmentCode) {
+            vertexCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".vertex");
+            fragmentCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".fragment");
+            return super.activeShaderProgram(context3D, vertexCode, fragmentCode);
+        }
+    }
+    feng3d.MouseRenderer = MouseRenderer;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -8683,6 +8715,79 @@ var feng3d;
         }
     }
     feng3d.AnimatorBase = AnimatorBase;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画播放器
+     * @author feng 2017-01-04
+     */
+    class AnimationPlayer {
+        constructor() {
+            this._time = 0;
+            this.preTime = 0;
+            this._isPlaying = false;
+            /**
+             * 播放速度
+             */
+            this.playbackSpeed = 1;
+        }
+        /**
+         * 动画时间
+         */
+        get time() {
+            return this._time;
+        }
+        set time(value) {
+            this._time = value;
+        }
+        /**
+         * 开始
+         */
+        start() {
+            this.time = 0;
+            this.continue();
+        }
+        /**
+         * 停止
+         */
+        stop() {
+            this.pause();
+        }
+        /**
+         * 继续
+         */
+        continue() {
+            this._isPlaying;
+            this.preTime = feng3d.getTimer();
+            feng3d.$ticker.addEventListener(feng3d.Event.ENTER_FRAME, this.onEnterFrame, this);
+        }
+        /**
+         * 暂停
+         */
+        pause() {
+            feng3d.$ticker.removeEventListener(feng3d.Event.ENTER_FRAME, this.onEnterFrame, this);
+        }
+        /**
+         * 自动更新动画时帧更新事件
+         */
+        onEnterFrame(event) {
+            var currentTime = feng3d.getTimer();
+            this.time = this.time + (currentTime - this.preTime) * this.playbackSpeed;
+            this.preTime = feng3d.getTimer();
+        }
+    }
+    feng3d.AnimationPlayer = AnimationPlayer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 帧动画播放器
+     * @author feng 2017-01-04
+     */
+    class AnimationClipPlayer extends feng3d.AnimationPlayer {
+    }
+    feng3d.AnimationClipPlayer = AnimationClipPlayer;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -3369,13 +3369,7 @@ declare module feng3d {
      */
     class Renderer extends Object3DComponent {
         /** 渲染原子 */
-        private _renderAtomic;
-        private _material;
-        /**
-         * 材质
-         */
-        material: Material;
-        constructor();
+        protected renderAtomic: RenderAtomic;
         /**
          * 渲染
          */
@@ -3383,7 +3377,11 @@ declare module feng3d {
         /**
          * 绘制3D对象
          */
-        private drawObject3D(context3D);
+        protected drawObject3D(context3D: Context3D): void;
+        /**
+         * 激活渲染程序
+         */
+        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram;
     }
 }
 declare module feng3d {
@@ -3392,6 +3390,12 @@ declare module feng3d {
      * @author feng 2016-12-12
      */
     class MeshRenderer extends Renderer {
+        private _material;
+        /**
+         * 材质
+         */
+        material: Material;
+        constructor();
         /**
          * 处理被添加组件事件
          */
@@ -3408,6 +3412,20 @@ declare module feng3d {
          * 处理从场景移除事件
          */
         private onRemovedFromScene(event);
+    }
+}
+declare module feng3d {
+    /**
+     * 鼠标拾取渲染器
+     * @author feng 2017-02-06
+     */
+    class MouseRenderer extends Renderer {
+        private shaderName;
+        private shaderProgram;
+        /**
+         * 激活渲染程序
+         */
+        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram;
     }
 }
 declare module feng3d {
@@ -5191,6 +5209,53 @@ declare module feng3d {
          * 应用位置偏移量
          */
         private applyPositionDelta();
+    }
+}
+declare module feng3d {
+    /**
+     * 动画播放器
+     * @author feng 2017-01-04
+     */
+    class AnimationPlayer {
+        private _time;
+        private preTime;
+        private _isPlaying;
+        /**
+         * 播放速度
+         */
+        playbackSpeed: number;
+        /**
+         * 动画时间
+         */
+        time: number;
+        /**
+         * 开始
+         */
+        start(): void;
+        /**
+         * 停止
+         */
+        stop(): void;
+        /**
+         * 继续
+         */
+        continue(): void;
+        /**
+         * 暂停
+         */
+        pause(): void;
+        /**
+         * 自动更新动画时帧更新事件
+         */
+        private onEnterFrame(event);
+    }
+}
+declare module feng3d {
+    /**
+     * 帧动画播放器
+     * @author feng 2017-01-04
+     */
+    class AnimationClipPlayer extends AnimationPlayer {
     }
 }
 declare module feng3d {
