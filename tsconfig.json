@@ -77,6 +77,7 @@
         "src/core/MeshFilter.ts",
         "src/render/Renderer.ts",
         "src/core/MeshRenderer.ts",
+        "src/render/MouseRenderer.ts",
         //3D场景
         "src/scene/Scene3D.ts",
         "src/scene/Scene3DEvent.ts",
