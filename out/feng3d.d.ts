@@ -5806,6 +5806,16 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 坐标系，三叉戟
+     * @author feng 2017-02-06
+     */
+    class Trident extends Object3D {
+        constructor(length?: number, showLetters?: boolean);
+        private buildTrident(length, showLetters);
+    }
+}
+declare module feng3d {
+    /**
      * 3D对象工厂
      * @author feng 2016-12-19
      */
