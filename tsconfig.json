@@ -175,7 +175,9 @@
         "src/factory/SphereObject3D.ts",
         "src/factory/CapsuleObject3D.ts",
         "src/factory/CylinderObject3D.ts",
+        "src/factory/ConeObject3D.ts",
         "src/factory/SkyBoxObject3D.ts",
+        "src/factory/SegmentObject3D.ts",
         "src/factory/ParticleObject3D.ts"
     ]
 }

@@ -5857,6 +5857,12 @@ declare module feng3d {
      * @author feng 2017-02-06
      */
     class Trident extends Object3D {
+        xLine: SegmentObject3D;
+        yLine: SegmentObject3D;
+        zLine: SegmentObject3D;
+        xArrow: ConeObject3D;
+        yArrow: ConeObject3D;
+        zArrow: ConeObject3D;
         constructor(length?: number);
         private buildTrident(length);
     }
@@ -5923,6 +5929,18 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 圆锥体3D对象
+     * @author feng 2017-02-06
+     */
+    class ConeObject3D extends Object3D {
+        /**
+         * 构建3D对象
+         */
+        constructor(name?: string);
+    }
+}
+declare module feng3d {
+    /**
      * 天空盒3D对象
      * @author feng 2017-02-06
      */
@@ -5931,6 +5949,16 @@ declare module feng3d {
          * 构建3D对象
          */
         constructor(images: HTMLImageElement[], name?: string);
+    }
+}
+declare module feng3d {
+    /**
+     * 线条3D对象
+     * @author feng 2017-02-06
+     */
+    class SegmentObject3D extends Object3D {
+        segmentGeometry: SegmentGeometry;
+        constructor(name?: string);
     }
 }
 declare module feng3d {

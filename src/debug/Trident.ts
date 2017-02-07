@@ -6,51 +6,46 @@ module feng3d {
      */
     export class Trident extends Object3D {
 
+        public xLine: SegmentObject3D;
+        public yLine: SegmentObject3D;
+        public zLine: SegmentObject3D;
+
+        public xArrow: ConeObject3D;
+        public yArrow: ConeObject3D;
+        public zArrow: ConeObject3D;
+
         constructor(length = 100) {
             super();
             this.buildTrident(Math.abs((length == 0) ? 10 : length));
         }
 
         private buildTrident(length: number) {
-            var scaleH: number = length / 10;
-            var scaleW: number = length / 20;
-            var scl1: number = scaleW * 1.5;
-            var scl2: number = scaleH * 3;
-            var scl3: number = scaleH * 2;
-            var scl4: number = scaleH * 3.4;
-            var cross: number = length + (scl3) + (((length + scl4) - (length + scl3)) / 3 * 2);
 
-            var arr = [ //
-                [new Vector3D(), new Vector3D(length, 0, 0), 0x880000, 0xff0000, 1], //X轴
-                //X
-                [new Vector3D(length + scl2, scl1, 0), new Vector3D(length + scl3, -scl1, 0), 0xff0000, 0xff0000, 1], //
-                [new Vector3D(length + scl3, scl1, 0), new Vector3D(length + scl2, -scl1, 0), 0xff0000, 0xff0000, 1], //
-
-                [new Vector3D(), new Vector3D(0, length, 0), 0x008800, 0x00ff00, 1], //Y轴
-                //Y
-                [new Vector3D(-scaleW * 1.2, length + scl4, 0), new Vector3D(0, cross, 0), 0x00ff00, 0x00ff00, 1], //
-                [new Vector3D(scaleW * 1.2, length + scl4, 0), new Vector3D(0, cross, 0), 0x00ff00, 0x00ff00, 1], //
-                [new Vector3D(0, cross, 0), new Vector3D(0, length + scl3, 0), 0x00ff00, 0x00ff00, 1], //
-
-                [new Vector3D(), new Vector3D(0, 0, length), 0x000088, 0x0000ff, 1], //Z轴
-                //Z
-                [new Vector3D(0, scl1, length + scl2), new Vector3D(0, scl1, length + scl3), 0x0000ff, 0x0000ff, 1], //
-                [new Vector3D(0, -scl1, length + scl2), new Vector3D(0, -scl1, length + scl3), 0x0000ff, 0x0000ff, 1], //
-                [new Vector3D(0, -scl1, length + scl3), new Vector3D(0, scl1, length + scl2), 0x0000ff, 0x0000ff, 1], //
-            ];
-
-            var groundGridObject3D = new Object3D("GroundGrid");
-            groundGridObject3D.getOrCreateComponentByClass(MeshRenderer).material = new SegmentMaterial();
-            var segmentGeometry = new SegmentGeometry();
-            var geometry = groundGridObject3D.getOrCreateComponentByClass(Geometry);
-            geometry.addComponent(segmentGeometry);
-
-            var segmentX: Segment;
-            for (var i: number = 0; i < arr.length; i++) {
-                segmentX = new Segment(as(arr[i][0], Vector3D), as(arr[i][1], Vector3D), Number(arr[i][2]), Number(arr[i][3]), Number(arr[i][4]));
-                segmentGeometry.addSegment(segmentX);
-            }
-            this.addChild(groundGridObject3D);
+            this.xLine = new SegmentObject3D();
+            this.xLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(length, 0, 0), 0xff0000, 0xff0000));
+            this.addChild(this.xLine);
+            //
+            this.yLine = new SegmentObject3D();
+            this.yLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, length, 0), 0xff0000, 0x00ff00));
+            this.addChild(this.yLine);
+            //
+            this.zLine = new SegmentObject3D();
+            this.zLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, 0, length), 0xff0000, 0x0000ff));
+            this.addChild(this.zLine);
+            //
+            this.xArrow = new ConeObject3D();
+            this.xArrow.transform.x = length;
+            this.xArrow.transform.rz = -90;
+            this.addChild(this.xArrow);
+            //
+            this.yArrow = new ConeObject3D();
+            this.yArrow.transform.y = length;
+            this.addChild(this.yArrow);
+            //
+            this.zArrow = new ConeObject3D();
+            this.zArrow.transform.z = length;
+            this.zArrow.transform.rx = 90;
+            this.addChild(this.zArrow);
         }
     }
 }
