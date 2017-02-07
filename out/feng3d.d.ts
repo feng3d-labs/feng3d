@@ -3536,6 +3536,10 @@ declare module feng3d {
          */
         static a_position: string;
         /**
+         * 颜色
+         */
+        static a_color: string;
+        /**
          * 法线
          */
         static a_normal: string;
@@ -3760,8 +3764,8 @@ declare module feng3d {
         thickness: number;
         start: Vector3D;
         end: Vector3D;
-        startColor: number;
-        endColor: number;
+        startColor: Color;
+        endColor: Color;
         /**
          * 创建线段
          * @param start 起点坐标
@@ -3775,6 +3779,10 @@ declare module feng3d {
          * 坐标数据
          */
         readonly positionData: number[];
+        /**
+         * 颜色数据
+         */
+        readonly colorData: number[];
     }
 }
 declare module feng3d {
