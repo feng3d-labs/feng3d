@@ -3558,6 +3558,10 @@ declare module feng3d {
          */
         static a_position: string;
         /**
+         * 颜色
+         */
+        static a_color: string;
+        /**
          * 法线
          */
         static a_normal: string;
@@ -3782,8 +3786,8 @@ declare module feng3d {
         thickness: number;
         start: Vector3D;
         end: Vector3D;
-        startColor: number;
-        endColor: number;
+        startColor: Color;
+        endColor: Color;
         /**
          * 创建线段
          * @param start 起点坐标
@@ -3797,6 +3801,10 @@ declare module feng3d {
          * 坐标数据
          */
         readonly positionData: number[];
+        /**
+         * 颜色数据
+         */
+        readonly colorData: number[];
     }
 }
 declare module feng3d {
@@ -5824,6 +5832,16 @@ declare module feng3d {
          * @return 包含帧数据的SkeletonPose对象
          */
         private translatePose(md5AnimData, frameData);
+    }
+}
+declare module feng3d {
+    /**
+     * 坐标系，三叉戟
+     * @author feng 2017-02-06
+     */
+    class Trident extends Object3D {
+        constructor(length?: number, showLetters?: boolean);
+        private buildTrident(length, showLetters);
     }
 }
 declare module feng3d {

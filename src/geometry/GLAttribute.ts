@@ -11,6 +11,11 @@ module feng3d {
         static a_position = "a_position";
 
         /**
+         * 颜色
+         */
+        static a_color = "a_color";
+
+        /**
          * 法线
          */
         static a_normal = "a_normal";

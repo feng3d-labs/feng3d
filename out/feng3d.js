@@ -5237,6 +5237,10 @@ var feng3d;
      */
     GLAttribute.a_position = "a_position";
     /**
+     * 颜色
+     */
+    GLAttribute.a_color = "a_color";
+    /**
      * 法线
      */
     GLAttribute.a_normal = "a_normal";
@@ -5556,15 +5560,19 @@ var feng3d;
         updateGeometry() {
             this.geometryDirty = false;
             var segmentPositionStep = 6;
+            var segmentColorStep = 8;
             var numSegments = this._segments.length;
             var indices = new Uint16Array(numSegments * 2);
             var positionData = new Float32Array(numSegments * segmentPositionStep);
+            var colorData = new Float32Array(numSegments * segmentColorStep);
             for (var i = 0; i < numSegments; i++) {
                 var element = this._segments[i];
                 indices.set([i * 2, i * 2 + 1], i * 2);
                 positionData.set(element.positionData, i * segmentPositionStep);
+                colorData.set(element.colorData, i * segmentColorStep);
             }
             this.setVAData(feng3d.GLAttribute.a_position, positionData, 3);
+            this.setVAData(feng3d.GLAttribute.a_color, colorData, 3);
             this.setIndices(indices);
         }
         /**
@@ -5609,14 +5617,22 @@ var feng3d;
             this.thickness = thickness * .5;
             this.start = start;
             this.end = end;
-            this.startColor = colorStart;
-            this.endColor = colorEnd;
+            this.startColor = new feng3d.Color();
+            this.startColor.fromUnit(colorStart, colorStart > 1 << 24);
+            this.endColor = new feng3d.Color();
+            this.endColor.fromUnit(colorEnd, colorEnd > 1 << 24);
         }
         /**
          * 坐标数据
          */
         get positionData() {
             return [this.start.x, this.start.y, this.start.z, this.end.x, this.end.y, this.end.z];
+        }
+        /**
+         * 颜色数据
+         */
+        get colorData() {
+            return this.startColor.asArray().concat(this.endColor.asArray());
         }
     }
     feng3d.Segment = Segment;
@@ -10083,6 +10099,57 @@ var feng3d;
         }
     }
     feng3d.MD5Loader = MD5Loader;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 坐标系，三叉戟
+     * @author feng 2017-02-06
+     */
+    class Trident extends feng3d.Object3D {
+        constructor(length = 100, showLetters = true) {
+            super();
+            this.buildTrident(Math.abs((length == 0) ? 10 : length), showLetters);
+        }
+        buildTrident(length, showLetters) {
+            var scaleH = length / 10;
+            var scaleW = length / 20;
+            var scl1 = scaleW * 1.5;
+            var scl2 = scaleH * 3;
+            var scl3 = scaleH * 2;
+            var scl4 = scaleH * 3.4;
+            var cross = length + (scl3) + (((length + scl4) - (length + scl3)) / 3 * 2);
+            var arr = [
+                [new feng3d.Vector3D(), new feng3d.Vector3D(length, 0, 0), 0x880000, 0xff0000, 1],
+                //X
+                [new feng3d.Vector3D(length + scl2, scl1, 0), new feng3d.Vector3D(length + scl3, -scl1, 0), 0xff0000, 0xff0000, 1],
+                [new feng3d.Vector3D(length + scl3, scl1, 0), new feng3d.Vector3D(length + scl2, -scl1, 0), 0xff0000, 0xff0000, 1],
+                [new feng3d.Vector3D(), new feng3d.Vector3D(0, length, 0), 0x008800, 0x00ff00, 1],
+                //Y
+                [new feng3d.Vector3D(-scaleW * 1.2, length + scl4, 0), new feng3d.Vector3D(0, cross, 0), 0x00ff00, 0x00ff00, 1],
+                [new feng3d.Vector3D(scaleW * 1.2, length + scl4, 0), new feng3d.Vector3D(0, cross, 0), 0x00ff00, 0x00ff00, 1],
+                [new feng3d.Vector3D(0, cross, 0), new feng3d.Vector3D(0, length + scl3, 0), 0x00ff00, 0x00ff00, 1],
+                [new feng3d.Vector3D(), new feng3d.Vector3D(0, 0, length), 0x000088, 0x0000ff, 1],
+                //Z
+                [new feng3d.Vector3D(0, scl1, length + scl2), new feng3d.Vector3D(0, scl1, length + scl3), 0x0000ff, 0x0000ff, 1],
+                [new feng3d.Vector3D(0, -scl1, length + scl2), new feng3d.Vector3D(0, -scl1, length + scl3), 0x0000ff, 0x0000ff, 1],
+                [new feng3d.Vector3D(0, -scl1, length + scl3), new feng3d.Vector3D(0, scl1, length + scl2), 0x0000ff, 0x0000ff, 1],
+            ];
+            var groundGridObject3D = new feng3d.Object3D("GroundGrid");
+            groundGridObject3D.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
+            groundGridObject3D.transform.y = -50;
+            var segmentGeometry = new feng3d.SegmentGeometry();
+            var geometry = groundGridObject3D.getOrCreateComponentByClass(feng3d.Geometry);
+            geometry.addComponent(segmentGeometry);
+            var segmentX;
+            for (var i = 0; i < arr.length; i++) {
+                segmentX = new feng3d.Segment(feng3d.as(arr[i][0], feng3d.Vector3D), feng3d.as(arr[i][1], feng3d.Vector3D), Number(arr[i][2]), Number(arr[i][3]), Number(arr[i][4]));
+                segmentGeometry.addSegment(segmentX);
+            }
+            this.addChild(groundGridObject3D);
+        }
+    }
+    feng3d.Trident = Trident;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
