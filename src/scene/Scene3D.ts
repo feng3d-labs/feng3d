@@ -12,6 +12,11 @@ module feng3d {
         private _lights: Light[] = [];
 
         /**
+         * 默认渲染器
+         */
+        private renderer: Renderer;
+
+        /**
          * 渲染列表
          */
         public get renderers() {
@@ -33,6 +38,7 @@ module feng3d {
         constructor() {
 
             super("root");
+            this.renderer = new Renderer();
             this.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
             this.addEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
             this.addEventListener(Scene3DEvent.ADDED_RENDERER_TO_SCENE, this.onAddedRendererToScene, this);
@@ -102,7 +108,7 @@ module feng3d {
             context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
             var renderables = this.renderers;
             renderables.forEach(element => {
-                element.draw(context3D, this._renderContext);
+                this.renderer.draw(context3D, this._renderContext, element.object3D);
             });
 
         }

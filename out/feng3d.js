@@ -4846,26 +4846,25 @@ var feng3d;
      * 渲染器
      * @author feng 2016-05-01
      */
-    class Renderer extends feng3d.Object3DComponent {
+    class Renderer {
         constructor() {
-            super(...arguments);
             /** 渲染原子 */
             this.renderAtomic = new feng3d.RenderAtomic();
         }
         /**
          * 渲染
          */
-        draw(context3D, renderContext) {
+        draw(context3D, renderContext, object3D) {
             //更新数据
-            renderContext.updateRenderData(this.object3D);
-            this.object3D.updateRenderData(renderContext);
+            renderContext.updateRenderData(object3D);
+            object3D.updateRenderData(renderContext);
             //收集数据
             renderContext.activate(this.renderAtomic);
-            this.object3D.activate(this.renderAtomic);
+            object3D.activate(this.renderAtomic);
             //绘制
             this.drawObject3D(context3D); //
             //释放数据
-            this.object3D.deactivate(this.renderAtomic);
+            object3D.deactivate(this.renderAtomic);
             renderContext.deactivate(this.renderAtomic);
         }
         /**
@@ -5020,7 +5019,7 @@ var feng3d;
      * 网格渲染器
      * @author feng 2016-12-12
      */
-    class MeshRenderer extends feng3d.Renderer {
+    class MeshRenderer extends feng3d.Object3DComponent {
         constructor() {
             super();
             this.material = new feng3d.ColorMaterial();
@@ -5073,12 +5072,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    class MouseRenderer extends feng3d.Renderer {
-    }
-    feng3d.MouseRenderer = MouseRenderer;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     /**
      * 鼠标拾取渲染器
      * @author feng 2017-02-06
@@ -5115,6 +5108,7 @@ var feng3d;
             this._object3Ds = [];
             this._renderers = [];
             this._lights = [];
+            this.renderer = new feng3d.Renderer();
             this.addEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
             this.addEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
             this.addEventListener(feng3d.Scene3DEvent.ADDED_RENDERER_TO_SCENE, this.onAddedRendererToScene, this);
@@ -5182,7 +5176,7 @@ var feng3d;
             context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
             var renderables = this.renderers;
             renderables.forEach(element => {
-                element.draw(context3D, this._renderContext);
+                this.renderer.draw(context3D, this._renderContext, element.object3D);
             });
         }
     }

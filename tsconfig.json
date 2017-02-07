@@ -103,6 +103,7 @@
         "src/primitives/SphereGeometry.ts",
         "src/primitives/CapsuleGeometry.ts",
         "src/primitives/CylinderGeometry.ts",
+        "src/primitives/ConeGeometry.ts",
         "src/primitives/SkyBoxGeometry.ts",
         //
         "src/textures/TextureInfo.ts",

@@ -4,7 +4,7 @@ module feng3d {
      * 渲染器
      * @author feng 2016-05-01
      */
-    export class Renderer extends Object3DComponent {
+    export class Renderer {
 
         /** 渲染原子 */
         protected renderAtomic = new RenderAtomic();
@@ -12,18 +12,18 @@ module feng3d {
         /**
 		 * 渲染
 		 */
-        public draw(context3D: Context3D, renderContext: RenderContext) {
+        public draw(context3D: Context3D, renderContext: RenderContext, object3D: Object3D) {
 
             //更新数据
-            renderContext.updateRenderData(this.object3D);
-            this.object3D.updateRenderData(renderContext);
+            renderContext.updateRenderData(object3D);
+            object3D.updateRenderData(renderContext);
             //收集数据
             renderContext.activate(this.renderAtomic);
-            this.object3D.activate(this.renderAtomic);
+            object3D.activate(this.renderAtomic);
             //绘制
             this.drawObject3D(context3D);            //
             //释放数据
-            this.object3D.deactivate(this.renderAtomic);
+            object3D.deactivate(this.renderAtomic);
             renderContext.deactivate(this.renderAtomic);
         }
 

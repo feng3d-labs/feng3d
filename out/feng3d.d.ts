@@ -3367,13 +3367,13 @@ declare module feng3d {
      * 渲染器
      * @author feng 2016-05-01
      */
-    class Renderer extends Object3DComponent {
+    class Renderer {
         /** 渲染原子 */
         protected renderAtomic: RenderAtomic;
         /**
          * 渲染
          */
-        draw(context3D: Context3D, renderContext: RenderContext): void;
+        draw(context3D: Context3D, renderContext: RenderContext, object3D: Object3D): void;
         /**
          * 绘制3D对象
          */
@@ -3389,7 +3389,7 @@ declare module feng3d {
      * 网格渲染器
      * @author feng 2016-12-12
      */
-    class MeshRenderer extends Renderer {
+    class MeshRenderer extends Object3DComponent {
         private _material;
         /**
          * 材质
@@ -3412,10 +3412,6 @@ declare module feng3d {
          * 处理从场景移除事件
          */
         private onRemovedFromScene(event);
-    }
-}
-declare module feng3d {
-    class MouseRenderer extends Renderer {
     }
 }
 declare module feng3d {
@@ -3442,6 +3438,10 @@ declare module feng3d {
         private _object3Ds;
         private _renderers;
         private _lights;
+        /**
+         * 默认渲染器
+         */
+        private renderer;
         /**
          * 渲染列表
          */
