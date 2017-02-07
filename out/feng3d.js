@@ -5073,6 +5073,12 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    class MouseRenderer extends feng3d.Renderer {
+    }
+    feng3d.MouseRenderer = MouseRenderer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 鼠标拾取渲染器
      * @author feng 2017-02-06
