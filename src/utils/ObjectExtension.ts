@@ -57,12 +57,15 @@ module feng3d {
         function createUID(object: any) {
 
             var className = getClassName(object);
+            var id = ~~uidStart[className];
+            var time = Date.now();//时间戳
             var uid = [//
                 className,//类名
                 StringUtils.getString(~~uidStart[className], 8, "0", false),//类id
-                Date.now(),//时间戳
+                time,//时间戳
             ].join("-");
-
+            //
+            $uidDetails[uid] = { className: className, id: id, time: time };
             uidStart[className] = ~~uidStart[className] + 1;
             return uid;
         }
@@ -72,6 +75,10 @@ module feng3d {
      * uid自增长编号
      */
     var uidStart: { [className: string]: number } = {};
+    /**
+     * uid细节
+     */
+    export var $uidDetails: { [uid: string]: { className: string, id: number, time: number } } = {};
 
     /**
      * 获取对象的类名

@@ -5,6 +5,9 @@ module feng3d {
      */
     export class Object3D extends RenderDataHolder {
 
+        private _object3DID: number;
+        private _uid: string;
+
         private _transform: Transform;
         /**
          * 父对象
@@ -23,7 +26,12 @@ module feng3d {
          */
         public get uid() {
 
-            return getUID(this);
+            return this._uid;
+        }
+
+        public get object3DID() {
+
+            return this._object3DID;
         }
 
         /**
@@ -49,9 +57,14 @@ module feng3d {
 
             super();
 
-            this.name = name || this.uid;
+            this._uid = getUID(this);
+            this._object3DID = object3DAutoID++;
+            object3DMap[this._object3DID] = this;
+            this.name = name || this._uid;
             //
             this.transform = new Transform();
+            //
+            this.renderData.uniforms[RenderDataID.u_objectID] = this._object3DID;
             //
             this.addEventListener(Object3DEvent.ADDED, this.onAdded, this);
             this.addEventListener(Object3DEvent.REMOVED, this.onRemoved, this);
@@ -202,5 +215,12 @@ module feng3d {
                 this._setParent(null);
             }
         }
+
+        public static getObject3D(id: number) {
+            return object3DMap[id];
+        }
     }
+
+    var object3DAutoID = 0;
+    var object3DMap: { [id: number]: Object3D } = {};
 }

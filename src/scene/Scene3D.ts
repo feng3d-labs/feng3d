@@ -6,15 +6,9 @@ module feng3d {
      */
     export class Scene3D extends Object3D {
 
-        private _renderContext = new RenderContext();
         private _object3Ds: Object3D[] = [];
         private _renderers: MeshRenderer[] = [];
         private _lights: Light[] = [];
-
-        /**
-         * 默认渲染器
-         */
-        private renderer: Renderer;
 
         /**
          * 渲染列表
@@ -38,7 +32,7 @@ module feng3d {
         constructor() {
 
             super("root");
-            this.renderer = new Renderer();
+            //
             this.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
             this.addEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
             this.addEventListener(Scene3DEvent.ADDED_RENDERER_TO_SCENE, this.onAddedRendererToScene, this);
@@ -93,24 +87,6 @@ module feng3d {
         private onRemovedLightFromScene(event: Scene3DEvent) {
 
             ArrayUtils.removeItem(this._lights, event.data.light);
-        }
-
-        /**
-		 * 渲染
-		 */
-        public draw(context3D: Context3D, camera: Camera3D) {
-
-            //初始化渲染环境
-            this._renderContext.clear();
-            this._renderContext.camera = camera;
-            this._renderContext.lights = this._lights;
-            //
-            context3D.clear(context3D.COLOR_BUFFER_BIT | context3D.DEPTH_BUFFER_BIT);
-            var renderables = this.renderers;
-            renderables.forEach(element => {
-                this.renderer.draw(context3D, this._renderContext, element.object3D);
-            });
-
         }
     }
 }

@@ -1714,6 +1714,16 @@ declare module feng3d {
         __uid__?: string;
     }): any;
     /**
+     * uid细节
+     */
+    var $uidDetails: {
+        [uid: string]: {
+            className: string;
+            id: number;
+            time: number;
+        };
+    };
+    /**
      * 获取对象的类名
      * @author feng 2016-4-24
      */
@@ -2842,6 +2852,10 @@ declare module feng3d {
          * 骨骼全局矩阵
          */
         static u_skeletonGlobalMatriices: string;
+        /**
+         * 3D对象编号
+         */
+        static u_objectID: string;
     }
 }
 declare module feng3d {
@@ -2967,6 +2981,8 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Object3D extends RenderDataHolder {
+        private _object3DID;
+        private _uid;
         private _transform;
         /**
          * 父对象
@@ -2980,7 +2996,8 @@ declare module feng3d {
         /**
          * 唯一标识符
          */
-        readonly uid: any;
+        readonly uid: string;
+        readonly object3DID: number;
         /**
          * 变换
          */
@@ -3047,6 +3064,7 @@ declare module feng3d {
          * 处理删除子对象事件
          */
         private onRemoved(event);
+        static getObject3D(id: number): Object3D;
     }
 }
 declare module feng3d {
@@ -3060,13 +3078,13 @@ declare module feng3d {
         private _scene;
         private _canvas;
         /**
-         * 绘制宽度
+         * 默认渲染器
          */
-        private renderWidth;
+        private defaultRenderer;
         /**
-         * 绘制高度
+         * 鼠标拾取渲染器
          */
-        private renderHeight;
+        private mouseRenderer;
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -3080,14 +3098,11 @@ declare module feng3d {
         private initGL();
         /** 3d场景 */
         scene: Scene3D;
+        private onMousedown(event);
         /**
          * 绘制场景
          */
         private drawScene();
-        /**
-         * 重置尺寸
-         */
-        private resize();
         /**
          * 摄像机
          */
@@ -3373,7 +3388,7 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(context3D: Context3D, renderContext: RenderContext, object3D: Object3D): void;
+        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
         /**
          * 绘制3D对象
          */
@@ -3434,14 +3449,9 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class Scene3D extends Object3D {
-        private _renderContext;
         private _object3Ds;
         private _renderers;
         private _lights;
-        /**
-         * 默认渲染器
-         */
-        private renderer;
         /**
          * 渲染列表
          */
@@ -3478,10 +3488,6 @@ declare module feng3d {
          * 处理移除灯光事件
          */
         private onRemovedLightFromScene(event);
-        /**
-         * 渲染
-         */
-        draw(context3D: Context3D, camera: Camera3D): void;
     }
 }
 declare module feng3d {

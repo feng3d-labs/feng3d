@@ -12,19 +12,29 @@ module feng3d {
         /**
 		 * 渲染
 		 */
-        public draw(context3D: Context3D, renderContext: RenderContext, object3D: Object3D) {
+        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D) {
 
-            //更新数据
-            renderContext.updateRenderData(object3D);
-            object3D.updateRenderData(renderContext);
-            //收集数据
-            renderContext.activate(this.renderAtomic);
-            object3D.activate(this.renderAtomic);
-            //绘制
-            this.drawObject3D(context3D);            //
-            //释放数据
-            object3D.deactivate(this.renderAtomic);
-            renderContext.deactivate(this.renderAtomic);
+            var renderContext: RenderContext = new RenderContext();
+            //初始化渲染环境
+            renderContext.clear();
+            renderContext.camera = camera;
+            renderContext.lights = scene3D.lights;
+
+            var renderables = scene3D.renderers;
+            renderables.forEach(element => {
+                var object3D = element.object3D;
+                //更新数据
+                renderContext.updateRenderData(object3D);
+                object3D.updateRenderData(renderContext);
+                //收集数据
+                renderContext.activate(this.renderAtomic);
+                object3D.activate(this.renderAtomic);
+                //绘制
+                this.drawObject3D(context3D);            //
+                //释放数据
+                object3D.deactivate(this.renderAtomic);
+                renderContext.deactivate(this.renderAtomic);
+            });
         }
 
         /**
@@ -150,6 +160,9 @@ module feng3d {
 
         var location = context3D.getUniformLocation(shaderProgram, activeInfo.name);
         switch (activeInfo.type) {
+            case Context3D.UNSIGNED_INT:
+                context3D.uniform1ui(location, data);
+                break;
             case Context3D.FLOAT_MAT4:
                 context3D.uniformMatrix4fv(location, false, data.rawData);
                 break;

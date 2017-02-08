@@ -109,5 +109,10 @@ module feng3d {
          * 骨骼全局矩阵
          */
         static u_skeletonGlobalMatriices = "u_skeletonGlobalMatriices";
+
+        /**
+         * 3D对象编号
+         */
+        static u_objectID = "u_objectID";
     }
 }
