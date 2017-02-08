@@ -41,7 +41,7 @@ module feng3d {
             this.defaultRenderer = new Renderer();
             this.mouseRenderer = new MouseRenderer();
 
-            $mouseKeyInput.addEventListener("mousedown", this.onMousedown, this);
+            $mouseKeyInput.addEventListener("mousemove", this.onMousedown, this);
 
             setInterval(this.drawScene.bind(this), 15);
         }
@@ -66,28 +66,14 @@ module feng3d {
             this._scene = value;
         }
 
+        private mousePickTasks: { mouseX: number, mouseY: number, event: Event }[] = [];
+
         private onMousedown(event: Event) {
 
             var mouseX = event.data.clientX - this._canvas.offsetLeft;
             var mouseY = event.data.clientY - this._canvas.offsetTop;
 
-            //鼠标拾取渲
-            this._context3D.clearColor(0, 0, 0, 1.0);
-            this._context3D.clearDepth(1);
-            this._context3D.clearStencil(0);
-            this._context3D.clear(Context3D.COLOR_BUFFER_BIT | Context3D.DEPTH_BUFFER_BIT);
-            this._context3D.viewport(-mouseX, -mouseY, this._canvas.width, this._canvas.height);
-            this.mouseRenderer.draw(this._context3D, this._scene, this._camera);
-
-            this._context3D.readBuffer(Context3D.COLOR_ATTACHMENT0);
-            var data = new Uint8Array(4);
-            this._context3D.readPixels(0, 0, 1, 1, Context3D.RGBA, Context3D.UNSIGNED_BYTE, data)
-            var id = data[0] * 255 + data[1];
-            console.log(`选中索引3D对象${id}`);
-
-            var object3D = Object3D.getObject3D(id);
-            if (object3D.parent)
-                object3D.parent.removeChild(object3D);
+            this.mousePickTasks.push({ mouseX: mouseX, mouseY: mouseY, event: event });
         }
 
         /**
@@ -95,7 +81,22 @@ module feng3d {
          */
         private drawScene() {
 
+            //鼠标拾取渲染
+            if (this.mousePickTasks.length > 0) {
+                var mousePickTasks = this.mousePickTasks.reverse();
+                while (mousePickTasks.length > 0) {
+                    var mousePickTask = mousePickTasks.pop();
+
+                    this._context3D.clearColor(0, 0, 0, 0);
+                    this._context3D.clearDepth(1);
+                    this._context3D.clear(Context3D.COLOR_BUFFER_BIT | Context3D.DEPTH_BUFFER_BIT);
+                    this._context3D.viewport(-mousePickTask.mouseX, -mousePickTask.mouseY, this._canvas.width, this._canvas.height);
+                    this.mouseRenderer.draw(this._context3D, this._scene, this._camera);
+                }
+            }
+
             // 默认渲染
+            this._context3D.clearColor(0, 0, 0, 1.0);
             this._context3D.clear(Context3D.COLOR_BUFFER_BIT | Context3D.DEPTH_BUFFER_BIT);
             this._context3D.viewport(0, 0, this._canvas.width, this._canvas.height);
             this.defaultRenderer.draw(this._context3D, this._scene, this._camera);

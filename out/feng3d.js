@@ -4445,6 +4445,7 @@ var feng3d;
          * @param camera    摄像机
          */
         constructor(canvas, scene = null, camera = null) {
+            this.mousePickTasks = [];
             feng3d.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
             this._context3D = this._canvas.getContext(feng3d.contextId);
@@ -4453,7 +4454,7 @@ var feng3d;
             this.camera = camera || new feng3d.Camera3D();
             this.defaultRenderer = new feng3d.Renderer();
             this.mouseRenderer = new feng3d.MouseRenderer();
-            feng3d.$mouseKeyInput.addEventListener("mousedown", this.onMousedown, this);
+            feng3d.$mouseKeyInput.addEventListener("mousemove", this.onMousedown, this);
             setInterval(this.drawScene.bind(this), 15);
         }
         /**
@@ -4475,27 +4476,26 @@ var feng3d;
         onMousedown(event) {
             var mouseX = event.data.clientX - this._canvas.offsetLeft;
             var mouseY = event.data.clientY - this._canvas.offsetTop;
-            //鼠标拾取渲
-            this._context3D.clearColor(0, 0, 0, 1.0);
-            this._context3D.clearDepth(1);
-            this._context3D.clearStencil(0);
-            this._context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
-            this._context3D.viewport(-mouseX, -mouseY, this._canvas.width, this._canvas.height);
-            this.mouseRenderer.draw(this._context3D, this._scene, this._camera);
-            this._context3D.readBuffer(feng3d.Context3D.COLOR_ATTACHMENT0);
-            var data = new Uint8Array(4);
-            this._context3D.readPixels(0, 0, 1, 1, feng3d.Context3D.RGBA, feng3d.Context3D.UNSIGNED_BYTE, data);
-            var id = data[0] * 255 + data[1];
-            console.log(`选中索引${id}`);
-            var object3D = feng3d.Object3D.getObject3D(id);
-            if (object3D.parent)
-                object3D.parent.removeChild(object3D);
+            this.mousePickTasks.push({ mouseX: mouseX, mouseY: mouseY, event: event });
         }
         /**
          * 绘制场景
          */
         drawScene() {
+            //鼠标拾取渲染
+            if (this.mousePickTasks.length > 0) {
+                var mousePickTasks = this.mousePickTasks.reverse();
+                while (mousePickTasks.length > 0) {
+                    var mousePickTask = mousePickTasks.pop();
+                    this._context3D.clearColor(0, 0, 0, 0);
+                    this._context3D.clearDepth(1);
+                    this._context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
+                    this._context3D.viewport(-mousePickTask.mouseX, -mousePickTask.mouseY, this._canvas.width, this._canvas.height);
+                    this.mouseRenderer.draw(this._context3D, this._scene, this._camera);
+                }
+            }
             // 默认渲染
+            this._context3D.clearColor(0, 0, 0, 1.0);
             this._context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
             this._context3D.viewport(0, 0, this._canvas.width, this._canvas.height);
             this.defaultRenderer.draw(this._context3D, this._scene, this._camera);
@@ -5131,6 +5131,26 @@ var feng3d;
         constructor() {
             super(...arguments);
             this.shaderName = "mouse";
+        }
+        /**
+         * 渲染
+         */
+        draw(context3D, scene3D, camera) {
+            //启动裁剪，只绘制一个像素
+            context3D.enable(feng3d.Context3D.SCISSOR_TEST);
+            context3D.scissor(0, 0, 1, 1);
+            super.draw(context3D, scene3D, camera);
+            context3D.disable(feng3d.Context3D.SCISSOR_TEST);
+            //读取鼠标拾取索引
+            context3D.readBuffer(feng3d.Context3D.COLOR_ATTACHMENT0);
+            var data = new Uint8Array(4);
+            context3D.readPixels(0, 0, 1, 1, feng3d.Context3D.RGBA, feng3d.Context3D.UNSIGNED_BYTE, data);
+            var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3]; //最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
+            console.log(`选中索引3D对象${id}`, data.toString());
+            var object3D = feng3d.Object3D.getObject3D(id);
+            if (object3D) {
+                object3D.dispatchEvent(new feng3d.Event("mousepick"));
+            }
         }
         /**
          * 激活渲染程序

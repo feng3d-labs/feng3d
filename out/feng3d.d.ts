@@ -3098,6 +3098,7 @@ declare module feng3d {
         private initGL();
         /** 3d场景 */
         scene: Scene3D;
+        private mousePickTasks;
         private onMousedown(event);
         /**
          * 绘制场景
@@ -3437,6 +3438,10 @@ declare module feng3d {
     class MouseRenderer extends Renderer {
         private shaderName;
         private shaderProgram;
+        /**
+         * 渲染
+         */
+        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
         /**
          * 激活渲染程序
          */

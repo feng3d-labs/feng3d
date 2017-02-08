@@ -9,6 +9,32 @@ module feng3d {
         private shaderName = "mouse";
         private shaderProgram: WebGLProgram;
 
+
+        /**
+		 * 渲染
+		 */
+        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D) {
+
+            //启动裁剪，只绘制一个像素
+            context3D.enable(Context3D.SCISSOR_TEST);
+            context3D.scissor(0, 0, 1, 1);
+            super.draw(context3D, scene3D, camera);
+            context3D.disable(Context3D.SCISSOR_TEST);
+            //读取鼠标拾取索引
+            context3D.readBuffer(Context3D.COLOR_ATTACHMENT0);
+            var data = new Uint8Array(4);
+            context3D.readPixels(0, 0, 1, 1, Context3D.RGBA, Context3D.UNSIGNED_BYTE, data);
+            var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3];//最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
+            console.log(`选中索引3D对象${id}`, data.toString());
+
+            var object3D = Object3D.getObject3D(id);
+            if (object3D) {
+                object3D.dispatchEvent(new Event("mousepick"));
+            }
+
+        }
+
+
         /**
          * 激活渲染程序
          */
