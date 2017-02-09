@@ -10,18 +10,18 @@ module feng3d {
          * 几何体是否变脏
          */
         private geometryDirty = false;
-        private _points: Point[] = [];
+        private _points: PointInfo[] = [];
 
         constructor() {
             super();
-            this.addPoint(new Point(new Vector3D(0, 0, 0)))
+            this.addPoint(new PointInfo(new Vector3D(0, 0, 0)))
         }
 
         /**
 		 * 添加点
 		 * @param point		点数据
 		 */
-        public addPoint(point: Point, needUpdateGeometry: boolean = true) {
+        public addPoint(point: PointInfo, needUpdateGeometry: boolean = true) {
 
             this._points.push(point);
             this.geometryDirty = true;
@@ -56,7 +56,7 @@ module feng3d {
 		 * @param index 		线段索引
 		 * @return				线段数据
 		 */
-        public getPoint(index: number): Point {
+        public getPoint(index: number): PointInfo {
             if (index < this._points.length)
                 return this._points[index];
             return null;
@@ -74,17 +74,17 @@ module feng3d {
 		/**
 		 * 线段列表
 		 */
-        public get points(): Point[] {
+        public get points(): PointInfo[] {
 
             return this._points;
         }
     }
 
     /**
-     * 点
+     * 点信息
      * @author feng 2016-10-16
      */
-    export class Point {
+    export class PointInfo {
 
         public position: Vector3D;
 

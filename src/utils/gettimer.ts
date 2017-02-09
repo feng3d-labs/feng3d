@@ -1,10 +1,9 @@
 module feng3d {
 
     /**
-     * 获取时间，毫秒为单位
+     * 获取feng3d运行时间，毫秒为单位
      */
-    export function getTimer() {
-
-        return new Date().getTime();
+    export function getTimer(): number {
+        return Date.now() - $feng3dStartTime;
     }
 }

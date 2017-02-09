@@ -1518,10 +1518,10 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 获取时间，毫秒为单位
+     * 获取feng3d运行时间，毫秒为单位
      */
     function getTimer() {
-        return new Date().getTime();
+        return Date.now() - feng3d.$feng3dStartTime;
     }
     feng3d.getTimer = getTimer;
 })(feng3d || (feng3d = {}));
@@ -2179,36 +2179,420 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var DEG_TO_RAD = Math.PI / 180;
+    /**
+     * Point 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
+     */
+    class Point {
+        /**
+         * 创建一个 egret.Point 对象.若不传入任何参数，将会创建一个位于（0，0）位置的点。
+         * @param x 该对象的x属性值，默认为0
+         * @param y 该对象的y属性值，默认为0
+         */
+        constructor(x = 0, y = 0) {
+            this.x = x;
+            this.y = y;
+        }
+        /**
+         * 从 (0,0) 到此点的线段长度。
+         */
+        get length() {
+            return Math.sqrt(this.x * this.x + this.y * this.y);
+        }
+        /**
+         * 将 Point 的成员设置为指定值
+         * @param x 该对象的x属性值
+         * @param y 该对象的y属性值
+         */
+        setTo(x, y) {
+            this.x = x;
+            this.y = y;
+            return this;
+        }
+        /**
+         * 克隆点对象
+         */
+        clone() {
+            return new Point(this.x, this.y);
+        }
+        /**
+         * 确定两个点是否相同。如果两个点具有相同的 x 和 y 值，则它们是相同的点。
+         * @param toCompare 要比较的点。
+         * @returns 如果该对象与此 Point 对象相同，则为 true 值，如果不相同，则为 false。
+         */
+        equals(toCompare) {
+            return this.x == toCompare.x && this.y == toCompare.y;
+        }
+        /**
+         * 返回 pt1 和 pt2 之间的距离。
+         * @param p1 第一个点
+         * @param p2 第二个点
+         * @returns 第一个点和第二个点之间的距离。
+         */
+        static distance(p1, p2) {
+            return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+        }
+        /**
+         * 将源 Point 对象中的所有点数据复制到调用方 Point 对象中。
+         * @param sourcePoint 要从中复制数据的 Point 对象。
+         */
+        copyFrom(sourcePoint) {
+            this.x = sourcePoint.x;
+            this.y = sourcePoint.y;
+        }
+        /**
+         * 将另一个点的坐标添加到此点的坐标以创建一个新点。
+         * @param v 要添加的点。
+         * @returns 新点。
+         */
+        add(v) {
+            return new Point(this.x + v.x, this.y + v.y);
+        }
+        /**
+         * 确定两个指定点之间的点。
+         * 参数 f 确定新的内插点相对于参数 pt1 和 pt2 指定的两个端点所处的位置。参数 f 的值越接近 1.0，则内插点就越接近第一个点（参数 pt1）。参数 f 的值越接近 0，则内插点就越接近第二个点（参数 pt2）。
+         * @param pt1 第一个点。
+         * @param pt2 第二个点。
+         * @param f 两个点之间的内插级别。表示新点将位于 pt1 和 pt2 连成的直线上的什么位置。如果 f=1，则返回 pt1；如果 f=0，则返回 pt2。
+         * @returns 新的内插点。
+         */
+        static interpolate(pt1, pt2, f) {
+            let f1 = 1 - f;
+            return new Point(pt1.x * f + pt2.x * f1, pt1.y * f + pt2.y * f1);
+        }
+        /**
+         * 将 (0,0) 和当前点之间的线段缩放为设定的长度。
+         * @param thickness 缩放值。例如，如果当前点为 (0,5) 并且您将它规范化为 1，则返回的点位于 (0,1) 处。
+         */
+        normalize(thickness) {
+            if (this.x != 0 || this.y != 0) {
+                let relativeThickness = thickness / this.length;
+                this.x *= relativeThickness;
+                this.y *= relativeThickness;
+            }
+        }
+        /**
+         * 按指定量偏移 Point 对象。dx 的值将添加到 x 的原始值中以创建新的 x 值。dy 的值将添加到 y 的原始值中以创建新的 y 值。
+         * @param dx 水平坐标 x 的偏移量。
+         * @param dy 水平坐标 y 的偏移量。
+         */
+        offset(dx, dy) {
+            this.x += dx;
+            this.y += dy;
+        }
+        /**
+         * 将一对极坐标转换为笛卡尔点坐标。
+         * @param len 极坐标对的长度。
+         * @param angle 极坐标对的角度（以弧度表示）。
+         */
+        static polar(len, angle) {
+            return new Point(len * Math.cos(angle / DEG_TO_RAD), len * Math.sin(angle / DEG_TO_RAD));
+        }
+        /**
+         * 从此点的坐标中减去另一个点的坐标以创建一个新点。
+         * @param v 要减去的点。
+         * @returns 新点。
+         */
+        subtract(v) {
+            return new Point(this.x - v.x, this.y - v.y);
+        }
+        /**
+         * 返回包含 x 和 y 坐标的值的字符串。该字符串的格式为 "(x=x, y=y)"，因此为点 23,17 调用 toString() 方法将返回 "(x=23, y=17)"。
+         * @returns 坐标的字符串表示形式。
+         */
+        toString() {
+            return "(x=" + this.x + ", y=" + this.y + ")";
+        }
+    }
+    feng3d.Point = Point;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    let rectanglePool = [];
     /**
      * 矩形
+     *
+     * Rectangle 对象是按其位置（由它左上角的点 (x, y) 确定）以及宽度和高度定义的区域。<br/>
+     * Rectangle 类的 x、y、width 和 height 属性相互独立；更改一个属性的值不会影响其他属性。
+     * 但是，right 和 bottom 属性与这四个属性是整体相关的。例如，如果更改 right 属性的值，则 width
+     * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
      * @author feng 2016-04-27
      */
     class Rectangle {
-        constructor() {
-            /**
-             * X坐标
-             */
+        /**
+         * 创建一个新 Rectangle 对象，其左上角由 x 和 y 参数指定，并具有指定的 width 和 height 参数。
+         * @param x 矩形左上角的 x 坐标。
+         * @param y 矩形左上角的 y 坐标。
+         * @param width 矩形的宽度（以像素为单位）。
+         * @param height 矩形的高度（以像素为单位）。
+         */
+        constructor(x = 0, y = 0, width = 0, height = 0) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+        /**
+         * x 和 width 属性的和。
+         */
+        get right() {
+            return this.x + this.width;
+        }
+        set right(value) {
+            this.width = value - this.x;
+        }
+        /**
+         * y 和 height 属性的和。
+         */
+        get bottom() {
+            return this.y + this.height;
+        }
+        set bottom(value) {
+            this.height = value - this.y;
+        }
+        /**
+         * 矩形左上角的 x 坐标。更改 Rectangle 对象的 left 属性对 y 和 height 属性没有影响。但是，它会影响 width 属性，而更改 x 值不会影响 width 属性。
+         * left 属性的值等于 x 属性的值。
+         */
+        get left() {
+            return this.x;
+        }
+        set left(value) {
+            this.width += this.x - value;
+            this.x = value;
+        }
+        /**
+         * 矩形左上角的 y 坐标。更改 Rectangle 对象的 top 属性对 x 和 width 属性没有影响。但是，它会影响 height 属性，而更改 y 值不会影响 height 属性。<br/>
+         * top 属性的值等于 y 属性的值。
+         */
+        get top() {
+            return this.y;
+        }
+        set top(value) {
+            this.height += this.y - value;
+            this.y = value;
+        }
+        /**
+         * 由该点的 x 和 y 坐标确定的 Rectangle 对象左上角的位置。
+         */
+        get topLeft() {
+            return new feng3d.Point(this.left, this.top);
+        }
+        set topLeft(value) {
+            this.top = value.y;
+            this.left = value.x;
+        }
+        /**
+         * 由 right 和 bottom 属性的值确定的 Rectangle 对象的右下角的位置。
+         */
+        get bottomRight() {
+            return new feng3d.Point(this.right, this.bottom);
+        }
+        set bottomRight(value) {
+            this.bottom = value.y;
+            this.right = value.x;
+        }
+        /**
+         * 将源 Rectangle 对象中的所有矩形数据复制到调用方 Rectangle 对象中。
+         * @param sourceRect 要从中复制数据的 Rectangle 对象。
+         */
+        copyFrom(sourceRect) {
+            this.x = sourceRect.x;
+            this.y = sourceRect.y;
+            this.width = sourceRect.width;
+            this.height = sourceRect.height;
+            return this;
+        }
+        /**
+         * 将 Rectangle 的成员设置为指定值
+         * @param x 矩形左上角的 x 坐标。
+         * @param y 矩形左上角的 y 坐标。
+         * @param width 矩形的宽度（以像素为单位）。
+         * @param height 矩形的高度（以像素为单位）。
+         */
+        setTo(x, y, width, height) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+            return this;
+        }
+        /**
+         * 确定由此 Rectangle 对象定义的矩形区域内是否包含指定的点。
+         * @param x 检测点的x轴
+         * @param y 检测点的y轴
+         * @returns 如果检测点位于矩形内，返回true，否则，返回false
+         */
+        contains(x, y) {
+            return this.x <= x &&
+                this.x + this.width >= x &&
+                this.y <= y &&
+                this.y + this.height >= y;
+        }
+        /**
+         * 如果在 toIntersect 参数中指定的 Rectangle 对象与此 Rectangle 对象相交，则返回交集区域作为 Rectangle 对象。如果矩形不相交，
+         * 则此方法返回一个空的 Rectangle 对象，其属性设置为 0。
+         * @param toIntersect 要对照比较以查看其是否与此 Rectangle 对象相交的 Rectangle 对象。
+         * @returns 等于交集区域的 Rectangle 对象。如果该矩形不相交，则此方法返回一个空的 Rectangle 对象；即，其 x、y、width 和
+         * height 属性均设置为 0 的矩形。
+         */
+        intersection(toIntersect) {
+            return this.clone().$intersectInPlace(toIntersect);
+        }
+        /**
+         * 按指定量增加 Rectangle 对象的大小（以像素为单位）
+         * 保持 Rectangle 对象的中心点不变，使用 dx 值横向增加它的大小，使用 dy 值纵向增加它的大小。
+         * @param dx Rectangle 对象横向增加的值。
+         * @param dy Rectangle 对象纵向增加的值。
+         */
+        inflate(dx, dy) {
+            this.x -= dx;
+            this.width += 2 * dx;
+            this.y -= dy;
+            this.height += 2 * dy;
+        }
+        /**
+         * @private
+         */
+        $intersectInPlace(clipRect) {
+            let x0 = this.x;
+            let y0 = this.y;
+            let x1 = clipRect.x;
+            let y1 = clipRect.y;
+            let l = Math.max(x0, x1);
+            let r = Math.min(x0 + this.width, x1 + clipRect.width);
+            if (l <= r) {
+                let t = Math.max(y0, y1);
+                let b = Math.min(y0 + this.height, y1 + clipRect.height);
+                if (t <= b) {
+                    this.setTo(l, t, r - l, b - t);
+                    return this;
+                }
+            }
+            this.setEmpty();
+            return this;
+        }
+        /**
+         * 确定在 toIntersect 参数中指定的对象是否与此 Rectangle 对象相交。此方法检查指定的 Rectangle
+         * 对象的 x、y、width 和 height 属性，以查看它是否与此 Rectangle 对象相交。
+         * @param toIntersect 要与此 Rectangle 对象比较的 Rectangle 对象。
+         * @returns 如果两个矩形相交，返回true，否则返回false
+         */
+        intersects(toIntersect) {
+            return Math.max(this.x, toIntersect.x) <= Math.min(this.right, toIntersect.right)
+                && Math.max(this.y, toIntersect.y) <= Math.min(this.bottom, toIntersect.bottom);
+        }
+        /**
+         * 确定此 Rectangle 对象是否为空。
+         * @returns 如果 Rectangle 对象的宽度或高度小于等于 0，则返回 true 值，否则返回 false。
+         */
+        isEmpty() {
+            return this.width <= 0 || this.height <= 0;
+        }
+        /**
+         * 将 Rectangle 对象的所有属性设置为 0。
+         */
+        setEmpty() {
             this.x = 0;
-            /**
-             * Y坐标
-             */
             this.y = 0;
-            /**
-             * 宽度
-             */
             this.width = 0;
-            /**
-             * 高度
-             */
             this.height = 0;
         }
         /**
-         * 是否包含指定点
-         * @param x 点的X坐标
-         * @param y 点的Y坐标
+         * 返回一个新的 Rectangle 对象，其 x、y、width 和 height 属性的值与原始 Rectangle 对象的对应值相同。
+         * @returns 新的 Rectangle 对象，其 x、y、width 和 height 属性的值与原始 Rectangle 对象的对应值相同。
          */
-        contains(x, y) {
-            return this.x <= x && x < this.x + this.width && this.y <= y && y < this.y + this.height;
+        clone() {
+            return new Rectangle(this.x, this.y, this.width, this.height);
+        }
+        /**
+         * 确定由此 Rectangle 对象定义的矩形区域内是否包含指定的点。
+         * 此方法与 Rectangle.contains() 方法类似，只不过它采用 Point 对象作为参数。
+         * @param point 包含点对象
+         * @returns 如果包含，返回true，否则返回false
+         */
+        containsPoint(point) {
+            if (this.x < point.x
+                && this.x + this.width > point.x
+                && this.y < point.y
+                && this.y + this.height > point.y) {
+                return true;
+            }
+            return false;
+        }
+        /**
+         * 确定此 Rectangle 对象内是否包含由 rect 参数指定的 Rectangle 对象。
+         * 如果一个 Rectangle 对象完全在另一个 Rectangle 的边界内，我们说第二个 Rectangle 包含第一个 Rectangle。
+         * @param rect 所检查的 Rectangle 对象
+         * @returns 如果此 Rectangle 对象包含您指定的 Rectangle 对象，则返回 true 值，否则返回 false。
+         */
+        containsRect(rect) {
+            let r1 = rect.x + rect.width;
+            let b1 = rect.y + rect.height;
+            let r2 = this.x + this.width;
+            let b2 = this.y + this.height;
+            return (rect.x >= this.x) && (rect.x < r2) && (rect.y >= this.y) && (rect.y < b2) && (r1 > this.x) && (r1 <= r2) && (b1 > this.y) && (b1 <= b2);
+        }
+        /**
+         * 确定在 toCompare 参数中指定的对象是否等于此 Rectangle 对象。
+         * 此方法将某个对象的 x、y、width 和 height 属性与此 Rectangle 对象所对应的相同属性进行比较。
+         * @param toCompare 要与此 Rectangle 对象进行比较的矩形。
+         * @returns 如果对象具有与此 Rectangle 对象完全相同的 x、y、width 和 height 属性值，则返回 true 值，否则返回 false。
+         */
+        equals(toCompare) {
+            if (this === toCompare) {
+                return true;
+            }
+            return this.x === toCompare.x && this.y === toCompare.y
+                && this.width === toCompare.width && this.height === toCompare.height;
+        }
+        /**
+         * 增加 Rectangle 对象的大小。此方法与 Rectangle.inflate() 方法类似，只不过它采用 Point 对象作为参数。
+         */
+        inflatePoint(point) {
+            this.inflate(point.x, point.y);
+        }
+        /**
+         * 按指定量调整 Rectangle 对象的位置（由其左上角确定）。
+         * @param dx 将 Rectangle 对象的 x 值移动此数量。
+         * @param dy 将 Rectangle 对象的 t 值移动此数量。
+         */
+        offset(dx, dy) {
+            this.x += dx;
+            this.y += dy;
+        }
+        /**
+         * 将 Point 对象用作参数来调整 Rectangle 对象的位置。此方法与 Rectangle.offset() 方法类似，只不过它采用 Point 对象作为参数。
+         * @param point 要用于偏移此 Rectangle 对象的 Point 对象。
+         */
+        offsetPoint(point) {
+            this.offset(point.x, point.y);
+        }
+        /**
+         * 生成并返回一个字符串，该字符串列出 Rectangle 对象的水平位置和垂直位置以及高度和宽度。
+         * @returns 一个字符串，它列出了 Rectangle 对象的下列各个属性的值：x、y、width 和 height。
+         */
+        toString() {
+            return "(x=" + this.x + ", y=" + this.y + ", width=" + this.width + ", height=" + this.height + ")";
+        }
+        /**
+         * 通过填充两个矩形之间的水平和垂直空间，将这两个矩形组合在一起以创建一个新的 Rectangle 对象。
+         * @param toUnion 要添加到此 Rectangle 对象的 Rectangle 对象。
+         * @returns 充当两个矩形的联合的新 Rectangle 对象。
+         */
+        union(toUnion) {
+            let result = this.clone();
+            if (toUnion.isEmpty()) {
+                return result;
+            }
+            if (result.isEmpty()) {
+                result.copyFrom(toUnion);
+                return result;
+            }
+            let l = Math.min(result.x, toUnion.x);
+            let t = Math.min(result.y, toUnion.y);
+            result.setTo(l, t, Math.max(result.right, toUnion.right) - l, Math.max(result.bottom, toUnion.bottom) - t);
+            return result;
         }
     }
     feng3d.Rectangle = Rectangle;
@@ -4445,7 +4829,6 @@ var feng3d;
          * @param camera    摄像机
          */
         constructor(canvas, scene = null, camera = null) {
-            this.mousePickTasks = [];
             feng3d.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
             this._context3D = this._canvas.getContext(feng3d.contextId);
@@ -4453,8 +4836,7 @@ var feng3d;
             this.scene = scene || new feng3d.Scene3D();
             this.camera = camera || new feng3d.Camera3D();
             this.defaultRenderer = new feng3d.Renderer();
-            this.mouseRenderer = new feng3d.MouseRenderer();
-            feng3d.$mouseKeyInput.addEventListener("mousemove", this.onMousedown, this);
+            this.mouse3DManager = new feng3d.Mouse3DManager();
             setInterval(this.drawScene.bind(this), 15);
         }
         /**
@@ -4473,27 +4855,13 @@ var feng3d;
         set scene(value) {
             this._scene = value;
         }
-        onMousedown(event) {
-            var mouseX = event.data.clientX - this._canvas.offsetLeft;
-            var mouseY = event.data.clientY - this._canvas.offsetTop;
-            this.mousePickTasks.push({ mouseX: mouseX, mouseY: mouseY, event: event });
-        }
         /**
          * 绘制场景
          */
         drawScene() {
             //鼠标拾取渲染
-            if (this.mousePickTasks.length > 0) {
-                var mousePickTasks = this.mousePickTasks.reverse();
-                while (mousePickTasks.length > 0) {
-                    var mousePickTask = mousePickTasks.pop();
-                    this._context3D.clearColor(0, 0, 0, 0);
-                    this._context3D.clearDepth(1);
-                    this._context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
-                    this._context3D.viewport(-mousePickTask.mouseX, -mousePickTask.mouseY, this._canvas.width, this._canvas.height);
-                    this.mouseRenderer.draw(this._context3D, this._scene, this._camera);
-                }
-            }
+            this.mouse3DManager.viewRect.setTo(this._canvas.offsetLeft, this._canvas.offsetTop, this._canvas.width, this._canvas.height);
+            this.mouse3DManager.draw(this._context3D, this._scene, this._camera);
             // 默认渲染
             this._context3D.clearColor(0, 0, 0, 1.0);
             this._context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
@@ -5146,8 +5514,8 @@ var feng3d;
             var data = new Uint8Array(4);
             context3D.readPixels(0, 0, 1, 1, feng3d.Context3D.RGBA, feng3d.Context3D.UNSIGNED_BYTE, data);
             var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3]; //最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
-            console.log(`选中索引3D对象${id}`, data.toString());
-            var object3D = feng3d.Object3D.getObject3D(id);
+            // console.log(`选中索引3D对象${id}`, data.toString());
+            var object3D = this.selectedObject3D = feng3d.Object3D.getObject3D(id);
             if (object3D) {
                 object3D.dispatchEvent(new feng3d.Event("mousepick"));
             }
@@ -5467,7 +5835,7 @@ var feng3d;
              */
             this.geometryDirty = false;
             this._points = [];
-            this.addPoint(new Point(new feng3d.Vector3D(0, 0, 0)));
+            this.addPoint(new PointInfo(new feng3d.Vector3D(0, 0, 0)));
         }
         /**
          * 添加点
@@ -5521,10 +5889,10 @@ var feng3d;
     }
     feng3d.PointGeometry = PointGeometry;
     /**
-     * 点
+     * 点信息
      * @author feng 2016-10-16
      */
-    class Point {
+    class PointInfo {
         /**
          * 创建点
          * @param position 坐标
@@ -5539,7 +5907,7 @@ var feng3d;
             return [this.position.x, this.position.y, this.position.z];
         }
     }
-    feng3d.Point = Point;
+    feng3d.PointInfo = PointInfo;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -10389,5 +10757,42 @@ var feng3d;
         }
     }
     feng3d.ParticleObject3D = ParticleObject3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 鼠标事件管理
+     * @author feng 2014-4-29
+     */
+    class Mouse3DManager {
+        constructor() {
+            this.mousePickTasks = [];
+            this.viewRect = new feng3d.Rectangle(0, 0, 100, 100);
+            this.mouseRenderer = new feng3d.MouseRenderer();
+            feng3d.$mouseKeyInput.addEventListener("mousemove", this.onMousedown, this);
+        }
+        onMousedown(event) {
+            var mouseX = event.data.clientX - this.viewRect.x;
+            var mouseY = event.data.clientY - this.viewRect.y;
+            this.mousePickTasks.push({ mouseX: mouseX, mouseY: mouseY, event: event });
+        }
+        /**
+         * 渲染
+         */
+        draw(context3D, scene3D, camera) {
+            if (this.mousePickTasks.length > 0) {
+                var mousePickTasks = this.mousePickTasks.reverse();
+                while (mousePickTasks.length > 0) {
+                    var mousePickTask = mousePickTasks.pop();
+                    context3D.clearColor(0, 0, 0, 0);
+                    context3D.clearDepth(1);
+                    context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
+                    context3D.viewport(-mousePickTask.mouseX, -mousePickTask.mouseY, this.viewRect.width, this.viewRect.height);
+                    this.mouseRenderer.draw(context3D, scene3D, camera);
+                }
+            }
+        }
+    }
+    feng3d.Mouse3DManager = Mouse3DManager;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

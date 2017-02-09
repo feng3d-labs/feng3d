@@ -48,6 +48,7 @@
         //
         "src/mathlib/Color.ts",
         "src/mathlib/MathConsts.ts",
+        "src/mathlib/Point.ts",
         "src/mathlib/Rectangle.ts",
         "src/mathlib/Vector3D.ts",
         "src/mathlib/Matrix3D.ts",
@@ -178,6 +179,8 @@
         "src/factory/ConeObject3D.ts",
         "src/factory/SkyBoxObject3D.ts",
         "src/factory/SegmentObject3D.ts",
-        "src/factory/ParticleObject3D.ts"
+        "src/factory/ParticleObject3D.ts",
+        //
+        "src/core/Mouse3DManager.ts"
     ]
 }

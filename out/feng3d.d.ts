@@ -1601,7 +1601,7 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 获取时间，毫秒为单位
+     * 获取feng3d运行时间，毫秒为单位
      */
     function getTimer(): number;
 }
@@ -1879,32 +1879,274 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * Point 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
+     */
+    class Point {
+        /**
+         * 创建一个 egret.Point 对象.若不传入任何参数，将会创建一个位于（0，0）位置的点。
+         * @param x 该对象的x属性值，默认为0
+         * @param y 该对象的y属性值，默认为0
+         */
+        constructor(x?: number, y?: number);
+        /**
+         * 该点的水平坐标。
+         * @default 0
+         */
+        x: number;
+        /**
+         * 该点的垂直坐标。
+         * @default 0
+         */
+        y: number;
+        /**
+         * 从 (0,0) 到此点的线段长度。
+         */
+        readonly length: number;
+        /**
+         * 将 Point 的成员设置为指定值
+         * @param x 该对象的x属性值
+         * @param y 该对象的y属性值
+         */
+        setTo(x: number, y: number): Point;
+        /**
+         * 克隆点对象
+         */
+        clone(): Point;
+        /**
+         * 确定两个点是否相同。如果两个点具有相同的 x 和 y 值，则它们是相同的点。
+         * @param toCompare 要比较的点。
+         * @returns 如果该对象与此 Point 对象相同，则为 true 值，如果不相同，则为 false。
+         */
+        equals(toCompare: Point): boolean;
+        /**
+         * 返回 pt1 和 pt2 之间的距离。
+         * @param p1 第一个点
+         * @param p2 第二个点
+         * @returns 第一个点和第二个点之间的距离。
+         */
+        static distance(p1: Point, p2: Point): number;
+        /**
+         * 将源 Point 对象中的所有点数据复制到调用方 Point 对象中。
+         * @param sourcePoint 要从中复制数据的 Point 对象。
+         */
+        copyFrom(sourcePoint: Point): void;
+        /**
+         * 将另一个点的坐标添加到此点的坐标以创建一个新点。
+         * @param v 要添加的点。
+         * @returns 新点。
+         */
+        add(v: Point): Point;
+        /**
+         * 确定两个指定点之间的点。
+         * 参数 f 确定新的内插点相对于参数 pt1 和 pt2 指定的两个端点所处的位置。参数 f 的值越接近 1.0，则内插点就越接近第一个点（参数 pt1）。参数 f 的值越接近 0，则内插点就越接近第二个点（参数 pt2）。
+         * @param pt1 第一个点。
+         * @param pt2 第二个点。
+         * @param f 两个点之间的内插级别。表示新点将位于 pt1 和 pt2 连成的直线上的什么位置。如果 f=1，则返回 pt1；如果 f=0，则返回 pt2。
+         * @returns 新的内插点。
+         */
+        static interpolate(pt1: Point, pt2: Point, f: number): Point;
+        /**
+         * 将 (0,0) 和当前点之间的线段缩放为设定的长度。
+         * @param thickness 缩放值。例如，如果当前点为 (0,5) 并且您将它规范化为 1，则返回的点位于 (0,1) 处。
+         */
+        normalize(thickness: number): void;
+        /**
+         * 按指定量偏移 Point 对象。dx 的值将添加到 x 的原始值中以创建新的 x 值。dy 的值将添加到 y 的原始值中以创建新的 y 值。
+         * @param dx 水平坐标 x 的偏移量。
+         * @param dy 水平坐标 y 的偏移量。
+         */
+        offset(dx: number, dy: number): void;
+        /**
+         * 将一对极坐标转换为笛卡尔点坐标。
+         * @param len 极坐标对的长度。
+         * @param angle 极坐标对的角度（以弧度表示）。
+         */
+        static polar(len: number, angle: number): Point;
+        /**
+         * 从此点的坐标中减去另一个点的坐标以创建一个新点。
+         * @param v 要减去的点。
+         * @returns 新点。
+         */
+        subtract(v: Point): Point;
+        /**
+         * 返回包含 x 和 y 坐标的值的字符串。该字符串的格式为 "(x=x, y=y)"，因此为点 23,17 调用 toString() 方法将返回 "(x=23, y=17)"。
+         * @returns 坐标的字符串表示形式。
+         */
+        toString(): string;
+    }
+}
+declare module feng3d {
+    /**
      * 矩形
+     *
+     * Rectangle 对象是按其位置（由它左上角的点 (x, y) 确定）以及宽度和高度定义的区域。<br/>
+     * Rectangle 类的 x、y、width 和 height 属性相互独立；更改一个属性的值不会影响其他属性。
+     * 但是，right 和 bottom 属性与这四个属性是整体相关的。例如，如果更改 right 属性的值，则 width
+     * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
      * @author feng 2016-04-27
      */
     class Rectangle {
         /**
-         * X坐标
+         * 创建一个新 Rectangle 对象，其左上角由 x 和 y 参数指定，并具有指定的 width 和 height 参数。
+         * @param x 矩形左上角的 x 坐标。
+         * @param y 矩形左上角的 y 坐标。
+         * @param width 矩形的宽度（以像素为单位）。
+         * @param height 矩形的高度（以像素为单位）。
+         */
+        constructor(x?: number, y?: number, width?: number, height?: number);
+        /**
+         * 矩形左上角的 x 坐标。
+         * @default 0
          */
         x: number;
         /**
-         * Y坐标
+         * 矩形左上角的 y 坐标。
+         * @default 0
          */
         y: number;
         /**
-         * 宽度
+         * 矩形的宽度（以像素为单位）。
+         * @default 0
          */
         width: number;
         /**
-         * 高度
+         * 矩形的高度（以像素为单位）。
+         * @default 0
          */
         height: number;
         /**
-         * 是否包含指定点
-         * @param x 点的X坐标
-         * @param y 点的Y坐标
+         * x 和 width 属性的和。
+         */
+        right: number;
+        /**
+         * y 和 height 属性的和。
+         */
+        bottom: number;
+        /**
+         * 矩形左上角的 x 坐标。更改 Rectangle 对象的 left 属性对 y 和 height 属性没有影响。但是，它会影响 width 属性，而更改 x 值不会影响 width 属性。
+         * left 属性的值等于 x 属性的值。
+         */
+        left: number;
+        /**
+         * 矩形左上角的 y 坐标。更改 Rectangle 对象的 top 属性对 x 和 width 属性没有影响。但是，它会影响 height 属性，而更改 y 值不会影响 height 属性。<br/>
+         * top 属性的值等于 y 属性的值。
+         */
+        top: number;
+        /**
+         * 由该点的 x 和 y 坐标确定的 Rectangle 对象左上角的位置。
+         */
+        topLeft: Point;
+        /**
+         * 由 right 和 bottom 属性的值确定的 Rectangle 对象的右下角的位置。
+         */
+        bottomRight: Point;
+        /**
+         * 将源 Rectangle 对象中的所有矩形数据复制到调用方 Rectangle 对象中。
+         * @param sourceRect 要从中复制数据的 Rectangle 对象。
+         */
+        copyFrom(sourceRect: Rectangle): Rectangle;
+        /**
+         * 将 Rectangle 的成员设置为指定值
+         * @param x 矩形左上角的 x 坐标。
+         * @param y 矩形左上角的 y 坐标。
+         * @param width 矩形的宽度（以像素为单位）。
+         * @param height 矩形的高度（以像素为单位）。
+         */
+        setTo(x: number, y: number, width: number, height: number): Rectangle;
+        /**
+         * 确定由此 Rectangle 对象定义的矩形区域内是否包含指定的点。
+         * @param x 检测点的x轴
+         * @param y 检测点的y轴
+         * @returns 如果检测点位于矩形内，返回true，否则，返回false
          */
         contains(x: number, y: number): boolean;
+        /**
+         * 如果在 toIntersect 参数中指定的 Rectangle 对象与此 Rectangle 对象相交，则返回交集区域作为 Rectangle 对象。如果矩形不相交，
+         * 则此方法返回一个空的 Rectangle 对象，其属性设置为 0。
+         * @param toIntersect 要对照比较以查看其是否与此 Rectangle 对象相交的 Rectangle 对象。
+         * @returns 等于交集区域的 Rectangle 对象。如果该矩形不相交，则此方法返回一个空的 Rectangle 对象；即，其 x、y、width 和
+         * height 属性均设置为 0 的矩形。
+         */
+        intersection(toIntersect: Rectangle): Rectangle;
+        /**
+         * 按指定量增加 Rectangle 对象的大小（以像素为单位）
+         * 保持 Rectangle 对象的中心点不变，使用 dx 值横向增加它的大小，使用 dy 值纵向增加它的大小。
+         * @param dx Rectangle 对象横向增加的值。
+         * @param dy Rectangle 对象纵向增加的值。
+         */
+        inflate(dx: number, dy: number): void;
+        /**
+         * @private
+         */
+        $intersectInPlace(clipRect: Rectangle): Rectangle;
+        /**
+         * 确定在 toIntersect 参数中指定的对象是否与此 Rectangle 对象相交。此方法检查指定的 Rectangle
+         * 对象的 x、y、width 和 height 属性，以查看它是否与此 Rectangle 对象相交。
+         * @param toIntersect 要与此 Rectangle 对象比较的 Rectangle 对象。
+         * @returns 如果两个矩形相交，返回true，否则返回false
+         */
+        intersects(toIntersect: Rectangle): boolean;
+        /**
+         * 确定此 Rectangle 对象是否为空。
+         * @returns 如果 Rectangle 对象的宽度或高度小于等于 0，则返回 true 值，否则返回 false。
+         */
+        isEmpty(): boolean;
+        /**
+         * 将 Rectangle 对象的所有属性设置为 0。
+         */
+        setEmpty(): void;
+        /**
+         * 返回一个新的 Rectangle 对象，其 x、y、width 和 height 属性的值与原始 Rectangle 对象的对应值相同。
+         * @returns 新的 Rectangle 对象，其 x、y、width 和 height 属性的值与原始 Rectangle 对象的对应值相同。
+         */
+        clone(): Rectangle;
+        /**
+         * 确定由此 Rectangle 对象定义的矩形区域内是否包含指定的点。
+         * 此方法与 Rectangle.contains() 方法类似，只不过它采用 Point 对象作为参数。
+         * @param point 包含点对象
+         * @returns 如果包含，返回true，否则返回false
+         */
+        containsPoint(point: Point): boolean;
+        /**
+         * 确定此 Rectangle 对象内是否包含由 rect 参数指定的 Rectangle 对象。
+         * 如果一个 Rectangle 对象完全在另一个 Rectangle 的边界内，我们说第二个 Rectangle 包含第一个 Rectangle。
+         * @param rect 所检查的 Rectangle 对象
+         * @returns 如果此 Rectangle 对象包含您指定的 Rectangle 对象，则返回 true 值，否则返回 false。
+         */
+        containsRect(rect: Rectangle): boolean;
+        /**
+         * 确定在 toCompare 参数中指定的对象是否等于此 Rectangle 对象。
+         * 此方法将某个对象的 x、y、width 和 height 属性与此 Rectangle 对象所对应的相同属性进行比较。
+         * @param toCompare 要与此 Rectangle 对象进行比较的矩形。
+         * @returns 如果对象具有与此 Rectangle 对象完全相同的 x、y、width 和 height 属性值，则返回 true 值，否则返回 false。
+         */
+        equals(toCompare: Rectangle): boolean;
+        /**
+         * 增加 Rectangle 对象的大小。此方法与 Rectangle.inflate() 方法类似，只不过它采用 Point 对象作为参数。
+         */
+        inflatePoint(point: Point): void;
+        /**
+         * 按指定量调整 Rectangle 对象的位置（由其左上角确定）。
+         * @param dx 将 Rectangle 对象的 x 值移动此数量。
+         * @param dy 将 Rectangle 对象的 t 值移动此数量。
+         */
+        offset(dx: number, dy: number): void;
+        /**
+         * 将 Point 对象用作参数来调整 Rectangle 对象的位置。此方法与 Rectangle.offset() 方法类似，只不过它采用 Point 对象作为参数。
+         * @param point 要用于偏移此 Rectangle 对象的 Point 对象。
+         */
+        offsetPoint(point: Point): void;
+        /**
+         * 生成并返回一个字符串，该字符串列出 Rectangle 对象的水平位置和垂直位置以及高度和宽度。
+         * @returns 一个字符串，它列出了 Rectangle 对象的下列各个属性的值：x、y、width 和 height。
+         */
+        toString(): string;
+        /**
+         * 通过填充两个矩形之间的水平和垂直空间，将这两个矩形组合在一起以创建一个新的 Rectangle 对象。
+         * @param toUnion 要添加到此 Rectangle 对象的 Rectangle 对象。
+         * @returns 充当两个矩形的联合的新 Rectangle 对象。
+         */
+        union(toUnion: Rectangle): Rectangle;
     }
 }
 declare module feng3d {
@@ -3082,9 +3324,9 @@ declare module feng3d {
          */
         private defaultRenderer;
         /**
-         * 鼠标拾取渲染器
+         * 鼠标事件管理器
          */
-        private mouseRenderer;
+        private mouse3DManager;
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -3098,8 +3340,6 @@ declare module feng3d {
         private initGL();
         /** 3d场景 */
         scene: Scene3D;
-        private mousePickTasks;
-        private onMousedown(event);
         /**
          * 绘制场景
          */
@@ -3438,6 +3678,7 @@ declare module feng3d {
     class MouseRenderer extends Renderer {
         private shaderName;
         private shaderProgram;
+        selectedObject3D: Object3D;
         /**
          * 渲染
          */
@@ -3691,7 +3932,7 @@ declare module feng3d {
          * 添加点
          * @param point		点数据
          */
-        addPoint(point: Point, needUpdateGeometry?: boolean): void;
+        addPoint(point: PointInfo, needUpdateGeometry?: boolean): void;
         /**
          * 更新几何体
          */
@@ -3701,7 +3942,7 @@ declare module feng3d {
          * @param index 		线段索引
          * @return				线段数据
          */
-        getPoint(index: number): Point;
+        getPoint(index: number): PointInfo;
         /**
          * 移除所有线段
          */
@@ -3709,13 +3950,13 @@ declare module feng3d {
         /**
          * 线段列表
          */
-        readonly points: Point[];
+        readonly points: PointInfo[];
     }
     /**
-     * 点
+     * 点信息
      * @author feng 2016-10-16
      */
-    class Point {
+    class PointInfo {
         position: Vector3D;
         /**
          * 创建点
@@ -5983,5 +6224,25 @@ declare module feng3d {
          * 构建3D对象
          */
         constructor(name?: string);
+    }
+}
+declare module feng3d {
+    /**
+     * 鼠标事件管理
+     * @author feng 2014-4-29
+     */
+    class Mouse3DManager {
+        /**
+         * 鼠标拾取渲染器
+         */
+        private mouseRenderer;
+        private mousePickTasks;
+        viewRect: Rectangle;
+        constructor();
+        private onMousedown(event);
+        /**
+         * 渲染
+         */
+        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
     }
 }

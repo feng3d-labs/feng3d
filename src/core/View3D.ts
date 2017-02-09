@@ -15,10 +15,11 @@ module feng3d {
          * 默认渲染器
          */
         private defaultRenderer: Renderer;
+
         /**
-         * 鼠标拾取渲染器
+         * 鼠标事件管理器
          */
-        private mouseRenderer: MouseRenderer;
+        private mouse3DManager: Mouse3DManager;
 
         /**
          * 构建3D视图
@@ -39,9 +40,7 @@ module feng3d {
             this.camera = camera || new Camera3D();
 
             this.defaultRenderer = new Renderer();
-            this.mouseRenderer = new MouseRenderer();
-
-            $mouseKeyInput.addEventListener("mousemove", this.onMousedown, this);
+            this.mouse3DManager = new Mouse3DManager();
 
             setInterval(this.drawScene.bind(this), 15);
         }
@@ -66,34 +65,14 @@ module feng3d {
             this._scene = value;
         }
 
-        private mousePickTasks: { mouseX: number, mouseY: number, event: Event }[] = [];
-
-        private onMousedown(event: Event) {
-
-            var mouseX = event.data.clientX - this._canvas.offsetLeft;
-            var mouseY = event.data.clientY - this._canvas.offsetTop;
-
-            this.mousePickTasks.push({ mouseX: mouseX, mouseY: mouseY, event: event });
-        }
-
         /**
          * 绘制场景
          */
         private drawScene() {
 
             //鼠标拾取渲染
-            if (this.mousePickTasks.length > 0) {
-                var mousePickTasks = this.mousePickTasks.reverse();
-                while (mousePickTasks.length > 0) {
-                    var mousePickTask = mousePickTasks.pop();
-
-                    this._context3D.clearColor(0, 0, 0, 0);
-                    this._context3D.clearDepth(1);
-                    this._context3D.clear(Context3D.COLOR_BUFFER_BIT | Context3D.DEPTH_BUFFER_BIT);
-                    this._context3D.viewport(-mousePickTask.mouseX, -mousePickTask.mouseY, this._canvas.width, this._canvas.height);
-                    this.mouseRenderer.draw(this._context3D, this._scene, this._camera);
-                }
-            }
+            this.mouse3DManager.viewRect.setTo(this._canvas.offsetLeft, this._canvas.offsetTop, this._canvas.width, this._canvas.height)
+            this.mouse3DManager.draw(this._context3D, this._scene, this._camera);
 
             // 默认渲染
             this._context3D.clearColor(0, 0, 0, 1.0);
