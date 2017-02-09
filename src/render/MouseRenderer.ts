@@ -27,10 +27,7 @@ module feng3d {
             var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3];//最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
             // console.log(`选中索引3D对象${id}`, data.toString());
 
-            var object3D = this.selectedObject3D = Object3D.getObject3D(id);
-            if (object3D) {
-                object3D.dispatchEvent(new Event("mousepick"));
-            }
+            this.selectedObject3D = Object3D.getObject3D(id);
         }
 
         /**

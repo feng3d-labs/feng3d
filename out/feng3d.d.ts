@@ -6232,17 +6232,50 @@ declare module feng3d {
      * @author feng 2014-4-29
      */
     class Mouse3DManager {
+        viewRect: Rectangle;
         /**
          * 鼠标拾取渲染器
          */
         private mouseRenderer;
-        private mousePickTasks;
-        viewRect: Rectangle;
+        private clientX;
+        private clientY;
+        private selectedObject3D;
+        private mouseEventTypes;
         constructor();
-        private onMousedown(event);
+        /**
+         * 监听鼠标事件收集事件类型
+         */
+        private onMouseEvent(event);
+        /**
+         * 监听鼠标移动事件获取鼠标位置
+         */
+        private onMousemove(event);
         /**
          * 渲染
          */
         draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
+        /**
+         * 设置选中对象
+         */
+        private setSelectedObject3D(value);
+    }
+    /**
+     * 3D鼠标事件
+     */
+    class Mouse3DEvent extends Event {
+        /** 鼠标单击 */
+        static CLICK: string;
+        /** 鼠标双击 */
+        static DOUBLE_CLICK: "doubleClick3D";
+        /** 鼠标按下 */
+        static MOUSE_DOWN: string;
+        /** 鼠标移动 */
+        static MOUSE_MOVE: string;
+        /** 鼠标移出 */
+        static MOUSE_OUT: string;
+        /** 鼠标移入 */
+        static MOUSE_OVER: string;
+        /** 鼠标弹起 */
+        static MOUSE_UP: string;
     }
 }

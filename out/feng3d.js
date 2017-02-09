@@ -4812,7 +4812,7 @@ var feng3d;
         }
     }
     feng3d.Object3D = Object3D;
-    var object3DAutoID = 0;
+    var object3DAutoID = 1; //索引从1开始，因为索引拾取中默认值为0
     var object3DMap = {};
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -5515,10 +5515,7 @@ var feng3d;
             context3D.readPixels(0, 0, 1, 1, feng3d.Context3D.RGBA, feng3d.Context3D.UNSIGNED_BYTE, data);
             var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3]; //最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
             // console.log(`选中索引3D对象${id}`, data.toString());
-            var object3D = this.selectedObject3D = feng3d.Object3D.getObject3D(id);
-            if (object3D) {
-                object3D.dispatchEvent(new feng3d.Event("mousepick"));
-            }
+            this.selectedObject3D = feng3d.Object3D.getObject3D(id);
         }
         /**
          * 激活渲染程序
@@ -10766,33 +10763,95 @@ var feng3d;
      */
     class Mouse3DManager {
         constructor() {
-            this.mousePickTasks = [];
             this.viewRect = new feng3d.Rectangle(0, 0, 100, 100);
+            this.mouseEventTypes = [];
             this.mouseRenderer = new feng3d.MouseRenderer();
-            feng3d.$mouseKeyInput.addEventListener("mousemove", this.onMousedown, this);
+            //
+            mouse3DEventMap[feng3d.$mouseKeyType.click] = Mouse3DEvent.CLICK;
+            mouse3DEventMap[feng3d.$mouseKeyType.dblclick] = Mouse3DEvent.DOUBLE_CLICK;
+            mouse3DEventMap[feng3d.$mouseKeyType.mousedown] = Mouse3DEvent.MOUSE_DOWN;
+            mouse3DEventMap[feng3d.$mouseKeyType.mousemove] = Mouse3DEvent.MOUSE_MOVE;
+            mouse3DEventMap[feng3d.$mouseKeyType.mouseup] = Mouse3DEvent.MOUSE_UP;
+            //
+            feng3d.$mouseKeyInput.addEventListener(feng3d.$mouseKeyType.mousemove, this.onMousemove, this);
+            //
+            feng3d.$mouseKeyInput.addEventListener(feng3d.$mouseKeyType.click, this.onMouseEvent, this);
+            feng3d.$mouseKeyInput.addEventListener(feng3d.$mouseKeyType.dblclick, this.onMouseEvent, this);
+            feng3d.$mouseKeyInput.addEventListener(feng3d.$mouseKeyType.mousedown, this.onMouseEvent, this);
+            feng3d.$mouseKeyInput.addEventListener(feng3d.$mouseKeyType.mousemove, this.onMouseEvent, this);
+            feng3d.$mouseKeyInput.addEventListener(feng3d.$mouseKeyType.mouseup, this.onMouseEvent, this);
         }
-        onMousedown(event) {
-            var mouseX = event.data.clientX - this.viewRect.x;
-            var mouseY = event.data.clientY - this.viewRect.y;
-            this.mousePickTasks.push({ mouseX: mouseX, mouseY: mouseY, event: event });
+        /**
+         * 监听鼠标事件收集事件类型
+         */
+        onMouseEvent(event) {
+            if (this.mouseEventTypes.indexOf(event.type) == -1)
+                this.mouseEventTypes.push(event.type);
+        }
+        /**
+         * 监听鼠标移动事件获取鼠标位置
+         */
+        onMousemove(event) {
+            this.clientX = event.data.clientX;
+            this.clientY = event.data.clientY;
         }
         /**
          * 渲染
          */
         draw(context3D, scene3D, camera) {
-            if (this.mousePickTasks.length > 0) {
-                var mousePickTasks = this.mousePickTasks.reverse();
-                while (mousePickTasks.length > 0) {
-                    var mousePickTask = mousePickTasks.pop();
-                    context3D.clearColor(0, 0, 0, 0);
-                    context3D.clearDepth(1);
-                    context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
-                    context3D.viewport(-mousePickTask.mouseX, -mousePickTask.mouseY, this.viewRect.width, this.viewRect.height);
-                    this.mouseRenderer.draw(context3D, scene3D, camera);
-                }
+            if (!this.viewRect.contains(this.clientX, this.clientY))
+                return;
+            var offsetX = -(this.clientX - this.viewRect.x);
+            var offsetY = -(this.clientY - this.viewRect.y);
+            context3D.clearColor(0, 0, 0, 0);
+            context3D.clearDepth(1);
+            context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
+            context3D.viewport(offsetX, offsetY, this.viewRect.width, this.viewRect.height);
+            this.mouseRenderer.draw(context3D, scene3D, camera);
+            var object3D = this.mouseRenderer.selectedObject3D;
+            this.setSelectedObject3D(object3D);
+        }
+        /**
+         * 设置选中对象
+         */
+        setSelectedObject3D(value) {
+            if (this.selectedObject3D != value) {
+                if (this.selectedObject3D)
+                    this.selectedObject3D.dispatchEvent(new Mouse3DEvent(Mouse3DEvent.MOUSE_OUT, null, true));
+                if (value)
+                    value.dispatchEvent(new Mouse3DEvent(Mouse3DEvent.MOUSE_OVER, null, true));
             }
+            this.selectedObject3D = value;
+            if (this.selectedObject3D) {
+                this.mouseEventTypes.forEach(element => {
+                    this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                });
+            }
+            this.mouseEventTypes.length = 0;
         }
     }
     feng3d.Mouse3DManager = Mouse3DManager;
+    /**
+     * 3D鼠标事件
+     */
+    class Mouse3DEvent extends feng3d.Event {
+    }
+    /** 鼠标单击 */
+    Mouse3DEvent.CLICK = "click3D";
+    /** 鼠标按下 */
+    Mouse3DEvent.MOUSE_DOWN = "mousedown3d";
+    /** 鼠标移动 */
+    Mouse3DEvent.MOUSE_MOVE = "mousemove3d";
+    /** 鼠标移出 */
+    Mouse3DEvent.MOUSE_OUT = "mouseout3d";
+    /** 鼠标移入 */
+    Mouse3DEvent.MOUSE_OVER = "mouseover3d";
+    /** 鼠标弹起 */
+    Mouse3DEvent.MOUSE_UP = "mouseup3d";
+    feng3d.Mouse3DEvent = Mouse3DEvent;
+    /**
+     * 鼠标事件与3D鼠标事件类型映射
+     */
+    var mouse3DEventMap = {};
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

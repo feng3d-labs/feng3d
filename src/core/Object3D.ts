@@ -221,6 +221,6 @@ module feng3d {
         }
     }
 
-    var object3DAutoID = 0;
+    var object3DAutoID = 1;//索引从1开始，因为索引拾取中默认值为0
     var object3DMap: { [id: number]: Object3D } = {};
 }
