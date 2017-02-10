@@ -1734,11 +1734,25 @@ declare module feng3d {
      */
     function isBaseType(object: any): boolean;
     /**
+     * 深克隆
+     * @param source        源数据
+     * @returns             克隆数据
+     */
+    function deepClone<T>(source: T): T;
+    /**
      * （浅）克隆
      * @param source        源数据
      * @returns             克隆数据
      */
     function clone<T>(source: T): T;
+    /**
+     * （浅）拷贝数据
+     */
+    function copy(target: Object, source: Object): void;
+    /**
+     * 深拷贝数据
+     */
+    function deepCopy(target: Object, source: Object): void;
     /**
      * 合并数据
      * @param source        源数据

@@ -1798,6 +1798,22 @@ var feng3d;
     }
     feng3d.isBaseType = isBaseType;
     /**
+     * 深克隆
+     * @param source        源数据
+     * @returns             克隆数据
+     */
+    function deepClone(source) {
+        if (isBaseType(source))
+            return source;
+        var prototype = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
+        var target = new prototype.constructor();
+        for (var attribute in source) {
+            target[attribute] = deepClone(source[attribute]);
+        }
+        return target;
+    }
+    feng3d.deepClone = deepClone;
+    /**
      * （浅）克隆
      * @param source        源数据
      * @returns             克隆数据
@@ -1813,6 +1829,34 @@ var feng3d;
         return target;
     }
     feng3d.clone = clone;
+    /**
+     * （浅）拷贝数据
+     */
+    function copy(target, source) {
+        var keys = Object.keys(target);
+        keys.forEach(element => {
+            target[element] = source[element];
+        });
+    }
+    feng3d.copy = copy;
+    /**
+     * 深拷贝数据
+     */
+    function deepCopy(target, source) {
+        var keys = Object.keys(target);
+        keys.forEach(element => {
+            if (!source[element] || isBaseType(source[element])) {
+                target[element] = source[element];
+            }
+            else if (!target[element]) {
+                target[element] = deepClone(source[element]);
+            }
+            else {
+                copy(target[element], source[element]);
+            }
+        });
+    }
+    feng3d.deepCopy = deepCopy;
     /**
      * 合并数据
      * @param source        源数据

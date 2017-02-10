@@ -99,6 +99,22 @@ module feng3d {
     }
 
     /**
+     * 深克隆
+     * @param source        源数据
+     * @returns             克隆数据
+     */
+    export function deepClone<T>(source: T): T {
+        if (isBaseType(source))
+            return source;
+        var prototype: any = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
+        var target = new prototype.constructor();
+        for (var attribute in source) {
+            target[attribute] = deepClone(source[attribute]);
+        }
+        return target;
+    }
+
+    /**
      * （浅）克隆
      * @param source        源数据
      * @returns             克隆数据
@@ -112,6 +128,36 @@ module feng3d {
             target[attribute] = source[attribute];
         }
         return target;
+    }
+
+    /**
+     * （浅）拷贝数据
+     */
+    export function copy(target: Object, source: Object) {
+
+        var keys = Object.keys(target);
+        keys.forEach(element => {
+            target[element] = source[element];
+        });
+    }
+
+    /**
+     * 深拷贝数据
+     */
+    export function deepCopy(target: Object, source: Object) {
+
+        var keys = Object.keys(target);
+        keys.forEach(element => {
+            if (!source[element] || isBaseType(source[element])) {
+                target[element] = source[element];
+            }
+            else if (!target[element]) {
+                target[element] = deepClone(source[element]);
+            }
+            else {
+                copy(target[element], source[element]);
+            }
+        });
     }
 
     /**
