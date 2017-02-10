@@ -1833,7 +1833,7 @@ var feng3d;
      * （浅）拷贝数据
      */
     function copy(target, source) {
-        var keys = Object.keys(target);
+        var keys = Object.keys(source);
         keys.forEach(element => {
             target[element] = source[element];
         });
@@ -1843,7 +1843,7 @@ var feng3d;
      * 深拷贝数据
      */
     function deepCopy(target, source) {
-        var keys = Object.keys(target);
+        var keys = Object.keys(source);
         keys.forEach(element => {
             if (!source[element] || isBaseType(source[element])) {
                 target[element] = source[element];

@@ -135,7 +135,7 @@ module feng3d {
      */
     export function copy(target: Object, source: Object) {
 
-        var keys = Object.keys(target);
+        var keys = Object.keys(source);
         keys.forEach(element => {
             target[element] = source[element];
         });
@@ -146,7 +146,7 @@ module feng3d {
      */
     export function deepCopy(target: Object, source: Object) {
 
-        var keys = Object.keys(target);
+        var keys = Object.keys(source);
         keys.forEach(element => {
             if (!source[element] || isBaseType(source[element])) {
                 target[element] = source[element];
