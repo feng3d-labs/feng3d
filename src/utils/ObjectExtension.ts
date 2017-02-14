@@ -3,7 +3,7 @@ module feng3d {
     /**
      * 判断a对象是否为b类型
      */
-    export function is(a, b: Function): boolean {
+    export function is<T>(a, b: new () => T): boolean {
 
         var prototype: any = a.prototype ? a.prototype : Object.getPrototypeOf(a);
         while (prototype != null) {
@@ -20,10 +20,10 @@ module feng3d {
     /**
      * 如果a为b类型则返回，否则返回null
      */
-    export function as(a, b: Function) {
+    export function as<T>(a, b: new () => T): T {
         if (!is(a, b))
             return null;
-        return <any>a;
+        return <T>a;
     }
 
     /**
