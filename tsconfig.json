@@ -12,6 +12,13 @@
         //
         "src/Feng3d.ts",
         "src/Context3D.ts",
+        //基础工具
+        "src/debug/assert.ts",
+        "src/utils/ClassUtils.ts",
+        "src/utils/ObjectUtils.ts",
+        "src/utils/WatchUtils.ts",
+        "src/utils/UIDUtils.ts",
+        "src/utils/VersionUtils.ts",
         //事件模块
         "src/events/Event.ts",
         "src/events/IEventDispatcher.ts",
@@ -35,15 +42,11 @@
         "src/net/Loader.ts",
         "src/net/LoaderEvent.ts",
         "src/net/LoaderDataFormat.ts",
-        //
-        "src/debug/assert.ts",
         //基础工具
         "src/utils/gettimer.ts",
         "src/utils/StringUtils.ts",
         "src/utils/ArrayUtils.ts",
         "src/utils/Map.ts",
-        "src/utils/Version.ts",
-        "src/utils/ObjectExtension.ts",
         "src/utils/ShaderLib.ts",
         //
         "src/mathlib/Color.ts",

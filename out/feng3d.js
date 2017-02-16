@@ -22,6 +22,437 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 断言
+     * @b			判定为真的表达式
+     * @msg			在表达式为假时将输出的错误信息
+     * @author feng 2014-10-29
+     */
+    function assert(b, msg = "assert") {
+        if (!b)
+            throw msg;
+    }
+    feng3d.assert = assert;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 类工具
+     * @author feng 2017-02-15
+     */
+    class ClassUtils {
+        /**
+         * 判断a对象是否为b类型
+         */
+        static is(a, b) {
+            var prototype = a.prototype ? a.prototype : Object.getPrototypeOf(a);
+            while (prototype != null) {
+                //类型==自身原型的构造函数
+                if (prototype.constructor == b)
+                    return true;
+                //父类就是原型的原型构造函数
+                prototype = Object.getPrototypeOf(prototype);
+            }
+            return false;
+        }
+        /**
+         * 如果a为b类型则返回，否则返回null
+         */
+        static as(a, b) {
+            if (!ClassUtils.is(a, b))
+                return null;
+            return a;
+        }
+        /**
+         * 是否为基础类型
+         * @param object    对象
+         */
+        static isBaseType(object) {
+            return object == null || typeof object == "number" || typeof object == "boolean" || typeof object == "string";
+        }
+        /**
+         * 返回对象的完全限定类名。
+         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
+         * （如number)和类对象
+         * @returns 包含完全限定类名称的字符串。
+         */
+        static getQualifiedClassName(value) {
+            if (value == null) {
+                return null;
+            }
+            var className = null;
+            var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
+            if (prototype.hasOwnProperty(CLASS_KEY)) {
+                className = prototype[CLASS_KEY];
+            }
+            if (className == null) {
+                className = prototype.constructor.name;
+                if (ClassUtils.getDefinitionByName(className) == prototype.constructor) {
+                    ClassUtils.registerClass(prototype.constructor, className);
+                }
+                else {
+                    //在可能的命名空间内查找
+                    for (var i = 0; i < classNameSpaces.length; i++) {
+                        var tryClassName = classNameSpaces[i] + "." + className;
+                        if (ClassUtils.getDefinitionByName(tryClassName) == prototype.constructor) {
+                            className = tryClassName;
+                            ClassUtils.registerClass(prototype.constructor, className);
+                            break;
+                        }
+                    }
+                }
+            }
+            feng3d.assert(ClassUtils.getDefinitionByName(className) == prototype.constructor);
+            return className;
+        }
+        /**
+         * 返回 value 参数指定的对象的基类的完全限定类名。
+         * @param value 需要取得父类的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型（如number）和类对象
+         * @returns 完全限定的基类名称，或 null（如果不存在基类名称）。
+         */
+        static getQualifiedSuperclassName(value) {
+            if (value == null) {
+                return null;
+            }
+            var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
+            var superProto = Object.getPrototypeOf(prototype);
+            if (!superProto) {
+                return null;
+            }
+            var superClass = ClassUtils.getQualifiedClassName(superProto.constructor);
+            if (!superClass) {
+                return null;
+            }
+            return superClass;
+        }
+        /**
+         * 返回 name 参数指定的类的类对象引用。
+         * @param name 类的名称。
+         */
+        static getDefinitionByName(name) {
+            if (!name)
+                return null;
+            var definition = definitionCache[name];
+            if (definition) {
+                return definition;
+            }
+            var paths = name.split(".");
+            var length = paths.length;
+            definition = global;
+            for (var i = 0; i < length; i++) {
+                var path = paths[i];
+                definition = definition[path];
+                if (!definition) {
+                    return null;
+                }
+            }
+            definitionCache[name] = definition;
+            return definition;
+        }
+        /**
+         * 为一个类定义注册完全限定类名
+         * @param classDefinition 类定义
+         * @param className 完全限定类名
+         */
+        static registerClass(classDefinition, className) {
+            var prototype = classDefinition.prototype;
+            Object.defineProperty(prototype, CLASS_KEY, {
+                value: className,
+                enumerable: false,
+                writable: true
+            });
+        }
+        /**
+         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
+         */
+        static addClassNameSpace(namespace) {
+            if (classNameSpaces.indexOf(namespace) == -1) {
+                classNameSpaces.push(namespace);
+            }
+        }
+    }
+    feng3d.ClassUtils = ClassUtils;
+    var definitionCache = {};
+    var global = window;
+    var CLASS_KEY = "__class__";
+    var classNameSpaces = ["feng3d"];
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 对象工具
+     * @author feng 2017-02-15
+     */
+    class ObjectUtils {
+        /**
+         * 深克隆
+         * @param source        源数据
+         * @returns             克隆数据
+         */
+        static deepClone(source) {
+            if (feng3d.ClassUtils.isBaseType(source))
+                return source;
+            var prototype = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
+            var target = new prototype.constructor();
+            for (var attribute in source) {
+                target[attribute] = ObjectUtils.deepClone(source[attribute]);
+            }
+            return target;
+        }
+        /**
+         * （浅）克隆
+         * @param source        源数据
+         * @returns             克隆数据
+         */
+        static clone(source) {
+            if (feng3d.ClassUtils.isBaseType(source))
+                return source;
+            var prototype = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
+            var target = new prototype.constructor();
+            for (var attribute in source) {
+                target[attribute] = source[attribute];
+            }
+            return target;
+        }
+        /**
+         * （浅）拷贝数据
+         */
+        static copy(target, source) {
+            var keys = Object.keys(source);
+            keys.forEach(element => {
+                target[element] = source[element];
+            });
+        }
+        /**
+         * 深拷贝数据
+         */
+        static deepCopy(target, source) {
+            var keys = Object.keys(source);
+            keys.forEach(element => {
+                if (!source[element] || feng3d.ClassUtils.isBaseType(source[element])) {
+                    target[element] = source[element];
+                }
+                else if (!target[element]) {
+                    target[element] = ObjectUtils.deepClone(source[element]);
+                }
+                else {
+                    ObjectUtils.copy(target[element], source[element]);
+                }
+            });
+        }
+        /**
+         * 合并数据
+         * @param source        源数据
+         * @param mergeData     合并数据
+         * @param createNew     是否合并为新对象，默认为false
+         * @returns             如果createNew为true时返回新对象，否则返回源数据
+         */
+        static merge(source, mergeData, createNew = false) {
+            if (feng3d.ClassUtils.isBaseType(mergeData))
+                return mergeData;
+            var target = createNew ? ObjectUtils.clone(source) : source;
+            for (var mergeAttribute in mergeData) {
+                target[mergeAttribute] = ObjectUtils.merge(source[mergeAttribute], mergeData[mergeAttribute], createNew);
+            }
+            return target;
+        }
+    }
+    feng3d.ObjectUtils = ObjectUtils;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    class WatchUtils {
+        /**
+         * 观察对象
+         * @param object        被观察的对象
+         * @param onChanged     属性值变化回调函数
+         */
+        static watchObject(object, onChanged = null) {
+            if (feng3d.ClassUtils.isBaseType(object))
+                return;
+            for (var key in object) {
+                WatchUtils.watch(object, key, onChanged);
+            }
+        }
+        /**
+         * 观察对象中属性
+         * @param object        被观察的对象
+         * @param attribute     被观察的属性
+         * @param onChanged     属性值变化回调函数
+         */
+        static watch(object, attribute, onChanged = null) {
+            if (feng3d.ClassUtils.isBaseType(object))
+                return;
+            if (!object.orig) {
+                Object.defineProperty(object, "orig", {
+                    value: {},
+                    enumerable: false,
+                    writable: false,
+                    configurable: true
+                });
+            }
+            object.orig[attribute] = object[attribute];
+            Object.defineProperty(object, attribute, {
+                get: function () {
+                    return this.orig[attribute];
+                },
+                set: function (value) {
+                    if (onChanged) {
+                        onChanged(this, attribute, this.orig[attribute], value);
+                    }
+                    this.orig[attribute] = value;
+                }
+            });
+        }
+        /**
+         * 取消观察对象
+         * @param object        被观察的对象
+         */
+        static unwatchObject(object) {
+            if (feng3d.ClassUtils.isBaseType(object))
+                return;
+            if (!object.orig)
+                return;
+            for (var key in object.orig) {
+                WatchUtils.unwatch(object, key);
+            }
+            delete object.orig;
+        }
+        /**
+         * 取消观察对象中属性
+         * @param object        被观察的对象
+         * @param attribute     被观察的属性
+         */
+        static unwatch(object, attribute) {
+            if (feng3d.ClassUtils.isBaseType(object))
+                return;
+            Object.defineProperty(object, attribute, {
+                value: object.orig[attribute],
+                enumerable: true,
+                writable: true
+            });
+        }
+    }
+    feng3d.WatchUtils = WatchUtils;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    class UIDUtils {
+        /**
+         * 获取对象UID
+         * @author feng 2016-05-08
+         */
+        static getUID(object) {
+            if (feng3d.ClassUtils.isBaseType(object)) {
+                return object;
+            }
+            //uid属性名称
+            var uidKey = "__uid__";
+            if (object.hasOwnProperty(uidKey)) {
+                return object[uidKey];
+            }
+            var uid = createUID(object);
+            Object.defineProperty(object, uidKey, {
+                value: uid,
+                enumerable: false,
+                writable: false
+            });
+            return uid;
+            /**
+             * 创建对象的UID
+             * @param object 对象
+             */
+            function createUID(object) {
+                var className = feng3d.ClassUtils.getQualifiedClassName(object);
+                var id = ~~uidStart[className];
+                var time = Date.now(); //时间戳
+                var uid = [
+                    className,
+                    feng3d.StringUtils.getString(~~uidStart[className], 8, "0", false),
+                    time,
+                ].join("-");
+                //
+                feng3d.$uidDetails[uid] = { className: className, id: id, time: time };
+                uidStart[className] = ~~uidStart[className] + 1;
+                return uid;
+            }
+        }
+    }
+    feng3d.UIDUtils = UIDUtils;
+    /**
+     * uid自增长编号
+     */
+    var uidStart = {};
+    /**
+     * uid细节
+     */
+    feng3d.$uidDetails = {};
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    class VersionUtils {
+        /**
+         * 获取对象版本
+         * @param object 对象
+         */
+        static getVersion(object) {
+            this.assertObject(object);
+            if (!object.hasOwnProperty(versionKey)) {
+                return -1;
+            }
+            return ~~object[versionKey];
+        }
+        /**
+         * 升级对象版本（版本号+1）
+         * @param object 对象
+         */
+        static upgradeVersion(object) {
+            this.assertObject(object);
+            if (!object.hasOwnProperty(versionKey)) {
+                Object.defineProperty(object, versionKey, {
+                    value: 0,
+                    enumerable: false,
+                    writable: true
+                });
+            }
+            object[versionKey] = ~~object[versionKey] + 1;
+        }
+        /**
+         * 设置版本号
+         * @param object 对象
+         * @param version 版本号
+         */
+        static setVersion(object, version) {
+            this.assertObject(object);
+            object[versionKey] = ~~version;
+        }
+        /**
+         * 判断两个对象的版本号是否相等
+         */
+        static equal(a, b) {
+            var va = this.getVersion(a);
+            var vb = this.getVersion(b);
+            if (va == -1 && vb == -1)
+                return false;
+            return va == vb;
+        }
+        /**
+         * 断言object为对象类型
+         */
+        static assertObject(object) {
+            if (typeof object != "object") {
+                throw `无法获取${object}的UID`;
+            }
+        }
+    }
+    feng3d.VersionUtils = VersionUtils;
+    /**
+     * 版本号键名称
+     */
+    var versionKey = "__version__";
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 事件
      * @author feng 2014-5-7
      */
@@ -1504,20 +1935,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 断言
-     * @b			判定为真的表达式
-     * @msg			在表达式为假时将输出的错误信息
-     * @author feng 2014-10-29
-     */
-    function assert(b, msg = "assert") {
-        if (!b)
-            throw msg;
-    }
-    feng3d.assert = assert;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 获取feng3d运行时间，毫秒为单位
      */
     function getTimer() {
@@ -1602,21 +2019,21 @@ var feng3d;
          * 删除
          */
         delete(k) {
-            delete this.keyMap[feng3d.getUID(k)];
-            delete this.valueMap[feng3d.getUID(k)];
+            delete this.keyMap[feng3d.UIDUtils.getUID(k)];
+            delete this.valueMap[feng3d.UIDUtils.getUID(k)];
         }
         /**
          * 添加映射
          */
         push(k, v) {
-            this.keyMap[feng3d.getUID(k)] = k;
-            this.valueMap[feng3d.getUID(k)] = v;
+            this.keyMap[feng3d.UIDUtils.getUID(k)] = k;
+            this.valueMap[feng3d.UIDUtils.getUID(k)] = v;
         }
         /**
          * 通过key获取value
          */
         get(k) {
-            return this.valueMap[feng3d.getUID(k)];
+            return this.valueMap[feng3d.UIDUtils.getUID(k)];
         }
         /**
          * 获取键列表
@@ -1637,317 +2054,6 @@ var feng3d;
         }
     }
     feng3d.Map = Map;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    class Version {
-        /**
-         * 获取对象版本
-         * @param object 对象
-         */
-        getVersion(object) {
-            this.assertObject(object);
-            if (!object.hasOwnProperty(versionKey)) {
-                return -1;
-            }
-            return ~~object[versionKey];
-        }
-        /**
-         * 升级对象版本（版本号+1）
-         * @param object 对象
-         */
-        upgradeVersion(object) {
-            this.assertObject(object);
-            if (!object.hasOwnProperty(versionKey)) {
-                Object.defineProperty(object, versionKey, {
-                    value: 0,
-                    enumerable: false,
-                    writable: true
-                });
-            }
-            object[versionKey] = ~~object[versionKey] + 1;
-        }
-        /**
-         * 设置版本号
-         * @param object 对象
-         * @param version 版本号
-         */
-        setVersion(object, version) {
-            this.assertObject(object);
-            object[versionKey] = ~~version;
-        }
-        /**
-         * 判断两个对象的版本号是否相等
-         */
-        equal(a, b) {
-            var va = this.getVersion(a);
-            var vb = this.getVersion(b);
-            if (va == -1 && vb == -1)
-                return false;
-            return va == vb;
-        }
-        /**
-         * 断言object为对象类型
-         */
-        assertObject(object) {
-            if (typeof object != "object") {
-                throw `无法获取${object}的UID`;
-            }
-        }
-    }
-    feng3d.Version = Version;
-    /**
-     * 版本号键名称
-     */
-    var versionKey = "__version__";
-    /**
-     * 对象版本
-     */
-    feng3d.version = new Version();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 判断a对象是否为b类型
-     */
-    function is(a, b) {
-        var prototype = a.prototype ? a.prototype : Object.getPrototypeOf(a);
-        while (prototype != null) {
-            //类型==自身原型的构造函数
-            if (prototype.constructor == b)
-                return true;
-            //父类就是原型的原型构造函数
-            prototype = Object.getPrototypeOf(prototype);
-        }
-        return false;
-    }
-    feng3d.is = is;
-    /**
-     * 如果a为b类型则返回，否则返回null
-     */
-    function as(a, b) {
-        if (!is(a, b))
-            return null;
-        return a;
-    }
-    feng3d.as = as;
-    /**
-     * 获取对象UID
-     * @author feng 2016-05-08
-     */
-    function getUID(object) {
-        //uid属性名称
-        var uidKey = "__uid__";
-        if (typeof object != "object") {
-            throw `无法获取${object}的UID`;
-        }
-        if (object.hasOwnProperty(uidKey)) {
-            return object[uidKey];
-        }
-        var uid = createUID(object);
-        Object.defineProperty(object, uidKey, {
-            value: uid,
-            enumerable: false,
-            writable: false
-        });
-        return uid;
-        /**
-         * 创建对象的UID
-         * @param object 对象
-         */
-        function createUID(object) {
-            var className = getClassName(object);
-            var id = ~~uidStart[className];
-            var time = Date.now(); //时间戳
-            var uid = [
-                className,
-                feng3d.StringUtils.getString(~~uidStart[className], 8, "0", false),
-                time,
-            ].join("-");
-            //
-            feng3d.$uidDetails[uid] = { className: className, id: id, time: time };
-            uidStart[className] = ~~uidStart[className] + 1;
-            return uid;
-        }
-    }
-    feng3d.getUID = getUID;
-    /**
-     * uid自增长编号
-     */
-    var uidStart = {};
-    /**
-     * uid细节
-     */
-    feng3d.$uidDetails = {};
-    /**
-     * 获取对象的类名
-     * @author feng 2016-4-24
-     */
-    function getClassName(value) {
-        var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
-        var className = prototype.constructor.name;
-        return className;
-    }
-    feng3d.getClassName = getClassName;
-    /**
-     * 是否为基础类型
-     * @param object    对象
-     */
-    function isBaseType(object) {
-        return typeof object == "number" || typeof object == "boolean" || typeof object == "string";
-    }
-    feng3d.isBaseType = isBaseType;
-    /**
-     * 深克隆
-     * @param source        源数据
-     * @returns             克隆数据
-     */
-    function deepClone(source) {
-        if (isBaseType(source))
-            return source;
-        var prototype = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
-        var target = new prototype.constructor();
-        for (var attribute in source) {
-            target[attribute] = deepClone(source[attribute]);
-        }
-        return target;
-    }
-    feng3d.deepClone = deepClone;
-    /**
-     * （浅）克隆
-     * @param source        源数据
-     * @returns             克隆数据
-     */
-    function clone(source) {
-        if (isBaseType(source))
-            return source;
-        var prototype = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
-        var target = new prototype.constructor();
-        for (var attribute in source) {
-            target[attribute] = source[attribute];
-        }
-        return target;
-    }
-    feng3d.clone = clone;
-    /**
-     * （浅）拷贝数据
-     */
-    function copy(target, source) {
-        var keys = Object.keys(source);
-        keys.forEach(element => {
-            target[element] = source[element];
-        });
-    }
-    feng3d.copy = copy;
-    /**
-     * 深拷贝数据
-     */
-    function deepCopy(target, source) {
-        var keys = Object.keys(source);
-        keys.forEach(element => {
-            if (!source[element] || isBaseType(source[element])) {
-                target[element] = source[element];
-            }
-            else if (!target[element]) {
-                target[element] = deepClone(source[element]);
-            }
-            else {
-                copy(target[element], source[element]);
-            }
-        });
-    }
-    feng3d.deepCopy = deepCopy;
-    /**
-     * 合并数据
-     * @param source        源数据
-     * @param mergeData     合并数据
-     * @param createNew     是否合并为新对象，默认为false
-     * @returns             如果createNew为true时返回新对象，否则返回源数据
-     */
-    function merge(source, mergeData, createNew = false) {
-        if (isBaseType(mergeData))
-            return mergeData;
-        var target = createNew ? clone(source) : source;
-        for (var mergeAttribute in mergeData) {
-            target[mergeAttribute] = merge(source[mergeAttribute], mergeData[mergeAttribute], createNew);
-        }
-        return target;
-    }
-    feng3d.merge = merge;
-    /**
-     * 观察对象
-     * @param object        被观察的对象
-     * @param onChanged     属性值变化回调函数
-     */
-    function watchObject(object, onChanged = null) {
-        if (isBaseType(object))
-            return;
-        for (var key in object) {
-            watch(object, key, onChanged);
-        }
-    }
-    feng3d.watchObject = watchObject;
-    /**
-     * 观察对象中属性
-     * @param object        被观察的对象
-     * @param attribute     被观察的属性
-     * @param onChanged     属性值变化回调函数
-     */
-    function watch(object, attribute, onChanged = null) {
-        if (isBaseType(object))
-            return;
-        if (!object.orig) {
-            Object.defineProperty(object, "orig", {
-                value: {},
-                enumerable: false,
-                writable: false,
-                configurable: true
-            });
-        }
-        object.orig[attribute] = object[attribute];
-        Object.defineProperty(object, attribute, {
-            get: function () {
-                return this.orig[attribute];
-            },
-            set: function (value) {
-                if (onChanged) {
-                    onChanged(this, attribute, this.orig[attribute], value);
-                }
-                this.orig[attribute] = value;
-            }
-        });
-    }
-    feng3d.watch = watch;
-    /**
-     * 取消观察对象
-     * @param object        被观察的对象
-     */
-    function unwatchObject(object) {
-        if (isBaseType(object))
-            return;
-        if (!object.orig)
-            return;
-        for (var key in object.orig) {
-            unwatch(object, key);
-        }
-        delete object.orig;
-    }
-    feng3d.unwatchObject = unwatchObject;
-    /**
-     * 取消观察对象中属性
-     * @param object        被观察的对象
-     * @param attribute     被观察的属性
-     */
-    function unwatch(object, attribute) {
-        if (isBaseType(object))
-            return;
-        Object.defineProperty(object, attribute, {
-            value: object.orig[attribute],
-            enumerable: true,
-            writable: true
-        });
-    }
-    feng3d.unwatch = unwatch;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -3985,8 +4091,8 @@ var feng3d;
          */
         addComponentAt(component, index) {
             super.addComponentAt(component, index);
-            if (component != null && feng3d.is(component, RenderDataHolder)) {
-                var renderDataHolder = feng3d.as(component, RenderDataHolder);
+            if (component != null && feng3d.ClassUtils.is(component, RenderDataHolder)) {
+                var renderDataHolder = feng3d.ClassUtils.as(component, RenderDataHolder);
                 var index = this._subRenderDataHolders.indexOf(renderDataHolder);
                 if (index == -1) {
                     this._subRenderDataHolders.splice(index, 0, renderDataHolder);
@@ -3999,8 +4105,8 @@ var feng3d;
          */
         removeComponentAt(index) {
             var component = this.components[index];
-            if (component != null && feng3d.is(component, RenderDataHolder)) {
-                var renderDataHolder = feng3d.as(component, RenderDataHolder);
+            if (component != null && feng3d.ClassUtils.is(component, RenderDataHolder)) {
+                var renderDataHolder = feng3d.ClassUtils.as(component, RenderDataHolder);
                 var index = this._subRenderDataHolders.indexOf(renderDataHolder);
                 if (index != -1) {
                     this._subRenderDataHolders.splice(index, 1);
@@ -4110,7 +4216,7 @@ var feng3d;
          */
         getContext3DBufferPool(context3D) {
             //获取3D环境唯一标识符
-            var context3DUID = feng3d.getUID(context3D);
+            var context3DUID = feng3d.UIDUtils.getUID(context3D);
             return this.context3DBufferPools[context3DUID] = this.context3DBufferPools[context3DUID] || new Context3DBufferPool(context3D);
         }
         /**
@@ -4269,16 +4375,16 @@ var feng3d;
          */
         getBuffer(data, target) {
             var context3D = this.context3D;
-            var dataUID = feng3d.getUID(data);
+            var dataUID = feng3d.UIDUtils.getUID(data);
             var buffer = this.bufferMap[dataUID] = this.bufferMap[dataUID] || context3D.createBuffer();
-            if (!feng3d.version.equal(data, buffer)) {
+            if (!feng3d.VersionUtils.equal(data, buffer)) {
                 context3D.bindBuffer(target, buffer);
                 context3D.bufferData(target, data, feng3d.Context3D.STATIC_DRAW);
-                feng3d.version.setVersion(buffer, feng3d.version.getVersion(data));
+                feng3d.VersionUtils.setVersion(buffer, feng3d.VersionUtils.getVersion(data));
                 //升级buffer和数据版本号一致
-                var dataVersion = Math.max(0, feng3d.version.getVersion(data));
-                feng3d.version.setVersion(data, dataVersion);
-                feng3d.version.setVersion(buffer, dataVersion);
+                var dataVersion = Math.max(0, feng3d.VersionUtils.getVersion(data));
+                feng3d.VersionUtils.setVersion(data, dataVersion);
+                feng3d.VersionUtils.setVersion(buffer, dataVersion);
             }
             return buffer;
         }
@@ -4700,7 +4806,7 @@ var feng3d;
              * 子对象列表
              */
             this._children = [];
-            this._uid = feng3d.getUID(this);
+            this._uid = feng3d.UIDUtils.getUID(this);
             this._object3DID = object3DAutoID++;
             object3DMap[this._object3DID] = this;
             this.name = name || this._uid;
@@ -4745,7 +4851,7 @@ var feng3d;
             this._parent = value;
             if (this._parent == null)
                 this._setScene(null);
-            else if (feng3d.is(this.parent, feng3d.Scene3D))
+            else if (feng3d.ClassUtils.is(this.parent, feng3d.Scene3D))
                 this._setScene(this.parent);
             else
                 this._setScene(this.parent.scene);
@@ -8854,7 +8960,7 @@ var feng3d;
                 vector3DData[index * 4 + 2] = data.a;
             }
             else {
-                throw new Error(`无法处理${feng3d.getClassName(data)}粒子属性`);
+                throw new Error(`无法处理${feng3d.ClassUtils.getQualifiedClassName(data)}粒子属性`);
             }
         }
     }
@@ -9117,7 +9223,7 @@ var feng3d;
          */
         getAnimationState(node) {
             var cls = node.stateClass;
-            var className = feng3d.getClassName(cls);
+            var className = feng3d.ClassUtils.getQualifiedClassName(cls);
             if (this._animationStates[className] == null)
                 this._animationStates[className] = new cls(this, node);
             return this._animationStates[className];

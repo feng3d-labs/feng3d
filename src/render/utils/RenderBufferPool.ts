@@ -12,7 +12,7 @@ module feng3d {
         private getContext3DBufferPool(context3D: Context3D) {
 
             //获取3D环境唯一标识符
-            var context3DUID = getUID(context3D);
+            var context3DUID = UIDUtils.getUID(context3D);
             return this.context3DBufferPools[context3DUID] = this.context3DBufferPools[context3DUID] || new Context3DBufferPool(context3D);
         }
 
@@ -192,18 +192,18 @@ module feng3d {
         private getBuffer(data: ArrayBufferView | ArrayBuffer, target: number) {
 
             var context3D = this.context3D;
-            var dataUID = getUID(data);
+            var dataUID = UIDUtils.getUID(data);
             var buffer = this.bufferMap[dataUID] = this.bufferMap[dataUID] || context3D.createBuffer();
 
-            if (!version.equal(data, buffer)) {
+            if (!VersionUtils.equal(data, buffer)) {
                 context3D.bindBuffer(target, buffer);
                 context3D.bufferData(target, data, Context3D.STATIC_DRAW);
-                version.setVersion(buffer, version.getVersion(data));
+                VersionUtils.setVersion(buffer, VersionUtils.getVersion(data));
 
                 //升级buffer和数据版本号一致
-                var dataVersion = Math.max(0, version.getVersion(data));
-                version.setVersion(data, dataVersion);
-                version.setVersion(buffer, dataVersion);
+                var dataVersion = Math.max(0, VersionUtils.getVersion(data));
+                VersionUtils.setVersion(data, dataVersion);
+                VersionUtils.setVersion(buffer, dataVersion);
             }
 
             return buffer;
