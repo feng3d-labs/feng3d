@@ -32,7 +32,8 @@ module feng3d {
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
 
-            this._context3D = <Context3D>this._canvas.getContext(contextId);
+            this._context3D = <Context3D>this._canvas.getContext(contextId, { antialias: false });
+            this._context3D.getContextAttributes();
 
             this.initGL();
 
@@ -52,8 +53,8 @@ module feng3d {
 
             this._context3D.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
             this._context3D.clearDepth(1.0);                 // Clear everything
-            this._context3D.enable(this._context3D.DEPTH_TEST);           // Enable depth testing
-            this._context3D.depthFunc(this._context3D.LEQUAL);            // Near things obscure far things
+            this._context3D.enable(Context3D.DEPTH_TEST);           // Enable depth testing
+            this._context3D.depthFunc(Context3D.LEQUAL);            // Near things obscure far things
         }
 
         /** 3d场景 */

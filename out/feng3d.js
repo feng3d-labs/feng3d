@@ -4831,7 +4831,8 @@ var feng3d;
         constructor(canvas, scene = null, camera = null) {
             feng3d.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
-            this._context3D = this._canvas.getContext(feng3d.contextId);
+            this._context3D = this._canvas.getContext(feng3d.contextId, { antialias: false });
+            this._context3D.getContextAttributes();
             this.initGL();
             this.scene = scene || new feng3d.Scene3D();
             this.camera = camera || new feng3d.Camera3D();
@@ -4845,8 +4846,8 @@ var feng3d;
         initGL() {
             this._context3D.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
             this._context3D.clearDepth(1.0); // Clear everything
-            this._context3D.enable(this._context3D.DEPTH_TEST); // Enable depth testing
-            this._context3D.depthFunc(this._context3D.LEQUAL); // Near things obscure far things
+            this._context3D.enable(feng3d.Context3D.DEPTH_TEST); // Enable depth testing
+            this._context3D.depthFunc(feng3d.Context3D.LEQUAL); // Near things obscure far things
         }
         /** 3d场景 */
         get scene() {
@@ -5504,18 +5505,23 @@ var feng3d;
          * 渲染
          */
         draw(context3D, scene3D, camera) {
+            // var b = this.testRenderable(context3D)
+            // 参考 playcanvas - device.js - testRenderable,updateBegin
+            this.testRenderable0(context3D);
             //启动裁剪，只绘制一个像素
             context3D.enable(feng3d.Context3D.SCISSOR_TEST);
             context3D.scissor(0, 0, 1, 1);
             super.draw(context3D, scene3D, camera);
             context3D.disable(feng3d.Context3D.SCISSOR_TEST);
+            //
             //读取鼠标拾取索引
             context3D.readBuffer(feng3d.Context3D.COLOR_ATTACHMENT0);
             var data = new Uint8Array(4);
             context3D.readPixels(0, 0, 1, 1, feng3d.Context3D.RGBA, feng3d.Context3D.UNSIGNED_BYTE, data);
             var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3]; //最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
-            // console.log(`选中索引3D对象${id}`, data.toString());
+            console.log(`选中索引3D对象${id}`, data.toString());
             this.selectedObject3D = feng3d.Object3D.getObject3D(id);
+            this.testRenderable1(context3D);
         }
         /**
          * 激活渲染程序
@@ -5524,6 +5530,64 @@ var feng3d;
             vertexCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".vertex");
             fragmentCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".fragment");
             return super.activeShaderProgram(context3D, vertexCode, fragmentCode);
+        }
+        testRenderable(gl) {
+            var pixelFormat = gl.FLOAT;
+            var __texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, __texture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            var __width = 2;
+            var __height = 2;
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, __width, __height, 0, gl.RGBA, pixelFormat, null);
+            // Try to use this texture as a render target.
+            var __fbo = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, __fbo);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, __texture, 0);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+            // It is legal for a WebGL implementation exposing the OES_texture_float extension to
+            // support floating-point textures but not as attachments to framebuffer objects.
+            if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
+                gl.deleteTexture(__texture);
+                return false;
+            }
+            gl.deleteTexture(__texture);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            return true;
+        }
+        testRenderable0(gl) {
+            var pixelFormat = gl.FLOAT;
+            // var __texture = this.__texture = gl.createTexture();
+            // gl.bindTexture(gl.TEXTURE_2D, __texture);
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            var __width = gl.drawingBufferWidth;
+            var __height = gl.drawingBufferHeight;
+            // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, __width, __height, 0, gl.RGBA, pixelFormat, null);
+            // Try to use this texture as a render target.
+            if (!this.__fbo) {
+                this.__fbo = gl.createFramebuffer();
+            }
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.__fbo);
+            // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, __texture, 0);
+            // gl.bindTexture(gl.TEXTURE_2D, null);
+            //
+            if (!this.renderBuffer) {
+                this.renderBuffer = gl.createRenderbuffer();
+            }
+            gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBuffer);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA8, __width, __height);
+            // gl.bindFramebuffer(gl.FRAMEBUFFER, this.__fbo);
+            gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, this.renderBuffer);
+        }
+        testRenderable1(gl) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            return true;
         }
     }
     feng3d.MouseRenderer = MouseRenderer;
@@ -10802,7 +10866,7 @@ var feng3d;
             if (!this.viewRect.contains(this.clientX, this.clientY))
                 return;
             var offsetX = -(this.clientX - this.viewRect.x);
-            var offsetY = -(this.clientY - this.viewRect.y);
+            var offsetY = -(this.viewRect.height - this.clientY + this.viewRect.y); //y轴与window中坐标反向，所以需要 h = (maxHeight - h)
             context3D.clearColor(0, 0, 0, 0);
             context3D.clearDepth(1);
             context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);

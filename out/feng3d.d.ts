@@ -3687,6 +3687,11 @@ declare module feng3d {
          * 激活渲染程序
          */
         protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram;
+        protected testRenderable(gl: Context3D): boolean;
+        __fbo: WebGLFramebuffer;
+        renderBuffer: WebGLRenderbuffer;
+        protected testRenderable0(gl: Context3D): void;
+        protected testRenderable1(gl: Context3D): boolean;
     }
 }
 declare module feng3d {

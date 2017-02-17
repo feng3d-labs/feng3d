@@ -62,7 +62,7 @@ module feng3d {
                 return;
 
             var offsetX = -(this.clientX - this.viewRect.x);
-            var offsetY = -(this.clientY - this.viewRect.y);
+            var offsetY = -(this.viewRect.height - this.clientY + this.viewRect.y);//y轴与window中坐标反向，所以需要 h = (maxHeight - h)
 
             context3D.clearColor(0, 0, 0, 0);
             context3D.clearDepth(1);
