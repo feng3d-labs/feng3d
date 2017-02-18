@@ -69,6 +69,8 @@
         "src/render/ShaderMacro.ts",
         "src/render/RenderContext.ts",
         //
+        "src/render/FrameBufferObject.ts",
+        //
         "src/core/Object3D.ts",
         "src/core/View3D.ts",
         //3D对象组件

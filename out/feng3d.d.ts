@@ -2969,6 +2969,8 @@ declare module feng3d {
          * @param data  数据
          */
         getTexture(context3D: Context3D, data: TextureInfo): WebGLBuffer;
+        getFrameBuffer(context3D: Context3D, frameBufferObject: FrameBufferObject): WebGLFramebuffer;
+        getRenderBuffer(context3D: Context3D, renderbuffer: Renderbuffer): WebGLRenderbuffer;
         /**
          * 3D环境缓冲池
          */
@@ -3215,6 +3217,31 @@ declare module feng3d {
          * 清理
          */
         clear(): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 帧缓冲对象
+     * @author feng 2017-02-18
+     *
+     * @see playcanvas - device.js - testRenderable,updateBegin
+     */
+    class FrameBufferObject {
+        colorAttachments: {
+            [name: string]: Renderbuffer;
+        };
+        activate(context3D: Context3D, width: number, height: number): void;
+        readBuffer(context3D: Context3D, name: string): void;
+        deactivate(context3D: Context3D): void;
+    }
+    class Renderbuffer {
+        attachment: number;
+        internalformat: number;
+        width: number;
+        height: number;
+        constructor(index: number, internalformat?: number, width?: number, height?: number);
+        activate(context3D: Context3D, width: number, height: number): void;
+        framebufferRenderbuffer(context3D: Context3D): void;
     }
 }
 declare module feng3d {
@@ -3679,6 +3706,8 @@ declare module feng3d {
         private shaderName;
         private shaderProgram;
         selectedObject3D: Object3D;
+        private frameBufferObject;
+        constructor();
         /**
          * 渲染
          */
@@ -3687,11 +3716,6 @@ declare module feng3d {
          * 激活渲染程序
          */
         protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram;
-        protected testRenderable(gl: Context3D): boolean;
-        __fbo: WebGLFramebuffer;
-        renderBuffer: WebGLRenderbuffer;
-        protected testRenderable0(gl: Context3D): void;
-        protected testRenderable1(gl: Context3D): boolean;
     }
 }
 declare module feng3d {
