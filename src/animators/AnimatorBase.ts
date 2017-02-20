@@ -42,7 +42,7 @@ module feng3d
         public getAnimationState(node: AnimationNodeBase): AnimationStateBase
         {
             var cls = node.stateClass;
-            var className: string = getClassName(cls);
+            var className: string = ClassUtils.getQualifiedClassName(cls);
             if (this._animationStates[className] == null)
                 this._animationStates[className] = new cls(this, node);
 

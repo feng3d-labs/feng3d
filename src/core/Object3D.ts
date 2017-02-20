@@ -64,7 +64,7 @@ module feng3d
 
             super();
 
-            this._uid = getUID(this);
+            this._uid = UIDUtils.getUID(this);
             this._object3DID = object3DAutoID++;
             object3DMap[this._object3DID] = this;
             this.name = name || this._uid;
@@ -95,7 +95,7 @@ module feng3d
 
             if (this._parent == null)
                 this._setScene(null);
-            else if (is(this.parent, Scene3D))
+            else if (ClassUtils.is(this.parent, Scene3D))
                 this._setScene(<Scene3D>this.parent);
             else
                 this._setScene(this.parent.scene);

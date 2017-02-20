@@ -71,11 +71,10 @@ module feng3d
 		 */
         public addComponentAt(component: IComponent, index: number): void
         {
-
             super.addComponentAt(component, index);
-            if (component != null && is(component, RenderDataHolder))
+            if (component != null && ClassUtils.is(component, RenderDataHolder))
             {
-                var renderDataHolder: RenderDataHolder = as(component, RenderDataHolder);
+                var renderDataHolder: RenderDataHolder = ClassUtils.as(component, RenderDataHolder);
                 var index = this._subRenderDataHolders.indexOf(renderDataHolder);
                 if (index == -1)
                 {
@@ -90,11 +89,10 @@ module feng3d
          */
         public removeComponentAt(index: number): IComponent
         {
-
             var component = this.components[index];
-            if (component != null && is(component, RenderDataHolder))
+            if (component != null && ClassUtils.is(component, RenderDataHolder))
             {
-                var renderDataHolder: RenderDataHolder = as(component, RenderDataHolder);
+                var renderDataHolder: RenderDataHolder = ClassUtils.as(component, RenderDataHolder);
                 var index = this._subRenderDataHolders.indexOf(renderDataHolder);
                 if (index != -1)
                 {

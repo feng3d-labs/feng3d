@@ -574,6 +574,177 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 断言
+     * @b			判定为真的表达式
+     * @msg			在表达式为假时将输出的错误信息
+     * @author feng 2014-10-29
+     */
+    function assert(b: boolean, msg?: string): void;
+}
+declare module feng3d {
+    /**
+     * 类工具
+     * @author feng 2017-02-15
+     */
+    class ClassUtils {
+        /**
+         * 判断a对象是否为b类型
+         */
+        static is<T>(a: any, b: new () => T): boolean;
+        /**
+         * 如果a为b类型则返回，否则返回null
+         */
+        static as<T>(a: any, b: new () => T): T;
+        /**
+         * 是否为基础类型
+         * @param object    对象
+         */
+        static isBaseType(object: any): boolean;
+        /**
+         * 返回对象的完全限定类名。
+         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
+         * （如number)和类对象
+         * @returns 包含完全限定类名称的字符串。
+         */
+        static getQualifiedClassName(value: any): string;
+        /**
+         * 返回 value 参数指定的对象的基类的完全限定类名。
+         * @param value 需要取得父类的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型（如number）和类对象
+         * @returns 完全限定的基类名称，或 null（如果不存在基类名称）。
+         */
+        static getQualifiedSuperclassName(value: any): string;
+        /**
+         * 返回 name 参数指定的类的类对象引用。
+         * @param name 类的名称。
+         */
+        static getDefinitionByName(name: string): any;
+        /**
+         * 为一个类定义注册完全限定类名
+         * @param classDefinition 类定义
+         * @param className 完全限定类名
+         */
+        static registerClass(classDefinition: any, className: string): void;
+        /**
+         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
+         */
+        static addClassNameSpace(namespace: string): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 对象工具
+     * @author feng 2017-02-15
+     */
+    class ObjectUtils {
+        /**
+         * 深克隆
+         * @param source        源数据
+         * @returns             克隆数据
+         */
+        static deepClone<T>(source: T): T;
+        /**
+         * （浅）克隆
+         * @param source        源数据
+         * @returns             克隆数据
+         */
+        static clone<T>(source: T): T;
+        /**
+         * （浅）拷贝数据
+         */
+        static copy(target: Object, source: Object): void;
+        /**
+         * 深拷贝数据
+         */
+        static deepCopy(target: Object, source: Object): void;
+        /**
+         * 合并数据
+         * @param source        源数据
+         * @param mergeData     合并数据
+         * @param createNew     是否合并为新对象，默认为false
+         * @returns             如果createNew为true时返回新对象，否则返回源数据
+         */
+        static merge<T>(source: T, mergeData: Object, createNew?: boolean): T;
+    }
+}
+declare module feng3d {
+    class WatchUtils {
+        /**
+         * 观察对象
+         * @param object        被观察的对象
+         * @param onChanged     属性值变化回调函数
+         */
+        static watchObject(object: any, onChanged?: (object: any, attribute: string, oldValue: any, newValue: any) => void): void;
+        /**
+         * 观察对象中属性
+         * @param object        被观察的对象
+         * @param attribute     被观察的属性
+         * @param onChanged     属性值变化回调函数
+         */
+        static watch(object: any, attribute: string, onChanged?: (object: any, attribute: string, oldValue: any, newValue: any) => void): void;
+        /**
+         * 取消观察对象
+         * @param object        被观察的对象
+         */
+        static unwatchObject(object: any): void;
+        /**
+         * 取消观察对象中属性
+         * @param object        被观察的对象
+         * @param attribute     被观察的属性
+         */
+        static unwatch(object: any, attribute: string): void;
+    }
+}
+declare module feng3d {
+    class UIDUtils {
+        /**
+         * 获取对象UID
+         * @author feng 2016-05-08
+         */
+        static getUID(object: {
+            __uid__?: string;
+        }): any;
+    }
+    /**
+     * uid细节
+     */
+    var $uidDetails: {
+        [uid: string]: {
+            className: string;
+            id: number;
+            time: number;
+        };
+    };
+}
+declare module feng3d {
+    class VersionUtils {
+        /**
+         * 获取对象版本
+         * @param object 对象
+         */
+        static getVersion(object: Object): number;
+        /**
+         * 升级对象版本（版本号+1）
+         * @param object 对象
+         */
+        static upgradeVersion(object: Object): void;
+        /**
+         * 设置版本号
+         * @param object 对象
+         * @param version 版本号
+         */
+        static setVersion(object: Object, version: number): void;
+        /**
+         * 判断两个对象的版本号是否相等
+         */
+        static equal(a: Object, b: Object): boolean;
+        /**
+         * 断言object为对象类型
+         */
+        private static assertObject(object);
+    }
+}
+declare module feng3d {
+    /**
      * 事件
      * @author feng 2014-5-7
      */
@@ -1592,15 +1763,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 断言
-     * @b			判定为真的表达式
-     * @msg			在表达式为假时将输出的错误信息
-     * @author feng 2014-10-29
-     */
-    function assert(b: boolean, msg?: string): void;
-}
-declare module feng3d {
-    /**
      * 获取feng3d运行时间，毫秒为单位
      */
     function getTimer(): number;
@@ -1664,113 +1826,6 @@ declare module feng3d {
          */
         clear(): void;
     }
-}
-declare module feng3d {
-    class Version {
-        /**
-         * 获取对象版本
-         * @param object 对象
-         */
-        getVersion(object: Object): number;
-        /**
-         * 升级对象版本（版本号+1）
-         * @param object 对象
-         */
-        upgradeVersion(object: Object): void;
-        /**
-         * 设置版本号
-         * @param object 对象
-         * @param version 版本号
-         */
-        setVersion(object: Object, version: number): void;
-        /**
-         * 判断两个对象的版本号是否相等
-         */
-        equal(a: Object, b: Object): boolean;
-        /**
-         * 断言object为对象类型
-         */
-        private assertObject(object);
-    }
-    /**
-     * 对象版本
-     */
-    var version: Version;
-}
-declare module feng3d {
-    /**
-     * 判断a对象是否为b类型
-     */
-    function is(a: any, b: Function): boolean;
-    /**
-     * 如果a为b类型则返回，否则返回null
-     */
-    function as(a: any, b: Function): any;
-    /**
-     * 获取对象UID
-     * @author feng 2016-05-08
-     */
-    function getUID(object: {
-        __uid__?: string;
-    }): any;
-    /**
-     * uid细节
-     */
-    var $uidDetails: {
-        [uid: string]: {
-            className: string;
-            id: number;
-            time: number;
-        };
-    };
-    /**
-     * 获取对象的类名
-     * @author feng 2016-4-24
-     */
-    function getClassName(value: any): string;
-    /**
-     * 是否为基础类型
-     * @param object    对象
-     */
-    function isBaseType(object: any): boolean;
-    /**
-     * （浅）克隆
-     * @param source        源数据
-     * @returns             克隆数据
-     */
-    function clone<T>(source: T): T;
-    /**
-     * 合并数据
-     * @param source        源数据
-     * @param mergeData     合并数据
-     * @param createNew     是否合并为新对象，默认为false
-     * @returns             如果createNew为true时返回新对象，否则返回源数据
-     */
-    function merge<T>(source: T, mergeData: Object, createNew?: boolean): T;
-    /**
-     * 观察对象
-     * @param object        被观察的对象
-     * @param onChanged     属性值变化回调函数
-     */
-    function watchObject(object: any, onChanged?: (object: any, attribute: string, oldValue: any, newValue: any) => void): void;
-    /**
-     * 观察对象中属性
-     * @param object        被观察的对象
-     * @param attribute     被观察的属性
-     * @param onChanged     属性值变化回调函数
-     */
-    function watch(object: any, attribute: string, onChanged?: (object: any, attribute: string, oldValue: any, newValue: any) => void): void;
-    /**
-     * 取消观察对象
-     * @param object        被观察的对象
-     */
-    function unwatchObject(object: any): void;
-    /**
-     * 取消观察对象中属性
-     * @param object        被观察的对象
-     * @param attribute     被观察的属性
-     */
-    function unwatch(object: any, attribute: string): void;
 }
 declare module feng3d {
     /**
