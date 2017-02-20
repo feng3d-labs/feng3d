@@ -70,6 +70,13 @@
         "src/render/RenderContext.ts",
         //
         "src/render/FrameBufferObject.ts",
+        "src/render/Renderer.ts",
+        "src/render/renderer/ForwardRenderer.ts",
+        "src/render/renderer/MouseRenderer.ts",
+        "src/render/renderer/PostProcessRenderer.ts",
+        //后处理效果
+        "src/render/postEffect/PostEffect.ts",
+        "src/render/postEffect/FXAAEffect.ts",
         //
         "src/core/Object3D.ts",
         "src/core/View3D.ts",
@@ -78,9 +85,7 @@
         "src/core/Transform.ts",
         "src/core/Object3DEvent.ts",
         "src/core/MeshFilter.ts",
-        "src/render/Renderer.ts",
         "src/core/MeshRenderer.ts",
-        "src/render/MouseRenderer.ts",
         //3D场景
         "src/scene/Scene3D.ts",
         "src/scene/Scene3DEvent.ts",
