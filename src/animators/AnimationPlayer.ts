@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
 	/**
 	 * 动画播放器
 	 * @author feng 2017-01-04
 	 */
-    export class AnimationPlayer {
+    export class AnimationPlayer
+    {
 
         private _time: number = 0;
         private preTime: number = 0;
@@ -18,12 +20,14 @@ module feng3d {
         /**
          * 动画时间
          */
-        public get time() {
+        public get time()
+        {
 
             return this._time;
         }
 
-        public set time(value: number) {
+        public set time(value: number)
+        {
 
             this._time = value;
         }
@@ -31,7 +35,8 @@ module feng3d {
         /**
          * 开始
          */
-        public start() {
+        public start()
+        {
 
             this.time = 0;
             this.continue();
@@ -40,7 +45,8 @@ module feng3d {
         /**
          * 停止
          */
-        public stop() {
+        public stop()
+        {
 
             this.pause();
         }
@@ -48,7 +54,8 @@ module feng3d {
         /**
          * 继续
          */
-        public continue() {
+        public continue()
+        {
 
             this._isPlaying
             this.preTime = getTimer();
@@ -58,7 +65,8 @@ module feng3d {
         /**
          * 暂停
          */
-        public pause() {
+        public pause()
+        {
 
             $ticker.removeEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
         }
@@ -66,7 +74,8 @@ module feng3d {
         /**
 		 * 自动更新动画时帧更新事件
 		 */
-        private onEnterFrame(event: Event) {
+        private onEnterFrame(event: Event)
+        {
 
             var currentTime = getTimer();
             this.time = this.time + (currentTime - this.preTime) * this.playbackSpeed;

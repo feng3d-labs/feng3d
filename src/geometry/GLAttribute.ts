@@ -1,9 +1,11 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * opengl顶点属性名称
      */
-    export class GLAttribute {
+    export class GLAttribute
+    {
 
         /**
          * 坐标

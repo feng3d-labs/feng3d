@@ -1,10 +1,12 @@
-module feng3d.shortcut {
+module feng3d.shortcut
+{
 
 	/**
 	 * 按键状态
 	 * @author feng 2016-4-26
 	 */
-	export class KeyState extends EventDispatcher {
+	export class KeyState extends EventDispatcher
+	{
 		/**
 		 * 按键状态{key:键名称,value:是否按下}
 		 */
@@ -13,8 +15,9 @@ module feng3d.shortcut {
 		/**
 		 * 构建
 		 */
-		constructor() {
-			
+		constructor()
+		{
+
 			super();
 			this.keyStateDic = {};
 		}
@@ -24,8 +27,9 @@ module feng3d.shortcut {
 		 * @param key 	键名称
 		 * @param data	携带数据
 		 */
-		public pressKey(key: string, data: Object = null): void {
-			
+		public pressKey(key: string, data: Object = null): void
+		{
+
 			this.keyStateDic[key] = true;
 			this.dispatchEvent(new ShortCutEvent(key, data));
 		}
@@ -35,7 +39,8 @@ module feng3d.shortcut {
 		 * @param key	键名称
 		 * @param data	携带数据
 		 */
-		public releaseKey(key: string, data: Object = null): void {
+		public releaseKey(key: string, data: Object = null): void
+		{
 
 			this.keyStateDic[key] = false;
 			this.dispatchEvent(new ShortCutEvent(key, data));
@@ -45,7 +50,8 @@ module feng3d.shortcut {
 		 * 获取按键状态
 		 * @param key 按键名称
 		 */
-		public getKeyState(key: string): Boolean {
+		public getKeyState(key: string): Boolean
+		{
 
 			return !!this.keyStateDic[key];
 		}

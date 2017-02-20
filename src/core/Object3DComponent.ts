@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 3D对象组件
      * @author feng 2016-09-02
      */
-    export class Object3DComponent extends RenderDataHolder {
+    export class Object3DComponent extends RenderDataHolder
+    {
 
         /**
          * 父组件
@@ -19,14 +21,16 @@ module feng3d {
         /**
          * 构建3D对象组件
          */
-        constructor() {
+        constructor()
+        {
             super();
         }
 
         /**
          * 全局矩阵
          */
-        public get globalMatrix3d() {
+        public get globalMatrix3d()
+        {
 
             return this.object3D ? this.object3D.transform.globalMatrix3D : new Matrix3D();
         }

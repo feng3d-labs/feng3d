@@ -1,10 +1,12 @@
-module feng3d.shortcut {
+module feng3d.shortcut
+{
 
 	/**
 	 * 快捷键捕获
 	 * @author feng 2016-4-26
 	 */
-	export class ShortCutCapture {
+	export class ShortCutCapture
+	{
 		/**
 		 * 快捷键环境
 		 */
@@ -63,7 +65,8 @@ module feng3d.shortcut {
 		 * @param stateCommand			可执行的状态命令
 		 * @param when					快捷键处于活动状态的条件
 		 */
-		constructor(shortCutContext: ShortCutContext, key: string, command: string = null, stateCommand: string = null, when: string = null) {
+		constructor(shortCutContext: ShortCutContext, key: string, command: string = null, stateCommand: string = null, when: string = null)
+		{
 
 			this.shortCutContext = shortCutContext;
 			this.keyState = shortCutContext.keyState;
@@ -83,9 +86,11 @@ module feng3d.shortcut {
 		/**
 		 * 初始化
 		 */
-		private init(): void {
+		private init(): void
+		{
 
-			for (var i = 0; i < this.keys.length; i++) {
+			for (var i = 0; i < this.keys.length; i++)
+			{
 				this.keyState.addEventListener(this.keys[i].key, this.onCapture, this);
 			}
 		}
@@ -93,12 +98,14 @@ module feng3d.shortcut {
 		/**
 		 * 处理捕获事件
 		 */
-		private onCapture(event: ShortCutEvent): void {
+		private onCapture(event: ShortCutEvent): void
+		{
 
 			var inWhen: Boolean = this.checkActivityStates(this.states);
 			var pressKeys: Boolean = this.checkActivityKeys(this.keys);
 
-			if (pressKeys && inWhen) {
+			if (pressKeys && inWhen)
+			{
 				this.dispatchCommands(this.commands, event.data);
 				this.executeStateCommands(this.stateCommands);
 			}
@@ -107,9 +114,11 @@ module feng3d.shortcut {
 		/**
 		 * 派发命令
 		 */
-		private dispatchCommands(commands: string[], data: Object): void {
+		private dispatchCommands(commands: string[], data: Object): void
+		{
 
-			for (var i = 0; i < commands.length; i++) {
+			for (var i = 0; i < commands.length; i++)
+			{
 				this.shortCutContext.commandDispatcher.dispatchEvent(new ShortCutEvent(commands[i], data));
 			}
 		}
@@ -117,9 +126,11 @@ module feng3d.shortcut {
 		/**
 		 * 执行状态命令
 		 */
-		private executeStateCommands(stateCommands: StateCommand[]): void {
+		private executeStateCommands(stateCommands: StateCommand[]): void
+		{
 
-			for (var i = 0; i < stateCommands.length; i++) {
+			for (var i = 0; i < stateCommands.length; i++)
+			{
 				var stateCommand: StateCommand = stateCommands[i];
 				if (stateCommand.not)
 					this.shortCutContext.deactivityState(stateCommand.state);
@@ -131,9 +142,11 @@ module feng3d.shortcut {
 		/**
 		 * 检测快捷键是否处于活跃状态
 		 */
-		private checkActivityStates(states: State[]): Boolean {
+		private checkActivityStates(states: State[]): Boolean
+		{
 
-			for (var i = 0; i < states.length; i++) {
+			for (var i = 0; i < states.length; i++)
+			{
 				if (!this.getState(states[i]))
 					return false;
 			}
@@ -144,10 +157,12 @@ module feng3d.shortcut {
 		 * 获取是否处于指定状态中（支持一个！取反）
 		 * @param state 状态名称
 		 */
-		private getState(state: State): Boolean {
+		private getState(state: State): Boolean
+		{
 
 			var result: Boolean = this.shortCutContext.getState(state.state);
-			if (state.not) {
+			if (state.not)
+			{
 				result = !result;
 			}
 			return result;
@@ -157,9 +172,11 @@ module feng3d.shortcut {
 		 * 检测是否按下给出的键
 		 * @param keys 按键数组
 		 */
-		private checkActivityKeys(keys: Key[]): Boolean {
+		private checkActivityKeys(keys: Key[]): Boolean
+		{
 
-			for (var i = 0; i < keys.length; i++) {
+			for (var i = 0; i < keys.length; i++)
+			{
 				if (!this.getKeyValue(keys[i]))
 					return false;
 			}
@@ -169,11 +186,13 @@ module feng3d.shortcut {
 		/**
 		 * 获取按键状态（true：按下状态，false：弹起状态）
 		 */
-		private getKeyValue(key: Key): Boolean {
+		private getKeyValue(key: Key): Boolean
+		{
 
 			var value: Boolean = this.keyState.getKeyState(key.key);
 
-			if (key.not) {
+			if (key.not)
+			{
 				value = !value;
 			}
 
@@ -184,18 +203,21 @@ module feng3d.shortcut {
 		 * 获取状态列表
 		 * @param when		状态字符串
 		 */
-		private getStates(when: string): State[] {
+		private getStates(when: string): State[]
+		{
 
 			var states: State[] = [];
 			if (when == null)
 				return states;
 			var state: string = when.trim();
-			if (state.length == 0) {
+			if (state.length == 0)
+			{
 				return states;
 			}
 
 			var stateStrs = state.split("+");
-			for (var i = 0; i < stateStrs.length; i++) {
+			for (var i = 0; i < stateStrs.length; i++)
+			{
 				states.push(new State(stateStrs[i]));
 			}
 
@@ -206,11 +228,13 @@ module feng3d.shortcut {
 		 * 获取键列表
 		 * @param key		快捷键
 		 */
-		private getKeys(key: string): Key[] {
+		private getKeys(key: string): Key[]
+		{
 
 			var keyStrs = key.split("+");
 			var keys: Key[] = [];
-			for (var i = 0; i < keyStrs.length; i++) {
+			for (var i = 0; i < keyStrs.length; i++)
+			{
 				keys.push(new Key(keyStrs[i]));
 			}
 
@@ -221,7 +245,8 @@ module feng3d.shortcut {
 		 * 获取命令列表
 		 * @param command	命令
 		 */
-		private getCommands(command: string): string[] {
+		private getCommands(command: string): string[]
+		{
 
 			var commands: string[] = [];
 			if (command == null)
@@ -229,9 +254,11 @@ module feng3d.shortcut {
 
 			command = command.trim();
 			var commandStrs = command.split(",");
-			for (var i = 0; i < commandStrs.length; i++) {
+			for (var i = 0; i < commandStrs.length; i++)
+			{
 				var commandStr: string = commandStrs[i].trim();
-				if (commandStr.length > 0) {
+				if (commandStr.length > 0)
+				{
 					commands.push(commandStr);
 				}
 			}
@@ -243,7 +270,8 @@ module feng3d.shortcut {
 		 * 获取状态命令列表
 		 * @param stateCommand	状态命令
 		 */
-		private getStateCommand(stateCommand: string): StateCommand[] {
+		private getStateCommand(stateCommand: string): StateCommand[]
+		{
 
 			var stateCommands: StateCommand[] = [];
 			if (stateCommand == null)
@@ -251,9 +279,11 @@ module feng3d.shortcut {
 
 			stateCommand = stateCommand.trim();
 			var stateCommandStrs = stateCommand.split(",");
-			for (var i = 0; i < stateCommandStrs.length; i++) {
+			for (var i = 0; i < stateCommandStrs.length; i++)
+			{
 				var commandStr: string = stateCommandStrs[i].trim();
-				if (commandStr.length > 0) {
+				if (commandStr.length > 0)
+				{
 					stateCommands.push(new StateCommand(commandStr));
 				}
 			}
@@ -264,9 +294,11 @@ module feng3d.shortcut {
 		/**
 		 * 销毁
 		 */
-		public destroy(): void {
+		public destroy(): void
+		{
 
-			for (var i = 0; i < this.keys.length; i++) {
+			for (var i = 0; i < this.keys.length; i++)
+			{
 				this.keyState.removeEventListener(this.keys[i].key, this.onCapture, this);
 			}
 			this.shortCutContext = null;
@@ -280,7 +312,8 @@ module feng3d.shortcut {
  * 按键
  * @author feng 2016-6-6
  */
-class Key {
+class Key
+{
 	/**
 	 * 是否取反
 	 */
@@ -291,10 +324,12 @@ class Key {
 	 */
 	public key: string;
 
-	constructor(key: string) {
+	constructor(key: string)
+	{
 
 		key = key.trim();
-		if (key.charAt(0) == "!") {
+		if (key.charAt(0) == "!")
+		{
 			this.not = true;
 			key = key.substr(1).trim();
 		}
@@ -306,7 +341,8 @@ class Key {
  * 状态
  * @author feng 2016-6-6
  */
-class State {
+class State
+{
 	/**
 	 * 是否取反
 	 */
@@ -317,10 +353,12 @@ class State {
 	 */
 	public state: string;
 
-	constructor(state: string) {
+	constructor(state: string)
+	{
 
 		state = state.trim();
-		if (state.charAt(0) == "!") {
+		if (state.charAt(0) == "!")
+		{
 			this.not = true;
 			state = state.substr(1).trim();
 		}
@@ -332,7 +370,8 @@ class State {
  * 状态命令
  * @author feng 2016-6-6
  */
-class StateCommand {
+class StateCommand
+{
 	/**
 	 * 是否取反
 	 */
@@ -343,10 +382,12 @@ class StateCommand {
 	 */
 	public state: string;
 
-	constructor(state: string) {
+	constructor(state: string)
+	{
 
 		state = state.trim();
-		if (state.charAt(0) == "!") {
+		if (state.charAt(0) == "!")
+		{
 			this.not = true;
 			state = state.substr(1).trim();
 		}

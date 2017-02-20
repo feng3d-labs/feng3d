@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 胶囊体几何体
      * @author DawnKing 2016-09-12
      */
-    export class CapsuleGeometry extends Geometry {
+    export class CapsuleGeometry extends Geometry
+    {
 
         /**
          * 创建胶囊几何体
@@ -14,7 +16,8 @@ module feng3d {
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(radius = 50, height = 100, segmentsW = 16, segmentsH = 15, yUp = true) {
+        constructor(radius = 50, height = 100, segmentsW = 16, segmentsH = 15, yUp = true)
+        {
 
             super();
 
@@ -33,7 +36,8 @@ module feng3d {
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildGeometry(radius = 1, height = 1, segmentsW = 1, segmentsH = 1, yUp = true) {
+        private buildGeometry(radius = 1, height = 1, segmentsW = 1, segmentsH = 1, yUp = true)
+        {
 
             var vertexPositionData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
             var vertexNormalData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
@@ -42,14 +46,16 @@ module feng3d {
             var startIndex: number;
             var index: number = 0;
             var comp1: number, comp2: number, t1: number, t2: number;
-            for (var yi: number = 0; yi <= segmentsH; ++yi) {
+            for (var yi: number = 0; yi <= segmentsH; ++yi)
+            {
                 startIndex = index;
 
                 var horangle: number = Math.PI * yi / segmentsH;
                 var z: number = -radius * Math.cos(horangle);
                 var ringradius: number = radius * Math.sin(horangle);
 
-                for (var xi: number = 0; xi <= segmentsW; ++xi) {
+                for (var xi: number = 0; xi <= segmentsW; ++xi)
+                {
                     var verangle: number = 2 * Math.PI * xi / segmentsW;
                     var x: number = ringradius * Math.cos(verangle);
                     var y: number = ringradius * Math.sin(verangle);
@@ -57,20 +63,23 @@ module feng3d {
                     var tanLen: number = Math.sqrt(y * y + x * x);
                     var offset: number = yi > segmentsH / 2 ? height / 2 : -height / 2;
 
-                    if (yUp) {
+                    if (yUp)
+                    {
                         t1 = 0;
                         t2 = tanLen > .007 ? x / tanLen : 0;
                         comp1 = -z;
                         comp2 = y;
                     }
-                    else {
+                    else
+                    {
                         t1 = tanLen > .007 ? x / tanLen : 0;
                         t2 = 0;
                         comp1 = y;
                         comp2 = z;
                     }
 
-                    if (xi == segmentsW) {
+                    if (xi == segmentsW)
+                    {
                         vertexPositionData[index] = vertexPositionData[startIndex];
                         vertexPositionData[index + 1] = vertexPositionData[startIndex + 1];
                         vertexPositionData[index + 2] = vertexPositionData[startIndex + 2];
@@ -83,7 +92,8 @@ module feng3d {
                         vertexTangentData[index + 1] = (vertexTangentData[startIndex + 1] + t1) * 0.5;
                         vertexTangentData[index + 2] = (vertexTangentData[startIndex + 2] + t2) * 0.5;
                     }
-                    else {
+                    else
+                    {
                         vertexPositionData[index] = x;
                         vertexPositionData[index + 1] = yUp ? comp1 - offset : comp1;
                         vertexPositionData[index + 2] = yUp ? comp2 : comp2 + offset;
@@ -97,9 +107,11 @@ module feng3d {
                         vertexTangentData[index + 2] = t2;
                     }
 
-                    if (xi > 0 && yi > 0) {
+                    if (xi > 0 && yi > 0)
+                    {
 
-                        if (yi == segmentsH) {
+                        if (yi == segmentsH)
+                        {
                             vertexPositionData[index] = vertexPositionData[startIndex];
                             vertexPositionData[index + 1] = vertexPositionData[startIndex + 1];
                             vertexPositionData[index + 2] = vertexPositionData[startIndex + 2];
@@ -120,30 +132,37 @@ module feng3d {
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        buildIndices(segmentsW = 1, segmentsH = 1, yUp = true) {
+        buildIndices(segmentsW = 1, segmentsH = 1, yUp = true)
+        {
 
             var indices = new Uint16Array(segmentsH * segmentsW * 6);
 
             var numIndices = 0;
-            for (var yi: number = 0; yi <= segmentsH; ++yi) {
-                for (var xi: number = 0; xi <= segmentsW; ++xi) {
-                    if (xi > 0 && yi > 0) {
+            for (var yi: number = 0; yi <= segmentsH; ++yi)
+            {
+                for (var xi: number = 0; xi <= segmentsW; ++xi)
+                {
+                    if (xi > 0 && yi > 0)
+                    {
                         var a: number = (segmentsW + 1) * yi + xi;
                         var b: number = (segmentsW + 1) * yi + xi - 1;
                         var c: number = (segmentsW + 1) * (yi - 1) + xi - 1;
                         var d: number = (segmentsW + 1) * (yi - 1) + xi;
 
-                        if (yi == segmentsH) {
+                        if (yi == segmentsH)
+                        {
                             indices[numIndices++] = a;
                             indices[numIndices++] = c;
                             indices[numIndices++] = d;
                         }
-                        else if (yi == 1) {
+                        else if (yi == 1)
+                        {
                             indices[numIndices++] = a;
                             indices[numIndices++] = b;
                             indices[numIndices++] = c;
                         }
-                        else {
+                        else
+                        {
                             indices[numIndices++] = a;
                             indices[numIndices++] = b;
                             indices[numIndices++] = c;
@@ -162,13 +181,16 @@ module feng3d {
          * @param segmentsW 横向分割数
          * @param segmentsH 纵向分割数
          */
-        private buildUVs(segmentsW = 1, segmentsH = 1) {
+        private buildUVs(segmentsW = 1, segmentsH = 1)
+        {
 
             var data = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 2);
             var index: number = 0;
 
-            for (var yi: number = 0; yi <= segmentsH; ++yi) {
-                for (var xi: number = 0; xi <= segmentsW; ++xi) {
+            for (var yi: number = 0; yi <= segmentsH; ++yi)
+            {
+                for (var xi: number = 0; xi <= segmentsW; ++xi)
+                {
                     data[index++] = xi / segmentsW;
                     data[index++] = yi / segmentsH;
                 }

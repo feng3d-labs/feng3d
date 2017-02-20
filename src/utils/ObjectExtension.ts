@@ -1,12 +1,15 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 判断a对象是否为b类型
      */
-    export function is(a, b: Function): boolean {
+    export function is(a, b: Function): boolean
+    {
 
         var prototype: any = a.prototype ? a.prototype : Object.getPrototypeOf(a);
-        while (prototype != null) {
+        while (prototype != null)
+        {
             //类型==自身原型的构造函数
             if (prototype.constructor == b)
                 return true;
@@ -20,7 +23,8 @@ module feng3d {
     /**
      * 如果a为b类型则返回，否则返回null
      */
-    export function as(a, b: Function) {
+    export function as(a, b: Function)
+    {
         if (!is(a, b))
             return null;
         return <any>a;
@@ -30,16 +34,19 @@ module feng3d {
      * 获取对象UID
      * @author feng 2016-05-08
      */
-    export function getUID(object: { __uid__?: string }) {
+    export function getUID(object: { __uid__?: string })
+    {
 
         //uid属性名称
         var uidKey = "__uid__";
 
-        if (typeof object != "object") {
+        if (typeof object != "object")
+        {
             throw `无法获取${object}的UID`;
         }
 
-        if (object.hasOwnProperty(uidKey)) {
+        if (object.hasOwnProperty(uidKey))
+        {
             return object[uidKey];
         }
         var uid = createUID(object);
@@ -54,7 +61,8 @@ module feng3d {
          * 创建对象的UID
          * @param object 对象
          */
-        function createUID(object: any) {
+        function createUID(object: any)
+        {
 
             var className = getClassName(object);
             var id = ~~uidStart[className];
@@ -84,7 +92,8 @@ module feng3d {
      * 获取对象的类名
      * @author feng 2016-4-24
      */
-    export function getClassName(value: any): string {
+    export function getClassName(value: any): string
+    {
         var prototype: any = value.prototype ? value.prototype : Object.getPrototypeOf(value);
         var className: string = prototype.constructor.name;
         return className;
@@ -94,7 +103,8 @@ module feng3d {
      * 是否为基础类型
      * @param object    对象  
      */
-    export function isBaseType(object: any) {
+    export function isBaseType(object: any)
+    {
         return typeof object == "number" || typeof object == "boolean" || typeof object == "string";
     }
 
@@ -103,12 +113,14 @@ module feng3d {
      * @param source        源数据
      * @returns             克隆数据
      */
-    export function clone<T>(source: T): T {
+    export function clone<T>(source: T): T
+    {
         if (isBaseType(source))
             return source;
         var prototype: any = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
         var target = new prototype.constructor();
-        for (var attribute in source) {
+        for (var attribute in source)
+        {
             target[attribute] = source[attribute];
         }
         return target;
@@ -121,12 +133,14 @@ module feng3d {
      * @param createNew     是否合并为新对象，默认为false
      * @returns             如果createNew为true时返回新对象，否则返回源数据
      */
-    export function merge<T>(source: T, mergeData: Object, createNew = false): T {
+    export function merge<T>(source: T, mergeData: Object, createNew = false): T
+    {
 
         if (isBaseType(mergeData))
             return <any>mergeData;
         var target = createNew ? clone(source) : source;
-        for (var mergeAttribute in mergeData) {
+        for (var mergeAttribute in mergeData)
+        {
             target[mergeAttribute] = merge(source[mergeAttribute], mergeData[mergeAttribute], createNew);
         }
         return target;
@@ -137,11 +151,13 @@ module feng3d {
      * @param object        被观察的对象
      * @param onChanged     属性值变化回调函数
      */
-    export function watchObject(object: any, onChanged: (object: any, attribute: string, oldValue: any, newValue: any) => void = null) {
+    export function watchObject(object: any, onChanged: (object: any, attribute: string, oldValue: any, newValue: any) => void = null)
+    {
 
         if (isBaseType(object))
             return;
-        for (var key in object) {
+        for (var key in object)
+        {
             watch(object, key, onChanged);
         }
     }
@@ -152,11 +168,13 @@ module feng3d {
      * @param attribute     被观察的属性
      * @param onChanged     属性值变化回调函数
      */
-    export function watch(object: any, attribute: string, onChanged: (object: any, attribute: string, oldValue: any, newValue: any) => void = null) {
+    export function watch(object: any, attribute: string, onChanged: (object: any, attribute: string, oldValue: any, newValue: any) => void = null)
+    {
 
         if (isBaseType(object))
             return;
-        if (!object.orig) {
+        if (!object.orig)
+        {
             Object.defineProperty(object, "orig", {
                 value: {},
                 enumerable: false,
@@ -166,11 +184,14 @@ module feng3d {
         }
         object.orig[attribute] = object[attribute];
         Object.defineProperty(object, attribute, {
-            get: function () {
+            get: function ()
+            {
                 return this.orig[attribute];
             },
-            set: function (value) {
-                if (onChanged) {
+            set: function (value)
+            {
+                if (onChanged)
+                {
                     onChanged(this, attribute, this.orig[attribute], value);
                 }
                 this.orig[attribute] = value;
@@ -182,13 +203,15 @@ module feng3d {
      * 取消观察对象
      * @param object        被观察的对象
      */
-    export function unwatchObject(object: any) {
+    export function unwatchObject(object: any)
+    {
 
         if (isBaseType(object))
             return;
         if (!object.orig)
             return;
-        for (var key in object.orig) {
+        for (var key in object.orig)
+        {
             unwatch(object, key);
         }
         delete object.orig;
@@ -199,7 +222,8 @@ module feng3d {
      * @param object        被观察的对象
      * @param attribute     被观察的属性
      */
-    export function unwatch(object: any, attribute: string) {
+    export function unwatch(object: any, attribute: string)
+    {
 
         if (isBaseType(object))
             return;

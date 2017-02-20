@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 颜色
      * @author feng 2016-09-24
      */
-    export class Color {
+    export class Color
+    {
 
         /**
          * 红[0,1]
@@ -30,7 +32,8 @@ module feng3d {
          * @param b     蓝[0,1]
          * @param a     透明度[0,1]
          */
-        constructor(r: number = 1, g: number = 1, b: number = 1, a: number = 1) {
+        constructor(r: number = 1, g: number = 1, b: number = 1, a: number = 1)
+        {
 
             this.r = r;
             this.g = g;
@@ -45,7 +48,8 @@ module feng3d {
          * @param b     蓝[0,255]
          * @param a     透明度[0,255]
          */
-        public fromInts(r: number, g: number, b: number, a: number) {
+        public fromInts(r: number, g: number, b: number, a: number)
+        {
 
             this.r = r / 0xff;
             this.g = g / 0xff;
@@ -53,7 +57,8 @@ module feng3d {
             this.a = a / 0xff;
         }
 
-        public fromUnit(color: number, hasAlpha: boolean = true) {
+        public fromUnit(color: number, hasAlpha: boolean = true)
+        {
 
             this.a = (hasAlpha ? (color >> 24) & 0xff : 0xff) / 0xff;
             this.r = ((color >> 16) & 0xff) / 0xff;
@@ -64,7 +69,8 @@ module feng3d {
         /**
          * 转换为数组
          */
-        public asArray(): number[] {
+        public asArray(): number[]
+        {
 
             var result = [];
             this.toArray(result);
@@ -76,7 +82,8 @@ module feng3d {
          * @param array     数组
          * @param index     存储在数组中的位置
          */
-        public toArray(array: number[], index: number = 0): Color {
+        public toArray(array: number[], index: number = 0): Color
+        {
 
             array[index] = this.r;
             array[index + 1] = this.g;
@@ -88,7 +95,8 @@ module feng3d {
         /**
          * 输出为向量
          */
-        public toVector3D() {
+        public toVector3D()
+        {
 
             return new Vector3D(this.r, this.g, this.b, this.a);
         }
@@ -96,7 +104,8 @@ module feng3d {
         /**
          * 输出16进制字符串
          */
-        public toHexString(): string {
+        public toHexString(): string
+        {
 
             var intR = (this.r * 0xff) | 0;
             var intG = (this.g * 0xff) | 0;
@@ -111,7 +120,8 @@ module feng3d {
          * @param color 混入的颜色
          * @param rate  混入比例
          */
-        public mix(color: Color, rate: number = 0.5) {
+        public mix(color: Color, rate: number = 0.5)
+        {
 
             this.r = this.r * (1 - rate) + color.r * rate;
             this.g = this.g * (1 - rate) + color.g * rate;
@@ -123,7 +133,8 @@ module feng3d {
         /**
          * 输出字符串
          */
-        public toString(): string {
+        public toString(): string
+        {
 
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
         }
@@ -132,10 +143,12 @@ module feng3d {
          * [0,15]数值转为16进制字符串
          * param i  [0,15]数值
          */
-        public static ToHex(i: number): string {
+        public static ToHex(i: number): string
+        {
 
             var str = i.toString(16);
-            if (i <= 0xf) {
+            if (i <= 0xf)
+            {
                 return ("0" + str).toUpperCase();
             }
             return str.toUpperCase();

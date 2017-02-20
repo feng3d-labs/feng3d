@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 灯光类型
      * @author feng 2016-12-12
      */
-    export enum LightType {
+    export enum LightType
+    {
         /**
          * 点光
          */

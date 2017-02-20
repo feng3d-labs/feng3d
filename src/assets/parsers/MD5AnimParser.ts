@@ -1,4 +1,5 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 帧数据
@@ -55,13 +56,16 @@ module feng3d {
         frame: MD5_Frame[];
     }
 
-    export class MD5AnimParser {
+    export class MD5AnimParser
+    {
 
-        static parse(context: string) {
+        static parse(context: string)
+        {
 
             var md5AnimData = <MD5AnimData>{};
             var lines = context.split("\n").reverse();
-            do {
+            do
+            {
                 var line = lines.pop();
                 parserLine(line, md5AnimData);
             } while (line);
@@ -88,7 +92,8 @@ module feng3d {
     /**
      * 状态
      */
-    enum State {
+    enum State
+    {
         hierarchy,
         bounds,
         baseframe,
@@ -99,7 +104,8 @@ module feng3d {
     var states: State[] = [];
     var currentFrame: MD5_Frame;
 
-    function parserLine(line: string, md5AnimData: MD5AnimData) {
+    function parserLine(line: string, md5AnimData: MD5AnimData)
+    {
 
         if (!line)
             return;
@@ -108,23 +114,32 @@ module feng3d {
             return;
 
         var result: RegExpExecArray;
-        if ((result = MD5VersionReg.exec(line)) && result[0] == line) {
+        if ((result = MD5VersionReg.exec(line)) && result[0] == line)
+        {
             md5AnimData.MD5Version = parseInt(result[1]);
-        } else if ((result = commandlineReg.exec(line)) && result[0] == line) {
+        } else if ((result = commandlineReg.exec(line)) && result[0] == line)
+        {
             md5AnimData.commandline = result[1];
-        } else if ((result = numFramesReg.exec(line)) && result[0] == line) {
+        } else if ((result = numFramesReg.exec(line)) && result[0] == line)
+        {
             md5AnimData.numFrames = parseInt(result[1]);
-        } else if ((result = numJointsReg.exec(line)) && result[0] == line) {
+        } else if ((result = numJointsReg.exec(line)) && result[0] == line)
+        {
             md5AnimData.numJoints = parseInt(result[1]);
-        } else if ((result = frameRateReg.exec(line)) && result[0] == line) {
+        } else if ((result = frameRateReg.exec(line)) && result[0] == line)
+        {
             md5AnimData.frameRate = parseInt(result[1]);
-        } else if ((result = numAnimatedComponentsReg.exec(line)) && result[0] == line) {
+        } else if ((result = numAnimatedComponentsReg.exec(line)) && result[0] == line)
+        {
             md5AnimData.numAnimatedComponents = parseInt(result[1]);
-        } else if ((result = hierarchyStartReg.exec(line)) && result[0] == line) {
+        } else if ((result = hierarchyStartReg.exec(line)) && result[0] == line)
+        {
             md5AnimData.hierarchy = [];
             states.push(State.hierarchy);
-        } else if ((result = hierarchyReg.exec(line)) && result[0] == line) {
-            switch (states[states.length - 1]) {
+        } else if ((result = hierarchyReg.exec(line)) && result[0] == line)
+        {
+            switch (states[states.length - 1])
+            {
                 case State.hierarchy:
                     md5AnimData.hierarchy.push({
                         name: result[1], parentIndex: parseInt(result[2]),
@@ -134,22 +149,29 @@ module feng3d {
                 default:
                     throw new Error("没有对应的数据处理");
             }
-        } else if ((result = endBlockReg.exec(line)) && result[0] == line) {
+        } else if ((result = endBlockReg.exec(line)) && result[0] == line)
+        {
             var state = states.pop();
-            if (state == State.frame) {
-                if (currentFrame.components.length != md5AnimData.numAnimatedComponents) {
+            if (state == State.frame)
+            {
+                if (currentFrame.components.length != md5AnimData.numAnimatedComponents)
+                {
                     throw new Error("frame中数据不对");
                 }
                 currentFrame = null;
             }
-        } else if ((result = boundsStartReg.exec(line)) && result[0] == line) {
+        } else if ((result = boundsStartReg.exec(line)) && result[0] == line)
+        {
             md5AnimData.bounds = [];
             states.push(State.bounds);
-        } else if ((result = baseframeStartReg.exec(line)) && result[0] == line) {
+        } else if ((result = baseframeStartReg.exec(line)) && result[0] == line)
+        {
             md5AnimData.baseframe = [];
             states.push(State.baseframe);
-        } else if ((result = number32Reg.exec(line)) && result[0] == line) {
-            switch (states[states.length - 1]) {
+        } else if ((result = number32Reg.exec(line)) && result[0] == line)
+        {
+            switch (states[states.length - 1])
+            {
                 case State.bounds:
                     md5AnimData.bounds.push({ min: [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])], max: [parseFloat(result[4]), parseFloat(result[5]), parseFloat(result[6])] });
                     break;
@@ -159,25 +181,31 @@ module feng3d {
                 default:
                     throw new Error("没有对应的数据处理");
             }
-        } else if ((result = frameStartReg.exec(line)) && result[0] == line) {
-            if (!md5AnimData.frame) {
+        } else if ((result = frameStartReg.exec(line)) && result[0] == line)
+        {
+            if (!md5AnimData.frame)
+            {
                 md5AnimData.frame = [];
             }
             currentFrame = { index: parseInt(result[1]), components: [] };
             md5AnimData.frame.push(currentFrame);
             states.push(State.frame);
-        } else if ((result = numbersReg.exec(line)) && result[0] == line) {
-            switch (states[states.length - 1]) {
+        } else if ((result = numbersReg.exec(line)) && result[0] == line)
+        {
+            switch (states[states.length - 1])
+            {
                 case State.frame:
                     var numbers = line.split(" ");
-                    while (numbers.length > 0) {
+                    while (numbers.length > 0)
+                    {
                         currentFrame.components.push(parseFloat(numbers.shift()));
                     }
                     break;
                 default:
                     throw new Error("没有对应的数据处理");
             }
-        } else {
+        } else
+        {
             throw new Error(`无法解析${line}`);
         }
 

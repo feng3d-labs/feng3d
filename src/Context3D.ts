@@ -1,4 +1,5 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 3D上下文

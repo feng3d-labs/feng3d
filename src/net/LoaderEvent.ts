@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 加载事件
      * @author feng 2016-12-14
      */
-    export class LoaderEvent extends Event {
+    export class LoaderEvent extends Event
+    {
 
         /**
          * 加载进度发生改变时调度。

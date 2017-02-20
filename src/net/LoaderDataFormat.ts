@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 加载数据类型
      * @author feng 2016-12-14
      */
-    export class LoaderDataFormat {
+    export class LoaderDataFormat
+    {
 
         /**
          * 以原始二进制数据形式接收下载的数据。

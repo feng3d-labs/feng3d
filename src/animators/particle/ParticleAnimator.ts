@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 粒子动画
      * @author feng 2017-01-09
      */
-    export class ParticleAnimator extends Object3DComponent {
+    export class ParticleAnimator extends Object3DComponent
+    {
 
         /**
          * 是否正在播放
@@ -50,7 +52,8 @@ module feng3d {
 
         private autoRenderDataHolder: ParticleRenderDataHolder;
 
-        constructor() {
+        constructor()
+        {
             super();
             this.autoRenderDataHolder = new ParticleRenderDataHolder();
             this.addComponent(this.autoRenderDataHolder);
@@ -59,22 +62,26 @@ module feng3d {
         /**
 		 * 生成粒子
 		 */
-        private generateParticles() {
+        private generateParticles()
+        {
 
             var generateFunctions = this.generateFunctions.concat();
 
             var components = this.getComponentsByClass(ParticleComponent);
-            components.forEach(element => {
+            components.forEach(element =>
+            {
                 generateFunctions.push({ generate: element.generateParticle.bind(element), priority: element.priority });
             });
             //按优先级排序，优先级越高先执行
             generateFunctions.sort((a: { priority: number; }, b: { priority: number; }) => { return b.priority - a.priority; })
             //
-            for (var i = 0; i < this.numParticles; i++) {
+            for (var i = 0; i < this.numParticles; i++)
+            {
                 var particle = <Particle>{};
                 particle.index = i;
                 particle.total = this.numParticles;
-                generateFunctions.forEach(element => {
+                generateFunctions.forEach(element =>
+                {
                     element.generate(particle);
                 });
                 this.autoRenderDataHolder.collectionParticle(particle);
@@ -84,9 +91,11 @@ module feng3d {
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext) {
+        public updateRenderData(renderContext: RenderContext)
+        {
 
-            if (this.isDirty) {
+            if (this.isDirty)
+            {
 
                 this.startTime = getTimer();
                 this.generateParticles();
@@ -102,33 +111,40 @@ module feng3d {
         }
     }
 
-    class ParticleRenderDataHolder extends RenderDataHolder {
+    class ParticleRenderDataHolder extends RenderDataHolder
+    {
 
         /**
          * 收集粒子数据
          * @param particle      粒子
          */
-        public collectionParticle(particle: Particle) {
+        public collectionParticle(particle: Particle)
+        {
 
-            for (var attribute in particle) {
+            for (var attribute in particle)
+            {
                 this.collectionParticleAttribute(attribute, particle);
             }
         }
 
-        public update(particleGlobal: ParticleGlobal) {
+        public update(particleGlobal: ParticleGlobal)
+        {
 
             this.renderData.uniforms = {};
             //更新常量数据
-            for (var uniform in particleGlobal) {
+            for (var uniform in particleGlobal)
+            {
                 this.renderData.uniforms["u_particle_" + uniform] = particleGlobal[uniform];
             }
 
             //更新宏定义
             var boolMacros = this.renderData.shaderMacro.boolMacros = <any>{};
-            for (var attribute in this.renderData.attributes) {
+            for (var attribute in this.renderData.attributes)
+            {
                 boolMacros["D_" + attribute] = true;
             }
-            for (var uniform in particleGlobal) {
+            for (var uniform in particleGlobal)
+            {
                 boolMacros["D_u_particle_" + uniform] = true;
             }
         }
@@ -139,7 +155,8 @@ module feng3d {
          * @param index             粒子编号
          * @param data              属性数据      
          */
-        private collectionParticleAttribute(attribute: string, particle: Particle) {
+        private collectionParticleAttribute(attribute: string, particle: Particle)
+        {
 
             var attributeID = "a_particle_" + attribute;
             var data = particle[attribute];
@@ -149,22 +166,28 @@ module feng3d {
             var attributes = this.renderData.attributes;
             var attributeRenderData = attributes[attributeID];
             var vector3DData: Float32Array;
-            if (typeof data == "number") {
-                if (!attributeRenderData) {
+            if (typeof data == "number")
+            {
+                if (!attributeRenderData)
+                {
                     attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles), 1, 1)
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index] = data;
-            } else if (data instanceof Vector3D) {
-                if (!attributeRenderData) {
+            } else if (data instanceof Vector3D)
+            {
+                if (!attributeRenderData)
+                {
                     attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 3), 3, 1)
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index * 3] = data.x;
                 vector3DData[index * 3 + 1] = data.y;
                 vector3DData[index * 3 + 2] = data.z;
-            } else if (data instanceof Color) {
-                if (!attributeRenderData) {
+            } else if (data instanceof Color)
+            {
+                if (!attributeRenderData)
+                {
                     attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 4), 4, 1)
                 }
                 vector3DData = attributeRenderData.data;
@@ -172,7 +195,8 @@ module feng3d {
                 vector3DData[index * 4 + 1] = data.g;
                 vector3DData[index * 4 + 2] = data.b;
                 vector3DData[index * 4 + 2] = data.a;
-            } else {
+            } else
+            {
                 throw new Error(`无法处理${getClassName(data)}粒子属性`);
             }
         }

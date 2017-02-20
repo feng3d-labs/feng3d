@@ -1,9 +1,11 @@
-module feng3d {
+module feng3d
+{
     /**
      * 变换
      * @author feng 2016-04-26
      */
-    export class Transform extends Object3DComponent {
+    export class Transform extends Object3DComponent
+    {
 
         //private
         private _x = 0;
@@ -43,7 +45,8 @@ module feng3d {
          * @param sy Y缩放
          * @param sz Z缩放
          */
-        constructor(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1) {
+        constructor(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1)
+        {
             super();
             this._x = x;
             this._y = y;
@@ -132,7 +135,8 @@ module feng3d {
         /**
          * 全局坐标
          */
-        get globalPosition() {
+        get globalPosition()
+        {
 
             return this.globalMatrix3D.position;
         }
@@ -140,14 +144,16 @@ module feng3d {
         /**
          * 变换矩阵
          */
-        get matrix3d(): Matrix3D {
+        get matrix3d(): Matrix3D
+        {
 
             if (this._matrix3DDirty)
                 this.updateMatrix3D();
             return this._matrix3D;
         }
 
-        set matrix3d(value: Matrix3D) {
+        set matrix3d(value: Matrix3D)
+        {
 
             this._matrix3DDirty = false;
             this._matrix3D.rawData.set(value.rawData);
@@ -169,9 +175,11 @@ module feng3d {
         /**
          * 逆变换矩阵
          */
-        public get inverseMatrix3D(): Matrix3D {
+        public get inverseMatrix3D(): Matrix3D
+        {
 
-            if (this._inverseMatrix3DDirty) {
+            if (this._inverseMatrix3DDirty)
+            {
                 this._inverseMatrix3D.copyFrom(this.matrix3d);
                 this._inverseMatrix3D.invert();
                 this._inverseMatrix3DDirty = false;
@@ -184,7 +192,8 @@ module feng3d {
          * @param target    目标位置
          * @param upAxis    向上朝向
          */
-        public lookAt(target: Vector3D, upAxis: Vector3D = null): void {
+        public lookAt(target: Vector3D, upAxis: Vector3D = null): void
+        {
 
             this.matrix3d.lookAt(target, upAxis);
             this.matrix3d = this.matrix3d;
@@ -193,7 +202,8 @@ module feng3d {
         /**
          * 全局矩阵
          */
-        public get globalMatrix3D(): Matrix3D {
+        public get globalMatrix3D(): Matrix3D
+        {
 
             this._globalMatrix3DDirty && this.updateGlobalMatrix3D();
             return this._globalMatrix3D;
@@ -202,7 +212,8 @@ module feng3d {
         /**
          * 逆全局矩阵
          */
-        public get inverseGlobalMatrix3D(): Matrix3D {
+        public get inverseGlobalMatrix3D(): Matrix3D
+        {
 
             this._inverseGlobalMatrix3DDirty && this.updateInverseGlobalMatrix3D();
             return this._inverseGlobalMatrix3D;
@@ -211,7 +222,8 @@ module feng3d {
         /**
          * 变换矩阵
          */
-        private updateMatrix3D() {
+        private updateMatrix3D()
+        {
 
             this._matrix3D.recompose([//
                 new Vector3D(this.x, this.y, this.z),//
@@ -224,7 +236,8 @@ module feng3d {
         /**
          * 使变换矩阵无效
          */
-        protected invalidateMatrix3D() {
+        protected invalidateMatrix3D()
+        {
 
             this._matrix3DDirty = true;
             this.notifyMatrix3DChanged();
@@ -235,7 +248,8 @@ module feng3d {
         /**
 		 * 发出状态改变消息
 		 */
-        private notifyMatrix3DChanged() {
+        private notifyMatrix3DChanged()
+        {
 
             var transformChanged = new TransfromEvent(TransfromEvent.TRANSFORM_CHANGED, this);
             this.object3D && this.object3D.dispatchEvent(transformChanged);
@@ -244,11 +258,13 @@ module feng3d {
         /**
          * 更新全局矩阵
          */
-        private updateGlobalMatrix3D() {
+        private updateGlobalMatrix3D()
+        {
 
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);
-            if (this.object3D.parent != null) {
+            if (this.object3D.parent != null)
+            {
                 var parentGlobalMatrix3D = this.object3D.parent.transform.globalMatrix3D;
                 this._globalMatrix3D.append(parentGlobalMatrix3D);
             }
@@ -257,7 +273,8 @@ module feng3d {
         /**
          * 更新逆全局矩阵
          */
-        private updateInverseGlobalMatrix3D() {
+        private updateInverseGlobalMatrix3D()
+        {
 
             this._inverseGlobalMatrix3DDirty = false;
             this._inverseGlobalMatrix3D.copyFrom(this.globalMatrix3D);
@@ -267,7 +284,8 @@ module feng3d {
         /**
 		 * 通知全局变换改变
 		 */
-        private notifySceneTransformChange() {
+        private notifySceneTransformChange()
+        {
 
             var sceneTransformChanged = new TransfromEvent(TransfromEvent.SCENETRANSFORM_CHANGED, this);
             this.object3D && this.object3D.dispatchEvent(sceneTransformChanged);
@@ -277,15 +295,18 @@ module feng3d {
 		 * 全局变换矩阵失效
          * @private
 		 */
-        public invalidateGlobalMatrix3D() {
+        public invalidateGlobalMatrix3D()
+        {
 
             this._globalMatrix3DDirty = true;
             this._inverseGlobalMatrix3DDirty = true;
             this.notifySceneTransformChange();
 
             //
-            if (this.object3D) {
-                for (var i = 0; i < this.object3D.numChildren; i++) {
+            if (this.object3D)
+            {
+                for (var i = 0; i < this.object3D.numChildren; i++)
+                {
                     var element = this.object3D.getChildAt(i)
                     element.transform.invalidateGlobalMatrix3D();
                 }
@@ -295,7 +316,8 @@ module feng3d {
 		/**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext) {
+        public updateRenderData(renderContext: RenderContext)
+        {
             super.updateRenderData(renderContext);
             this.renderData.uniforms[RenderDataID.u_modelMatrix] = this.globalMatrix3D;
         }
@@ -305,7 +327,8 @@ module feng3d {
 	 * 变换事件(3D状态发生改变、位置、旋转、缩放)
 	 * @author feng 2014-3-31
 	 */
-    export class TransfromEvent extends Event {
+    export class TransfromEvent extends Event
+    {
 		/**
 		 * 平移
 		 */
@@ -347,7 +370,8 @@ module feng3d {
          * @param data 携带数据
 		 * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
 		 */
-        constructor(type: string, data: Transform, bubbles = false) {
+        constructor(type: string, data: Transform, bubbles = false)
+        {
 
             super(type, data, bubbles);
         }

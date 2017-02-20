@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
 	/**
 	 * 组件容器（集合）
 	 * @author feng 2015-5-6
 	 */
-    export class Component extends EventDispatcher implements IComponent {
+    export class Component extends EventDispatcher implements IComponent
+    {
 
         /**
          * 父组件
@@ -19,7 +21,8 @@ module feng3d {
 		/**
 		 * 创建一个组件容器
 		 */
-        constructor() {
+        constructor()
+        {
 
             super();
             this.initComponent();
@@ -28,7 +31,8 @@ module feng3d {
         /**
          * 初始化组件
          */
-        protected initComponent(): void {
+        protected initComponent(): void
+        {
 
             //以最高优先级监听组件被添加，设置父组件
             this.addEventListener(ComponentEvent.ADDED_COMPONENT, this._onAddedComponent, this, Number.MAX_VALUE);
@@ -39,7 +43,8 @@ module feng3d {
         /**
          * 父组件
          */
-        public get parentComponent(): IComponent {
+        public get parentComponent(): IComponent
+        {
 
             return this._parentComponent;
         }
@@ -47,7 +52,8 @@ module feng3d {
 		/**
 		 * 子组件个数
 		 */
-        public get numComponents(): number {
+        public get numComponents(): number
+        {
 
             return this.components.length;
         }
@@ -56,9 +62,11 @@ module feng3d {
 		 * 添加组件
 		 * @param component 被添加组件
 		 */
-        public addComponent(component: IComponent): void {
+        public addComponent(component: IComponent): void
+        {
 
-            if (this.hasComponent(component)) {
+            if (this.hasComponent(component))
+            {
                 this.setComponentIndex(component, this.components.length - 1);
                 return;
             }
@@ -71,12 +79,14 @@ module feng3d {
 		 * @param component		被添加的组件
 		 * @param index			插入的位置
 		 */
-        public addComponentAt(component: IComponent, index: number): void {
+        public addComponentAt(component: IComponent, index: number): void
+        {
 
             assert(component != this, "子项与父项不能相同");
             assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
 
-            if (this.hasComponent(component)) {
+            if (this.hasComponent(component))
+            {
                 index = Math.min(index, this.components.length - 1);
                 this.setComponentIndex(component, index)
                 return;
@@ -91,7 +101,8 @@ module feng3d {
 		 * 移除组件
 		 * @param component 被移除组件
 		 */
-        public removeComponent(component: IComponent): void {
+        public removeComponent(component: IComponent): void
+        {
 
             assert(this.hasComponent(component), "只能移除在容器中的组件");
 
@@ -103,7 +114,8 @@ module feng3d {
          * 移除组件
          * @param index		要删除的 Component 的子索引。
          */
-        public removeComponentAt(index: number): IComponent {
+        public removeComponentAt(index: number): IComponent
+        {
 
             assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
@@ -118,7 +130,8 @@ module feng3d {
          * @param component			查询的组件
          * @return				    组件在容器的索引位置
          */
-        public getComponentIndex(component: IComponent): number {
+        public getComponentIndex(component: IComponent): number
+        {
 
             assert(this.components.indexOf(component) != -1, "组件不在容器中");
 
@@ -131,7 +144,8 @@ module feng3d {
          * @param component				子组件
          * @param index				位置索引
          */
-        public setComponentIndex(component: IComponent, index: number): void {
+        public setComponentIndex(component: IComponent, index: number): void
+        {
 
             assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
@@ -147,7 +161,8 @@ module feng3d {
          * @param index			位置索引
          * @return				子组件
          */
-        public getComponentAt(index: number): IComponent {
+        public getComponentAt(index: number): IComponent
+        {
 
             assert(index < this.numComponents, "给出索引超出范围");
             return this.components[index];
@@ -159,7 +174,8 @@ module feng3d {
          * @param componentName		组件名称
          * @return 					获取到的组件
          */
-        public getComponentByName(name: String): IComponent {
+        public getComponentByName(name: String): IComponent
+        {
 
             var filterResult = this.getComponentsByName(name);
             return filterResult[0];
@@ -171,9 +187,11 @@ module feng3d {
          * @param name		        组件名称
          * @return 					获取到的组件
          */
-        public getComponentsByName(name: String): IComponent[] {
+        public getComponentsByName(name: String): IComponent[]
+        {
 
-            var filterResult = this.components.filter(function (value: IComponent, index: number, array: IComponent[]): boolean {
+            var filterResult = this.components.filter(function (value: IComponent, index: number, array: IComponent[]): boolean
+            {
                 return value.name == name;
             });
             return filterResult;
@@ -185,7 +203,8 @@ module feng3d {
          * @param cls				类定义
          * @return                  返回指定类型组件
          */
-        public getComponentByClass<T extends IComponent>(cls: new () => T): T {
+        public getComponentByClass<T extends IComponent>(cls: new () => T): T
+        {
 
             var component = this.getComponentsByClass(cls)[0];
             return component;
@@ -196,9 +215,11 @@ module feng3d {
          * @param cls		类定义
          * @return			返回与给出类定义一致的组件
          */
-        public getComponentsByClass<T extends IComponent>(cls: new () => T): T[] {
+        public getComponentsByClass<T extends IComponent>(cls: new () => T): T[]
+        {
 
-            var filterResult: any = this.components.filter(function (value: IComponent, index: number, array: IComponent[]): boolean {
+            var filterResult: any = this.components.filter(function (value: IComponent, index: number, array: IComponent[]): boolean
+            {
                 return value instanceof cls;
             });
 
@@ -211,10 +232,12 @@ module feng3d {
          * @param cls       类定义
          * @return          返回与给出类定义一致的组件
          */
-        public getOrCreateComponentByClass<T extends IComponent>(cls: new () => T): T {
+        public getOrCreateComponentByClass<T extends IComponent>(cls: new () => T): T
+        {
 
             var component = this.getComponentByClass(cls);
-            if (component == null) {
+            if (component == null)
+            {
                 component = new cls();
                 this.addComponent(component);
             }
@@ -226,7 +249,8 @@ module feng3d {
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。
          */
-        public hasComponent(com: IComponent): boolean {
+        public hasComponent(com: IComponent): boolean
+        {
 
             return this.components.indexOf(com) != -1;
         }
@@ -236,7 +260,8 @@ module feng3d {
          * @param index1		第一个子组件的索引位置
          * @param index2		第二个子组件的索引位置
          */
-        public swapComponentsAt(index1: number, index2: number): void {
+        public swapComponentsAt(index1: number, index2: number): void
+        {
 
             assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
             assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
@@ -251,7 +276,8 @@ module feng3d {
          * @param a		第一个子组件
          * @param b		第二个子组件
          */
-        public swapComponents(a: IComponent, b: IComponent): void {
+        public swapComponents(a: IComponent, b: IComponent): void
+        {
 
             assert(this.hasComponent(a), "第一个子组件不在容器中");
             assert(this.hasComponent(b), "第二个子组件不在容器中");
@@ -265,11 +291,13 @@ module feng3d {
          * @param event     事件
          * @param depth     广播深度
          */
-        public dispatchChildrenEvent(event: Event, depth = 1): void {
+        public dispatchChildrenEvent(event: Event, depth = 1): void
+        {
 
             if (depth == 0)
                 return;
-            this.components.forEach(function (value: IComponent, index: number, array: IComponent[]): void {
+            this.components.forEach(function (value: IComponent, index: number, array: IComponent[]): void
+            {
                 value.dispatchEvent(event);
                 value.dispatchChildrenEvent(event, depth - 1)
             });
@@ -282,21 +310,24 @@ module feng3d {
         /**
          * 处理被添加组件事件
          */
-        protected onBeAddedComponent(event: ComponentEvent): void {
+        protected onBeAddedComponent(event: ComponentEvent): void
+        {
 
         }
 
         /**
          * 处理被移除组件事件
          */
-        protected onBeRemovedComponent(event: ComponentEvent): void {
+        protected onBeRemovedComponent(event: ComponentEvent): void
+        {
 
         }
 
         /**
          * 获取冒泡对象
          */
-        protected getBubbleTargets(event: Event = null): IEventDispatcher[] {
+        protected getBubbleTargets(event: Event = null): IEventDispatcher[]
+        {
 
             var bubbleTargets = super.getBubbleTargets(event);
             bubbleTargets.push(this._parentComponent);
@@ -310,10 +341,12 @@ module feng3d {
         /**
          * 处理添加组件事件，此处为被添加，设置父组件
          */
-        private _onAddedComponent(event: ComponentEvent): void {
+        private _onAddedComponent(event: ComponentEvent): void
+        {
 
             var data: { container: IComponent, child: IComponent } = event.data;
-            if (data.child == this) {
+            if (data.child == this)
+            {
                 this._parentComponent = data.container;
                 this.onBeAddedComponent(event);
             }
@@ -322,10 +355,12 @@ module feng3d {
         /**
          * 处理移除组件事件，此处为被移除，清空父组件
          */
-        private _onRemovedComponent(event: ComponentEvent): void {
+        private _onRemovedComponent(event: ComponentEvent): void
+        {
 
             var data: { container: IComponent, child: IComponent } = event.data;
-            if (event.data.child == this) {
+            if (event.data.child == this)
+            {
                 this.onBeRemovedComponent(event);
                 this._parentComponent = null;
             }
@@ -339,7 +374,8 @@ module feng3d {
 	 * @msg			在表达式为假时将输出的错误信息
 	 * @author feng 2014-10-29
 	 */
-    function assert(b: boolean, msg: string = "assert"): void {
+    function assert(b: boolean, msg: string = "assert"): void
+    {
         if (!b)
             throw new Error(msg);
     }

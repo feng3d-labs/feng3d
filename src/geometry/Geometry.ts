@@ -1,22 +1,26 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 几何体
      * @author feng 2016-04-28
      */
-    export class Geometry extends RenderDataHolder {
+    export class Geometry extends RenderDataHolder
+    {
 
         /**
 		 * 创建一个几何体
 		 */
-        constructor() {
+        constructor()
+        {
             super();
         }
 
 		/**
 		 * 更新顶点索引数据
 		 */
-        public setIndices(indices: Uint16Array) {
+        public setIndices(indices: Uint16Array)
+        {
 
             this.renderData.indexBuffer = new IndexRenderData();
             this.renderData.indexBuffer.indices = indices;
@@ -30,7 +34,8 @@ module feng3d {
 		 * @param data          顶点属性数据
          * @param stride        顶点数据步长
 		 */
-        public setVAData(vaId: string, data: Float32Array, stride: number) {
+        public setVAData(vaId: string, data: Float32Array, stride: number)
+        {
 
             this.renderData.attributes[vaId] = new AttributeRenderData(data, stride);
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
@@ -41,7 +46,8 @@ module feng3d {
 		 * @param vaId 数据类型编号
 		 * @return 顶点属性数据
 		 */
-        public getVAData(vaId: string): AttributeRenderData {
+        public getVAData(vaId: string): AttributeRenderData
+        {
 
             this.dispatchEvent(new GeometryEvent(GeometryEvent.GET_VA_DATA, vaId));
             return this.renderData.attributes[vaId];
@@ -50,10 +56,12 @@ module feng3d {
         /**
          * 顶点数量
          */
-        public get numVertex() {
+        public get numVertex()
+        {
 
             var numVertex = 0;
-            for (var attributeName in this.renderData.attributes) {
+            for (var attributeName in this.renderData.attributes)
+            {
                 var attributeRenderData = this.renderData.attributes[attributeName];
                 numVertex = attributeRenderData.data.length / attributeRenderData.stride;
                 break;
@@ -64,7 +72,8 @@ module feng3d {
         /**
          * 附加几何体
          */
-        public addGeometry(geometry: Geometry) {
+        public addGeometry(geometry: Geometry)
+        {
 
             var attributes = this.renderData.attributes;
             var addAttributes = geometry.renderData.attributes;
@@ -75,14 +84,16 @@ module feng3d {
             var targetIndices = geometry.renderData.indexBuffer.indices;
             var totalIndices = new Uint16Array(indices.length + targetIndices.length);
             totalIndices.set(indices, 0);
-            for (var i = 0; i < targetIndices.length; i++) {
+            for (var i = 0; i < targetIndices.length; i++)
+            {
                 totalIndices[indices.length + i] = targetIndices[i] + oldNumVertex;
             }
             this.setIndices(totalIndices);
             //合并后顶点数量
             var totalVertex = oldNumVertex + geometry.numVertex;
             //合并属性数据
-            for (var attributeName in attributes) {
+            for (var attributeName in attributes)
+            {
 
                 var stride = attributes[attributeName].stride;
                 var data = new Float32Array(totalVertex * stride);
@@ -95,7 +106,8 @@ module feng3d {
         /**
          * 克隆一个几何体
          */
-        public clone() {
+        public clone()
+        {
 
             var geometry = new Geometry();
             geometry.renderData.indexBuffer = this.renderData.indexBuffer;
@@ -106,7 +118,8 @@ module feng3d {
         /**
          * 从一个几何体中克隆数据
          */
-        public cloneFrom(geometry: Geometry) {
+        public cloneFrom(geometry: Geometry)
+        {
 
             this.renderData.indexBuffer = geometry.renderData.indexBuffer;
             this.renderData.attributes = geometry.renderData.attributes;

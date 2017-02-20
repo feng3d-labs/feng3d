@@ -1,17 +1,20 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 粒子材质（为了使用独立的着色器，暂时设置粒子材质）
      * @author feng 2017-01-09
      */
-    export class SkeletonAnimatorMaterial extends Material {
+    export class SkeletonAnimatorMaterial extends Material
+    {
 
         /**
          * 纹理数据
          */
         public texture: Texture2D;
 
-        constructor() {
+        constructor()
+        {
             super();
             this.shaderName = "skeleton";
         }
@@ -19,7 +22,8 @@ module feng3d {
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext) {
+        public updateRenderData(renderContext: RenderContext)
+        {
 
             super.updateRenderData(renderContext);
 

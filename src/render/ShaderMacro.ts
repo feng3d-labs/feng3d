@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 着色器宏定义
      * @author feng 2016-12-17
      */
-    export class ShaderMacro {
+    export class ShaderMacro
+    {
 
         /**
          * 值类型宏
@@ -24,7 +26,8 @@ module feng3d {
      * 值类型宏
      * 没有默认值
      */
-    export class ValueMacros {
+    export class ValueMacros
+    {
 
         /** 
          * 点光源数量
@@ -41,7 +44,8 @@ module feng3d {
      * Boolean类型宏
      * 没有默认值
      */
-    export class BoolMacros {
+    export class BoolMacros
+    {
 
     }
 
@@ -49,7 +53,8 @@ module feng3d {
      * 递增类型宏
      * 所有默认值为0
      */
-    export class IAddMacros {
+    export class IAddMacros
+    {
         /** 
          * 是否需要属性uv
          */

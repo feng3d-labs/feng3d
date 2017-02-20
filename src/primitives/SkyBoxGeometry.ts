@@ -1,15 +1,18 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 天空盒几何体
      * @author feng 2016-09-12
      */
-    export class SkyBoxGeometry extends Geometry {
+    export class SkyBoxGeometry extends Geometry
+    {
 
         /**
          * 创建天空盒
          */
-        constructor() {
+        constructor()
+        {
             super();
 
             //八个顶点，32个number

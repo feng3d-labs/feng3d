@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 纹理信息
      * @author feng 2016-12-20
      */
-    export class TextureInfo {
+    export class TextureInfo
+    {
 
         /**
          * 纹理类型

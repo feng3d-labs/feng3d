@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * IEventDispatcher 接口定义用于添加或删除事件侦听器的方法，检查是否已注册特定类型的事件侦听器，并调度事件。
      * @author feng 2016-3-22
      */
-    export interface IEventDispatcher {
+    export interface IEventDispatcher
+    {
 
         /**
          * 名称

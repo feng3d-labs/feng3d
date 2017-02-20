@@ -1,11 +1,13 @@
-module feng3d {
+module feng3d
+{
 
 
 	/**
 	 * 动画剪辑节点基类(用于控制动画播放，包含每帧持续时间，是否循环播放等)
 	 * @author feng 2014-5-20
 	 */
-    export class AnimationClipNodeBase extends AnimationNodeBase {
+    export class AnimationClipNodeBase extends AnimationNodeBase
+    {
         protected _looping: boolean = true;
         protected _totalDuration: number = 0;
         protected _lastFrame: number;
@@ -23,14 +25,16 @@ module feng3d {
 		/**
 		 * 持续时间列表（ms）
 		 */
-        public get durations(): number[] {
+        public get durations(): number[]
+        {
             return this._durations;
         }
 
 		/**
 		 * 总坐标偏移量
 		 */
-        public get totalDelta(): Vector3D {
+        public get totalDelta(): Vector3D
+        {
             if (this._stitchDirty)
                 this.updateStitch();
 
@@ -40,11 +44,13 @@ module feng3d {
 		/**
 		 * 是否循环播放
 		 */
-        public get looping(): boolean {
+        public get looping(): boolean
+        {
             return this._looping;
         }
 
-        public set looping(value: boolean) {
+        public set looping(value: boolean)
+        {
             if (this._looping == value)
                 return;
 
@@ -56,11 +62,13 @@ module feng3d {
 		/**
 		 * 是否过渡结束帧
 		 */
-        public get stitchFinalFrame(): boolean {
+        public get stitchFinalFrame(): boolean
+        {
             return this._stitchFinalFrame;
         }
 
-        public set stitchFinalFrame(value: boolean) {
+        public set stitchFinalFrame(value: boolean)
+        {
             if (this._stitchFinalFrame == value)
                 return;
 
@@ -72,7 +80,8 @@ module feng3d {
 		/**
 		 * 总持续时间
 		 */
-        public get totalDuration(): number {
+        public get totalDuration(): number
+        {
             if (this._stitchDirty)
                 this.updateStitch();
 
@@ -82,7 +91,8 @@ module feng3d {
 		/**
 		 * 最后帧数
 		 */
-        public get lastFrame(): number {
+        public get lastFrame(): number
+        {
             if (this._stitchDirty)
                 this.updateStitch();
 
@@ -92,7 +102,8 @@ module feng3d {
 		/**
 		 * 更新动画播放控制状态
 		 */
-        protected updateStitch() {
+        protected updateStitch()
+        {
             this._stitchDirty = false;
 
             this._lastFrame = (this._looping && this._stitchFinalFrame) ? this._numFrames : this._numFrames - 1;

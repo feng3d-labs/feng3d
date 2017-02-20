@@ -1,16 +1,19 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 粒子速度组件
      * @author feng 2017-01-09
      */
-    export class ParticleVelocity extends ParticleComponent {
+    export class ParticleVelocity extends ParticleComponent
+    {
 
         /**
 		 * 创建粒子属性
          * @param particle                  粒子
 		 */
-        public generateParticle(particle: Particle) {
+        public generateParticle(particle: Particle)
+        {
 
             var baseVelocity = 100;
 

@@ -61,7 +61,6 @@
         "src/render/data/RenderDataHolder.ts",
         "src/render/data/RenderAtomic.ts",
         "src/render/data/RenderDataItems.ts",
-        "src/render/data/IRenderData.ts",
         "src/render/utils/RenderBufferPool.ts",
         "src/render/utils/RenderDataUtil.ts",
         "src/render/RenderDataID.ts",

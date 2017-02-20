@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 加载类
      * @author feng 2016-12-14
      */
-    export class Loader extends EventDispatcher {
+    export class Loader extends EventDispatcher
+    {
 
         private request: XMLHttpRequest;
         private image: HTMLImageElement;
@@ -35,7 +37,8 @@ module feng3d {
          * 加载资源
          * @param url   路径
          */
-        public load(url: string) {
+        public load(url: string)
+        {
 
             this.url = url;
         }
@@ -44,7 +47,8 @@ module feng3d {
          * 加载文本
          * @param url   路径
          */
-        public loadText(url: string) {
+        public loadText(url: string)
+        {
 
             this.url = url;
             this.dataFormat = LoaderDataFormat.TEXT;
@@ -55,7 +59,8 @@ module feng3d {
          * 加载二进制
          * @param url   路径
          */
-        public loadBinary(url: string) {
+        public loadBinary(url: string)
+        {
 
             this.url = url;
             this.dataFormat = LoaderDataFormat.BINARY;
@@ -66,7 +71,8 @@ module feng3d {
          * 加载图片
          * @param url   路径
          */
-        public loadImage(url: string) {
+        public loadImage(url: string)
+        {
 
             this.dataFormat = LoaderDataFormat.IMAGE;
             this.image = new Image();
@@ -78,7 +84,8 @@ module feng3d {
         /**
          * 使用XMLHttpRequest加载
          */
-        private xmlHttpRequestLoad() {
+        private xmlHttpRequestLoad()
+        {
 
             this.request = new XMLHttpRequest();
             this.request.open('Get', this.url, true);
@@ -91,7 +98,8 @@ module feng3d {
         /**
          * 请求进度回调
          */
-        private onRequestProgress(event: ProgressEvent) {
+        private onRequestProgress(event: ProgressEvent)
+        {
 
             this.bytesLoaded = event.loaded;
             this.bytesTotal = event.total;
@@ -101,17 +109,22 @@ module feng3d {
         /**
          * 请求状态变化回调
          */
-        private onRequestReadystatechange(ev: ProgressEvent) {
+        private onRequestReadystatechange(ev: ProgressEvent)
+        {
 
-            if (this.request.readyState == 4) {// 4 = "loaded"
+            if (this.request.readyState == 4)
+            {// 4 = "loaded"
 
                 this.request.onreadystatechange = null;
 
-                if (this.request.status >= 200 && this.request.status < 300) {
+                if (this.request.status >= 200 && this.request.status < 300)
+                {
                     this.content = this.dataFormat == LoaderDataFormat.TEXT ? this.request.responseText : this.request.response;
                     this.dispatchEvent(new LoaderEvent(LoaderEvent.COMPLETE, this));
-                } else {
-                    if (!this.hasEventListener(LoaderEvent.ERROR)) {
+                } else
+                {
+                    if (!this.hasEventListener(LoaderEvent.ERROR))
+                    {
                         throw new Error("Error status: " + this.request + " - Unable to load " + this.url);
                     }
                     this.dispatchEvent(new LoaderEvent(LoaderEvent.ERROR, this));
@@ -122,7 +135,8 @@ module feng3d {
         /**
          * 加载图片完成回调
          */
-        private onImageLoad(event) {
+        private onImageLoad(event)
+        {
 
             this.content = this.image;
             this.dispatchEvent(new LoaderEvent(LoaderEvent.COMPLETE, this));
@@ -131,7 +145,8 @@ module feng3d {
         /**
          * 加载图片出错回调
          */
-        private onImageError(event) {
+        private onImageError(event)
+        {
 
             console.error("Error while trying to load texture: " + this.url);
             //

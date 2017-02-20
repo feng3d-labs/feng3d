@@ -1,9 +1,11 @@
-module feng3d {
+module feng3d
+{
     /**
      * 3D对象
      * @author feng 2016-04-26
      */
-    export class Object3D extends RenderDataHolder {
+    export class Object3D extends RenderDataHolder
+    {
 
         private _object3DID: number;
         private _uid: string;
@@ -24,12 +26,14 @@ module feng3d {
         /**
          * 唯一标识符
          */
-        public get uid() {
+        public get uid()
+        {
 
             return this._uid;
         }
 
-        public get object3DID() {
+        public get object3DID()
+        {
 
             return this._object3DID;
         }
@@ -37,12 +41,14 @@ module feng3d {
         /**
          * 变换
          */
-        public get transform(): Transform {
+        public get transform(): Transform
+        {
 
             return this._transform;
         }
 
-        public set transform(value: Transform) {
+        public set transform(value: Transform)
+        {
 
             assert(value != null, "3D空间不能为null");
             this._transform && this.removeComponent(this._transform);
@@ -53,7 +59,8 @@ module feng3d {
         /**
          * 构建3D对象
          */
-        constructor(name?: string) {
+        constructor(name?: string)
+        {
 
             super();
 
@@ -73,12 +80,14 @@ module feng3d {
         /**
          * 父对象
          */
-        public get parent() {
+        public get parent()
+        {
 
             return this._parent;
         }
 
-        private _setParent(value: Object3D) {
+        private _setParent(value: Object3D)
+        {
 
             if (this._parent == value)
                 return;
@@ -95,26 +104,31 @@ module feng3d {
         /**
          * 场景
          */
-        public get scene() {
+        public get scene()
+        {
 
             return this._scene;
         }
 
-        private _setScene(value: Scene3D) {
+        private _setScene(value: Scene3D)
+        {
 
             if (this._scene == value)
                 return;
 
-            if (this._scene) {
+            if (this._scene)
+            {
                 this.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
                 this._scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
             }
             this._scene = value;
-            if (this._scene) {
+            if (this._scene)
+            {
                 this.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
                 this._scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
             }
-            this._children.forEach(child => {
+            this._children.forEach(child =>
+            {
                 child._setScene(this._scene);
             });
         }
@@ -124,7 +138,8 @@ module feng3d {
 		 * @param child		子对象
 		 * @return			新增的子对象
 		 */
-        public addChild(child: Object3D): void {
+        public addChild(child: Object3D): void
+        {
 
             this.addChildAt(child, this._children.length);
         }
@@ -134,7 +149,8 @@ module feng3d {
          * @param   child   子对象
          * @param   index   添加到的位置
          */
-        public addChildAt(child: Object3D, index: number): void {
+        public addChildAt(child: Object3D, index: number): void
+        {
 
             assert(-1 < index && index <= this._children.length, "添加子对象的索引越界！");
             this._children.splice(index, 0, child);
@@ -146,7 +162,8 @@ module feng3d {
          * @param   child   子对象
          * @return			被移除子对象索引
          */
-        public removeChild(child: Object3D): number {
+        public removeChild(child: Object3D): number
+        {
 
             var childIndex = this._children.indexOf(child);
             assert(-1 < childIndex && childIndex < this._children.length, "删除的子对象不存在！");
@@ -159,7 +176,8 @@ module feng3d {
          * @param   child   子对象
          * @return  子对象位置
          */
-        public getChildIndex(child: Object3D): number {
+        public getChildIndex(child: Object3D): number
+        {
 
             return this._children.indexOf(child);
         }
@@ -169,7 +187,8 @@ module feng3d {
 		 * @param childIndex	子对象索引
 		 * @return				被移除对象
 		 */
-        public removeChildAt(childIndex: number): Object3D {
+        public removeChildAt(childIndex: number): Object3D
+        {
 
             var child: Object3D = this._children[childIndex];
             assert(-1 < childIndex && childIndex < this._children.length, "删除的索引越界！");
@@ -183,7 +202,8 @@ module feng3d {
 		 * @param index         子对象索引
 		 * @return              指定索引的子对象
 		 */
-        public getChildAt(index: number): Object3D {
+        public getChildAt(index: number): Object3D
+        {
 
             return this._children[index];
         }
@@ -191,7 +211,8 @@ module feng3d {
         /**
          * 获取子对象数量
          */
-        public get numChildren(): number {
+        public get numChildren(): number
+        {
 
             return this._children.length;
         }
@@ -199,9 +220,11 @@ module feng3d {
         /**
          * 处理添加子对象事件
          */
-        private onAdded(event: Object3DEvent): void {
+        private onAdded(event: Object3DEvent): void
+        {
 
-            if (event.data.child == this) {
+            if (event.data.child == this)
+            {
                 this._setParent(event.data.parent);
             }
         }
@@ -209,14 +232,17 @@ module feng3d {
         /**
          * 处理删除子对象事件
          */
-        private onRemoved(event: Object3DEvent): void {
+        private onRemoved(event: Object3DEvent): void
+        {
 
-            if (event.data.child == this) {
+            if (event.data.child == this)
+            {
                 this._setParent(null);
             }
         }
 
-        public static getObject3D(id: number) {
+        public static getObject3D(id: number)
+        {
             return object3DMap[id];
         }
     }

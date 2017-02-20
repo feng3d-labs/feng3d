@@ -1,8 +1,10 @@
-module feng3d {
+module feng3d
+{
 	/**
 	 * A Quaternion object which can be used to represent rotations.
 	 */
-    export class Quaternion {
+    export class Quaternion
+    {
 		/**
 		 * The x value of the quaternion.
 		 */
@@ -30,7 +32,8 @@ module feng3d {
 		 * @param z The z value of the quaternion.
 		 * @param w The w value of the quaternion.
 		 */
-        constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 1) {
+        constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 1)
+        {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -40,7 +43,8 @@ module feng3d {
 		/**
 		 * Returns the magnitude of the quaternion object.
 		 */
-        public get magnitude(): number {
+        public get magnitude(): number
+        {
             return Math.sqrt(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z);
         }
 
@@ -50,7 +54,8 @@ module feng3d {
 		 * @param    qa    The first quaternion in the multiplication.
 		 * @param    qb    The second quaternion in the multiplication.
 		 */
-        public multiply(qa: Quaternion, qb: Quaternion) {
+        public multiply(qa: Quaternion, qb: Quaternion)
+        {
             var w1: number = qa.w, x1: number = qa.x, y1: number = qa.y, z1: number = qa.z;
             var w2: number = qb.w, x2: number = qb.x, y2: number = qb.y, z2: number = qb.z;
 
@@ -60,7 +65,8 @@ module feng3d {
             this.z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2;
         }
 
-        public multiplyVector(vector: Vector3D, target: Quaternion = null): Quaternion {
+        public multiplyVector(vector: Vector3D, target: Quaternion = null): Quaternion
+        {
             target = target || new Quaternion();
 
             var x2: number = vector.x;
@@ -81,7 +87,8 @@ module feng3d {
 		 * @param    axis    The axis around which to rotate
 		 * @param    angle    The angle in radians of the rotation.
 		 */
-        public fromAxisAngle(axis: Vector3D, angle: number) {
+        public fromAxisAngle(axis: Vector3D, angle: number)
+        {
             var sin_a: number = Math.sin(angle / 2);
             var cos_a: number = Math.cos(angle / 2);
 
@@ -98,13 +105,15 @@ module feng3d {
 		 * @param qb The second quaternion to interpolate.
 		 * @param t The interpolation weight, a value between 0 and 1.
 		 */
-        public slerp(qa: Quaternion, qb: Quaternion, t: number) {
+        public slerp(qa: Quaternion, qb: Quaternion, t: number)
+        {
             var w1: number = qa.w, x1: number = qa.x, y1: number = qa.y, z1: number = qa.z;
             var w2: number = qb.w, x2: number = qb.x, y2: number = qb.y, z2: number = qb.z;
             var dot: number = w1 * w2 + x1 * x2 + y1 * y2 + z1 * z2;
 
             // shortest direction
-            if (dot < 0) {
+            if (dot < 0)
+            {
                 dot = -dot;
                 w2 = -w2;
                 x2 = -x2;
@@ -112,7 +121,8 @@ module feng3d {
                 z2 = -z2;
             }
 
-            if (dot < 0.95) {
+            if (dot < 0.95)
+            {
                 // interpolate angle linearly
                 var angle: number = Math.acos(dot);
                 var s: number = 1 / Math.sin(angle);
@@ -123,7 +133,8 @@ module feng3d {
                 this.y = y1 * s1 + y2 * s2;
                 this.z = z1 * s1 + z2 * s2;
             }
-            else {
+            else
+            {
                 // nearly identical angle, interpolate linearly
                 this.w = w1 + t * (w2 - w1);
                 this.x = x1 + t * (x2 - x1);
@@ -143,13 +154,15 @@ module feng3d {
 		 * @param qb 第二个四元素
 		 * @param t 权重
 		 */
-        public lerp(qa: Quaternion, qb: Quaternion, t: number) {
+        public lerp(qa: Quaternion, qb: Quaternion, t: number)
+        {
             var w1: number = qa.w, x1: number = qa.x, y1: number = qa.y, z1: number = qa.z;
             var w2: number = qb.w, x2: number = qb.x, y2: number = qb.y, z2: number = qb.z;
             var len: number;
 
             // shortest direction
-            if (w1 * w2 + x1 * x2 + y1 * y2 + z1 * z2 < 0) {
+            if (w1 * w2 + x1 * x2 + y1 * y2 + z1 * z2 < 0)
+            {
                 w2 = -w2;
                 x2 = -x2;
                 y2 = -y2;
@@ -175,7 +188,8 @@ module feng3d {
 		 * @param    ay        The angle in radians of the rotation around the ay axis.
 		 * @param    az        The angle in radians of the rotation around the az axis.
 		 */
-        public fromEulerAngles(ax: number, ay: number, az: number) {
+        public fromEulerAngles(ax: number, ay: number, az: number)
+        {
             var halfX: number = ax * .5, halfY: number = ay * .5, halfZ: number = az * .5;
             var cosX: number = Math.cos(halfX), sinX: number = Math.sin(halfX);
             var cosY: number = Math.cos(halfY), sinY: number = Math.sin(halfY);
@@ -192,7 +206,8 @@ module feng3d {
 		 * @param target An optional Vector3D object to contain the Euler angles. If not provided, a new object is created.
 		 * @return The Vector3D containing the Euler angles.
 		 */
-        public toEulerAngles(target: Vector3D = null): Vector3D {
+        public toEulerAngles(target: Vector3D = null): Vector3D
+        {
             target = target || new Vector3D();
             target.x = Math.atan2(2 * (this.w * this.x + this.y * this.z), 1 - 2 * (this.x * this.x + this.y * this.y));
             target.y = Math.asin(2 * (this.w * this.y - this.z * this.x));
@@ -203,7 +218,8 @@ module feng3d {
 		/**
 		 * Normalises the quaternion object.
 		 */
-        public normalize(val: number = 1) {
+        public normalize(val: number = 1)
+        {
             var mag: number = val / Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
 
             this.x *= mag;
@@ -217,7 +233,8 @@ module feng3d {
 		 *
 		 * @return A string representation of the quaternion object.
 		 */
-        public toString(): string {
+        public toString(): string
+        {
             return "{this.x:" + this.x + " this.y:" + this.y + " this.z:" + this.z + " this.w:" + this.w + "}";
         }
 
@@ -226,7 +243,8 @@ module feng3d {
 		 * @param target An optional Matrix3D container to store the transformation in. If not provided, a new object is created.
 		 * @return A Matrix3D object representing an equivalent rotation.
 		 */
-        public toMatrix3D(target: Matrix3D = null): Matrix3D {
+        public toMatrix3D(target: Matrix3D = null): Matrix3D
+        {
             if (!target)
                 target = new Matrix3D();
 
@@ -261,7 +279,8 @@ module feng3d {
 		 * Extracts a quaternion rotation matrix out of a given Matrix3D object.
 		 * @param matrix The Matrix3D out of which the rotation will be extracted.
 		 */
-        public fromMatrix(matrix: Matrix3D) {
+        public fromMatrix(matrix: Matrix3D)
+        {
             var v: Vector3D = matrix.decompose()[1];
             this.fromEulerAngles(v.x, v.y, v.z);
         }
@@ -271,7 +290,8 @@ module feng3d {
 		 * @param target The Vector.&lt;number&gt; to contain the raw matrix data.
 		 * @param exclude4thRow If true, the last row will be omitted, and a 4x3 matrix will be generated instead of a 4x4.
 		 */
-        public toRawData(target: number[], exclude4thRow: boolean = false) {
+        public toRawData(target: number[], exclude4thRow: boolean = false)
+        {
             var xy2: number = 2.0 * this.x * this.y, xz2: number = 2.0 * this.x * this.z, xw2: number = 2.0 * this.x * this.w;
             var yz2: number = 2.0 * this.y * this.z, yw2: number = 2.0 * this.y * this.w, zw2: number = 2.0 * this.z * this.w;
             var xx: number = this.x * this.x, yy: number = this.y * this.y, zz: number = this.z * this.z, ww: number = this.w * this.w;
@@ -287,7 +307,8 @@ module feng3d {
             target[10] = -xx - yy + zz + ww;
             target[3] = target[7] = target[11] = 0;
 
-            if (!exclude4thRow) {
+            if (!exclude4thRow)
+            {
                 target[12] = target[13] = target[14] = 0;
                 target[15] = 1;
             }
@@ -297,7 +318,8 @@ module feng3d {
 		 * Clones the quaternion.
 		 * @return An exact duplicate of the current Quaternion.
 		 */
-        public clone(): Quaternion {
+        public clone(): Quaternion
+        {
             return new Quaternion(this.x, this.y, this.z, this.w);
         }
 
@@ -307,7 +329,8 @@ module feng3d {
 		 * @param target An optional Vector3D object that will contain the rotated coordinates. If not provided, a new object will be created.
 		 * @return A Vector3D object containing the rotated point.
 		 */
-        public rotatePoint(vector: Vector3D, target: Vector3D = null): Vector3D {
+        public rotatePoint(vector: Vector3D, target: Vector3D = null): Vector3D
+        {
             var x1: number, y1: number, z1: number, w1: number;
             var x2: number = vector.x, y2: number = vector.y, z2: number = vector.z;
 
@@ -330,7 +353,8 @@ module feng3d {
 		 * Copies the data from a quaternion into this instance.
 		 * @param q The quaternion to copy from.
 		 */
-        public copyFrom(q: Quaternion) {
+        public copyFrom(q: Quaternion)
+        {
             this.x = q.x;
             this.y = q.y;
             this.z = q.z;

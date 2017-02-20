@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      * @author feng 2016-06-20
      */
-    export class RenderAtomic {
+    export class RenderAtomic
+    {
 
         /**
          * 顶点索引缓冲

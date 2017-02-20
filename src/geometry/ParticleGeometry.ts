@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 粒子几何体
      * @author feng 2016-04-28
      */
-    export class ParticleGeometry extends Geometry {
+    export class ParticleGeometry extends Geometry
+    {
 
         /**
          * 粒子数量
@@ -18,7 +20,8 @@ module feng3d {
 
         private isDirty = true;
 
-        constructor() {
+        constructor()
+        {
             super();
             this.elementGeometry = new PlaneGeometry(10, 10, 1, 1, false);
         }
@@ -26,14 +29,17 @@ module feng3d {
         /**
          * 粒子数量
          */
-        public get numParticle() {
+        public get numParticle()
+        {
 
             return this._numParticle;
         }
 
-        public set numParticle(value: number) {
+        public set numParticle(value: number)
+        {
 
-            if (this._numParticle != value) {
+            if (this._numParticle != value)
+            {
 
                 this._numParticle = value;
                 this.isDirty = true;
@@ -43,13 +49,16 @@ module feng3d {
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext) {
+        public updateRenderData(renderContext: RenderContext)
+        {
 
             super.updateRenderData(renderContext);
 
-            if (this.isDirty) {
+            if (this.isDirty)
+            {
                 this.cloneFrom(new PlaneGeometry(10, 10, 1, 1, false));
-                for (var i = 1; i < this.numParticle; i++) {
+                for (var i = 1; i < this.numParticle; i++)
+                {
                     this.addGeometry(this.elementGeometry);
                 }
                 this.isDirty = false;

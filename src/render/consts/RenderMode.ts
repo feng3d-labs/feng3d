@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 渲染模式
      * @author feng 2016-09-28
      */
-    export enum RenderMode {
+    export enum RenderMode
+    {
         DEFAULT = Context3D.TRIANGLES,
         /**
          * 点渲染

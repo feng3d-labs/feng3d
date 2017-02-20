@@ -2922,8 +2922,6 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-}
-declare module feng3d {
     /**
      * 对象池
      * @author feng 2016-04-26
@@ -3242,6 +3240,84 @@ declare module feng3d {
         constructor(index: number, internalformat?: number, width?: number, height?: number);
         activate(context3D: Context3D, width: number, height: number): void;
         framebufferRenderbuffer(context3D: Context3D): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 渲染器
+     * @author feng 2016-05-01
+     */
+    class Renderer {
+        /** 渲染原子 */
+        protected renderAtomic: RenderAtomic;
+        /**
+         * 渲染
+         */
+        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
+        /**
+         * 绘制3D对象
+         */
+        protected drawObject3D(context3D: Context3D): void;
+        /**
+         * 激活渲染程序
+         */
+        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram;
+    }
+}
+declare module feng3d {
+    /**
+     * 前向渲染器
+     * @author feng 2017-02-20
+     */
+    class ForwardRenderer extends Renderer {
+    }
+}
+declare module feng3d {
+    /**
+     * 鼠标拾取渲染器
+     * @author feng 2017-02-06
+     */
+    class MouseRenderer extends Renderer {
+        private shaderName;
+        selectedObject3D: Object3D;
+        private frameBufferObject;
+        constructor();
+        /**
+         * 渲染
+         */
+        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
+        /**
+         * 激活渲染程序
+         */
+        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram;
+    }
+}
+declare module feng3d {
+    /**
+     * 后处理渲染器
+     * @author feng 2017-02-20
+     */
+    class PostProcessRenderer extends Renderer {
+    }
+}
+declare module feng3d {
+    /**
+     * 后处理效果
+     * @author feng 2017-02-20
+     */
+    class PostEffect {
+    }
+}
+declare module feng3d {
+    /**
+     * 快速近似抗锯齿（Fast Approximate Anti-Aliasing）后处理效果
+     * @author feng 2017-02-20
+     *
+     * @see
+     * https://github.com/BabylonJS/Babylon.js/blob/master/src/Shaders/fxaa.fragment.fx
+     * https://github.com/playcanvas/engine/blob/master/extras/posteffects/posteffect-fxaa.js
+     */
+    class FXAAEffect {
     }
 }
 declare module feng3d {
@@ -3647,28 +3723,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 渲染器
-     * @author feng 2016-05-01
-     */
-    class Renderer {
-        /** 渲染原子 */
-        protected renderAtomic: RenderAtomic;
-        /**
-         * 渲染
-         */
-        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
-        /**
-         * 绘制3D对象
-         */
-        protected drawObject3D(context3D: Context3D): void;
-        /**
-         * 激活渲染程序
-         */
-        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram;
-    }
-}
-declare module feng3d {
-    /**
      * 网格渲染器
      * @author feng 2016-12-12
      */
@@ -3695,27 +3749,6 @@ declare module feng3d {
          * 处理从场景移除事件
          */
         private onRemovedFromScene(event);
-    }
-}
-declare module feng3d {
-    /**
-     * 鼠标拾取渲染器
-     * @author feng 2017-02-06
-     */
-    class MouseRenderer extends Renderer {
-        private shaderName;
-        private shaderProgram;
-        selectedObject3D: Object3D;
-        private frameBufferObject;
-        constructor();
-        /**
-         * 渲染
-         */
-        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
-        /**
-         * 激活渲染程序
-         */
-        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram;
     }
 }
 declare module feng3d {

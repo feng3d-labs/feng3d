@@ -1,9 +1,11 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 数学常量类
      */
-    export class MathConsts {
+    export class MathConsts
+    {
 
         /**
 		 * 弧度转角度因子

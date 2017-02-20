@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
 	/**
 	 * 鼠标事件管理
 	 * @author feng 2014-4-29
 	 */
-    export class Mouse3DManager {
+    export class Mouse3DManager
+    {
         public viewRect: Rectangle = new Rectangle(0, 0, 100, 100);
         /**
          * 鼠标拾取渲染器
@@ -16,7 +18,8 @@ module feng3d {
         private selectedObject3D: Object3D;
         private mouseEventTypes: string[] = [];
 
-        constructor() {
+        constructor()
+        {
 
             this.mouseRenderer = new MouseRenderer();
             //
@@ -38,7 +41,8 @@ module feng3d {
         /**
          * 监听鼠标事件收集事件类型
          */
-        private onMouseEvent(event: Event) {
+        private onMouseEvent(event: Event)
+        {
 
             if (this.mouseEventTypes.indexOf(event.type) == -1)
                 this.mouseEventTypes.push(event.type);
@@ -47,7 +51,8 @@ module feng3d {
         /**
          * 监听鼠标移动事件获取鼠标位置
          */
-        private onMousemove(event: Event) {
+        private onMousemove(event: Event)
+        {
 
             this.clientX = event.data.clientX;
             this.clientY = event.data.clientY;
@@ -56,7 +61,8 @@ module feng3d {
         /**
 		 * 渲染
 		 */
-        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D) {
+        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D)
+        {
 
             if (!this.viewRect.contains(this.clientX, this.clientY))
                 return;
@@ -77,17 +83,21 @@ module feng3d {
         /**
          * 设置选中对象
          */
-        private setSelectedObject3D(value: Object3D) {
+        private setSelectedObject3D(value: Object3D)
+        {
 
-            if (this.selectedObject3D != value) {
+            if (this.selectedObject3D != value)
+            {
                 if (this.selectedObject3D)
                     this.selectedObject3D.dispatchEvent(new Mouse3DEvent(Mouse3DEvent.MOUSE_OUT, null, true));
                 if (value)
                     value.dispatchEvent(new Mouse3DEvent(Mouse3DEvent.MOUSE_OVER, null, true));
             }
             this.selectedObject3D = value;
-            if (this.selectedObject3D) {
-                this.mouseEventTypes.forEach(element => {
+            if (this.selectedObject3D)
+            {
+                this.mouseEventTypes.forEach(element =>
+                {
                     this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                 });
             }
@@ -98,7 +108,8 @@ module feng3d {
     /**
      * 3D鼠标事件
      */
-    export class Mouse3DEvent extends Event {
+    export class Mouse3DEvent extends Event
+    {
 
         /** 鼠标单击 */
         static CLICK = "click3D";

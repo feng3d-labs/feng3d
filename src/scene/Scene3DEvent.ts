@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 3D场景事件
      * @author feng 2016-01-03
      */
-    export class Scene3DEvent extends Event {
+    export class Scene3DEvent extends Event
+    {
 
         /**
          * 当Object3D的scene属性被设置是由Object3D与Scene3D分别派发不冒泡事件
@@ -47,7 +49,8 @@ module feng3d {
          * @param data 携带数据
 		 * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
 		 */
-        constructor(type: string, data: IScene3DEventData = null, bubbles = false) {
+        constructor(type: string, data: IScene3DEventData = null, bubbles = false)
+        {
             super(type, data, bubbles);
         }
     }
@@ -55,7 +58,8 @@ module feng3d {
     /**
      * 3D对象事件数据
      */
-    export interface IScene3DEventData {
+    export interface IScene3DEventData
+    {
 
         /**
          * 3d对象

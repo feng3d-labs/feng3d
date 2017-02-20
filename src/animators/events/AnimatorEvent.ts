@@ -1,11 +1,13 @@
-module feng3d {
+module feng3d
+{
 
 
 	/**
 	 * 动画事件
 	 * @author feng 2014-5-27
 	 */
-    export class AnimatorEvent extends Event {
+    export class AnimatorEvent extends Event
+    {
         /** 开始播放动画 */
         public static START: string = "start";
 
@@ -21,7 +23,8 @@ module feng3d {
 		 * @param data			事件数据
 		 * @param bubbles		是否冒泡
 		 */
-        constructor(type: string, data = null, bubbles: boolean = false) {
+        constructor(type: string, data = null, bubbles: boolean = false)
+        {
             super(type, data, bubbles);
         }
     }

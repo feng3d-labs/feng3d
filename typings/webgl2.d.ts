@@ -4,7 +4,8 @@
 //使用工具  
 //http://regexr.com/
 
-interface HTMLCanvasElement {
+interface HTMLCanvasElement
+{
     getContext(contextId: "webgl2"): WebGL2RenderingContext;
 }
 
@@ -27,7 +28,8 @@ declare interface WebGLVertexArrayObject extends WebGLObject { }
  * webgl 2.0 API
  * @author feng 2017-01-10
  */
-interface WebGL2RenderingContext extends WebGLRenderingContext {
+interface WebGL2RenderingContext extends WebGLRenderingContext
+{
     READ_BUFFER: number;
     UNPACK_ROW_LENGTH: number;
     UNPACK_SKIP_ROWS: number;
@@ -300,7 +302,7 @@ interface WebGL2RenderingContext extends WebGLRenderingContext {
     /* Buffer objects */
     // WebGL1:
     bufferData(target: GLenum, srcData: GLsizeiptr | ArrayBuffer | ArrayBufferView, usage: GLenum);
-    
+
     bufferData(target: GLenum, size: GLsizeiptr, usage: GLenum);
     bufferData(target: GLenum, srcData: ArrayBuffer, usage: GLenum);
     bufferData(target: GLenum, srcData: ArrayBufferView, usage: GLenum);

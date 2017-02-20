@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
 	/**
 	 * 透视摄像机镜头
 	 * @author feng 2014-10-14
 	 */
-    export class PerspectiveLens extends LensBase {
+    export class PerspectiveLens extends LensBase
+    {
         private _fieldOfView: number;
         private _focalLength: number;
         private _focalLengthInv: number;
@@ -17,7 +19,8 @@ module feng3d {
 		 * @param fieldOfView 视野
 		 * @param coordinateSystem 坐标系统类型
 		 */
-        constructor(fieldOfView: number = 60, coordinateSystem: number = CoordinateSystem.LEFT_HANDED) {
+        constructor(fieldOfView: number = 60, coordinateSystem: number = CoordinateSystem.LEFT_HANDED)
+        {
             super();
 
             this.fieldOfView = fieldOfView;
@@ -27,11 +30,13 @@ module feng3d {
 		/**
 		 * 视野
 		 */
-        public get fieldOfView(): number {
+        public get fieldOfView(): number
+        {
             return this._fieldOfView;
         }
 
-        public set fieldOfView(value: number) {
+        public set fieldOfView(value: number)
+        {
             if (value == this._fieldOfView)
                 return;
 
@@ -46,11 +51,13 @@ module feng3d {
 		/**
 		 * 焦距
 		 */
-        public get focalLength(): number {
+        public get focalLength(): number
+        {
             return this._focalLength;
         }
 
-        public set focalLength(value: number) {
+        public set focalLength(value: number)
+        {
             if (value == this._focalLength)
                 return;
 
@@ -62,7 +69,8 @@ module feng3d {
             this.invalidateMatrix();
         }
 
-        public unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D {
+        public unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D
+        {
             if (!v)
                 v = new Vector3D();
             v.x = nX;
@@ -83,11 +91,13 @@ module feng3d {
 		/**
 		 * 坐标系类型
 		 */
-        public get coordinateSystem(): number {
+        public get coordinateSystem(): number
+        {
             return this._coordinateSystem;
         }
 
-        public set coordinateSystem(value: number) {
+        public set coordinateSystem(value: number)
+        {
             if (value == this._coordinateSystem)
                 return;
 
@@ -99,7 +109,8 @@ module feng3d {
         /**
          * 更新投影矩阵
          */
-        protected updateMatrix() {
+        protected updateMatrix()
+        {
             var raw = tempRawData;
 
             this._yMax = this._near * this._focalLengthInv;
@@ -107,7 +118,8 @@ module feng3d {
 
             var left: number, right: number, top: number, bottom: number;
 
-            if (this._scissorRect.x == 0 && this._scissorRect.y == 0 && this._scissorRect.width == this._viewPort.width && this._scissorRect.height == this._viewPort.height) {
+            if (this._scissorRect.x == 0 && this._scissorRect.y == 0 && this._scissorRect.width == this._viewPort.width && this._scissorRect.height == this._viewPort.height)
+            {
                 // assume unscissored frustum
                 left = -this._xMax;
                 right = this._xMax;
@@ -121,7 +133,8 @@ module feng3d {
                 raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
                 raw[14] = -this._near * raw[10];
             }
-            else {
+            else
+            {
                 // assume scissored frustum
                 var xWidth: number = this._xMax * (this._viewPort.width / this._scissorRect.width);
                 var yHgt: number = this._yMax * (this._viewPort.height / this._scissorRect.height);

@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 坐标系，三叉戟
      * @author feng 2017-02-06
      */
-    export class Trident extends Object3D {
+    export class Trident extends Object3D
+    {
 
         public xLine: SegmentObject3D;
         public yLine: SegmentObject3D;
@@ -14,12 +16,14 @@ module feng3d {
         public yArrow: ConeObject3D;
         public zArrow: ConeObject3D;
 
-        constructor(length = 100) {
+        constructor(length = 100)
+        {
             super();
             this.buildTrident(Math.abs((length == 0) ? 10 : length));
         }
 
-        private buildTrident(length: number) {
+        private buildTrident(length: number)
+        {
 
             this.xLine = new SegmentObject3D();
             this.xLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(length, 0, 0), 0xff0000, 0xff0000));

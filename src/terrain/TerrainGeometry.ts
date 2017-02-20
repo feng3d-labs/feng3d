@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 地形几何体
      * @author feng 2016-04-28
      */
-    export class TerrainGeometry extends Geometry {
+    export class TerrainGeometry extends Geometry
+    {
 
         private _segmentsW: number;
         private _segmentsH: number;
@@ -28,7 +30,8 @@ module feng3d {
 		 * @param    maxElevation	最大地形高度
 		 * @param    minElevation	最小地形高度
 		 */
-        constructor(heightMap: ImageData, width: number = 1000, height: number = 100, depth: number = 1000, segmentsW: number = 30, segmentsH: number = 30, maxElevation: number = 255, minElevation: number = 0) {
+        constructor(heightMap: ImageData, width: number = 1000, height: number = 100, depth: number = 1000, segmentsW: number = 30, segmentsH: number = 30, maxElevation: number = 255, minElevation: number = 0)
+        {
             super();
 
             this._heightMap = heightMap;
@@ -48,7 +51,8 @@ module feng3d {
 		/**
 		 * 创建顶点坐标
 		 */
-        private buildGeometry() {
+        private buildGeometry()
+        {
 
             var x: number, z: number;
             var numInds: number = 0;
@@ -69,8 +73,10 @@ module feng3d {
 
             numVerts = 0;
             var col: number;
-            for (var zi: number = 0; zi <= this._segmentsH; ++zi) {
-                for (var xi: number = 0; xi <= this._segmentsW; ++xi) {
+            for (var zi: number = 0; zi <= this._segmentsH; ++zi)
+            {
+                for (var xi: number = 0; xi <= this._segmentsW; ++xi)
+                {
                     //顶点坐标
                     x = (xi / this._segmentsW - .5) * this._width;
                     z = (zi / this._segmentsH - .5) * this._depth;
@@ -88,7 +94,8 @@ module feng3d {
                     vertices[numVerts++] = y;
                     vertices[numVerts++] = z;
 
-                    if (xi != this._segmentsW && zi != this._segmentsH) {
+                    if (xi != this._segmentsW && zi != this._segmentsH)
+                    {
                         //增加 一个顶点同时 生成一个格子或两个三角形
                         base = xi + zi * tw;
                         indices[numInds++] = base;
@@ -107,14 +114,17 @@ module feng3d {
 		/**
 		 * 创建uv坐标
 		 */
-        private buildUVs() {
+        private buildUVs()
+        {
             var numUvs: number = (this._segmentsH + 1) * (this._segmentsW + 1) * 2;
             var uvs = new Float32Array(numUvs);
 
             numUvs = 0;
             //计算每个顶点的uv坐标
-            for (var yi: number = 0; yi <= this._segmentsH; ++yi) {
-                for (var xi: number = 0; xi <= this._segmentsW; ++xi) {
+            for (var yi: number = 0; yi <= this._segmentsH; ++yi)
+            {
+                for (var xi: number = 0; xi <= this._segmentsW; ++xi)
+                {
                     uvs[numUvs++] = xi / this._segmentsW;
                     uvs[numUvs++] = 1 - yi / this._segmentsH;
                 }
@@ -129,7 +139,8 @@ module feng3d {
 		 * @param z z坐标
 		 * @return 高度
 		 */
-        public getHeightAt(x: number, z: number): number {
+        public getHeightAt(x: number, z: number): number
+        {
 
             //得到高度图中的值
             var u: number = (x / this._width + .5) * (this._heightMap.width - 1);
@@ -138,13 +149,16 @@ module feng3d {
             var col: number = this.getPixel(this._heightMap, u, v) & 0xff;
 
             var h: number;
-            if (col > this._maxElevation) {
+            if (col > this._maxElevation)
+            {
                 h = (this._maxElevation / 0xff) * this._height;
             }
-            else if (col < this._minElevation) {
+            else if (col < this._minElevation)
+            {
                 h = (this._minElevation / 0xff) * this._height;
             }
-            else {
+            else
+            {
                 h = (col / 0xff) * this._height;
             }
 
@@ -154,7 +168,8 @@ module feng3d {
         /**
          * 获取像素值
          */
-        private getPixel(imageData: ImageData, u: number, v: number) {
+        private getPixel(imageData: ImageData, u: number, v: number)
+        {
 
             //取整
             u = ~~u;

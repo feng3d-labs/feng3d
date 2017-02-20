@@ -1,9 +1,11 @@
-module feng3d {
+module feng3d
+{
 	/**
 	 * 骨骼动画
 	 * @author feng 2014-5-27
 	 */
-    export class SkeletonAnimator extends AnimatorBase {
+    export class SkeletonAnimator extends AnimatorBase
+    {
         /** 动画节点列表 */
         public animations: AnimationNodeBase[] = [];
 
@@ -20,7 +22,8 @@ module feng3d {
 		 * 当前骨骼姿势的全局矩阵
 		 * @see #globalPose
 		 */
-        public get globalMatrices(): Matrix3D[] {
+        public get globalMatrices(): Matrix3D[]
+        {
             if (this._globalPropertiesDirty)
                 this.updateGlobalProperties();
 
@@ -30,7 +33,8 @@ module feng3d {
 		/**
 		 * 创建一个骨骼动画类
 		 */
-        constructor(skeleton: Skeleton) {
+        constructor(skeleton: Skeleton)
+        {
             super();
 
             this.skeleton = skeleton;
@@ -40,13 +44,15 @@ module feng3d {
 		 * 播放动画
 		 * @param name 动作名称
 		 */
-        public play() {
+        public play()
+        {
 
             if (!this._activeNode)
                 this._activeNode = this.animations[0];
             this._activeState = this.getAnimationState(this._activeNode);
 
-            if (this.updatePosition) {
+            if (this.updatePosition)
+            {
                 //this.update straight away to this.reset position deltas
                 this._activeState.update(this._absoluteTime);
                 this._activeState.positionDelta;
@@ -60,7 +66,8 @@ module feng3d {
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext) {
+        public updateRenderData(renderContext: RenderContext)
+        {
 
             super.updateRenderData(renderContext);
 
@@ -71,7 +78,8 @@ module feng3d {
 		/**
 		 * @inheritDoc
 		 */
-        protected updateDeltaTime(dt: number) {
+        protected updateDeltaTime(dt: number)
+        {
             super.updateDeltaTime(dt);
 
             this._globalPropertiesDirty = true;
@@ -80,7 +88,8 @@ module feng3d {
 		/**
 		 * 更新骨骼全局变换矩阵
 		 */
-        private updateGlobalProperties() {
+        private updateGlobalProperties()
+        {
             this._globalPropertiesDirty = false;
 
             //获取全局骨骼姿势
@@ -91,7 +100,8 @@ module feng3d {
             var joints: SkeletonJoint[] = this.skeleton.joints;
 
             //遍历每个关节
-            for (var i: number = 0; i < this.skeleton.numJoints; ++i) {
+            for (var i: number = 0; i < this.skeleton.numJoints; ++i)
+            {
 
                 var inverseMatrix3D: Matrix3D = joints[i].invertMatrix3D;
                 var matrix3D: Matrix3D = globalMatrix3Ds[i].clone();

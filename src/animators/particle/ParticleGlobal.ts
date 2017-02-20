@@ -1,4 +1,5 @@
-module feng3d {
+module feng3d
+{
 
 	/**
 	 * 粒子
@@ -6,7 +7,8 @@ module feng3d {
 	 * 例如：position 对应 a_particle_position 与 #define D_a_particle_position
 	 * @author feng 2017-01-12
 	 */
-    export interface ParticleGlobal {
+    export interface ParticleGlobal
+    {
 
         /**
          * 加速度

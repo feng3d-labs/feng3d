@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 线段组件
      * @author feng 2016-10-16
      */
-    export class SegmentGeometry extends Geometry {
+    export class SegmentGeometry extends Geometry
+    {
 
         /**
          * 几何体是否变脏
@@ -16,7 +18,8 @@ module feng3d {
 		 * 添加线段
 		 * @param segment		线段数据
 		 */
-        public addSegment(segment: Segment, needUpdateGeometry: boolean = true) {
+        public addSegment(segment: Segment, needUpdateGeometry: boolean = true)
+        {
 
             this._segments.push(segment);
             this.geometryDirty = true;
@@ -26,7 +29,8 @@ module feng3d {
         /**
          * 更新几何体
          */
-        public updateGeometry() {
+        public updateGeometry()
+        {
 
             this.geometryDirty = false;
 
@@ -37,7 +41,8 @@ module feng3d {
             var positionData = new Float32Array(numSegments * segmentPositionStep);
             var colorData = new Float32Array(numSegments * segmentColorStep);
 
-            for (var i = 0; i < numSegments; i++) {
+            for (var i = 0; i < numSegments; i++)
+            {
 
                 var element = this._segments[i];
                 indices.set([i * 2, i * 2 + 1], i * 2);
@@ -55,7 +60,8 @@ module feng3d {
 		 * @param index 		线段索引
 		 * @return				线段数据
 		 */
-        public getSegment(index: number): Segment {
+        public getSegment(index: number): Segment
+        {
             if (index < this._segments.length)
                 return this._segments[index];
             return null;
@@ -64,7 +70,8 @@ module feng3d {
 		/**
 		 * 移除所有线段
 		 */
-        public removeAllSegments() {
+        public removeAllSegments()
+        {
 
             this.segments.length = 0;
             this.geometryDirty = true;
@@ -73,7 +80,8 @@ module feng3d {
 		/**
 		 * 线段列表
 		 */
-        public get segments(): Segment[] {
+        public get segments(): Segment[]
+        {
 
             return this._segments;
         }
@@ -83,7 +91,8 @@ module feng3d {
      * 线段
      * @author feng 2016-10-16
      */
-    export class Segment {
+    export class Segment
+    {
 
         public thickness: number;
         public start: Vector3D;
@@ -99,7 +108,8 @@ module feng3d {
 		 * @param colorEnd 终点颜色
 		 * @param thickness 线段厚度
 		 */
-        constructor(start: Vector3D, end: Vector3D, colorStart: number = 0x333333, colorEnd: number = 0x333333, thickness: number = 1) {
+        constructor(start: Vector3D, end: Vector3D, colorStart: number = 0x333333, colorEnd: number = 0x333333, thickness: number = 1)
+        {
 
             this.thickness = thickness * .5;
             this.start = start;
@@ -113,7 +123,8 @@ module feng3d {
         /**
          * 坐标数据
          */
-        public get positionData() {
+        public get positionData()
+        {
 
             return [this.start.x, this.start.y, this.start.z, this.end.x, this.end.y, this.end.z];
         }
@@ -121,7 +132,8 @@ module feng3d {
         /**
          * 颜色数据
          */
-        public get colorData() {
+        public get colorData()
+        {
 
             return this.startColor.asArray().concat(this.endColor.asArray());
         }

@@ -1,15 +1,18 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 天空盒材质
      * @author feng 2016-12-20
      */
-    export class SkyBoxMaterial extends Material {
+    export class SkyBoxMaterial extends Material
+    {
 
         public skyBoxTextureCube: TextureCube;
         private skyBoxSize: Vector3D;
 
-        constructor(images: HTMLImageElement[]) {
+        constructor(images: HTMLImageElement[])
+        {
             super();
             this.shaderName = "skybox";
             this.skyBoxSize = new Vector3D();
@@ -19,7 +22,8 @@ module feng3d {
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext) {
+        public updateRenderData(renderContext: RenderContext)
+        {
 
             super.updateRenderData(renderContext);
 

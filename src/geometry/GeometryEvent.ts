@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
 	/**
 	 * 几何体事件
 	 * @author feng 2015-12-8
 	 */
-    export class GeometryEvent extends Event {
+	export class GeometryEvent extends Event
+	{
 
 		/**
 		 * 获取几何体顶点数据
@@ -14,12 +16,12 @@ module feng3d {
 		/**
 		 * 改变几何体顶点数据事件
 		 */
-        public static CHANGED_VA_DATA: string = "changedVAData";
+		public static CHANGED_VA_DATA: string = "changedVAData";
 
 		/**
 		 * 改变顶点索引数据事件
 		 */
-        public static CHANGED_INDEX_DATA: string = "changedIndexData";
+		public static CHANGED_INDEX_DATA: string = "changedIndexData";
 
 		/**
 		 * 事件目标
@@ -29,8 +31,9 @@ module feng3d {
 		/**
 		 * 构建几何体事件
 		 */
-        constructor(type: string, data = null, bubbles: boolean = false) {
-            super(type, data, bubbles);
-        }
-    }
+		constructor(type: string, data = null, bubbles: boolean = false)
+		{
+			super(type, data, bubbles);
+		}
+	}
 }

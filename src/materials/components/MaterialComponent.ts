@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 材质组件
      * @author feng 2016-11-01
      */
-    export class MaterialComponent extends Component {
+    export class MaterialComponent extends Component
+    {
 
         /**
          * 父组件
@@ -19,7 +21,8 @@ module feng3d {
         /**
          * 构建材质组件
          */
-        constructor() {
+        constructor()
+        {
             super();
         }
     }

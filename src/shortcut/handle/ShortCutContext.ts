@@ -1,10 +1,12 @@
-module feng3d.shortcut {
+module feng3d.shortcut
+{
 
 	/**
 	 * 快捷键环境
 	 * @author feng 2016-6-6
 	 */
-	export class ShortCutContext {
+	export class ShortCutContext
+	{
 
 		/**
 		 * 命令派发器
@@ -35,7 +37,8 @@ module feng3d.shortcut {
 		 * 构建快捷键环境
 		 * @param stage 舞台
 		 */
-		constructor() {
+		constructor()
+		{
 
 			this.init();
 		}
@@ -43,7 +46,8 @@ module feng3d.shortcut {
 		/**
 		 * 初始化快捷键模块
 		 */
-		public init(): void {
+		public init(): void
+		{
 
 			this.keyState = new KeyState();
 			this.keyCapture = new KeyCapture(this)
@@ -57,9 +61,11 @@ module feng3d.shortcut {
 		 * 添加快捷键
 		 * @param shortcuts		快捷键列表
 		 */
-		public addShortCuts(shortcuts: any[]): void {
+		public addShortCuts(shortcuts: any[]): void
+		{
 
-			for (var i = 0; i < shortcuts.length; i++) {
+			for (var i = 0; i < shortcuts.length; i++)
+			{
 				var shortcut = shortcuts[i];
 				var shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcut);
 				this.captureDic[shortcutUniqueKey] = this.captureDic[shortcutUniqueKey] || new ShortCutCapture(this, shortcut.key, shortcut.command, shortcut.stateCommand, shortcut.when);
@@ -70,12 +76,15 @@ module feng3d.shortcut {
 		 * 删除快捷键
 		 * @param shortcuts		快捷键列表
 		 */
-		public removeShortCuts(shortcuts: any[]): void {
+		public removeShortCuts(shortcuts: any[]): void
+		{
 
-			for (var i = 0; i < shortcuts.length; i++) {
+			for (var i = 0; i < shortcuts.length; i++)
+			{
 				var shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcuts[i]);
 				var shortCutCapture: ShortCutCapture = this.captureDic[shortcutUniqueKey];
-				if (ShortCutCapture != null) {
+				if (ShortCutCapture != null)
+				{
 					shortCutCapture.destroy();
 				}
 				delete this.captureDic[shortcutUniqueKey];
@@ -85,15 +94,18 @@ module feng3d.shortcut {
 		/**
 		 * 移除所有快捷键
 		 */
-		public removeAllShortCuts(): void {
+		public removeAllShortCuts(): void
+		{
 
 			var keys = [];
 			var key: string;
-			for (key in this.captureDic) {
+			for (key in this.captureDic)
+			{
 				keys.push(key);
 			}
 
-			keys.forEach(key => {
+			keys.forEach(key =>
+			{
 				var shortCutCapture: ShortCutCapture = this.captureDic[key];
 				shortCutCapture.destroy();
 				delete this.captureDic[key];
@@ -104,7 +116,8 @@ module feng3d.shortcut {
 		 * 激活状态
 		 * @param state 状态名称
 		 */
-		public activityState(state: string): void {
+		public activityState(state: string): void
+		{
 
 			this.stateDic[state] = true;
 		}
@@ -113,7 +126,8 @@ module feng3d.shortcut {
 		 * 取消激活状态
 		 * @param state 状态名称
 		 */
-		public deactivityState(state: string): void {
+		public deactivityState(state: string): void
+		{
 
 			delete this.stateDic[state];
 		}
@@ -122,7 +136,8 @@ module feng3d.shortcut {
 		 * 获取状态
 		 * @param state 状态名称
 		 */
-		public getState(state: string): Boolean {
+		public getState(state: string): Boolean
+		{
 
 			return !!this.stateDic[state];
 		}
@@ -130,7 +145,8 @@ module feng3d.shortcut {
 		/**
 		 * 获取快捷键唯一字符串
 		 */
-		private getShortcutUniqueKey(shortcut: any): string {
+		private getShortcutUniqueKey(shortcut: any): string
+		{
 
 			return shortcut.key + "," + shortcut.command + "," + shortcut.when;
 		}

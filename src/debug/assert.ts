@@ -1,4 +1,5 @@
-module feng3d {
+module feng3d
+{
 
     /**
 	 * 断言
@@ -6,7 +7,8 @@ module feng3d {
 	 * @msg			在表达式为假时将输出的错误信息
 	 * @author feng 2014-10-29
 	 */
-    export function assert(b: boolean, msg: string = "assert"): void {
+    export function assert(b: boolean, msg: string = "assert"): void
+    {
         if (!b)
             throw msg;
     }

@@ -1,15 +1,18 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 鼠标键盘输入，处理js事件中this关键字问题
      * @author feng 2016-12-19
      */
-    export class MouseKeyInput extends EventDispatcher {
+    export class MouseKeyInput extends EventDispatcher
+    {
 
         /**
          * 构建
          */
-        constructor() {
+        constructor()
+        {
             super();
             this.init();
         }
@@ -17,9 +20,11 @@ module feng3d {
         /**
          * 初始化
          */
-        private init() {
+        private init()
+        {
 
-            for (var key in $mouseKeyType) {
+            for (var key in $mouseKeyType)
+            {
                 window.addEventListener(key, this.onMouseKey.bind(this));
             }
         }
@@ -27,7 +32,8 @@ module feng3d {
         /**
 		 * 键盘按下事件
 		 */
-        private onMouseKey(event: MouseEvent): void {
+        private onMouseKey(event: MouseEvent): void
+        {
 
             this.dispatchEvent(new Event(event.type, event, event.bubbles));
         }

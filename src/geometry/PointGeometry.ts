@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 点几何体
      * @author feng 2017-01-11
      */
-    export class PointGeometry extends Geometry {
+    export class PointGeometry extends Geometry
+    {
 
         /**
          * 几何体是否变脏
@@ -12,7 +14,8 @@ module feng3d {
         private geometryDirty = false;
         private _points: PointInfo[] = [];
 
-        constructor() {
+        constructor()
+        {
             super();
             this.addPoint(new PointInfo(new Vector3D(0, 0, 0)))
         }
@@ -21,7 +24,8 @@ module feng3d {
 		 * 添加点
 		 * @param point		点数据
 		 */
-        public addPoint(point: PointInfo, needUpdateGeometry: boolean = true) {
+        public addPoint(point: PointInfo, needUpdateGeometry: boolean = true)
+        {
 
             this._points.push(point);
             this.geometryDirty = true;
@@ -31,7 +35,8 @@ module feng3d {
         /**
          * 更新几何体
          */
-        public updateGeometry() {
+        public updateGeometry()
+        {
 
             this.geometryDirty = false;
 
@@ -40,7 +45,8 @@ module feng3d {
             var indices = new Uint16Array(numPoints);
             var positionData = new Float32Array(numPoints * positionStep);
 
-            for (var i = 0; i < numPoints; i++) {
+            for (var i = 0; i < numPoints; i++)
+            {
 
                 var element = this._points[i];
                 indices[i] = i;
@@ -56,7 +62,8 @@ module feng3d {
 		 * @param index 		线段索引
 		 * @return				线段数据
 		 */
-        public getPoint(index: number): PointInfo {
+        public getPoint(index: number): PointInfo
+        {
             if (index < this._points.length)
                 return this._points[index];
             return null;
@@ -65,7 +72,8 @@ module feng3d {
 		/**
 		 * 移除所有线段
 		 */
-        public removeAllPoints() {
+        public removeAllPoints()
+        {
 
             this.points.length = 0;
             this.geometryDirty = true;
@@ -74,7 +82,8 @@ module feng3d {
 		/**
 		 * 线段列表
 		 */
-        public get points(): PointInfo[] {
+        public get points(): PointInfo[]
+        {
 
             return this._points;
         }
@@ -84,7 +93,8 @@ module feng3d {
      * 点信息
      * @author feng 2016-10-16
      */
-    export class PointInfo {
+    export class PointInfo
+    {
 
         public position: Vector3D;
 
@@ -92,7 +102,8 @@ module feng3d {
 		 * 创建点
 		 * @param position 坐标
 		 */
-        constructor(position: Vector3D) {
+        constructor(position: Vector3D)
+        {
 
             this.position = position;
         }
@@ -100,7 +111,8 @@ module feng3d {
         /**
          * 坐标
          */
-        public get positionData() {
+        public get positionData()
+        {
 
             return [this.position.x, this.position.y, this.position.z];
         }

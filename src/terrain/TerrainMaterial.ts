@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 地形材质
      * @author feng 2016-04-28
      */
-    export class TerrainMaterial extends Material {
+    export class TerrainMaterial extends Material
+    {
 
         public diffuseTexture: Texture2D;
 
@@ -18,7 +20,8 @@ module feng3d {
         /**
          * 构建材质
          */
-        constructor() {
+        constructor()
+        {
 
             super();
             this.shaderName = "terrain";
@@ -27,7 +30,8 @@ module feng3d {
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext) {
+        public updateRenderData(renderContext: RenderContext)
+        {
 
             super.updateRenderData(renderContext);
 

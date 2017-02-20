@@ -1,10 +1,12 @@
-module feng3d.shortcut {
+module feng3d.shortcut
+{
 
 	/**
 	 * 按键捕获
 	 * @author feng 2016-4-26
 	 */
-	export class KeyCapture {
+	export class KeyCapture
+	{
 		/**
 		 * 键盘按键字典 （补充常量，a-z以及鼠标按键不必再次列出）
 		 * 例如 boardKeyDic[17] = "ctrl";
@@ -30,7 +32,8 @@ module feng3d.shortcut {
 		 * 构建
 		 * @param stage		舞台
 		 */
-		constructor(shortCutContext: ShortCutContext) {
+		constructor(shortCutContext: ShortCutContext)
+		{
 
 			this.keyState = shortCutContext.keyState;
 			//
@@ -50,7 +53,8 @@ module feng3d.shortcut {
 				"mouseover", //
 				"mouseup", //
 			];
-			for (var i = 0; i < mouseEvents.length; i++) {
+			for (var i = 0; i < mouseEvents.length; i++)
+			{
 				window.addEventListener(mouseEvents[i], this.onMouseOnce.bind(this));
 			}
 			window.addEventListener("mousewheel", this.onMousewheel.bind(this));
@@ -59,7 +63,8 @@ module feng3d.shortcut {
 		/**
 		 * 默认支持按键
 		 */
-		private defaultSupportKeys(): void {
+		private defaultSupportKeys(): void
+		{
 
 			this.boardKeyDic[17] = "ctrl";
 			this.boardKeyDic[16] = "shift";
@@ -70,7 +75,8 @@ module feng3d.shortcut {
 		/**
 		 * 鼠标事件
 		 */
-		private onMouseOnce(event: MouseEvent): void {
+		private onMouseOnce(event: MouseEvent): void
+		{
 
 			var mouseKey: string = event.type;
 			this.keyState.pressKey(mouseKey, event);
@@ -80,7 +86,8 @@ module feng3d.shortcut {
 		/**
 		 * 鼠标事件
 		 */
-		private onMousewheel(event: WheelEvent): void {
+		private onMousewheel(event: WheelEvent): void
+		{
 
 			var mouseKey: string = event.type;
 			this.keyState.pressKey(mouseKey, event);
@@ -90,7 +97,8 @@ module feng3d.shortcut {
 		/**
 		 * 键盘按下事件
 		 */
-		private onKeydown(event: KeyboardEvent): void {
+		private onKeydown(event: KeyboardEvent): void
+		{
 
 			var boardKey: string = this.getBoardKey(event.keyCode);
 			if (boardKey != null)
@@ -100,7 +108,8 @@ module feng3d.shortcut {
 		/**
 		 * 键盘弹起事件
 		 */
-		private onKeyup(event: KeyboardEvent): void {
+		private onKeyup(event: KeyboardEvent): void
+		{
 
 			var boardKey: string = this.getBoardKey(event.keyCode);
 			if (boardKey)
@@ -110,10 +119,12 @@ module feng3d.shortcut {
 		/**
 		 * 获取键盘按键名称
 		 */
-		private getBoardKey(keyCode: number): string {
+		private getBoardKey(keyCode: number): string
+		{
 
 			var boardKey = this.boardKeyDic[keyCode];
-			if (boardKey == null && 65 <= keyCode && keyCode <= 90) {
+			if (boardKey == null && 65 <= keyCode && keyCode <= 90)
+			{
 				boardKey = String.fromCharCode(keyCode).toLocaleLowerCase();
 			}
 			return boardKey;

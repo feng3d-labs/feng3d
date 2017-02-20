@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 渲染环境
      * @author feng 2017-01-04
      */
-    export class RenderContext {
+    export class RenderContext
+    {
 
         protected renderData = new RenderData();
 
@@ -21,12 +23,14 @@ module feng3d {
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(object3D: Object3D) {
+        public updateRenderData(object3D: Object3D)
+        {
 
             var pointLights: Light[] = [];
             this.camera.updateRenderData(this);
             var light: Light;
-            for (var i = 0; i < this.lights.length; i++) {
+            for (var i = 0; i < this.lights.length; i++)
+            {
                 light = this.lights[i];
                 light.updateRenderData(this);
                 if (light.type == LightType.Point)
@@ -36,7 +40,8 @@ module feng3d {
             var pointLightPositions: Vector3D[] = [];
             var pointLightDiffuses: Vector3D[] = [];
             var pointLightIntensitys: number[] = [];
-            for (var i = 0; i < pointLights.length; i++) {
+            for (var i = 0; i < pointLights.length; i++)
+            {
                 light = pointLights[i];
                 pointLightPositions.push(light.position);
                 pointLightDiffuses.push(light.color.toVector3D());
@@ -44,7 +49,8 @@ module feng3d {
             }
             //设置点光源数据
             this.renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
-            if (pointLights.length > 0) {
+            if (pointLights.length > 0)
+            {
                 this.renderData.shaderMacro.addMacros.A_NORMAL_NEED = 1;
                 this.renderData.shaderMacro.addMacros.V_NORMAL_NEED = 1;
                 this.renderData.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
@@ -60,7 +66,8 @@ module feng3d {
 		 * 激活
 		 * @param renderData	渲染数据
 		 */
-        public activate(renderData: RenderAtomic) {
+        public activate(renderData: RenderAtomic)
+        {
 
             RenderDataUtil.active(renderData, this.renderData);
             this.camera.activate(renderData);
@@ -70,7 +77,8 @@ module feng3d {
 		 * 释放
 		 * @param renderData	渲染数据
 		 */
-        public deactivate(renderData: RenderAtomic) {
+        public deactivate(renderData: RenderAtomic)
+        {
 
             RenderDataUtil.deactivate(renderData, this.renderData);
             this.camera.deactivate(renderData);
@@ -79,7 +87,8 @@ module feng3d {
         /**
          * 清理
          */
-        public clear() {
+        public clear()
+        {
 
             this.camera = null;
             this.lights = [];

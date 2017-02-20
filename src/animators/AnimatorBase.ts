@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
 	/**
 	 * 动画基类
 	 * @author feng 2014-5-27
 	 */
-    export abstract class AnimatorBase extends RenderDataHolder {
+    export abstract class AnimatorBase extends RenderDataHolder
+    {
 
         /** 是否正在播放动画 */
         private _isPlaying: boolean;
@@ -27,7 +29,8 @@ module feng3d {
 		/**
 		 * 创建一个动画基类
 		 */
-        constructor() {
+        constructor()
+        {
             super();
         }
 
@@ -36,7 +39,8 @@ module feng3d {
 		 * @param node		动画节点
 		 * @return			动画状态
 		 */
-        public getAnimationState(node: AnimationNodeBase): AnimationStateBase {
+        public getAnimationState(node: AnimationNodeBase): AnimationStateBase
+        {
             var cls = node.stateClass;
             var className: string = getClassName(cls);
             if (this._animationStates[className] == null)
@@ -48,11 +52,13 @@ module feng3d {
 		/**
 		 * 动画时间
 		 */
-        public get time(): number {
+        public get time(): number
+        {
             return this._time;
         }
 
-        public set time(value: number) {
+        public set time(value: number)
+        {
             if (this._time == value)
                 return;
 
@@ -66,11 +72,13 @@ module feng3d {
 		 * 播放速度
 		 * <p>默认为1，表示正常速度</p>
 		 */
-        public get playbackSpeed(): number {
+        public get playbackSpeed(): number
+        {
             return this._playbackSpeed;
         }
 
-        public set playbackSpeed(value: number) {
+        public set playbackSpeed(value: number)
+        {
             this._playbackSpeed = value;
         }
 
@@ -78,7 +86,8 @@ module feng3d {
 		 * 开始动画，当自动更新为true时有效
 		 * @see #autoUpdate
 		 */
-        public start() {
+        public start()
+        {
             if (this._isPlaying || !this._autoUpdate)
                 return;
 
@@ -100,7 +109,8 @@ module feng3d {
 		 * @see #time
 		 * @see #update()
 		 */
-        public stop() {
+        public stop()
+        {
             if (!this._isPlaying)
                 return;
 
@@ -122,7 +132,8 @@ module feng3d {
 		 * @see #stop()
 		 * @see #autoUpdate
 		 */
-        public update(time: number) {
+        public update(time: number)
+        {
             var dt: number = (time - this._time) * this.playbackSpeed;
 
             this.updateDeltaTime(dt);
@@ -134,7 +145,8 @@ module feng3d {
 		 * 更新偏移时间
 		 * @private
 		 */
-        protected updateDeltaTime(dt: number) {
+        protected updateDeltaTime(dt: number)
+        {
             this._absoluteTime += dt;
 
             this._activeState.update(this._absoluteTime);
@@ -146,18 +158,21 @@ module feng3d {
 		/**
 		 * 自动更新动画时帧更新事件
 		 */
-        private onEnterFrame(event: Event = null) {
+        private onEnterFrame(event: Event = null)
+        {
             this.update(getTimer());
         }
 
         /**
 		 * 应用位置偏移量
 		 */
-        private applyPositionDelta() {
+        private applyPositionDelta()
+        {
             var delta: Vector3D = this._activeState.positionDelta;
             var dist: number = delta.length;
             var len: number;
-            if (dist > 0) {
+            if (dist > 0)
+            {
             }
         }
     }

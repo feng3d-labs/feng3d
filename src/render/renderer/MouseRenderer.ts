@@ -1,16 +1,19 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 鼠标拾取渲染器
      * @author feng 2017-02-06
      */
-    export class MouseRenderer extends Renderer {
+    export class MouseRenderer extends Renderer
+    {
 
         private shaderName = "mouse";
         public selectedObject3D: Object3D;
         private frameBufferObject: FrameBufferObject;
 
-        constructor() {
+        constructor()
+        {
 
             super();
             this.frameBufferObject = new FrameBufferObject();
@@ -20,7 +23,8 @@ module feng3d {
         /**
 		 * 渲染
 		 */
-        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D) {
+        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D)
+        {
 
             this.frameBufferObject.activate(context3D,
                 context3D.drawingBufferWidth,
@@ -48,7 +52,8 @@ module feng3d {
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string) {
+        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string)
+        {
 
             vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
             fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");

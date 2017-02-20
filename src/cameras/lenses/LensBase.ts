@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
 	/**
 	 * 摄像机镜头
 	 * @author feng 2014-10-14
 	 */
-	export abstract class LensBase extends Component {
+	export abstract class LensBase extends Component
+	{
 		protected _matrix: Matrix3D;
 		protected _scissorRect: Rectangle = new Rectangle();
 		protected _viewPort: Rectangle = new Rectangle();
@@ -20,7 +22,8 @@ module feng3d {
 		/**
 		 * 创建一个摄像机镜头
 		 */
-		constructor() {
+		constructor()
+		{
 			super();
 			this._matrix = new Matrix3D();
 		}
@@ -28,15 +31,18 @@ module feng3d {
 		/**
 		 * 投影矩阵
 		 */
-		public get matrix(): Matrix3D {
-			if (this._matrixInvalid) {
+		public get matrix(): Matrix3D
+		{
+			if (this._matrixInvalid)
+			{
 				this.updateMatrix();
 				this._matrixInvalid = false;
 			}
 			return this._matrix;
 		}
 
-		public set matrix(value: Matrix3D) {
+		public set matrix(value: Matrix3D)
+		{
 			this._matrix = value;
 			this.invalidateMatrix();
 		}
@@ -44,11 +50,13 @@ module feng3d {
 		/**
 		 * 最近距离
 		 */
-		public get near(): number {
+		public get near(): number
+		{
 			return this._near;
 		}
 
-		public set near(value: number) {
+		public set near(value: number)
+		{
 			if (value == this._near)
 				return;
 			this._near = value;
@@ -58,11 +66,13 @@ module feng3d {
 		/**
 		 * 最远距离
 		 */
-		public get far(): number {
+		public get far(): number
+		{
 			return this._far;
 		}
 
-		public set far(value: number) {
+		public set far(value: number)
+		{
 			if (value == this._far)
 				return;
 			this._far = value;
@@ -72,11 +82,13 @@ module feng3d {
 		/**
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
-		public get aspectRatio(): number {
+		public get aspectRatio(): number
+		{
 			return this._aspectRatio;
 		}
 
-		public set aspectRatio(value: number) {
+		public set aspectRatio(value: number)
+		{
 			if (this._aspectRatio == value || (value * 0) != 0)
 				return;
 			this._aspectRatio = value;
@@ -89,7 +101,8 @@ module feng3d {
 		 * @param v 屏幕坐标（输出）
 		 * @return 屏幕坐标
 		 */
-		public project(point3d: Vector3D, v: Vector3D = null): Vector3D {
+		public project(point3d: Vector3D, v: Vector3D = null): Vector3D
+		{
 			if (!v)
 				v = new Vector3D();
 			this.matrix.transformVector(point3d, v);
@@ -104,8 +117,10 @@ module feng3d {
 		/**
 		 * 投影逆矩阵
 		 */
-		public get unprojectionMatrix(): Matrix3D {
-			if (this._unprojectionInvalid) {
+		public get unprojectionMatrix(): Matrix3D
+		{
+			if (this._unprojectionInvalid)
+			{
 				if (this._unprojection == null)
 					this._unprojection = new Matrix3D();
 				this._unprojection.copyFrom(this.matrix);
@@ -129,7 +144,8 @@ module feng3d {
 		/**
 		 * 投影矩阵失效
 		 */
-		protected invalidateMatrix() {
+		protected invalidateMatrix()
+		{
 			this._matrixInvalid = true;
 			this._unprojectionInvalid = true;
 			this.dispatchEvent(new LensEvent(LensEvent.MATRIX_CHANGED, this));

@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 3D视图
      * @author feng 2016-05-01
      */
-    export class View3D {
+    export class View3D
+    {
 
         private _context3D: Context3D;
         private _camera: Camera3D;
@@ -27,7 +29,8 @@ module feng3d {
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas, scene: Scene3D = null, camera: Camera3D = null) {
+        constructor(canvas, scene: Scene3D = null, camera: Camera3D = null)
+        {
 
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
@@ -49,7 +52,8 @@ module feng3d {
         /**
          * 初始化GL
          */
-        private initGL() {
+        private initGL()
+        {
 
             this._context3D.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
             this._context3D.clearDepth(1.0);                 // Clear everything
@@ -58,18 +62,21 @@ module feng3d {
         }
 
         /** 3d场景 */
-        public get scene(): Scene3D {
+        public get scene(): Scene3D
+        {
             return this._scene;
         }
 
-        public set scene(value: Scene3D) {
+        public set scene(value: Scene3D)
+        {
             this._scene = value;
         }
 
         /**
          * 绘制场景
          */
-        private drawScene() {
+        private drawScene()
+        {
 
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.setTo(this._canvas.offsetLeft, this._canvas.offsetTop, this._canvas.width, this._canvas.height)
@@ -85,11 +92,13 @@ module feng3d {
         /**
          * 摄像机
          */
-        public get camera(): Camera3D {
+        public get camera(): Camera3D
+        {
             return this._camera;
         }
 
-        public set camera(value: Camera3D) {
+        public set camera(value: Camera3D)
+        {
 
             this._camera = value;
         }

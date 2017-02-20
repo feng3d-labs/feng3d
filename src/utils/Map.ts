@@ -1,4 +1,5 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 构建Map类代替Dictionary
@@ -12,7 +13,8 @@ module feng3d {
         /**
          * 删除
          */
-        public delete(k: K) {
+        public delete(k: K)
+        {
 
             delete this.keyMap[getUID(k)];
             delete this.valueMap[getUID(k)];
@@ -21,7 +23,8 @@ module feng3d {
         /**
          * 添加映射
          */
-        public push(k: K, v: V) {
+        public push(k: K, v: V)
+        {
 
             this.keyMap[getUID(k)] = k;
             this.valueMap[getUID(k)] = v;
@@ -30,7 +33,8 @@ module feng3d {
         /**
          * 通过key获取value
          */
-        public get(k: K): V {
+        public get(k: K): V
+        {
 
             return this.valueMap[getUID(k)];
         }
@@ -38,10 +42,12 @@ module feng3d {
         /**
          * 获取键列表
          */
-        public getKeys(): K[] {
+        public getKeys(): K[]
+        {
 
             var keys: K[] = [];
-            for (var key in this.keyMap) {
+            for (var key in this.keyMap)
+            {
                 keys.push(this.keyMap[key]);
             }
             return keys;
@@ -50,7 +56,8 @@ module feng3d {
         /**
          * 清理字典
          */
-        public clear() {
+        public clear()
+        {
 
             this.keyMap = {};
             this.valueMap = {};

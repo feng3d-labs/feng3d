@@ -1,9 +1,11 @@
-module feng3d {
+module feng3d
+{
     /**
      * 组件接口
      * @author feng 2016-4-24
      */
-    export interface IComponent extends IEventDispatcher {
+    export interface IComponent extends IEventDispatcher
+    {
 
         /**
          * 组件数量

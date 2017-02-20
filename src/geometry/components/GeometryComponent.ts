@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 几何体组件
      * @author feng 2016-10-16
      */
-    export class GeometryComponent extends Component {
+    export class GeometryComponent extends Component
+    {
 
         /**
          * 父组件
@@ -19,7 +21,8 @@ module feng3d {
         /**
          * 构建几何体组件
          */
-        constructor() {
+        constructor()
+        {
             super();
         }
     }

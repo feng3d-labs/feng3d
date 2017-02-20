@@ -1,4 +1,5 @@
-module feng3d.shortcut {
+module feng3d.shortcut
+{
 	/**
 	 * 初始化快捷键模块
 	 * @author feng 2016-4-26
@@ -23,7 +24,8 @@ ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
 });
 	 * </pre>
 	 */
-	export class ShortCut {
+	export class ShortCut
+	{
 		/**
 		 * 命令派发器
 		 */
@@ -37,7 +39,8 @@ ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
 		/**
 		 * 初始化快捷键模块
 		 */
-		public static init(): void {
+		public static init(): void
+		{
 
 			ShortCut.shortcutContext = new ShortCutContext();
 			ShortCut.commandDispatcher = ShortCut.shortcutContext.commandDispatcher;
@@ -47,7 +50,8 @@ ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
 		 * 添加快捷键
 		 * @param shortcuts		快捷键列表
 		 */
-		public static addShortCuts(shortcuts: any[]): void {
+		public static addShortCuts(shortcuts: any[]): void
+		{
 
 			ShortCut.shortcutContext.addShortCuts(shortcuts);
 		}
@@ -56,7 +60,8 @@ ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
 		 * 删除快捷键
 		 * @param shortcuts		快捷键列表
 		 */
-		public static removeShortCuts(shortcuts: any[]): void {
+		public static removeShortCuts(shortcuts: any[]): void
+		{
 
 			ShortCut.shortcutContext.removeShortCuts(shortcuts);
 		}
@@ -64,7 +69,8 @@ ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
 		/**
 		 * 移除所有快捷键
 		 */
-		public static removeAllShortCuts(): void {
+		public static removeAllShortCuts(): void
+		{
 
 			ShortCut.shortcutContext.removeAllShortCuts();
 		}
@@ -73,7 +79,8 @@ ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
 		 * 激活状态
 		 * @param state 状态名称
 		 */
-		public static activityState(state: string): void {
+		public static activityState(state: string): void
+		{
 
 			ShortCut.shortcutContext.activityState(state);
 		}
@@ -82,7 +89,8 @@ ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
 		 * 取消激活状态
 		 * @param state 状态名称
 		 */
-		public static deactivityState(state: string): void {
+		public static deactivityState(state: string): void
+		{
 
 			ShortCut.shortcutContext.deactivityState(state);
 		}
@@ -91,7 +99,8 @@ ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
 		 * 获取状态
 		 * @param state 状态名称
 		 */
-		public static getState(state: string): Boolean {
+		public static getState(state: string): Boolean
+		{
 
 			return ShortCut.shortcutContext.getState(state);
 		}

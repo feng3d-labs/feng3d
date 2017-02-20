@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * MD5模型加载类
      * @author feng 2017-01-18
      */
-    export class MD5Loader extends Loader {
+    export class MD5Loader extends Loader
+    {
 
         completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void;
         animCompleted: (skeletonClipNode: SkeletonClipNode) => void;
@@ -13,13 +15,15 @@ module feng3d {
          * 加载资源
          * @param url   路径
          */
-        public load(url: string, completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void = null) {
+        public load(url: string, completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void = null)
+        {
 
             this.url = url
             this.completed = completed;
 
             var loader = new Loader();
-            loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent) {
+            loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent)
+            {
 
                 var objData = MD5MeshParser.parse(e.data.content);
 
@@ -28,13 +32,15 @@ module feng3d {
             loader.loadText(url);
         }
 
-        public loadAnim(url: string, completed: (object3D: SkeletonClipNode) => void = null) {
+        public loadAnim(url: string, completed: (object3D: SkeletonClipNode) => void = null)
+        {
 
             this.url = url
             this.animCompleted = completed;
 
             var loader = new Loader();
-            loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent) {
+            loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent)
+            {
 
                 var objData = MD5AnimParser.parse(e.data.content);
 
@@ -44,7 +50,8 @@ module feng3d {
         }
 
         private _skeleton: Skeleton;
-        private createMD5Mesh(md5MeshData: MD5MeshData) {
+        private createMD5Mesh(md5MeshData: MD5MeshData)
+        {
 
             var object3D = new Object3D();
 
@@ -55,7 +62,8 @@ module feng3d {
             this._skeleton = this.createSkeleton(md5MeshData.joints);
             var skeletonAnimator = new SkeletonAnimator(this._skeleton);
 
-            for (var i = 0; i < md5MeshData.meshs.length; i++) {
+            for (var i = 0; i < md5MeshData.meshs.length; i++)
+            {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
 
                 var skeletonObject3D = new Object3D();
@@ -66,7 +74,8 @@ module feng3d {
                 object3D.addChild(skeletonObject3D);
             }
 
-            if (this.completed) {
+            if (this.completed)
+            {
                 this.completed(object3D, skeletonAnimator);
             }
         }
@@ -74,18 +83,21 @@ module feng3d {
         /**
 		 * 计算最大关节数量
 		 */
-        private calculateMaxJointCount(md5MeshData: MD5MeshData) {
+        private calculateMaxJointCount(md5MeshData: MD5MeshData)
+        {
             var _maxJointCount = 0;
 
             //遍历所有的网格数据
             var numMeshData: number = md5MeshData.meshs.length;
-            for (var i: number = 0; i < numMeshData; ++i) {
+            for (var i: number = 0; i < numMeshData; ++i)
+            {
                 var meshData: MD5_Mesh = md5MeshData.meshs[i];
                 var vertexData: MD5_Vertex[] = meshData.verts;
                 var numVerts: number = vertexData.length;
 
                 //遍历每个顶点 寻找关节关联最大数量
-                for (var j: number = 0; j < numVerts; ++j) {
+                for (var j: number = 0; j < numVerts; ++j)
+                {
                     var zeroWeights: number = this.countZeroWeightJoints(vertexData[j], meshData.weights);
                     var totalJoints: number = vertexData[j].countWeight - zeroWeights;
                     if (totalJoints > _maxJointCount)
@@ -101,13 +113,15 @@ module feng3d {
 		 * @param weights 关节权重数组
 		 * @return
 		 */
-        private countZeroWeightJoints(vertex: MD5_Vertex, weights: MD5_Weight[]): number {
+        private countZeroWeightJoints(vertex: MD5_Vertex, weights: MD5_Weight[]): number
+        {
             var start: number = vertex.startWeight;
             var end: number = vertex.startWeight + vertex.countWeight;
             var count: number = 0;
             var weight: number;
 
-            for (var i: number = start; i < end; ++i) {
+            for (var i: number = start; i < end; ++i)
+            {
                 weight = weights[i].bias;
                 if (weight == 0)
                     ++count;
@@ -116,17 +130,20 @@ module feng3d {
             return count;
         }
 
-        private createSkeleton(joints: MD5_Joint[]) {
+        private createSkeleton(joints: MD5_Joint[])
+        {
 
             var skeleton: Skeleton = new Skeleton();
-            for (var i = 0; i < joints.length; i++) {
+            for (var i = 0; i < joints.length; i++)
+            {
                 var skeletonJoint = this.createSkeletonJoint(joints[i]);
                 skeleton.joints.push(skeletonJoint);
             }
             return skeleton;
         }
 
-        private createSkeletonJoint(joint: MD5_Joint) {
+        private createSkeletonJoint(joint: MD5_Joint)
+        {
             var skeletonJoint = new SkeletonJoint();
             skeletonJoint.name = joint.name;
             skeletonJoint.parentIndex = joint.parentIndex;
@@ -144,7 +161,8 @@ module feng3d {
             return skeletonJoint;
         }
 
-        private createGeometry(md5Mesh: MD5_Mesh) {
+        private createGeometry(md5Mesh: MD5_Mesh)
+        {
 
             var vertexData = md5Mesh.verts;
             var weights = md5Mesh.weights;
@@ -174,7 +192,8 @@ module feng3d {
             var jointWeights1: number[] = [];
             jointWeights1.length = len * 4;
 
-            for (var i: number = 0; i < len; ++i) {
+            for (var i: number = 0; i < len; ++i)
+            {
                 vertex = vertexData[i];
                 vertices[i * 3] = vertices[i * 3 + 1] = vertices[i * 3 + 2] = 0;
 
@@ -187,12 +206,15 @@ module feng3d {
 				 */
                 var weightJoints = [];
                 var weightBiass = [];
-                for (var j = 0; j < 8; ++j) {
+                for (var j = 0; j < 8; ++j)
+                {
                     weightJoints[j] = 0;
                     weightBiass[j] = 0;
-                    if (j < vertex.countWeight) {
+                    if (j < vertex.countWeight)
+                    {
                         weight = weights[vertex.startWeight + j];
-                        if (weight.bias > 0) {
+                        if (weight.bias > 0)
+                        {
                             bindPose = this._skeleton.joints[weight.joint].matrix3D;
                             pos = bindPose.transformVector(new Vector3D(-weight.pos[0], weight.pos[1], weight.pos[2]));
                             vertices[i * 3] += pos.x * weight.bias;
@@ -240,7 +262,8 @@ module feng3d {
             return geometry;
         }
 
-        private createAnimator(md5AnimData: MD5AnimData) {
+        private createAnimator(md5AnimData: MD5AnimData)
+        {
 
             var object = new Object3D();
 
@@ -248,7 +271,8 @@ module feng3d {
             for (var i: number = 0; i < md5AnimData.numFrames; ++i)
                 _clip.addFrame(this.translatePose(md5AnimData, md5AnimData.frame[i]), 1000 / md5AnimData.frameRate);
 
-            if (this.animCompleted) {
+            if (this.animCompleted)
+            {
                 this.animCompleted(_clip);
             }
         }
@@ -258,7 +282,8 @@ module feng3d {
 		 * @param frameData 帧数据
 		 * @return 包含帧数据的SkeletonPose对象
 		 */
-        private translatePose(md5AnimData: MD5AnimData, frameData: MD5_Frame): SkeletonPose {
+        private translatePose(md5AnimData: MD5AnimData, frameData: MD5_Frame): SkeletonPose
+        {
             var hierarchy: MD5_HierarchyData;
             var pose: JointPose;
             var base: MD5_BaseFrame;
@@ -274,7 +299,8 @@ module feng3d {
             //骨骼pose列表
             var jointPoses: JointPose[] = skelPose.jointPoses;
 
-            for (var i: number = 0; i < md5AnimData.numJoints; ++i) {
+            for (var i: number = 0; i < md5AnimData.numJoints; ++i)
+            {
                 //通过原始帧数据与层级数据计算出当前骨骼pose数据
                 j = 0;
                 //层级数据

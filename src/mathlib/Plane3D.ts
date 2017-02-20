@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
 
 	/**
 	 * 3d面
 	 */
-    export class Plane3D {
+    export class Plane3D
+    {
 		/**
 		 * 平面A系数
 		 * <p>同样也是面法线x尺寸</p>
@@ -63,7 +65,8 @@ module feng3d {
 		 * @param c		C系数
 		 * @param d		D系数
 		 */
-        constructor(a: number = 0, b: number = 0, c: number = 0, d: number = 0) {
+        constructor(a: number = 0, b: number = 0, c: number = 0, d: number = 0)
+        {
             this.a = a;
             this.b = b;
             this.c = c;
@@ -84,7 +87,8 @@ module feng3d {
 		 * @param p1		点1
 		 * @param p2		点2
 		 */
-        public fromPoints(p0: Vector3D, p1: Vector3D, p2: Vector3D) {
+        public fromPoints(p0: Vector3D, p1: Vector3D, p2: Vector3D)
+        {
             //计算向量1
             var d1x: number = p1.x - p0.x;
             var d1y: number = p1.y - p0.y;
@@ -122,7 +126,8 @@ module feng3d {
 		 * @param normal		平面法线
 		 * @param point			平面上任意一点
 		 */
-        public fromNormalAndPoint(normal: Vector3D, point: Vector3D) {
+        public fromNormalAndPoint(normal: Vector3D, point: Vector3D)
+        {
             this.a = normal.x;
             this.b = normal.y;
             this.c = normal.z;
@@ -141,7 +146,8 @@ module feng3d {
 		 * 标准化平面
 		 * @return		标准化后的平面
 		 */
-        public normalize(): Plane3D {
+        public normalize(): Plane3D
+        {
             var len: number = 1 / Math.sqrt(this.a * this.a + this.b * this.b + this.c * this.c);
             this.a *= len;
             this.b *= len;
@@ -155,7 +161,8 @@ module feng3d {
 		 * @param p		点
 		 * @returns		距离
 		 */
-        public distance(p: Vector3D): number {
+        public distance(p: Vector3D): number
+        {
             if (this._alignment == Plane3D.ALIGN_YZ_AXIS)
                 return this.a * p.x - this.d;
             else if (this._alignment == Plane3D.ALIGN_XZ_AXIS)
@@ -173,7 +180,8 @@ module feng3d {
 		 * @return			顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
 		 * @see				feng3d.core.math.PlaneClassification
 		 */
-        public classifyPoint(p: Vector3D, epsilon: number = 0.01): number {
+        public classifyPoint(p: Vector3D, epsilon: number = 0.01): number
+        {
             // check NaN
             if (this.d != this.d)
                 return PlaneClassification.FRONT;
@@ -199,7 +207,8 @@ module feng3d {
 		/**
 		 * 输出字符串
 		 */
-        public toString(): string {
+        public toString(): string
+        {
             return "Plane3D [this.a:" + this.a + ", this.b:" + this.b + ", this.c:" + this.c + ", this.d:" + this.d + "]";
         }
     }

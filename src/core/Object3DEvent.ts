@@ -1,9 +1,11 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 3D对象事件
      */
-    export class Object3DEvent extends Event {
+    export class Object3DEvent extends Event
+    {
 
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
@@ -26,7 +28,8 @@ module feng3d {
          * @param data 携带数据
 		 * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
 		 */
-        constructor(type: string, data: IObject3DEventData = null, bubbles = false) {
+        constructor(type: string, data: IObject3DEventData = null, bubbles = false)
+        {
             super(type, data, bubbles);
         }
     }
@@ -34,7 +37,8 @@ module feng3d {
     /**
      * 3D对象事件数据
      */
-    export interface IObject3DEventData {
+    export interface IObject3DEventData
+    {
         /**
          * 父容器
          */

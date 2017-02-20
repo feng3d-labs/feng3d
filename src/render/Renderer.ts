@@ -1,10 +1,12 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 渲染器
      * @author feng 2016-05-01
      */
-    export class Renderer {
+    export class Renderer
+    {
 
         /** 渲染原子 */
         protected renderAtomic = new RenderAtomic();
@@ -12,7 +14,8 @@ module feng3d {
         /**
 		 * 渲染
 		 */
-        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D) {
+        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D)
+        {
 
             var renderContext: RenderContext = new RenderContext();
             //初始化渲染环境
@@ -21,7 +24,8 @@ module feng3d {
             renderContext.lights = scene3D.lights;
 
             var renderables = scene3D.renderers;
-            renderables.forEach(element => {
+            renderables.forEach(element =>
+            {
                 var object3D = element.object3D;
                 //更新数据
                 renderContext.updateRenderData(object3D);
@@ -40,7 +44,8 @@ module feng3d {
         /**
          * 绘制3D对象
          */
-        protected drawObject3D(context3D: Context3D) {
+        protected drawObject3D(context3D: Context3D)
+        {
 
             var shaderProgram = this.activeShaderProgram(context3D, this.renderAtomic.vertexCode, this.renderAtomic.fragmentCode);
             if (!shaderProgram)
@@ -55,7 +60,8 @@ module feng3d {
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string) {
+        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string)
+        {
 
             if (!vertexCode || !fragmentCode)
                 return null;
@@ -76,11 +82,13 @@ module feng3d {
     /**
      * 激活属性
      */
-    function activeAttributes(context3D: Context3D, shaderProgram: WebGLProgram, attributes: { [name: string]: AttributeRenderData }) {
+    function activeAttributes(context3D: Context3D, shaderProgram: WebGLProgram, attributes: { [name: string]: AttributeRenderData })
+    {
 
         var numAttributes = context3D.getProgramParameter(shaderProgram, context3D.ACTIVE_ATTRIBUTES);
         var i = 0;
-        while (i < numAttributes) {
+        while (i < numAttributes)
+        {
             var activeInfo = context3D.getActiveAttrib(shaderProgram, i++);
             setContext3DAttribute(context3D, shaderProgram, activeInfo, attributes[activeInfo.name]);
         }
@@ -89,19 +97,24 @@ module feng3d {
     /**
      * 激活常量
      */
-    function activeUniforms(context3D: Context3D, shaderProgram: WebGLProgram, uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[]; }) {
+    function activeUniforms(context3D: Context3D, shaderProgram: WebGLProgram, uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[]; })
+    {
 
         var numUniforms = context3D.getProgramParameter(shaderProgram, context3D.ACTIVE_UNIFORMS);
         var i = 0;
-        while (i < numUniforms) {
+        while (i < numUniforms)
+        {
             var activeInfo = context3D.getActiveUniform(shaderProgram, i++);
-            if (activeInfo.name.indexOf("[") != -1) {
+            if (activeInfo.name.indexOf("[") != -1)
+            {
                 //处理数组
                 var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
-                for (var j = 0; j < activeInfo.size; j++) {
+                for (var j = 0; j < activeInfo.size; j++)
+                {
                     setContext3DUniform(context3D, shaderProgram, { name: baseName + `[${j}]`, type: activeInfo.type }, uniforms[baseName][j]);
                 }
-            } else {
+            } else
+            {
                 setContext3DUniform(context3D, shaderProgram, activeInfo, uniforms[activeInfo.name]);
             }
         }
@@ -109,16 +122,19 @@ module feng3d {
 
     /**
      */
-    function dodraw(context3D: Context3D, shaderParams: ShaderParams, indexBuffer: IndexRenderData, instanceCount: number = 1) {
+    function dodraw(context3D: Context3D, shaderParams: ShaderParams, indexBuffer: IndexRenderData, instanceCount: number = 1)
+    {
 
         instanceCount = ~~instanceCount;
         var buffer = context3DPool.getIndexBuffer(context3D, indexBuffer.indices);
         context3D.bindBuffer(indexBuffer.target, buffer);
         context3D.lineWidth(1);
-        if (instanceCount > 1) {
+        if (instanceCount > 1)
+        {
             context3D.drawElementsInstanced(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset, instanceCount)
         }
-        else {
+        else
+        {
             context3D.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
         }
     }
@@ -126,14 +142,16 @@ module feng3d {
     /**
      * 设置环境属性数据
      */
-    function setContext3DAttribute(context3D: Context3D, shaderProgram: WebGLProgram, activeInfo: WebGLActiveInfo, buffer: AttributeRenderData) {
+    function setContext3DAttribute(context3D: Context3D, shaderProgram: WebGLProgram, activeInfo: WebGLActiveInfo, buffer: AttributeRenderData)
+    {
 
         var location = context3D.getAttribLocation(shaderProgram, activeInfo.name);
         context3D.enableVertexAttribArray(location);
         //
         var squareVerticesBuffer = context3DPool.getVABuffer(context3D, buffer.data);
         context3D.bindBuffer(Context3D.ARRAY_BUFFER, squareVerticesBuffer);
-        switch (activeInfo.type) {
+        switch (activeInfo.type)
+        {
             case Context3D.FLOAT:
                 context3D.vertexAttribPointer(location, 1, Context3D.FLOAT, false, 0, 0);
                 break;
@@ -156,10 +174,12 @@ module feng3d {
     /**
      * 设置环境Uniform数据
      */
-    function setContext3DUniform(context3D: Context3D, shaderProgram: WebGLProgram, activeInfo: { name: string; type: number; }, data) {
+    function setContext3DUniform(context3D: Context3D, shaderProgram: WebGLProgram, activeInfo: { name: string; type: number; }, data)
+    {
 
         var location = context3D.getUniformLocation(shaderProgram, activeInfo.name);
-        switch (activeInfo.type) {
+        switch (activeInfo.type)
+        {
             case Context3D.UNSIGNED_INT:
                 context3D.uniform1ui(location, data);
                 break;
