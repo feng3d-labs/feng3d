@@ -4849,7 +4849,7 @@ var feng3d;
         }
     }
     feng3d.FrameBufferObject = FrameBufferObject;
-    class Renderbuffer {
+    class RenderBuffer {
         constructor(index, internalformat = feng3d.Context3D.RGBA8, width = 100, height = 100) {
             this.attachment = feng3d.Context3D["COLOR_ATTACHMENT" + index];
             this.internalformat = internalformat;
@@ -4866,7 +4866,10 @@ var feng3d;
             context3D.framebufferRenderbuffer(context3D.FRAMEBUFFER, this.attachment, context3D.RENDERBUFFER, renderBuffer);
         }
     }
-    feng3d.Renderbuffer = Renderbuffer;
+    feng3d.RenderBuffer = RenderBuffer;
+    class RenderTexture {
+    }
+    feng3d.RenderTexture = RenderTexture;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -5060,6 +5063,11 @@ var feng3d;
      * @author feng 2017-02-20
      */
     class ForwardRenderer extends feng3d.Renderer {
+        constructor() {
+            super();
+            this.frameBufferObject = new feng3d.FrameBufferObject();
+            this.frameBufferObject.colorAttachments["forwardTexture"] = new feng3d.RenderBuffer(0);
+        }
     }
     feng3d.ForwardRenderer = ForwardRenderer;
 })(feng3d || (feng3d = {}));
@@ -5074,7 +5082,7 @@ var feng3d;
             super();
             this.shaderName = "mouse";
             this.frameBufferObject = new feng3d.FrameBufferObject();
-            this.frameBufferObject.colorAttachments["objectID"] = new feng3d.Renderbuffer(0);
+            this.frameBufferObject.colorAttachments["objectID"] = new feng3d.RenderBuffer(0);
         }
         /**
          * 渲染
@@ -5340,7 +5348,7 @@ var feng3d;
             this.initGL();
             this.scene = scene || new feng3d.Scene3D();
             this.camera = camera || new feng3d.Camera3D();
-            this.defaultRenderer = new feng3d.Renderer();
+            this.defaultRenderer = new feng3d.ForwardRenderer();
             this.mouse3DManager = new feng3d.Mouse3DManager();
             setInterval(this.drawScene.bind(this), 15);
         }

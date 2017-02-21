@@ -13,6 +13,7 @@ module feng3d
         constructor()
         {
             super();
+            this.frameBufferObject = new FrameBufferObject();
             this.frameBufferObject.colorAttachments["forwardTexture"] = new RenderBuffer(0);
         }
     }
