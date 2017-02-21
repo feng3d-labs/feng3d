@@ -3505,7 +3505,7 @@ declare module feng3d {
         /**
          * 绘制场景
          */
-        private drawScene();
+        private drawScene(event);
         /**
          * 摄像机
          */
@@ -6358,11 +6358,12 @@ declare module feng3d {
          * 鼠标拾取渲染器
          */
         private mouseRenderer;
-        private clientX;
-        private clientY;
+        private mouseX;
+        private mouseY;
+        private mouseInView;
         private selectedObject3D;
         private mouseEventTypes;
-        constructor();
+        constructor(canvas: HTMLCanvasElement);
         /**
          * 监听鼠标事件收集事件类型
          */
@@ -6371,6 +6372,14 @@ declare module feng3d {
          * 监听鼠标移动事件获取鼠标位置
          */
         private onMousemove(event);
+        /**
+         * 监听鼠标移入事件
+         */
+        private onMouseOver(event);
+        /**
+         * 监听鼠标移出事件
+         */
+        private onMouseOut(event);
         /**
          * 渲染
          */
