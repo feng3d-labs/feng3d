@@ -44,9 +44,9 @@ module feng3d
             this.camera = camera || new Camera3D();
 
             this.defaultRenderer = new ForwardRenderer();
-            this.mouse3DManager = new Mouse3DManager();
+            this.mouse3DManager = new Mouse3DManager(this._canvas);
 
-            setInterval(this.drawScene.bind(this), 15);
+            $ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
         }
 
         /**
@@ -75,17 +75,24 @@ module feng3d
         /**
          * 绘制场景
          */
-        private drawScene()
+        private drawScene(event: Event)
         {
+            this._canvas.width = this._canvas.clientWidth;
+            this._canvas.height = this._canvas.clientHeight;
+
+            var viewWidth = this._canvas.width;
+            var viewHeight = this._canvas.height;
+
+            this.camera.lens.aspectRatio = viewWidth / viewHeight;
 
             //鼠标拾取渲染
-            this.mouse3DManager.viewRect.setTo(this._canvas.offsetLeft, this._canvas.offsetTop, this._canvas.width, this._canvas.height)
+            this.mouse3DManager.viewRect.setTo(0, 0, viewWidth, viewHeight)
             this.mouse3DManager.draw(this._context3D, this._scene, this._camera);
 
             // 默认渲染
             this._context3D.clearColor(0, 0, 0, 1.0);
             this._context3D.clear(Context3D.COLOR_BUFFER_BIT | Context3D.DEPTH_BUFFER_BIT);
-            this._context3D.viewport(0, 0, this._canvas.width, this._canvas.height);
+            this._context3D.viewport(0, 0, viewWidth, viewHeight);
             this.defaultRenderer.draw(this._context3D, this._scene, this._camera);
         }
 

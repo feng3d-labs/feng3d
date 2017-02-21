@@ -3023,7 +3023,7 @@ declare module feng3d {
          */
         getTexture(context3D: Context3D, data: TextureInfo): WebGLBuffer;
         getFrameBuffer(context3D: Context3D, frameBufferObject: FrameBufferObject): WebGLFramebuffer;
-        getRenderBuffer(context3D: Context3D, renderbuffer: Renderbuffer): WebGLRenderbuffer;
+        getRenderBuffer(context3D: Context3D, renderbuffer: RenderBuffer): WebGLRenderbuffer;
         /**
          * 3D环境缓冲池
          */
@@ -3281,13 +3281,13 @@ declare module feng3d {
      */
     class FrameBufferObject {
         colorAttachments: {
-            [name: string]: Renderbuffer;
+            [name: string]: RenderBuffer;
         };
         activate(context3D: Context3D, width: number, height: number): void;
         readBuffer(context3D: Context3D, name: string): void;
         deactivate(context3D: Context3D): void;
     }
-    class Renderbuffer {
+    class RenderBuffer {
         attachment: number;
         internalformat: number;
         width: number;
@@ -3295,6 +3295,8 @@ declare module feng3d {
         constructor(index: number, internalformat?: number, width?: number, height?: number);
         activate(context3D: Context3D, width: number, height: number): void;
         framebufferRenderbuffer(context3D: Context3D): void;
+    }
+    class RenderTexture {
     }
 }
 declare module feng3d {
@@ -3325,6 +3327,8 @@ declare module feng3d {
      * @author feng 2017-02-20
      */
     class ForwardRenderer extends Renderer {
+        private frameBufferObject;
+        constructor();
     }
 }
 declare module feng3d {
@@ -3501,7 +3505,7 @@ declare module feng3d {
         /**
          * 绘制场景
          */
-        private drawScene();
+        private drawScene(event);
         /**
          * 摄像机
          */
@@ -6354,11 +6358,12 @@ declare module feng3d {
          * 鼠标拾取渲染器
          */
         private mouseRenderer;
-        private clientX;
-        private clientY;
+        private mouseX;
+        private mouseY;
+        private mouseInView;
         private selectedObject3D;
         private mouseEventTypes;
-        constructor();
+        constructor(canvas: HTMLCanvasElement);
         /**
          * 监听鼠标事件收集事件类型
          */
@@ -6367,6 +6372,14 @@ declare module feng3d {
          * 监听鼠标移动事件获取鼠标位置
          */
         private onMousemove(event);
+        /**
+         * 监听鼠标移入事件
+         */
+        private onMouseOver(event);
+        /**
+         * 监听鼠标移出事件
+         */
+        private onMouseOut(event);
         /**
          * 渲染
          */
