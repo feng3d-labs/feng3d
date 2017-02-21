@@ -5349,7 +5349,7 @@ var feng3d;
             this.scene = scene || new feng3d.Scene3D();
             this.camera = camera || new feng3d.Camera3D();
             this.defaultRenderer = new feng3d.ForwardRenderer();
-            this.mouse3DManager = new feng3d.Mouse3DManager(this._canvas);
+            this.mouse3DManager = new feng3d.Mouse3DManager();
             feng3d.$ticker.addEventListener(feng3d.Event.ENTER_FRAME, this.drawScene, this);
         }
         /**
@@ -5372,19 +5372,36 @@ var feng3d;
          * 绘制场景
          */
         drawScene(event) {
-            this._canvas.width = this._canvas.clientWidth;
-            this._canvas.height = this._canvas.clientHeight;
-            var viewWidth = this._canvas.width;
-            var viewHeight = this._canvas.height;
-            this.camera.lens.aspectRatio = viewWidth / viewHeight;
+            var viewRect = this.updateViewRect();
+            this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
             //鼠标拾取渲染
-            this.mouse3DManager.viewRect.setTo(0, 0, viewWidth, viewHeight);
+            this.mouse3DManager.viewRect.copyFrom(viewRect);
             this.mouse3DManager.draw(this._context3D, this._scene, this._camera);
             // 默认渲染
             this._context3D.clearColor(0, 0, 0, 1.0);
             this._context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
-            this._context3D.viewport(0, 0, viewWidth, viewHeight);
+            this._context3D.viewport(0, 0, viewRect.width, viewRect.height);
             this.defaultRenderer.draw(this._context3D, this._scene, this._camera);
+        }
+        /**
+         * 更新视窗矩阵
+         */
+        updateViewRect() {
+            var viewRect = new feng3d.Rectangle();
+            this._canvas.width = this._canvas.clientWidth;
+            this._canvas.height = this._canvas.clientHeight;
+            var viewWidth = this._canvas.width;
+            var viewHeight = this._canvas.height;
+            var x = 0;
+            var y = 0;
+            var obj = this._canvas;
+            do {
+                x += obj.offsetLeft;
+                y += obj.offsetTop;
+                obj = obj.parentElement;
+            } while (obj);
+            viewRect.setTo(x, y, viewWidth, viewHeight);
+            return viewRect;
         }
         /**
          * 摄像机
@@ -11056,9 +11073,8 @@ var feng3d;
      * @author feng 2014-4-29
      */
     class Mouse3DManager {
-        constructor(canvas) {
+        constructor() {
             this.viewRect = new feng3d.Rectangle(0, 0, 100, 100);
-            this.mouseInView = false;
             this.mouseEventTypes = [];
             this.mouseRenderer = new feng3d.MouseRenderer();
             //
@@ -11068,9 +11084,7 @@ var feng3d;
             mouse3DEventMap[feng3d.$mouseKeyType.mousemove] = Mouse3DEvent.MOUSE_MOVE;
             mouse3DEventMap[feng3d.$mouseKeyType.mouseup] = Mouse3DEvent.MOUSE_UP;
             //
-            canvas.addEventListener(feng3d.$mouseKeyType.mousemove, this.onMousemove.bind(this));
-            canvas.addEventListener(feng3d.$mouseKeyType.mouseover, this.onMouseOver.bind(this));
-            canvas.addEventListener(feng3d.$mouseKeyType.mouseout, this.onMouseOut.bind(this));
+            feng3d.$mouseKeyInput.addEventListener(feng3d.$mouseKeyType.mousemove, this.onMousemove, this);
             //
             feng3d.$mouseKeyInput.addEventListener(feng3d.$mouseKeyType.click, this.onMouseEvent, this);
             feng3d.$mouseKeyInput.addEventListener(feng3d.$mouseKeyType.dblclick, this.onMouseEvent, this);
@@ -11089,29 +11103,17 @@ var feng3d;
          * 监听鼠标移动事件获取鼠标位置
          */
         onMousemove(event) {
-            this.mouseX = event.offsetX;
-            this.mouseY = event.offsetY;
-        }
-        /**
-         * 监听鼠标移入事件
-         */
-        onMouseOver(event) {
-            this.mouseInView = true;
-        }
-        /**
-         * 监听鼠标移出事件
-         */
-        onMouseOut(event) {
-            this.mouseInView = false;
+            this.mouseX = event.data.clientX;
+            this.mouseY = event.data.clientY;
         }
         /**
          * 渲染
          */
         draw(context3D, scene3D, camera) {
-            if (!this.mouseInView)
+            if (!this.viewRect.contains(this.mouseX, this.mouseY))
                 return;
-            var offsetX = -this.mouseX;
-            var offsetY = -(this.viewRect.height - this.mouseY); //y轴与window中坐标反向，所以需要 h = (maxHeight - h)
+            var offsetX = -(this.mouseX - this.viewRect.x);
+            var offsetY = -(this.viewRect.height - (this.mouseY - this.viewRect.y)); //y轴与window中坐标反向，所以需要 h = (maxHeight - h)
             context3D.clearColor(0, 0, 0, 0);
             context3D.clearDepth(1);
             context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);

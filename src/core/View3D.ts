@@ -44,7 +44,7 @@ module feng3d
             this.camera = camera || new Camera3D();
 
             this.defaultRenderer = new ForwardRenderer();
-            this.mouse3DManager = new Mouse3DManager(this._canvas);
+            this.mouse3DManager = new Mouse3DManager();
 
             $ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
         }
@@ -77,23 +77,45 @@ module feng3d
          */
         private drawScene(event: Event)
         {
-            this._canvas.width = this._canvas.clientWidth;
-            this._canvas.height = this._canvas.clientHeight;
+            var viewRect: Rectangle = this.updateViewRect();
 
-            var viewWidth = this._canvas.width;
-            var viewHeight = this._canvas.height;
-
-            this.camera.lens.aspectRatio = viewWidth / viewHeight;
+            this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
-            this.mouse3DManager.viewRect.setTo(0, 0, viewWidth, viewHeight)
+            this.mouse3DManager.viewRect.copyFrom(viewRect);
             this.mouse3DManager.draw(this._context3D, this._scene, this._camera);
 
             // 默认渲染
             this._context3D.clearColor(0, 0, 0, 1.0);
             this._context3D.clear(Context3D.COLOR_BUFFER_BIT | Context3D.DEPTH_BUFFER_BIT);
-            this._context3D.viewport(0, 0, viewWidth, viewHeight);
+            this._context3D.viewport(0, 0, viewRect.width, viewRect.height);
             this.defaultRenderer.draw(this._context3D, this._scene, this._camera);
+        }
+
+        /**
+         * 更新视窗矩阵
+         */
+        private updateViewRect()
+        {
+            var viewRect: Rectangle = new Rectangle();
+
+            this._canvas.width = this._canvas.clientWidth;
+            this._canvas.height = this._canvas.clientHeight;
+            var viewWidth = this._canvas.width;
+            var viewHeight = this._canvas.height;
+            var x = 0;
+            var y = 0;
+            var obj: HTMLElement = this._canvas;
+            do
+            {
+                x += obj.offsetLeft;
+                y += obj.offsetTop;
+                obj = obj.parentElement;
+            }
+            while (obj);
+            viewRect.setTo(x, y, viewWidth, viewHeight);
+
+            return viewRect;
         }
 
         /**

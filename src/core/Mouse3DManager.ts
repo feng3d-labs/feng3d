@@ -14,12 +14,11 @@ module feng3d
         private mouseRenderer: MouseRenderer;
         private mouseX: number;
         private mouseY: number;
-        private mouseInView = false;
 
         private selectedObject3D: Object3D;
         private mouseEventTypes: string[] = [];
 
-        constructor(canvas: HTMLCanvasElement)
+        constructor()
         {
 
             this.mouseRenderer = new MouseRenderer();
@@ -30,9 +29,7 @@ module feng3d
             mouse3DEventMap[$mouseKeyType.mousemove] = Mouse3DEvent.MOUSE_MOVE;
             mouse3DEventMap[$mouseKeyType.mouseup] = Mouse3DEvent.MOUSE_UP;
             //
-            canvas.addEventListener($mouseKeyType.mousemove, this.onMousemove.bind(this));
-            canvas.addEventListener($mouseKeyType.mouseover, this.onMouseOver.bind(this));
-            canvas.addEventListener($mouseKeyType.mouseout, this.onMouseOut.bind(this));
+            $mouseKeyInput.addEventListener($mouseKeyType.mousemove, this.onMousemove, this);
             //
             $mouseKeyInput.addEventListener($mouseKeyType.click, this.onMouseEvent, this);
             $mouseKeyInput.addEventListener($mouseKeyType.dblclick, this.onMouseEvent, this);
@@ -53,26 +50,10 @@ module feng3d
         /**
          * 监听鼠标移动事件获取鼠标位置
          */
-        private onMousemove(event: MouseEvent)
+        private onMousemove(event: Event)
         {
-            this.mouseX = event.offsetX;
-            this.mouseY = event.offsetY;
-        }
-
-        /**
-         * 监听鼠标移入事件
-         */
-        private onMouseOver(event: MouseEvent)
-        {
-            this.mouseInView = true;
-        }
-
-        /**
-         * 监听鼠标移出事件
-         */
-        private onMouseOut(event: MouseEvent)
-        {
-            this.mouseInView = false;
+            this.mouseX = event.data.clientX;
+            this.mouseY = event.data.clientY;
         }
 
         /**
@@ -80,11 +61,11 @@ module feng3d
 		 */
         public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D)
         {
-            if (!this.mouseInView)
+            if (!this.viewRect.contains(this.mouseX, this.mouseY))
                 return;
 
-            var offsetX = -this.mouseX;
-            var offsetY = -(this.viewRect.height - this.mouseY);//y轴与window中坐标反向，所以需要 h = (maxHeight - h)
+            var offsetX = -(this.mouseX - this.viewRect.x);
+            var offsetY = -(this.viewRect.height - (this.mouseY - this.viewRect.y));//y轴与window中坐标反向，所以需要 h = (maxHeight - h)
 
             context3D.clearColor(0, 0, 0, 0);
             context3D.clearDepth(1);

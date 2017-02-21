@@ -3507,6 +3507,10 @@ declare module feng3d {
          */
         private drawScene(event);
         /**
+         * 更新视窗矩阵
+         */
+        private updateViewRect();
+        /**
          * 摄像机
          */
         camera: Camera3D;
@@ -6360,10 +6364,9 @@ declare module feng3d {
         private mouseRenderer;
         private mouseX;
         private mouseY;
-        private mouseInView;
         private selectedObject3D;
         private mouseEventTypes;
-        constructor(canvas: HTMLCanvasElement);
+        constructor();
         /**
          * 监听鼠标事件收集事件类型
          */
@@ -6372,14 +6375,6 @@ declare module feng3d {
          * 监听鼠标移动事件获取鼠标位置
          */
         private onMousemove(event);
-        /**
-         * 监听鼠标移入事件
-         */
-        private onMouseOver(event);
-        /**
-         * 监听鼠标移出事件
-         */
-        private onMouseOut(event);
         /**
          * 渲染
          */
