@@ -8,5 +8,12 @@ module feng3d
     export class ForwardRenderer extends Renderer
     {
 
+        private frameBufferObject: FrameBufferObject;
+
+        constructor()
+        {
+            super();
+            this.frameBufferObject.colorAttachments["forwardTexture"] = new RenderBuffer(0);
+        }
     }
 }

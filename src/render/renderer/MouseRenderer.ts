@@ -17,7 +17,7 @@ module feng3d
 
             super();
             this.frameBufferObject = new FrameBufferObject();
-            this.frameBufferObject.colorAttachments["objectID"] = new Renderbuffer(0);
+            this.frameBufferObject.colorAttachments["objectID"] = new RenderBuffer(0);
         }
 
         /**

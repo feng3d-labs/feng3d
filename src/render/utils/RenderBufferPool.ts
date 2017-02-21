@@ -91,7 +91,7 @@ module feng3d
             return this.getContext3DBufferPool(context3D).getFrameBuffer(frameBufferObject);
         }
 
-        getRenderBuffer(context3D: Context3D, renderbuffer: Renderbuffer)
+        getRenderBuffer(context3D: Context3D, renderbuffer: RenderBuffer)
         {
 
             return this.getContext3DBufferPool(context3D).getRenderBuffer(renderbuffer);
@@ -233,7 +233,7 @@ module feng3d
             return buffer;
         }
 
-        getRenderBuffer(renderbuffer: Renderbuffer)
+        getRenderBuffer(renderbuffer: RenderBuffer)
         {
 
             var buffer = this.renderbufferPool.get(renderbuffer);
@@ -276,7 +276,7 @@ module feng3d
          * 帧缓冲对象池
          */
         private framebufferPool = new Map<FrameBufferObject, WebGLFramebuffer>();
-        private renderbufferPool = new Map<Renderbuffer, WebGLRenderbuffer>();
+        private renderbufferPool = new Map<RenderBuffer, WebGLRenderbuffer>();
         /**
          * 纹理缓冲
          */

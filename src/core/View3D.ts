@@ -16,7 +16,7 @@ module feng3d
         /**
          * 默认渲染器
          */
-        private defaultRenderer: Renderer;
+        private defaultRenderer: ForwardRenderer;
 
         /**
          * 鼠标事件管理器
@@ -43,7 +43,7 @@ module feng3d
             this.scene = scene || new Scene3D();
             this.camera = camera || new Camera3D();
 
-            this.defaultRenderer = new Renderer();
+            this.defaultRenderer = new ForwardRenderer();
             this.mouse3DManager = new Mouse3DManager();
 
             setInterval(this.drawScene.bind(this), 15);

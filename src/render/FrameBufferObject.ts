@@ -10,7 +10,7 @@ module feng3d
     export class FrameBufferObject
     {
 
-        colorAttachments: { [name: string]: Renderbuffer } = {};
+        colorAttachments: { [name: string]: RenderBuffer } = {};
 
         activate(context3D: Context3D, width: number, height: number)
         {
@@ -47,7 +47,7 @@ module feng3d
         }
     }
 
-    export class Renderbuffer
+    export class RenderBuffer
     {
 
         attachment: number;
@@ -78,6 +78,11 @@ module feng3d
             var renderBuffer = context3DPool.getRenderBuffer(context3D, this);
             context3D.framebufferRenderbuffer(context3D.FRAMEBUFFER, this.attachment, context3D.RENDERBUFFER, renderBuffer);
         }
+
+    }
+
+    export class RenderTexture
+    {
 
     }
 }
