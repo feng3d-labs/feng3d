@@ -5099,7 +5099,7 @@ var feng3d;
             var data = new Uint8Array(4);
             context3D.readPixels(0, 0, 1, 1, feng3d.Context3D.RGBA, feng3d.Context3D.UNSIGNED_BYTE, data);
             var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3]; //最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
-            console.log(`选中索引3D对象${id}`, data.toString());
+            // console.log(`选中索引3D对象${id}`, data.toString());
             this.selectedObject3D = feng3d.Object3D.getObject3D(id);
             this.frameBufferObject.deactivate(context3D);
         }
