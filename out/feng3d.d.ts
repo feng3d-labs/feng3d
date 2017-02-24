@@ -3546,15 +3546,9 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Transform extends Object3DComponent {
-        private _x;
-        private _y;
-        private _z;
-        private _rx;
-        private _ry;
-        private _rz;
-        private _sx;
-        private _sy;
-        private _sz;
+        private _position;
+        private _rotation;
+        private _scacle;
         private _matrix3D;
         private _matrix3DDirty;
         private _inverseMatrix3D;
