@@ -453,6 +453,96 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 属性描述工具类
+     * @author feng 2017-02-23
+     */
+    class PropertyDescriptorUtils {
+        /**
+         * 判断是否为函数
+         *
+         * @static
+         * @param {PropertyDescriptor} propertyDescriptor 属性描述
+         * @returns
+         *
+         * @memberOf PropertyDescriptorUtils
+         */
+        static isFunction(propertyDescriptor) {
+            return Boolean(propertyDescriptor.value && typeof propertyDescriptor.value == "function");
+        }
+        /**
+         * 判断是否写
+         *
+         * @static
+         * @param {PropertyDescriptor} propertyDescriptor 属性描述
+         * @returns
+         *
+         * @memberOf PropertyDescriptorUtils
+         */
+        static isWritable(propertyDescriptor) {
+            return Boolean(propertyDescriptor.writable || propertyDescriptor.set);
+        }
+        /**
+         * 获取属性描述
+         *
+         * @static
+         * @param {Object} object
+         * @param {string} name
+         * @returns
+         *
+         * @memberOf PropertyDescriptorUtils
+         */
+        static getPropertyDescriptor(object, name) {
+            return Object.getOwnPropertyDescriptor(object, name) || Object.getOwnPropertyDescriptor(object.constructor.prototype, name);
+        }
+        /**
+         * 获取所有属性描述（不包含函数）
+         *
+         * @static
+         * @param {Object} object 对象
+         * @returns
+         *
+         * @memberOf PropertyDescriptorUtils
+         */
+        static getAttributes(object) {
+            var attributePropertyDescriptors = {};
+            var propertyDescriptors = this.getPropertyDescriptors(object);
+            for (var property in propertyDescriptors) {
+                var element = propertyDescriptors[property];
+                if (!this.isFunction(element))
+                    attributePropertyDescriptors[property] = element;
+            }
+            return attributePropertyDescriptors;
+        }
+        /**
+         * 获取所有属性描述
+         *
+         * @static
+         * @param {Object} object
+         * @returns
+         *
+         * @memberOf PropertyDescriptorUtils
+         */
+        static getPropertyDescriptors(object) {
+            var propertyDescriptors = {};
+            var names = Object.getOwnPropertyNames(object);
+            names.forEach(element => {
+                propertyDescriptors[element] = this.getPropertyDescriptor(object, element);
+            });
+            if (object.constructor != Object) {
+                var names = Object.getOwnPropertyNames(object.constructor.prototype);
+                names.forEach(element => {
+                    propertyDescriptors[element] = this.getPropertyDescriptor(object, element);
+                });
+            }
+            delete propertyDescriptors["constructor"];
+            return propertyDescriptors;
+        }
+    }
+    feng3d.PropertyDescriptorUtils = PropertyDescriptorUtils;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 事件
      * @author feng 2014-5-7
      */

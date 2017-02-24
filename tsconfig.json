@@ -19,6 +19,7 @@
         "src/utils/WatchUtils.ts",
         "src/utils/UIDUtils.ts",
         "src/utils/VersionUtils.ts",
+        "src/utils/PropertyDescriptorUtils.ts",
         //事件模块
         "src/events/Event.ts",
         "src/events/IEventDispatcher.ts",

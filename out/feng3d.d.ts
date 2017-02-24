@@ -745,6 +745,69 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 属性描述工具类
+     * @author feng 2017-02-23
+     */
+    class PropertyDescriptorUtils {
+        /**
+         * 判断是否为函数
+         *
+         * @static
+         * @param {PropertyDescriptor} propertyDescriptor 属性描述
+         * @returns
+         *
+         * @memberOf PropertyDescriptorUtils
+         */
+        static isFunction(propertyDescriptor: PropertyDescriptor): boolean;
+        /**
+         * 判断是否写
+         *
+         * @static
+         * @param {PropertyDescriptor} propertyDescriptor 属性描述
+         * @returns
+         *
+         * @memberOf PropertyDescriptorUtils
+         */
+        static isWritable(propertyDescriptor: PropertyDescriptor): boolean;
+        /**
+         * 获取属性描述
+         *
+         * @static
+         * @param {Object} object
+         * @param {string} name
+         * @returns
+         *
+         * @memberOf PropertyDescriptorUtils
+         */
+        static getPropertyDescriptor(object: Object, name: string): PropertyDescriptor;
+        /**
+         * 获取所有属性描述（不包含函数）
+         *
+         * @static
+         * @param {Object} object 对象
+         * @returns
+         *
+         * @memberOf PropertyDescriptorUtils
+         */
+        static getAttributes(object: Object): {
+            [propertyKey: string]: PropertyDescriptor;
+        };
+        /**
+         * 获取所有属性描述
+         *
+         * @static
+         * @param {Object} object
+         * @returns
+         *
+         * @memberOf PropertyDescriptorUtils
+         */
+        static getPropertyDescriptors(object: Object): {
+            [propertyKey: string]: PropertyDescriptor;
+        };
+    }
+}
+declare module feng3d {
+    /**
      * 事件
      * @author feng 2014-5-7
      */
