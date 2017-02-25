@@ -10,7 +10,7 @@ module feng3d
         //private
         private _position = new Vector3D();
         private _rotation = new Vector3D();
-        private _scacle = new Vector3D(1, 1, 1);
+        private _scale = new Vector3D(1, 1, 1);
         //
         private _matrix3D = new Matrix3D();
         private _matrix3DDirty: boolean;
@@ -44,10 +44,10 @@ module feng3d
             super();
             this._position.setTo(x, y, z);
             this._rotation.setTo(rx, ry, rz);
-            this._scacle.setTo(sx, sy, sz);
+            this._scale.setTo(sx, sy, sz);
             WatchUtils.watchObject(this._position, this.invalidateMatrix3D.bind(this));
             WatchUtils.watchObject(this._rotation, this.invalidateMatrix3D.bind(this));
-            WatchUtils.watchObject(this._scacle, this.invalidateMatrix3D.bind(this));
+            WatchUtils.watchObject(this._scale, this.invalidateMatrix3D.bind(this));
             this.invalidateMatrix3D();
         }
 
@@ -90,20 +90,20 @@ module feng3d
         /**
          * X缩放
          */
-        get sx(): number { return this._scacle.x; }
-        set sx(value: number) { this._scacle.x = value; }
+        get sx(): number { return this._scale.x; }
+        set sx(value: number) { this._scale.x = value; }
 
         /**
          * Y缩放
          */
-        get sy(): number { return this._scacle.y; }
-        set sy(value: number) { this._scacle.y = value; }
+        get sy(): number { return this._scale.y; }
+        set sy(value: number) { this._scale.y = value; }
 
         /**
          * Z缩放
          */
-        get sz(): number { return this._scacle.z; }
-        set sz(value: number) { this._scacle.z = value; }
+        get sz(): number { return this._scale.z; }
+        set sz(value: number) { this._scale.z = value; }
 
         /**
          * 位移
@@ -120,8 +120,8 @@ module feng3d
         /**
          * 缩放
          */
-        get scale(): Vector3D { return this._scacle; }
-        set scale(value: Vector3D) { this._scacle.copyFrom(value); }
+        get scale(): Vector3D { return this._scale; }
+        set scale(value: Vector3D) { this._scale.copyFrom(value); }
 
         /**
          * 全局坐标
@@ -147,7 +147,7 @@ module feng3d
             vecs[1].scaleBy(MathConsts.RADIANS_TO_DEGREES);
             this._position.copyFrom(vecs[0]);
             this._rotation.copyFrom(vecs[1]);
-            this._scacle.copyFrom(vecs[2]);
+            this._scale.copyFrom(vecs[2]);
         }
 
         /**
@@ -203,7 +203,7 @@ module feng3d
             this._matrix3D.recompose([//
                 this._position,//
                 rotation,//
-                this._scacle,//
+                this._scale,//
             ]);
             this._matrix3DDirty = false;
         }
@@ -235,7 +235,7 @@ module feng3d
         {
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);
-            if (this.object3D.parent != null)
+            if (this.object3D && this.object3D.parent)
             {
                 var parentGlobalMatrix3D = this.object3D.parent.transform.globalMatrix3D;
                 this._globalMatrix3D.append(parentGlobalMatrix3D);

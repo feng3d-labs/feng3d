@@ -1580,7 +1580,7 @@ declare module feng3d {
         /**
          * 组件列表
          */
-        protected components: IComponent[];
+        protected _components: IComponent[];
         /**
          * 创建一个组件容器
          */
@@ -1597,6 +1597,10 @@ declare module feng3d {
          * 子组件个数
          */
         readonly numComponents: number;
+        /**
+         * 获取组件列表，无法通过返回数组对该组件进行子组件增删等操作
+         */
+        getComponents(): IComponent[];
         /**
          * 添加组件
          * @param component 被添加组件
@@ -3611,7 +3615,7 @@ declare module feng3d {
     class Transform extends Object3DComponent {
         private _position;
         private _rotation;
-        private _scacle;
+        private _scale;
         private _matrix3D;
         private _matrix3DDirty;
         private _inverseMatrix3D;

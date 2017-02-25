@@ -89,7 +89,7 @@ module feng3d
          */
         public removeComponentAt(index: number): IComponent
         {
-            var component = this.components[index];
+            var component = this._components[index];
             if (component != null && ClassUtils.is(component, RenderDataHolder))
             {
                 var renderDataHolder: RenderDataHolder = ClassUtils.as(component, RenderDataHolder);

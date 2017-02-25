@@ -1616,7 +1616,7 @@ var feng3d;
             /**
              * 组件列表
              */
-            this.components = [];
+            this._components = [];
             this.initComponent();
         }
         /**
@@ -1638,7 +1638,13 @@ var feng3d;
          * 子组件个数
          */
         get numComponents() {
-            return this.components.length;
+            return this._components.length;
+        }
+        /**
+         * 获取组件列表，无法通过返回数组对该组件进行子组件增删等操作
+         */
+        getComponents() {
+            return this._components.concat();
         }
         /**
          * 添加组件
@@ -1646,10 +1652,10 @@ var feng3d;
          */
         addComponent(component) {
             if (this.hasComponent(component)) {
-                this.setComponentIndex(component, this.components.length - 1);
+                this.setComponentIndex(component, this._components.length - 1);
                 return;
             }
-            this.addComponentAt(component, this.components.length);
+            this.addComponentAt(component, this._components.length);
         }
         /**
          * 添加组件到指定位置
@@ -1660,11 +1666,11 @@ var feng3d;
             assert(component != this, "子项与父项不能相同");
             assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
             if (this.hasComponent(component)) {
-                index = Math.min(index, this.components.length - 1);
+                index = Math.min(index, this._components.length - 1);
                 this.setComponentIndex(component, index);
                 return;
             }
-            this.components.splice(index, 0, component);
+            this._components.splice(index, 0, component);
             //派发添加组件事件
             component.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.ADDED_COMPONENT, { container: this, child: component }, true));
         }
@@ -1683,7 +1689,7 @@ var feng3d;
          */
         removeComponentAt(index) {
             assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
-            var component = this.components.splice(index, 1)[0];
+            var component = this._components.splice(index, 1)[0];
             //派发移除组件事件
             component.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }, true));
             return component;
@@ -1694,8 +1700,8 @@ var feng3d;
          * @return				    组件在容器的索引位置
          */
         getComponentIndex(component) {
-            assert(this.components.indexOf(component) != -1, "组件不在容器中");
-            var index = this.components.indexOf(component);
+            assert(this._components.indexOf(component) != -1, "组件不在容器中");
+            var index = this._components.indexOf(component);
             return index;
         }
         /**
@@ -1705,10 +1711,10 @@ var feng3d;
          */
         setComponentIndex(component, index) {
             assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
-            var oldIndex = this.components.indexOf(component);
+            var oldIndex = this._components.indexOf(component);
             assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
-            this.components.splice(oldIndex, 1);
-            this.components.splice(index, 0, component);
+            this._components.splice(oldIndex, 1);
+            this._components.splice(index, 0, component);
         }
         /**
          * 获取指定位置索引的子组件
@@ -1717,7 +1723,7 @@ var feng3d;
          */
         getComponentAt(index) {
             assert(index < this.numComponents, "给出索引超出范围");
-            return this.components[index];
+            return this._components[index];
         }
         /**
          * 根据组件名称获取组件
@@ -1736,7 +1742,7 @@ var feng3d;
          * @return 					获取到的组件
          */
         getComponentsByName(name) {
-            var filterResult = this.components.filter(function (value, index, array) {
+            var filterResult = this._components.filter(function (value, index, array) {
                 return value.name == name;
             });
             return filterResult;
@@ -1757,7 +1763,7 @@ var feng3d;
          * @return			返回与给出类定义一致的组件
          */
         getComponentsByClass(cls) {
-            var filterResult = this.components.filter(function (value, index, array) {
+            var filterResult = this._components.filter(function (value, index, array) {
                 return value instanceof cls;
             });
             return filterResult;
@@ -1782,7 +1788,7 @@ var feng3d;
          * @return		true：拥有该组件；false：不拥有该组件。
          */
         hasComponent(com) {
-            return this.components.indexOf(com) != -1;
+            return this._components.indexOf(com) != -1;
         }
         /**
          * 交换子组件位置
@@ -1792,9 +1798,9 @@ var feng3d;
         swapComponentsAt(index1, index2) {
             assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
             assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
-            var temp = this.components[index1];
-            this.components[index1] = this.components[index2];
-            this.components[index2] = temp;
+            var temp = this._components[index1];
+            this._components[index1] = this._components[index2];
+            this._components[index2] = temp;
         }
         /**
          * 交换子组件位置
@@ -1815,7 +1821,7 @@ var feng3d;
         dispatchChildrenEvent(event, depth = 1) {
             if (depth == 0)
                 return;
-            this.components.forEach(function (value, index, array) {
+            this._components.forEach(function (value, index, array) {
                 value.dispatchEvent(event);
                 value.dispatchChildrenEvent(event, depth - 1);
             });
@@ -4194,7 +4200,7 @@ var feng3d;
          * @param index		要删除的 Component 的子索引。
          */
         removeComponentAt(index) {
-            var component = this.components[index];
+            var component = this._components[index];
             if (component != null && feng3d.ClassUtils.is(component, RenderDataHolder)) {
                 var renderDataHolder = feng3d.ClassUtils.as(component, RenderDataHolder);
                 var index = this._subRenderDataHolders.indexOf(renderDataHolder);
@@ -5555,7 +5561,7 @@ var feng3d;
             //private
             this._position = new feng3d.Vector3D();
             this._rotation = new feng3d.Vector3D();
-            this._scacle = new feng3d.Vector3D(1, 1, 1);
+            this._scale = new feng3d.Vector3D(1, 1, 1);
             //
             this._matrix3D = new feng3d.Matrix3D();
             this._inverseMatrix3D = new feng3d.Matrix3D();
@@ -5566,10 +5572,10 @@ var feng3d;
             this._inverseGlobalMatrix3D = new feng3d.Matrix3D();
             this._position.setTo(x, y, z);
             this._rotation.setTo(rx, ry, rz);
-            this._scacle.setTo(sx, sy, sz);
+            this._scale.setTo(sx, sy, sz);
             feng3d.WatchUtils.watchObject(this._position, this.invalidateMatrix3D.bind(this));
             feng3d.WatchUtils.watchObject(this._rotation, this.invalidateMatrix3D.bind(this));
-            feng3d.WatchUtils.watchObject(this._scacle, this.invalidateMatrix3D.bind(this));
+            feng3d.WatchUtils.watchObject(this._scale, this.invalidateMatrix3D.bind(this));
             this.invalidateMatrix3D();
         }
         /**
@@ -5605,18 +5611,18 @@ var feng3d;
         /**
          * X缩放
          */
-        get sx() { return this._scacle.x; }
-        set sx(value) { this._scacle.x = value; }
+        get sx() { return this._scale.x; }
+        set sx(value) { this._scale.x = value; }
         /**
          * Y缩放
          */
-        get sy() { return this._scacle.y; }
-        set sy(value) { this._scacle.y = value; }
+        get sy() { return this._scale.y; }
+        set sy(value) { this._scale.y = value; }
         /**
          * Z缩放
          */
-        get sz() { return this._scacle.z; }
-        set sz(value) { this._scacle.z = value; }
+        get sz() { return this._scale.z; }
+        set sz(value) { this._scale.z = value; }
         /**
          * 位移
          */
@@ -5631,8 +5637,8 @@ var feng3d;
         /**
          * 缩放
          */
-        get scale() { return this._scacle; }
-        set scale(value) { this._scacle.copyFrom(value); }
+        get scale() { return this._scale; }
+        set scale(value) { this._scale.copyFrom(value); }
         /**
          * 全局坐标
          */
@@ -5652,7 +5658,7 @@ var feng3d;
             vecs[1].scaleBy(feng3d.MathConsts.RADIANS_TO_DEGREES);
             this._position.copyFrom(vecs[0]);
             this._rotation.copyFrom(vecs[1]);
-            this._scacle.copyFrom(vecs[2]);
+            this._scale.copyFrom(vecs[2]);
         }
         /**
          * 逆变换矩阵
@@ -5697,7 +5703,7 @@ var feng3d;
             this._matrix3D.recompose([
                 this._position,
                 rotation,
-                this._scacle,
+                this._scale,
             ]);
             this._matrix3DDirty = false;
         }
@@ -5723,7 +5729,7 @@ var feng3d;
         updateGlobalMatrix3D() {
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);
-            if (this.object3D.parent != null) {
+            if (this.object3D && this.object3D.parent) {
                 var parentGlobalMatrix3D = this.object3D.parent.transform.globalMatrix3D;
                 this._globalMatrix3D.append(parentGlobalMatrix3D);
             }
