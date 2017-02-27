@@ -7,16 +7,14 @@ module feng3d
      */
     export class CubeObject3D extends Object3D
     {
-
         /**
          * 构建3D对象
          */
-        constructor(name = "cube")
+        constructor(width = 100, name = "cube")
         {
-
             super(name);
             var mesh = this.getOrCreateComponentByClass(MeshFilter);
-            mesh.geometry = new CubeGeometry();
+            mesh.geometry = new CubeGeometry(width, width, width);
             this.getOrCreateComponentByClass(MeshRenderer);
         }
     }

@@ -6326,7 +6326,7 @@ declare module feng3d {
         /**
          * 构建3D对象
          */
-        constructor(name?: string);
+        constructor(width?: number, name?: string);
     }
 }
 declare module feng3d {

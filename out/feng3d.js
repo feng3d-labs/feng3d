@@ -11005,10 +11005,10 @@ var feng3d;
         /**
          * 构建3D对象
          */
-        constructor(name = "cube") {
+        constructor(width = 100, name = "cube") {
             super(name);
             var mesh = this.getOrCreateComponentByClass(feng3d.MeshFilter);
-            mesh.geometry = new feng3d.CubeGeometry();
+            mesh.geometry = new feng3d.CubeGeometry(width, width, width);
             this.getOrCreateComponentByClass(feng3d.MeshRenderer);
         }
     }
