@@ -362,7 +362,8 @@ var feng3d;
              * @param object 对象
              */
             function createUID(object) {
-                var className = feng3d.ClassUtils.getQualifiedClassName(object);
+                var prototype = object.prototype ? object.prototype : Object.getPrototypeOf(object);
+                var className = prototype.constructor.name;
                 var id = ~~uidStart[className];
                 var time = Date.now(); //时间戳
                 var uid = [
@@ -2363,6 +2364,10 @@ var feng3d;
          */
         toVector3D() {
             return new feng3d.Vector3D(this.r, this.g, this.b, this.a);
+        }
+        toInt() {
+            var value = (this.a * 0xff) << 24 + (this.r * 0xff) << 16 + (this.g * 0xff) << 8 + (this.b * 0xff);
+            return value;
         }
         /**
          * 输出16进制字符串
@@ -10949,11 +10954,11 @@ var feng3d;
             this.addChild(this.xLine);
             //
             this.yLine = new feng3d.SegmentObject3D();
-            this.yLine.segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, length, 0), 0xff0000, 0xff0000));
+            this.yLine.segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, length, 0), 0x00ff00, 0x00ff00));
             this.addChild(this.yLine);
             //
             this.zLine = new feng3d.SegmentObject3D();
-            this.zLine.segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, 0, length), 0xff0000, 0xff0000));
+            this.zLine.segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, 0, length), 0x0000ff, 0x0000ff));
             this.addChild(this.zLine);
             //
             this.xArrow = new feng3d.ConeObject3D(5, 18);
@@ -10986,10 +10991,10 @@ var feng3d;
         /**
          * 构建3D对象
          */
-        constructor(name = "plane") {
+        constructor(width = 100, name = "plane") {
             super(name);
             var mesh = this.getOrCreateComponentByClass(feng3d.MeshFilter);
-            mesh.geometry = new feng3d.PlaneGeometry();
+            this.planeGeometry = mesh.geometry = new feng3d.PlaneGeometry(width, width);
             this.getOrCreateComponentByClass(feng3d.MeshRenderer);
         }
     }
@@ -11115,7 +11120,7 @@ var feng3d;
      * @author feng 2017-02-06
      */
     class SegmentObject3D extends feng3d.Object3D {
-        constructor(name = "GroundGrid") {
+        constructor(name = "Segment3D") {
             super(name);
             this.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
             var segmentGeometry = this.segmentGeometry = new feng3d.SegmentGeometry();

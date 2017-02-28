@@ -10,7 +10,7 @@ module feng3d
 
         public segmentGeometry: SegmentGeometry;
 
-        constructor(name = "GroundGrid")
+        constructor(name = "Segment3D")
         {
             super(name);
             this.getOrCreateComponentByClass(MeshRenderer).material = new SegmentMaterial();

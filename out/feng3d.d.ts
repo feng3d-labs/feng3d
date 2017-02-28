@@ -1963,6 +1963,7 @@ declare module feng3d {
          * 输出为向量
          */
         toVector3D(): Vector3D;
+        toInt(): number;
         /**
          * 输出16进制字符串
          */
@@ -6311,10 +6312,11 @@ declare module feng3d {
      * @author feng 2017-02-06
      */
     class PlaneObject3D extends Object3D {
+        planeGeometry: PlaneGeometry;
         /**
          * 构建3D对象
          */
-        constructor(name?: string);
+        constructor(width?: number, name?: string);
     }
 }
 declare module feng3d {

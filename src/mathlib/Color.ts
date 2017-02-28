@@ -97,8 +97,13 @@ module feng3d
          */
         public toVector3D()
         {
-
             return new Vector3D(this.r, this.g, this.b, this.a);
+        }
+
+        public toInt()
+        {
+            var value = (this.a * 0xff) << 24 + (this.r * 0xff) << 16 + (this.g * 0xff) << 8 + (this.b * 0xff);
+            return value;
         }
 
         /**
@@ -106,7 +111,6 @@ module feng3d
          */
         public toHexString(): string
         {
-
             var intR = (this.r * 0xff) | 0;
             var intG = (this.g * 0xff) | 0;
             var intB = (this.b * 0xff) | 0;

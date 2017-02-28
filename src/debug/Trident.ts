@@ -30,11 +30,11 @@ module feng3d
             this.addChild(this.xLine);
             //
             this.yLine = new SegmentObject3D();
-            this.yLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, length, 0), 0xff0000, 0xff0000));
+            this.yLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, length, 0), 0x00ff00, 0x00ff00));
             this.addChild(this.yLine);
             //
             this.zLine = new SegmentObject3D();
-            this.zLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, 0, length), 0xff0000, 0xff0000));
+            this.zLine.segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, 0, length), 0x0000ff, 0x0000ff));
             this.addChild(this.zLine);
             //
             this.xArrow = new ConeObject3D(5, 18);

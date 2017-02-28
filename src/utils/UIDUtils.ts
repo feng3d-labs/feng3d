@@ -1,21 +1,26 @@
-module feng3d {
+module feng3d
+{
 
-    export class UIDUtils {
+    export class UIDUtils
+    {
 
         /**
          * 获取对象UID
          * @author feng 2016-05-08
          */
-        public static getUID(object: { __uid__?: string }) {
+        public static getUID(object: { __uid__?: string })
+        {
 
-            if (ClassUtils.isBaseType(object)) {
+            if (ClassUtils.isBaseType(object))
+            {
                 return object;
             }
 
             //uid属性名称
             var uidKey = "__uid__";
 
-            if (object.hasOwnProperty(uidKey)) {
+            if (object.hasOwnProperty(uidKey))
+            {
                 return object[uidKey];
             }
             var uid = createUID(object);
@@ -30,9 +35,10 @@ module feng3d {
              * 创建对象的UID
              * @param object 对象
              */
-            function createUID(object: any) {
-
-                var className = ClassUtils.getQualifiedClassName(object);
+            function createUID(object: any)
+            {
+                var prototype: any = object.prototype ? object.prototype : Object.getPrototypeOf(object);
+                var className = prototype.constructor.name;
                 var id = ~~uidStart[className];
                 var time = Date.now();//时间戳
                 var uid = [//
