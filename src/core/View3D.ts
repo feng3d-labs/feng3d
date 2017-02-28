@@ -89,7 +89,12 @@ module feng3d
             this._context3D.clearColor(0, 0, 0, 1.0);
             this._context3D.clear(Context3D.COLOR_BUFFER_BIT | Context3D.DEPTH_BUFFER_BIT);
             this._context3D.viewport(0, 0, viewRect.width, viewRect.height);
+            // Enable alpha blending
+            this._context3D.enable(Context3D.BLEND);
+            // Set blending function
+            this._context3D.blendFunc(Context3D.SRC_ALPHA, Context3D.ONE_MINUS_SRC_ALPHA);
             this.defaultRenderer.draw(this._context3D, this._scene, this._camera);
+            this._context3D.disable(Context3D.BLEND);
         }
 
         /**

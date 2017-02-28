@@ -5482,7 +5482,12 @@ var feng3d;
             this._context3D.clearColor(0, 0, 0, 1.0);
             this._context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
             this._context3D.viewport(0, 0, viewRect.width, viewRect.height);
+            // Enable alpha blending
+            this._context3D.enable(feng3d.Context3D.BLEND);
+            // Set blending function
+            this._context3D.blendFunc(feng3d.Context3D.SRC_ALPHA, feng3d.Context3D.ONE_MINUS_SRC_ALPHA);
             this.defaultRenderer.draw(this._context3D, this._scene, this._camera);
+            this._context3D.disable(feng3d.Context3D.BLEND);
         }
         /**
          * 更新视窗矩阵
