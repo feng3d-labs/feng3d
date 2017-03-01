@@ -25,14 +25,5 @@ module feng3d
         {
             super();
         }
-
-        /**
-         * 全局矩阵
-         */
-        public get globalMatrix3d()
-        {
-
-            return this.object3D ? this.object3D.transform.globalMatrix3D : new Matrix3D();
-        }
     }
 }

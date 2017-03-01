@@ -18,9 +18,17 @@ module feng3d
         private selectedObject3D: Object3D;
         private mouseEventTypes: string[] = [];
 
+        /**
+         * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
+         */
+        private preMouseDownObject3D: Object3D;
+        /**
+         * 统计处理click次数，判断是否达到dblclick
+         */
+        private Object3DClickNum: number;
+
         constructor()
         {
-
             this.mouseRenderer = new MouseRenderer();
             //
             mouse3DEventMap[$mouseKeyType.click] = Mouse3DEvent.CLICK;
@@ -82,7 +90,6 @@ module feng3d
          */
         private setSelectedObject3D(value: Object3D)
         {
-
             if (this.selectedObject3D != value)
             {
                 if (this.selectedObject3D)
@@ -95,8 +102,45 @@ module feng3d
             {
                 this.mouseEventTypes.forEach(element =>
                 {
-                    this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                    switch (element)
+                    {
+                        case $mouseKeyType.mousedown:
+                            if (this.preMouseDownObject3D != this.selectedObject3D)
+                            {
+                                this.Object3DClickNum = 0;
+                                this.preMouseDownObject3D = this.selectedObject3D;
+                            }
+                            this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                            break;
+                        case $mouseKeyType.mouseup:
+                            if (this.selectedObject3D == this.preMouseDownObject3D)
+                            {
+                                this.Object3DClickNum++;
+                            } else
+                            {
+                                this.Object3DClickNum = 0;
+                                this.preMouseDownObject3D = null;
+                            }
+                            this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                            break;
+                        case $mouseKeyType.mousemove:
+                            this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                            break;
+                        case $mouseKeyType.click:
+                            if (this.Object3DClickNum > 0)
+                                this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                            break;
+                        case $mouseKeyType.dblclick:
+                            if (this.Object3DClickNum > 1)
+                                this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                            break;
+                    }
+
                 });
+            } else
+            {
+                this.Object3DClickNum = 0;
+                this.preMouseDownObject3D = null;
             }
             this.mouseEventTypes.length = 0;
         }

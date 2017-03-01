@@ -9,6 +9,8 @@ module feng3d
         private _object3DID: number;
         private _uid: string;
 
+        protected _mouseEnabled: boolean = false;
+
         private _transform: Transform;
         /**
          * 父对象
@@ -121,6 +123,27 @@ module feng3d
             {
                 child._setScene(this._scene);
             });
+        }
+
+        /**
+		 * 是否开启鼠标事件
+		 */
+        public get mouseEnabled(): boolean
+        {
+            return this._mouseEnabled;
+        }
+
+        public set mouseEnabled(value: boolean)
+        {
+            this._mouseEnabled = value;
+        }
+
+        /**
+         * 真实是否支持鼠标事件
+         */
+        public get realMouseEnable()
+        {
+            return this._mouseEnabled && (this.parent ? this.parent.realMouseEnable : true);
         }
 
         /**

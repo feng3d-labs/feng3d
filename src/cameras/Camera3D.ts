@@ -92,7 +92,8 @@ module feng3d
             super.updateRenderData(renderContext);
             //
             this.renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
-            this.renderData.uniforms[RenderDataID.u_cameraMatrix] = this.globalMatrix3d;
+            var globalMatrix3d = this.object3D ? this.object3D.transform.globalMatrix3D : new Matrix3D();
+            this.renderData.uniforms[RenderDataID.u_cameraMatrix] = globalMatrix3d;
         }
     }
 }

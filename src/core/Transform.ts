@@ -184,6 +184,16 @@ module feng3d
             return this._globalMatrix3D;
         }
 
+        public set globalMatrix3D(value)
+        {
+            value = value.clone();
+            if (this.object3D && this.object3D.parent)
+            {
+                value.append(this.object3D.parent.transform.inverseGlobalMatrix3D);
+            }
+            this.matrix3d = value;
+        }
+
         /**
          * 逆全局矩阵
          */
