@@ -5661,7 +5661,7 @@ var feng3d;
          */
         constructor(name) {
             super();
-            this._mouseEnabled = false;
+            this._mouseEnabled = true;
             /**
              * 父对象
              */
