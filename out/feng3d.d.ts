@@ -667,34 +667,6 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    class WatchUtils {
-        /**
-         * 观察对象
-         * @param object        被观察的对象
-         * @param onChanged     属性值变化回调函数
-         */
-        static watchObject(object: any, onChanged?: (object: any, attribute: string, oldValue: any, newValue: any) => void): void;
-        /**
-         * 观察对象中属性
-         * @param object        被观察的对象
-         * @param attribute     被观察的属性
-         * @param onChanged     属性值变化回调函数
-         */
-        static watch(object: any, attribute: string, onChanged?: (object: any, attribute: string, oldValue: any, newValue: any) => void): void;
-        /**
-         * 取消观察对象
-         * @param object        被观察的对象
-         */
-        static unwatchObject(object: any): void;
-        /**
-         * 取消观察对象中属性
-         * @param object        被观察的对象
-         * @param attribute     被观察的属性
-         */
-        static unwatch(object: any, attribute: string): void;
-    }
-}
-declare module feng3d {
     class UIDUtils {
         /**
          * 获取对象UID
@@ -3744,6 +3716,7 @@ declare module feng3d {
     class Object3D extends RenderDataHolder {
         private _object3DID;
         private _uid;
+        protected _mouseEnabled: boolean;
         private _transform;
         /**
          * 父对象
@@ -3777,6 +3750,14 @@ declare module feng3d {
          */
         readonly scene: Scene3D;
         private _setScene(value);
+        /**
+         * 是否开启鼠标事件
+         */
+        mouseEnabled: boolean;
+        /**
+         * 真实是否支持鼠标事件
+         */
+        readonly realMouseEnable: any;
         /**
          * 添加子对象
          * @param child		子对象
@@ -3891,10 +3872,6 @@ declare module feng3d {
          * 构建3D对象组件
          */
         constructor();
-        /**
-         * 全局矩阵
-         */
-        readonly globalMatrix3d: Matrix3D;
     }
 }
 declare module feng3d {
@@ -4002,7 +3979,7 @@ declare module feng3d {
         /**
          * 全局矩阵
          */
-        readonly globalMatrix3D: Matrix3D;
+        globalMatrix3D: Matrix3D;
         /**
          * 逆全局矩阵
          */
@@ -6718,6 +6695,14 @@ declare module feng3d {
         private mouseY;
         private selectedObject3D;
         private mouseEventTypes;
+        /**
+         * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
+         */
+        private preMouseDownObject3D;
+        /**
+         * 统计处理click次数，判断是否达到dblclick
+         */
+        private Object3DClickNum;
         constructor();
         /**
          * 监听鼠标事件收集事件类型

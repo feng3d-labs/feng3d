@@ -45,10 +45,21 @@ module feng3d
             this._position.setTo(x, y, z);
             this._rotation.setTo(rx, ry, rz);
             this._scale.setTo(sx, sy, sz);
-            WatchUtils.watchObject(this._position, this.invalidateMatrix3D.bind(this));
-            WatchUtils.watchObject(this._rotation, this.invalidateMatrix3D.bind(this));
-            WatchUtils.watchObject(this._scale, this.invalidateMatrix3D.bind(this));
+
             this.invalidateMatrix3D();
+
+            Binding.bindHandler(this._position, ["x"], this.invalidateMatrix3D, this);
+            Binding.bindHandler(this._position, ["y"], this.invalidateMatrix3D, this);
+            Binding.bindHandler(this._position, ["z"], this.invalidateMatrix3D, this);
+            //
+            Binding.bindHandler(this._rotation, ["x"], this.invalidateMatrix3D, this);
+            Binding.bindHandler(this._rotation, ["y"], this.invalidateMatrix3D, this);
+            Binding.bindHandler(this._rotation, ["z"], this.invalidateMatrix3D, this);
+            //
+            Binding.bindHandler(this._scale, ["x"], this.invalidateMatrix3D, this);
+            Binding.bindHandler(this._scale, ["y"], this.invalidateMatrix3D, this);
+            Binding.bindHandler(this._scale, ["z"], this.invalidateMatrix3D, this);
+
         }
 
         /**

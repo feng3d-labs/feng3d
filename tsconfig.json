@@ -16,7 +16,6 @@
         "src/debug/assert.ts",
         "src/utils/ClassUtils.ts",
         "src/utils/ObjectUtils.ts",
-        "src/utils/WatchUtils.ts",
         "src/utils/UIDUtils.ts",
         "src/utils/VersionUtils.ts",
         "src/utils/PropertyDescriptorUtils.ts",

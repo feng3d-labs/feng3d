@@ -260,82 +260,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    class WatchUtils {
-        /**
-         * 观察对象
-         * @param object        被观察的对象
-         * @param onChanged     属性值变化回调函数
-         */
-        static watchObject(object, onChanged = null) {
-            if (feng3d.ClassUtils.isBaseType(object))
-                return;
-            for (var key in object) {
-                WatchUtils.watch(object, key, onChanged);
-            }
-        }
-        /**
-         * 观察对象中属性
-         * @param object        被观察的对象
-         * @param attribute     被观察的属性
-         * @param onChanged     属性值变化回调函数
-         */
-        static watch(object, attribute, onChanged = null) {
-            if (feng3d.ClassUtils.isBaseType(object))
-                return;
-            if (!object.orig) {
-                Object.defineProperty(object, "orig", {
-                    value: {},
-                    enumerable: false,
-                    writable: false,
-                    configurable: true
-                });
-            }
-            object.orig[attribute] = object[attribute];
-            Object.defineProperty(object, attribute, {
-                get: function () {
-                    return this.orig[attribute];
-                },
-                set: function (value) {
-                    if (onChanged) {
-                        onChanged(this, attribute, this.orig[attribute], value);
-                    }
-                    this.orig[attribute] = value;
-                }
-            });
-        }
-        /**
-         * 取消观察对象
-         * @param object        被观察的对象
-         */
-        static unwatchObject(object) {
-            if (feng3d.ClassUtils.isBaseType(object))
-                return;
-            if (!object.orig)
-                return;
-            for (var key in object.orig) {
-                WatchUtils.unwatch(object, key);
-            }
-            delete object.orig;
-        }
-        /**
-         * 取消观察对象中属性
-         * @param object        被观察的对象
-         * @param attribute     被观察的属性
-         */
-        static unwatch(object, attribute) {
-            if (feng3d.ClassUtils.isBaseType(object))
-                return;
-            Object.defineProperty(object, attribute, {
-                value: object.orig[attribute],
-                enumerable: true,
-                writable: true
-            });
-        }
-    }
-    feng3d.WatchUtils = WatchUtils;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     class UIDUtils {
         /**
          * 获取对象UID
@@ -5737,6 +5661,7 @@ var feng3d;
          */
         constructor(name) {
             super();
+            this._mouseEnabled = false;
             /**
              * 父对象
              */
@@ -5816,6 +5741,21 @@ var feng3d;
             this._children.forEach(child => {
                 child._setScene(this._scene);
             });
+        }
+        /**
+         * 是否开启鼠标事件
+         */
+        get mouseEnabled() {
+            return this._mouseEnabled;
+        }
+        set mouseEnabled(value) {
+            this._mouseEnabled = value;
+        }
+        /**
+         * 真实是否支持鼠标事件
+         */
+        get realMouseEnable() {
+            return this._mouseEnabled && (this.parent ? this.parent.realMouseEnable : true);
         }
         /**
          * 添加子对象
@@ -6015,12 +5955,6 @@ var feng3d;
          * 所属对象
          */
         get object3D() { return this._parentComponent; }
-        /**
-         * 全局矩阵
-         */
-        get globalMatrix3d() {
-            return this.object3D ? this.object3D.transform.globalMatrix3D : new feng3d.Matrix3D();
-        }
     }
     feng3d.Object3DComponent = Object3DComponent;
 })(feng3d || (feng3d = {}));
@@ -6060,10 +5994,18 @@ var feng3d;
             this._position.setTo(x, y, z);
             this._rotation.setTo(rx, ry, rz);
             this._scale.setTo(sx, sy, sz);
-            feng3d.WatchUtils.watchObject(this._position, this.invalidateMatrix3D.bind(this));
-            feng3d.WatchUtils.watchObject(this._rotation, this.invalidateMatrix3D.bind(this));
-            feng3d.WatchUtils.watchObject(this._scale, this.invalidateMatrix3D.bind(this));
             this.invalidateMatrix3D();
+            feng3d.Binding.bindHandler(this._position, ["x"], this.invalidateMatrix3D, this);
+            feng3d.Binding.bindHandler(this._position, ["y"], this.invalidateMatrix3D, this);
+            feng3d.Binding.bindHandler(this._position, ["z"], this.invalidateMatrix3D, this);
+            //
+            feng3d.Binding.bindHandler(this._rotation, ["x"], this.invalidateMatrix3D, this);
+            feng3d.Binding.bindHandler(this._rotation, ["y"], this.invalidateMatrix3D, this);
+            feng3d.Binding.bindHandler(this._rotation, ["z"], this.invalidateMatrix3D, this);
+            //
+            feng3d.Binding.bindHandler(this._scale, ["x"], this.invalidateMatrix3D, this);
+            feng3d.Binding.bindHandler(this._scale, ["y"], this.invalidateMatrix3D, this);
+            feng3d.Binding.bindHandler(this._scale, ["z"], this.invalidateMatrix3D, this);
         }
         /**
          * X坐标
@@ -6173,6 +6115,13 @@ var feng3d;
         get globalMatrix3D() {
             this._globalMatrix3DDirty && this.updateGlobalMatrix3D();
             return this._globalMatrix3D;
+        }
+        set globalMatrix3D(value) {
+            value = value.clone();
+            if (this.object3D && this.object3D.parent) {
+                value.append(this.object3D.parent.transform.inverseGlobalMatrix3D);
+            }
+            this.matrix3d = value;
         }
         /**
          * 逆全局矩阵
@@ -7294,7 +7243,8 @@ var feng3d;
             super.updateRenderData(renderContext);
             //
             this.renderData.uniforms[feng3d.RenderDataID.u_viewProjection] = this.viewProjection;
-            this.renderData.uniforms[feng3d.RenderDataID.u_cameraMatrix] = this.globalMatrix3d;
+            var globalMatrix3d = this.object3D ? this.object3D.transform.globalMatrix3D : new feng3d.Matrix3D();
+            this.renderData.uniforms[feng3d.RenderDataID.u_cameraMatrix] = globalMatrix3d;
         }
     }
     feng3d.Camera3D = Camera3D;
@@ -11702,8 +11652,41 @@ var feng3d;
             this.selectedObject3D = value;
             if (this.selectedObject3D) {
                 this.mouseEventTypes.forEach(element => {
-                    this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                    switch (element) {
+                        case feng3d.$mouseKeyType.mousedown:
+                            if (this.preMouseDownObject3D != this.selectedObject3D) {
+                                this.Object3DClickNum = 0;
+                                this.preMouseDownObject3D = this.selectedObject3D;
+                            }
+                            this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                            break;
+                        case feng3d.$mouseKeyType.mouseup:
+                            if (this.selectedObject3D == this.preMouseDownObject3D) {
+                                this.Object3DClickNum++;
+                            }
+                            else {
+                                this.Object3DClickNum = 0;
+                                this.preMouseDownObject3D = null;
+                            }
+                            this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                            break;
+                        case feng3d.$mouseKeyType.mousemove:
+                            this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                            break;
+                        case feng3d.$mouseKeyType.click:
+                            if (this.Object3DClickNum > 0)
+                                this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                            break;
+                        case feng3d.$mouseKeyType.dblclick:
+                            if (this.Object3DClickNum > 1)
+                                this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
+                            break;
+                    }
                 });
+            }
+            else {
+                this.Object3DClickNum = 0;
+                this.preMouseDownObject3D = null;
             }
             this.mouseEventTypes.length = 0;
         }
