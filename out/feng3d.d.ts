@@ -808,6 +808,295 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * Register a property of an instance is can be bound.
+     * This method is ususally invoked by Watcher class.
+     *
+     * @param instance the instance to be registered.
+     * @param property the property of specified instance to be registered.
+     *
+     * @version Egret 2.4
+     * @version eui 1.0
+     * @platform Web,Native
+     * @language en_US
+     */
+    /**
+     * 标记实例的一个属性是可绑定的,此方法通常由 Watcher 类调用。
+     *
+     * @param instance 要标记的实例
+     * @param property 可绑定的属性。
+     *
+     * @version Egret 2.4
+     * @version eui 1.0
+     * @platform Web,Native
+     * @language zh_CN
+     */
+    function registerBindable(instance: any, property: string): void;
+    /**
+     * The Watcher class defines utility method that you can use with bindable properties.
+     * These methods let you define an event handler that is executed whenever a bindable property is updated.
+     *
+     * @version Egret 2.4
+     * @version eui 1.0
+     * @platform Web,Native
+     * @includeExample extension/eui/binding/WatcherExample.ts
+     * @language en_US
+     */
+    /**
+     * Watcher 类能够监视可绑定属性的改变，您可以定义一个事件处理函数作为 Watcher 的回调方法，在每次可绑定属性的值改变时都执行此函数。
+     *
+     * @version Egret 2.4
+     * @version eui 1.0
+     * @platform Web,Native
+     * @includeExample extension/eui/binding/WatcherExample.ts
+     * @language zh_CN
+     */
+    class Watcher {
+        /**
+         * Creates and starts a Watcher instance.
+         * The Watcher can only watch the property of a Object which host is instance of egret.IEventDispatcher.
+         * @param host The object that hosts the property or property chain to be watched.
+         * You can use the use the <code>reset()</code> method to change the value of the <code>host</code> argument
+         * after creating the Watcher instance.
+         * The <code>host</code> maintains a list of <code>handlers</code> to invoke when <code>prop</code> changes.
+         * @param chain A value specifying the property or chain to be watched.
+         * For example, to watch the property <code>host.a.b.c</code>,
+         * call the method as: <code>watch(host, ["a","b","c"], ...)</code>.
+         * @param handler  An event handler function called when the value of the watched property
+         * (or any property in a watched chain) is modified.
+         * @param thisObject <code>this</code> object of which binding with handler
+         * @returns he ChangeWatcher instance, if at least one property name has been specified to
+         * the <code>chain</code> argument; null otherwise.
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 创建并启动 Watcher 实例。注意：Watcher 只能监视 host 为 egret.IEventDispatcher 对象的属性改变。若属性链中某个属性所对应的实例不是 egret.IEventDispatcher，
+         * 则属性链中在它之后的属性改变将无法检测到。
+         * @param host 用于承载要监视的属性或属性链的对象。
+         * 创建Watcher实例后，您可以利用<code>reset()</code>方法更改<code>host</code>参数的值。
+         * 当<code>prop</code>改变的时候，会使得host对应的一系列<code>handlers</code>被触发。
+         * @param chain 用于指定要监视的属性链的值。例如，要监视属性 host.a.b.c，需按以下形式调用此方法：watch¬(host, ["a","b","c"], ...)。
+         * @param handler 在监视的目标属性链中任何属性的值发生改变时调用的事件处理函数。
+         * @param thisObject handler 方法绑定的this对象
+         * @returns 如果已为 chain 参数至少指定了一个属性名称，则返回 Watcher 实例；否则返回 null。
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        static watch(host: any, chain: string[], handler: (value: any) => void, thisObject: any): Watcher;
+        /**
+         * @private
+         * 检查属性是否可以绑定。若还未绑定，尝试添加绑定事件。若是只读或只写属性，返回false。
+         */
+        private static checkBindable(host, property);
+        /**
+         * Constructor.
+         * Not for public use. This method is called only from the <code>watch()</code> method.
+         * See the <code>watch()</code> method for parameter usage.
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 构造函数，非公开。只能从 watch() 方法中调用此方法。有关参数用法，请参阅 watch() 方法。
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        constructor(property: string, handler: (value: any) => void, thisObject: any, next?: Watcher);
+        /**
+         * @private
+         */
+        private host;
+        /**
+         * @private
+         */
+        private property;
+        /**
+         * @private
+         */
+        private handler;
+        /**
+         * @private
+         */
+        private thisObject;
+        /**
+         * @private
+         */
+        private next;
+        /**
+         * @private
+         */
+        private isExecuting;
+        /**
+         * Detaches this Watcher instance, and its handler function, from the current host.
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 从当前宿主中断开此 Watcher 实例及其处理函数。
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        unwatch(): void;
+        /**
+         * Retrieves the current value of the watched property or property chain, or null if the host object is null.
+         * @example
+         * <pre>
+         * watch(obj, ["a","b","c"], ...).getValue() === obj.a.b.c
+         * </pre>
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 检索观察的属性或属性链的当前值，当宿主对象为空时此值为空。
+         * @example
+         * <pre>
+         * watch(obj, ["a","b","c"], ...).getValue() === obj.a.b.c
+         * </pre>
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        getValue(): any;
+        /**
+         * Sets the handler function.s
+         * @param handler The handler function. This argument must not be null.
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 设置处理函数。
+         * @param handler 处理函数，此参数必须为非空。
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        setHandler(handler: (value: any) => void, thisObject: any): void;
+        /**
+         * Resets this ChangeWatcher instance to use a new host object.
+         * You can call this method to reuse a watcher instance on a different host.
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 重置此 Watcher 实例使用新的宿主对象。
+         * 您可以通过该方法实现一个Watcher实例用于不同的宿主。
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        reset(newHost: Object): void;
+        /**
+         * @private
+         *
+         * @returns
+         */
+        private getHostPropertyValue();
+        /**
+         * @private
+         */
+        private onPropertyChange(property);
+    }
+}
+declare module feng3d {
+    /**
+     * The Binding class defines utility methods for performing data binding.
+     * You can use the methods defined in this class to configure data bindings.
+     * @version Egret 2.4
+     * @version eui 1.0
+     * @platform Web,Native
+     * @includeExample extension/eui/binding/BindingExample.ts
+     * @language en_US
+     */
+    /**
+     * 绑定工具类，用于执行数据绑定用的方法集。您可以使用此类中定义的方法来配置数据绑定。
+     * @version Egret 2.4
+     * @version eui 1.0
+     * @platform Web,Native
+     * @includeExample extension/eui/binding/BindingExample.ts
+     * @language zh_CN
+     */
+    class Binding {
+        /**
+         * Binds a property, <prop>prop</code> on the <code>target</code> Object, to a bindable property or peoperty chain.
+         * @param host The object that hosts the property or property chain to be watched.
+         * The <code>host</code> maintains a list of <code>targets</code> to update theirs <code>prop</code> when <code>chain</code> changes.
+         * @param chain A value specifying the property or chain to be watched. For example, when watch the property <code>host.a.b.c</code>,
+         * you need call the method like this: <code>indProperty(host, ["a","b","c"], ...)</code>
+         * @param target The Object defining the property to be bound to <code>chain</code>.
+         * @param prop The name of the public property defined in the <code>site</code> Object to be bound.
+         * @returns A ChangeWatcher instance, if at least one property name has been specified
+         * to the <code>chain</code> argument; null otherwise.
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 绑定一个对象的属性值到要监视的对象属性上。
+         * @param host 用于承载要监视的属性或属性链的对象。
+         * 当 <code>host</code>上<code>chain</code>所对应的值发生改变时，<code>target</code>上的<code>prop</code>属性将被自动更新。
+         * @param chain 用于指定要监视的属性链的值。例如，要监视属性 <code>host.a.b.c</code>，需按以下形式调用此方法：<code>bindProperty(host, ["a","b","c"], ...)。</code>
+         * @param target 本次绑定要更新的目标对象。
+         * @param prop 本次绑定要更新的目标属性名称。
+         * @returns 如果已为 chain 参数至少指定了一个属性名称，则返回 Watcher 实例；否则返回 null。
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        static bindProperty(host: any, chain: string[], target: any, prop: string): Watcher;
+        /**
+         * Binds a callback, <prop>handler</code> on the <code>target</code> Object, to a bindable property or peoperty chain.
+         * Callback method to invoke with an argument of the current value of <code>chain</code> when that value changes.
+         * @param host The object that hosts the property or property chain to be watched.
+         * @param chain A value specifying the property or chain to be watched. For example, when watch the property <code>host.a.b.c</code>,
+         * you need call the method like this: <code>indProperty(host, ["a","b","c"], ...)</code>
+         * @param handler method to invoke with an argument of the current value of <code>chain</code> when that value changes.
+         * @param thisObject <code>this</code> object of binding method
+         * @returns A ChangeWatcher instance, if at least one property name has been  specified to the <code>chain</code> argument; null otherwise.
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 绑定一个回调函数到要监视的对象属性上。当 host上 chain 所对应的值发生改变时，handler 方法将被自动调用。
+         * @param host 用于承载要监视的属性或属性链的对象。
+         * @param chain 用于指定要监视的属性链的值。例如，要监视属性 host.a.b.c，需按以下形式调用此方法：bindSetter(host, ["a","b","c"], ...)。
+         * @param handler 在监视的目标属性链中任何属性的值发生改变时调用的事件处理函数。
+         * @param thisObject handler 方法绑定的this对象
+         * @returns 如果已为 chain 参数至少指定了一个属性名称，则返回 Watcher 实例；否则返回 null。
+         * @version Egret 2.4
+         * @version eui 1.0
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        static bindHandler(host: any, chain: string[], handler: (value: any) => void, thisObject: any): Watcher;
+        static $bindProperties(host: any, templates: any[], chainIndex: number[], target: any, prop: string): Watcher;
+    }
+}
+declare module feng3d {
+    /**
      * 事件
      * @author feng 2014-5-7
      */
