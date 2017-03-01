@@ -5831,7 +5831,8 @@ var feng3d;
          * @param   index   添加到的位置
          */
         addChildAt(child, index) {
-            feng3d.assert(-1 < index && index <= this._children.length, "添加子对象的索引越界！");
+            this.removeChild(child);
+            index = Math.max(0, Math.min(this._children.length, index));
             this._children.splice(index, 0, child);
             child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.ADDED, { parent: this, child: child }, true));
         }
@@ -5842,7 +5843,6 @@ var feng3d;
          */
         removeChild(child) {
             var childIndex = this._children.indexOf(child);
-            feng3d.assert(-1 < childIndex && childIndex < this._children.length, "删除的子对象不存在！");
             this.removeChildAt(childIndex);
             return childIndex;
         }
@@ -5860,8 +5860,9 @@ var feng3d;
          * @return				被移除对象
          */
         removeChildAt(childIndex) {
+            if (childIndex < 0 || childIndex > this._children.length - 1)
+                return null;
             var child = this._children[childIndex];
-            feng3d.assert(-1 < childIndex && childIndex < this._children.length, "删除的索引越界！");
             this._children.splice(childIndex, 1);
             child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.REMOVED, { parent: this, child: child }, true));
             return child;
