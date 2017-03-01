@@ -7,7 +7,6 @@ module feng3d
      */
     export class Scene3D extends Object3D
     {
-
         private _object3Ds: Object3D[] = [];
         private _renderers: MeshRenderer[] = [];
         private _lights: Light[] = [];
@@ -17,7 +16,6 @@ module feng3d
          */
         public get renderers()
         {
-
             return this._renderers;
         }
 
@@ -26,7 +24,6 @@ module feng3d
          */
         public get lights()
         {
-
             return this._lights;
         }
 
@@ -35,7 +32,6 @@ module feng3d
          */
         constructor()
         {
-
             super("root");
             //
             this.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
@@ -51,7 +47,6 @@ module feng3d
          */
         private onAddedToScene(event: Scene3DEvent)
         {
-
             this._object3Ds.push(event.data.object3d);
         }
 
@@ -60,7 +55,6 @@ module feng3d
          */
         private onRemovedFromScene(event: Scene3DEvent)
         {
-
             ArrayUtils.removeItem(this._object3Ds, event.data.object3d);
         }
 
@@ -69,7 +63,6 @@ module feng3d
          */
         private onAddedRendererToScene(event: Scene3DEvent)
         {
-
             this._renderers.push(event.data.renderer);
         }
 
@@ -78,7 +71,6 @@ module feng3d
          */
         private onRemovedRendererFromScene(event: Scene3DEvent)
         {
-
             ArrayUtils.removeItem(this._renderers, event.data.renderer);
         }
 
@@ -87,7 +79,6 @@ module feng3d
          */
         private onAddedLightToScene(event: Scene3DEvent)
         {
-
             this._lights.push(event.data.light);
         }
 
@@ -96,7 +87,6 @@ module feng3d
          */
         private onRemovedLightFromScene(event: Scene3DEvent)
         {
-
             ArrayUtils.removeItem(this._lights, event.data.light);
         }
     }

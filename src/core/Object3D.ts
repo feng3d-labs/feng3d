@@ -9,7 +9,7 @@ module feng3d
         private _object3DID: number;
         private _uid: string;
 
-        protected _mouseEnabled: boolean = false;
+        protected _mouseEnabled: boolean = true;
 
         private _transform: Transform;
         /**
