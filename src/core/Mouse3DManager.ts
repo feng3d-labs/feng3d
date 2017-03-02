@@ -31,19 +31,19 @@ module feng3d
         {
             this.mouseRenderer = new MouseRenderer();
             //
-            mouse3DEventMap[$mouseKeyType.click] = Mouse3DEvent.CLICK;
-            mouse3DEventMap[$mouseKeyType.dblclick] = Mouse3DEvent.DOUBLE_CLICK;
-            mouse3DEventMap[$mouseKeyType.mousedown] = Mouse3DEvent.MOUSE_DOWN;
-            mouse3DEventMap[$mouseKeyType.mousemove] = Mouse3DEvent.MOUSE_MOVE;
-            mouse3DEventMap[$mouseKeyType.mouseup] = Mouse3DEvent.MOUSE_UP;
+            mouse3DEventMap[InputEvent.types.CLICK] = Mouse3DEvent.CLICK;
+            mouse3DEventMap[InputEvent.types.DOUBLE_CLICK] = Mouse3DEvent.DOUBLE_CLICK;
+            mouse3DEventMap[InputEvent.types.MOUSE_DOWN] = Mouse3DEvent.MOUSE_DOWN;
+            mouse3DEventMap[InputEvent.types.MOUSE_MOVE] = Mouse3DEvent.MOUSE_MOVE;
+            mouse3DEventMap[InputEvent.types.MOUSE_UP] = Mouse3DEvent.MOUSE_UP;
+
+            Input.instance.addEventListener(InputEvent.types.MOUSE_MOVE, this.onMousemove, this);
             //
-            $mouseKeyInput.addEventListener($mouseKeyType.mousemove, this.onMousemove, this);
-            //
-            $mouseKeyInput.addEventListener($mouseKeyType.click, this.onMouseEvent, this);
-            $mouseKeyInput.addEventListener($mouseKeyType.dblclick, this.onMouseEvent, this);
-            $mouseKeyInput.addEventListener($mouseKeyType.mousedown, this.onMouseEvent, this);
-            $mouseKeyInput.addEventListener($mouseKeyType.mousemove, this.onMouseEvent, this);
-            $mouseKeyInput.addEventListener($mouseKeyType.mouseup, this.onMouseEvent, this);
+            Input.instance.addEventListener(InputEvent.types.CLICK, this.onMouseEvent, this);
+            Input.instance.addEventListener(InputEvent.types.DOUBLE_CLICK, this.onMouseEvent, this);
+            Input.instance.addEventListener(InputEvent.types.MOUSE_DOWN, this.onMouseEvent, this);
+            Input.instance.addEventListener(InputEvent.types.MOUSE_MOVE, this.onMouseEvent, this);
+            Input.instance.addEventListener(InputEvent.types.MOUSE_UP, this.onMouseEvent, this);
         }
 
         /**
@@ -104,7 +104,7 @@ module feng3d
                 {
                     switch (element)
                     {
-                        case $mouseKeyType.mousedown:
+                        case InputEvent.types.MOUSE_DOWN:
                             if (this.preMouseDownObject3D != this.selectedObject3D)
                             {
                                 this.Object3DClickNum = 0;
@@ -112,7 +112,7 @@ module feng3d
                             }
                             this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case $mouseKeyType.mouseup:
+                        case InputEvent.types.MOUSE_UP:
                             if (this.selectedObject3D == this.preMouseDownObject3D)
                             {
                                 this.Object3DClickNum++;
@@ -123,14 +123,14 @@ module feng3d
                             }
                             this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case $mouseKeyType.mousemove:
+                        case InputEvent.types.MOUSE_MOVE:
                             this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case $mouseKeyType.click:
+                        case InputEvent.types.CLICK:
                             if (this.Object3DClickNum > 0)
                                 this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case $mouseKeyType.dblclick:
+                        case InputEvent.types.DOUBLE_CLICK:
                             if (this.Object3DClickNum > 1)
                                 this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;

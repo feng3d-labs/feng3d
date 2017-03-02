@@ -28,7 +28,7 @@
         //
         "src/sys/SystemTicker.ts",
         //
-        "src/base/MouseKeyInput.ts",
+        "src/base/Input.ts",
         //快捷键模块
         "src/shortcut/handle/KeyCapture.ts",
         "src/shortcut/handle/KeyState.ts",

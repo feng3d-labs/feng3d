@@ -1255,39 +1255,51 @@ declare module feng3d {
      * 鼠标键盘输入，处理js事件中this关键字问题
      * @author feng 2016-12-19
      */
-    class MouseKeyInput extends EventDispatcher {
-        /**
-         * 构建
-         */
-        constructor();
-        /**
-         * 初始化
-         */
-        private init();
+    class Input extends EventDispatcher {
+        static readonly instance: Input;
+        private readonly _addedTypes;
+        clientX: number;
+        clientY: number;
         /**
          * 键盘按下事件
          */
         private onMouseKey(event);
+        /**
+         *
+         */
+        addEventListener(type: string, listener: (event: InputEvent) => void, thisObject: any, priority?: number): void;
     }
-    /**
-     * 鼠标事件类型
-     */
-    var $mouseKeyType: {
-        "click": string;
-        "dblclick": string;
-        "mousedown": string;
-        "mousemove": string;
-        "mouseout": string;
-        "mouseover": string;
-        "mouseup": string;
-        "keydown": string;
-        "keypress": string;
-        "keyup": string;
-    };
-    /**
-     * 鼠标键盘输入
-     */
-    var $mouseKeyInput: MouseKeyInput;
+    class InputEventType {
+        static readonly instance: InputEventType;
+        /** 鼠标单击 */
+        readonly CLICK: string;
+        /** 鼠标双击 */
+        readonly DOUBLE_CLICK: string;
+        /** 鼠标按下 */
+        readonly MOUSE_DOWN: string;
+        /** 鼠标移动 */
+        readonly MOUSE_MOVE: string;
+        /** 鼠标移出 */
+        readonly MOUSE_OUT: string;
+        /** 鼠标移入 */
+        readonly MOUSE_OVER: string;
+        /** 鼠标弹起 */
+        readonly MOUSE_UP: string;
+        /** 鼠标滚动滚轮 */
+        readonly MOUSE_WHEEL: string;
+        /** 键盘按下 */
+        readonly KEY_DOWN: string;
+        /** 键盘按着 */
+        readonly KEY_PRESS: string;
+        /** 键盘弹起 */
+        readonly KEY_UP: string;
+    }
+    class InputEvent extends Event {
+        static readonly types: InputEventType;
+        clientX: number;
+        clientY: number;
+        constructor(event: MouseEvent | WheelEvent | KeyboardEvent);
+    }
 }
 declare module feng3d.shortcut {
     /**

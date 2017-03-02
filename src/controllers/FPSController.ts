@@ -49,16 +49,16 @@ module feng3d
 
             if (this._target != null)
             {
-                $mouseKeyInput.removeEventListener("keydown", this.onKeydown, this);
-                $mouseKeyInput.removeEventListener("keyup", this.onKeyup, this);
-                $mouseKeyInput.removeEventListener("mousemove", this.onMouseMove, this);
+                Input.instance.removeEventListener(InputEvent.types.KEY_DOWN, this.onKeydown, this);
+                Input.instance.removeEventListener(InputEvent.types.KEY_UP, this.onKeyup, this);
+                Input.instance.removeEventListener(InputEvent.types.MOUSE_MOVE, this.onMouseMove, this);
             }
             this._target = value;
             if (this._target != null)
             {
-                $mouseKeyInput.addEventListener("keydown", this.onKeydown, this);
-                $mouseKeyInput.addEventListener("keyup", this.onKeyup, this);
-                $mouseKeyInput.addEventListener("mousemove", this.onMouseMove, this);
+                Input.instance.addEventListener(InputEvent.types.KEY_DOWN, this.onKeydown, this);
+                Input.instance.addEventListener(InputEvent.types.KEY_UP, this.onKeyup, this);
+                Input.instance.addEventListener(InputEvent.types.MOUSE_MOVE, this.onMouseMove, this);
                 this.preMousePoint = null;
                 this.velocity = new Vector3D();
                 this.keyDownDic = {};
