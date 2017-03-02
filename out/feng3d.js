@@ -6945,7 +6945,7 @@ var feng3d;
         /**
          * 添加线段
          * @param segment		            线段数据
-         * @param needUpdateGeometry		是否需要立即更新线段数据
+         * @param needUpdateGeometry		是否需要立即更新几何体
          */
         addSegment(segment, needUpdateGeometry = true) {
             this._segments.push(segment);
