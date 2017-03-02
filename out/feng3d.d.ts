@@ -4551,7 +4551,8 @@ declare module feng3d {
         private _segments;
         /**
          * 添加线段
-         * @param segment		线段数据
+         * @param segment		            线段数据
+         * @param needUpdateGeometry		是否需要立即更新线段数据
          */
         addSegment(segment: Segment, needUpdateGeometry?: boolean): void;
         /**

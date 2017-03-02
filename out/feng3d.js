@@ -6944,12 +6944,13 @@ var feng3d;
         }
         /**
          * 添加线段
-         * @param segment		线段数据
+         * @param segment		            线段数据
+         * @param needUpdateGeometry		是否需要立即更新线段数据
          */
         addSegment(segment, needUpdateGeometry = true) {
             this._segments.push(segment);
             this.geometryDirty = true;
-            this.updateGeometry();
+            needUpdateGeometry && this.updateGeometry();
         }
         /**
          * 更新几何体
