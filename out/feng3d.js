@@ -5969,7 +5969,7 @@ var feng3d;
          * 绘制场景
          */
         drawScene(event) {
-            var viewRect = this.updateViewRect();
+            var viewRect = this.viewRect;
             this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.copyFrom(viewRect);
@@ -5988,7 +5988,7 @@ var feng3d;
         /**
          * 更新视窗矩阵
          */
-        updateViewRect() {
+        get viewRect() {
             var viewRect = new feng3d.Rectangle();
             this._canvas.width = this._canvas.clientWidth;
             this._canvas.height = this._canvas.clientHeight;
@@ -6015,11 +6015,19 @@ var feng3d;
             this._camera = value;
         }
         /**
+         * 鼠标在3D视图中的位置
+         */
+        get mousePos() {
+            var viewRect = this.viewRect;
+            var pos = new feng3d.Point(this.mouse3DManager.mouseX - viewRect.x, this.mouse3DManager.mouseY - viewRect.y);
+            return pos;
+        }
+        /**
          * 获取鼠标射线（与鼠标重叠的摄像机射线）
          */
         getMouseRay3D() {
-            var viewRect = this.updateViewRect();
-            return this.getRay3D(this.mouse3DManager.mouseX - viewRect.x, this.mouse3DManager.mouseY - viewRect.y);
+            var pos = this.mousePos;
+            return this.getRay3D(pos.x, pos.y);
         }
         /**
          * 获取与坐标重叠的射线

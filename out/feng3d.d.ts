@@ -3907,11 +3907,15 @@ declare module feng3d {
         /**
          * 更新视窗矩阵
          */
-        private updateViewRect();
+        readonly viewRect: Rectangle;
         /**
          * 摄像机
          */
         camera: Camera3D;
+        /**
+         * 鼠标在3D视图中的位置
+         */
+        readonly mousePos: Point;
         /**
          * 获取鼠标射线（与鼠标重叠的摄像机射线）
          */
