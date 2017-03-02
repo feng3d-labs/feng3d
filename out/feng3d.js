@@ -6018,7 +6018,8 @@ var feng3d;
          * 获取鼠标射线（与鼠标重叠的摄像机射线）
          */
         getMouseRay3D() {
-            return this.getRay3D(this.mouse3DManager.mouseX, this.mouse3DManager.mouseY);
+            var viewRect = this.updateViewRect();
+            return this.getRay3D(this.mouse3DManager.mouseX - viewRect.x, this.mouse3DManager.mouseY - viewRect.y);
         }
         /**
          * 获取与坐标重叠的射线
@@ -6060,7 +6061,7 @@ var feng3d;
         screenToGpuPosition(screenPos) {
             var gpuPos = new feng3d.Point();
             gpuPos.x = (screenPos.x * 2 - this._canvas.width) / this._canvas.width;
-            gpuPos.y = (screenPos.y * 2 - this._canvas.height) / this._canvas.width;
+            gpuPos.y = (screenPos.y * 2 - this._canvas.height) / this._canvas.height;
             return gpuPos;
         }
     }

@@ -151,7 +151,8 @@ module feng3d
 		 */
         public getMouseRay3D(): Ray3D
         {
-            return this.getRay3D(this.mouse3DManager.mouseX, this.mouse3DManager.mouseY);
+            var viewRect: Rectangle = this.updateViewRect();
+            return this.getRay3D(this.mouse3DManager.mouseX - viewRect.x, this.mouse3DManager.mouseY - viewRect.y);
         }
 
         /**
@@ -199,7 +200,7 @@ module feng3d
         {
             var gpuPos: Point = new Point();
             gpuPos.x = (screenPos.x * 2 - this._canvas.width) / this._canvas.width;
-            gpuPos.y = (screenPos.y * 2 - this._canvas.height) / this._canvas.width;
+            gpuPos.y = (screenPos.y * 2 - this._canvas.height) / this._canvas.height;
             return gpuPos;
         }
     }
