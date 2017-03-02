@@ -86,7 +86,7 @@ module feng3d
          */
         private drawScene(event: Event)
         {
-            var viewRect: Rectangle = this.updateViewRect();
+            var viewRect: Rectangle = this.viewRect;
 
             this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
 
@@ -107,9 +107,9 @@ module feng3d
         }
 
         /**
-         * 更新视窗矩阵
+         * 更新视窗区域
          */
-        private updateViewRect()
+        public get viewRect()
         {
             var viewRect: Rectangle = new Rectangle();
 
@@ -142,8 +142,17 @@ module feng3d
 
         public set camera(value: Camera3D)
         {
-
             this._camera = value;
+        }
+
+        /**
+         * 鼠标在3D视图中的位置
+         */
+        public get mousePos()
+        {
+            var viewRect: Rectangle = this.viewRect;
+            var pos = new Point(this.mouse3DManager.mouseX - viewRect.x, this.mouse3DManager.mouseY - viewRect.y);
+            return pos;
         }
 
         /**
@@ -151,8 +160,8 @@ module feng3d
 		 */
         public getMouseRay3D(): Ray3D
         {
-            var viewRect: Rectangle = this.updateViewRect();
-            return this.getRay3D(this.mouse3DManager.mouseX - viewRect.x, this.mouse3DManager.mouseY - viewRect.y);
+            var pos = this.mousePos;
+            return this.getRay3D(pos.x, pos.y);
         }
 
         /**
