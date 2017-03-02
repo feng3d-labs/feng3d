@@ -4047,7 +4047,7 @@ declare module feng3d {
         /**
          * 全局坐标
          */
-        readonly globalPosition: Vector3D;
+        globalPosition: Vector3D;
         /**
          * 变换矩阵
          */

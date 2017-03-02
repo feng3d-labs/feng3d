@@ -6210,6 +6210,11 @@ var feng3d;
         get globalPosition() {
             return this.globalMatrix3D.position;
         }
+        set globalPosition(value) {
+            var globalMatrix3D = this.globalMatrix3D.clone();
+            globalMatrix3D.position = value;
+            this.globalMatrix3D = globalMatrix3D;
+        }
         /**
          * 变换矩阵
          */
