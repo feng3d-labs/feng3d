@@ -4325,6 +4325,66 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 3d直线
+     * @author feng 2013-6-13
+     */
+    class Line3D {
+        /**
+         * 根据直线某点与方向创建直线
+         * @param position 直线上某点
+         * @param direction 直线的方向
+         */
+        constructor(position = null, direction = null) {
+            this.position = position ? position : new feng3d.Vector3D();
+            this.direction = direction ? direction : new feng3d.Vector3D(0, 0, 1);
+        }
+        /**
+         * 根据直线上两点初始化直线
+         * @param p0 Vector3D
+         * @param p1 Vector3D
+         */
+        fromPoints(p0, p1) {
+            this.position = p0;
+            this.direction = p1.subtract(p0);
+        }
+        /**
+         * 根据直线某点与方向初始化直线
+         * @param position 直线上某点
+         * @param direction 直线的方向
+         */
+        fromPosAndDir(position, direction) {
+            this.position = position;
+            this.direction = direction;
+        }
+        /**
+         * 获取直线上的一个点
+         * @param length 与原点距离
+         */
+        getPoint(length = 0) {
+            var lengthDir = this.direction.clone();
+            lengthDir.scaleBy(length);
+            var newPoint = this.position.add(lengthDir);
+            return newPoint;
+        }
+    }
+    feng3d.Line3D = Line3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 3D射线
+     * @author feng 2013-6-13
+     */
+    class Ray3D extends feng3d.Line3D {
+        constructor(position = null, direction = null) {
+            super(position, direction);
+        }
+    }
+    feng3d.Ray3D = Ray3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 3d面
      */
     class Plane3D {
@@ -4348,6 +4408,12 @@ var feng3d;
                 this._alignment = Plane3D.ALIGN_XZ_AXIS;
             else
                 this._alignment = Plane3D.ALIGN_ANY;
+        }
+        /**
+         * 法线
+         */
+        get normal() {
+            return new feng3d.Vector3D(this.a, this.b, this.c);
         }
         /**
          * 通过3顶点定义一个平面
@@ -4452,6 +4518,19 @@ var feng3d;
                 return feng3d.PlaneClassification.FRONT;
             else
                 return feng3d.PlaneClassification.INTERSECT;
+        }
+        /**
+         * 获取与直线交点
+         */
+        lineCross(line3D) {
+            var lineDir = line3D.direction.clone();
+            lineDir.normalize();
+            var cosAngle = lineDir.dotProduct(this.normal);
+            var distance = this.distance(line3D.position);
+            var addVec = lineDir.clone();
+            addVec.scaleBy(-distance / cosAngle);
+            var crossPos = line3D.position.add(addVec);
+            return crossPos;
         }
         /**
          * 输出字符串
@@ -5935,7 +6014,64 @@ var feng3d;
         set camera(value) {
             this._camera = value;
         }
+        /**
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
+        getMouseRay3D() {
+            return this.getRay3D(this.mouse3DManager.mouseX, this.mouse3DManager.mouseY);
+        }
+        /**
+         * 获取与坐标重叠的射线
+         * @param x view3D上的X坐标
+         * @param y view3D上的X坐标
+         * @return
+         */
+        getRay3D(x, y) {
+            //摄像机坐标
+            var rayPosition = this.unproject(x, y, 0, View3D.tempRayPosition);
+            //摄像机前方1处坐标
+            var rayDirection = this.unproject(x, y, 1, View3D.tempRayDirection);
+            //射线方向
+            rayDirection.x = rayDirection.x - rayPosition.x;
+            rayDirection.y = rayDirection.y - rayPosition.y;
+            rayDirection.z = rayDirection.z - rayPosition.z;
+            rayDirection.normalize();
+            //定义射线
+            var ray3D = new feng3d.Ray3D(rayPosition, rayDirection);
+            return ray3D;
+        }
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X ([0-width])
+         * @param nY 屏幕坐标Y ([0-height])
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        unproject(sX, sY, sZ, v = null) {
+            var gpuPos = this.screenToGpuPosition(new feng3d.Point(sX, sY));
+            return this._camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
+        }
+        /**
+         * 屏幕坐标转GPU坐标
+         * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
+         * @return GPU坐标 (x:[-1,1],y:[-1-1])
+         */
+        screenToGpuPosition(screenPos) {
+            var gpuPos = new feng3d.Point();
+            gpuPos.x = (screenPos.x * 2 - this._canvas.width) / this._canvas.width;
+            gpuPos.y = (screenPos.y * 2 - this._canvas.height) / this._canvas.width;
+            return gpuPos;
+        }
     }
+    /**
+     * 射线坐标临时变量
+     */
+    View3D.tempRayPosition = new feng3d.Vector3D();
+    /**
+     * 射线方向临时变量
+     */
+    View3D.tempRayDirection = new feng3d.Vector3D();
     feng3d.View3D = View3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -7205,14 +7341,30 @@ var feng3d;
          */
         get viewProjection() {
             if (this._viewProjectionDirty) {
-                var inverseSceneTransform = this.object3D ? this.object3D.transform.inverseGlobalMatrix3D : new feng3d.Matrix3D();
                 //场景空间转摄像机空间
-                this._viewProjection.copyFrom(inverseSceneTransform);
+                this._viewProjection.copyFrom(this.inverseSceneTransform);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
                 this._viewProjection.append(this._lens.matrix);
                 this._viewProjectionDirty = false;
             }
             return this._viewProjection;
+        }
+        get inverseSceneTransform() {
+            return this.object3D ? this.object3D.transform.inverseGlobalMatrix3D : new feng3d.Matrix3D();
+        }
+        get globalMatrix3D() {
+            return this.object3D ? this.object3D.transform.globalMatrix3D : new feng3d.Matrix3D();
+        }
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X -1（左） -> 1（右）
+         * @param nY 屏幕坐标Y -1（上） -> 1（下）
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        unproject(nX, nY, sZ, v = null) {
+            return this.globalMatrix3D.transformVector(this.lens.unproject(nX, nY, sZ, v), v);
         }
         /**
          * 处理被添加组件事件

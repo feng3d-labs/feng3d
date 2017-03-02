@@ -12,8 +12,8 @@ module feng3d
          * 鼠标拾取渲染器
          */
         private mouseRenderer: MouseRenderer;
-        private mouseX: number;
-        private mouseY: number;
+        public mouseX: number;
+        public mouseY: number;
 
         private selectedObject3D: Object3D;
         private mouseEventTypes: string[] = [];

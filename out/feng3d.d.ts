@@ -3004,6 +3004,50 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 3d直线
+     * @author feng 2013-6-13
+     */
+    class Line3D {
+        /** 直线上某一点 */
+        position: Vector3D;
+        /** 直线方向 */
+        direction: Vector3D;
+        /**
+         * 根据直线某点与方向创建直线
+         * @param position 直线上某点
+         * @param direction 直线的方向
+         */
+        constructor(position?: Vector3D, direction?: Vector3D);
+        /**
+         * 根据直线上两点初始化直线
+         * @param p0 Vector3D
+         * @param p1 Vector3D
+         */
+        fromPoints(p0: Vector3D, p1: Vector3D): void;
+        /**
+         * 根据直线某点与方向初始化直线
+         * @param position 直线上某点
+         * @param direction 直线的方向
+         */
+        fromPosAndDir(position: Vector3D, direction: Vector3D): void;
+        /**
+         * 获取直线上的一个点
+         * @param length 与原点距离
+         */
+        getPoint(length?: number): Vector3D;
+    }
+}
+declare module feng3d {
+    /**
+     * 3D射线
+     * @author feng 2013-6-13
+     */
+    class Ray3D extends Line3D {
+        constructor(position?: Vector3D, direction?: Vector3D);
+    }
+}
+declare module feng3d {
+    /**
      * 3d面
      */
     class Plane3D {
@@ -3060,6 +3104,10 @@ declare module feng3d {
          */
         constructor(a?: number, b?: number, c?: number, d?: number);
         /**
+         * 法线
+         */
+        readonly normal: Vector3D;
+        /**
          * 通过3顶点定义一个平面
          * @param p0		点0
          * @param p1		点1
@@ -3091,6 +3139,10 @@ declare module feng3d {
          * @see				feng3d.core.math.PlaneClassification
          */
         classifyPoint(p: Vector3D, epsilon?: number): number;
+        /**
+         * 获取与直线交点
+         */
+        lineCross(line3D: Line3D): Vector3D;
         /**
          * 输出字符串
          */
@@ -3815,6 +3867,14 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class View3D {
+        /**
+         * 射线坐标临时变量
+         */
+        private static tempRayPosition;
+        /**
+         * 射线方向临时变量
+         */
+        private static tempRayDirection;
         private _context3D;
         private _camera;
         private _scene;
@@ -3852,6 +3912,32 @@ declare module feng3d {
          * 摄像机
          */
         camera: Camera3D;
+        /**
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
+        getMouseRay3D(): Ray3D;
+        /**
+         * 获取与坐标重叠的射线
+         * @param x view3D上的X坐标
+         * @param y view3D上的X坐标
+         * @return
+         */
+        getRay3D(x: number, y: number): Ray3D;
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X ([0-width])
+         * @param nY 屏幕坐标Y ([0-height])
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        unproject(sX: number, sY: number, sZ: number, v?: Vector3D): Vector3D;
+        /**
+         * 屏幕坐标转GPU坐标
+         * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
+         * @return GPU坐标 (x:[-1,1],y:[-1-1])
+         */
+        screenToGpuPosition(screenPos: Point): Point;
     }
 }
 declare module feng3d {
@@ -4692,6 +4778,17 @@ declare module feng3d {
          * 场景投影矩阵，世界空间转投影空间
          */
         readonly viewProjection: Matrix3D;
+        readonly inverseSceneTransform: Matrix3D;
+        readonly globalMatrix3D: Matrix3D;
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X -1（左） -> 1（右）
+         * @param nY 屏幕坐标Y -1（上） -> 1（下）
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
         /**
          * 处理被添加组件事件
          */
@@ -6691,8 +6788,8 @@ declare module feng3d {
          * 鼠标拾取渲染器
          */
         private mouseRenderer;
-        private mouseX;
-        private mouseY;
+        mouseX: number;
+        mouseY: number;
         private selectedObject3D;
         private mouseEventTypes;
         /**

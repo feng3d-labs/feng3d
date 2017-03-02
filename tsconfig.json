@@ -58,6 +58,8 @@
         "src/mathlib/Vector3D.ts",
         "src/mathlib/Matrix3D.ts",
         "src/mathlib/Quaternion.ts",
+        "src/mathlib/Line3D.ts",
+        "src/mathlib/Ray3D.ts",
         "src/mathlib/Plane3D.ts",
         "src/mathlib/PlaneClassification.ts",
         //渲染

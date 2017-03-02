@@ -81,6 +81,14 @@ module feng3d
                 this._alignment = Plane3D.ALIGN_ANY;
         }
 
+        /**
+         * 法线
+         */
+        public get normal()
+        {
+            return new Vector3D(this.a, this.b, this.c);
+        }
+
 		/**
 		 * 通过3顶点定义一个平面
 		 * @param p0		点0
@@ -202,6 +210,21 @@ module feng3d
                 return PlaneClassification.FRONT;
             else
                 return PlaneClassification.INTERSECT;
+        }
+
+        /**
+         * 获取与直线交点
+         */
+        public lineCross(line3D: Line3D)
+        {
+            var lineDir = line3D.direction.clone();
+            lineDir.normalize();
+            var cosAngle = lineDir.dotProduct(this.normal);
+            var distance = this.distance(line3D.position);
+            var addVec = lineDir.clone();
+            addVec.scaleBy(-distance / cosAngle);
+            var crossPos = line3D.position.add(addVec);
+            return crossPos;
         }
 
 		/**

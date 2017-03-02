@@ -7,7 +7,16 @@ module feng3d
      */
     export class View3D
     {
+		/**
+		 * 射线坐标临时变量
+		 */
+        private static tempRayPosition: Vector3D = new Vector3D();
+        /**
+		 * 射线方向临时变量
+		 */
+        private static tempRayDirection: Vector3D = new Vector3D();
 
+        //
         private _context3D: Context3D;
         private _camera: Camera3D;
         private _scene: Scene3D;
@@ -135,6 +144,63 @@ module feng3d
         {
 
             this._camera = value;
+        }
+
+        /**
+		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
+		 */
+        public getMouseRay3D(): Ray3D
+        {
+            return this.getRay3D(this.mouse3DManager.mouseX, this.mouse3DManager.mouseY);
+        }
+
+        /**
+		 * 获取与坐标重叠的射线
+		 * @param x view3D上的X坐标
+		 * @param y view3D上的X坐标
+		 * @return
+		 */
+        public getRay3D(x: number, y: number): Ray3D
+        {
+            //摄像机坐标
+            var rayPosition: Vector3D = this.unproject(x, y, 0, View3D.tempRayPosition);
+            //摄像机前方1处坐标
+            var rayDirection: Vector3D = this.unproject(x, y, 1, View3D.tempRayDirection);
+            //射线方向
+            rayDirection.x = rayDirection.x - rayPosition.x;
+            rayDirection.y = rayDirection.y - rayPosition.y;
+            rayDirection.z = rayDirection.z - rayPosition.z;
+            rayDirection.normalize();
+            //定义射线
+            var ray3D: Ray3D = new Ray3D(rayPosition, rayDirection);
+            return ray3D;
+        }
+
+        /**
+		 * 屏幕坐标投影到场景坐标
+		 * @param nX 屏幕坐标X ([0-width])
+		 * @param nY 屏幕坐标Y ([0-height])
+		 * @param sZ 到屏幕的距离
+		 * @param v 场景坐标（输出）
+		 * @return 场景坐标
+		 */
+        public unproject(sX: number, sY: number, sZ: number, v: Vector3D = null): Vector3D
+        {
+            var gpuPos: Point = this.screenToGpuPosition(new Point(sX, sY));
+            return this._camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
+        }
+
+        /**
+		 * 屏幕坐标转GPU坐标
+		 * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
+		 * @return GPU坐标 (x:[-1,1],y:[-1-1])
+		 */
+        public screenToGpuPosition(screenPos: Point): Point
+        {
+            var gpuPos: Point = new Point();
+            gpuPos.x = (screenPos.x * 2 - this._canvas.width) / this._canvas.width;
+            gpuPos.y = (screenPos.y * 2 - this._canvas.height) / this._canvas.width;
+            return gpuPos;
         }
     }
 }

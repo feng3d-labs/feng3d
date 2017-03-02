@@ -37,18 +37,39 @@ module feng3d
 		 */
         public get viewProjection(): Matrix3D
         {
-
             if (this._viewProjectionDirty)
             {
-                var inverseSceneTransform = this.object3D ? this.object3D.transform.inverseGlobalMatrix3D : new Matrix3D();
                 //场景空间转摄像机空间
-                this._viewProjection.copyFrom(inverseSceneTransform);
+                this._viewProjection.copyFrom(this.inverseSceneTransform);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
                 this._viewProjection.append(this._lens.matrix);
                 this._viewProjectionDirty = false;
             }
 
             return this._viewProjection;
+        }
+
+        public get inverseSceneTransform()
+        {
+            return this.object3D ? this.object3D.transform.inverseGlobalMatrix3D : new Matrix3D();
+        }
+
+        public get globalMatrix3D()
+        {
+            return this.object3D ? this.object3D.transform.globalMatrix3D : new Matrix3D();
+        }
+
+        /**
+		 * 屏幕坐标投影到场景坐标
+		 * @param nX 屏幕坐标X -1（左） -> 1（右）
+		 * @param nY 屏幕坐标Y -1（上） -> 1（下）
+		 * @param sZ 到屏幕的距离
+		 * @param v 场景坐标（输出）
+		 * @return 场景坐标
+		 */
+        public unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D
+        {
+            return this.globalMatrix3D.transformVector(this.lens.unproject(nX, nY, sZ, v), v);
         }
 
         /**
