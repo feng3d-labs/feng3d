@@ -16,8 +16,8 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.Context3D = WebGL2RenderingContext;
-    feng3d.contextId = "webgl2";
+    feng3d.Context3D = WebGLRenderingContext;
+    feng3d.contextId = "webgl";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -5608,7 +5608,8 @@ var feng3d;
         context3D.bindBuffer(indexBuffer.target, buffer);
         context3D.lineWidth(1);
         if (instanceCount > 1) {
-            context3D.drawElementsInstanced(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset, instanceCount);
+            ext = ext || context3D.getExtension('ANGLE_instanced_arrays');
+            ext.drawArraysInstancedANGLE(shaderParams.renderMode, 0, indexBuffer.count, instanceCount);
         }
         else {
             context3D.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
@@ -5639,8 +5640,10 @@ var feng3d;
             default:
                 throw `无法识别的attribute类型 ${activeInfo.name} ${buffer.data}`;
         }
-        if (buffer.divisor > 0)
-            context3D.vertexAttribDivisor(location, buffer.divisor);
+        if (buffer.divisor > 0) {
+            ext = ext || context3D.getExtension('ANGLE_instanced_arrays');
+            ext.vertexAttribDivisorANGLE(location, buffer.divisor);
+        }
     }
     /**
      * 设置环境Uniform数据
@@ -5686,6 +5689,7 @@ var feng3d;
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
     }
+    var ext;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -5719,20 +5723,22 @@ var feng3d;
          * 渲染
          */
         draw(context3D, scene3D, camera) {
-            this.frameBufferObject.activate(context3D, context3D.drawingBufferWidth, context3D.drawingBufferHeight);
+            // this.frameBufferObject.activate(context3D,
+            //     context3D.drawingBufferWidth,
+            //     context3D.drawingBufferHeight);
             //启动裁剪，只绘制一个像素
             context3D.enable(feng3d.Context3D.SCISSOR_TEST);
             context3D.scissor(0, 0, 1, 1);
             super.draw(context3D, scene3D, camera);
             context3D.disable(feng3d.Context3D.SCISSOR_TEST);
             //读取鼠标拾取索引
-            this.frameBufferObject.readBuffer(context3D, "objectID");
+            // this.frameBufferObject.readBuffer(context3D, "objectID");
             var data = new Uint8Array(4);
             context3D.readPixels(0, 0, 1, 1, feng3d.Context3D.RGBA, feng3d.Context3D.UNSIGNED_BYTE, data);
             var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3]; //最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
             // console.log(`选中索引3D对象${id}`, data.toString());
             this.selectedObject3D = feng3d.Object3D.getObject3D(id);
-            this.frameBufferObject.deactivate(context3D);
+            // this.frameBufferObject.deactivate(context3D);
         }
         /**
          * 激活渲染程序

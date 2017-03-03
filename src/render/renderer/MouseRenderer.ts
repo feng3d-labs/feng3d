@@ -26,9 +26,9 @@ module feng3d
         public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D)
         {
 
-            this.frameBufferObject.activate(context3D,
-                context3D.drawingBufferWidth,
-                context3D.drawingBufferHeight);
+            // this.frameBufferObject.activate(context3D,
+            //     context3D.drawingBufferWidth,
+            //     context3D.drawingBufferHeight);
 
             //启动裁剪，只绘制一个像素
             context3D.enable(Context3D.SCISSOR_TEST);
@@ -37,7 +37,7 @@ module feng3d
             context3D.disable(Context3D.SCISSOR_TEST);
 
             //读取鼠标拾取索引
-            this.frameBufferObject.readBuffer(context3D, "objectID");
+            // this.frameBufferObject.readBuffer(context3D, "objectID");
 
             var data = new Uint8Array(4);
             context3D.readPixels(0, 0, 1, 1, Context3D.RGBA, Context3D.UNSIGNED_BYTE, data);
@@ -46,7 +46,7 @@ module feng3d
 
             this.selectedObject3D = Object3D.getObject3D(id);
 
-            this.frameBufferObject.deactivate(context3D);
+            // this.frameBufferObject.deactivate(context3D);
         }
 
         /**

@@ -136,7 +136,8 @@ module feng3d
         context3D.lineWidth(1);
         if (instanceCount > 1)
         {
-            context3D.drawElementsInstanced(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset, instanceCount)
+             ext =ext || context3D.getExtension('ANGLE_instanced_arrays');
+            ext.drawArraysInstancedANGLE(shaderParams.renderMode,0, indexBuffer.count, instanceCount)
         }
         else
         {
@@ -172,8 +173,10 @@ module feng3d
             default:
                 throw `无法识别的attribute类型 ${activeInfo.name} ${buffer.data}`;
         }
-        if (buffer.divisor > 0)
-            context3D.vertexAttribDivisor(location, buffer.divisor);
+        if (buffer.divisor > 0){
+            ext =ext || context3D.getExtension('ANGLE_instanced_arrays');
+            ext.vertexAttribDivisorANGLE(location, buffer.divisor);
+        }
     }
 
     /**
@@ -224,4 +227,6 @@ module feng3d
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
     }
+    
+var ext
 }
