@@ -5062,7 +5062,7 @@ var feng3d;
         context3D.linkProgram(shaderProgram);
         // 渲染程序创建失败时给出弹框
         if (!context3D.getProgramParameter(shaderProgram, context3D.LINK_STATUS)) {
-            alert("无法初始化渲染程序。");
+            alert(`无法初始化渲染程序。\n${vertexCode}\n${fragmentCode}`);
         }
         return shaderProgram;
     }
@@ -9846,7 +9846,7 @@ var feng3d;
                 vector3DData[index * 4] = data.r;
                 vector3DData[index * 4 + 1] = data.g;
                 vector3DData[index * 4 + 2] = data.b;
-                vector3DData[index * 4 + 2] = data.a;
+                vector3DData[index * 4 + 3] = data.a;
             }
             else {
                 throw new Error(`无法处理${feng3d.ClassUtils.getQualifiedClassName(data)}粒子属性`);

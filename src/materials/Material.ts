@@ -11,7 +11,7 @@ module feng3d
         /**
         * 渲染模式
         */
-        protected renderMode = RenderMode.TRIANGLES;
+        public renderMode = RenderMode.TRIANGLES;
 
         /**
          * 着色器名称

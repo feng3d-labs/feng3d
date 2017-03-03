@@ -5189,7 +5189,7 @@ declare module feng3d {
         /**
         * 渲染模式
         */
-        protected renderMode: RenderMode;
+        renderMode: RenderMode;
         /**
          * 着色器名称
          */

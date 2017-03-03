@@ -194,7 +194,7 @@ module feng3d
                 vector3DData[index * 4] = data.r;
                 vector3DData[index * 4 + 1] = data.g;
                 vector3DData[index * 4 + 2] = data.b;
-                vector3DData[index * 4 + 2] = data.a;
+                vector3DData[index * 4 + 3] = data.a;
             } else
             {
                 throw new Error(`无法处理${ClassUtils.getQualifiedClassName(data)}粒子属性`);

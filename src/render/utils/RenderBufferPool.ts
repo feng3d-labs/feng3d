@@ -318,7 +318,7 @@ module feng3d
         // 渲染程序创建失败时给出弹框
         if (!context3D.getProgramParameter(shaderProgram, context3D.LINK_STATUS))
         {
-            alert("无法初始化渲染程序。");
+            alert(`无法初始化渲染程序。\n${vertexCode}\n${fragmentCode}`);
         }
 
         return shaderProgram;
