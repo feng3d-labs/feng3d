@@ -17,7 +17,6 @@ module feng3d.shortcut
 		 */
 		constructor()
 		{
-
 			super();
 			this.keyStateDic = {};
 		}
@@ -27,9 +26,8 @@ module feng3d.shortcut
 		 * @param key 	键名称
 		 * @param data	携带数据
 		 */
-		public pressKey(key: string, data: Object = null): void
+		public pressKey(key: string, data: InputEvent): void
 		{
-
 			this.keyStateDic[key] = true;
 			this.dispatchEvent(new ShortCutEvent(key, data));
 		}
@@ -39,9 +37,8 @@ module feng3d.shortcut
 		 * @param key	键名称
 		 * @param data	携带数据
 		 */
-		public releaseKey(key: string, data: Object = null): void
+		public releaseKey(key: string, data: InputEvent): void
 		{
-
 			this.keyStateDic[key] = false;
 			this.dispatchEvent(new ShortCutEvent(key, data));
 		}
@@ -52,7 +49,6 @@ module feng3d.shortcut
 		 */
 		public getKeyState(key: string): Boolean
 		{
-
 			return !!this.keyStateDic[key];
 		}
 	}

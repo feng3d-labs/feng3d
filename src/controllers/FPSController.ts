@@ -119,20 +119,18 @@ module feng3d
         /**
          * 处理鼠标移动事件
          */
-        private onMouseMove(event: Event)
+        private onMouseMove(event: InputEvent)
         {
-
-            var mouseEvent: MouseEvent = event.data;
             if (this.target == null)
                 return;
 
             if (this.preMousePoint == null)
             {
-                this.preMousePoint = { x: mouseEvent.clientX, y: mouseEvent.clientY };
+                this.preMousePoint = { x: event.clientX, y: event.clientY };
                 return;
             }
             //计算旋转
-            var offsetPoint = { x: mouseEvent.clientX - this.preMousePoint.x, y: mouseEvent.clientY - this.preMousePoint.y };
+            var offsetPoint = { x: event.clientX - this.preMousePoint.x, y: event.clientY - this.preMousePoint.y };
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
             var matrix3d = this.target.matrix3d;
@@ -142,17 +140,16 @@ module feng3d
             matrix3d.appendRotation(offsetPoint.x, Vector3D.Y_AXIS, position);
             this.target.matrix3d = matrix3d;
             //
-            this.preMousePoint = { x: mouseEvent.clientX, y: mouseEvent.clientY };
+            this.preMousePoint = { x: event.clientX, y: event.clientY };
         }
 
         /**
 		 * 键盘按下事件
 		 */
-        private onKeydown(event: Event): void
+        private onKeydown(event: InputEvent): void
         {
 
-            var keyboardEvent: KeyboardEvent = event.data;
-            var boardKey = String.fromCharCode(keyboardEvent.keyCode).toLocaleLowerCase();
+            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
 
@@ -164,11 +161,9 @@ module feng3d
 		/**
 		 * 键盘弹起事件
 		 */
-        private onKeyup(event: Event): void
+        private onKeyup(event: InputEvent): void
         {
-
-            var keyboardEvent: KeyboardEvent = event.data;
-            var boardKey = String.fromCharCode(keyboardEvent.keyCode).toLocaleLowerCase();
+            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
 

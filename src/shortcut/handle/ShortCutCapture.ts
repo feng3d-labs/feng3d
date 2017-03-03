@@ -114,7 +114,7 @@ module feng3d.shortcut
 		/**
 		 * 派发命令
 		 */
-		private dispatchCommands(commands: string[], data: Object): void
+		private dispatchCommands(commands: string[], data: InputEvent): void
 		{
 
 			for (var i = 0; i < commands.length; i++)

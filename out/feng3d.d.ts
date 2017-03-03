@@ -1271,20 +1271,32 @@ declare module feng3d {
     }
     class InputEventType {
         static readonly instance: InputEventType;
-        /** 鼠标单击 */
-        readonly CLICK: string;
         /** 鼠标双击 */
         readonly DOUBLE_CLICK: string;
+        /** 鼠标单击 */
+        readonly CLICK: string;
         /** 鼠标按下 */
         readonly MOUSE_DOWN: string;
+        /** 鼠标弹起 */
+        readonly MOUSE_UP: string;
+        /** 鼠标中键单击 */
+        readonly MIDDLE_CLICK: string;
+        /** 鼠标中键按下 */
+        readonly MIDDLE_MOUSE_DOWN: string;
+        /** 鼠标中键弹起 */
+        readonly MIDDLE_MOUSE_UP: string;
+        /** 鼠标右键单击 */
+        readonly RIGHT_CLICK: string;
+        /** 鼠标右键按下 */
+        readonly RIGHT_MOUSE_DOWN: string;
+        /** 鼠标右键弹起 */
+        readonly RIGHT_MOUSE_UP: string;
         /** 鼠标移动 */
         readonly MOUSE_MOVE: string;
         /** 鼠标移出 */
         readonly MOUSE_OUT: string;
         /** 鼠标移入 */
         readonly MOUSE_OVER: string;
-        /** 鼠标弹起 */
-        readonly MOUSE_UP: string;
         /** 鼠标滚动滚轮 */
         readonly MOUSE_WHEEL: string;
         /** 键盘按下 */
@@ -1296,9 +1308,11 @@ declare module feng3d {
     }
     class InputEvent extends Event {
         static readonly types: InputEventType;
+        data: Input;
         clientX: number;
         clientY: number;
-        constructor(event: MouseEvent | WheelEvent | KeyboardEvent);
+        keyCode: number;
+        constructor(event: MouseEvent | WheelEvent | KeyboardEvent, data?: Input, bubbles?: boolean);
     }
 }
 declare module feng3d.shortcut {
@@ -1374,13 +1388,13 @@ declare module feng3d.shortcut {
          * @param key 	键名称
          * @param data	携带数据
          */
-        pressKey(key: string, data?: Object): void;
+        pressKey(key: string, data: InputEvent): void;
         /**
          * 释放键
          * @param key	键名称
          * @param data	携带数据
          */
-        releaseKey(key: string, data?: Object): void;
+        releaseKey(key: string, data: InputEvent): void;
         /**
          * 获取按键状态
          * @param key 按键名称
@@ -1627,12 +1641,12 @@ declare module feng3d.shortcut {
         /**
          * 携带数据
          */
-        data: Object;
+        data: InputEvent;
         /**
          * 构建
          * @param command		命令名称
          */
-        constructor(command: string, data?: Object);
+        constructor(command: string, data: InputEvent);
     }
 }
 declare module feng3d.shortcut {

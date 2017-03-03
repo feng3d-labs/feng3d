@@ -1368,12 +1368,12 @@ var feng3d;
          * 键盘按下事件
          */
         onMouseKey(event) {
-            if (event.hasOwnProperty("clientX")) {
+            if (event["clientX"] != undefined) {
                 event = event;
                 this.clientX = event.clientX;
                 this.clientY = event.clientY;
             }
-            this.dispatchEvent(new InputEvent(event));
+            this.dispatchEvent(new InputEvent(event, this, true));
         }
         /**
          *
@@ -1390,20 +1390,32 @@ var feng3d;
     feng3d.Input = Input;
     class InputEventType {
         constructor() {
-            /** 鼠标单击 */
-            this.CLICK = "click";
             /** 鼠标双击 */
             this.DOUBLE_CLICK = "dblclick";
+            /** 鼠标单击 */
+            this.CLICK = "click";
             /** 鼠标按下 */
             this.MOUSE_DOWN = "mousedown";
+            /** 鼠标弹起 */
+            this.MOUSE_UP = "mouseup";
+            /** 鼠标中键单击 */
+            this.MIDDLE_CLICK = "middleClick";
+            /** 鼠标中键按下 */
+            this.MIDDLE_MOUSE_DOWN = "middleMousedown";
+            /** 鼠标中键弹起 */
+            this.MIDDLE_MOUSE_UP = "middleMouseup";
+            /** 鼠标右键单击 */
+            this.RIGHT_CLICK = "rightClick";
+            /** 鼠标右键按下 */
+            this.RIGHT_MOUSE_DOWN = "rightMousedown";
+            /** 鼠标右键弹起 */
+            this.RIGHT_MOUSE_UP = "rightMouseup";
             /** 鼠标移动 */
             this.MOUSE_MOVE = "mousemove";
             /** 鼠标移出 */
             this.MOUSE_OUT = "mouseout";
             /** 鼠标移入 */
             this.MOUSE_OVER = "mouseover";
-            /** 鼠标弹起 */
-            this.MOUSE_UP = "mouseup";
             /** 鼠标滚动滚轮 */
             this.MOUSE_WHEEL = "mousewheel";
             /** 键盘按下 */
@@ -1417,19 +1429,29 @@ var feng3d;
     InputEventType.instance = new InputEventType();
     feng3d.InputEventType = InputEventType;
     class InputEvent extends feng3d.Event {
-        constructor(event) {
-            super(event.type, event, event.bubbles);
-            this.clientX = 0;
-            this.clientY = 0;
-            if (event.hasOwnProperty("clientX")) {
+        constructor(event, data = null, bubbles = true) {
+            super(event.type, null, true);
+            if (event["clientX"] != undefined) {
                 event = event;
                 this.clientX = event.clientX;
                 this.clientY = event.clientY;
+                if (mouseTypeMap[event.type]) {
+                    this["_type"] = mouseTypeMap[event.type][event.button];
+                }
+            }
+            if (event["keyCode"] != undefined) {
+                event = event;
+                this.keyCode = event.keyCode;
             }
         }
     }
     InputEvent.types = InputEventType.instance;
     feng3d.InputEvent = InputEvent;
+    var mouseTypeMap = {
+        "click": ["click", "middleClick", "rightClick"],
+        "mousedown": ["mousedown", "middleMousedown", "rightMousedown"],
+        "mouseup": ["mouseup", "middleMouseup", "rightMouseup"],
+    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -1450,25 +1472,33 @@ var feng3d;
                  */
                 this.mouseKeyDic = {};
                 this.keyState = shortCutContext.keyState;
+                var input = feng3d.Input.instance;
+                var types = feng3d.InputEvent.types;
                 //
-                window.addEventListener("keydown", this.onKeydown.bind(this));
-                window.addEventListener("keyup", this.onKeyup.bind(this));
+                input.addEventListener(types.KEY_DOWN, this.onKeydown, this);
+                input.addEventListener(types.KEY_UP, this.onKeyup, this);
                 this.boardKeyDic = {};
                 this.defaultSupportKeys();
                 //监听鼠标事件
                 var mouseEvents = [
-                    "click",
-                    "dblclick",
-                    "mousedown",
-                    "mousemove",
-                    "mouseout",
-                    "mouseover",
-                    "mouseup",
+                    types.DOUBLE_CLICK,
+                    types.CLICK,
+                    types.MOUSE_DOWN,
+                    types.MOUSE_UP,
+                    types.MIDDLE_CLICK,
+                    types.MIDDLE_MOUSE_DOWN,
+                    types.MIDDLE_MOUSE_UP,
+                    types.RIGHT_CLICK,
+                    types.RIGHT_MOUSE_DOWN,
+                    types.RIGHT_MOUSE_UP,
+                    types.MOUSE_MOVE,
+                    types.MOUSE_OVER,
+                    types.MOUSE_OUT,
                 ];
                 for (var i = 0; i < mouseEvents.length; i++) {
-                    window.addEventListener(mouseEvents[i], this.onMouseOnce.bind(this));
+                    input.addEventListener(mouseEvents[i], this.onMouseOnce, this);
                 }
-                window.addEventListener("mousewheel", this.onMousewheel.bind(this));
+                input.addEventListener(types.MOUSE_WHEEL, this.onMousewheel, this);
             }
             /**
              * 默认支持按键
@@ -1546,7 +1576,7 @@ var feng3d;
              * @param key 	键名称
              * @param data	携带数据
              */
-            pressKey(key, data = null) {
+            pressKey(key, data) {
                 this.keyStateDic[key] = true;
                 this.dispatchEvent(new shortcut.ShortCutEvent(key, data));
             }
@@ -1555,7 +1585,7 @@ var feng3d;
              * @param key	键名称
              * @param data	携带数据
              */
-            releaseKey(key, data = null) {
+            releaseKey(key, data) {
                 this.keyStateDic[key] = false;
                 this.dispatchEvent(new shortcut.ShortCutEvent(key, data));
             }
@@ -1914,7 +1944,7 @@ var feng3d;
              * 构建
              * @param command		命令名称
              */
-            constructor(command, data = null) {
+            constructor(command, data) {
                 super(command, data);
             }
         }
@@ -9243,15 +9273,14 @@ var feng3d;
          * 处理鼠标移动事件
          */
         onMouseMove(event) {
-            var mouseEvent = event.data;
             if (this.target == null)
                 return;
             if (this.preMousePoint == null) {
-                this.preMousePoint = { x: mouseEvent.clientX, y: mouseEvent.clientY };
+                this.preMousePoint = { x: event.clientX, y: event.clientY };
                 return;
             }
             //计算旋转
-            var offsetPoint = { x: mouseEvent.clientX - this.preMousePoint.x, y: mouseEvent.clientY - this.preMousePoint.y };
+            var offsetPoint = { x: event.clientX - this.preMousePoint.x, y: event.clientY - this.preMousePoint.y };
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
             var matrix3d = this.target.matrix3d;
@@ -9261,14 +9290,13 @@ var feng3d;
             matrix3d.appendRotation(offsetPoint.x, feng3d.Vector3D.Y_AXIS, position);
             this.target.matrix3d = matrix3d;
             //
-            this.preMousePoint = { x: mouseEvent.clientX, y: mouseEvent.clientY };
+            this.preMousePoint = { x: event.clientX, y: event.clientY };
         }
         /**
          * 键盘按下事件
          */
         onKeydown(event) {
-            var keyboardEvent = event.data;
-            var boardKey = String.fromCharCode(keyboardEvent.keyCode).toLocaleLowerCase();
+            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
             if (!this.keyDownDic[boardKey])
@@ -9279,8 +9307,7 @@ var feng3d;
          * 键盘弹起事件
          */
         onKeyup(event) {
-            var keyboardEvent = event.data;
-            var boardKey = String.fromCharCode(keyboardEvent.keyCode).toLocaleLowerCase();
+            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
             this.keyDownDic[boardKey] = false;
@@ -11806,8 +11833,8 @@ var feng3d;
          * 监听鼠标移动事件获取鼠标位置
          */
         onMousemove(event) {
-            this.mouseX = event.data.clientX;
-            this.mouseY = event.data.clientY;
+            this.mouseX = event.clientX;
+            this.mouseY = event.clientY;
         }
         /**
          * 渲染

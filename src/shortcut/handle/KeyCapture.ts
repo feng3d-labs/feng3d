@@ -36,28 +36,36 @@ module feng3d.shortcut
 		{
 
 			this.keyState = shortCutContext.keyState;
+			var input = Input.instance;
+			var types = InputEvent.types;
 			//
-			window.addEventListener("keydown", this.onKeydown.bind(this));
-			window.addEventListener("keyup", this.onKeyup.bind(this));
+			input.addEventListener(types.KEY_DOWN, this.onKeydown, this);
+			input.addEventListener(types.KEY_UP, this.onKeyup, this);
 
 			this.boardKeyDic = {};
 			this.defaultSupportKeys();
 
 			//监听鼠标事件
 			var mouseEvents = [ //
-				"click", //
-				"dblclick", //
-				"mousedown", //
-				"mousemove", //
-				"mouseout", //
-				"mouseover", //
-				"mouseup", //
+				types.DOUBLE_CLICK, //
+				types.CLICK, //
+				types.MOUSE_DOWN,
+				types.MOUSE_UP,
+				types.MIDDLE_CLICK,
+				types.MIDDLE_MOUSE_DOWN,
+				types.MIDDLE_MOUSE_UP,
+				types.RIGHT_CLICK,
+				types.RIGHT_MOUSE_DOWN,
+				types.RIGHT_MOUSE_UP,
+				types.MOUSE_MOVE,
+				types.MOUSE_OVER,
+				types.MOUSE_OUT,
 			];
 			for (var i = 0; i < mouseEvents.length; i++)
 			{
-				window.addEventListener(mouseEvents[i], this.onMouseOnce.bind(this));
+				input.addEventListener(mouseEvents[i], this.onMouseOnce, this);
 			}
-			window.addEventListener("mousewheel", this.onMousewheel.bind(this));
+			input.addEventListener(types.MOUSE_WHEEL, this.onMousewheel, this);
 		}
 
 		/**
@@ -65,7 +73,6 @@ module feng3d.shortcut
 		 */
 		private defaultSupportKeys(): void
 		{
-
 			this.boardKeyDic[17] = "ctrl";
 			this.boardKeyDic[16] = "shift";
 			this.boardKeyDic[32] = "escape";
@@ -75,9 +82,8 @@ module feng3d.shortcut
 		/**
 		 * 鼠标事件
 		 */
-		private onMouseOnce(event: MouseEvent): void
+		private onMouseOnce(event: InputEvent): void
 		{
-
 			var mouseKey: string = event.type;
 			this.keyState.pressKey(mouseKey, event);
 			this.keyState.releaseKey(mouseKey, event);
@@ -86,9 +92,8 @@ module feng3d.shortcut
 		/**
 		 * 鼠标事件
 		 */
-		private onMousewheel(event: WheelEvent): void
+		private onMousewheel(event: InputEvent): void
 		{
-
 			var mouseKey: string = event.type;
 			this.keyState.pressKey(mouseKey, event);
 			this.keyState.releaseKey(mouseKey, event);
@@ -97,9 +102,8 @@ module feng3d.shortcut
 		/**
 		 * 键盘按下事件
 		 */
-		private onKeydown(event: KeyboardEvent): void
+		private onKeydown(event: InputEvent): void
 		{
-
 			var boardKey: string = this.getBoardKey(event.keyCode);
 			if (boardKey != null)
 				this.keyState.pressKey(boardKey, event);
@@ -108,9 +112,8 @@ module feng3d.shortcut
 		/**
 		 * 键盘弹起事件
 		 */
-		private onKeyup(event: KeyboardEvent): void
+		private onKeyup(event: InputEvent): void
 		{
-
 			var boardKey: string = this.getBoardKey(event.keyCode);
 			if (boardKey)
 				this.keyState.releaseKey(boardKey, event);

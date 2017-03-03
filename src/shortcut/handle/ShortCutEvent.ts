@@ -10,15 +10,14 @@ module feng3d.shortcut
 		/**
 		 * 携带数据
 		 */
-		public data: Object;
+		public data: InputEvent;
 
 		/**
 		 * 构建
 		 * @param command		命令名称
 		 */
-		constructor(command: string, data: Object = null)
+		constructor(command: string, data: InputEvent)
 		{
-
 			super(command, data);
 		}
 	}

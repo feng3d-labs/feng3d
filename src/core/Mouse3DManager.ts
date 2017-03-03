@@ -49,7 +49,7 @@ module feng3d
         /**
          * 监听鼠标事件收集事件类型
          */
-        private onMouseEvent(event: Event)
+        private onMouseEvent(event: InputEvent)
         {
             if (this.mouseEventTypes.indexOf(event.type) == -1)
                 this.mouseEventTypes.push(event.type);
@@ -58,10 +58,10 @@ module feng3d
         /**
          * 监听鼠标移动事件获取鼠标位置
          */
-        private onMousemove(event: Event)
+        private onMousemove(event: InputEvent)
         {
-            this.mouseX = event.data.clientX;
-            this.mouseY = event.data.clientY;
+            this.mouseX = event.clientX;
+            this.mouseY = event.clientY;
         }
 
         /**
