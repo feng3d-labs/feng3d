@@ -2780,7 +2780,7 @@ var feng3d;
             this.b = b / 0xff;
             this.a = a / 0xff;
         }
-        fromUnit(color, hasAlpha = true) {
+        fromUnit(color, hasAlpha = false) {
             this.a = (hasAlpha ? (color >> 24) & 0xff : 0xff) / 0xff;
             this.r = ((color >> 16) & 0xff) / 0xff;
             this.g = ((color >> 8) & 0xff) / 0xff;

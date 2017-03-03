@@ -57,7 +57,7 @@ module feng3d
             this.a = a / 0xff;
         }
 
-        public fromUnit(color: number, hasAlpha: boolean = true)
+        public fromUnit(color: number, hasAlpha: boolean = false)
         {
 
             this.a = (hasAlpha ? (color >> 24) & 0xff : 0xff) / 0xff;
