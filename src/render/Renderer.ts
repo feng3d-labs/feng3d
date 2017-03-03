@@ -185,8 +185,8 @@ module feng3d
         var location = context3D.getUniformLocation(shaderProgram, activeInfo.name);
         switch (activeInfo.type)
         {
-            case Context3D.UNSIGNED_INT:
-                context3D.uniform1ui(location, data);
+            case Context3D.INT:
+                context3D.uniform1i(location, data);
                 break;
             case Context3D.FLOAT_MAT4:
                 context3D.uniformMatrix4fv(location, false, data.rawData);

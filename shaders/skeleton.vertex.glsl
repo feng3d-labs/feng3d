@@ -1,24 +1,24 @@
-#version 300 es
+
 precision mediump float;
 
 //此处将填充宏定义
 #define macros
 
-in vec3 a_position;
-in vec2 a_uv;
+attribute vec3 a_position;
+attribute vec2 a_uv;
 
-in vec4 a_jointindex0;
-in vec4 a_jointweight0;
+attribute vec4 a_jointindex0;
+attribute vec4 a_jointweight0;
 
-in vec4 a_jointindex1;
-in vec4 a_jointweight1;
+attribute vec4 a_jointindex1;
+attribute vec4 a_jointweight1;
 
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 
 uniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];
 
-out vec2 v_uv;
+varying vec2 v_uv;
 
 void main(void) {
 

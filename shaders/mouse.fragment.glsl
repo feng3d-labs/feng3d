@@ -1,10 +1,8 @@
-#version 300 es
+
 
 precision highp float;
 
-uniform uint u_objectID;
-
-layout(location = 0) out vec4 o_objectID;
+uniform int u_objectID;
 
 void main(){
 
@@ -12,11 +10,11 @@ void main(){
     const float invColor = 1.0/255.0;
     float temp = float(u_objectID);
     temp = floor(temp) * invColor;
-    o_objectID.x = fract(temp);
+    gl_FragColor.x = fract(temp);
     temp = floor(temp) * invColor;
-    o_objectID.y = fract(temp);
+    gl_FragColor.y = fract(temp);
     temp = floor(temp) * invColor;
-    o_objectID.z = fract(temp);
+    gl_FragColor.z = fract(temp);
     temp = floor(temp) * invColor;
-    o_objectID.w = fract(temp);
+    gl_FragColor.w = fract(temp);
 }

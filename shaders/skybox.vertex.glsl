@@ -1,13 +1,13 @@
-#version 300 es
 
-in vec3 a_position;
+
+attribute vec3 a_position;
 
 uniform mat4 u_cameraMatrix;
 uniform mat4 u_viewProjection;
 
 uniform vec3 u_skyBoxSize;
 
-out vec3 v_worldPos;
+varying vec3 v_worldPos;
 
 void main(){
     vec3 worldPos = a_position.xyz * u_skyBoxSize.xyz + u_cameraMatrix[3].xyz;

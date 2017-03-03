@@ -5648,8 +5648,8 @@ var feng3d;
     function setContext3DUniform(context3D, shaderProgram, activeInfo, data) {
         var location = context3D.getUniformLocation(shaderProgram, activeInfo.name);
         switch (activeInfo.type) {
-            case feng3d.Context3D.UNSIGNED_INT:
-                context3D.uniform1ui(location, data);
+            case feng3d.Context3D.INT:
+                context3D.uniform1i(location, data);
                 break;
             case feng3d.Context3D.FLOAT_MAT4:
                 context3D.uniformMatrix4fv(location, false, data.rawData);
