@@ -321,7 +321,7 @@ module feng3d
         context3D.compileShader(shader);
         if (!context3D.getShaderParameter(shader, context3D.COMPILE_STATUS))
         {
-            alert("编译渲染程序时发生错误: " + context3D.getShaderInfoLog(shader));
+            alert(`编译渲染程序时发生错误: ${context3D.getShaderInfoLog(shader)}\n${shaderCode}`);
         }
 
         return shader;

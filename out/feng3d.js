@@ -6,13 +6,6 @@ var feng3d;
      */
     var $REVISION = "0.0.0";
     console.log(`Feng3D version ${$REVISION}`);
-    try {
-        WebGL2RenderingContext;
-    }
-    catch (error) {
-        alert("浏览器不支持 WebGL2!");
-        window.location.href = "https://wardenfeng.github.io/#!blogs/2017/01/10/1.md";
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -5070,7 +5063,7 @@ var feng3d;
         context3D.shaderSource(shader, shaderCode);
         context3D.compileShader(shader);
         if (!context3D.getShaderParameter(shader, context3D.COMPILE_STATUS)) {
-            alert("编译渲染程序时发生错误: " + context3D.getShaderInfoLog(shader));
+            alert(`编译渲染程序时发生错误: ${context3D.getShaderInfoLog(shader)}\n${shaderCode}`);
         }
         return shader;
     }
