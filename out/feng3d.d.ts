@@ -1257,9 +1257,9 @@ declare module feng3d {
      */
     class Input extends EventDispatcher {
         static readonly instance: Input;
-        private readonly _addedTypes;
         clientX: number;
         clientY: number;
+        constructor();
         /**
          * 键盘按下事件
          */

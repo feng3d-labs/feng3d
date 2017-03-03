@@ -9,10 +9,22 @@ module feng3d
     {
         public static readonly instance = new Input();
 
-        private readonly _addedTypes: { [type: string]: boolean } = {};
-
         public clientX: number = 0;
         public clientY: number = 0;
+
+        constructor()
+        {
+            super();
+
+            var mouseKeyType = [
+                "click", "dblclick",
+                "mousedown", "mousemove", "mouseout", "mouseover", "mouseup", "mousewheel",
+                "keydown", "keypress", "keyup"];
+            for (var i = 0; i < mouseKeyType.length; i++)
+            {
+                window.addEventListener(mouseKeyType[i], this.onMouseKey.bind(this));
+            }
+        }
 
         /**
 		 * 键盘按下事件
@@ -35,12 +47,6 @@ module feng3d
         public addEventListener(type: string, listener: (event: InputEvent) => void, thisObject: any, priority = 0): void
         {
             super.addEventListener(type, listener, thisObject, priority);
-
-            if (!this._addedTypes[type])
-            {
-                window.addEventListener(type, this.onMouseKey.bind(this));
-                this._addedTypes[type] = true;
-            }
         }
     }
 
@@ -57,17 +63,17 @@ module feng3d
         /** 鼠标弹起 */
         public readonly MOUSE_UP = "mouseup";
         /** 鼠标中键单击 */
-        public readonly MIDDLE_CLICK = "middleClick";
+        public readonly MIDDLE_CLICK = "middleclick";
         /** 鼠标中键按下 */
-        public readonly MIDDLE_MOUSE_DOWN = "middleMousedown";
+        public readonly MIDDLE_MOUSE_DOWN = "middlemousedown";
         /** 鼠标中键弹起 */
-        public readonly MIDDLE_MOUSE_UP = "middleMouseup";
+        public readonly MIDDLE_MOUSE_UP = "middlemouseup";
         /** 鼠标右键单击 */
-        public readonly RIGHT_CLICK = "rightClick";
+        public readonly RIGHT_CLICK = "rightclick";
         /** 鼠标右键按下 */
-        public readonly RIGHT_MOUSE_DOWN = "rightMousedown";
+        public readonly RIGHT_MOUSE_DOWN = "rightmousedown";
         /** 鼠标右键弹起 */
-        public readonly RIGHT_MOUSE_UP = "rightMouseup";
+        public readonly RIGHT_MOUSE_UP = "rightmouseup";
         /** 鼠标移动 */
         public readonly MOUSE_MOVE = "mousemove";
         /** 鼠标移出 */
@@ -103,9 +109,9 @@ module feng3d
                 event = <MouseEvent>event;
                 this.clientX = event.clientX;
                 this.clientY = event.clientY;
-                if (mouseTypeMap[event.type])
+                if (["click", "mousedown", "mouseup"].indexOf(event.type) != -1)
                 {
-                    this["_type"] = mouseTypeMap[event.type][event.button];
+                    this["_type"] = ["", "middle", "right"][event.button] + event.type;
                 }
             }
             if (event["keyCode"] != undefined)
@@ -115,10 +121,4 @@ module feng3d
             }
         }
     }
-
-    var mouseTypeMap = {
-        "click": ["click", "middleClick", "rightClick"],
-        "mousedown": ["mousedown", "middleMousedown", "rightMousedown"],
-        "mouseup": ["mouseup", "middleMouseup", "rightMouseup"],
-    };
 }

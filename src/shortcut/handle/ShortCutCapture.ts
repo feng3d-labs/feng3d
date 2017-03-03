@@ -88,7 +88,6 @@ module feng3d.shortcut
 		 */
 		private init(): void
 		{
-
 			for (var i = 0; i < this.keys.length; i++)
 			{
 				this.keyState.addEventListener(this.keys[i].key, this.onCapture, this);
@@ -100,7 +99,6 @@ module feng3d.shortcut
 		 */
 		private onCapture(event: ShortCutEvent): void
 		{
-
 			var inWhen: Boolean = this.checkActivityStates(this.states);
 			var pressKeys: Boolean = this.checkActivityKeys(this.keys);
 

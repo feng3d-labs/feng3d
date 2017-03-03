@@ -1359,10 +1359,16 @@ var feng3d;
      */
     class Input extends feng3d.EventDispatcher {
         constructor() {
-            super(...arguments);
-            this._addedTypes = {};
+            super();
             this.clientX = 0;
             this.clientY = 0;
+            var mouseKeyType = [
+                "click", "dblclick",
+                "mousedown", "mousemove", "mouseout", "mouseover", "mouseup", "mousewheel",
+                "keydown", "keypress", "keyup"];
+            for (var i = 0; i < mouseKeyType.length; i++) {
+                window.addEventListener(mouseKeyType[i], this.onMouseKey.bind(this));
+            }
         }
         /**
          * 键盘按下事件
@@ -1380,10 +1386,6 @@ var feng3d;
          */
         addEventListener(type, listener, thisObject, priority = 0) {
             super.addEventListener(type, listener, thisObject, priority);
-            if (!this._addedTypes[type]) {
-                window.addEventListener(type, this.onMouseKey.bind(this));
-                this._addedTypes[type] = true;
-            }
         }
     }
     Input.instance = new Input();
@@ -1399,17 +1401,17 @@ var feng3d;
             /** 鼠标弹起 */
             this.MOUSE_UP = "mouseup";
             /** 鼠标中键单击 */
-            this.MIDDLE_CLICK = "middleClick";
+            this.MIDDLE_CLICK = "middleclick";
             /** 鼠标中键按下 */
-            this.MIDDLE_MOUSE_DOWN = "middleMousedown";
+            this.MIDDLE_MOUSE_DOWN = "middlemousedown";
             /** 鼠标中键弹起 */
-            this.MIDDLE_MOUSE_UP = "middleMouseup";
+            this.MIDDLE_MOUSE_UP = "middlemouseup";
             /** 鼠标右键单击 */
-            this.RIGHT_CLICK = "rightClick";
+            this.RIGHT_CLICK = "rightclick";
             /** 鼠标右键按下 */
-            this.RIGHT_MOUSE_DOWN = "rightMousedown";
+            this.RIGHT_MOUSE_DOWN = "rightmousedown";
             /** 鼠标右键弹起 */
-            this.RIGHT_MOUSE_UP = "rightMouseup";
+            this.RIGHT_MOUSE_UP = "rightmouseup";
             /** 鼠标移动 */
             this.MOUSE_MOVE = "mousemove";
             /** 鼠标移出 */
@@ -1435,8 +1437,8 @@ var feng3d;
                 event = event;
                 this.clientX = event.clientX;
                 this.clientY = event.clientY;
-                if (mouseTypeMap[event.type]) {
-                    this["_type"] = mouseTypeMap[event.type][event.button];
+                if (["click", "mousedown", "mouseup"].indexOf(event.type) != -1) {
+                    this["_type"] = ["", "middle", "right"][event.button] + event.type;
                 }
             }
             if (event["keyCode"] != undefined) {
@@ -1447,11 +1449,6 @@ var feng3d;
     }
     InputEvent.types = InputEventType.instance;
     feng3d.InputEvent = InputEvent;
-    var mouseTypeMap = {
-        "click": ["click", "middleClick", "rightClick"],
-        "mousedown": ["mousedown", "middleMousedown", "rightMousedown"],
-        "mouseup": ["mouseup", "middleMouseup", "rightMouseup"],
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
