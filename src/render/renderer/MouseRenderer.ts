@@ -10,14 +10,10 @@ module feng3d
 
         private shaderName = "mouse";
         public selectedObject3D: Object3D;
-        private frameBufferObject: FrameBufferObject;
 
         constructor()
         {
-
             super();
-            this.frameBufferObject = new FrameBufferObject();
-            this.frameBufferObject.colorAttachments["objectID"] = new RenderBuffer(0);
         }
 
         /**
@@ -25,7 +21,6 @@ module feng3d
 		 */
         public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D)
         {
-
             // this.frameBufferObject.activate(context3D,
             //     context3D.drawingBufferWidth,
             //     context3D.drawingBufferHeight);
@@ -54,7 +49,6 @@ module feng3d
          */
         protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string)
         {
-
             vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
             fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");
             return super.activeShaderProgram(context3D, vertexCode, fragmentCode);

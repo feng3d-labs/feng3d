@@ -4894,12 +4894,6 @@ var feng3d;
         getTexture(context3D, data) {
             return this.getContext3DBufferPool(context3D).getTexture(data);
         }
-        getFrameBuffer(context3D, frameBufferObject) {
-            return this.getContext3DBufferPool(context3D).getFrameBuffer(frameBufferObject);
-        }
-        getRenderBuffer(context3D, renderbuffer) {
-            return this.getContext3DBufferPool(context3D).getRenderBuffer(renderbuffer);
-        }
     }
     feng3d.RenderBufferPool = RenderBufferPool;
     /**
@@ -4911,11 +4905,6 @@ var feng3d;
          * @param context3D         3D环境
          */
         constructor(context3D) {
-            /**
-             * 帧缓冲对象池
-             */
-            this.framebufferPool = new feng3d.Map();
-            this.renderbufferPool = new feng3d.Map();
             /**
              * 纹理缓冲
              */
@@ -5006,24 +4995,6 @@ var feng3d;
             }
             this.textureBuffer.push(textureInfo.pixels, texture);
             return texture;
-        }
-        getFrameBuffer(frameBufferObject) {
-            var buffer = this.framebufferPool.get(frameBufferObject);
-            if (buffer != null) {
-                return buffer;
-            }
-            buffer = this.context3D.createFramebuffer();
-            this.framebufferPool.push(frameBufferObject, buffer);
-            return buffer;
-        }
-        getRenderBuffer(renderbuffer) {
-            var buffer = this.renderbufferPool.get(renderbuffer);
-            if (buffer != null) {
-                return buffer;
-            }
-            buffer = this.context3D.createRenderbuffer();
-            this.renderbufferPool.push(renderbuffer, buffer);
-            return buffer;
         }
         /**
          * 获取缓冲
@@ -5445,62 +5416,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 帧缓冲对象
-     * @author feng 2017-02-18
-     *
-     * @see playcanvas - device.js - testRenderable,updateBegin
-     */
-    class FrameBufferObject {
-        constructor() {
-            this.colorAttachments = {};
-        }
-        activate(context3D, width, height) {
-            var framebuffer = feng3d.context3DPool.getFrameBuffer(context3D, this);
-            context3D.bindFramebuffer(context3D.FRAMEBUFFER, framebuffer);
-            var buffers = [];
-            for (var key in this.colorAttachments) {
-                var renderbuffer = this.colorAttachments[key];
-                renderbuffer.activate(context3D, width, height);
-                buffers.push(renderbuffer.attachment);
-            }
-            context3D.drawBuffers(buffers);
-            for (var key in this.colorAttachments) {
-                this.colorAttachments[key].framebufferRenderbuffer(context3D);
-            }
-        }
-        readBuffer(context3D, name) {
-            context3D.readBuffer(this.colorAttachments[name].attachment);
-        }
-        deactivate(context3D) {
-            context3D.bindFramebuffer(context3D.FRAMEBUFFER, null);
-        }
-    }
-    feng3d.FrameBufferObject = FrameBufferObject;
-    class RenderBuffer {
-        constructor(index, internalformat = feng3d.Context3D.RGBA8, width = 100, height = 100) {
-            this.attachment = feng3d.Context3D["COLOR_ATTACHMENT" + index];
-            this.internalformat = internalformat;
-            this.width = width;
-            this.height = height;
-        }
-        activate(context3D, width, height) {
-            var renderBuffer = feng3d.context3DPool.getRenderBuffer(context3D, this);
-            context3D.bindRenderbuffer(context3D.RENDERBUFFER, renderBuffer);
-            context3D.renderbufferStorage(context3D.RENDERBUFFER, context3D.RGBA8, width, height);
-        }
-        framebufferRenderbuffer(context3D) {
-            var renderBuffer = feng3d.context3DPool.getRenderBuffer(context3D, this);
-            context3D.framebufferRenderbuffer(context3D.FRAMEBUFFER, this.attachment, context3D.RENDERBUFFER, renderBuffer);
-        }
-    }
-    feng3d.RenderBuffer = RenderBuffer;
-    class RenderTexture {
-    }
-    feng3d.RenderTexture = RenderTexture;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 渲染器
      * @author feng 2016-05-01
      */
@@ -5700,8 +5615,6 @@ var feng3d;
     class ForwardRenderer extends feng3d.Renderer {
         constructor() {
             super();
-            this.frameBufferObject = new feng3d.FrameBufferObject();
-            this.frameBufferObject.colorAttachments["forwardTexture"] = new feng3d.RenderBuffer(0);
         }
     }
     feng3d.ForwardRenderer = ForwardRenderer;
@@ -5716,8 +5629,6 @@ var feng3d;
         constructor() {
             super();
             this.shaderName = "mouse";
-            this.frameBufferObject = new feng3d.FrameBufferObject();
-            this.frameBufferObject.colorAttachments["objectID"] = new feng3d.RenderBuffer(0);
         }
         /**
          * 渲染

@@ -3168,8 +3168,6 @@ declare module feng3d {
          * @param data  数据
          */
         getTexture(context3D: Context3D, data: TextureInfo): WebGLBuffer;
-        getFrameBuffer(context3D: Context3D, frameBufferObject: FrameBufferObject): WebGLFramebuffer;
-        getRenderBuffer(context3D: Context3D, renderbuffer: RenderBuffer): WebGLRenderbuffer;
         /**
          * 3D环境缓冲池
          */
@@ -3420,33 +3418,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 帧缓冲对象
-     * @author feng 2017-02-18
-     *
-     * @see playcanvas - device.js - testRenderable,updateBegin
-     */
-    class FrameBufferObject {
-        colorAttachments: {
-            [name: string]: RenderBuffer;
-        };
-        activate(context3D: Context3D, width: number, height: number): void;
-        readBuffer(context3D: Context3D, name: string): void;
-        deactivate(context3D: Context3D): void;
-    }
-    class RenderBuffer {
-        attachment: number;
-        internalformat: number;
-        width: number;
-        height: number;
-        constructor(index: number, internalformat?: any, width?: number, height?: number);
-        activate(context3D: Context3D, width: number, height: number): void;
-        framebufferRenderbuffer(context3D: Context3D): void;
-    }
-    class RenderTexture {
-    }
-}
-declare module feng3d {
-    /**
      * 渲染器
      * @author feng 2016-05-01
      */
@@ -3473,7 +3444,6 @@ declare module feng3d {
      * @author feng 2017-02-20
      */
     class ForwardRenderer extends Renderer {
-        private frameBufferObject;
         constructor();
     }
 }
@@ -3485,7 +3455,6 @@ declare module feng3d {
     class MouseRenderer extends Renderer {
         private shaderName;
         selectedObject3D: Object3D;
-        private frameBufferObject;
         constructor();
         /**
          * 渲染

@@ -75,7 +75,7 @@
         "src/render/ShaderMacro.ts",
         "src/render/RenderContext.ts",
         //
-        "src/render/FrameBufferObject.ts",
+        // "src/render/FrameBufferObject.ts",
         "src/render/Renderer.ts",
         "src/render/renderer/ForwardRenderer.ts",
         "src/render/renderer/MouseRenderer.ts",

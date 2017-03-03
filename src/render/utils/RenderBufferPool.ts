@@ -85,18 +85,6 @@ module feng3d
             return this.getContext3DBufferPool(context3D).getTexture(data);
         }
 
-        getFrameBuffer(context3D: Context3D, frameBufferObject: FrameBufferObject)
-        {
-
-            return this.getContext3DBufferPool(context3D).getFrameBuffer(frameBufferObject);
-        }
-
-        getRenderBuffer(context3D: Context3D, renderbuffer: RenderBuffer)
-        {
-
-            return this.getContext3DBufferPool(context3D).getRenderBuffer(renderbuffer);
-        }
-
         /**
          * 3D环境缓冲池
          */
@@ -219,34 +207,6 @@ module feng3d
             return texture;
         }
 
-        getFrameBuffer(frameBufferObject: FrameBufferObject)
-        {
-
-            var buffer = this.framebufferPool.get(frameBufferObject);
-            if (buffer != null)
-            {
-                return buffer;
-            }
-
-            buffer = this.context3D.createFramebuffer();
-            this.framebufferPool.push(frameBufferObject, buffer);
-            return buffer;
-        }
-
-        getRenderBuffer(renderbuffer: RenderBuffer)
-        {
-
-            var buffer = this.renderbufferPool.get(renderbuffer);
-            if (buffer != null)
-            {
-                return buffer;
-            }
-
-            buffer = this.context3D.createRenderbuffer();
-            this.renderbufferPool.push(renderbuffer, buffer);
-            return buffer;
-        }
-
         /**
          * 获取缓冲
          * @param data  数据
@@ -272,11 +232,6 @@ module feng3d
             return buffer;
         }
 
-        /**
-         * 帧缓冲对象池
-         */
-        private framebufferPool = new Map<FrameBufferObject, WebGLFramebuffer>();
-        private renderbufferPool = new Map<RenderBuffer, WebGLRenderbuffer>();
         /**
          * 纹理缓冲
          */
