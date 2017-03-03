@@ -95,8 +95,7 @@ module feng3d
 
             this._isPlaying = true;
 
-            if (!$ticker.hasEventListener(Event.ENTER_FRAME))
-                $ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            $ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
 
             if (!this.hasEventListener(AnimatorEvent.START))
                 return;

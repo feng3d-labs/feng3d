@@ -5543,9 +5543,13 @@ var feng3d;
                 return;
             samplerIndex = 0;
             //
-            activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
-            activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
-            dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer, this.renderAtomic.instanceCount);
+            try {
+                activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
+                activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
+                dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer, this.renderAtomic.instanceCount);
+            }
+            catch (error) {
+            }
         }
         /**
          * 激活渲染程序
@@ -10150,8 +10154,7 @@ var feng3d;
                 return;
             this._time = this._absoluteTime = feng3d.getTimer();
             this._isPlaying = true;
-            if (!feng3d.$ticker.hasEventListener(feng3d.Event.ENTER_FRAME))
-                feng3d.$ticker.addEventListener(feng3d.Event.ENTER_FRAME, this.onEnterFrame, this);
+            feng3d.$ticker.addEventListener(feng3d.Event.ENTER_FRAME, this.onEnterFrame, this);
             if (!this.hasEventListener(feng3d.AnimatorEvent.START))
                 return;
             this.dispatchEvent(new feng3d.AnimatorEvent(feng3d.AnimatorEvent.START, this));

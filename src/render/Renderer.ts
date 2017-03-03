@@ -52,9 +52,14 @@ module feng3d
                 return;
             samplerIndex = 0;
             //
-            activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
-            activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
-            dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer, this.renderAtomic.instanceCount);
+            try {
+                
+                activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
+                activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
+                dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer, this.renderAtomic.instanceCount);
+            } catch (error) {
+                
+            }
         }
 
         /**
