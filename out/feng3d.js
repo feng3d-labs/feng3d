@@ -1482,6 +1482,7 @@ var feng3d;
             this.boardKeyDic[16] = "shift";
             this.boardKeyDic[32] = "escape";
             this.boardKeyDic[18] = "alt";
+            this.boardKeyDic[46] = "del";
         }
         /**
          * 鼠标事件
