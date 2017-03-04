@@ -1381,7 +1381,6 @@ var feng3d;
             super.addEventListener(type, listener, thisObject, priority);
         }
     }
-    Input.instance = new Input();
     feng3d.Input = Input;
     class InputEventType {
         constructor() {
@@ -1421,7 +1420,6 @@ var feng3d;
             this.KEY_UP = "keyup";
         }
     }
-    InputEventType.instance = new InputEventType();
     feng3d.InputEventType = InputEventType;
     class InputEvent extends feng3d.Event {
         constructor(event, data = null, bubbles = true) {
@@ -1440,8 +1438,9 @@ var feng3d;
             }
         }
     }
-    InputEvent.types = InputEventType.instance;
     feng3d.InputEvent = InputEvent;
+    feng3d.input = new Input();
+    feng3d.inputType = new InputEventType();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -1460,33 +1459,31 @@ var feng3d;
              */
             this.mouseKeyDic = {};
             this.keyState = shortCut.keyState;
-            var input = feng3d.Input.instance;
-            var types = feng3d.InputEvent.types;
             //
-            input.addEventListener(types.KEY_DOWN, this.onKeydown, this);
-            input.addEventListener(types.KEY_UP, this.onKeyup, this);
+            feng3d.input.addEventListener(feng3d.inputType.KEY_DOWN, this.onKeydown, this);
+            feng3d.input.addEventListener(feng3d.inputType.KEY_UP, this.onKeyup, this);
             this.boardKeyDic = {};
             this.defaultSupportKeys();
             //监听鼠标事件
             var mouseEvents = [
-                types.DOUBLE_CLICK,
-                types.CLICK,
-                types.MOUSE_DOWN,
-                types.MOUSE_UP,
-                types.MIDDLE_CLICK,
-                types.MIDDLE_MOUSE_DOWN,
-                types.MIDDLE_MOUSE_UP,
-                types.RIGHT_CLICK,
-                types.RIGHT_MOUSE_DOWN,
-                types.RIGHT_MOUSE_UP,
-                types.MOUSE_MOVE,
-                types.MOUSE_OVER,
-                types.MOUSE_OUT,
+                feng3d.inputType.DOUBLE_CLICK,
+                feng3d.inputType.CLICK,
+                feng3d.inputType.MOUSE_DOWN,
+                feng3d.inputType.MOUSE_UP,
+                feng3d.inputType.MIDDLE_CLICK,
+                feng3d.inputType.MIDDLE_MOUSE_DOWN,
+                feng3d.inputType.MIDDLE_MOUSE_UP,
+                feng3d.inputType.RIGHT_CLICK,
+                feng3d.inputType.RIGHT_MOUSE_DOWN,
+                feng3d.inputType.RIGHT_MOUSE_UP,
+                feng3d.inputType.MOUSE_MOVE,
+                feng3d.inputType.MOUSE_OVER,
+                feng3d.inputType.MOUSE_OUT,
             ];
             for (var i = 0; i < mouseEvents.length; i++) {
-                input.addEventListener(mouseEvents[i], this.onMouseOnce, this);
+                feng3d.input.addEventListener(mouseEvents[i], this.onMouseOnce, this);
             }
-            input.addEventListener(types.MOUSE_WHEEL, this.onMousewheel, this);
+            feng3d.input.addEventListener(feng3d.inputType.MOUSE_WHEEL, this.onMousewheel, this);
         }
         /**
          * 默认支持按键
@@ -9008,15 +9005,15 @@ var feng3d;
         }
         set target(value) {
             if (this._target != null) {
-                feng3d.Input.instance.removeEventListener(feng3d.InputEvent.types.KEY_DOWN, this.onKeydown, this);
-                feng3d.Input.instance.removeEventListener(feng3d.InputEvent.types.KEY_UP, this.onKeyup, this);
-                feng3d.Input.instance.removeEventListener(feng3d.InputEvent.types.MOUSE_MOVE, this.onMouseMove, this);
+                feng3d.input.removeEventListener(feng3d.inputType.KEY_DOWN, this.onKeydown, this);
+                feng3d.input.removeEventListener(feng3d.inputType.KEY_UP, this.onKeyup, this);
+                feng3d.input.removeEventListener(feng3d.inputType.MOUSE_MOVE, this.onMouseMove, this);
             }
             this._target = value;
             if (this._target != null) {
-                feng3d.Input.instance.addEventListener(feng3d.InputEvent.types.KEY_DOWN, this.onKeydown, this);
-                feng3d.Input.instance.addEventListener(feng3d.InputEvent.types.KEY_UP, this.onKeyup, this);
-                feng3d.Input.instance.addEventListener(feng3d.InputEvent.types.MOUSE_MOVE, this.onMouseMove, this);
+                feng3d.input.addEventListener(feng3d.inputType.KEY_DOWN, this.onKeydown, this);
+                feng3d.input.addEventListener(feng3d.inputType.KEY_UP, this.onKeyup, this);
+                feng3d.input.addEventListener(feng3d.inputType.MOUSE_MOVE, this.onMouseMove, this);
                 this.preMousePoint = null;
                 this.velocity = new feng3d.Vector3D();
                 this.keyDownDic = {};
@@ -9070,7 +9067,7 @@ var feng3d;
         onMouseMove(event) {
             if (this.target == null)
                 return;
-            var mousePoint = new feng3d.Point(feng3d.Input.instance.clientX, feng3d.Input.instance.clientY);
+            var mousePoint = new feng3d.Point(feng3d.input.clientX, feng3d.input.clientY);
             if (this.preMousePoint == null) {
                 this.preMousePoint = mousePoint;
                 return;
@@ -11604,18 +11601,18 @@ var feng3d;
             this.mouseEventTypes = [];
             this.mouseRenderer = new feng3d.MouseRenderer();
             //
-            mouse3DEventMap[feng3d.InputEvent.types.CLICK] = Mouse3DEvent.CLICK;
-            mouse3DEventMap[feng3d.InputEvent.types.DOUBLE_CLICK] = Mouse3DEvent.DOUBLE_CLICK;
-            mouse3DEventMap[feng3d.InputEvent.types.MOUSE_DOWN] = Mouse3DEvent.MOUSE_DOWN;
-            mouse3DEventMap[feng3d.InputEvent.types.MOUSE_MOVE] = Mouse3DEvent.MOUSE_MOVE;
-            mouse3DEventMap[feng3d.InputEvent.types.MOUSE_UP] = Mouse3DEvent.MOUSE_UP;
-            feng3d.Input.instance.addEventListener(feng3d.InputEvent.types.MOUSE_MOVE, this.onMousemove, this);
+            mouse3DEventMap[feng3d.inputType.CLICK] = Mouse3DEvent.CLICK;
+            mouse3DEventMap[feng3d.inputType.DOUBLE_CLICK] = Mouse3DEvent.DOUBLE_CLICK;
+            mouse3DEventMap[feng3d.inputType.MOUSE_DOWN] = Mouse3DEvent.MOUSE_DOWN;
+            mouse3DEventMap[feng3d.inputType.MOUSE_MOVE] = Mouse3DEvent.MOUSE_MOVE;
+            mouse3DEventMap[feng3d.inputType.MOUSE_UP] = Mouse3DEvent.MOUSE_UP;
+            feng3d.input.addEventListener(feng3d.inputType.MOUSE_MOVE, this.onMousemove, this);
             //
-            feng3d.Input.instance.addEventListener(feng3d.InputEvent.types.CLICK, this.onMouseEvent, this);
-            feng3d.Input.instance.addEventListener(feng3d.InputEvent.types.DOUBLE_CLICK, this.onMouseEvent, this);
-            feng3d.Input.instance.addEventListener(feng3d.InputEvent.types.MOUSE_DOWN, this.onMouseEvent, this);
-            feng3d.Input.instance.addEventListener(feng3d.InputEvent.types.MOUSE_MOVE, this.onMouseEvent, this);
-            feng3d.Input.instance.addEventListener(feng3d.InputEvent.types.MOUSE_UP, this.onMouseEvent, this);
+            feng3d.input.addEventListener(feng3d.inputType.CLICK, this.onMouseEvent, this);
+            feng3d.input.addEventListener(feng3d.inputType.DOUBLE_CLICK, this.onMouseEvent, this);
+            feng3d.input.addEventListener(feng3d.inputType.MOUSE_DOWN, this.onMouseEvent, this);
+            feng3d.input.addEventListener(feng3d.inputType.MOUSE_MOVE, this.onMouseEvent, this);
+            feng3d.input.addEventListener(feng3d.inputType.MOUSE_UP, this.onMouseEvent, this);
         }
         /**
          * 监听鼠标事件收集事件类型
@@ -11661,14 +11658,14 @@ var feng3d;
             if (this.selectedObject3D) {
                 this.mouseEventTypes.forEach(element => {
                     switch (element) {
-                        case feng3d.InputEvent.types.MOUSE_DOWN:
+                        case feng3d.inputType.MOUSE_DOWN:
                             if (this.preMouseDownObject3D != this.selectedObject3D) {
                                 this.Object3DClickNum = 0;
                                 this.preMouseDownObject3D = this.selectedObject3D;
                             }
                             this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case feng3d.InputEvent.types.MOUSE_UP:
+                        case feng3d.inputType.MOUSE_UP:
                             if (this.selectedObject3D == this.preMouseDownObject3D) {
                                 this.Object3DClickNum++;
                             }
@@ -11678,14 +11675,14 @@ var feng3d;
                             }
                             this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case feng3d.InputEvent.types.MOUSE_MOVE:
+                        case feng3d.inputType.MOUSE_MOVE:
                             this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case feng3d.InputEvent.types.CLICK:
+                        case feng3d.inputType.CLICK:
                             if (this.Object3DClickNum > 0)
                                 this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case feng3d.InputEvent.types.DOUBLE_CLICK:
+                        case feng3d.inputType.DOUBLE_CLICK:
                             if (this.Object3DClickNum > 1)
                                 this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;

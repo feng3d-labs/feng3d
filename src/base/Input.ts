@@ -7,8 +7,6 @@ module feng3d
      */
     export class Input extends EventDispatcher
     {
-        public static readonly instance = new Input();
-
         public clientX: number = 0;
         public clientY: number = 0;
 
@@ -52,8 +50,6 @@ module feng3d
 
     export class InputEventType
     {
-        public static readonly instance = new InputEventType();
-
         /** 鼠标双击 */
         public readonly DOUBLE_CLICK = "dblclick";
         /** 鼠标单击 */
@@ -92,8 +88,6 @@ module feng3d
 
     export class InputEvent extends Event
     {
-        public static readonly types = InputEventType.instance;
-
         public data: Input;
 
         public clientX: number;
@@ -121,4 +115,6 @@ module feng3d
             }
         }
     }
+    export var input = new Input();
+    export var inputType = new InputEventType();
 }

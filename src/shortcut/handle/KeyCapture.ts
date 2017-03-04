@@ -31,36 +31,34 @@ module feng3d
 		{
 
 			this.keyState = shortCut.keyState;
-			var input = Input.instance;
-			var types = InputEvent.types;
 			//
-			input.addEventListener(types.KEY_DOWN, this.onKeydown, this);
-			input.addEventListener(types.KEY_UP, this.onKeyup, this);
+			input.addEventListener(inputType.KEY_DOWN, this.onKeydown, this);
+			input.addEventListener(inputType.KEY_UP, this.onKeyup, this);
 
 			this.boardKeyDic = {};
 			this.defaultSupportKeys();
 
 			//监听鼠标事件
 			var mouseEvents = [ //
-				types.DOUBLE_CLICK, //
-				types.CLICK, //
-				types.MOUSE_DOWN,
-				types.MOUSE_UP,
-				types.MIDDLE_CLICK,
-				types.MIDDLE_MOUSE_DOWN,
-				types.MIDDLE_MOUSE_UP,
-				types.RIGHT_CLICK,
-				types.RIGHT_MOUSE_DOWN,
-				types.RIGHT_MOUSE_UP,
-				types.MOUSE_MOVE,
-				types.MOUSE_OVER,
-				types.MOUSE_OUT,
+				inputType.DOUBLE_CLICK, //
+				inputType.CLICK, //
+				inputType.MOUSE_DOWN,
+				inputType.MOUSE_UP,
+				inputType.MIDDLE_CLICK,
+				inputType.MIDDLE_MOUSE_DOWN,
+				inputType.MIDDLE_MOUSE_UP,
+				inputType.RIGHT_CLICK,
+				inputType.RIGHT_MOUSE_DOWN,
+				inputType.RIGHT_MOUSE_UP,
+				inputType.MOUSE_MOVE,
+				inputType.MOUSE_OVER,
+				inputType.MOUSE_OUT,
 			];
 			for (var i = 0; i < mouseEvents.length; i++)
 			{
 				input.addEventListener(mouseEvents[i], this.onMouseOnce, this);
 			}
-			input.addEventListener(types.MOUSE_WHEEL, this.onMousewheel, this);
+			input.addEventListener(inputType.MOUSE_WHEEL, this.onMousewheel, this);
 		}
 
 		/**

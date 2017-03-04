@@ -995,7 +995,6 @@ declare module feng3d {
      * @author feng 2016-12-19
      */
     class Input extends EventDispatcher {
-        static readonly instance: Input;
         clientX: number;
         clientY: number;
         constructor();
@@ -1009,7 +1008,6 @@ declare module feng3d {
         addEventListener(type: string, listener: (event: InputEvent) => void, thisObject: any, priority?: number): void;
     }
     class InputEventType {
-        static readonly instance: InputEventType;
         /** 鼠标双击 */
         readonly DOUBLE_CLICK: string;
         /** 鼠标单击 */
@@ -1046,13 +1044,14 @@ declare module feng3d {
         readonly KEY_UP: string;
     }
     class InputEvent extends Event {
-        static readonly types: InputEventType;
         data: Input;
         clientX: number;
         clientY: number;
         keyCode: number;
         constructor(event: MouseEvent | WheelEvent | KeyboardEvent, data?: Input, bubbles?: boolean);
     }
+    var input: Input;
+    var inputType: InputEventType;
 }
 declare module feng3d {
     /**

@@ -31,19 +31,19 @@ module feng3d
         {
             this.mouseRenderer = new MouseRenderer();
             //
-            mouse3DEventMap[InputEvent.types.CLICK] = Mouse3DEvent.CLICK;
-            mouse3DEventMap[InputEvent.types.DOUBLE_CLICK] = Mouse3DEvent.DOUBLE_CLICK;
-            mouse3DEventMap[InputEvent.types.MOUSE_DOWN] = Mouse3DEvent.MOUSE_DOWN;
-            mouse3DEventMap[InputEvent.types.MOUSE_MOVE] = Mouse3DEvent.MOUSE_MOVE;
-            mouse3DEventMap[InputEvent.types.MOUSE_UP] = Mouse3DEvent.MOUSE_UP;
+            mouse3DEventMap[inputType.CLICK] = Mouse3DEvent.CLICK;
+            mouse3DEventMap[inputType.DOUBLE_CLICK] = Mouse3DEvent.DOUBLE_CLICK;
+            mouse3DEventMap[inputType.MOUSE_DOWN] = Mouse3DEvent.MOUSE_DOWN;
+            mouse3DEventMap[inputType.MOUSE_MOVE] = Mouse3DEvent.MOUSE_MOVE;
+            mouse3DEventMap[inputType.MOUSE_UP] = Mouse3DEvent.MOUSE_UP;
 
-            Input.instance.addEventListener(InputEvent.types.MOUSE_MOVE, this.onMousemove, this);
+            input.addEventListener(inputType.MOUSE_MOVE, this.onMousemove, this);
             //
-            Input.instance.addEventListener(InputEvent.types.CLICK, this.onMouseEvent, this);
-            Input.instance.addEventListener(InputEvent.types.DOUBLE_CLICK, this.onMouseEvent, this);
-            Input.instance.addEventListener(InputEvent.types.MOUSE_DOWN, this.onMouseEvent, this);
-            Input.instance.addEventListener(InputEvent.types.MOUSE_MOVE, this.onMouseEvent, this);
-            Input.instance.addEventListener(InputEvent.types.MOUSE_UP, this.onMouseEvent, this);
+            input.addEventListener(inputType.CLICK, this.onMouseEvent, this);
+            input.addEventListener(inputType.DOUBLE_CLICK, this.onMouseEvent, this);
+            input.addEventListener(inputType.MOUSE_DOWN, this.onMouseEvent, this);
+            input.addEventListener(inputType.MOUSE_MOVE, this.onMouseEvent, this);
+            input.addEventListener(inputType.MOUSE_UP, this.onMouseEvent, this);
         }
 
         /**
@@ -104,7 +104,7 @@ module feng3d
                 {
                     switch (element)
                     {
-                        case InputEvent.types.MOUSE_DOWN:
+                        case inputType.MOUSE_DOWN:
                             if (this.preMouseDownObject3D != this.selectedObject3D)
                             {
                                 this.Object3DClickNum = 0;
@@ -112,7 +112,7 @@ module feng3d
                             }
                             this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case InputEvent.types.MOUSE_UP:
+                        case inputType.MOUSE_UP:
                             if (this.selectedObject3D == this.preMouseDownObject3D)
                             {
                                 this.Object3DClickNum++;
@@ -123,14 +123,14 @@ module feng3d
                             }
                             this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case InputEvent.types.MOUSE_MOVE:
+                        case inputType.MOUSE_MOVE:
                             this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case InputEvent.types.CLICK:
+                        case inputType.CLICK:
                             if (this.Object3DClickNum > 0)
                                 this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;
-                        case InputEvent.types.DOUBLE_CLICK:
+                        case inputType.DOUBLE_CLICK:
                             if (this.Object3DClickNum > 1)
                                 this.selectedObject3D.dispatchEvent(new Mouse3DEvent(mouse3DEventMap[element], null, true));
                             break;

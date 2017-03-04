@@ -49,16 +49,16 @@ module feng3d
 
             if (this._target != null)
             {
-                Input.instance.removeEventListener(InputEvent.types.KEY_DOWN, this.onKeydown, this);
-                Input.instance.removeEventListener(InputEvent.types.KEY_UP, this.onKeyup, this);
-                Input.instance.removeEventListener(InputEvent.types.MOUSE_MOVE, this.onMouseMove, this);
+                input.removeEventListener(inputType.KEY_DOWN, this.onKeydown, this);
+                input.removeEventListener(inputType.KEY_UP, this.onKeyup, this);
+                input.removeEventListener(inputType.MOUSE_MOVE, this.onMouseMove, this);
             }
             this._target = value;
             if (this._target != null)
             {
-                Input.instance.addEventListener(InputEvent.types.KEY_DOWN, this.onKeydown, this);
-                Input.instance.addEventListener(InputEvent.types.KEY_UP, this.onKeyup, this);
-                Input.instance.addEventListener(InputEvent.types.MOUSE_MOVE, this.onMouseMove, this);
+                input.addEventListener(inputType.KEY_DOWN, this.onKeydown, this);
+                input.addEventListener(inputType.KEY_UP, this.onKeyup, this);
+                input.addEventListener(inputType.MOUSE_MOVE, this.onMouseMove, this);
                 this.preMousePoint = null;
                 this.velocity = new Vector3D();
                 this.keyDownDic = {};
@@ -124,7 +124,7 @@ module feng3d
             if (this.target == null)
                 return;
 
-            var mousePoint = new Point(Input.instance.clientX, Input.instance.clientY);
+            var mousePoint = new Point(input.clientX, input.clientY);
 
             if (this.preMousePoint == null)
             {
