@@ -9,16 +9,20 @@ module feng3d
     {
         public static shaderFileMap: { [filePath: string]: string } = {};
 
+        public static getShaderContentByName(shaderName: string)
+        {
+            var shaderPath = "shaders/" + shaderName + ".glsl";
+            return ShaderLib.shaderFileMap[shaderPath];
+        }
+
         /**
          * 获取shaderCode
          */
         public static getShaderCode(shaderName: string)
         {
-
-            if (shaderMap[shaderName])
-                return shaderMap[shaderName];
-            getShaderLoader(shaderName);
-            return null;
+            if (!shaderMap[shaderName])
+                shaderMap[shaderName] = ShaderLoader.loadText(shaderName);
+            return shaderMap[shaderName];
         }
 
         /**
@@ -65,114 +69,38 @@ module feng3d
     var shaderLoaderMap: { [shaderName: string]: ShaderLoader } = {};
 
     /**
-     * 获取shader加载器
-     */
-    function getShaderLoader(shaderName: string)
-    {
-
-        var shaderLoader = shaderLoaderMap[shaderName];
-        if (shaderLoader == null)
-        {
-            shaderLoader = new ShaderLoader();
-            shaderLoader.addEventListener(LoaderEvent.COMPLETE, function (event: LoaderEvent)
-            {
-                shaderMap[shaderLoader.shaderName] = shaderLoader.shaderCode;
-                delete shaderLoaderMap[shaderLoader.shaderName];
-            }, null, Number.MAX_VALUE)
-            shaderLoader.loadText(shaderName);
-        }
-        return shaderLoader;
-    }
-
-    /**
      * 着色器加载器
      * @author feng 2016-12-15
      */
-    class ShaderLoader extends EventDispatcher
+    class ShaderLoader
     {
-
-        private subShaders: { [shaderName: string]: RegExpExecArray }
-        /**
-         * shader根路径
-         */
-        public static shadersRoot = "feng3d/shaders/";
-        /**
-         * shader名称
-         */
-        public shaderName: string;
-
-        /**
-         * 渲染代码
-         */
-        public shaderCode: string;
-
         /**
          * 加载shader
          * @param url   路径
          */
-        public loadText(shaderName: string)
+        public static loadText(shaderName: string)
         {
-
-            this.shaderName = shaderName;
-            var url = ShaderLoader.shadersRoot + this.shaderName + ".glsl";
-            var loader = new Loader();
-            loader.addEventListener(LoaderEvent.COMPLETE, this.onComplete, this);
-            loader.loadText(url);
-        }
-
-        /**
-         * shader加载完成
-         */
-        private onComplete(event: LoaderEvent)
-        {
+            var shaderCode = ShaderLib.getShaderContentByName(shaderName);
 
             //#include 正则表达式
             var includeRegExp = /#include<(.+)>/g;
             //
-            this.shaderCode = event.data.content;
-            var match = includeRegExp.exec(this.shaderCode);
-            this.subShaders = {};
+            var match = includeRegExp.exec(shaderCode);
             while (match != null)
             {
                 var subShaderName = match[1];
                 var subShaderCode = ShaderLib.getShaderCode(subShaderName);
                 if (subShaderCode)
                 {
-                    this.shaderCode = this.shaderCode.replace(match[0], subShaderCode);
+                    shaderCode = shaderCode.replace(match[0], subShaderCode);
                 } else
                 {
-                    var subShaderLoader = getShaderLoader(subShaderName);
-                    subShaderLoader.addEventListener(LoaderEvent.COMPLETE, this.onSubComplete, this)
+                    var subShaderCode = ShaderLoader.loadText(subShaderName);
+                    shaderCode = shaderCode.replace(match[0], subShaderCode);
                 }
-                this.subShaders[subShaderName] = match;
-                match = includeRegExp.exec(this.shaderCode);
+                match = includeRegExp.exec(shaderCode);
             }
-            this.check();
-        }
-
-        /**
-         * subShader加载完成
-         */
-        private onSubComplete(event: LoaderEvent)
-        {
-
-            var shaderLoader: ShaderLoader = event.data;
-            var match = this.subShaders[shaderLoader.shaderName];
-            this.shaderCode = this.shaderCode.replace(match[0], shaderLoader.shaderCode);
-            delete this.subShaders[shaderLoader.shaderName];
-            //
-            this.check();
-        }
-
-        /**
-         * 检查是否加载完成
-         */
-        private check()
-        {
-            if (Object.keys(this.subShaders).length == 0)
-            {
-                this.dispatchEvent(new LoaderEvent(LoaderEvent.COMPLETE, this));
-            }
+            return shaderCode;
         }
     }
 }

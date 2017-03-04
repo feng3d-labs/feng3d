@@ -1929,6 +1929,7 @@ declare module feng3d {
         static shaderFileMap: {
             [filePath: string]: string;
         };
+        static getShaderContentByName(shaderName: string): string;
         /**
          * 获取shaderCode
          */

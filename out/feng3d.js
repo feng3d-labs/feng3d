@@ -6,13 +6,6 @@ var feng3d;
      */
     var $REVISION = "0.0.0";
     console.log(`Feng3D version ${$REVISION}`);
-    try {
-        WebGL2RenderingContext;
-    }
-    catch (error) {
-        alert("浏览器不支持 WebGL2!");
-        window.location.href = "https://wardenfeng.github.io/#!blogs/2017/01/10/1.md";
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -2606,14 +2599,17 @@ var feng3d;
      * @author feng 2016-12-16
      */
     class ShaderLib {
+        static getShaderContentByName(shaderName) {
+            var shaderPath = "shaders/" + shaderName + ".glsl";
+            return ShaderLib.shaderFileMap[shaderPath];
+        }
         /**
          * 获取shaderCode
          */
         static getShaderCode(shaderName) {
-            if (shaderMap[shaderName])
-                return shaderMap[shaderName];
-            getShaderLoader(shaderName);
-            return null;
+            if (!shaderMap[shaderName])
+                shaderMap[shaderName] = ShaderLoader.loadText(shaderName);
+            return shaderMap[shaderName];
         }
         /**
          * 获取ShaderMacro代码
@@ -2652,85 +2648,35 @@ var feng3d;
      */
     var shaderLoaderMap = {};
     /**
-     * 获取shader加载器
-     */
-    function getShaderLoader(shaderName) {
-        var shaderLoader = shaderLoaderMap[shaderName];
-        if (shaderLoader == null) {
-            shaderLoader = new ShaderLoader();
-            shaderLoader.addEventListener(feng3d.LoaderEvent.COMPLETE, function (event) {
-                shaderMap[shaderLoader.shaderName] = shaderLoader.shaderCode;
-                delete shaderLoaderMap[shaderLoader.shaderName];
-            }, null, Number.MAX_VALUE);
-            shaderLoader.loadText(shaderName);
-        }
-        return shaderLoader;
-    }
-    /**
      * 着色器加载器
      * @author feng 2016-12-15
      */
-    class ShaderLoader extends feng3d.EventDispatcher {
+    class ShaderLoader {
         /**
          * 加载shader
          * @param url   路径
          */
-        loadText(shaderName) {
-            this.shaderName = shaderName;
-            var url = ShaderLoader.shadersRoot + this.shaderName + ".glsl";
-            var loader = new feng3d.Loader();
-            loader.addEventListener(feng3d.LoaderEvent.COMPLETE, this.onComplete, this);
-            loader.loadText(url);
-        }
-        /**
-         * shader加载完成
-         */
-        onComplete(event) {
+        static loadText(shaderName) {
+            var shaderCode = ShaderLib.getShaderContentByName(shaderName);
             //#include 正则表达式
             var includeRegExp = /#include<(.+)>/g;
             //
-            this.shaderCode = event.data.content;
-            var match = includeRegExp.exec(this.shaderCode);
-            this.subShaders = {};
+            var match = includeRegExp.exec(shaderCode);
             while (match != null) {
                 var subShaderName = match[1];
                 var subShaderCode = ShaderLib.getShaderCode(subShaderName);
                 if (subShaderCode) {
-                    this.shaderCode = this.shaderCode.replace(match[0], subShaderCode);
+                    shaderCode = shaderCode.replace(match[0], subShaderCode);
                 }
                 else {
-                    var subShaderLoader = getShaderLoader(subShaderName);
-                    subShaderLoader.addEventListener(feng3d.LoaderEvent.COMPLETE, this.onSubComplete, this);
+                    var subShaderCode = ShaderLoader.loadText(subShaderName);
+                    shaderCode = shaderCode.replace(match[0], subShaderCode);
                 }
-                this.subShaders[subShaderName] = match;
-                match = includeRegExp.exec(this.shaderCode);
+                match = includeRegExp.exec(shaderCode);
             }
-            this.check();
-        }
-        /**
-         * subShader加载完成
-         */
-        onSubComplete(event) {
-            var shaderLoader = event.data;
-            var match = this.subShaders[shaderLoader.shaderName];
-            this.shaderCode = this.shaderCode.replace(match[0], shaderLoader.shaderCode);
-            delete this.subShaders[shaderLoader.shaderName];
-            //
-            this.check();
-        }
-        /**
-         * 检查是否加载完成
-         */
-        check() {
-            if (Object.keys(this.subShaders).length == 0) {
-                this.dispatchEvent(new feng3d.LoaderEvent(feng3d.LoaderEvent.COMPLETE, this));
-            }
+            return shaderCode;
         }
     }
-    /**
-     * shader根路径
-     */
-    ShaderLoader.shadersRoot = "feng3d/shaders/";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
