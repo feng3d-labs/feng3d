@@ -3619,6 +3619,11 @@ declare module feng3d {
          * @return GPU坐标 (x:[-1,1],y:[-1-1])
          */
         screenToGpuPosition(screenPos: Point): Point;
+        /**
+         * 获取单位像素在指定深度映射的大小
+         * @param   depth   深度
+         */
+        getScaleByDepth(depth: number): number;
     }
 }
 declare module feng3d {

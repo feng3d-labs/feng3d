@@ -5905,6 +5905,18 @@ var feng3d;
             gpuPos.y = (screenPos.y * 2 - this._canvas.height) / this._canvas.height;
             return gpuPos;
         }
+        /**
+         * 获取单位像素在指定深度映射的大小
+         * @param   depth   深度
+         */
+        getScaleByDepth(depth) {
+            var centerX = this.viewRect.width / 2;
+            var centerY = this.viewRect.height / 2;
+            var lt = this.unproject(centerX - 0.5, centerY - 0.5, depth);
+            var rb = this.unproject(centerX + 0.5, centerY + 0.5, depth);
+            var scale = lt.subtract(rb).length;
+            return scale;
+        }
     }
     /**
      * 射线坐标临时变量
