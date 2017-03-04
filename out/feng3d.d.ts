@@ -1,6 +1,4 @@
 declare module feng3d {
-}
-declare module feng3d {
     /**
      * 3D上下文
      *
@@ -1050,8 +1048,6 @@ declare module feng3d {
         keyCode: number;
         constructor(event: MouseEvent | WheelEvent | KeyboardEvent, data?: Input, bubbles?: boolean);
     }
-    var input: Input;
-    var inputType: InputEventType;
 }
 declare module feng3d {
     /**
@@ -1393,7 +1389,6 @@ shortCut.addEventListener("run", function(e:Event):void
          */
         private getShortcutUniqueKey(shortcut);
     }
-    var shortcut: ShortCut;
 }
 declare module feng3d {
     /**
@@ -6523,4 +6518,10 @@ declare module feng3d {
         /** 鼠标弹起 */
         static MOUSE_UP: string;
     }
+}
+declare module feng3d {
+    /*************************** 初始化模块 ***************************/
+    var input: Input;
+    var inputType: InputEventType;
+    var shortcut: ShortCut;
 }

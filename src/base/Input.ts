@@ -115,6 +115,4 @@ module feng3d
             }
         }
     }
-    export var input = new Input();
-    export var inputType = new InputEventType();
 }

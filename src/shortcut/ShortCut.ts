@@ -147,5 +147,4 @@ shortCut.addEventListener("run", function(e:Event):void
 			return shortcut.key + "," + shortcut.command + "," + shortcut.when;
 		}
 	}
-	export var shortcut = new ShortCut();
 }
