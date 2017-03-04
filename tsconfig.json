@@ -31,7 +31,6 @@
         "src/shortcut/handle/KeyCapture.ts",
         "src/shortcut/handle/KeyState.ts",
         "src/shortcut/handle/ShortCutCapture.ts",
-        "src/shortcut/handle/ShortCutContext.ts",
         "src/shortcut/handle/ShortCutEvent.ts",
         "src/shortcut/ShortCut.ts",
         //组件模块

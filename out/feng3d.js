@@ -1372,9 +1372,7 @@ var feng3d;
                 this.clientX = event.clientX;
                 this.clientY = event.clientY;
             }
-            var inputEvent = new InputEvent(event, this, true);
-            console.log(inputEvent);
-            this.dispatchEvent(inputEvent);
+            this.dispatchEvent(new InputEvent(event, this, true));
         }
         /**
          *
@@ -1447,342 +1445,333 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var shortcut;
-    (function (shortcut) {
+    /**
+     * 按键捕获
+     * @author feng 2016-4-26
+     */
+    class KeyCapture {
         /**
-         * 按键捕获
-         * @author feng 2016-4-26
+         * 构建
+         * @param stage		舞台
          */
-        class KeyCapture {
+        constructor(shortCut) {
             /**
-             * 构建
-             * @param stage		舞台
+             * 捕获的按键字典
              */
-            constructor(shortCutContext) {
-                /**
-                 * 捕获的按键字典
-                 */
-                this.mouseKeyDic = {};
-                this.keyState = shortCutContext.keyState;
-                var input = feng3d.Input.instance;
-                var types = feng3d.InputEvent.types;
-                //
-                input.addEventListener(types.KEY_DOWN, this.onKeydown, this);
-                input.addEventListener(types.KEY_UP, this.onKeyup, this);
-                this.boardKeyDic = {};
-                this.defaultSupportKeys();
-                //监听鼠标事件
-                var mouseEvents = [
-                    types.DOUBLE_CLICK,
-                    types.CLICK,
-                    types.MOUSE_DOWN,
-                    types.MOUSE_UP,
-                    types.MIDDLE_CLICK,
-                    types.MIDDLE_MOUSE_DOWN,
-                    types.MIDDLE_MOUSE_UP,
-                    types.RIGHT_CLICK,
-                    types.RIGHT_MOUSE_DOWN,
-                    types.RIGHT_MOUSE_UP,
-                    types.MOUSE_MOVE,
-                    types.MOUSE_OVER,
-                    types.MOUSE_OUT,
-                ];
-                for (var i = 0; i < mouseEvents.length; i++) {
-                    input.addEventListener(mouseEvents[i], this.onMouseOnce, this);
-                }
-                input.addEventListener(types.MOUSE_WHEEL, this.onMousewheel, this);
+            this.mouseKeyDic = {};
+            this.keyState = shortCut.keyState;
+            var input = feng3d.Input.instance;
+            var types = feng3d.InputEvent.types;
+            //
+            input.addEventListener(types.KEY_DOWN, this.onKeydown, this);
+            input.addEventListener(types.KEY_UP, this.onKeyup, this);
+            this.boardKeyDic = {};
+            this.defaultSupportKeys();
+            //监听鼠标事件
+            var mouseEvents = [
+                types.DOUBLE_CLICK,
+                types.CLICK,
+                types.MOUSE_DOWN,
+                types.MOUSE_UP,
+                types.MIDDLE_CLICK,
+                types.MIDDLE_MOUSE_DOWN,
+                types.MIDDLE_MOUSE_UP,
+                types.RIGHT_CLICK,
+                types.RIGHT_MOUSE_DOWN,
+                types.RIGHT_MOUSE_UP,
+                types.MOUSE_MOVE,
+                types.MOUSE_OVER,
+                types.MOUSE_OUT,
+            ];
+            for (var i = 0; i < mouseEvents.length; i++) {
+                input.addEventListener(mouseEvents[i], this.onMouseOnce, this);
             }
-            /**
-             * 默认支持按键
-             */
-            defaultSupportKeys() {
-                this.boardKeyDic[17] = "ctrl";
-                this.boardKeyDic[16] = "shift";
-                this.boardKeyDic[32] = "escape";
-                this.boardKeyDic[18] = "alt";
-            }
-            /**
-             * 鼠标事件
-             */
-            onMouseOnce(event) {
-                var mouseKey = event.type;
-                this.keyState.pressKey(mouseKey, event);
-                this.keyState.releaseKey(mouseKey, event);
-            }
-            /**
-             * 鼠标事件
-             */
-            onMousewheel(event) {
-                var mouseKey = event.type;
-                this.keyState.pressKey(mouseKey, event);
-                this.keyState.releaseKey(mouseKey, event);
-            }
-            /**
-             * 键盘按下事件
-             */
-            onKeydown(event) {
-                var boardKey = this.getBoardKey(event.keyCode);
-                if (boardKey != null)
-                    this.keyState.pressKey(boardKey, event);
-            }
-            /**
-             * 键盘弹起事件
-             */
-            onKeyup(event) {
-                var boardKey = this.getBoardKey(event.keyCode);
-                if (boardKey)
-                    this.keyState.releaseKey(boardKey, event);
-            }
-            /**
-             * 获取键盘按键名称
-             */
-            getBoardKey(keyCode) {
-                var boardKey = this.boardKeyDic[keyCode];
-                if (boardKey == null && 65 <= keyCode && keyCode <= 90) {
-                    boardKey = String.fromCharCode(keyCode).toLocaleLowerCase();
-                }
-                return boardKey;
-            }
+            input.addEventListener(types.MOUSE_WHEEL, this.onMousewheel, this);
         }
-        shortcut.KeyCapture = KeyCapture;
-    })(shortcut = feng3d.shortcut || (feng3d.shortcut = {}));
+        /**
+         * 默认支持按键
+         */
+        defaultSupportKeys() {
+            this.boardKeyDic[17] = "ctrl";
+            this.boardKeyDic[16] = "shift";
+            this.boardKeyDic[32] = "escape";
+            this.boardKeyDic[18] = "alt";
+        }
+        /**
+         * 鼠标事件
+         */
+        onMouseOnce(event) {
+            var mouseKey = event.type;
+            this.keyState.pressKey(mouseKey, event);
+            this.keyState.releaseKey(mouseKey, event);
+        }
+        /**
+         * 鼠标事件
+         */
+        onMousewheel(event) {
+            var mouseKey = event.type;
+            this.keyState.pressKey(mouseKey, event);
+            this.keyState.releaseKey(mouseKey, event);
+        }
+        /**
+         * 键盘按下事件
+         */
+        onKeydown(event) {
+            var boardKey = this.getBoardKey(event.keyCode);
+            if (boardKey != null)
+                this.keyState.pressKey(boardKey, event);
+        }
+        /**
+         * 键盘弹起事件
+         */
+        onKeyup(event) {
+            var boardKey = this.getBoardKey(event.keyCode);
+            if (boardKey)
+                this.keyState.releaseKey(boardKey, event);
+        }
+        /**
+         * 获取键盘按键名称
+         */
+        getBoardKey(keyCode) {
+            var boardKey = this.boardKeyDic[keyCode];
+            if (boardKey == null && 65 <= keyCode && keyCode <= 90) {
+                boardKey = String.fromCharCode(keyCode).toLocaleLowerCase();
+            }
+            return boardKey;
+        }
+    }
+    feng3d.KeyCapture = KeyCapture;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var shortcut;
-    (function (shortcut) {
+    /**
+     * 按键状态
+     * @author feng 2016-4-26
+     */
+    class KeyState extends feng3d.EventDispatcher {
         /**
-         * 按键状态
-         * @author feng 2016-4-26
+         * 构建
          */
-        class KeyState extends feng3d.EventDispatcher {
-            /**
-             * 构建
-             */
-            constructor() {
-                super();
-                this.keyStateDic = {};
-            }
-            /**
-             * 按下键
-             * @param key 	键名称
-             * @param data	携带数据
-             */
-            pressKey(key, data) {
-                this.keyStateDic[key] = true;
-                this.dispatchEvent(new shortcut.ShortCutEvent(key, data));
-            }
-            /**
-             * 释放键
-             * @param key	键名称
-             * @param data	携带数据
-             */
-            releaseKey(key, data) {
-                this.keyStateDic[key] = false;
-                this.dispatchEvent(new shortcut.ShortCutEvent(key, data));
-            }
-            /**
-             * 获取按键状态
-             * @param key 按键名称
-             */
-            getKeyState(key) {
-                return !!this.keyStateDic[key];
-            }
+        constructor() {
+            super();
+            this.keyStateDic = {};
         }
-        shortcut.KeyState = KeyState;
-    })(shortcut = feng3d.shortcut || (feng3d.shortcut = {}));
+        /**
+         * 按下键
+         * @param key 	键名称
+         * @param data	携带数据
+         */
+        pressKey(key, data) {
+            this.keyStateDic[key] = true;
+            this.dispatchEvent(new feng3d.ShortCutEvent(key, data));
+        }
+        /**
+         * 释放键
+         * @param key	键名称
+         * @param data	携带数据
+         */
+        releaseKey(key, data) {
+            this.keyStateDic[key] = false;
+            this.dispatchEvent(new feng3d.ShortCutEvent(key, data));
+        }
+        /**
+         * 获取按键状态
+         * @param key 按键名称
+         */
+        getKeyState(key) {
+            return !!this.keyStateDic[key];
+        }
+    }
+    feng3d.KeyState = KeyState;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var shortcut;
-    (function (shortcut) {
+    /**
+     * 快捷键捕获
+     * @author feng 2016-4-26
+     */
+    class ShortCutCapture {
         /**
-         * 快捷键捕获
-         * @author feng 2016-4-26
+         * 构建快捷键捕获
+         * @param shortCut				快捷键环境
+         * @param key					快捷键
+         * @param command				要执行的命令名称
+         * @param stateCommand			可执行的状态命令
+         * @param when					快捷键处于活动状态的条件
          */
-        class ShortCutCapture {
-            /**
-             * 构建快捷键捕获
-             * @param shortCutContext		快捷键环境
-             * @param key					快捷键
-             * @param command				要执行的命令名称
-             * @param stateCommand			可执行的状态命令
-             * @param when					快捷键处于活动状态的条件
-             */
-            constructor(shortCutContext, key, command = null, stateCommand = null, when = null) {
-                this.shortCutContext = shortCutContext;
-                this.keyState = shortCutContext.keyState;
-                this.key = key;
-                this.command = command;
-                this.stateCommand = stateCommand;
-                this.when = when;
-                this.keys = this.getKeys(key);
-                this.states = this.getStates(when);
-                this.commands = this.getCommands(command);
-                this.stateCommands = this.getStateCommand(stateCommand);
-                this.init();
+        constructor(shortCut, key, command = null, stateCommand = null, when = null) {
+            this.shortCut = shortCut;
+            this.keyState = shortCut.keyState;
+            this.key = key;
+            this.command = command;
+            this.stateCommand = stateCommand;
+            this.when = when;
+            this.keys = this.getKeys(key);
+            this.states = this.getStates(when);
+            this.commands = this.getCommands(command);
+            this.stateCommands = this.getStateCommand(stateCommand);
+            this.init();
+        }
+        /**
+         * 初始化
+         */
+        init() {
+            for (var i = 0; i < this.keys.length; i++) {
+                this.keyState.addEventListener(this.keys[i].key, this.onCapture, this);
             }
-            /**
-             * 初始化
-             */
-            init() {
-                for (var i = 0; i < this.keys.length; i++) {
-                    this.keyState.addEventListener(this.keys[i].key, this.onCapture, this);
-                }
+        }
+        /**
+         * 处理捕获事件
+         */
+        onCapture(event) {
+            var inWhen = this.checkActivityStates(this.states);
+            var pressKeys = this.checkActivityKeys(this.keys);
+            if (pressKeys && inWhen) {
+                this.dispatchCommands(this.commands, event.data);
+                this.executeStateCommands(this.stateCommands);
             }
-            /**
-             * 处理捕获事件
-             */
-            onCapture(event) {
-                var inWhen = this.checkActivityStates(this.states);
-                var pressKeys = this.checkActivityKeys(this.keys);
-                if (pressKeys && inWhen) {
-                    this.dispatchCommands(this.commands, event.data);
-                    this.executeStateCommands(this.stateCommands);
-                }
+        }
+        /**
+         * 派发命令
+         */
+        dispatchCommands(commands, data) {
+            for (var i = 0; i < commands.length; i++) {
+                this.shortCut.dispatchEvent(new feng3d.ShortCutEvent(commands[i], data));
             }
-            /**
-             * 派发命令
-             */
-            dispatchCommands(commands, data) {
-                for (var i = 0; i < commands.length; i++) {
-                    this.shortCutContext.commandDispatcher.dispatchEvent(new shortcut.ShortCutEvent(commands[i], data));
-                }
+        }
+        /**
+         * 执行状态命令
+         */
+        executeStateCommands(stateCommands) {
+            for (var i = 0; i < stateCommands.length; i++) {
+                var stateCommand = stateCommands[i];
+                if (stateCommand.not)
+                    this.shortCut.deactivityState(stateCommand.state);
+                else
+                    this.shortCut.activityState(stateCommand.state);
             }
-            /**
-             * 执行状态命令
-             */
-            executeStateCommands(stateCommands) {
-                for (var i = 0; i < stateCommands.length; i++) {
-                    var stateCommand = stateCommands[i];
-                    if (stateCommand.not)
-                        this.shortCutContext.deactivityState(stateCommand.state);
-                    else
-                        this.shortCutContext.activityState(stateCommand.state);
-                }
+        }
+        /**
+         * 检测快捷键是否处于活跃状态
+         */
+        checkActivityStates(states) {
+            for (var i = 0; i < states.length; i++) {
+                if (!this.getState(states[i]))
+                    return false;
             }
-            /**
-             * 检测快捷键是否处于活跃状态
-             */
-            checkActivityStates(states) {
-                for (var i = 0; i < states.length; i++) {
-                    if (!this.getState(states[i]))
-                        return false;
-                }
-                return true;
+            return true;
+        }
+        /**
+         * 获取是否处于指定状态中（支持一个！取反）
+         * @param state 状态名称
+         */
+        getState(state) {
+            var result = this.shortCut.getState(state.state);
+            if (state.not) {
+                result = !result;
             }
-            /**
-             * 获取是否处于指定状态中（支持一个！取反）
-             * @param state 状态名称
-             */
-            getState(state) {
-                var result = this.shortCutContext.getState(state.state);
-                if (state.not) {
-                    result = !result;
-                }
-                return result;
+            return result;
+        }
+        /**
+         * 检测是否按下给出的键
+         * @param keys 按键数组
+         */
+        checkActivityKeys(keys) {
+            for (var i = 0; i < keys.length; i++) {
+                if (!this.getKeyValue(keys[i]))
+                    return false;
             }
-            /**
-             * 检测是否按下给出的键
-             * @param keys 按键数组
-             */
-            checkActivityKeys(keys) {
-                for (var i = 0; i < keys.length; i++) {
-                    if (!this.getKeyValue(keys[i]))
-                        return false;
-                }
-                return true;
+            return true;
+        }
+        /**
+         * 获取按键状态（true：按下状态，false：弹起状态）
+         */
+        getKeyValue(key) {
+            var value = this.keyState.getKeyState(key.key);
+            if (key.not) {
+                value = !value;
             }
-            /**
-             * 获取按键状态（true：按下状态，false：弹起状态）
-             */
-            getKeyValue(key) {
-                var value = this.keyState.getKeyState(key.key);
-                if (key.not) {
-                    value = !value;
-                }
-                return value;
-            }
-            /**
-             * 获取状态列表
-             * @param when		状态字符串
-             */
-            getStates(when) {
-                var states = [];
-                if (when == null)
-                    return states;
-                var state = when.trim();
-                if (state.length == 0) {
-                    return states;
-                }
-                var stateStrs = state.split("+");
-                for (var i = 0; i < stateStrs.length; i++) {
-                    states.push(new State(stateStrs[i]));
-                }
+            return value;
+        }
+        /**
+         * 获取状态列表
+         * @param when		状态字符串
+         */
+        getStates(when) {
+            var states = [];
+            if (when == null)
+                return states;
+            var state = when.trim();
+            if (state.length == 0) {
                 return states;
             }
-            /**
-             * 获取键列表
-             * @param key		快捷键
-             */
-            getKeys(key) {
-                var keyStrs = key.split("+");
-                var keys = [];
-                for (var i = 0; i < keyStrs.length; i++) {
-                    keys.push(new Key(keyStrs[i]));
-                }
-                return keys;
+            var stateStrs = state.split("+");
+            for (var i = 0; i < stateStrs.length; i++) {
+                states.push(new State(stateStrs[i]));
             }
-            /**
-             * 获取命令列表
-             * @param command	命令
-             */
-            getCommands(command) {
-                var commands = [];
-                if (command == null)
-                    return commands;
-                command = command.trim();
-                var commandStrs = command.split(",");
-                for (var i = 0; i < commandStrs.length; i++) {
-                    var commandStr = commandStrs[i].trim();
-                    if (commandStr.length > 0) {
-                        commands.push(commandStr);
-                    }
-                }
-                return commands;
-            }
-            /**
-             * 获取状态命令列表
-             * @param stateCommand	状态命令
-             */
-            getStateCommand(stateCommand) {
-                var stateCommands = [];
-                if (stateCommand == null)
-                    return stateCommands;
-                stateCommand = stateCommand.trim();
-                var stateCommandStrs = stateCommand.split(",");
-                for (var i = 0; i < stateCommandStrs.length; i++) {
-                    var commandStr = stateCommandStrs[i].trim();
-                    if (commandStr.length > 0) {
-                        stateCommands.push(new StateCommand(commandStr));
-                    }
-                }
-                return stateCommands;
-            }
-            /**
-             * 销毁
-             */
-            destroy() {
-                for (var i = 0; i < this.keys.length; i++) {
-                    this.keyState.removeEventListener(this.keys[i].key, this.onCapture, this);
-                }
-                this.shortCutContext = null;
-                this.keys = null;
-                this.states = null;
-            }
+            return states;
         }
-        shortcut.ShortCutCapture = ShortCutCapture;
-    })(shortcut = feng3d.shortcut || (feng3d.shortcut = {}));
+        /**
+         * 获取键列表
+         * @param key		快捷键
+         */
+        getKeys(key) {
+            var keyStrs = key.split("+");
+            var keys = [];
+            for (var i = 0; i < keyStrs.length; i++) {
+                keys.push(new Key(keyStrs[i]));
+            }
+            return keys;
+        }
+        /**
+         * 获取命令列表
+         * @param command	命令
+         */
+        getCommands(command) {
+            var commands = [];
+            if (command == null)
+                return commands;
+            command = command.trim();
+            var commandStrs = command.split(",");
+            for (var i = 0; i < commandStrs.length; i++) {
+                var commandStr = commandStrs[i].trim();
+                if (commandStr.length > 0) {
+                    commands.push(commandStr);
+                }
+            }
+            return commands;
+        }
+        /**
+         * 获取状态命令列表
+         * @param stateCommand	状态命令
+         */
+        getStateCommand(stateCommand) {
+            var stateCommands = [];
+            if (stateCommand == null)
+                return stateCommands;
+            stateCommand = stateCommand.trim();
+            var stateCommandStrs = stateCommand.split(",");
+            for (var i = 0; i < stateCommandStrs.length; i++) {
+                var commandStr = stateCommandStrs[i].trim();
+                if (commandStr.length > 0) {
+                    stateCommands.push(new StateCommand(commandStr));
+                }
+            }
+            return stateCommands;
+        }
+        /**
+         * 销毁
+         */
+        destroy() {
+            for (var i = 0; i < this.keys.length; i++) {
+                this.keyState.removeEventListener(this.keys[i].key, this.onCapture, this);
+            }
+            this.shortCut = null;
+            this.keys = null;
+            this.states = null;
+        }
+    }
+    feng3d.ShortCutCapture = ShortCutCapture;
 })(feng3d || (feng3d = {}));
 /**
  * 按键
@@ -1828,201 +1817,128 @@ class StateCommand {
 }
 var feng3d;
 (function (feng3d) {
-    var shortcut;
-    (function (shortcut_1) {
+    /**
+     * 快捷键命令事件
+     * @author feng 2016-4-27
+     */
+    class ShortCutEvent extends feng3d.Event {
         /**
-         * 快捷键环境
-         * @author feng 2016-6-6
+         * 构建
+         * @param command		命令名称
          */
-        class ShortCutContext {
-            /**
-             * 构建快捷键环境
-             * @param stage 舞台
-             */
-            constructor() {
-                this.init();
-            }
-            /**
-             * 初始化快捷键模块
-             */
-            init() {
-                this.keyState = new shortcut_1.KeyState();
-                this.keyCapture = new shortcut_1.KeyCapture(this);
-                this.commandDispatcher = new feng3d.EventDispatcher();
-                this.captureDic = {};
-                this.stateDic = {};
-            }
-            /**
-             * 添加快捷键
-             * @param shortcuts		快捷键列表
-             */
-            addShortCuts(shortcuts) {
-                for (var i = 0; i < shortcuts.length; i++) {
-                    var shortcut = shortcuts[i];
-                    var shortcutUniqueKey = this.getShortcutUniqueKey(shortcut);
-                    this.captureDic[shortcutUniqueKey] = this.captureDic[shortcutUniqueKey] || new shortcut_1.ShortCutCapture(this, shortcut.key, shortcut.command, shortcut.stateCommand, shortcut.when);
-                }
-            }
-            /**
-             * 删除快捷键
-             * @param shortcuts		快捷键列表
-             */
-            removeShortCuts(shortcuts) {
-                for (var i = 0; i < shortcuts.length; i++) {
-                    var shortcutUniqueKey = this.getShortcutUniqueKey(shortcuts[i]);
-                    var shortCutCapture = this.captureDic[shortcutUniqueKey];
-                    if (shortcut_1.ShortCutCapture != null) {
-                        shortCutCapture.destroy();
-                    }
-                    delete this.captureDic[shortcutUniqueKey];
-                }
-            }
-            /**
-             * 移除所有快捷键
-             */
-            removeAllShortCuts() {
-                var keys = [];
-                var key;
-                for (key in this.captureDic) {
-                    keys.push(key);
-                }
-                keys.forEach(key => {
-                    var shortCutCapture = this.captureDic[key];
-                    shortCutCapture.destroy();
-                    delete this.captureDic[key];
-                });
-            }
-            /**
-             * 激活状态
-             * @param state 状态名称
-             */
-            activityState(state) {
-                this.stateDic[state] = true;
-            }
-            /**
-             * 取消激活状态
-             * @param state 状态名称
-             */
-            deactivityState(state) {
-                delete this.stateDic[state];
-            }
-            /**
-             * 获取状态
-             * @param state 状态名称
-             */
-            getState(state) {
-                return !!this.stateDic[state];
-            }
-            /**
-             * 获取快捷键唯一字符串
-             */
-            getShortcutUniqueKey(shortcut) {
-                return shortcut.key + "," + shortcut.command + "," + shortcut.when;
-            }
+        constructor(command, data) {
+            super(command, data);
         }
-        shortcut_1.ShortCutContext = ShortCutContext;
-    })(shortcut = feng3d.shortcut || (feng3d.shortcut = {}));
+    }
+    feng3d.ShortCutEvent = ShortCutEvent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var shortcut;
-    (function (shortcut) {
-        /**
-         * 快捷键命令事件
-         * @author feng 2016-4-27
-         */
-        class ShortCutEvent extends feng3d.Event {
-            /**
-             * 构建
-             * @param command		命令名称
-             */
-            constructor(command, data) {
-                super(command, data);
-            }
-        }
-        shortcut.ShortCutEvent = ShortCutEvent;
-    })(shortcut = feng3d.shortcut || (feng3d.shortcut = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var shortcut;
-    (function (shortcut) {
+    /**
+     * 初始化快捷键模块
+     * @author feng 2016-4-26
+     *
+     * <pre>
+var shortcuts:Array = [ //
+//在按下key1时触发命令command1
+    {key: "key1", command: "command1", when: ""}, //
+     //在按下key1时触发状态命令改变stateCommand1为激活状态
+    {key: "key1", stateCommand: "stateCommand1", when: "state1"}, //
+     //处于state1状态时按下key1触发命令command1
+    {key: "key1", command: "command1", when: "state1"}, //
+    //处于state1状态不处于state2时按下key1与没按下key2触发command1与command2，改变stateCommand1为激活状态，stateCommand2为非激活状态
+    {key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
+    ];
+//添加快捷键
+shortCut.addShortCuts(shortcuts);
+//监听命令
+shortCut.addEventListener("run", function(e:Event):void
+{
+    trace("接受到命令：" + e.type);
+});
+     * </pre>
+     */
+    class ShortCut extends feng3d.EventDispatcher {
         /**
          * 初始化快捷键模块
-         * @author feng 2016-4-26
-         *
-         * <pre>
-    var shortcuts:Array = [ //
-    //在按下key1时触发命令command1
-        {key: "key1", command: "command1", when: ""}, //
-         //在按下key1时触发状态命令改变stateCommand1为激活状态
-        {key: "key1", stateCommand: "stateCommand1", when: "state1"}, //
-         //处于state1状态时按下key1触发命令command1
-        {key: "key1", command: "command1", when: "state1"}, //
-        //处于state1状态不处于state2时按下key1与没按下key2触发command1与command2，改变stateCommand1为激活状态，stateCommand2为非激活状态
-        {key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
-        ];
-    //添加快捷键
-    ShortCut.addShortCuts(shortcuts);
-    //监听命令
-    ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
-    {
-        trace("接受到命令：" + e.type);
-    });
-         * </pre>
          */
-        class ShortCut {
-            /**
-             * 初始化快捷键模块
-             */
-            static init() {
-                ShortCut.shortcutContext = new shortcut.ShortCutContext();
-                ShortCut.commandDispatcher = ShortCut.shortcutContext.commandDispatcher;
-            }
-            /**
-             * 添加快捷键
-             * @param shortcuts		快捷键列表
-             */
-            static addShortCuts(shortcuts) {
-                ShortCut.shortcutContext.addShortCuts(shortcuts);
-            }
-            /**
-             * 删除快捷键
-             * @param shortcuts		快捷键列表
-             */
-            static removeShortCuts(shortcuts) {
-                ShortCut.shortcutContext.removeShortCuts(shortcuts);
-            }
-            /**
-             * 移除所有快捷键
-             */
-            static removeAllShortCuts() {
-                ShortCut.shortcutContext.removeAllShortCuts();
-            }
-            /**
-             * 激活状态
-             * @param state 状态名称
-             */
-            static activityState(state) {
-                ShortCut.shortcutContext.activityState(state);
-            }
-            /**
-             * 取消激活状态
-             * @param state 状态名称
-             */
-            static deactivityState(state) {
-                ShortCut.shortcutContext.deactivityState(state);
-            }
-            /**
-             * 获取状态
-             * @param state 状态名称
-             */
-            static getState(state) {
-                return ShortCut.shortcutContext.getState(state);
+        constructor() {
+            super();
+            this.keyState = new feng3d.KeyState();
+            this.keyCapture = new feng3d.KeyCapture(this);
+            this.captureDic = {};
+            this.stateDic = {};
+        }
+        /**
+         * 添加快捷键
+         * @param shortcuts		快捷键列表
+         */
+        addShortCuts(shortcuts) {
+            for (var i = 0; i < shortcuts.length; i++) {
+                var shortcut = shortcuts[i];
+                var shortcutUniqueKey = this.getShortcutUniqueKey(shortcut);
+                this.captureDic[shortcutUniqueKey] = this.captureDic[shortcutUniqueKey] || new feng3d.ShortCutCapture(this, shortcut.key, shortcut.command, shortcut.stateCommand, shortcut.when);
             }
         }
-        shortcut.ShortCut = ShortCut;
-    })(shortcut = feng3d.shortcut || (feng3d.shortcut = {}));
+        /**
+         * 删除快捷键
+         * @param shortcuts		快捷键列表
+         */
+        removeShortCuts(shortcuts) {
+            for (var i = 0; i < shortcuts.length; i++) {
+                var shortcutUniqueKey = this.getShortcutUniqueKey(shortcuts[i]);
+                var shortCutCapture = this.captureDic[shortcutUniqueKey];
+                if (feng3d.ShortCutCapture != null) {
+                    shortCutCapture.destroy();
+                }
+                delete this.captureDic[shortcutUniqueKey];
+            }
+        }
+        /**
+         * 移除所有快捷键
+         */
+        removeAllShortCuts() {
+            var keys = [];
+            var key;
+            for (key in this.captureDic) {
+                keys.push(key);
+            }
+            keys.forEach(key => {
+                var shortCutCapture = this.captureDic[key];
+                shortCutCapture.destroy();
+                delete this.captureDic[key];
+            });
+        }
+        /**
+         * 激活状态
+         * @param state 状态名称
+         */
+        activityState(state) {
+            this.stateDic[state] = true;
+        }
+        /**
+         * 取消激活状态
+         * @param state 状态名称
+         */
+        deactivityState(state) {
+            delete this.stateDic[state];
+        }
+        /**
+         * 获取状态
+         * @param state 状态名称
+         */
+        getState(state) {
+            return !!this.stateDic[state];
+        }
+        /**
+         * 获取快捷键唯一字符串
+         */
+        getShortcutUniqueKey(shortcut) {
+            return shortcut.key + "," + shortcut.command + "," + shortcut.when;
+        }
+    }
+    feng3d.ShortCut = ShortCut;
+    feng3d.shortcut = new ShortCut();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

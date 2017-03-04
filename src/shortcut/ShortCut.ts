@@ -1,4 +1,4 @@
-module feng3d.shortcut
+module feng3d
 {
 	/**
 	 * 初始化快捷键模块
@@ -16,93 +16,136 @@ var shortcuts:Array = [ //
 	{key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
 	];
 //添加快捷键
-ShortCut.addShortCuts(shortcuts);
+shortCut.addShortCuts(shortcuts);
 //监听命令
-ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
+shortCut.addEventListener("run", function(e:Event):void
 {
 	trace("接受到命令：" + e.type);
 });
 	 * </pre>
 	 */
-	export class ShortCut
+	export class ShortCut extends EventDispatcher
 	{
 		/**
-		 * 命令派发器
+		 * 按键状态
 		 */
-		public static commandDispatcher: IEventDispatcher;
+		public keyState: KeyState;
 
 		/**
-		 * 快捷键环境
+		 * 状态字典
 		 */
-		private static shortcutContext: ShortCutContext;
+		public stateDic: {};
+
+		/**
+		 * 按键捕获
+		 */
+		public keyCapture: KeyCapture;
+
+		/**
+		 * 捕获字典
+		 */
+		public captureDic: {};
 
 		/**
 		 * 初始化快捷键模块
 		 */
-		public static init(): void
+		constructor()
 		{
+			super();
 
-			ShortCut.shortcutContext = new ShortCutContext();
-			ShortCut.commandDispatcher = ShortCut.shortcutContext.commandDispatcher;
+			this.keyState = new KeyState();
+			this.keyCapture = new KeyCapture(this)
+
+			this.captureDic = {};
+			this.stateDic = {};
 		}
 
 		/**
 		 * 添加快捷键
 		 * @param shortcuts		快捷键列表
 		 */
-		public static addShortCuts(shortcuts: any[]): void
+		public addShortCuts(shortcuts: any[]): void
 		{
-
-			ShortCut.shortcutContext.addShortCuts(shortcuts);
+			for (var i = 0; i < shortcuts.length; i++)
+			{
+				var shortcut = shortcuts[i];
+				var shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcut);
+				this.captureDic[shortcutUniqueKey] = this.captureDic[shortcutUniqueKey] || new ShortCutCapture(this, shortcut.key, shortcut.command, shortcut.stateCommand, shortcut.when);
+			}
 		}
 
 		/**
 		 * 删除快捷键
 		 * @param shortcuts		快捷键列表
 		 */
-		public static removeShortCuts(shortcuts: any[]): void
+		public removeShortCuts(shortcuts: any[]): void
 		{
-
-			ShortCut.shortcutContext.removeShortCuts(shortcuts);
+			for (var i = 0; i < shortcuts.length; i++)
+			{
+				var shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcuts[i]);
+				var shortCutCapture: ShortCutCapture = this.captureDic[shortcutUniqueKey];
+				if (ShortCutCapture != null)
+				{
+					shortCutCapture.destroy();
+				}
+				delete this.captureDic[shortcutUniqueKey];
+			}
 		}
 
 		/**
 		 * 移除所有快捷键
 		 */
-		public static removeAllShortCuts(): void
+		public removeAllShortCuts(): void
 		{
+			var keys = [];
+			var key: string;
+			for (key in this.captureDic)
+			{
+				keys.push(key);
+			}
 
-			ShortCut.shortcutContext.removeAllShortCuts();
+			keys.forEach(key =>
+			{
+				var shortCutCapture: ShortCutCapture = this.captureDic[key];
+				shortCutCapture.destroy();
+				delete this.captureDic[key];
+			});
 		}
 
 		/**
 		 * 激活状态
 		 * @param state 状态名称
 		 */
-		public static activityState(state: string): void
+		public activityState(state: string): void
 		{
-
-			ShortCut.shortcutContext.activityState(state);
+			this.stateDic[state] = true;
 		}
 
 		/**
 		 * 取消激活状态
 		 * @param state 状态名称
 		 */
-		public static deactivityState(state: string): void
+		public deactivityState(state: string): void
 		{
-
-			ShortCut.shortcutContext.deactivityState(state);
+			delete this.stateDic[state];
 		}
 
 		/**
 		 * 获取状态
 		 * @param state 状态名称
 		 */
-		public static getState(state: string): Boolean
+		public getState(state: string): Boolean
 		{
+			return !!this.stateDic[state];
+		}
 
-			return ShortCut.shortcutContext.getState(state);
+		/**
+		 * 获取快捷键唯一字符串
+		 */
+		private getShortcutUniqueKey(shortcut: any): string
+		{
+			return shortcut.key + "," + shortcut.command + "," + shortcut.when;
 		}
 	}
+	export var shortcut = new ShortCut();
 }

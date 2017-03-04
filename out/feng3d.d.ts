@@ -1054,7 +1054,7 @@ declare module feng3d {
         constructor(event: MouseEvent | WheelEvent | KeyboardEvent, data?: Input, bubbles?: boolean);
     }
 }
-declare module feng3d.shortcut {
+declare module feng3d {
     /**
      * 按键捕获
      * @author feng 2016-4-26
@@ -1070,10 +1070,6 @@ declare module feng3d.shortcut {
          */
         private mouseKeyDic;
         /**
-         * 快捷键环境
-         */
-        private shortCutContext;
-        /**
          * 按键状态
          */
         private keyState;
@@ -1081,7 +1077,7 @@ declare module feng3d.shortcut {
          * 构建
          * @param stage		舞台
          */
-        constructor(shortCutContext: ShortCutContext);
+        constructor(shortCut: ShortCut);
         /**
          * 默认支持按键
          */
@@ -1108,7 +1104,7 @@ declare module feng3d.shortcut {
         private getBoardKey(keyCode);
     }
 }
-declare module feng3d.shortcut {
+declare module feng3d {
     /**
      * 按键状态
      * @author feng 2016-4-26
@@ -1141,7 +1137,7 @@ declare module feng3d.shortcut {
         getKeyState(key: string): Boolean;
     }
 }
-declare module feng3d.shortcut {
+declare module feng3d {
     /**
      * 快捷键捕获
      * @author feng 2016-4-26
@@ -1150,7 +1146,7 @@ declare module feng3d.shortcut {
         /**
          * 快捷键环境
          */
-        private shortCutContext;
+        private shortCut;
         /**
          * 快捷键
          */
@@ -1189,13 +1185,13 @@ declare module feng3d.shortcut {
         private stateCommands;
         /**
          * 构建快捷键捕获
-         * @param shortCutContext		快捷键环境
+         * @param shortCut				快捷键环境
          * @param key					快捷键
          * @param command				要执行的命令名称
          * @param stateCommand			可执行的状态命令
          * @param when					快捷键处于活动状态的条件
          */
-        constructor(shortCutContext: ShortCutContext, key: string, command?: string, stateCommand?: string, when?: string);
+        constructor(shortCut: ShortCut, key: string, command?: string, stateCommand?: string, when?: string);
         /**
          * 初始化
          */
@@ -1301,16 +1297,49 @@ declare class StateCommand {
     state: string;
     constructor(state: string);
 }
-declare module feng3d.shortcut {
+declare module feng3d {
     /**
-     * 快捷键环境
-     * @author feng 2016-6-6
+     * 快捷键命令事件
+     * @author feng 2016-4-27
      */
-    class ShortCutContext {
+    class ShortCutEvent extends Event {
         /**
-         * 命令派发器
+         * 携带数据
          */
-        commandDispatcher: IEventDispatcher;
+        data: InputEvent;
+        /**
+         * 构建
+         * @param command		命令名称
+         */
+        constructor(command: string, data: InputEvent);
+    }
+}
+declare module feng3d {
+    /**
+     * 初始化快捷键模块
+     * @author feng 2016-4-26
+     *
+     * <pre>
+var shortcuts:Array = [ //
+//在按下key1时触发命令command1
+    {key: "key1", command: "command1", when: ""}, //
+     //在按下key1时触发状态命令改变stateCommand1为激活状态
+    {key: "key1", stateCommand: "stateCommand1", when: "state1"}, //
+     //处于state1状态时按下key1触发命令command1
+    {key: "key1", command: "command1", when: "state1"}, //
+    //处于state1状态不处于state2时按下key1与没按下key2触发command1与command2，改变stateCommand1为激活状态，stateCommand2为非激活状态
+    {key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
+    ];
+//添加快捷键
+shortCut.addShortCuts(shortcuts);
+//监听命令
+shortCut.addEventListener("run", function(e:Event):void
+{
+    trace("接受到命令：" + e.type);
+});
+     * </pre>
+     */
+    class ShortCut extends EventDispatcher {
         /**
          * 按键状态
          */
@@ -1328,14 +1357,9 @@ declare module feng3d.shortcut {
          */
         captureDic: {};
         /**
-         * 构建快捷键环境
-         * @param stage 舞台
-         */
-        constructor();
-        /**
          * 初始化快捷键模块
          */
-        init(): void;
+        constructor();
         /**
          * 添加快捷键
          * @param shortcuts		快捷键列表
@@ -1370,92 +1394,7 @@ declare module feng3d.shortcut {
          */
         private getShortcutUniqueKey(shortcut);
     }
-}
-declare module feng3d.shortcut {
-    /**
-     * 快捷键命令事件
-     * @author feng 2016-4-27
-     */
-    class ShortCutEvent extends Event {
-        /**
-         * 携带数据
-         */
-        data: InputEvent;
-        /**
-         * 构建
-         * @param command		命令名称
-         */
-        constructor(command: string, data: InputEvent);
-    }
-}
-declare module feng3d.shortcut {
-    /**
-     * 初始化快捷键模块
-     * @author feng 2016-4-26
-     *
-     * <pre>
-var shortcuts:Array = [ //
-//在按下key1时触发命令command1
-    {key: "key1", command: "command1", when: ""}, //
-     //在按下key1时触发状态命令改变stateCommand1为激活状态
-    {key: "key1", stateCommand: "stateCommand1", when: "state1"}, //
-     //处于state1状态时按下key1触发命令command1
-    {key: "key1", command: "command1", when: "state1"}, //
-    //处于state1状态不处于state2时按下key1与没按下key2触发command1与command2，改变stateCommand1为激活状态，stateCommand2为非激活状态
-    {key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
-    ];
-//添加快捷键
-ShortCut.addShortCuts(shortcuts);
-//监听命令
-ShortCut.commandDispatcher.addEventListener("run", function(e:Event):void
-{
-    trace("接受到命令：" + e.type);
-});
-     * </pre>
-     */
-    class ShortCut {
-        /**
-         * 命令派发器
-         */
-        static commandDispatcher: IEventDispatcher;
-        /**
-         * 快捷键环境
-         */
-        private static shortcutContext;
-        /**
-         * 初始化快捷键模块
-         */
-        static init(): void;
-        /**
-         * 添加快捷键
-         * @param shortcuts		快捷键列表
-         */
-        static addShortCuts(shortcuts: any[]): void;
-        /**
-         * 删除快捷键
-         * @param shortcuts		快捷键列表
-         */
-        static removeShortCuts(shortcuts: any[]): void;
-        /**
-         * 移除所有快捷键
-         */
-        static removeAllShortCuts(): void;
-        /**
-         * 激活状态
-         * @param state 状态名称
-         */
-        static activityState(state: string): void;
-        /**
-         * 取消激活状态
-         * @param state 状态名称
-         */
-        static deactivityState(state: string): void;
-        /**
-         * 获取状态
-         * @param state 状态名称
-         */
-        static getState(state: string): Boolean;
-    }
+    var shortcut: ShortCut;
 }
 declare module feng3d {
     /**

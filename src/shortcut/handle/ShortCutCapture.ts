@@ -1,4 +1,4 @@
-module feng3d.shortcut
+module feng3d
 {
 
 	/**
@@ -10,7 +10,7 @@ module feng3d.shortcut
 		/**
 		 * 快捷键环境
 		 */
-		private shortCutContext: ShortCutContext;
+		private shortCut: ShortCut;
 
 		/**
 		 * 快捷键
@@ -59,17 +59,16 @@ module feng3d.shortcut
 
 		/**
 		 * 构建快捷键捕获
-		 * @param shortCutContext		快捷键环境
+		 * @param shortCut				快捷键环境
 		 * @param key					快捷键
 		 * @param command				要执行的命令名称
 		 * @param stateCommand			可执行的状态命令
 		 * @param when					快捷键处于活动状态的条件
 		 */
-		constructor(shortCutContext: ShortCutContext, key: string, command: string = null, stateCommand: string = null, when: string = null)
+		constructor(shortCut: ShortCut, key: string, command: string = null, stateCommand: string = null, when: string = null)
 		{
-
-			this.shortCutContext = shortCutContext;
-			this.keyState = shortCutContext.keyState;
+			this.shortCut = shortCut;
+			this.keyState = shortCut.keyState;
 			this.key = key;
 			this.command = command;
 			this.stateCommand = stateCommand;
@@ -117,7 +116,7 @@ module feng3d.shortcut
 
 			for (var i = 0; i < commands.length; i++)
 			{
-				this.shortCutContext.commandDispatcher.dispatchEvent(new ShortCutEvent(commands[i], data));
+				this.shortCut.dispatchEvent(new ShortCutEvent(commands[i], data));
 			}
 		}
 
@@ -131,9 +130,9 @@ module feng3d.shortcut
 			{
 				var stateCommand: StateCommand = stateCommands[i];
 				if (stateCommand.not)
-					this.shortCutContext.deactivityState(stateCommand.state);
+					this.shortCut.deactivityState(stateCommand.state);
 				else
-					this.shortCutContext.activityState(stateCommand.state);
+					this.shortCut.activityState(stateCommand.state);
 			}
 		}
 
@@ -158,7 +157,7 @@ module feng3d.shortcut
 		private getState(state: State): Boolean
 		{
 
-			var result: Boolean = this.shortCutContext.getState(state.state);
+			var result: Boolean = this.shortCut.getState(state.state);
 			if (state.not)
 			{
 				result = !result;
@@ -299,7 +298,7 @@ module feng3d.shortcut
 			{
 				this.keyState.removeEventListener(this.keys[i].key, this.onCapture, this);
 			}
-			this.shortCutContext = null;
+			this.shortCut = null;
 			this.keys = null;
 			this.states = null;
 		}

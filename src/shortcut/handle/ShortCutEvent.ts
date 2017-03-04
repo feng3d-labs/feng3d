@@ -1,4 +1,4 @@
-module feng3d.shortcut
+module feng3d
 {
 
 	/**

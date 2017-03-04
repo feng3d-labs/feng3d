@@ -1,4 +1,4 @@
-module feng3d.shortcut
+module feng3d
 {
 
 	/**
@@ -19,11 +19,6 @@ module feng3d.shortcut
 		private mouseKeyDic = {};
 
 		/**
-		 * 快捷键环境
-		 */
-		private shortCutContext: ShortCutContext;
-
-		/**
 		 * 按键状态
 		 */
 		private keyState: KeyState;
@@ -32,10 +27,10 @@ module feng3d.shortcut
 		 * 构建
 		 * @param stage		舞台
 		 */
-		constructor(shortCutContext: ShortCutContext)
+		constructor(shortCut: ShortCut)
 		{
 
-			this.keyState = shortCutContext.keyState;
+			this.keyState = shortCut.keyState;
 			var input = Input.instance;
 			var types = InputEvent.types;
 			//
