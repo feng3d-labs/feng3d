@@ -1594,10 +1594,10 @@ var feng3d;
         /**
          * 构建快捷键捕获
          * @param shortCut				快捷键环境
-         * @param key					快捷键
-         * @param command				要执行的命令名称
-         * @param stateCommand			可执行的状态命令
-         * @param when					快捷键处于活动状态的条件
+         * @param key					快捷键；用“+”连接多个按键，“!”表示没按下某键；例如 “a+!b”表示按下“a”与没按下“b”时触发。
+         * @param command				要执行的command的id；使用“,”连接触发多个命令；例如 “commandA,commandB”表示满足触发条件后依次执行commandA与commandB命令。
+         * @param stateCommand			要执行的状态命令id；使用“,”连接触发多个状态命令，没带“!”表示激活该状态，否则表示使其处于非激活状态；例如 “stateA,!stateB”表示满足触发条件后激活状态“stateA，使“stateB处于非激活状态。
+         * @param when					快捷键激活的条件；使用“+”连接多个状态，没带“!”表示需要处于激活状态，否则需要处于非激活状态； 例如 “stateA+!stateB”表示stateA处于激活状态且stateB处于非激活状态时会判断按键是否满足条件。
          */
         constructor(shortCut, key, command = null, stateCommand = null, when = null) {
             this.shortCut = shortCut;
