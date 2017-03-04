@@ -192,6 +192,8 @@
         "src/factory/SegmentObject3D.ts",
         "src/factory/ParticleObject3D.ts",
         //
-        "src/core/Mouse3DManager.ts"
+        "src/core/Mouse3DManager.ts",
+        //
+        "src/autofiles/shaders.ts"
     ]
 }
