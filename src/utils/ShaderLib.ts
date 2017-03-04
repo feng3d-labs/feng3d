@@ -7,6 +7,7 @@ module feng3d
      */
     export class ShaderLib
     {
+        public static shaderFileMap: { [filePath: string]: string } = {};
 
         /**
          * 获取shaderCode

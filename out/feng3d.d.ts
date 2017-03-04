@@ -1926,6 +1926,9 @@ declare module feng3d {
      * @author feng 2016-12-16
      */
     class ShaderLib {
+        static shaderFileMap: {
+            [filePath: string]: string;
+        };
         /**
          * 获取shaderCode
          */
