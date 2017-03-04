@@ -11718,10 +11718,10 @@ var feng3d;
     var $REVISION = "0.0.0";
     console.log(`Feng3D version ${$REVISION}`);
     /*************************** 初始化模块 ***************************/
-    //键盘鼠标输入模块
+    //键盘鼠标输入
     feng3d.input = new feng3d.Input();
     feng3d.inputType = new feng3d.InputEventType();
-    //快捷键模块
+    //快捷键
     feng3d.shortcut = new feng3d.ShortCut();
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

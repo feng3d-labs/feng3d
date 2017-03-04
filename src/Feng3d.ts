@@ -8,10 +8,10 @@ module feng3d
     console.log(`Feng3D version ${$REVISION}`)
 
     /*************************** 初始化模块 ***************************/
-    //键盘鼠标输入模块
+    //键盘鼠标输入
     export var input = new Input();
     export var inputType = new InputEventType();
 
-    //快捷键模块
+    //快捷键
     export var shortcut = new ShortCut();
 }
