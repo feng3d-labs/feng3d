@@ -31,7 +31,7 @@ module feng3d
         /**
          * 上次鼠标位置
          */
-        private preMousePoint: { x: number, y: number };
+        private preMousePoint: Point;
 
         constructor(transform: Transform = null)
         {
@@ -124,13 +124,15 @@ module feng3d
             if (this.target == null)
                 return;
 
+            var mousePoint = new Point(Input.instance.clientX, Input.instance.clientY);
+
             if (this.preMousePoint == null)
             {
-                this.preMousePoint = { x: event.clientX, y: event.clientY };
+                this.preMousePoint = mousePoint;
                 return;
             }
             //计算旋转
-            var offsetPoint = { x: event.clientX - this.preMousePoint.x, y: event.clientY - this.preMousePoint.y };
+            var offsetPoint = mousePoint.subtract(this.preMousePoint)
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
             var matrix3d = this.target.matrix3d;
@@ -140,7 +142,7 @@ module feng3d
             matrix3d.appendRotation(offsetPoint.x, Vector3D.Y_AXIS, position);
             this.target.matrix3d = matrix3d;
             //
-            this.preMousePoint = { x: event.clientX, y: event.clientY };
+            this.preMousePoint = mousePoint;
         }
 
         /**

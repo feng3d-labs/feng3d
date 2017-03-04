@@ -1372,7 +1372,9 @@ var feng3d;
                 this.clientX = event.clientX;
                 this.clientY = event.clientY;
             }
-            this.dispatchEvent(new InputEvent(event, this, true));
+            var inputEvent = new InputEvent(event, this, true);
+            console.log(inputEvent);
+            this.dispatchEvent(inputEvent);
         }
         /**
          *
@@ -9140,12 +9142,13 @@ var feng3d;
         onMouseMove(event) {
             if (this.target == null)
                 return;
+            var mousePoint = new feng3d.Point(feng3d.Input.instance.clientX, feng3d.Input.instance.clientY);
             if (this.preMousePoint == null) {
-                this.preMousePoint = { x: event.clientX, y: event.clientY };
+                this.preMousePoint = mousePoint;
                 return;
             }
             //计算旋转
-            var offsetPoint = { x: event.clientX - this.preMousePoint.x, y: event.clientY - this.preMousePoint.y };
+            var offsetPoint = mousePoint.subtract(this.preMousePoint);
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
             var matrix3d = this.target.matrix3d;
@@ -9155,7 +9158,7 @@ var feng3d;
             matrix3d.appendRotation(offsetPoint.x, feng3d.Vector3D.Y_AXIS, position);
             this.target.matrix3d = matrix3d;
             //
-            this.preMousePoint = { x: event.clientX, y: event.clientY };
+            this.preMousePoint = mousePoint;
         }
         /**
          * 键盘按下事件
