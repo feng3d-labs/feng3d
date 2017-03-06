@@ -8,22 +8,22 @@ module feng3d
     {
 
         //private
-        private _position = new Vector3D();
-        private _rotation = new Vector3D();
-        private _scale = new Vector3D(1, 1, 1);
+        protected _position = new Vector3D();
+        protected _rotation = new Vector3D();
+        protected _scale = new Vector3D(1, 1, 1);
         //
-        private _matrix3D = new Matrix3D();
-        private _matrix3DDirty: boolean;
+        protected _matrix3D = new Matrix3D();
+        protected _matrix3DDirty: boolean;
         private _inverseMatrix3D = new Matrix3D();
         private _inverseMatrix3DDirty: boolean;
         /**
          * 全局矩阵是否变脏
          */
-        private _globalMatrix3DDirty: boolean;
+        protected _globalMatrix3DDirty: boolean;
         /**
          * 全局矩阵
          */
-        private _globalMatrix3D: Matrix3D = new Matrix3D();
+        protected _globalMatrix3D: Matrix3D = new Matrix3D();
         private _inverseGlobalMatrix3DDirty: boolean;
         private _inverseGlobalMatrix3D: Matrix3D = new Matrix3D();
 
@@ -290,7 +290,7 @@ module feng3d
         /**
          * 变换矩阵
          */
-        private updateMatrix3D()
+        protected updateMatrix3D()
         {
             var rotation = this._rotation.clone();
             rotation.scaleBy(MathConsts.DEGREES_TO_RADIANS);
@@ -325,7 +325,7 @@ module feng3d
         /**
          * 更新全局矩阵
          */
-        private updateGlobalMatrix3D()
+        protected updateGlobalMatrix3D()
         {
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);

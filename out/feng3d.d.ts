@@ -3651,21 +3651,21 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Transform extends Object3DComponent {
-        private _position;
-        private _rotation;
-        private _scale;
-        private _matrix3D;
-        private _matrix3DDirty;
+        protected _position: Vector3D;
+        protected _rotation: Vector3D;
+        protected _scale: Vector3D;
+        protected _matrix3D: Matrix3D;
+        protected _matrix3DDirty: boolean;
         private _inverseMatrix3D;
         private _inverseMatrix3DDirty;
         /**
          * 全局矩阵是否变脏
          */
-        private _globalMatrix3DDirty;
+        protected _globalMatrix3DDirty: boolean;
         /**
          * 全局矩阵
          */
-        private _globalMatrix3D;
+        protected _globalMatrix3D: Matrix3D;
         private _inverseGlobalMatrix3DDirty;
         private _inverseGlobalMatrix3D;
         /**
@@ -3788,7 +3788,7 @@ declare module feng3d {
         /**
          * 变换矩阵
          */
-        private updateMatrix3D();
+        protected updateMatrix3D(): void;
         /**
          * 使变换矩阵无效
          */
@@ -3800,7 +3800,7 @@ declare module feng3d {
         /**
          * 更新全局矩阵
          */
-        private updateGlobalMatrix3D();
+        protected updateGlobalMatrix3D(): void;
         /**
          * 更新逆全局矩阵
          */
