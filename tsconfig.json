@@ -113,6 +113,7 @@
         "src/primitives/CapsuleGeometry.ts",
         "src/primitives/CylinderGeometry.ts",
         "src/primitives/ConeGeometry.ts",
+        "src/primitives/TorusGeometry.ts",
         "src/primitives/SkyBoxGeometry.ts",
         //
         "src/textures/TextureInfo.ts",
@@ -182,6 +183,7 @@
         "src/factory/CameraObject3D.ts",
         "src/factory/PlaneObject3D.ts",
         "src/factory/CubeObject3D.ts",
+        "src/factory/TorusObect3D.ts",
         "src/factory/SphereObject3D.ts",
         "src/factory/CapsuleObject3D.ts",
         "src/factory/CylinderObject3D.ts",

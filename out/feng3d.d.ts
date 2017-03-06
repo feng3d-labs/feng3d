@@ -3400,6 +3400,7 @@ declare module feng3d {
          * 渲染
          */
         draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer): void;
         /**
          * 激活渲染程序
          */
@@ -4802,6 +4803,72 @@ declare module feng3d {
          * @param yUp
          */
         constructor(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, closed?: boolean, yUp?: boolean);
+    }
+}
+declare module feng3d {
+    /**
+     * 圆环几何体
+     */
+    class TorusGeometry extends Geometry {
+        /**
+         * 圆环半径
+         */
+        radius: number;
+        /**
+         * 管子半径
+         */
+        tubeRadius: number;
+        /**
+         * 横向段数
+         */
+        segmentsR: number;
+        /**
+         * 纵向段数
+         */
+        segmentsT: number;
+        /**
+         * Y轴是否朝上
+         */
+        yUp: boolean;
+        protected vertexPositionData: Float32Array;
+        protected vertexNormalData: Float32Array;
+        protected vertexTangentData: Float32Array;
+        private _rawIndices;
+        private _vertexIndex;
+        private _currentTriangleIndex;
+        private _numVertices;
+        private vertexPositionStride;
+        private vertexNormalStride;
+        private vertexTangentStride;
+        /**
+         * 添加顶点数据
+         */
+        private addVertex(vertexIndex, px, py, pz, nx, ny, nz, tx, ty, tz);
+        /**
+         * 添加三角形索引数据
+         * @param currentTriangleIndex		当前三角形索引
+         * @param cwVertexIndex0			索引0
+         * @param cwVertexIndex1			索引1
+         * @param cwVertexIndex2			索引2
+         */
+        private addTriangleClockWise(currentTriangleIndex, cwVertexIndex0, cwVertexIndex1, cwVertexIndex2);
+        /**
+         * @inheritDoc
+         */
+        protected buildGeometry(): void;
+        /**
+         * @inheritDoc
+         */
+        protected buildUVs(): void;
+        /**
+         * 创建<code>Torus</code>实例
+         * @param radius						圆环半径
+         * @param tuebRadius					管道半径
+         * @param segmentsR						横向段数
+         * @param segmentsT						纵向段数
+         * @param yUp							Y轴是否朝上
+         */
+        constructor(radius?: number, tubeRadius?: number, segmentsR?: number, segmentsT?: number, yUp?: boolean);
     }
 }
 declare module feng3d {
@@ -6426,6 +6493,19 @@ declare module feng3d {
          * 构建3D对象
          */
         constructor(width?: number, name?: string);
+    }
+}
+declare module feng3d {
+    /**
+     * 圆环3D对象
+     * @author feng 2017-02-06
+     */
+    class TorusObect3D extends Object3D {
+        torusGeometry: TorusGeometry;
+        /**
+         * 构建3D对象
+         */
+        constructor(name?: string);
     }
 }
 declare module feng3d {

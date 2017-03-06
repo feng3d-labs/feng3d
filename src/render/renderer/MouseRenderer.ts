@@ -44,6 +44,12 @@ module feng3d
             // this.frameBufferObject.deactivate(context3D);
         }
 
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer)
+        {
+            if (meshRenderer.object3D.realMouseEnable)
+                super.drawRenderables(context3D, renderContext, meshRenderer);
+        }
+
         /**
          * 激活渲染程序
          */
