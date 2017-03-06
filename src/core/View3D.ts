@@ -18,7 +18,7 @@ module feng3d
 
         //
         private _context3D: Context3D;
-        private _camera: Camera3D;
+        private _camera: CameraObject3D;
         private _scene: Scene3D;
         private _canvas: HTMLCanvasElement;
 
@@ -38,7 +38,7 @@ module feng3d
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas, scene: Scene3D = null, camera: Camera3D = null)
+        constructor(canvas, scene: Scene3D = null, camera: CameraObject3D = null)
         {
 
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
@@ -50,7 +50,7 @@ module feng3d
             this.initGL();
 
             this.scene = scene || new Scene3D();
-            this.camera = camera || new Camera3D();
+            this.camera = camera || new CameraObject3D();
 
             this.defaultRenderer = new ForwardRenderer();
             this.mouse3DManager = new Mouse3DManager();
@@ -88,11 +88,11 @@ module feng3d
         {
             var viewRect: Rectangle = this.viewRect;
 
-            this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
+            this.camera.camera.lens.aspectRatio = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.copyFrom(viewRect);
-            this.mouse3DManager.draw(this._context3D, this._scene, this._camera);
+            this.mouse3DManager.draw(this._context3D, this._scene, this._camera.camera);
 
             // 默认渲染
             this._context3D.clearColor(0, 0, 0, 1.0);
@@ -102,7 +102,7 @@ module feng3d
             this._context3D.enable(Context3D.BLEND);
             // Set blending function
             this._context3D.blendFunc(Context3D.SRC_ALPHA, Context3D.ONE_MINUS_SRC_ALPHA);
-            this.defaultRenderer.draw(this._context3D, this._scene, this._camera);
+            this.defaultRenderer.draw(this._context3D, this._scene, this._camera.camera);
             this._context3D.disable(Context3D.BLEND);
         }
 
@@ -135,12 +135,12 @@ module feng3d
         /**
          * 摄像机
          */
-        public get camera(): Camera3D
+        public get camera()
         {
             return this._camera;
         }
 
-        public set camera(value: Camera3D)
+        public set camera(value)
         {
             this._camera = value;
         }
@@ -197,7 +197,7 @@ module feng3d
         public unproject(sX: number, sY: number, sZ: number, v: Vector3D = null): Vector3D
         {
             var gpuPos: Point = this.screenToGpuPosition(new Point(sX, sY));
-            return this._camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
+            return this._camera.camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
         }
 
         /**

@@ -3565,7 +3565,7 @@ declare module feng3d {
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas: any, scene?: Scene3D, camera?: Camera3D);
+        constructor(canvas: any, scene?: Scene3D, camera?: CameraObject3D);
         /**
          * 初始化GL
          */
@@ -3583,7 +3583,7 @@ declare module feng3d {
         /**
          * 摄像机
          */
-        camera: Camera3D;
+        camera: CameraObject3D;
         /**
          * 鼠标在3D视图中的位置
          */
@@ -6379,6 +6379,12 @@ declare module feng3d {
         zArrow: ConeObject3D;
         constructor(length?: number);
         private buildTrident(length);
+    }
+}
+declare module feng3d {
+    class CameraObject3D extends Object3D {
+        camera: Camera3D;
+        constructor(name?: string);
     }
 }
 declare module feng3d {

@@ -5767,7 +5767,7 @@ var feng3d;
             this._context3D.getContextAttributes();
             this.initGL();
             this.scene = scene || new feng3d.Scene3D();
-            this.camera = camera || new feng3d.Camera3D();
+            this.camera = camera || new feng3d.CameraObject3D();
             this.defaultRenderer = new feng3d.ForwardRenderer();
             this.mouse3DManager = new feng3d.Mouse3DManager();
             feng3d.$ticker.addEventListener(feng3d.Event.ENTER_FRAME, this.drawScene, this);
@@ -5793,10 +5793,10 @@ var feng3d;
          */
         drawScene(event) {
             var viewRect = this.viewRect;
-            this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
+            this.camera.camera.lens.aspectRatio = viewRect.width / viewRect.height;
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.copyFrom(viewRect);
-            this.mouse3DManager.draw(this._context3D, this._scene, this._camera);
+            this.mouse3DManager.draw(this._context3D, this._scene, this._camera.camera);
             // 默认渲染
             this._context3D.clearColor(0, 0, 0, 1.0);
             this._context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
@@ -5805,7 +5805,7 @@ var feng3d;
             this._context3D.enable(feng3d.Context3D.BLEND);
             // Set blending function
             this._context3D.blendFunc(feng3d.Context3D.SRC_ALPHA, feng3d.Context3D.ONE_MINUS_SRC_ALPHA);
-            this.defaultRenderer.draw(this._context3D, this._scene, this._camera);
+            this.defaultRenderer.draw(this._context3D, this._scene, this._camera.camera);
             this._context3D.disable(feng3d.Context3D.BLEND);
         }
         /**
@@ -5882,7 +5882,7 @@ var feng3d;
          */
         unproject(sX, sY, sZ, v = null) {
             var gpuPos = this.screenToGpuPosition(new feng3d.Point(sX, sY));
-            return this._camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
+            return this._camera.camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
         }
         /**
          * 屏幕坐标转GPU坐标
@@ -11465,6 +11465,17 @@ var feng3d;
         }
     }
     feng3d.Trident = Trident;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    class CameraObject3D extends feng3d.Object3D {
+        constructor(name = "camera") {
+            super(name);
+            this.camera = new feng3d.Camera3D();
+            this.addComponent(this.camera);
+        }
+    }
+    feng3d.CameraObject3D = CameraObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

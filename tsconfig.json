@@ -179,6 +179,7 @@
         //
         "src/debug/Trident.ts",
         //
+        "src/factory/CameraObject3D.ts",
         "src/factory/PlaneObject3D.ts",
         "src/factory/CubeObject3D.ts",
         "src/factory/SphereObject3D.ts",
