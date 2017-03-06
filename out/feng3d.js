@@ -5761,6 +5761,10 @@ var feng3d;
          * @param camera    摄像机
          */
         constructor(canvas, scene = null, camera = null) {
+            /**
+             * 背景颜色
+             */
+            this.background = new feng3d.Color(0, 0, 0);
             feng3d.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
             this._context3D = this._canvas.getContext(feng3d.contextId, { antialias: false });
@@ -5798,7 +5802,7 @@ var feng3d;
             this.mouse3DManager.viewRect.copyFrom(viewRect);
             this.mouse3DManager.draw(this._context3D, this._scene, this._camera.camera);
             // 默认渲染
-            this._context3D.clearColor(0, 0, 0, 1.0);
+            this._context3D.clearColor(this.background.r, this.background.g, this.background.b, this.background.a);
             this._context3D.clear(feng3d.Context3D.COLOR_BUFFER_BIT | feng3d.Context3D.DEPTH_BUFFER_BIT);
             this._context3D.viewport(0, 0, viewRect.width, viewRect.height);
             // Enable alpha blending

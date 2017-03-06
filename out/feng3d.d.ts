@@ -3560,6 +3560,10 @@ declare module feng3d {
          */
         private mouse3DManager;
         /**
+         * 背景颜色
+         */
+        background: Color;
+        /**
          * 构建3D视图
          * @param canvas    画布
          * @param scene     3D场景
