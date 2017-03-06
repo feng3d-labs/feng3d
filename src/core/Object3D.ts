@@ -10,6 +10,7 @@ module feng3d
         private _uid: string;
 
         protected _mouseEnabled: boolean = true;
+        protected _visible = true;
 
         private _transform: Transform;
         /**
@@ -144,6 +145,27 @@ module feng3d
         public get realMouseEnable()
         {
             return this._mouseEnabled && (this.parent ? this.parent.realMouseEnable : true);
+        }
+
+        /**
+		 * 是否可见
+		 */
+        public get visible(): boolean
+        {
+            return this._visible;
+        }
+
+        public set visible(value: boolean)
+        {
+            this._visible = value;
+        }
+
+        /**
+         * 真实是否可见
+         */
+        public get realVisible()
+        {
+            return this._visible && (this.parent ? this.parent.realVisible : true);
         }
 
         /**

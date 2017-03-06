@@ -5288,21 +5288,23 @@ var feng3d;
             renderContext.clear();
             renderContext.camera = camera;
             renderContext.lights = scene3D.lights;
-            var renderables = scene3D.renderers;
-            renderables.forEach(element => {
-                var object3D = element.object3D;
-                //更新数据
-                renderContext.updateRenderData(object3D);
-                object3D.updateRenderData(renderContext);
-                //收集数据
-                renderContext.activate(this.renderAtomic);
-                object3D.activate(this.renderAtomic);
-                //绘制
-                this.drawObject3D(context3D); //
-                //释放数据
-                object3D.deactivate(this.renderAtomic);
-                renderContext.deactivate(this.renderAtomic);
+            scene3D.renderers.forEach(element => {
+                this.drawRenderables(context3D, renderContext, element);
             });
+        }
+        drawRenderables(context3D, renderContext, meshRenderer) {
+            var object3D = meshRenderer.object3D;
+            //更新数据
+            renderContext.updateRenderData(object3D);
+            object3D.updateRenderData(renderContext);
+            //收集数据
+            renderContext.activate(this.renderAtomic);
+            object3D.activate(this.renderAtomic);
+            //绘制
+            this.drawObject3D(context3D); //
+            //释放数据
+            object3D.deactivate(this.renderAtomic);
+            renderContext.deactivate(this.renderAtomic);
         }
         /**
          * 绘制3D对象
@@ -5313,13 +5315,9 @@ var feng3d;
                 return;
             samplerIndex = 0;
             //
-            try {
-                activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
-                activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
-                dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer, this.renderAtomic.instanceCount);
-            }
-            catch (error) {
-            }
+            activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
+            activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
+            dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer, this.renderAtomic.instanceCount);
         }
         /**
          * 激活渲染程序
@@ -5376,7 +5374,6 @@ var feng3d;
         instanceCount = ~~instanceCount;
         var buffer = feng3d.context3DPool.getIndexBuffer(context3D, indexBuffer.indices);
         context3D.bindBuffer(indexBuffer.target, buffer);
-        context3D.lineWidth(1);
         if (instanceCount > 1) {
             ext = ext || context3D.getExtension('ANGLE_instanced_arrays');
             ext.drawArraysInstancedANGLE(shaderParams.renderMode, 0, indexBuffer.count, instanceCount);
@@ -5471,6 +5468,10 @@ var feng3d;
         constructor() {
             super();
         }
+        drawRenderables(context3D, renderContext, meshRenderer) {
+            if (meshRenderer.object3D.visible)
+                super.drawRenderables(context3D, renderContext, meshRenderer);
+        }
     }
     feng3d.ForwardRenderer = ForwardRenderer;
 })(feng3d || (feng3d = {}));
@@ -5564,6 +5565,7 @@ var feng3d;
         constructor(name) {
             super();
             this._mouseEnabled = true;
+            this._visible = true;
             /**
              * 父对象
              */
@@ -5658,6 +5660,21 @@ var feng3d;
          */
         get realMouseEnable() {
             return this._mouseEnabled && (this.parent ? this.parent.realMouseEnable : true);
+        }
+        /**
+         * 是否可见
+         */
+        get visible() {
+            return this._visible;
+        }
+        set visible(value) {
+            this._visible = value;
+        }
+        /**
+         * 真实是否可见
+         */
+        get realVisible() {
+            return this._visible && (this.parent ? this.parent.realVisible : true);
         }
         /**
          * 添加子对象
@@ -8674,6 +8691,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 线段材质
+     * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
      * @author feng 2016-10-15
      */
     class SegmentMaterial extends feng3d.Material {
@@ -11567,10 +11585,10 @@ var feng3d;
         /**
          * 构建3D对象
          */
-        constructor(name = "cylinder") {
+        constructor(name = "cylinder", topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true) {
             super(name);
             var mesh = this.getOrCreateComponentByClass(feng3d.MeshFilter);
-            mesh.geometry = new feng3d.CylinderGeometry();
+            mesh.geometry = new feng3d.CylinderGeometry(topRadius, bottomRadius, height, segmentsW, segmentsH, topClosed, bottomClosed, surfaceClosed, yUp);
             this.getOrCreateComponentByClass(feng3d.MeshRenderer);
         }
     }
@@ -11622,7 +11640,7 @@ var feng3d;
     class SegmentObject3D extends feng3d.Object3D {
         constructor(name = "Segment3D") {
             super(name);
-            this.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
+            this.material = this.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
             var segmentGeometry = this.segmentGeometry = new feng3d.SegmentGeometry();
             var geometry = this.getOrCreateComponentByClass(feng3d.Geometry);
             geometry.addComponent(segmentGeometry);

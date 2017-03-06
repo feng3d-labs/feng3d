@@ -22,23 +22,26 @@ module feng3d
             renderContext.clear();
             renderContext.camera = camera;
             renderContext.lights = scene3D.lights;
-
-            var renderables = scene3D.renderers;
-            renderables.forEach(element =>
+            scene3D.renderers.forEach(element =>
             {
-                var object3D = element.object3D;
-                //更新数据
-                renderContext.updateRenderData(object3D);
-                object3D.updateRenderData(renderContext);
-                //收集数据
-                renderContext.activate(this.renderAtomic);
-                object3D.activate(this.renderAtomic);
-                //绘制
-                this.drawObject3D(context3D);            //
-                //释放数据
-                object3D.deactivate(this.renderAtomic);
-                renderContext.deactivate(this.renderAtomic);
+                this.drawRenderables(context3D, renderContext, element);
             });
+        }
+
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer)
+        {
+            var object3D = meshRenderer.object3D;
+            //更新数据
+            renderContext.updateRenderData(object3D);
+            object3D.updateRenderData(renderContext);
+            //收集数据
+            renderContext.activate(this.renderAtomic);
+            object3D.activate(this.renderAtomic);
+            //绘制
+            this.drawObject3D(context3D);            //
+            //释放数据
+            object3D.deactivate(this.renderAtomic);
+            renderContext.deactivate(this.renderAtomic);
         }
 
         /**
@@ -52,14 +55,9 @@ module feng3d
                 return;
             samplerIndex = 0;
             //
-            try {
-                
-                activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
-                activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
-                dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer, this.renderAtomic.instanceCount);
-            } catch (error) {
-                
-            }
+            activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
+            activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
+            dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer, this.renderAtomic.instanceCount);
         }
 
         /**
@@ -133,11 +131,10 @@ module feng3d
         instanceCount = ~~instanceCount;
         var buffer = context3DPool.getIndexBuffer(context3D, indexBuffer.indices);
         context3D.bindBuffer(indexBuffer.target, buffer);
-        context3D.lineWidth(1);
         if (instanceCount > 1)
         {
-             ext =ext || context3D.getExtension('ANGLE_instanced_arrays');
-            ext.drawArraysInstancedANGLE(shaderParams.renderMode,0, indexBuffer.count, instanceCount)
+            ext = ext || context3D.getExtension('ANGLE_instanced_arrays');
+            ext.drawArraysInstancedANGLE(shaderParams.renderMode, 0, indexBuffer.count, instanceCount)
         }
         else
         {
@@ -173,8 +170,9 @@ module feng3d
             default:
                 throw `无法识别的attribute类型 ${activeInfo.name} ${buffer.data}`;
         }
-        if (buffer.divisor > 0){
-            ext =ext || context3D.getExtension('ANGLE_instanced_arrays');
+        if (buffer.divisor > 0)
+        {
+            ext = ext || context3D.getExtension('ANGLE_instanced_arrays');
             ext.vertexAttribDivisorANGLE(location, buffer.divisor);
         }
     }
@@ -227,6 +225,6 @@ module feng3d
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
     }
-    
-var ext
+
+    var ext
 }

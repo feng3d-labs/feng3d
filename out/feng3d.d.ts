@@ -3366,6 +3366,7 @@ declare module feng3d {
          * 渲染
          */
         draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer): void;
         /**
          * 绘制3D对象
          */
@@ -3383,6 +3384,7 @@ declare module feng3d {
      */
     class ForwardRenderer extends Renderer {
         constructor();
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer): void;
     }
 }
 declare module feng3d {
@@ -3441,6 +3443,7 @@ declare module feng3d {
         private _object3DID;
         private _uid;
         protected _mouseEnabled: boolean;
+        protected _visible: boolean;
         private _transform;
         /**
          * 父对象
@@ -3482,6 +3485,14 @@ declare module feng3d {
          * 真实是否支持鼠标事件
          */
         readonly realMouseEnable: any;
+        /**
+         * 是否可见
+         */
+        visible: boolean;
+        /**
+         * 真实是否可见
+         */
+        readonly realVisible: any;
         /**
          * 添加子对象
          * @param child		子对象
@@ -4931,6 +4942,7 @@ declare module feng3d {
 declare module feng3d {
     /**
      * 线段材质
+     * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
      * @author feng 2016-10-15
      */
     class SegmentMaterial extends Material {
@@ -6449,7 +6461,7 @@ declare module feng3d {
         /**
          * 构建3D对象
          */
-        constructor(name?: string);
+        constructor(name?: string, topRadius?: number, bottomRadius?: number, height?: number, segmentsW?: number, segmentsH?: number, topClosed?: boolean, bottomClosed?: boolean, surfaceClosed?: boolean, yUp?: boolean);
     }
 }
 declare module feng3d {
@@ -6484,6 +6496,7 @@ declare module feng3d {
      */
     class SegmentObject3D extends Object3D {
         segmentGeometry: SegmentGeometry;
+        material: SegmentMaterial;
         constructor(name?: string);
     }
 }

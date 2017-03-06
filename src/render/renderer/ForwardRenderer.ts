@@ -11,5 +11,11 @@ module feng3d
         {
             super();
         }
+
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer)
+        {
+            if (meshRenderer.object3D.visible)
+                super.drawRenderables(context3D, renderContext, meshRenderer);
+        }
     }
 }

@@ -11,12 +11,12 @@ module feng3d
         /**
          * 构建3D对象
          */
-        constructor(name = "cylinder")
+        constructor(name = "cylinder", topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true)
         {
 
             super(name);
             var mesh = this.getOrCreateComponentByClass(MeshFilter);
-            mesh.geometry = new CylinderGeometry();
+            mesh.geometry = new CylinderGeometry(topRadius, bottomRadius, height, segmentsW, segmentsH, topClosed, bottomClosed, surfaceClosed, yUp);
             this.getOrCreateComponentByClass(MeshRenderer);
         }
     }
