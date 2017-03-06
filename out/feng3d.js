@@ -6116,6 +6116,60 @@ var feng3d;
             return this._inverseGlobalMatrix3D;
         }
         /**
+         * X轴方向移动
+         * @param distance  移动距离
+         */
+        xMove(distance) {
+            var direction = this.matrix3d.right;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+        }
+        /**
+         * Y轴方向移动
+         * @param distance  移动距离
+         */
+        yMove(distance) {
+            var direction = this.matrix3d.up;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+        }
+        /**
+         * Z轴方向移动
+         * @param distance  移动距离
+         */
+        zMove(distance) {
+            var direction = this.matrix3d.forward;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+        }
+        /**
+         * X轴全局方向移动
+         * @param distance  移动距离
+         */
+        xGlobalMove(distance) {
+            var direction = this.globalMatrix3D.right;
+            direction.scaleBy(distance);
+            this.globalPosition = this.globalPosition.add(direction);
+        }
+        /**
+         * Y轴全局方向移动
+         * @param distance  移动距离
+         */
+        yGlobalMove(distance) {
+            var direction = this.globalMatrix3D.up;
+            direction.scaleBy(distance);
+            this.globalPosition = this.globalPosition.add(direction);
+        }
+        /**
+         * Z轴全局方向移动
+         * @param distance  移动距离
+         */
+        zGlobalMove(distance) {
+            var direction = this.globalMatrix3D.forward;
+            direction.scaleBy(distance);
+            this.globalPosition = this.globalPosition.add(direction);
+        }
+        /**
          * 变换矩阵
          */
         updateMatrix3D() {

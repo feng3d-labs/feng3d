@@ -222,6 +222,72 @@ module feng3d
         }
 
         /**
+         * X轴方向移动
+         * @param distance  移动距离
+         */
+        public xMove(distance: number)
+        {
+            var direction = this.matrix3d.right;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+        }
+
+        /**
+         * Y轴方向移动
+         * @param distance  移动距离
+         */
+        public yMove(distance: number)
+        {
+            var direction = this.matrix3d.up;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+        }
+
+        /**
+         * Z轴方向移动
+         * @param distance  移动距离
+         */
+        public zMove(distance: number)
+        {
+            var direction = this.matrix3d.forward;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+        }
+
+        /**
+         * X轴全局方向移动
+         * @param distance  移动距离
+         */
+        public xGlobalMove(distance: number)
+        {
+            var direction = this.globalMatrix3D.right;
+            direction.scaleBy(distance);
+            this.globalPosition = this.globalPosition.add(direction);
+        }
+
+        /**
+         * Y轴全局方向移动
+         * @param distance  移动距离
+         */
+        public yGlobalMove(distance: number)
+        {
+            var direction = this.globalMatrix3D.up;
+            direction.scaleBy(distance);
+            this.globalPosition = this.globalPosition.add(direction);
+        }
+
+        /**
+         * Z轴全局方向移动
+         * @param distance  移动距离
+         */
+        public zGlobalMove(distance: number)
+        {
+            var direction = this.globalMatrix3D.forward;
+            direction.scaleBy(distance);
+            this.globalPosition = this.globalPosition.add(direction);
+        }
+
+        /**
          * 变换矩阵
          */
         private updateMatrix3D()

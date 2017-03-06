@@ -3752,6 +3752,36 @@ declare module feng3d {
          */
         readonly inverseGlobalMatrix3D: Matrix3D;
         /**
+         * X轴方向移动
+         * @param distance  移动距离
+         */
+        xMove(distance: number): void;
+        /**
+         * Y轴方向移动
+         * @param distance  移动距离
+         */
+        yMove(distance: number): void;
+        /**
+         * Z轴方向移动
+         * @param distance  移动距离
+         */
+        zMove(distance: number): void;
+        /**
+         * X轴全局方向移动
+         * @param distance  移动距离
+         */
+        xGlobalMove(distance: number): void;
+        /**
+         * Y轴全局方向移动
+         * @param distance  移动距离
+         */
+        yGlobalMove(distance: number): void;
+        /**
+         * Z轴全局方向移动
+         * @param distance  移动距离
+         */
+        zGlobalMove(distance: number): void;
+        /**
          * 变换矩阵
          */
         private updateMatrix3D();
