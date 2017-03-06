@@ -1416,16 +1416,20 @@ var feng3d;
         constructor(event, data = null, bubbles = true) {
             super(event.type, null, true);
             if (event["clientX"] != undefined) {
-                event = event;
-                this.clientX = event.clientX;
-                this.clientY = event.clientY;
-                if (["click", "mousedown", "mouseup"].indexOf(event.type) != -1) {
-                    this["_type"] = ["", "middle", "right"][event.button] + event.type;
+                var mouseEvent = event;
+                this.clientX = mouseEvent.clientX;
+                this.clientY = mouseEvent.clientY;
+                if (["click", "mousedown", "mouseup"].indexOf(mouseEvent.type) != -1) {
+                    this["_type"] = ["", "middle", "right"][mouseEvent.button] + mouseEvent.type;
                 }
             }
             if (event["keyCode"] != undefined) {
-                event = event;
-                this.keyCode = event.keyCode;
+                var keyboardEvent = event;
+                this.keyCode = keyboardEvent.keyCode;
+            }
+            if (event["wheelDelta"] != undefined) {
+                var wheelEvent = event;
+                this.wheelDelta = wheelEvent.wheelDelta;
             }
         }
     }

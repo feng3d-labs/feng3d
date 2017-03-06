@@ -95,23 +95,30 @@ module feng3d
 
         public keyCode: number;
 
-        constructor(event: MouseEvent | WheelEvent | KeyboardEvent, data: Input = null, bubbles = true)
+        public wheelDelta: number;
+
+        constructor(event: WheelEvent | MouseEvent | KeyboardEvent, data: Input = null, bubbles = true)
         {
             super(event.type, null, true)
             if (event["clientX"] != undefined)
             {
-                event = <MouseEvent>event;
-                this.clientX = event.clientX;
-                this.clientY = event.clientY;
-                if (["click", "mousedown", "mouseup"].indexOf(event.type) != -1)
+                var mouseEvent = <MouseEvent>event;
+                this.clientX = mouseEvent.clientX;
+                this.clientY = mouseEvent.clientY;
+                if (["click", "mousedown", "mouseup"].indexOf(mouseEvent.type) != -1)
                 {
-                    this["_type"] = ["", "middle", "right"][event.button] + event.type;
+                    this["_type"] = ["", "middle", "right"][mouseEvent.button] + mouseEvent.type;
                 }
             }
             if (event["keyCode"] != undefined)
             {
-                event = <KeyboardEvent>event;
-                this.keyCode = event.keyCode;
+                var keyboardEvent = <KeyboardEvent>event;
+                this.keyCode = keyboardEvent.keyCode;
+            }
+            if (event["wheelDelta"] != undefined)
+            {
+                var wheelEvent = <WheelEvent>event;
+                this.wheelDelta = wheelEvent.wheelDelta;
             }
         }
     }

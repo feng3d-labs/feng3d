@@ -1046,7 +1046,8 @@ declare module feng3d {
         clientX: number;
         clientY: number;
         keyCode: number;
-        constructor(event: MouseEvent | WheelEvent | KeyboardEvent, data?: Input, bubbles?: boolean);
+        wheelDelta: number;
+        constructor(event: WheelEvent | MouseEvent | KeyboardEvent, data?: Input, bubbles?: boolean);
     }
 }
 declare module feng3d {
