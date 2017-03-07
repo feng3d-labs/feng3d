@@ -1,13 +1,11 @@
 module feng3d
 {
-
 	/**
 	 * 摄像机
 	 * @author feng 2016-08-16
 	 */
     export class Camera3D extends Object3DComponent
     {
-
         private _viewProjection: Matrix3D = new Matrix3D();
         private _viewProjectionDirty: Boolean = true;
         private _lens: LensBase;
@@ -28,7 +26,6 @@ module feng3d
          */
         public get lens()
         {
-
             return this._lens;
         }
 
@@ -77,7 +74,6 @@ module feng3d
          */
         protected onBeAddedComponent(event: ComponentEvent): void
         {
-
             this.object3D.addEventListener(TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
@@ -86,7 +82,6 @@ module feng3d
          */
         protected onBeRemovedComponent(event: ComponentEvent): void
         {
-
             this.object3D.removeEventListener(TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
@@ -95,7 +90,6 @@ module feng3d
 		 */
         private onLensMatrixChanged(event: LensEvent): void
         {
-
             this._viewProjectionDirty = true;
             this.dispatchEvent(event);
         }
@@ -112,9 +106,9 @@ module feng3d
         {
             super.updateRenderData(renderContext);
             //
-            this.renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
+            this._renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
             var globalMatrix3d = this.object3D ? this.object3D.transform.globalMatrix3D : new Matrix3D();
-            this.renderData.uniforms[RenderDataID.u_cameraMatrix] = globalMatrix3d;
+            this._renderData.uniforms[RenderDataID.u_cameraMatrix] = globalMatrix3d;
         }
     }
 }

@@ -7,7 +7,6 @@ module feng3d
      */
     export class CubeGeometry extends Geometry
     {
-
         /**
          * 创建立方几何体
          * @param   width           宽度
@@ -20,7 +19,6 @@ module feng3d
          */
         constructor(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true)
         {
-
             super();
 
             var vertexPositionData = this.buildPosition(width, height, depth, segmentsW, segmentsH, segmentsD);
@@ -47,7 +45,6 @@ module feng3d
          */
         private buildPosition(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1)
         {
-
             var vertexPositionData = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 3);
 
             var i: number, j: number;
@@ -144,7 +141,6 @@ module feng3d
 
             for (i = 0; i <= segmentsW; i++)
             {
-
                 for (j = 0; j <= segmentsH; j++)
                 {
                     // front
@@ -161,7 +157,6 @@ module feng3d
 
             for (i = 0; i <= segmentsW; i++)
             {
-
                 for (j = 0; j <= segmentsD; j++)
                 {
                     // top
@@ -178,7 +173,6 @@ module feng3d
 
             for (i = 0; i <= segmentsD; i++)
             {
-
                 for (j = 0; j <= segmentsH; j++)
                 {
                     // left
@@ -213,7 +207,6 @@ module feng3d
 
             for (i = 0; i <= segmentsW; i++)
             {
-
                 for (j = 0; j <= segmentsH; j++)
                 {
                     // front
@@ -347,7 +340,6 @@ module feng3d
 
             for (i = 0; i <= segmentsD; i++)
             {
-
                 for (j = 0; j <= segmentsH; j++)
                 {
                     // left

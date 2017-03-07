@@ -10,7 +10,7 @@ module feng3d
 		/**
 		 * 按键状态{key:键名称,value:是否按下}
 		 */
-		private keyStateDic: {};
+		private _keyStateDic: {};
 
 		/**
 		 * 构建
@@ -18,7 +18,7 @@ module feng3d
 		constructor()
 		{
 			super();
-			this.keyStateDic = {};
+			this._keyStateDic = {};
 		}
 
 		/**
@@ -28,7 +28,7 @@ module feng3d
 		 */
 		public pressKey(key: string, data: InputEvent): void
 		{
-			this.keyStateDic[key] = true;
+			this._keyStateDic[key] = true;
 			this.dispatchEvent(new ShortCutEvent(key, data));
 		}
 
@@ -39,7 +39,7 @@ module feng3d
 		 */
 		public releaseKey(key: string, data: InputEvent): void
 		{
-			this.keyStateDic[key] = false;
+			this._keyStateDic[key] = false;
 			this.dispatchEvent(new ShortCutEvent(key, data));
 		}
 
@@ -49,7 +49,7 @@ module feng3d
 		 */
 		public getKeyState(key: string): Boolean
 		{
-			return !!this.keyStateDic[key];
+			return !!this._keyStateDic[key];
 		}
 	}
 }

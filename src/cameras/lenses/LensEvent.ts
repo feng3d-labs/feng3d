@@ -12,7 +12,7 @@ module feng3d
         /**
          * 镜头
          */
-        data: LensBase;
+        public data: LensBase;
 
         /**
          * 创建一个镜头事件。

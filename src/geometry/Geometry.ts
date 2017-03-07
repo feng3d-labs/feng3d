@@ -21,10 +21,9 @@ module feng3d
 		 */
         public setIndices(indices: Uint16Array)
         {
-
-            this.renderData.indexBuffer = new IndexRenderData();
-            this.renderData.indexBuffer.indices = indices;
-            this.renderData.indexBuffer.count = indices.length;
+            this._renderData.indexBuffer = new IndexRenderData();
+            this._renderData.indexBuffer.indices = indices;
+            this._renderData.indexBuffer.count = indices.length;
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_INDEX_DATA));
         }
 
@@ -36,8 +35,7 @@ module feng3d
 		 */
         public setVAData(vaId: string, data: Float32Array, stride: number)
         {
-
-            this.renderData.attributes[vaId] = new AttributeRenderData(data, stride);
+            this._renderData.attributes[vaId] = new AttributeRenderData(data, stride);
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
         }
 
@@ -48,9 +46,8 @@ module feng3d
 		 */
         public getVAData(vaId: string): AttributeRenderData
         {
-
             this.dispatchEvent(new GeometryEvent(GeometryEvent.GET_VA_DATA, vaId));
-            return this.renderData.attributes[vaId];
+            return this._renderData.attributes[vaId];
         }
 
         /**
@@ -58,11 +55,10 @@ module feng3d
          */
         public get numVertex()
         {
-
             var numVertex = 0;
-            for (var attributeName in this.renderData.attributes)
+            for (var attributeName in this._renderData.attributes)
             {
-                var attributeRenderData = this.renderData.attributes[attributeName];
+                var attributeRenderData = this._renderData.attributes[attributeName];
                 numVertex = attributeRenderData.data.length / attributeRenderData.stride;
                 break;
             }
@@ -74,14 +70,13 @@ module feng3d
          */
         public addGeometry(geometry: Geometry)
         {
-
-            var attributes = this.renderData.attributes;
-            var addAttributes = geometry.renderData.attributes;
+            var attributes = this._renderData.attributes;
+            var addAttributes = geometry._renderData.attributes;
             //当前顶点数量
             var oldNumVertex = this.numVertex;
             //合并索引
-            var indices = this.renderData.indexBuffer.indices;
-            var targetIndices = geometry.renderData.indexBuffer.indices;
+            var indices = this._renderData.indexBuffer.indices;
+            var targetIndices = geometry._renderData.indexBuffer.indices;
             var totalIndices = new Uint16Array(indices.length + targetIndices.length);
             totalIndices.set(indices, 0);
             for (var i = 0; i < targetIndices.length; i++)
@@ -94,7 +89,6 @@ module feng3d
             //合并属性数据
             for (var attributeName in attributes)
             {
-
                 var stride = attributes[attributeName].stride;
                 var data = new Float32Array(totalVertex * stride);
                 data.set(attributes[attributeName].data, 0);
@@ -108,10 +102,9 @@ module feng3d
          */
         public clone()
         {
-
             var geometry = new Geometry();
-            geometry.renderData.indexBuffer = this.renderData.indexBuffer;
-            geometry.renderData.attributes = this.renderData.attributes;
+            geometry._renderData.indexBuffer = this._renderData.indexBuffer;
+            geometry._renderData.attributes = this._renderData.attributes;
             return geometry;
         }
 
@@ -120,9 +113,8 @@ module feng3d
          */
         public cloneFrom(geometry: Geometry)
         {
-
-            this.renderData.indexBuffer = geometry.renderData.indexBuffer;
-            this.renderData.attributes = geometry.renderData.attributes;
+            this._renderData.indexBuffer = geometry._renderData.indexBuffer;
+            this._renderData.attributes = geometry._renderData.attributes;
         }
     }
 }

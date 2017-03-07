@@ -1,7 +1,6 @@
 module feng3d
 {
 
-
 	/**
 	 * 3d面
 	 */

@@ -24,14 +24,11 @@ module feng3d
 
         public get globalMatrix3Ds()
         {
-
             if (!this._globalMatrix3Ds)
             {
-
                 var matrix3Ds: Matrix3D[] = this._globalMatrix3Ds = [];
                 for (var i = 0; i < this.jointPoses.length; i++)
                 {
-
                     var jointPose = this.jointPoses[i];
                     matrix3Ds[i] = jointPose.matrix3D.clone();
                     if (jointPose.parentIndex >= 0)
@@ -46,7 +43,6 @@ module feng3d
 
         public invalid()
         {
-
             this._globalMatrix3Ds = null;
         }
     }

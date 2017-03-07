@@ -10,52 +10,52 @@ module feng3d
 		/**
 		 * 快捷键环境
 		 */
-		private shortCut: ShortCut;
+		private _shortCut: ShortCut;
 
 		/**
 		 * 快捷键
 		 */
-		private key: string;
+		private _key: string;
 
 		/**
 		 * 要执行的命令名称
 		 */
-		private command: string;
+		private _command: string;
 
 		/**
 		 * 可执行的状态命令
 		 */
-		private stateCommand: string;
+		private _stateCommand: string;
 
 		/**
 		 * 快捷键处于活动状态的条件
 		 */
-		private when: string;
+		private _when: string;
 
 		/**
 		 * 按键状态
 		 */
-		private keyState: KeyState;
+		private _keyState: KeyState;
 
 		/**
 		 * 按键列表
 		 */
-		private keys: Key[];
+		private _keys: Key[];
 
 		/**
 		 * 状态列表
 		 */
-		private states: State[];
+		private _states: State[];
 
 		/**
 		 * 命令列表
 		 */
-		private commands: string[];
+		private _commands: string[];
 
 		/**
 		 * 命令列表
 		 */
-		private stateCommands: StateCommand[];
+		private _stateCommands: StateCommand[];
 
 		/**
 		 * 构建快捷键捕获
@@ -67,17 +67,17 @@ module feng3d
 		 */
 		constructor(shortCut: ShortCut, key: string, command: string = null, stateCommand: string = null, when: string = null)
 		{
-			this.shortCut = shortCut;
-			this.keyState = shortCut.keyState;
-			this.key = key;
-			this.command = command;
-			this.stateCommand = stateCommand;
-			this.when = when;
+			this._shortCut = shortCut;
+			this._keyState = shortCut.keyState;
+			this._key = key;
+			this._command = command;
+			this._stateCommand = stateCommand;
+			this._when = when;
 
-			this.keys = this.getKeys(key);
-			this.states = this.getStates(when);
-			this.commands = this.getCommands(command);
-			this.stateCommands = this.getStateCommand(stateCommand);
+			this._keys = this.getKeys(key);
+			this._states = this.getStates(when);
+			this._commands = this.getCommands(command);
+			this._stateCommands = this.getStateCommand(stateCommand);
 
 			this.init();
 		}
@@ -87,9 +87,9 @@ module feng3d
 		 */
 		private init(): void
 		{
-			for (var i = 0; i < this.keys.length; i++)
+			for (var i = 0; i < this._keys.length; i++)
 			{
-				this.keyState.addEventListener(this.keys[i].key, this.onCapture, this);
+				this._keyState.addEventListener(this._keys[i].key, this.onCapture, this);
 			}
 		}
 
@@ -98,13 +98,13 @@ module feng3d
 		 */
 		private onCapture(event: ShortCutEvent): void
 		{
-			var inWhen: Boolean = this.checkActivityStates(this.states);
-			var pressKeys: Boolean = this.checkActivityKeys(this.keys);
+			var inWhen: Boolean = this.checkActivityStates(this._states);
+			var pressKeys: Boolean = this.checkActivityKeys(this._keys);
 
 			if (pressKeys && inWhen)
 			{
-				this.dispatchCommands(this.commands, event.data);
-				this.executeStateCommands(this.stateCommands);
+				this.dispatchCommands(this._commands, event.data);
+				this.executeStateCommands(this._stateCommands);
 			}
 		}
 
@@ -116,7 +116,7 @@ module feng3d
 
 			for (var i = 0; i < commands.length; i++)
 			{
-				this.shortCut.dispatchEvent(new ShortCutEvent(commands[i], data));
+				this._shortCut.dispatchEvent(new ShortCutEvent(commands[i], data));
 			}
 		}
 
@@ -130,9 +130,9 @@ module feng3d
 			{
 				var stateCommand: StateCommand = stateCommands[i];
 				if (stateCommand.not)
-					this.shortCut.deactivityState(stateCommand.state);
+					this._shortCut.deactivityState(stateCommand.state);
 				else
-					this.shortCut.activityState(stateCommand.state);
+					this._shortCut.activityState(stateCommand.state);
 			}
 		}
 
@@ -157,7 +157,7 @@ module feng3d
 		private getState(state: State): Boolean
 		{
 
-			var result: Boolean = this.shortCut.getState(state.state);
+			var result: Boolean = this._shortCut.getState(state.state);
 			if (state.not)
 			{
 				result = !result;
@@ -186,7 +186,7 @@ module feng3d
 		private getKeyValue(key: Key): Boolean
 		{
 
-			var value: Boolean = this.keyState.getKeyState(key.key);
+			var value: Boolean = this._keyState.getKeyState(key.key);
 
 			if (key.not)
 			{
@@ -293,14 +293,13 @@ module feng3d
 		 */
 		public destroy(): void
 		{
-
-			for (var i = 0; i < this.keys.length; i++)
+			for (var i = 0; i < this._keys.length; i++)
 			{
-				this.keyState.removeEventListener(this.keys[i].key, this.onCapture, this);
+				this._keyState.removeEventListener(this._keys[i].key, this.onCapture, this);
 			}
-			this.shortCut = null;
-			this.keys = null;
-			this.states = null;
+			this._shortCut = null;
+			this._keys = null;
+			this._states = null;
 		}
 	}
 }
@@ -323,7 +322,6 @@ class Key
 
 	constructor(key: string)
 	{
-
 		key = key.trim();
 		if (key.charAt(0) == "!")
 		{
@@ -352,7 +350,6 @@ class State
 
 	constructor(state: string)
 	{
-
 		state = state.trim();
 		if (state.charAt(0) == "!")
 		{
@@ -381,7 +378,6 @@ class StateCommand
 
 	constructor(state: string)
 	{
-
 		state = state.trim();
 		if (state.charAt(0) == "!")
 		{

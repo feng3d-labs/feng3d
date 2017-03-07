@@ -31,16 +31,13 @@ module feng3d
          */
         public get numParticle()
         {
-
             return this._numParticle;
         }
 
         public set numParticle(value: number)
         {
-
             if (this._numParticle != value)
             {
-
                 this._numParticle = value;
                 this.isDirty = true;
             }
@@ -51,7 +48,6 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext)
         {
-
             super.updateRenderData(renderContext);
 
             if (this.isDirty)

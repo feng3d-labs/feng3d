@@ -1,13 +1,11 @@
 module feng3d
 {
-
     /**
      * 渲染数据工具
      * @author feng 2016-05-02
      */
     export class RenderDataUtil
     {
-
         /**
          * 激活渲染数据
          * @param renderAtomic  渲染原子
@@ -15,7 +13,6 @@ module feng3d
          */
         public static active(renderAtomic: RenderAtomic, renderData: RenderData)
         {
-
             renderData.vertexCode && (renderAtomic.vertexCode = renderData.vertexCode);
             renderData.fragmentCode && (renderAtomic.fragmentCode = renderData.fragmentCode);
             renderData.indexBuffer && (renderAtomic.indexBuffer = renderData.indexBuffer);
@@ -55,7 +52,6 @@ module feng3d
          */
         public static deactivate(renderAtomic: RenderAtomic, renderData: RenderData)
         {
-
             renderData.vertexCode && (renderAtomic.vertexCode = null);
             renderData.fragmentCode && (renderAtomic.fragmentCode = null);
             renderData.indexBuffer && (renderAtomic.indexBuffer = null);

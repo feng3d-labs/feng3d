@@ -7,7 +7,6 @@ module feng3d
      */
     export class ArrayUtils
     {
-
         /**
          * 删除数据元素
          * @param source    数组源数据
@@ -16,7 +15,6 @@ module feng3d
          */
         static removeItem<T>(source: T[], item: T, all = false)
         {
-
             var deleteIndexs: number[] = [];
             var index = source.indexOf(item);
             while (index != -1)

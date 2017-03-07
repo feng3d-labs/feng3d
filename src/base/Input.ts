@@ -1,6 +1,5 @@
 module feng3d
 {
-
     /**
      * 鼠标键盘输入，处理js事件中this关键字问题
      * @author feng 2016-12-19

@@ -1,6 +1,5 @@
 module feng3d
 {
-
     /**
      * 天空盒3D对象
      * @author feng 2017-02-06
@@ -13,7 +12,6 @@ module feng3d
          */
         constructor(images: HTMLImageElement[], name = "skyBox")
         {
-
             super(name);
             this.getOrCreateComponentByClass(MeshFilter).geometry = new SkyBoxGeometry();
             this.getOrCreateComponentByClass(MeshRenderer).material = new SkyBoxMaterial(images);

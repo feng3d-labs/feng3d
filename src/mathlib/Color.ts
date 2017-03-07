@@ -11,19 +11,19 @@ module feng3d
         /**
          * 红[0,1]
          */
-        r: number = 1;
+        public r: number = 1;
         /**
          * 绿[0,1]
          */
-        g: number = 1;
+        public g: number = 1;
         /**
          * 蓝[0,1]
          */
-        b: number = 1;
+        public b: number = 1;
         /**
          * 透明度[0,1]
          */
-        a: number = 1;
+        public a: number = 1;
 
         /**
          * 构建颜色
@@ -34,7 +34,6 @@ module feng3d
          */
         constructor(r: number = 1, g: number = 1, b: number = 1, a: number = 1)
         {
-
             this.r = r;
             this.g = g;
             this.b = b;
@@ -50,7 +49,6 @@ module feng3d
          */
         public fromInts(r: number, g: number, b: number, a: number)
         {
-
             this.r = r / 0xff;
             this.g = g / 0xff;
             this.b = b / 0xff;
@@ -59,7 +57,6 @@ module feng3d
 
         public fromUnit(color: number, hasAlpha: boolean = false)
         {
-
             this.a = (hasAlpha ? (color >> 24) & 0xff : 0xff) / 0xff;
             this.r = ((color >> 16) & 0xff) / 0xff;
             this.g = ((color >> 8) & 0xff) / 0xff;
@@ -71,7 +68,6 @@ module feng3d
          */
         public asArray(): number[]
         {
-
             var result = [];
             this.toArray(result);
             return result;
@@ -84,7 +80,6 @@ module feng3d
          */
         public toArray(array: number[], index: number = 0): Color
         {
-
             array[index] = this.r;
             array[index + 1] = this.g;
             array[index + 2] = this.b;
@@ -126,7 +121,6 @@ module feng3d
          */
         public mix(color: Color, rate: number = 0.5)
         {
-
             this.r = this.r * (1 - rate) + color.r * rate;
             this.g = this.g * (1 - rate) + color.g * rate;
             this.b = this.b * (1 - rate) + color.b * rate;
@@ -139,7 +133,6 @@ module feng3d
          */
         public toString(): string
         {
-
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
         }
 
@@ -149,7 +142,6 @@ module feng3d
          */
         public static ToHex(i: number): string
         {
-
             var str = i.toString(16);
             if (i <= 0xf)
             {

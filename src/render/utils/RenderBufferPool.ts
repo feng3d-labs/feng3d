@@ -13,7 +13,6 @@ module feng3d
          */
         private getContext3DBufferPool(context3D: Context3D)
         {
-
             //获取3D环境唯一标识符
             var context3DUID = UIDUtils.getUID(context3D);
             return this.context3DBufferPools[context3DUID] = this.context3DBufferPools[context3DUID] || new Context3DBufferPool(context3D);
@@ -26,9 +25,8 @@ module feng3d
          * @param fragmentCode  片段着色器代码
          * @return  渲染程序
          */
-        getWebGLProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram
+        public getWebGLProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram
         {
-
             return this.getContext3DBufferPool(context3D).getWebGLProgram(vertexCode, fragmentCode);
         }
 
@@ -38,9 +36,8 @@ module feng3d
          * @param vertexCode        顶点渲染代码
          * @return                  顶点渲染程序
          */
-        getVertexShader(context3D: Context3D, vertexCode: string)
+        public getVertexShader(context3D: Context3D, vertexCode: string)
         {
-
             return this.getContext3DBufferPool(context3D).getVertexShader(vertexCode);
         }
 
@@ -50,18 +47,16 @@ module feng3d
          * @param fragmentCode      顶点渲染代码
          * @return                  顶点渲染程序
          */
-        getFragmentShader(context3D: Context3D, fragmentCode: string)
+        public getFragmentShader(context3D: Context3D, fragmentCode: string)
         {
-
             return this.getContext3DBufferPool(context3D).getFragmentShader(fragmentCode);
         }
 
         /**
          * 获取索引缓冲
          */
-        getIndexBuffer(context3D: Context3D, indices: Uint16Array)
+        public getIndexBuffer(context3D: Context3D, indices: Uint16Array)
         {
-
             return this.getContext3DBufferPool(context3D).getIndexBuffer(indices);
         }
 
@@ -69,9 +64,8 @@ module feng3d
          * 获取顶点属性缓冲
          * @param data  数据 
          */
-        getVABuffer(context3D: Context3D, data: Float32Array): WebGLBuffer
+        public getVABuffer(context3D: Context3D, data: Float32Array): WebGLBuffer
         {
-
             return this.getContext3DBufferPool(context3D).getVABuffer(data);
         }
 
@@ -79,9 +73,8 @@ module feng3d
          * 获取顶点属性缓冲
          * @param data  数据 
          */
-        getTexture(context3D: Context3D, data: TextureInfo): WebGLBuffer
+        public getTexture(context3D: Context3D, data: TextureInfo): WebGLBuffer
         {
-
             return this.getContext3DBufferPool(context3D).getTexture(data);
         }
 
@@ -119,11 +112,10 @@ module feng3d
          */
         public getWebGLProgram(vertexCode: string, fragmentCode: string): WebGLProgram
         {
-
             //获取3D环境唯一标识符
             var shaderCode = [vertexCode, fragmentCode].join("\n--- shaderCode ---\n");
             //获取3D环境中的渲染程序对象池
-            return this.webGLProgramPool[shaderCode] = this.webGLProgramPool[shaderCode] || getWebGLProgram(this.context3D, vertexCode, fragmentCode);
+            return this._webGLProgramPool[shaderCode] = this._webGLProgramPool[shaderCode] || getWebGLProgram(this.context3D, vertexCode, fragmentCode);
         }
 
         /**
@@ -133,8 +125,7 @@ module feng3d
          */
         public getVertexShader(vertexCode: string)
         {
-
-            return this.vertexShaderPool[vertexCode] = this.vertexShaderPool[vertexCode] || getVertexShader(this.context3D, vertexCode);
+            return this._vertexShaderPool[vertexCode] = this._vertexShaderPool[vertexCode] || getVertexShader(this.context3D, vertexCode);
         }
 
         /**
@@ -144,8 +135,7 @@ module feng3d
          */
         public getFragmentShader(fragmentCode: string)
         {
-
-            return this.fragmentShaderPool[fragmentCode] = this.fragmentShaderPool[fragmentCode] || getFragmentShader(this.context3D, fragmentCode);
+            return this._fragmentShaderPool[fragmentCode] = this._fragmentShaderPool[fragmentCode] || getFragmentShader(this.context3D, fragmentCode);
         }
 
         /**
@@ -153,7 +143,6 @@ module feng3d
          */
         public getIndexBuffer(indices: Uint16Array)
         {
-
             var indexBuffer = this.getBuffer(indices, Context3D.ELEMENT_ARRAY_BUFFER);
             return indexBuffer;
         }
@@ -174,8 +163,7 @@ module feng3d
          */
         public getTexture(textureInfo: TextureInfo)
         {
-
-            var buffer = this.textureBuffer.get(textureInfo.pixels);
+            var buffer = this._textureBuffer.get(textureInfo.pixels);
             if (buffer != null)
             {
                 return buffer;
@@ -203,7 +191,7 @@ module feng3d
             {
                 context3D.generateMipmap(textureInfo.textureType);
             }
-            this.textureBuffer.push(textureInfo.pixels, texture);
+            this._textureBuffer.push(textureInfo.pixels, texture);
             return texture;
         }
 
@@ -215,7 +203,7 @@ module feng3d
         {
             var context3D = this.context3D;
             var dataUID = UIDUtils.getUID(data);
-            var buffer = this.bufferMap[dataUID] = this.bufferMap[dataUID] || context3D.createBuffer();
+            var buffer = this._bufferMap[dataUID] = this._bufferMap[dataUID] || context3D.createBuffer();
 
             if (!VersionUtils.equal(data, buffer))
             {
@@ -235,21 +223,21 @@ module feng3d
         /**
          * 纹理缓冲
          */
-        private textureBuffer = new Map<any, WebGLTexture>();
+        private _textureBuffer = new Map<any, WebGLTexture>();
 
         /** 渲染程序对象池 */
-        private webGLProgramPool: { [shaderCode: string]: WebGLProgram } = {};
+        private _webGLProgramPool: { [shaderCode: string]: WebGLProgram } = {};
 
         /** 顶点渲染程序对象池 */
-        private vertexShaderPool: { [vertexCode: string]: WebGLShader } = {};
+        private _vertexShaderPool: { [vertexCode: string]: WebGLShader } = {};
 
         /** 顶点渲染程序对象池 */
-        private fragmentShaderPool: { [fragmentCode: string]: WebGLShader } = {};
+        private _fragmentShaderPool: { [fragmentCode: string]: WebGLShader } = {};
 
         /**
          * 缓冲字典
          */
-        private bufferMap: { [dataUID: string]: WebGLBuffer } = {};
+        private _bufferMap: { [dataUID: string]: WebGLBuffer } = {};
     }
 
     /**
@@ -261,7 +249,6 @@ module feng3d
      */
     function getWebGLProgram(context3D: Context3D, vertexCode: string, fragmentCode: string)
     {
-
         var vertexShader = context3DPool.getVertexShader(context3D, vertexCode);
         var fragmentShader = context3DPool.getFragmentShader(context3D, fragmentCode);
         // 创建渲染程序
@@ -287,7 +274,6 @@ module feng3d
      */
     function getVertexShader(context3D: Context3D, vertexCode: string)
     {
-
         var shader = context3D.createShader(Context3D.VERTEX_SHADER);
         shader = compileShader(context3D, shader, vertexCode);
         return shader;
@@ -301,7 +287,6 @@ module feng3d
      */
     function getFragmentShader(context3D: Context3D, fragmentCode: string)
     {
-
         var shader = context3D.createShader(Context3D.FRAGMENT_SHADER);
         shader = compileShader(context3D, shader, fragmentCode);
         return shader;
@@ -316,7 +301,6 @@ module feng3d
      */
     function compileShader(context3D: Context3D, shader: WebGLShader, shaderCode: string)
     {
-
         context3D.shaderSource(shader, shaderCode);
         context3D.compileShader(shader);
         if (!context3D.getShaderParameter(shader, context3D.COMPILE_STATUS))

@@ -17,7 +17,6 @@ module feng3d
          */
         constructor(radius = 50, segmentsW = 16, segmentsH = 12, yUp = true)
         {
-
             super();
 
             this.buildGeometry(radius, segmentsW, segmentsH, yUp);
@@ -38,7 +37,6 @@ module feng3d
          */
         private buildGeometry(radius = 1, segmentsW = 1, segmentsH = 1, yUp = true)
         {
-
             var vertexPositionData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
             var vertexNormalData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
             var vertexTangentData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
@@ -134,7 +132,6 @@ module feng3d
          */
         private buildIndices(segmentsW = 1, segmentsH = 1, yUp = true)
         {
-
             var indices = new Uint16Array(segmentsH * segmentsW * 6);
 
             var numIndices = 0;

@@ -1,36 +1,39 @@
-module feng3d {
+module feng3d
+{
 
-    export class VersionUtils {
-
+    export class VersionUtils
+    {
         /**
          * 获取对象版本
          * @param object 对象
          */
-        public static getVersion(object: Object) {
-
+        public static getVersion(object: Object)
+        {
             this.assertObject(object);
-            if (!object.hasOwnProperty(versionKey)) {
+            if (!object.hasOwnProperty(_versionKey))
+            {
                 return -1;
             }
-            return ~~object[versionKey];
+            return ~~object[_versionKey];
         }
 
         /**
          * 升级对象版本（版本号+1）
          * @param object 对象
          */
-        public static upgradeVersion(object: Object) {
-
+        public static upgradeVersion(object: Object)
+        {
             this.assertObject(object);
-            if (!object.hasOwnProperty(versionKey)) {
-                Object.defineProperty(object, versionKey, {
+            if (!object.hasOwnProperty(_versionKey))
+            {
+                Object.defineProperty(object, _versionKey, {
                     value: 0,
                     enumerable: false,
                     writable: true
                 });
             }
 
-            object[versionKey] = ~~object[versionKey] + 1;
+            object[_versionKey] = ~~object[_versionKey] + 1;
         }
 
         /**
@@ -38,16 +41,17 @@ module feng3d {
          * @param object 对象
          * @param version 版本号
          */
-        public static setVersion(object: Object, version: number) {
-
+        public static setVersion(object: Object, version: number)
+        {
             this.assertObject(object);
-            object[versionKey] = ~~version;
+            object[_versionKey] = ~~version;
         }
 
         /**
          * 判断两个对象的版本号是否相等
          */
-        public static equal(a: Object, b: Object) {
+        public static equal(a: Object, b: Object)
+        {
             var va = this.getVersion(a);
             var vb = this.getVersion(b);
             if (va == -1 && vb == -1)
@@ -58,8 +62,10 @@ module feng3d {
         /**
          * 断言object为对象类型
          */
-        private static assertObject(object) {
-            if (typeof object != "object") {
+        private static assertObject(object)
+        {
+            if (typeof object != "object")
+            {
                 throw `无法获取${object}的UID`;
             }
         }
@@ -68,5 +74,5 @@ module feng3d {
     /**
      * 版本号键名称
      */
-    var versionKey = "__version__";
+    var _versionKey = "__version__";
 }

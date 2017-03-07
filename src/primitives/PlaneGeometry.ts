@@ -18,7 +18,6 @@ module feng3d
          */
         constructor(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true)
         {
-
             super();
 
             var vertexPositionData = this.buildPosition(width, height, segmentsW, segmentsH, yUp);
@@ -47,7 +46,6 @@ module feng3d
          */
         private buildPosition(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true)
         {
-
             var vertexPositionData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
             var x: number, y: number;
             var positionIndex: number = 0;
@@ -83,7 +81,6 @@ module feng3d
          */
         private buildNormal(segmentsW = 1, segmentsH = 1, yUp = true)
         {
-
             var vertexNormalData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
 
             var normalIndex: number = 0;
@@ -117,7 +114,6 @@ module feng3d
          */
         private buildTangent(segmentsW = 1, segmentsH = 1, yUp = true)
         {
-
             var vertexTangentData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
             var tangentIndex: number = 0;
             for (var yi: number = 0; yi <= segmentsH; ++yi)
@@ -141,7 +137,6 @@ module feng3d
          */
         private buildIndices(segmentsW = 1, segmentsH = 1, yUp = true)
         {
-
             var indices = new Uint16Array(segmentsH * segmentsW * 6);
             var tw: number = segmentsW + 1;
 

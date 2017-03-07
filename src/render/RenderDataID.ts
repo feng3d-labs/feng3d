@@ -11,110 +11,110 @@ module feng3d
         /**
          * 顶点索引
          */
-        static index = "index";
+        public static index = "index";
 
         /**
          * 模型矩阵
          */
-        static u_modelMatrix = "u_modelMatrix";
+        public static u_modelMatrix = "u_modelMatrix";
 
         /**
          * 世界投影矩阵
          */
-        static u_viewProjection = "u_viewProjection";
+        public static u_viewProjection = "u_viewProjection";
 
-        static u_diffuseInput = "u_diffuseInput";
+        public static u_diffuseInput = "u_diffuseInput";
 
         /**
          * 漫反射贴图
          */
-        static s_texture = "s_texture";
+        public static s_texture = "s_texture";
         /**
          * 天空盒纹理
          */
-        static s_skyboxTexture = "s_skyboxTexture";
+        public static s_skyboxTexture = "s_skyboxTexture";
 
         /**
          * 摄像机矩阵
          */
-        static u_cameraMatrix = "u_cameraMatrix";
+        public static u_cameraMatrix = "u_cameraMatrix";
         /**
          * 天空盒尺寸
          */
-        static u_skyBoxSize = "u_skyBoxSize";
+        public static u_skyBoxSize = "u_skyBoxSize";
 
         /**
          * 地形混合贴图
          */
-        static s_blendTexture = "s_blendTexture";
+        public static s_blendTexture = "s_blendTexture";
 
         /**
          * 地形块贴图1
          */
-        static s_splatTexture1 = "s_splatTexture1";
+        public static s_splatTexture1 = "s_splatTexture1";
         /**
          * 地形块贴图2
          */
-        static s_splatTexture2 = "s_splatTexture2";
+        public static s_splatTexture2 = "s_splatTexture2";
         /**
          * 地形块贴图3
          */
-        static s_splatTexture3 = "s_splatTexture3";
+        public static s_splatTexture3 = "s_splatTexture3";
         /**
          * 地形块重复次数
          */
-        static u_splatRepeats = "u_splatRepeats";
+        public static u_splatRepeats = "u_splatRepeats";
         /**
          * 点光源位置数组
          */
-        static u_pointLightPositions = "u_pointLightPositions";
+        public static u_pointLightPositions = "u_pointLightPositions";
         /**
          * 点光源颜色数组
          */
-        static u_pointLightColors = "u_pointLightColors";
+        public static u_pointLightColors = "u_pointLightColors";
         /**
          * 点光源光照强度数组
          */
-        static u_pointLightIntensitys = "u_pointLightIntensitys";
+        public static u_pointLightIntensitys = "u_pointLightIntensitys";
 
         /**
          * 基本颜色
          */
-        static u_baseColor = "u_baseColor";
+        public static u_baseColor = "u_baseColor";
 
         /**
          * 反射率
          */
-        static u_reflectance = "u_reflectance";
+        public static u_reflectance = "u_reflectance";
 
         /**
          * 粗糙度
          */
-        static u_roughness = "u_roughness";
+        public static u_roughness = "u_roughness";
 
         /**
          * 金属度
          */
-        static u_metalic = "u_metalic";
+        public static u_metalic = "u_metalic";
 
         /**
          * 粒子时间
          */
-        static u_particleTime = "u_particleTime";
+        public static u_particleTime = "u_particleTime";
 
         /**
          * 点大小
          */
-        static u_PointSize = "u_PointSize";
+        public static u_PointSize = "u_PointSize";
 
         /**
          * 骨骼全局矩阵
          */
-        static u_skeletonGlobalMatriices = "u_skeletonGlobalMatriices";
+        public static u_skeletonGlobalMatriices = "u_skeletonGlobalMatriices";
 
         /**
          * 3D对象编号
          */
-        static u_objectID = "u_objectID";
+        public static u_objectID = "u_objectID";
     }
 }

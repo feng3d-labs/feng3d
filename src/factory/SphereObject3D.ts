@@ -1,6 +1,5 @@
 module feng3d
 {
-
     /**
      * 球体3D对象
      * @author feng 2017-02-06
@@ -13,7 +12,6 @@ module feng3d
          */
         constructor(name = "sphere")
         {
-
             super(name);
             var mesh = this.getOrCreateComponentByClass(MeshFilter);
             mesh.geometry = new SphereGeometry();

@@ -7,7 +7,6 @@ module feng3d
      */
     export class Texture2D extends TextureInfo
     {
-
         public pixels: HTMLImageElement;
 
         constructor(pixels: HTMLImageElement)

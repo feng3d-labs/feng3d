@@ -52,10 +52,10 @@ module feng3d
         {
             super.updateRenderData(renderContext);
 
-            this.renderData.uniforms[RenderDataID.u_baseColor] = this.baseColor.toVector3D();
-            this.renderData.uniforms[RenderDataID.u_reflectance] = this.reflectance;
-            this.renderData.uniforms[RenderDataID.u_roughness] = this.roughness;
-            this.renderData.uniforms[RenderDataID.u_metalic] = this.metalic;
+            this._renderData.uniforms[RenderDataID.u_baseColor] = this.baseColor.toVector3D();
+            this._renderData.uniforms[RenderDataID.u_reflectance] = this.reflectance;
+            this._renderData.uniforms[RenderDataID.u_roughness] = this.roughness;
+            this._renderData.uniforms[RenderDataID.u_metalic] = this.metalic;
         }
     }
 }

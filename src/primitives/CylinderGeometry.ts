@@ -11,10 +11,8 @@ module feng3d
         /**
          * 创建圆柱体
          */
-        constructor(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1,
-            topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true)
+        constructor(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true)
         {
-
             super();
 
             this.buildGeometry(topRadius, bottomRadius, height, segmentsW, segmentsH,
@@ -61,8 +59,7 @@ module feng3d
         /**
          * 构建几何体数据
          */
-        private buildGeometry(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1,
-            topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true)
+        private buildGeometry(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true)
         {
             var i: number, j: number, index: number = 0;
             var x: number, y: number, z: number, radius: number, revolutionAngle: number;
@@ -275,8 +272,7 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildIndices(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1,
-            topClosed = true, bottomClosed = true, surfaceClosed = true)
+        private buildIndices(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true)
         {
 
             var i: number, j: number, index: number = 0;

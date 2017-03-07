@@ -20,9 +20,9 @@ module feng3d
          */
         public static getShaderCode(shaderName: string)
         {
-            if (!shaderMap[shaderName])
-                shaderMap[shaderName] = ShaderLoader.loadText(shaderName);
-            return shaderMap[shaderName];
+            if (!_shaderMap[shaderName])
+                _shaderMap[shaderName] = ShaderLoader.loadText(shaderName);
+            return _shaderMap[shaderName];
         }
 
         /**
@@ -30,7 +30,6 @@ module feng3d
          */
         public static getMacroCode(macro: ShaderMacro)
         {
-
             var macroHeader = "";
             var macroNames = Object.keys(macro.valueMacros);
             macroNames = macroNames.sort();
@@ -61,12 +60,12 @@ module feng3d
     /**
      * 渲染代码字典
      */
-    var shaderMap: { [shaderName: string]: string } = {};
+    var _shaderMap: { [shaderName: string]: string } = {};
 
     /**
      * 渲染代码加载器字典
      */
-    var shaderLoaderMap: { [shaderName: string]: ShaderLoader } = {};
+    var _shaderLoaderMap: { [shaderName: string]: ShaderLoader } = {};
 
     /**
      * 着色器加载器

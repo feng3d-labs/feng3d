@@ -57,12 +57,9 @@ module feng3d
 
     export class MD5MeshParser
     {
-
         static parse(context: string)
         {
-
             //
-
             var md5MeshData = <MD5MeshData>{};
             var lines = context.split("\n").reverse();
             do

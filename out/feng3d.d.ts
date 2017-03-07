@@ -416,7 +416,7 @@ declare module feng3d {
     /**
      * uid细节
      */
-    var $uidDetails: {
+    var uidDetails: {
         [uid: string]: {
             className: string;
             id: number;
@@ -915,7 +915,7 @@ declare module feng3d {
         /**
          * 事件适配主体
          */
-        private target;
+        private _target;
         /**
          * 构建事件适配器
          * @param target		事件适配主体
@@ -984,8 +984,8 @@ declare module feng3d {
     /**
      * 心跳计时器单例
      */
-    var $ticker: SystemTicker;
-    var $feng3dStartTime: number;
+    var ticker: SystemTicker;
+    var feng3dStartTime: number;
 }
 declare module feng3d {
     /**
@@ -1060,15 +1060,15 @@ declare module feng3d {
          * 键盘按键字典 （补充常量，a-z以及鼠标按键不必再次列出）
          * 例如 boardKeyDic[17] = "ctrl";
          */
-        private boardKeyDic;
+        private _boardKeyDic;
         /**
          * 捕获的按键字典
          */
-        private mouseKeyDic;
+        private _mouseKeyDic;
         /**
          * 按键状态
          */
-        private keyState;
+        private _keyState;
         /**
          * 构建
          * @param stage		舞台
@@ -1109,7 +1109,7 @@ declare module feng3d {
         /**
          * 按键状态{key:键名称,value:是否按下}
          */
-        private keyStateDic;
+        private _keyStateDic;
         /**
          * 构建
          */
@@ -1142,43 +1142,43 @@ declare module feng3d {
         /**
          * 快捷键环境
          */
-        private shortCut;
+        private _shortCut;
         /**
          * 快捷键
          */
-        private key;
+        private _key;
         /**
          * 要执行的命令名称
          */
-        private command;
+        private _command;
         /**
          * 可执行的状态命令
          */
-        private stateCommand;
+        private _stateCommand;
         /**
          * 快捷键处于活动状态的条件
          */
-        private when;
+        private _when;
         /**
          * 按键状态
          */
-        private keyState;
+        private _keyState;
         /**
          * 按键列表
          */
-        private keys;
+        private _keys;
         /**
          * 状态列表
          */
-        private states;
+        private _states;
         /**
          * 命令列表
          */
-        private commands;
+        private _commands;
         /**
          * 命令列表
          */
-        private stateCommands;
+        private _stateCommands;
         /**
          * 构建快捷键捕获
          * @param shortCut				快捷键环境
@@ -1687,13 +1687,13 @@ declare module feng3d {
      * @author feng 2016-12-14
      */
     class Loader extends EventDispatcher {
-        private request;
-        private image;
+        private _request;
+        private _image;
         /**
          * 数据类型
          */
         dataFormat: string;
-        protected url: string;
+        protected _url: string;
         /**
          * 已加载的字节数
          */
@@ -2940,7 +2940,7 @@ declare module feng3d {
      * @author feng 2016-6-7
      */
     class RenderDataHolder extends Component {
-        protected renderData: RenderData;
+        protected _renderData: RenderData;
         private _subRenderDataHolders;
         /**
          * 创建Context3D数据缓冲
@@ -3340,7 +3340,7 @@ declare module feng3d {
      * @author feng 2017-01-04
      */
     class RenderContext {
-        protected renderData: RenderData;
+        protected _renderData: RenderData;
         /**
          * 摄像机
          */
@@ -3376,7 +3376,7 @@ declare module feng3d {
      */
     class Renderer {
         /** 渲染原子 */
-        protected renderAtomic: RenderAtomic;
+        protected _renderAtomic: RenderAtomic;
         /**
          * 渲染
          */
@@ -3408,7 +3408,7 @@ declare module feng3d {
      * @author feng 2017-02-06
      */
     class MouseRenderer extends Renderer {
-        private shaderName;
+        private _shaderName;
         selectedObject3D: Object3D;
         constructor();
         /**
@@ -4049,39 +4049,39 @@ declare module feng3d {
         /**
          * 坐标
          */
-        static a_position: string;
+        static readonly a_position: string;
         /**
          * 颜色
          */
-        static a_color: string;
+        static readonly a_color: string;
         /**
          * 法线
          */
-        static a_normal: string;
+        static readonly a_normal: string;
         /**
          * 切线
          */
-        static a_tangent: string;
+        static readonly a_tangent: string;
         /**
          * uv（纹理坐标）
          */
-        static a_uv: string;
+        static readonly a_uv: string;
         /**
          * 关节索引
          */
-        static a_jointindex0: string;
+        static readonly a_jointindex0: string;
         /**
          * 关节权重
          */
-        static a_jointweight0: string;
+        static readonly a_jointweight0: string;
         /**
          * 关节索引
          */
-        static a_jointindex1: string;
+        static readonly a_jointindex1: string;
         /**
          * 关节权重
          */
-        static a_jointweight1: string;
+        static readonly a_jointweight1: string;
     }
 }
 declare module feng3d {
@@ -4717,7 +4717,7 @@ declare module feng3d {
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        buildIndices(segmentsW?: number, segmentsH?: number, yUp?: boolean): void;
+        private buildIndices(segmentsW?, segmentsH?, yUp?);
         /**
          * 构建uv
          * @param segmentsW 横向分割数
@@ -5616,8 +5616,8 @@ declare module feng3d {
             particles: number;
         }[];
         isDirty: boolean;
-        private numParticles;
-        private birthTimes;
+        private _numParticles;
+        private _birthTimes;
         constructor();
         /**
          * 创建粒子属性
@@ -5771,16 +5771,12 @@ declare module feng3d {
          */
         time: number;
         /**
-         * The amount by which passed time should be scaled. Used to slow down or speed up animations. Defaults to 1.
-         */
-        /**
          * 播放速度
          * <p>默认为1，表示正常速度</p>
          */
         playbackSpeed: number;
         /**
          * 开始动画，当自动更新为true时有效
-         * @see #autoUpdate
          */
         start(): void;
         /**
@@ -5792,9 +5788,6 @@ declare module feng3d {
         /**
          * 更新动画
          * @param time			动画时间
-         *
-         * @see #stop()
-         * @see #autoUpdate
          */
         update(time: number): void;
         /**
@@ -5901,12 +5894,12 @@ declare module feng3d {
     class SkeletonAnimator extends AnimatorBase {
         /** 动画节点列表 */
         animations: AnimationNodeBase[];
-        private _globalMatrices;
-        private _globalPropertiesDirty;
         /**
          * 骨骼
          */
         skeleton: Skeleton;
+        private _globalMatrices;
+        private _globalPropertiesDirty;
         private _activeSkeletonState;
         /**
          * 当前骨骼姿势的全局矩阵
@@ -6371,9 +6364,9 @@ declare module feng3d {
      * @author feng 2017-01-18
      */
     class ObjLoader extends Loader {
-        objData: OBJ_OBJData;
-        mtlData: Mtl_Mtl;
-        completed: (object3D: Object3D) => void;
+        private _objData;
+        private _mtlData;
+        private _completed;
         /**
          * 加载资源
          * @param url   路径
@@ -6390,8 +6383,8 @@ declare module feng3d {
      * @author feng 2017-01-18
      */
     class MD5Loader extends Loader {
-        completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void;
-        animCompleted: (skeletonClipNode: SkeletonClipNode) => void;
+        private _completed;
+        private _animCompleted;
         /**
          * 加载资源
          * @param url   路径

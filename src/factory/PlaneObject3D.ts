@@ -1,6 +1,5 @@
 module feng3d
 {
-
     /**
      * 平面3D对象
      * @author feng 2017-02-06
@@ -14,7 +13,6 @@ module feng3d
          */
         constructor(width = 100, name = "plane")
         {
-
             super(name);
             var mesh = this.getOrCreateComponentByClass(MeshFilter);
             this.planeGeometry = mesh.geometry = new PlaneGeometry(width, width);

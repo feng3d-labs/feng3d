@@ -9,14 +9,13 @@ module feng3d
     {
 
         /** 渲染原子 */
-        protected renderAtomic = new RenderAtomic();
+        protected _renderAtomic = new RenderAtomic();
 
         /**
 		 * 渲染
 		 */
         public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D)
         {
-
             var renderContext: RenderContext = new RenderContext();
             //初始化渲染环境
             renderContext.clear();
@@ -35,13 +34,13 @@ module feng3d
             renderContext.updateRenderData(object3D);
             object3D.updateRenderData(renderContext);
             //收集数据
-            renderContext.activate(this.renderAtomic);
-            object3D.activate(this.renderAtomic);
+            renderContext.activate(this._renderAtomic);
+            object3D.activate(this._renderAtomic);
             //绘制
             this.drawObject3D(context3D);            //
             //释放数据
-            object3D.deactivate(this.renderAtomic);
-            renderContext.deactivate(this.renderAtomic);
+            object3D.deactivate(this._renderAtomic);
+            renderContext.deactivate(this._renderAtomic);
         }
 
         /**
@@ -49,15 +48,14 @@ module feng3d
          */
         protected drawObject3D(context3D: Context3D)
         {
-
-            var shaderProgram = this.activeShaderProgram(context3D, this.renderAtomic.vertexCode, this.renderAtomic.fragmentCode);
+            var shaderProgram = this.activeShaderProgram(context3D, this._renderAtomic.vertexCode, this._renderAtomic.fragmentCode);
             if (!shaderProgram)
                 return;
-            samplerIndex = 0;
+            _samplerIndex = 0;
             //
-            activeAttributes(context3D, shaderProgram, this.renderAtomic.attributes);
-            activeUniforms(context3D, shaderProgram, this.renderAtomic.uniforms);
-            dodraw(context3D, this.renderAtomic.shaderParams, this.renderAtomic.indexBuffer, this.renderAtomic.instanceCount);
+            activeAttributes(context3D, shaderProgram, this._renderAtomic.attributes);
+            activeUniforms(context3D, shaderProgram, this._renderAtomic.uniforms);
+            dodraw(context3D, this._renderAtomic.shaderParams, this._renderAtomic.indexBuffer, this._renderAtomic.instanceCount);
         }
 
         /**
@@ -65,12 +63,11 @@ module feng3d
          */
         protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string)
         {
-
             if (!vertexCode || !fragmentCode)
                 return null;
 
             //应用宏
-            var shaderMacro = ShaderLib.getMacroCode(this.renderAtomic.shaderMacro);
+            var shaderMacro = ShaderLib.getMacroCode(this._renderAtomic.shaderMacro);
             vertexCode = vertexCode.replace(/#define\s+macros/, shaderMacro);
             fragmentCode = fragmentCode.replace(/#define\s+macros/, shaderMacro);
             //渲染程序
@@ -80,14 +77,13 @@ module feng3d
         }
     }
 
-    var samplerIndex = 0;
+    var _samplerIndex = 0;
 
     /**
      * 激活属性
      */
     function activeAttributes(context3D: Context3D, shaderProgram: WebGLProgram, attributes: { [name: string]: AttributeRenderData })
     {
-
         var numAttributes = context3D.getProgramParameter(shaderProgram, context3D.ACTIVE_ATTRIBUTES);
         var i = 0;
         while (i < numAttributes)
@@ -102,7 +98,6 @@ module feng3d
      */
     function activeUniforms(context3D: Context3D, shaderProgram: WebGLProgram, uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[]; })
     {
-
         var numUniforms = context3D.getProgramParameter(shaderProgram, context3D.ACTIVE_UNIFORMS);
         var i = 0;
         while (i < numUniforms)
@@ -127,14 +122,13 @@ module feng3d
      */
     function dodraw(context3D: Context3D, shaderParams: ShaderParams, indexBuffer: IndexRenderData, instanceCount: number = 1)
     {
-
         instanceCount = ~~instanceCount;
         var buffer = context3DPool.getIndexBuffer(context3D, indexBuffer.indices);
         context3D.bindBuffer(indexBuffer.target, buffer);
         if (instanceCount > 1)
         {
-            ext = ext || context3D.getExtension('ANGLE_instanced_arrays');
-            ext.drawArraysInstancedANGLE(shaderParams.renderMode, 0, indexBuffer.count, instanceCount)
+            _ext = _ext || context3D.getExtension('ANGLE_instanced_arrays');
+            _ext.drawArraysInstancedANGLE(shaderParams.renderMode, 0, indexBuffer.count, instanceCount)
         }
         else
         {
@@ -147,7 +141,6 @@ module feng3d
      */
     function setContext3DAttribute(context3D: Context3D, shaderProgram: WebGLProgram, activeInfo: WebGLActiveInfo, buffer: AttributeRenderData)
     {
-
         var location = context3D.getAttribLocation(shaderProgram, activeInfo.name);
         context3D.enableVertexAttribArray(location);
         //
@@ -172,8 +165,8 @@ module feng3d
         }
         if (buffer.divisor > 0)
         {
-            ext = ext || context3D.getExtension('ANGLE_instanced_arrays');
-            ext.vertexAttribDivisorANGLE(location, buffer.divisor);
+            _ext = _ext || context3D.getExtension('ANGLE_instanced_arrays');
+            _ext.vertexAttribDivisorANGLE(location, buffer.divisor);
         }
     }
 
@@ -182,7 +175,6 @@ module feng3d
      */
     function setContext3DUniform(context3D: Context3D, shaderProgram: WebGLProgram, activeInfo: { name: string; type: number; }, data)
     {
-
         var location = context3D.getUniformLocation(shaderProgram, activeInfo.name);
         switch (activeInfo.type)
         {
@@ -207,7 +199,7 @@ module feng3d
                 var textureInfo = <TextureInfo>data;
                 var texture = context3DPool.getTexture(context3D, textureInfo);
                 //激活纹理编号
-                context3D.activeTexture(Context3D["TEXTURE" + samplerIndex]);
+                context3D.activeTexture(Context3D["TEXTURE" + _samplerIndex]);
                 //绑定纹理
                 context3D.bindTexture(textureInfo.textureType, texture);
                 //设置图片y轴方向
@@ -218,13 +210,13 @@ module feng3d
                 context3D.texParameteri(textureInfo.textureType, Context3D.TEXTURE_WRAP_S, textureInfo.wrapS);
                 context3D.texParameteri(textureInfo.textureType, Context3D.TEXTURE_WRAP_T, textureInfo.wrapT);
                 //设置纹理所在采样编号
-                context3D.uniform1i(location, samplerIndex);
-                samplerIndex++;
+                context3D.uniform1i(location, _samplerIndex);
+                _samplerIndex++;
                 break;
             default:
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
     }
 
-    var ext
+    var _ext
 }

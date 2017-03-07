@@ -1,13 +1,11 @@
 module feng3d
 {
-
     /**
      * 粒子发射器
      * @author feng 2017-01-09
      */
     export class ParticleEmission extends ParticleComponent
     {
-
         /**
          * 发射率，每秒发射粒子数量
          */
@@ -20,9 +18,9 @@ module feng3d
 
         public isDirty = true;
 
-        private numParticles;
+        private _numParticles;
 
-        private birthTimes: number[];
+        private _birthTimes: number[];
 
         constructor()
         {
@@ -36,10 +34,9 @@ module feng3d
 		 */
         public generateParticle(particle: Particle)
         {
-
-            if (this.numParticles != particle.total)
+            if (this._numParticles != particle.total)
                 this.isDirty = true;
-            this.numParticles = particle.total;
+            this._numParticles = particle.total;
 
             particle.birthTime = this.getBirthTimeArray(particle.total)[particle.index];
         }
@@ -49,10 +46,8 @@ module feng3d
          */
         private getBirthTimeArray(numParticles)
         {
-
             if (this.isDirty)
             {
-
                 this.isDirty = false;
 
                 var birthTimes: number[] = [];
@@ -65,7 +60,6 @@ module feng3d
                 var timeStep = 1 / this.rate;
                 while (index < numParticles)
                 {
-
                     while (bursts.length > 0 && bursts[bursts.length - 1].time <= time)
                     {
                         var burst = bursts.pop();
@@ -78,10 +72,10 @@ module feng3d
                     birthTimes[index++] = time;
                     time += timeStep;
                 }
-                this.birthTimes = birthTimes;
+                this._birthTimes = birthTimes;
             }
 
-            return this.birthTimes;
+            return this._birthTimes;
         }
     }
 }

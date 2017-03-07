@@ -8,7 +8,7 @@ module feng3d
     export class RenderDataHolder extends Component
     {
 
-        protected renderData = new RenderData();
+        protected _renderData = new RenderData();
 
         //
         private _subRenderDataHolders: RenderDataHolder[] = [];
@@ -18,7 +18,6 @@ module feng3d
 		 */
         constructor()
         {
-
             super();
         }
 
@@ -27,7 +26,6 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext)
         {
-
             this._subRenderDataHolders.forEach(element =>
             {
                 element.updateRenderData(renderContext);
@@ -40,8 +38,7 @@ module feng3d
 		 */
         public activate(renderData: RenderAtomic)
         {
-
-            RenderDataUtil.active(renderData, this.renderData)
+            RenderDataUtil.active(renderData, this._renderData)
 
             this._subRenderDataHolders.forEach(element =>
             {
@@ -55,8 +52,7 @@ module feng3d
 		 */
         public deactivate(renderData: RenderAtomic)
         {
-
-            RenderDataUtil.deactivate(renderData, this.renderData)
+            RenderDataUtil.deactivate(renderData, this._renderData)
 
             this._subRenderDataHolders.forEach(element =>
             {

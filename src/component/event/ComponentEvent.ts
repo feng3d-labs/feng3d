@@ -7,7 +7,6 @@ module feng3d
 	 */
 	export class ComponentEvent extends Event
 	{
-
 		/**
 		 * 添加子组件事件
 		 * data = { container: IComponent, child: IComponent }
@@ -23,6 +22,6 @@ module feng3d
         /**
          * 事件目标。
          */
-		target: IComponent;
+		public target: IComponent;
 	}
 }

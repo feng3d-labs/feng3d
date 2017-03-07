@@ -8,14 +8,14 @@ module feng3d
     {
         /** 动画节点列表 */
         public animations: AnimationNodeBase[] = [];
-
-        private _globalMatrices: Matrix3D[] = [];
-        private _globalPropertiesDirty: boolean;
-
 		/**
 		 * 骨骼
 		 */
         public skeleton: Skeleton;
+
+        private _globalMatrices: Matrix3D[] = [];
+        private _globalPropertiesDirty: boolean;
+
         private _activeSkeletonState: SkeletonClipState;
 
 		/**
@@ -46,7 +46,6 @@ module feng3d
 		 */
         public play()
         {
-
             if (!this._activeNode)
                 this._activeNode = this.animations[0];
             this._activeState = this.getAnimationState(this._activeNode);
@@ -68,11 +67,10 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext)
         {
-
             super.updateRenderData(renderContext);
 
-            this.renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this.skeleton.numJoints;
-            this.renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
+            this._renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this.skeleton.numJoints;
+            this._renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
         }
 
 		/**
@@ -102,7 +100,6 @@ module feng3d
             //遍历每个关节
             for (var i: number = 0; i < this.skeleton.numJoints; ++i)
             {
-
                 var inverseMatrix3D: Matrix3D = joints[i].invertMatrix3D;
                 var matrix3D: Matrix3D = globalMatrix3Ds[i].clone();
                 matrix3D.prepend(inverseMatrix3D);

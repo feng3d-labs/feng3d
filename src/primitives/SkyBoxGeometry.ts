@@ -7,7 +7,6 @@ module feng3d
      */
     export class SkyBoxGeometry extends Geometry
     {
-
         /**
          * 创建天空盒
          */

@@ -35,12 +35,12 @@ module feng3d
 
             super.updateRenderData(renderContext);
 
-            this.renderData.uniforms[RenderDataID.s_texture] = this.diffuseTexture;
-            this.renderData.uniforms[RenderDataID.s_blendTexture] = this.blendTexture;
-            this.renderData.uniforms[RenderDataID.s_splatTexture1] = this.splatTexture1;
-            this.renderData.uniforms[RenderDataID.s_splatTexture2] = this.splatTexture2;
-            this.renderData.uniforms[RenderDataID.s_splatTexture3] = this.splatTexture3;
-            this.renderData.uniforms[RenderDataID.u_splatRepeats] = this.splatRepeats;
+            this._renderData.uniforms[RenderDataID.s_texture] = this.diffuseTexture;
+            this._renderData.uniforms[RenderDataID.s_blendTexture] = this.blendTexture;
+            this._renderData.uniforms[RenderDataID.s_splatTexture1] = this.splatTexture1;
+            this._renderData.uniforms[RenderDataID.s_splatTexture2] = this.splatTexture2;
+            this._renderData.uniforms[RenderDataID.s_splatTexture3] = this.splatTexture3;
+            this._renderData.uniforms[RenderDataID.u_splatRepeats] = this.splatRepeats;
         }
     }
 }

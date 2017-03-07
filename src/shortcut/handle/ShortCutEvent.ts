@@ -1,6 +1,5 @@
 module feng3d
 {
-
 	/**
 	 * 快捷键命令事件
 	 * @author feng 2016-4-27

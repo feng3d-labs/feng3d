@@ -68,7 +68,7 @@ module feng3d
             //
             this.transform = new Transform();
             //
-            this.renderData.uniforms[RenderDataID.u_objectID] = this._object3DID;
+            this._renderData.uniforms[RenderDataID.u_objectID] = this._object3DID;
             //
             this.addEventListener(Object3DEvent.ADDED, this.onAdded, this);
             this.addEventListener(Object3DEvent.REMOVED, this.onRemoved, this);

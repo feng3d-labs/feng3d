@@ -15,7 +15,6 @@ module feng3d
          */
         public delete(k: K)
         {
-
             delete this.keyMap[UIDUtils.getUID(k)];
             delete this.valueMap[UIDUtils.getUID(k)];
         }
@@ -25,7 +24,6 @@ module feng3d
          */
         public push(k: K, v: V)
         {
-
             this.keyMap[UIDUtils.getUID(k)] = k;
             this.valueMap[UIDUtils.getUID(k)] = v;
         }
@@ -35,7 +33,6 @@ module feng3d
          */
         public get(k: K): V
         {
-
             return this.valueMap[UIDUtils.getUID(k)];
         }
 
@@ -44,7 +41,6 @@ module feng3d
          */
         public getKeys(): K[]
         {
-
             var keys: K[] = [];
             for (var key in this.keyMap)
             {
@@ -58,7 +54,6 @@ module feng3d
          */
         public clear()
         {
-
             this.keyMap = {};
             this.valueMap = {};
         }

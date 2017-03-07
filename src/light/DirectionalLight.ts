@@ -7,13 +7,11 @@ module feng3d
      */
     export class DirectionalLight extends Light
     {
-
         /**
          * 构建
          */
         constructor()
         {
-
             super();
             this.type = LightType.Directional;
         }

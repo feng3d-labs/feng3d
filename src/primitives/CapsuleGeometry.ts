@@ -7,7 +7,6 @@ module feng3d
      */
     export class CapsuleGeometry extends Geometry
     {
-
         /**
          * 创建胶囊几何体
          * @param radius 胶囊体半径
@@ -18,7 +17,6 @@ module feng3d
          */
         constructor(radius = 50, height = 100, segmentsW = 16, segmentsH = 15, yUp = true)
         {
-
             super();
 
             this.buildGeometry(radius, height, segmentsW, segmentsH, yUp);
@@ -38,7 +36,6 @@ module feng3d
          */
         private buildGeometry(radius = 1, height = 1, segmentsW = 1, segmentsH = 1, yUp = true)
         {
-
             var vertexPositionData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
             var vertexNormalData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
             var vertexTangentData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
@@ -132,9 +129,8 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        buildIndices(segmentsW = 1, segmentsH = 1, yUp = true)
+        private buildIndices(segmentsW = 1, segmentsH = 1, yUp = true)
         {
-
             var indices = new Uint16Array(segmentsH * segmentsW * 6);
 
             var numIndices = 0;
@@ -183,7 +179,6 @@ module feng3d
          */
         private buildUVs(segmentsW = 1, segmentsH = 1)
         {
-
             var data = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 2);
             var index: number = 0;
 

@@ -20,7 +20,7 @@ module feng3d
         /**
          * 事件适配主体
          */
-        private target: IEventDispatcher;
+        private _target: IEventDispatcher;
 
 		/**
 		 * 构建事件适配器
@@ -28,9 +28,9 @@ module feng3d
 		 */
         constructor(target: IEventDispatcher = null)
         {
-            this.target = target;
-            if (this.target == null)
-                this.target = this;
+            this._target = target;
+            if (this._target == null)
+                this._target = this;
         }
 
         /**
@@ -46,8 +46,8 @@ module feng3d
                 return;
 
             $listernerCenter//
-                .remove(this.target, type, listener, thisObject)//
-                .add(this.target, type, listener, thisObject, priority);
+                .remove(this._target, type, listener, thisObject)//
+                .add(this._target, type, listener, thisObject, priority);
         }
 
         /**
@@ -61,7 +61,7 @@ module feng3d
         {
 
             $listernerCenter//
-                .remove(this.target, type, listener, thisObject);
+                .remove(this._target, type, listener, thisObject);
         }
 
         /**
@@ -72,8 +72,8 @@ module feng3d
         {
 
             //设置目标
-            event.target = this.target;
-            var listeners: ListenerVO[] = $listernerCenter.getListeners(this.target, event.type);
+            event.target = this._target;
+            var listeners: ListenerVO[] = $listernerCenter.getListeners(this._target, event.type);
 
             //遍历调用事件回调函数
             for (var i = 0; !!listeners && i < listeners.length && !event.isStop; i++)
@@ -98,7 +98,7 @@ module feng3d
         public hasEventListener(type: string): boolean
         {
 
-            var has: boolean = $listernerCenter.hasEventListener(this.target, type);
+            var has: boolean = $listernerCenter.hasEventListener(this._target, type);
             return has;
         }
 
@@ -107,7 +107,7 @@ module feng3d
          */
         public destroy()
         {
-            $listernerCenter.destroyDispatcherListener(this.target);
+            $listernerCenter.destroyDispatcherListener(this._target);
         }
 
         /**
@@ -131,7 +131,7 @@ module feng3d
         protected getBubbleTargets(event: Event): IEventDispatcher[]
         {
 
-            return [this.target[this.bubbleAttribute]];
+            return [this._target[this.bubbleAttribute]];
         }
     }
 

@@ -1,23 +1,25 @@
-module feng3d {
+module feng3d
+{
 
     /**
      * 对象工具
      * @author feng 2017-02-15
      */
-    export class ObjectUtils {
-
+    export class ObjectUtils
+    {
         /**
          * 深克隆
          * @param source        源数据
          * @returns             克隆数据
          */
-        public static deepClone<T>(source: T): T {
-
+        public static deepClone<T>(source: T): T
+        {
             if (ClassUtils.isBaseType(source))
                 return source;
             var prototype: any = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
             var target = new prototype.constructor();
-            for (var attribute in source) {
+            for (var attribute in source)
+            {
                 target[attribute] = ObjectUtils.deepClone(source[attribute]);
             }
             return target;
@@ -28,13 +30,14 @@ module feng3d {
          * @param source        源数据
          * @returns             克隆数据
          */
-        public static clone<T>(source: T): T {
-
+        public static clone<T>(source: T): T
+        {
             if (ClassUtils.isBaseType(source))
                 return source;
             var prototype: any = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
             var target = new prototype.constructor();
-            for (var attribute in source) {
+            for (var attribute in source)
+            {
                 target[attribute] = source[attribute];
             }
             return target;
@@ -43,10 +46,11 @@ module feng3d {
         /**
          * （浅）拷贝数据
          */
-        public static copy(target: Object, source: Object) {
-
+        public static copy(target: Object, source: Object)
+        {
             var keys = Object.keys(source);
-            keys.forEach(element => {
+            keys.forEach(element =>
+            {
                 target[element] = source[element];
             });
         }
@@ -54,17 +58,21 @@ module feng3d {
         /**
          * 深拷贝数据
          */
-        public static deepCopy(target: Object, source: Object) {
-
+        public static deepCopy(target: Object, source: Object)
+        {
             var keys = Object.keys(source);
-            keys.forEach(element => {
-                if (!source[element] || ClassUtils.isBaseType(source[element])) {
+            keys.forEach(element =>
+            {
+                if (!source[element] || ClassUtils.isBaseType(source[element]))
+                {
                     target[element] = source[element];
                 }
-                else if (!target[element]) {
+                else if (!target[element])
+                {
                     target[element] = ObjectUtils.deepClone(source[element]);
                 }
-                else {
+                else
+                {
                     ObjectUtils.copy(target[element], source[element]);
                 }
             });
@@ -77,12 +85,13 @@ module feng3d {
          * @param createNew     是否合并为新对象，默认为false
          * @returns             如果createNew为true时返回新对象，否则返回源数据
          */
-        public static merge<T>(source: T, mergeData: Object, createNew = false): T {
-
+        public static merge<T>(source: T, mergeData: Object, createNew = false): T
+        {
             if (ClassUtils.isBaseType(mergeData))
                 return <any>mergeData;
             var target = createNew ? ObjectUtils.clone(source) : source;
-            for (var mergeAttribute in mergeData) {
+            for (var mergeAttribute in mergeData)
+            {
                 target[mergeAttribute] = ObjectUtils.merge(source[mergeAttribute], mergeData[mergeAttribute], createNew);
             }
             return target;

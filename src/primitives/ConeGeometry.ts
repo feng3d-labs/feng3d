@@ -7,7 +7,6 @@ module feng3d
 	 */
 	export class ConeGeometry extends CylinderGeometry
 	{
-
 		/**
 		 * 创建圆锥体
 		 * @param radius 底部半径

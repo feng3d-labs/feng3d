@@ -11,17 +11,17 @@ module feng3d
 		 * 键盘按键字典 （补充常量，a-z以及鼠标按键不必再次列出）
 		 * 例如 boardKeyDic[17] = "ctrl";
 		 */
-		private boardKeyDic: { [keyCode: number]: string };
+		private _boardKeyDic: { [keyCode: number]: string };
 
 		/**
 		 * 捕获的按键字典
 		 */
-		private mouseKeyDic = {};
+		private _mouseKeyDic = {};
 
 		/**
 		 * 按键状态
 		 */
-		private keyState: KeyState;
+		private _keyState: KeyState;
 
 		/**
 		 * 构建
@@ -30,12 +30,12 @@ module feng3d
 		constructor(shortCut: ShortCut)
 		{
 
-			this.keyState = shortCut.keyState;
+			this._keyState = shortCut.keyState;
 			//
 			input.addEventListener(inputType.KEY_DOWN, this.onKeydown, this);
 			input.addEventListener(inputType.KEY_UP, this.onKeyup, this);
 
-			this.boardKeyDic = {};
+			this._boardKeyDic = {};
 			this.defaultSupportKeys();
 
 			//监听鼠标事件
@@ -66,11 +66,11 @@ module feng3d
 		 */
 		private defaultSupportKeys(): void
 		{
-			this.boardKeyDic[17] = "ctrl";
-			this.boardKeyDic[16] = "shift";
-			this.boardKeyDic[32] = "escape";
-			this.boardKeyDic[18] = "alt";
-			this.boardKeyDic[46] = "del";
+			this._boardKeyDic[17] = "ctrl";
+			this._boardKeyDic[16] = "shift";
+			this._boardKeyDic[32] = "escape";
+			this._boardKeyDic[18] = "alt";
+			this._boardKeyDic[46] = "del";
 		}
 
 		/**
@@ -79,8 +79,8 @@ module feng3d
 		private onMouseOnce(event: InputEvent): void
 		{
 			var mouseKey: string = event.type;
-			this.keyState.pressKey(mouseKey, event);
-			this.keyState.releaseKey(mouseKey, event);
+			this._keyState.pressKey(mouseKey, event);
+			this._keyState.releaseKey(mouseKey, event);
 		}
 
 		/**
@@ -89,8 +89,8 @@ module feng3d
 		private onMousewheel(event: InputEvent): void
 		{
 			var mouseKey: string = event.type;
-			this.keyState.pressKey(mouseKey, event);
-			this.keyState.releaseKey(mouseKey, event);
+			this._keyState.pressKey(mouseKey, event);
+			this._keyState.releaseKey(mouseKey, event);
 		}
 
 		/**
@@ -100,7 +100,7 @@ module feng3d
 		{
 			var boardKey: string = this.getBoardKey(event.keyCode);
 			if (boardKey != null)
-				this.keyState.pressKey(boardKey, event);
+				this._keyState.pressKey(boardKey, event);
 		}
 
 		/**
@@ -110,7 +110,7 @@ module feng3d
 		{
 			var boardKey: string = this.getBoardKey(event.keyCode);
 			if (boardKey)
-				this.keyState.releaseKey(boardKey, event);
+				this._keyState.releaseKey(boardKey, event);
 		}
 
 		/**
@@ -119,7 +119,7 @@ module feng3d
 		private getBoardKey(keyCode: number): string
 		{
 
-			var boardKey = this.boardKeyDic[keyCode];
+			var boardKey = this._boardKeyDic[keyCode];
 			if (boardKey == null && 65 <= keyCode && keyCode <= 90)
 			{
 				boardKey = String.fromCharCode(keyCode).toLocaleLowerCase();

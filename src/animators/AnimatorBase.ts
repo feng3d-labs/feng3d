@@ -66,9 +66,6 @@ module feng3d
         }
 
 		/**
-		 * The amount by which passed time should be scaled. Used to slow down or speed up animations. Defaults to 1.
-		 */
-		/**
 		 * 播放速度
 		 * <p>默认为1，表示正常速度</p>
 		 */
@@ -84,7 +81,6 @@ module feng3d
 
 		/**
 		 * 开始动画，当自动更新为true时有效
-		 * @see #autoUpdate
 		 */
         public start()
         {
@@ -95,7 +91,7 @@ module feng3d
 
             this._isPlaying = true;
 
-            $ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
 
             if (!this.hasEventListener(AnimatorEvent.START))
                 return;
@@ -115,8 +111,8 @@ module feng3d
 
             this._isPlaying = false;
 
-            if ($ticker.hasEventListener(Event.ENTER_FRAME))
-                $ticker.removeEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            if (ticker.hasEventListener(Event.ENTER_FRAME))
+                ticker.removeEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
 
             if (!this.hasEventListener(AnimatorEvent.STOP))
                 return;
@@ -127,9 +123,6 @@ module feng3d
 		/**
 		 * 更新动画
 		 * @param time			动画时间
-		 *
-		 * @see #stop()
-		 * @see #autoUpdate
 		 */
         public update(time: number)
         {

@@ -1,15 +1,13 @@
 module feng3d
 {
-
     /**
      * MD5模型加载类
      * @author feng 2017-01-18
      */
     export class MD5Loader extends Loader
     {
-
-        completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void;
-        animCompleted: (skeletonClipNode: SkeletonClipNode) => void;
+        private _completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void;
+        private _animCompleted: (skeletonClipNode: SkeletonClipNode) => void;
 
         /**
          * 加载资源
@@ -17,14 +15,12 @@ module feng3d
          */
         public load(url: string, completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void = null)
         {
-
-            this.url = url
-            this.completed = completed;
+            this._url = url
+            this._completed = completed;
 
             var loader = new Loader();
             loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent)
             {
-
                 var objData = MD5MeshParser.parse(e.data.content);
 
                 this.createMD5Mesh(objData);
@@ -34,14 +30,12 @@ module feng3d
 
         public loadAnim(url: string, completed: (object3D: SkeletonClipNode) => void = null)
         {
-
-            this.url = url
-            this.animCompleted = completed;
+            this._url = url
+            this._animCompleted = completed;
 
             var loader = new Loader();
             loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent)
             {
-
                 var objData = MD5AnimParser.parse(e.data.content);
 
                 this.createAnimator(objData);
@@ -52,7 +46,6 @@ module feng3d
         private _skeleton: Skeleton;
         private createMD5Mesh(md5MeshData: MD5MeshData)
         {
-
             var object3D = new Object3D();
 
             //顶点最大关节关联数
@@ -74,9 +67,9 @@ module feng3d
                 object3D.addChild(skeletonObject3D);
             }
 
-            if (this.completed)
+            if (this._completed)
             {
-                this.completed(object3D, skeletonAnimator);
+                this._completed(object3D, skeletonAnimator);
             }
         }
 
@@ -132,7 +125,6 @@ module feng3d
 
         private createSkeleton(joints: MD5_Joint[])
         {
-
             var skeleton: Skeleton = new Skeleton();
             for (var i = 0; i < joints.length; i++)
             {
@@ -163,7 +155,6 @@ module feng3d
 
         private createGeometry(md5Mesh: MD5_Mesh)
         {
-
             var vertexData = md5Mesh.verts;
             var weights = md5Mesh.weights;
             var indices = md5Mesh.tris;
@@ -264,16 +255,15 @@ module feng3d
 
         private createAnimator(md5AnimData: MD5AnimData)
         {
-
             var object = new Object3D();
 
             var _clip = new SkeletonClipNode();
             for (var i: number = 0; i < md5AnimData.numFrames; ++i)
                 _clip.addFrame(this.translatePose(md5AnimData, md5AnimData.frame[i]), 1000 / md5AnimData.frameRate);
 
-            if (this.animCompleted)
+            if (this._animCompleted)
             {
-                this.animCompleted(_clip);
+                this._animCompleted(_clip);
             }
         }
 

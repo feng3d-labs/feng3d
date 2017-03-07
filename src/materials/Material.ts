@@ -23,7 +23,6 @@ module feng3d
          */
         constructor()
         {
-
             super();
         }
 
@@ -34,12 +33,12 @@ module feng3d
         {
             super.updateRenderData(renderContext);
             //
-            this.renderData.shaderParams.renderMode = this.renderMode;
+            this._renderData.shaderParams.renderMode = this.renderMode;
             //
             if (this.shaderName)
             {
-                this.renderData.vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
-                this.renderData.fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");
+                this._renderData.vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
+                this._renderData.fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");
             }
         }
     }

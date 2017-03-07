@@ -8,14 +8,13 @@ module feng3d
     export class PointMaterial extends Material
     {
 
-        pointSize = 1;
+        public pointSize = 1;
 
         /**
          * 构建颜色材质
          */
         constructor()
         {
-
             super();
             this.shaderName = "point";
             this.renderMode = RenderMode.POINTS;
@@ -28,7 +27,7 @@ module feng3d
         {
             super.updateRenderData(renderContext);
 
-            this.renderData.uniforms[RenderDataID.u_PointSize] = this.pointSize;
+            this._renderData.uniforms[RenderDataID.u_PointSize] = this.pointSize;
         }
     }
 }

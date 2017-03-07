@@ -1,6 +1,5 @@
 module feng3d
 {
-
 	/**
 	 * 骨骼数据
 	 * @author feng 2014-5-20

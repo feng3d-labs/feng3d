@@ -7,7 +7,6 @@ module feng3d
      */
     export class PointGeometry extends Geometry
     {
-
         /**
          * 几何体是否变脏
          */
@@ -26,7 +25,6 @@ module feng3d
 		 */
         public addPoint(point: PointInfo, needUpdateGeometry: boolean = true)
         {
-
             this._points.push(point);
             this.geometryDirty = true;
             this.updateGeometry();
@@ -37,7 +35,6 @@ module feng3d
          */
         public updateGeometry()
         {
-
             this.geometryDirty = false;
 
             var positionStep = 3;
@@ -47,7 +44,6 @@ module feng3d
 
             for (var i = 0; i < numPoints; i++)
             {
-
                 var element = this._points[i];
                 indices[i] = i;
                 positionData.set(element.positionData, i * positionStep);
@@ -74,7 +70,6 @@ module feng3d
 		 */
         public removeAllPoints()
         {
-
             this.points.length = 0;
             this.geometryDirty = true;
         }
@@ -84,7 +79,6 @@ module feng3d
 		 */
         public get points(): PointInfo[]
         {
-
             return this._points;
         }
     }
@@ -104,7 +98,6 @@ module feng3d
 		 */
         constructor(position: Vector3D)
         {
-
             this.position = position;
         }
 
@@ -113,7 +106,6 @@ module feng3d
          */
         public get positionData()
         {
-
             return [this.position.x, this.position.y, this.position.z];
         }
     }

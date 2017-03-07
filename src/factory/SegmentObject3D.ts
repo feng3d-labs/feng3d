@@ -1,6 +1,5 @@
 module feng3d
 {
-
     /**
      * 线条3D对象
      * @author feng 2017-02-06

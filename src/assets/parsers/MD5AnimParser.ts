@@ -58,10 +58,8 @@ module feng3d
 
     export class MD5AnimParser
     {
-
-        static parse(context: string)
+        public static parse(context: string)
         {
-
             var md5AnimData = <MD5AnimData>{};
             var lines = context.split("\n").reverse();
             do

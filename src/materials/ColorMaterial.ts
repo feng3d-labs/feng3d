@@ -20,7 +20,6 @@ module feng3d
          */
         constructor(color: Color = null)
         {
-
             super();
             this.shaderName = "color";
             this.color = color || new Color();
@@ -32,7 +31,7 @@ module feng3d
         public updateRenderData(renderContext: RenderContext)
         {
             super.updateRenderData(renderContext);
-            this.renderData.uniforms[RenderDataID.u_diffuseInput] = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
+            this._renderData.uniforms[RenderDataID.u_diffuseInput] = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
         }
     }
 }

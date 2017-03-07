@@ -7,7 +7,6 @@ module feng3d
 	 */
     export class IndexRenderData
     {
-
         /**
          * 索引数据
          */
@@ -40,7 +39,6 @@ module feng3d
 	 */
     export class AttributeRenderData
     {
-
         /**
          * 属性数据
          */
@@ -58,7 +56,6 @@ module feng3d
 
         constructor(data: Float32Array = null, stride: number = 3, divisor: number = 0)
         {
-
             this.data = data;
             this.stride = stride;
             this.divisor = divisor;
@@ -68,9 +65,8 @@ module feng3d
          * 获取或创建数据
          * @param num   数据数量
          */
-        getOrCreateData(num: number)
+        public getOrCreateData(num: number)
         {
-
             if (this.data == null || this.data.length != num * this.stride)
             {
                 this.data = new Float32Array(num * this.stride);

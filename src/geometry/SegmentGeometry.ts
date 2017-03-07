@@ -21,7 +21,6 @@ module feng3d
 		 */
         public addSegment(segment: Segment, needUpdateGeometry: boolean = true)
         {
-
             this._segments.push(segment);
             this.geometryDirty = true;
             needUpdateGeometry && this.updateGeometry();
@@ -32,7 +31,6 @@ module feng3d
          */
         public updateGeometry()
         {
-
             this.geometryDirty = false;
 
             var segmentPositionStep = 6;
@@ -44,7 +42,6 @@ module feng3d
 
             for (var i = 0; i < numSegments; i++)
             {
-
                 var element = this._segments[i];
                 indices.set([i * 2, i * 2 + 1], i * 2);
                 positionData.set(element.positionData, i * segmentPositionStep);
@@ -73,7 +70,6 @@ module feng3d
 		 */
         public removeAllSegments()
         {
-
             this.segments.length = 0;
             this.geometryDirty = true;
         }
@@ -83,7 +79,6 @@ module feng3d
 		 */
         public get segments(): Segment[]
         {
-
             return this._segments;
         }
     }
@@ -94,7 +89,6 @@ module feng3d
      */
     export class Segment
     {
-
         public thickness: number;
         public start: Vector3D;
         public end: Vector3D;
@@ -111,7 +105,6 @@ module feng3d
 		 */
         constructor(start: Vector3D, end: Vector3D, colorStart: number = 0x333333, colorEnd: number = 0x333333, thickness: number = 1)
         {
-
             this.thickness = thickness * .5;
             this.start = start;
             this.end = end;
@@ -126,7 +119,6 @@ module feng3d
          */
         public get positionData()
         {
-
             return [this.start.x, this.start.y, this.start.z, this.end.x, this.end.y, this.end.z];
         }
 
@@ -135,7 +127,6 @@ module feng3d
          */
         public get colorData()
         {
-
             return this.startColor.asArray().concat(this.endColor.asArray());
         }
     }

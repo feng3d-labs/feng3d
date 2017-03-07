@@ -1,16 +1,14 @@
 module feng3d
 {
-
     /**
      * Obj模型加载类
      * @author feng 2017-01-18
      */
     export class ObjLoader extends Loader
     {
-
-        objData: OBJ_OBJData;
-        mtlData: Mtl_Mtl;
-        completed: (object3D: Object3D) => void;
+        private _objData: OBJ_OBJData;
+        private _mtlData: Mtl_Mtl;
+        private _completed: (object3D: Object3D) => void;
 
         /**
          * 加载资源
@@ -18,14 +16,12 @@ module feng3d
          */
         public load(url: string, completed: (object3D: Object3D) => void = null)
         {
-
-            this.url = url
-            this.completed = completed;
+            this._url = url
+            this._completed = completed;
 
             var loader = new Loader();
             loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent)
             {
-
                 var objData = this.objData = OBJParser.parser(e.data.content);
 
                 var mtl = objData.mtl;
@@ -49,9 +45,8 @@ module feng3d
 
         private createObj()
         {
-
             var object = new Object3D();
-            var objData = this.objData;
+            var objData = this._objData;
             var objs = objData.objs;
             for (var i = 0; i < objs.length; i++)
             {
@@ -59,15 +54,14 @@ module feng3d
                 var object3D = this.createSubObj(obj);
                 object.addChild(object3D);
             }
-            if (this.completed)
+            if (this._completed)
             {
-                this.completed(object);
+                this._completed(object);
             }
         }
 
         private createSubObj(obj: OBJ_OBJ)
         {
-
             var object3D = new Object3D(obj.name);
             var vertex = new Float32Array(obj.vertex);
 
@@ -75,7 +69,6 @@ module feng3d
 
             for (var i = 0; i < subObjs.length; i++)
             {
-
                 var materialObj = this.createMaterialObj(vertex, subObjs[i]);
                 object3D.addChild(materialObj);
             }
@@ -105,9 +98,9 @@ module feng3d
             geometry.setIndices(new Uint16Array(indices));
             var material = object3D.getOrCreateComponentByClass(MeshRenderer).material = new ColorMaterial();
 
-            if (this.mtlData && this.mtlData[subObj.material])
+            if (this._mtlData && this._mtlData[subObj.material])
             {
-                var materialInfo = this.mtlData[subObj.material];
+                var materialInfo = this._mtlData[subObj.material];
                 var kd = materialInfo.kd;
                 material.color.r = kd[0];
                 material.color.g = kd[1];

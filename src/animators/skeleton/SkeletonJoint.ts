@@ -23,10 +23,8 @@ module feng3d
 
         public get matrix3D()
         {
-
             if (!this._matrix3D)
             {
-
                 this._matrix3D = this.orientation.toMatrix3D();
                 this._matrix3D.appendTranslation(this.translation.x, this.translation.y, this.translation.z);
             }
@@ -50,7 +48,6 @@ module feng3d
 
         public invalid()
         {
-
             this._matrix3D = null;
             this._invertMatrix3D = null;
         }

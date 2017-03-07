@@ -11,15 +11,15 @@ module feng3d
         /**
          * 值类型宏
          */
-        valueMacros = new ValueMacros();
+        public valueMacros = new ValueMacros();
         /**
          * Boolean类型宏
          */
-        boolMacros = new BoolMacros();
+        public boolMacros = new BoolMacros();
         /**
          * 递增类型宏
          */
-        addMacros = new IAddMacros();
+        public addMacros = new IAddMacros();
     }
 
     /**
@@ -32,12 +32,12 @@ module feng3d
         /** 
          * 点光源数量
          */
-        NUM_POINTLIGHT: number;
+        public NUM_POINTLIGHT: number;
 
         /**
          * 骨骼关节数量
          */
-        NUM_SKELETONJOINT: number;
+        public NUM_SKELETONJOINT: number;
     }
 
     /**
@@ -58,19 +58,19 @@ module feng3d
         /** 
          * 是否需要属性uv
          */
-        A_UV_NEED: number = 0;
+        public A_UV_NEED: number = 0;
         /** 
          * 是否需要变量uv
          */
-        V_UV_NEED: number = 0;
+        public V_UV_NEED: number = 0;
         /** 
          * 是否需要变量全局坐标
          */
-        V_GLOBAL_POSITION_NEED: number = 0;
+        public V_GLOBAL_POSITION_NEED: number = 0;
         /**
          * 是否需要属性法线
          */
-        A_NORMAL_NEED: number = 0;
+        public A_NORMAL_NEED: number = 0;
         /**
          * 是否需要变量法线
          */
@@ -78,6 +78,6 @@ module feng3d
         /**
          * 是否需要摄像机矩阵
          */
-        U_CAMERAmATRIX_NEED: number = 0;
+        public U_CAMERAmATRIX_NEED: number = 0;
     }
 }

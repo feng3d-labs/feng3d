@@ -7,8 +7,7 @@ module feng3d
      */
     export class RenderContext
     {
-
-        protected renderData = new RenderData();
+        protected _renderData = new RenderData();
 
         /**
          * 摄像机
@@ -25,7 +24,6 @@ module feng3d
 		 */
         public updateRenderData(object3D: Object3D)
         {
-
             var pointLights: Light[] = [];
             this.camera.updateRenderData(this);
             var light: Light;
@@ -48,17 +46,17 @@ module feng3d
                 pointLightIntensitys.push(light.intensity);
             }
             //设置点光源数据
-            this.renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
+            this._renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
             if (pointLights.length > 0)
             {
-                this.renderData.shaderMacro.addMacros.A_NORMAL_NEED = 1;
-                this.renderData.shaderMacro.addMacros.V_NORMAL_NEED = 1;
-                this.renderData.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
-                this.renderData.shaderMacro.addMacros.U_CAMERAmATRIX_NEED = 1;
+                this._renderData.shaderMacro.addMacros.A_NORMAL_NEED = 1;
+                this._renderData.shaderMacro.addMacros.V_NORMAL_NEED = 1;
+                this._renderData.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
+                this._renderData.shaderMacro.addMacros.U_CAMERAmATRIX_NEED = 1;
                 //
-                this.renderData.uniforms[RenderDataID.u_pointLightPositions] = pointLightPositions;
-                this.renderData.uniforms[RenderDataID.u_pointLightColors] = pointLightDiffuses;
-                this.renderData.uniforms[RenderDataID.u_pointLightIntensitys] = pointLightIntensitys;
+                this._renderData.uniforms[RenderDataID.u_pointLightPositions] = pointLightPositions;
+                this._renderData.uniforms[RenderDataID.u_pointLightColors] = pointLightDiffuses;
+                this._renderData.uniforms[RenderDataID.u_pointLightIntensitys] = pointLightIntensitys;
             }
         }
 
@@ -68,8 +66,7 @@ module feng3d
 		 */
         public activate(renderData: RenderAtomic)
         {
-
-            RenderDataUtil.active(renderData, this.renderData);
+            RenderDataUtil.active(renderData, this._renderData);
             this.camera.activate(renderData);
         }
 
@@ -79,8 +76,7 @@ module feng3d
 		 */
         public deactivate(renderData: RenderAtomic)
         {
-
-            RenderDataUtil.deactivate(renderData, this.renderData);
+            RenderDataUtil.deactivate(renderData, this._renderData);
             this.camera.deactivate(renderData);
         }
 
@@ -89,7 +85,6 @@ module feng3d
          */
         public clear()
         {
-
             this.camera = null;
             this.lights = [];
         }

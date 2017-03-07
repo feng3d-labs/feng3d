@@ -8,7 +8,7 @@ module feng3d
     export class MouseRenderer extends Renderer
     {
 
-        private shaderName = "mouse";
+        private _shaderName = "mouse";
         public selectedObject3D: Object3D;
 
         constructor()
@@ -55,8 +55,8 @@ module feng3d
          */
         protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string)
         {
-            vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
-            fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");
+            vertexCode = ShaderLib.getShaderCode(this._shaderName + ".vertex");
+            fragmentCode = ShaderLib.getShaderCode(this._shaderName + ".fragment");
             return super.activeShaderProgram(context3D, vertexCode, fragmentCode);
         }
     }

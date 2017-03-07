@@ -11,7 +11,7 @@ module feng3d
         /**
          * 优先级
          */
-        priority: number = 0;
+        public priority: number = 0;
 
         /**
 		 * 创建粒子属性

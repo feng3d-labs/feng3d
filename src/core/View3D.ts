@@ -60,7 +60,7 @@ module feng3d
             this.defaultRenderer = new ForwardRenderer();
             this.mouse3DManager = new Mouse3DManager();
 
-            $ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
+            ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
         }
 
         /**

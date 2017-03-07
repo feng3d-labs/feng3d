@@ -103,8 +103,8 @@ module feng3d
             }
 
             this.time = ((getTimer() - this.startTime) / 1000) % this.cycle;
-            this.renderData.uniforms[RenderDataID.u_particleTime] = this.time;
-            this.renderData.instanceCount = this.numParticles;
+            this._renderData.uniforms[RenderDataID.u_particleTime] = this.time;
+            this._renderData.instanceCount = this.numParticles;
 
             this.autoRenderDataHolder.update(this.particleGlobal);
             super.updateRenderData(renderContext);
@@ -130,16 +130,16 @@ module feng3d
         public update(particleGlobal: ParticleGlobal)
         {
 
-            this.renderData.uniforms = {};
+            this._renderData.uniforms = {};
             //更新常量数据
             for (var uniform in particleGlobal)
             {
-                this.renderData.uniforms["u_particle_" + uniform] = particleGlobal[uniform];
+                this._renderData.uniforms["u_particle_" + uniform] = particleGlobal[uniform];
             }
 
             //更新宏定义
-            var boolMacros = this.renderData.shaderMacro.boolMacros = <any>{};
-            for (var attribute in this.renderData.attributes)
+            var boolMacros = this._renderData.shaderMacro.boolMacros = <any>{};
+            for (var attribute in this._renderData.attributes)
             {
                 boolMacros["D_" + attribute] = true;
             }
@@ -163,7 +163,7 @@ module feng3d
             var index = particle.index;
             var numParticles = particle.total;
             //
-            var attributes = this.renderData.attributes;
+            var attributes = this._renderData.attributes;
             var attributeRenderData = attributes[attributeID];
             var vector3DData: Float32Array;
             if (typeof data == "number")
