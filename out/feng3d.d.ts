@@ -2426,28 +2426,28 @@ declare module feng3d {
         /**
          * 通过将另一个 Matrix3D 对象与当前 Matrix3D 对象相乘来后置一个矩阵。
          */
-        append(lhs: Matrix3D): void;
+        append(lhs: Matrix3D): this;
         /**
          * 在 Matrix3D 对象上后置一个增量旋转。
          * @param   degrees         角度
          * @param   axis            旋转轴
          * @param   pivotPoint      旋转中心点
          */
-        appendRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
+        appendRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): this;
         /**
          * 在 Matrix3D 对象上后置一个增量缩放，沿 x、y 和 z 轴改变位置。
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
          * @param   yScale      用于沿 y 轴缩放对象的乘数。
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
-        appendScale(xScale: number, yScale: number, zScale: number): void;
+        appendScale(xScale: number, yScale: number, zScale: number): this;
         /**
          * 在 Matrix3D 对象上后置一个增量平移，沿 x、y 和 z 轴重新定位。
          * @param   x   沿 x 轴的增量平移。
          * @param   y   沿 y 轴的增量平移。
          * @param   z   沿 z 轴的增量平移。
          */
-        appendTranslation(x: number, y: number, z: number): void;
+        appendTranslation(x: number, y: number, z: number): this;
         /**
          * 返回一个新 Matrix3D 对象，它是与当前 Matrix3D 对象完全相同的副本。
          */
@@ -2457,49 +2457,49 @@ declare module feng3d {
          * @param   column      副本的目标列。
          * @param   vector3D    要从中复制数据的 Vector3D 对象。
          */
-        copyColumnFrom(column: number, vector3D: Vector3D): void;
+        copyColumnFrom(column: number, vector3D: Vector3D): this;
         /**
          * 将调用方 Matrix3D 对象的特定列复制到 Vector3D 对象中。
          * @param   column       要从中复制数据的列。
          * @param   vector3D     副本的目标 Vector3D 对象。
          */
-        copyColumnTo(column: number, vector3D: Vector3D): void;
+        copyColumnTo(column: number, vector3D: Vector3D): this;
         /**
          * 将源 Matrix3D 对象中的所有矩阵数据复制到调用方 Matrix3D 对象中。
          * @param   sourceMatrix3D      要从中复制数据的 Matrix3D 对象。
          */
-        copyFrom(sourceMatrix3D: Matrix3D): void;
+        copyFrom(sourceMatrix3D: Matrix3D): this;
         /**
          * 将源 Vector 对象中的所有矢量数据复制到调用方 Matrix3D 对象中。利用可选索引参数，您可以选择矢量中的任何起始文字插槽。
          * @param   vector      要从中复制数据的 Vector 对象。
          * @param   index       vector中的起始位置
          * @param   transpose   是否转置当前矩阵
          */
-        copyRawDataFrom(vector: Float32Array, index?: number, transpose?: boolean): void;
+        copyRawDataFrom(vector: Float32Array, index?: number, transpose?: boolean): this;
         /**
          * 将调用方 Matrix3D 对象中的所有矩阵数据复制到提供的矢量中。
          * @param   vector      要将数据复制到的 Vector 对象。
          * @param   index       vector中的起始位置
          * @param   transpose   是否转置当前矩阵
          */
-        copyRawDataTo(vector: Array<number>, index?: number, transpose?: boolean): void;
+        copyRawDataTo(vector: Array<number>, index?: number, transpose?: boolean): this;
         /**
          * 将 Vector3D 对象复制到调用方 Matrix3D 对象的特定行中。
          * @param   row         要将数据复制到的行。
          * @param   vector3D    要从中复制数据的 Vector3D 对象。
          */
-        copyRowFrom(row: number, vector3D: Vector3D): void;
+        copyRowFrom(row: number, vector3D: Vector3D): this;
         /**
          * 将调用方 Matrix3D 对象的特定行复制到 Vector3D 对象中。
          * @param   row         要从中复制数据的行。
          * @param   vector3D    将作为数据复制目的地的 Vector3D 对象。
          */
-        copyRowTo(row: number, vector3D: Vector3D): void;
+        copyRowTo(row: number, vector3D: Vector3D): this;
         /**
          * 拷贝当前矩阵
          * @param   dest    目标矩阵
          */
-        copyToMatrix3D(dest: Matrix3D): void;
+        copyToMatrix3D(dest: Matrix3D): this;
         /**
          * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3D 对象组成的矢量返回。
          * @return      一个由三个 Vector3D 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
@@ -2514,43 +2514,58 @@ declare module feng3d {
         /**
          * 将当前矩阵转换为恒等或单位矩阵。
          */
-        identity(): void;
+        identity(): this;
         /**
          * 反转当前矩阵。逆矩阵
-         * @return      如果成功反转矩阵，则返回 true。
+         * @return      如果成功反转矩阵，则返回 该矩阵。
          */
-        invert(): boolean;
+        invert(): this;
         /**
          * 通过将当前 Matrix3D 对象与另一个 Matrix3D 对象相乘来前置一个矩阵。得到的结果将合并两个矩阵转换。
          * @param   rhs     个右侧矩阵，它与当前 Matrix3D 对象相乘。
          */
-        prepend(rhs: Matrix3D): void;
+        prepend(rhs: Matrix3D): this;
         /**
          * 在 Matrix3D 对象上前置一个增量旋转。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行旋转，然后再执行其他转换。
          * @param   degrees     旋转的角度。
          * @param   axis        旋转的轴或方向。常见的轴为 X_AXIS (Vector3D(1,0,0))、Y_AXIS (Vector3D(0,1,0)) 和 Z_AXIS (Vector3D(0,0,1))。此矢量的长度应为 1。
          * @param   pivotPoint  一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
          */
-        prependRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
+        prependRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): this;
         /**
          * 在 Matrix3D 对象上前置一个增量缩放，沿 x、y 和 z 轴改变位置。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行缩放更改，然后再执行其他转换。
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
          * @param   yScale      用于沿 y 轴缩放对象的乘数。
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
-        prependScale(xScale: number, yScale: number, zScale: number): void;
+        prependScale(xScale: number, yScale: number, zScale: number): this;
         /**
          * 在 Matrix3D 对象上前置一个增量平移，沿 x、y 和 z 轴重新定位。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行平移更改，然后再执行其他转换。
          * @param   x   沿 x 轴的增量平移。
          * @param   y   沿 y 轴的增量平移。
          * @param   z   沿 z 轴的增量平移。
          */
-        prependTranslation(x: number, y: number, z: number): void;
+        prependTranslation(x: number, y: number, z: number): this;
+        /**
+         * X轴方向移动
+         * @param distance  移动距离
+         */
+        moveRight(distance: number): this;
+        /**
+         * Y轴方向移动
+         * @param distance  移动距离
+         */
+        moveUp(distance: number): this;
+        /**
+         * Z轴方向移动
+         * @param distance  移动距离
+         */
+        moveForward(distance: number): this;
         /**
          * 设置转换矩阵的平移、旋转和缩放设置。
          * @param   components      一个由三个 Vector3D 对象组成的矢量，这些对象将替代 Matrix3D 对象的平移、旋转和缩放元素。
          */
-        recompose(components: Vector3D[]): void;
+        recompose(components: Vector3D[]): this;
         /**
          * 使用转换矩阵将 Vector3D 对象从一个空间坐标转换到另一个空间坐标。
          * @param   vin   一个容纳要转换的坐标的 Vector3D 对象。
@@ -3674,8 +3689,8 @@ declare module feng3d {
         protected _sz: number;
         protected _matrix3D: Matrix3D;
         protected _matrix3DDirty: boolean;
-        private _inverseMatrix3D;
-        private _inverseMatrix3DDirty;
+        protected _inverseMatrix3D: Matrix3D;
+        protected _inverseMatrix3DDirty: boolean;
         /**
          * 全局矩阵是否变脏
          */
@@ -3684,8 +3699,8 @@ declare module feng3d {
          * 全局矩阵
          */
         protected _globalMatrix3D: Matrix3D;
-        private _inverseGlobalMatrix3DDirty;
-        private _inverseGlobalMatrix3D;
+        protected _inverseGlobalMatrix3DDirty: boolean;
+        protected _inverseGlobalMatrix3D: Matrix3D;
         /**
          * 构建变换
          * @param x X坐标
@@ -3774,36 +3789,6 @@ declare module feng3d {
          */
         readonly inverseGlobalMatrix3D: Matrix3D;
         /**
-         * X轴方向移动
-         * @param distance  移动距离
-         */
-        xMove(distance: number): void;
-        /**
-         * Y轴方向移动
-         * @param distance  移动距离
-         */
-        yMove(distance: number): void;
-        /**
-         * Z轴方向移动
-         * @param distance  移动距离
-         */
-        zMove(distance: number): void;
-        /**
-         * X轴全局方向移动
-         * @param distance  移动距离
-         */
-        xGlobalMove(distance: number): void;
-        /**
-         * Y轴全局方向移动
-         * @param distance  移动距离
-         */
-        yGlobalMove(distance: number): void;
-        /**
-         * Z轴全局方向移动
-         * @param distance  移动距离
-         */
-        zGlobalMove(distance: number): void;
-        /**
          * 变换矩阵
          */
         protected updateMatrix3D(): void;
@@ -3822,16 +3807,16 @@ declare module feng3d {
         /**
          * 更新逆全局矩阵
          */
-        private updateInverseGlobalMatrix3D();
+        protected updateInverseGlobalMatrix3D(): void;
         /**
          * 通知全局变换改变
          */
-        private notifySceneTransformChange();
+        protected notifySceneTransformChange(): void;
         /**
          * 全局变换矩阵失效
          * @private
          */
-        invalidateGlobalMatrix3D(): void;
+        protected invalidateGlobalMatrix3D(): void;
         /**
          * 更新渲染数据
          */

@@ -22,7 +22,6 @@ module feng3d
      */
     export class Matrix3D
     {
-
         /**
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
@@ -48,7 +47,6 @@ module feng3d
          */
         public get determinant(): number
         {
-
             return (//
                 (this.rawData[0] * this.rawData[5] - this.rawData[4] * this.rawData[1]) * (this.rawData[10] * this.rawData[15] - this.rawData[14] * this.rawData[11]) //
                 - (this.rawData[0] * this.rawData[9] - this.rawData[8] * this.rawData[1]) * (this.rawData[6] * this.rawData[15] - this.rawData[14] * this.rawData[7]) //
@@ -64,7 +62,6 @@ module feng3d
          */
         public get forward(): Vector3D
         {
-
             var v = new Vector3D(0.0, 0.0, 0.0);
 
             this.copyColumnTo(2, v);
@@ -77,7 +74,6 @@ module feng3d
          */
         public get up(): Vector3D
         {
-
             var v = new Vector3D();
             this.copyColumnTo(1, v);
             v.normalize();
@@ -89,7 +85,6 @@ module feng3d
          */
         public get right(): Vector3D
         {
-
             var v = new Vector3D();
             this.copyColumnTo(0, v);
             v.normalize();
@@ -102,7 +97,6 @@ module feng3d
          */
         constructor(datas: Float32Array | number[] = null)
         {
-
             datas = datas || [//
                 1, 0, 0, 0,// 
                 0, 1, 0, 0,// 
@@ -126,7 +120,6 @@ module feng3d
          */
         public static createRotationMatrix3D(degrees: number, axis: Vector3D): Matrix3D
         {
-
             var n = axis.clone();
             n.normalize();
             var q = degrees * Math.PI / 180;
@@ -152,7 +145,6 @@ module feng3d
          */
         public static createScaleMatrix3D(xScale: number, yScale: number, zScale: number): Matrix3D
         {
-
             var rotationMat: Matrix3D = new Matrix3D([//
                 xScale, 0.0000, 0.0000, 0,//
                 0.0000, yScale, 0.0000, 0,//
@@ -170,7 +162,6 @@ module feng3d
          */
         public static createTranslationMatrix3D(x: number, y: number, z: number): Matrix3D
         {
-
             var rotationMat: Matrix3D = new Matrix3D([//
                 1, 0, 0, 0,//
                 0, 1, 0, 0,//
@@ -215,6 +206,7 @@ module feng3d
             this.rawData[13] = m141 * m212 + m142 * m222 + m143 * m232 + m144 * m242;
             this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
             this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
+            return this;
         }
 
         /**
@@ -225,7 +217,6 @@ module feng3d
          */
         public appendRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = new Vector3D())
         {
-
             var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
 
             if (pivotPoint != null)
@@ -239,6 +230,7 @@ module feng3d
             {
                 this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z)
             }
+            return this;
         }
 
         /**
@@ -249,9 +241,9 @@ module feng3d
          */
         public appendScale(xScale: number, yScale: number, zScale: number)
         {
-
             var scaleMat = Matrix3D.createScaleMatrix3D(xScale, yScale, zScale);
             this.append(scaleMat);
+            return this;
         }
 
         /**
@@ -265,6 +257,7 @@ module feng3d
             this.rawData[12] += x;
             this.rawData[13] += y;
             this.rawData[14] += z;
+            return this;
         }
 
         /**
@@ -288,6 +281,7 @@ module feng3d
             this.rawData[column * 4 + 1] = vector3D.y;
             this.rawData[column * 4 + 2] = vector3D.z;
             this.rawData[column * 4 + 3] = vector3D.w;
+            return this;
         }
 
         /**
@@ -301,6 +295,7 @@ module feng3d
             vector3D.y = this.rawData[column * 4 + 1];
             vector3D.z = this.rawData[column * 4 + 2];
             vector3D.w = this.rawData[column * 4 + 3];
+            return this;
         }
 
         /**
@@ -310,6 +305,7 @@ module feng3d
         public copyFrom(sourceMatrix3D: Matrix3D)
         {
             this.rawData.set(sourceMatrix3D.rawData);
+            return this;
         }
 
         /**
@@ -336,6 +332,7 @@ module feng3d
             {
                 this.transpose();
             }
+            return this;
         }
 
         /**
@@ -358,6 +355,7 @@ module feng3d
             {
                 this.transpose();
             }
+            return this;
         }
 
         /**
@@ -367,11 +365,11 @@ module feng3d
          */
         public copyRowFrom(row: number, vector3D: Vector3D)
         {
-
             this.rawData[row + 4 * 0] = vector3D.x;
             this.rawData[row + 4 * 1] = vector3D.y;
             this.rawData[row + 4 * 2] = vector3D.z;
             this.rawData[row + 4 * 3] = vector3D.w;
+            return this;
         }
 
         /**
@@ -381,11 +379,11 @@ module feng3d
          */
         public copyRowTo(row: number, vector3D: Vector3D)
         {
-
             vector3D.x = this.rawData[row + 4 * 0];
             vector3D.y = this.rawData[row + 4 * 1];
             vector3D.z = this.rawData[row + 4 * 2];
             vector3D.w = this.rawData[row + 4 * 3];
+            return this;
         }
 
         /**
@@ -395,6 +393,7 @@ module feng3d
         public copyToMatrix3D(dest: Matrix3D)
         {
             dest.rawData.set(this.rawData);
+            return this;
         }
 
         /**
@@ -459,7 +458,6 @@ module feng3d
          */
         public deltaTransformVector(v: Vector3D): Vector3D
         {
-
             var tempx = this.rawData[12];
             var tempy = this.rawData[13];
             var tempz = this.rawData[14];
@@ -499,13 +497,14 @@ module feng3d
             this.rawData[5] = 1;
             this.rawData[10] = 1;
             this.rawData[15] = 1;
+            return this;
         }
 
         /**
          * 反转当前矩阵。逆矩阵
-         * @return      如果成功反转矩阵，则返回 true。
+         * @return      如果成功反转矩阵，则返回 该矩阵。
          */
-        public invert(): boolean
+        public invert()
         {
             var d = this.determinant;
             var invertable = Math.abs(d) > 0.00000000001;
@@ -547,7 +546,9 @@ module feng3d
                 this.rawData[14] = -d * (m11 * (m22 * m43 - m42 * m23) - m21 * (m12 * m43 - m42 * m13) + m41 * (m12 * m23 - m22 * m13));
                 this.rawData[15] = d * (m11 * (m22 * m33 - m32 * m23) - m21 * (m12 * m33 - m32 * m13) + m31 * (m12 * m23 - m22 * m13));
             }
-            return invertable;
+            if (invertable)
+                return this;
+            return null;
         }
 
         /**
@@ -556,10 +557,10 @@ module feng3d
          */
         public prepend(rhs: Matrix3D)
         {
-
             var mat = this.clone();
             this.copyFrom(rhs);
             this.append(mat);
+            return this;
         }
 
         /**
@@ -570,9 +571,9 @@ module feng3d
          */
         public prependRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = new Vector3D())
         {
-
             var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
             this.prepend(rotationMat);
+            return this;
         }
 
         /**
@@ -583,9 +584,9 @@ module feng3d
          */
         public prependScale(xScale: number, yScale: number, zScale: number)
         {
-
             var scaleMat = Matrix3D.createScaleMatrix3D(xScale, yScale, zScale);
             this.prepend(scaleMat);
+            return this;
         }
 
         /**
@@ -596,24 +597,60 @@ module feng3d
          */
         public prependTranslation(x: number, y: number, z: number)
         {
-
             var translationMat = Matrix3D.createTranslationMatrix3D(x, y, z);
             this.prepend(translationMat);
+            return this;
+        }
+
+        /**
+         * X轴方向移动
+         * @param distance  移动距离
+         */
+        public moveRight(distance: number)
+        {
+            var direction = this.right;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+            return this;
+        }
+
+        /**
+         * Y轴方向移动
+         * @param distance  移动距离
+         */
+        public moveUp(distance: number)
+        {
+            var direction = this.up;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+            return this;
+        }
+
+        /**
+         * Z轴方向移动
+         * @param distance  移动距离
+         */
+        public moveForward(distance: number)
+        {
+            var direction = this.forward;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+            return this;
         }
 
         /**
          * 设置转换矩阵的平移、旋转和缩放设置。
          * @param   components      一个由三个 Vector3D 对象组成的矢量，这些对象将替代 Matrix3D 对象的平移、旋转和缩放元素。
          */
-        public recompose(components: Vector3D[]): void
+        public recompose(components: Vector3D[])
         {
-
             this.identity();
             this.appendScale(components[2].x, components[2].y, components[2].z);
             this.appendRotation(components[1].x * MathConsts.RADIANS_TO_DEGREES, Vector3D.X_AXIS);
             this.appendRotation(components[1].y * MathConsts.RADIANS_TO_DEGREES, Vector3D.Y_AXIS);
             this.appendRotation(components[1].z * MathConsts.RADIANS_TO_DEGREES, Vector3D.Z_AXIS);
             this.appendTranslation(components[0].x, components[0].y, components[0].z);
+            return this;
         }
 
         /**
@@ -623,7 +660,6 @@ module feng3d
          */
         public transformVector(vin: Vector3D, vout?: Vector3D): Vector3D
         {
-
             var x: number = vin.x;
             var y: number = vin.y;
             var z: number = vin.z;
@@ -644,7 +680,6 @@ module feng3d
          */
         public transformVectors(vin: number[], vout: number[])
         {
-
             var vec = new Vector3D();
             for (var i = 0; i < vin.length; i += 3)
             {
@@ -698,7 +733,6 @@ module feng3d
          */
         public lookAt(target: Vector3D, upAxis: Vector3D = null): void
         {
-
             //获取位移，缩放，在变换过程位移与缩放不变
             var vec = this.decompose();
             var position = vec[0];

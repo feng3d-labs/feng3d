@@ -3482,6 +3482,7 @@ var feng3d;
             this.rawData[13] = m141 * m212 + m142 * m222 + m143 * m232 + m144 * m242;
             this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
             this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
+            return this;
         }
         /**
          * 在 Matrix3D 对象上后置一个增量旋转。
@@ -3498,6 +3499,7 @@ var feng3d;
             if (pivotPoint != null) {
                 this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
             }
+            return this;
         }
         /**
          * 在 Matrix3D 对象上后置一个增量缩放，沿 x、y 和 z 轴改变位置。
@@ -3508,6 +3510,7 @@ var feng3d;
         appendScale(xScale, yScale, zScale) {
             var scaleMat = Matrix3D.createScaleMatrix3D(xScale, yScale, zScale);
             this.append(scaleMat);
+            return this;
         }
         /**
          * 在 Matrix3D 对象上后置一个增量平移，沿 x、y 和 z 轴重新定位。
@@ -3519,6 +3522,7 @@ var feng3d;
             this.rawData[12] += x;
             this.rawData[13] += y;
             this.rawData[14] += z;
+            return this;
         }
         /**
          * 返回一个新 Matrix3D 对象，它是与当前 Matrix3D 对象完全相同的副本。
@@ -3538,6 +3542,7 @@ var feng3d;
             this.rawData[column * 4 + 1] = vector3D.y;
             this.rawData[column * 4 + 2] = vector3D.z;
             this.rawData[column * 4 + 3] = vector3D.w;
+            return this;
         }
         /**
          * 将调用方 Matrix3D 对象的特定列复制到 Vector3D 对象中。
@@ -3549,6 +3554,7 @@ var feng3d;
             vector3D.y = this.rawData[column * 4 + 1];
             vector3D.z = this.rawData[column * 4 + 2];
             vector3D.w = this.rawData[column * 4 + 3];
+            return this;
         }
         /**
          * 将源 Matrix3D 对象中的所有矩阵数据复制到调用方 Matrix3D 对象中。
@@ -3556,6 +3562,7 @@ var feng3d;
          */
         copyFrom(sourceMatrix3D) {
             this.rawData.set(sourceMatrix3D.rawData);
+            return this;
         }
         /**
          * 将源 Vector 对象中的所有矢量数据复制到调用方 Matrix3D 对象中。利用可选索引参数，您可以选择矢量中的任何起始文字插槽。
@@ -3576,6 +3583,7 @@ var feng3d;
             if (transpose) {
                 this.transpose();
             }
+            return this;
         }
         /**
          * 将调用方 Matrix3D 对象中的所有矩阵数据复制到提供的矢量中。
@@ -3593,6 +3601,7 @@ var feng3d;
             if (transpose) {
                 this.transpose();
             }
+            return this;
         }
         /**
          * 将 Vector3D 对象复制到调用方 Matrix3D 对象的特定行中。
@@ -3604,6 +3613,7 @@ var feng3d;
             this.rawData[row + 4 * 1] = vector3D.y;
             this.rawData[row + 4 * 2] = vector3D.z;
             this.rawData[row + 4 * 3] = vector3D.w;
+            return this;
         }
         /**
          * 将调用方 Matrix3D 对象的特定行复制到 Vector3D 对象中。
@@ -3615,6 +3625,7 @@ var feng3d;
             vector3D.y = this.rawData[row + 4 * 1];
             vector3D.z = this.rawData[row + 4 * 2];
             vector3D.w = this.rawData[row + 4 * 3];
+            return this;
         }
         /**
          * 拷贝当前矩阵
@@ -3622,6 +3633,7 @@ var feng3d;
          */
         copyToMatrix3D(dest) {
             dest.rawData.set(this.rawData);
+            return this;
         }
         /**
          * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3D 对象组成的矢量返回。
@@ -3703,10 +3715,11 @@ var feng3d;
             this.rawData[5] = 1;
             this.rawData[10] = 1;
             this.rawData[15] = 1;
+            return this;
         }
         /**
          * 反转当前矩阵。逆矩阵
-         * @return      如果成功反转矩阵，则返回 true。
+         * @return      如果成功反转矩阵，则返回 该矩阵。
          */
         invert() {
             var d = this.determinant;
@@ -3746,7 +3759,9 @@ var feng3d;
                 this.rawData[14] = -d * (m11 * (m22 * m43 - m42 * m23) - m21 * (m12 * m43 - m42 * m13) + m41 * (m12 * m23 - m22 * m13));
                 this.rawData[15] = d * (m11 * (m22 * m33 - m32 * m23) - m21 * (m12 * m33 - m32 * m13) + m31 * (m12 * m23 - m22 * m13));
             }
-            return invertable;
+            if (invertable)
+                return this;
+            return null;
         }
         /**
          * 通过将当前 Matrix3D 对象与另一个 Matrix3D 对象相乘来前置一个矩阵。得到的结果将合并两个矩阵转换。
@@ -3756,6 +3771,7 @@ var feng3d;
             var mat = this.clone();
             this.copyFrom(rhs);
             this.append(mat);
+            return this;
         }
         /**
          * 在 Matrix3D 对象上前置一个增量旋转。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行旋转，然后再执行其他转换。
@@ -3766,6 +3782,7 @@ var feng3d;
         prependRotation(degrees, axis, pivotPoint = new feng3d.Vector3D()) {
             var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
             this.prepend(rotationMat);
+            return this;
         }
         /**
          * 在 Matrix3D 对象上前置一个增量缩放，沿 x、y 和 z 轴改变位置。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行缩放更改，然后再执行其他转换。
@@ -3776,6 +3793,7 @@ var feng3d;
         prependScale(xScale, yScale, zScale) {
             var scaleMat = Matrix3D.createScaleMatrix3D(xScale, yScale, zScale);
             this.prepend(scaleMat);
+            return this;
         }
         /**
          * 在 Matrix3D 对象上前置一个增量平移，沿 x、y 和 z 轴重新定位。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行平移更改，然后再执行其他转换。
@@ -3786,6 +3804,37 @@ var feng3d;
         prependTranslation(x, y, z) {
             var translationMat = Matrix3D.createTranslationMatrix3D(x, y, z);
             this.prepend(translationMat);
+            return this;
+        }
+        /**
+         * X轴方向移动
+         * @param distance  移动距离
+         */
+        moveRight(distance) {
+            var direction = this.right;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+            return this;
+        }
+        /**
+         * Y轴方向移动
+         * @param distance  移动距离
+         */
+        moveUp(distance) {
+            var direction = this.up;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+            return this;
+        }
+        /**
+         * Z轴方向移动
+         * @param distance  移动距离
+         */
+        moveForward(distance) {
+            var direction = this.forward;
+            direction.scaleBy(distance);
+            this.position = this.position.add(direction);
+            return this;
         }
         /**
          * 设置转换矩阵的平移、旋转和缩放设置。
@@ -3798,6 +3847,7 @@ var feng3d;
             this.appendRotation(components[1].y * feng3d.MathConsts.RADIANS_TO_DEGREES, feng3d.Vector3D.Y_AXIS);
             this.appendRotation(components[1].z * feng3d.MathConsts.RADIANS_TO_DEGREES, feng3d.Vector3D.Z_AXIS);
             this.appendTranslation(components[0].x, components[0].y, components[0].z);
+            return this;
         }
         /**
          * 使用转换矩阵将 Vector3D 对象从一个空间坐标转换到另一个空间坐标。
@@ -6149,60 +6199,6 @@ var feng3d;
         get inverseGlobalMatrix3D() {
             this._inverseGlobalMatrix3DDirty && this.updateInverseGlobalMatrix3D();
             return this._inverseGlobalMatrix3D;
-        }
-        /**
-         * X轴方向移动
-         * @param distance  移动距离
-         */
-        xMove(distance) {
-            var direction = this.matrix3d.right;
-            direction.scaleBy(distance);
-            this.position = this.position.add(direction);
-        }
-        /**
-         * Y轴方向移动
-         * @param distance  移动距离
-         */
-        yMove(distance) {
-            var direction = this.matrix3d.up;
-            direction.scaleBy(distance);
-            this.position = this.position.add(direction);
-        }
-        /**
-         * Z轴方向移动
-         * @param distance  移动距离
-         */
-        zMove(distance) {
-            var direction = this.matrix3d.forward;
-            direction.scaleBy(distance);
-            this.position = this.position.add(direction);
-        }
-        /**
-         * X轴全局方向移动
-         * @param distance  移动距离
-         */
-        xGlobalMove(distance) {
-            var direction = this.globalMatrix3D.right;
-            direction.scaleBy(distance);
-            this.globalPosition = this.globalPosition.add(direction);
-        }
-        /**
-         * Y轴全局方向移动
-         * @param distance  移动距离
-         */
-        yGlobalMove(distance) {
-            var direction = this.globalMatrix3D.up;
-            direction.scaleBy(distance);
-            this.globalPosition = this.globalPosition.add(direction);
-        }
-        /**
-         * Z轴全局方向移动
-         * @param distance  移动距离
-         */
-        zGlobalMove(distance) {
-            var direction = this.globalMatrix3D.forward;
-            direction.scaleBy(distance);
-            this.globalPosition = this.globalPosition.add(direction);
         }
         /**
          * 变换矩阵
