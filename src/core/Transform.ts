@@ -20,8 +20,8 @@ module feng3d
         protected _matrix3D = new Matrix3D();
         protected _matrix3DDirty: boolean;
 
-        private _inverseMatrix3D = new Matrix3D();
-        private _inverseMatrix3DDirty: boolean;
+        protected _inverseMatrix3D = new Matrix3D();
+        protected _inverseMatrix3DDirty: boolean;
         /**
          * 全局矩阵是否变脏
          */
@@ -30,8 +30,8 @@ module feng3d
          * 全局矩阵
          */
         protected _globalMatrix3D: Matrix3D = new Matrix3D();
-        private _inverseGlobalMatrix3DDirty: boolean;
-        private _inverseGlobalMatrix3D: Matrix3D = new Matrix3D();
+        protected _inverseGlobalMatrix3DDirty: boolean;
+        protected _inverseGlobalMatrix3D: Matrix3D = new Matrix3D();
 
         /**
          * 构建变换
@@ -63,84 +63,84 @@ module feng3d
         /**
          * X坐标
          */
-        get x(): number { return this._x; }
-        set x(value: number) { this._x = value; this.invalidateMatrix3D(); }
+        public get x(): number { return this._x; }
+        public set x(value: number) { this._x = value; this.invalidateMatrix3D(); }
 
         /**
          * Y坐标
          */
-        get y(): number { return this._y; }
-        set y(value: number) { this._y = value; this.invalidateMatrix3D(); }
+        public get y(): number { return this._y; }
+        public set y(value: number) { this._y = value; this.invalidateMatrix3D(); }
 
         /**
          * Z坐标
          */
-        get z(): number { return this._z; }
-        set z(value: number) { this._z = value; this.invalidateMatrix3D(); }
+        public get z(): number { return this._z; }
+        public set z(value: number) { this._z = value; this.invalidateMatrix3D(); }
 
         /**
          * X旋转
          */
-        get rx(): number { return this._rx; }
-        set rx(value: number) { this._rx = value; this.invalidateMatrix3D(); }
+        public get rx(): number { return this._rx; }
+        public set rx(value: number) { this._rx = value; this.invalidateMatrix3D(); }
 
         /**
          * Y旋转
          */
-        get ry(): number { return this._ry; }
-        set ry(value: number) { this._ry = value; this.invalidateMatrix3D(); }
+        public get ry(): number { return this._ry; }
+        public set ry(value: number) { this._ry = value; this.invalidateMatrix3D(); }
 
         /**
          * Z旋转
          */
-        get rz(): number { return this._rz; }
-        set rz(value: number) { this._rz = value; this.invalidateMatrix3D(); }
+        public get rz(): number { return this._rz; }
+        public set rz(value: number) { this._rz = value; this.invalidateMatrix3D(); }
 
         /**
          * X缩放
          */
-        get sx(): number { return this._sx; }
-        set sx(value: number) { this._sx = value; this.invalidateMatrix3D(); }
+        public get sx(): number { return this._sx; }
+        public set sx(value: number) { this._sx = value; this.invalidateMatrix3D(); }
 
         /**
          * Y缩放
          */
-        get sy(): number { return this._sy; }
-        set sy(value: number) { this._sy = value; this.invalidateMatrix3D(); }
+        public get sy(): number { return this._sy; }
+        public set sy(value: number) { this._sy = value; this.invalidateMatrix3D(); }
 
         /**
          * Z缩放
          */
-        get sz(): number { return this._sz; }
-        set sz(value: number) { this._sz = value; this.invalidateMatrix3D(); }
+        public get sz(): number { return this._sz; }
+        public set sz(value: number) { this._sz = value; this.invalidateMatrix3D(); }
 
         /**
          * 位移
          */
-        get position(): Vector3D { return new Vector3D(this.x, this.y, this.z); };
-        set position(value: Vector3D) { this._x = value.x; this._y = value.y; this._z = value.z; this.invalidateMatrix3D(); }
+        public get position(): Vector3D { return new Vector3D(this.x, this.y, this.z); };
+        public set position(value: Vector3D) { this._x = value.x; this._y = value.y; this._z = value.z; this.invalidateMatrix3D(); }
 
         /**
          * 旋转
          */
-        get rotation(): Vector3D { return new Vector3D(this.rx, this.ry, this.rz); }
-        set rotation(value: Vector3D) { this._rx = value.x; this._ry = value.y; this._rz = value.z; this.invalidateMatrix3D(); }
+        public get rotation(): Vector3D { return new Vector3D(this.rx, this.ry, this.rz); }
+        public set rotation(value: Vector3D) { this._rx = value.x; this._ry = value.y; this._rz = value.z; this.invalidateMatrix3D(); }
 
         /**
          * 缩放
          */
-        get scale(): Vector3D { return new Vector3D(this.sx, this.sy, this.sz); }
-        set scale(value: Vector3D) { this._sx = value.x; this._sy = value.y; this._sz = value.z; this.invalidateMatrix3D(); }
+        public get scale(): Vector3D { return new Vector3D(this.sx, this.sy, this.sz); }
+        public set scale(value: Vector3D) { this._sx = value.x; this._sy = value.y; this._sz = value.z; this.invalidateMatrix3D(); }
 
         /**
          * 全局坐标
          */
-        get globalPosition()
+        public get globalPosition()
         {
             return this.globalMatrix3D.position;
         }
 
-        set globalPosition(value)
+        public set globalPosition(value)
         {
             var globalMatrix3D = this.globalMatrix3D.clone();
             globalMatrix3D.position = value;
@@ -150,14 +150,14 @@ module feng3d
         /**
          * 变换矩阵
          */
-        get matrix3d(): Matrix3D
+        public get matrix3d(): Matrix3D
         {
             if (this._matrix3DDirty)
                 this.updateMatrix3D();
             return this._matrix3D;
         }
 
-        set matrix3d(value: Matrix3D)
+        public set matrix3d(value: Matrix3D)
         {
             this._matrix3DDirty = false;
             this._matrix3D.rawData.set(value.rawData);
@@ -345,7 +345,7 @@ module feng3d
         /**
          * 更新逆全局矩阵
          */
-        private updateInverseGlobalMatrix3D()
+        protected updateInverseGlobalMatrix3D()
         {
             this._inverseGlobalMatrix3DDirty = false;
             this._inverseGlobalMatrix3D.copyFrom(this.globalMatrix3D);
@@ -355,7 +355,7 @@ module feng3d
         /**
 		 * 通知全局变换改变
 		 */
-        private notifySceneTransformChange()
+        protected notifySceneTransformChange()
         {
             var sceneTransformChanged = new TransfromEvent(TransfromEvent.SCENETRANSFORM_CHANGED, this);
             this.object3D && this.object3D.dispatchEvent(sceneTransformChanged);
@@ -365,7 +365,7 @@ module feng3d
 		 * 全局变换矩阵失效
          * @private
 		 */
-        public invalidateGlobalMatrix3D()
+        protected invalidateGlobalMatrix3D()
         {
             this._globalMatrix3DDirty = true;
             this._inverseGlobalMatrix3DDirty = true;
