@@ -7299,13 +7299,13 @@ var feng3d;
          * 处理被添加组件事件
          */
         onBeAddedComponent(event) {
-            this.object3D.addEventListener(feng3d.TransfromEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.object3D.addEventListener(feng3d.TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
         /**
          * 处理被移除组件事件
          */
         onBeRemovedComponent(event) {
-            this.object3D.removeEventListener(feng3d.TransfromEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.object3D.removeEventListener(feng3d.TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
         /**
          * 处理镜头变化事件

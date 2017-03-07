@@ -78,7 +78,7 @@ module feng3d
         protected onBeAddedComponent(event: ComponentEvent): void
         {
 
-            this.object3D.addEventListener(TransfromEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.object3D.addEventListener(TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
         /**
@@ -87,7 +87,7 @@ module feng3d
         protected onBeRemovedComponent(event: ComponentEvent): void
         {
 
-            this.object3D.removeEventListener(TransfromEvent.TRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.object3D.removeEventListener(TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
         /**
