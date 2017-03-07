@@ -6,14 +6,20 @@ module feng3d
      */
     export class Transform extends Object3DComponent
     {
-
         //private
-        protected _position = new Vector3D();
-        protected _rotation = new Vector3D();
-        protected _scale = new Vector3D(1, 1, 1);
+        protected _x = 0;
+        protected _y = 0;
+        protected _z = 0;
+        protected _rx = 0;
+        protected _ry = 0;
+        protected _rz = 0;
+        protected _sx = 1;
+        protected _sy = 1;
+        protected _sz = 1;
         //
         protected _matrix3D = new Matrix3D();
         protected _matrix3DDirty: boolean;
+
         private _inverseMatrix3D = new Matrix3D();
         private _inverseMatrix3DDirty: boolean;
         /**
@@ -42,97 +48,89 @@ module feng3d
         constructor(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1)
         {
             super();
-            this._position.setTo(x, y, z);
-            this._rotation.setTo(rx, ry, rz);
-            this._scale.setTo(sx, sy, sz);
-
+            this._x = x;
+            this._y = y;
+            this._z = z;
+            this._rx = rx;
+            this._ry = ry;
+            this._rz = rz;
+            this._sx = sx;
+            this._sy = sy;
+            this._sz = sz;
             this.invalidateMatrix3D();
-
-            Binding.bindHandler(this._position, ["x"], this.invalidateMatrix3D, this);
-            Binding.bindHandler(this._position, ["y"], this.invalidateMatrix3D, this);
-            Binding.bindHandler(this._position, ["z"], this.invalidateMatrix3D, this);
-            //
-            Binding.bindHandler(this._rotation, ["x"], this.invalidateMatrix3D, this);
-            Binding.bindHandler(this._rotation, ["y"], this.invalidateMatrix3D, this);
-            Binding.bindHandler(this._rotation, ["z"], this.invalidateMatrix3D, this);
-            //
-            Binding.bindHandler(this._scale, ["x"], this.invalidateMatrix3D, this);
-            Binding.bindHandler(this._scale, ["y"], this.invalidateMatrix3D, this);
-            Binding.bindHandler(this._scale, ["z"], this.invalidateMatrix3D, this);
-
         }
 
         /**
          * X坐标
          */
-        get x(): number { return this._position.x; }
-        set x(value: number) { this._position.x = value; }
+        get x(): number { return this._x; }
+        set x(value: number) { this._x = value; this.invalidateMatrix3D(); }
 
         /**
          * Y坐标
          */
-        get y(): number { return this._position.y; }
-        set y(value: number) { this._position.y = value; }
+        get y(): number { return this._y; }
+        set y(value: number) { this._y = value; this.invalidateMatrix3D(); }
 
         /**
          * Z坐标
          */
-        get z(): number { return this._position.z; }
-        set z(value: number) { this._position.z = value; }
+        get z(): number { return this._z; }
+        set z(value: number) { this._z = value; this.invalidateMatrix3D(); }
 
         /**
          * X旋转
          */
-        get rx(): number { return this._rotation.x; }
-        set rx(value: number) { this._rotation.x = value; }
+        get rx(): number { return this._rx; }
+        set rx(value: number) { this._rx = value; this.invalidateMatrix3D(); }
 
         /**
          * Y旋转
          */
-        get ry(): number { return this._rotation.y; }
-        set ry(value: number) { this._rotation.y = value; }
+        get ry(): number { return this._ry; }
+        set ry(value: number) { this._ry = value; this.invalidateMatrix3D(); }
 
         /**
          * Z旋转
          */
-        get rz(): number { return this._rotation.z; }
-        set rz(value: number) { this._rotation.z = value; }
+        get rz(): number { return this._rz; }
+        set rz(value: number) { this._rz = value; this.invalidateMatrix3D(); }
 
         /**
          * X缩放
          */
-        get sx(): number { return this._scale.x; }
-        set sx(value: number) { this._scale.x = value; }
+        get sx(): number { return this._sx; }
+        set sx(value: number) { this._sx = value; this.invalidateMatrix3D(); }
 
         /**
          * Y缩放
          */
-        get sy(): number { return this._scale.y; }
-        set sy(value: number) { this._scale.y = value; }
+        get sy(): number { return this._sy; }
+        set sy(value: number) { this._sy = value; this.invalidateMatrix3D(); }
 
         /**
          * Z缩放
          */
-        get sz(): number { return this._scale.z; }
-        set sz(value: number) { this._scale.z = value; }
+        get sz(): number { return this._sz; }
+        set sz(value: number) { this._sz = value; this.invalidateMatrix3D(); }
 
         /**
          * 位移
          */
-        get position(): Vector3D { return this._position };
-        set position(value: Vector3D) { this.position.copyFrom(value); }
+        get position(): Vector3D { return new Vector3D(this.x, this.y, this.z); };
+        set position(value: Vector3D) { this._x = value.x; this._y = value.y; this._z = value.z; this.invalidateMatrix3D(); }
 
         /**
          * 旋转
          */
-        get rotation(): Vector3D { return this._rotation; }
-        set rotation(value: Vector3D) { this._rotation.copyFrom(value); }
+        get rotation(): Vector3D { return new Vector3D(this.rx, this.ry, this.rz); }
+        set rotation(value: Vector3D) { this._rx = value.x; this._ry = value.y; this._rz = value.z; this.invalidateMatrix3D(); }
 
         /**
          * 缩放
          */
-        get scale(): Vector3D { return this._scale; }
-        set scale(value: Vector3D) { this._scale.copyFrom(value); }
+        get scale(): Vector3D { return new Vector3D(this.sx, this.sy, this.sz); }
+        set scale(value: Vector3D) { this._sx = value.x; this._sy = value.y; this._sz = value.z; this.invalidateMatrix3D(); }
 
         /**
          * 全局坐标
@@ -161,11 +159,21 @@ module feng3d
 
         set matrix3d(value: Matrix3D)
         {
-            var vecs = value.decompose();
-            vecs[1].scaleBy(MathConsts.RADIANS_TO_DEGREES);
-            this._position.copyFrom(vecs[0]);
-            this._rotation.copyFrom(vecs[1]);
-            this._scale.copyFrom(vecs[2]);
+            this._matrix3DDirty = false;
+            this._matrix3D.rawData.set(value.rawData);
+            var vecs = this._matrix3D.decompose();
+            this._x = vecs[0].x;
+            this._y = vecs[0].y;
+            this._z = vecs[0].z;
+            this._rx = vecs[1].x * MathConsts.RADIANS_TO_DEGREES;
+            this._ry = vecs[1].y * MathConsts.RADIANS_TO_DEGREES;
+            this._rz = vecs[1].z * MathConsts.RADIANS_TO_DEGREES;
+            this._sx = vecs[2].x;
+            this._sy = vecs[2].y;
+            this._sz = vecs[2].z;
+
+            this.notifyMatrix3DChanged();
+            this.invalidateGlobalMatrix3D();
         }
 
         /**
@@ -292,12 +300,10 @@ module feng3d
          */
         protected updateMatrix3D()
         {
-            var rotation = this._rotation.clone();
-            rotation.scaleBy(MathConsts.DEGREES_TO_RADIANS);
             this._matrix3D.recompose([//
-                this._position,//
-                rotation,//
-                this._scale,//
+                new Vector3D(this.x, this.y, this.z),//
+                new Vector3D(this.rx * MathConsts.DEGREES_TO_RADIANS, this.ry * MathConsts.DEGREES_TO_RADIANS, this.rz * MathConsts.DEGREES_TO_RADIANS),//
+                new Vector3D(this.sx, this.sy, this.sz),//
             ]);
             this._matrix3DDirty = false;
         }
@@ -316,7 +322,7 @@ module feng3d
         /**
 		 * 发出状态改变消息
 		 */
-        private notifyMatrix3DChanged()
+        protected notifyMatrix3DChanged()
         {
             var transformChanged = new TransfromEvent(TransfromEvent.TRANSFORM_CHANGED, this);
             this.object3D && this.object3D.dispatchEvent(transformChanged);
@@ -393,29 +399,9 @@ module feng3d
     export class TransfromEvent extends Event
     {
 		/**
-		 * 平移
-		 */
-        public static POSITION_CHANGED: string = "positionChanged";
-
-		/**
-		 * 旋转
-		 */
-        public static ROTATION_CHANGED: string = "rotationChanged";
-
-		/**
-		 * 缩放
-		 */
-        public static SCALE_CHANGED: string = "scaleChanged";
-
-		/**
 		 * 变换
 		 */
         public static TRANSFORM_CHANGED: string = "transformChanged";
-
-		/**
-		 * 变换已更新
-		 */
-        public static TRANSFORM_UPDATED: string = "transformUpdated";
 
         /**
 		 * 场景变换矩阵发生变化
@@ -435,7 +421,6 @@ module feng3d
 		 */
         constructor(type: string, data: Transform, bubbles = false)
         {
-
             super(type, data, bubbles);
         }
     }

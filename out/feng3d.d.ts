@@ -3663,9 +3663,15 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Transform extends Object3DComponent {
-        protected _position: Vector3D;
-        protected _rotation: Vector3D;
-        protected _scale: Vector3D;
+        protected _x: number;
+        protected _y: number;
+        protected _z: number;
+        protected _rx: number;
+        protected _ry: number;
+        protected _rz: number;
+        protected _sx: number;
+        protected _sy: number;
+        protected _sz: number;
         protected _matrix3D: Matrix3D;
         protected _matrix3DDirty: boolean;
         private _inverseMatrix3D;
@@ -3808,7 +3814,7 @@ declare module feng3d {
         /**
          * 发出状态改变消息
          */
-        private notifyMatrix3DChanged();
+        protected notifyMatrix3DChanged(): void;
         /**
          * 更新全局矩阵
          */
@@ -3837,25 +3843,9 @@ declare module feng3d {
      */
     class TransfromEvent extends Event {
         /**
-         * 平移
-         */
-        static POSITION_CHANGED: string;
-        /**
-         * 旋转
-         */
-        static ROTATION_CHANGED: string;
-        /**
-         * 缩放
-         */
-        static SCALE_CHANGED: string;
-        /**
          * 变换
          */
         static TRANSFORM_CHANGED: string;
-        /**
-         * 变换已更新
-         */
-        static TRANSFORM_UPDATED: string;
         /**
          * 场景变换矩阵发生变化
          */
