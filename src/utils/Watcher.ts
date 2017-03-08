@@ -384,6 +384,8 @@ module feng3d
          */
         public reset(newHost: Object): void
         {
+            if (newHost == this.host)
+                return;
             let oldHost = this.host;
             if (oldHost)
             {

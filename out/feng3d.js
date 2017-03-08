@@ -760,6 +760,8 @@ var feng3d;
          * @language zh_CN
          */
         reset(newHost) {
+            if (newHost == this.host)
+                return;
             let oldHost = this.host;
             if (oldHost) {
                 let list = oldHost[listeners];
@@ -6078,23 +6080,42 @@ var feng3d;
              */
             this._globalMatrix3DDirty = true;
             this._inverseGlobalMatrix3DDirty = true;
+            //
+            this._positionWatchers = [];
+            this._rotationWatchers = [];
+            this._scaleWatchers = [];
             //矫正值
             this.position.setTo(x || 0, y || 0, z || 0);
             this.rotation.setTo(rx || 0, ry || 0, rz || 0);
             this.scale.setTo(rx || 0.000001, ry || 0.000001, rz || 0.000001);
             //
-            feng3d.Watcher.watch(this, ["position", "x"], this.invalidateMatrix3D, this);
-            feng3d.Watcher.watch(this, ["position", "y"], this.invalidateMatrix3D, this);
-            feng3d.Watcher.watch(this, ["position", "z"], this.invalidateMatrix3D, this);
-            feng3d.Watcher.watch(this, ["rotation", "x"], this.invalidateMatrix3D, this);
-            feng3d.Watcher.watch(this, ["rotation", "y"], this.invalidateMatrix3D, this);
-            feng3d.Watcher.watch(this, ["rotation", "z"], this.invalidateMatrix3D, this);
-            feng3d.Watcher.watch(this, ["scale", "x"], this.invalidateMatrix3D, this);
-            feng3d.Watcher.watch(this, ["scale", "y"], this.invalidateMatrix3D, this);
-            feng3d.Watcher.watch(this, ["scale", "z"], this.invalidateMatrix3D, this);
-            feng3d.Watcher.watch(this, ["position"], this.invalidateMatrix3D, this);
-            feng3d.Watcher.watch(this, ["rotation"], this.invalidateMatrix3D, this);
-            feng3d.Watcher.watch(this, ["rotation"], this.invalidateMatrix3D, this);
+            this._positionWatchers.push(feng3d.Watcher.watch(this.position, ["y"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.position, ["z"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.position, ["x"], this.invalidateMatrix3D, this));
+            this._rotationWatchers.push(feng3d.Watcher.watch(this.rotation, ["x"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.rotation, ["y"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.rotation, ["z"], this.invalidateMatrix3D, this));
+            this._scaleWatchers.push(feng3d.Watcher.watch(this.scale, ["x"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.scale, ["y"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.scale, ["z"], this.invalidateMatrix3D, this));
+            feng3d.Watcher.watch(this, ["position"], this.invalidateComp, this);
+            feng3d.Watcher.watch(this, ["rotation"], this.invalidateComp, this);
+            feng3d.Watcher.watch(this, ["scale"], this.invalidateComp, this);
+        }
+        /**
+         * 位移旋转缩放组件失效
+         */
+        invalidateComp() {
+            //
+            this.position || (this.position = new feng3d.Vector3D());
+            this.rotation || (this.rotation = new feng3d.Vector3D());
+            this.scale || (this.scale = new feng3d.Vector3D(1, 1, 1));
+            //
+            this._positionWatchers.forEach(element => {
+                element.reset(this.position);
+            });
+            this._rotationWatchers.forEach(element => {
+                element.reset(this.rotation);
+            });
+            this._scaleWatchers.forEach(element => {
+                element.reset(this.scale);
+            });
+            //
+            this.invalidateMatrix3D();
         }
         /**
          * 全局坐标
@@ -6205,9 +6226,6 @@ var feng3d;
          * 矫正数值
          */
         adjust() {
-            this.position || (this.position = new feng3d.Vector3D());
-            this.rotation || (this.rotation = new feng3d.Vector3D());
-            this.scale || (this.scale = new feng3d.Vector3D(1, 1, 1));
             this.position.setTo(this.position.x || 0, this.position.y || 0, this.position.z || 0);
             this.rotation.setTo(this.rotation.x || 0, this.rotation.y || 0, this.rotation.z || 0);
             this.scale.setTo(this.scale.x || 0.000001, this.scale.y || 0.000001, this.scale.z || 0.000001);

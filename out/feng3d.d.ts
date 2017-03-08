@@ -3699,6 +3699,9 @@ declare module feng3d {
          */
         protected _globalMatrix3DDirty: boolean;
         protected _inverseGlobalMatrix3DDirty: boolean;
+        private _positionWatchers;
+        private _rotationWatchers;
+        private _scaleWatchers;
         /**
          * 构建变换
          * @param x X坐标
@@ -3712,6 +3715,10 @@ declare module feng3d {
          * @param sz Z缩放
          */
         constructor(x?: number, y?: number, z?: number, rx?: number, ry?: number, rz?: number, sx?: number, sy?: number, sz?: number);
+        /**
+         * 位移旋转缩放组件失效
+         */
+        private invalidateComp();
         /**
          * 全局坐标
          */
