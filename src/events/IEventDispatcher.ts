@@ -7,6 +7,7 @@ module feng3d
      */
     export interface IEventDispatcher
     {
+        listener: { [type: string]: ListenerVO[] }
 
         /**
          * 名称

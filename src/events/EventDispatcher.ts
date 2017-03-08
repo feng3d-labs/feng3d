@@ -7,6 +7,8 @@ module feng3d
 	 */
     export class EventDispatcher implements IEventDispatcher
     {
+        public listener: { [type: string]: ListenerVO[] }
+
         /**
          * 名称
          */
@@ -177,14 +179,6 @@ module feng3d
         }
 
         /**
-         * 销毁
-         */
-        public destroy()
-        {
-            $listernerCenter.destroyDispatcherListener(this._target);
-        }
-
-        /**
          * 派发冒泡事件
          * @param event						调度到事件流中的 Event 对象。
          */
@@ -212,7 +206,7 @@ module feng3d
     /**
      * 监听数据
      */
-    class ListenerVO
+    export class ListenerVO
     {
         /**
          * 监听函数
@@ -237,10 +231,6 @@ module feng3d
      */
     class ListenerCenter
     {
-        /**
-         * 派发器与监听器字典
-         */
-        map: { dispatcher: IEventDispatcher, listener: Map<ListenerVO[]> }[] = [];
 
         /**
          * 添加监听
@@ -252,14 +242,9 @@ module feng3d
          */
         add(dispatcher: IEventDispatcher, type: string, listener: (event: Event) => any, thisObject: any = null, priority: number = 0, once = false): this
         {
+            var dispatcherListener: { [type: string]: ListenerVO[] } = dispatcher.listener = dispatcher.listener || {};
 
-            var dispatcherListener: Map<ListenerVO[]> = this.getDispatcherListener(dispatcher);
-            if (dispatcherListener == null)
-            {
-                dispatcherListener = this.createDispatcherListener(dispatcher);
-            }
-
-            var listeners: ListenerVO[] = dispatcherListener.get(type) || [];
+            var listeners: ListenerVO[] = dispatcherListener[type] || [];
 
             this.remove(dispatcher, type, listener, thisObject);
 
@@ -273,7 +258,7 @@ module feng3d
             }
             listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
 
-            dispatcherListener.push(type, listeners);
+            dispatcherListener[type] = listeners;
 
             return this;
         }
@@ -288,13 +273,13 @@ module feng3d
         remove(dispatcher: IEventDispatcher, type: string, listener: (event: Event) => any, thisObject: any = null): this
         {
 
-            var dispatcherListener: Map<ListenerVO[]> = this.getDispatcherListener(dispatcher);
+            var dispatcherListener: { [type: string]: ListenerVO[] } = dispatcher.listener;
             if (dispatcherListener == null)
             {
                 return this;
             }
 
-            var listeners: ListenerVO[] = dispatcherListener.get(type);
+            var listeners: ListenerVO[] = dispatcherListener[type];
             if (listeners == null)
             {
                 return this;
@@ -311,12 +296,7 @@ module feng3d
 
             if (listeners.length == 0)
             {
-                dispatcherListener.delete(type);
-            }
-
-            if (dispatcherListener.isEmpty())
-            {
-                this.destroyDispatcherListener(dispatcher);
+                delete dispatcherListener[type];
             }
 
             return this;
@@ -329,14 +309,7 @@ module feng3d
          */
         getListeners(dispatcher: IEventDispatcher, type: string): ListenerVO[]
         {
-
-            var dispatcherListener: Map<ListenerVO[]> = this.getDispatcherListener(dispatcher);
-            if (dispatcherListener == null)
-            {
-                return null;
-            }
-
-            return dispatcherListener.get(type);
+            return dispatcher.listener && dispatcher.listener[type];
         }
 
         /**
@@ -346,124 +319,7 @@ module feng3d
          */
         hasEventListener(dispatcher: IEventDispatcher, type: string): boolean
         {
-
-            var dispatcherListener: Map<ListenerVO[]> = this.getDispatcherListener(dispatcher);
-            if (dispatcherListener == null)
-            {
-                return false;
-            }
-
-            return !!dispatcherListener.get(type);
-        }
-
-        /**
-         * 创建派发器监听
-         * @param dispatcher 派发器
-         */
-        createDispatcherListener(dispatcher: IEventDispatcher): Map<ListenerVO[]>
-        {
-
-            var dispatcherListener = new Map<ListenerVO[]>();
-            this.map.push({ dispatcher: dispatcher, listener: dispatcherListener });
-            return dispatcherListener;
-        }
-
-        /**
-         * 销毁派发器监听
-         * @param dispatcher 派发器
-         */
-        destroyDispatcherListener(dispatcher: IEventDispatcher): void
-        {
-
-            for (var i = 0; i < this.map.length; i++)
-            {
-                var element = this.map[i];
-                if (element.dispatcher == dispatcher)
-                {
-                    element.dispatcher = null;
-                    element.listener.destroy();
-                    element.listener = null;
-                    this.map.splice(i, 1);
-                    break;
-                }
-            }
-        }
-
-        /**
-         * 获取派发器监听
-         * @param dispatcher 派发器
-         */
-        getDispatcherListener(dispatcher: IEventDispatcher): Map<ListenerVO[]>
-        {
-            var dispatcherListener: Map<ListenerVO[]> = null;
-            this.map.forEach(element =>
-            {
-                if (element.dispatcher == dispatcher)
-                    dispatcherListener = element.listener;
-            });
-
-            return dispatcherListener;
-        }
-    }
-
-    /**
-     * 映射
-     */
-    class Map<T>
-    {
-        /**
-         * 映射对象
-         */
-        private map = {};
-
-        /**
-         * 添加对象到字典
-         * @param key       键
-         * @param value     值
-         */
-        push(key: string, value: T): void
-        {
-            this.map[key] = value;
-        }
-
-        /**
-         * 删除
-         * @param key       键
-         */
-        delete(key: string): void
-        {
-            delete this.map[key];
-        }
-
-        /**
-         * 获取值
-         * @param key       键
-         */
-        get(key: string): T
-        {
-            return this.map[key];
-        }
-
-        /**
-         * 是否为空
-         */
-        isEmpty(): boolean
-        {
-            return Object.keys(this.map).length == 0;
-        }
-
-        /**
-         * 销毁
-         */
-        destroy(): void
-        {
-            var keys = Object.keys(this.map);
-            for (var i = 0; i < keys.length; i++)
-            {
-                var element = keys[i];
-                delete this.map[element];
-            }
-            this.map = null;
+            return !!(dispatcher.listener && dispatcher.listener[type]);
         }
     }
 

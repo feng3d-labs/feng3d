@@ -822,6 +822,9 @@ declare module feng3d {
      * @author feng 2016-3-22
      */
     interface IEventDispatcher {
+        listener: {
+            [type: string]: ListenerVO[];
+        };
         /**
          * 名称
          */
@@ -862,6 +865,9 @@ declare module feng3d {
      * @author feng 2016-3-22
      */
     class EventDispatcher implements IEventDispatcher {
+        listener: {
+            [type: string]: ListenerVO[];
+        };
         /**
          * 名称
          */
@@ -938,10 +944,6 @@ declare module feng3d {
          */
         hasEventListener(type: string): boolean;
         /**
-         * 销毁
-         */
-        destroy(): void;
-        /**
          * 派发冒泡事件
          * @param event						调度到事件流中的 Event 对象。
          */
@@ -951,6 +953,27 @@ declare module feng3d {
          * @param event						调度到事件流中的 Event 对象。
          */
         protected getBubbleTargets(event: Event): IEventDispatcher[];
+    }
+    /**
+     * 监听数据
+     */
+    class ListenerVO {
+        /**
+         * 监听函数
+         */
+        listener: (event: Event) => void;
+        /**
+         * 监听函数作用域
+         */
+        thisObject: any;
+        /**
+         * 优先级
+         */
+        priority: number;
+        /**
+         * 是否只监听一次
+         */
+        once: boolean;
     }
 }
 declare module feng3d {

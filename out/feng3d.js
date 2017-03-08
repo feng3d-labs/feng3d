@@ -1080,12 +1080,6 @@ var feng3d;
             return has;
         }
         /**
-         * 销毁
-         */
-        destroy() {
-            $listernerCenter.destroyDispatcherListener(this._target);
-        }
-        /**
          * 派发冒泡事件
          * @param event						调度到事件流中的 Event 对象。
          */
@@ -1109,16 +1103,11 @@ var feng3d;
      */
     class ListenerVO {
     }
+    feng3d.ListenerVO = ListenerVO;
     /**
      * 事件监听中心
      */
     class ListenerCenter {
-        constructor() {
-            /**
-             * 派发器与监听器字典
-             */
-            this.map = [];
-        }
         /**
          * 添加监听
          * @param dispatcher 派发器
@@ -1128,11 +1117,8 @@ var feng3d;
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
         add(dispatcher, type, listener, thisObject = null, priority = 0, once = false) {
-            var dispatcherListener = this.getDispatcherListener(dispatcher);
-            if (dispatcherListener == null) {
-                dispatcherListener = this.createDispatcherListener(dispatcher);
-            }
-            var listeners = dispatcherListener.get(type) || [];
+            var dispatcherListener = dispatcher.listener = dispatcher.listener || {};
+            var listeners = dispatcherListener[type] || [];
             this.remove(dispatcher, type, listener, thisObject);
             for (var i = 0; i < listeners.length; i++) {
                 var element = listeners[i];
@@ -1141,7 +1127,7 @@ var feng3d;
                 }
             }
             listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
-            dispatcherListener.push(type, listeners);
+            dispatcherListener[type] = listeners;
             return this;
         }
         /**
@@ -1152,11 +1138,11 @@ var feng3d;
          * @param thisObject                listener函数作用域
          */
         remove(dispatcher, type, listener, thisObject = null) {
-            var dispatcherListener = this.getDispatcherListener(dispatcher);
+            var dispatcherListener = dispatcher.listener;
             if (dispatcherListener == null) {
                 return this;
             }
-            var listeners = dispatcherListener.get(type);
+            var listeners = dispatcherListener[type];
             if (listeners == null) {
                 return this;
             }
@@ -1167,10 +1153,7 @@ var feng3d;
                 }
             }
             if (listeners.length == 0) {
-                dispatcherListener.delete(type);
-            }
-            if (dispatcherListener.isEmpty()) {
-                this.destroyDispatcherListener(dispatcher);
+                delete dispatcherListener[type];
             }
             return this;
         }
@@ -1180,11 +1163,7 @@ var feng3d;
          * @param type  事件类型
          */
         getListeners(dispatcher, type) {
-            var dispatcherListener = this.getDispatcherListener(dispatcher);
-            if (dispatcherListener == null) {
-                return null;
-            }
-            return dispatcherListener.get(type);
+            return dispatcher.listener && dispatcher.listener[type];
         }
         /**
          * 判断是否有监听事件
@@ -1192,98 +1171,7 @@ var feng3d;
          * @param type  事件类型
          */
         hasEventListener(dispatcher, type) {
-            var dispatcherListener = this.getDispatcherListener(dispatcher);
-            if (dispatcherListener == null) {
-                return false;
-            }
-            return !!dispatcherListener.get(type);
-        }
-        /**
-         * 创建派发器监听
-         * @param dispatcher 派发器
-         */
-        createDispatcherListener(dispatcher) {
-            var dispatcherListener = new Map();
-            this.map.push({ dispatcher: dispatcher, listener: dispatcherListener });
-            return dispatcherListener;
-        }
-        /**
-         * 销毁派发器监听
-         * @param dispatcher 派发器
-         */
-        destroyDispatcherListener(dispatcher) {
-            for (var i = 0; i < this.map.length; i++) {
-                var element = this.map[i];
-                if (element.dispatcher == dispatcher) {
-                    element.dispatcher = null;
-                    element.listener.destroy();
-                    element.listener = null;
-                    this.map.splice(i, 1);
-                    break;
-                }
-            }
-        }
-        /**
-         * 获取派发器监听
-         * @param dispatcher 派发器
-         */
-        getDispatcherListener(dispatcher) {
-            var dispatcherListener = null;
-            this.map.forEach(element => {
-                if (element.dispatcher == dispatcher)
-                    dispatcherListener = element.listener;
-            });
-            return dispatcherListener;
-        }
-    }
-    /**
-     * 映射
-     */
-    class Map {
-        constructor() {
-            /**
-             * 映射对象
-             */
-            this.map = {};
-        }
-        /**
-         * 添加对象到字典
-         * @param key       键
-         * @param value     值
-         */
-        push(key, value) {
-            this.map[key] = value;
-        }
-        /**
-         * 删除
-         * @param key       键
-         */
-        delete(key) {
-            delete this.map[key];
-        }
-        /**
-         * 获取值
-         * @param key       键
-         */
-        get(key) {
-            return this.map[key];
-        }
-        /**
-         * 是否为空
-         */
-        isEmpty() {
-            return Object.keys(this.map).length == 0;
-        }
-        /**
-         * 销毁
-         */
-        destroy() {
-            var keys = Object.keys(this.map);
-            for (var i = 0; i < keys.length; i++) {
-                var element = keys[i];
-                delete this.map[element];
-            }
-            this.map = null;
+            return !!(dispatcher.listener && dispatcher.listener[type]);
         }
     }
     /**
