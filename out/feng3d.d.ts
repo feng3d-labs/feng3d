@@ -756,7 +756,6 @@ declare module feng3d {
     class BothBind {
         private _watchera;
         private _watcherb;
-        private _mark;
         constructor(hosta: any, chaina: string[], hostb: any, chainb: string[]);
         private todata();
         private fromdata();

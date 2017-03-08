@@ -847,29 +847,20 @@ var feng3d;
     feng3d.Binding = Binding;
     class BothBind {
         constructor(hosta, chaina, hostb, chainb) {
-            this._mark = false;
             this._watchera = feng3d.Watcher.watch(hosta, chaina, this.todata, this);
             this._watcherb = feng3d.Watcher.watch(hostb, chainb, this.fromdata, this);
         }
         todata() {
-            if (this._mark)
-                return;
-            this._mark = true;
             var value = this._watchera.getValue();
             if (value !== undefined) {
                 this._watcherb.setValue(value);
             }
-            this._mark = false;
         }
         fromdata() {
-            if (this._mark)
-                return;
-            this._mark = true;
             var value = this._watcherb.getValue();
             if (value !== undefined) {
                 this._watchera.setValue(value);
             }
-            this._mark = false;
         }
         unwatch() {
             this._watchera.unwatch();

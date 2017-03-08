@@ -44,7 +44,6 @@ module feng3d
     {
         private _watchera: Watcher;
         private _watcherb: Watcher;
-        private _mark = false;
 
         constructor(hosta: any, chaina: string[], hostb: any, chainb: string[])
         {
@@ -54,32 +53,20 @@ module feng3d
 
         private todata()
         {
-            if (this._mark)
-                return;
-            this._mark = true;
-
             var value = this._watchera.getValue();
             if (value !== undefined)
             {
                 this._watcherb.setValue(value);
             }
-
-            this._mark = false;
         }
 
         private fromdata()
         {
-            if (this._mark)
-                return;
-            this._mark = true;
-
             var value = this._watcherb.getValue();
             if (value !== undefined)
             {
                 this._watchera.setValue(value);
             }
-
-            this._mark = false;
         }
 
         public unwatch()
