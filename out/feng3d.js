@@ -6010,6 +6010,14 @@ var feng3d;
          * 所属对象
          */
         get object3D() { return this._parentComponent; }
+        /**
+         * 派发事件，该事件将会强制冒泡到3D对象中
+         * @param event						调度到事件流中的 Event 对象。
+         */
+        dispatchEvent(event) {
+            super.dispatchEvent(event);
+            this.object3D && this.object3D.dispatchEvent(event);
+        }
     }
     feng3d.Object3DComponent = Object3DComponent;
 })(feng3d || (feng3d = {}));
@@ -6224,8 +6232,8 @@ var feng3d;
          * 发出状态改变消息
          */
         notifyMatrix3DChanged() {
-            var transformChanged = new TransfromEvent(TransfromEvent.TRANSFORM_CHANGED, this);
-            this.object3D && this.object3D.dispatchEvent(transformChanged);
+            var transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
+            this.dispatchEvent(transformChanged);
         }
         /**
          * 更新全局矩阵
@@ -6250,8 +6258,8 @@ var feng3d;
          * 通知全局变换改变
          */
         notifySceneTransformChange() {
-            var sceneTransformChanged = new TransfromEvent(TransfromEvent.SCENETRANSFORM_CHANGED, this);
-            this.object3D && this.object3D.dispatchEvent(sceneTransformChanged);
+            var sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
+            this.dispatchEvent(sceneTransformChanged);
         }
         /**
          * 全局变换矩阵失效
@@ -6282,7 +6290,7 @@ var feng3d;
      * 变换事件(3D状态发生改变、位置、旋转、缩放)
      * @author feng 2014-3-31
      */
-    class TransfromEvent extends feng3d.Event {
+    class TransformEvent extends feng3d.Event {
         /**
          * 创建一个作为参数传递给事件侦听器的 Event 对象。
          * @param type 事件的类型，可以作为 Event.type 访问。
@@ -6296,12 +6304,12 @@ var feng3d;
     /**
      * 变换
      */
-    TransfromEvent.TRANSFORM_CHANGED = "transformChanged";
+    TransformEvent.TRANSFORM_CHANGED = "transformChanged";
     /**
      * 场景变换矩阵发生变化
      */
-    TransfromEvent.SCENETRANSFORM_CHANGED = "scenetransformChanged";
-    feng3d.TransfromEvent = TransfromEvent;
+    TransformEvent.SCENETRANSFORM_CHANGED = "scenetransformChanged";
+    feng3d.TransformEvent = TransformEvent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -7287,13 +7295,13 @@ var feng3d;
          * 处理被添加组件事件
          */
         onBeAddedComponent(event) {
-            this.object3D.addEventListener(feng3d.TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.object3D.addEventListener(feng3d.TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
         /**
          * 处理被移除组件事件
          */
         onBeRemovedComponent(event) {
-            this.object3D.removeEventListener(feng3d.TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.object3D.removeEventListener(feng3d.TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
         /**
          * 处理镜头变化事件

@@ -258,8 +258,8 @@ module feng3d
 		 */
         protected notifyMatrix3DChanged()
         {
-            var transformChanged = new TransfromEvent(TransfromEvent.TRANSFORM_CHANGED, this);
-            this.object3D && this.object3D.dispatchEvent(transformChanged);
+            var transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
+            this.dispatchEvent(transformChanged);
         }
 
         /**
@@ -291,8 +291,8 @@ module feng3d
 		 */
         protected notifySceneTransformChange()
         {
-            var sceneTransformChanged = new TransfromEvent(TransfromEvent.SCENETRANSFORM_CHANGED, this);
-            this.object3D && this.object3D.dispatchEvent(sceneTransformChanged);
+            var sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
+            this.dispatchEvent(sceneTransformChanged);
         }
 
         /**
@@ -330,7 +330,7 @@ module feng3d
 	 * 变换事件(3D状态发生改变、位置、旋转、缩放)
 	 * @author feng 2014-3-31
 	 */
-    export class TransfromEvent extends Event
+    export class TransformEvent extends Event
     {
 		/**
 		 * 变换

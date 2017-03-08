@@ -3670,6 +3670,11 @@ declare module feng3d {
          * 构建3D对象组件
          */
         constructor();
+        /**
+         * 派发事件，该事件将会强制冒泡到3D对象中
+         * @param event						调度到事件流中的 Event 对象。
+         */
+        dispatchEvent(event: Event): void;
     }
 }
 declare module feng3d {
@@ -3826,7 +3831,7 @@ declare module feng3d {
      * 变换事件(3D状态发生改变、位置、旋转、缩放)
      * @author feng 2014-3-31
      */
-    class TransfromEvent extends Event {
+    class TransformEvent extends Event {
         /**
          * 变换
          */
