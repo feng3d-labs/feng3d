@@ -975,6 +975,20 @@ var feng3d;
                 this._target = this;
         }
         /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once(type, listener, thisObject, priority = 0) {
+            if (listener == null)
+                return;
+            $listernerCenter //
+                .remove(this._target, type, listener, thisObject) //
+                .add(this._target, type, listener, thisObject, priority, true);
+        }
+        /**
          * 使用 EventDispatcher 对象注册事件侦听器对象，以使侦听器能够接收事件通知。
          * @param type						事件的类型。
          * @param listener					处理事件的侦听器函数。
@@ -1007,10 +1021,17 @@ var feng3d;
             //设置目标
             event.target = this._target;
             var listeners = $listernerCenter.getListeners(this._target, event.type);
+            var onceElements = [];
             //遍历调用事件回调函数
             for (var i = 0; !!listeners && i < listeners.length && !event.isStop; i++) {
                 var element = listeners[i];
                 element.listener.call(element.thisObject, event);
+                if (element.once) {
+                    onceElements.push(i);
+                }
+            }
+            while (onceElements.length > 0) {
+                listeners.splice(onceElements.pop(), 1);
             }
             //事件冒泡(冒泡阶段)
             if (event.bubbles && !event.isStopBubbles) {
@@ -1075,7 +1096,7 @@ var feng3d;
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        add(dispatcher, type, listener, thisObject = null, priority = 0) {
+        add(dispatcher, type, listener, thisObject = null, priority = 0, once = false) {
             var dispatcherListener = this.getDispatcherListener(dispatcher);
             if (dispatcherListener == null) {
                 dispatcherListener = this.createDispatcherListener(dispatcher);
@@ -1088,7 +1109,7 @@ var feng3d;
                     break;
                 }
             }
-            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority });
+            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
             dispatcherListener.push(type, listeners);
             return this;
         }

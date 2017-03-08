@@ -34,6 +34,23 @@ module feng3d
         }
 
         /**
+         * 监听一次事件后将会被移除
+		 * @param type						事件的类型。
+		 * @param listener					处理事件的侦听器函数。
+		 * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        public once(type: string, listener: (event: Event) => void, thisObject: any, priority: number = 0): void
+        {
+            if (listener == null)
+                return;
+
+            $listernerCenter//
+                .remove(this._target, type, listener, thisObject)//
+                .add(this._target, type, listener, thisObject, priority, true);
+        }
+
+        /**
          * 使用 EventDispatcher 对象注册事件侦听器对象，以使侦听器能够接收事件通知。
 		 * @param type						事件的类型。
 		 * @param listener					处理事件的侦听器函数。
@@ -75,11 +92,21 @@ module feng3d
             event.target = this._target;
             var listeners: ListenerVO[] = $listernerCenter.getListeners(this._target, event.type);
 
+            var onceElements: number[] = [];
             //遍历调用事件回调函数
             for (var i = 0; !!listeners && i < listeners.length && !event.isStop; i++)
             {
                 var element = listeners[i];
                 element.listener.call(element.thisObject, event);
+                if (element.once)
+                {
+                    onceElements.push(i);
+                }
+            }
+
+            while (onceElements.length > 0)
+            {
+                listeners.splice(onceElements.pop(), 1);
             }
 
             //事件冒泡(冒泡阶段)
@@ -152,6 +179,10 @@ module feng3d
          * 优先级
          */
         priority: number;
+        /**
+         * 是否只监听一次
+         */
+        once: boolean;
     }
 
     /**
@@ -172,7 +203,7 @@ module feng3d
 		 * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        add(dispatcher: IEventDispatcher, type: string, listener: (event: Event) => any, thisObject: any = null, priority: number = 0): this
+        add(dispatcher: IEventDispatcher, type: string, listener: (event: Event) => any, thisObject: any = null, priority: number = 0, once = false): this
         {
 
             var dispatcherListener: Map<ListenerVO[]> = this.getDispatcherListener(dispatcher);
@@ -193,7 +224,7 @@ module feng3d
                     break;
                 }
             }
-            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority });
+            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
 
             dispatcherListener.push(type, listeners);
 

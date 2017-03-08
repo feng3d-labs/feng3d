@@ -881,6 +881,14 @@ declare module feng3d {
          */
         constructor(target?: IEventDispatcher);
         /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
+        /**
          * 使用 EventDispatcher 对象注册事件侦听器对象，以使侦听器能够接收事件通知。
          * @param type						事件的类型。
          * @param listener					处理事件的侦听器函数。
