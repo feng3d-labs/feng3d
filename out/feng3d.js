@@ -959,6 +959,7 @@ var feng3d;
          * @param target		事件适配主体
          */
         constructor(target = null) {
+            this._listenermap = {};
             /**
              * 冒泡属性名称为“parent”
              */
@@ -985,9 +986,7 @@ var feng3d;
         once(type, listener, thisObject, priority = 0) {
             if (listener == null)
                 return;
-            $listernerCenter //
-                .remove(this._target, type, listener, thisObject) //
-                .add(this._target, type, listener, thisObject, priority, true);
+            this._addEventListener(type, listener, thisObject, priority, true);
         }
         /**
          * 使用 EventDispatcher 对象注册事件侦听器对象，以使侦听器能够接收事件通知。
@@ -999,9 +998,7 @@ var feng3d;
         addEventListener(type, listener, thisObject, priority = 0) {
             if (listener == null)
                 return;
-            $listernerCenter //
-                .remove(this._target, type, listener, thisObject) //
-                .add(this._target, type, listener, thisObject, priority);
+            this._addEventListener(type, listener, thisObject, priority);
         }
         /**
          * 从 EventDispatcher 对象中删除侦听器. 如果没有向 IEventDispatcher 对象注册任何匹配的侦听器，则对此方法的调用没有任何效果。
@@ -1011,8 +1008,7 @@ var feng3d;
          * @param thisObject                listener函数作用域
          */
         removeEventListener(type, listener, thisObject) {
-            $listernerCenter //
-                .remove(this._target, type, listener, thisObject);
+            this._removeEventListener(type, listener, thisObject);
         }
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEventDispatcher 对象。
@@ -1027,18 +1023,20 @@ var feng3d;
             }
             //设置目标
             event.target = this._target;
-            var listeners = $listernerCenter.getListeners(this._target, event.type);
-            var onceElements = [];
-            //遍历调用事件回调函数
-            for (var i = 0; !!listeners && i < listeners.length && !event.isStop; i++) {
-                var element = listeners[i];
-                element.listener.call(element.thisObject, event);
-                if (element.once) {
-                    onceElements.push(i);
+            var listeners = this._listenermap[event.type];
+            if (listeners && listeners.length > 0) {
+                var onceElements = [];
+                //遍历调用事件回调函数
+                for (var i = 0; i < listeners.length && !event.isStop; i++) {
+                    var element = listeners[i];
+                    element.listener.call(element.thisObject, event);
+                    if (element.once) {
+                        onceElements.push(i);
+                    }
                 }
-            }
-            while (onceElements.length > 0) {
-                listeners.splice(onceElements.pop(), 1);
+                while (onceElements.length > 0) {
+                    listeners.splice(onceElements.pop(), 1);
+                }
             }
             //事件冒泡(冒泡阶段)
             if (event.bubbles && !event.isStopBubbles) {
@@ -1076,8 +1074,7 @@ var feng3d;
          * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
          */
         hasEventListener(type) {
-            var has = $listernerCenter.hasEventListener(this._target, type);
-            return has;
+            return !!(this._listenermap[type] && this._listenermap[type].length);
         }
         /**
          * 派发冒泡事件
@@ -1096,18 +1093,6 @@ var feng3d;
         getBubbleTargets(event) {
             return [this._target[this.bubbleAttribute]];
         }
-    }
-    feng3d.EventDispatcher = EventDispatcher;
-    /**
-     * 监听数据
-     */
-    class ListenerVO {
-    }
-    feng3d.ListenerVO = ListenerVO;
-    /**
-     * 事件监听中心
-     */
-    class ListenerCenter {
         /**
          * 添加监听
          * @param dispatcher 派发器
@@ -1116,10 +1101,9 @@ var feng3d;
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        add(dispatcher, type, listener, thisObject = null, priority = 0, once = false) {
-            var dispatcherListener = dispatcher.listener = dispatcher.listener || {};
-            var listeners = dispatcherListener[type] || [];
-            this.remove(dispatcher, type, listener, thisObject);
+        _addEventListener(type, listener, thisObject = null, priority = 0, once = false) {
+            this._removeEventListener(type, listener, thisObject);
+            var listeners = this._listenermap[type] = this._listenermap[type] || [];
             for (var i = 0; i < listeners.length; i++) {
                 var element = listeners[i];
                 if (priority > element.priority) {
@@ -1127,8 +1111,6 @@ var feng3d;
                 }
             }
             listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
-            dispatcherListener[type] = listeners;
-            return this;
         }
         /**
          * 移除监听
@@ -1137,47 +1119,22 @@ var feng3d;
          * @param listener					要删除的侦听器对象。
          * @param thisObject                listener函数作用域
          */
-        remove(dispatcher, type, listener, thisObject = null) {
-            var dispatcherListener = dispatcher.listener;
-            if (dispatcherListener == null) {
-                return this;
-            }
-            var listeners = dispatcherListener[type];
-            if (listeners == null) {
-                return this;
-            }
-            for (var i = listeners.length - 1; i >= 0; i--) {
-                var element = listeners[i];
-                if (element.listener == listener && element.thisObject == thisObject) {
-                    listeners.splice(i, 1);
+        _removeEventListener(type, listener, thisObject = null) {
+            var listeners = this._listenermap[type];
+            if (listeners) {
+                for (var i = listeners.length - 1; i >= 0; i--) {
+                    var element = listeners[i];
+                    if (element.listener == listener && element.thisObject == thisObject) {
+                        listeners.splice(i, 1);
+                    }
+                }
+                if (listeners.length == 0) {
+                    delete this._listenermap[type];
                 }
             }
-            if (listeners.length == 0) {
-                delete dispatcherListener[type];
-            }
-            return this;
-        }
-        /**
-         * 获取某类型事件的监听列表
-         * @param dispatcher 派发器
-         * @param type  事件类型
-         */
-        getListeners(dispatcher, type) {
-            return dispatcher.listener && dispatcher.listener[type];
-        }
-        /**
-         * 判断是否有监听事件
-         * @param dispatcher 派发器
-         * @param type  事件类型
-         */
-        hasEventListener(dispatcher, type) {
-            return !!(dispatcher.listener && dispatcher.listener[type]);
         }
     }
-    /**
-     * 事件监听中心
-     */
-    var $listernerCenter = new ListenerCenter();
+    feng3d.EventDispatcher = EventDispatcher;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6106,7 +6063,6 @@ var feng3d;
         invalidateMatrix3D() {
             //延迟事件
             this.delay();
-            this.adjust();
             this._matrix3DDirty = true;
             this.notifyMatrix3DChanged();
             //

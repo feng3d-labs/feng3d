@@ -822,9 +822,6 @@ declare module feng3d {
      * @author feng 2016-3-22
      */
     interface IEventDispatcher {
-        listener: {
-            [type: string]: ListenerVO[];
-        };
         /**
          * 名称
          */
@@ -865,9 +862,7 @@ declare module feng3d {
      * @author feng 2016-3-22
      */
     class EventDispatcher implements IEventDispatcher {
-        listener: {
-            [type: string]: ListenerVO[];
-        };
+        private readonly _listenermap;
         /**
          * 名称
          */
@@ -875,7 +870,7 @@ declare module feng3d {
         /**
          * 冒泡属性名称为“parent”
          */
-        bubbleAttribute: string;
+        protected bubbleAttribute: string;
         /**
          * 事件适配主体
          */
@@ -953,27 +948,23 @@ declare module feng3d {
          * @param event						调度到事件流中的 Event 对象。
          */
         protected getBubbleTargets(event: Event): IEventDispatcher[];
-    }
-    /**
-     * 监听数据
-     */
-    class ListenerVO {
         /**
-         * 监听函数
+         * 添加监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        listener: (event: Event) => void;
+        private _addEventListener(type, listener, thisObject?, priority?, once?);
         /**
-         * 监听函数作用域
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         * @param thisObject                listener函数作用域
          */
-        thisObject: any;
-        /**
-         * 优先级
-         */
-        priority: number;
-        /**
-         * 是否只监听一次
-         */
-        once: boolean;
+        private _removeEventListener(type, listener, thisObject?);
     }
 }
 declare module feng3d {
