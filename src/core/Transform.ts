@@ -22,7 +22,7 @@ module feng3d
         /**
          * 缩放
          */
-        public scale = new Vector3D();
+        public scale = new Vector3D(1, 1, 1);
 
         //
         protected _matrix3D = new Matrix3D();
@@ -63,7 +63,7 @@ module feng3d
             //矫正值
             this.position.setTo(x || 0, y || 0, z || 0);
             this.rotation.setTo(rx || 0, ry || 0, rz || 0);
-            this.scale.setTo(rx || 0.000001, ry || 0.000001, rz || 0.000001);
+            this.scale.setTo(sx || 0.000001, sy || 0.000001, sz || 0.000001);
             //
             this._positionWatchers.push(
                 Watcher.watch(this.position, ["y"], this.invalidateMatrix3D, this),
@@ -232,10 +232,9 @@ module feng3d
          * 使变换矩阵无效
          */
         protected invalidateMatrix3D()
-        {
+        {            
             //延迟事件
             this.delay();
-            this.adjust();
 
             this._matrix3DDirty = true;
             this.notifyMatrix3DChanged();
