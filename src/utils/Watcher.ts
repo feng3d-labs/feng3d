@@ -196,7 +196,7 @@ module feng3d
             {
                 bindableCount++;
                 let newProp = "_" + bindableCount + property;
-                host[newProp] = data ? data.value : null;
+                host[newProp] = data ? data.value : undefined;
                 data = <any>{ enumerable: true, configurable: true };
                 data.get = function (): any
                 {
@@ -328,6 +328,17 @@ module feng3d
             return this.getHostPropertyValue();
         }
 
+        public setValue(value)
+        {
+            if (this.next)
+            {
+                this.next.setValue(value);
+            } else
+            {
+                this.setHostPropertyValue(value);
+            }
+        }
+
         /**
          * Sets the handler function.s
          * @param handler The handler function. This argument must not be null.
@@ -403,6 +414,16 @@ module feng3d
         private getHostPropertyValue(): any
         {
             return this.host ? this.host[this.property] : null;
+        }
+
+        /**
+         * @private
+         *
+         * @returns
+         */
+        private setHostPropertyValue(value)
+        {
+            this.host && (this.host[this.property] = value);
         }
 
         /**

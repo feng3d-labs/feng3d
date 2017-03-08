@@ -25,5 +25,15 @@ module feng3d
         {
             super();
         }
+
+        /**
+         * 派发事件，该事件将会强制冒泡到3D对象中
+		 * @param event						调度到事件流中的 Event 对象。
+         */
+        public dispatchEvent(event: Event): void
+        {
+            super.dispatchEvent(event);
+            this.object3D && this.object3D.dispatchEvent(event);
+        }
     }
 }

@@ -645,7 +645,7 @@ var feng3d;
             else if (!data || (!data.get && !data.set)) {
                 bindableCount++;
                 let newProp = "_" + bindableCount + property;
-                host[newProp] = data ? data.value : null;
+                host[newProp] = data ? data.value : undefined;
                 data = { enumerable: true, configurable: true };
                 data.get = function () {
                     return this[newProp];
@@ -711,6 +711,14 @@ var feng3d;
                 return this.next.getValue();
             }
             return this.getHostPropertyValue();
+        }
+        setValue(value) {
+            if (this.next) {
+                this.next.setValue(value);
+            }
+            else {
+                this.setHostPropertyValue(value);
+            }
         }
         /**
          * Sets the handler function.s
@@ -778,6 +786,14 @@ var feng3d;
         }
         /**
          * @private
+         *
+         * @returns
+         */
+        setHostPropertyValue(value) {
+            this.host && (this.host[this.property] = value);
+        }
+        /**
+         * @private
          */
         onPropertyChange(property) {
             if (property == this.property && !this.isExecuting) {
@@ -795,67 +811,20 @@ var feng3d;
     }
     feng3d.Watcher = Watcher;
 })(feng3d || (feng3d = {}));
-//参考 egret https://github.com/egret-labs/egret-core/blob/master/src/extension/eui/binding/Binding.ts
 var feng3d;
 (function (feng3d) {
-    function joinValues(templates) {
-        let first = templates[0];
-        let value = first instanceof feng3d.Watcher ? first.getValue() : first;
-        let length = templates.length;
-        for (let i = 1; i < length; i++) {
-            let item = templates[i];
-            if (item instanceof feng3d.Watcher) {
-                item = item.getValue();
-            }
-            value += item;
-        }
-        return value;
-    }
     /**
-     * The Binding class defines utility methods for performing data binding.
-     * You can use the methods defined in this class to configure data bindings.
-     * @version Egret 2.4
-     * @version eui 1.0
-     * @platform Web,Native
-     * @includeExample extension/eui/binding/BindingExample.ts
-     * @language en_US
-     */
-    /**
-     * 绑定工具类，用于执行数据绑定用的方法集。您可以使用此类中定义的方法来配置数据绑定。
-     * @version Egret 2.4
-     * @version eui 1.0
-     * @platform Web,Native
-     * @includeExample extension/eui/binding/BindingExample.ts
-     * @language zh_CN
+     * 绑定工具类
      */
     class Binding {
         /**
-         * Binds a property, <prop>prop</code> on the <code>target</code> Object, to a bindable property or peoperty chain.
-         * @param host The object that hosts the property or property chain to be watched.
-         * The <code>host</code> maintains a list of <code>targets</code> to update theirs <code>prop</code> when <code>chain</code> changes.
-         * @param chain A value specifying the property or chain to be watched. For example, when watch the property <code>host.a.b.c</code>,
-         * you need call the method like this: <code>indProperty(host, ["a","b","c"], ...)</code>
-         * @param target The Object defining the property to be bound to <code>chain</code>.
-         * @param prop The name of the public property defined in the <code>site</code> Object to be bound.
-         * @returns A ChangeWatcher instance, if at least one property name has been specified
-         * to the <code>chain</code> argument; null otherwise.
-         * @version Egret 2.4
-         * @version eui 1.0
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 绑定一个对象的属性值到要监视的对象属性上。
+         * （单向）绑定属性
          * @param host 用于承载要监视的属性或属性链的对象。
          * 当 <code>host</code>上<code>chain</code>所对应的值发生改变时，<code>target</code>上的<code>prop</code>属性将被自动更新。
          * @param chain 用于指定要监视的属性链的值。例如，要监视属性 <code>host.a.b.c</code>，需按以下形式调用此方法：<code>bindProperty(host, ["a","b","c"], ...)。</code>
          * @param target 本次绑定要更新的目标对象。
          * @param prop 本次绑定要更新的目标属性名称。
          * @returns 如果已为 chain 参数至少指定了一个属性名称，则返回 Watcher 实例；否则返回 null。
-         * @version Egret 2.4
-         * @version eui 1.0
-         * @platform Web,Native
-         * @language zh_CN
          */
         static bindProperty(host, chain, target, prop) {
             let watcher = feng3d.Watcher.watch(host, chain, null, null);
@@ -864,66 +833,50 @@ var feng3d;
                     target[prop] = value;
                 };
                 watcher.setHandler(assign, null);
-                assign(watcher.getValue());
             }
             return watcher;
         }
         /**
-         * Binds a callback, <prop>handler</code> on the <code>target</code> Object, to a bindable property or peoperty chain.
-         * Callback method to invoke with an argument of the current value of <code>chain</code> when that value changes.
-         * @param host The object that hosts the property or property chain to be watched.
-         * @param chain A value specifying the property or chain to be watched. For example, when watch the property <code>host.a.b.c</code>,
-         * you need call the method like this: <code>indProperty(host, ["a","b","c"], ...)</code>
-         * @param handler method to invoke with an argument of the current value of <code>chain</code> when that value changes.
-         * @param thisObject <code>this</code> object of binding method
-         * @returns A ChangeWatcher instance, if at least one property name has been  specified to the <code>chain</code> argument; null otherwise.
-         * @version Egret 2.4
-         * @version eui 1.0
-         * @platform Web,Native
-         * @language en_US
+         * 双向绑定属性
          */
-        /**
-         * 绑定一个回调函数到要监视的对象属性上。当 host上 chain 所对应的值发生改变时，handler 方法将被自动调用。
-         * @param host 用于承载要监视的属性或属性链的对象。
-         * @param chain 用于指定要监视的属性链的值。例如，要监视属性 host.a.b.c，需按以下形式调用此方法：bindSetter(host, ["a","b","c"], ...)。
-         * @param handler 在监视的目标属性链中任何属性的值发生改变时调用的事件处理函数。
-         * @param thisObject handler 方法绑定的this对象
-         * @returns 如果已为 chain 参数至少指定了一个属性名称，则返回 Watcher 实例；否则返回 null。
-         * @version Egret 2.4
-         * @version eui 1.0
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        static bindHandler(host, chain, handler, thisObject) {
-            let watcher = feng3d.Watcher.watch(host, chain, handler, thisObject);
-            if (watcher) {
-                handler.call(thisObject, watcher.getValue());
-            }
-            return watcher;
-        }
-        static $bindProperties(host, templates, chainIndex, target, prop) {
-            if (templates.length == 1 && chainIndex.length == 1) {
-                return Binding.bindProperty(host, templates[0].split("."), target, prop);
-            }
-            let assign = function () {
-                target[prop] = joinValues(templates);
-            };
-            let length = chainIndex.length;
-            let watcher;
-            for (let i = 0; i < length; i++) {
-                let index = chainIndex[i];
-                let chain = templates[index].split(".");
-                watcher = feng3d.Watcher.watch(host, chain, null, null);
-                if (watcher) {
-                    templates[index] = watcher;
-                    watcher.setHandler(assign, null);
-                }
-            }
-            assign();
-            return watcher;
+        static bothBindProperty(hosta, chaina, hostb, chainb) {
+            var bothBind = new BothBind(hosta, chaina, hostb, chainb);
+            return bothBind;
         }
     }
     feng3d.Binding = Binding;
+    class BothBind {
+        constructor(hosta, chaina, hostb, chainb) {
+            this._mark = false;
+            this._watchera = feng3d.Watcher.watch(hosta, chaina, this.todata, this);
+            this._watcherb = feng3d.Watcher.watch(hostb, chainb, this.fromdata, this);
+        }
+        todata() {
+            if (this._mark)
+                return;
+            this._mark = true;
+            var value = this._watchera.getValue();
+            if (value !== undefined) {
+                this._watcherb.setValue(value);
+            }
+            this._mark = false;
+        }
+        fromdata() {
+            if (this._mark)
+                return;
+            this._mark = true;
+            var value = this._watcherb.getValue();
+            if (value !== undefined) {
+                this._watchera.setValue(value);
+            }
+            this._mark = false;
+        }
+        unwatch() {
+            this._watchera.unwatch();
+            this._watcherb.unwatch();
+        }
+    }
+    feng3d.BothBind = BothBind;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -1022,6 +975,20 @@ var feng3d;
                 this._target = this;
         }
         /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once(type, listener, thisObject, priority = 0) {
+            if (listener == null)
+                return;
+            $listernerCenter //
+                .remove(this._target, type, listener, thisObject) //
+                .add(this._target, type, listener, thisObject, priority, true);
+        }
+        /**
          * 使用 EventDispatcher 对象注册事件侦听器对象，以使侦听器能够接收事件通知。
          * @param type						事件的类型。
          * @param listener					处理事件的侦听器函数。
@@ -1054,10 +1021,17 @@ var feng3d;
             //设置目标
             event.target = this._target;
             var listeners = $listernerCenter.getListeners(this._target, event.type);
+            var onceElements = [];
             //遍历调用事件回调函数
             for (var i = 0; !!listeners && i < listeners.length && !event.isStop; i++) {
                 var element = listeners[i];
                 element.listener.call(element.thisObject, event);
+                if (element.once) {
+                    onceElements.push(i);
+                }
+            }
+            while (onceElements.length > 0) {
+                listeners.splice(onceElements.pop(), 1);
             }
             //事件冒泡(冒泡阶段)
             if (event.bubbles && !event.isStopBubbles) {
@@ -1122,7 +1096,7 @@ var feng3d;
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        add(dispatcher, type, listener, thisObject = null, priority = 0) {
+        add(dispatcher, type, listener, thisObject = null, priority = 0, once = false) {
             var dispatcherListener = this.getDispatcherListener(dispatcher);
             if (dispatcherListener == null) {
                 dispatcherListener = this.createDispatcherListener(dispatcher);
@@ -1135,7 +1109,7 @@ var feng3d;
                     break;
                 }
             }
-            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority });
+            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
             dispatcherListener.push(type, listeners);
             return this;
         }
@@ -6010,6 +5984,14 @@ var feng3d;
          * 所属对象
          */
         get object3D() { return this._parentComponent; }
+        /**
+         * 派发事件，该事件将会强制冒泡到3D对象中
+         * @param event						调度到事件流中的 Event 对象。
+         */
+        dispatchEvent(event) {
+            super.dispatchEvent(event);
+            this.object3D && this.object3D.dispatchEvent(event);
+        }
     }
     feng3d.Object3DComponent = Object3DComponent;
 })(feng3d || (feng3d = {}));
@@ -6224,8 +6206,8 @@ var feng3d;
          * 发出状态改变消息
          */
         notifyMatrix3DChanged() {
-            var transformChanged = new TransfromEvent(TransfromEvent.TRANSFORM_CHANGED, this);
-            this.object3D && this.object3D.dispatchEvent(transformChanged);
+            var transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
+            this.dispatchEvent(transformChanged);
         }
         /**
          * 更新全局矩阵
@@ -6250,8 +6232,8 @@ var feng3d;
          * 通知全局变换改变
          */
         notifySceneTransformChange() {
-            var sceneTransformChanged = new TransfromEvent(TransfromEvent.SCENETRANSFORM_CHANGED, this);
-            this.object3D && this.object3D.dispatchEvent(sceneTransformChanged);
+            var sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
+            this.dispatchEvent(sceneTransformChanged);
         }
         /**
          * 全局变换矩阵失效
@@ -6282,7 +6264,7 @@ var feng3d;
      * 变换事件(3D状态发生改变、位置、旋转、缩放)
      * @author feng 2014-3-31
      */
-    class TransfromEvent extends feng3d.Event {
+    class TransformEvent extends feng3d.Event {
         /**
          * 创建一个作为参数传递给事件侦听器的 Event 对象。
          * @param type 事件的类型，可以作为 Event.type 访问。
@@ -6296,12 +6278,12 @@ var feng3d;
     /**
      * 变换
      */
-    TransfromEvent.TRANSFORM_CHANGED = "transformChanged";
+    TransformEvent.TRANSFORM_CHANGED = "transformChanged";
     /**
      * 场景变换矩阵发生变化
      */
-    TransfromEvent.SCENETRANSFORM_CHANGED = "scenetransformChanged";
-    feng3d.TransfromEvent = TransfromEvent;
+    TransformEvent.SCENETRANSFORM_CHANGED = "scenetransformChanged";
+    feng3d.TransformEvent = TransformEvent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -7287,13 +7269,13 @@ var feng3d;
          * 处理被添加组件事件
          */
         onBeAddedComponent(event) {
-            this.object3D.addEventListener(feng3d.TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.object3D.addEventListener(feng3d.TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
         /**
          * 处理被移除组件事件
          */
         onBeRemovedComponent(event) {
-            this.object3D.removeEventListener(feng3d.TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.object3D.removeEventListener(feng3d.TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
         /**
          * 处理镜头变化事件
@@ -8514,11 +8496,11 @@ var feng3d;
             this.segmentsT = segmentsT;
             this.yUp = yUp;
             this.buildGeometry();
-            feng3d.Binding.bindHandler(this, ["radius"], this.buildGeometry, this);
-            feng3d.Binding.bindHandler(this, ["tubeRadius"], this.buildGeometry, this);
-            feng3d.Binding.bindHandler(this, ["segmentsR"], this.buildGeometry, this);
-            feng3d.Binding.bindHandler(this, ["segmentsT"], this.buildGeometry, this);
-            feng3d.Binding.bindHandler(this, ["yUp"], this.buildGeometry, this);
+            feng3d.Watcher.watch(this, ["radius"], this.buildGeometry, this);
+            feng3d.Watcher.watch(this, ["tubeRadius"], this.buildGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsR"], this.buildGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsT"], this.buildGeometry, this);
+            feng3d.Watcher.watch(this, ["yUp"], this.buildGeometry, this);
         }
         /**
          * 添加顶点数据

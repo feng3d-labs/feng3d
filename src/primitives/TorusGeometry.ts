@@ -226,11 +226,11 @@ module feng3d
 
 			this.buildGeometry();
 
-			Binding.bindHandler(this, ["radius"], this.buildGeometry, this);
-			Binding.bindHandler(this, ["tubeRadius"], this.buildGeometry, this);
-			Binding.bindHandler(this, ["segmentsR"], this.buildGeometry, this);
-			Binding.bindHandler(this, ["segmentsT"], this.buildGeometry, this);
-			Binding.bindHandler(this, ["yUp"], this.buildGeometry, this);
+			Watcher.watch(this, ["radius"], this.buildGeometry, this);
+			Watcher.watch(this, ["tubeRadius"], this.buildGeometry, this);
+			Watcher.watch(this, ["segmentsR"], this.buildGeometry, this);
+			Watcher.watch(this, ["segmentsT"], this.buildGeometry, this);
+			Watcher.watch(this, ["yUp"], this.buildGeometry, this);
 		}
 	}
 }

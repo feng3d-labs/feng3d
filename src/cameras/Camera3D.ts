@@ -74,7 +74,7 @@ module feng3d
          */
         protected onBeAddedComponent(event: ComponentEvent): void
         {
-            this.object3D.addEventListener(TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.object3D.addEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
         /**
@@ -82,7 +82,7 @@ module feng3d
          */
         protected onBeRemovedComponent(event: ComponentEvent): void
         {
-            this.object3D.removeEventListener(TransfromEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.object3D.removeEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
         /**
@@ -94,7 +94,7 @@ module feng3d
             this.dispatchEvent(event);
         }
 
-        private onSpaceTransformChanged(event: TransfromEvent): void
+        private onSpaceTransformChanged(event: TransformEvent): void
         {
             this._viewProjectionDirty = true;
         }
