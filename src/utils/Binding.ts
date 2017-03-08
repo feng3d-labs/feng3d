@@ -8,17 +8,13 @@ module feng3d
     {
 
         /**
-         * 绑定一个对象的属性值到要监视的对象属性上。
+         * （单向）绑定属性
          * @param host 用于承载要监视的属性或属性链的对象。
          * 当 <code>host</code>上<code>chain</code>所对应的值发生改变时，<code>target</code>上的<code>prop</code>属性将被自动更新。
          * @param chain 用于指定要监视的属性链的值。例如，要监视属性 <code>host.a.b.c</code>，需按以下形式调用此方法：<code>bindProperty(host, ["a","b","c"], ...)。</code>
          * @param target 本次绑定要更新的目标对象。
          * @param prop 本次绑定要更新的目标属性名称。
          * @returns 如果已为 chain 参数至少指定了一个属性名称，则返回 Watcher 实例；否则返回 null。
-         * @version Egret 2.4
-         * @version eui 1.0
-         * @platform Web,Native
-         * @language zh_CN
          */
         public static bindProperty(host: any, chain: string[], target: any, prop: string): Watcher
         {
@@ -30,9 +26,58 @@ module feng3d
                     target[prop] = value;
                 };
                 watcher.setHandler(assign, null);
-                // assign(watcher.getValue());
             }
             return watcher;
+        }
+
+        /**
+         * 双向绑定属性
+         */
+        public static bothBindProperty(hosta: any, chaina: string[], hostb: any, chainb: string[])
+        {
+            var bothBind = new BothBind(hosta, chaina, hostb, chainb);
+            return bothBind;
+        }
+    }
+
+    export class BothBind
+    {
+        private _watchera: Watcher;
+        private _watcherb: Watcher;
+        private _mark = false;
+
+        constructor(hosta: any, chaina: string[], hostb: any, chainb: string[])
+        {
+            this._watchera = Watcher.watch(hosta, chaina, this.todata, this);
+            this._watcherb = Watcher.watch(hostb, chainb, this.fromdata, this);
+        }
+
+        private todata()
+        {
+            if (this._mark)
+                return;
+            this._mark = true;
+
+            this._watcherb.setValue(this._watchera.getValue());
+
+            this._mark = false;
+        }
+
+        private fromdata()
+        {
+            if (this._mark)
+                return;
+            this._mark = true;
+
+            this._watchera.setValue(this._watcherb.getValue());
+
+            this._mark = false;
+        }
+
+        public unwatch()
+        {
+            this._watchera.unwatch();
+            this._watcherb.unwatch();
         }
     }
 }

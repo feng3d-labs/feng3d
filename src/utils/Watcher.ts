@@ -328,6 +328,15 @@ module feng3d
             return this.getHostPropertyValue();
         }
 
+        public setValue(value)
+        {
+            if (this.next)
+            {
+                return this.next.setValue(value);
+            }
+            return this.setHostPropertyValue(value);
+        }
+
         /**
          * Sets the handler function.s
          * @param handler The handler function. This argument must not be null.
@@ -403,6 +412,16 @@ module feng3d
         private getHostPropertyValue(): any
         {
             return this.host ? this.host[this.property] : null;
+        }
+
+        /**
+         * @private
+         *
+         * @returns
+         */
+        private setHostPropertyValue(value)
+        {
+            this.host && (this.host[this.property] = value);
         }
 
         /**

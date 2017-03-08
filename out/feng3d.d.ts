@@ -680,6 +680,7 @@ declare module feng3d {
          * @language zh_CN
          */
         getValue(): any;
+        setValue(value: any): any;
         /**
          * Sets the handler function.s
          * @param handler The handler function. This argument must not be null.
@@ -722,6 +723,12 @@ declare module feng3d {
         private getHostPropertyValue();
         /**
          * @private
+         *
+         * @returns
+         */
+        private setHostPropertyValue(value);
+        /**
+         * @private
          */
         private onPropertyChange(property);
     }
@@ -732,19 +739,28 @@ declare module feng3d {
      */
     class Binding {
         /**
-         * 绑定一个对象的属性值到要监视的对象属性上。
+         * （单向）绑定属性
          * @param host 用于承载要监视的属性或属性链的对象。
          * 当 <code>host</code>上<code>chain</code>所对应的值发生改变时，<code>target</code>上的<code>prop</code>属性将被自动更新。
          * @param chain 用于指定要监视的属性链的值。例如，要监视属性 <code>host.a.b.c</code>，需按以下形式调用此方法：<code>bindProperty(host, ["a","b","c"], ...)。</code>
          * @param target 本次绑定要更新的目标对象。
          * @param prop 本次绑定要更新的目标属性名称。
          * @returns 如果已为 chain 参数至少指定了一个属性名称，则返回 Watcher 实例；否则返回 null。
-         * @version Egret 2.4
-         * @version eui 1.0
-         * @platform Web,Native
-         * @language zh_CN
          */
         static bindProperty(host: any, chain: string[], target: any, prop: string): Watcher;
+        /**
+         * 双向绑定属性
+         */
+        static bothBindProperty(hosta: any, chaina: string[], hostb: any, chainb: string[]): BothBind;
+    }
+    class BothBind {
+        private _watchera;
+        private _watcherb;
+        private _mark;
+        constructor(hosta: any, chaina: string[], hostb: any, chainb: string[]);
+        private todata();
+        private fromdata();
+        unwatch(): void;
     }
 }
 declare module feng3d {
