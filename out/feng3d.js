@@ -10364,6 +10364,7 @@ var feng3d;
             /** 动画节点列表 */
             this.animations = [];
             this._globalMatrices = [];
+            this._globalPropertiesDirty = true;
             this.skeleton = skeleton;
         }
         /**
