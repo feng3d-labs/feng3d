@@ -6,32 +6,40 @@ module feng3d
      */
     export class Transform extends Object3DComponent
     {
-        //private
-        protected _x = 0;
-        protected _y = 0;
-        protected _z = 0;
-        protected _rx = 0;
-        protected _ry = 0;
-        protected _rz = 0;
-        protected _sx = 1;
-        protected _sy = 1;
-        protected _sz = 1;
+
+        private readonly transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
+        private readonly sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
+        /**
+         * 位移
+         */
+        public position = new Vector3D();
+
+        /**
+         * 旋转
+         */
+        public rotation = new Vector3D();
+
+        /**
+         * 缩放
+         */
+        public scale = new Vector3D();
+
         //
         protected _matrix3D = new Matrix3D();
-        protected _matrix3DDirty: boolean;
-
         protected _inverseMatrix3D = new Matrix3D();
-        protected _inverseMatrix3DDirty: boolean;
-        /**
-         * 全局矩阵是否变脏
-         */
-        protected _globalMatrix3DDirty: boolean;
         /**
          * 全局矩阵
          */
-        protected _globalMatrix3D: Matrix3D = new Matrix3D();
-        protected _inverseGlobalMatrix3DDirty: boolean;
-        protected _inverseGlobalMatrix3D: Matrix3D = new Matrix3D();
+        protected _globalMatrix3D = new Matrix3D();
+        protected _inverseGlobalMatrix3D = new Matrix3D();
+        //
+        protected _matrix3DDirty = true;
+        protected _inverseMatrix3DDirty = true;
+        /**
+         * 全局矩阵是否变脏
+         */
+        protected _globalMatrix3DDirty = true;
+        protected _inverseGlobalMatrix3DDirty = true;
 
         /**
          * 构建变换
@@ -48,89 +56,24 @@ module feng3d
         constructor(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1)
         {
             super();
-            this._x = x || 0;
-            this._y = y || 0;
-            this._z = z || 0;
-            this._rx = rx || 0;
-            this._ry = ry || 0;
-            this._rz = rz || 0;
-            this._sx = sx || 0.000001;
-            this._sy = sy || 0.000001;
-            this._sz = sz || 0.000001;
-            this.invalidateMatrix3D();
+            //矫正值
+            this.position.setTo(x || 0, y || 0, z || 0);
+            this.rotation.setTo(rx || 0, ry || 0, rz || 0);
+            this.scale.setTo(rx || 0.000001, ry || 0.000001, rz || 0.000001);
+            //
+            Watcher.watch(this, ["position", "x"], this.invalidateMatrix3D, this);
+            Watcher.watch(this, ["position", "y"], this.invalidateMatrix3D, this);
+            Watcher.watch(this, ["position", "z"], this.invalidateMatrix3D, this);
+            Watcher.watch(this, ["rotation", "x"], this.invalidateMatrix3D, this);
+            Watcher.watch(this, ["rotation", "y"], this.invalidateMatrix3D, this);
+            Watcher.watch(this, ["rotation", "z"], this.invalidateMatrix3D, this);
+            Watcher.watch(this, ["scale", "x"], this.invalidateMatrix3D, this);
+            Watcher.watch(this, ["scale", "y"], this.invalidateMatrix3D, this);
+            Watcher.watch(this, ["scale", "z"], this.invalidateMatrix3D, this);
+            Watcher.watch(this, ["position"], this.invalidateMatrix3D, this);
+            Watcher.watch(this, ["rotation"], this.invalidateMatrix3D, this);
+            Watcher.watch(this, ["rotation"], this.invalidateMatrix3D, this);
         }
-
-        /**
-         * X坐标
-         */
-        public get x(): number { return this._x; }
-        public set x(value: number) { this._x = value || 0; this.invalidateMatrix3D(); }
-
-        /**
-         * Y坐标
-         */
-        public get y(): number { return this._y; }
-        public set y(value: number) { this._y = value || 0; this.invalidateMatrix3D(); }
-
-        /**
-         * Z坐标
-         */
-        public get z(): number { return this._z; }
-        public set z(value: number) { this._z = value || 0; this.invalidateMatrix3D(); }
-
-        /**
-         * X旋转
-         */
-        public get rx(): number { return this._rx; }
-        public set rx(value: number) { this._rx = value || 0; this.invalidateMatrix3D(); }
-
-        /**
-         * Y旋转
-         */
-        public get ry(): number { return this._ry; }
-        public set ry(value: number) { this._ry = value || 0; this.invalidateMatrix3D(); }
-
-        /**
-         * Z旋转
-         */
-        public get rz(): number { return this._rz; }
-        public set rz(value: number) { this._rz = value || 0; this.invalidateMatrix3D(); }
-
-        /**
-         * X缩放
-         */
-        public get sx(): number { return this._sx; }
-        public set sx(value: number) { this._sx = value || 0.000001; this.invalidateMatrix3D(); }
-
-        /**
-         * Y缩放
-         */
-        public get sy(): number { return this._sy; }
-        public set sy(value: number) { this._sy = value || 0.000001; this.invalidateMatrix3D(); }
-
-        /**
-         * Z缩放
-         */
-        public get sz(): number { return this._sz; }
-        public set sz(value: number) { this._sz = value || 0.000001; this.invalidateMatrix3D(); }
-
-        /**
-         * 位移
-         */
-        public get position(): Vector3D { return new Vector3D(this.x, this.y, this.z); };
-        public set position(value: Vector3D) { this._x = value.x || 0; this._y = value.y || 0; this._z = value.z || 0; this.invalidateMatrix3D(); }
-
-        /**
-         * 旋转
-         */
-        public get rotation(): Vector3D { return new Vector3D(this.rx, this.ry, this.rz); }
-        public set rotation(value: Vector3D) { this._rx = value.x || 0; this._ry = value.y || 0; this._rz = value.z || 0; this.invalidateMatrix3D(); }
-
-        /**
-         * 缩放
-         */
-        public get scale(): Vector3D { return new Vector3D(this.sx, this.sy, this.sz); }
-        public set scale(value: Vector3D) { this._sx = value.x || 0.000001; this._sy = value.y || 0.000001; this._sz = value.z || 0.000001; this.invalidateMatrix3D(); }
 
         /**
          * 全局坐标
@@ -159,21 +102,22 @@ module feng3d
 
         public set matrix3d(value: Matrix3D)
         {
+            //延迟事件
+            this.delay();
+
             this._matrix3DDirty = false;
             this._matrix3D.rawData.set(value.rawData);
             var vecs = this._matrix3D.decompose();
-            this._x = vecs[0].x || 0;
-            this._y = vecs[0].y || 0;
-            this._z = vecs[0].z || 0;
-            this._rx = vecs[1].x * MathConsts.RADIANS_TO_DEGREES || 0;
-            this._ry = vecs[1].y * MathConsts.RADIANS_TO_DEGREES || 0;
-            this._rz = vecs[1].z * MathConsts.RADIANS_TO_DEGREES || 0;
-            this._sx = vecs[2].x || 0.000001;
-            this._sy = vecs[2].y || 0.000001;
-            this._sz = vecs[2].z || 0.000001;
+            this.position.copyFrom(vecs[0]);
+            this.rotation.copyFrom(vecs[1]);
+            this.rotation.scaleBy(MathConsts.RADIANS_TO_DEGREES);
+            this.scale.copyFrom(vecs[2]);
+            this.adjust();
 
             this.notifyMatrix3DChanged();
             this.invalidateGlobalMatrix3D();
+            //释放事件
+            this.release();
         }
 
         /**
@@ -234,10 +178,15 @@ module feng3d
          */
         protected updateMatrix3D()
         {
-            this._matrix3D.recompose([//
-                new Vector3D(this.x, this.y, this.z),//
-                new Vector3D(this.rx * MathConsts.DEGREES_TO_RADIANS, this.ry * MathConsts.DEGREES_TO_RADIANS, this.rz * MathConsts.DEGREES_TO_RADIANS),//
-                new Vector3D(this.sx, this.sy, this.sz),//
+            //矫正值
+            this.adjust();
+            //
+            var rotation = this.rotation.clone();
+            rotation.scaleBy(MathConsts.DEGREES_TO_RADIANS);
+            this._matrix3D.recompose([
+                this.position,
+                rotation,
+                this.scale
             ]);
             this._matrix3DDirty = false;
         }
@@ -247,10 +196,29 @@ module feng3d
          */
         protected invalidateMatrix3D()
         {
+            //延迟事件
+            this.delay();
+            this.adjust();
+
             this._matrix3DDirty = true;
             this.notifyMatrix3DChanged();
             //
             this.invalidateGlobalMatrix3D();
+            this.release();
+        }
+
+        /**
+         * 矫正数值
+         */
+        private adjust()
+        {
+            this.position || (this.position = new Vector3D());
+            this.rotation || (this.rotation = new Vector3D());
+            this.scale || (this.scale = new Vector3D(1, 1, 1));
+
+            this.position.setTo(this.position.x || 0, this.position.y || 0, this.position.z || 0);
+            this.rotation.setTo(this.rotation.x || 0, this.rotation.y || 0, this.rotation.z || 0);
+            this.scale.setTo(this.scale.x || 0.000001, this.scale.y || 0.000001, this.scale.z || 0.000001);
         }
 
         /**
@@ -258,8 +226,7 @@ module feng3d
 		 */
         protected notifyMatrix3DChanged()
         {
-            var transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
-            this.dispatchEvent(transformChanged);
+            this.dispatchEvent(this.transformChanged);
         }
 
         /**
@@ -291,8 +258,7 @@ module feng3d
 		 */
         protected notifySceneTransformChange()
         {
-            var sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
-            this.dispatchEvent(sceneTransformChanged);
+            this.dispatchEvent(this.sceneTransformChanged);
         }
 
         /**

@@ -1015,12 +1015,13 @@ var feng3d;
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEventDispatcher 对象。
          * @param event						调度到事件流中的 Event 对象。
+         * @returns                         被延迟返回false，否则返回true
          */
         dispatchEvent(event) {
             if (this._delaycount > 0) {
                 if (this._delayEvents.indexOf(event) == -1)
                     this._delayEvents.push(event);
-                return;
+                return false;
             }
             //设置目标
             event.target = this._target;
@@ -1041,6 +1042,7 @@ var feng3d;
             if (event.bubbles && !event.isStopBubbles) {
                 this.dispatchBubbleEvent(event);
             }
+            return true;
         }
         /**
          * 延迟事件
@@ -6016,8 +6018,11 @@ var feng3d;
          * @param event						调度到事件流中的 Event 对象。
          */
         dispatchEvent(event) {
-            super.dispatchEvent(event);
-            this.object3D && this.object3D.dispatchEvent(event);
+            var result = super.dispatchEvent(event);
+            if (result) {
+                this.object3D && this.object3D.dispatchEvent(event);
+            }
+            return result;
         }
     }
     feng3d.Object3DComponent = Object3DComponent;
@@ -6043,16 +6048,20 @@ var feng3d;
          */
         constructor(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1) {
             super();
-            //private
-            this._x = 0;
-            this._y = 0;
-            this._z = 0;
-            this._rx = 0;
-            this._ry = 0;
-            this._rz = 0;
-            this._sx = 1;
-            this._sy = 1;
-            this._sz = 1;
+            this.transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
+            this.sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
+            /**
+             * 位移
+             */
+            this.position = new feng3d.Vector3D();
+            /**
+             * 旋转
+             */
+            this.rotation = new feng3d.Vector3D();
+            /**
+             * 缩放
+             */
+            this.scale = new feng3d.Vector3D();
             //
             this._matrix3D = new feng3d.Matrix3D();
             this._inverseMatrix3D = new feng3d.Matrix3D();
@@ -6061,78 +6070,32 @@ var feng3d;
              */
             this._globalMatrix3D = new feng3d.Matrix3D();
             this._inverseGlobalMatrix3D = new feng3d.Matrix3D();
-            this._x = x || 0;
-            this._y = y || 0;
-            this._z = z || 0;
-            this._rx = rx || 0;
-            this._ry = ry || 0;
-            this._rz = rz || 0;
-            this._sx = sx || 0.000001;
-            this._sy = sy || 0.000001;
-            this._sz = sz || 0.000001;
-            this.invalidateMatrix3D();
+            //
+            this._matrix3DDirty = true;
+            this._inverseMatrix3DDirty = true;
+            /**
+             * 全局矩阵是否变脏
+             */
+            this._globalMatrix3DDirty = true;
+            this._inverseGlobalMatrix3DDirty = true;
+            //矫正值
+            this.position.setTo(x || 0, y || 0, z || 0);
+            this.rotation.setTo(rx || 0, ry || 0, rz || 0);
+            this.scale.setTo(rx || 0.000001, ry || 0.000001, rz || 0.000001);
+            //
+            feng3d.Watcher.watch(this, ["position", "x"], this.invalidateMatrix3D, this);
+            feng3d.Watcher.watch(this, ["position", "y"], this.invalidateMatrix3D, this);
+            feng3d.Watcher.watch(this, ["position", "z"], this.invalidateMatrix3D, this);
+            feng3d.Watcher.watch(this, ["rotation", "x"], this.invalidateMatrix3D, this);
+            feng3d.Watcher.watch(this, ["rotation", "y"], this.invalidateMatrix3D, this);
+            feng3d.Watcher.watch(this, ["rotation", "z"], this.invalidateMatrix3D, this);
+            feng3d.Watcher.watch(this, ["scale", "x"], this.invalidateMatrix3D, this);
+            feng3d.Watcher.watch(this, ["scale", "y"], this.invalidateMatrix3D, this);
+            feng3d.Watcher.watch(this, ["scale", "z"], this.invalidateMatrix3D, this);
+            feng3d.Watcher.watch(this, ["position"], this.invalidateMatrix3D, this);
+            feng3d.Watcher.watch(this, ["rotation"], this.invalidateMatrix3D, this);
+            feng3d.Watcher.watch(this, ["rotation"], this.invalidateMatrix3D, this);
         }
-        /**
-         * X坐标
-         */
-        get x() { return this._x; }
-        set x(value) { this._x = value || 0; this.invalidateMatrix3D(); }
-        /**
-         * Y坐标
-         */
-        get y() { return this._y; }
-        set y(value) { this._y = value || 0; this.invalidateMatrix3D(); }
-        /**
-         * Z坐标
-         */
-        get z() { return this._z; }
-        set z(value) { this._z = value || 0; this.invalidateMatrix3D(); }
-        /**
-         * X旋转
-         */
-        get rx() { return this._rx; }
-        set rx(value) { this._rx = value || 0; this.invalidateMatrix3D(); }
-        /**
-         * Y旋转
-         */
-        get ry() { return this._ry; }
-        set ry(value) { this._ry = value || 0; this.invalidateMatrix3D(); }
-        /**
-         * Z旋转
-         */
-        get rz() { return this._rz; }
-        set rz(value) { this._rz = value || 0; this.invalidateMatrix3D(); }
-        /**
-         * X缩放
-         */
-        get sx() { return this._sx; }
-        set sx(value) { this._sx = value || 0.000001; this.invalidateMatrix3D(); }
-        /**
-         * Y缩放
-         */
-        get sy() { return this._sy; }
-        set sy(value) { this._sy = value || 0.000001; this.invalidateMatrix3D(); }
-        /**
-         * Z缩放
-         */
-        get sz() { return this._sz; }
-        set sz(value) { this._sz = value || 0.000001; this.invalidateMatrix3D(); }
-        /**
-         * 位移
-         */
-        get position() { return new feng3d.Vector3D(this.x, this.y, this.z); }
-        ;
-        set position(value) { this._x = value.x || 0; this._y = value.y || 0; this._z = value.z || 0; this.invalidateMatrix3D(); }
-        /**
-         * 旋转
-         */
-        get rotation() { return new feng3d.Vector3D(this.rx, this.ry, this.rz); }
-        set rotation(value) { this._rx = value.x || 0; this._ry = value.y || 0; this._rz = value.z || 0; this.invalidateMatrix3D(); }
-        /**
-         * 缩放
-         */
-        get scale() { return new feng3d.Vector3D(this.sx, this.sy, this.sz); }
-        set scale(value) { this._sx = value.x || 0.000001; this._sy = value.y || 0.000001; this._sz = value.z || 0.000001; this.invalidateMatrix3D(); }
         /**
          * 全局坐标
          */
@@ -6153,20 +6116,20 @@ var feng3d;
             return this._matrix3D;
         }
         set matrix3d(value) {
+            //延迟事件
+            this.delay();
             this._matrix3DDirty = false;
             this._matrix3D.rawData.set(value.rawData);
             var vecs = this._matrix3D.decompose();
-            this._x = vecs[0].x || 0;
-            this._y = vecs[0].y || 0;
-            this._z = vecs[0].z || 0;
-            this._rx = vecs[1].x * feng3d.MathConsts.RADIANS_TO_DEGREES || 0;
-            this._ry = vecs[1].y * feng3d.MathConsts.RADIANS_TO_DEGREES || 0;
-            this._rz = vecs[1].z * feng3d.MathConsts.RADIANS_TO_DEGREES || 0;
-            this._sx = vecs[2].x || 0.000001;
-            this._sy = vecs[2].y || 0.000001;
-            this._sz = vecs[2].z || 0.000001;
+            this.position.copyFrom(vecs[0]);
+            this.rotation.copyFrom(vecs[1]);
+            this.rotation.scaleBy(feng3d.MathConsts.RADIANS_TO_DEGREES);
+            this.scale.copyFrom(vecs[2]);
+            this.adjust();
             this.notifyMatrix3DChanged();
             this.invalidateGlobalMatrix3D();
+            //释放事件
+            this.release();
         }
         /**
          * 逆变换矩阵
@@ -6213,10 +6176,15 @@ var feng3d;
          * 变换矩阵
          */
         updateMatrix3D() {
+            //矫正值
+            this.adjust();
+            //
+            var rotation = this.rotation.clone();
+            rotation.scaleBy(feng3d.MathConsts.DEGREES_TO_RADIANS);
             this._matrix3D.recompose([
-                new feng3d.Vector3D(this.x, this.y, this.z),
-                new feng3d.Vector3D(this.rx * feng3d.MathConsts.DEGREES_TO_RADIANS, this.ry * feng3d.MathConsts.DEGREES_TO_RADIANS, this.rz * feng3d.MathConsts.DEGREES_TO_RADIANS),
-                new feng3d.Vector3D(this.sx, this.sy, this.sz),
+                this.position,
+                rotation,
+                this.scale
             ]);
             this._matrix3DDirty = false;
         }
@@ -6224,17 +6192,31 @@ var feng3d;
          * 使变换矩阵无效
          */
         invalidateMatrix3D() {
+            //延迟事件
+            this.delay();
+            this.adjust();
             this._matrix3DDirty = true;
             this.notifyMatrix3DChanged();
             //
             this.invalidateGlobalMatrix3D();
+            this.release();
+        }
+        /**
+         * 矫正数值
+         */
+        adjust() {
+            this.position || (this.position = new feng3d.Vector3D());
+            this.rotation || (this.rotation = new feng3d.Vector3D());
+            this.scale || (this.scale = new feng3d.Vector3D(1, 1, 1));
+            this.position.setTo(this.position.x || 0, this.position.y || 0, this.position.z || 0);
+            this.rotation.setTo(this.rotation.x || 0, this.rotation.y || 0, this.rotation.z || 0);
+            this.scale.setTo(this.scale.x || 0.000001, this.scale.y || 0.000001, this.scale.z || 0.000001);
         }
         /**
          * 发出状态改变消息
          */
         notifyMatrix3DChanged() {
-            var transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
-            this.dispatchEvent(transformChanged);
+            this.dispatchEvent(this.transformChanged);
         }
         /**
          * 更新全局矩阵
@@ -6259,8 +6241,7 @@ var feng3d;
          * 通知全局变换改变
          */
         notifySceneTransformChange() {
-            var sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
-            this.dispatchEvent(sceneTransformChanged);
+            this.dispatchEvent(this.sceneTransformChanged);
         }
         /**
          * 全局变换矩阵失效
@@ -9200,9 +9181,7 @@ var feng3d;
                     this._target.lookAt(this.lookAtPosition, this._upAxis);
                 }
                 else if (this._lookAtObject) {
-                    this._pos.x = this._lookAtObject.x;
-                    this._pos.y = this._lookAtObject.y;
-                    this._pos.z = this._lookAtObject.z;
+                    this._pos.copyFrom(this._lookAtObject.position);
                     this._target.lookAt(this._pos, this._upAxis);
                 }
             }
@@ -9290,9 +9269,9 @@ var feng3d;
             var displacement = right.clone();
             displacement.incrementBy(up);
             displacement.incrementBy(forward);
-            this.target.x += displacement.x;
-            this.target.y += displacement.y;
-            this.target.z += displacement.z;
+            this.target.position.x += displacement.x;
+            this.target.position.y += displacement.y;
+            this.target.position.z += displacement.z;
         }
         /**
          * 处理鼠标移动事件
@@ -11627,19 +11606,19 @@ var feng3d;
             this.addChild(this.zLine);
             //
             this.xArrow = new feng3d.ConeObject3D(5, 18);
-            this.xArrow.transform.x = length;
-            this.xArrow.transform.rz = -90;
+            this.xArrow.transform.position.x = length;
+            this.xArrow.transform.rotation.z = -90;
             this.xArrow.colorMaterial.color = new feng3d.Color(1, 0, 0);
             this.addChild(this.xArrow);
             //
             this.yArrow = new feng3d.ConeObject3D(5, 18);
-            this.yArrow.transform.y = length;
+            this.yArrow.transform.position.y = length;
             this.yArrow.colorMaterial.color = new feng3d.Color(0, 1, 0);
             this.addChild(this.yArrow);
             //
             this.zArrow = new feng3d.ConeObject3D(5, 18);
-            this.zArrow.transform.z = length;
-            this.zArrow.transform.rx = 90;
+            this.zArrow.transform.position.z = length;
+            this.zArrow.transform.rotation.x = 90;
             this.zArrow.colorMaterial.color = new feng3d.Color(0, 0, 1);
             this.addChild(this.zArrow);
         }

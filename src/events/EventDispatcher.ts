@@ -94,14 +94,15 @@ module feng3d
         /**
 		 * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEventDispatcher 对象。
 		 * @param event						调度到事件流中的 Event 对象。
+         * @returns                         被延迟返回false，否则返回true
          */
-        public dispatchEvent(event: Event): void
+        public dispatchEvent(event: Event): boolean
         {
             if (this._delaycount > 0)
             {
                 if (this._delayEvents.indexOf(event) == -1)
                     this._delayEvents.push(event);
-                return;
+                return false;
             }
 
             //设置目标
@@ -130,6 +131,7 @@ module feng3d
             {
                 this.dispatchBubbleEvent(event);
             }
+            return true;
         }
 
         /**

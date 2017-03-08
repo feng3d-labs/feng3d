@@ -914,8 +914,9 @@ declare module feng3d {
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEventDispatcher 对象。
          * @param event						调度到事件流中的 Event 对象。
+         * @returns                         被延迟返回false，否则返回true
          */
-        dispatchEvent(event: Event): void;
+        dispatchEvent(event: Event): boolean;
         /**
          * 延迟事件
          * 当派发事件时先收集下来，调用release派发被延迟的事件
@@ -3661,7 +3662,7 @@ declare module feng3d {
          * 派发事件，该事件将会强制冒泡到3D对象中
          * @param event						调度到事件流中的 Event 对象。
          */
-        dispatchEvent(event: Event): void;
+        dispatchEvent(event: Event): boolean;
     }
 }
 declare module feng3d {
@@ -3670,29 +3671,34 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Transform extends Object3DComponent {
-        protected _x: number;
-        protected _y: number;
-        protected _z: number;
-        protected _rx: number;
-        protected _ry: number;
-        protected _rz: number;
-        protected _sx: number;
-        protected _sy: number;
-        protected _sz: number;
+        private readonly transformChanged;
+        private readonly sceneTransformChanged;
+        /**
+         * 位移
+         */
+        position: Vector3D;
+        /**
+         * 旋转
+         */
+        rotation: Vector3D;
+        /**
+         * 缩放
+         */
+        scale: Vector3D;
         protected _matrix3D: Matrix3D;
-        protected _matrix3DDirty: boolean;
         protected _inverseMatrix3D: Matrix3D;
+        /**
+         * 全局矩阵
+         */
+        protected _globalMatrix3D: Matrix3D;
+        protected _inverseGlobalMatrix3D: Matrix3D;
+        protected _matrix3DDirty: boolean;
         protected _inverseMatrix3DDirty: boolean;
         /**
          * 全局矩阵是否变脏
          */
         protected _globalMatrix3DDirty: boolean;
-        /**
-         * 全局矩阵
-         */
-        protected _globalMatrix3D: Matrix3D;
         protected _inverseGlobalMatrix3DDirty: boolean;
-        protected _inverseGlobalMatrix3D: Matrix3D;
         /**
          * 构建变换
          * @param x X坐标
@@ -3706,54 +3712,6 @@ declare module feng3d {
          * @param sz Z缩放
          */
         constructor(x?: number, y?: number, z?: number, rx?: number, ry?: number, rz?: number, sx?: number, sy?: number, sz?: number);
-        /**
-         * X坐标
-         */
-        x: number;
-        /**
-         * Y坐标
-         */
-        y: number;
-        /**
-         * Z坐标
-         */
-        z: number;
-        /**
-         * X旋转
-         */
-        rx: number;
-        /**
-         * Y旋转
-         */
-        ry: number;
-        /**
-         * Z旋转
-         */
-        rz: number;
-        /**
-         * X缩放
-         */
-        sx: number;
-        /**
-         * Y缩放
-         */
-        sy: number;
-        /**
-         * Z缩放
-         */
-        sz: number;
-        /**
-         * 位移
-         */
-        position: Vector3D;
-        /**
-         * 旋转
-         */
-        rotation: Vector3D;
-        /**
-         * 缩放
-         */
-        scale: Vector3D;
         /**
          * 全局坐标
          */
@@ -3788,6 +3746,10 @@ declare module feng3d {
          * 使变换矩阵无效
          */
         protected invalidateMatrix3D(): void;
+        /**
+         * 矫正数值
+         */
+        private adjust();
         /**
          * 发出状态改变消息
          */

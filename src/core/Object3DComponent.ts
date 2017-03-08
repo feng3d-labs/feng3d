@@ -30,10 +30,14 @@ module feng3d
          * 派发事件，该事件将会强制冒泡到3D对象中
 		 * @param event						调度到事件流中的 Event 对象。
          */
-        public dispatchEvent(event: Event): void
+        public dispatchEvent(event: Event): boolean
         {
-            super.dispatchEvent(event);
-            this.object3D && this.object3D.dispatchEvent(event);
+            var result = super.dispatchEvent(event);
+            if (result)
+            {
+                this.object3D && this.object3D.dispatchEvent(event);
+            }
+            return result;
         }
     }
 }

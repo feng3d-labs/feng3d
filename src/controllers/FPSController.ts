@@ -111,9 +111,9 @@ module feng3d
             var displacement = right.clone();
             displacement.incrementBy(up);
             displacement.incrementBy(forward);
-            this.target.x += displacement.x;
-            this.target.y += displacement.y;
-            this.target.z += displacement.z;
+            this.target.position.x += displacement.x;
+            this.target.position.y += displacement.y;
+            this.target.position.z += displacement.z;
         }
 
         /**
