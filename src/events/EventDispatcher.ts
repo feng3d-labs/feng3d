@@ -22,6 +22,16 @@ module feng3d
          */
         private _target: IEventDispatcher;
 
+        /**
+         * 延迟计数，当计数大于0时事件将会被收集，等到计数等于0时派发
+         */
+        private _delaycount = 0;
+
+        /**
+         * 被延迟的事件列表
+         */
+        private _delayEvents: Event[] = [];
+
 		/**
 		 * 构建事件适配器
 		 * @param target		事件适配主体
@@ -87,6 +97,12 @@ module feng3d
          */
         public dispatchEvent(event: Event): void
         {
+            if (this._delaycount > 0)
+            {
+                if (this._delayEvents.indexOf(event) == -1)
+                    this._delayEvents.push(event);
+                return;
+            }
 
             //设置目标
             event.target = this._target;
@@ -113,6 +129,35 @@ module feng3d
             if (event.bubbles && !event.isStopBubbles)
             {
                 this.dispatchBubbleEvent(event);
+            }
+        }
+
+        /**
+         * 延迟事件
+         * 当派发事件时先收集下来，调用release派发被延迟的事件
+         * 每调用一次delay计数加1、调用release一次计数减1，当计数为0时派发所有被收集事件
+         * 与release配合使用
+         */
+        public delay()
+        {
+            this._delaycount = this._delaycount + 1;
+        }
+
+        /**
+         * 派发被延迟的事件
+         * 每调用一次delay计数加1、调用release一次计数减1，当计数为0时派发所有被收集事件
+         * 与delay配合使用
+         */
+        public release()
+        {
+            this._delaycount = this._delaycount - 1;
+            if (this._delaycount == 0)
+            {
+                for (var i = 0; i < this._delayEvents.length; i++)
+                {
+                    this.dispatchEvent(this._delayEvents[i]);
+                }
+                this._delayEvents.length = 0;
             }
         }
 

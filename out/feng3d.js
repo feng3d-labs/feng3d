@@ -970,6 +970,14 @@ var feng3d;
              * 冒泡属性名称为“parent”
              */
             this.bubbleAttribute = "parent";
+            /**
+             * 延迟计数，当计数大于0时事件将会被收集，等到计数等于0时派发
+             */
+            this._delaycount = 0;
+            /**
+             * 被延迟的事件列表
+             */
+            this._delayEvents = [];
             this._target = target;
             if (this._target == null)
                 this._target = this;
@@ -1018,6 +1026,11 @@ var feng3d;
          * @param event						调度到事件流中的 Event 对象。
          */
         dispatchEvent(event) {
+            if (this._delaycount > 0) {
+                if (this._delayEvents.indexOf(event) == -1)
+                    this._delayEvents.push(event);
+                return;
+            }
             //设置目标
             event.target = this._target;
             var listeners = $listernerCenter.getListeners(this._target, event.type);
@@ -1036,6 +1049,29 @@ var feng3d;
             //事件冒泡(冒泡阶段)
             if (event.bubbles && !event.isStopBubbles) {
                 this.dispatchBubbleEvent(event);
+            }
+        }
+        /**
+         * 延迟事件
+         * 当派发事件时先收集下来，调用release派发被延迟的事件
+         * 每调用一次delay计数加1、调用release一次计数减1，当计数为0时派发所有被收集事件
+         * 与release配合使用
+         */
+        delay() {
+            this._delaycount = this._delaycount + 1;
+        }
+        /**
+         * 派发被延迟的事件
+         * 每调用一次delay计数加1、调用release一次计数减1，当计数为0时派发所有被收集事件
+         * 与delay配合使用
+         */
+        release() {
+            this._delaycount = this._delaycount - 1;
+            if (this._delaycount == 0) {
+                for (var i = 0; i < this._delayEvents.length; i++) {
+                    this.dispatchEvent(this._delayEvents[i]);
+                }
+                this._delayEvents.length = 0;
             }
         }
         /**

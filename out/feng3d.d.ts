@@ -876,6 +876,14 @@ declare module feng3d {
          */
         private _target;
         /**
+         * 延迟计数，当计数大于0时事件将会被收集，等到计数等于0时派发
+         */
+        private _delaycount;
+        /**
+         * 被延迟的事件列表
+         */
+        private _delayEvents;
+        /**
          * 构建事件适配器
          * @param target		事件适配主体
          */
@@ -909,6 +917,19 @@ declare module feng3d {
          * @param event						调度到事件流中的 Event 对象。
          */
         dispatchEvent(event: Event): void;
+        /**
+         * 延迟事件
+         * 当派发事件时先收集下来，调用release派发被延迟的事件
+         * 每调用一次delay计数加1、调用release一次计数减1，当计数为0时派发所有被收集事件
+         * 与release配合使用
+         */
+        delay(): void;
+        /**
+         * 派发被延迟的事件
+         * 每调用一次delay计数加1、调用release一次计数减1，当计数为0时派发所有被收集事件
+         * 与delay配合使用
+         */
+        release(): void;
         /**
          * 检查 EventDispatcher 对象是否为特定事件类型注册了任何侦听器.
          *
