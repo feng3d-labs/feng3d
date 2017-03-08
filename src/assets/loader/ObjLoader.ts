@@ -22,7 +22,7 @@ module feng3d
             var loader = new Loader();
             loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent)
             {
-                var objData = this.objData = OBJParser.parser(e.data.content);
+                var objData = this._objData = OBJParser.parser(e.data.content);
 
                 var mtl = objData.mtl;
                 if (mtl)
@@ -32,7 +32,7 @@ module feng3d
                     mtlLoader.loadText(mtlRoot + mtl);
                     mtlLoader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent)
                     {
-                        var mtlData = this.mtlData = MtlParser.parser(e.data.content);
+                        var mtlData = this._mtlData = MtlParser.parser(e.data.content);
                         this.createObj();
                     }, this);
                 } else
