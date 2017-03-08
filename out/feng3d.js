@@ -455,15 +455,15 @@ var feng3d;
     /**
      * @private
      */
-    let listeners = "__listeners__";
+    var listeners = "__listeners__";
     /**
      * @private
      */
-    let bindables = "__bindables__";
+    var bindables = "__bindables__";
     /**
      * @private
      */
-    let bindableCount = 0;
+    var bindableCount = 0;
     /**
      * Register a property of an instance is can be bound.
      * This method is ususally invoked by Watcher class.
@@ -492,7 +492,7 @@ var feng3d;
             instance[bindables].push(property);
         }
         else {
-            let list = [property];
+            var list = [property];
             if (instance[bindables]) {
                 list = instance[bindables].concat(list);
             }
@@ -508,28 +508,28 @@ var feng3d;
      * @returns
      */
     function getPropertyDescriptor(host, property) {
-        let data = Object.getOwnPropertyDescriptor(host, property);
+        var data = Object.getOwnPropertyDescriptor(host, property);
         if (data) {
             return data;
         }
-        let prototype = Object.getPrototypeOf(host);
+        var prototype = Object.getPrototypeOf(host);
         if (prototype) {
             return getPropertyDescriptor(prototype, property);
         }
         return null;
     }
     function notifyListener(host, property) {
-        let list = host[listeners];
-        let length = list.length;
-        for (let i = 0; i < length; i += 2) {
-            let listener = list[i];
-            let target = list[i + 1];
+        var list = host[listeners];
+        var length = list.length;
+        for (var i = 0; i < length; i += 2) {
+            var listener = list[i];
+            var target = list[i + 1];
             listener.call(target, property);
         }
     }
     /**
      * The Watcher class defines utility method that you can use with bindable properties.
-     * These methods let you define an event handler that is executed whenever a bindable property is updated.
+     * These methods var you define an event handler that is executed whenever a bindable property is updated.
      *
      * @version Egret 2.4
      * @version eui 1.0
@@ -610,9 +610,9 @@ var feng3d;
          */
         static watch(host, chain, handler, thisObject) {
             if (chain.length > 0) {
-                let property = chain.shift();
-                let next = Watcher.watch(null, chain, handler, thisObject);
-                let watcher = new Watcher(property, handler, thisObject, next);
+                var property = chain.shift();
+                var next = Watcher.watch(null, chain, handler, thisObject);
+                var watcher = new Watcher(property, handler, thisObject, next);
                 watcher.reset(host);
                 return watcher;
             }
@@ -625,16 +625,16 @@ var feng3d;
          * 检查属性是否可以绑定。若还未绑定，尝试添加绑定事件。若是只读或只写属性，返回false。
          */
         static checkBindable(host, property) {
-            let list = host[bindables];
+            var list = host[bindables];
             if (list && list.indexOf(property) != -1) {
                 return true;
             }
             if (!host[listeners]) {
                 host[listeners] = [];
             }
-            let data = getPropertyDescriptor(host, property);
+            var data = getPropertyDescriptor(host, property);
             if (data && data.set && data.get) {
-                let orgSet = data.set;
+                var orgSet = data.set;
                 data.set = function (value) {
                     if (this[property] != value) {
                         orgSet.call(this, value);
@@ -644,7 +644,7 @@ var feng3d;
             }
             else if (!data || (!data.get && !data.set)) {
                 bindableCount++;
-                let newProp = "_" + bindableCount + property;
+                var newProp = "_" + bindableCount + property;
                 host[newProp] = data ? data.value : undefined;
                 data = { enumerable: true, configurable: true };
                 data.get = function () {
@@ -762,16 +762,16 @@ var feng3d;
         reset(newHost) {
             if (newHost == this.host)
                 return;
-            let oldHost = this.host;
+            var oldHost = this.host;
             if (oldHost) {
-                let list = oldHost[listeners];
-                let index = list.indexOf(this);
+                var list = oldHost[listeners];
+                var index = list.indexOf(this);
                 list.splice(index - 1, 2);
             }
             this.host = newHost;
             if (newHost) {
                 Watcher.checkBindable(newHost, this.property);
-                let list = newHost[listeners];
+                var list = newHost[listeners];
                 list.push(this.onPropertyChange);
                 list.push(this);
             }
@@ -6700,14 +6700,20 @@ var feng3d;
             this._segments = [];
         }
         /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext) {
+            this.geometryDirty && this.updateGeometry();
+            super.updateRenderData(renderContext);
+        }
+        /**
          * 添加线段
          * @param segment		            线段数据
          * @param needUpdateGeometry		是否需要立即更新几何体
          */
-        addSegment(segment, needUpdateGeometry = true) {
+        addSegment(segment) {
             this._segments.push(segment);
             this.geometryDirty = true;
-            needUpdateGeometry && this.updateGeometry();
         }
         /**
          * 更新几何体

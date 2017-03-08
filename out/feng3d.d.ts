@@ -542,7 +542,7 @@ declare module feng3d {
     function registerBindable(instance: any, property: string): void;
     /**
      * The Watcher class defines utility method that you can use with bindable properties.
-     * These methods let you define an event handler that is executed whenever a bindable property is updated.
+     * These methods var you define an event handler that is executed whenever a bindable property is updated.
      *
      * @version Egret 2.4
      * @version eui 1.0
@@ -4227,15 +4227,19 @@ declare module feng3d {
         private geometryDirty;
         private _segments;
         /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext): void;
+        /**
          * 添加线段
          * @param segment		            线段数据
          * @param needUpdateGeometry		是否需要立即更新几何体
          */
-        addSegment(segment: Segment, needUpdateGeometry?: boolean): void;
+        addSegment(segment: Segment): void;
         /**
          * 更新几何体
          */
-        updateGeometry(): void;
+        private updateGeometry();
         /**
          * 获取线段数据
          * @param index 		线段索引

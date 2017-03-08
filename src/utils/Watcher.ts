@@ -5,15 +5,15 @@ module feng3d
     /**
      * @private
      */
-    let listeners = "__listeners__";
+    var listeners = "__listeners__";
     /**
      * @private
      */
-    let bindables = "__bindables__";
+    var bindables = "__bindables__";
     /**
      * @private
      */
-    let bindableCount = 0;
+    var bindableCount = 0;
 
     /**
      * Register a property of an instance is can be bound.
@@ -47,7 +47,7 @@ module feng3d
         }
         else
         {
-            let list = [property];
+            var list = [property];
             if (instance[bindables])
             {
                 list = instance[bindables].concat(list);
@@ -65,12 +65,12 @@ module feng3d
      */
     function getPropertyDescriptor(host: any, property: string): any
     {
-        let data = Object.getOwnPropertyDescriptor(host, property);
+        var data = Object.getOwnPropertyDescriptor(host, property);
         if (data)
         {
             return data;
         }
-        let prototype = Object.getPrototypeOf(host);
+        var prototype = Object.getPrototypeOf(host);
         if (prototype)
         {
             return getPropertyDescriptor(prototype, property);
@@ -80,19 +80,19 @@ module feng3d
 
     function notifyListener(host: any, property: string): void
     {
-        let list: any[] = host[listeners];
-        let length = list.length;
-        for (let i = 0; i < length; i += 2)
+        var list: any[] = host[listeners];
+        var length = list.length;
+        for (var i = 0; i < length; i += 2)
         {
-            let listener: Function = list[i];
-            let target: any = list[i + 1];
+            var listener: Function = list[i];
+            var target: any = list[i + 1];
             listener.call(target, property);
         }
     }
 
     /**
      * The Watcher class defines utility method that you can use with bindable properties.
-     * These methods let you define an event handler that is executed whenever a bindable property is updated.
+     * These methods var you define an event handler that is executed whenever a bindable property is updated.
      *
      * @version Egret 2.4
      * @version eui 1.0
@@ -152,9 +152,9 @@ module feng3d
 
             if (chain.length > 0)
             {
-                let property = chain.shift();
-                let next = Watcher.watch(null, chain, handler, thisObject);
-                let watcher = new Watcher(property, handler, thisObject, next);
+                var property = chain.shift();
+                var next = Watcher.watch(null, chain, handler, thisObject);
+                var watcher = new Watcher(property, handler, thisObject, next);
                 watcher.reset(host);
                 return watcher;
             }
@@ -170,7 +170,7 @@ module feng3d
          */
         private static checkBindable(host: any, property: string): boolean
         {
-            let list: string[] = host[bindables];
+            var list: string[] = host[bindables];
             if (list && list.indexOf(property) != -1)
             {
                 return true;
@@ -179,10 +179,10 @@ module feng3d
             {
                 host[listeners] = [];
             }
-            let data: PropertyDescriptor = getPropertyDescriptor(host, property);
+            var data: PropertyDescriptor = getPropertyDescriptor(host, property);
             if (data && data.set && data.get)
             {
-                let orgSet = data.set;
+                var orgSet = data.set;
                 data.set = function (value: any)
                 {
                     if (this[property] != value)
@@ -195,7 +195,7 @@ module feng3d
             else if (!data || (!data.get && !data.set))
             {
                 bindableCount++;
-                let newProp = "_" + bindableCount + property;
+                var newProp = "_" + bindableCount + property;
                 host[newProp] = data ? data.value : undefined;
                 data = <any>{ enumerable: true, configurable: true };
                 data.get = function (): any
@@ -386,11 +386,11 @@ module feng3d
         {
             if (newHost == this.host)
                 return;
-            let oldHost = this.host;
+            var oldHost = this.host;
             if (oldHost)
             {
-                let list: any[] = oldHost[listeners];
-                let index = list.indexOf(this);
+                var list: any[] = oldHost[listeners];
+                var index = list.indexOf(this);
                 list.splice(index - 1, 2);
             }
 
@@ -399,7 +399,7 @@ module feng3d
             if (newHost)
             {
                 Watcher.checkBindable(newHost, this.property);
-                let list: any[] = newHost[listeners];
+                var list: any[] = newHost[listeners];
                 list.push(this.onPropertyChange);
                 list.push(this);
             }

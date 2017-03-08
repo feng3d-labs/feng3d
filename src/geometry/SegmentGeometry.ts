@@ -15,21 +15,29 @@ module feng3d
         private _segments: Segment[] = [];
 
         /**
+		 * 更新渲染数据
+		 */
+        public updateRenderData(renderContext: RenderContext)
+        {
+            this.geometryDirty && this.updateGeometry();
+            super.updateRenderData(renderContext);
+        }
+
+        /**
 		 * 添加线段
 		 * @param segment		            线段数据
 		 * @param needUpdateGeometry		是否需要立即更新几何体
 		 */
-        public addSegment(segment: Segment, needUpdateGeometry: boolean = true)
+        public addSegment(segment: Segment)
         {
             this._segments.push(segment);
             this.geometryDirty = true;
-            needUpdateGeometry && this.updateGeometry();
         }
 
         /**
          * 更新几何体
          */
-        public updateGeometry()
+        private updateGeometry()
         {
             this.geometryDirty = false;
 
