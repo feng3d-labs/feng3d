@@ -680,7 +680,7 @@ declare module feng3d {
          * @language zh_CN
          */
         getValue(): any;
-        setValue(value: any): any;
+        setValue(value: any): void;
         /**
          * Sets the handler function.s
          * @param handler The handler function. This argument must not be null.

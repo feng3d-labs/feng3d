@@ -58,7 +58,11 @@ module feng3d
                 return;
             this._mark = true;
 
-            this._watcherb.setValue(this._watchera.getValue());
+            var value = this._watchera.getValue();
+            if (value !== undefined)
+            {
+                this._watcherb.setValue(value);
+            }
 
             this._mark = false;
         }
@@ -69,7 +73,11 @@ module feng3d
                 return;
             this._mark = true;
 
-            this._watchera.setValue(this._watcherb.getValue());
+            var value = this._watcherb.getValue();
+            if (value !== undefined)
+            {
+                this._watchera.setValue(value);
+            }
 
             this._mark = false;
         }

@@ -196,7 +196,7 @@ module feng3d
             {
                 bindableCount++;
                 let newProp = "_" + bindableCount + property;
-                host[newProp] = data ? data.value : null;
+                host[newProp] = data ? data.value : undefined;
                 data = <any>{ enumerable: true, configurable: true };
                 data.get = function (): any
                 {
@@ -332,9 +332,11 @@ module feng3d
         {
             if (this.next)
             {
-                return this.next.setValue(value);
+                this.next.setValue(value);
+            } else
+            {
+                this.setHostPropertyValue(value);
             }
-            return this.setHostPropertyValue(value);
         }
 
         /**

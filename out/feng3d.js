@@ -645,7 +645,7 @@ var feng3d;
             else if (!data || (!data.get && !data.set)) {
                 bindableCount++;
                 let newProp = "_" + bindableCount + property;
-                host[newProp] = data ? data.value : null;
+                host[newProp] = data ? data.value : undefined;
                 data = { enumerable: true, configurable: true };
                 data.get = function () {
                     return this[newProp];
@@ -714,9 +714,11 @@ var feng3d;
         }
         setValue(value) {
             if (this.next) {
-                return this.next.setValue(value);
+                this.next.setValue(value);
             }
-            return this.setHostPropertyValue(value);
+            else {
+                this.setHostPropertyValue(value);
+            }
         }
         /**
          * Sets the handler function.s
@@ -853,14 +855,20 @@ var feng3d;
             if (this._mark)
                 return;
             this._mark = true;
-            this._watcherb.setValue(this._watchera.getValue());
+            var value = this._watchera.getValue();
+            if (value !== undefined) {
+                this._watcherb.setValue(value);
+            }
             this._mark = false;
         }
         fromdata() {
             if (this._mark)
                 return;
             this._mark = true;
-            this._watchera.setValue(this._watcherb.getValue());
+            var value = this._watcherb.getValue();
+            if (value !== undefined) {
+                this._watchera.setValue(value);
+            }
             this._mark = false;
         }
         unwatch() {
