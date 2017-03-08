@@ -795,55 +795,12 @@ var feng3d;
     }
     feng3d.Watcher = Watcher;
 })(feng3d || (feng3d = {}));
-//参考 egret https://github.com/egret-labs/egret-core/blob/master/src/extension/eui/binding/Binding.ts
 var feng3d;
 (function (feng3d) {
-    function joinValues(templates) {
-        let first = templates[0];
-        let value = first instanceof feng3d.Watcher ? first.getValue() : first;
-        let length = templates.length;
-        for (let i = 1; i < length; i++) {
-            let item = templates[i];
-            if (item instanceof feng3d.Watcher) {
-                item = item.getValue();
-            }
-            value += item;
-        }
-        return value;
-    }
     /**
-     * The Binding class defines utility methods for performing data binding.
-     * You can use the methods defined in this class to configure data bindings.
-     * @version Egret 2.4
-     * @version eui 1.0
-     * @platform Web,Native
-     * @includeExample extension/eui/binding/BindingExample.ts
-     * @language en_US
-     */
-    /**
-     * 绑定工具类，用于执行数据绑定用的方法集。您可以使用此类中定义的方法来配置数据绑定。
-     * @version Egret 2.4
-     * @version eui 1.0
-     * @platform Web,Native
-     * @includeExample extension/eui/binding/BindingExample.ts
-     * @language zh_CN
+     * 绑定工具类
      */
     class Binding {
-        /**
-         * Binds a property, <prop>prop</code> on the <code>target</code> Object, to a bindable property or peoperty chain.
-         * @param host The object that hosts the property or property chain to be watched.
-         * The <code>host</code> maintains a list of <code>targets</code> to update theirs <code>prop</code> when <code>chain</code> changes.
-         * @param chain A value specifying the property or chain to be watched. For example, when watch the property <code>host.a.b.c</code>,
-         * you need call the method like this: <code>indProperty(host, ["a","b","c"], ...)</code>
-         * @param target The Object defining the property to be bound to <code>chain</code>.
-         * @param prop The name of the public property defined in the <code>site</code> Object to be bound.
-         * @returns A ChangeWatcher instance, if at least one property name has been specified
-         * to the <code>chain</code> argument; null otherwise.
-         * @version Egret 2.4
-         * @version eui 1.0
-         * @platform Web,Native
-         * @language en_US
-         */
         /**
          * 绑定一个对象的属性值到要监视的对象属性上。
          * @param host 用于承载要监视的属性或属性链的对象。
@@ -864,62 +821,7 @@ var feng3d;
                     target[prop] = value;
                 };
                 watcher.setHandler(assign, null);
-                assign(watcher.getValue());
             }
-            return watcher;
-        }
-        /**
-         * Binds a callback, <prop>handler</code> on the <code>target</code> Object, to a bindable property or peoperty chain.
-         * Callback method to invoke with an argument of the current value of <code>chain</code> when that value changes.
-         * @param host The object that hosts the property or property chain to be watched.
-         * @param chain A value specifying the property or chain to be watched. For example, when watch the property <code>host.a.b.c</code>,
-         * you need call the method like this: <code>indProperty(host, ["a","b","c"], ...)</code>
-         * @param handler method to invoke with an argument of the current value of <code>chain</code> when that value changes.
-         * @param thisObject <code>this</code> object of binding method
-         * @returns A ChangeWatcher instance, if at least one property name has been  specified to the <code>chain</code> argument; null otherwise.
-         * @version Egret 2.4
-         * @version eui 1.0
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 绑定一个回调函数到要监视的对象属性上。当 host上 chain 所对应的值发生改变时，handler 方法将被自动调用。
-         * @param host 用于承载要监视的属性或属性链的对象。
-         * @param chain 用于指定要监视的属性链的值。例如，要监视属性 host.a.b.c，需按以下形式调用此方法：bindSetter(host, ["a","b","c"], ...)。
-         * @param handler 在监视的目标属性链中任何属性的值发生改变时调用的事件处理函数。
-         * @param thisObject handler 方法绑定的this对象
-         * @returns 如果已为 chain 参数至少指定了一个属性名称，则返回 Watcher 实例；否则返回 null。
-         * @version Egret 2.4
-         * @version eui 1.0
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        static bindHandler(host, chain, handler, thisObject) {
-            let watcher = feng3d.Watcher.watch(host, chain, handler, thisObject);
-            if (watcher) {
-                handler.call(thisObject, watcher.getValue());
-            }
-            return watcher;
-        }
-        static $bindProperties(host, templates, chainIndex, target, prop) {
-            if (templates.length == 1 && chainIndex.length == 1) {
-                return Binding.bindProperty(host, templates[0].split("."), target, prop);
-            }
-            let assign = function () {
-                target[prop] = joinValues(templates);
-            };
-            let length = chainIndex.length;
-            let watcher;
-            for (let i = 0; i < length; i++) {
-                let index = chainIndex[i];
-                let chain = templates[index].split(".");
-                watcher = feng3d.Watcher.watch(host, chain, null, null);
-                if (watcher) {
-                    templates[index] = watcher;
-                    watcher.setHandler(assign, null);
-                }
-            }
-            assign();
             return watcher;
         }
     }
@@ -8522,11 +8424,11 @@ var feng3d;
             this.segmentsT = segmentsT;
             this.yUp = yUp;
             this.buildGeometry();
-            feng3d.Binding.bindHandler(this, ["radius"], this.buildGeometry, this);
-            feng3d.Binding.bindHandler(this, ["tubeRadius"], this.buildGeometry, this);
-            feng3d.Binding.bindHandler(this, ["segmentsR"], this.buildGeometry, this);
-            feng3d.Binding.bindHandler(this, ["segmentsT"], this.buildGeometry, this);
-            feng3d.Binding.bindHandler(this, ["yUp"], this.buildGeometry, this);
+            feng3d.Watcher.watch(this, ["radius"], this.buildGeometry, this);
+            feng3d.Watcher.watch(this, ["tubeRadius"], this.buildGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsR"], this.buildGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsT"], this.buildGeometry, this);
+            feng3d.Watcher.watch(this, ["yUp"], this.buildGeometry, this);
         }
         /**
          * 添加顶点数据
