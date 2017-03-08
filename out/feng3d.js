@@ -3227,13 +3227,16 @@ var feng3d;
             this.z -= a.z;
         }
         /**
-         * 返回两个 Vector3D 对象之间的距离。
+         * 通过将当前 Vector3D 对象的 x、y 和 z 元素乘以指定的 Vector3D 对象的 x、y 和 z 元素得到新对象。
          */
-        static distance(pt1, pt2) {
-            var x = (pt1.x - pt2.x);
-            var y = (pt1.y - pt2.y);
-            var z = (pt1.z - pt2.z);
-            return Math.sqrt(x * x + y * y + z * z);
+        multiply(a) {
+            return new Vector3D(this.x * a.x, this.y * a.y, this.z * a.z);
+        }
+        /**
+         * 通过将当前 Vector3D 对象的 x、y 和 z 元素除以指定的 Vector3D 对象的 x、y 和 z 元素得到新对象。
+         */
+        divide(a) {
+            return new Vector3D(this.x / a.x, this.y / a.y, this.z / a.z);
         }
         /**
          * 如果当前 Vector3D 对象和作为参数指定的 Vector3D 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
@@ -6063,7 +6066,7 @@ var feng3d;
             /**
              * 缩放
              */
-            this.scale = new feng3d.Vector3D();
+            this.scale = new feng3d.Vector3D(1, 1, 1);
             //
             this._matrix3D = new feng3d.Matrix3D();
             this._inverseMatrix3D = new feng3d.Matrix3D();
@@ -6087,7 +6090,7 @@ var feng3d;
             //矫正值
             this.position.setTo(x || 0, y || 0, z || 0);
             this.rotation.setTo(rx || 0, ry || 0, rz || 0);
-            this.scale.setTo(rx || 0.000001, ry || 0.000001, rz || 0.000001);
+            this.scale.setTo(sx || 0.000001, sy || 0.000001, sz || 0.000001);
             //
             this._positionWatchers.push(feng3d.Watcher.watch(this.position, ["y"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.position, ["z"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.position, ["x"], this.invalidateMatrix3D, this));
             this._rotationWatchers.push(feng3d.Watcher.watch(this.rotation, ["x"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.rotation, ["y"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.rotation, ["z"], this.invalidateMatrix3D, this));

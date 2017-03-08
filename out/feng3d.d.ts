@@ -2299,9 +2299,13 @@ declare module feng3d {
          */
         decrementBy(a: Vector3D): void;
         /**
-         * 返回两个 Vector3D 对象之间的距离。
+         * 通过将当前 Vector3D 对象的 x、y 和 z 元素乘以指定的 Vector3D 对象的 x、y 和 z 元素得到新对象。
          */
-        static distance(pt1: Vector3D, pt2: Vector3D): number;
+        multiply(a: Vector3D): Vector3D;
+        /**
+         * 通过将当前 Vector3D 对象的 x、y 和 z 元素除以指定的 Vector3D 对象的 x、y 和 z 元素得到新对象。
+         */
+        divide(a: Vector3D): Vector3D;
         /**
          * 如果当前 Vector3D 对象和作为参数指定的 Vector3D 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
          */

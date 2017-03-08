@@ -123,14 +123,19 @@ module feng3d
         }
 
         /**
-         * 返回两个 Vector3D 对象之间的距离。
+         * 通过将当前 Vector3D 对象的 x、y 和 z 元素乘以指定的 Vector3D 对象的 x、y 和 z 元素得到新对象。
          */
-        static distance(pt1: Vector3D, pt2: Vector3D): number
+        public multiply(a: Vector3D)
         {
-            var x: number = (pt1.x - pt2.x);
-            var y: number = (pt1.y - pt2.y);
-            var z: number = (pt1.z - pt2.z);
-            return Math.sqrt(x * x + y * y + z * z);
+            return new Vector3D(this.x * a.x, this.y * a.y, this.z * a.z);
+        }
+
+        /**
+         * 通过将当前 Vector3D 对象的 x、y 和 z 元素除以指定的 Vector3D 对象的 x、y 和 z 元素得到新对象。
+         */
+        public divide(a: Vector3D)
+        {
+            return new Vector3D(this.x / a.x, this.y / a.y, this.z / a.z);
         }
 
         /**
