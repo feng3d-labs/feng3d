@@ -14,7 +14,7 @@ module feng3d
         public skeleton: Skeleton;
 
         private _globalMatrices: Matrix3D[] = [];
-        private _globalPropertiesDirty: boolean;
+        private _globalPropertiesDirty: boolean = true;
 
         private _activeSkeletonState: SkeletonClipState;
 

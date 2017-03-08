@@ -10382,6 +10382,7 @@ var feng3d;
             /** 动画节点列表 */
             this.animations = [];
             this._globalMatrices = [];
+            this._globalPropertiesDirty = true;
             this.skeleton = skeleton;
         }
         /**
@@ -11264,14 +11265,14 @@ var feng3d;
             this._completed = completed;
             var loader = new feng3d.Loader();
             loader.addEventListener(feng3d.LoaderEvent.COMPLETE, function (e) {
-                var objData = this.objData = feng3d.OBJParser.parser(e.data.content);
+                var objData = this._objData = feng3d.OBJParser.parser(e.data.content);
                 var mtl = objData.mtl;
                 if (mtl) {
                     var mtlRoot = url.substring(0, url.lastIndexOf("/") + 1);
                     var mtlLoader = new feng3d.Loader();
                     mtlLoader.loadText(mtlRoot + mtl);
                     mtlLoader.addEventListener(feng3d.LoaderEvent.COMPLETE, function (e) {
-                        var mtlData = this.mtlData = feng3d.MtlParser.parser(e.data.content);
+                        var mtlData = this._mtlData = feng3d.MtlParser.parser(e.data.content);
                         this.createObj();
                     }, this);
                 }
