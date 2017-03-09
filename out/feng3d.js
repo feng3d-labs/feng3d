@@ -5985,6 +5985,8 @@ var feng3d;
             return this._matrix3D;
         }
         set matrix3d(value) {
+            //延迟事件
+            this.delay();
             this._matrix3DDirty = false;
             this._matrix3D.rawData.set(value.rawData);
             var vecs = this._matrix3D.decompose();
@@ -5995,6 +5997,8 @@ var feng3d;
             feng3d.debuger && this._debug();
             this.notifyMatrix3DChanged();
             this.invalidateGlobalMatrix3D();
+            //释放事件
+            this.release();
         }
         /**
          * 逆变换矩阵
@@ -6057,11 +6061,14 @@ var feng3d;
          * 使变换矩阵无效
          */
         invalidateMatrix3D() {
+            //延迟事件
+            this.delay();
             this._matrix3DDirty = true;
             this._inverseMatrix3DDirty = true;
             this.notifyMatrix3DChanged();
             //
             this.invalidateGlobalMatrix3D();
+            this.release();
         }
         /**
          * 验证数值是否正确

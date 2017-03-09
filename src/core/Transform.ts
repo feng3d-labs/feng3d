@@ -138,6 +138,9 @@ module feng3d
 
         public set matrix3d(value: Matrix3D)
         {
+            //延迟事件
+            this.delay();
+
             this._matrix3DDirty = false;
             this._matrix3D.rawData.set(value.rawData);
             var vecs = this._matrix3D.decompose();
@@ -148,6 +151,9 @@ module feng3d
             feng3d.debuger && this._debug();
             this.notifyMatrix3DChanged();
             this.invalidateGlobalMatrix3D();
+
+            //释放事件
+            this.release();
         }
 
         /**
@@ -226,11 +232,15 @@ module feng3d
          */
         protected invalidateMatrix3D()
         {
+            //延迟事件
+            this.delay();
+
             this._matrix3DDirty = true;
             this._inverseMatrix3DDirty = true;
             this.notifyMatrix3DChanged();
             //
             this.invalidateGlobalMatrix3D();
+            this.release();
         }
 
         /**
