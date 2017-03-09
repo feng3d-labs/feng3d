@@ -5481,7 +5481,7 @@ var feng3d;
         /**
          * 构建3D对象
          */
-        constructor(name) {
+        constructor(name = "object") {
             super();
             this._mouseEnabled = true;
             this._visible = true;
@@ -5496,7 +5496,7 @@ var feng3d;
             this._uid = feng3d.UIDUtils.getUID(this);
             this._object3DID = object3DAutoID++;
             object3DMap[this._object3DID] = this;
-            this.name = name || this._uid;
+            this.name = name;
             //
             this.transform = new feng3d.Transform();
             //

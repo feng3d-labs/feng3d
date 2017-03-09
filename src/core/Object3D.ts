@@ -57,14 +57,14 @@ module feng3d
         /**
          * 构建3D对象
          */
-        constructor(name?: string)
+        constructor(name = "object")
         {
             super();
 
             this._uid = UIDUtils.getUID(this);
             this._object3DID = object3DAutoID++;
             object3DMap[this._object3DID] = this;
-            this.name = name || this._uid;
+            this.name = name;
             //
             this.transform = new Transform();
             //
