@@ -7,7 +7,7 @@ module feng3d
     export class Camera3D extends Object3DComponent
     {
         private _viewProjection: Matrix3D = new Matrix3D();
-        private _viewProjectionDirty: Boolean = true;
+        private _viewProjectionDirty:boolean = true;
         private _lens: LensBase;
 
 		/**

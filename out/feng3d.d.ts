@@ -1140,7 +1140,7 @@ declare module feng3d {
          * 获取按键状态
          * @param key 按键名称
          */
-        getKeyState(key: string): Boolean;
+        getKeyState(key: string): boolean;
     }
 }
 declare module feng3d {
@@ -1266,7 +1266,7 @@ declare class Key {
     /**
      * 是否取反
      */
-    not: Boolean;
+    not: boolean;
     /**
      * 状态名称
      */
@@ -1281,7 +1281,7 @@ declare class State {
     /**
      * 是否取反
      */
-    not: Boolean;
+    not: boolean;
     /**
      * 状态名称
      */
@@ -1296,7 +1296,7 @@ declare class StateCommand {
     /**
      * 是否取反
      */
-    not: Boolean;
+    not: boolean;
     /**
      * 状态名称
      */
@@ -1394,7 +1394,7 @@ shortCut.addEventListener("run", function(e:Event):void
          * 获取状态
          * @param state 状态名称
          */
-        getState(state: string): Boolean;
+        getState(state: string): boolean;
         /**
          * 获取快捷键唯一字符串
          */

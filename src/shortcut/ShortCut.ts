@@ -134,7 +134,7 @@ shortCut.addEventListener("run", function(e:Event):void
 		 * 获取状态
 		 * @param state 状态名称
 		 */
-		public getState(state: string): Boolean
+		public getState(state: string):boolean
 		{
 			return !!this.stateDic[state];
 		}

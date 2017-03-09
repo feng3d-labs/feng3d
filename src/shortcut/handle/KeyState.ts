@@ -47,7 +47,7 @@ module feng3d
 		 * 获取按键状态
 		 * @param key 按键名称
 		 */
-		public getKeyState(key: string): Boolean
+		public getKeyState(key: string):boolean
 		{
 			return !!this._keyStateDic[key];
 		}

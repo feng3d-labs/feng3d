@@ -98,8 +98,8 @@ module feng3d
 		 */
 		private onCapture(event: ShortCutEvent): void
 		{
-			var inWhen: Boolean = this.checkActivityStates(this._states);
-			var pressKeys: Boolean = this.checkActivityKeys(this._keys);
+			var inWhen:boolean = this.checkActivityStates(this._states);
+			var pressKeys:boolean = this.checkActivityKeys(this._keys);
 
 			if (pressKeys && inWhen)
 			{
@@ -139,7 +139,7 @@ module feng3d
 		/**
 		 * 检测快捷键是否处于活跃状态
 		 */
-		private checkActivityStates(states: State[]): Boolean
+		private checkActivityStates(states: State[]):boolean
 		{
 
 			for (var i = 0; i < states.length; i++)
@@ -154,10 +154,10 @@ module feng3d
 		 * 获取是否处于指定状态中（支持一个！取反）
 		 * @param state 状态名称
 		 */
-		private getState(state: State): Boolean
+		private getState(state: State):boolean
 		{
 
-			var result: Boolean = this._shortCut.getState(state.state);
+			var result:boolean = this._shortCut.getState(state.state);
 			if (state.not)
 			{
 				result = !result;
@@ -169,7 +169,7 @@ module feng3d
 		 * 检测是否按下给出的键
 		 * @param keys 按键数组
 		 */
-		private checkActivityKeys(keys: Key[]): Boolean
+		private checkActivityKeys(keys: Key[]):boolean
 		{
 
 			for (var i = 0; i < keys.length; i++)
@@ -183,10 +183,10 @@ module feng3d
 		/**
 		 * 获取按键状态（true：按下状态，false：弹起状态）
 		 */
-		private getKeyValue(key: Key): Boolean
+		private getKeyValue(key: Key):boolean
 		{
 
-			var value: Boolean = this._keyState.getKeyState(key.key);
+			var value:boolean = this._keyState.getKeyState(key.key);
 
 			if (key.not)
 			{
@@ -313,7 +313,7 @@ class Key
 	/**
 	 * 是否取反
 	 */
-	public not: Boolean;
+	public not:boolean;
 
 	/**
 	 * 状态名称
@@ -341,7 +341,7 @@ class State
 	/**
 	 * 是否取反
 	 */
-	public not: Boolean;
+	public not:boolean;
 
 	/**
 	 * 状态名称
@@ -369,7 +369,7 @@ class StateCommand
 	/**
 	 * 是否取反
 	 */
-	public not: Boolean;
+	public not:boolean;
 
 	/**
 	 * 状态名称
