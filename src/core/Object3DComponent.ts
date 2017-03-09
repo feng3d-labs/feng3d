@@ -9,14 +9,9 @@ module feng3d
     {
 
         /**
-         * 父组件
+         * 父组件,所属3d对象
          */
-        protected _parentComponent: Object3D;
-
-        /**
-         * 所属对象
-         */
-        public get object3D(): Object3D { return this._parentComponent; }
+        public parentComponent: Object3D;
 
         /**
          * 构建3D对象组件
@@ -35,7 +30,7 @@ module feng3d
             var result = super.dispatchEvent(event);
             if (result)
             {
-                this.object3D && this.object3D.dispatchEvent(event);
+                this.parentComponent && this.parentComponent.dispatchEvent(event);
             }
             return result;
         }

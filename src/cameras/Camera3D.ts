@@ -48,12 +48,12 @@ module feng3d
 
         public get inverseSceneTransform()
         {
-            return this.object3D ? this.object3D.transform.inverseGlobalMatrix3D : new Matrix3D();
+            return this.parentComponent ? this.parentComponent.transform.inverseGlobalMatrix3D : new Matrix3D();
         }
 
         public get globalMatrix3D()
         {
-            return this.object3D ? this.object3D.transform.globalMatrix3D : new Matrix3D();
+            return this.parentComponent ? this.parentComponent.transform.globalMatrix3D : new Matrix3D();
         }
 
         /**
@@ -74,7 +74,7 @@ module feng3d
          */
         protected onBeAddedComponent(event: ComponentEvent): void
         {
-            this.object3D.addEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.addEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
         /**
@@ -82,7 +82,7 @@ module feng3d
          */
         protected onBeRemovedComponent(event: ComponentEvent): void
         {
-            this.object3D.removeEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.removeEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
         /**
@@ -107,7 +107,7 @@ module feng3d
             super.updateRenderData(renderContext);
             //
             this._renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
-            var globalMatrix3d = this.object3D ? this.object3D.transform.globalMatrix3D : new Matrix3D();
+            var globalMatrix3d = this.parentComponent ? this.parentComponent.transform.globalMatrix3D : new Matrix3D();
             this._renderData.uniforms[RenderDataID.u_cameraMatrix] = globalMatrix3d;
         }
     }

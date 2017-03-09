@@ -3673,13 +3673,9 @@ declare module feng3d {
      */
     class Object3DComponent extends RenderDataHolder {
         /**
-         * 父组件
+         * 父组件,所属3d对象
          */
-        protected _parentComponent: Object3D;
-        /**
-         * 所属对象
-         */
-        readonly object3D: Object3D;
+        parentComponent: Object3D;
         /**
          * 构建3D对象组件
          */

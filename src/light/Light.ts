@@ -28,7 +28,7 @@ module feng3d
          */
         public get position()
         {
-            return this.object3D.transform.globalPosition;
+            return this.parentComponent.transform.globalPosition;
         }
 
         /**
@@ -36,11 +36,11 @@ module feng3d
          */
         protected onBeAddedComponent(event: ComponentEvent): void
         {
-            this.object3D.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.object3D.addEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.object3D.scene)
+            this.parentComponent.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.parentComponent.addEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            if (this.parentComponent.scene)
             {
-                this.object3D.scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_LIGHT_TO_SCENE, { light: this }));
+                this.parentComponent.scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_LIGHT_TO_SCENE, { light: this }));
             }
         }
 
@@ -49,11 +49,11 @@ module feng3d
          */
         protected onBeRemovedComponent(event: ComponentEvent): void
         {
-            this.object3D.removeEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.object3D.removeEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.object3D.scene)
+            this.parentComponent.removeEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.parentComponent.removeEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            if (this.parentComponent.scene)
             {
-                this.object3D.scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, { light: this }));
+                this.parentComponent.scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, { light: this }));
             }
         }
 

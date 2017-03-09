@@ -196,9 +196,9 @@ module feng3d
         public set globalMatrix3D(value)
         {
             value = value.clone();
-            if (this.object3D && this.object3D.parent)
+            if (this.parentComponent && this.parentComponent.parent)
             {
-                value.append(this.object3D.parent.transform.inverseGlobalMatrix3D);
+                value.append(this.parentComponent.parent.transform.inverseGlobalMatrix3D);
             }
             this.matrix3d = value;
         }
@@ -270,9 +270,9 @@ module feng3d
         {
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);
-            if (this.object3D && this.object3D.parent)
+            if (this.parentComponent && this.parentComponent.parent)
             {
-                var parentGlobalMatrix3D = this.object3D.parent.transform.globalMatrix3D;
+                var parentGlobalMatrix3D = this.parentComponent.parent.transform.globalMatrix3D;
                 this._globalMatrix3D.append(parentGlobalMatrix3D);
             }
         }
@@ -306,11 +306,11 @@ module feng3d
             this.notifySceneTransformChange();
 
             //
-            if (this.object3D)
+            if (this.parentComponent)
             {
-                for (var i = 0; i < this.object3D.numChildren; i++)
+                for (var i = 0; i < this.parentComponent.numChildren; i++)
                 {
-                    var element = this.object3D.getChildAt(i)
+                    var element = this.parentComponent.getChildAt(i)
                     element.transform.invalidateGlobalMatrix3D();
                 }
             }

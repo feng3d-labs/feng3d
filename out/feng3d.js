@@ -5208,7 +5208,7 @@ var feng3d;
             });
         }
         drawRenderables(context3D, renderContext, meshRenderer) {
-            var object3D = meshRenderer.object3D;
+            var object3D = meshRenderer.parentComponent;
             //更新数据
             renderContext.updateRenderData(object3D);
             object3D.updateRenderData(renderContext);
@@ -5384,7 +5384,7 @@ var feng3d;
             super();
         }
         drawRenderables(context3D, renderContext, meshRenderer) {
-            if (meshRenderer.object3D.realVisible)
+            if (meshRenderer.parentComponent.realVisible)
                 super.drawRenderables(context3D, renderContext, meshRenderer);
         }
     }
@@ -5423,7 +5423,7 @@ var feng3d;
             // this.frameBufferObject.deactivate(context3D);
         }
         drawRenderables(context3D, renderContext, meshRenderer) {
-            if (meshRenderer.object3D.realMouseEnable)
+            if (meshRenderer.parentComponent.realMouseEnable)
                 super.drawRenderables(context3D, renderContext, meshRenderer);
         }
         /**
@@ -5872,17 +5872,13 @@ var feng3d;
             super();
         }
         /**
-         * 所属对象
-         */
-        get object3D() { return this._parentComponent; }
-        /**
          * 派发事件，该事件将会强制冒泡到3D对象中
          * @param event						调度到事件流中的 Event 对象。
          */
         dispatchEvent(event) {
             var result = super.dispatchEvent(event);
             if (result) {
-                this.object3D && this.object3D.dispatchEvent(event);
+                this.parentComponent && this.parentComponent.dispatchEvent(event);
             }
             return result;
         }
@@ -6044,8 +6040,8 @@ var feng3d;
         }
         set globalMatrix3D(value) {
             value = value.clone();
-            if (this.object3D && this.object3D.parent) {
-                value.append(this.object3D.parent.transform.inverseGlobalMatrix3D);
+            if (this.parentComponent && this.parentComponent.parent) {
+                value.append(this.parentComponent.parent.transform.inverseGlobalMatrix3D);
             }
             this.matrix3d = value;
         }
@@ -6076,8 +6072,6 @@ var feng3d;
          * 使变换矩阵无效
          */
         invalidateMatrix3D() {
-            if (this.isLockEvent)
-                return;
             this._matrix3DDirty = true;
             this._inverseMatrix3DDirty = true;
             this.notifyMatrix3DChanged();
@@ -6107,8 +6101,8 @@ var feng3d;
         updateGlobalMatrix3D() {
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);
-            if (this.object3D && this.object3D.parent) {
-                var parentGlobalMatrix3D = this.object3D.parent.transform.globalMatrix3D;
+            if (this.parentComponent && this.parentComponent.parent) {
+                var parentGlobalMatrix3D = this.parentComponent.parent.transform.globalMatrix3D;
                 this._globalMatrix3D.append(parentGlobalMatrix3D);
             }
         }
@@ -6135,9 +6129,9 @@ var feng3d;
             this._inverseGlobalMatrix3DDirty = true;
             this.notifySceneTransformChange();
             //
-            if (this.object3D) {
-                for (var i = 0; i < this.object3D.numChildren; i++) {
-                    var element = this.object3D.getChildAt(i);
+            if (this.parentComponent) {
+                for (var i = 0; i < this.parentComponent.numChildren; i++) {
+                    var element = this.parentComponent.getChildAt(i);
                     element.transform.invalidateGlobalMatrix3D();
                 }
             }
@@ -6249,20 +6243,20 @@ var feng3d;
          * 处理被添加组件事件
          */
         onBeAddedComponent(event) {
-            this.object3D.addEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.object3D.addEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.object3D.scene) {
-                this.object3D.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_RENDERER_TO_SCENE, { renderer: this }));
+            this.parentComponent.addEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.parentComponent.addEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            if (this.parentComponent.scene) {
+                this.parentComponent.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_RENDERER_TO_SCENE, { renderer: this }));
             }
         }
         /**
          * 处理被移除组件事件
          */
         onBeRemovedComponent(event) {
-            this.object3D.removeEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.object3D.removeEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.object3D.scene) {
-                this.object3D.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_RENDERER_FROM_SCENE, { renderer: this }));
+            this.parentComponent.removeEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.parentComponent.removeEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            if (this.parentComponent.scene) {
+                this.parentComponent.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_RENDERER_FROM_SCENE, { renderer: this }));
             }
         }
         /**
@@ -7146,10 +7140,10 @@ var feng3d;
             return this._viewProjection;
         }
         get inverseSceneTransform() {
-            return this.object3D ? this.object3D.transform.inverseGlobalMatrix3D : new feng3d.Matrix3D();
+            return this.parentComponent ? this.parentComponent.transform.inverseGlobalMatrix3D : new feng3d.Matrix3D();
         }
         get globalMatrix3D() {
-            return this.object3D ? this.object3D.transform.globalMatrix3D : new feng3d.Matrix3D();
+            return this.parentComponent ? this.parentComponent.transform.globalMatrix3D : new feng3d.Matrix3D();
         }
         /**
          * 屏幕坐标投影到场景坐标
@@ -7166,13 +7160,13 @@ var feng3d;
          * 处理被添加组件事件
          */
         onBeAddedComponent(event) {
-            this.object3D.addEventListener(feng3d.TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.addEventListener(feng3d.TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
         /**
          * 处理被移除组件事件
          */
         onBeRemovedComponent(event) {
-            this.object3D.removeEventListener(feng3d.TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.removeEventListener(feng3d.TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
         /**
          * 处理镜头变化事件
@@ -7191,7 +7185,7 @@ var feng3d;
             super.updateRenderData(renderContext);
             //
             this._renderData.uniforms[feng3d.RenderDataID.u_viewProjection] = this.viewProjection;
-            var globalMatrix3d = this.object3D ? this.object3D.transform.globalMatrix3D : new feng3d.Matrix3D();
+            var globalMatrix3d = this.parentComponent ? this.parentComponent.transform.globalMatrix3D : new feng3d.Matrix3D();
             this._renderData.uniforms[feng3d.RenderDataID.u_cameraMatrix] = globalMatrix3d;
         }
     }
@@ -8936,26 +8930,26 @@ var feng3d;
          * 灯光位置
          */
         get position() {
-            return this.object3D.transform.globalPosition;
+            return this.parentComponent.transform.globalPosition;
         }
         /**
          * 处理被添加组件事件
          */
         onBeAddedComponent(event) {
-            this.object3D.addEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.object3D.addEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.object3D.scene) {
-                this.object3D.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_LIGHT_TO_SCENE, { light: this }));
+            this.parentComponent.addEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.parentComponent.addEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            if (this.parentComponent.scene) {
+                this.parentComponent.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_LIGHT_TO_SCENE, { light: this }));
             }
         }
         /**
          * 处理被移除组件事件
          */
         onBeRemovedComponent(event) {
-            this.object3D.removeEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.object3D.removeEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.object3D.scene) {
-                this.object3D.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, { light: this }));
+            this.parentComponent.removeEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.parentComponent.removeEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            if (this.parentComponent.scene) {
+                this.parentComponent.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, { light: this }));
             }
         }
         /**

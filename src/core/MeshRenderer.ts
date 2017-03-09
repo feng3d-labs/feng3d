@@ -1,13 +1,11 @@
 module feng3d
 {
-
     /**
      * 网格渲染器
      * @author feng 2016-12-12
      */
     export class MeshRenderer extends Object3DComponent
     {
-
         private _material: Material;
 
         /**
@@ -15,13 +13,11 @@ module feng3d
          */
         public get material(): Material
         {
-
             return this._material;
         }
 
         public set material(value: Material)
         {
-
             this._material && this.removeComponent(this._material);
             this._material = value;
             this._material && this.addComponent(this._material);
@@ -29,7 +25,6 @@ module feng3d
 
         constructor()
         {
-
             super();
             this.material = new ColorMaterial();
         }
@@ -39,12 +34,11 @@ module feng3d
          */
         protected onBeAddedComponent(event: ComponentEvent): void
         {
-
-            this.object3D.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.object3D.addEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.object3D.scene)
+            this.parentComponent.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.parentComponent.addEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            if (this.parentComponent.scene)
             {
-                this.object3D.scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_RENDERER_TO_SCENE, { renderer: this }));
+                this.parentComponent.scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_RENDERER_TO_SCENE, { renderer: this }));
             }
         }
 
@@ -53,12 +47,11 @@ module feng3d
          */
         protected onBeRemovedComponent(event: ComponentEvent): void
         {
-
-            this.object3D.removeEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.object3D.removeEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.object3D.scene)
+            this.parentComponent.removeEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
+            this.parentComponent.removeEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
+            if (this.parentComponent.scene)
             {
-                this.object3D.scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_RENDERER_FROM_SCENE, { renderer: this }));
+                this.parentComponent.scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_RENDERER_FROM_SCENE, { renderer: this }));
             }
         }
 
@@ -67,7 +60,6 @@ module feng3d
          */
         private onAddedToScene(event: Scene3DEvent)
         {
-
             event.data.scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_RENDERER_TO_SCENE, { renderer: this }));
         }
 
@@ -76,7 +68,6 @@ module feng3d
          */
         private onRemovedFromScene(event: Scene3DEvent)
         {
-
             event.data.scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_RENDERER_FROM_SCENE, { renderer: this }));
         }
     }
