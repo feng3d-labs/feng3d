@@ -235,9 +235,6 @@ module feng3d
          */
         protected invalidateMatrix3D()
         {
-            if (this.isLockEvent)
-                return;
-
             this._matrix3DDirty = true;
             this._inverseMatrix3DDirty = true;
             this.notifyMatrix3DChanged();
