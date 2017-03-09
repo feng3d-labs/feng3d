@@ -88,6 +88,14 @@ module feng3d
         }
 
         /**
+         * 获取父类定义
+         */
+        public static getSuperClass(value: any): any
+        {
+            return value && value["__proto__"];
+        }
+
+        /**
          * 返回 value 参数指定的对象的基类的完全限定类名。
          * @param value 需要取得父类的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型（如number）和类对象
          * @returns 完全限定的基类名称，或 null（如果不存在基类名称）。
