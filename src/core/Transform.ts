@@ -90,6 +90,8 @@ module feng3d
          */
         private invalidateComp()
         {
+            //延迟事件
+            this.lockEvent();
             //
             this.position || (this.position = new Vector3D());
             this.rotation || (this.rotation = new Vector3D());
@@ -109,6 +111,7 @@ module feng3d
             });
             //
             this.invalidateMatrix3D();
+            this.unlockEvent();
         }
 
         /**
@@ -139,7 +142,7 @@ module feng3d
         public set matrix3d(value: Matrix3D)
         {
             //延迟事件
-            this.delay();
+            this.lockEvent();
 
             this._matrix3DDirty = false;
             this._matrix3D.rawData.set(value.rawData);
@@ -153,7 +156,7 @@ module feng3d
             this.invalidateGlobalMatrix3D();
 
             //释放事件
-            this.release();
+            this.unlockEvent();
         }
 
         /**
@@ -232,15 +235,14 @@ module feng3d
          */
         protected invalidateMatrix3D()
         {
-            //延迟事件
-            this.delay();
+            if (this.isLockEvent)
+                return;
 
             this._matrix3DDirty = true;
             this._inverseMatrix3DDirty = true;
             this.notifyMatrix3DChanged();
             //
             this.invalidateGlobalMatrix3D();
-            this.release();
         }
 
         /**

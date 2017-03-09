@@ -134,22 +134,22 @@ module feng3d
         }
 
         /**
-         * 延迟事件
-         * 当派发事件时先收集下来，调用release派发被延迟的事件
-         * 每调用一次delay计数加1、调用release一次计数减1，当计数为0时派发所有被收集事件
-         * 与release配合使用
+         * 锁住事件
+         * 当派发事件时先收集下来，调用unlockEvent派发被延迟的事件
+         * 每调用一次lockEvent计数加1、调用unlockEvent一次计数减1，当计数为0时派发所有被收集事件
+         * 与unlockEvent配合使用
          */
-        public delay()
+        public lockEvent()
         {
             this._delaycount = this._delaycount + 1;
         }
 
         /**
-         * 派发被延迟的事件
-         * 每调用一次delay计数加1、调用release一次计数减1，当计数为0时派发所有被收集事件
+         * 解锁事件，派发被锁住的事件
+         * 每调用一次lockEvent计数加1、调用unlockEvent一次计数减1，当计数为0时派发所有被收集事件
          * 与delay配合使用
          */
-        public release()
+        public unlockEvent()
         {
             this._delaycount = this._delaycount - 1;
             if (this._delaycount == 0)
@@ -160,6 +160,14 @@ module feng3d
                 }
                 this._delayEvents.length = 0;
             }
+        }
+
+        /**
+         * 事件是否被锁住
+         */
+        public get isLockEvent()
+        {
+            return this._delaycount > 0;
         }
 
         /**

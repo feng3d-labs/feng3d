@@ -919,18 +919,22 @@ declare module feng3d {
          */
         dispatchEvent(event: Event): boolean;
         /**
-         * 延迟事件
-         * 当派发事件时先收集下来，调用release派发被延迟的事件
-         * 每调用一次delay计数加1、调用release一次计数减1，当计数为0时派发所有被收集事件
-         * 与release配合使用
+         * 锁住事件
+         * 当派发事件时先收集下来，调用unlockEvent派发被延迟的事件
+         * 每调用一次lockEvent计数加1、调用unlockEvent一次计数减1，当计数为0时派发所有被收集事件
+         * 与unlockEvent配合使用
          */
-        delay(): void;
+        lockEvent(): void;
         /**
-         * 派发被延迟的事件
-         * 每调用一次delay计数加1、调用release一次计数减1，当计数为0时派发所有被收集事件
+         * 解锁事件，派发被锁住的事件
+         * 每调用一次lockEvent计数加1、调用unlockEvent一次计数减1，当计数为0时派发所有被收集事件
          * 与delay配合使用
          */
-        release(): void;
+        unlockEvent(): void;
+        /**
+         * 事件是否被锁住
+         */
+        readonly isLockEvent: boolean;
         /**
          * 检查 EventDispatcher 对象是否为特定事件类型注册了任何侦听器.
          *
