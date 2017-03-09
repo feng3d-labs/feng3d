@@ -5951,6 +5951,23 @@ var feng3d;
             feng3d.Watcher.watch(this, ["position"], this.invalidateComp, this);
             feng3d.Watcher.watch(this, ["rotation"], this.invalidateComp, this);
             feng3d.Watcher.watch(this, ["scale"], this.invalidateComp, this);
+            //
+            feng3d.Binding.bindProperty(this, ["_parentComponent", "_parent", "transform"], this, "parentTransform");
+        }
+        /**
+         * 只写，提供给Binding.bindProperty使用
+         */
+        set parentTransform(value) {
+            if (this._parentTransform == value)
+                return;
+            if (this._parentTransform) {
+                this._parentTransform.removeEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.invalidateGlobalMatrix3D, this);
+            }
+            this._parentTransform = value;
+            if (this._parentTransform) {
+                this._parentTransform.addEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.invalidateGlobalMatrix3D, this);
+            }
+            this.invalidateGlobalMatrix3D();
         }
         /**
          * 位移旋转缩放组件失效
@@ -6040,9 +6057,7 @@ var feng3d;
         }
         set globalMatrix3D(value) {
             value = value.clone();
-            if (this.parentComponent && this.parentComponent.parent) {
-                value.append(this.parentComponent.parent.transform.inverseGlobalMatrix3D);
-            }
+            this._parentTransform && value.append(this._parentTransform.inverseGlobalMatrix3D);
             this.matrix3d = value;
         }
         /**
@@ -6101,10 +6116,7 @@ var feng3d;
         updateGlobalMatrix3D() {
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);
-            if (this.parentComponent && this.parentComponent.parent) {
-                var parentGlobalMatrix3D = this.parentComponent.parent.transform.globalMatrix3D;
-                this._globalMatrix3D.append(parentGlobalMatrix3D);
-            }
+            this._parentTransform && this._globalMatrix3D.append(this._parentTransform.globalMatrix3D);
         }
         /**
          * 更新逆全局矩阵
@@ -6128,13 +6140,6 @@ var feng3d;
             this._globalMatrix3DDirty = true;
             this._inverseGlobalMatrix3DDirty = true;
             this.notifySceneTransformChange();
-            //
-            if (this.parentComponent) {
-                for (var i = 0; i < this.parentComponent.numChildren; i++) {
-                    var element = this.parentComponent.getChildAt(i);
-                    element.transform.invalidateGlobalMatrix3D();
-                }
-            }
         }
         /**
          * 更新渲染数据

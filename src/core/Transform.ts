@@ -43,6 +43,10 @@ module feng3d
         private _positionWatchers: Watcher[] = [];
         private _rotationWatchers: Watcher[] = [];
         private _scaleWatchers: Watcher[] = [];
+        /**
+         * 父变换
+         */
+        private _parentTransform: Transform;
 
         /**
          * 构建变换
@@ -83,6 +87,28 @@ module feng3d
             Watcher.watch(this, ["position"], this.invalidateComp, this);
             Watcher.watch(this, ["rotation"], this.invalidateComp, this);
             Watcher.watch(this, ["scale"], this.invalidateComp, this);
+
+            //
+            Binding.bindProperty(this, ["_parentComponent", "_parent", "transform"], this, "parentTransform");
+        }
+
+        /**
+         * 只写，提供给Binding.bindProperty使用
+         */
+        private set parentTransform(value)
+        {
+            if (this._parentTransform == value)
+                return;
+            if (this._parentTransform)
+            {
+                this._parentTransform.removeEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.invalidateGlobalMatrix3D, this);
+            }
+            this._parentTransform = value;
+            if (this._parentTransform)
+            {
+                this._parentTransform.addEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.invalidateGlobalMatrix3D, this);
+            }
+            this.invalidateGlobalMatrix3D();
         }
 
         /**
@@ -196,10 +222,7 @@ module feng3d
         public set globalMatrix3D(value)
         {
             value = value.clone();
-            if (this.parentComponent && this.parentComponent.parent)
-            {
-                value.append(this.parentComponent.parent.transform.inverseGlobalMatrix3D);
-            }
+            this._parentTransform && value.append(this._parentTransform.inverseGlobalMatrix3D);
             this.matrix3d = value;
         }
 
@@ -270,11 +293,7 @@ module feng3d
         {
             this._globalMatrix3DDirty = false;
             this._globalMatrix3D.copyFrom(this.matrix3d);
-            if (this.parentComponent && this.parentComponent.parent)
-            {
-                var parentGlobalMatrix3D = this.parentComponent.parent.transform.globalMatrix3D;
-                this._globalMatrix3D.append(parentGlobalMatrix3D);
-            }
+            this._parentTransform && this._globalMatrix3D.append(this._parentTransform.globalMatrix3D);
         }
 
         /**
@@ -304,16 +323,6 @@ module feng3d
             this._globalMatrix3DDirty = true;
             this._inverseGlobalMatrix3DDirty = true;
             this.notifySceneTransformChange();
-
-            //
-            if (this.parentComponent)
-            {
-                for (var i = 0; i < this.parentComponent.numChildren; i++)
-                {
-                    var element = this.parentComponent.getChildAt(i)
-                    element.transform.invalidateGlobalMatrix3D();
-                }
-            }
         }
 
 		/**
