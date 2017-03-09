@@ -5575,6 +5575,21 @@ declare module feng3d {
          */
         updateRenderData(renderContext: RenderContext): void;
     }
+    class ParticleRenderDataHolder extends RenderDataHolder {
+        /**
+         * 收集粒子数据
+         * @param particle      粒子
+         */
+        collectionParticle(particle: Particle): void;
+        update(particleGlobal: ParticleGlobal): void;
+        /**
+         * 收集粒子属性数据
+         * @param attributeID       属性编号
+         * @param index             粒子编号
+         * @param data              属性数据
+         */
+        private collectionParticleAttribute(attribute, particle);
+    }
 }
 declare module feng3d {
     /**

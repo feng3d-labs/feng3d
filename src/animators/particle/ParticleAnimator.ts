@@ -111,7 +111,7 @@ module feng3d
         }
     }
 
-    class ParticleRenderDataHolder extends RenderDataHolder
+    export class ParticleRenderDataHolder extends RenderDataHolder
     {
 
         /**
