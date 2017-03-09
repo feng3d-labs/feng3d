@@ -61,7 +61,7 @@ module feng3d
         /**
          * 获取组件列表，无法通过返回数组对该组件进行子组件增删等操作
          */
-        public getComponents()
+        public get components()
         {
             return this._components.concat();
         }
