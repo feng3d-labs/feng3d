@@ -8,6 +8,10 @@ module feng3d
     console.log(`Feng3D version ${$REVISION}`)
 
     /*************************** 初始化模块 ***************************/
+    /**
+     * 是否开启调试(主要用于断言)
+     */
+    export var debuger = false;
     //键盘鼠标输入
     export var input = new Input();
     export var inputType = new InputEventType();

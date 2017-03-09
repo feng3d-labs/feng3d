@@ -6,7 +6,6 @@ module feng3d
      */
     export class Transform extends Object3DComponent
     {
-
         private readonly transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
         private readonly sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
         /**
@@ -61,9 +60,9 @@ module feng3d
         {
             super();
             //矫正值
-            this.position.setTo(x || 0, y || 0, z || 0);
-            this.rotation.setTo(rx || 0, ry || 0, rz || 0);
-            this.scale.setTo(sx || 0.000001, sy || 0.000001, sz || 0.000001);
+            this.position.setTo(x, y, z);
+            this.rotation.setTo(rx, ry, rz);
+            this.scale.setTo(sx, sy, sz);
             //
             this._positionWatchers.push(
                 Watcher.watch(this.position, ["y"], this.invalidateMatrix3D, this),
@@ -139,9 +138,6 @@ module feng3d
 
         public set matrix3d(value: Matrix3D)
         {
-            //延迟事件
-            this.delay();
-
             this._matrix3DDirty = false;
             this._matrix3D.rawData.set(value.rawData);
             var vecs = this._matrix3D.decompose();
@@ -149,12 +145,9 @@ module feng3d
             this.rotation.copyFrom(vecs[1]);
             this.rotation.scaleBy(MathConsts.RADIANS_TO_DEGREES);
             this.scale.copyFrom(vecs[2]);
-            this.adjust();
-
+            feng3d.debuger && this._debug();
             this.notifyMatrix3DChanged();
             this.invalidateGlobalMatrix3D();
-            //释放事件
-            this.release();
         }
 
         /**
@@ -216,7 +209,7 @@ module feng3d
         protected updateMatrix3D()
         {
             //矫正值
-            this.adjust();
+            feng3d.debuger && this._debug();
             //
             var rotation = this.rotation.clone();
             rotation.scaleBy(MathConsts.DEGREES_TO_RADIANS);
@@ -232,29 +225,29 @@ module feng3d
          * 使变换矩阵无效
          */
         protected invalidateMatrix3D()
-        {            
-            //延迟事件
-            this.delay();
-
+        {
             this._matrix3DDirty = true;
+            this._inverseMatrix3DDirty = true;
             this.notifyMatrix3DChanged();
             //
             this.invalidateGlobalMatrix3D();
-            this.release();
         }
 
         /**
-         * 矫正数值
+         * 验证数值是否正确
          */
-        private adjust()
+        private _debug()
         {
-            this.position.setTo(this.position.x || 0, this.position.y || 0, this.position.z || 0);
-            this.rotation.setTo(this.rotation.x || 0, this.rotation.y || 0, this.rotation.z || 0);
-            this.scale.setTo(this.scale.x || 0.000001, this.scale.y || 0.000001, this.scale.z || 0.000001);
+            assert(this.position.length !== NaN);
+            assert(this.rotation.length !== NaN);
+            assert(this.rotation.length !== NaN);
+            assert(this.rotation.x != 0);
+            assert(this.rotation.y != 0);
+            assert(this.rotation.z != 0);
         }
 
-        /**
-		 * 发出状态改变消息
+        /**		 
+         * 发出状态改变消息
 		 */
         protected notifyMatrix3DChanged()
         {

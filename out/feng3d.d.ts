@@ -3772,9 +3772,9 @@ declare module feng3d {
          */
         protected invalidateMatrix3D(): void;
         /**
-         * 矫正数值
+         * 验证数值是否正确
          */
-        private adjust();
+        private _debug();
         /**
          * 发出状态改变消息
          */
@@ -6606,6 +6606,10 @@ declare module feng3d {
 }
 declare module feng3d {
     /*************************** 初始化模块 ***************************/
+    /**
+     * 是否开启调试(主要用于断言)
+     */
+    var debuger: boolean;
     var input: Input;
     var inputType: InputEventType;
     var shortcut: ShortCut;

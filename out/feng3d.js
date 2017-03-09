@@ -5933,9 +5933,9 @@ var feng3d;
             this._rotationWatchers = [];
             this._scaleWatchers = [];
             //矫正值
-            this.position.setTo(x || 0, y || 0, z || 0);
-            this.rotation.setTo(rx || 0, ry || 0, rz || 0);
-            this.scale.setTo(sx || 0.000001, sy || 0.000001, sz || 0.000001);
+            this.position.setTo(x, y, z);
+            this.rotation.setTo(rx, ry, rz);
+            this.scale.setTo(sx, sy, sz);
             //
             this._positionWatchers.push(feng3d.Watcher.watch(this.position, ["y"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.position, ["z"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.position, ["x"], this.invalidateMatrix3D, this));
             this._rotationWatchers.push(feng3d.Watcher.watch(this.rotation, ["x"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.rotation, ["y"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.rotation, ["z"], this.invalidateMatrix3D, this));
@@ -5985,8 +5985,6 @@ var feng3d;
             return this._matrix3D;
         }
         set matrix3d(value) {
-            //延迟事件
-            this.delay();
             this._matrix3DDirty = false;
             this._matrix3D.rawData.set(value.rawData);
             var vecs = this._matrix3D.decompose();
@@ -5994,11 +5992,9 @@ var feng3d;
             this.rotation.copyFrom(vecs[1]);
             this.rotation.scaleBy(feng3d.MathConsts.RADIANS_TO_DEGREES);
             this.scale.copyFrom(vecs[2]);
-            this.adjust();
+            feng3d.debuger && this._debug();
             this.notifyMatrix3DChanged();
             this.invalidateGlobalMatrix3D();
-            //释放事件
-            this.release();
         }
         /**
          * 逆变换矩阵
@@ -6046,7 +6042,7 @@ var feng3d;
          */
         updateMatrix3D() {
             //矫正值
-            this.adjust();
+            feng3d.debuger && this._debug();
             //
             var rotation = this.rotation.clone();
             rotation.scaleBy(feng3d.MathConsts.DEGREES_TO_RADIANS);
@@ -6061,21 +6057,22 @@ var feng3d;
          * 使变换矩阵无效
          */
         invalidateMatrix3D() {
-            //延迟事件
-            this.delay();
             this._matrix3DDirty = true;
+            this._inverseMatrix3DDirty = true;
             this.notifyMatrix3DChanged();
             //
             this.invalidateGlobalMatrix3D();
-            this.release();
         }
         /**
-         * 矫正数值
+         * 验证数值是否正确
          */
-        adjust() {
-            this.position.setTo(this.position.x || 0, this.position.y || 0, this.position.z || 0);
-            this.rotation.setTo(this.rotation.x || 0, this.rotation.y || 0, this.rotation.z || 0);
-            this.scale.setTo(this.scale.x || 0.000001, this.scale.y || 0.000001, this.scale.z || 0.000001);
+        _debug() {
+            feng3d.assert(this.position.length !== NaN);
+            feng3d.assert(this.rotation.length !== NaN);
+            feng3d.assert(this.rotation.length !== NaN);
+            feng3d.assert(this.rotation.x != 0);
+            feng3d.assert(this.rotation.y != 0);
+            feng3d.assert(this.rotation.z != 0);
         }
         /**
          * 发出状态改变消息
@@ -11837,6 +11834,10 @@ var feng3d;
     var $REVISION = "0.0.0";
     console.log(`Feng3D version ${$REVISION}`);
     /*************************** 初始化模块 ***************************/
+    /**
+     * 是否开启调试(主要用于断言)
+     */
+    feng3d.debuger = false;
     //键盘鼠标输入
     feng3d.input = new feng3d.Input();
     feng3d.inputType = new feng3d.InputEventType();
