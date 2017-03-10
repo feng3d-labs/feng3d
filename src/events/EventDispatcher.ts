@@ -17,7 +17,7 @@ module feng3d
         /** 
          * 冒泡属性名称为“parent” 
          */
-        protected bubbleAttribute: string = "parent";
+        protected _bubbleAttribute: string = "parent";
 
         /**
          * 事件适配主体
@@ -200,7 +200,7 @@ module feng3d
          */
         protected getBubbleTargets(event: Event): IEventDispatcher[]
         {
-            return [this._target[this.bubbleAttribute]];
+            return [this._target[this._bubbleAttribute]];
         }
 
         /**

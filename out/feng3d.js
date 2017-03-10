@@ -969,7 +969,7 @@ var feng3d;
             /**
              * 冒泡属性名称为“parent”
              */
-            this.bubbleAttribute = "parent";
+            this._bubbleAttribute = "parent";
             /**
              * 延迟计数，当计数大于0时事件将会被收集，等到计数等于0时派发
              */
@@ -1103,7 +1103,7 @@ var feng3d;
          * @param event						调度到事件流中的 Event 对象。
          */
         getBubbleTargets(event) {
-            return [this._target[this.bubbleAttribute]];
+            return [this._target[this._bubbleAttribute]];
         }
         /**
          * 添加监听

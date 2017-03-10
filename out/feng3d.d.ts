@@ -874,7 +874,7 @@ declare module feng3d {
         /**
          * 冒泡属性名称为“parent”
          */
-        protected bubbleAttribute: string;
+        protected _bubbleAttribute: string;
         /**
          * 事件适配主体
          */
