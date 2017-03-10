@@ -16,7 +16,7 @@ module feng3d
             super(name);
             var mesh = this.getOrCreateComponentByClass(MeshFilter);
             this.planeGeometry = mesh.geometry = new PlaneGeometry(width, width);
-            this.getOrCreateComponentByClass(MeshRenderer);
+            this.getOrCreateComponentByClass(MeshRenderer).material = new StandardMaterial();
         }
     }
 }

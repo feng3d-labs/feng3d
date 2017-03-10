@@ -40,18 +40,18 @@ module feng3d
             this.xArrow = new ConeObject3D(5, 18);
             this.xArrow.transform.position.x = length;
             this.xArrow.transform.rotation.z = -90;
-            this.xArrow.colorMaterial.color = new Color(1, 0, 0);
+            this.xArrow.material.baseColor = new Color(1, 0, 0);
             this.addChild(this.xArrow);
             //
             this.yArrow = new ConeObject3D(5, 18);
             this.yArrow.transform.position.y = length;
-            this.yArrow.colorMaterial.color = new Color(0, 1, 0);
+            this.yArrow.material.baseColor = new Color(0, 1, 0);
             this.addChild(this.yArrow);
             //
             this.zArrow = new ConeObject3D(5, 18);
             this.zArrow.transform.position.z = length;
             this.zArrow.transform.rotation.x = 90;
-            this.zArrow.colorMaterial.color = new Color(0, 0, 1);
+            this.zArrow.material.baseColor = new Color(0, 0, 1);
             this.addChild(this.zArrow);
         }
     }

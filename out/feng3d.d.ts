@@ -6443,6 +6443,10 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    /**
+     * 摄像机3D对象
+     * @author feng 2017-02-06
+     */
     class CameraObject3D extends Object3D {
         camera: Camera3D;
         constructor(name?: string);
@@ -6528,7 +6532,7 @@ declare module feng3d {
      * @author feng 2017-02-06
      */
     class ConeObject3D extends Object3D {
-        colorMaterial: ColorMaterial;
+        material: StandardMaterial;
         /**
          * 构建3D对象
          */
@@ -6567,6 +6571,15 @@ declare module feng3d {
         /**
          * 构建3D对象
          */
+        constructor(name?: string);
+    }
+}
+declare module feng3d {
+    /**
+     * 点光源3D对象
+     * @author feng 2017-03-10
+     */
+    class PointLightObject3D extends Object3D {
         constructor(name?: string);
     }
 }

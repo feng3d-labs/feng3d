@@ -7,8 +7,7 @@ module feng3d
      */
     export class ConeObject3D extends Object3D
     {
-
-        public colorMaterial: ColorMaterial;
+        public material: StandardMaterial;
 
         /**
          * 构建3D对象
@@ -19,7 +18,7 @@ module feng3d
             super(name);
             var mesh = this.getOrCreateComponentByClass(MeshFilter);
             mesh.geometry = new ConeGeometry(radius, height);
-            this.colorMaterial = this.getOrCreateComponentByClass(MeshRenderer).material = new ColorMaterial;
+            this.material = this.getOrCreateComponentByClass(MeshRenderer).material = new StandardMaterial();
         }
     }
 }

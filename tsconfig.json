@@ -191,6 +191,7 @@
         "src/factory/SkyBoxObject3D.ts",
         "src/factory/SegmentObject3D.ts",
         "src/factory/ParticleObject3D.ts",
+        "src/factory/PointLightObject3D.ts",
         //
         "src/core/Mouse3DManager.ts",
         //
