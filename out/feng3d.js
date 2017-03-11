@@ -5906,8 +5906,8 @@ var feng3d;
          */
         constructor(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1) {
             super();
-            this.transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
-            this.sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
+            this._transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
+            this._sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
             /**
              * 位移
              */
@@ -6108,7 +6108,7 @@ var feng3d;
          * 发出状态改变消息
          */
         notifyMatrix3DChanged() {
-            this.dispatchEvent(this.transformChanged);
+            this.dispatchEvent(this._transformChanged);
         }
         /**
          * 更新全局矩阵
@@ -6130,7 +6130,7 @@ var feng3d;
          * 通知全局变换改变
          */
         notifySceneTransformChange() {
-            this.dispatchEvent(this.sceneTransformChanged);
+            this.dispatchEvent(this._sceneTransformChanged);
         }
         /**
          * 全局变换矩阵失效

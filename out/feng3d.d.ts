@@ -3693,8 +3693,8 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Transform extends Object3DComponent {
-        private readonly transformChanged;
-        private readonly sceneTransformChanged;
+        private readonly _transformChanged;
+        private readonly _sceneTransformChanged;
         /**
          * 位移
          */

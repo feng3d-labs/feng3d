@@ -6,8 +6,8 @@ module feng3d
      */
     export class Transform extends Object3DComponent
     {
-        private readonly transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
-        private readonly sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
+        private readonly _transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
+        private readonly _sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
         /**
          * 位移
          */
@@ -283,7 +283,7 @@ module feng3d
 		 */
         protected notifyMatrix3DChanged()
         {
-            this.dispatchEvent(this.transformChanged);
+            this.dispatchEvent(this._transformChanged);
         }
 
         /**
@@ -311,7 +311,7 @@ module feng3d
 		 */
         protected notifySceneTransformChange()
         {
-            this.dispatchEvent(this.sceneTransformChanged);
+            this.dispatchEvent(this._sceneTransformChanged);
         }
 
         /**
