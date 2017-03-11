@@ -908,6 +908,29 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 数据持久化
+     * @author feng 2017-03-11
+     */
+    var Serialization = (function () {
+        function Serialization() {
+        }
+        /**
+         * 由纯数据对象（无循环引用）转换为复杂类型（例如feng3d对象）
+         */
+        Serialization.prototype.readObject = function () {
+        };
+        /**
+         * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
+         */
+        Serialization.prototype.writeObject = function (object3d) {
+        };
+        return Serialization;
+    }());
+    feng3d.Serialization = Serialization;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 事件
      * @author feng 2014-5-7
      */
@@ -12970,6 +12993,8 @@ var feng3d;
      * 是否开启调试(主要用于断言)
      */
     feng3d.debuger = true;
+    //数据持久化
+    feng3d.serialization = new feng3d.Serialization();
     //键盘鼠标输入
     feng3d.input = new feng3d.Input();
     feng3d.inputType = new feng3d.InputEventType();

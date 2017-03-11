@@ -768,6 +768,22 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 数据持久化
+     * @author feng 2017-03-11
+     */
+    class Serialization {
+        /**
+         * 由纯数据对象（无循环引用）转换为复杂类型（例如feng3d对象）
+         */
+        readObject(): void;
+        /**
+         * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
+         */
+        writeObject(object3d: Object3D): void;
+    }
+}
+declare module feng3d {
+    /**
      * 事件
      * @author feng 2014-5-7
      */
@@ -6662,6 +6678,7 @@ declare module feng3d {
      * 是否开启调试(主要用于断言)
      */
     var debuger: boolean;
+    var serialization: Serialization;
     var input: Input;
     var inputType: InputEventType;
     var shortcut: ShortCut;

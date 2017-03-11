@@ -12,6 +12,10 @@ module feng3d
      * 是否开启调试(主要用于断言)
      */
     export var debuger = true;
+
+    //数据持久化
+    export var serialization = new Serialization();
+
     //键盘鼠标输入
     export var input = new Input();
     export var inputType = new InputEventType();
