@@ -11,12 +11,12 @@ module feng3d
         /**
          * 最小半径
          */
-        public radius: number;
+        public radius = 0;
 
         /**
          * 可照射最大距离
          */
-        public fallOff: number;
+        public fallOff = 0;
 
         /**
          * 构建

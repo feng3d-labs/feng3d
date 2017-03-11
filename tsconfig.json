@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es5",
         "noImplicitAny": false,
         "sourceMap": true,
         "declaration": true,
@@ -87,6 +87,7 @@
         "src/core/Object3DEvent.ts",
         "src/core/MeshFilter.ts",
         "src/core/MeshRenderer.ts",
+        "src/core/Object3dScript.ts",
         //3D场景
         "src/scene/Scene3D.ts",
         "src/scene/Scene3DEvent.ts",
