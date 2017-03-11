@@ -3574,6 +3574,7 @@ var feng3d;
             this.rawData[13] = m141 * m212 + m142 * m222 + m143 * m232 + m144 * m242;
             this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
             this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
+            feng3d.debuger && feng3d.assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
             return this;
         };
         /**
@@ -6520,11 +6521,8 @@ var feng3d;
          */
         Transform.prototype._debug = function () {
             feng3d.assert(this.position.length !== NaN);
-            feng3d.assert(this.rotation.length !== NaN);
-            feng3d.assert(this.rotation.length !== NaN);
-            feng3d.assert(this.rotation.x != 0);
-            feng3d.assert(this.rotation.y != 0);
-            feng3d.assert(this.rotation.z != 0);
+            feng3d.assert(this.position.length !== NaN);
+            feng3d.assert(!!this.scale.length);
         };
         /**
          * 发出状态改变消息
@@ -12971,7 +12969,7 @@ var feng3d;
     /**
      * 是否开启调试(主要用于断言)
      */
-    feng3d.debuger = false;
+    feng3d.debuger = true;
     //键盘鼠标输入
     feng3d.input = new feng3d.Input();
     feng3d.inputType = new feng3d.InputEventType();

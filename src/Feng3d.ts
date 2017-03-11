@@ -11,7 +11,7 @@ module feng3d
     /**
      * 是否开启调试(主要用于断言)
      */
-    export var debuger = false;
+    export var debuger = true;
     //键盘鼠标输入
     export var input = new Input();
     export var inputType = new InputEventType();

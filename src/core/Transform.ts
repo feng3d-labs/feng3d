@@ -271,11 +271,8 @@ module feng3d
         private _debug()
         {
             assert(this.position.length !== NaN);
-            assert(this.rotation.length !== NaN);
-            assert(this.rotation.length !== NaN);
-            assert(this.rotation.x != 0);
-            assert(this.rotation.y != 0);
-            assert(this.rotation.z != 0);
+            assert(this.position.length !== NaN);
+            assert(!!this.scale.length);
         }
 
         /**		 
