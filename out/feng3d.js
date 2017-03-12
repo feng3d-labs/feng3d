@@ -384,100 +384,6 @@ var feng3d;
      */
     var _versionKey = "__version__";
 })(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 属性描述工具类
-     * @author feng 2017-02-23
-     */
-    var PropertyDescriptorUtils = (function () {
-        function PropertyDescriptorUtils() {
-        }
-        /**
-         * 判断是否为函数
-         *
-         * @static
-         * @param {PropertyDescriptor} propertyDescriptor 属性描述
-         * @returns
-         *
-         * @memberOf PropertyDescriptorUtils
-         */
-        PropertyDescriptorUtils.isFunction = function (propertyDescriptor) {
-            return Boolean(propertyDescriptor.value && typeof propertyDescriptor.value == "function");
-        };
-        /**
-         * 判断是否写
-         *
-         * @static
-         * @param {PropertyDescriptor} propertyDescriptor 属性描述
-         * @returns
-         *
-         * @memberOf PropertyDescriptorUtils
-         */
-        PropertyDescriptorUtils.isWritable = function (propertyDescriptor) {
-            return Boolean(propertyDescriptor.writable || propertyDescriptor.set);
-        };
-        /**
-         * 获取属性描述
-         *
-         * @static
-         * @param {Object} object
-         * @param {string} name
-         * @returns
-         *
-         * @memberOf PropertyDescriptorUtils
-         */
-        PropertyDescriptorUtils.getPropertyDescriptor = function (object, name) {
-            return Object.getOwnPropertyDescriptor(object, name) || Object.getOwnPropertyDescriptor(object.constructor.prototype, name);
-        };
-        /**
-         * 获取所有属性描述（不包含函数）
-         *
-         * @static
-         * @param {Object} object 对象
-         * @returns
-         *
-         * @memberOf PropertyDescriptorUtils
-         */
-        PropertyDescriptorUtils.getAttributes = function (object) {
-            var attributePropertyDescriptors = {};
-            var propertyDescriptors = this.getPropertyDescriptors(object);
-            for (var property in propertyDescriptors) {
-                var element = propertyDescriptors[property];
-                if (!this.isFunction(element))
-                    attributePropertyDescriptors[property] = element;
-            }
-            return attributePropertyDescriptors;
-        };
-        /**
-         * 获取所有属性描述
-         *
-         * @static
-         * @param {Object} object
-         * @returns
-         *
-         * @memberOf PropertyDescriptorUtils
-         */
-        PropertyDescriptorUtils.getPropertyDescriptors = function (object) {
-            var _this = this;
-            var propertyDescriptors = {};
-            var names = Object.getOwnPropertyNames(object);
-            names.forEach(function (element) {
-                propertyDescriptors[element] = _this.getPropertyDescriptor(object, element);
-            });
-            if (object.constructor != Object) {
-                var names = Object.getOwnPropertyNames(object.constructor.prototype);
-                names.forEach(function (element) {
-                    propertyDescriptors[element] = _this.getPropertyDescriptor(object, element);
-                });
-            }
-            delete propertyDescriptors["constructor"];
-            return propertyDescriptors;
-        };
-        return PropertyDescriptorUtils;
-    }());
-    feng3d.PropertyDescriptorUtils = PropertyDescriptorUtils;
-})(feng3d || (feng3d = {}));
 //参考 egret https://github.com/egret-labs/egret-core/blob/master/src/extension/eui/binding/Watcher.ts
 var feng3d;
 (function (feng3d) {
@@ -927,8 +833,7 @@ var feng3d;
             //保存以字母开头或者纯数字的所有属性
             var filterReg = /([a-zA-Z](\w*)|(\d+))/;
             //
-            var propertyDescriptors = feng3d.PropertyDescriptorUtils.getAttributes(object3d);
-            var attributeNames = Object.keys(propertyDescriptors);
+            var attributeNames = Object.keys(object3d);
             attributeNames = attributeNames.filter(function (value, index, array) {
                 var result = filterReg.exec(value);
                 return result[0] == value;

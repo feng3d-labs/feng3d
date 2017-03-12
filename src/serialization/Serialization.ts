@@ -24,8 +24,7 @@ module feng3d
             //保存以字母开头或者纯数字的所有属性
             var filterReg = /([a-zA-Z](\w*)|(\d+))/;
             //
-            var propertyDescriptors = PropertyDescriptorUtils.getAttributes(object3d);
-            var attributeNames = Object.keys(propertyDescriptors);
+            var attributeNames = Object.keys(object3d);
             attributeNames = attributeNames.filter((value: string, index: number, array: string[]) =>
             {
                 var result = filterReg.exec(value);
