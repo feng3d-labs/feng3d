@@ -6,11 +6,16 @@ module feng3d
      */
     export class Object3D extends RenderDataHolder
     {
-        private _object3DID: number;
-        private _uid: string;
+        //-序列化
+        protected mouseEnabled_: boolean = true;
+        protected visible_ = true;
+        /**
+         * 子对象列表
+         */
+        private children_: Object3D[] = [];
 
-        protected _mouseEnabled: boolean = true;
-        protected _visible = true;
+        //-非序列化
+        private _object3DID: number;
 
         private _transform: Transform;
         /**
@@ -18,20 +23,7 @@ module feng3d
          */
         private _parent: Object3D = null;
 
-        /**
-         * 子对象列表
-         */
-        private _children: Object3D[] = [];
-
         private _scene: Scene3D;
-
-        /**
-         * 唯一标识符
-         */
-        public get uid()
-        {
-            return this._uid;
-        }
 
         public get object3DID()
         {
@@ -61,7 +53,6 @@ module feng3d
         {
             super();
 
-            this._uid = UIDUtils.getUID(this);
             this._object3DID = object3DAutoID++;
             object3DMap[this._object3DID] = this;
             this.name = name;
@@ -120,7 +111,7 @@ module feng3d
                 this.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
                 this._scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
             }
-            this._children.forEach(child =>
+            this.children_.forEach(child =>
             {
                 child._setScene(this._scene);
             });
@@ -131,12 +122,12 @@ module feng3d
 		 */
         public get mouseEnabled(): boolean
         {
-            return this._mouseEnabled;
+            return this.mouseEnabled_;
         }
 
         public set mouseEnabled(value: boolean)
         {
-            this._mouseEnabled = value;
+            this.mouseEnabled_ = value;
         }
 
         /**
@@ -144,7 +135,7 @@ module feng3d
          */
         public get realMouseEnable()
         {
-            return this._mouseEnabled && (this.parent ? this.parent.realMouseEnable : true);
+            return this.mouseEnabled_ && (this.parent ? this.parent.realMouseEnable : true);
         }
 
         /**
@@ -152,12 +143,12 @@ module feng3d
 		 */
         public get visible(): boolean
         {
-            return this._visible;
+            return this.visible_;
         }
 
         public set visible(value: boolean)
         {
-            this._visible = value;
+            this.visible_ = value;
         }
 
         /**
@@ -165,7 +156,7 @@ module feng3d
          */
         public get realVisible()
         {
-            return this._visible && (this.parent ? this.parent.realVisible : true);
+            return this.visible_ && (this.parent ? this.parent.realVisible : true);
         }
 
         /**
@@ -175,7 +166,7 @@ module feng3d
 		 */
         public addChild(child: Object3D): void
         {
-            this.addChildAt(child, this._children.length);
+            this.addChildAt(child, this.children_.length);
         }
 
         /**
@@ -186,8 +177,8 @@ module feng3d
         public addChildAt(child: Object3D, index: number): void
         {
             this.removeChild(child);
-            index = Math.max(0, Math.min(this._children.length, index));
-            this._children.splice(index, 0, child);
+            index = Math.max(0, Math.min(this.children_.length, index));
+            this.children_.splice(index, 0, child);
             child.dispatchEvent(new Object3DEvent(Object3DEvent.ADDED, { parent: this, child: child }, true));
         }
 
@@ -198,7 +189,7 @@ module feng3d
          */
         public removeChild(child: Object3D): number
         {
-            var childIndex = this._children.indexOf(child);
+            var childIndex = this.children_.indexOf(child);
             this.removeChildAt(childIndex);
             return childIndex;
         }
@@ -210,7 +201,7 @@ module feng3d
          */
         public getChildIndex(child: Object3D): number
         {
-            return this._children.indexOf(child);
+            return this.children_.indexOf(child);
         }
 
         /**
@@ -220,10 +211,10 @@ module feng3d
 		 */
         public removeChildAt(childIndex: number): Object3D
         {
-            if (childIndex < 0 || childIndex > this._children.length - 1)
+            if (childIndex < 0 || childIndex > this.children_.length - 1)
                 return null;
-            var child: Object3D = this._children[childIndex];
-            this._children.splice(childIndex, 1);
+            var child: Object3D = this.children_[childIndex];
+            this.children_.splice(childIndex, 1);
             child.dispatchEvent(new Object3DEvent(Object3DEvent.REMOVED, { parent: this, child: child }, true));
             return child;
         }
@@ -235,7 +226,7 @@ module feng3d
 		 */
         public getChildAt(index: number): Object3D
         {
-            return this._children[index];
+            return this.children_[index];
         }
 
         /**
@@ -243,7 +234,7 @@ module feng3d
          */
         public get numChildren(): number
         {
-            return this._children.length;
+            return this.children_.length;
         }
 
         /**

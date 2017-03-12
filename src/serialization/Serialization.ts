@@ -1,7 +1,7 @@
 module feng3d
 {
     /**
-     * 数据持久化（序列化）
+     * 数据序列化
      * @author feng 2017-03-11
      */
     export class Serialization
@@ -23,18 +23,30 @@ module feng3d
 
             //保存以字母开头或者纯数字的所有属性
             var filterReg = /([a-zA-Z](\w*)|(\d+))/;
-            //
-            var attributeNames = Object.keys(object3d);
-            attributeNames = attributeNames.filter((value: string, index: number, array: string[]) =>
+            if (className == "Array" || className == "Object")
             {
-                var result = filterReg.exec(value);
-                return result[0] == value;
-            });
-            attributeNames = attributeNames.sort();
+                var attributeNames = Object.keys(object3d);
+            } else
+            {
+                //
+                var attributeNames = Object.keys(this.getNewObject(className));
+                attributeNames = attributeNames.filter((value: string, index: number, array: string[]) =>
+                {
+                    var result = filterReg.exec(value);
+                    return result[0] == value;
+                });
+                attributeNames = attributeNames.sort();
+            }
 
-            var object: { __className__: string } = <any>{};
-            object.__className__ = className;
+            var object: { __className__: string };
+            if (className == "Array")
+            {
+                object = <any>[];
 
+            } else
+            {
+                object = <any>{};
+            }
             for (var i = 0; i < attributeNames.length; i++)
             {
                 var attributeName = attributeNames[i];
@@ -52,6 +64,15 @@ module feng3d
                 }
             }
             return object;
+        }
+
+        /**
+         * 获取新对象来判断存储的属性
+         */
+        private getNewObject(className: string)
+        {
+            var cls = ClassUtils.getDefinitionByName(className);
+            return new cls();
         }
     }
 

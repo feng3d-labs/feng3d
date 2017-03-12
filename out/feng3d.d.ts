@@ -705,7 +705,73 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 数据持久化（序列化）
+     * 获取feng3d运行时间，毫秒为单位
+     */
+    function getTimer(): number;
+}
+declare module feng3d {
+    class StringUtils {
+        /**
+         * 获取字符串
+         * @param obj 转换为字符串的对象
+         * @param showLen       显示长度
+         * @param fill          长度不够是填充的字符串
+         * @param tail          true（默认）:在尾部添加；false：在首部添加
+         */
+        static getString(obj: any, showLen?: number, fill?: string, tail?: boolean): string;
+    }
+}
+declare module feng3d {
+    /**
+     * 数组工具
+     * @author feng 2017-01-03
+     */
+    class ArrayUtils {
+        /**
+         * 删除数据元素
+         * @param source    数组源数据
+         * @param item      被删除数据
+         * @param all       是否删除所有相同数据
+         */
+        static removeItem<T>(source: T[], item: T, all?: boolean): {
+            deleteIndexs: number[];
+            length: number;
+        };
+    }
+}
+declare module feng3d {
+    /**
+     * 构建Map类代替Dictionary
+     * @author feng 2017-01-03
+     */
+    class Map<K, V> {
+        private keyMap;
+        private valueMap;
+        /**
+         * 删除
+         */
+        delete(k: K): void;
+        /**
+         * 添加映射
+         */
+        push(k: K, v: V): void;
+        /**
+         * 通过key获取value
+         */
+        get(k: K): V;
+        /**
+         * 获取键列表
+         */
+        getKeys(): K[];
+        /**
+         * 清理字典
+         */
+        clear(): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 数据序列化
      * @author feng 2017-03-11
      */
     class Serialization {
@@ -719,6 +785,10 @@ declare module feng3d {
         writeObject(object3d: Object3D): {
             __className__: string;
         };
+        /**
+         * 获取新对象来判断存储的属性
+         */
+        private getNewObject(className);
     }
 }
 declare module feng3d {
@@ -822,6 +892,7 @@ declare module feng3d {
      */
     class EventDispatcher implements IEventDispatcher {
         private readonly _listenermap;
+        private uuid;
         /**
          * 名称
          */
@@ -1505,7 +1576,7 @@ declare module feng3d {
         /**
          * 组件列表
          */
-        protected _components: IComponent[];
+        protected components_: IComponent[];
         /**
          * 创建一个组件容器
          */
@@ -1751,72 +1822,6 @@ declare module feng3d {
          * 图片数据
          */
         static IMAGE: string;
-    }
-}
-declare module feng3d {
-    /**
-     * 获取feng3d运行时间，毫秒为单位
-     */
-    function getTimer(): number;
-}
-declare module feng3d {
-    class StringUtils {
-        /**
-         * 获取字符串
-         * @param obj 转换为字符串的对象
-         * @param showLen       显示长度
-         * @param fill          长度不够是填充的字符串
-         * @param tail          true（默认）:在尾部添加；false：在首部添加
-         */
-        static getString(obj: any, showLen?: number, fill?: string, tail?: boolean): string;
-    }
-}
-declare module feng3d {
-    /**
-     * 数组工具
-     * @author feng 2017-01-03
-     */
-    class ArrayUtils {
-        /**
-         * 删除数据元素
-         * @param source    数组源数据
-         * @param item      被删除数据
-         * @param all       是否删除所有相同数据
-         */
-        static removeItem<T>(source: T[], item: T, all?: boolean): {
-            deleteIndexs: number[];
-            length: number;
-        };
-    }
-}
-declare module feng3d {
-    /**
-     * 构建Map类代替Dictionary
-     * @author feng 2017-01-03
-     */
-    class Map<K, V> {
-        private keyMap;
-        private valueMap;
-        /**
-         * 删除
-         */
-        delete(k: K): void;
-        /**
-         * 添加映射
-         */
-        push(k: K, v: V): void;
-        /**
-         * 通过key获取value
-         */
-        get(k: K): V;
-        /**
-         * 获取键列表
-         */
-        getKeys(): K[];
-        /**
-         * 清理字典
-         */
-        clear(): void;
     }
 }
 declare module feng3d {
@@ -3425,24 +3430,19 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Object3D extends RenderDataHolder {
+        protected mouseEnabled_: boolean;
+        protected visible_: boolean;
+        /**
+         * 子对象列表
+         */
+        private children_;
         private _object3DID;
-        private _uid;
-        protected _mouseEnabled: boolean;
-        protected _visible: boolean;
         private _transform;
         /**
          * 父对象
          */
         private _parent;
-        /**
-         * 子对象列表
-         */
-        private _children;
         private _scene;
-        /**
-         * 唯一标识符
-         */
-        readonly uid: string;
         readonly object3DID: number;
         /**
          * 变换

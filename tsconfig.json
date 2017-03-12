@@ -16,9 +16,12 @@
         "src/utils/VersionUtils.ts",
         "src/utils/Watcher.ts",
         "src/utils/Binding.ts",
+        "src/utils/gettimer.ts",
+        "src/utils/StringUtils.ts",
+        "src/utils/ArrayUtils.ts",
+        "src/utils/Map.ts",
         //数据持久化
         "src/serialization/Serialization.ts",
-
         //事件模块
         "src/events/Event.ts",
         "src/events/IEventDispatcher.ts",
@@ -42,10 +45,6 @@
         "src/net/LoaderEvent.ts",
         "src/net/LoaderDataFormat.ts",
         //基础工具
-        "src/utils/gettimer.ts",
-        "src/utils/StringUtils.ts",
-        "src/utils/ArrayUtils.ts",
-        "src/utils/Map.ts",
         "src/utils/ShaderLib.ts",
         //
         "src/mathlib/Color.ts",

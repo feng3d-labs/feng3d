@@ -292,7 +292,7 @@ var feng3d;
              */
             function createUID(object) {
                 var prototype = object.prototype ? object.prototype : Object.getPrototypeOf(object);
-                var className = prototype.constructor.name;
+                var className = feng3d.ClassUtils.getQualifiedClassName(object);
                 var id = ~~_uidStart[className];
                 var time = Date.now(); //时间戳
                 var uid = [
@@ -814,7 +814,141 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 数据持久化（序列化）
+     * 获取feng3d运行时间，毫秒为单位
+     */
+    function getTimer() {
+        return Date.now() - feng3d.feng3dStartTime;
+    }
+    feng3d.getTimer = getTimer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var StringUtils = (function () {
+        function StringUtils() {
+        }
+        /**
+         * 获取字符串
+         * @param obj 转换为字符串的对象
+         * @param showLen       显示长度
+         * @param fill          长度不够是填充的字符串
+         * @param tail          true（默认）:在尾部添加；false：在首部添加
+         */
+        StringUtils.getString = function (obj, showLen, fill, tail) {
+            if (showLen === void 0) { showLen = -1; }
+            if (fill === void 0) { fill = " "; }
+            if (tail === void 0) { tail = true; }
+            var str = "";
+            if (obj.toString != null) {
+                str = obj.toString();
+            }
+            else {
+                str = obj;
+            }
+            if (showLen != -1) {
+                while (str.length < showLen) {
+                    if (tail) {
+                        str = str + fill;
+                    }
+                    else {
+                        str = fill + str;
+                    }
+                }
+                if (str.length > showLen) {
+                    str = str.substr(0, showLen);
+                }
+            }
+            return str;
+        };
+        return StringUtils;
+    }());
+    feng3d.StringUtils = StringUtils;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 数组工具
+     * @author feng 2017-01-03
+     */
+    var ArrayUtils = (function () {
+        function ArrayUtils() {
+        }
+        /**
+         * 删除数据元素
+         * @param source    数组源数据
+         * @param item      被删除数据
+         * @param all       是否删除所有相同数据
+         */
+        ArrayUtils.removeItem = function (source, item, all) {
+            if (all === void 0) { all = false; }
+            var deleteIndexs = [];
+            var index = source.indexOf(item);
+            while (index != -1) {
+                source.splice(index, 1);
+                deleteIndexs.push(index);
+                all || (index = -1);
+            }
+            return { deleteIndexs: deleteIndexs, length: source.length };
+        };
+        return ArrayUtils;
+    }());
+    feng3d.ArrayUtils = ArrayUtils;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 构建Map类代替Dictionary
+     * @author feng 2017-01-03
+     */
+    var Map = (function () {
+        function Map() {
+            this.keyMap = {};
+            this.valueMap = {};
+        }
+        /**
+         * 删除
+         */
+        Map.prototype.delete = function (k) {
+            delete this.keyMap[feng3d.UIDUtils.getUID(k)];
+            delete this.valueMap[feng3d.UIDUtils.getUID(k)];
+        };
+        /**
+         * 添加映射
+         */
+        Map.prototype.push = function (k, v) {
+            this.keyMap[feng3d.UIDUtils.getUID(k)] = k;
+            this.valueMap[feng3d.UIDUtils.getUID(k)] = v;
+        };
+        /**
+         * 通过key获取value
+         */
+        Map.prototype.get = function (k) {
+            return this.valueMap[feng3d.UIDUtils.getUID(k)];
+        };
+        /**
+         * 获取键列表
+         */
+        Map.prototype.getKeys = function () {
+            var keys = [];
+            for (var key in this.keyMap) {
+                keys.push(this.keyMap[key]);
+            }
+            return keys;
+        };
+        /**
+         * 清理字典
+         */
+        Map.prototype.clear = function () {
+            this.keyMap = {};
+            this.valueMap = {};
+        };
+        return Map;
+    }());
+    feng3d.Map = Map;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 数据序列化
      * @author feng 2017-03-11
      */
     var Serialization = (function () {
@@ -832,15 +966,25 @@ var feng3d;
             var className = feng3d.ClassUtils.getQualifiedClassName(object3d);
             //保存以字母开头或者纯数字的所有属性
             var filterReg = /([a-zA-Z](\w*)|(\d+))/;
-            //
-            var attributeNames = Object.keys(object3d);
-            attributeNames = attributeNames.filter(function (value, index, array) {
-                var result = filterReg.exec(value);
-                return result[0] == value;
-            });
-            attributeNames = attributeNames.sort();
-            var object = {};
-            object.__className__ = className;
+            if (className == "Array" || className == "Object") {
+                var attributeNames = Object.keys(object3d);
+            }
+            else {
+                //
+                var attributeNames = Object.keys(this.getNewObject(className));
+                attributeNames = attributeNames.filter(function (value, index, array) {
+                    var result = filterReg.exec(value);
+                    return result[0] == value;
+                });
+                attributeNames = attributeNames.sort();
+            }
+            var object;
+            if (className == "Array") {
+                object = [];
+            }
+            else {
+                object = {};
+            }
             for (var i = 0; i < attributeNames.length; i++) {
                 var attributeName = attributeNames[i];
                 var attributeValue = object3d[attributeName];
@@ -855,6 +999,13 @@ var feng3d;
                 }
             }
             return object;
+        };
+        /**
+         * 获取新对象来判断存储的属性
+         */
+        Serialization.prototype.getNewObject = function (className) {
+            var cls = feng3d.ClassUtils.getDefinitionByName(className);
+            return new cls();
         };
         return Serialization;
     }());
@@ -989,6 +1140,7 @@ var feng3d;
              * 被延迟的事件列表
              */
             this._delayEvents = [];
+            this.uuid = feng3d.UIDUtils.getUID(this);
             this._target = target;
             if (this._target == null)
                 this._target = this;
@@ -1880,7 +2032,7 @@ var feng3d;
             /**
              * 组件列表
              */
-            this._components = [];
+            this.components_ = [];
             this.initComponent();
         }
         /**
@@ -1907,7 +2059,7 @@ var feng3d;
              * 子组件个数
              */
             get: function () {
-                return this._components.length;
+                return this.components_.length;
             },
             enumerable: true,
             configurable: true
@@ -1917,7 +2069,7 @@ var feng3d;
              * 获取组件列表，无法通过返回数组对该组件进行子组件增删等操作
              */
             get: function () {
-                return this._components.concat();
+                return this.components_.concat();
             },
             enumerable: true,
             configurable: true
@@ -1928,10 +2080,10 @@ var feng3d;
          */
         Component.prototype.addComponent = function (component) {
             if (this.hasComponent(component)) {
-                this.setComponentIndex(component, this._components.length - 1);
+                this.setComponentIndex(component, this.components_.length - 1);
                 return;
             }
-            this.addComponentAt(component, this._components.length);
+            this.addComponentAt(component, this.components_.length);
         };
         /**
          * 添加组件到指定位置
@@ -1942,11 +2094,11 @@ var feng3d;
             assert(component != this, "子项与父项不能相同");
             assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
             if (this.hasComponent(component)) {
-                index = Math.min(index, this._components.length - 1);
+                index = Math.min(index, this.components_.length - 1);
                 this.setComponentIndex(component, index);
                 return;
             }
-            this._components.splice(index, 0, component);
+            this.components_.splice(index, 0, component);
             //派发添加组件事件
             component.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.ADDED_COMPONENT, { container: this, child: component }, true));
         };
@@ -1965,7 +2117,7 @@ var feng3d;
          */
         Component.prototype.removeComponentAt = function (index) {
             assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
-            var component = this._components.splice(index, 1)[0];
+            var component = this.components_.splice(index, 1)[0];
             //派发移除组件事件
             component.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }, true));
             return component;
@@ -1976,8 +2128,8 @@ var feng3d;
          * @return				    组件在容器的索引位置
          */
         Component.prototype.getComponentIndex = function (component) {
-            assert(this._components.indexOf(component) != -1, "组件不在容器中");
-            var index = this._components.indexOf(component);
+            assert(this.components_.indexOf(component) != -1, "组件不在容器中");
+            var index = this.components_.indexOf(component);
             return index;
         };
         /**
@@ -1987,10 +2139,10 @@ var feng3d;
          */
         Component.prototype.setComponentIndex = function (component, index) {
             assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
-            var oldIndex = this._components.indexOf(component);
+            var oldIndex = this.components_.indexOf(component);
             assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
-            this._components.splice(oldIndex, 1);
-            this._components.splice(index, 0, component);
+            this.components_.splice(oldIndex, 1);
+            this.components_.splice(index, 0, component);
         };
         /**
          * 获取指定位置索引的子组件
@@ -1999,7 +2151,7 @@ var feng3d;
          */
         Component.prototype.getComponentAt = function (index) {
             assert(index < this.numComponents, "给出索引超出范围");
-            return this._components[index];
+            return this.components_[index];
         };
         /**
          * 根据组件名称获取组件
@@ -2018,7 +2170,7 @@ var feng3d;
          * @return 					获取到的组件
          */
         Component.prototype.getComponentsByName = function (name) {
-            var filterResult = this._components.filter(function (value, index, array) {
+            var filterResult = this.components_.filter(function (value, index, array) {
                 return value.name == name;
             });
             return filterResult;
@@ -2039,7 +2191,7 @@ var feng3d;
          * @return			返回与给出类定义一致的组件
          */
         Component.prototype.getComponentsByClass = function (cls) {
-            var filterResult = this._components.filter(function (value, index, array) {
+            var filterResult = this.components_.filter(function (value, index, array) {
                 return value instanceof cls;
             });
             return filterResult;
@@ -2064,7 +2216,7 @@ var feng3d;
          * @return		true：拥有该组件；false：不拥有该组件。
          */
         Component.prototype.hasComponent = function (com) {
-            return this._components.indexOf(com) != -1;
+            return this.components_.indexOf(com) != -1;
         };
         /**
          * 交换子组件位置
@@ -2074,9 +2226,9 @@ var feng3d;
         Component.prototype.swapComponentsAt = function (index1, index2) {
             assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
             assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
-            var temp = this._components[index1];
-            this._components[index1] = this._components[index2];
-            this._components[index2] = temp;
+            var temp = this.components_[index1];
+            this.components_[index1] = this.components_[index2];
+            this.components_[index2] = temp;
         };
         /**
          * 交换子组件位置
@@ -2098,7 +2250,7 @@ var feng3d;
             if (depth === void 0) { depth = 1; }
             if (depth == 0)
                 return;
-            this._components.forEach(function (value, index, array) {
+            this.components_.forEach(function (value, index, array) {
                 value.dispatchEvent(event);
                 value.dispatchChildrenEvent(event, depth - 1);
             });
@@ -2320,140 +2472,6 @@ var feng3d;
         return LoaderDataFormat;
     }());
     feng3d.LoaderDataFormat = LoaderDataFormat;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 获取feng3d运行时间，毫秒为单位
-     */
-    function getTimer() {
-        return Date.now() - feng3d.feng3dStartTime;
-    }
-    feng3d.getTimer = getTimer;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var StringUtils = (function () {
-        function StringUtils() {
-        }
-        /**
-         * 获取字符串
-         * @param obj 转换为字符串的对象
-         * @param showLen       显示长度
-         * @param fill          长度不够是填充的字符串
-         * @param tail          true（默认）:在尾部添加；false：在首部添加
-         */
-        StringUtils.getString = function (obj, showLen, fill, tail) {
-            if (showLen === void 0) { showLen = -1; }
-            if (fill === void 0) { fill = " "; }
-            if (tail === void 0) { tail = true; }
-            var str = "";
-            if (obj.toString != null) {
-                str = obj.toString();
-            }
-            else {
-                str = obj;
-            }
-            if (showLen != -1) {
-                while (str.length < showLen) {
-                    if (tail) {
-                        str = str + fill;
-                    }
-                    else {
-                        str = fill + str;
-                    }
-                }
-                if (str.length > showLen) {
-                    str = str.substr(0, showLen);
-                }
-            }
-            return str;
-        };
-        return StringUtils;
-    }());
-    feng3d.StringUtils = StringUtils;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 数组工具
-     * @author feng 2017-01-03
-     */
-    var ArrayUtils = (function () {
-        function ArrayUtils() {
-        }
-        /**
-         * 删除数据元素
-         * @param source    数组源数据
-         * @param item      被删除数据
-         * @param all       是否删除所有相同数据
-         */
-        ArrayUtils.removeItem = function (source, item, all) {
-            if (all === void 0) { all = false; }
-            var deleteIndexs = [];
-            var index = source.indexOf(item);
-            while (index != -1) {
-                source.splice(index, 1);
-                deleteIndexs.push(index);
-                all || (index = -1);
-            }
-            return { deleteIndexs: deleteIndexs, length: source.length };
-        };
-        return ArrayUtils;
-    }());
-    feng3d.ArrayUtils = ArrayUtils;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 构建Map类代替Dictionary
-     * @author feng 2017-01-03
-     */
-    var Map = (function () {
-        function Map() {
-            this.keyMap = {};
-            this.valueMap = {};
-        }
-        /**
-         * 删除
-         */
-        Map.prototype.delete = function (k) {
-            delete this.keyMap[feng3d.UIDUtils.getUID(k)];
-            delete this.valueMap[feng3d.UIDUtils.getUID(k)];
-        };
-        /**
-         * 添加映射
-         */
-        Map.prototype.push = function (k, v) {
-            this.keyMap[feng3d.UIDUtils.getUID(k)] = k;
-            this.valueMap[feng3d.UIDUtils.getUID(k)] = v;
-        };
-        /**
-         * 通过key获取value
-         */
-        Map.prototype.get = function (k) {
-            return this.valueMap[feng3d.UIDUtils.getUID(k)];
-        };
-        /**
-         * 获取键列表
-         */
-        Map.prototype.getKeys = function () {
-            var keys = [];
-            for (var key in this.keyMap) {
-                keys.push(this.keyMap[key]);
-            }
-            return keys;
-        };
-        /**
-         * 清理字典
-         */
-        Map.prototype.clear = function () {
-            this.keyMap = {};
-            this.valueMap = {};
-        };
-        return Map;
-    }());
-    feng3d.Map = Map;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -4730,7 +4748,7 @@ var feng3d;
          * @param index		要删除的 Component 的子索引。
          */
         RenderDataHolder.prototype.removeComponentAt = function (index) {
-            var component = this._components[index];
+            var component = this.components_[index];
             if (component != null && feng3d.ClassUtils.is(component, RenderDataHolder)) {
                 var renderDataHolder = feng3d.ClassUtils.as(component, RenderDataHolder);
                 var index = this._subRenderDataHolders.indexOf(renderDataHolder);
@@ -5761,17 +5779,17 @@ var feng3d;
         function Object3D(name) {
             if (name === void 0) { name = "object"; }
             _super.call(this);
-            this._mouseEnabled = true;
-            this._visible = true;
+            //-序列化
+            this.mouseEnabled_ = true;
+            this.visible_ = true;
+            /**
+             * 子对象列表
+             */
+            this.children_ = [];
             /**
              * 父对象
              */
             this._parent = null;
-            /**
-             * 子对象列表
-             */
-            this._children = [];
-            this._uid = feng3d.UIDUtils.getUID(this);
             this._object3DID = object3DAutoID++;
             object3DMap[this._object3DID] = this;
             this.name = name;
@@ -5783,16 +5801,6 @@ var feng3d;
             this.addEventListener(feng3d.Object3DEvent.ADDED, this.onAdded, this);
             this.addEventListener(feng3d.Object3DEvent.REMOVED, this.onRemoved, this);
         }
-        Object.defineProperty(Object3D.prototype, "uid", {
-            /**
-             * 唯一标识符
-             */
-            get: function () {
-                return this._uid;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Object3D.prototype, "object3DID", {
             get: function () {
                 return this._object3DID;
@@ -5860,7 +5868,7 @@ var feng3d;
                 this.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
                 this._scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
             }
-            this._children.forEach(function (child) {
+            this.children_.forEach(function (child) {
                 child._setScene(_this._scene);
             });
         };
@@ -5869,10 +5877,10 @@ var feng3d;
              * 是否开启鼠标事件
              */
             get: function () {
-                return this._mouseEnabled;
+                return this.mouseEnabled_;
             },
             set: function (value) {
-                this._mouseEnabled = value;
+                this.mouseEnabled_ = value;
             },
             enumerable: true,
             configurable: true
@@ -5882,7 +5890,7 @@ var feng3d;
              * 真实是否支持鼠标事件
              */
             get: function () {
-                return this._mouseEnabled && (this.parent ? this.parent.realMouseEnable : true);
+                return this.mouseEnabled_ && (this.parent ? this.parent.realMouseEnable : true);
             },
             enumerable: true,
             configurable: true
@@ -5892,10 +5900,10 @@ var feng3d;
              * 是否可见
              */
             get: function () {
-                return this._visible;
+                return this.visible_;
             },
             set: function (value) {
-                this._visible = value;
+                this.visible_ = value;
             },
             enumerable: true,
             configurable: true
@@ -5905,7 +5913,7 @@ var feng3d;
              * 真实是否可见
              */
             get: function () {
-                return this._visible && (this.parent ? this.parent.realVisible : true);
+                return this.visible_ && (this.parent ? this.parent.realVisible : true);
             },
             enumerable: true,
             configurable: true
@@ -5916,7 +5924,7 @@ var feng3d;
          * @return			新增的子对象
          */
         Object3D.prototype.addChild = function (child) {
-            this.addChildAt(child, this._children.length);
+            this.addChildAt(child, this.children_.length);
         };
         /**
          * 添加子对象到指定位置
@@ -5925,8 +5933,8 @@ var feng3d;
          */
         Object3D.prototype.addChildAt = function (child, index) {
             this.removeChild(child);
-            index = Math.max(0, Math.min(this._children.length, index));
-            this._children.splice(index, 0, child);
+            index = Math.max(0, Math.min(this.children_.length, index));
+            this.children_.splice(index, 0, child);
             child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.ADDED, { parent: this, child: child }, true));
         };
         /**
@@ -5935,7 +5943,7 @@ var feng3d;
          * @return			被移除子对象索引
          */
         Object3D.prototype.removeChild = function (child) {
-            var childIndex = this._children.indexOf(child);
+            var childIndex = this.children_.indexOf(child);
             this.removeChildAt(childIndex);
             return childIndex;
         };
@@ -5945,7 +5953,7 @@ var feng3d;
          * @return  子对象位置
          */
         Object3D.prototype.getChildIndex = function (child) {
-            return this._children.indexOf(child);
+            return this.children_.indexOf(child);
         };
         /**
          * 移出指定索引的子对象
@@ -5953,10 +5961,10 @@ var feng3d;
          * @return				被移除对象
          */
         Object3D.prototype.removeChildAt = function (childIndex) {
-            if (childIndex < 0 || childIndex > this._children.length - 1)
+            if (childIndex < 0 || childIndex > this.children_.length - 1)
                 return null;
-            var child = this._children[childIndex];
-            this._children.splice(childIndex, 1);
+            var child = this.children_[childIndex];
+            this.children_.splice(childIndex, 1);
             child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.REMOVED, { parent: this, child: child }, true));
             return child;
         };
@@ -5966,14 +5974,14 @@ var feng3d;
          * @return              指定索引的子对象
          */
         Object3D.prototype.getChildAt = function (index) {
-            return this._children[index];
+            return this.children_[index];
         };
         Object.defineProperty(Object3D.prototype, "numChildren", {
             /**
              * 获取子对象数量
              */
             get: function () {
-                return this._children.length;
+                return this.children_.length;
             },
             enumerable: true,
             configurable: true
@@ -6712,6 +6720,7 @@ var feng3d;
             this._object3Ds = [];
             this._renderers = [];
             this._lights = [];
+            // Object.seal(this);
             //
             this.addEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
             this.addEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
@@ -12921,6 +12930,7 @@ var feng3d;
     var $REVISION = "0.0.0";
     console.log("Feng3D version " + $REVISION);
     /*************************** 初始化模块 ***************************/
+    // export var feng3dObjects: { [parentUUid: string]: any } = {};
     /**
      * 是否开启调试(主要用于断言)
      */

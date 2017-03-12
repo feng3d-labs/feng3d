@@ -8,6 +8,7 @@ module feng3d
     console.log(`Feng3D version ${$REVISION}`)
 
     /*************************** 初始化模块 ***************************/
+    // export var feng3dObjects: { [parentUUid: string]: any } = {};
     /**
      * 是否开启调试(主要用于断言)
      */

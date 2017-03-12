@@ -33,6 +33,7 @@ module feng3d
         constructor()
         {
             super("root");
+            // Object.seal(this);
             //
             this.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
             this.addEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);

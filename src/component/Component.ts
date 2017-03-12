@@ -16,7 +16,7 @@ module feng3d
 		/**
 		 * 组件列表
 		 */
-        protected _components: IComponent[] = [];
+        protected components_: IComponent[] = [];
 
 		/**
 		 * 创建一个组件容器
@@ -55,7 +55,7 @@ module feng3d
         public get numComponents(): number
         {
 
-            return this._components.length;
+            return this.components_.length;
         }
 
         /**
@@ -63,7 +63,7 @@ module feng3d
          */
         public get components()
         {
-            return this._components.concat();
+            return this.components_.concat();
         }
 
 		/**
@@ -75,11 +75,11 @@ module feng3d
 
             if (this.hasComponent(component))
             {
-                this.setComponentIndex(component, this._components.length - 1);
+                this.setComponentIndex(component, this.components_.length - 1);
                 return;
             }
 
-            this.addComponentAt(component, this._components.length);
+            this.addComponentAt(component, this.components_.length);
         }
 
 		/**
@@ -95,12 +95,12 @@ module feng3d
 
             if (this.hasComponent(component))
             {
-                index = Math.min(index, this._components.length - 1);
+                index = Math.min(index, this.components_.length - 1);
                 this.setComponentIndex(component, index)
                 return;
             }
 
-            this._components.splice(index, 0, component);
+            this.components_.splice(index, 0, component);
             //派发添加组件事件
             component.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONENT, { container: this, child: component }, true));
         }
@@ -127,7 +127,7 @@ module feng3d
 
             assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
-            var component: IComponent = this._components.splice(index, 1)[0];
+            var component: IComponent = this.components_.splice(index, 1)[0];
             //派发移除组件事件
             component.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }, true));
             return component;
@@ -141,9 +141,9 @@ module feng3d
         public getComponentIndex(component: IComponent): number
         {
 
-            assert(this._components.indexOf(component) != -1, "组件不在容器中");
+            assert(this.components_.indexOf(component) != -1, "组件不在容器中");
 
-            var index: number = this._components.indexOf(component);
+            var index: number = this.components_.indexOf(component);
             return index;
         }
 
@@ -157,11 +157,11 @@ module feng3d
 
             assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
-            var oldIndex: number = this._components.indexOf(component);
+            var oldIndex: number = this.components_.indexOf(component);
             assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
 
-            this._components.splice(oldIndex, 1);
-            this._components.splice(index, 0, component);
+            this.components_.splice(oldIndex, 1);
+            this.components_.splice(index, 0, component);
         }
 
         /**
@@ -173,7 +173,7 @@ module feng3d
         {
 
             assert(index < this.numComponents, "给出索引超出范围");
-            return this._components[index];
+            return this.components_[index];
         }
 
         /**
@@ -198,7 +198,7 @@ module feng3d
         public getComponentsByName(name: String): IComponent[]
         {
 
-            var filterResult = this._components.filter(function (value: IComponent, index: number, array: IComponent[]): boolean
+            var filterResult = this.components_.filter(function (value: IComponent, index: number, array: IComponent[]): boolean
             {
                 return value.name == name;
             });
@@ -226,7 +226,7 @@ module feng3d
         public getComponentsByClass<T extends IComponent>(cls: new () => T): T[]
         {
 
-            var filterResult: any = this._components.filter(function (value: IComponent, index: number, array: IComponent[]): boolean
+            var filterResult: any = this.components_.filter(function (value: IComponent, index: number, array: IComponent[]): boolean
             {
                 return value instanceof cls;
             });
@@ -260,7 +260,7 @@ module feng3d
         public hasComponent(com: IComponent): boolean
         {
 
-            return this._components.indexOf(com) != -1;
+            return this.components_.indexOf(com) != -1;
         }
 
         /**
@@ -274,9 +274,9 @@ module feng3d
             assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
             assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
 
-            var temp: IComponent = this._components[index1];
-            this._components[index1] = this._components[index2];
-            this._components[index2] = temp;
+            var temp: IComponent = this.components_[index1];
+            this.components_[index1] = this.components_[index2];
+            this.components_[index2] = temp;
         }
 
         /**
@@ -304,7 +304,7 @@ module feng3d
 
             if (depth == 0)
                 return;
-            this._components.forEach(function (value: IComponent, index: number, array: IComponent[]): void
+            this.components_.forEach(function (value: IComponent, index: number, array: IComponent[]): void
             {
                 value.dispatchEvent(event);
                 value.dispatchChildrenEvent(event, depth - 1)

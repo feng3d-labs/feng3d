@@ -9,6 +9,8 @@ module feng3d
     {
         private readonly _listenermap: { [type: string]: ListenerVO[] } = {};
 
+        private uuid: string;
+
         /**
          * 名称
          */
@@ -40,6 +42,7 @@ module feng3d
 		 */
         constructor(target: IEventDispatcher = null)
         {
+            this.uuid = UIDUtils.getUID(this);
             this._target = target;
             if (this._target == null)
                 this._target = this;

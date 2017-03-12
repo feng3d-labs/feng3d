@@ -38,7 +38,7 @@ module feng3d
             function createUID(object: any)
             {
                 var prototype: any = object.prototype ? object.prototype : Object.getPrototypeOf(object);
-                var className = prototype.constructor.name;
+                var className = ClassUtils.getQualifiedClassName(object);
                 var id = ~~_uidStart[className];
                 var time = Date.now();//时间戳
                 var uid = [//
