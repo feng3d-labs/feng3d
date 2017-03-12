@@ -768,7 +768,7 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 数据持久化
+     * 数据持久化（序列化）
      * @author feng 2017-03-11
      */
     class Serialization {
@@ -782,31 +782,7 @@ declare module feng3d {
         writeObject(object3d: Object3D): {
             __className__: string;
         };
-        /**
-         * 命名规范过滤
-         */
-        private attributeFilter(filters);
-        /**
-         * 排除属性过滤
-         */
-        private excludeAttributeFilter(excludeAttributes);
-        /**
-         * 命名规范过滤
-         */
-        private namenormFilter(filterReg);
-        /**
-         * 获取类配置，允许继承
-         */
-        private getClassConfig(object);
     }
-    var serializationConfig: {
-        excludeClass: any[];
-        classConfig: {
-            [className: string]: {
-                excludeAttributes: string[];
-            };
-        };
-    };
 }
 declare module feng3d {
     /**

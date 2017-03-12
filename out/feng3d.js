@@ -908,7 +908,7 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 数据持久化
+     * 数据持久化（序列化）
      * @author feng 2017-03-11
      */
     var Serialization = (function () {
@@ -924,20 +924,15 @@ var feng3d;
          */
         Serialization.prototype.writeObject = function (object3d) {
             var className = feng3d.ClassUtils.getQualifiedClassName(object3d);
-            //处理排除类名
-            if (feng3d.serializationConfig.excludeClass.indexOf(className) != -1) {
-                return undefined;
-            }
-            //新增命名规范过滤
-            var filterFuns = [this.namenormFilter(/[a-zA-Z](\w+)/)];
-            var classConfig = this.getClassConfig(object3d);
-            if (classConfig && classConfig.excludeAttributes) {
-                filterFuns.push(this.excludeAttributeFilter(classConfig.excludeAttributes));
-            }
-            var attributeFilter = this.attributeFilter(filterFuns);
+            //保存以字母开头或者纯数字的所有属性
+            var filterReg = /([a-zA-Z](\w*)|(\d+))/;
+            //
             var propertyDescriptors = feng3d.PropertyDescriptorUtils.getAttributes(object3d);
             var attributeNames = Object.keys(propertyDescriptors);
-            attributeNames = attributeNames.filter(attributeFilter);
+            attributeNames = attributeNames.filter(function (value, index, array) {
+                var result = filterReg.exec(value);
+                return result[0] == value;
+            });
             attributeNames = attributeNames.sort();
             var object = {};
             object.__className__ = className;
@@ -956,61 +951,9 @@ var feng3d;
             }
             return object;
         };
-        /**
-         * 命名规范过滤
-         */
-        Serialization.prototype.attributeFilter = function (filters) {
-            return function (value, index, array) {
-                for (var i = 0; i < filters.length; i++) {
-                    var result = filters[i].call(null, value, index, array);
-                    if (!result)
-                        return false;
-                }
-                return true;
-            };
-        };
-        /**
-         * 排除属性过滤
-         */
-        Serialization.prototype.excludeAttributeFilter = function (excludeAttributes) {
-            return function (value, index, array) {
-                return excludeAttributes.indexOf(value) == -1;
-            };
-        };
-        /**
-         * 命名规范过滤
-         */
-        Serialization.prototype.namenormFilter = function (filterReg) {
-            return function (value, index, array) {
-                var result = filterReg.exec(value);
-                return result[0] == value;
-            };
-        };
-        /**
-         * 获取类配置，允许继承
-         */
-        Serialization.prototype.getClassConfig = function (object) {
-            if (object == null || object == Object.prototype)
-                return null;
-            var className = feng3d.ClassUtils.getQualifiedClassName(object);
-            var config = feng3d.serializationConfig.classConfig[className];
-            if (config) {
-                return config;
-            }
-            var superCls = feng3d.ClassUtils.getSuperClass(object);
-            return this.getClassConfig(superCls);
-        };
         return Serialization;
     }());
     feng3d.Serialization = Serialization;
-    feng3d.serializationConfig = {
-        // export var serializationConfig = {
-        excludeClass: [], classConfig: {
-            "feng3d.Scene3D": {
-                excludeAttributes: ["lights", "renderers", "transform"]
-            }
-        }
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
