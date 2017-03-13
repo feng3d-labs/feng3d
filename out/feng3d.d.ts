@@ -778,7 +778,10 @@ declare module feng3d {
         /**
          * 由纯数据对象（无循环引用）转换为复杂类型（例如feng3d对象）
          */
-        readObject(): void;
+        readObject(data: {
+            __className__?: string;
+        }, object?: any): any;
+        private handle(object, key, data);
         /**
          * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
          */
@@ -4203,8 +4206,8 @@ declare module feng3d {
         /**
          * 几何体是否变脏
          */
-        private geometryDirty;
-        private _segments;
+        private _geometryDirty;
+        private segments_;
         /**
          * 更新渲染数据
          */

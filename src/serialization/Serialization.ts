@@ -9,9 +9,74 @@ module feng3d
         /**
          * 由纯数据对象（无循环引用）转换为复杂类型（例如feng3d对象）
          */
-        public readObject()
+        public readObject(data: { __className__?: string }, object = null)
         {
+            if (ClassUtils.isBaseType(data))
+            {
+                return data;
+            }
+            if (data instanceof Array)
+            {
+                object = object || [];
 
+                for (var i = 0; i < data.length; i++)
+                {
+                    object[i] = this.readObject(data[i], object[i]);
+                }
+                return object;
+            }
+            if (!object)
+            {
+                var cls = ClassUtils.getDefinitionByName(data.__className__);
+                if (cls == null)
+                    return undefined;
+                object = new cls();
+            }
+            var keys = Object.keys(data);
+            for (var i = 0; i < keys.length; i++)
+            {
+                var key = keys[i];
+                var ishandle = this.handle(object, key, data[key]);
+                if (ishandle)
+                    continue;
+                object[key] = this.readObject(data[key], object[key]);
+            }
+            return object;
+        }
+
+        private handle(object, key, data)
+        {
+            if (ClassUtils.is(object, Object3D) && key == "children_")
+            {
+                var children: Object3D[] = this.readObject(data);
+                var object3D: Object3D = object;
+                for (var i = 0; i < children.length; i++)
+                {
+                    children[i] && object3D.addChild(children[i])
+                }
+                return true;
+            }
+            if (ClassUtils.is(object, Component) && key == "components_")
+            {
+                var components: Component[] = this.readObject(data);
+                var component: Component = object;
+                for (var i = 0; i < components.length; i++)
+                {
+                    component.addComponent(components[i])
+                }
+                return true;
+            }
+            if (ClassUtils.is(object, SegmentGeometry) && key == "segments_")
+            {
+                var segments: Segment[] = this.readObject(data);
+                var segmentGeometry: SegmentGeometry = object;
+                for (var i = 0; i < segments.length; i++)
+                {
+                    segmentGeometry.addSegment(segments[i]);
+                }
+                return true;
+            }
+            return false;
         }
 
         /**

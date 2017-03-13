@@ -957,7 +957,60 @@ var feng3d;
         /**
          * 由纯数据对象（无循环引用）转换为复杂类型（例如feng3d对象）
          */
-        Serialization.prototype.readObject = function () {
+        Serialization.prototype.readObject = function (data, object) {
+            if (object === void 0) { object = null; }
+            if (feng3d.ClassUtils.isBaseType(data)) {
+                return data;
+            }
+            if (data instanceof Array) {
+                object = object || [];
+                for (var i = 0; i < data.length; i++) {
+                    object[i] = this.readObject(data[i], object[i]);
+                }
+                return object;
+            }
+            if (!object) {
+                var cls = feng3d.ClassUtils.getDefinitionByName(data.__className__);
+                if (cls == null)
+                    return undefined;
+                object = new cls();
+            }
+            var keys = Object.keys(data);
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                var ishandle = this.handle(object, key, data[key]);
+                if (ishandle)
+                    continue;
+                object[key] = this.readObject(data[key], object[key]);
+            }
+            return object;
+        };
+        Serialization.prototype.handle = function (object, key, data) {
+            if (feng3d.ClassUtils.is(object, feng3d.Object3D) && key == "children_") {
+                var children = this.readObject(data);
+                var object3D = object;
+                for (var i = 0; i < children.length; i++) {
+                    children[i] && object3D.addChild(children[i]);
+                }
+                return true;
+            }
+            if (feng3d.ClassUtils.is(object, feng3d.Component) && key == "components_") {
+                var components = this.readObject(data);
+                var component = object;
+                for (var i = 0; i < components.length; i++) {
+                    component.addComponent(components[i]);
+                }
+                return true;
+            }
+            if (feng3d.ClassUtils.is(object, feng3d.SegmentGeometry) && key == "segments_") {
+                var segments = this.readObject(data);
+                var segmentGeometry = object;
+                for (var i = 0; i < segments.length; i++) {
+                    segmentGeometry.addSegment(segments[i]);
+                }
+                return true;
+            }
+            return false;
         };
         /**
          * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
@@ -7185,14 +7238,14 @@ var feng3d;
             /**
              * 几何体是否变脏
              */
-            this.geometryDirty = false;
-            this._segments = [];
+            this._geometryDirty = false;
+            this.segments_ = [];
         }
         /**
          * 更新渲染数据
          */
         SegmentGeometry.prototype.updateRenderData = function (renderContext) {
-            this.geometryDirty && this.updateGeometry();
+            this._geometryDirty && this.updateGeometry();
             _super.prototype.updateRenderData.call(this, renderContext);
         };
         /**
@@ -7201,22 +7254,22 @@ var feng3d;
          * @param needUpdateGeometry		是否需要立即更新几何体
          */
         SegmentGeometry.prototype.addSegment = function (segment) {
-            this._segments.push(segment);
-            this.geometryDirty = true;
+            this.segments_.push(segment);
+            this._geometryDirty = true;
         };
         /**
          * 更新几何体
          */
         SegmentGeometry.prototype.updateGeometry = function () {
-            this.geometryDirty = false;
+            this._geometryDirty = false;
             var segmentPositionStep = 6;
             var segmentColorStep = 8;
-            var numSegments = this._segments.length;
+            var numSegments = this.segments_.length;
             var indices = new Uint16Array(numSegments * 2);
             var positionData = new Float32Array(numSegments * segmentPositionStep);
             var colorData = new Float32Array(numSegments * segmentColorStep);
             for (var i = 0; i < numSegments; i++) {
-                var element = this._segments[i];
+                var element = this.segments_[i];
                 indices.set([i * 2, i * 2 + 1], i * 2);
                 positionData.set(element.positionData, i * segmentPositionStep);
                 colorData.set(element.colorData, i * segmentColorStep);
@@ -7231,8 +7284,8 @@ var feng3d;
          * @return				线段数据
          */
         SegmentGeometry.prototype.getSegment = function (index) {
-            if (index < this._segments.length)
-                return this._segments[index];
+            if (index < this.segments_.length)
+                return this.segments_[index];
             return null;
         };
         /**
@@ -7240,14 +7293,14 @@ var feng3d;
          */
         SegmentGeometry.prototype.removeAllSegments = function () {
             this.segments.length = 0;
-            this.geometryDirty = true;
+            this._geometryDirty = true;
         };
         Object.defineProperty(SegmentGeometry.prototype, "segments", {
             /**
              * 线段列表
              */
             get: function () {
-                return this._segments;
+                return this.segments_;
             },
             enumerable: true,
             configurable: true

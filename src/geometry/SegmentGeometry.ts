@@ -11,15 +11,15 @@ module feng3d
         /**
          * 几何体是否变脏
          */
-        private geometryDirty = false;
-        private _segments: Segment[] = [];
+        private _geometryDirty = false;
+        private segments_: Segment[] = [];
 
         /**
 		 * 更新渲染数据
 		 */
         public updateRenderData(renderContext: RenderContext)
         {
-            this.geometryDirty && this.updateGeometry();
+            this._geometryDirty && this.updateGeometry();
             super.updateRenderData(renderContext);
         }
 
@@ -30,8 +30,8 @@ module feng3d
 		 */
         public addSegment(segment: Segment)
         {
-            this._segments.push(segment);
-            this.geometryDirty = true;
+            this.segments_.push(segment);
+            this._geometryDirty = true;
         }
 
         /**
@@ -39,18 +39,18 @@ module feng3d
          */
         private updateGeometry()
         {
-            this.geometryDirty = false;
+            this._geometryDirty = false;
 
             var segmentPositionStep = 6;
             var segmentColorStep = 8;
-            var numSegments = this._segments.length;
+            var numSegments = this.segments_.length;
             var indices = new Uint16Array(numSegments * 2);
             var positionData = new Float32Array(numSegments * segmentPositionStep);
             var colorData = new Float32Array(numSegments * segmentColorStep);
 
             for (var i = 0; i < numSegments; i++)
             {
-                var element = this._segments[i];
+                var element = this.segments_[i];
                 indices.set([i * 2, i * 2 + 1], i * 2);
                 positionData.set(element.positionData, i * segmentPositionStep);
                 colorData.set(element.colorData, i * segmentColorStep);
@@ -68,8 +68,8 @@ module feng3d
 		 */
         public getSegment(index: number): Segment
         {
-            if (index < this._segments.length)
-                return this._segments[index];
+            if (index < this.segments_.length)
+                return this.segments_[index];
             return null;
         }
 
@@ -79,7 +79,7 @@ module feng3d
         public removeAllSegments()
         {
             this.segments.length = 0;
-            this.geometryDirty = true;
+            this._geometryDirty = true;
         }
 
 		/**
@@ -87,7 +87,7 @@ module feng3d
 		 */
         public get segments(): Segment[]
         {
-            return this._segments;
+            return this.segments_;
         }
     }
 
