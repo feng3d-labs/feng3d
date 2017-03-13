@@ -11,7 +11,7 @@ module feng3d
         /**
          * 灯光类型
          */
-        public type: LightType;
+        public lightType: LightType;
 
         /**
          * 颜色

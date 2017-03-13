@@ -17,6 +17,7 @@ module feng3d
         constructor(lens: LensBase = null)
         {
             super();
+            this._single = true;
             this._lens = lens || new PerspectiveLens();
             this._lens.addEventListener(LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
         }

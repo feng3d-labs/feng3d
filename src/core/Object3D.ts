@@ -10,6 +10,10 @@ module feng3d
         protected mouseEnabled_: boolean = true;
         protected visible_ = true;
         /**
+		 * 组件列表
+		 */
+        protected components_: Object3DComponent[] = [];
+        /**
          * 子对象列表
          */
         private children_: Object3D[] = [];
@@ -180,6 +184,17 @@ module feng3d
             index = Math.max(0, Math.min(this.children_.length, index));
             this.children_.splice(index, 0, child);
             child.dispatchEvent(new Object3DEvent(Object3DEvent.ADDED, { parent: this, child: child }, true));
+        }
+
+        /**
+         * 设置子对象在指定位置
+         * @param child 子对象
+         * @param index 索引
+         */
+        public setChildAt(child: Object3D, index: number): void
+        {
+            this.removeChildAt(index);
+            this.addChildAt(child, index);
         }
 
         /**

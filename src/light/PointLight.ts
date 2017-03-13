@@ -24,7 +24,7 @@ module feng3d
         constructor()
         {
             super();
-            this.type = LightType.Point;
+            this.lightType = LightType.Point;
         }
     }
 }

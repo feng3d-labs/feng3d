@@ -13,7 +13,7 @@ module feng3d
         constructor()
         {
             super();
-            this.type = LightType.Directional;
+            this.lightType = LightType.Directional;
         }
     }
 }

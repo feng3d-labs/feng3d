@@ -38,7 +38,6 @@
         "src/shortcut/ShortCut.ts",
         //组件模块
         "src/component/event/ComponentEvent.ts",
-        "src/component/IComponent.ts",
         "src/component/Component.ts",
         //加载模块
         "src/net/Loader.ts",

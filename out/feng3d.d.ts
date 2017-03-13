@@ -1444,132 +1444,18 @@ declare module feng3d {
     class ComponentEvent extends Event {
         /**
          * 添加子组件事件
-         * data = { container: IComponent, child: IComponent }
+         * data = { container: Component, child: Component }
          */
         static ADDED_COMPONENT: string;
         /**
          * 移除子组件事件
-         * data = { container: IComponent, child: IComponent }
+         * data = { container: Component, child: Component }
          */
         static REMOVED_COMPONENT: string;
         /**
          * 事件目标。
          */
-        target: IComponent;
-    }
-}
-declare module feng3d {
-    /**
-     * 组件接口
-     * @author feng 2016-4-24
-     */
-    interface IComponent extends IEventDispatcher {
-        /**
-         * 组件数量
-         */
-        numComponents: number;
-        /**
-         * 父组件
-         */
-        parentComponent: IComponent;
-        /**
-         * 添加组件
-         * @param component 被添加组件
-         */
-        addComponent(component: IComponent): void;
-        /**
-         * 添加组件到指定位置
-         * @param component		被添加的组件
-         * @param index			插入的位置
-         */
-        addComponentAt(component: IComponent, index: number): void;
-        /**
-         * 移除组件
-         * @param component 被移除组件
-         */
-        removeComponent(component: IComponent): void;
-        /**
-         * 移除组件
-         * @param index		要删除的 Component 的子索引。
-         */
-        removeComponentAt(index: number): IComponent;
-        /**
-         * 获取组件在容器的索引位置
-         * @param component			查询的组件
-         * @return				    组件在容器的索引位置
-         */
-        getComponentIndex(com: IComponent): number;
-        /**
-        * 设置子组件的位置
-        * @param component				子组件
-        * @param index				    位置索引
-        */
-        setComponentIndex(component: IComponent, index: number): void;
-        /**
-         * 获取指定位置索引的子组件
-         * @param index			位置索引
-         * @return				子组件
-         */
-        getComponentAt(index: number): IComponent;
-        /**
-         * 根据组件名称获取组件
-         * <p>注意：此处比较的是componentName而非name</p>
-         * @param componentName		组件名称
-         * @return 					获取到的组件
-         */
-        getComponentByName(componentName: String): IComponent;
-        /**
-        * 获取与给出组件名称相同的所有组件
-        * <p>注意：此处比较的是componentName而非name</p>
-        * @param componentName		组件名称
-        * @return 					获取到的组件
-        */
-        getComponentsByName(componentName: String): IComponent[];
-        /**
-         * 根据类定义获取组件
-         * <p>如果存在多个则返回第一个</p>
-         * @param cls				类定义
-         * @return
-         */
-        getComponentByClass<T extends IComponent>(cls: new () => T): T;
-        /**
-         * 根据类定义查找组件
-         * @param cls		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsByClass<T extends IComponent>(cls: new () => T): T[];
-        /**
-         * 根据类定义获取或创建组件
-         * <p>当不存在该类型对象时创建一个该组件并且添加到容器中</p>
-         * @param cls
-         * @return
-         */
-        getOrCreateComponentByClass<T extends IComponent>(cls: new () => T): T;
-        /**
-        * 判断是否拥有组件
-        * @param com	被检测的组件
-        * @return		true：拥有该组件；false：不拥有该组件。
-        */
-        hasComponent(com: IComponent): boolean;
-        /**
-         * 交换子组件位置
-         * @param index1		第一个子组件的索引位置
-         * @param index2		第二个子组件的索引位置
-         */
-        swapComponentsAt(index1: number, index2: number): void;
-        /**
-         * 交换子组件位置
-         * @param a		第一个子组件
-         * @param b		第二个子组件
-         */
-        swapComponents(a: IComponent, b: IComponent): void;
-        /**
-         * 派发子组件事件
-         * <p>事件广播给子组件</p>
-         * @param event     事件
-         * @param depth     广播深度
-         */
-        dispatchChildrenEvent(event: Event, depth: number): void;
+        target: Component;
     }
 }
 declare module feng3d {
@@ -1577,15 +1463,25 @@ declare module feng3d {
      * 组件容器（集合）
      * @author feng 2015-5-6
      */
-    class Component extends EventDispatcher implements IComponent {
+    class Component extends EventDispatcher {
         /**
          * 父组件
          */
-        protected _parentComponent: IComponent;
+        protected _parentComponent: Component;
         /**
          * 组件列表
          */
-        protected components_: IComponent[];
+        protected components_: Component[];
+        /**
+         * 是否唯一，同类型3D对象组件只允许一个
+         */
+        readonly single: boolean;
+        protected _single: boolean;
+        /**
+         * 组件类型
+         */
+        readonly type: new () => Component;
+        protected _type: new () => Component;
         /**
          * 创建一个组件容器
          */
@@ -1597,7 +1493,7 @@ declare module feng3d {
         /**
          * 父组件
          */
-        readonly parentComponent: IComponent;
+        readonly parentComponent: Component;
         /**
          * 子组件个数
          */
@@ -1605,86 +1501,83 @@ declare module feng3d {
         /**
          * 获取组件列表，无法通过返回数组对该组件进行子组件增删等操作
          */
-        readonly components: IComponent[];
+        readonly components: Component[];
         /**
          * 添加组件
          * @param component 被添加组件
          */
-        addComponent(component: IComponent): void;
+        addComponent(component: Component): void;
         /**
          * 添加组件到指定位置
          * @param component		被添加的组件
          * @param index			插入的位置
          */
-        addComponentAt(component: IComponent, index: number): void;
+        addComponentAt(component: Component, index: number): void;
+        /**
+         * 设置组件到指定位置
+         * @param component		被设置的组件
+         * @param index			索引
+         */
+        setComponentAt(component: Component, index: number): void;
         /**
          * 移除组件
          * @param component 被移除组件
          */
-        removeComponent(component: IComponent): void;
+        removeComponent(component: Component): void;
         /**
          * 移除组件
          * @param index		要删除的 Component 的子索引。
          */
-        removeComponentAt(index: number): IComponent;
+        removeComponentAt(index: number): Component;
         /**
          * 获取组件在容器的索引位置
          * @param component			查询的组件
          * @return				    组件在容器的索引位置
          */
-        getComponentIndex(component: IComponent): number;
+        getComponentIndex(component: Component): number;
         /**
          * 设置子组件的位置
          * @param component				子组件
          * @param index				位置索引
          */
-        setComponentIndex(component: IComponent, index: number): void;
+        setComponentIndex(component: Component, index: number): void;
         /**
          * 获取指定位置索引的子组件
          * @param index			位置索引
          * @return				子组件
          */
-        getComponentAt(index: number): IComponent;
-        /**
-         * 根据组件名称获取组件
-         * <p>注意：此处比较的是componentName而非name</p>
-         * @param componentName		组件名称
-         * @return 					获取到的组件
-         */
-        getComponentByName(name: String): IComponent;
-        /**
-         * 获取与给出组件名称相同的所有组件
-         * <p>注意：此处比较的是componentName而非name</p>
-         * @param name		        组件名称
-         * @return 					获取到的组件
-         */
-        getComponentsByName(name: String): IComponent[];
+        getComponentAt(index: number): Component;
         /**
          * 根据类定义获取组件
          * <p>如果存在多个则返回第一个</p>
-         * @param cls				类定义
+         * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponentByClass<T extends IComponent>(cls: new () => T): T;
+        getComponentByType<T extends Component>(type: new () => T): T;
         /**
          * 根据类定义查找组件
-         * @param cls		类定义
+         * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsByClass<T extends IComponent>(cls: new () => T): T[];
+        getComponentsByType<T extends Component>(type: new () => T): T[];
+        /**
+         * 移除指定类型组件
+         * @param type 组件类型
+         */
+        removeComponentsByType<T extends Component>(type: new () => T): T[];
         /**
          * 根据类定义获取或创建组件
          * <p>当不存在该类型对象时创建一个该组件并且添加到容器中</p>
          * @param cls       类定义
          * @return          返回与给出类定义一致的组件
          */
-        getOrCreateComponentByClass<T extends IComponent>(cls: new () => T): T;
+        getOrCreateComponentByClass<T extends Component>(cls: new () => T): T;
         /**
          * 判断是否拥有组件
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。
          */
-        hasComponent(com: IComponent): boolean;
+        hasComponent(com: Component): boolean;
         /**
          * 交换子组件位置
          * @param index1		第一个子组件的索引位置
@@ -1696,7 +1589,7 @@ declare module feng3d {
          * @param a		第一个子组件
          * @param b		第二个子组件
          */
-        swapComponents(a: IComponent, b: IComponent): void;
+        swapComponents(a: Component, b: Component): void;
         /**
          * 派发子组件事件
          * <p>事件广播给子组件</p>
@@ -2948,12 +2841,12 @@ declare module feng3d {
          * @param component		被添加的组件
          * @param index			插入的位置
          */
-        addComponentAt(component: IComponent, index: number): void;
+        addComponentAt(component: Component, index: number): void;
         /**
          * 移除组件
          * @param index		要删除的 Component 的子索引。
          */
-        removeComponentAt(index: number): IComponent;
+        removeComponentAt(index: number): Component;
     }
 }
 declare module feng3d {
@@ -3442,6 +3335,10 @@ declare module feng3d {
         protected mouseEnabled_: boolean;
         protected visible_: boolean;
         /**
+         * 组件列表
+         */
+        protected components_: Object3DComponent[];
+        /**
          * 子对象列表
          */
         private children_;
@@ -3499,6 +3396,12 @@ declare module feng3d {
          * @param   index   添加到的位置
          */
         addChildAt(child: Object3D, index: number): void;
+        /**
+         * 设置子对象在指定位置
+         * @param child 子对象
+         * @param index 索引
+         */
+        setChildAt(child: Object3D, index: number): void;
         /**
          * 移除子对象
          * @param   child   子对象
@@ -3635,7 +3538,7 @@ declare module feng3d {
      * 3D对象组件
      * @author feng 2016-09-02
      */
-    class Object3DComponent extends RenderDataHolder {
+    abstract class Object3DComponent extends RenderDataHolder {
         /**
          * 父组件,所属3d对象
          */
@@ -3853,6 +3756,7 @@ declare module feng3d {
          * 几何体
          */
         geometry: Geometry;
+        constructor();
     }
 }
 declare module feng3d {
@@ -4222,25 +4126,23 @@ declare module feng3d {
      * @author feng 2016-10-16
      */
     class SegmentGeometry extends Geometry {
-        /**
-         * 几何体是否变脏
-         */
-        private _geometryDirty;
         private segments_;
-        /**
-         * 更新渲染数据
-         */
-        updateRenderData(renderContext: RenderContext): void;
+        constructor();
         /**
          * 添加线段
          * @param segment		            线段数据
-         * @param needUpdateGeometry		是否需要立即更新几何体
          */
         addSegment(segment: Segment): void;
         /**
+         * 设置线段
+         * @param segment		            线段数据
+         * @param index		                线段索引
+         */
+        setSegmentAt(segment: Segment, index: number): void;
+        /**
          * 更新几何体
          */
-        private updateGeometry();
+        protected buildGeometry(): void;
         /**
          * 获取线段数据
          * @param index 		线段索引
@@ -5143,7 +5045,7 @@ declare module feng3d {
         /**
          * 灯光类型
          */
-        type: LightType;
+        lightType: LightType;
         /**
          * 颜色
          */
@@ -6439,12 +6341,12 @@ declare module feng3d {
      * @author feng 2017-02-06
      */
     class Trident extends Object3D {
-        xLine: SegmentObject3D;
-        yLine: SegmentObject3D;
-        zLine: SegmentObject3D;
-        xArrow: ConeObject3D;
-        yArrow: ConeObject3D;
-        zArrow: ConeObject3D;
+        private _xLine;
+        private _yLine;
+        private _zLine;
+        private _xArrow;
+        private _yArrow;
+        private _zArrow;
         constructor(length?: number);
         private buildTrident(length);
     }
@@ -6539,7 +6441,6 @@ declare module feng3d {
      * @author feng 2017-02-06
      */
     class ConeObject3D extends Object3D {
-        material: StandardMaterial;
         /**
          * 构建3D对象
          */
@@ -6564,8 +6465,6 @@ declare module feng3d {
      * @author feng 2017-02-06
      */
     class SegmentObject3D extends Object3D {
-        segmentGeometry: SegmentGeometry;
-        material: SegmentMaterial;
         constructor(name?: string);
     }
 }
