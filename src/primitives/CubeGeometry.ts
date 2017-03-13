@@ -17,21 +17,30 @@ module feng3d
          * @param   segmentsD       深度方向分割
          * @param   tile6           是否为6块贴图
          */
-        constructor(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true)
+        constructor(public width = 100, public height = 100, public depth = 100, public segmentsW = 1, public segmentsH = 1, public segmentsD = 1, public tile6 = true)
         {
             super();
 
-            var vertexPositionData = this.buildPosition(width, height, depth, segmentsW, segmentsH, segmentsD);
+            Watcher.watch(this, ["width"], this.invalidate, this);
+            Watcher.watch(this, ["height"], this.invalidate, this);
+            Watcher.watch(this, ["depth"], this.invalidate, this);
+            Watcher.watch(this, ["segmentsW"], this.invalidate, this);
+            Watcher.watch(this, ["segmentsH"], this.invalidate, this);
+            Watcher.watch(this, ["segmentsD"], this.invalidate, this);
+            Watcher.watch(this, ["tile6"], this.invalidate, this);
+        }
+        protected buildGeometry()
+        {
+            var vertexPositionData = this.buildPosition();
             this.setVAData(GLAttribute.a_position, vertexPositionData, 3);
-            var vertexNormalData = this.buildNormal(segmentsW, segmentsH, segmentsD);
+            var vertexNormalData = this.buildNormal();
             this.setVAData(GLAttribute.a_normal, vertexNormalData, 3);
-            var vertexTangentData = this.buildTangent(segmentsW, segmentsH, segmentsD);
+            var vertexTangentData = this.buildTangent();
             this.setVAData(GLAttribute.a_tangent, vertexTangentData, 3);
-            var uvData = this.buildUVs(segmentsW, segmentsH, segmentsD, tile6);
+            var uvData = this.buildUVs();
             this.setVAData(GLAttribute.a_uv, uvData, 2);
-            var indices = this.buildIndices(segmentsW, segmentsH, segmentsD);
+            var indices = this.buildIndices();
             this.setIndices(indices);
-
         }
 
         /**
@@ -43,9 +52,9 @@ module feng3d
          * @param   segmentsH       高度方向分割
          * @param   segmentsD       深度方向分割
          */
-        private buildPosition(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1)
+        private buildPosition()
         {
-            var vertexPositionData = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 3);
+            var vertexPositionData = new Float32Array(((this.segmentsW + 1) * (this.segmentsH + 1) + (this.segmentsW + 1) * (this.segmentsD + 1) + (this.segmentsH + 1) * (this.segmentsD + 1)) * 2 * 3);
 
             var i: number, j: number;
 
@@ -58,20 +67,20 @@ module feng3d
             var positionIndex: number = 0;
 
             // half cube dimensions
-            hw = width / 2;
-            hh = height / 2;
-            hd = depth / 2;
+            hw = this.width / 2;
+            hh = this.height / 2;
+            hd = this.depth / 2;
 
             // Segment dimensions
-            dw = width / segmentsW;
-            dh = height / segmentsH;
-            dd = depth / segmentsD;
+            dw = this.width / this.segmentsW;
+            dh = this.height / this.segmentsH;
+            dd = this.depth / this.segmentsD;
 
-            for (i = 0; i <= segmentsW; i++)
+            for (i = 0; i <= this.segmentsW; i++)
             {
                 outer_pos = -hw + i * dw;
 
-                for (j = 0; j <= segmentsH; j++)
+                for (j = 0; j <= this.segmentsH; j++)
                 {
                     // front
                     vertexPositionData[positionIndex++] = outer_pos;
@@ -85,11 +94,11 @@ module feng3d
                 }
             }
 
-            for (i = 0; i <= segmentsW; i++)
+            for (i = 0; i <= this.segmentsW; i++)
             {
                 outer_pos = -hw + i * dw;
 
-                for (j = 0; j <= segmentsD; j++)
+                for (j = 0; j <= this.segmentsD; j++)
                 {
                     // top
                     vertexPositionData[positionIndex++] = outer_pos;
@@ -103,11 +112,11 @@ module feng3d
                 }
             }
 
-            for (i = 0; i <= segmentsD; i++)
+            for (i = 0; i <= this.segmentsD; i++)
             {
                 outer_pos = hd - i * dd;
 
-                for (j = 0; j <= segmentsH; j++)
+                for (j = 0; j <= this.segmentsH; j++)
                 {
                     // left
                     vertexPositionData[positionIndex++] = -hw;
@@ -130,18 +139,18 @@ module feng3d
          * @param   segmentsH       高度方向分割
          * @param   segmentsD       深度方向分割
          */
-        private buildNormal(segmentsW = 1, segmentsH = 1, segmentsD = 1)
+        private buildNormal()
         {
-            var vertexNormalData = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 3);
+            var vertexNormalData = new Float32Array(((this.segmentsW + 1) * (this.segmentsH + 1) + (this.segmentsW + 1) * (this.segmentsD + 1) + (this.segmentsH + 1) * (this.segmentsD + 1)) * 2 * 3);
 
             var i: number, j: number;
 
             // Indices
             var normalIndex: number = 0;
 
-            for (i = 0; i <= segmentsW; i++)
+            for (i = 0; i <= this.segmentsW; i++)
             {
-                for (j = 0; j <= segmentsH; j++)
+                for (j = 0; j <= this.segmentsH; j++)
                 {
                     // front
                     vertexNormalData[normalIndex++] = 0;
@@ -155,9 +164,9 @@ module feng3d
                 }
             }
 
-            for (i = 0; i <= segmentsW; i++)
+            for (i = 0; i <= this.segmentsW; i++)
             {
-                for (j = 0; j <= segmentsD; j++)
+                for (j = 0; j <= this.segmentsD; j++)
                 {
                     // top
                     vertexNormalData[normalIndex++] = 0;
@@ -171,9 +180,9 @@ module feng3d
                 }
             }
 
-            for (i = 0; i <= segmentsD; i++)
+            for (i = 0; i <= this.segmentsD; i++)
             {
-                for (j = 0; j <= segmentsH; j++)
+                for (j = 0; j <= this.segmentsH; j++)
                 {
                     // left
                     vertexNormalData[normalIndex++] = -1;
@@ -195,19 +204,19 @@ module feng3d
          * @param   segmentsH       高度方向分割
          * @param   segmentsD       深度方向分割
          */
-        private buildTangent(segmentsW = 1, segmentsH = 1, segmentsD = 1)
+        private buildTangent()
         {
 
-            var vertexTangentData = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 3);
+            var vertexTangentData = new Float32Array(((this.segmentsW + 1) * (this.segmentsH + 1) + (this.segmentsW + 1) * (this.segmentsD + 1) + (this.segmentsH + 1) * (this.segmentsD + 1)) * 2 * 3);
 
             var i: number, j: number;
 
             // Indices
             var tangentIndex: number = 0;
 
-            for (i = 0; i <= segmentsW; i++)
+            for (i = 0; i <= this.segmentsW; i++)
             {
-                for (j = 0; j <= segmentsH; j++)
+                for (j = 0; j <= this.segmentsH; j++)
                 {
                     // front
                     vertexTangentData[tangentIndex++] = 1;
@@ -221,10 +230,10 @@ module feng3d
                 }
             }
 
-            for (i = 0; i <= segmentsW; i++)
+            for (i = 0; i <= this.segmentsW; i++)
             {
 
-                for (j = 0; j <= segmentsD; j++)
+                for (j = 0; j <= this.segmentsD; j++)
                 {
                     // top
                     vertexTangentData[tangentIndex++] = 1;
@@ -238,10 +247,10 @@ module feng3d
                 }
             }
 
-            for (i = 0; i <= segmentsD; i++)
+            for (i = 0; i <= this.segmentsD; i++)
             {
 
-                for (j = 0; j <= segmentsH; j++)
+                for (j = 0; j <= this.segmentsH; j++)
                 {
                     // left
                     vertexTangentData[tangentIndex++] = 0;
@@ -264,27 +273,27 @@ module feng3d
          * @param   segmentsH       高度方向分割
          * @param   segmentsD       深度方向分割
          */
-        private buildIndices(segmentsW = 1, segmentsH = 1, segmentsD = 1)
+        private buildIndices()
         {
 
-            var indices = new Uint16Array((segmentsW * segmentsH + segmentsW * segmentsD + segmentsH * segmentsD) * 12);
+            var indices = new Uint16Array((this.segmentsW * this.segmentsH + this.segmentsW * this.segmentsD + this.segmentsH * this.segmentsD) * 12);
 
             var tl: number, tr: number, bl: number, br: number;
             var i: number, j: number, inc: number = 0;
 
             var fidx: number = 0;
 
-            for (i = 0; i <= segmentsW; i++)
+            for (i = 0; i <= this.segmentsW; i++)
             {
 
-                for (j = 0; j <= segmentsH; j++)
+                for (j = 0; j <= this.segmentsH; j++)
                 {
                     // front
                     // back
                     if (i && j)
                     {
-                        tl = 2 * ((i - 1) * (segmentsH + 1) + (j - 1));
-                        tr = 2 * (i * (segmentsH + 1) + (j - 1));
+                        tl = 2 * ((i - 1) * (this.segmentsH + 1) + (j - 1));
+                        tr = 2 * (i * (this.segmentsH + 1) + (j - 1));
                         bl = tl + 2;
                         br = tr + 2;
 
@@ -304,19 +313,19 @@ module feng3d
                 }
             }
 
-            inc += 2 * (segmentsW + 1) * (segmentsH + 1);
+            inc += 2 * (this.segmentsW + 1) * (this.segmentsH + 1);
 
-            for (i = 0; i <= segmentsW; i++)
+            for (i = 0; i <= this.segmentsW; i++)
             {
 
-                for (j = 0; j <= segmentsD; j++)
+                for (j = 0; j <= this.segmentsD; j++)
                 {
                     // top
                     // bottom
                     if (i && j)
                     {
-                        tl = inc + 2 * ((i - 1) * (segmentsD + 1) + (j - 1));
-                        tr = inc + 2 * (i * (segmentsD + 1) + (j - 1));
+                        tl = inc + 2 * ((i - 1) * (this.segmentsD + 1) + (j - 1));
+                        tr = inc + 2 * (i * (this.segmentsD + 1) + (j - 1));
                         bl = tl + 2;
                         br = tr + 2;
 
@@ -336,19 +345,19 @@ module feng3d
                 }
             }
 
-            inc += 2 * (segmentsW + 1) * (segmentsD + 1);
+            inc += 2 * (this.segmentsW + 1) * (this.segmentsD + 1);
 
-            for (i = 0; i <= segmentsD; i++)
+            for (i = 0; i <= this.segmentsD; i++)
             {
-                for (j = 0; j <= segmentsH; j++)
+                for (j = 0; j <= this.segmentsH; j++)
                 {
                     // left
                     // right
 
                     if (i && j)
                     {
-                        tl = inc + 2 * ((i - 1) * (segmentsH + 1) + (j - 1));
-                        tr = inc + 2 * (i * (segmentsH + 1) + (j - 1));
+                        tl = inc + 2 * ((i - 1) * (this.segmentsH + 1) + (j - 1));
+                        tr = inc + 2 * (i * (this.segmentsH + 1) + (j - 1));
                         bl = tl + 2;
                         br = tr + 2;
 
@@ -378,10 +387,10 @@ module feng3d
          * @param   segmentsD       深度方向分割
          * @param   tile6           是否为6块贴图
          */
-        private buildUVs(segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true)
+        private buildUVs()
         {
             var i: number, j: number, uidx: number;
-            var data = new Float32Array(((segmentsW + 1) * (segmentsH + 1) + (segmentsW + 1) * (segmentsD + 1) + (segmentsH + 1) * (segmentsD + 1)) * 2 * 2);
+            var data = new Float32Array(((this.segmentsW + 1) * (this.segmentsH + 1) + (this.segmentsW + 1) * (this.segmentsD + 1) + (this.segmentsH + 1) * (this.segmentsD + 1)) * 2 * 2);
 
             var u_tile_dim: number, v_tile_dim: number;
             var u_tile_step: number, v_tile_step: number;
@@ -389,7 +398,7 @@ module feng3d
             var tl1u: number, tl1v: number;
             var du: number, dv: number;
 
-            if (tile6)
+            if (this.tile6)
             {
                 u_tile_dim = u_tile_step = 1 / 3;
                 v_tile_dim = v_tile_step = 1 / 2;
@@ -419,11 +428,11 @@ module feng3d
             tl0v = 1 * v_tile_step;
             tl1u = 2 * u_tile_step;
             tl1v = 0 * v_tile_step;
-            du = u_tile_dim / segmentsW;
-            dv = v_tile_dim / segmentsH;
-            for (i = 0; i <= segmentsW; i++)
+            du = u_tile_dim / this.segmentsW;
+            dv = v_tile_dim / this.segmentsH;
+            for (i = 0; i <= this.segmentsW; i++)
             {
-                for (j = 0; j <= segmentsH; j++)
+                for (j = 0; j <= this.segmentsH; j++)
                 {
                     data[uidx++] = tl0u + i * du;
                     data[uidx++] = tl0v + (v_tile_dim - j * dv);
@@ -437,11 +446,11 @@ module feng3d
             tl0v = 0 * v_tile_step;
             tl1u = 0 * u_tile_step;
             tl1v = 0 * v_tile_step;
-            du = u_tile_dim / segmentsW;
-            dv = v_tile_dim / segmentsD;
-            for (i = 0; i <= segmentsW; i++)
+            du = u_tile_dim / this.segmentsW;
+            dv = v_tile_dim / this.segmentsD;
+            for (i = 0; i <= this.segmentsW; i++)
             {
-                for (j = 0; j <= segmentsD; j++)
+                for (j = 0; j <= this.segmentsD; j++)
                 {
                     data[uidx++] = tl0u + i * du;
                     data[uidx++] = tl0v + (v_tile_dim - j * dv);
@@ -455,11 +464,11 @@ module feng3d
             tl0v = 1 * v_tile_step;
             tl1u = 2 * u_tile_step;
             tl1v = 1 * v_tile_step;
-            du = u_tile_dim / segmentsD;
-            dv = v_tile_dim / segmentsH;
-            for (i = 0; i <= segmentsD; i++)
+            du = u_tile_dim / this.segmentsD;
+            dv = v_tile_dim / this.segmentsH;
+            for (i = 0; i <= this.segmentsD; i++)
             {
-                for (j = 0; j <= segmentsH; j++)
+                for (j = 0; j <= this.segmentsH; j++)
                 {
                     data[uidx++] = tl0u + i * du;
                     data[uidx++] = tl0v + (v_tile_dim - j * dv);

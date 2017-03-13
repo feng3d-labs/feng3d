@@ -4080,10 +4080,23 @@ declare module feng3d {
      * @author feng 2016-04-28
      */
     class Geometry extends RenderDataHolder {
+        private _isDirty;
         /**
          * 创建一个几何体
          */
         constructor();
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext): void;
+        /**
+         * 几何体变脏
+         */
+        protected invalidate(): void;
+        /**
+         * 构建几何体
+         */
+        protected buildGeometry(): void;
         /**
          * 更新顶点索引数据
          */
@@ -4539,6 +4552,11 @@ declare module feng3d {
      * @author feng 2016-09-12
      */
     class PlaneGeometry extends Geometry {
+        width: number;
+        height: number;
+        segmentsW: number;
+        segmentsH: number;
+        yUp: boolean;
         /**
          * 创建平面几何体
          * @param width 宽度
@@ -4549,41 +4567,45 @@ declare module feng3d {
          */
         constructor(width?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
         /**
-         * 构建顶点坐标
-         * @param width 宽度
-         * @param height 高度
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
+         * 构建几何体数据
          */
-        private buildPosition(width?, height?, segmentsW?, segmentsH?, yUp?);
+        protected buildGeometry(): void;
+        /**
+         * 构建顶点坐标
+         * @param this.width 宽度
+         * @param this.height 高度
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
+         * @param this.yUp 正面朝向 true:Y+ false:Z+
+         */
+        private buildPosition();
         /**
          * 构建顶点法线
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
+         * @param this.yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildNormal(segmentsW?, segmentsH?, yUp?);
+        private buildNormal();
         /**
          * 构建顶点切线
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
+         * @param this.yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildTangent(segmentsW?, segmentsH?, yUp?);
+        private buildTangent();
         /**
          * 构建顶点索引
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
+         * @param this.yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildIndices(segmentsW?, segmentsH?, yUp?);
+        private buildIndices();
         /**
          * 构建uv
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
          */
-        private buildUVs(segmentsW?, segmentsH?);
+        private buildUVs();
     }
 }
 declare module feng3d {
@@ -4592,6 +4614,13 @@ declare module feng3d {
      * @author feng 2016-09-12
      */
     class CubeGeometry extends Geometry {
+        width: number;
+        height: number;
+        depth: number;
+        segmentsW: number;
+        segmentsH: number;
+        segmentsD: number;
+        tile6: boolean;
         /**
          * 创建立方几何体
          * @param   width           宽度
@@ -4603,6 +4632,7 @@ declare module feng3d {
          * @param   tile6           是否为6块贴图
          */
         constructor(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean);
+        protected buildGeometry(): void;
         /**
          * 构建坐标
          * @param   width           宽度
@@ -4612,28 +4642,28 @@ declare module feng3d {
          * @param   segmentsH       高度方向分割
          * @param   segmentsD       深度方向分割
          */
-        private buildPosition(width?, height?, depth?, segmentsW?, segmentsH?, segmentsD?);
+        private buildPosition();
         /**
          * 构建法线
          * @param   segmentsW       宽度方向分割
          * @param   segmentsH       高度方向分割
          * @param   segmentsD       深度方向分割
          */
-        private buildNormal(segmentsW?, segmentsH?, segmentsD?);
+        private buildNormal();
         /**
          * 构建切线
          * @param   segmentsW       宽度方向分割
          * @param   segmentsH       高度方向分割
          * @param   segmentsD       深度方向分割
          */
-        private buildTangent(segmentsW?, segmentsH?, segmentsD?);
+        private buildTangent();
         /**
          * 构建索引
          * @param   segmentsW       宽度方向分割
          * @param   segmentsH       高度方向分割
          * @param   segmentsD       深度方向分割
          */
-        private buildIndices(segmentsW?, segmentsH?, segmentsD?);
+        private buildIndices();
         /**
          * 构建uv
          * @param   segmentsW       宽度方向分割
@@ -4641,7 +4671,7 @@ declare module feng3d {
          * @param   segmentsD       深度方向分割
          * @param   tile6           是否为6块贴图
          */
-        private buildUVs(segmentsW?, segmentsH?, segmentsD?, tile6?);
+        private buildUVs();
     }
 }
 declare module feng3d {
@@ -4650,6 +4680,10 @@ declare module feng3d {
      * @author DawnKing 2016-09-12
      */
     class SphereGeometry extends Geometry {
+        radius: number;
+        segmentsW: number;
+        segmentsH: number;
+        yUp: boolean;
         /**
          * 创建球形几何体
          * @param radius 球体半径
@@ -4660,25 +4694,25 @@ declare module feng3d {
         constructor(radius?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
         /**
          * 构建几何体数据
-         * @param radius 球体半径
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
+         * @param this.radius 球体半径
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
+         * @param this.yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildGeometry(radius?, segmentsW?, segmentsH?, yUp?);
+        protected buildGeometry(): void;
         /**
          * 构建顶点索引
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
+         * @param this.yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildIndices(segmentsW?, segmentsH?, yUp?);
+        private buildIndices();
         /**
          * 构建uv
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
          */
-        private buildUVs(segmentsW?, segmentsH?);
+        private buildUVs();
     }
 }
 declare module feng3d {
@@ -4687,6 +4721,11 @@ declare module feng3d {
      * @author DawnKing 2016-09-12
      */
     class CapsuleGeometry extends Geometry {
+        radius: number;
+        height: number;
+        segmentsW: number;
+        segmentsH: number;
+        yUp: boolean;
         /**
          * 创建胶囊几何体
          * @param radius 胶囊体半径
@@ -4704,20 +4743,20 @@ declare module feng3d {
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildGeometry(radius?, height?, segmentsW?, segmentsH?, yUp?);
+        protected buildGeometry(): void;
         /**
          * 构建顶点索引
          * @param segmentsW 横向分割数
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildIndices(segmentsW?, segmentsH?, yUp?);
+        private buildIndices();
         /**
          * 构建uv
          * @param segmentsW 横向分割数
          * @param segmentsH 纵向分割数
          */
-        private buildUVs(segmentsW?, segmentsH?);
+        private buildUVs();
     }
 }
 declare module feng3d {
@@ -4726,6 +4765,15 @@ declare module feng3d {
      * @author DawnKing 2016-09-12
      */
     class CylinderGeometry extends Geometry {
+        topRadius: number;
+        bottomRadius: number;
+        height: number;
+        segmentsW: number;
+        segmentsH: number;
+        topClosed: boolean;
+        bottomClosed: boolean;
+        surfaceClosed: boolean;
+        yUp: boolean;
         /**
          * 创建圆柱体
          */
@@ -4733,28 +4781,28 @@ declare module feng3d {
         /**
          * 计算几何体顶点数
          */
-        private getNumVertices(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed);
+        private getNumVertices();
         /**
          * 计算几何体三角形数量
          */
-        private getNumTriangles(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed);
+        private getNumTriangles();
         /**
          * 构建几何体数据
          */
-        private buildGeometry(topRadius?, bottomRadius?, height?, segmentsW?, segmentsH?, topClosed?, bottomClosed?, surfaceClosed?, yUp?);
+        protected buildGeometry(): void;
         /**
          * 构建顶点索引
          * @param segmentsW 横向分割数
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildIndices(topRadius?, bottomRadius?, height?, segmentsW?, segmentsH?, topClosed?, bottomClosed?, surfaceClosed?);
+        private buildIndices();
         /**
          * 构建uv
          * @param segmentsW 横向分割数
          * @param segmentsH 纵向分割数
          */
-        private buildUVs(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed);
+        private buildUVs();
     }
 }
 declare module feng3d {
@@ -4779,36 +4827,30 @@ declare module feng3d {
      * 圆环几何体
      */
     class TorusGeometry extends Geometry {
-        /**
-         * 圆环半径
-         */
         radius: number;
-        /**
-         * 管子半径
-         */
         tubeRadius: number;
-        /**
-         * 横向段数
-         */
         segmentsR: number;
-        /**
-         * 纵向段数
-         */
         segmentsT: number;
-        /**
-         * Y轴是否朝上
-         */
         yUp: boolean;
-        protected vertexPositionData: Float32Array;
-        protected vertexNormalData: Float32Array;
-        protected vertexTangentData: Float32Array;
+        /**
+         * 创建<code>Torus</code>实例
+         * @param radius						圆环半径
+         * @param tubeRadius					管道半径
+         * @param segmentsR						横向段数
+         * @param segmentsT						纵向段数
+         * @param yUp							Y轴是否朝上
+         */
+        constructor(radius?: number, tubeRadius?: number, segmentsR?: number, segmentsT?: number, yUp?: boolean);
+        protected _vertexPositionData: Float32Array;
+        protected _vertexNormalData: Float32Array;
+        protected _vertexTangentData: Float32Array;
         private _rawIndices;
         private _vertexIndex;
         private _currentTriangleIndex;
         private _numVertices;
-        private vertexPositionStride;
-        private vertexNormalStride;
-        private vertexTangentStride;
+        private _vertexPositionStride;
+        private _vertexNormalStride;
+        private _vertexTangentStride;
         /**
          * 添加顶点数据
          */
@@ -4829,15 +4871,6 @@ declare module feng3d {
          * @inheritDoc
          */
         protected buildUVs(): void;
-        /**
-         * 创建<code>Torus</code>实例
-         * @param radius						圆环半径
-         * @param tuebRadius					管道半径
-         * @param segmentsR						横向段数
-         * @param segmentsT						纵向段数
-         * @param yUp							Y轴是否朝上
-         */
-        constructor(radius?: number, tubeRadius?: number, segmentsR?: number, segmentsT?: number, yUp?: boolean);
     }
 }
 declare module feng3d {
@@ -5288,16 +5321,14 @@ declare module feng3d {
      * @author feng 2016-04-28
      */
     class TerrainGeometry extends Geometry {
-        private _segmentsW;
-        private _segmentsH;
-        private _width;
-        private _height;
-        private _depth;
-        private _heightMap;
-        private _minElevation;
-        private _maxElevation;
-        protected _geomDirty: boolean;
-        protected _uvDirty: boolean;
+        heightMap: ImageData;
+        width: number;
+        height: number;
+        depth: number;
+        segmentsW: number;
+        segmentsH: number;
+        maxElevation: number;
+        minElevation: number;
         /**
          * 创建高度地形 拥有segmentsW*segmentsH个顶点
          * @param    heightMap	高度图
@@ -5313,7 +5344,7 @@ declare module feng3d {
         /**
          * 创建顶点坐标
          */
-        private buildGeometry();
+        protected buildGeometry(): void;
         /**
          * 创建uv坐标
          */

@@ -6,53 +6,52 @@ module feng3d
 	 */
 	export class TorusGeometry extends Geometry
 	{
+
 		/**
-		 * 圆环半径
+		 * 创建<code>Torus</code>实例
+		 * @param radius						圆环半径
+		 * @param tubeRadius					管道半径
+		 * @param segmentsR						横向段数
+		 * @param segmentsT						纵向段数
+		 * @param yUp							Y轴是否朝上
 		 */
-		public radius: number;
-		/**
-		 * 管子半径
-		 */
-		public tubeRadius: number;
-		/**
-		 * 横向段数
-		 */
-		public segmentsR: number;
-		/**
-		 * 纵向段数
-		 */
-		public segmentsT: number;
-		/**
-		 * Y轴是否朝上
-		 */
-		public yUp: boolean;
+		constructor(public radius = 50, public tubeRadius = 50, public segmentsR = 16, public segmentsT = 8, public yUp = true)
+		{
+			super();
+
+			Watcher.watch(this, ["radius"], this.buildGeometry, this);
+			Watcher.watch(this, ["tubeRadius"], this.buildGeometry, this);
+			Watcher.watch(this, ["segmentsR"], this.buildGeometry, this);
+			Watcher.watch(this, ["segmentsT"], this.buildGeometry, this);
+			Watcher.watch(this, ["yUp"], this.buildGeometry, this);
+		}
 
 		//
-		protected vertexPositionData: Float32Array;
-		protected vertexNormalData: Float32Array;
-		protected vertexTangentData: Float32Array;
+		protected _vertexPositionData: Float32Array;
+		protected _vertexNormalData: Float32Array;
+		protected _vertexTangentData: Float32Array;
 		private _rawIndices: Uint16Array;
 		private _vertexIndex: number;
 		private _currentTriangleIndex: number;
 		private _numVertices: number;
-		private vertexPositionStride: number = 3;
-		private vertexNormalStride: number = 3;
-		private vertexTangentStride: number = 3;
+		private _vertexPositionStride: number = 3;
+		private _vertexNormalStride: number = 3;
+		private _vertexTangentStride: number = 3;
 
 		/**
 		 * 添加顶点数据
 		 */
 		private addVertex(vertexIndex: number, px: number, py: number, pz: number, nx: number, ny: number, nz: number, tx: number, ty: number, tz: number)
 		{
-			this.vertexPositionData[vertexIndex * this.vertexPositionStride] = px;
-			this.vertexPositionData[vertexIndex * this.vertexPositionStride + 1] = py;
-			this.vertexPositionData[vertexIndex * this.vertexPositionStride + 2] = pz;
-			this.vertexNormalData[vertexIndex * this.vertexNormalStride] = nx;
-			this.vertexNormalData[vertexIndex * this.vertexNormalStride + 1] = ny;
-			this.vertexNormalData[vertexIndex * this.vertexNormalStride + 2] = nz;
-			this.vertexTangentData[vertexIndex * this.vertexTangentStride] = tx;
-			this.vertexTangentData[vertexIndex * this.vertexTangentStride + 1] = ty;
-			this.vertexTangentData[vertexIndex * this.vertexTangentStride + 2] = tz;
+			this._vertexPositionData[vertexIndex * this._vertexPositionStride] = px;
+			this._vertexPositionData[vertexIndex * this._vertexPositionStride + 1] = py;
+			this._vertexPositionData[vertexIndex * this._vertexPositionStride + 2] = pz;
+			this._vertexNormalData[vertexIndex * this._vertexNormalStride] = nx;
+			this._vertexNormalData[vertexIndex * this._vertexNormalStride + 1] = ny;
+			this._vertexNormalData[vertexIndex * this._vertexNormalStride + 2] = nz;
+			this._vertexTangentData[vertexIndex * this._vertexTangentStride] = tx;
+			this._vertexTangentData[vertexIndex * this._vertexTangentStride + 1] = ty;
+			this._vertexTangentData[vertexIndex * this._vertexTangentStride + 2] = tz;
 		}
 
 		/**
@@ -86,9 +85,9 @@ module feng3d
 			this._numVertices = (this.segmentsT + 1) * (this.segmentsR + 1); // this.segmentsT + 1 because of closure, this.segmentsR + 1 because of closure
 			numTriangles = this.segmentsT * this.segmentsR * 2; // each level has segmentR quads, each of 2 triangles
 
-			this.vertexPositionData = new Float32Array(this._numVertices * this.vertexPositionStride);
-			this.vertexNormalData = new Float32Array(this._numVertices * this.vertexNormalStride);
-			this.vertexTangentData = new Float32Array(this._numVertices * this.vertexTangentStride);
+			this._vertexPositionData = new Float32Array(this._numVertices * this._vertexPositionStride);
+			this._vertexNormalData = new Float32Array(this._numVertices * this._vertexNormalStride);
+			this._vertexTangentData = new Float32Array(this._numVertices * this._vertexTangentStride);
 			this._rawIndices = new Uint16Array(numTriangles * 3);
 			this.buildUVs();
 
@@ -106,7 +105,7 @@ module feng3d
 
 			for (j = 0; j <= this.segmentsT; ++j)
 			{
-				startPositionIndex = j * (this.segmentsR + 1) * this.vertexPositionStride;
+				startPositionIndex = j * (this.segmentsR + 1) * this._vertexPositionStride;
 
 				for (i = 0; i <= this.segmentsR; ++i)
 				{
@@ -147,7 +146,7 @@ module feng3d
 
 					if (i == this.segmentsR)
 					{
-						this.addVertex(this._vertexIndex, x, this.vertexPositionData[startPositionIndex + 1], this.vertexPositionData[startPositionIndex + 2], nx, n1, n2, -(length ? ny / length : y / this.radius), t1, t2);
+						this.addVertex(this._vertexIndex, x, this._vertexPositionData[startPositionIndex + 1], this._vertexPositionData[startPositionIndex + 2], nx, n1, n2, -(length ? ny / length : y / this.radius), t1, t2);
 					}
 					else
 					{
@@ -167,9 +166,9 @@ module feng3d
 				}
 			}
 
-			this.setVAData(GLAttribute.a_position, this.vertexPositionData, 3);
-			this.setVAData(GLAttribute.a_normal, this.vertexNormalData, 3);
-			this.setVAData(GLAttribute.a_tangent, this.vertexTangentData, 3);
+			this.setVAData(GLAttribute.a_position, this._vertexPositionData, 3);
+			this.setVAData(GLAttribute.a_normal, this._vertexNormalData, 3);
+			this.setVAData(GLAttribute.a_tangent, this._vertexTangentData, 3);
 			this.setIndices(this._rawIndices);
 		}
 
@@ -204,33 +203,6 @@ module feng3d
 			// build real data from raw data
 			this.setVAData(GLAttribute.a_uv, data, 2);
 
-		}
-
-		/**
-		 * 创建<code>Torus</code>实例
-		 * @param radius						圆环半径
-		 * @param tuebRadius					管道半径
-		 * @param segmentsR						横向段数
-		 * @param segmentsT						纵向段数
-		 * @param yUp							Y轴是否朝上
-		 */
-		constructor(radius: number = 50, tubeRadius: number = 50, segmentsR: number = 16, segmentsT: number = 8, yUp: boolean = true)
-		{
-			super();
-
-			this.radius = radius;
-			this.tubeRadius = tubeRadius;
-			this.segmentsR = segmentsR;
-			this.segmentsT = segmentsT;
-			this.yUp = yUp;
-
-			this.buildGeometry();
-
-			Watcher.watch(this, ["radius"], this.buildGeometry, this);
-			Watcher.watch(this, ["tubeRadius"], this.buildGeometry, this);
-			Watcher.watch(this, ["segmentsR"], this.buildGeometry, this);
-			Watcher.watch(this, ["segmentsT"], this.buildGeometry, this);
-			Watcher.watch(this, ["yUp"], this.buildGeometry, this);
 		}
 	}
 }

@@ -11,55 +11,55 @@ module feng3d
         /**
          * 创建圆柱体
          */
-        constructor(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true)
+        constructor(public topRadius = 50, public bottomRadius = 50, public height = 100, public segmentsW = 16, public segmentsH = 1, public topClosed = true, public bottomClosed = true, public surfaceClosed = true, public yUp = true)
         {
             super();
 
-            this.buildGeometry(topRadius, bottomRadius, height, segmentsW, segmentsH,
-                topClosed, bottomClosed, surfaceClosed, yUp);
-
-            var uvData = this.buildUVs(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed);
-            this.setVAData(GLAttribute.a_uv, uvData, 2);
-
-            var indices = this.buildIndices(topRadius, bottomRadius, height, segmentsW, segmentsH,
-                topClosed, bottomClosed, surfaceClosed);
-            this.setIndices(indices);
+            Watcher.watch(this, ["topRadius"], this.invalidate, this);
+            Watcher.watch(this, ["bottomRadius"], this.invalidate, this);
+            Watcher.watch(this, ["height"], this.invalidate, this);
+            Watcher.watch(this, ["segmentsW"], this.invalidate, this);
+            Watcher.watch(this, ["segmentsH"], this.invalidate, this);
+            Watcher.watch(this, ["topClosed"], this.invalidate, this);
+            Watcher.watch(this, ["bottomClosed"], this.invalidate, this);
+            Watcher.watch(this, ["surfaceClosed"], this.invalidate, this);
+            Watcher.watch(this, ["yUp"], this.invalidate, this);
         }
 
         /**
          * 计算几何体顶点数
          */
-        private getNumVertices(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed)
+        private getNumVertices()
         {
             var numVertices: number = 0;
-            if (surfaceClosed)
-                numVertices += (segmentsH + 1) * (segmentsW + 1);
-            if (topClosed)
-                numVertices += 2 * (segmentsW + 1);
-            if (bottomClosed)
-                numVertices += 2 * (segmentsW + 1);
+            if (this.surfaceClosed)
+                numVertices += (this.segmentsH + 1) * (this.segmentsW + 1);
+            if (this.topClosed)
+                numVertices += 2 * (this.segmentsW + 1);
+            if (this.bottomClosed)
+                numVertices += 2 * (this.segmentsW + 1);
             return numVertices
         }
 
         /**
          * 计算几何体三角形数量
          */
-        private getNumTriangles(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed)
+        private getNumTriangles()
         {
             var numTriangles: number = 0;
-            if (surfaceClosed)
-                numTriangles += segmentsH * segmentsW * 2;
-            if (topClosed)
-                numTriangles += segmentsW;
-            if (bottomClosed)
-                numTriangles += segmentsW;
+            if (this.surfaceClosed)
+                numTriangles += this.segmentsH * this.segmentsW * 2;
+            if (this.topClosed)
+                numTriangles += this.segmentsW;
+            if (this.bottomClosed)
+                numTriangles += this.segmentsW;
             return numTriangles;
         }
 
         /**
          * 构建几何体数据
          */
-        private buildGeometry(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true)
+        protected buildGeometry()
         {
             var i: number, j: number, index: number = 0;
             var x: number, y: number, z: number, radius: number, revolutionAngle: number;
@@ -69,23 +69,23 @@ module feng3d
             var startIndex: number = 0;
             var t1: number, t2: number;
 
-            var numVertices: number = this.getNumVertices(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed);
+            var numVertices: number = this.getNumVertices();
 
             var vertexPositionData = new Float32Array(numVertices * 3);
             var vertexNormalData = new Float32Array(numVertices * 3);
             var vertexTangentData = new Float32Array(numVertices * 3);
 
-            var revolutionAngleDelta: number = 2 * Math.PI / segmentsW;
+            var revolutionAngleDelta: number = 2 * Math.PI / this.segmentsW;
 
             // 顶部
-            if (topClosed && topRadius > 0)
+            if (this.topClosed && this.topRadius > 0)
             {
-                z = -0.5 * height;
+                z = -0.5 * this.height;
 
-                for (i = 0; i <= segmentsW; ++i)
+                for (i = 0; i <= this.segmentsW; ++i)
                 {
                     // 中心顶点
-                    if (yUp)
+                    if (this.yUp)
                     {
                         t1 = 1;
                         t2 = 0;
@@ -104,10 +104,10 @@ module feng3d
 
                     // 旋转顶点
                     revolutionAngle = i * revolutionAngleDelta;
-                    x = topRadius * Math.cos(revolutionAngle);
-                    y = topRadius * Math.sin(revolutionAngle);
+                    x = this.topRadius * Math.cos(revolutionAngle);
+                    y = this.topRadius * Math.sin(revolutionAngle);
 
-                    if (yUp)
+                    if (this.yUp)
                     {
                         comp1 = -z;
                         comp2 = y;
@@ -118,7 +118,7 @@ module feng3d
                         comp2 = z;
                     }
 
-                    if (i == segmentsW)
+                    if (i == this.segmentsW)
                     {
                         addVertex(vertexPositionData[startIndex + 3], vertexPositionData[startIndex + 4], vertexPositionData[startIndex + 5],
                             0, t1, t2, 1, 0, 0);
@@ -132,14 +132,14 @@ module feng3d
             }
 
             // 底部
-            if (bottomClosed && bottomRadius > 0)
+            if (this.bottomClosed && this.bottomRadius > 0)
             {
-                z = 0.5 * height;
+                z = 0.5 * this.height;
                 startIndex = index;
-                for (i = 0; i <= segmentsW; ++i)
+                for (i = 0; i <= this.segmentsW; ++i)
                 {
                     // 中心顶点
-                    if (yUp)
+                    if (this.yUp)
                     {
                         t1 = -1;
                         t2 = 0;
@@ -158,10 +158,10 @@ module feng3d
 
                     // 旋转顶点
                     revolutionAngle = i * revolutionAngle;
-                    x = bottomRadius * Math.cos(revolutionAngle);
-                    y = bottomRadius * Math.sin(revolutionAngle);
+                    x = this.bottomRadius * Math.cos(revolutionAngle);
+                    y = this.bottomRadius * Math.sin(revolutionAngle);
 
-                    if (yUp)
+                    if (this.yUp)
                     {
                         comp1 = -z;
                         comp2 = y;
@@ -172,7 +172,7 @@ module feng3d
                         comp2 = z;
                     }
 
-                    if (i == segmentsW)
+                    if (i == this.segmentsW)
                     {
                         addVertex(x, vertexPositionData[startIndex + 1], vertexPositionData[startIndex + 2],
                             0, t1, t2, 1, 0, 0);
@@ -186,22 +186,22 @@ module feng3d
             }
 
             // 侧面
-            dr = bottomRadius - topRadius;
-            latNormElev = dr / height;
-            latNormBase = (latNormElev == 0) ? 1 : height / dr;
+            dr = this.bottomRadius - this.topRadius;
+            latNormElev = dr / this.height;
+            latNormBase = (latNormElev == 0) ? 1 : this.height / dr;
 
-            if (surfaceClosed)
+            if (this.surfaceClosed)
             {
                 var a: number, b: number, c: number, d: number;
                 var na0: number, na1: number, naComp1: number, naComp2: number;
 
-                for (j = 0; j <= segmentsH; ++j)
+                for (j = 0; j <= this.segmentsH; ++j)
                 {
-                    radius = topRadius - ((j / segmentsH) * (topRadius - bottomRadius));
-                    z = -(height / 2) + (j / segmentsH * height);
+                    radius = this.topRadius - ((j / this.segmentsH) * (this.topRadius - this.bottomRadius));
+                    z = -(this.height / 2) + (j / this.segmentsH * this.height);
 
                     startIndex = index;
-                    for (i = 0; i <= segmentsW; ++i)
+                    for (i = 0; i <= this.segmentsW; ++i)
                     {
                         revolutionAngle = i * revolutionAngleDelta;
                         x = radius * Math.cos(revolutionAngle);
@@ -209,7 +209,7 @@ module feng3d
                         na0 = latNormBase * Math.cos(revolutionAngle);
                         na1 = latNormBase * Math.sin(revolutionAngle);
 
-                        if (yUp)
+                        if (this.yUp)
                         {
                             t1 = 0;
                             t2 = -na0;
@@ -228,7 +228,7 @@ module feng3d
                             naComp2 = latNormElev;
                         }
 
-                        if (i == segmentsW)
+                        if (i == this.segmentsW)
                         {
                             addVertex(vertexPositionData[startIndex], vertexPositionData[startIndex + 1], vertexPositionData[startIndex + 2],
                                 na0, latNormElev, na1,
@@ -264,6 +264,13 @@ module feng3d
 
                 index += 3;
             }
+
+            //
+            var uvData = this.buildUVs();
+            this.setVAData(GLAttribute.a_uv, uvData, 2);
+
+            var indices = this.buildIndices();
+            this.setIndices(indices);
         }
 
         /**
@@ -272,18 +279,18 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildIndices(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true)
+        private buildIndices()
         {
 
             var i: number, j: number, index: number = 0;
-            var numTriangles: number = this.getNumTriangles(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed);
+            var numTriangles: number = this.getNumTriangles();
 
             var indices = new Uint16Array(numTriangles * 3);
             var numIndices = 0;
             // 顶部
-            if (topClosed && topRadius > 0)
+            if (this.topClosed && this.topRadius > 0)
             {
-                for (i = 0; i <= segmentsW; ++i)
+                for (i = 0; i <= this.segmentsW; ++i)
                 {
                     index += 2;
                     if (i > 0)
@@ -292,9 +299,9 @@ module feng3d
             }
 
             // 底部
-            if (bottomClosed && bottomRadius > 0)
+            if (this.bottomClosed && this.bottomRadius > 0)
             {
-                for (i = 0; i <= segmentsW; ++i)
+                for (i = 0; i <= this.segmentsW; ++i)
                 {
                     index += 2;
                     if (i > 0)
@@ -303,20 +310,20 @@ module feng3d
             }
 
             // 侧面
-            if (surfaceClosed)
+            if (this.surfaceClosed)
             {
                 var a: number, b: number, c: number, d: number;
-                for (j = 0; j <= segmentsH; ++j)
+                for (j = 0; j <= this.segmentsH; ++j)
                 {
-                    for (i = 0; i <= segmentsW; ++i)
+                    for (i = 0; i <= this.segmentsW; ++i)
                     {
                         index++;
                         if (i > 0 && j > 0)
                         {
                             a = index - 1;
                             b = index - 2;
-                            c = b - segmentsW - 1;
-                            d = a - segmentsW - 1;
+                            c = b - this.segmentsW - 1;
+                            d = a - this.segmentsW - 1;
 
                             addTriangleClockWise(a, b, c);
                             addTriangleClockWise(a, c, d);
@@ -340,20 +347,20 @@ module feng3d
          * @param segmentsW 横向分割数
          * @param segmentsH 纵向分割数
          */
-        private buildUVs(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed)
+        private buildUVs()
         {
             var i: number, j: number;
             var x: number, y: number, revolutionAngle: number;
-            var numVertices: number = this.getNumVertices(segmentsW, segmentsH, surfaceClosed, topClosed, bottomClosed)
+            var numVertices: number = this.getNumVertices()
 
             var data = new Float32Array(numVertices * 2);
-            var revolutionAngleDelta: number = 2 * Math.PI / segmentsW;
+            var revolutionAngleDelta: number = 2 * Math.PI / this.segmentsW;
             var index: number = 0;
 
             // 顶部
-            if (topClosed)
+            if (this.topClosed)
             {
-                for (i = 0; i <= segmentsW; ++i)
+                for (i = 0; i <= this.segmentsW; ++i)
                 {
                     revolutionAngle = i * revolutionAngleDelta;
                     x = 0.5 + 0.5 * -Math.cos(revolutionAngle);
@@ -368,9 +375,9 @@ module feng3d
                 }
             }
             // 底部
-            if (bottomClosed)
+            if (this.bottomClosed)
             {
-                for (i = 0; i <= segmentsW; ++i)
+                for (i = 0; i <= this.segmentsW; ++i)
                 {
                     revolutionAngle = i * revolutionAngleDelta;
                     x = 0.5 + 0.5 * Math.cos(revolutionAngle);
@@ -385,15 +392,15 @@ module feng3d
                 }
             }
             // 侧面
-            if (surfaceClosed)
+            if (this.surfaceClosed)
             {
-                for (j = 0; j <= segmentsH; ++j)
+                for (j = 0; j <= this.segmentsH; ++j)
                 {
-                    for (i = 0; i <= segmentsW; ++i)
+                    for (i = 0; i <= this.segmentsW; ++i)
                     {
                         // 旋转顶点
-                        data[index++] = (i / segmentsW);
-                        data[index++] = (j / segmentsH);
+                        data[index++] = (i / this.segmentsW);
+                        data[index++] = (j / this.segmentsH);
                     }
                 }
             }

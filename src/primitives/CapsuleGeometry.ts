@@ -15,15 +15,15 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(radius = 50, height = 100, segmentsW = 16, segmentsH = 15, yUp = true)
+        constructor(public radius = 50, public height = 100, public segmentsW = 16, public segmentsH = 15, public yUp = true)
         {
             super();
 
-            this.buildGeometry(radius, height, segmentsW, segmentsH, yUp);
-
-            var uvData = this.buildUVs(segmentsW, segmentsH);
-            this.setVAData(GLAttribute.a_uv, uvData, 2);
-            this.buildIndices(segmentsW, segmentsH, yUp);
+            Watcher.watch(this, ["radius"], this.invalidate, this);
+            Watcher.watch(this, ["height"], this.invalidate, this);
+            Watcher.watch(this, ["segmentsW"], this.invalidate, this);
+            Watcher.watch(this, ["segmentsH"], this.invalidate, this);
+            Watcher.watch(this, ["yUp"], this.invalidate, this);
         }
 
         /**
@@ -34,33 +34,33 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildGeometry(radius = 1, height = 1, segmentsW = 1, segmentsH = 1, yUp = true)
+        protected buildGeometry()
         {
-            var vertexPositionData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
-            var vertexNormalData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
-            var vertexTangentData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
+            var vertexPositionData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
+            var vertexNormalData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
+            var vertexTangentData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
 
             var startIndex: number;
             var index: number = 0;
             var comp1: number, comp2: number, t1: number, t2: number;
-            for (var yi: number = 0; yi <= segmentsH; ++yi)
+            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
             {
                 startIndex = index;
 
-                var horangle: number = Math.PI * yi / segmentsH;
-                var z: number = -radius * Math.cos(horangle);
-                var ringradius: number = radius * Math.sin(horangle);
+                var horangle: number = Math.PI * yi / this.segmentsH;
+                var z: number = -this.radius * Math.cos(horangle);
+                var ringradius: number = this.radius * Math.sin(horangle);
 
-                for (var xi: number = 0; xi <= segmentsW; ++xi)
+                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
                 {
-                    var verangle: number = 2 * Math.PI * xi / segmentsW;
+                    var verangle: number = 2 * Math.PI * xi / this.segmentsW;
                     var x: number = ringradius * Math.cos(verangle);
                     var y: number = ringradius * Math.sin(verangle);
                     var normLen: number = 1 / Math.sqrt(x * x + y * y + z * z);
                     var tanLen: number = Math.sqrt(y * y + x * x);
-                    var offset: number = yi > segmentsH / 2 ? height / 2 : -height / 2;
+                    var offset: number = yi > this.segmentsH / 2 ? this.height / 2 : -this.height / 2;
 
-                    if (yUp)
+                    if (this.yUp)
                     {
                         t1 = 0;
                         t2 = tanLen > .007 ? x / tanLen : 0;
@@ -75,7 +75,7 @@ module feng3d
                         comp2 = z;
                     }
 
-                    if (xi == segmentsW)
+                    if (xi == this.segmentsW)
                     {
                         vertexPositionData[index] = vertexPositionData[startIndex];
                         vertexPositionData[index + 1] = vertexPositionData[startIndex + 1];
@@ -92,8 +92,8 @@ module feng3d
                     else
                     {
                         vertexPositionData[index] = x;
-                        vertexPositionData[index + 1] = yUp ? comp1 - offset : comp1;
-                        vertexPositionData[index + 2] = yUp ? comp2 : comp2 + offset;
+                        vertexPositionData[index + 1] = this.yUp ? comp1 - offset : comp1;
+                        vertexPositionData[index + 2] = this.yUp ? comp2 : comp2 + offset;
 
                         vertexNormalData[index] = x * normLen;
                         vertexNormalData[index + 1] = comp1 * normLen;
@@ -107,7 +107,7 @@ module feng3d
                     if (xi > 0 && yi > 0)
                     {
 
-                        if (yi == segmentsH)
+                        if (yi == this.segmentsH)
                         {
                             vertexPositionData[index] = vertexPositionData[startIndex];
                             vertexPositionData[index + 1] = vertexPositionData[startIndex + 1];
@@ -121,6 +121,10 @@ module feng3d
             this.setVAData(GLAttribute.a_position, vertexPositionData, 3);
             this.setVAData(GLAttribute.a_normal, vertexNormalData, 3);
             this.setVAData(GLAttribute.a_tangent, vertexTangentData, 3);
+
+            var uvData = this.buildUVs();
+            this.setVAData(GLAttribute.a_uv, uvData, 2);
+            this.buildIndices();
         }
 
         /**
@@ -129,23 +133,23 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildIndices(segmentsW = 1, segmentsH = 1, yUp = true)
+        private buildIndices()
         {
-            var indices = new Uint16Array(segmentsH * segmentsW * 6);
+            var indices = new Uint16Array(this.segmentsH * this.segmentsW * 6);
 
             var numIndices = 0;
-            for (var yi: number = 0; yi <= segmentsH; ++yi)
+            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= segmentsW; ++xi)
+                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
                 {
                     if (xi > 0 && yi > 0)
                     {
-                        var a: number = (segmentsW + 1) * yi + xi;
-                        var b: number = (segmentsW + 1) * yi + xi - 1;
-                        var c: number = (segmentsW + 1) * (yi - 1) + xi - 1;
-                        var d: number = (segmentsW + 1) * (yi - 1) + xi;
+                        var a: number = (this.segmentsW + 1) * yi + xi;
+                        var b: number = (this.segmentsW + 1) * yi + xi - 1;
+                        var c: number = (this.segmentsW + 1) * (yi - 1) + xi - 1;
+                        var d: number = (this.segmentsW + 1) * (yi - 1) + xi;
 
-                        if (yi == segmentsH)
+                        if (yi == this.segmentsH)
                         {
                             indices[numIndices++] = a;
                             indices[numIndices++] = c;
@@ -177,17 +181,17 @@ module feng3d
          * @param segmentsW 横向分割数
          * @param segmentsH 纵向分割数
          */
-        private buildUVs(segmentsW = 1, segmentsH = 1)
+        private buildUVs()
         {
-            var data = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 2);
+            var data = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 2);
             var index: number = 0;
 
-            for (var yi: number = 0; yi <= segmentsH; ++yi)
+            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= segmentsW; ++xi)
+                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
                 {
-                    data[index++] = xi / segmentsW;
-                    data[index++] = yi / segmentsH;
+                    data[index++] = xi / this.segmentsW;
+                    data[index++] = yi / this.segmentsH;
                 }
             }
 

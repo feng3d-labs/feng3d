@@ -16,49 +16,61 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true)
+        constructor(public width = 100, public height = 100, public segmentsW = 1, public segmentsH = 1, public yUp = true)
         {
             super();
 
-            var vertexPositionData = this.buildPosition(width, height, segmentsW, segmentsH, yUp);
+            Watcher.watch(this, ["width"], this.invalidate, this);
+            Watcher.watch(this, ["height"], this.invalidate, this);
+            Watcher.watch(this, ["segmentsW"], this.invalidate, this);
+            Watcher.watch(this, ["segmentsH"], this.invalidate, this);
+            Watcher.watch(this, ["yUp"], this.invalidate, this);
+        }
+
+        /**
+         * 构建几何体数据
+         */
+        protected buildGeometry()
+        {
+            var vertexPositionData = this.buildPosition();
             this.setVAData(GLAttribute.a_position, vertexPositionData, 3);
 
-            var vertexNormalData = this.buildNormal(segmentsW, segmentsH, yUp);
+            var vertexNormalData = this.buildNormal();
             this.setVAData(GLAttribute.a_normal, vertexNormalData, 3)
 
-            var vertexTangentData = this.buildTangent(segmentsW, segmentsH, yUp);
+            var vertexTangentData = this.buildTangent();
             this.setVAData(GLAttribute.a_tangent, vertexTangentData, 3)
 
-            var uvData = this.buildUVs(segmentsW, segmentsH);
+            var uvData = this.buildUVs();
             this.setVAData(GLAttribute.a_uv, uvData, 2);
 
-            var indices = this.buildIndices(segmentsW, segmentsH, yUp);
+            var indices = this.buildIndices();
             this.setIndices(indices);
         }
 
         /**
          * 构建顶点坐标
-         * @param width 宽度
-         * @param height 高度
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
+         * @param this.width 宽度
+         * @param this.height 高度
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
+         * @param this.yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildPosition(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true)
+        private buildPosition()
         {
-            var vertexPositionData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
+            var vertexPositionData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
             var x: number, y: number;
             var positionIndex: number = 0;
-            for (var yi: number = 0; yi <= segmentsH; ++yi)
+            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= segmentsW; ++xi)
+                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
                 {
-                    x = (xi / segmentsW - .5) * width;
-                    y = (yi / segmentsH - .5) * height;
+                    x = (xi / this.segmentsW - .5) * this.width;
+                    y = (yi / this.segmentsH - .5) * this.height;
 
                     //设置坐标数据
                     vertexPositionData[positionIndex++] = x;
-                    if (yUp)
+                    if (this.yUp)
                     {
                         vertexPositionData[positionIndex++] = 0;
                         vertexPositionData[positionIndex++] = y;
@@ -75,23 +87,23 @@ module feng3d
 
         /**
          * 构建顶点法线
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
+         * @param this.yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildNormal(segmentsW = 1, segmentsH = 1, yUp = true)
+        private buildNormal()
         {
-            var vertexNormalData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
+            var vertexNormalData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
 
             var normalIndex: number = 0;
-            for (var yi: number = 0; yi <= segmentsH; ++yi)
+            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= segmentsW; ++xi)
+                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
                 {
 
                     //设置法线数据
                     vertexNormalData[normalIndex++] = 0;
-                    if (yUp)
+                    if (this.yUp)
                     {
                         vertexNormalData[normalIndex++] = 1;
                         vertexNormalData[normalIndex++] = 0;
@@ -108,17 +120,17 @@ module feng3d
 
         /**
          * 构建顶点切线
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
+         * @param this.yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildTangent(segmentsW = 1, segmentsH = 1, yUp = true)
+        private buildTangent()
         {
-            var vertexTangentData = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 3);
+            var vertexTangentData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
             var tangentIndex: number = 0;
-            for (var yi: number = 0; yi <= segmentsH; ++yi)
+            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= segmentsW; ++xi)
+                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
                 {
 
                     vertexTangentData[tangentIndex++] = 1;
@@ -131,24 +143,24 @@ module feng3d
 
         /**
          * 构建顶点索引
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
+         * @param this.yUp 正面朝向 true:Y+ false:Z+
          */
-        private buildIndices(segmentsW = 1, segmentsH = 1, yUp = true)
+        private buildIndices()
         {
-            var indices = new Uint16Array(segmentsH * segmentsW * 6);
-            var tw: number = segmentsW + 1;
+            var indices = new Uint16Array(this.segmentsH * this.segmentsW * 6);
+            var tw: number = this.segmentsW + 1;
 
             var numIndices = 0;
             var base: number;
-            for (var yi: number = 0; yi <= segmentsH; ++yi)
+            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= segmentsW; ++xi)
+                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
                 {
 
                     //生成索引数据
-                    if (xi != segmentsW && yi != segmentsH)
+                    if (xi != this.segmentsW && yi != this.segmentsH)
                     {
                         base = xi + yi * tw;
 
@@ -167,20 +179,20 @@ module feng3d
 
         /**
          * 构建uv
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
+         * @param this.segmentsW 横向分割数
+         * @param this.segmentsH 纵向分割数
          */
-        private buildUVs(segmentsW = 1, segmentsH = 1)
+        private buildUVs()
         {
-            var data = new Float32Array((segmentsH + 1) * (segmentsW + 1) * 2);
+            var data = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 2);
             var index: number = 0;
 
-            for (var yi: number = 0; yi <= segmentsH; ++yi)
+            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= segmentsW; ++xi)
+                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
                 {
-                    data[index++] = xi / segmentsW;
-                    data[index++] = 1 - yi / segmentsH;
+                    data[index++] = xi / this.segmentsW;
+                    data[index++] = 1 - yi / this.segmentsH;
                 }
             }
 
