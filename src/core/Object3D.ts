@@ -4,7 +4,7 @@ module feng3d
      * 3D对象
      * @author feng 2016-04-26
      */
-    export class Object3D extends RenderDataHolder
+    export class Object3D extends RenderDataHolder implements Serializable
     {
         //-序列化
         protected mouseEnabled_: boolean = true;
@@ -24,6 +24,37 @@ module feng3d
         private _parent: Object3D = null;
 
         private _scene: Scene3D;
+
+        /**
+         * 保存为数据
+         */
+        public saveToData()
+        {
+            // var data = {};
+            // data.className = ClassUtils.getQualifiedClassName(this);
+            // data.name = this.name;
+            // data.visible = this.visible;
+            // var children = data.children = [];
+            // this.children_.forEach(element =>
+            // {
+            //     children.push(element.saveToData());
+            // });
+            // var components = data.components = [];
+            // this.components_.forEach(element =>
+            // {
+            //     components
+            // });
+
+            // return data;
+        }
+
+        /**
+         * 从数据初始化
+         */
+        public initFromData()
+        {
+
+        }
 
         public get object3DID()
         {

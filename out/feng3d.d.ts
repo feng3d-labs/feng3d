@@ -771,6 +771,21 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 可序列化对象
+     */
+    interface Serializable {
+        /**
+         * 保存为数据
+         */
+        saveToData(): any;
+        /**
+         * 从数据初始化
+         */
+        initFromData(): any;
+    }
+}
+declare module feng3d {
+    /**
      * 数据序列化
      * @author feng 2017-03-11
      */
@@ -3438,7 +3453,7 @@ declare module feng3d {
      * 3D对象
      * @author feng 2016-04-26
      */
-    class Object3D extends RenderDataHolder {
+    class Object3D extends RenderDataHolder implements Serializable {
         protected mouseEnabled_: boolean;
         protected visible_: boolean;
         /**
@@ -3452,6 +3467,14 @@ declare module feng3d {
          */
         private _parent;
         private _scene;
+        /**
+         * 保存为数据
+         */
+        saveToData(): void;
+        /**
+         * 从数据初始化
+         */
+        initFromData(): void;
         readonly object3DID: number;
         /**
          * 变换

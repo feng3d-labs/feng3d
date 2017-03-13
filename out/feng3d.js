@@ -5878,6 +5878,31 @@ var feng3d;
             this.addEventListener(feng3d.Object3DEvent.ADDED, this.onAdded, this);
             this.addEventListener(feng3d.Object3DEvent.REMOVED, this.onRemoved, this);
         }
+        /**
+         * 保存为数据
+         */
+        Object3D.prototype.saveToData = function () {
+            // var data = {};
+            // data.className = ClassUtils.getQualifiedClassName(this);
+            // data.name = this.name;
+            // data.visible = this.visible;
+            // var children = data.children = [];
+            // this.children_.forEach(element =>
+            // {
+            //     children.push(element.saveToData());
+            // });
+            // var components = data.components = [];
+            // this.components_.forEach(element =>
+            // {
+            //     components
+            // });
+            // return data;
+        };
+        /**
+         * 从数据初始化
+         */
+        Object3D.prototype.initFromData = function () {
+        };
         Object.defineProperty(Object3D.prototype, "object3DID", {
             get: function () {
                 return this._object3DID;
