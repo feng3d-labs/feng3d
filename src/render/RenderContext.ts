@@ -31,7 +31,7 @@ module feng3d
             {
                 light = this.lights[i];
                 light.updateRenderData(this);
-                if (light.type == LightType.Point)
+                if (light.lightType == LightType.Point)
                     pointLights.push(light);
             }
             //收集点光源数据

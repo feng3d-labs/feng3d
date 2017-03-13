@@ -63,6 +63,7 @@ module feng3d
         constructor(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1)
         {
             super();
+            this._single = true;
             //矫正值
             this.position.setTo(x, y, z);
             this.rotation.setTo(rx, ry, rz);

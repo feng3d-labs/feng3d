@@ -990,7 +990,7 @@ var feng3d;
                 var children = this.readObject(data);
                 var object3D = object;
                 for (var i = 0; i < children.length; i++) {
-                    children[i] && object3D.addChild(children[i]);
+                    children[i] && object3D.setChildAt(children[i], i);
                 }
                 return true;
             }
@@ -998,7 +998,7 @@ var feng3d;
                 var components = this.readObject(data);
                 var component = object;
                 for (var i = 0; i < components.length; i++) {
-                    component.addComponent(components[i]);
+                    component.setComponentAt(components[i], i);
                 }
                 return true;
             }
@@ -1006,7 +1006,7 @@ var feng3d;
                 var segments = this.readObject(data);
                 var segmentGeometry = object;
                 for (var i = 0; i < segments.length; i++) {
-                    segmentGeometry.addSegment(segments[i]);
+                    segmentGeometry.setSegmentAt(segments[i], i);
                 }
                 return true;
             }
@@ -2081,12 +2081,12 @@ var feng3d;
         }
         /**
          * 添加子组件事件
-         * data = { container: IComponent, child: IComponent }
+         * data = { container: Component, child: Component }
          */
         ComponentEvent.ADDED_COMPONENT = "addedComponent";
         /**
          * 移除子组件事件
-         * data = { container: IComponent, child: IComponent }
+         * data = { container: Component, child: Component }
          */
         ComponentEvent.REMOVED_COMPONENT = "removedComponent";
         return ComponentEvent;
@@ -2110,8 +2110,26 @@ var feng3d;
              * 组件列表
              */
             this.components_ = [];
+            this._single = false;
             this.initComponent();
+            this._type = this.constructor;
         }
+        Object.defineProperty(Component.prototype, "single", {
+            /**
+             * 是否唯一，同类型3D对象组件只允许一个
+             */
+            get: function () { return this._single; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Component.prototype, "type", {
+            /**
+             * 组件类型
+             */
+            get: function () { return this._type; },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 初始化组件
          */
@@ -2168,23 +2186,37 @@ var feng3d;
          * @param index			插入的位置
          */
         Component.prototype.addComponentAt = function (component, index) {
-            assert(component != this, "子项与父项不能相同");
-            assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
+            console.assert(component != this, "子项与父项不能相同");
+            console.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
             if (this.hasComponent(component)) {
                 index = Math.min(index, this.components_.length - 1);
                 this.setComponentIndex(component, index);
                 return;
             }
+            //组件唯一时移除同类型的组件
+            if (component.single)
+                this.removeComponentsByType(component.type);
             this.components_.splice(index, 0, component);
             //派发添加组件事件
             component.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.ADDED_COMPONENT, { container: this, child: component }, true));
+        };
+        /**
+         * 设置组件到指定位置
+         * @param component		被设置的组件
+         * @param index			索引
+         */
+        Component.prototype.setComponentAt = function (component, index) {
+            if (this.components_[index]) {
+                this.removeComponentAt(index);
+            }
+            this.addComponentAt(component, index);
         };
         /**
          * 移除组件
          * @param component 被移除组件
          */
         Component.prototype.removeComponent = function (component) {
-            assert(this.hasComponent(component), "只能移除在容器中的组件");
+            console.assert(this.hasComponent(component), "只能移除在容器中的组件");
             var index = this.getComponentIndex(component);
             this.removeComponentAt(index);
         };
@@ -2193,7 +2225,7 @@ var feng3d;
          * @param index		要删除的 Component 的子索引。
          */
         Component.prototype.removeComponentAt = function (index) {
-            assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var component = this.components_.splice(index, 1)[0];
             //派发移除组件事件
             component.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }, true));
@@ -2205,7 +2237,7 @@ var feng3d;
          * @return				    组件在容器的索引位置
          */
         Component.prototype.getComponentIndex = function (component) {
-            assert(this.components_.indexOf(component) != -1, "组件不在容器中");
+            console.assert(this.components_.indexOf(component) != -1, "组件不在容器中");
             var index = this.components_.indexOf(component);
             return index;
         };
@@ -2215,9 +2247,9 @@ var feng3d;
          * @param index				位置索引
          */
         Component.prototype.setComponentIndex = function (component, index) {
-            assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var oldIndex = this.components_.indexOf(component);
-            assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
+            console.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
             this.components_.splice(oldIndex, 1);
             this.components_.splice(index, 0, component);
         };
@@ -2227,51 +2259,41 @@ var feng3d;
          * @return				子组件
          */
         Component.prototype.getComponentAt = function (index) {
-            assert(index < this.numComponents, "给出索引超出范围");
+            console.assert(index < this.numComponents, "给出索引超出范围");
             return this.components_[index];
-        };
-        /**
-         * 根据组件名称获取组件
-         * <p>注意：此处比较的是componentName而非name</p>
-         * @param componentName		组件名称
-         * @return 					获取到的组件
-         */
-        Component.prototype.getComponentByName = function (name) {
-            var filterResult = this.getComponentsByName(name);
-            return filterResult[0];
-        };
-        /**
-         * 获取与给出组件名称相同的所有组件
-         * <p>注意：此处比较的是componentName而非name</p>
-         * @param name		        组件名称
-         * @return 					获取到的组件
-         */
-        Component.prototype.getComponentsByName = function (name) {
-            var filterResult = this.components_.filter(function (value, index, array) {
-                return value.name == name;
-            });
-            return filterResult;
         };
         /**
          * 根据类定义获取组件
          * <p>如果存在多个则返回第一个</p>
-         * @param cls				类定义
+         * @param type				类定义
          * @return                  返回指定类型组件
          */
-        Component.prototype.getComponentByClass = function (cls) {
-            var component = this.getComponentsByClass(cls)[0];
+        Component.prototype.getComponentByType = function (type) {
+            var component = this.getComponentsByType(type)[0];
             return component;
         };
         /**
          * 根据类定义查找组件
-         * @param cls		类定义
+         * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        Component.prototype.getComponentsByClass = function (cls) {
+        Component.prototype.getComponentsByType = function (type) {
             var filterResult = this.components_.filter(function (value, index, array) {
-                return value instanceof cls;
+                return value instanceof type;
             });
             return filterResult;
+        };
+        /**
+         * 移除指定类型组件
+         * @param type 组件类型
+         */
+        Component.prototype.removeComponentsByType = function (type) {
+            var removeComponents = [];
+            for (var i = this.components_.length - 1; i >= 0; i--) {
+                if (this.components_[i]._type == type)
+                    removeComponents.push(this.removeComponentAt(i));
+            }
+            return removeComponents;
         };
         /**
          * 根据类定义获取或创建组件
@@ -2280,7 +2302,7 @@ var feng3d;
          * @return          返回与给出类定义一致的组件
          */
         Component.prototype.getOrCreateComponentByClass = function (cls) {
-            var component = this.getComponentByClass(cls);
+            var component = this.getComponentByType(cls);
             if (component == null) {
                 component = new cls();
                 this.addComponent(component);
@@ -2301,8 +2323,8 @@ var feng3d;
          * @param index2		第二个子组件的索引位置
          */
         Component.prototype.swapComponentsAt = function (index1, index2) {
-            assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
-            assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
+            console.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
+            console.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
             var temp = this.components_[index1];
             this.components_[index1] = this.components_[index2];
             this.components_[index2] = temp;
@@ -2313,8 +2335,8 @@ var feng3d;
          * @param b		第二个子组件
          */
         Component.prototype.swapComponents = function (a, b) {
-            assert(this.hasComponent(a), "第一个子组件不在容器中");
-            assert(this.hasComponent(b), "第二个子组件不在容器中");
+            console.assert(this.hasComponent(a), "第一个子组件不在容器中");
+            console.assert(this.hasComponent(b), "第二个子组件不在容器中");
             this.swapComponentsAt(this.getComponentIndex(a), this.getComponentIndex(b));
         };
         /**
@@ -2380,17 +2402,6 @@ var feng3d;
         return Component;
     }(feng3d.EventDispatcher));
     feng3d.Component = Component;
-    /**
-     * 断言
-     * @b			判定为真的表达式
-     * @msg			在表达式为假时将输出的错误信息
-     * @author feng 2014-10-29
-     */
-    function assert(b, msg) {
-        if (msg === void 0) { msg = "assert"; }
-        if (!b)
-            throw new Error(msg);
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -4828,9 +4839,9 @@ var feng3d;
             var component = this.components_[index];
             if (component != null && feng3d.ClassUtils.is(component, RenderDataHolder)) {
                 var renderDataHolder = feng3d.ClassUtils.as(component, RenderDataHolder);
-                var index = this._subRenderDataHolders.indexOf(renderDataHolder);
-                if (index != -1) {
-                    this._subRenderDataHolders.splice(index, 1);
+                var index1 = this._subRenderDataHolders.indexOf(renderDataHolder);
+                if (index1 != -1) {
+                    this._subRenderDataHolders.splice(index1, 1);
                 }
             }
             return _super.prototype.removeComponentAt.call(this, index);
@@ -5483,7 +5494,7 @@ var feng3d;
             for (var i = 0; i < this.lights.length; i++) {
                 light = this.lights[i];
                 light.updateRenderData(this);
-                if (light.type == feng3d.LightType.Point)
+                if (light.lightType == feng3d.LightType.Point)
                     pointLights.push(light);
             }
             //收集点光源数据
@@ -5860,6 +5871,10 @@ var feng3d;
             this.mouseEnabled_ = true;
             this.visible_ = true;
             /**
+             * 组件列表
+             */
+            this.components_ = [];
+            /**
              * 子对象列表
              */
             this.children_ = [];
@@ -6038,6 +6053,15 @@ var feng3d;
             index = Math.max(0, Math.min(this.children_.length, index));
             this.children_.splice(index, 0, child);
             child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.ADDED, { parent: this, child: child }, true));
+        };
+        /**
+         * 设置子对象在指定位置
+         * @param child 子对象
+         * @param index 索引
+         */
+        Object3D.prototype.setChildAt = function (child, index) {
+            this.removeChildAt(index);
+            this.addChildAt(child, index);
         };
         /**
          * 移除子对象
@@ -6402,6 +6426,7 @@ var feng3d;
             this._positionWatchers = [];
             this._rotationWatchers = [];
             this._scaleWatchers = [];
+            this._single = true;
             //矫正值
             this.position.setTo(x, y, z);
             this.rotation.setTo(rx, ry, rz);
@@ -6703,7 +6728,8 @@ var feng3d;
     var MeshFilter = (function (_super) {
         __extends(MeshFilter, _super);
         function MeshFilter() {
-            _super.apply(this, arguments);
+            _super.call(this);
+            this._single = true;
         }
         Object.defineProperty(MeshFilter.prototype, "geometry", {
             /**
@@ -6734,6 +6760,7 @@ var feng3d;
         __extends(MeshRenderer, _super);
         function MeshRenderer() {
             _super.call(this);
+            this._single = true;
             this.material = new feng3d.ColorMaterial();
         }
         Object.defineProperty(MeshRenderer.prototype, "material", {
@@ -7000,6 +7027,7 @@ var feng3d;
         function Geometry() {
             _super.call(this);
             this._isDirty = true;
+            this._single = true;
         }
         /**
          * 更新渲染数据
@@ -7305,34 +7333,31 @@ var feng3d;
     var SegmentGeometry = (function (_super) {
         __extends(SegmentGeometry, _super);
         function SegmentGeometry() {
-            _super.apply(this, arguments);
-            /**
-             * 几何体是否变脏
-             */
-            this._geometryDirty = false;
+            _super.call(this);
             this.segments_ = [];
+            this._type = feng3d.Geometry;
         }
-        /**
-         * 更新渲染数据
-         */
-        SegmentGeometry.prototype.updateRenderData = function (renderContext) {
-            this._geometryDirty && this.updateGeometry();
-            _super.prototype.updateRenderData.call(this, renderContext);
-        };
         /**
          * 添加线段
          * @param segment		            线段数据
-         * @param needUpdateGeometry		是否需要立即更新几何体
          */
         SegmentGeometry.prototype.addSegment = function (segment) {
             this.segments_.push(segment);
-            this._geometryDirty = true;
+            this.invalidate();
+        };
+        /**
+         * 设置线段
+         * @param segment		            线段数据
+         * @param index		                线段索引
+         */
+        SegmentGeometry.prototype.setSegmentAt = function (segment, index) {
+            this.segments_[index] = segment;
+            this.invalidate();
         };
         /**
          * 更新几何体
          */
-        SegmentGeometry.prototype.updateGeometry = function () {
-            this._geometryDirty = false;
+        SegmentGeometry.prototype.buildGeometry = function () {
             var segmentPositionStep = 6;
             var segmentColorStep = 8;
             var numSegments = this.segments_.length;
@@ -7346,7 +7371,7 @@ var feng3d;
                 colorData.set(element.colorData, i * segmentColorStep);
             }
             this.setVAData(feng3d.GLAttribute.a_position, positionData, 3);
-            this.setVAData(feng3d.GLAttribute.a_color, colorData, 3);
+            this.setVAData(feng3d.GLAttribute.a_color, colorData, 4);
             this.setIndices(indices);
         };
         /**
@@ -7364,7 +7389,7 @@ var feng3d;
          */
         SegmentGeometry.prototype.removeAllSegments = function () {
             this.segments.length = 0;
-            this._geometryDirty = true;
+            this.invalidate();
         };
         Object.defineProperty(SegmentGeometry.prototype, "segments", {
             /**
@@ -7790,6 +7815,7 @@ var feng3d;
             _super.call(this);
             this._viewProjection = new feng3d.Matrix3D();
             this._viewProjectionDirty = true;
+            this._single = true;
             this._lens = lens || new feng3d.PerspectiveLens();
             this._lens.addEventListener(feng3d.LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
         }
@@ -9463,6 +9489,8 @@ var feng3d;
             * 渲染模式
             */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
+            this._single = true;
+            this._type = Material;
         }
         /**
          * 更新渲染数据
@@ -9828,7 +9856,7 @@ var feng3d;
          */
         function DirectionalLight() {
             _super.call(this);
-            this.type = feng3d.LightType.Directional;
+            this.lightType = feng3d.LightType.Directional;
         }
         return DirectionalLight;
     }(feng3d.Light));
@@ -9855,7 +9883,7 @@ var feng3d;
              * 可照射最大距离
              */
             this.fallOff = 0;
-            this.type = feng3d.LightType.Point;
+            this.lightType = feng3d.LightType.Point;
         }
         return PointLight;
     }(feng3d.Light));
@@ -10558,6 +10586,7 @@ var feng3d;
              * 粒子全局属性，作用于所有粒子元素
              */
             this.particleGlobal = {};
+            this._single = true;
             this.autoRenderDataHolder = new ParticleRenderDataHolder();
             this.addComponent(this.autoRenderDataHolder);
         }
@@ -10566,7 +10595,7 @@ var feng3d;
          */
         ParticleAnimator.prototype.generateParticles = function () {
             var generateFunctions = this.generateFunctions.concat();
-            var components = this.getComponentsByClass(feng3d.ParticleComponent);
+            var components = this.getComponentsByType(feng3d.ParticleComponent);
             components.forEach(function (element) {
                 generateFunctions.push({ generate: element.generateParticle.bind(element), priority: element.priority });
             });
@@ -12581,34 +12610,46 @@ var feng3d;
             this.buildTrident(Math.abs((length == 0) ? 10 : length));
         }
         Trident.prototype.buildTrident = function (length) {
-            this.xLine = new feng3d.SegmentObject3D();
-            this.xLine.segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(length, 0, 0), 0xff0000, 0xff0000));
-            this.addChild(this.xLine);
+            this._xLine = new feng3d.Object3D();
+            var segmentGeometry = this._xLine.getOrCreateComponentByClass(feng3d.SegmentGeometry);
+            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(length, 0, 0), 0xff0000, 0xff0000));
+            this._xLine.addComponent(segmentGeometry);
+            this._xLine.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
+            this.addChild(this._xLine);
             //
-            this.yLine = new feng3d.SegmentObject3D();
-            this.yLine.segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, length, 0), 0x00ff00, 0x00ff00));
-            this.addChild(this.yLine);
+            this._yLine = new feng3d.Object3D();
+            var segmentGeometry = this._yLine.getOrCreateComponentByClass(feng3d.SegmentGeometry);
+            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, length, 0), 0x00ff00, 0x00ff00));
+            this._yLine.addComponent(segmentGeometry);
+            this._yLine.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
+            this.addChild(this._yLine);
             //
-            this.zLine = new feng3d.SegmentObject3D();
-            this.zLine.segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, 0, length), 0x0000ff, 0x0000ff));
-            this.addChild(this.zLine);
+            this._zLine = new feng3d.Object3D();
+            var segmentGeometry = this._zLine.getOrCreateComponentByClass(feng3d.SegmentGeometry);
+            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, 0, length), 0x0000ff, 0x0000ff));
+            this._zLine.addComponent(segmentGeometry);
+            this._zLine.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
+            this.addChild(this._zLine);
             //
-            this.xArrow = new feng3d.ConeObject3D(5, 18);
-            this.xArrow.transform.position.x = length;
-            this.xArrow.transform.rotation.z = -90;
-            this.xArrow.material.baseColor = new feng3d.Color(1, 0, 0);
-            this.addChild(this.xArrow);
+            this._xArrow = new feng3d.ConeObject3D(5, 18);
+            this._xArrow.transform.position.x = length;
+            this._xArrow.transform.rotation.z = -90;
+            var material = this._xArrow.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.StandardMaterial();
+            material.baseColor = new feng3d.Color(1, 0, 0);
+            this.addChild(this._xArrow);
             //
-            this.yArrow = new feng3d.ConeObject3D(5, 18);
-            this.yArrow.transform.position.y = length;
-            this.yArrow.material.baseColor = new feng3d.Color(0, 1, 0);
-            this.addChild(this.yArrow);
+            this._yArrow = new feng3d.ConeObject3D(5, 18);
+            this._yArrow.transform.position.y = length;
+            var material = this._yArrow.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.StandardMaterial();
+            material.baseColor = new feng3d.Color(0, 1, 0);
+            this.addChild(this._yArrow);
             //
-            this.zArrow = new feng3d.ConeObject3D(5, 18);
-            this.zArrow.transform.position.z = length;
-            this.zArrow.transform.rotation.x = 90;
-            this.zArrow.material.baseColor = new feng3d.Color(0, 0, 1);
-            this.addChild(this.zArrow);
+            this._zArrow = new feng3d.ConeObject3D(5, 18);
+            this._zArrow.transform.position.z = length;
+            this._zArrow.transform.rotation.x = 90;
+            var material = this._zArrow.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.StandardMaterial();
+            material.baseColor = new feng3d.Color(0, 0, 1);
+            this.addChild(this._zArrow);
         };
         return Trident;
     }(feng3d.Object3D));
@@ -12793,7 +12834,7 @@ var feng3d;
             _super.call(this, name);
             var mesh = this.getOrCreateComponentByClass(feng3d.MeshFilter);
             mesh.geometry = new feng3d.ConeGeometry(radius, height);
-            this.material = this.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.StandardMaterial();
+            this.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.StandardMaterial();
         }
         return ConeObject3D;
     }(feng3d.Object3D));
@@ -12831,10 +12872,8 @@ var feng3d;
         function SegmentObject3D(name) {
             if (name === void 0) { name = "Segment3D"; }
             _super.call(this, name);
-            this.material = this.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
-            var segmentGeometry = this.segmentGeometry = new feng3d.SegmentGeometry();
-            var geometry = this.getOrCreateComponentByClass(feng3d.Geometry);
-            geometry.addComponent(segmentGeometry);
+            this.getOrCreateComponentByClass(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
+            this.addComponent(new feng3d.SegmentGeometry());
         }
         return SegmentObject3D;
     }(feng3d.Object3D));

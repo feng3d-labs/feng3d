@@ -52,7 +52,7 @@ module feng3d
                 var object3D: Object3D = object;
                 for (var i = 0; i < children.length; i++)
                 {
-                    children[i] && object3D.addChild(children[i])
+                    children[i] && object3D.setChildAt(children[i], i);
                 }
                 return true;
             }
@@ -62,7 +62,7 @@ module feng3d
                 var component: Component = object;
                 for (var i = 0; i < components.length; i++)
                 {
-                    component.addComponent(components[i])
+                    component.setComponentAt(components[i], i);
                 }
                 return true;
             }
@@ -72,7 +72,7 @@ module feng3d
                 var segmentGeometry: SegmentGeometry = object;
                 for (var i = 0; i < segments.length; i++)
                 {
-                    segmentGeometry.addSegment(segments[i]);
+                    segmentGeometry.setSegmentAt(segments[i], i);
                 }
                 return true;
             }

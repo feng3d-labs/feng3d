@@ -9,19 +9,19 @@ module feng3d
 	{
 		/**
 		 * 添加子组件事件
-		 * data = { container: IComponent, child: IComponent }
+		 * data = { container: Component, child: Component }
 		 */
 		public static ADDED_COMPONENT = "addedComponent";
 
 		/**
 		 * 移除子组件事件
-		 * data = { container: IComponent, child: IComponent }
+		 * data = { container: Component, child: Component }
 		 */
 		public static REMOVED_COMPONENT = "removedComponent";
 
         /**
          * 事件目标。
          */
-		public target: IComponent;
+		public target: Component;
 	}
 }

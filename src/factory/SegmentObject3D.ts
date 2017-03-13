@@ -6,16 +6,11 @@ module feng3d
      */
     export class SegmentObject3D extends Object3D
     {
-        public segmentGeometry: SegmentGeometry;
-        public material: SegmentMaterial;
-
         constructor(name = "Segment3D")
         {
             super(name);
-            this.material = this.getOrCreateComponentByClass(MeshRenderer).material = new SegmentMaterial();
-            var segmentGeometry = this.segmentGeometry = new SegmentGeometry();
-            var geometry = this.getOrCreateComponentByClass(Geometry);
-            geometry.addComponent(segmentGeometry);
+            this.getOrCreateComponentByClass(MeshRenderer).material = new SegmentMaterial();
+            this.addComponent(new SegmentGeometry());
         }
     }
 }

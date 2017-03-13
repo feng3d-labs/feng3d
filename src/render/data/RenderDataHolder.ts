@@ -65,7 +65,7 @@ module feng3d
 		 * @param component		被添加的组件
 		 * @param index			插入的位置
 		 */
-        public addComponentAt(component: IComponent, index: number): void
+        public addComponentAt(component: Component, index: number): void
         {
             super.addComponentAt(component, index);
             if (component != null && ClassUtils.is(component, RenderDataHolder))
@@ -83,16 +83,16 @@ module feng3d
          * 移除组件
          * @param index		要删除的 Component 的子索引。
          */
-        public removeComponentAt(index: number): IComponent
+        public removeComponentAt(index: number): Component
         {
             var component = this.components_[index];
             if (component != null && ClassUtils.is(component, RenderDataHolder))
             {
                 var renderDataHolder: RenderDataHolder = ClassUtils.as(component, RenderDataHolder);
-                var index = this._subRenderDataHolders.indexOf(renderDataHolder);
-                if (index != -1)
+                var index1 = this._subRenderDataHolders.indexOf(renderDataHolder);
+                if (index1 != -1)
                 {
-                    this._subRenderDataHolders.splice(index, 1);
+                    this._subRenderDataHolders.splice(index1, 1);
                 }
             }
 

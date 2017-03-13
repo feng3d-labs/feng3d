@@ -7,40 +7,40 @@ module feng3d
      */
     export class SegmentGeometry extends Geometry
     {
-
-        /**
-         * 几何体是否变脏
-         */
-        private _geometryDirty = false;
         private segments_: Segment[] = [];
 
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext)
+        constructor()
         {
-            this._geometryDirty && this.updateGeometry();
-            super.updateRenderData(renderContext);
+            super();
+            this._type = Geometry;
         }
 
         /**
 		 * 添加线段
 		 * @param segment		            线段数据
-		 * @param needUpdateGeometry		是否需要立即更新几何体
 		 */
         public addSegment(segment: Segment)
         {
             this.segments_.push(segment);
-            this._geometryDirty = true;
+            this.invalidate();
+        }
+
+        /**
+		 * 设置线段
+		 * @param segment		            线段数据
+		 * @param index		                线段索引
+		 */
+        public setSegmentAt(segment: Segment, index: number)
+        {
+            this.segments_[index] = segment;
+            this.invalidate();
         }
 
         /**
          * 更新几何体
          */
-        private updateGeometry()
+        protected buildGeometry()
         {
-            this._geometryDirty = false;
-
             var segmentPositionStep = 6;
             var segmentColorStep = 8;
             var numSegments = this.segments_.length;
@@ -57,7 +57,7 @@ module feng3d
             }
 
             this.setVAData(GLAttribute.a_position, positionData, 3);
-            this.setVAData(GLAttribute.a_color, colorData, 3);
+            this.setVAData(GLAttribute.a_color, colorData, 4);
             this.setIndices(indices);
         }
 
@@ -79,7 +79,7 @@ module feng3d
         public removeAllSegments()
         {
             this.segments.length = 0;
-            this._geometryDirty = true;
+            this.invalidate();
         }
 
 		/**

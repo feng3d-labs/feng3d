@@ -26,6 +26,7 @@ module feng3d
         constructor()
         {
             super();
+            this._single = true;
             this.material = new ColorMaterial();
         }
 

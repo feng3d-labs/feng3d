@@ -55,6 +55,7 @@ module feng3d
         constructor()
         {
             super();
+            this._single = true;
             this.autoRenderDataHolder = new ParticleRenderDataHolder();
             this.addComponent(this.autoRenderDataHolder);
         }
@@ -67,7 +68,7 @@ module feng3d
 
             var generateFunctions = this.generateFunctions.concat();
 
-            var components = this.getComponentsByClass(ParticleComponent);
+            var components = this.getComponentsByType(ParticleComponent);
             components.forEach(element =>
             {
                 generateFunctions.push({ generate: element.generateParticle.bind(element), priority: element.priority });
