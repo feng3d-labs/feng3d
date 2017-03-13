@@ -7,6 +7,7 @@ module feng3d
      */
     export class Geometry extends RenderDataHolder
     {
+        private _isDirty = true;
 
         /**
 		 * 创建一个几何体
@@ -14,6 +15,35 @@ module feng3d
         constructor()
         {
             super();
+        }
+
+        /**
+		 * 更新渲染数据
+		 */
+        public updateRenderData(renderContext: RenderContext)
+        {
+            if (this._isDirty)
+            {
+                this.buildGeometry();
+                this._isDirty = false;
+            }
+            super.updateRenderData(renderContext);
+        }
+
+        /**
+         * 几何体变脏
+         */
+        protected invalidate()
+        {
+            this._isDirty = true;
+        }
+
+        /**
+         * 构建几何体
+         */
+        protected buildGeometry()
+        {
+
         }
 
 		/**
