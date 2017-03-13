@@ -782,14 +782,21 @@ declare module feng3d {
         /**
          * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
          */
-        writeObject(object3d: Object3D): {
-            __className__: string;
-        };
+        writeObject(object: Object): any;
+        private getAttributes(object);
         /**
          * 获取新对象来判断存储的属性
          */
         private getNewObject(className);
     }
+    var serializationConfig: {
+        excludeClass: any[];
+        classConfig: {
+            [className: string]: {
+                toJson?: Function;
+            };
+        };
+    };
 }
 declare module feng3d {
     /**
@@ -892,7 +899,6 @@ declare module feng3d {
      */
     class EventDispatcher implements IEventDispatcher {
         private readonly _listenermap;
-        private uuid;
         /**
          * 名称
          */

@@ -962,12 +962,49 @@ var feng3d;
         /**
          * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
          */
-        Serialization.prototype.writeObject = function (object3d) {
-            var className = feng3d.ClassUtils.getQualifiedClassName(object3d);
+        Serialization.prototype.writeObject = function (object) {
+            if (feng3d.ClassUtils.isBaseType(object)) {
+                return object;
+            }
+            if (object instanceof Array) {
+                var arr = [];
+                for (var i = 0; i < object.length; i++) {
+                    var item = this.writeObject(object[i]);
+                    if (item !== undefined) {
+                        arr.push(item);
+                    }
+                }
+                if (arr.length == 0)
+                    return undefined;
+                return arr;
+            }
+            var className = feng3d.ClassUtils.getQualifiedClassName(object);
+            var toJson = feng3d.serializationConfig.classConfig[className] && feng3d.serializationConfig.classConfig[className].toJson;
+            if (toJson) {
+                return toJson(object);
+            }
+            var attributeNames = this.getAttributes(object);
+            attributeNames = attributeNames.sort();
+            //没有属性时不保存该对象
+            if (attributeNames.length == 0)
+                return undefined;
+            var json = {};
+            json.__className__ = className;
+            for (var i = 0; i < attributeNames.length; i++) {
+                var attributeName = attributeNames[i];
+                var value = this.writeObject(object[attributeName]);
+                if (value !== undefined) {
+                    json[attributeName] = value;
+                }
+            }
+            return json;
+        };
+        Serialization.prototype.getAttributes = function (object) {
+            var className = feng3d.ClassUtils.getQualifiedClassName(object);
             //保存以字母开头或者纯数字的所有属性
             var filterReg = /([a-zA-Z](\w*)|(\d+))/;
             if (className == "Array" || className == "Object") {
-                var attributeNames = Object.keys(object3d);
+                var attributeNames = Object.keys(object);
             }
             else {
                 //
@@ -976,40 +1013,28 @@ var feng3d;
                     var result = filterReg.exec(value);
                     return result[0] == value;
                 });
-                attributeNames = attributeNames.sort();
             }
-            var object;
-            if (className == "Array") {
-                object = [];
-            }
-            else {
-                object = {};
-            }
-            for (var i = 0; i < attributeNames.length; i++) {
-                var attributeName = attributeNames[i];
-                var attributeValue = object3d[attributeName];
-                if (feng3d.ClassUtils.isBaseType(attributeValue)) {
-                    object[attributeName] = attributeValue;
-                }
-                else {
-                    var data = this.writeObject(attributeValue);
-                    if (data !== undefined) {
-                        object[attributeName] = data;
-                    }
-                }
-            }
-            return object;
+            return attributeNames;
         };
         /**
          * 获取新对象来判断存储的属性
          */
         Serialization.prototype.getNewObject = function (className) {
+            if (tempObjectMap[className]) {
+                return tempObjectMap[className];
+            }
             var cls = feng3d.ClassUtils.getDefinitionByName(className);
-            return new cls();
+            tempObjectMap[className] = new cls();
+            return tempObjectMap[className];
         };
         return Serialization;
     }());
     feng3d.Serialization = Serialization;
+    var tempObjectMap = {};
+    feng3d.serializationConfig = {
+        // export var serializationConfig = {
+        excludeClass: [], classConfig: {}
+    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -1140,7 +1165,6 @@ var feng3d;
              * 被延迟的事件列表
              */
             this._delayEvents = [];
-            this.uuid = feng3d.UIDUtils.getUID(this);
             this._target = target;
             if (this._target == null)
                 this._target = this;
