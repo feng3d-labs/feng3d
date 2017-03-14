@@ -84,6 +84,12 @@ module feng3d
          */
         public writeObject(object: Object)
         {
+            //排除指定对象
+            if (serializationConfig.excludeObject.indexOf(object) != -1)
+            {
+                return undefined;
+            }
+
             if (ClassUtils.isBaseType(object))
             {
                 return object;
@@ -173,6 +179,7 @@ module feng3d
     var tempObjectMap = {};
 
     export var serializationConfig: {
+        excludeObject: any[],
         excludeClass: any[];
         classConfig: {
             [className: string]: {
@@ -181,6 +188,7 @@ module feng3d
         };
     } = {
             // export var serializationConfig = {
+            excludeObject: [],
             excludeClass: [], classConfig: {
                 // "feng3d.Transform": {
                 //     toJson: (object: Transform) =>

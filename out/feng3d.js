@@ -1016,6 +1016,10 @@ var feng3d;
          * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
          */
         Serialization.prototype.writeObject = function (object) {
+            //排除指定对象
+            if (feng3d.serializationConfig.excludeObject.indexOf(object) != -1) {
+                return undefined;
+            }
             if (feng3d.ClassUtils.isBaseType(object)) {
                 return object;
             }
@@ -1086,6 +1090,7 @@ var feng3d;
     var tempObjectMap = {};
     feng3d.serializationConfig = {
         // export var serializationConfig = {
+        excludeObject: [],
         excludeClass: [], classConfig: {}
     };
 })(feng3d || (feng3d = {}));

@@ -808,6 +808,7 @@ declare module feng3d {
         private getNewObject(className);
     }
     var serializationConfig: {
+        excludeObject: any[];
         excludeClass: any[];
         classConfig: {
             [className: string]: {
