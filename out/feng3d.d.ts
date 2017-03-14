@@ -1460,14 +1460,19 @@ declare module feng3d {
     class ComponentEvent extends Event {
         /**
          * 添加子组件事件
-         * data = { container: Component, child: Component }
          */
         static ADDED_COMPONENT: string;
         /**
          * 移除子组件事件
-         * data = { container: Component, child: Component }
          */
         static REMOVED_COMPONENT: string;
+        /**
+         * 组件事件数据
+         */
+        data: {
+            container: Component;
+            child: Component;
+        };
         /**
          * 事件目标。
          */
@@ -3440,10 +3445,10 @@ declare module feng3d {
         getChildIndex(child: Object3D): number;
         /**
          * 移出指定索引的子对象
-         * @param childIndex	子对象索引
+         * @param index         子对象索引
          * @return				被移除对象
          */
-        removeChildAt(childIndex: number): Object3D;
+        removeChildAt(index: number): Object3D;
         /**
          * 获取子对象
          * @param index         子对象索引
@@ -3462,6 +3467,14 @@ declare module feng3d {
          * 处理删除子对象事件
          */
         private onRemoved(event);
+        /**
+         * 处理新增组件事件
+         */
+        protected onAddedComponent(event: ComponentEvent): void;
+        /**
+         * 处理移除组件事件
+         */
+        protected onRemovedComponent(event: ComponentEvent): void;
         static getObject3D(id: number): Object3D;
     }
 }

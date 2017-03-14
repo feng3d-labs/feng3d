@@ -2086,12 +2086,10 @@ var feng3d;
         }
         /**
          * 添加子组件事件
-         * data = { container: Component, child: Component }
          */
         ComponentEvent.ADDED_COMPONENT = "addedComponent";
         /**
          * 移除子组件事件
-         * data = { container: Component, child: Component }
          */
         ComponentEvent.REMOVED_COMPONENT = "removedComponent";
         return ComponentEvent;
@@ -2203,7 +2201,8 @@ var feng3d;
                 this.removeComponentsByType(component.type);
             this.components_.splice(index, 0, component);
             //派发添加组件事件
-            component.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.ADDED_COMPONENT, { container: this, child: component }, true));
+            component.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.ADDED_COMPONENT, { container: this, child: component }));
+            this.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.ADDED_COMPONENT, { container: this, child: component }));
         };
         /**
          * 设置组件到指定位置
@@ -2233,7 +2232,8 @@ var feng3d;
             console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var component = this.components_.splice(index, 1)[0];
             //派发移除组件事件
-            component.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }, true));
+            component.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }));
+            this.dispatchEvent(new feng3d.ComponentEvent(feng3d.ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }));
             return component;
         };
         /**
@@ -5897,6 +5897,8 @@ var feng3d;
             //
             this.addEventListener(feng3d.Object3DEvent.ADDED, this.onAdded, this);
             this.addEventListener(feng3d.Object3DEvent.REMOVED, this.onRemoved, this);
+            this.addEventListener(feng3d.ComponentEvent.ADDED_COMPONENT, this.onAddedComponent, this);
+            this.addEventListener(feng3d.ComponentEvent.REMOVED_COMPONENT, this.onRemovedComponent, this);
         }
         /**
          * 保存为数据
@@ -6054,10 +6056,16 @@ var feng3d;
          * @param   index   添加到的位置
          */
         Object3D.prototype.addChildAt = function (child, index) {
-            this.removeChild(child);
-            index = Math.max(0, Math.min(this.children_.length, index));
-            this.children_.splice(index, 0, child);
-            child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.ADDED, { parent: this, child: child }, true));
+            feng3d.debuger && console.assert(index >= 0 && index <= this.children_.length);
+            var childIndex = this.children_.indexOf(child);
+            if (childIndex != -1) {
+                this.children_.splice(childIndex, 1);
+                this.children_.splice(index, 0, child);
+            }
+            else {
+                this.children_.splice(index, 0, child);
+                child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.ADDED, { parent: this, child: child }, true));
+            }
         };
         /**
          * 设置子对象在指定位置
@@ -6065,7 +6073,9 @@ var feng3d;
          * @param index 索引
          */
         Object3D.prototype.setChildAt = function (child, index) {
-            this.removeChildAt(index);
+            if (-1 < index && index < this.children_.length) {
+                this.removeChildAt(index);
+            }
             this.addChildAt(child, index);
         };
         /**
@@ -6088,14 +6098,13 @@ var feng3d;
         };
         /**
          * 移出指定索引的子对象
-         * @param childIndex	子对象索引
+         * @param index         子对象索引
          * @return				被移除对象
          */
-        Object3D.prototype.removeChildAt = function (childIndex) {
-            if (childIndex < 0 || childIndex > this.children_.length - 1)
-                return null;
-            var child = this.children_[childIndex];
-            this.children_.splice(childIndex, 1);
+        Object3D.prototype.removeChildAt = function (index) {
+            feng3d.debuger && console.assert(-1 < index && index < this.children_.length);
+            var child = this.children_[index];
+            this.children_.splice(index, 1);
             child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.REMOVED, { parent: this, child: child }, true));
             return child;
         };
@@ -6105,6 +6114,7 @@ var feng3d;
          * @return              指定索引的子对象
          */
         Object3D.prototype.getChildAt = function (index) {
+            feng3d.debuger && console.assert(-1 < index && index < this.children_.length);
             return this.children_[index];
         };
         Object.defineProperty(Object3D.prototype, "numChildren", {
@@ -6131,6 +6141,26 @@ var feng3d;
         Object3D.prototype.onRemoved = function (event) {
             if (event.data.child == this) {
                 this._setParent(null);
+            }
+        };
+        /**
+         * 处理新增组件事件
+         */
+        Object3D.prototype.onAddedComponent = function (event) {
+            if (event.data.container == this) {
+                if (event.data.child instanceof feng3d.Transform) {
+                    this._transform = event.data.child;
+                }
+            }
+        };
+        /**
+         * 处理移除组件事件
+         */
+        Object3D.prototype.onRemovedComponent = function (event) {
+            if (event.data.container == this) {
+                if (event.data.child instanceof feng3d.Transform) {
+                    this._transform = null;
+                }
             }
         };
         Object3D.getObject3D = function (id) {
@@ -6444,7 +6474,7 @@ var feng3d;
             feng3d.Watcher.watch(this, ["rotation"], this.invalidateComp, this);
             feng3d.Watcher.watch(this, ["scale"], this.invalidateComp, this);
             //
-            feng3d.Binding.bindProperty(this, ["_parentComponent", "_parent", "transform"], this, "parentTransform");
+            feng3d.Binding.bindProperty(this, ["_parentComponent", "_parent", "_transform"], this, "parentTransform");
         }
         Object.defineProperty(Transform.prototype, "parentTransform", {
             /**

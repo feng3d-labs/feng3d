@@ -98,6 +98,8 @@ module feng3d
             //
             this.addEventListener(Object3DEvent.ADDED, this.onAdded, this);
             this.addEventListener(Object3DEvent.REMOVED, this.onRemoved, this);
+            this.addEventListener(ComponentEvent.ADDED_COMPONENT, this.onAddedComponent, this);
+            this.addEventListener(ComponentEvent.REMOVED_COMPONENT, this.onRemovedComponent, this);
         }
 
         /**
@@ -211,10 +213,17 @@ module feng3d
          */
         public addChildAt(child: Object3D, index: number): void
         {
-            this.removeChild(child);
-            index = Math.max(0, Math.min(this.children_.length, index));
-            this.children_.splice(index, 0, child);
-            child.dispatchEvent(new Object3DEvent(Object3DEvent.ADDED, { parent: this, child: child }, true));
+            debuger && console.assert(index >= 0 && index <= this.children_.length);
+            var childIndex = this.children_.indexOf(child);
+            if (childIndex != -1)
+            {
+                this.children_.splice(childIndex, 1);
+                this.children_.splice(index, 0, child);
+            } else
+            {
+                this.children_.splice(index, 0, child);
+                child.dispatchEvent(new Object3DEvent(Object3DEvent.ADDED, { parent: this, child: child }, true));
+            }
         }
 
         /**
@@ -224,7 +233,11 @@ module feng3d
          */
         public setChildAt(child: Object3D, index: number): void
         {
-            this.removeChildAt(index);
+            if (-1 < index && index < this.children_.length)
+            {
+                this.removeChildAt(index);
+            }
+
             this.addChildAt(child, index);
         }
 
@@ -252,15 +265,14 @@ module feng3d
 
         /**
 		 * 移出指定索引的子对象
-		 * @param childIndex	子对象索引
+		 * @param index         子对象索引
 		 * @return				被移除对象
 		 */
-        public removeChildAt(childIndex: number): Object3D
+        public removeChildAt(index: number): Object3D
         {
-            if (childIndex < 0 || childIndex > this.children_.length - 1)
-                return null;
-            var child: Object3D = this.children_[childIndex];
-            this.children_.splice(childIndex, 1);
+            debuger && console.assert(-1 < index && index < this.children_.length);
+            var child: Object3D = this.children_[index];
+            this.children_.splice(index, 1);
             child.dispatchEvent(new Object3DEvent(Object3DEvent.REMOVED, { parent: this, child: child }, true));
             return child;
         }
@@ -272,6 +284,7 @@ module feng3d
 		 */
         public getChildAt(index: number): Object3D
         {
+            debuger && console.assert(-1 < index && index < this.children_.length);
             return this.children_[index];
         }
 
@@ -302,6 +315,34 @@ module feng3d
             if (event.data.child == this)
             {
                 this._setParent(null);
+            }
+        }
+
+        /**
+         * 处理新增组件事件
+         */
+        protected onAddedComponent(event: ComponentEvent)
+        {
+            if (event.data.container == this)
+            {
+                if (event.data.child instanceof Transform)
+                {
+                    this._transform = event.data.child;
+                }
+            }
+        }
+
+        /**
+         * 处理移除组件事件
+         */
+        protected onRemovedComponent(event: ComponentEvent)
+        {
+            if (event.data.container == this)
+            {
+                if (event.data.child instanceof Transform)
+                {
+                    this._transform = null;
+                }
             }
         }
 
