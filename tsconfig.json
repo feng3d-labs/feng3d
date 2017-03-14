@@ -155,6 +155,7 @@
         "src/animators/particle/ParticleEmission.ts",
         "src/animators/particle/ParticlePosition.ts",
         "src/animators/particle/ParticleVelocity.ts",
+        "src/animators/particle/ParticleColor.ts",
         //
         "src/animators/events/AnimationStateEvent.ts",
         "src/animators/events/AnimatorEvent.ts",

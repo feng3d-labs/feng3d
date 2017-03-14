@@ -10857,6 +10857,28 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 粒子颜色组件
+     * @author feng 2017-03-14
+     */
+    var ParticleColor = (function (_super) {
+        __extends(ParticleColor, _super);
+        function ParticleColor() {
+            _super.apply(this, arguments);
+        }
+        /**
+         * 创建粒子属性
+         * @param particle                  粒子
+         */
+        ParticleColor.prototype.generateParticle = function (particle) {
+            particle.color = new feng3d.Color(1, 0, 0, 1).mix(new feng3d.Color(0, 1, 0, 1), particle.index / particle.total);
+        };
+        return ParticleColor;
+    }(feng3d.ParticleComponent));
+    feng3d.ParticleColor = ParticleColor;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * Dispatched to notify changes in an animation state's state.
      */
     var AnimationStateEvent = (function (_super) {
@@ -12916,11 +12938,13 @@ var feng3d;
             // particleAnimator.addComponent(new ParticleAcceleration());
             particleAnimator.particleGlobal.acceleration = new feng3d.Vector3D(0, -9.8, 0);
             //通过函数来创建粒子初始状态
-            particleAnimator.generateFunctions.push({
-                generate: function (particle) {
-                    particle.color = new feng3d.Color(1, 0, 0, 1).mix(new feng3d.Color(0, 1, 0, 1), particle.index / particle.total);
-                }, priority: 0
-            });
+            particleAnimator.addComponent(new feng3d.ParticleColor());
+            // particleAnimator.generateFunctions.push({
+            //     generate: (particle) =>
+            //     {
+            //         particle.color = new Color(1, 0, 0, 1).mix(new Color(0, 1, 0, 1), particle.index / particle.total);
+            //     }, priority: 0
+            // });
         }
         return ParticleObject3D;
     }(feng3d.Object3D));
