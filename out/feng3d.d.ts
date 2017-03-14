@@ -5485,7 +5485,7 @@ declare module feng3d {
          * 周期
          */
         cycle: number;
-        private isDirty;
+        private _isDirty;
         /**
          * 生成粒子函数列表，优先级越高先执行
          */
@@ -5497,7 +5497,6 @@ declare module feng3d {
          * 粒子全局属性，作用于所有粒子元素
          */
         particleGlobal: ParticleGlobal;
-        private autoRenderDataHolder;
         constructor();
         /**
          * 生成粒子

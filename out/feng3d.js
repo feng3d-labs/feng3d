@@ -4830,8 +4830,8 @@ var feng3d;
             _super.prototype.addComponentAt.call(this, component, index);
             if (component != null && feng3d.ClassUtils.is(component, RenderDataHolder)) {
                 var renderDataHolder = feng3d.ClassUtils.as(component, RenderDataHolder);
-                var index = this._subRenderDataHolders.indexOf(renderDataHolder);
-                if (index == -1) {
+                var index1 = this._subRenderDataHolders.indexOf(renderDataHolder);
+                if (index1 == -1) {
                     this._subRenderDataHolders.splice(index, 0, renderDataHolder);
                 }
             }
@@ -10582,7 +10582,7 @@ var feng3d;
              * 周期
              */
             this.cycle = 10000;
-            this.isDirty = true;
+            this._isDirty = true;
             /**
              * 生成粒子函数列表，优先级越高先执行
              */
@@ -10592,8 +10592,7 @@ var feng3d;
              */
             this.particleGlobal = {};
             this._single = true;
-            this.autoRenderDataHolder = new ParticleRenderDataHolder();
-            this.addComponent(this.autoRenderDataHolder);
+            this.addComponent(new ParticleRenderDataHolder());
         }
         /**
          * 生成粒子
@@ -10607,6 +10606,7 @@ var feng3d;
             //按优先级排序，优先级越高先执行
             generateFunctions.sort(function (a, b) { return b.priority - a.priority; });
             //
+            var autoRenderDataHolder = this.getComponentByType(ParticleRenderDataHolder);
             for (var i = 0; i < this.numParticles; i++) {
                 var particle = {};
                 particle.index = i;
@@ -10614,22 +10614,23 @@ var feng3d;
                 generateFunctions.forEach(function (element) {
                     element.generate(particle);
                 });
-                this.autoRenderDataHolder.collectionParticle(particle);
+                autoRenderDataHolder.collectionParticle(particle);
             }
         };
         /**
          * 更新渲染数据
          */
         ParticleAnimator.prototype.updateRenderData = function (renderContext) {
-            if (this.isDirty) {
+            if (this._isDirty) {
                 this.startTime = feng3d.getTimer();
                 this.generateParticles();
-                this.isDirty = false;
+                this._isDirty = false;
             }
             this.time = ((feng3d.getTimer() - this.startTime) / 1000) % this.cycle;
             this._renderData.uniforms[feng3d.RenderDataID.u_particleTime] = this.time;
             this._renderData.instanceCount = this.numParticles;
-            this.autoRenderDataHolder.update(this.particleGlobal);
+            var autoRenderDataHolder = this.getComponentByType(ParticleRenderDataHolder);
+            autoRenderDataHolder.update(this.particleGlobal);
             _super.prototype.updateRenderData.call(this, renderContext);
         };
         return ParticleAnimator;
