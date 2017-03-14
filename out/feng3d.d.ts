@@ -3241,7 +3241,7 @@ declare module feng3d {
         /**
          * 摄像机
          */
-        camera: Camera3D;
+        camera: Camera;
         /**
          * 灯光
          */
@@ -3277,7 +3277,7 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
+        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera): void;
         protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer): void;
         /**
          * 绘制3D对象
@@ -3311,7 +3311,7 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
+        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera): void;
         protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer): void;
         /**
          * 激活渲染程序
@@ -4246,26 +4246,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 镜头事件
-     * @author feng 2014-10-14
-     */
-    class LensEvent extends Event {
-        static MATRIX_CHANGED: string;
-        /**
-         * 镜头
-         */
-        data: LensBase;
-        /**
-         * 创建一个镜头事件。
-         * @param type      事件的类型
-         * @param lens      镜头
-         * @param bubbles   确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
-         */
-        constructor(type: string, lens?: LensBase, bubbles?: boolean);
-    }
-}
-declare module feng3d {
-    /**
      * 坐标系统类型
      * @author feng 2014-10-14
      */
@@ -4282,10 +4262,10 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 摄像机镜头
-     * @author feng 2014-10-14
+     * 摄像机
+     * @author feng 2016-08-16
      */
-    abstract class LensBase extends Component {
+    abstract class Camera extends Object3DComponent {
         protected _matrix: Matrix3D;
         protected _scissorRect: Rectangle;
         protected _viewPort: Rectangle;
@@ -4295,8 +4275,11 @@ declare module feng3d {
         protected _matrixInvalid: boolean;
         private _unprojection;
         private _unprojectionInvalid;
+        private _viewProjection;
+        private _viewProjectionDirty;
         /**
-         * 创建一个摄像机镜头
+         * 创建一个摄像机
+         * @param lens 摄像机镜头
          */
         constructor();
         /**
@@ -4327,30 +4310,49 @@ declare module feng3d {
          */
         readonly unprojectionMatrix: Matrix3D;
         /**
-         * 屏幕坐标投影到摄像机空间坐标
+         * 投影矩阵失效
+         */
+        protected invalidateMatrix(): void;
+        /**
+         * 场景投影矩阵，世界空间转投影空间
+         */
+        readonly viewProjection: Matrix3D;
+        readonly inverseSceneTransform: Matrix3D;
+        readonly globalMatrix3D: Matrix3D;
+        /**
+         * 更新投影矩阵
+         */
+        protected abstract updateMatrix(): any;
+        /**
+         * 屏幕坐标投影到场景坐标
          * @param nX 屏幕坐标X -1（左） -> 1（右）
          * @param nY 屏幕坐标Y -1（上） -> 1（下）
          * @param sZ 到屏幕的距离
          * @param v 场景坐标（输出）
          * @return 场景坐标
          */
-        abstract unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D;
+        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
         /**
-         * 投影矩阵失效
+         * 处理被添加组件事件
          */
-        protected invalidateMatrix(): void;
+        protected onBeAddedComponent(event: ComponentEvent): void;
         /**
-         * 更新投影矩阵
+         * 处理被移除组件事件
          */
-        protected abstract updateMatrix(): any;
+        protected onBeRemovedComponent(event: ComponentEvent): void;
+        private onSpaceTransformChanged(event);
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
     /**
-     * 透视摄像机镜头
+     * 透视摄像机
      * @author feng 2014-10-14
      */
-    class PerspectiveLens extends LensBase {
+    class PerspectiveCamera extends Camera {
         private _fieldOfView;
         private _focalLength;
         private _focalLengthInv;
@@ -4358,7 +4360,7 @@ declare module feng3d {
         private _xMax;
         private _coordinateSystem;
         /**
-         * 创建一个透视摄像机镜头
+         * 创建一个透视摄像机
          * @param fieldOfView 视野
          * @param coordinateSystem 坐标系统类型
          */
@@ -4380,58 +4382,6 @@ declare module feng3d {
          * 更新投影矩阵
          */
         protected updateMatrix(): void;
-    }
-}
-declare module feng3d {
-    /**
-     * 摄像机
-     * @author feng 2016-08-16
-     */
-    class Camera3D extends Object3DComponent {
-        private _viewProjection;
-        private _viewProjectionDirty;
-        private _lens;
-        /**
-         * 创建一个摄像机
-         * @param lens 摄像机镜头
-         */
-        constructor(lens?: LensBase);
-        /**
-         * 镜头
-         */
-        readonly lens: LensBase;
-        /**
-         * 场景投影矩阵，世界空间转投影空间
-         */
-        readonly viewProjection: Matrix3D;
-        readonly inverseSceneTransform: Matrix3D;
-        readonly globalMatrix3D: Matrix3D;
-        /**
-         * 屏幕坐标投影到场景坐标
-         * @param nX 屏幕坐标X -1（左） -> 1（右）
-         * @param nY 屏幕坐标Y -1（上） -> 1（下）
-         * @param sZ 到屏幕的距离
-         * @param v 场景坐标（输出）
-         * @return 场景坐标
-         */
-        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: ComponentEvent): void;
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: ComponentEvent): void;
-        /**
-         * 处理镜头变化事件
-         */
-        private onLensMatrixChanged(event);
-        private onSpaceTransformChanged(event);
-        /**
-         * 更新渲染数据
-         */
-        updateRenderData(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
@@ -6406,7 +6356,7 @@ declare module feng3d {
      * @author feng 2017-02-06
      */
     class CameraObject3D extends Object3D {
-        camera: Camera3D;
+        camera: Camera;
         constructor(name?: string);
     }
 }
@@ -6573,7 +6523,7 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D): void;
+        draw(context3D: Context3D, scene3D: Scene3D, camera: Camera): void;
         /**
          * 设置选中对象
          */

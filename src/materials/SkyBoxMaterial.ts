@@ -27,7 +27,7 @@ module feng3d
             super.updateRenderData(renderContext);
 
             //
-            this.skyBoxSize.x = this.skyBoxSize.y = this.skyBoxSize.z = renderContext.camera.lens.far / Math.sqrt(3);
+            this.skyBoxSize.x = this.skyBoxSize.y = this.skyBoxSize.z = renderContext.camera.far / Math.sqrt(3);
             //
             this._renderData.uniforms[RenderDataID.s_skyboxTexture] = this.skyBoxTextureCube;
             this._renderData.uniforms[RenderDataID.u_skyBoxSize] = this.skyBoxSize;

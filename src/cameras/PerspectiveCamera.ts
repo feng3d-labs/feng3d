@@ -2,10 +2,10 @@ module feng3d
 {
 
 	/**
-	 * 透视摄像机镜头
+	 * 透视摄像机
 	 * @author feng 2014-10-14
 	 */
-    export class PerspectiveLens extends LensBase
+    export class PerspectiveCamera extends Camera
     {
         private _fieldOfView: number;
         private _focalLength: number;
@@ -15,7 +15,7 @@ module feng3d
         private _coordinateSystem: number;
 
 		/**
-		 * 创建一个透视摄像机镜头
+		 * 创建一个透视摄像机
 		 * @param fieldOfView 视野
 		 * @param coordinateSystem 坐标系统类型
 		 */

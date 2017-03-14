@@ -12,7 +12,7 @@ module feng3d
         /**
          * 摄像机
          */
-        public camera: Camera3D;
+        public camera: Camera;
 
         /**
          * 灯光
