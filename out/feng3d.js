@@ -5149,16 +5149,28 @@ var feng3d;
     function getWebGLProgram(context3D, vertexCode, fragmentCode) {
         var vertexShader = feng3d.context3DPool.getVertexShader(context3D, vertexCode);
         var fragmentShader = feng3d.context3DPool.getFragmentShader(context3D, fragmentCode);
-        // 创建渲染程序
-        var shaderProgram = context3D.createProgram();
-        context3D.attachShader(shaderProgram, vertexShader);
-        context3D.attachShader(shaderProgram, fragmentShader);
-        context3D.linkProgram(shaderProgram);
-        // 渲染程序创建失败时给出弹框
-        if (!context3D.getProgramParameter(shaderProgram, context3D.LINK_STATUS)) {
-            alert("\u65E0\u6CD5\u521D\u59CB\u5316\u6E32\u67D3\u7A0B\u5E8F\u3002\n" + vertexCode + "\n" + fragmentCode);
+        if (!vertexShader || !fragmentShader) {
+            return null;
         }
-        return shaderProgram;
+        // 创建渲染程序
+        var program = context3D.createProgram();
+        if (!program) {
+            return null;
+        }
+        context3D.attachShader(program, vertexShader);
+        context3D.attachShader(program, fragmentShader);
+        context3D.linkProgram(program);
+        // 渲染程序创建失败时给出弹框
+        var linked = context3D.getProgramParameter(program, context3D.LINK_STATUS);
+        if (!linked) {
+            var error = context3D.getProgramInfoLog(program);
+            console.log('Failed to link program: ' + error + ("\n" + vertexCode + "\n" + fragmentCode));
+            context3D.deleteProgram(program);
+            context3D.deleteShader(fragmentShader);
+            context3D.deleteShader(vertexShader);
+            return null;
+        }
+        return program;
     }
     /**
      * 获取顶点渲染程序
@@ -5168,6 +5180,10 @@ var feng3d;
      */
     function getVertexShader(context3D, vertexCode) {
         var shader = context3D.createShader(feng3d.Context3D.VERTEX_SHADER);
+        if (shader == null) {
+            console.log('unable to create shader');
+            return null;
+        }
         shader = compileShader(context3D, shader, vertexCode);
         return shader;
     }
@@ -5179,6 +5195,10 @@ var feng3d;
      */
     function getFragmentShader(context3D, fragmentCode) {
         var shader = context3D.createShader(feng3d.Context3D.FRAGMENT_SHADER);
+        if (shader == null) {
+            console.log('unable to create shader');
+            return null;
+        }
         shader = compileShader(context3D, shader, fragmentCode);
         return shader;
     }
@@ -5192,8 +5212,13 @@ var feng3d;
     function compileShader(context3D, shader, shaderCode) {
         context3D.shaderSource(shader, shaderCode);
         context3D.compileShader(shader);
-        if (!context3D.getShaderParameter(shader, context3D.COMPILE_STATUS)) {
-            alert("\u7F16\u8BD1\u6E32\u67D3\u7A0B\u5E8F\u65F6\u53D1\u751F\u9519\u8BEF: " + context3D.getShaderInfoLog(shader) + "\n" + shaderCode);
+        // Check the result of compilation
+        var compiled = context3D.getShaderParameter(shader, context3D.COMPILE_STATUS);
+        if (!compiled) {
+            var error = context3D.getShaderInfoLog(shader);
+            console.log("\u7F16\u8BD1\u6E32\u67D3\u7A0B\u5E8F\u65F6\u53D1\u751F\u9519\u8BEF: " + error + " \n " + context3D.getShaderInfoLog(shader) + "\n" + shaderCode);
+            context3D.deleteShader(shader);
+            return null;
         }
         return shader;
     }
@@ -7569,50 +7594,34 @@ var feng3d;
              * 视窗缩放比例(width/height)，在渲染器中设置
              */
             this.aspectRatio = 1;
-            this._matrixInvalid = true;
+            this._projectionInvalid = true;
             this._unprojectionInvalid = true;
             this._viewProjection = new feng3d.Matrix3D();
             this._viewProjectionInvalid = true;
             this._single = true;
-            this._matrix = new feng3d.Matrix3D();
+            this._projection = new feng3d.Matrix3D();
             feng3d.Watcher.watch(this, ["near"], this.invalidateMatrix, this);
             feng3d.Watcher.watch(this, ["far"], this.invalidateMatrix, this);
             feng3d.Watcher.watch(this, ["aspectRatio"], this.invalidateMatrix, this);
         }
-        Object.defineProperty(Camera.prototype, "matrix", {
+        Object.defineProperty(Camera.prototype, "projection", {
             /**
              * 投影矩阵
              */
             get: function () {
-                if (this._matrixInvalid) {
+                if (this._projectionInvalid) {
                     this.updateMatrix();
-                    this._matrixInvalid = false;
+                    this._projectionInvalid = false;
                 }
-                return this._matrix;
+                return this._projection;
             },
             set: function (value) {
-                this._matrix = value;
+                this._projection = value;
                 this.invalidateMatrix();
             },
             enumerable: true,
             configurable: true
         });
-        /**
-         * 场景坐标投影到屏幕坐标
-         * @param point3d 场景坐标
-         * @param v 屏幕坐标（输出）
-         * @return 屏幕坐标
-         */
-        Camera.prototype.project = function (point3d, v) {
-            if (v === void 0) { v = null; }
-            if (!v)
-                v = new feng3d.Vector3D();
-            this.matrix.transformVector(point3d, v);
-            v.x = v.x / v.w;
-            v.y = -v.y / v.w;
-            v.z = point3d.z;
-            return v;
-        };
         Object.defineProperty(Camera.prototype, "unprojectionMatrix", {
             /**
              * 投影逆矩阵
@@ -7621,7 +7630,7 @@ var feng3d;
                 if (this._unprojectionInvalid) {
                     if (this._unprojection == null)
                         this._unprojection = new feng3d.Matrix3D();
-                    this._unprojection.copyFrom(this.matrix);
+                    this._unprojection.copyFrom(this.projection);
                     this._unprojection.invert();
                     this._unprojectionInvalid = false;
                 }
@@ -7634,8 +7643,9 @@ var feng3d;
          * 投影矩阵失效
          */
         Camera.prototype.invalidateMatrix = function () {
-            this._matrixInvalid = true;
+            this._projectionInvalid = true;
             this._unprojectionInvalid = true;
+            this._viewProjectionInvalid = true;
         };
         Object.defineProperty(Camera.prototype, "viewProjection", {
             /**
@@ -7644,9 +7654,9 @@ var feng3d;
             get: function () {
                 if (this._viewProjectionInvalid) {
                     //场景空间转摄像机空间
-                    this._viewProjection.copyFrom(this.inverseSceneTransform);
+                    this._viewProjection.copyFrom(this.inverseGlobalMatrix3D);
                     //+摄像机空间转投影空间 = 场景空间转投影空间
-                    this._viewProjection.append(this.matrix);
+                    this._viewProjection.append(this.projection);
                     this._viewProjectionInvalid = false;
                 }
                 return this._viewProjection;
@@ -7654,7 +7664,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera.prototype, "inverseSceneTransform", {
+        Object.defineProperty(Camera.prototype, "inverseGlobalMatrix3D", {
             get: function () {
                 return this.parentComponent ? this.parentComponent.transform.inverseGlobalMatrix3D : new feng3d.Matrix3D();
             },
@@ -7668,18 +7678,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        /**
-         * 屏幕坐标投影到场景坐标
-         * @param nX 屏幕坐标X -1（左） -> 1（右）
-         * @param nY 屏幕坐标Y -1（上） -> 1（下）
-         * @param sZ 到屏幕的距离
-         * @param v 场景坐标（输出）
-         * @return 场景坐标
-         */
-        Camera.prototype.unproject = function (nX, nY, sZ, v) {
-            if (v === void 0) { v = null; }
-            return this.globalMatrix3D.transformVector(this.unproject(nX, nY, sZ, v), v);
-        };
         /**
          * 处理被添加组件事件
          */
@@ -7735,6 +7733,14 @@ var feng3d;
             feng3d.Watcher.watch(this, ["fieldOfView"], this.invalidateMatrix, this);
             feng3d.Watcher.watch(this, ["coordinateSystem"], this.invalidateMatrix, this);
         }
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X -1（左） -> 1（右）
+         * @param nY 屏幕坐标Y -1（上） -> 1（下）
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
         PerspectiveCamera.prototype.unproject = function (nX, nY, sZ, v) {
             if (v === void 0) { v = null; }
             if (!v)
@@ -7747,6 +7753,7 @@ var feng3d;
             v.y *= sZ;
             this.unprojectionMatrix.transformVector(v, v);
             v.z = sZ;
+            this.globalMatrix3D.transformVector(v, v);
             return v;
         };
         /**
@@ -7794,8 +7801,8 @@ var feng3d;
             // Switch projection transform from left to right handed.
             if (this.coordinateSystem == feng3d.CoordinateSystem.RIGHT_HANDED)
                 raw[5] = -raw[5];
-            this._matrix.copyRawDataFrom(raw);
-            this._matrixInvalid = false;
+            this._projection.copyRawDataFrom(raw);
+            this._projectionInvalid = false;
         };
         return PerspectiveCamera;
     }(feng3d.Camera));

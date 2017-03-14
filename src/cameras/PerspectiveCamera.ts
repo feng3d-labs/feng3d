@@ -29,6 +29,14 @@ module feng3d
             Watcher.watch(this, ["coordinateSystem"], this.invalidateMatrix, this);
         }
 
+        /**
+		 * 屏幕坐标投影到场景坐标
+		 * @param nX 屏幕坐标X -1（左） -> 1（右）
+		 * @param nY 屏幕坐标Y -1（上） -> 1（下）
+		 * @param sZ 到屏幕的距离
+		 * @param v 场景坐标（输出）
+		 * @return 场景坐标
+		 */
         public unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D
         {
             if (!v)
@@ -44,6 +52,8 @@ module feng3d
             this.unprojectionMatrix.transformVector(v, v);
 
             v.z = sZ;
+
+            this.globalMatrix3D.transformVector(v, v);
 
             return v;
         }
@@ -103,9 +113,9 @@ module feng3d
             if (this.coordinateSystem == CoordinateSystem.RIGHT_HANDED)
                 raw[5] = -raw[5];
 
-            this._matrix.copyRawDataFrom(raw);
+            this._projection.copyRawDataFrom(raw);
 
-            this._matrixInvalid = false;
+            this._projectionInvalid = false;
         }
     }
     /**

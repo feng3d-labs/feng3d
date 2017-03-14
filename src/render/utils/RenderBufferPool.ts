@@ -251,19 +251,34 @@ module feng3d
     {
         var vertexShader = context3DPool.getVertexShader(context3D, vertexCode);
         var fragmentShader = context3DPool.getFragmentShader(context3D, fragmentCode);
+
+        if (!vertexShader || !fragmentShader)
+        {
+            return null;
+        }
         // 创建渲染程序
-        var shaderProgram = context3D.createProgram();
-        context3D.attachShader(shaderProgram, vertexShader);
-        context3D.attachShader(shaderProgram, fragmentShader);
-        context3D.linkProgram(shaderProgram);
+        var program = context3D.createProgram();
+        if (!program)
+        {
+            return null;
+        }
+        context3D.attachShader(program, vertexShader);
+        context3D.attachShader(program, fragmentShader);
+        context3D.linkProgram(program);
 
         // 渲染程序创建失败时给出弹框
-        if (!context3D.getProgramParameter(shaderProgram, context3D.LINK_STATUS))
+        var linked = context3D.getProgramParameter(program, context3D.LINK_STATUS);
+        if (!linked)
         {
-            alert(`无法初始化渲染程序。\n${vertexCode}\n${fragmentCode}`);
+            var error = context3D.getProgramInfoLog(program);
+            console.log('Failed to link program: ' + error + `\n${vertexCode}\n${fragmentCode}`);
+            context3D.deleteProgram(program);
+            context3D.deleteShader(fragmentShader);
+            context3D.deleteShader(vertexShader);
+            return null;
         }
 
-        return shaderProgram;
+        return program;
     }
 
     /**
@@ -275,6 +290,11 @@ module feng3d
     function getVertexShader(context3D: Context3D, vertexCode: string)
     {
         var shader = context3D.createShader(Context3D.VERTEX_SHADER);
+        if (shader == null)
+        {
+            console.log('unable to create shader');
+            return null;
+        }
         shader = compileShader(context3D, shader, vertexCode);
         return shader;
     }
@@ -288,6 +308,11 @@ module feng3d
     function getFragmentShader(context3D: Context3D, fragmentCode: string)
     {
         var shader = context3D.createShader(Context3D.FRAGMENT_SHADER);
+        if (shader == null)
+        {
+            console.log('unable to create shader');
+            return null;
+        }
         shader = compileShader(context3D, shader, fragmentCode);
         return shader;
     }
@@ -303,11 +328,15 @@ module feng3d
     {
         context3D.shaderSource(shader, shaderCode);
         context3D.compileShader(shader);
-        if (!context3D.getShaderParameter(shader, context3D.COMPILE_STATUS))
+        // Check the result of compilation
+        var compiled = context3D.getShaderParameter(shader, context3D.COMPILE_STATUS);
+        if (!compiled)
         {
-            alert(`编译渲染程序时发生错误: ${context3D.getShaderInfoLog(shader)}\n${shaderCode}`);
+            var error = context3D.getShaderInfoLog(shader);
+            console.log(`编译渲染程序时发生错误: ${error} \n ${context3D.getShaderInfoLog(shader)}\n${shaderCode}`);
+            context3D.deleteShader(shader);
+            return null;
         }
-
         return shader;
     }
 

@@ -6,7 +6,7 @@ module feng3d
 	 */
     export abstract class Camera extends Object3DComponent
     {
-        protected _matrix: Matrix3D;
+        protected _projection: Matrix3D;
         public scissorRect: Rectangle = new Rectangle();
         public viewPort: Rectangle = new Rectangle();
         /**
@@ -22,7 +22,7 @@ module feng3d
 		 */
         public aspectRatio: number = 1;
 
-        protected _matrixInvalid: boolean = true;
+        protected _projectionInvalid: boolean = true;
         private _unprojection: Matrix3D;
         private _unprojectionInvalid: boolean = true;
 
@@ -37,7 +37,7 @@ module feng3d
         {
             super();
             this._single = true;
-            this._matrix = new Matrix3D();
+            this._projection = new Matrix3D();
 
             Watcher.watch(this, ["near"], this.invalidateMatrix, this);
             Watcher.watch(this, ["far"], this.invalidateMatrix, this);
@@ -47,39 +47,20 @@ module feng3d
 		/**
 		 * 投影矩阵
 		 */
-        public get matrix(): Matrix3D
+        public get projection(): Matrix3D
         {
-            if (this._matrixInvalid)
+            if (this._projectionInvalid)
             {
                 this.updateMatrix();
-                this._matrixInvalid = false;
+                this._projectionInvalid = false;
             }
-            return this._matrix;
+            return this._projection;
         }
 
-        public set matrix(value: Matrix3D)
+        public set projection(value: Matrix3D)
         {
-            this._matrix = value;
+            this._projection = value;
             this.invalidateMatrix();
-        }
-
-		/**
-		 * 场景坐标投影到屏幕坐标
-		 * @param point3d 场景坐标
-		 * @param v 屏幕坐标（输出）
-		 * @return 屏幕坐标
-		 */
-        public project(point3d: Vector3D, v: Vector3D = null): Vector3D
-        {
-            if (!v)
-                v = new Vector3D();
-            this.matrix.transformVector(point3d, v);
-            v.x = v.x / v.w;
-            v.y = -v.y / v.w;
-
-            v.z = point3d.z;
-
-            return v;
         }
 
 		/**
@@ -91,7 +72,7 @@ module feng3d
             {
                 if (this._unprojection == null)
                     this._unprojection = new Matrix3D();
-                this._unprojection.copyFrom(this.matrix);
+                this._unprojection.copyFrom(this.projection);
                 this._unprojection.invert();
                 this._unprojectionInvalid = false;
             }
@@ -104,8 +85,9 @@ module feng3d
 		 */
         protected invalidateMatrix()
         {
-            this._matrixInvalid = true;
+            this._projectionInvalid = true;
             this._unprojectionInvalid = true;
+            this._viewProjectionInvalid = true;
         }
 
         /**
@@ -116,16 +98,16 @@ module feng3d
             if (this._viewProjectionInvalid)
             {
                 //场景空间转摄像机空间
-                this._viewProjection.copyFrom(this.inverseSceneTransform);
+                this._viewProjection.copyFrom(this.inverseGlobalMatrix3D);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
-                this._viewProjection.append(this.matrix);
+                this._viewProjection.append(this.projection);
                 this._viewProjectionInvalid = false;
             }
 
             return this._viewProjection;
         }
 
-        public get inverseSceneTransform()
+        public get inverseGlobalMatrix3D()
         {
             return this.parentComponent ? this.parentComponent.transform.inverseGlobalMatrix3D : new Matrix3D();
         }
@@ -148,10 +130,7 @@ module feng3d
 		 * @param v 场景坐标（输出）
 		 * @return 场景坐标
 		 */
-        public unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D
-        {
-            return this.globalMatrix3D.transformVector(this.unproject(nX, nY, sZ, v), v);
-        }
+        abstract unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D;
 
         /**
          * 处理被添加组件事件

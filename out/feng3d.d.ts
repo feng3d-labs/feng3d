@@ -4265,7 +4265,7 @@ declare module feng3d {
      * @author feng 2016-08-16
      */
     abstract class Camera extends Object3DComponent {
-        protected _matrix: Matrix3D;
+        protected _projection: Matrix3D;
         scissorRect: Rectangle;
         viewPort: Rectangle;
         /**
@@ -4280,7 +4280,7 @@ declare module feng3d {
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
         aspectRatio: number;
-        protected _matrixInvalid: boolean;
+        protected _projectionInvalid: boolean;
         private _unprojection;
         private _unprojectionInvalid;
         private _viewProjection;
@@ -4293,14 +4293,7 @@ declare module feng3d {
         /**
          * 投影矩阵
          */
-        matrix: Matrix3D;
-        /**
-         * 场景坐标投影到屏幕坐标
-         * @param point3d 场景坐标
-         * @param v 屏幕坐标（输出）
-         * @return 屏幕坐标
-         */
-        project(point3d: Vector3D, v?: Vector3D): Vector3D;
+        projection: Matrix3D;
         /**
          * 投影逆矩阵
          */
@@ -4313,7 +4306,7 @@ declare module feng3d {
          * 场景投影矩阵，世界空间转投影空间
          */
         readonly viewProjection: Matrix3D;
-        readonly inverseSceneTransform: Matrix3D;
+        readonly inverseGlobalMatrix3D: Matrix3D;
         readonly globalMatrix3D: Matrix3D;
         /**
          * 更新投影矩阵
@@ -4327,7 +4320,7 @@ declare module feng3d {
          * @param v 场景坐标（输出）
          * @return 场景坐标
          */
-        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
+        abstract unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D;
         /**
          * 处理被添加组件事件
          */
@@ -4363,6 +4356,14 @@ declare module feng3d {
          * @param coordinateSystem 坐标系统类型
          */
         constructor();
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X -1（左） -> 1（右）
+         * @param nY 屏幕坐标Y -1（上） -> 1（下）
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
         unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
         /**
          * 更新投影矩阵
