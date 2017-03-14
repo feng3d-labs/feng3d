@@ -6,7 +6,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 var feng3d;
 (function (feng3d) {
     feng3d.Context3D = WebGLRenderingContext;
-    feng3d.contextId = "webgl";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6159,8 +6158,15 @@ var feng3d;
             this.background = new feng3d.Color(0, 0, 0);
             feng3d.assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
             this._canvas = canvas;
-            this._context3D = this._canvas.getContext(feng3d.contextId, { antialias: false });
-            this._context3D.getContextAttributes();
+            try {
+                this._context3D = this._canvas.getContext("webgl", { antialias: false }) || this._canvas.getContext("experimental-webgl", { antialias: false });
+            }
+            catch (e) {
+                throw new Error("WebGL not supported");
+            }
+            if (!this._context3D) {
+                throw new Error("WebGL not supported");
+            }
             this.initGL();
             this.scene = scene || new feng3d.Scene3D();
             this.camera = camera || new feng3d.CameraObject3D();

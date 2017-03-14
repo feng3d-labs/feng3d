@@ -307,7 +307,6 @@ declare module feng3d {
         readonly VIEWPORT: number;
         readonly ZERO: number;
     };
-    var contextId: string;
 }
 declare module feng3d {
     /**

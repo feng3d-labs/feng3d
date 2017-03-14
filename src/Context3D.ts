@@ -11,5 +11,4 @@ module feng3d
     //webgl 1
     export type Context3D = WebGLRenderingContext;
     export var Context3D = WebGLRenderingContext;
-    export var contextId = "webgl";
 }
