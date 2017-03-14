@@ -38,12 +38,13 @@ module feng3d
             // particleAnimator.addComponent(new ParticleAcceleration());
             particleAnimator.particleGlobal.acceleration = new Vector3D(0, -9.8, 0);
             //通过函数来创建粒子初始状态
-            particleAnimator.generateFunctions.push({
-                generate: (particle) =>
-                {
-                    particle.color = new Color(1, 0, 0, 1).mix(new Color(0, 1, 0, 1), particle.index / particle.total);
-                }, priority: 0
-            });
+            particleAnimator.addComponent(new ParticleColor());
+            // particleAnimator.generateFunctions.push({
+            //     generate: (particle) =>
+            //     {
+            //         particle.color = new Color(1, 0, 0, 1).mix(new Color(0, 1, 0, 1), particle.index / particle.total);
+            //     }, priority: 0
+            // });
         }
     }
 }

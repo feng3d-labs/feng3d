@@ -111,7 +111,8 @@ module feng3d
 
             this.components_.splice(index, 0, component);
             //派发添加组件事件
-            component.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONENT, { container: this, child: component }, true));
+            component.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONENT, { container: this, child: component }));
+            this.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONENT, { container: this, child: component }));
         }
 
 		/**
@@ -150,7 +151,8 @@ module feng3d
 
             var component: Component = this.components_.splice(index, 1)[0];
             //派发移除组件事件
-            component.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }, true));
+            component.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }));
+            this.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }));
             return component;
         }
 

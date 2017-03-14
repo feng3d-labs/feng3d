@@ -90,7 +90,7 @@ module feng3d
             Watcher.watch(this, ["scale"], this.invalidateComp, this);
 
             //
-            Binding.bindProperty(this, ["_parentComponent", "_parent", "transform"], this, "parentTransform");
+            Binding.bindProperty(this, ["_parentComponent", "_parent", "_transform"], this, "parentTransform");
         }
 
         /**

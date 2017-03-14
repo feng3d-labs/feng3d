@@ -102,11 +102,9 @@
         "src/geometry/SegmentGeometry.ts",
         "src/geometry/components/GeometryComponent.ts",
         //摄像机
-        "src/cameras/lenses/LensEvent.ts",
-        "src/cameras/lenses/CoordinateSystem.ts",
-        "src/cameras/lenses/LensBase.ts",
-        "src/cameras/lenses/PerspectiveLens.ts",
-        "src/cameras/Camera3D.ts",
+        "src/cameras/CoordinateSystem.ts",
+        "src/cameras/Camera.ts",
+        "src/cameras/PerspectiveCamera.ts",
         //几何体基元
         "src/primitives/PrimitiveType.ts",
         "src/primitives/PlaneGeometry.ts",
@@ -155,6 +153,7 @@
         "src/animators/particle/ParticleEmission.ts",
         "src/animators/particle/ParticlePosition.ts",
         "src/animators/particle/ParticleVelocity.ts",
+        "src/animators/particle/ParticleColor.ts",
         //
         "src/animators/events/AnimationStateEvent.ts",
         "src/animators/events/AnimatorEvent.ts",

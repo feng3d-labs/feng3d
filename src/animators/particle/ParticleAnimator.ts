@@ -38,7 +38,7 @@ module feng3d
          */
         public cycle: number = 10000;
 
-        private isDirty = true;
+        private _isDirty = true;
 
         /**
          * 生成粒子函数列表，优先级越高先执行
@@ -50,14 +50,11 @@ module feng3d
          */
         public particleGlobal: ParticleGlobal = <any>{};
 
-        private autoRenderDataHolder: ParticleRenderDataHolder;
-
         constructor()
         {
             super();
             this._single = true;
-            this.autoRenderDataHolder = new ParticleRenderDataHolder();
-            this.addComponent(this.autoRenderDataHolder);
+            this.addComponent(new ParticleRenderDataHolder());
         }
 
         /**
@@ -76,6 +73,7 @@ module feng3d
             //按优先级排序，优先级越高先执行
             generateFunctions.sort((a: { priority: number; }, b: { priority: number; }) => { return b.priority - a.priority; })
             //
+            var autoRenderDataHolder = this.getComponentByType(ParticleRenderDataHolder);
             for (var i = 0; i < this.numParticles; i++)
             {
                 var particle = <Particle>{};
@@ -85,7 +83,7 @@ module feng3d
                 {
                     element.generate(particle);
                 });
-                this.autoRenderDataHolder.collectionParticle(particle);
+                autoRenderDataHolder.collectionParticle(particle);
             }
         }
 
@@ -95,19 +93,19 @@ module feng3d
         public updateRenderData(renderContext: RenderContext)
         {
 
-            if (this.isDirty)
+            if (this._isDirty)
             {
-
                 this.startTime = getTimer();
                 this.generateParticles();
-                this.isDirty = false;
+                this._isDirty = false;
             }
 
             this.time = ((getTimer() - this.startTime) / 1000) % this.cycle;
             this._renderData.uniforms[RenderDataID.u_particleTime] = this.time;
             this._renderData.instanceCount = this.numParticles;
 
-            this.autoRenderDataHolder.update(this.particleGlobal);
+            var autoRenderDataHolder = this.getComponentByType(ParticleRenderDataHolder);
+            autoRenderDataHolder.update(this.particleGlobal);
             super.updateRenderData(renderContext);
         }
     }

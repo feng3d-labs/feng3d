@@ -19,7 +19,7 @@ module feng3d
         /**
 		 * 渲染
 		 */
-        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera3D)
+        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera)
         {
             // this.frameBufferObject.activate(context3D,
             //     context3D.drawingBufferWidth,

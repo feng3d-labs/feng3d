@@ -103,7 +103,7 @@ module feng3d
         {
             var viewRect: Rectangle = this.viewRect;
 
-            this.camera.camera.lens.aspectRatio = viewRect.width / viewRect.height;
+            this.camera.camera.aspectRatio = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.copyFrom(viewRect);

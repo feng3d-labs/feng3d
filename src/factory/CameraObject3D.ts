@@ -6,12 +6,12 @@ module feng3d
      */
     export class CameraObject3D extends Object3D
     {
-        public camera: Camera3D;
+        public camera: Camera;
 
         constructor(name = "camera")
         {
             super(name);
-            this.camera = new Camera3D();
+            this.camera = new PerspectiveCamera();
             this.addComponent(this.camera);
         }
     }

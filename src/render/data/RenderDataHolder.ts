@@ -71,8 +71,8 @@ module feng3d
             if (component != null && ClassUtils.is(component, RenderDataHolder))
             {
                 var renderDataHolder: RenderDataHolder = ClassUtils.as(component, RenderDataHolder);
-                var index = this._subRenderDataHolders.indexOf(renderDataHolder);
-                if (index == -1)
+                var index1 = this._subRenderDataHolders.indexOf(renderDataHolder);
+                if (index1 == -1)
                 {
                     this._subRenderDataHolders.splice(index, 0, renderDataHolder);
                 }
