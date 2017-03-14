@@ -4267,25 +4267,8 @@ declare module feng3d {
      */
     abstract class Camera extends Object3DComponent {
         protected _matrix: Matrix3D;
-        protected _scissorRect: Rectangle;
-        protected _viewPort: Rectangle;
-        protected _near: number;
-        protected _far: number;
-        protected _aspectRatio: number;
-        protected _matrixInvalid: boolean;
-        private _unprojection;
-        private _unprojectionInvalid;
-        private _viewProjection;
-        private _viewProjectionDirty;
-        /**
-         * 创建一个摄像机
-         * @param lens 摄像机镜头
-         */
-        constructor();
-        /**
-         * 投影矩阵
-         */
-        matrix: Matrix3D;
+        scissorRect: Rectangle;
+        viewPort: Rectangle;
         /**
          * 最近距离
          */
@@ -4298,6 +4281,20 @@ declare module feng3d {
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
         aspectRatio: number;
+        protected _matrixInvalid: boolean;
+        private _unprojection;
+        private _unprojectionInvalid;
+        private _viewProjection;
+        private _viewProjectionInvalid;
+        /**
+         * 创建一个摄像机
+         * @param lens 摄像机镜头
+         */
+        constructor();
+        /**
+         * 投影矩阵
+         */
+        matrix: Matrix3D;
         /**
          * 场景坐标投影到屏幕坐标
          * @param point3d 场景坐标
@@ -4353,31 +4350,21 @@ declare module feng3d {
      * @author feng 2014-10-14
      */
     class PerspectiveCamera extends Camera {
-        private _fieldOfView;
-        private _focalLength;
-        private _focalLengthInv;
-        private _yMax;
-        private _xMax;
-        private _coordinateSystem;
         /**
-         * 创建一个透视摄像机
-         * @param fieldOfView 视野
-         * @param coordinateSystem 坐标系统类型
-         */
-        constructor(fieldOfView?: number, coordinateSystem?: number);
-        /**
-         * 视野
+         * 视角
          */
         fieldOfView: number;
-        /**
-         * 焦距
-         */
-        focalLength: number;
-        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
         /**
          * 坐标系类型
          */
         coordinateSystem: number;
+        /**
+         * 创建一个透视摄像机
+         * @param fieldOfView 视角
+         * @param coordinateSystem 坐标系统类型
+         */
+        constructor();
+        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
         /**
          * 更新投影矩阵
          */

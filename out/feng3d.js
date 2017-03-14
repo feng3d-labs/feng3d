@@ -7549,17 +7549,29 @@ var feng3d;
          */
         function Camera() {
             _super.call(this);
-            this._scissorRect = new feng3d.Rectangle();
-            this._viewPort = new feng3d.Rectangle();
-            this._near = 0.1;
-            this._far = 10000;
-            this._aspectRatio = 1;
+            this.scissorRect = new feng3d.Rectangle();
+            this.viewPort = new feng3d.Rectangle();
+            /**
+             * 最近距离
+             */
+            this.near = 0.1;
+            /**
+             * 最远距离
+             */
+            this.far = 10000;
+            /**
+             * 视窗缩放比例(width/height)，在渲染器中设置
+             */
+            this.aspectRatio = 1;
             this._matrixInvalid = true;
             this._unprojectionInvalid = true;
             this._viewProjection = new feng3d.Matrix3D();
-            this._viewProjectionDirty = true;
+            this._viewProjectionInvalid = true;
             this._single = true;
             this._matrix = new feng3d.Matrix3D();
+            feng3d.Watcher.watch(this, ["near"], this.invalidateMatrix, this);
+            feng3d.Watcher.watch(this, ["far"], this.invalidateMatrix, this);
+            feng3d.Watcher.watch(this, ["aspectRatio"], this.invalidateMatrix, this);
         }
         Object.defineProperty(Camera.prototype, "matrix", {
             /**
@@ -7574,54 +7586,6 @@ var feng3d;
             },
             set: function (value) {
                 this._matrix = value;
-                this.invalidateMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Camera.prototype, "near", {
-            /**
-             * 最近距离
-             */
-            get: function () {
-                return this._near;
-            },
-            set: function (value) {
-                if (value == this._near)
-                    return;
-                this._near = value;
-                this.invalidateMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Camera.prototype, "far", {
-            /**
-             * 最远距离
-             */
-            get: function () {
-                return this._far;
-            },
-            set: function (value) {
-                if (value == this._far)
-                    return;
-                this._far = value;
-                this.invalidateMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Camera.prototype, "aspectRatio", {
-            /**
-             * 视窗缩放比例(width/height)，在渲染器中设置
-             */
-            get: function () {
-                return this._aspectRatio;
-            },
-            set: function (value) {
-                if (this._aspectRatio == value || (value * 0) != 0)
-                    return;
-                this._aspectRatio = value;
                 this.invalidateMatrix();
             },
             enumerable: true,
@@ -7672,12 +7636,12 @@ var feng3d;
              * 场景投影矩阵，世界空间转投影空间
              */
             get: function () {
-                if (this._viewProjectionDirty) {
+                if (this._viewProjectionInvalid) {
                     //场景空间转摄像机空间
                     this._viewProjection.copyFrom(this.inverseSceneTransform);
                     //+摄像机空间转投影空间 = 场景空间转投影空间
                     this._viewProjection.append(this.matrix);
-                    this._viewProjectionDirty = false;
+                    this._viewProjectionInvalid = false;
                 }
                 return this._viewProjection;
             },
@@ -7723,7 +7687,7 @@ var feng3d;
             this.parentComponent.removeEventListener(feng3d.TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         };
         Camera.prototype.onSpaceTransformChanged = function (event) {
-            this._viewProjectionDirty = true;
+            this._viewProjectionInvalid = true;
         };
         /**
          * 更新渲染数据
@@ -7749,52 +7713,22 @@ var feng3d;
         __extends(PerspectiveCamera, _super);
         /**
          * 创建一个透视摄像机
-         * @param fieldOfView 视野
+         * @param fieldOfView 视角
          * @param coordinateSystem 坐标系统类型
          */
-        function PerspectiveCamera(fieldOfView, coordinateSystem) {
-            if (fieldOfView === void 0) { fieldOfView = 60; }
-            if (coordinateSystem === void 0) { coordinateSystem = feng3d.CoordinateSystem.LEFT_HANDED; }
+        function PerspectiveCamera() {
             _super.call(this);
-            this.fieldOfView = fieldOfView;
-            this.coordinateSystem = coordinateSystem;
+            /**
+             * 视角
+             */
+            this.fieldOfView = 60;
+            /**
+             * 坐标系类型
+             */
+            this.coordinateSystem = feng3d.CoordinateSystem.LEFT_HANDED;
+            feng3d.Watcher.watch(this, ["fieldOfView"], this.invalidateMatrix, this);
+            feng3d.Watcher.watch(this, ["coordinateSystem"], this.invalidateMatrix, this);
         }
-        Object.defineProperty(PerspectiveCamera.prototype, "fieldOfView", {
-            /**
-             * 视野
-             */
-            get: function () {
-                return this._fieldOfView;
-            },
-            set: function (value) {
-                if (value == this._fieldOfView)
-                    return;
-                this._fieldOfView = value;
-                this._focalLengthInv = Math.tan(this._fieldOfView * Math.PI / 360);
-                this._focalLength = 1 / this._focalLengthInv;
-                this.invalidateMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(PerspectiveCamera.prototype, "focalLength", {
-            /**
-             * 焦距
-             */
-            get: function () {
-                return this._focalLength;
-            },
-            set: function (value) {
-                if (value == this._focalLength)
-                    return;
-                this._focalLength = value;
-                this._focalLengthInv = 1 / this._focalLength;
-                this._fieldOfView = Math.atan(this._focalLengthInv) * 360 / Math.PI;
-                this.invalidateMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
         PerspectiveCamera.prototype.unproject = function (nX, nY, sZ, v) {
             if (v === void 0) { v = null; }
             if (!v)
@@ -7809,65 +7743,50 @@ var feng3d;
             v.z = sZ;
             return v;
         };
-        Object.defineProperty(PerspectiveCamera.prototype, "coordinateSystem", {
-            /**
-             * 坐标系类型
-             */
-            get: function () {
-                return this._coordinateSystem;
-            },
-            set: function (value) {
-                if (value == this._coordinateSystem)
-                    return;
-                this._coordinateSystem = value;
-                this.invalidateMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 更新投影矩阵
          */
         PerspectiveCamera.prototype.updateMatrix = function () {
             var raw = tempRawData;
-            this._yMax = this._near * this._focalLengthInv;
-            this._xMax = this._yMax * this._aspectRatio;
+            var focalLengthInv = Math.tan(this.fieldOfView * Math.PI / 360);
+            var yMax = this.near * focalLengthInv;
+            var xMax = yMax * this.aspectRatio;
             var left, right, top, bottom;
-            if (this._scissorRect.x == 0 && this._scissorRect.y == 0 && this._scissorRect.width == this._viewPort.width && this._scissorRect.height == this._viewPort.height) {
+            if (this.scissorRect.x == 0 && this.scissorRect.y == 0 && this.scissorRect.width == this.viewPort.width && this.scissorRect.height == this.viewPort.height) {
                 // assume unscissored frustum
-                left = -this._xMax;
-                right = this._xMax;
-                top = -this._yMax;
-                bottom = this._yMax;
+                left = -xMax;
+                right = xMax;
+                top = -yMax;
+                bottom = yMax;
                 // assume unscissored frustum
-                raw[0] = this._near / this._xMax;
-                raw[5] = this._near / this._yMax;
-                raw[10] = this._far / (this._far - this._near);
+                raw[0] = this.near / xMax;
+                raw[5] = this.near / yMax;
+                raw[10] = this.far / (this.far - this.near);
                 raw[11] = 1;
                 raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
-                raw[14] = -this._near * raw[10];
+                raw[14] = -this.near * raw[10];
             }
             else {
                 // assume scissored frustum
-                var xWidth = this._xMax * (this._viewPort.width / this._scissorRect.width);
-                var yHgt = this._yMax * (this._viewPort.height / this._scissorRect.height);
-                var center = this._xMax * (this._scissorRect.x * 2 - this._viewPort.width) / this._scissorRect.width + this._xMax;
-                var middle = -this._yMax * (this._scissorRect.y * 2 - this._viewPort.height) / this._scissorRect.height - this._yMax;
+                var xWidth = xMax * (this.viewPort.width / this.scissorRect.width);
+                var yHgt = yMax * (this.viewPort.height / this.scissorRect.height);
+                var center = xMax * (this.scissorRect.x * 2 - this.viewPort.width) / this.scissorRect.width + xMax;
+                var middle = -yMax * (this.scissorRect.y * 2 - this.viewPort.height) / this.scissorRect.height - yMax;
                 left = center - xWidth;
                 right = center + xWidth;
                 top = middle - yHgt;
                 bottom = middle + yHgt;
-                raw[0] = 2 * this._near / (right - left);
-                raw[5] = 2 * this._near / (bottom - top);
+                raw[0] = 2 * this.near / (right - left);
+                raw[5] = 2 * this.near / (bottom - top);
                 raw[8] = (right + left) / (right - left);
                 raw[9] = (bottom + top) / (bottom - top);
-                raw[10] = (this._far + this._near) / (this._far - this._near);
+                raw[10] = (this.far + this.near) / (this.far - this.near);
                 raw[11] = 1;
                 raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[12] = raw[13] = raw[15] = 0;
-                raw[14] = -2 * this._far * this._near / (this._far - this._near);
+                raw[14] = -2 * this.far * this.near / (this.far - this.near);
             }
             // Switch projection transform from left to right handed.
-            if (this._coordinateSystem == feng3d.CoordinateSystem.RIGHT_HANDED)
+            if (this.coordinateSystem == feng3d.CoordinateSystem.RIGHT_HANDED)
                 raw[5] = -raw[5];
             this._matrix.copyRawDataFrom(raw);
             this._matrixInvalid = false;

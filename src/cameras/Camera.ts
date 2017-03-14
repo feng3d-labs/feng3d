@@ -7,19 +7,27 @@ module feng3d
     export abstract class Camera extends Object3DComponent
     {
         protected _matrix: Matrix3D;
-        protected _scissorRect: Rectangle = new Rectangle();
-        protected _viewPort: Rectangle = new Rectangle();
-        protected _near: number = 0.1;
-        protected _far: number = 10000;
-        protected _aspectRatio: number = 1;
+        public scissorRect: Rectangle = new Rectangle();
+        public viewPort: Rectangle = new Rectangle();
+        /**
+		 * 最近距离
+		 */
+        public near: number = 0.1;
+        /**
+         * 最远距离
+         */
+        public far: number = 10000;
+		/**
+		 * 视窗缩放比例(width/height)，在渲染器中设置
+		 */
+        public aspectRatio: number = 1;
 
         protected _matrixInvalid: boolean = true;
-
         private _unprojection: Matrix3D;
         private _unprojectionInvalid: boolean = true;
 
         private _viewProjection: Matrix3D = new Matrix3D();
-        private _viewProjectionDirty: boolean = true;
+        private _viewProjectionInvalid: boolean = true;
 
 		/**
 		 * 创建一个摄像机
@@ -30,6 +38,10 @@ module feng3d
             super();
             this._single = true;
             this._matrix = new Matrix3D();
+
+            Watcher.watch(this, ["near"], this.invalidateMatrix, this);
+            Watcher.watch(this, ["far"], this.invalidateMatrix, this);
+            Watcher.watch(this, ["aspectRatio"], this.invalidateMatrix, this);
         }
 
 		/**
@@ -48,54 +60,6 @@ module feng3d
         public set matrix(value: Matrix3D)
         {
             this._matrix = value;
-            this.invalidateMatrix();
-        }
-
-		/**
-		 * 最近距离
-		 */
-        public get near(): number
-        {
-            return this._near;
-        }
-
-        public set near(value: number)
-        {
-            if (value == this._near)
-                return;
-            this._near = value;
-            this.invalidateMatrix();
-        }
-
-		/**
-		 * 最远距离
-		 */
-        public get far(): number
-        {
-            return this._far;
-        }
-
-        public set far(value: number)
-        {
-            if (value == this._far)
-                return;
-            this._far = value;
-            this.invalidateMatrix();
-        }
-
-		/**
-		 * 视窗缩放比例(width/height)，在渲染器中设置
-		 */
-        public get aspectRatio(): number
-        {
-            return this._aspectRatio;
-        }
-
-        public set aspectRatio(value: number)
-        {
-            if (this._aspectRatio == value || (value * 0) != 0)
-                return;
-            this._aspectRatio = value;
             this.invalidateMatrix();
         }
 
@@ -149,13 +113,13 @@ module feng3d
 		 */
         public get viewProjection(): Matrix3D
         {
-            if (this._viewProjectionDirty)
+            if (this._viewProjectionInvalid)
             {
                 //场景空间转摄像机空间
                 this._viewProjection.copyFrom(this.inverseSceneTransform);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
                 this._viewProjection.append(this.matrix);
-                this._viewProjectionDirty = false;
+                this._viewProjectionInvalid = false;
             }
 
             return this._viewProjection;
@@ -207,7 +171,7 @@ module feng3d
 
         private onSpaceTransformChanged(event: TransformEvent): void
         {
-            this._viewProjectionDirty = true;
+            this._viewProjectionInvalid = true;
         }
 
         /**
