@@ -22,11 +22,11 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext)
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            super.updateRenderData(renderContext);
 
             this._renderData.uniforms[RenderDataID.s_texture] = this.texture;
+            super.updateRenderData(renderContext, renderData);
         }
     }
 }

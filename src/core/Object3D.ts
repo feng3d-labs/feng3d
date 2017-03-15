@@ -6,6 +6,8 @@ module feng3d
      */
     export class Object3D extends RenderDataHolder implements Serializable
     {
+        public get renderData() { return this._renderData; }
+
         //-序列化
         protected mouseEnabled_: boolean = true;
         protected visible_ = true;

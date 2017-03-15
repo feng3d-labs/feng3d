@@ -65,12 +65,12 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext)
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            super.updateRenderData(renderContext);
-
             this._renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this.skeleton.numJoints;
             this._renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
+
+            super.updateRenderData(renderContext, renderData);
         }
 
 		/**

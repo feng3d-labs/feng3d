@@ -7,7 +7,6 @@ module feng3d
      */
     export class ParticleAnimator extends Object3DComponent
     {
-
         /**
          * 是否正在播放
          */
@@ -54,7 +53,6 @@ module feng3d
         {
             super();
             this._single = true;
-            this.addComponent(new ParticleRenderDataHolder());
         }
 
         /**
@@ -62,7 +60,6 @@ module feng3d
 		 */
         private generateParticles()
         {
-
             var generateFunctions = this.generateFunctions.concat();
 
             var components = this.getComponentsByType(ParticleComponent);
@@ -73,7 +70,6 @@ module feng3d
             //按优先级排序，优先级越高先执行
             generateFunctions.sort((a: { priority: number; }, b: { priority: number; }) => { return b.priority - a.priority; })
             //
-            var autoRenderDataHolder = this.getComponentByType(ParticleRenderDataHolder);
             for (var i = 0; i < this.numParticles; i++)
             {
                 var particle = <Particle>{};
@@ -83,16 +79,15 @@ module feng3d
                 {
                     element.generate(particle);
                 });
-                autoRenderDataHolder.collectionParticle(particle);
+                this.collectionParticle(particle);
             }
         }
 
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext)
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-
             if (this._isDirty)
             {
                 this.startTime = getTimer();
@@ -104,32 +99,24 @@ module feng3d
             this._renderData.uniforms[RenderDataID.u_particleTime] = this.time;
             this._renderData.instanceCount = this.numParticles;
 
-            var autoRenderDataHolder = this.getComponentByType(ParticleRenderDataHolder);
-            autoRenderDataHolder.update(this.particleGlobal);
-            super.updateRenderData(renderContext);
+            this.update(this.particleGlobal);
+            super.updateRenderData(renderContext, renderData);
         }
-    }
-
-    export class ParticleRenderDataHolder extends RenderDataHolder
-    {
 
         /**
          * 收集粒子数据
          * @param particle      粒子
          */
-        public collectionParticle(particle: Particle)
+        private collectionParticle(particle: Particle)
         {
-
             for (var attribute in particle)
             {
                 this.collectionParticleAttribute(attribute, particle);
             }
         }
 
-        public update(particleGlobal: ParticleGlobal)
+        private update(particleGlobal: ParticleGlobal)
         {
-
-            this._renderData.uniforms = {};
             //更新常量数据
             for (var uniform in particleGlobal)
             {

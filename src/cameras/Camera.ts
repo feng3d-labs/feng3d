@@ -156,13 +156,13 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext)
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            super.updateRenderData(renderContext);
             //
             this._renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
             var globalMatrix3d = this.parentComponent ? this.parentComponent.transform.globalMatrix3D : new Matrix3D();
             this._renderData.uniforms[RenderDataID.u_cameraMatrix] = globalMatrix3d;
+            super.updateRenderData(renderContext, renderData);
         }
     }
 }

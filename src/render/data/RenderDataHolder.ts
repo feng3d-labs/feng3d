@@ -24,40 +24,13 @@ module feng3d
 		/**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext)
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
             this._subRenderDataHolders.forEach(element =>
             {
-                element.updateRenderData(renderContext);
+                element.updateRenderData(renderContext, renderData);
             });
-        }
-
-		/**
-		 * 激活
-		 * @param renderData	渲染数据
-		 */
-        public activate(renderData: RenderAtomic)
-        {
             RenderDataUtil.active(renderData, this._renderData)
-
-            this._subRenderDataHolders.forEach(element =>
-            {
-                element.activate(renderData);
-            });
-        }
-
-		/**
-		 * 释放
-		 * @param renderData	渲染数据
-		 */
-        public deactivate(renderData: RenderAtomic)
-        {
-            RenderDataUtil.deactivate(renderData, this._renderData)
-
-            this._subRenderDataHolders.forEach(element =>
-            {
-                element.deactivate(renderData);
-            });
         }
 
 		/**

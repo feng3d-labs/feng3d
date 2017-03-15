@@ -48,14 +48,14 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext)
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            super.updateRenderData(renderContext);
-
             this._renderData.uniforms[RenderDataID.u_baseColor] = this.baseColor.toVector3D();
             this._renderData.uniforms[RenderDataID.u_reflectance] = this.reflectance;
             this._renderData.uniforms[RenderDataID.u_roughness] = this.roughness;
             this._renderData.uniforms[RenderDataID.u_metalic] = this.metalic;
+            //
+            super.updateRenderData(renderContext, renderData);
         }
     }
 }
