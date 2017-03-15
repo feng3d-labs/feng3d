@@ -5,8 +5,35 @@ module feng3d
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      * @author feng 2016-06-20
      */
-    export class RenderAtomic
+    export class RenderAtomic extends EventDispatcher
     {
+        /**
+         * 数据是否失效
+         */
+        public static readonly INVALIDATE = "invalidate";
+
+        private _invalidate = true;
+        private _children: RenderAtomic[] = [];
+
+        private addChild(child: RenderAtomic)
+        {
+            debuger && console.assert(child != null && this._children.indexOf(child) == -1);
+            child.addEventListener(RenderAtomic.INVALIDATE, this.invalidate, this)
+            this._children.push(child);
+        }
+
+        private removeChild(child: RenderAtomic)
+        {
+            debuger && console.assert(child != null && this._children.indexOf(child) != -1);
+            var index = this._children.indexOf(child);
+            this._children.splice(index, 1);
+            child.removeEventListener(RenderAtomic.INVALIDATE, this.invalidate, this)
+        }
+
+        private invalidate()
+        {
+            this._invalidate = true;
+        }
 
         /**
          * 顶点索引缓冲
