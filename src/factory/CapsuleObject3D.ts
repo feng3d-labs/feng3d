@@ -13,11 +13,10 @@ module feng3d
          */
         constructor(name = "capsule")
         {
-
             super(name);
-            var mesh = this.getOrCreateComponentByClass(MeshFilter);
-            mesh.geometry = new CapsuleGeometry();
-            this.getOrCreateComponentByClass(MeshRenderer).material = new StandardMaterial();
+            var model = this.getOrCreateComponentByClass(Model);
+            model.geometry = new CapsuleGeometry();
+            model.material = new StandardMaterial();
         }
     }
 }

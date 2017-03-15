@@ -60,8 +60,10 @@ module feng3d
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
 
                 var skeletonObject3D = new Object3D();
-                skeletonObject3D.getOrCreateComponentByClass(MeshFilter).geometry = geometry;
-                skeletonObject3D.getOrCreateComponentByClass(MeshRenderer).material = new SkeletonAnimatorMaterial();
+                var model = new Model();
+                model.geometry = geometry;
+                model.material = new SkeletonAnimatorMaterial();
+                skeletonObject3D.addComponent(model);
                 skeletonObject3D.addComponent(skeletonAnimator);
 
                 object3D.addChild(skeletonObject3D);

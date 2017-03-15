@@ -44,7 +44,7 @@ module feng3d
             // this.frameBufferObject.deactivate(context3D);
         }
 
-        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer)
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: Model)
         {
             if (meshRenderer.parentComponent.realMouseEnable)
                 super.drawRenderables(context3D, renderContext, meshRenderer);

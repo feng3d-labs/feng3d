@@ -79,6 +79,6 @@ module feng3d
         /**
          * 渲染器
          */
-        renderer?: MeshRenderer;
+        renderer?: Model;
     }
 }

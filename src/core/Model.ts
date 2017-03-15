@@ -4,9 +4,25 @@ module feng3d
      * 网格渲染器
      * @author feng 2016-12-12
      */
-    export class MeshRenderer extends Object3DComponent
+    export class Model extends Object3DComponent
     {
+        private _geometry: Geometry;
         private _material: Material;
+
+        /**
+         * 几何体
+         */
+        public get geometry(): Geometry
+        {
+            return this._geometry;
+        }
+
+        public set geometry(value: Geometry)
+        {
+            this._geometry && this.removeComponent(this._geometry);
+            this._geometry = value;
+            this._geometry && this.addComponent(this._geometry);
+        }
 
         /**
          * 材质

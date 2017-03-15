@@ -27,7 +27,7 @@ module feng3d
             });
         }
 
-        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer)
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: Model)
         {
             var object3D = meshRenderer.parentComponent;
             //更新数据

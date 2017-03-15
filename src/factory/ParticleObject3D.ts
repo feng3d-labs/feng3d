@@ -13,8 +13,8 @@ module feng3d
         {
             super(name);
 
-            this.getOrCreateComponentByClass(MeshFilter).geometry = new PointGeometry();
-            this.getOrCreateComponentByClass(MeshRenderer).material = new ParticleMaterial();
+            this.getOrCreateComponentByClass(Model).geometry = new PointGeometry();
+            this.getOrCreateComponentByClass(Model).material = new ParticleMaterial();
 
             var particleAnimator = this.getOrCreateComponentByClass(ParticleAnimator);
             particleAnimator.cycle = 10;

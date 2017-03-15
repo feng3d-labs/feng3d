@@ -12,7 +12,7 @@ module feng3d
             super();
         }
 
-        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer)
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: Model)
         {
             if (meshRenderer.parentComponent.realVisible)
                 super.drawRenderables(context3D, renderContext, meshRenderer);

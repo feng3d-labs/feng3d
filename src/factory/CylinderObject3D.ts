@@ -12,9 +12,9 @@ module feng3d
         constructor(name = "cylinder", topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true)
         {
             super(name);
-            var mesh = this.getOrCreateComponentByClass(MeshFilter);
-            mesh.geometry = new CylinderGeometry(topRadius, bottomRadius, height, segmentsW, segmentsH, topClosed, bottomClosed, surfaceClosed, yUp);
-            this.getOrCreateComponentByClass(MeshRenderer).material = new StandardMaterial();
+            var model = this.getOrCreateComponentByClass(Model);
+            model.geometry = new CylinderGeometry(topRadius, bottomRadius, height, segmentsW, segmentsH, topClosed, bottomClosed, surfaceClosed, yUp);
+            model.material = new StandardMaterial();
         }
     }
 }

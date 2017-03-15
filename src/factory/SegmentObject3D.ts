@@ -9,8 +9,10 @@ module feng3d
         constructor(name = "Segment3D")
         {
             super(name);
-            this.getOrCreateComponentByClass(MeshRenderer).material = new SegmentMaterial();
-            this.addComponent(new SegmentGeometry());
+            var model = new Model();
+            model.material = new SegmentMaterial();
+            model.geometry = new SegmentGeometry();
+            this.addComponent(model);
         }
     }
 }
