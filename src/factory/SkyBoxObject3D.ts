@@ -13,8 +13,8 @@ module feng3d
         constructor(images: HTMLImageElement[], name = "skyBox")
         {
             super(name);
-            this.getOrCreateComponentByClass(MeshFilter).geometry = new SkyBoxGeometry();
-            this.getOrCreateComponentByClass(MeshRenderer).material = new SkyBoxMaterial(images);
+            this.getOrCreateComponentByClass(Model).geometry = new SkyBoxGeometry();
+            this.getOrCreateComponentByClass(Model).material = new SkyBoxMaterial(images);
         }
     }
 }

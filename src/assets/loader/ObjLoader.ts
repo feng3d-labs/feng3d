@@ -78,9 +78,9 @@ module feng3d
         private createMaterialObj(vertex: Float32Array, subObj: OBJ_SubOBJ)
         {
             var object3D = new Object3D();
-            var mesh = object3D.getOrCreateComponentByClass(MeshFilter);
+            var model = object3D.getOrCreateComponentByClass(Model);
 
-            var geometry = mesh.geometry = new Geometry();
+            var geometry = model.geometry = new Geometry();
             geometry.setVAData(GLAttribute.a_position, vertex, 3);
 
             var faces = subObj.faces;
@@ -96,7 +96,7 @@ module feng3d
                 }
             }
             geometry.setIndices(new Uint16Array(indices));
-            var material = object3D.getOrCreateComponentByClass(MeshRenderer).material = new ColorMaterial();
+            var material = object3D.getOrCreateComponentByClass(Model).material = new ColorMaterial();
 
             if (this._mtlData && this._mtlData[subObj.material])
             {

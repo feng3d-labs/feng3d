@@ -13,9 +13,11 @@ module feng3d
         constructor(radius = 50, height = 100, name = "cone")
         {
             super(name);
-            var mesh = this.getOrCreateComponentByClass(MeshFilter);
-            mesh.geometry = new ConeGeometry(radius, height);
-            this.getOrCreateComponentByClass(MeshRenderer).material = new StandardMaterial();
+
+            var model = new Model();
+            model.material = new StandardMaterial();
+            model.geometry = new ConeGeometry(radius, height);
+            this.addComponent(model);
         }
     }
 }

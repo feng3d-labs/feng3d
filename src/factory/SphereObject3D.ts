@@ -13,9 +13,9 @@ module feng3d
         constructor(name = "sphere")
         {
             super(name);
-            var mesh = this.getOrCreateComponentByClass(MeshFilter);
+            var mesh = this.getOrCreateComponentByClass(Model);
             mesh.geometry = new SphereGeometry();
-            this.getOrCreateComponentByClass(MeshRenderer).material = new StandardMaterial();
+            this.getOrCreateComponentByClass(Model).material = new StandardMaterial();
         }
     }
 }

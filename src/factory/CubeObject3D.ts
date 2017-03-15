@@ -13,9 +13,10 @@ module feng3d
         constructor(width = 100, name = "cube")
         {
             super(name);
-            var mesh = this.getOrCreateComponentByClass(MeshFilter);
-            mesh.geometry = new CubeGeometry(width, width, width);
-            this.getOrCreateComponentByClass(MeshRenderer).material = new StandardMaterial();
+            var model = new Model();
+            model.geometry = new CubeGeometry(width, width, width);
+            model.material = new StandardMaterial();
+            this.addComponent(model);
         }
     }
 }

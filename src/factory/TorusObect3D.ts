@@ -15,9 +15,9 @@ module feng3d
         constructor(name = "torus")
         {
             super(name);
-            var mesh = this.getOrCreateComponentByClass(MeshFilter);
+            var mesh = this.getOrCreateComponentByClass(Model);
             this.torusGeometry = mesh.geometry = new TorusGeometry();
-            this.getOrCreateComponentByClass(MeshRenderer).material = new StandardMaterial();
+            this.getOrCreateComponentByClass(Model).material = new StandardMaterial();
         }
     }
 }

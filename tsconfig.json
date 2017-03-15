@@ -86,8 +86,7 @@
         "src/core/Object3DComponent.ts",
         "src/core/Transform.ts",
         "src/core/Object3DEvent.ts",
-        "src/core/MeshFilter.ts",
-        "src/core/MeshRenderer.ts",
+        "src/core/Model.ts",
         "src/core/Object3dScript.ts",
         //3D场景
         "src/scene/Scene3D.ts",

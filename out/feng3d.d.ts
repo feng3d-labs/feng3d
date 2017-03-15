@@ -3277,7 +3277,7 @@ declare module feng3d {
          * 渲染
          */
         draw(context3D: Context3D, scene3D: Scene3D, camera: Camera): void;
-        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer): void;
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: Model): void;
         /**
          * 绘制3D对象
          */
@@ -3295,7 +3295,7 @@ declare module feng3d {
      */
     class ForwardRenderer extends Renderer {
         constructor();
-        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer): void;
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: Model): void;
     }
 }
 declare module feng3d {
@@ -3311,7 +3311,7 @@ declare module feng3d {
          * 渲染
          */
         draw(context3D: Context3D, scene3D: Scene3D, camera: Camera): void;
-        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: MeshRenderer): void;
+        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: Model): void;
         /**
          * 激活渲染程序
          */
@@ -3783,25 +3783,16 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 网格
+     * 网格渲染器
      * @author feng 2016-12-12
      */
-    class MeshFilter extends Object3DComponent {
+    class Model extends Object3DComponent {
         private _geometry;
+        private _material;
         /**
          * 几何体
          */
         geometry: Geometry;
-        constructor();
-    }
-}
-declare module feng3d {
-    /**
-     * 网格渲染器
-     * @author feng 2016-12-12
-     */
-    class MeshRenderer extends Object3DComponent {
-        private _material;
         /**
          * 材质
          */
@@ -3849,7 +3840,7 @@ declare module feng3d {
         /**
          * 渲染列表
          */
-        readonly renderers: MeshRenderer[];
+        readonly renderers: Model[];
         /**
          * 灯光列表
          */
@@ -3945,7 +3936,7 @@ declare module feng3d {
         /**
          * 渲染器
          */
-        renderer?: MeshRenderer;
+        renderer?: Model;
     }
 }
 declare module feng3d {
@@ -6353,7 +6344,6 @@ declare module feng3d {
      * @author feng 2017-02-06
      */
     class PlaneObject3D extends Object3D {
-        planeGeometry: PlaneGeometry;
         /**
          * 构建3D对象
          */
