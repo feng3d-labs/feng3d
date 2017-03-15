@@ -90,7 +90,7 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext)
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
 
             if (this._isDirty)
@@ -106,7 +106,7 @@ module feng3d
 
             var autoRenderDataHolder = this.getComponentByType(ParticleRenderDataHolder);
             autoRenderDataHolder.update(this.particleGlobal);
-            super.updateRenderData(renderContext);
+            super.updateRenderData(renderContext, renderData);
         }
     }
 

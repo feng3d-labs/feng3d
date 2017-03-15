@@ -31,9 +31,8 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext)
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            super.updateRenderData(renderContext);
             //
             this._renderData.shaderParams.renderMode = this.renderMode;
             //
@@ -42,6 +41,7 @@ module feng3d
                 this._renderData.vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
                 this._renderData.fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");
             }
+            super.updateRenderData(renderContext, renderData);
         }
     }
 }

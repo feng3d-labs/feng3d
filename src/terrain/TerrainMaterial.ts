@@ -30,17 +30,16 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext)
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-
-            super.updateRenderData(renderContext);
-
             this._renderData.uniforms[RenderDataID.s_texture] = this.diffuseTexture;
             this._renderData.uniforms[RenderDataID.s_blendTexture] = this.blendTexture;
             this._renderData.uniforms[RenderDataID.s_splatTexture1] = this.splatTexture1;
             this._renderData.uniforms[RenderDataID.s_splatTexture2] = this.splatTexture2;
             this._renderData.uniforms[RenderDataID.s_splatTexture3] = this.splatTexture3;
             this._renderData.uniforms[RenderDataID.u_splatRepeats] = this.splatRepeats;
+
+            super.updateRenderData(renderContext, renderData);
         }
     }
 }

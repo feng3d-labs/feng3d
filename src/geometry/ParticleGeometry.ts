@@ -46,10 +46,8 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext)
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            super.updateRenderData(renderContext);
-
             if (this.isDirty)
             {
                 this.cloneFrom(new PlaneGeometry(10, 10, 1, 1, false));
@@ -59,6 +57,7 @@ module feng3d
                 }
                 this.isDirty = false;
             }
+            super.updateRenderData(renderContext, renderData);
         }
     }
 }

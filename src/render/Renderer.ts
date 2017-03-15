@@ -8,9 +8,6 @@ module feng3d
     export class Renderer
     {
 
-        /** 渲染原子 */
-        protected _renderAtomic = new RenderAtomic();
-
         /**
 		 * 渲染
 		 */
@@ -21,6 +18,8 @@ module feng3d
             renderContext.clear();
             renderContext.camera = camera;
             renderContext.lights = scene3D.lights;
+            //更新数据
+            renderContext.updateRenderData();
             scene3D.renderers.forEach(element =>
             {
                 this.drawRenderables(context3D, renderContext, element);
@@ -30,44 +29,42 @@ module feng3d
         protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: Model)
         {
             var object3D = meshRenderer.parentComponent;
-            //更新数据
-            renderContext.updateRenderData(object3D);
-            object3D.updateRenderData(renderContext);
+            var renderData = new RenderData();
+            object3D.updateRenderData(renderContext, renderData);
             //收集数据
-            renderContext.activate(this._renderAtomic);
-            object3D.activate(this._renderAtomic);
+            RenderDataUtil.active(renderData, renderContext.renderData)
+            RenderDataUtil.active(renderData, object3D.renderData)
             //绘制
-            this.drawObject3D(context3D);            //
-            //释放数据
-            object3D.deactivate(this._renderAtomic);
-            renderContext.deactivate(this._renderAtomic);
+            this.drawObject3D(context3D, renderData);            //
         }
 
         /**
          * 绘制3D对象
          */
-        protected drawObject3D(context3D: Context3D)
+        protected drawObject3D(context3D: Context3D, renderAtomic: RenderData)
         {
-            var shaderProgram = this.activeShaderProgram(context3D, this._renderAtomic.vertexCode, this._renderAtomic.fragmentCode);
+            var shaderProgram = this.activeShaderProgram(context3D, renderAtomic);
             if (!shaderProgram)
                 return;
             _samplerIndex = 0;
             //
-            activeAttributes(context3D, shaderProgram, this._renderAtomic.attributes);
-            activeUniforms(context3D, shaderProgram, this._renderAtomic.uniforms);
-            dodraw(context3D, this._renderAtomic.shaderParams, this._renderAtomic.indexBuffer, this._renderAtomic.instanceCount);
+            activeAttributes(context3D, shaderProgram, renderAtomic.attributes);
+            activeUniforms(context3D, shaderProgram, renderAtomic.uniforms);
+            dodraw(context3D, renderAtomic.shaderParams, renderAtomic.indexBuffer, renderAtomic.instanceCount);
         }
 
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string)
+        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderData)
         {
+            var vertexCode = renderAtomic.vertexCode;
+            var fragmentCode = renderAtomic.fragmentCode;
             if (!vertexCode || !fragmentCode)
                 return null;
 
             //应用宏
-            var shaderMacro = ShaderLib.getMacroCode(this._renderAtomic.shaderMacro);
+            var shaderMacro = ShaderLib.getMacroCode(renderAtomic.shaderMacro);
             vertexCode = vertexCode.replace(/#define\s+macros/, shaderMacro);
             fragmentCode = fragmentCode.replace(/#define\s+macros/, shaderMacro);
             //渲染程序

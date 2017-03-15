@@ -7,8 +7,8 @@ module feng3d
      */
     export class RenderContext
     {
+        public get renderData() { return this._renderData; }
         protected _renderData = new RenderData();
-
         /**
          * 摄像机
          */
@@ -22,15 +22,17 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(object3D: Object3D)
+        public updateRenderData()
         {
+            this._renderData = new RenderData();
+
             var pointLights: Light[] = [];
-            this.camera.updateRenderData(this);
+            this.camera.updateRenderData(this, this._renderData);
             var light: Light;
             for (var i = 0; i < this.lights.length; i++)
             {
                 light = this.lights[i];
-                light.updateRenderData(this);
+                light.updateRenderData(this, this._renderData);
                 if (light.lightType == LightType.Point)
                     pointLights.push(light);
             }
@@ -58,26 +60,6 @@ module feng3d
                 this._renderData.uniforms[RenderDataID.u_pointLightColors] = pointLightDiffuses;
                 this._renderData.uniforms[RenderDataID.u_pointLightIntensitys] = pointLightIntensitys;
             }
-        }
-
-        /**
-		 * 激活
-		 * @param renderData	渲染数据
-		 */
-        public activate(renderData: RenderAtomic)
-        {
-            RenderDataUtil.active(renderData, this._renderData);
-            this.camera.activate(renderData);
-        }
-
-        /**
-		 * 释放
-		 * @param renderData	渲染数据
-		 */
-        public deactivate(renderData: RenderAtomic)
-        {
-            RenderDataUtil.deactivate(renderData, this._renderData);
-            this.camera.deactivate(renderData);
         }
 
         /**

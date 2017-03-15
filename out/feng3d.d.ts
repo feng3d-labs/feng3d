@@ -2845,17 +2845,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData: RenderAtomic): void;
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData: RenderAtomic): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
         /**
          * 添加组件到指定位置
          * @param component		被添加的组件
@@ -3236,6 +3226,7 @@ declare module feng3d {
      * @author feng 2017-01-04
      */
     class RenderContext {
+        readonly renderData: RenderData;
         protected _renderData: RenderData;
         /**
          * 摄像机
@@ -3248,17 +3239,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(object3D: Object3D): void;
-        /**
-         * 激活
-         * @param renderData	渲染数据
-         */
-        activate(renderData: RenderAtomic): void;
-        /**
-         * 释放
-         * @param renderData	渲染数据
-         */
-        deactivate(renderData: RenderAtomic): void;
+        updateRenderData(): void;
         /**
          * 清理
          */
@@ -3271,8 +3252,6 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class Renderer {
-        /** 渲染原子 */
-        protected _renderAtomic: RenderAtomic;
         /**
          * 渲染
          */
@@ -3281,11 +3260,11 @@ declare module feng3d {
         /**
          * 绘制3D对象
          */
-        protected drawObject3D(context3D: Context3D): void;
+        protected drawObject3D(context3D: Context3D, renderAtomic: RenderData): void;
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram;
+        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderData): WebGLProgram;
     }
 }
 declare module feng3d {
@@ -3315,7 +3294,7 @@ declare module feng3d {
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram;
+        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderData): WebGLProgram;
     }
 }
 declare module feng3d {
@@ -3352,6 +3331,7 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Object3D extends RenderDataHolder implements Serializable {
+        readonly renderData: RenderData;
         protected mouseEnabled_: boolean;
         protected visible_: boolean;
         /**
@@ -3714,7 +3694,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
     /**
      * 变换事件(3D状态发生改变、位置、旋转、缩放)
@@ -3996,7 +3976,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
         /**
          * 几何体变脏
          */
@@ -4144,7 +4124,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -4324,7 +4304,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -4810,7 +4790,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -4827,7 +4807,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -4849,7 +4829,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -4899,7 +4879,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -4914,7 +4894,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -4952,7 +4932,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -4978,7 +4958,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -5225,7 +5205,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -5446,7 +5426,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
     class ParticleRenderDataHolder extends RenderDataHolder {
         /**
@@ -5814,7 +5794,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(renderContext: RenderContext): void;
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
         /**
          * @inheritDoc
          */

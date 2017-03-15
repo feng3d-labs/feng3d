@@ -53,11 +53,11 @@ module feng3d
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string)
+        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderData)
         {
-            vertexCode = ShaderLib.getShaderCode(this._shaderName + ".vertex");
-            fragmentCode = ShaderLib.getShaderCode(this._shaderName + ".fragment");
-            return super.activeShaderProgram(context3D, vertexCode, fragmentCode);
+            renderAtomic.vertexCode = ShaderLib.getShaderCode(this._shaderName + ".vertex");
+            renderAtomic.fragmentCode = ShaderLib.getShaderCode(this._shaderName + ".fragment");
+            return super.activeShaderProgram(context3D, renderAtomic);
         }
     }
 }

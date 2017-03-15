@@ -23,11 +23,10 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext)
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            super.updateRenderData(renderContext);
-
             this._renderData.uniforms[RenderDataID.u_PointSize] = this.pointSize;
+            super.updateRenderData(renderContext, renderData);
         }
     }
 }
