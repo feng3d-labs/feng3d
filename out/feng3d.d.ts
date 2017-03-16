@@ -2836,27 +2836,15 @@ declare module feng3d {
      * @author feng 2016-6-7
      */
     class RenderDataHolder extends Component {
-        protected _renderData: RenderData;
-        private _subRenderDataHolders;
         /**
          * 创建Context3D数据缓冲
          */
         constructor();
+        collectRenderDataHolder(renderData?: RenderData): void;
         /**
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
-        /**
-         * 添加组件到指定位置
-         * @param component		被添加的组件
-         * @param index			插入的位置
-         */
-        addComponentAt(component: Component, index: number): void;
-        /**
-         * 移除组件
-         * @param index		要删除的 Component 的子索引。
-         */
-        removeComponentAt(index: number): Component;
     }
 }
 declare module feng3d {
@@ -2864,7 +2852,20 @@ declare module feng3d {
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      * @author feng 2016-06-20
      */
-    class RenderAtomic {
+    class RenderAtomic extends EventDispatcher {
+        /**
+         * 数据是否失效
+         */
+        static readonly INVALIDATE: string;
+        private _invalidate;
+        private _children;
+        private addChild(child);
+        private removeChild(child);
+        private invalidate();
+        private renderDataHolders;
+        addRenderDataHolder(renderDataHolder: RenderDataHolder): void;
+        update(renderContext: RenderContext): void;
+        clear(): void;
         /**
          * 顶点索引缓冲
          */
@@ -3226,8 +3227,6 @@ declare module feng3d {
      * @author feng 2017-01-04
      */
     class RenderContext {
-        readonly renderData: RenderData;
-        protected _renderData: RenderData;
         /**
          * 摄像机
          */
@@ -3239,7 +3238,7 @@ declare module feng3d {
         /**
          * 更新渲染数据
          */
-        updateRenderData(): void;
+        updateRenderData(renderAtomic: RenderAtomic): void;
         /**
          * 清理
          */
@@ -3331,7 +3330,7 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Object3D extends RenderDataHolder implements Serializable {
-        readonly renderData: RenderData;
+        renderData: RenderData;
         protected mouseEnabled_: boolean;
         protected visible_: boolean;
         /**
@@ -3353,6 +3352,7 @@ declare module feng3d {
          * 保存为数据
          */
         saveToData(): void;
+        updateRender(renderContext: RenderContext): void;
         /**
          * 从数据初始化
          */
@@ -3366,6 +3366,10 @@ declare module feng3d {
          * 构建3D对象
          */
         constructor(name?: string);
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
         /**
          * 父对象
          */
@@ -3778,6 +3782,7 @@ declare module feng3d {
          */
         material: Material;
         constructor();
+        collectRenderDataHolder(renderData?: RenderData): void;
         /**
          * 处理被添加组件事件
          */
@@ -3968,6 +3973,14 @@ declare module feng3d {
      * @author feng 2016-04-28
      */
     class Geometry extends RenderDataHolder {
+        /**
+         * 顶点索引缓冲
+         */
+        private indexBuffer;
+        /**
+         * 属性数据列表
+         */
+        private attributes;
         private _isDirty;
         /**
          * 创建一个几何体
@@ -5383,6 +5396,10 @@ declare module feng3d {
      */
     class ParticleAnimator extends Object3DComponent {
         /**
+         * 属性数据列表
+         */
+        private attributes;
+        /**
          * 是否正在播放
          */
         isPlaying: boolean;
@@ -5432,7 +5449,7 @@ declare module feng3d {
          * @param particle      粒子
          */
         private collectionParticle(particle);
-        private update(particleGlobal);
+        private update(particleGlobal, renderData);
         /**
          * 收集粒子属性数据
          * @param attributeID       属性编号

@@ -7,8 +7,6 @@ module feng3d
      */
     export class RenderContext
     {
-        public get renderData() { return this._renderData; }
-        protected _renderData = new RenderData();
         /**
          * 摄像机
          */
@@ -22,17 +20,15 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData()
+        public updateRenderData(renderAtomic: RenderAtomic)
         {
-            this._renderData = new RenderData();
-
             var pointLights: Light[] = [];
-            this.camera.updateRenderData(this, this._renderData);
+            this.camera.updateRenderData(this, renderAtomic);
             var light: Light;
             for (var i = 0; i < this.lights.length; i++)
             {
                 light = this.lights[i];
-                light.updateRenderData(this, this._renderData);
+                light.updateRenderData(this, renderAtomic);
                 if (light.lightType == LightType.Point)
                     pointLights.push(light);
             }
@@ -48,17 +44,17 @@ module feng3d
                 pointLightIntensitys.push(light.intensity);
             }
             //设置点光源数据
-            this._renderData.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
+            renderAtomic.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
             if (pointLights.length > 0)
             {
-                this._renderData.shaderMacro.addMacros.A_NORMAL_NEED = 1;
-                this._renderData.shaderMacro.addMacros.V_NORMAL_NEED = 1;
-                this._renderData.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
-                this._renderData.shaderMacro.addMacros.U_CAMERAmATRIX_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.U_CAMERAmATRIX_NEED = 1;
                 //
-                this._renderData.uniforms[RenderDataID.u_pointLightPositions] = pointLightPositions;
-                this._renderData.uniforms[RenderDataID.u_pointLightColors] = pointLightDiffuses;
-                this._renderData.uniforms[RenderDataID.u_pointLightIntensitys] = pointLightIntensitys;
+                renderAtomic.uniforms[RenderDataID.u_pointLightPositions] = pointLightPositions;
+                renderAtomic.uniforms[RenderDataID.u_pointLightColors] = pointLightDiffuses;
+                renderAtomic.uniforms[RenderDataID.u_pointLightIntensitys] = pointLightIntensitys;
             }
         }
 

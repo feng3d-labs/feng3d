@@ -34,12 +34,12 @@ module feng3d
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
             //
-            this._renderData.shaderParams.renderMode = this.renderMode;
+            renderData.shaderParams.renderMode = this.renderMode;
             //
             if (this.shaderName)
             {
-                this._renderData.vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
-                this._renderData.fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");
+                renderData.vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
+                renderData.fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");
             }
             super.updateRenderData(renderContext, renderData);
         }

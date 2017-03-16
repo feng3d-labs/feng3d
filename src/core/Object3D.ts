@@ -6,7 +6,7 @@ module feng3d
      */
     export class Object3D extends RenderDataHolder implements Serializable
     {
-        public get renderData() { return this._renderData; }
+        public renderData = new RenderData();
 
         //-序列化
         protected mouseEnabled_: boolean = true;
@@ -54,6 +54,13 @@ module feng3d
             // return data;
         }
 
+        public updateRender(renderContext: RenderContext)
+        {
+            this.renderData.clear();
+            this.collectRenderDataHolder(this.renderData);
+            this.renderData.update(renderContext);
+        }
+
         /**
          * 从数据初始化
          */
@@ -96,12 +103,19 @@ module feng3d
             //
             this.transform = new Transform();
             //
-            this._renderData.uniforms[RenderDataID.u_objectID] = this._object3DID;
-            //
             this.addEventListener(Object3DEvent.ADDED, this.onAdded, this);
             this.addEventListener(Object3DEvent.REMOVED, this.onRemoved, this);
             this.addEventListener(ComponentEvent.ADDED_COMPONENT, this.onAddedComponent, this);
             this.addEventListener(ComponentEvent.REMOVED_COMPONENT, this.onRemovedComponent, this);
+        }
+
+		/**
+		 * 更新渲染数据
+		 */
+        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
+        {
+            //
+            renderData.uniforms[RenderDataID.u_objectID] = this._object3DID;
         }
 
         /**

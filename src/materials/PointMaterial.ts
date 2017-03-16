@@ -25,7 +25,7 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            this._renderData.uniforms[RenderDataID.u_PointSize] = this.pointSize;
+            renderData.uniforms[RenderDataID.u_PointSize] = this.pointSize;
             super.updateRenderData(renderContext, renderData);
         }
     }

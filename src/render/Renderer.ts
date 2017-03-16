@@ -18,8 +18,6 @@ module feng3d
             renderContext.clear();
             renderContext.camera = camera;
             renderContext.lights = scene3D.lights;
-            //更新数据
-            renderContext.updateRenderData();
             scene3D.renderers.forEach(element =>
             {
                 this.drawRenderables(context3D, renderContext, element);
@@ -29,13 +27,13 @@ module feng3d
         protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: Model)
         {
             var object3D = meshRenderer.parentComponent;
-            var renderData = new RenderData();
-            object3D.updateRenderData(renderContext, renderData);
+            //更新数据
+            object3D.updateRender(renderContext);
             //收集数据
-            RenderDataUtil.active(renderData, renderContext.renderData)
-            RenderDataUtil.active(renderData, object3D.renderData)
+            // RenderDataUtil.active(renderData, renderContext.renderData)
+            // RenderDataUtil.active(renderData, object3D.renderData)
             //绘制
-            this.drawObject3D(context3D, renderData);            //
+            this.drawObject3D(context3D, object3D.renderData);            //
         }
 
         /**

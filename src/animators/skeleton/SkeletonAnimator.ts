@@ -67,8 +67,8 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            this._renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this.skeleton.numJoints;
-            this._renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
+            renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this.skeleton.numJoints;
+            renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
 
             super.updateRenderData(renderContext, renderData);
         }

@@ -24,8 +24,7 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-
-            this._renderData.uniforms[RenderDataID.s_texture] = this.texture;
+            renderData.uniforms[RenderDataID.s_texture] = this.texture;
             super.updateRenderData(renderContext, renderData);
         }
     }

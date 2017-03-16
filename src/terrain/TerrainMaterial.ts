@@ -32,12 +32,12 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            this._renderData.uniforms[RenderDataID.s_texture] = this.diffuseTexture;
-            this._renderData.uniforms[RenderDataID.s_blendTexture] = this.blendTexture;
-            this._renderData.uniforms[RenderDataID.s_splatTexture1] = this.splatTexture1;
-            this._renderData.uniforms[RenderDataID.s_splatTexture2] = this.splatTexture2;
-            this._renderData.uniforms[RenderDataID.s_splatTexture3] = this.splatTexture3;
-            this._renderData.uniforms[RenderDataID.u_splatRepeats] = this.splatRepeats;
+            renderData.uniforms[RenderDataID.s_texture] = this.diffuseTexture;
+            renderData.uniforms[RenderDataID.s_blendTexture] = this.blendTexture;
+            renderData.uniforms[RenderDataID.s_splatTexture1] = this.splatTexture1;
+            renderData.uniforms[RenderDataID.s_splatTexture2] = this.splatTexture2;
+            renderData.uniforms[RenderDataID.s_splatTexture3] = this.splatTexture3;
+            renderData.uniforms[RenderDataID.u_splatRepeats] = this.splatRepeats;
 
             super.updateRenderData(renderContext, renderData);
         }

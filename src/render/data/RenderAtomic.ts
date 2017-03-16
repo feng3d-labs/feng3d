@@ -35,6 +35,27 @@ module feng3d
             this._invalidate = true;
         }
 
+        private renderDataHolders: RenderDataHolder[] = [];
+
+        public addRenderDataHolder(renderDataHolder: RenderDataHolder)
+        {
+            this.renderDataHolders.push(renderDataHolder);
+        }
+
+        public update(renderContext: RenderContext)
+        {
+            renderContext.updateRenderData(this);
+            this.renderDataHolders.forEach(element =>
+            {
+                element.updateRenderData(renderContext, this);
+            });
+        }
+
+        public clear()
+        {
+            this.renderDataHolders.length = 0;
+        }
+
         /**
          * 顶点索引缓冲
          */

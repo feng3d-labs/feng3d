@@ -328,7 +328,7 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            this._renderData.uniforms[RenderDataID.u_modelMatrix] = this.globalMatrix3D;
+            renderData.uniforms[RenderDataID.u_modelMatrix] = this.globalMatrix3D;
             super.updateRenderData(renderContext, renderData);
         }
     }

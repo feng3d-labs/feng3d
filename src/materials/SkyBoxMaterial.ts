@@ -24,12 +24,11 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-
             //
             this.skyBoxSize.x = this.skyBoxSize.y = this.skyBoxSize.z = renderContext.camera.far / Math.sqrt(3);
             //
-            this._renderData.uniforms[RenderDataID.s_skyboxTexture] = this.skyBoxTextureCube;
-            this._renderData.uniforms[RenderDataID.u_skyBoxSize] = this.skyBoxSize;
+            renderData.uniforms[RenderDataID.s_skyboxTexture] = this.skyBoxTextureCube;
+            renderData.uniforms[RenderDataID.u_skyBoxSize] = this.skyBoxSize;
             super.updateRenderData(renderContext, renderData);
         }
     }

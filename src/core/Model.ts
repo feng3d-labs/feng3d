@@ -46,6 +46,11 @@ module feng3d
             this.material = new ColorMaterial();
         }
 
+        public collectRenderDataHolder(renderData: RenderData = null)
+        {
+            super.collectRenderDataHolder(renderData);
+        }
+
         /**
          * 处理被添加组件事件
          */

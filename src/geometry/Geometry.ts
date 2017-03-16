@@ -7,6 +7,15 @@ module feng3d
      */
     export class Geometry extends RenderDataHolder
     {
+        /**
+         * 顶点索引缓冲
+         */
+        private indexBuffer: IndexRenderData;
+        /**
+         * 属性数据列表
+         */
+        private attributes: { [name: string]: AttributeRenderData } = {};
+
         private _isDirty = true;
 
         /**
@@ -27,6 +36,11 @@ module feng3d
             {
                 this.buildGeometry();
                 this._isDirty = false;
+            }
+            renderData.indexBuffer = this.indexBuffer;
+            for (var attributeName in this.attributes)
+            {
+                renderData.attributes[attributeName] = this.attributes[attributeName];
             }
             super.updateRenderData(renderContext, renderData);
         }
@@ -52,9 +66,9 @@ module feng3d
 		 */
         public setIndices(indices: Uint16Array)
         {
-            this._renderData.indexBuffer = new IndexRenderData();
-            this._renderData.indexBuffer.indices = indices;
-            this._renderData.indexBuffer.count = indices.length;
+            this.indexBuffer = new IndexRenderData();
+            this.indexBuffer.indices = indices;
+            this.indexBuffer.count = indices.length;
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_INDEX_DATA));
         }
 
@@ -66,7 +80,7 @@ module feng3d
 		 */
         public setVAData(vaId: string, data: Float32Array, stride: number)
         {
-            this._renderData.attributes[vaId] = new AttributeRenderData(data, stride);
+            this.attributes[vaId] = new AttributeRenderData(data, stride);
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
         }
 
@@ -78,7 +92,7 @@ module feng3d
         public getVAData(vaId: string): AttributeRenderData
         {
             this.dispatchEvent(new GeometryEvent(GeometryEvent.GET_VA_DATA, vaId));
-            return this._renderData.attributes[vaId];
+            return this.attributes[vaId];
         }
 
         /**
@@ -87,9 +101,9 @@ module feng3d
         public get numVertex()
         {
             var numVertex = 0;
-            for (var attributeName in this._renderData.attributes)
+            for (var attributeName in this.attributes)
             {
-                var attributeRenderData = this._renderData.attributes[attributeName];
+                var attributeRenderData = this.attributes[attributeName];
                 numVertex = attributeRenderData.data.length / attributeRenderData.stride;
                 break;
             }
@@ -101,13 +115,13 @@ module feng3d
          */
         public addGeometry(geometry: Geometry)
         {
-            var attributes = this._renderData.attributes;
-            var addAttributes = geometry._renderData.attributes;
+            var attributes = this.attributes;
+            var addAttributes = geometry.attributes;
             //当前顶点数量
             var oldNumVertex = this.numVertex;
             //合并索引
-            var indices = this._renderData.indexBuffer.indices;
-            var targetIndices = geometry._renderData.indexBuffer.indices;
+            var indices = this.indexBuffer.indices;
+            var targetIndices = geometry.indexBuffer.indices;
             var totalIndices = new Uint16Array(indices.length + targetIndices.length);
             totalIndices.set(indices, 0);
             for (var i = 0; i < targetIndices.length; i++)
@@ -134,8 +148,8 @@ module feng3d
         public clone()
         {
             var geometry = new Geometry();
-            geometry._renderData.indexBuffer = this._renderData.indexBuffer;
-            geometry._renderData.attributes = this._renderData.attributes;
+            geometry.indexBuffer = this.indexBuffer;
+            geometry.attributes = this.attributes;
             return geometry;
         }
 
@@ -144,8 +158,8 @@ module feng3d
          */
         public cloneFrom(geometry: Geometry)
         {
-            this._renderData.indexBuffer = geometry._renderData.indexBuffer;
-            this._renderData.attributes = geometry._renderData.attributes;
+            this.indexBuffer = geometry.indexBuffer;
+            this.attributes = geometry.attributes;
         }
     }
 }

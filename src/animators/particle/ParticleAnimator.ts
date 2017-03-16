@@ -8,6 +8,11 @@ module feng3d
     export class ParticleAnimator extends Object3DComponent
     {
         /**
+         * 属性数据列表
+         */
+        private attributes: { [name: string]: AttributeRenderData } = {};
+
+        /**
          * 是否正在播放
          */
         public isPlaying: boolean;
@@ -96,10 +101,15 @@ module feng3d
             }
 
             this.time = ((getTimer() - this.startTime) / 1000) % this.cycle;
-            this._renderData.uniforms[RenderDataID.u_particleTime] = this.time;
-            this._renderData.instanceCount = this.numParticles;
+            renderData.uniforms[RenderDataID.u_particleTime] = this.time;
+            renderData.instanceCount = this.numParticles;
 
-            this.update(this.particleGlobal);
+            for (var attributeName in this.attributes)
+            {
+                renderData.attributes[attributeName] = this.attributes[attributeName];
+            }
+
+            this.update(this.particleGlobal, renderData);
             super.updateRenderData(renderContext, renderData);
         }
 
@@ -115,17 +125,17 @@ module feng3d
             }
         }
 
-        private update(particleGlobal: ParticleGlobal)
+        private update(particleGlobal: ParticleGlobal, renderData: RenderAtomic)
         {
             //更新常量数据
             for (var uniform in particleGlobal)
             {
-                this._renderData.uniforms["u_particle_" + uniform] = particleGlobal[uniform];
+                renderData.uniforms["u_particle_" + uniform] = particleGlobal[uniform];
             }
 
             //更新宏定义
-            var boolMacros = this._renderData.shaderMacro.boolMacros = <any>{};
-            for (var attribute in this._renderData.attributes)
+            var boolMacros = renderData.shaderMacro.boolMacros = <any>{};
+            for (var attribute in renderData.attributes)
             {
                 boolMacros["D_" + attribute] = true;
             }
@@ -143,20 +153,18 @@ module feng3d
          */
         private collectionParticleAttribute(attribute: string, particle: Particle)
         {
-
             var attributeID = "a_particle_" + attribute;
             var data = particle[attribute];
             var index = particle.index;
             var numParticles = particle.total;
             //
-            var attributes = this._renderData.attributes;
-            var attributeRenderData = attributes[attributeID];
+            var attributeRenderData = this.attributes[attributeID];
             var vector3DData: Float32Array;
             if (typeof data == "number")
             {
                 if (!attributeRenderData)
                 {
-                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles), 1, 1)
+                    attributeRenderData = this.attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles), 1, 1)
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index] = data;
@@ -164,7 +172,7 @@ module feng3d
             {
                 if (!attributeRenderData)
                 {
-                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 3), 3, 1)
+                    attributeRenderData = this.attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 3), 3, 1)
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index * 3] = data.x;
@@ -174,7 +182,7 @@ module feng3d
             {
                 if (!attributeRenderData)
                 {
-                    attributeRenderData = attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 4), 4, 1)
+                    attributeRenderData = this.attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 4), 4, 1)
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index * 4] = data.r;

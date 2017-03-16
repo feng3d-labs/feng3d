@@ -7,12 +7,6 @@ module feng3d
 	 */
     export class RenderDataHolder extends Component
     {
-
-        protected _renderData = new RenderData();
-
-        //
-        private _subRenderDataHolders: RenderDataHolder[] = [];
-
 		/**
 		 * 创建Context3D数据缓冲
 		 */
@@ -21,55 +15,24 @@ module feng3d
             super();
         }
 
+        public collectRenderDataHolder(renderData: RenderData = null)
+        {
+            renderData.addRenderDataHolder(this);
+            this.components_.forEach(element =>
+            {
+                if (element instanceof RenderDataHolder)
+                {
+                    element.collectRenderDataHolder(renderData);
+                }
+            });
+        }
+
 		/**
 		 * 更新渲染数据
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            this._subRenderDataHolders.forEach(element =>
-            {
-                element.updateRenderData(renderContext, renderData);
-            });
-            RenderDataUtil.active(renderData, this._renderData)
-        }
 
-		/**
-		 * 添加组件到指定位置
-		 * @param component		被添加的组件
-		 * @param index			插入的位置
-		 */
-        public addComponentAt(component: Component, index: number): void
-        {
-            super.addComponentAt(component, index);
-            if (component != null && ClassUtils.is(component, RenderDataHolder))
-            {
-                var renderDataHolder: RenderDataHolder = ClassUtils.as(component, RenderDataHolder);
-                var index1 = this._subRenderDataHolders.indexOf(renderDataHolder);
-                if (index1 == -1)
-                {
-                    this._subRenderDataHolders.splice(index, 0, renderDataHolder);
-                }
-            }
-        }
-
-		/**
-         * 移除组件
-         * @param index		要删除的 Component 的子索引。
-         */
-        public removeComponentAt(index: number): Component
-        {
-            var component = this.components_[index];
-            if (component != null && ClassUtils.is(component, RenderDataHolder))
-            {
-                var renderDataHolder: RenderDataHolder = ClassUtils.as(component, RenderDataHolder);
-                var index1 = this._subRenderDataHolders.indexOf(renderDataHolder);
-                if (index1 != -1)
-                {
-                    this._subRenderDataHolders.splice(index1, 1);
-                }
-            }
-
-            return super.removeComponentAt(index);
         }
     }
 }
