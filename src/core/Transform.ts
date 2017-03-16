@@ -320,6 +320,7 @@ module feng3d
         {
             this._globalMatrix3DDirty = true;
             this._inverseGlobalMatrix3DDirty = true;
+            this.invalidateRenderData();
             this.notifySceneTransformChange();
         }
 

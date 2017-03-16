@@ -20,11 +20,11 @@ module feng3d
         {
             super();
 
-            Watcher.watch(this, ["width"], this.invalidate, this);
-            Watcher.watch(this, ["height"], this.invalidate, this);
-            Watcher.watch(this, ["segmentsW"], this.invalidate, this);
-            Watcher.watch(this, ["segmentsH"], this.invalidate, this);
-            Watcher.watch(this, ["yUp"], this.invalidate, this);
+            Watcher.watch(this, ["width"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["height"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["yUp"], this.invalidateGeometry, this);
         }
 
         /**

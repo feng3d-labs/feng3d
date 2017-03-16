@@ -2822,6 +2822,11 @@ declare module feng3d {
      */
     class RenderDataHolder extends Component {
         /**
+         * 是否每次必须更新
+         */
+        readonly updateEverytime: boolean;
+        protected _updateEverytime: boolean;
+        /**
          * 创建Context3D数据缓冲
          */
         constructor();
@@ -2830,6 +2835,17 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 添加组件到指定位置
+         * @param component		被添加的组件
+         * @param index			插入的位置
+         */
+        addComponentAt(component: Component, index: number): void;
+        /**
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
+         */
+        removeComponentAt(index: number): Component;
         protected invalidateRenderData(): void;
         protected invalidateRenderHolder(): void;
     }
@@ -2897,8 +2913,12 @@ declare module feng3d {
          */
         static readonly INVALIDATE_RENDERHOLDER: string;
         private _invalidateRenderDataHolderList;
+        renderHolderInvalid: boolean;
         private invalidate(event);
+        private invalidateRenderHolder();
+        private addInvalidateHolders(renderDataHolder);
         private renderDataHolders;
+        private updateEverytimeList;
         addRenderDataHolder(renderDataHolder: RenderDataHolder): void;
         update(renderContext: RenderContext): void;
         clear(): void;
@@ -3257,7 +3277,7 @@ declare module feng3d {
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderAtomic): WebGLProgram;
+        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string, shaderMacro: ShaderMacro): WebGLProgram;
     }
 }
 declare module feng3d {
@@ -3287,7 +3307,7 @@ declare module feng3d {
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderAtomic): WebGLProgram;
+        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string, shaderMacro: ShaderMacro): WebGLProgram;
     }
 }
 declare module feng3d {
@@ -3963,7 +3983,7 @@ declare module feng3d {
          * 属性数据列表
          */
         private attributes;
-        private _isDirty;
+        private _geometryInvalidate;
         /**
          * 创建一个几何体
          */
@@ -3975,7 +3995,7 @@ declare module feng3d {
         /**
          * 几何体变脏
          */
-        protected invalidate(): void;
+        protected invalidateGeometry(): void;
         /**
          * 构建几何体
          */

@@ -15,15 +15,15 @@ module feng3d
         {
             super();
 
-            Watcher.watch(this, ["topRadius"], this.invalidate, this);
-            Watcher.watch(this, ["bottomRadius"], this.invalidate, this);
-            Watcher.watch(this, ["height"], this.invalidate, this);
-            Watcher.watch(this, ["segmentsW"], this.invalidate, this);
-            Watcher.watch(this, ["segmentsH"], this.invalidate, this);
-            Watcher.watch(this, ["topClosed"], this.invalidate, this);
-            Watcher.watch(this, ["bottomClosed"], this.invalidate, this);
-            Watcher.watch(this, ["surfaceClosed"], this.invalidate, this);
-            Watcher.watch(this, ["yUp"], this.invalidate, this);
+            Watcher.watch(this, ["topRadius"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["bottomRadius"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["height"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["topClosed"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["bottomClosed"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["surfaceClosed"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["yUp"], this.invalidateGeometry, this);
         }
 
         /**

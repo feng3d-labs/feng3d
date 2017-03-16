@@ -17,6 +17,7 @@ module feng3d
         {
             super();
             this.shaderName = "texture";
+            Watcher.watch(this, ["texture"], this.invalidateRenderData, this);
         }
 
         /**

@@ -38,7 +38,7 @@ module feng3d
          */
         protected drawObject3D(context3D: Context3D, renderAtomic: RenderAtomic)
         {
-            var shaderProgram = this.activeShaderProgram(context3D, renderAtomic);
+            var shaderProgram = this.activeShaderProgram(context3D, renderAtomic.vertexCode, renderAtomic.fragmentCode, renderAtomic.shaderMacro);
             if (!shaderProgram)
                 return;
             _samplerIndex = 0;
@@ -51,17 +51,15 @@ module feng3d
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderAtomic)
+        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string, shaderMacro: ShaderMacro)
         {
-            var vertexCode = renderAtomic.vertexCode;
-            var fragmentCode = renderAtomic.fragmentCode;
             if (!vertexCode || !fragmentCode)
                 return null;
 
             //应用宏
-            var shaderMacro = ShaderLib.getMacroCode(renderAtomic.shaderMacro);
-            vertexCode = vertexCode.replace(/#define\s+macros/, shaderMacro);
-            fragmentCode = fragmentCode.replace(/#define\s+macros/, shaderMacro);
+            var shaderMacroStr = ShaderLib.getMacroCode(shaderMacro);
+            vertexCode = vertexCode.replace(/#define\s+macros/, shaderMacroStr);
+            fragmentCode = fragmentCode.replace(/#define\s+macros/, shaderMacroStr);
             //渲染程序
             var shaderProgram = context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);

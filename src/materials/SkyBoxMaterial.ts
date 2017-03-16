@@ -17,6 +17,8 @@ module feng3d
             this.shaderName = "skybox";
             this.skyBoxSize = new Vector3D();
             this.skyBoxTextureCube = new TextureCube(images);
+
+            Watcher.watch(this, ["skyBoxTextureCube"], this.invalidateRenderData, this);
         }
 
         /**

@@ -58,6 +58,8 @@ module feng3d
         {
             super();
             this._single = true;
+
+            this._updateEverytime = true;
         }
 
         /**

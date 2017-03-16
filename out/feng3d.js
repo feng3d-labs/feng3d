@@ -4788,7 +4788,16 @@ var feng3d;
          */
         function RenderDataHolder() {
             _super.call(this);
+            this._updateEverytime = false;
         }
+        Object.defineProperty(RenderDataHolder.prototype, "updateEverytime", {
+            /**
+             * 是否每次必须更新
+             */
+            get: function () { return this._updateEverytime; },
+            enumerable: true,
+            configurable: true
+        });
         RenderDataHolder.prototype.collectRenderDataHolder = function (renderAtomic) {
             if (renderAtomic === void 0) { renderAtomic = null; }
             renderAtomic.addRenderDataHolder(this);
@@ -4802,6 +4811,24 @@ var feng3d;
          * 更新渲染数据
          */
         RenderDataHolder.prototype.updateRenderData = function (renderContext, renderData) {
+        };
+        /**
+         * 添加组件到指定位置
+         * @param component		被添加的组件
+         * @param index			插入的位置
+         */
+        RenderDataHolder.prototype.addComponentAt = function (component, index) {
+            _super.prototype.addComponentAt.call(this, component, index);
+            this.invalidateRenderHolder();
+        };
+        /**
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
+         */
+        RenderDataHolder.prototype.removeComponentAt = function (index) {
+            var component = _super.prototype.removeComponentAt.call(this, index);
+            this.invalidateRenderHolder();
+            return component;
         };
         RenderDataHolder.prototype.invalidateRenderData = function () {
             this.dispatchEvent(new feng3d.Event(feng3d.Object3DRenderAtomic.INVALIDATE));
@@ -4846,22 +4873,42 @@ var feng3d;
         function Object3DRenderAtomic() {
             _super.apply(this, arguments);
             this._invalidateRenderDataHolderList = [];
+            this.renderHolderInvalid = true;
             this.renderDataHolders = [];
+            this.updateEverytimeList = [];
         }
         Object3DRenderAtomic.prototype.invalidate = function (event) {
             var renderDataHolder = event.target;
+            this.addInvalidateHolders(renderDataHolder);
+        };
+        Object3DRenderAtomic.prototype.invalidateRenderHolder = function () {
+            this.renderHolderInvalid = true;
+        };
+        Object3DRenderAtomic.prototype.addInvalidateHolders = function (renderDataHolder) {
             if (this._invalidateRenderDataHolderList.indexOf(renderDataHolder) == -1) {
                 this._invalidateRenderDataHolderList.push(renderDataHolder);
             }
         };
         Object3DRenderAtomic.prototype.addRenderDataHolder = function (renderDataHolder) {
             this.renderDataHolders.push(renderDataHolder);
-            this._invalidateRenderDataHolderList.push(renderDataHolder);
+            if (renderDataHolder.updateEverytime) {
+                this.updateEverytimeList.push(renderDataHolder);
+            }
+            this.addInvalidateHolders(renderDataHolder);
             renderDataHolder.addEventListener(Object3DRenderAtomic.INVALIDATE, this.invalidate, this);
+            renderDataHolder.addEventListener(Object3DRenderAtomic.INVALIDATE_RENDERHOLDER, this.invalidateRenderHolder, this);
         };
         Object3DRenderAtomic.prototype.update = function (renderContext) {
             var _this = this;
             renderContext.updateRenderData(this);
+            // if (this._renderHolderInvalid)
+            // {
+            // this._invalidateRenderDataHolderList = this.renderDataHolders.concat();
+            //     this._renderHolderInvalid = false;
+            // }
+            this.updateEverytimeList.forEach(function (element) {
+                element.updateRenderData(renderContext, _this);
+            });
             this._invalidateRenderDataHolderList.forEach(function (element) {
                 element.updateRenderData(renderContext, _this);
             });
@@ -4871,8 +4918,10 @@ var feng3d;
             var _this = this;
             this.renderDataHolders.forEach(function (element) {
                 element.removeEventListener(Object3DRenderAtomic.INVALIDATE, _this.invalidate, _this);
+                element.removeEventListener(Object3DRenderAtomic.INVALIDATE_RENDERHOLDER, _this.invalidateRenderHolder, _this);
             });
             this.renderDataHolders.length = 0;
+            this.updateEverytimeList.length = 0;
         };
         /**
          * 数据是否失效，需要重新收集数据
@@ -5584,7 +5633,7 @@ var feng3d;
          * 绘制3D对象
          */
         Renderer.prototype.drawObject3D = function (context3D, renderAtomic) {
-            var shaderProgram = this.activeShaderProgram(context3D, renderAtomic);
+            var shaderProgram = this.activeShaderProgram(context3D, renderAtomic.vertexCode, renderAtomic.fragmentCode, renderAtomic.shaderMacro);
             if (!shaderProgram)
                 return;
             _samplerIndex = 0;
@@ -5596,15 +5645,13 @@ var feng3d;
         /**
          * 激活渲染程序
          */
-        Renderer.prototype.activeShaderProgram = function (context3D, renderAtomic) {
-            var vertexCode = renderAtomic.vertexCode;
-            var fragmentCode = renderAtomic.fragmentCode;
+        Renderer.prototype.activeShaderProgram = function (context3D, vertexCode, fragmentCode, shaderMacro) {
             if (!vertexCode || !fragmentCode)
                 return null;
             //应用宏
-            var shaderMacro = feng3d.ShaderLib.getMacroCode(renderAtomic.shaderMacro);
-            vertexCode = vertexCode.replace(/#define\s+macros/, shaderMacro);
-            fragmentCode = fragmentCode.replace(/#define\s+macros/, shaderMacro);
+            var shaderMacroStr = feng3d.ShaderLib.getMacroCode(shaderMacro);
+            vertexCode = vertexCode.replace(/#define\s+macros/, shaderMacroStr);
+            fragmentCode = fragmentCode.replace(/#define\s+macros/, shaderMacroStr);
             //渲染程序
             var shaderProgram = feng3d.context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
             context3D.useProgram(shaderProgram);
@@ -5795,10 +5842,10 @@ var feng3d;
         /**
          * 激活渲染程序
          */
-        MouseRenderer.prototype.activeShaderProgram = function (context3D, renderAtomic) {
-            renderAtomic.vertexCode = feng3d.ShaderLib.getShaderCode(this._shaderName + ".vertex");
-            renderAtomic.fragmentCode = feng3d.ShaderLib.getShaderCode(this._shaderName + ".fragment");
-            return _super.prototype.activeShaderProgram.call(this, context3D, renderAtomic);
+        MouseRenderer.prototype.activeShaderProgram = function (context3D, vertexCode, fragmentCode, shaderMacro) {
+            var vertexCode = feng3d.ShaderLib.getShaderCode(this._shaderName + ".vertex");
+            var fragmentCode = feng3d.ShaderLib.getShaderCode(this._shaderName + ".fragment");
+            return _super.prototype.activeShaderProgram.call(this, context3D, vertexCode, fragmentCode, shaderMacro);
         };
         return MouseRenderer;
     }(feng3d.Renderer));
@@ -5897,8 +5944,11 @@ var feng3d;
             this.addEventListener(feng3d.ComponentEvent.REMOVED_COMPONENT, this.onRemovedComponent, this);
         }
         Object3D.prototype.updateRender = function (renderContext) {
-            this.renderData.clear();
-            this.collectRenderDataHolder(this.renderData);
+            if (this.renderData.renderHolderInvalid) {
+                this.renderData.clear();
+                this.collectRenderDataHolder(this.renderData);
+                this.renderData.renderHolderInvalid = false;
+            }
             this.renderData.update(renderContext);
         };
         Object.defineProperty(Object3D.prototype, "object3DID", {
@@ -6648,6 +6698,7 @@ var feng3d;
         Transform.prototype.invalidateGlobalMatrix3D = function () {
             this._globalMatrix3DDirty = true;
             this._inverseGlobalMatrix3DDirty = true;
+            this.invalidateRenderData();
             this.notifySceneTransformChange();
         };
         /**
@@ -6990,16 +7041,16 @@ var feng3d;
              * 属性数据列表
              */
             this.attributes = {};
-            this._isDirty = true;
+            this._geometryInvalidate = true;
             this._single = true;
         }
         /**
          * 更新渲染数据
          */
         Geometry.prototype.updateRenderData = function (renderContext, renderData) {
-            if (this._isDirty) {
+            if (this._geometryInvalidate) {
                 this.buildGeometry();
-                this._isDirty = false;
+                this._geometryInvalidate = false;
             }
             renderData.indexBuffer = this.indexBuffer;
             for (var attributeName in this.attributes) {
@@ -7010,8 +7061,9 @@ var feng3d;
         /**
          * 几何体变脏
          */
-        Geometry.prototype.invalidate = function () {
-            this._isDirty = true;
+        Geometry.prototype.invalidateGeometry = function () {
+            this._geometryInvalidate = true;
+            this.invalidateRenderData();
         };
         /**
          * 构建几何体
@@ -7025,6 +7077,7 @@ var feng3d;
             this.indexBuffer = new feng3d.IndexRenderData();
             this.indexBuffer.indices = indices;
             this.indexBuffer.count = indices.length;
+            this.invalidateRenderData();
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.CHANGED_INDEX_DATA));
         };
         /**
@@ -7035,6 +7088,7 @@ var feng3d;
          */
         Geometry.prototype.setVAData = function (vaId, data, stride) {
             this.attributes[vaId] = new feng3d.AttributeRenderData(data, stride);
+            this.invalidateRenderData();
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.CHANGED_VA_DATA, vaId));
         };
         /**
@@ -7311,7 +7365,7 @@ var feng3d;
          */
         SegmentGeometry.prototype.addSegment = function (segment) {
             this.segments_.push(segment);
-            this.invalidate();
+            this.invalidateGeometry();
         };
         /**
          * 设置线段
@@ -7320,7 +7374,7 @@ var feng3d;
          */
         SegmentGeometry.prototype.setSegmentAt = function (segment, index) {
             this.segments_[index] = segment;
-            this.invalidate();
+            this.invalidateGeometry();
         };
         /**
          * 更新几何体
@@ -7357,7 +7411,7 @@ var feng3d;
          */
         SegmentGeometry.prototype.removeAllSegments = function () {
             this.segments.length = 0;
-            this.invalidate();
+            this.invalidateGeometry();
         };
         Object.defineProperty(SegmentGeometry.prototype, "segments", {
             /**
@@ -7772,11 +7826,11 @@ var feng3d;
             this.segmentsW = segmentsW;
             this.segmentsH = segmentsH;
             this.yUp = yUp;
-            feng3d.Watcher.watch(this, ["width"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["height"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["segmentsW"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["segmentsH"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["yUp"], this.invalidate, this);
+            feng3d.Watcher.watch(this, ["width"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["height"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["yUp"], this.invalidateGeometry, this);
         }
         /**
          * 构建几何体数据
@@ -7947,13 +8001,13 @@ var feng3d;
             this.segmentsH = segmentsH;
             this.segmentsD = segmentsD;
             this.tile6 = tile6;
-            feng3d.Watcher.watch(this, ["width"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["height"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["depth"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["segmentsW"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["segmentsH"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["segmentsD"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["tile6"], this.invalidate, this);
+            feng3d.Watcher.watch(this, ["width"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["height"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["depth"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsD"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["tile6"], this.invalidateGeometry, this);
         }
         CubeGeometry.prototype.buildGeometry = function () {
             var vertexPositionData = this.buildPosition();
@@ -8328,10 +8382,10 @@ var feng3d;
             this.segmentsW = segmentsW;
             this.segmentsH = segmentsH;
             this.yUp = yUp;
-            feng3d.Watcher.watch(this, ["radius"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["segmentsW"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["segmentsH"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["yUp"], this.invalidate, this);
+            feng3d.Watcher.watch(this, ["radius"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["yUp"], this.invalidateGeometry, this);
         }
         /**
          * 构建几何体数据
@@ -8497,11 +8551,11 @@ var feng3d;
             this.segmentsW = segmentsW;
             this.segmentsH = segmentsH;
             this.yUp = yUp;
-            feng3d.Watcher.watch(this, ["radius"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["height"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["segmentsW"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["segmentsH"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["yUp"], this.invalidate, this);
+            feng3d.Watcher.watch(this, ["radius"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["height"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["yUp"], this.invalidateGeometry, this);
         }
         /**
          * 构建几何体数据
@@ -8671,15 +8725,15 @@ var feng3d;
             this.bottomClosed = bottomClosed;
             this.surfaceClosed = surfaceClosed;
             this.yUp = yUp;
-            feng3d.Watcher.watch(this, ["topRadius"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["bottomRadius"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["height"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["segmentsW"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["segmentsH"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["topClosed"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["bottomClosed"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["surfaceClosed"], this.invalidate, this);
-            feng3d.Watcher.watch(this, ["yUp"], this.invalidate, this);
+            feng3d.Watcher.watch(this, ["topRadius"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["bottomRadius"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["height"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["topClosed"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["bottomClosed"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["surfaceClosed"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["yUp"], this.invalidateGeometry, this);
         }
         /**
          * 计算几何体顶点数
@@ -9297,6 +9351,8 @@ var feng3d;
             this.renderMode = feng3d.RenderMode.TRIANGLES;
             this._single = true;
             this._type = Material;
+            feng3d.Watcher.watch(this, ["shaderName"], this.invalidateRenderData, this);
+            feng3d.Watcher.watch(this, ["renderMode"], this.invalidateRenderData, this);
         }
         /**
          * 更新渲染数据
@@ -9331,6 +9387,7 @@ var feng3d;
             this.pointSize = 1;
             this.shaderName = "point";
             this.renderMode = feng3d.RenderMode.POINTS;
+            feng3d.Watcher.watch(this, ["pointSize"], this.invalidateRenderData, this);
         }
         /**
          * 更新渲染数据
@@ -9361,6 +9418,11 @@ var feng3d;
             _super.call(this);
             this.shaderName = "color";
             this.color = color || new feng3d.Color();
+            feng3d.Watcher.watch(this, ["color"], this.invalidateRenderData, this);
+            feng3d.Watcher.watch(this, ["color", "r"], this.invalidateRenderData, this);
+            feng3d.Watcher.watch(this, ["color", "g"], this.invalidateRenderData, this);
+            feng3d.Watcher.watch(this, ["color", "b"], this.invalidateRenderData, this);
+            feng3d.Watcher.watch(this, ["color", "a"], this.invalidateRenderData, this);
         }
         /**
          * 更新渲染数据
@@ -9431,6 +9493,7 @@ var feng3d;
         function TextureMaterial() {
             _super.call(this);
             this.shaderName = "texture";
+            feng3d.Watcher.watch(this, ["texture"], this.invalidateRenderData, this);
         }
         /**
          * 更新渲染数据
@@ -9456,6 +9519,7 @@ var feng3d;
             this.shaderName = "skybox";
             this.skyBoxSize = new feng3d.Vector3D();
             this.skyBoxTextureCube = new feng3d.TextureCube(images);
+            feng3d.Watcher.watch(this, ["skyBoxTextureCube"], this.invalidateRenderData, this);
         }
         /**
          * 更新渲染数据
@@ -9507,6 +9571,12 @@ var feng3d;
              */
             this.metalic = 1.0;
             this.shaderName = "standard";
+            feng3d.Watcher.watch(this, ["difuseTexture"], this.invalidateRenderData, this);
+            feng3d.Watcher.watch(this, ["baseColor"], this.invalidateRenderData, this);
+            feng3d.Watcher.watch(this, ["ambientColor"], this.invalidateRenderData, this);
+            feng3d.Watcher.watch(this, ["reflectance"], this.invalidateRenderData, this);
+            feng3d.Watcher.watch(this, ["roughness"], this.invalidateRenderData, this);
+            feng3d.Watcher.watch(this, ["metalic"], this.invalidateRenderData, this);
         }
         /**
          * 更新渲染数据
@@ -9551,6 +9621,7 @@ var feng3d;
         function SkeletonAnimatorMaterial() {
             _super.call(this);
             this.shaderName = "skeleton";
+            feng3d.Watcher.watch(this, ["texture"], this.invalidateRenderData, this);
         }
         /**
          * 更新渲染数据
@@ -10398,6 +10469,7 @@ var feng3d;
              */
             this.particleGlobal = {};
             this._single = true;
+            this._updateEverytime = true;
         }
         /**
          * 生成粒子

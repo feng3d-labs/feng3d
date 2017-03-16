@@ -23,6 +23,12 @@ module feng3d
             super();
             this.shaderName = "color";
             this.color = color || new Color();
+
+            Watcher.watch(this, ["color"], this.invalidateRenderData, this);
+            Watcher.watch(this, ["color", "r"], this.invalidateRenderData, this);
+            Watcher.watch(this, ["color", "g"], this.invalidateRenderData, this);
+            Watcher.watch(this, ["color", "b"], this.invalidateRenderData, this);
+            Watcher.watch(this, ["color", "a"], this.invalidateRenderData, this);
         }
 
         /**

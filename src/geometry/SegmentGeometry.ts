@@ -22,7 +22,7 @@ module feng3d
         public addSegment(segment: Segment)
         {
             this.segments_.push(segment);
-            this.invalidate();
+            this.invalidateGeometry();
         }
 
         /**
@@ -33,7 +33,7 @@ module feng3d
         public setSegmentAt(segment: Segment, index: number)
         {
             this.segments_[index] = segment;
-            this.invalidate();
+            this.invalidateGeometry();
         }
 
         /**
@@ -79,7 +79,7 @@ module feng3d
         public removeAllSegments()
         {
             this.segments.length = 0;
-            this.invalidate();
+            this.invalidateGeometry();
         }
 
 		/**

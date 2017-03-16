@@ -5,7 +5,7 @@ module feng3d
      * @author feng 2016-04-26
      */
     export class Object3D extends RenderDataHolder
-    {        
+    {
         public renderData = new Object3DRenderAtomic();
 
         //-序列化
@@ -39,8 +39,12 @@ module feng3d
 
         public updateRender(renderContext: RenderContext)
         {
-            this.renderData.clear();
-            this.collectRenderDataHolder(this.renderData);
+            if (this.renderData.renderHolderInvalid)
+            {
+                this.renderData.clear();
+                this.collectRenderDataHolder(this.renderData);
+                this.renderData.renderHolderInvalid = false;
+            }
             this.renderData.update(renderContext);
         }
 

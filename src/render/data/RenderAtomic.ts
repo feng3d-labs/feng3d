@@ -60,10 +60,21 @@ module feng3d
         public static readonly INVALIDATE_RENDERHOLDER = "invalidateRenderHolder";
 
         private _invalidateRenderDataHolderList: RenderDataHolder[] = [];
+        public renderHolderInvalid = true;
 
         private invalidate(event: Event)
         {
             var renderDataHolder = <RenderDataHolder>event.target;
+            this.addInvalidateHolders(renderDataHolder);
+        }
+
+        private invalidateRenderHolder()
+        {
+            this.renderHolderInvalid = true;
+        }
+
+        private addInvalidateHolders(renderDataHolder: RenderDataHolder)
+        {
             if (this._invalidateRenderDataHolderList.indexOf(renderDataHolder) == -1)
             {
                 this._invalidateRenderDataHolderList.push(renderDataHolder)
@@ -71,17 +82,32 @@ module feng3d
         }
 
         private renderDataHolders: RenderDataHolder[] = [];
+        private updateEverytimeList: RenderDataHolder[] = [];
 
         public addRenderDataHolder(renderDataHolder: RenderDataHolder)
         {
             this.renderDataHolders.push(renderDataHolder);
-            this._invalidateRenderDataHolderList.push(renderDataHolder);
+            if (renderDataHolder.updateEverytime)
+            {
+                this.updateEverytimeList.push(renderDataHolder);
+            }
+            this.addInvalidateHolders(renderDataHolder);
             renderDataHolder.addEventListener(Object3DRenderAtomic.INVALIDATE, this.invalidate, this)
+            renderDataHolder.addEventListener(Object3DRenderAtomic.INVALIDATE_RENDERHOLDER, this.invalidateRenderHolder, this)
         }
 
         public update(renderContext: RenderContext)
         {
             renderContext.updateRenderData(this);
+            // if (this._renderHolderInvalid)
+            // {
+            // this._invalidateRenderDataHolderList = this.renderDataHolders.concat();
+            //     this._renderHolderInvalid = false;
+            // }
+            this.updateEverytimeList.forEach(element =>
+            {
+                element.updateRenderData(renderContext, this);
+            });
             this._invalidateRenderDataHolderList.forEach(element =>
             {
                 element.updateRenderData(renderContext, this);
@@ -94,9 +120,11 @@ module feng3d
             this.renderDataHolders.forEach(element =>
             {
                 element.removeEventListener(Object3DRenderAtomic.INVALIDATE, this.invalidate, this)
+                element.removeEventListener(Object3DRenderAtomic.INVALIDATE_RENDERHOLDER, this.invalidateRenderHolder, this)
             });
 
             this.renderDataHolders.length = 0;
+            this.updateEverytimeList.length = 0;
         }
     }
 }

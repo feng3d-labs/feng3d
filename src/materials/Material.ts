@@ -25,6 +25,9 @@ module feng3d
             super();
             this._single = true;
             this._type = Material;
+
+            Watcher.watch(this, ["shaderName"], this.invalidateRenderData, this);
+            Watcher.watch(this, ["renderMode"], this.invalidateRenderData, this);
         }
 
         /**

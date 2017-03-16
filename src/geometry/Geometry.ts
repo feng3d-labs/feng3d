@@ -16,7 +16,7 @@ module feng3d
          */
         private attributes: { [name: string]: AttributeRenderData } = {};
 
-        private _isDirty = true;
+        private _geometryInvalidate = true;
 
         /**
 		 * 创建一个几何体
@@ -32,10 +32,10 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            if (this._isDirty)
+            if (this._geometryInvalidate)
             {
                 this.buildGeometry();
-                this._isDirty = false;
+                this._geometryInvalidate = false;
             }
             renderData.indexBuffer = this.indexBuffer;
             for (var attributeName in this.attributes)
@@ -48,9 +48,10 @@ module feng3d
         /**
          * 几何体变脏
          */
-        protected invalidate()
+        protected invalidateGeometry()
         {
-            this._isDirty = true;
+            this._geometryInvalidate = true;
+            this.invalidateRenderData();
         }
 
         /**
@@ -58,7 +59,6 @@ module feng3d
          */
         protected buildGeometry()
         {
-
         }
 
 		/**
@@ -69,6 +69,7 @@ module feng3d
             this.indexBuffer = new IndexRenderData();
             this.indexBuffer.indices = indices;
             this.indexBuffer.count = indices.length;
+            this.invalidateRenderData();
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_INDEX_DATA));
         }
 
@@ -81,6 +82,7 @@ module feng3d
         public setVAData(vaId: string, data: Float32Array, stride: number)
         {
             this.attributes[vaId] = new AttributeRenderData(data, stride);
+            this.invalidateRenderData();
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
         }
 

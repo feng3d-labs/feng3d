@@ -43,6 +43,13 @@ module feng3d
         {
             super();
             this.shaderName = "standard";
+
+            Watcher.watch(this, ["difuseTexture"], this.invalidateRenderData, this);
+            Watcher.watch(this, ["baseColor"], this.invalidateRenderData, this);
+            Watcher.watch(this, ["ambientColor"], this.invalidateRenderData, this);
+            Watcher.watch(this, ["reflectance"], this.invalidateRenderData, this);
+            Watcher.watch(this, ["roughness"], this.invalidateRenderData, this);
+            Watcher.watch(this, ["metalic"], this.invalidateRenderData, this);
         }
 
         /**
