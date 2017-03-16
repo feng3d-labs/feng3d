@@ -36,7 +36,7 @@ module feng3d
         /**
          * 绘制3D对象
          */
-        protected drawObject3D(context3D: Context3D, renderAtomic: RenderData)
+        protected drawObject3D(context3D: Context3D, renderAtomic: RenderAtomic)
         {
             var shaderProgram = this.activeShaderProgram(context3D, renderAtomic);
             if (!shaderProgram)
@@ -51,7 +51,7 @@ module feng3d
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderData)
+        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderAtomic)
         {
             var vertexCode = renderAtomic.vertexCode;
             var fragmentCode = renderAtomic.fragmentCode;

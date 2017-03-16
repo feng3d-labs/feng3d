@@ -7,7 +7,6 @@ module feng3d
      */
     export class Material extends RenderDataHolder
     {
-
         /**
         * 渲染模式
         */

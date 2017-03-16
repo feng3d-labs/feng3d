@@ -53,7 +53,7 @@ module feng3d
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderData)
+        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderAtomic)
         {
             renderAtomic.vertexCode = ShaderLib.getShaderCode(this._shaderName + ".vertex");
             renderAtomic.fragmentCode = ShaderLib.getShaderCode(this._shaderName + ".fragment");

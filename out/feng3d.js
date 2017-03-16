@@ -4789,12 +4789,12 @@ var feng3d;
         function RenderDataHolder() {
             _super.call(this);
         }
-        RenderDataHolder.prototype.collectRenderDataHolder = function (renderData) {
-            if (renderData === void 0) { renderData = null; }
-            renderData.addRenderDataHolder(this);
+        RenderDataHolder.prototype.collectRenderDataHolder = function (renderAtomic) {
+            if (renderAtomic === void 0) { renderAtomic = null; }
+            renderAtomic.addRenderDataHolder(this);
             this.components_.forEach(function (element) {
                 if (element instanceof RenderDataHolder) {
-                    element.collectRenderDataHolder(renderData);
+                    element.collectRenderDataHolder(renderAtomic);
                 }
             });
         };
@@ -4802,6 +4802,12 @@ var feng3d;
          * 更新渲染数据
          */
         RenderDataHolder.prototype.updateRenderData = function (renderContext, renderData) {
+        };
+        RenderDataHolder.prototype.invalidateRenderData = function () {
+            this.dispatchEvent(new feng3d.Event(feng3d.Object3DRenderAtomic.INVALIDATE));
+        };
+        RenderDataHolder.prototype.invalidateRenderHolder = function () {
+            this.dispatchEvent(new feng3d.Event(feng3d.Object3DRenderAtomic.INVALIDATE_RENDERHOLDER));
         };
         return RenderDataHolder;
     }(feng3d.Component));
@@ -4813,13 +4819,8 @@ var feng3d;
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      * @author feng 2016-06-20
      */
-    var RenderAtomic = (function (_super) {
-        __extends(RenderAtomic, _super);
+    var RenderAtomic = (function () {
         function RenderAtomic() {
-            _super.apply(this, arguments);
-            this._invalidate = true;
-            this._children = [];
-            this.renderDataHolders = [];
             /**
              * 属性数据列表
              */
@@ -4837,52 +4838,53 @@ var feng3d;
              */
             this.shaderMacro = new feng3d.ShaderMacro();
         }
-        RenderAtomic.prototype.addChild = function (child) {
-            feng3d.debuger && console.assert(child != null && this._children.indexOf(child) == -1);
-            child.addEventListener(RenderAtomic.INVALIDATE, this.invalidate, this);
-            this._children.push(child);
+        return RenderAtomic;
+    }());
+    feng3d.RenderAtomic = RenderAtomic;
+    var Object3DRenderAtomic = (function (_super) {
+        __extends(Object3DRenderAtomic, _super);
+        function Object3DRenderAtomic() {
+            _super.apply(this, arguments);
+            this._invalidateRenderDataHolderList = [];
+            this.renderDataHolders = [];
+        }
+        Object3DRenderAtomic.prototype.invalidate = function (event) {
+            var renderDataHolder = event.target;
+            if (this._invalidateRenderDataHolderList.indexOf(renderDataHolder) == -1) {
+                this._invalidateRenderDataHolderList.push(renderDataHolder);
+            }
         };
-        RenderAtomic.prototype.removeChild = function (child) {
-            feng3d.debuger && console.assert(child != null && this._children.indexOf(child) != -1);
-            var index = this._children.indexOf(child);
-            this._children.splice(index, 1);
-            child.removeEventListener(RenderAtomic.INVALIDATE, this.invalidate, this);
-        };
-        RenderAtomic.prototype.invalidate = function () {
-            this._invalidate = true;
-        };
-        RenderAtomic.prototype.addRenderDataHolder = function (renderDataHolder) {
+        Object3DRenderAtomic.prototype.addRenderDataHolder = function (renderDataHolder) {
             this.renderDataHolders.push(renderDataHolder);
+            this._invalidateRenderDataHolderList.push(renderDataHolder);
+            renderDataHolder.addEventListener(Object3DRenderAtomic.INVALIDATE, this.invalidate, this);
         };
-        RenderAtomic.prototype.update = function (renderContext) {
+        Object3DRenderAtomic.prototype.update = function (renderContext) {
             var _this = this;
             renderContext.updateRenderData(this);
-            this.renderDataHolders.forEach(function (element) {
+            this._invalidateRenderDataHolderList.forEach(function (element) {
                 element.updateRenderData(renderContext, _this);
             });
+            this._invalidateRenderDataHolderList.length = 0;
         };
-        RenderAtomic.prototype.clear = function () {
+        Object3DRenderAtomic.prototype.clear = function () {
+            var _this = this;
+            this.renderDataHolders.forEach(function (element) {
+                element.removeEventListener(Object3DRenderAtomic.INVALIDATE, _this.invalidate, _this);
+            });
             this.renderDataHolders.length = 0;
         };
         /**
-         * 数据是否失效
+         * 数据是否失效，需要重新收集数据
          */
-        RenderAtomic.INVALIDATE = "invalidate";
-        return RenderAtomic;
-    }(feng3d.EventDispatcher));
-    feng3d.RenderAtomic = RenderAtomic;
-    /**
-     * 渲染所需数据
-     * @author feng 2016-12-28
-     */
-    var RenderData = (function (_super) {
-        __extends(RenderData, _super);
-        function RenderData() {
-            _super.apply(this, arguments);
-        }
-        return RenderData;
+        Object3DRenderAtomic.INVALIDATE = "invalidate";
+        /**
+         * 渲染拥有者失效，需要重新收集渲染数据拥有者
+         */
+        Object3DRenderAtomic.INVALIDATE_RENDERHOLDER = "invalidateRenderHolder";
+        return Object3DRenderAtomic;
     }(RenderAtomic));
-    feng3d.RenderData = RenderData;
+    feng3d.Object3DRenderAtomic = Object3DRenderAtomic;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -5861,10 +5863,16 @@ var feng3d;
         function Object3D(name) {
             if (name === void 0) { name = "object"; }
             _super.call(this);
-            this.renderData = new feng3d.RenderData();
+            this.renderData = new feng3d.Object3DRenderAtomic();
             //-序列化
-            this.mouseEnabled_ = true;
-            this.visible_ = true;
+            /**
+             * 是否开启鼠标事件
+             */
+            this.mouseEnabled = true;
+            /**
+             * 是否可见
+             */
+            this.visible = true;
             /**
              * 组件列表
              */
@@ -5888,35 +5896,10 @@ var feng3d;
             this.addEventListener(feng3d.ComponentEvent.ADDED_COMPONENT, this.onAddedComponent, this);
             this.addEventListener(feng3d.ComponentEvent.REMOVED_COMPONENT, this.onRemovedComponent, this);
         }
-        /**
-         * 保存为数据
-         */
-        Object3D.prototype.saveToData = function () {
-            // var data = {};
-            // data.className = ClassUtils.getQualifiedClassName(this);
-            // data.name = this.name;
-            // data.visible = this.visible;
-            // var children = data.children = [];
-            // this.children_.forEach(element =>
-            // {
-            //     children.push(element.saveToData());
-            // });
-            // var components = data.components = [];
-            // this.components_.forEach(element =>
-            // {
-            //     components
-            // });
-            // return data;
-        };
         Object3D.prototype.updateRender = function (renderContext) {
             this.renderData.clear();
             this.collectRenderDataHolder(this.renderData);
             this.renderData.update(renderContext);
-        };
-        /**
-         * 从数据初始化
-         */
-        Object3D.prototype.initFromData = function () {
         };
         Object.defineProperty(Object3D.prototype, "object3DID", {
             get: function () {
@@ -5996,38 +5979,12 @@ var feng3d;
                 child._setScene(_this._scene);
             });
         };
-        Object.defineProperty(Object3D.prototype, "mouseEnabled", {
-            /**
-             * 是否开启鼠标事件
-             */
-            get: function () {
-                return this.mouseEnabled_;
-            },
-            set: function (value) {
-                this.mouseEnabled_ = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Object3D.prototype, "realMouseEnable", {
             /**
              * 真实是否支持鼠标事件
              */
             get: function () {
-                return this.mouseEnabled_ && (this.parent ? this.parent.realMouseEnable : true);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Object3D.prototype, "visible", {
-            /**
-             * 是否可见
-             */
-            get: function () {
-                return this.visible_;
-            },
-            set: function (value) {
-                this.visible_ = value;
+                return this.mouseEnabled && (this.parent ? this.parent.realMouseEnable : true);
             },
             enumerable: true,
             configurable: true
@@ -6037,7 +5994,7 @@ var feng3d;
              * 真实是否可见
              */
             get: function () {
-                return this.visible_ && (this.parent ? this.parent.realVisible : true);
+                return this.visible && (this.parent ? this.parent.realVisible : true);
             },
             enumerable: true,
             configurable: true
@@ -6773,11 +6730,13 @@ var feng3d;
             _super.call(this);
             this._single = true;
             this.material = new feng3d.ColorMaterial();
+            feng3d.Watcher.watch(this, ["geometry"], this.invalidateRenderHolder, this);
+            feng3d.Watcher.watch(this, ["material"], this.invalidateRenderHolder, this);
         }
-        Model.prototype.collectRenderDataHolder = function (renderData) {
-            if (renderData === void 0) { renderData = null; }
-            this.geometry && renderData.addRenderDataHolder(this.geometry);
-            this.material && renderData.addRenderDataHolder(this.material);
+        Model.prototype.collectRenderDataHolder = function (renderAtomic) {
+            if (renderAtomic === void 0) { renderAtomic = null; }
+            this.geometry && renderAtomic.addRenderDataHolder(this.geometry);
+            this.material && renderAtomic.addRenderDataHolder(this.material);
         };
         /**
          * 处理被添加组件事件

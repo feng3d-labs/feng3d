@@ -5,57 +5,8 @@ module feng3d
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      * @author feng 2016-06-20
      */
-    export class RenderAtomic extends EventDispatcher
+    export class RenderAtomic
     {
-        /**
-         * 数据是否失效
-         */
-        public static readonly INVALIDATE = "invalidate";
-
-        private _invalidate = true;
-        private _children: RenderAtomic[] = [];
-
-        private addChild(child: RenderAtomic)
-        {
-            debuger && console.assert(child != null && this._children.indexOf(child) == -1);
-            child.addEventListener(RenderAtomic.INVALIDATE, this.invalidate, this)
-            this._children.push(child);
-        }
-
-        private removeChild(child: RenderAtomic)
-        {
-            debuger && console.assert(child != null && this._children.indexOf(child) != -1);
-            var index = this._children.indexOf(child);
-            this._children.splice(index, 1);
-            child.removeEventListener(RenderAtomic.INVALIDATE, this.invalidate, this)
-        }
-
-        private invalidate()
-        {
-            this._invalidate = true;
-        }
-
-        private renderDataHolders: RenderDataHolder[] = [];
-
-        public addRenderDataHolder(renderDataHolder: RenderDataHolder)
-        {
-            this.renderDataHolders.push(renderDataHolder);
-        }
-
-        public update(renderContext: RenderContext)
-        {
-            renderContext.updateRenderData(this);
-            this.renderDataHolders.forEach(element =>
-            {
-                element.updateRenderData(renderContext, this);
-            });
-        }
-
-        public clear()
-        {
-            this.renderDataHolders.length = 0;
-        }
-
         /**
          * 顶点索引缓冲
          */
@@ -97,9 +48,55 @@ module feng3d
         public instanceCount: number;
     }
 
-    /**
-     * 渲染所需数据
-     * @author feng 2016-12-28
-     */
-    export class RenderData extends RenderAtomic { }
+    export class Object3DRenderAtomic extends RenderAtomic
+    {
+        /**
+         * 数据是否失效，需要重新收集数据
+         */
+        public static readonly INVALIDATE = "invalidate";
+        /**
+         * 渲染拥有者失效，需要重新收集渲染数据拥有者
+         */
+        public static readonly INVALIDATE_RENDERHOLDER = "invalidateRenderHolder";
+
+        private _invalidateRenderDataHolderList: RenderDataHolder[] = [];
+
+        private invalidate(event: Event)
+        {
+            var renderDataHolder = <RenderDataHolder>event.target;
+            if (this._invalidateRenderDataHolderList.indexOf(renderDataHolder) == -1)
+            {
+                this._invalidateRenderDataHolderList.push(renderDataHolder)
+            }
+        }
+
+        private renderDataHolders: RenderDataHolder[] = [];
+
+        public addRenderDataHolder(renderDataHolder: RenderDataHolder)
+        {
+            this.renderDataHolders.push(renderDataHolder);
+            this._invalidateRenderDataHolderList.push(renderDataHolder);
+            renderDataHolder.addEventListener(Object3DRenderAtomic.INVALIDATE, this.invalidate, this)
+        }
+
+        public update(renderContext: RenderContext)
+        {
+            renderContext.updateRenderData(this);
+            this._invalidateRenderDataHolderList.forEach(element =>
+            {
+                element.updateRenderData(renderContext, this);
+            });
+            this._invalidateRenderDataHolderList.length = 0;
+        }
+
+        public clear()
+        {
+            this.renderDataHolders.forEach(element =>
+            {
+                element.removeEventListener(Object3DRenderAtomic.INVALIDATE, this.invalidate, this)
+            });
+
+            this.renderDataHolders.length = 0;
+        }
+    }
 }

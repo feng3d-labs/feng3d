@@ -15,14 +15,14 @@ module feng3d
             super();
         }
 
-        public collectRenderDataHolder(renderData: RenderData = null)
+        public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
         {
-            renderData.addRenderDataHolder(this);
+            renderAtomic.addRenderDataHolder(this);
             this.components_.forEach(element =>
             {
                 if (element instanceof RenderDataHolder)
                 {
-                    element.collectRenderDataHolder(renderData);
+                    element.collectRenderDataHolder(renderAtomic);
                 }
             });
         }
@@ -34,5 +34,28 @@ module feng3d
         {
 
         }
+
+        protected invalidateRenderData()
+        {
+            this.dispatchEvent(new Event(Object3DRenderAtomic.INVALIDATE));
+        }
+
+        protected invalidateRenderHolder()
+        {
+            this.dispatchEvent(new Event(Object3DRenderAtomic.INVALIDATE_RENDERHOLDER));
+        }
+    }
+
+    export interface IRenderDataHolder
+    {
+        /**
+         * 收集渲染数据拥有者
+         */
+        collectRenderDataHolder(renderAtomic: RenderAtomic);
+
+		/**
+		 * 更新渲染数据
+		 */
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic);
     }
 }

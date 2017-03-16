@@ -11,7 +11,7 @@ module feng3d
          * @param renderAtomic  渲染原子
          * @param renderData    包含渲染数据的对象
          */
-        public static active(renderAtomic: RenderAtomic, renderData: RenderData)
+        public static active(renderAtomic: RenderAtomic, renderData: RenderAtomic)
         {
             renderData.vertexCode && (renderAtomic.vertexCode = renderData.vertexCode);
             renderData.fragmentCode && (renderAtomic.fragmentCode = renderData.fragmentCode);
@@ -50,7 +50,7 @@ module feng3d
          * @param renderAtomic  渲染原子
          * @param renderData    包含渲染数据的对象
          */
-        public static deactivate(renderAtomic: RenderAtomic, renderData: RenderData)
+        public static deactivate(renderAtomic: RenderAtomic, renderData: RenderAtomic)
         {
             renderData.vertexCode && (renderAtomic.vertexCode = null);
             renderData.fragmentCode && (renderAtomic.fragmentCode = null);

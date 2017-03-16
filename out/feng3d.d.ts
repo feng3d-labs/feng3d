@@ -770,21 +770,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 可序列化对象
-     */
-    interface Serializable {
-        /**
-         * 保存为数据
-         */
-        saveToData(): any;
-        /**
-         * 从数据初始化
-         */
-        initFromData(): any;
-    }
-}
-declare module feng3d {
-    /**
      * 数据序列化
      * @author feng 2017-03-11
      */
@@ -2840,11 +2825,23 @@ declare module feng3d {
          * 创建Context3D数据缓冲
          */
         constructor();
-        collectRenderDataHolder(renderData?: RenderData): void;
+        collectRenderDataHolder(renderAtomic?: Object3DRenderAtomic): void;
         /**
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        protected invalidateRenderData(): void;
+        protected invalidateRenderHolder(): void;
+    }
+    interface IRenderDataHolder {
+        /**
+         * 收集渲染数据拥有者
+         */
+        collectRenderDataHolder(renderAtomic: RenderAtomic): any;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): any;
     }
 }
 declare module feng3d {
@@ -2852,20 +2849,7 @@ declare module feng3d {
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      * @author feng 2016-06-20
      */
-    class RenderAtomic extends EventDispatcher {
-        /**
-         * 数据是否失效
-         */
-        static readonly INVALIDATE: string;
-        private _invalidate;
-        private _children;
-        private addChild(child);
-        private removeChild(child);
-        private invalidate();
-        private renderDataHolders;
-        addRenderDataHolder(renderDataHolder: RenderDataHolder): void;
-        update(renderContext: RenderContext): void;
-        clear(): void;
+    class RenderAtomic {
         /**
          * 顶点索引缓冲
          */
@@ -2903,11 +2887,21 @@ declare module feng3d {
          */
         instanceCount: number;
     }
-    /**
-     * 渲染所需数据
-     * @author feng 2016-12-28
-     */
-    class RenderData extends RenderAtomic {
+    class Object3DRenderAtomic extends RenderAtomic {
+        /**
+         * 数据是否失效，需要重新收集数据
+         */
+        static readonly INVALIDATE: string;
+        /**
+         * 渲染拥有者失效，需要重新收集渲染数据拥有者
+         */
+        static readonly INVALIDATE_RENDERHOLDER: string;
+        private _invalidateRenderDataHolderList;
+        private invalidate(event);
+        private renderDataHolders;
+        addRenderDataHolder(renderDataHolder: RenderDataHolder): void;
+        update(renderContext: RenderContext): void;
+        clear(): void;
     }
 }
 declare module feng3d {
@@ -3029,13 +3023,13 @@ declare module feng3d {
          * @param renderAtomic  渲染原子
          * @param renderData    包含渲染数据的对象
          */
-        static active(renderAtomic: RenderAtomic, renderData: RenderData): void;
+        static active(renderAtomic: RenderAtomic, renderData: RenderAtomic): void;
         /**
          * 释放渲染数据
          * @param renderAtomic  渲染原子
          * @param renderData    包含渲染数据的对象
          */
-        static deactivate(renderAtomic: RenderAtomic, renderData: RenderData): void;
+        static deactivate(renderAtomic: RenderAtomic, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -3259,11 +3253,11 @@ declare module feng3d {
         /**
          * 绘制3D对象
          */
-        protected drawObject3D(context3D: Context3D, renderAtomic: RenderData): void;
+        protected drawObject3D(context3D: Context3D, renderAtomic: RenderAtomic): void;
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderData): WebGLProgram;
+        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderAtomic): WebGLProgram;
     }
 }
 declare module feng3d {
@@ -3293,7 +3287,7 @@ declare module feng3d {
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderData): WebGLProgram;
+        protected activeShaderProgram(context3D: Context3D, renderAtomic: RenderAtomic): WebGLProgram;
     }
 }
 declare module feng3d {
@@ -3329,10 +3323,16 @@ declare module feng3d {
      * 3D对象
      * @author feng 2016-04-26
      */
-    class Object3D extends RenderDataHolder implements Serializable {
-        renderData: RenderData;
-        protected mouseEnabled_: boolean;
-        protected visible_: boolean;
+    class Object3D extends RenderDataHolder {
+        renderData: Object3DRenderAtomic;
+        /**
+         * 是否开启鼠标事件
+         */
+        protected mouseEnabled: boolean;
+        /**
+         * 是否可见
+         */
+        visible: boolean;
         /**
          * 组件列表
          */
@@ -3348,15 +3348,7 @@ declare module feng3d {
          */
         private _parent;
         private _scene;
-        /**
-         * 保存为数据
-         */
-        saveToData(): void;
         updateRender(renderContext: RenderContext): void;
-        /**
-         * 从数据初始化
-         */
-        initFromData(): void;
         readonly object3DID: number;
         /**
          * 变换
@@ -3381,17 +3373,9 @@ declare module feng3d {
         readonly scene: Scene3D;
         private _setScene(value);
         /**
-         * 是否开启鼠标事件
-         */
-        mouseEnabled: boolean;
-        /**
          * 真实是否支持鼠标事件
          */
         readonly realMouseEnable: any;
-        /**
-         * 是否可见
-         */
-        visible: boolean;
         /**
          * 真实是否可见
          */
@@ -3780,7 +3764,7 @@ declare module feng3d {
          */
         material: Material;
         constructor();
-        collectRenderDataHolder(renderData?: RenderData): void;
+        collectRenderDataHolder(renderAtomic?: Object3DRenderAtomic): void;
         /**
          * 处理被添加组件事件
          */

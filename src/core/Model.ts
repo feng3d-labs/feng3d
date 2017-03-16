@@ -20,12 +20,15 @@ module feng3d
             super();
             this._single = true;
             this.material = new ColorMaterial();
+
+            Watcher.watch(this, ["geometry"], this.invalidateRenderHolder, this);
+            Watcher.watch(this, ["material"], this.invalidateRenderHolder, this);
         }
 
-        public collectRenderDataHolder(renderData: RenderData = null)
+        public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
         {
-            this.geometry && renderData.addRenderDataHolder(this.geometry);
-            this.material && renderData.addRenderDataHolder(this.material);
+            this.geometry && renderAtomic.addRenderDataHolder(this.geometry);
+            this.material && renderAtomic.addRenderDataHolder(this.material);
         }
 
         /**

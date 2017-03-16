@@ -4,13 +4,19 @@ module feng3d
      * 3D对象
      * @author feng 2016-04-26
      */
-    export class Object3D extends RenderDataHolder implements Serializable
-    {
-        public renderData = new RenderData();
+    export class Object3D extends RenderDataHolder
+    {        
+        public renderData = new Object3DRenderAtomic();
 
         //-序列化
-        protected mouseEnabled_: boolean = true;
-        protected visible_ = true;
+        /**
+		 * 是否开启鼠标事件
+		 */
+        protected mouseEnabled: boolean = true;
+        /**
+		 * 是否可见
+		 */
+        public visible = true;
         /**
 		 * 组件列表
 		 */
@@ -31,42 +37,11 @@ module feng3d
 
         private _scene: Scene3D;
 
-        /**
-         * 保存为数据
-         */
-        public saveToData()
-        {
-            // var data = {};
-            // data.className = ClassUtils.getQualifiedClassName(this);
-            // data.name = this.name;
-            // data.visible = this.visible;
-            // var children = data.children = [];
-            // this.children_.forEach(element =>
-            // {
-            //     children.push(element.saveToData());
-            // });
-            // var components = data.components = [];
-            // this.components_.forEach(element =>
-            // {
-            //     components
-            // });
-
-            // return data;
-        }
-
         public updateRender(renderContext: RenderContext)
         {
             this.renderData.clear();
             this.collectRenderDataHolder(this.renderData);
             this.renderData.update(renderContext);
-        }
-
-        /**
-         * 从数据初始化
-         */
-        public initFromData()
-        {
-
         }
 
         public get object3DID()
@@ -171,37 +146,11 @@ module feng3d
         }
 
         /**
-		 * 是否开启鼠标事件
-		 */
-        public get mouseEnabled(): boolean
-        {
-            return this.mouseEnabled_;
-        }
-
-        public set mouseEnabled(value: boolean)
-        {
-            this.mouseEnabled_ = value;
-        }
-
-        /**
          * 真实是否支持鼠标事件
          */
         public get realMouseEnable()
         {
-            return this.mouseEnabled_ && (this.parent ? this.parent.realMouseEnable : true);
-        }
-
-        /**
-		 * 是否可见
-		 */
-        public get visible(): boolean
-        {
-            return this.visible_;
-        }
-
-        public set visible(value: boolean)
-        {
-            this.visible_ = value;
+            return this.mouseEnabled && (this.parent ? this.parent.realMouseEnable : true);
         }
 
         /**
@@ -209,7 +158,7 @@ module feng3d
          */
         public get realVisible()
         {
-            return this.visible_ && (this.parent ? this.parent.realVisible : true);
+            return this.visible && (this.parent ? this.parent.realVisible : true);
         }
 
         /**
