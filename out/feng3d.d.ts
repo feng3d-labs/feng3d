@@ -3771,8 +3771,6 @@ declare module feng3d {
      * @author feng 2016-12-12
      */
     class Model extends Object3DComponent {
-        private _geometry;
-        private _material;
         /**
          * 几何体
          */

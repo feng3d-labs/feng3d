@@ -29,9 +29,6 @@ module feng3d
             var object3D = meshRenderer.parentComponent;
             //更新数据
             object3D.updateRender(renderContext);
-            //收集数据
-            // RenderDataUtil.active(renderData, renderContext.renderData)
-            // RenderDataUtil.active(renderData, object3D.renderData)
             //绘制
             this.drawObject3D(context3D, object3D.renderData);            //
         }

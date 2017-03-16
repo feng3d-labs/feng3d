@@ -6,38 +6,14 @@ module feng3d
      */
     export class Model extends Object3DComponent
     {
-        private _geometry: Geometry;
-        private _material: Material;
-
         /**
          * 几何体
          */
-        public get geometry(): Geometry
-        {
-            return this._geometry;
-        }
-
-        public set geometry(value: Geometry)
-        {
-            this._geometry && this.removeComponent(this._geometry);
-            this._geometry = value;
-            this._geometry && this.addComponent(this._geometry);
-        }
-
+        public geometry: Geometry;
         /**
          * 材质
          */
-        public get material(): Material
-        {
-            return this._material;
-        }
-
-        public set material(value: Material)
-        {
-            this._material && this.removeComponent(this._material);
-            this._material = value;
-            this._material && this.addComponent(this._material);
-        }
+        public material: Material;
 
         constructor()
         {
@@ -48,7 +24,8 @@ module feng3d
 
         public collectRenderDataHolder(renderData: RenderData = null)
         {
-            super.collectRenderDataHolder(renderData);
+            this.geometry && renderData.addRenderDataHolder(this.geometry);
+            this.material && renderData.addRenderDataHolder(this.material);
         }
 
         /**

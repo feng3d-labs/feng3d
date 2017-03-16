@@ -5575,9 +5575,6 @@ var feng3d;
             var object3D = meshRenderer.parentComponent;
             //更新数据
             object3D.updateRender(renderContext);
-            //收集数据
-            // RenderDataUtil.active(renderData, renderContext.renderData)
-            // RenderDataUtil.active(renderData, object3D.renderData)
             //绘制
             this.drawObject3D(context3D, object3D.renderData); //
         };
@@ -6777,39 +6774,10 @@ var feng3d;
             this._single = true;
             this.material = new feng3d.ColorMaterial();
         }
-        Object.defineProperty(Model.prototype, "geometry", {
-            /**
-             * 几何体
-             */
-            get: function () {
-                return this._geometry;
-            },
-            set: function (value) {
-                this._geometry && this.removeComponent(this._geometry);
-                this._geometry = value;
-                this._geometry && this.addComponent(this._geometry);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Model.prototype, "material", {
-            /**
-             * 材质
-             */
-            get: function () {
-                return this._material;
-            },
-            set: function (value) {
-                this._material && this.removeComponent(this._material);
-                this._material = value;
-                this._material && this.addComponent(this._material);
-            },
-            enumerable: true,
-            configurable: true
-        });
         Model.prototype.collectRenderDataHolder = function (renderData) {
             if (renderData === void 0) { renderData = null; }
-            _super.prototype.collectRenderDataHolder.call(this, renderData);
+            this.geometry && renderData.addRenderDataHolder(this.geometry);
+            this.material && renderData.addRenderDataHolder(this.material);
         };
         /**
          * 处理被添加组件事件
