@@ -10,7 +10,7 @@ module feng3d
         /**
          * 属性数据列表
          */
-        private attributes: { [name: string]: AttributeRenderData } = {};
+        private _attributes: { [name: string]: AttributeRenderData } = {};
 
         /**
          * 是否正在播放
@@ -106,9 +106,9 @@ module feng3d
             renderData.uniforms[RenderDataID.u_particleTime] = this.time;
             renderData.instanceCount = this.numParticles;
 
-            for (var attributeName in this.attributes)
+            for (var attributeName in this._attributes)
             {
-                renderData.attributes[attributeName] = this.attributes[attributeName];
+                renderData.attributes[attributeName] = this._attributes[attributeName];
             }
 
             this.update(this.particleGlobal, renderData);
@@ -160,13 +160,13 @@ module feng3d
             var index = particle.index;
             var numParticles = particle.total;
             //
-            var attributeRenderData = this.attributes[attributeID];
+            var attributeRenderData = this._attributes[attributeID];
             var vector3DData: Float32Array;
             if (typeof data == "number")
             {
                 if (!attributeRenderData)
                 {
-                    attributeRenderData = this.attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles), 1, 1)
+                    attributeRenderData = this._attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles), 1, 1)
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index] = data;
@@ -174,7 +174,7 @@ module feng3d
             {
                 if (!attributeRenderData)
                 {
-                    attributeRenderData = this.attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 3), 3, 1)
+                    attributeRenderData = this._attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 3), 3, 1)
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index * 3] = data.x;
@@ -184,7 +184,7 @@ module feng3d
             {
                 if (!attributeRenderData)
                 {
-                    attributeRenderData = this.attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 4), 4, 1)
+                    attributeRenderData = this._attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 4), 4, 1)
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index * 4] = data.r;

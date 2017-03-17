@@ -9,29 +9,29 @@ module feng3d
         /**
          * 由纯数据对象（无循环引用）转换为复杂类型（例如feng3d对象）
          */
-        public readObject(data: { __className__?: string }, object = null)
+        public readObject(data: { __className__?: string })
         {
+            //处理简单类型
             if (ClassUtils.isBaseType(data))
             {
                 return data;
             }
+            //处理数组
             if (data instanceof Array)
             {
-                object = object || [];
-
+                var arr = [];
                 for (var i = 0; i < data.length; i++)
                 {
-                    object[i] = this.readObject(data[i], object[i]);
+                    arr[i] = this.readObject(data[i]);
                 }
-                return object;
+                return arr;
             }
-            if (!object)
-            {
-                var cls = ClassUtils.getDefinitionByName(data.__className__);
-                if (cls == null)
-                    return undefined;
-                object = new cls();
-            }
+
+            //处理其他数据结构
+            var cls = ClassUtils.getDefinitionByName(data.__className__);
+            debuger && console.assert(cls != null);
+            var object = new cls();
+
             var keys = Object.keys(data);
             for (var i = 0; i < keys.length; i++)
             {
@@ -39,7 +39,7 @@ module feng3d
                 var ishandle = this.handle(object, key, data[key]);
                 if (ishandle)
                     continue;
-                object[key] = this.readObject(data[key], object[key]);
+                object[key] = this.readObject(data[key]);
             }
             return object;
         }

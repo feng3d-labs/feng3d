@@ -956,31 +956,30 @@ var feng3d;
         /**
          * 由纯数据对象（无循环引用）转换为复杂类型（例如feng3d对象）
          */
-        Serialization.prototype.readObject = function (data, object) {
-            if (object === void 0) { object = null; }
+        Serialization.prototype.readObject = function (data) {
+            //处理简单类型
             if (feng3d.ClassUtils.isBaseType(data)) {
                 return data;
             }
+            //处理数组
             if (data instanceof Array) {
-                object = object || [];
+                var arr = [];
                 for (var i = 0; i < data.length; i++) {
-                    object[i] = this.readObject(data[i], object[i]);
+                    arr[i] = this.readObject(data[i]);
                 }
-                return object;
+                return arr;
             }
-            if (!object) {
-                var cls = feng3d.ClassUtils.getDefinitionByName(data.__className__);
-                if (cls == null)
-                    return undefined;
-                object = new cls();
-            }
+            //处理其他数据结构
+            var cls = feng3d.ClassUtils.getDefinitionByName(data.__className__);
+            feng3d.debuger && console.assert(cls != null);
+            var object = new cls();
             var keys = Object.keys(data);
             for (var i = 0; i < keys.length; i++) {
                 var key = keys[i];
                 var ishandle = this.handle(object, key, data[key]);
                 if (ishandle)
                     continue;
-                object[key] = this.readObject(data[key], object[key]);
+                object[key] = this.readObject(data[key]);
             }
             return object;
         };
@@ -4901,11 +4900,6 @@ var feng3d;
         Object3DRenderAtomic.prototype.update = function (renderContext) {
             var _this = this;
             renderContext.updateRenderData(this);
-            // if (this._renderHolderInvalid)
-            // {
-            // this._invalidateRenderDataHolderList = this.renderDataHolders.concat();
-            //     this._renderHolderInvalid = false;
-            // }
             this.updateEverytimeList.forEach(function (element) {
                 element.updateRenderData(renderContext, _this);
             });
@@ -5910,7 +5904,7 @@ var feng3d;
         function Object3D(name) {
             if (name === void 0) { name = "object"; }
             _super.call(this);
-            this.renderData = new feng3d.Object3DRenderAtomic();
+            this._renderData = new feng3d.Object3DRenderAtomic();
             //-序列化
             /**
              * 是否开启鼠标事件
@@ -5943,6 +5937,11 @@ var feng3d;
             this.addEventListener(feng3d.ComponentEvent.ADDED_COMPONENT, this.onAddedComponent, this);
             this.addEventListener(feng3d.ComponentEvent.REMOVED_COMPONENT, this.onRemovedComponent, this);
         }
+        Object.defineProperty(Object3D.prototype, "renderData", {
+            get: function () { return this._renderData; },
+            enumerable: true,
+            configurable: true
+        });
         Object3D.prototype.updateRender = function (renderContext) {
             if (this.renderData.renderHolderInvalid) {
                 this.renderData.clear();
@@ -7040,7 +7039,7 @@ var feng3d;
             /**
              * 属性数据列表
              */
-            this.attributes = {};
+            this._attributes = {};
             this._geometryInvalidate = true;
             this._single = true;
         }
@@ -7052,9 +7051,9 @@ var feng3d;
                 this.buildGeometry();
                 this._geometryInvalidate = false;
             }
-            renderData.indexBuffer = this.indexBuffer;
-            for (var attributeName in this.attributes) {
-                renderData.attributes[attributeName] = this.attributes[attributeName];
+            renderData.indexBuffer = this._indexBuffer;
+            for (var attributeName in this._attributes) {
+                renderData.attributes[attributeName] = this._attributes[attributeName];
             }
             _super.prototype.updateRenderData.call(this, renderContext, renderData);
         };
@@ -7074,9 +7073,9 @@ var feng3d;
          * 更新顶点索引数据
          */
         Geometry.prototype.setIndices = function (indices) {
-            this.indexBuffer = new feng3d.IndexRenderData();
-            this.indexBuffer.indices = indices;
-            this.indexBuffer.count = indices.length;
+            this._indexBuffer = new feng3d.IndexRenderData();
+            this._indexBuffer.indices = indices;
+            this._indexBuffer.count = indices.length;
             this.invalidateRenderData();
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.CHANGED_INDEX_DATA));
         };
@@ -7087,7 +7086,7 @@ var feng3d;
          * @param stride        顶点数据步长
          */
         Geometry.prototype.setVAData = function (vaId, data, stride) {
-            this.attributes[vaId] = new feng3d.AttributeRenderData(data, stride);
+            this._attributes[vaId] = new feng3d.AttributeRenderData(data, stride);
             this.invalidateRenderData();
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.CHANGED_VA_DATA, vaId));
         };
@@ -7098,7 +7097,7 @@ var feng3d;
          */
         Geometry.prototype.getVAData = function (vaId) {
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.GET_VA_DATA, vaId));
-            return this.attributes[vaId];
+            return this._attributes[vaId];
         };
         Object.defineProperty(Geometry.prototype, "numVertex", {
             /**
@@ -7106,8 +7105,8 @@ var feng3d;
              */
             get: function () {
                 var numVertex = 0;
-                for (var attributeName in this.attributes) {
-                    var attributeRenderData = this.attributes[attributeName];
+                for (var attributeName in this._attributes) {
+                    var attributeRenderData = this._attributes[attributeName];
                     numVertex = attributeRenderData.data.length / attributeRenderData.stride;
                     break;
                 }
@@ -7120,13 +7119,13 @@ var feng3d;
          * 附加几何体
          */
         Geometry.prototype.addGeometry = function (geometry) {
-            var attributes = this.attributes;
-            var addAttributes = geometry.attributes;
+            var attributes = this._attributes;
+            var addAttributes = geometry._attributes;
             //当前顶点数量
             var oldNumVertex = this.numVertex;
             //合并索引
-            var indices = this.indexBuffer.indices;
-            var targetIndices = geometry.indexBuffer.indices;
+            var indices = this._indexBuffer.indices;
+            var targetIndices = geometry._indexBuffer.indices;
             var totalIndices = new Uint16Array(indices.length + targetIndices.length);
             totalIndices.set(indices, 0);
             for (var i = 0; i < targetIndices.length; i++) {
@@ -7149,16 +7148,16 @@ var feng3d;
          */
         Geometry.prototype.clone = function () {
             var geometry = new Geometry();
-            geometry.indexBuffer = this.indexBuffer;
-            geometry.attributes = this.attributes;
+            geometry._indexBuffer = this._indexBuffer;
+            geometry._attributes = this._attributes;
             return geometry;
         };
         /**
          * 从一个几何体中克隆数据
          */
         Geometry.prototype.cloneFrom = function (geometry) {
-            this.indexBuffer = geometry.indexBuffer;
-            this.attributes = geometry.attributes;
+            this._indexBuffer = geometry._indexBuffer;
+            this._attributes = geometry._attributes;
         };
         return Geometry;
     }(feng3d.RenderDataHolder));
@@ -9365,6 +9364,10 @@ var feng3d;
                 renderData.vertexCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".vertex");
                 renderData.fragmentCode = feng3d.ShaderLib.getShaderCode(this.shaderName + ".fragment");
             }
+            else {
+                renderData.vertexCode = null;
+                renderData.fragmentCode = null;
+            }
             _super.prototype.updateRenderData.call(this, renderContext, renderData);
         };
         return Material;
@@ -10438,7 +10441,7 @@ var feng3d;
             /**
              * 属性数据列表
              */
-            this.attributes = {};
+            this._attributes = {};
             /**
              * 粒子时间
              */
@@ -10505,8 +10508,8 @@ var feng3d;
             this.time = ((feng3d.getTimer() - this.startTime) / 1000) % this.cycle;
             renderData.uniforms[feng3d.RenderDataID.u_particleTime] = this.time;
             renderData.instanceCount = this.numParticles;
-            for (var attributeName in this.attributes) {
-                renderData.attributes[attributeName] = this.attributes[attributeName];
+            for (var attributeName in this._attributes) {
+                renderData.attributes[attributeName] = this._attributes[attributeName];
             }
             this.update(this.particleGlobal, renderData);
             _super.prototype.updateRenderData.call(this, renderContext, renderData);
@@ -10546,18 +10549,18 @@ var feng3d;
             var index = particle.index;
             var numParticles = particle.total;
             //
-            var attributeRenderData = this.attributes[attributeID];
+            var attributeRenderData = this._attributes[attributeID];
             var vector3DData;
             if (typeof data == "number") {
                 if (!attributeRenderData) {
-                    attributeRenderData = this.attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(numParticles), 1, 1);
+                    attributeRenderData = this._attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(numParticles), 1, 1);
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index] = data;
             }
             else if (data instanceof feng3d.Vector3D) {
                 if (!attributeRenderData) {
-                    attributeRenderData = this.attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(numParticles * 3), 3, 1);
+                    attributeRenderData = this._attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(numParticles * 3), 3, 1);
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index * 3] = data.x;
@@ -10566,7 +10569,7 @@ var feng3d;
             }
             else if (data instanceof feng3d.Color) {
                 if (!attributeRenderData) {
-                    attributeRenderData = this.attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(numParticles * 4), 4, 1);
+                    attributeRenderData = this._attributes[attributeID] = new feng3d.AttributeRenderData(new Float32Array(numParticles * 4), 4, 1);
                 }
                 vector3DData = attributeRenderData.data;
                 vector3DData[index * 4] = data.r;

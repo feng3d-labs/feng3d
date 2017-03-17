@@ -42,7 +42,11 @@ module feng3d
             {
                 renderData.vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
                 renderData.fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");
+            }else{
+                renderData.vertexCode = null;
+                renderData.fragmentCode = null;
             }
+
             super.updateRenderData(renderContext, renderData);
         }
     }

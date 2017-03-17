@@ -779,7 +779,7 @@ declare module feng3d {
          */
         readObject(data: {
             __className__?: string;
-        }, object?: any): any;
+        }): any;
         private handle(object, key, data);
         /**
          * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
@@ -3344,7 +3344,8 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Object3D extends RenderDataHolder {
-        renderData: Object3DRenderAtomic;
+        readonly renderData: Object3DRenderAtomic;
+        private _renderData;
         /**
          * 是否开启鼠标事件
          */
@@ -3978,11 +3979,11 @@ declare module feng3d {
         /**
          * 顶点索引缓冲
          */
-        private indexBuffer;
+        private _indexBuffer;
         /**
          * 属性数据列表
          */
-        private attributes;
+        private _attributes;
         private _geometryInvalidate;
         /**
          * 创建一个几何体
@@ -5400,7 +5401,7 @@ declare module feng3d {
         /**
          * 属性数据列表
          */
-        private attributes;
+        private _attributes;
         /**
          * 是否正在播放
          */

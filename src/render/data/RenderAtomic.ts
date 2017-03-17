@@ -99,11 +99,6 @@ module feng3d
         public update(renderContext: RenderContext)
         {
             renderContext.updateRenderData(this);
-            // if (this._renderHolderInvalid)
-            // {
-            // this._invalidateRenderDataHolderList = this.renderDataHolders.concat();
-            //     this._renderHolderInvalid = false;
-            // }
             this.updateEverytimeList.forEach(element =>
             {
                 element.updateRenderData(renderContext, this);

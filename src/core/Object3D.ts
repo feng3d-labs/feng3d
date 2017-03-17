@@ -6,7 +6,8 @@ module feng3d
      */
     export class Object3D extends RenderDataHolder
     {
-        public renderData = new Object3DRenderAtomic();
+        public get renderData() { return this._renderData; }
+        private _renderData = new Object3DRenderAtomic();
 
         //-序列化
         /**
