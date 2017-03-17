@@ -16,7 +16,6 @@ module feng3d
             super(name);
             var model = this.getOrCreateComponentByClass(Model);
             model.geometry = new CapsuleGeometry();
-            model.material = new StandardMaterial();
         }
     }
 }

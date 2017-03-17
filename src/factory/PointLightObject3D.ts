@@ -11,10 +11,8 @@ module feng3d
             super(name);
             //
             this.getOrCreateComponentByClass(Model).geometry = new SphereGeometry(5);
-            this.getOrCreateComponentByClass(Model);
             //初始化点光源
             this.addComponent(new PointLight());
-            this.getOrCreateComponentByClass(Model).material;
         }
     }
 }

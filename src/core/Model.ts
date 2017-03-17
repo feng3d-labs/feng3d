@@ -6,6 +6,7 @@ module feng3d
      */
     export class Model extends Object3DComponent
     {
+
         /**
          * 几何体
          */
@@ -19,7 +20,6 @@ module feng3d
         {
             super();
             this._single = true;
-            this.material = new ColorMaterial();
 
             Watcher.watch(this, ["geometry"], this.invalidateRenderHolder, this);
             Watcher.watch(this, ["material"], this.invalidateRenderHolder, this);
@@ -27,8 +27,10 @@ module feng3d
 
         public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
         {
-            this.geometry && renderAtomic.addRenderDataHolder(this.geometry);
-            this.material && renderAtomic.addRenderDataHolder(this.material);
+            var material = this.material || defaultMaterial;
+            var geometry = this.geometry || defaultGeometry;
+            geometry && renderAtomic.addRenderDataHolder(geometry);
+            material && renderAtomic.addRenderDataHolder(material);
         }
 
         /**

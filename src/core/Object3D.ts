@@ -1,5 +1,6 @@
 module feng3d
 {
+
     /**
      * 3D对象
      * @author feng 2016-04-26
@@ -85,8 +86,6 @@ module feng3d
             //
             this.addEventListener(Object3DEvent.ADDED, this.onAdded, this);
             this.addEventListener(Object3DEvent.REMOVED, this.onRemoved, this);
-            this.addEventListener(ComponentEvent.ADDED_COMPONENT, this.onAddedComponent, this);
-            this.addEventListener(ComponentEvent.REMOVED_COMPONENT, this.onRemovedComponent, this);
         }
 
 		/**
@@ -289,31 +288,33 @@ module feng3d
         }
 
         /**
-         * 处理新增组件事件
-         */
-        protected onAddedComponent(event: ComponentEvent)
+		 * 添加组件到指定位置
+		 * @param component		被添加的组件
+		 * @param index			插入的位置
+		 */
+        public addComponentAt(component: Object3DComponent, index: number): void
         {
-            if (event.data.container == this)
+            debuger && console.assert(component instanceof Object3DComponent, "只有Object3DComponent新增为Object3D组件！");
+
+            if (component instanceof Transform)
             {
-                if (event.data.child instanceof Transform)
-                {
-                    this._transform = event.data.child;
-                }
+                this._transform = component;
             }
+            super.addComponentAt(component, index);
         }
 
         /**
-         * 处理移除组件事件
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
          */
-        protected onRemovedComponent(event: ComponentEvent)
+        public removeComponentAt(index: number): Object3DComponent
         {
-            if (event.data.container == this)
+            var component = <Object3DComponent>super.removeComponentAt(index);
+            if (component instanceof Transform)
             {
-                if (event.data.child instanceof Transform)
-                {
-                    this._transform = null;
-                }
+                this._transform = null;
             }
+            return component;
         }
 
         public static getObject3D(id: number)

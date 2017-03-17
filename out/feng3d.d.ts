@@ -3456,13 +3456,16 @@ declare module feng3d {
          */
         private onRemoved(event);
         /**
-         * 处理新增组件事件
+         * 添加组件到指定位置
+         * @param component		被添加的组件
+         * @param index			插入的位置
          */
-        protected onAddedComponent(event: ComponentEvent): void;
+        addComponentAt(component: Object3DComponent, index: number): void;
         /**
-         * 处理移除组件事件
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
          */
-        protected onRemovedComponent(event: ComponentEvent): void;
+        removeComponentAt(index: number): Object3DComponent;
         static getObject3D(id: number): Object3D;
     }
 }
@@ -6534,4 +6537,6 @@ declare module feng3d {
     var input: Input;
     var inputType: InputEventType;
     var shortcut: ShortCut;
+    var defaultMaterial: ColorMaterial;
+    var defaultGeometry: CubeGeometry;
 }

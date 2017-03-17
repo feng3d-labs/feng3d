@@ -23,4 +23,8 @@ module feng3d
 
     //快捷键
     export var shortcut = new ShortCut();
+
+    //
+    export var defaultMaterial = new ColorMaterial();
+    export var defaultGeometry = new CubeGeometry();
 }

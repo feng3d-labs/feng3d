@@ -14,7 +14,6 @@ module feng3d
             super(name);
             var model = this.getOrCreateComponentByClass(Model);
             model.geometry = new CylinderGeometry(topRadius, bottomRadius, height, segmentsW, segmentsH, topClosed, bottomClosed, surfaceClosed, yUp);
-            model.material = new StandardMaterial();
         }
     }
 }

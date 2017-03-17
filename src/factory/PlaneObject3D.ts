@@ -14,7 +14,6 @@ module feng3d
             super(name);
             var model = new Model();
             model.geometry = new PlaneGeometry(width, width);
-            model.material = new StandardMaterial();
             this.addComponent(model);
         }
     }
