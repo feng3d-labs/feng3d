@@ -15,7 +15,7 @@ module feng3d
 		 * @param segmentsT						纵向段数
 		 * @param yUp							Y轴是否朝上
 		 */
-		constructor(public radius = 50, public tubeRadius = 50, public segmentsR = 16, public segmentsT = 8, public yUp = true)
+		constructor(public radius = 50, public tubeRadius = 10, public segmentsR = 16, public segmentsT = 8, public yUp = true)
 		{
 			super();
 

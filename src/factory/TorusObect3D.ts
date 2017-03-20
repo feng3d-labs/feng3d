@@ -17,6 +17,7 @@ module feng3d
             super(name);
             var model = new Model();
             this.torusGeometry = model.geometry = new TorusGeometry();
+            model.material = new ColorMaterial();
             this.addComponent(model);
         }
     }

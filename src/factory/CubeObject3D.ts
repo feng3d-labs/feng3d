@@ -15,6 +15,7 @@ module feng3d
             super(name);
             var model = new Model();
             model.geometry = new CubeGeometry(width, width, width);
+            model.material = new ColorMaterial();
             this.addComponent(model);
         }
     }

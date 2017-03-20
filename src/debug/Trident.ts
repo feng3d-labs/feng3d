@@ -47,23 +47,23 @@ module feng3d
             this._xArrow.transform.position.x = length;
             this._xArrow.transform.rotation.z = -90;
             this._xArrow.getOrCreateComponentByClass(Model).geometry = new ConeGeometry(5, 18);;
-            var material = this._xArrow.getOrCreateComponentByClass(Model).material = new StandardMaterial();
-            material.baseColor = new Color(1, 0, 0);
+            var material = this._xArrow.getOrCreateComponentByClass(Model).material = new ColorMaterial();
+            material.color = new Color(1, 0, 0);
             this.addChild(this._xArrow);
             //
             this._yArrow = new Object3D();
             this._yArrow.transform.position.y = length;
             this._yArrow.getOrCreateComponentByClass(Model).geometry = new ConeGeometry(5, 18);
-            var material = this._yArrow.getOrCreateComponentByClass(Model).material = new StandardMaterial();
-            material.baseColor = new Color(0, 1, 0);
+            var material = this._yArrow.getOrCreateComponentByClass(Model).material = new ColorMaterial();
+            material.color = new Color(0, 1, 0);
             this.addChild(this._yArrow);
             //
             this._zArrow = new Object3D();
             this._zArrow.transform.position.z = length;
             this._zArrow.transform.rotation.x = 90;
             this._zArrow.getOrCreateComponentByClass(Model).geometry = new ConeGeometry(5, 18);
-            var material = this._zArrow.getOrCreateComponentByClass(Model).material = new StandardMaterial();
-            material.baseColor = new Color(0, 0, 1);
+            var material = this._zArrow.getOrCreateComponentByClass(Model).material = new ColorMaterial();
+            material.color = new Color(0, 0, 1);
             this.addChild(this._zArrow);
         }
     }

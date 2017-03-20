@@ -16,6 +16,7 @@ module feng3d
 
             var model = new Model();
             model.geometry = new ConeGeometry(radius, height);
+            model.material = new ColorMaterial();
             this.addComponent(model);
         }
     }

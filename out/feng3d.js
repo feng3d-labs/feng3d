@@ -9074,7 +9074,7 @@ var feng3d;
          */
         function TorusGeometry(radius, tubeRadius, segmentsR, segmentsT, yUp) {
             if (radius === void 0) { radius = 50; }
-            if (tubeRadius === void 0) { tubeRadius = 50; }
+            if (tubeRadius === void 0) { tubeRadius = 10; }
             if (segmentsR === void 0) { segmentsR = 16; }
             if (segmentsT === void 0) { segmentsT = 8; }
             if (yUp === void 0) { yUp = true; }
@@ -12543,23 +12543,23 @@ var feng3d;
             this._xArrow.transform.rotation.z = -90;
             this._xArrow.getOrCreateComponentByClass(feng3d.Model).geometry = new feng3d.ConeGeometry(5, 18);
             ;
-            var material = this._xArrow.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.StandardMaterial();
-            material.baseColor = new feng3d.Color(1, 0, 0);
+            var material = this._xArrow.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.ColorMaterial();
+            material.color = new feng3d.Color(1, 0, 0);
             this.addChild(this._xArrow);
             //
             this._yArrow = new feng3d.Object3D();
             this._yArrow.transform.position.y = length;
             this._yArrow.getOrCreateComponentByClass(feng3d.Model).geometry = new feng3d.ConeGeometry(5, 18);
-            var material = this._yArrow.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.StandardMaterial();
-            material.baseColor = new feng3d.Color(0, 1, 0);
+            var material = this._yArrow.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.ColorMaterial();
+            material.color = new feng3d.Color(0, 1, 0);
             this.addChild(this._yArrow);
             //
             this._zArrow = new feng3d.Object3D();
             this._zArrow.transform.position.z = length;
             this._zArrow.transform.rotation.x = 90;
             this._zArrow.getOrCreateComponentByClass(feng3d.Model).geometry = new feng3d.ConeGeometry(5, 18);
-            var material = this._zArrow.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.StandardMaterial();
-            material.baseColor = new feng3d.Color(0, 0, 1);
+            var material = this._zArrow.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.ColorMaterial();
+            material.color = new feng3d.Color(0, 0, 1);
             this.addChild(this._zArrow);
         };
         return Trident;
@@ -12601,6 +12601,7 @@ var feng3d;
             _super.call(this, name);
             var model = new feng3d.Model();
             model.geometry = new feng3d.PlaneGeometry(width, width);
+            model.material = new feng3d.ColorMaterial();
             this.addComponent(model);
         }
         return PlaneObject3D;
@@ -12624,6 +12625,7 @@ var feng3d;
             _super.call(this, name);
             var model = new feng3d.Model();
             model.geometry = new feng3d.CubeGeometry(width, width, width);
+            model.material = new feng3d.ColorMaterial();
             this.addComponent(model);
         }
         return CubeObject3D;
@@ -12646,6 +12648,7 @@ var feng3d;
             _super.call(this, name);
             var model = new feng3d.Model();
             this.torusGeometry = model.geometry = new feng3d.TorusGeometry();
+            model.material = new feng3d.ColorMaterial();
             this.addComponent(model);
         }
         return TorusObect3D;
@@ -12668,6 +12671,7 @@ var feng3d;
             _super.call(this, name);
             var model = this.getOrCreateComponentByClass(feng3d.Model);
             model.geometry = new feng3d.SphereGeometry();
+            model.material = new feng3d.ColorMaterial();
         }
         return SphereObject3D;
     }(feng3d.Object3D));
@@ -12689,6 +12693,7 @@ var feng3d;
             _super.call(this, name);
             var model = this.getOrCreateComponentByClass(feng3d.Model);
             model.geometry = new feng3d.CapsuleGeometry();
+            model.material = new feng3d.ColorMaterial();
         }
         return CapsuleObject3D;
     }(feng3d.Object3D));
@@ -12719,6 +12724,7 @@ var feng3d;
             _super.call(this, name);
             var model = this.getOrCreateComponentByClass(feng3d.Model);
             model.geometry = new feng3d.CylinderGeometry(topRadius, bottomRadius, height, segmentsW, segmentsH, topClosed, bottomClosed, surfaceClosed, yUp);
+            model.material = new feng3d.ColorMaterial();
         }
         return CylinderObject3D;
     }(feng3d.Object3D));
@@ -12742,6 +12748,7 @@ var feng3d;
             _super.call(this, name);
             var model = new feng3d.Model();
             model.geometry = new feng3d.ConeGeometry(radius, height);
+            model.material = new feng3d.ColorMaterial();
             this.addComponent(model);
         }
         return ConeObject3D;
