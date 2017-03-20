@@ -11009,7 +11009,7 @@ var feng3d;
             }
         };
         return AnimatorBase;
-    }(feng3d.RenderDataHolder));
+    }(feng3d.Object3DComponent));
     feng3d.AnimatorBase = AnimatorBase;
 })(feng3d || (feng3d = {}));
 var feng3d;

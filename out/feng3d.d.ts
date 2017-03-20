@@ -5641,7 +5641,7 @@ declare module feng3d {
      * 动画基类
      * @author feng 2014-5-27
      */
-    abstract class AnimatorBase extends RenderDataHolder {
+    abstract class AnimatorBase extends Object3DComponent {
         /** 是否正在播放动画 */
         private _isPlaying;
         private _autoUpdate;
