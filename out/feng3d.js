@@ -191,10 +191,28 @@ var feng3d;
         ObjectUtils.deepClone = function (source) {
             if (feng3d.ClassUtils.isBaseType(source))
                 return source;
-            var prototype = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
-            var target = new prototype.constructor();
+            var target = ObjectUtils.getInstance(source);
             for (var attribute in source) {
                 target[attribute] = ObjectUtils.deepClone(source[attribute]);
+            }
+            return target;
+        };
+        /**
+         * 获取实例
+         * @param source 实例对象
+         */
+        ObjectUtils.getInstance = function (source) {
+            var cls = source.constructor;
+            var className = feng3d.ClassUtils.getQualifiedClassName(source);
+            var target = null;
+            switch (className) {
+                case "Uint16Array":
+                case "Int16Array":
+                case "Float32Array":
+                    target = new cls(source["length"]);
+                    break;
+                default:
+                    target = new cls();
             }
             return target;
         };
@@ -4970,16 +4988,6 @@ var feng3d;
             this.stride = stride;
             this.divisor = divisor;
         }
-        /**
-         * 获取或创建数据
-         * @param num   数据数量
-         */
-        AttributeRenderData.prototype.getOrCreateData = function (num) {
-            if (this.data == null || this.data.length != num * this.stride) {
-                this.data = new Float32Array(num * this.stride);
-            }
-            return this.data;
-        };
         return AttributeRenderData;
     }());
     feng3d.AttributeRenderData = AttributeRenderData;
@@ -7125,6 +7133,14 @@ var feng3d;
          * 附加几何体
          */
         Geometry.prototype.addGeometry = function (geometry) {
+            this.buildGeometry();
+            geometry.buildGeometry();
+            //如果自身为空几何体
+            if (!this._indexBuffer) {
+                this.cloneFrom(geometry);
+                return;
+            }
+            //
             var attributes = this._attributes;
             var addAttributes = geometry._attributes;
             //当前顶点数量
@@ -7153,17 +7169,17 @@ var feng3d;
          * 克隆一个几何体
          */
         Geometry.prototype.clone = function () {
-            var geometry = new Geometry();
-            geometry._indexBuffer = this._indexBuffer;
-            geometry._attributes = this._attributes;
+            var cls = this.constructor;
+            var geometry = new cls();
+            geometry.cloneFrom(this);
             return geometry;
         };
         /**
          * 从一个几何体中克隆数据
          */
         Geometry.prototype.cloneFrom = function (geometry) {
-            this._indexBuffer = geometry._indexBuffer;
-            this._attributes = geometry._attributes;
+            this._indexBuffer = feng3d.ObjectUtils.deepClone(geometry._indexBuffer);
+            this._attributes = feng3d.ObjectUtils.deepClone(geometry._attributes);
         };
         return Geometry;
     }(feng3d.RenderDataHolder));

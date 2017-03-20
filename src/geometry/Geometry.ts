@@ -117,6 +117,17 @@ module feng3d
          */
         public addGeometry(geometry: Geometry)
         {
+            this.buildGeometry();
+            geometry.buildGeometry();
+
+            //如果自身为空几何体
+            if (!this._indexBuffer)
+            {
+                this.cloneFrom(geometry);
+                return;
+            }
+
+            //
             var attributes = this._attributes;
             var addAttributes = geometry._attributes;
             //当前顶点数量
@@ -149,9 +160,9 @@ module feng3d
          */
         public clone()
         {
-            var geometry = new Geometry();
-            geometry._indexBuffer = this._indexBuffer;
-            geometry._attributes = this._attributes;
+            var cls = <any>this.constructor;
+            var geometry = new cls();
+            geometry.cloneFrom(this);
             return geometry;
         }
 
@@ -160,8 +171,8 @@ module feng3d
          */
         public cloneFrom(geometry: Geometry)
         {
-            this._indexBuffer = geometry._indexBuffer;
-            this._attributes = geometry._attributes;
+            this._indexBuffer = ObjectUtils.deepClone(geometry._indexBuffer);
+            this._attributes = ObjectUtils.deepClone(geometry._attributes);
         }
     }
 }

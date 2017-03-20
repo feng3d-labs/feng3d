@@ -383,6 +383,11 @@ declare module feng3d {
          */
         static deepClone<T>(source: T): T;
         /**
+         * 获取实例
+         * @param source 实例对象
+         */
+        static getInstance<T>(source: T): T;
+        /**
          * （浅）克隆
          * @param source        源数据
          * @returns             克隆数据
@@ -2973,11 +2978,6 @@ declare module feng3d {
          */
         divisor: number;
         constructor(data?: Float32Array, stride?: number, divisor?: number);
-        /**
-         * 获取或创建数据
-         * @param num   数据数量
-         */
-        getOrCreateData(num: number): Float32Array;
     }
 }
 declare module feng3d {
@@ -4036,7 +4036,7 @@ declare module feng3d {
         /**
          * 克隆一个几何体
          */
-        clone(): Geometry;
+        clone(): any;
         /**
          * 从一个几何体中克隆数据
          */

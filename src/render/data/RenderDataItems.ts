@@ -10,27 +10,27 @@ module feng3d
         /**
          * 索引数据
          */
-        indices: Uint16Array;
+        public indices: Uint16Array;
 
         /**
          * 数据绑定目标，gl.ARRAY_BUFFER、gl.ELEMENT_ARRAY_BUFFER
          */
-        target: number = Context3D.ELEMENT_ARRAY_BUFFER;
+        public target: number = Context3D.ELEMENT_ARRAY_BUFFER;
 
         /**
          * 渲染数量
          */
-        count: number;
+        public count: number;
 
         /**
          * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
          */
-        type: number = Context3D.UNSIGNED_SHORT;
+        public type: number = Context3D.UNSIGNED_SHORT;
 
         /**
          * 索引偏移
          */
-        offset: number = 0;
+        public offset: number = 0;
     }
 
 	/**
@@ -59,19 +59,6 @@ module feng3d
             this.data = data;
             this.stride = stride;
             this.divisor = divisor;
-        }
-
-        /**
-         * 获取或创建数据
-         * @param num   数据数量
-         */
-        public getOrCreateData(num: number)
-        {
-            if (this.data == null || this.data.length != num * this.stride)
-            {
-                this.data = new Float32Array(num * this.stride);
-            }
-            return this.data;
         }
     }
 }

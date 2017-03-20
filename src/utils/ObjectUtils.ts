@@ -16,11 +16,32 @@ module feng3d
         {
             if (ClassUtils.isBaseType(source))
                 return source;
-            var prototype: any = source["prototype"] ? source["prototype"] : Object.getPrototypeOf(source);
-            var target = new prototype.constructor();
+            var target = ObjectUtils.getInstance(source);
             for (var attribute in source)
             {
                 target[attribute] = ObjectUtils.deepClone(source[attribute]);
+            }
+            return target;
+        }
+
+        /**
+         * 获取实例
+         * @param source 实例对象
+         */
+        public static getInstance<T>(source: T): T
+        {
+            var cls = <any>source.constructor;
+            var className = ClassUtils.getQualifiedClassName(source);
+            var target: T = null;
+            switch (className)
+            {
+                case "Uint16Array":
+                case "Int16Array":
+                case "Float32Array":
+                    target = new cls(source["length"]);
+                    break;
+                default:
+                    target = new cls();
             }
             return target;
         }
