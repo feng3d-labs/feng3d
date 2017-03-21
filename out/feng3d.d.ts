@@ -2934,10 +2934,6 @@ declare module feng3d {
          */
         indices: Uint16Array;
         /**
-         * 数据绑定目标，gl.ARRAY_BUFFER、gl.ELEMENT_ARRAY_BUFFER
-         */
-        target: number;
-        /**
          * 渲染数量
          */
         count: number;
@@ -2949,6 +2945,36 @@ declare module feng3d {
          * 索引偏移
          */
         offset: number;
+        /**
+         * 顶点缓冲
+         */
+        private _indexBufferMap;
+        /**
+         * 是否失效
+         */
+        private _invalid;
+        constructor();
+        /**
+         * 使纹理失效
+         */
+        protected invalidate(): void;
+        /**
+         * 激活顶点数据
+         * @param gl
+         */
+        active(gl: GL): void;
+        /**
+         * 获取缓冲
+         */
+        private getBuffer(gl);
+        /**
+         * 清理纹理
+         */
+        private clear();
+        /**
+         * 克隆
+         */
+        clone(): this;
     }
     /**
      * 属性渲染数据
@@ -3002,10 +3028,6 @@ declare module feng3d {
          * @return                  顶点渲染程序
          */
         getFragmentShader(gl: GL, fragmentCode: string): WebGLShader;
-        /**
-         * 获取索引缓冲
-         */
-        getIndexBuffer(gl: GL, indices: Uint16Array): WebGLBuffer;
         /**
          * 获取顶点属性缓冲
          * @param data  数据

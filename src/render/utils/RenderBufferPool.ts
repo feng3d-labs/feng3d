@@ -53,14 +53,6 @@ module feng3d
         }
 
         /**
-         * 获取索引缓冲
-         */
-        public getIndexBuffer(gl: GL, indices: Uint16Array)
-        {
-            return this.getContext3DBufferPool(gl).getIndexBuffer(indices);
-        }
-
-        /**
          * 获取顶点属性缓冲
          * @param data  数据 
          */
@@ -127,15 +119,6 @@ module feng3d
         public getFragmentShader(fragmentCode: string)
         {
             return this._fragmentShaderPool[fragmentCode] = this._fragmentShaderPool[fragmentCode] || getFragmentShader(this.gl, fragmentCode);
-        }
-
-        /**
-         * 获取索引缓冲
-         */
-        public getIndexBuffer(indices: Uint16Array)
-        {
-            var indexBuffer = this.getBuffer(indices, GL.ELEMENT_ARRAY_BUFFER);
-            return indexBuffer;
         }
 
         /**

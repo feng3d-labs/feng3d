@@ -119,8 +119,9 @@ module feng3d
     function dodraw(gl: GL, shaderParams: ShaderParams, indexBuffer: IndexRenderData, instanceCount: number = 1)
     {
         instanceCount = ~~instanceCount;
-        var buffer = context3DPool.getIndexBuffer(gl, indexBuffer.indices);
-        gl.bindBuffer(indexBuffer.target, buffer);
+
+        indexBuffer.active(gl);
+
         if (instanceCount > 1)
         {
             _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');

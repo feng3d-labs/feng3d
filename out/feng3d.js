@@ -4950,10 +4950,6 @@ var feng3d;
     var IndexRenderData = (function () {
         function IndexRenderData() {
             /**
-             * 数据绑定目标，gl.ARRAY_BUFFER、gl.ELEMENT_ARRAY_BUFFER
-             */
-            this.target = feng3d.GL.ELEMENT_ARRAY_BUFFER;
-            /**
              * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
              */
             this.type = feng3d.GL.UNSIGNED_SHORT;
@@ -4961,7 +4957,71 @@ var feng3d;
              * 索引偏移
              */
             this.offset = 0;
+            /**
+             * 顶点缓冲
+             */
+            this._indexBufferMap = new feng3d.Map();
+            /**
+             * 是否失效
+             */
+            this._invalid = true;
+            feng3d.Watcher.watch(this, ["indices"], this.invalidate, this);
         }
+        /**
+         * 使纹理失效
+         */
+        IndexRenderData.prototype.invalidate = function () {
+            this._invalid = true;
+            this.count = this.indices ? this.indices.length : 0;
+        };
+        /**
+         * 激活顶点数据
+         * @param gl
+         */
+        IndexRenderData.prototype.active = function (gl) {
+            if (this._invalid) {
+                this.clear();
+                this._invalid = false;
+            }
+            var buffer = this.getBuffer(gl);
+            gl.bindBuffer(feng3d.GL.ELEMENT_ARRAY_BUFFER, buffer);
+        };
+        /**
+         * 获取缓冲
+         */
+        IndexRenderData.prototype.getBuffer = function (gl) {
+            var buffer = this._indexBufferMap.get(gl);
+            if (!buffer) {
+                buffer = gl.createBuffer();
+                gl.bindBuffer(feng3d.GL.ELEMENT_ARRAY_BUFFER, buffer);
+                gl.bufferData(feng3d.GL.ELEMENT_ARRAY_BUFFER, this.indices, feng3d.GL.STATIC_DRAW);
+                this._indexBufferMap.push(gl, buffer);
+            }
+            return buffer;
+        };
+        /**
+         * 清理纹理
+         */
+        IndexRenderData.prototype.clear = function () {
+            var gls = this._indexBufferMap.getKeys();
+            for (var i = 0; i < gls.length; i++) {
+                gls[i].deleteBuffer(this._indexBufferMap.get(gls[i]));
+            }
+            this._indexBufferMap.clear();
+        };
+        /**
+         * 克隆
+         */
+        IndexRenderData.prototype.clone = function () {
+            var cls = this.constructor;
+            var ins = new cls();
+            var indices = ins.indices = new Uint16Array(this.indices.length);
+            indices.set(this.indices, 0);
+            ins.count = this.count;
+            ins.type = this.type;
+            ins.offset = this.offset;
+            return ins;
+        };
         return IndexRenderData;
     }());
     feng3d.IndexRenderData = IndexRenderData;
@@ -5032,12 +5092,6 @@ var feng3d;
             return this.getContext3DBufferPool(gl).getFragmentShader(fragmentCode);
         };
         /**
-         * 获取索引缓冲
-         */
-        RenderBufferPool.prototype.getIndexBuffer = function (gl, indices) {
-            return this.getContext3DBufferPool(gl).getIndexBuffer(indices);
-        };
-        /**
          * 获取顶点属性缓冲
          * @param data  数据
          */
@@ -5095,13 +5149,6 @@ var feng3d;
          */
         Context3DBufferPool.prototype.getFragmentShader = function (fragmentCode) {
             return this._fragmentShaderPool[fragmentCode] = this._fragmentShaderPool[fragmentCode] || getFragmentShader(this.gl, fragmentCode);
-        };
-        /**
-         * 获取索引缓冲
-         */
-        Context3DBufferPool.prototype.getIndexBuffer = function (indices) {
-            var indexBuffer = this.getBuffer(indices, feng3d.GL.ELEMENT_ARRAY_BUFFER);
-            return indexBuffer;
         };
         /**
          * 获取顶点属性缓冲
@@ -5654,8 +5701,7 @@ var feng3d;
     function dodraw(gl, shaderParams, indexBuffer, instanceCount) {
         if (instanceCount === void 0) { instanceCount = 1; }
         instanceCount = ~~instanceCount;
-        var buffer = feng3d.context3DPool.getIndexBuffer(gl, indexBuffer.indices);
-        gl.bindBuffer(indexBuffer.target, buffer);
+        indexBuffer.active(gl);
         if (instanceCount > 1) {
             _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
             _ext.drawArraysInstancedANGLE(shaderParams.renderMode, 0, indexBuffer.count, instanceCount);
@@ -7120,7 +7166,7 @@ var feng3d;
          * 从一个几何体中克隆数据
          */
         Geometry.prototype.cloneFrom = function (geometry) {
-            this._indexBuffer = feng3d.ObjectUtils.deepClone(geometry._indexBuffer);
+            this._indexBuffer = geometry._indexBuffer.clone();
             this._attributes = feng3d.ObjectUtils.deepClone(geometry._attributes);
         };
         return Geometry;
