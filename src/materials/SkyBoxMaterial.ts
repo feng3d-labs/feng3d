@@ -7,11 +7,10 @@ module feng3d
      */
     export class SkyBoxMaterial extends Material
     {
-
         public skyBoxTextureCube: TextureCube;
         private skyBoxSize: Vector3D;
 
-        constructor(images: HTMLImageElement[])
+        constructor(images: string[])
         {
             super();
             this.shaderName = "skybox";

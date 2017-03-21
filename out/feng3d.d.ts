@@ -4754,7 +4754,7 @@ declare module feng3d {
         /**
          * 图片数据
          */
-        pixels: HTMLImageElement | HTMLImageElement[];
+        protected _pixels: HTMLImageElement | HTMLImageElement[];
         /**
          * 纹理缓冲
          */
@@ -4803,8 +4803,7 @@ declare module feng3d {
      * @author feng 2016-12-28
      */
     class TextureCube extends TextureInfo {
-        pixels: HTMLImageElement[];
-        constructor(images: HTMLImageElement[]);
+        constructor(images: string[]);
     }
 }
 declare module feng3d {
@@ -4928,7 +4927,7 @@ declare module feng3d {
     class SkyBoxMaterial extends Material {
         skyBoxTextureCube: TextureCube;
         private skyBoxSize;
-        constructor(images: HTMLImageElement[]);
+        constructor(images: string[]);
         /**
          * 更新渲染数据
          */
@@ -6447,18 +6446,6 @@ declare module feng3d {
          * 构建3D对象
          */
         constructor(radius?: number, height?: number, name?: string);
-    }
-}
-declare module feng3d {
-    /**
-     * 天空盒3D对象
-     * @author feng 2017-02-06
-     */
-    class SkyBoxObject3D extends Object3D {
-        /**
-         * 构建3D对象
-         */
-        constructor(images: HTMLImageElement[], name?: string);
     }
 }
 declare module feng3d {

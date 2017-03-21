@@ -13,10 +13,10 @@ module feng3d
         {
             super();
             this.textureType = GL.TEXTURE_2D;
-            this.pixels = new Image();
-            this.pixels.addEventListener("load", this.invalidate.bind(this));
-            this.pixels.src = url;
-            Binding.bindProperty(this, ["url"], this.pixels, "src");
+            this._pixels = new Image();
+            this._pixels.addEventListener("load", this.invalidate.bind(this));
+            this._pixels.src = url;
+            Binding.bindProperty(this, ["url"], this._pixels, "src");
         }
     }
 }

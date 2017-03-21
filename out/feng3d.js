@@ -9317,7 +9317,7 @@ var feng3d;
                 gl.bindTexture(this.textureType, texture);
                 if (this.textureType == feng3d.GL.TEXTURE_2D) {
                     //设置纹理图片
-                    gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, this.pixels);
+                    gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, this._pixels);
                 }
                 else if (this.textureType == feng3d.GL.TEXTURE_CUBE_MAP) {
                     var faces = [
@@ -9325,7 +9325,7 @@ var feng3d;
                         feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_X, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
                     ];
                     for (var i = 0; i < faces.length; i++) {
-                        gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this.pixels[i]);
+                        gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this._pixels[i]);
                     }
                 }
                 if (this.generateMipmap) {
@@ -9364,10 +9364,10 @@ var feng3d;
             _super.call(this);
             this.url = "";
             this.textureType = feng3d.GL.TEXTURE_2D;
-            this.pixels = new Image();
-            this.pixels.addEventListener("load", this.invalidate.bind(this));
-            this.pixels.src = url;
-            feng3d.Binding.bindProperty(this, ["url"], this.pixels, "src");
+            this._pixels = new Image();
+            this._pixels.addEventListener("load", this.invalidate.bind(this));
+            this._pixels.src = url;
+            feng3d.Binding.bindProperty(this, ["url"], this._pixels, "src");
         }
         return Texture2D;
     }(feng3d.TextureInfo));
@@ -9384,7 +9384,12 @@ var feng3d;
         function TextureCube(images) {
             _super.call(this);
             this.textureType = feng3d.GL.TEXTURE_CUBE_MAP;
-            this.pixels = images;
+            this._pixels = [];
+            for (var i = 0; i < 6; i++) {
+                this._pixels[i] = new Image();
+                this._pixels[i].addEventListener("load", this.invalidate.bind(this));
+                this._pixels[i].src = images[i];
+            }
         }
         return TextureCube;
     }(feng3d.TextureInfo));
@@ -12829,27 +12834,6 @@ var feng3d;
         return ConeObject3D;
     }(feng3d.Object3D));
     feng3d.ConeObject3D = ConeObject3D;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 天空盒3D对象
-     * @author feng 2017-02-06
-     */
-    var SkyBoxObject3D = (function (_super) {
-        __extends(SkyBoxObject3D, _super);
-        /**
-         * 构建3D对象
-         */
-        function SkyBoxObject3D(images, name) {
-            if (name === void 0) { name = "skyBox"; }
-            _super.call(this, name);
-            this.getOrCreateComponentByClass(feng3d.Model).geometry = new feng3d.SkyBoxGeometry();
-            this.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.SkyBoxMaterial(images);
-        }
-        return SkyBoxObject3D;
-    }(feng3d.Object3D));
-    feng3d.SkyBoxObject3D = SkyBoxObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

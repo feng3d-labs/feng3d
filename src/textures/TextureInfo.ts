@@ -44,7 +44,7 @@ module feng3d
          * 图片数据
          */
         // ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement
-        public pixels: HTMLImageElement | HTMLImageElement[];
+        protected _pixels: HTMLImageElement | HTMLImageElement[];
 
         /**
          * 纹理缓冲
@@ -120,7 +120,7 @@ module feng3d
                 if (this.textureType == GL.TEXTURE_2D)
                 {
                     //设置纹理图片
-                    gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, <HTMLImageElement>this.pixels);
+                    gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, <HTMLImageElement>this._pixels);
                 } else if (this.textureType == GL.TEXTURE_CUBE_MAP)
                 {
                     var faces = [
@@ -129,7 +129,7 @@ module feng3d
                     ];
                     for (var i = 0; i < faces.length; i++)
                     {
-                        gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this.pixels[i])
+                        gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this._pixels[i])
                     }
                 }
                 if (this.generateMipmap)

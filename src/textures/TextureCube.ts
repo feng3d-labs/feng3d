@@ -7,14 +7,18 @@ module feng3d
      */
     export class TextureCube extends TextureInfo
     {
-
-        public pixels: HTMLImageElement[];
-
-        constructor(images: HTMLImageElement[])
+        constructor(images: string[])
         {
             super();
             this.textureType = GL.TEXTURE_CUBE_MAP;
-            this.pixels = images;
+
+            this._pixels = [];
+            for (var i = 0; i < 6; i++)
+            {
+                this._pixels[i] = new Image();
+                this._pixels[i].addEventListener("load", this.invalidate.bind(this));
+                this._pixels[i].src = images[i];
+            }
         }
     }
 }
