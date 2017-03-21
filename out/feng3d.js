@@ -309,31 +309,21 @@ var feng3d;
              */
             function createUID(object) {
                 var prototype = object.prototype ? object.prototype : Object.getPrototypeOf(object);
-                var className = feng3d.ClassUtils.getQualifiedClassName(object);
-                var id = ~~_uidStart[className];
+                var className = object.constructor.name;
+                var autoID = ~~object.constructor.autoID;
+                object.constructor.autoID = autoID + 1;
                 var time = Date.now(); //时间戳
                 var uid = [
                     className,
-                    feng3d.StringUtils.getString(~~_uidStart[className], 8, "0", false),
+                    feng3d.StringUtils.getString(autoID, 8, "0", false),
                     time,
                 ].join("-");
-                //
-                feng3d.uidDetails[uid] = { className: className, id: id, time: time };
-                _uidStart[className] = ~~_uidStart[className] + 1;
                 return uid;
             }
         };
         return UIDUtils;
     }());
     feng3d.UIDUtils = UIDUtils;
-    /**
-     * uid自增长编号
-     */
-    var _uidStart = {};
-    /**
-     * uid细节
-     */
-    feng3d.uidDetails = {};
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -11234,6 +11224,8 @@ var feng3d;
          * 更新渲染数据
          */
         SkeletonAnimator.prototype.updateRenderData = function (renderContext, renderData) {
+            if (!this._activeSkeletonState)
+                return;
             renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this.skeleton.numJoints;
             renderData.uniforms[feng3d.RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
             _super.prototype.updateRenderData.call(this, renderContext, renderData);
@@ -11244,6 +11236,7 @@ var feng3d;
         SkeletonAnimator.prototype.updateDeltaTime = function (dt) {
             _super.prototype.updateDeltaTime.call(this, dt);
             this._globalPropertiesDirty = true;
+            this.invalidateRenderData();
         };
         /**
          * 更新骨骼全局变换矩阵

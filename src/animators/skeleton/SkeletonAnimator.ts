@@ -67,6 +67,8 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
+            if (!this._activeSkeletonState)
+                return;
             renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this.skeleton.numJoints;
             renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
 
@@ -81,6 +83,8 @@ module feng3d
             super.updateDeltaTime(dt);
 
             this._globalPropertiesDirty = true;
+
+            this.invalidateRenderData();
         }
 
 		/**

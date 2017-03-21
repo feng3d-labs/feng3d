@@ -38,28 +38,17 @@ module feng3d
             function createUID(object: any)
             {
                 var prototype: any = object.prototype ? object.prototype : Object.getPrototypeOf(object);
-                var className = ClassUtils.getQualifiedClassName(object);
-                var id = ~~_uidStart[className];
+                var className = object.constructor.name;
+                var autoID = ~~object.constructor.autoID;
+                object.constructor.autoID = autoID + 1;
                 var time = Date.now();//时间戳
                 var uid = [//
                     className,//类名
-                    StringUtils.getString(~~_uidStart[className], 8, "0", false),//类id
+                    StringUtils.getString(autoID, 8, "0", false),//类id
                     time,//时间戳
                 ].join("-");
-                //
-                uidDetails[uid] = { className: className, id: id, time: time };
-                _uidStart[className] = ~~_uidStart[className] + 1;
                 return uid;
             }
         }
     }
-
-    /**
-     * uid自增长编号
-     */
-    var _uidStart: { [className: string]: number } = {};
-    /**
-     * uid细节
-     */
-    export var uidDetails: { [uid: string]: { className: string, id: number, time: number } } = {};
 }

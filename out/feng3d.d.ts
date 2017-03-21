@@ -421,16 +421,6 @@ declare module feng3d {
             __uid__?: string;
         }): any;
     }
-    /**
-     * uid细节
-     */
-    var uidDetails: {
-        [uid: string]: {
-            className: string;
-            id: number;
-            time: number;
-        };
-    };
 }
 declare module feng3d {
     class VersionUtils {
