@@ -2946,7 +2946,7 @@ declare module feng3d {
          */
         offset: number;
         /**
-         * 顶点缓冲
+         * 缓冲
          */
         private _indexBufferMap;
         /**
@@ -2955,11 +2955,11 @@ declare module feng3d {
         private _invalid;
         constructor();
         /**
-         * 使纹理失效
+         * 使缓冲失效
          */
         protected invalidate(): void;
         /**
-         * 激活顶点数据
+         * 激活缓冲
          * @param gl
          */
         active(gl: GL): void;
@@ -2968,7 +2968,7 @@ declare module feng3d {
          */
         private getBuffer(gl);
         /**
-         * 清理纹理
+         * 清理缓冲
          */
         private clear();
         /**
@@ -2995,7 +2995,32 @@ declare module feng3d {
          * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
          */
         divisor: number;
+        /**
+         * 顶点数据缓冲
+         */
+        private _indexBufferMap;
+        /**
+         * 是否失效
+         */
+        private _invalid;
         constructor(data?: Float32Array, stride?: number, divisor?: number);
+        /**
+         * 使数据缓冲失效
+         */
+        protected invalidate(): void;
+        active(gl: GL, location: number): void;
+        /**
+         * 获取缓冲
+         */
+        private getBuffer(gl);
+        /**
+         * 清理缓冲
+         */
+        private clear();
+        /**
+         * 克隆
+         */
+        clone(): this;
     }
 }
 declare module feng3d {
@@ -3030,11 +3055,6 @@ declare module feng3d {
          * @return                  顶点渲染程序
          */
         getFragmentShader(gl: GL, fragmentCode: string): WebGLShader;
-        /**
-         * 获取顶点属性缓冲
-         * @param data  数据
-         */
-        getVABuffer(gl: GL, data: Float32Array): WebGLBuffer;
         /**
          * 3D环境缓冲池
          */

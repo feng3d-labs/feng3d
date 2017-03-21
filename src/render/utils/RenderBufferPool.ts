@@ -53,15 +53,6 @@ module feng3d
         }
 
         /**
-         * 获取顶点属性缓冲
-         * @param data  数据 
-         */
-        public getVABuffer(gl: GL, data: Float32Array): WebGLBuffer
-        {
-            return this.getContext3DBufferPool(gl).getVABuffer(data);
-        }
-
-        /**
          * 3D环境缓冲池
          */
         private context3DBufferPools: { [context3DUID: string]: Context3DBufferPool } = {};
@@ -121,41 +112,6 @@ module feng3d
             return this._fragmentShaderPool[fragmentCode] = this._fragmentShaderPool[fragmentCode] || getFragmentShader(this.gl, fragmentCode);
         }
 
-        /**
-         * 获取顶点属性缓冲
-         * @param data  数据 
-         */
-        public getVABuffer(data: Float32Array): WebGLBuffer
-        {
-            var buffer = this.getBuffer(data, GL.ARRAY_BUFFER);
-            return buffer;
-        }
-
-        /**
-         * 获取缓冲
-         * @param data  数据
-         */
-        private getBuffer(data: ArrayBufferView | ArrayBuffer, target: number)
-        {
-            var gl = this.gl;
-            var dataUID = UIDUtils.getUID(data);
-            var buffer = this._bufferMap[dataUID] = this._bufferMap[dataUID] || gl.createBuffer();
-
-            if (!VersionUtils.equal(data, buffer))
-            {
-                gl.bindBuffer(target, buffer);
-                gl.bufferData(target, data, GL.STATIC_DRAW);
-                VersionUtils.setVersion(buffer, VersionUtils.getVersion(data));
-
-                //升级buffer和数据版本号一致
-                var dataVersion = Math.max(0, VersionUtils.getVersion(data));
-                VersionUtils.setVersion(data, dataVersion);
-                VersionUtils.setVersion(buffer, dataVersion);
-            }
-
-            return buffer;
-        }
-
         /** 渲染程序对象池 */
         private _webGLProgramPool: { [shaderCode: string]: WebGLProgram } = {};
 
@@ -164,11 +120,6 @@ module feng3d
 
         /** 顶点渲染程序对象池 */
         private _fragmentShaderPool: { [fragmentCode: string]: WebGLShader } = {};
-
-        /**
-         * 缓冲字典
-         */
-        private _bufferMap: { [dataUID: string]: WebGLBuffer } = {};
     }
 
     /**

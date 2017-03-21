@@ -4958,7 +4958,7 @@ var feng3d;
              */
             this.offset = 0;
             /**
-             * 顶点缓冲
+             * 缓冲
              */
             this._indexBufferMap = new feng3d.Map();
             /**
@@ -4968,14 +4968,14 @@ var feng3d;
             feng3d.Watcher.watch(this, ["indices"], this.invalidate, this);
         }
         /**
-         * 使纹理失效
+         * 使缓冲失效
          */
         IndexRenderData.prototype.invalidate = function () {
             this._invalid = true;
             this.count = this.indices ? this.indices.length : 0;
         };
         /**
-         * 激活顶点数据
+         * 激活缓冲
          * @param gl
          */
         IndexRenderData.prototype.active = function (gl) {
@@ -5000,7 +5000,7 @@ var feng3d;
             return buffer;
         };
         /**
-         * 清理纹理
+         * 清理缓冲
          */
         IndexRenderData.prototype.clear = function () {
             var gls = this._indexBufferMap.getKeys();
@@ -5045,10 +5045,69 @@ var feng3d;
              * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
              */
             this.divisor = 0;
+            /**
+             * 顶点数据缓冲
+             */
+            this._indexBufferMap = new feng3d.Map();
+            /**
+             * 是否失效
+             */
+            this._invalid = true;
             this.data = data;
             this.stride = stride;
             this.divisor = divisor;
         }
+        /**
+         * 使数据缓冲失效
+         */
+        AttributeRenderData.prototype.invalidate = function () {
+            this._invalid = true;
+        };
+        AttributeRenderData.prototype.active = function (gl, location) {
+            if (this._invalid) {
+                this.clear();
+                this._invalid = false;
+            }
+            gl.enableVertexAttribArray(location);
+            var buffer = this.getBuffer(gl);
+            gl.bindBuffer(feng3d.GL.ARRAY_BUFFER, buffer);
+            gl.vertexAttribPointer(location, this.stride, feng3d.GL.FLOAT, false, 0, 0);
+        };
+        /**
+         * 获取缓冲
+         */
+        AttributeRenderData.prototype.getBuffer = function (gl) {
+            var buffer = this._indexBufferMap.get(gl);
+            if (!buffer) {
+                buffer = gl.createBuffer();
+                gl.bindBuffer(feng3d.GL.ARRAY_BUFFER, buffer);
+                gl.bufferData(feng3d.GL.ARRAY_BUFFER, this.data, feng3d.GL.STATIC_DRAW);
+                this._indexBufferMap.push(gl, buffer);
+            }
+            return buffer;
+        };
+        /**
+         * 清理缓冲
+         */
+        AttributeRenderData.prototype.clear = function () {
+            var gls = this._indexBufferMap.getKeys();
+            for (var i = 0; i < gls.length; i++) {
+                gls[i].deleteBuffer(this._indexBufferMap.get(gls[i]));
+            }
+            this._indexBufferMap.clear();
+        };
+        /**
+         * 克隆
+         */
+        AttributeRenderData.prototype.clone = function () {
+            var cls = this.constructor;
+            var ins = new cls();
+            ins.data = new Float32Array(this.data.length);
+            ins.data.set(this.data, 0);
+            ins.stride = this.stride;
+            ins.divisor = this.divisor;
+            return ins;
+        };
         return AttributeRenderData;
     }());
     feng3d.AttributeRenderData = AttributeRenderData;
@@ -5102,13 +5161,6 @@ var feng3d;
         RenderBufferPool.prototype.getFragmentShader = function (gl, fragmentCode) {
             return this.getContext3DBufferPool(gl).getFragmentShader(fragmentCode);
         };
-        /**
-         * 获取顶点属性缓冲
-         * @param data  数据
-         */
-        RenderBufferPool.prototype.getVABuffer = function (gl, data) {
-            return this.getContext3DBufferPool(gl).getVABuffer(data);
-        };
         return RenderBufferPool;
     }());
     feng3d.RenderBufferPool = RenderBufferPool;
@@ -5127,10 +5179,6 @@ var feng3d;
             this._vertexShaderPool = {};
             /** 顶点渲染程序对象池 */
             this._fragmentShaderPool = {};
-            /**
-             * 缓冲字典
-             */
-            this._bufferMap = {};
             this.gl = gl;
         }
         /**
@@ -5160,33 +5208,6 @@ var feng3d;
          */
         Context3DBufferPool.prototype.getFragmentShader = function (fragmentCode) {
             return this._fragmentShaderPool[fragmentCode] = this._fragmentShaderPool[fragmentCode] || getFragmentShader(this.gl, fragmentCode);
-        };
-        /**
-         * 获取顶点属性缓冲
-         * @param data  数据
-         */
-        Context3DBufferPool.prototype.getVABuffer = function (data) {
-            var buffer = this.getBuffer(data, feng3d.GL.ARRAY_BUFFER);
-            return buffer;
-        };
-        /**
-         * 获取缓冲
-         * @param data  数据
-         */
-        Context3DBufferPool.prototype.getBuffer = function (data, target) {
-            var gl = this.gl;
-            var dataUID = feng3d.UIDUtils.getUID(data);
-            var buffer = this._bufferMap[dataUID] = this._bufferMap[dataUID] || gl.createBuffer();
-            if (!feng3d.VersionUtils.equal(data, buffer)) {
-                gl.bindBuffer(target, buffer);
-                gl.bufferData(target, data, feng3d.GL.STATIC_DRAW);
-                feng3d.VersionUtils.setVersion(buffer, feng3d.VersionUtils.getVersion(data));
-                //升级buffer和数据版本号一致
-                var dataVersion = Math.max(0, feng3d.VersionUtils.getVersion(data));
-                feng3d.VersionUtils.setVersion(data, dataVersion);
-                feng3d.VersionUtils.setVersion(buffer, dataVersion);
-            }
-            return buffer;
         };
         return Context3DBufferPool;
     }());
@@ -5726,26 +5747,7 @@ var feng3d;
      */
     function setContext3DAttribute(gl, shaderProgram, activeInfo, buffer) {
         var location = gl.getAttribLocation(shaderProgram, activeInfo.name);
-        gl.enableVertexAttribArray(location);
-        //
-        var squareVerticesBuffer = feng3d.context3DPool.getVABuffer(gl, buffer.data);
-        gl.bindBuffer(feng3d.GL.ARRAY_BUFFER, squareVerticesBuffer);
-        switch (activeInfo.type) {
-            case feng3d.GL.FLOAT:
-                gl.vertexAttribPointer(location, 1, feng3d.GL.FLOAT, false, 0, 0);
-                break;
-            case feng3d.GL.FLOAT_VEC2:
-                gl.vertexAttribPointer(location, 2, feng3d.GL.FLOAT, false, 0, 0);
-                break;
-            case feng3d.GL.FLOAT_VEC3:
-                gl.vertexAttribPointer(location, 3, feng3d.GL.FLOAT, false, 0, 0);
-                break;
-            case feng3d.GL.FLOAT_VEC4:
-                gl.vertexAttribPointer(location, 4, feng3d.GL.FLOAT, false, 0, 0);
-                break;
-            default:
-                throw "\u65E0\u6CD5\u8BC6\u522B\u7684attribute\u7C7B\u578B " + activeInfo.name + " " + buffer.data;
-        }
+        buffer.active(gl, location);
         if (buffer.divisor > 0) {
             _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
             _ext.vertexAttribDivisorANGLE(location, buffer.divisor);
@@ -7178,7 +7180,10 @@ var feng3d;
          */
         Geometry.prototype.cloneFrom = function (geometry) {
             this._indexBuffer = geometry._indexBuffer.clone();
-            this._attributes = feng3d.ObjectUtils.deepClone(geometry._attributes);
+            this._attributes = {};
+            for (var key in geometry._attributes) {
+                this._attributes[key] = geometry._attributes[key].clone();
+            }
         };
         return Geometry;
     }(feng3d.RenderDataHolder));

@@ -139,27 +139,9 @@ module feng3d
     function setContext3DAttribute(gl: GL, shaderProgram: WebGLProgram, activeInfo: WebGLActiveInfo, buffer: AttributeRenderData)
     {
         var location = gl.getAttribLocation(shaderProgram, activeInfo.name);
-        gl.enableVertexAttribArray(location);
-        //
-        var squareVerticesBuffer = context3DPool.getVABuffer(gl, buffer.data);
-        gl.bindBuffer(GL.ARRAY_BUFFER, squareVerticesBuffer);
-        switch (activeInfo.type)
-        {
-            case GL.FLOAT:
-                gl.vertexAttribPointer(location, 1, GL.FLOAT, false, 0, 0);
-                break;
-            case GL.FLOAT_VEC2:
-                gl.vertexAttribPointer(location, 2, GL.FLOAT, false, 0, 0);
-                break;
-            case GL.FLOAT_VEC3:
-                gl.vertexAttribPointer(location, 3, GL.FLOAT, false, 0, 0);
-                break;
-            case GL.FLOAT_VEC4:
-                gl.vertexAttribPointer(location, 4, GL.FLOAT, false, 0, 0);
-                break;
-            default:
-                throw `无法识别的attribute类型 ${activeInfo.name} ${buffer.data}`;
-        }
+
+        buffer.active(gl, location);
+
         if (buffer.divisor > 0)
         {
             _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');

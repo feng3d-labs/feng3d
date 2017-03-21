@@ -27,7 +27,7 @@ module feng3d
          */
         public offset: number = 0;
         /**
-         * 顶点缓冲
+         * 缓冲
          */
         private _indexBufferMap = new Map<GL, WebGLBuffer>();
         /**
@@ -41,7 +41,7 @@ module feng3d
         }
 
         /**
-         * 使纹理失效
+         * 使缓冲失效
          */
         protected invalidate()
         {
@@ -50,7 +50,7 @@ module feng3d
         }
 
         /**
-         * 激活顶点数据
+         * 激活缓冲
          * @param gl 
          */
         public active(gl: GL)
@@ -81,7 +81,7 @@ module feng3d
         }
 
         /**
-         * 清理纹理
+         * 清理缓冲
          */
         private clear()
         {

@@ -172,7 +172,11 @@ module feng3d
         public cloneFrom(geometry: Geometry)
         {
             this._indexBuffer = geometry._indexBuffer.clone();
-            this._attributes = ObjectUtils.deepClone(geometry._attributes);
+            this._attributes = {};
+            for (var key in geometry._attributes)
+            {
+                this._attributes[key] = geometry._attributes[key].clone();
+            }
         }
     }
 }
