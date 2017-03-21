@@ -185,20 +185,10 @@ module feng3d
                 break;
             case GL.SAMPLER_2D:
             case GL.SAMPLER_CUBE:
-
                 var textureInfo = <TextureInfo>data;
-                var texture = context3DPool.getTexture(gl, textureInfo);
                 //激活纹理编号
                 gl.activeTexture(GL["TEXTURE" + _samplerIndex]);
-                //绑定纹理
-                gl.bindTexture(textureInfo.textureType, texture);
-                //设置图片y轴方向
-                gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, textureInfo.flipY);
-                //设置纹理参数
-                gl.texParameteri(textureInfo.textureType, GL.TEXTURE_MIN_FILTER, textureInfo.minFilter);
-                gl.texParameteri(textureInfo.textureType, GL.TEXTURE_MAG_FILTER, textureInfo.magFilter);
-                gl.texParameteri(textureInfo.textureType, GL.TEXTURE_WRAP_S, textureInfo.wrapS);
-                gl.texParameteri(textureInfo.textureType, GL.TEXTURE_WRAP_T, textureInfo.wrapT);
+                textureInfo.active(gl);
                 //设置纹理所在采样编号
                 gl.uniform1i(location, _samplerIndex);
                 _samplerIndex++;

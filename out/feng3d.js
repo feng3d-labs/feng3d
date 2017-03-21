@@ -5044,13 +5044,6 @@ var feng3d;
         RenderBufferPool.prototype.getVABuffer = function (gl, data) {
             return this.getContext3DBufferPool(gl).getVABuffer(data);
         };
-        /**
-         * 获取顶点属性缓冲
-         * @param data  数据
-         */
-        RenderBufferPool.prototype.getTexture = function (gl, data) {
-            return this.getContext3DBufferPool(gl).getTexture(data);
-        };
         return RenderBufferPool;
     }());
     feng3d.RenderBufferPool = RenderBufferPool;
@@ -5063,10 +5056,6 @@ var feng3d;
          * @param gl         3D环境
          */
         function Context3DBufferPool(gl) {
-            /**
-             * 纹理缓冲
-             */
-            this._textureBuffer = new feng3d.Map();
             /** 渲染程序对象池 */
             this._webGLProgramPool = {};
             /** 顶点渲染程序对象池 */
@@ -5121,38 +5110,6 @@ var feng3d;
         Context3DBufferPool.prototype.getVABuffer = function (data) {
             var buffer = this.getBuffer(data, feng3d.GL.ARRAY_BUFFER);
             return buffer;
-        };
-        /**
-         * 获取顶点属性缓冲
-         * @param data  数据
-         */
-        Context3DBufferPool.prototype.getTexture = function (textureInfo) {
-            var buffer = this._textureBuffer.get(textureInfo.pixels);
-            if (buffer != null) {
-                return buffer;
-            }
-            var gl = this.gl;
-            var texture = gl.createTexture(); // Create a texture object
-            //绑定纹理
-            gl.bindTexture(textureInfo.textureType, texture);
-            if (textureInfo.textureType == feng3d.GL.TEXTURE_2D) {
-                //设置纹理图片
-                gl.texImage2D(textureInfo.textureType, 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, textureInfo.pixels);
-            }
-            else if (textureInfo.textureType == feng3d.GL.TEXTURE_CUBE_MAP) {
-                var faces = [
-                    feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_X, feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_Y, feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                    feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_X, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                ];
-                for (var i = 0; i < faces.length; i++) {
-                    gl.texImage2D(faces[i], 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, textureInfo.pixels[i]);
-                }
-            }
-            if (textureInfo.generateMipmap) {
-                gl.generateMipmap(textureInfo.textureType);
-            }
-            this._textureBuffer.push(textureInfo.pixels, texture);
-            return texture;
         };
         /**
          * 获取缓冲
@@ -5757,18 +5714,9 @@ var feng3d;
             case feng3d.GL.SAMPLER_2D:
             case feng3d.GL.SAMPLER_CUBE:
                 var textureInfo = data;
-                var texture = feng3d.context3DPool.getTexture(gl, textureInfo);
                 //激活纹理编号
                 gl.activeTexture(feng3d.GL["TEXTURE" + _samplerIndex]);
-                //绑定纹理
-                gl.bindTexture(textureInfo.textureType, texture);
-                //设置图片y轴方向
-                gl.pixelStorei(feng3d.GL.UNPACK_FLIP_Y_WEBGL, textureInfo.flipY);
-                //设置纹理参数
-                gl.texParameteri(textureInfo.textureType, feng3d.GL.TEXTURE_MIN_FILTER, textureInfo.minFilter);
-                gl.texParameteri(textureInfo.textureType, feng3d.GL.TEXTURE_MAG_FILTER, textureInfo.magFilter);
-                gl.texParameteri(textureInfo.textureType, feng3d.GL.TEXTURE_WRAP_S, textureInfo.wrapS);
-                gl.texParameteri(textureInfo.textureType, feng3d.GL.TEXTURE_WRAP_T, textureInfo.wrapT);
+                textureInfo.active(gl);
                 //设置纹理所在采样编号
                 gl.uniform1i(location, _samplerIndex);
                 _samplerIndex++;
@@ -9279,6 +9227,9 @@ var feng3d;
      * @author feng 2016-12-20
      */
     var TextureInfo = (function () {
+        /**
+         * 构建纹理
+         */
         function TextureInfo() {
             /**
              * 内部格式
@@ -9304,7 +9255,91 @@ var feng3d;
             this.magFilter = feng3d.GL.NEAREST;
             this.wrapS = feng3d.GL.CLAMP_TO_EDGE;
             this.wrapT = feng3d.GL.CLAMP_TO_EDGE;
+            /**
+             * 纹理缓冲
+             */
+            this._textureMap = new feng3d.Map();
+            /**
+             * 是否失效
+             */
+            this._invalid = true;
+            feng3d.Watcher.watch(this, ["textureType"], this.invalidate, this);
+            feng3d.Watcher.watch(this, ["internalformat"], this.invalidate, this);
+            feng3d.Watcher.watch(this, ["format"], this.invalidate, this);
+            feng3d.Watcher.watch(this, ["type"], this.invalidate, this);
+            feng3d.Watcher.watch(this, ["generateMipmap"], this.invalidate, this);
+            feng3d.Watcher.watch(this, ["flipY"], this.invalidate, this);
+            // Watcher.watch(this, ["minFilter"], this.invalidate, this);
+            // Watcher.watch(this, ["magFilter"], this.invalidate, this);
+            // Watcher.watch(this, ["wrapS"], this.invalidate, this);
+            // Watcher.watch(this, ["wrapT"], this.invalidate, this);
         }
+        /**
+         * 使纹理失效
+         */
+        TextureInfo.prototype.invalidate = function () {
+            this._invalid = true;
+        };
+        /**
+         * 激活纹理
+         * @param gl
+         */
+        TextureInfo.prototype.active = function (gl) {
+            if (this._invalid) {
+                this.clear();
+                this._invalid = false;
+            }
+            var texture = this.getTexture(gl);
+            //绑定纹理
+            gl.bindTexture(this.textureType, texture);
+            //设置图片y轴方向
+            gl.pixelStorei(feng3d.GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
+            //设置纹理参数
+            gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_MIN_FILTER, this.minFilter);
+            gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_MAG_FILTER, this.magFilter);
+            gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_WRAP_S, this.wrapS);
+            gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_WRAP_T, this.wrapT);
+        };
+        /**
+         * 获取顶点属性缓冲
+         * @param data  数据
+         */
+        TextureInfo.prototype.getTexture = function (gl) {
+            var texture = this._textureMap.get(gl);
+            if (!texture) {
+                texture = gl.createTexture(); // Create a texture object
+                //绑定纹理
+                gl.bindTexture(this.textureType, texture);
+                if (this.textureType == feng3d.GL.TEXTURE_2D) {
+                    //设置纹理图片
+                    gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, this.pixels);
+                }
+                else if (this.textureType == feng3d.GL.TEXTURE_CUBE_MAP) {
+                    var faces = [
+                        feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_X, feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_Y, feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                        feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_X, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                    ];
+                    for (var i = 0; i < faces.length; i++) {
+                        gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this.pixels[i]);
+                    }
+                }
+                if (this.generateMipmap) {
+                    gl.generateMipmap(this.textureType);
+                }
+                this._textureMap.push(gl, texture);
+            }
+            return texture;
+        };
+        /**
+         * 清理纹理
+         */
+        TextureInfo.prototype.clear = function () {
+            var gls = this._textureMap.getKeys();
+            for (var i = 0; i < gls.length; i++) {
+                gls[i].deleteTexture(this._textureMap.get(gls[i]));
+            }
+            this._textureMap.clear();
+        };
         return TextureInfo;
     }());
     feng3d.TextureInfo = TextureInfo;

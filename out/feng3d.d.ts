@@ -3012,11 +3012,6 @@ declare module feng3d {
          */
         getVABuffer(gl: GL, data: Float32Array): WebGLBuffer;
         /**
-         * 获取顶点属性缓冲
-         * @param data  数据
-         */
-        getTexture(gl: GL, data: TextureInfo): WebGLBuffer;
-        /**
          * 3D环境缓冲池
          */
         private context3DBufferPools;
@@ -4760,6 +4755,36 @@ declare module feng3d {
          * 图片数据
          */
         pixels: HTMLImageElement | HTMLImageElement[];
+        /**
+         * 纹理缓冲
+         */
+        private _textureMap;
+        /**
+         * 是否失效
+         */
+        private _invalid;
+        /**
+         * 构建纹理
+         */
+        constructor();
+        /**
+         * 使纹理失效
+         */
+        protected invalidate(): void;
+        /**
+         * 激活纹理
+         * @param gl
+         */
+        active(gl: GL): void;
+        /**
+         * 获取顶点属性缓冲
+         * @param data  数据
+         */
+        getTexture(gl: GL): WebGLTexture;
+        /**
+         * 清理纹理
+         */
+        private clear();
     }
 }
 declare module feng3d {

@@ -70,15 +70,6 @@ module feng3d
         }
 
         /**
-         * 获取顶点属性缓冲
-         * @param data  数据 
-         */
-        public getTexture(gl: GL, data: TextureInfo): WebGLBuffer
-        {
-            return this.getContext3DBufferPool(gl).getTexture(data);
-        }
-
-        /**
          * 3D环境缓冲池
          */
         private context3DBufferPools: { [context3DUID: string]: Context3DBufferPool } = {};
@@ -158,44 +149,6 @@ module feng3d
         }
 
         /**
-         * 获取顶点属性缓冲
-         * @param data  数据 
-         */
-        public getTexture(textureInfo: TextureInfo)
-        {
-            var buffer = this._textureBuffer.get(textureInfo.pixels);
-            if (buffer != null)
-            {
-                return buffer;
-            }
-            var gl = this.gl;
-            var texture = gl.createTexture();   // Create a texture object
-            //绑定纹理
-            gl.bindTexture(textureInfo.textureType, texture);
-            if (textureInfo.textureType == GL.TEXTURE_2D)
-            {
-                //设置纹理图片
-                gl.texImage2D(textureInfo.textureType, 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, <HTMLImageElement>textureInfo.pixels);
-            } else if (textureInfo.textureType == GL.TEXTURE_CUBE_MAP)
-            {
-                var faces = [
-                    GL.TEXTURE_CUBE_MAP_POSITIVE_X, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                    GL.TEXTURE_CUBE_MAP_NEGATIVE_X, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                ];
-                for (var i = 0; i < faces.length; i++)
-                {
-                    gl.texImage2D(faces[i], 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, textureInfo.pixels[i])
-                }
-            }
-            if (textureInfo.generateMipmap)
-            {
-                gl.generateMipmap(textureInfo.textureType);
-            }
-            this._textureBuffer.push(textureInfo.pixels, texture);
-            return texture;
-        }
-
-        /**
          * 获取缓冲
          * @param data  数据
          */
@@ -219,11 +172,6 @@ module feng3d
 
             return buffer;
         }
-
-        /**
-         * 纹理缓冲
-         */
-        private _textureBuffer = new Map<any, WebGLTexture>();
 
         /** 渲染程序对象池 */
         private _webGLProgramPool: { [shaderCode: string]: WebGLProgram } = {};
