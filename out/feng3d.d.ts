@@ -2976,6 +2976,8 @@ declare module feng3d {
          */
         clone(): this;
     }
+}
+declare module feng3d {
     /**
      * 属性渲染数据
      * @author feng 2014-8-14

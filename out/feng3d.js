@@ -5025,6 +5025,9 @@ var feng3d;
         return IndexRenderData;
     }());
     feng3d.IndexRenderData = IndexRenderData;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 属性渲染数据
      * @author feng 2014-8-14
@@ -5034,6 +5037,14 @@ var feng3d;
             if (data === void 0) { data = null; }
             if (stride === void 0) { stride = 3; }
             if (divisor === void 0) { divisor = 0; }
+            /**
+             * 数据步长
+             */
+            this.stride = 3;
+            /**
+             * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
+             */
+            this.divisor = 0;
             this.data = data;
             this.stride = stride;
             this.divisor = divisor;
