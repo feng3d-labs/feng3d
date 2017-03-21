@@ -13,7 +13,7 @@ module feng3d
         constructor(images: HTMLImageElement[])
         {
             super();
-            this.textureType = Context3D.TEXTURE_CUBE_MAP;
+            this.textureType = GL.TEXTURE_CUBE_MAP;
             this.pixels = images;
         }
     }

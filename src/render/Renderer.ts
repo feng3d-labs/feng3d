@@ -11,7 +11,7 @@ module feng3d
         /**
 		 * 渲染
 		 */
-        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera)
+        public draw(gl: GL, scene3D: Scene3D, camera: Camera)
         {
             var renderContext: RenderContext = new RenderContext();
             //初始化渲染环境
@@ -20,38 +20,38 @@ module feng3d
             renderContext.lights = scene3D.lights;
             scene3D.renderers.forEach(element =>
             {
-                this.drawRenderables(context3D, renderContext, element);
+                this.drawRenderables(gl, renderContext, element);
             });
         }
 
-        protected drawRenderables(context3D: Context3D, renderContext: RenderContext, meshRenderer: Model)
+        protected drawRenderables(gl: GL, renderContext: RenderContext, meshRenderer: Model)
         {
             var object3D = meshRenderer.parentComponent;
             //更新数据
             object3D.updateRender(renderContext);
             //绘制
-            this.drawObject3D(context3D, object3D.renderData);            //
+            this.drawObject3D(gl, object3D.renderData);            //
         }
 
         /**
          * 绘制3D对象
          */
-        protected drawObject3D(context3D: Context3D, renderAtomic: RenderAtomic)
+        protected drawObject3D(gl: GL, renderAtomic: RenderAtomic)
         {
-            var shaderProgram = this.activeShaderProgram(context3D, renderAtomic.vertexCode, renderAtomic.fragmentCode, renderAtomic.shaderMacro);
+            var shaderProgram = this.activeShaderProgram(gl, renderAtomic.vertexCode, renderAtomic.fragmentCode, renderAtomic.shaderMacro);
             if (!shaderProgram)
                 return;
             _samplerIndex = 0;
             //
-            activeAttributes(context3D, shaderProgram, renderAtomic.attributes);
-            activeUniforms(context3D, shaderProgram, renderAtomic.uniforms);
-            dodraw(context3D, renderAtomic.shaderParams, renderAtomic.indexBuffer, renderAtomic.instanceCount);
+            activeAttributes(gl, shaderProgram, renderAtomic.attributes);
+            activeUniforms(gl, shaderProgram, renderAtomic.uniforms);
+            dodraw(gl, renderAtomic.shaderParams, renderAtomic.indexBuffer, renderAtomic.instanceCount);
         }
 
         /**
          * 激活渲染程序
          */
-        protected activeShaderProgram(context3D: Context3D, vertexCode: string, fragmentCode: string, shaderMacro: ShaderMacro)
+        protected activeShaderProgram(gl: GL, vertexCode: string, fragmentCode: string, shaderMacro: ShaderMacro)
         {
             if (!vertexCode || !fragmentCode)
                 return null;
@@ -61,8 +61,8 @@ module feng3d
             vertexCode = vertexCode.replace(/#define\s+macros/, shaderMacroStr);
             fragmentCode = fragmentCode.replace(/#define\s+macros/, shaderMacroStr);
             //渲染程序
-            var shaderProgram = context3DPool.getWebGLProgram(context3D, vertexCode, fragmentCode);
-            context3D.useProgram(shaderProgram);
+            var shaderProgram = context3DPool.getWebGLProgram(gl, vertexCode, fragmentCode);
+            gl.useProgram(shaderProgram);
             return shaderProgram;
         }
     }
@@ -72,90 +72,90 @@ module feng3d
     /**
      * 激活属性
      */
-    function activeAttributes(context3D: Context3D, shaderProgram: WebGLProgram, attributes: { [name: string]: AttributeRenderData })
+    function activeAttributes(gl: GL, shaderProgram: WebGLProgram, attributes: { [name: string]: AttributeRenderData })
     {
-        var numAttributes = context3D.getProgramParameter(shaderProgram, context3D.ACTIVE_ATTRIBUTES);
+        var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
         var i = 0;
         while (i < numAttributes)
         {
-            var activeInfo = context3D.getActiveAttrib(shaderProgram, i++);
-            setContext3DAttribute(context3D, shaderProgram, activeInfo, attributes[activeInfo.name]);
+            var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
+            setContext3DAttribute(gl, shaderProgram, activeInfo, attributes[activeInfo.name]);
         }
     }
 
     /**
      * 激活常量
      */
-    function activeUniforms(context3D: Context3D, shaderProgram: WebGLProgram, uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[]; })
+    function activeUniforms(gl: GL, shaderProgram: WebGLProgram, uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[]; })
     {
-        var numUniforms = context3D.getProgramParameter(shaderProgram, context3D.ACTIVE_UNIFORMS);
+        var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
         var i = 0;
         while (i < numUniforms)
         {
-            var activeInfo = context3D.getActiveUniform(shaderProgram, i++);
+            var activeInfo = gl.getActiveUniform(shaderProgram, i++);
             if (activeInfo.name.indexOf("[") != -1)
             {
                 //处理数组
                 var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
                 for (var j = 0; j < activeInfo.size; j++)
                 {
-                    setContext3DUniform(context3D, shaderProgram, { name: baseName + `[${j}]`, type: activeInfo.type }, uniforms[baseName][j]);
+                    setContext3DUniform(gl, shaderProgram, { name: baseName + `[${j}]`, type: activeInfo.type }, uniforms[baseName][j]);
                 }
             } else
             {
-                setContext3DUniform(context3D, shaderProgram, activeInfo, uniforms[activeInfo.name]);
+                setContext3DUniform(gl, shaderProgram, activeInfo, uniforms[activeInfo.name]);
             }
         }
     }
 
     /**
      */
-    function dodraw(context3D: Context3D, shaderParams: ShaderParams, indexBuffer: IndexRenderData, instanceCount: number = 1)
+    function dodraw(gl: GL, shaderParams: ShaderParams, indexBuffer: IndexRenderData, instanceCount: number = 1)
     {
         instanceCount = ~~instanceCount;
-        var buffer = context3DPool.getIndexBuffer(context3D, indexBuffer.indices);
-        context3D.bindBuffer(indexBuffer.target, buffer);
+        var buffer = context3DPool.getIndexBuffer(gl, indexBuffer.indices);
+        gl.bindBuffer(indexBuffer.target, buffer);
         if (instanceCount > 1)
         {
-            _ext = _ext || context3D.getExtension('ANGLE_instanced_arrays');
+            _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
             _ext.drawArraysInstancedANGLE(shaderParams.renderMode, 0, indexBuffer.count, instanceCount)
         }
         else
         {
-            context3D.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+            gl.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
         }
     }
 
     /**
      * 设置环境属性数据
      */
-    function setContext3DAttribute(context3D: Context3D, shaderProgram: WebGLProgram, activeInfo: WebGLActiveInfo, buffer: AttributeRenderData)
+    function setContext3DAttribute(gl: GL, shaderProgram: WebGLProgram, activeInfo: WebGLActiveInfo, buffer: AttributeRenderData)
     {
-        var location = context3D.getAttribLocation(shaderProgram, activeInfo.name);
-        context3D.enableVertexAttribArray(location);
+        var location = gl.getAttribLocation(shaderProgram, activeInfo.name);
+        gl.enableVertexAttribArray(location);
         //
-        var squareVerticesBuffer = context3DPool.getVABuffer(context3D, buffer.data);
-        context3D.bindBuffer(Context3D.ARRAY_BUFFER, squareVerticesBuffer);
+        var squareVerticesBuffer = context3DPool.getVABuffer(gl, buffer.data);
+        gl.bindBuffer(GL.ARRAY_BUFFER, squareVerticesBuffer);
         switch (activeInfo.type)
         {
-            case Context3D.FLOAT:
-                context3D.vertexAttribPointer(location, 1, Context3D.FLOAT, false, 0, 0);
+            case GL.FLOAT:
+                gl.vertexAttribPointer(location, 1, GL.FLOAT, false, 0, 0);
                 break;
-            case Context3D.FLOAT_VEC2:
-                context3D.vertexAttribPointer(location, 2, Context3D.FLOAT, false, 0, 0);
+            case GL.FLOAT_VEC2:
+                gl.vertexAttribPointer(location, 2, GL.FLOAT, false, 0, 0);
                 break;
-            case Context3D.FLOAT_VEC3:
-                context3D.vertexAttribPointer(location, 3, Context3D.FLOAT, false, 0, 0);
+            case GL.FLOAT_VEC3:
+                gl.vertexAttribPointer(location, 3, GL.FLOAT, false, 0, 0);
                 break;
-            case Context3D.FLOAT_VEC4:
-                context3D.vertexAttribPointer(location, 4, Context3D.FLOAT, false, 0, 0);
+            case GL.FLOAT_VEC4:
+                gl.vertexAttribPointer(location, 4, GL.FLOAT, false, 0, 0);
                 break;
             default:
                 throw `无法识别的attribute类型 ${activeInfo.name} ${buffer.data}`;
         }
         if (buffer.divisor > 0)
         {
-            _ext = _ext || context3D.getExtension('ANGLE_instanced_arrays');
+            _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
             _ext.vertexAttribDivisorANGLE(location, buffer.divisor);
         }
     }
@@ -163,44 +163,44 @@ module feng3d
     /**
      * 设置环境Uniform数据
      */
-    function setContext3DUniform(context3D: Context3D, shaderProgram: WebGLProgram, activeInfo: { name: string; type: number; }, data)
+    function setContext3DUniform(gl: GL, shaderProgram: WebGLProgram, activeInfo: { name: string; type: number; }, data)
     {
-        var location = context3D.getUniformLocation(shaderProgram, activeInfo.name);
+        var location = gl.getUniformLocation(shaderProgram, activeInfo.name);
         switch (activeInfo.type)
         {
-            case Context3D.INT:
-                context3D.uniform1i(location, data);
+            case GL.INT:
+                gl.uniform1i(location, data);
                 break;
-            case Context3D.FLOAT_MAT4:
-                context3D.uniformMatrix4fv(location, false, data.rawData);
+            case GL.FLOAT_MAT4:
+                gl.uniformMatrix4fv(location, false, data.rawData);
                 break;
-            case Context3D.FLOAT:
-                context3D.uniform1f(location, data);
+            case GL.FLOAT:
+                gl.uniform1f(location, data);
                 break;
-            case Context3D.FLOAT_VEC3:
-                context3D.uniform3f(location, data.x, data.y, data.z);
+            case GL.FLOAT_VEC3:
+                gl.uniform3f(location, data.x, data.y, data.z);
                 break;
-            case Context3D.FLOAT_VEC4:
-                context3D.uniform4f(location, data.x, data.y, data.z, data.w);
+            case GL.FLOAT_VEC4:
+                gl.uniform4f(location, data.x, data.y, data.z, data.w);
                 break;
-            case Context3D.SAMPLER_2D:
-            case Context3D.SAMPLER_CUBE:
+            case GL.SAMPLER_2D:
+            case GL.SAMPLER_CUBE:
 
                 var textureInfo = <TextureInfo>data;
-                var texture = context3DPool.getTexture(context3D, textureInfo);
+                var texture = context3DPool.getTexture(gl, textureInfo);
                 //激活纹理编号
-                context3D.activeTexture(Context3D["TEXTURE" + _samplerIndex]);
+                gl.activeTexture(GL["TEXTURE" + _samplerIndex]);
                 //绑定纹理
-                context3D.bindTexture(textureInfo.textureType, texture);
+                gl.bindTexture(textureInfo.textureType, texture);
                 //设置图片y轴方向
-                context3D.pixelStorei(Context3D.UNPACK_FLIP_Y_WEBGL, textureInfo.flipY);
+                gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, textureInfo.flipY);
                 //设置纹理参数
-                context3D.texParameteri(textureInfo.textureType, Context3D.TEXTURE_MIN_FILTER, textureInfo.minFilter);
-                context3D.texParameteri(textureInfo.textureType, Context3D.TEXTURE_MAG_FILTER, textureInfo.magFilter);
-                context3D.texParameteri(textureInfo.textureType, Context3D.TEXTURE_WRAP_S, textureInfo.wrapS);
-                context3D.texParameteri(textureInfo.textureType, Context3D.TEXTURE_WRAP_T, textureInfo.wrapT);
+                gl.texParameteri(textureInfo.textureType, GL.TEXTURE_MIN_FILTER, textureInfo.minFilter);
+                gl.texParameteri(textureInfo.textureType, GL.TEXTURE_MAG_FILTER, textureInfo.magFilter);
+                gl.texParameteri(textureInfo.textureType, GL.TEXTURE_WRAP_S, textureInfo.wrapS);
+                gl.texParameteri(textureInfo.textureType, GL.TEXTURE_WRAP_T, textureInfo.wrapT);
                 //设置纹理所在采样编号
-                context3D.uniform1i(location, _samplerIndex);
+                gl.uniform1i(location, _samplerIndex);
                 _samplerIndex++;
                 break;
             default:

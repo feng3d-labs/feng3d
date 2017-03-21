@@ -14,7 +14,7 @@ module feng3d
         protected _updateEverytime = false;
 
 		/**
-		 * 创建Context3D数据缓冲
+		 * 创建GL数据缓冲
 		 */
         constructor()
         {

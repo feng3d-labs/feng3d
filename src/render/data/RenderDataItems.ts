@@ -15,7 +15,7 @@ module feng3d
         /**
          * 数据绑定目标，gl.ARRAY_BUFFER、gl.ELEMENT_ARRAY_BUFFER
          */
-        public target: number = Context3D.ELEMENT_ARRAY_BUFFER;
+        public target: number = GL.ELEMENT_ARRAY_BUFFER;
 
         /**
          * 渲染数量
@@ -25,7 +25,7 @@ module feng3d
         /**
          * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
          */
-        public type: number = Context3D.UNSIGNED_SHORT;
+        public type: number = GL.UNSIGNED_SHORT;
 
         /**
          * 索引偏移

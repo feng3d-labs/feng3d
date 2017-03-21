@@ -67,7 +67,7 @@ module feng3d
         /**
 		 * 渲染
 		 */
-        public draw(context3D: Context3D, scene3D: Scene3D, camera: Camera)
+        public draw(gl: GL, scene3D: Scene3D, camera: Camera)
         {
             if (!this.viewRect.contains(this.mouseX, this.mouseY))
                 return;
@@ -75,11 +75,11 @@ module feng3d
             var offsetX = -(this.mouseX - this.viewRect.x);
             var offsetY = -(this.viewRect.height - (this.mouseY - this.viewRect.y));//y轴与window中坐标反向，所以需要 h = (maxHeight - h)
 
-            context3D.clearColor(0, 0, 0, 0);
-            context3D.clearDepth(1);
-            context3D.clear(Context3D.COLOR_BUFFER_BIT | Context3D.DEPTH_BUFFER_BIT);
-            context3D.viewport(offsetX, offsetY, this.viewRect.width, this.viewRect.height);
-            this.mouseRenderer.draw(context3D, scene3D, camera);
+            gl.clearColor(0, 0, 0, 0);
+            gl.clearDepth(1);
+            gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+            gl.viewport(offsetX, offsetY, this.viewRect.width, this.viewRect.height);
+            this.mouseRenderer.draw(gl, scene3D, camera);
 
             var object3D = this.mouseRenderer.selectedObject3D;
             this.setSelectedObject3D(object3D);

@@ -12,38 +12,38 @@ module feng3d
 
         colorAttachments: { [name: string]: RenderBuffer } = {};
 
-        activate(context3D: Context3D, width: number, height: number)
+        activate(gl: GL, width: number, height: number)
         {
 
-            var framebuffer = context3DPool.getFrameBuffer(context3D, this);
-            context3D.bindFramebuffer(context3D.FRAMEBUFFER, framebuffer);
+            var framebuffer = context3DPool.getFrameBuffer(gl, this);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
             var buffers: number[] = [];
             for (var key in this.colorAttachments)
             {
                 var renderbuffer = this.colorAttachments[key];
-                renderbuffer.activate(context3D, width, height);
+                renderbuffer.activate(gl, width, height);
                 buffers.push(renderbuffer.attachment);
             }
 
-            context3D.drawBuffers(buffers);
+            gl.drawBuffers(buffers);
 
             for (var key in this.colorAttachments)
             {
-                this.colorAttachments[key].framebufferRenderbuffer(context3D);
+                this.colorAttachments[key].framebufferRenderbuffer(gl);
             }
         }
 
-        readBuffer(context3D: Context3D, name: string)
+        readBuffer(gl: GL, name: string)
         {
 
-            context3D.readBuffer(this.colorAttachments[name].attachment);
+            gl.readBuffer(this.colorAttachments[name].attachment);
         }
 
-        deactivate(context3D: Context3D)
+        deactivate(gl: GL)
         {
 
-            context3D.bindFramebuffer(context3D.FRAMEBUFFER, null);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         }
     }
 
@@ -55,28 +55,28 @@ module feng3d
         width: number;
         height: number;
 
-        constructor(index: number, internalformat = Context3D.RGBA8, width = 100, height = 100)
+        constructor(index: number, internalformat = GL.RGBA8, width = 100, height = 100)
         {
 
-            this.attachment = Context3D["COLOR_ATTACHMENT" + index];
+            this.attachment = GL["COLOR_ATTACHMENT" + index];
             this.internalformat = internalformat;
             this.width = width;
             this.height = height;
         }
 
-        activate(context3D: Context3D, width: number, height: number)
+        activate(gl: GL, width: number, height: number)
         {
 
-            var renderBuffer = context3DPool.getRenderBuffer(context3D, this);
-            context3D.bindRenderbuffer(context3D.RENDERBUFFER, renderBuffer);
-            context3D.renderbufferStorage(context3D.RENDERBUFFER, context3D.RGBA8, width, height);
+            var renderBuffer = context3DPool.getRenderBuffer(gl, this);
+            gl.bindRenderbuffer(gl.RENDERBUFFER, renderBuffer);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA8, width, height);
         }
 
-        framebufferRenderbuffer(context3D: Context3D)
+        framebufferRenderbuffer(gl: GL)
         {
 
-            var renderBuffer = context3DPool.getRenderBuffer(context3D, this);
-            context3D.framebufferRenderbuffer(context3D.FRAMEBUFFER, this.attachment, context3D.RENDERBUFFER, renderBuffer);
+            var renderBuffer = context3DPool.getRenderBuffer(gl, this);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, this.attachment, gl.RENDERBUFFER, renderBuffer);
         }
 
     }

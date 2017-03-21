@@ -12,7 +12,7 @@ module feng3d
         constructor(pixels: HTMLImageElement)
         {
             super();
-            this.textureType = Context3D.TEXTURE_2D;
+            this.textureType = GL.TEXTURE_2D;
             this.pixels = pixels;
         }
     }

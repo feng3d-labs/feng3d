@@ -9,73 +9,73 @@ module feng3d
     {
 
         /**
-         * @param context3D     3D环境
+         * @param gl     3D环境
          */
-        private getContext3DBufferPool(context3D: Context3D)
+        private getContext3DBufferPool(gl: GL)
         {
             //获取3D环境唯一标识符
-            var context3DUID = UIDUtils.getUID(context3D);
-            return this.context3DBufferPools[context3DUID] = this.context3DBufferPools[context3DUID] || new Context3DBufferPool(context3D);
+            var context3DUID = UIDUtils.getUID(gl);
+            return this.context3DBufferPools[context3DUID] = this.context3DBufferPools[context3DUID] || new Context3DBufferPool(gl);
         }
 
         /**
          * 获取渲染程序
-         * @param context3D     3D环境
+         * @param gl     3D环境
          * @param vertexCode    顶点着色器代码
          * @param fragmentCode  片段着色器代码
          * @return  渲染程序
          */
-        public getWebGLProgram(context3D: Context3D, vertexCode: string, fragmentCode: string): WebGLProgram
+        public getWebGLProgram(gl: GL, vertexCode: string, fragmentCode: string): WebGLProgram
         {
-            return this.getContext3DBufferPool(context3D).getWebGLProgram(vertexCode, fragmentCode);
+            return this.getContext3DBufferPool(gl).getWebGLProgram(vertexCode, fragmentCode);
         }
 
 	    /**
          * 获取顶点渲染程序
-         * @param context3D         3D环境
+         * @param gl         3D环境
          * @param vertexCode        顶点渲染代码
          * @return                  顶点渲染程序
          */
-        public getVertexShader(context3D: Context3D, vertexCode: string)
+        public getVertexShader(gl: GL, vertexCode: string)
         {
-            return this.getContext3DBufferPool(context3D).getVertexShader(vertexCode);
+            return this.getContext3DBufferPool(gl).getVertexShader(vertexCode);
         }
 
 	    /**
          * 获取顶点渲染程序
-         * @param context3D         3D环境
+         * @param gl         3D环境
          * @param fragmentCode      顶点渲染代码
          * @return                  顶点渲染程序
          */
-        public getFragmentShader(context3D: Context3D, fragmentCode: string)
+        public getFragmentShader(gl: GL, fragmentCode: string)
         {
-            return this.getContext3DBufferPool(context3D).getFragmentShader(fragmentCode);
+            return this.getContext3DBufferPool(gl).getFragmentShader(fragmentCode);
         }
 
         /**
          * 获取索引缓冲
          */
-        public getIndexBuffer(context3D: Context3D, indices: Uint16Array)
+        public getIndexBuffer(gl: GL, indices: Uint16Array)
         {
-            return this.getContext3DBufferPool(context3D).getIndexBuffer(indices);
+            return this.getContext3DBufferPool(gl).getIndexBuffer(indices);
         }
 
         /**
          * 获取顶点属性缓冲
          * @param data  数据 
          */
-        public getVABuffer(context3D: Context3D, data: Float32Array): WebGLBuffer
+        public getVABuffer(gl: GL, data: Float32Array): WebGLBuffer
         {
-            return this.getContext3DBufferPool(context3D).getVABuffer(data);
+            return this.getContext3DBufferPool(gl).getVABuffer(data);
         }
 
         /**
          * 获取顶点属性缓冲
          * @param data  数据 
          */
-        public getTexture(context3D: Context3D, data: TextureInfo): WebGLBuffer
+        public getTexture(gl: GL, data: TextureInfo): WebGLBuffer
         {
-            return this.getContext3DBufferPool(context3D).getTexture(data);
+            return this.getContext3DBufferPool(gl).getTexture(data);
         }
 
         /**
@@ -93,15 +93,15 @@ module feng3d
         /**
          * 3D环境
          */
-        private context3D: Context3D;
+        private gl: GL;
 
         /**
          * 构建3D环境缓冲池
-         * @param context3D         3D环境
+         * @param gl         3D环境
          */
-        constructor(context3D: Context3D)
+        constructor(gl: GL)
         {
-            this.context3D = context3D;
+            this.gl = gl;
         }
 
 	    /**
@@ -115,7 +115,7 @@ module feng3d
             //获取3D环境唯一标识符
             var shaderCode = [vertexCode, fragmentCode].join("\n--- shaderCode ---\n");
             //获取3D环境中的渲染程序对象池
-            return this._webGLProgramPool[shaderCode] = this._webGLProgramPool[shaderCode] || getWebGLProgram(this.context3D, vertexCode, fragmentCode);
+            return this._webGLProgramPool[shaderCode] = this._webGLProgramPool[shaderCode] || getWebGLProgram(this.gl, vertexCode, fragmentCode);
         }
 
         /**
@@ -125,7 +125,7 @@ module feng3d
          */
         public getVertexShader(vertexCode: string)
         {
-            return this._vertexShaderPool[vertexCode] = this._vertexShaderPool[vertexCode] || getVertexShader(this.context3D, vertexCode);
+            return this._vertexShaderPool[vertexCode] = this._vertexShaderPool[vertexCode] || getVertexShader(this.gl, vertexCode);
         }
 
         /**
@@ -135,7 +135,7 @@ module feng3d
          */
         public getFragmentShader(fragmentCode: string)
         {
-            return this._fragmentShaderPool[fragmentCode] = this._fragmentShaderPool[fragmentCode] || getFragmentShader(this.context3D, fragmentCode);
+            return this._fragmentShaderPool[fragmentCode] = this._fragmentShaderPool[fragmentCode] || getFragmentShader(this.gl, fragmentCode);
         }
 
         /**
@@ -143,7 +143,7 @@ module feng3d
          */
         public getIndexBuffer(indices: Uint16Array)
         {
-            var indexBuffer = this.getBuffer(indices, Context3D.ELEMENT_ARRAY_BUFFER);
+            var indexBuffer = this.getBuffer(indices, GL.ELEMENT_ARRAY_BUFFER);
             return indexBuffer;
         }
 
@@ -153,7 +153,7 @@ module feng3d
          */
         public getVABuffer(data: Float32Array): WebGLBuffer
         {
-            var buffer = this.getBuffer(data, Context3D.ARRAY_BUFFER);
+            var buffer = this.getBuffer(data, GL.ARRAY_BUFFER);
             return buffer;
         }
 
@@ -168,28 +168,28 @@ module feng3d
             {
                 return buffer;
             }
-            var context3D = this.context3D;
-            var texture = context3D.createTexture();   // Create a texture object
+            var gl = this.gl;
+            var texture = gl.createTexture();   // Create a texture object
             //绑定纹理
-            context3D.bindTexture(textureInfo.textureType, texture);
-            if (textureInfo.textureType == Context3D.TEXTURE_2D)
+            gl.bindTexture(textureInfo.textureType, texture);
+            if (textureInfo.textureType == GL.TEXTURE_2D)
             {
                 //设置纹理图片
-                context3D.texImage2D(textureInfo.textureType, 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, <HTMLImageElement>textureInfo.pixels);
-            } else if (textureInfo.textureType == Context3D.TEXTURE_CUBE_MAP)
+                gl.texImage2D(textureInfo.textureType, 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, <HTMLImageElement>textureInfo.pixels);
+            } else if (textureInfo.textureType == GL.TEXTURE_CUBE_MAP)
             {
                 var faces = [
-                    Context3D.TEXTURE_CUBE_MAP_POSITIVE_X, Context3D.TEXTURE_CUBE_MAP_POSITIVE_Y, Context3D.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                    Context3D.TEXTURE_CUBE_MAP_NEGATIVE_X, Context3D.TEXTURE_CUBE_MAP_NEGATIVE_Y, Context3D.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                    GL.TEXTURE_CUBE_MAP_POSITIVE_X, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                    GL.TEXTURE_CUBE_MAP_NEGATIVE_X, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
                 ];
                 for (var i = 0; i < faces.length; i++)
                 {
-                    context3D.texImage2D(faces[i], 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, textureInfo.pixels[i])
+                    gl.texImage2D(faces[i], 0, textureInfo.internalformat, textureInfo.format, textureInfo.type, textureInfo.pixels[i])
                 }
             }
             if (textureInfo.generateMipmap)
             {
-                context3D.generateMipmap(textureInfo.textureType);
+                gl.generateMipmap(textureInfo.textureType);
             }
             this._textureBuffer.push(textureInfo.pixels, texture);
             return texture;
@@ -201,14 +201,14 @@ module feng3d
          */
         private getBuffer(data: ArrayBufferView | ArrayBuffer, target: number)
         {
-            var context3D = this.context3D;
+            var gl = this.gl;
             var dataUID = UIDUtils.getUID(data);
-            var buffer = this._bufferMap[dataUID] = this._bufferMap[dataUID] || context3D.createBuffer();
+            var buffer = this._bufferMap[dataUID] = this._bufferMap[dataUID] || gl.createBuffer();
 
             if (!VersionUtils.equal(data, buffer))
             {
-                context3D.bindBuffer(target, buffer);
-                context3D.bufferData(target, data, Context3D.STATIC_DRAW);
+                gl.bindBuffer(target, buffer);
+                gl.bufferData(target, data, GL.STATIC_DRAW);
                 VersionUtils.setVersion(buffer, VersionUtils.getVersion(data));
 
                 //升级buffer和数据版本号一致
@@ -242,39 +242,39 @@ module feng3d
 
     /**
      * 获取WebGLProgram
-     * @param context3D     3D环境上下文
+     * @param gl     3D环境上下文
      * @param vertexCode    顶点着色器代码
      * @param fragmentCode  片段着色器代码
      * @return  WebGL程序
      */
-    function getWebGLProgram(context3D: Context3D, vertexCode: string, fragmentCode: string)
+    function getWebGLProgram(gl: GL, vertexCode: string, fragmentCode: string)
     {
-        var vertexShader = context3DPool.getVertexShader(context3D, vertexCode);
-        var fragmentShader = context3DPool.getFragmentShader(context3D, fragmentCode);
+        var vertexShader = context3DPool.getVertexShader(gl, vertexCode);
+        var fragmentShader = context3DPool.getFragmentShader(gl, fragmentCode);
 
         if (!vertexShader || !fragmentShader)
         {
             return null;
         }
         // 创建渲染程序
-        var program = context3D.createProgram();
+        var program = gl.createProgram();
         if (!program)
         {
             return null;
         }
-        context3D.attachShader(program, vertexShader);
-        context3D.attachShader(program, fragmentShader);
-        context3D.linkProgram(program);
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
 
         // 渲染程序创建失败时给出弹框
-        var linked = context3D.getProgramParameter(program, context3D.LINK_STATUS);
+        var linked = gl.getProgramParameter(program, gl.LINK_STATUS);
         if (!linked)
         {
-            var error = context3D.getProgramInfoLog(program);
+            var error = gl.getProgramInfoLog(program);
             console.log('Failed to link program: ' + error + `\n${vertexCode}\n${fragmentCode}`);
-            context3D.deleteProgram(program);
-            context3D.deleteShader(fragmentShader);
-            context3D.deleteShader(vertexShader);
+            gl.deleteProgram(program);
+            gl.deleteShader(fragmentShader);
+            gl.deleteShader(vertexShader);
             return null;
         }
 
@@ -283,58 +283,58 @@ module feng3d
 
     /**
      * 获取顶点渲染程序
-     * @param context3D         3D环境上下文
+     * @param gl         3D环境上下文
      * @param vertexCode        顶点渲染代码
      * @return                  顶点渲染程序
      */
-    function getVertexShader(context3D: Context3D, vertexCode: string)
+    function getVertexShader(gl: GL, vertexCode: string)
     {
-        var shader = context3D.createShader(Context3D.VERTEX_SHADER);
+        var shader = gl.createShader(GL.VERTEX_SHADER);
         if (shader == null)
         {
             console.log('unable to create shader');
             return null;
         }
-        shader = compileShader(context3D, shader, vertexCode);
+        shader = compileShader(gl, shader, vertexCode);
         return shader;
     }
 
     /**
      * 获取片段渲染程序
-     * @param context3D         3D环境上下文
+     * @param gl         3D环境上下文
      * @param fragmentCode      片段渲染代码
      * @return                  片段渲染程序
      */
-    function getFragmentShader(context3D: Context3D, fragmentCode: string)
+    function getFragmentShader(gl: GL, fragmentCode: string)
     {
-        var shader = context3D.createShader(Context3D.FRAGMENT_SHADER);
+        var shader = gl.createShader(GL.FRAGMENT_SHADER);
         if (shader == null)
         {
             console.log('unable to create shader');
             return null;
         }
-        shader = compileShader(context3D, shader, fragmentCode);
+        shader = compileShader(gl, shader, fragmentCode);
         return shader;
     }
 
     /**
      * 编译渲染程序
-     * @param context3D         3D环境上下文
+     * @param gl         3D环境上下文
      * @param shader            渲染程序
      * @param shaderCode        渲染代码
      * @return                  完成编译的渲染程序
      */
-    function compileShader(context3D: Context3D, shader: WebGLShader, shaderCode: string)
+    function compileShader(gl: GL, shader: WebGLShader, shaderCode: string)
     {
-        context3D.shaderSource(shader, shaderCode);
-        context3D.compileShader(shader);
+        gl.shaderSource(shader, shaderCode);
+        gl.compileShader(shader);
         // Check the result of compilation
-        var compiled = context3D.getShaderParameter(shader, context3D.COMPILE_STATUS);
+        var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
         if (!compiled)
         {
-            var error = context3D.getShaderInfoLog(shader);
-            console.log(`编译渲染程序时发生错误: ${error} \n ${context3D.getShaderInfoLog(shader)}\n${shaderCode}`);
-            context3D.deleteShader(shader);
+            var error = gl.getShaderInfoLog(shader);
+            console.log(`编译渲染程序时发生错误: ${error} \n ${gl.getShaderInfoLog(shader)}\n${shaderCode}`);
+            gl.deleteShader(shader);
             return null;
         }
         return shader;

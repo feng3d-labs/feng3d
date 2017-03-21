@@ -17,7 +17,7 @@ module feng3d
         private static tempRayDirection: Vector3D = new Vector3D();
 
         //
-        private _context3D: Context3D;
+        private _context3D: GL;
         private _camera: CameraObject3D;
         private _scene: Scene3D;
         private _canvas: HTMLCanvasElement;
@@ -81,8 +81,8 @@ module feng3d
 
             this._context3D.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
             this._context3D.clearDepth(1.0);                 // Clear everything
-            this._context3D.enable(Context3D.DEPTH_TEST);           // Enable depth testing
-            this._context3D.depthFunc(Context3D.LEQUAL);            // Near things obscure far things
+            this._context3D.enable(GL.DEPTH_TEST);           // Enable depth testing
+            this._context3D.depthFunc(GL.LEQUAL);            // Near things obscure far things
         }
 
         /** 3d场景 */
@@ -111,14 +111,14 @@ module feng3d
 
             // 默认渲染
             this._context3D.clearColor(this.background.r, this.background.g, this.background.b, this.background.a);
-            this._context3D.clear(Context3D.COLOR_BUFFER_BIT | Context3D.DEPTH_BUFFER_BIT);
+            this._context3D.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
             this._context3D.viewport(0, 0, viewRect.width, viewRect.height);
             // Enable alpha blending
-            this._context3D.enable(Context3D.BLEND);
+            this._context3D.enable(GL.BLEND);
             // Set blending function
-            this._context3D.blendFunc(Context3D.SRC_ALPHA, Context3D.ONE_MINUS_SRC_ALPHA);
+            this._context3D.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
             this.defaultRenderer.draw(this._context3D, this._scene, this._camera.camera);
-            this._context3D.disable(Context3D.BLEND);
+            this._context3D.disable(GL.BLEND);
         }
 
         /**
