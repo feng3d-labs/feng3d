@@ -4793,8 +4793,8 @@ declare module feng3d {
      * @author feng 2016-12-20
      */
     class Texture2D extends TextureInfo {
-        pixels: HTMLImageElement;
-        constructor(pixels: HTMLImageElement);
+        url: string;
+        constructor(url: string);
     }
 }
 declare module feng3d {
@@ -5183,7 +5183,7 @@ declare module feng3d {
      * @author feng 2016-04-28
      */
     class TerrainGeometry extends Geometry {
-        heightMap: ImageData;
+        heightMapUrl: string;
         width: number;
         height: number;
         depth: number;
@@ -5191,6 +5191,8 @@ declare module feng3d {
         segmentsH: number;
         maxElevation: number;
         minElevation: number;
+        private _heightMap;
+        private _heightImage;
         /**
          * 创建高度地形 拥有segmentsW*segmentsH个顶点
          * @param    heightMap	高度图
@@ -5202,7 +5204,11 @@ declare module feng3d {
          * @param    maxElevation	最大地形高度
          * @param    minElevation	最小地形高度
          */
-        constructor(heightMap: ImageData, width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, maxElevation?: number, minElevation?: number);
+        constructor(heightMapUrl: string, width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, maxElevation?: number, minElevation?: number);
+        /**
+         * 高度图加载完成
+         */
+        private onHeightMapLoad();
         /**
          * 创建顶点坐标
          */

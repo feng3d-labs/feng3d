@@ -29,8 +29,14 @@ module feng3d
             var object3D = meshRenderer.parentComponent;
             //更新数据
             object3D.updateRender(renderContext);
-            //绘制
-            this.drawObject3D(gl, object3D.renderData);            //
+            try
+            {
+                //绘制
+                this.drawObject3D(gl, object3D.renderData);            //
+            } catch (error)
+            {
+
+            }
         }
 
         /**

@@ -7,13 +7,16 @@ module feng3d
      */
     export class Texture2D extends TextureInfo
     {
-        public pixels: HTMLImageElement;
+        public url = "";
 
-        constructor(pixels: HTMLImageElement)
+        constructor(url: string)
         {
             super();
             this.textureType = GL.TEXTURE_2D;
-            this.pixels = pixels;
+            this.pixels = new Image();
+            this.pixels.addEventListener("load", this.invalidate.bind(this));
+            this.pixels.src = url;
+            Binding.bindProperty(this, ["url"], this.pixels, "src");
         }
     }
 }

@@ -7,6 +7,8 @@ module feng3d
      */
     export class TerrainGeometry extends Geometry
     {
+        private _heightMap: ImageData;
+        private _heightImage: HTMLImageElement;
 
 		/**
 		 * 创建高度地形 拥有segmentsW*segmentsH个顶点
@@ -19,18 +21,42 @@ module feng3d
 		 * @param    maxElevation	最大地形高度
 		 * @param    minElevation	最小地形高度
 		 */
-        constructor(public heightMap: ImageData, public width: number = 1000, public height: number = 100, public depth: number = 1000, public segmentsW: number = 30, public segmentsH: number = 30, public maxElevation: number = 255, public minElevation: number = 0)
+        constructor(public heightMapUrl: string, public width: number = 1000, public height: number = 100, public depth: number = 1000, public segmentsW: number = 30, public segmentsH: number = 30, public maxElevation: number = 255, public minElevation: number = 0)
         {
             super();
 
-            Watcher.watch(this, ["heightMap"], this.buildGeometry, this);
-            Watcher.watch(this, ["width"], this.buildGeometry, this);
-            Watcher.watch(this, ["height"], this.buildGeometry, this);
-            Watcher.watch(this, ["depth"], this.buildGeometry, this);
-            Watcher.watch(this, ["segmentsW"], this.buildGeometry, this);
-            Watcher.watch(this, ["segmentsH"], this.buildGeometry, this);
-            Watcher.watch(this, ["maxElevation"], this.buildGeometry, this);
-            Watcher.watch(this, ["minElevation"], this.buildGeometry, this);
+            Watcher.watch(this, ["width"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["height"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["depth"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["maxElevation"], this.invalidateGeometry, this);
+            Watcher.watch(this, ["minElevation"], this.invalidateGeometry, this);
+
+            this._heightImage = new Image();
+            this._heightImage.addEventListener("load", this.onHeightMapLoad.bind(this));
+            this._heightImage.src = heightMapUrl;
+
+            Binding.bindProperty(this, ["heightMapUrl"], this._heightImage, "src");
+        }
+
+        /**
+         * 高度图加载完成
+         */
+        private onHeightMapLoad()
+        {
+            var canvasImg = <HTMLCanvasElement>document.createElement("canvas");
+            canvasImg.width = this._heightImage.width;
+            canvasImg.height = this._heightImage.height;
+
+            var ctxt = canvasImg.getContext('2d');
+
+            ctxt.drawImage(this._heightImage, 0, 0);
+            var terrainHeightData = ctxt.getImageData(0, 0, this._heightImage.width, this._heightImage.height);//读取整张图片的像素。
+            ctxt.putImageData(terrainHeightData, terrainHeightData.width, terrainHeightData.height);
+            this._heightMap = terrainHeightData;
+
+            this.invalidateGeometry();
         }
 
 		/**
@@ -38,7 +64,8 @@ module feng3d
 		 */
         protected buildGeometry()
         {
-
+            if (!this._heightMap)
+                return;
             var x: number, z: number;
             var numInds: number = 0;
             var base: number = 0;
@@ -47,9 +74,9 @@ module feng3d
             //总顶点数量
             var numVerts: number = (this.segmentsH + 1) * tw;
             //一个格子所占高度图X轴像素数
-            var uDiv: number = (this.heightMap.width - 1) / this.segmentsW;
+            var uDiv: number = (this._heightMap.width - 1) / this.segmentsW;
             //一个格子所占高度图Y轴像素数
-            var vDiv: number = (this.heightMap.height - 1) / this.segmentsH;
+            var vDiv: number = (this._heightMap.height - 1) / this.segmentsH;
             var u: number, v: number;
             var y: number;
 
@@ -70,7 +97,7 @@ module feng3d
                     v = (this.segmentsH - zi) * vDiv;
 
                     //获取颜色值
-                    col = this.getPixel(this.heightMap, u, v) & 0xff;
+                    col = this.getPixel(this._heightMap, u, v) & 0xff;
                     //计算高度值
                     y = (col > this.maxElevation) ? (this.maxElevation / 0xff) * this.height : ((col < this.minElevation) ? (this.minElevation / 0xff) * this.height : (col / 0xff) * this.height);
 
@@ -129,10 +156,10 @@ module feng3d
         {
 
             //得到高度图中的值
-            var u: number = (x / this.width + .5) * (this.heightMap.width - 1);
-            var v: number = (-z / this.depth + .5) * (this.heightMap.height - 1);
+            var u: number = (x / this.width + .5) * (this._heightMap.width - 1);
+            var v: number = (-z / this.depth + .5) * (this._heightMap.height - 1);
 
-            var col: number = this.getPixel(this.heightMap, u, v) & 0xff;
+            var col: number = this.getPixel(this._heightMap, u, v) & 0xff;
 
             var h: number;
             if (col > this.maxElevation)

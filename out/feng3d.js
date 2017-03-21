@@ -5579,8 +5579,12 @@ var feng3d;
             var object3D = meshRenderer.parentComponent;
             //更新数据
             object3D.updateRender(renderContext);
-            //绘制
-            this.drawObject3D(gl, object3D.renderData); //
+            try {
+                //绘制
+                this.drawObject3D(gl, object3D.renderData); //
+            }
+            catch (error) {
+            }
         };
         /**
          * 绘制3D对象
@@ -9292,8 +9296,9 @@ var feng3d;
             var texture = this.getTexture(gl);
             //绑定纹理
             gl.bindTexture(this.textureType, texture);
-            //设置图片y轴方向
-            gl.pixelStorei(feng3d.GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
+            // //设置图片y轴方向
+            // gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
+            // console.warn("flipY:" + this.flipY);
             //设置纹理参数
             gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_MIN_FILTER, this.minFilter);
             gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_MAG_FILTER, this.magFilter);
@@ -9326,6 +9331,9 @@ var feng3d;
                 if (this.generateMipmap) {
                     gl.generateMipmap(this.textureType);
                 }
+                //设置图片y轴方向
+                gl.pixelStorei(feng3d.GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
+                // console.warn("flipY:" + this.flipY);
                 this._textureMap.push(gl, texture);
             }
             return texture;
@@ -9352,10 +9360,14 @@ var feng3d;
      */
     var Texture2D = (function (_super) {
         __extends(Texture2D, _super);
-        function Texture2D(pixels) {
+        function Texture2D(url) {
             _super.call(this);
+            this.url = "";
             this.textureType = feng3d.GL.TEXTURE_2D;
-            this.pixels = pixels;
+            this.pixels = new Image();
+            this.pixels.addEventListener("load", this.invalidate.bind(this));
+            this.pixels.src = url;
+            feng3d.Binding.bindProperty(this, ["url"], this.pixels, "src");
         }
         return Texture2D;
     }(feng3d.TextureInfo));
@@ -10087,7 +10099,7 @@ var feng3d;
          * @param    maxElevation	最大地形高度
          * @param    minElevation	最小地形高度
          */
-        function TerrainGeometry(heightMap, width, height, depth, segmentsW, segmentsH, maxElevation, minElevation) {
+        function TerrainGeometry(heightMapUrl, width, height, depth, segmentsW, segmentsH, maxElevation, minElevation) {
             if (width === void 0) { width = 1000; }
             if (height === void 0) { height = 100; }
             if (depth === void 0) { depth = 1000; }
@@ -10096,7 +10108,7 @@ var feng3d;
             if (maxElevation === void 0) { maxElevation = 255; }
             if (minElevation === void 0) { minElevation = 0; }
             _super.call(this);
-            this.heightMap = heightMap;
+            this.heightMapUrl = heightMapUrl;
             this.width = width;
             this.height = height;
             this.depth = depth;
@@ -10104,19 +10116,38 @@ var feng3d;
             this.segmentsH = segmentsH;
             this.maxElevation = maxElevation;
             this.minElevation = minElevation;
-            feng3d.Watcher.watch(this, ["heightMap"], this.buildGeometry, this);
-            feng3d.Watcher.watch(this, ["width"], this.buildGeometry, this);
-            feng3d.Watcher.watch(this, ["height"], this.buildGeometry, this);
-            feng3d.Watcher.watch(this, ["depth"], this.buildGeometry, this);
-            feng3d.Watcher.watch(this, ["segmentsW"], this.buildGeometry, this);
-            feng3d.Watcher.watch(this, ["segmentsH"], this.buildGeometry, this);
-            feng3d.Watcher.watch(this, ["maxElevation"], this.buildGeometry, this);
-            feng3d.Watcher.watch(this, ["minElevation"], this.buildGeometry, this);
+            feng3d.Watcher.watch(this, ["width"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["height"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["depth"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["maxElevation"], this.invalidateGeometry, this);
+            feng3d.Watcher.watch(this, ["minElevation"], this.invalidateGeometry, this);
+            this._heightImage = new Image();
+            this._heightImage.addEventListener("load", this.onHeightMapLoad.bind(this));
+            this._heightImage.src = heightMapUrl;
+            feng3d.Binding.bindProperty(this, ["heightMapUrl"], this._heightImage, "src");
         }
+        /**
+         * 高度图加载完成
+         */
+        TerrainGeometry.prototype.onHeightMapLoad = function () {
+            var canvasImg = document.createElement("canvas");
+            canvasImg.width = this._heightImage.width;
+            canvasImg.height = this._heightImage.height;
+            var ctxt = canvasImg.getContext('2d');
+            ctxt.drawImage(this._heightImage, 0, 0);
+            var terrainHeightData = ctxt.getImageData(0, 0, this._heightImage.width, this._heightImage.height); //读取整张图片的像素。
+            ctxt.putImageData(terrainHeightData, terrainHeightData.width, terrainHeightData.height);
+            this._heightMap = terrainHeightData;
+            this.invalidateGeometry();
+        };
         /**
          * 创建顶点坐标
          */
         TerrainGeometry.prototype.buildGeometry = function () {
+            if (!this._heightMap)
+                return;
             var x, z;
             var numInds = 0;
             var base = 0;
@@ -10125,9 +10156,9 @@ var feng3d;
             //总顶点数量
             var numVerts = (this.segmentsH + 1) * tw;
             //一个格子所占高度图X轴像素数
-            var uDiv = (this.heightMap.width - 1) / this.segmentsW;
+            var uDiv = (this._heightMap.width - 1) / this.segmentsW;
             //一个格子所占高度图Y轴像素数
-            var vDiv = (this.heightMap.height - 1) / this.segmentsH;
+            var vDiv = (this._heightMap.height - 1) / this.segmentsH;
             var u, v;
             var y;
             var vertices = new Float32Array(numVerts * 3);
@@ -10143,7 +10174,7 @@ var feng3d;
                     u = xi * uDiv;
                     v = (this.segmentsH - zi) * vDiv;
                     //获取颜色值
-                    col = this.getPixel(this.heightMap, u, v) & 0xff;
+                    col = this.getPixel(this._heightMap, u, v) & 0xff;
                     //计算高度值
                     y = (col > this.maxElevation) ? (this.maxElevation / 0xff) * this.height : ((col < this.minElevation) ? (this.minElevation / 0xff) * this.height : (col / 0xff) * this.height);
                     //保存顶点坐标
@@ -10190,9 +10221,9 @@ var feng3d;
          */
         TerrainGeometry.prototype.getHeightAt = function (x, z) {
             //得到高度图中的值
-            var u = (x / this.width + .5) * (this.heightMap.width - 1);
-            var v = (-z / this.depth + .5) * (this.heightMap.height - 1);
-            var col = this.getPixel(this.heightMap, u, v) & 0xff;
+            var u = (x / this.width + .5) * (this._heightMap.width - 1);
+            var v = (-z / this.depth + .5) * (this._heightMap.height - 1);
+            var col = this.getPixel(this._heightMap, u, v) & 0xff;
             var h;
             if (col > this.maxElevation) {
                 h = (this.maxElevation / 0xff) * this.height;

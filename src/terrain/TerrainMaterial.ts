@@ -7,9 +7,7 @@ module feng3d
      */
     export class TerrainMaterial extends Material
     {
-
         public diffuseTexture: Texture2D;
-
         public splatTexture1: Texture2D;
         public splatTexture2: Texture2D;
         public splatTexture3: Texture2D;
@@ -22,7 +20,6 @@ module feng3d
          */
         constructor()
         {
-
             super();
             this.shaderName = "terrain";
         }
