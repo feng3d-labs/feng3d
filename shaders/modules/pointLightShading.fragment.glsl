@@ -1,10 +1,3 @@
-// Light Computing
-struct LightingResult
-{
-    vec3 diffuse;
-    vec3 specular;
-};
-
 //点光源位置数组
 uniform vec3 u_pointLightPositions[NUM_POINTLIGHT];
 //点光源颜色数组
@@ -27,6 +20,16 @@ vec3 calculateLightDiffuse(vec3 normal,vec3 lightDir,vec3 lightColor,float light
     return diffuse;
 }
 
+//计算光照镜面反射系数
+vec3 calculateLightSpecular(vec3 normal,vec3 lightDir,vec3 lightColor,float lightIntensity,vec3 viewDir){
+
+    vec3 halfVec = normalize(lightDir + viewDir);
+    float NdotH = clamp(dot(normal,halfVec),0.0,1.0);
+
+    vec3 diffuse = lightColor * lightIntensity * NdotH;
+    return diffuse;
+}
+
 //根据距离计算衰减
 float computeDistanceLightFalloff(float lightDistance, float range)
 {
@@ -40,11 +43,13 @@ float computeDistanceLightFalloff(float lightDistance, float range)
 }
 
 //渲染点光源
-LightingResult pointLightShading(vec3 normal,vec3 viewDir){
+vec3 pointLightShading(vec3 normal,vec3 diffuseColor){
 
-    LightingResult result;
+    //视线方向
+    vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_globalPosition);
 
     vec3 totalDiffuseLightColor = vec3(0.0,0.0,0.0);
+    vec3 totalSpecularLightColor = vec3(0.0,0.0,0.0);
     for(int i = 0;i<NUM_POINTLIGHT;i++){
         //
         vec3 lightOffset = u_pointLightPositions[i] - v_globalPosition;
@@ -61,7 +66,10 @@ LightingResult pointLightShading(vec3 normal,vec3 viewDir){
         lightIntensity = lightIntensity * attenuation;
         //
         totalDiffuseLightColor = totalDiffuseLightColor +  calculateLightDiffuse(normal,lightDir,lightColor,lightIntensity);
+        // totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,lightColor,lightIntensity,viewDir);
     }
-    result.diffuse = totalDiffuseLightColor;
-    return result;
+
+    vec3 resultColor = totalDiffuseLightColor * diffuseColor;
+    //  + totalSpecularLightColor;
+    return resultColor;
 }
