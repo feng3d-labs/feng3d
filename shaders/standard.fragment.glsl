@@ -21,18 +21,25 @@ uniform vec4 u_diffuse;
 
 void main(void) {
 
-    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);
     vec3 normal = normalize(v_normal);
 
-    finalColor = u_diffuse;
+    //视线方向
+    vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_globalPosition);
+
+    vec4 diffuseColor = u_diffuse;
     #ifdef HAS_DIFFUSE_SAMPLER
-        finalColor = finalColor * texture2D(s_diffuse, v_uv);
+        diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);
     #endif
-    
+
+    vec4 specularColor = vec4(1.0,1.0,1.0,1.0);
+
     //渲染灯光
     #if NUM_POINTLIGHT > 0
-        finalColor.xyz = pointLightShading(normal,finalColor.xyz);
+        LightingResult lightingResult  = pointLightShading(normal,viewDir);
+        diffuseColor.xyz = diffuseColor.xyz * lightingResult.diffuse;
     #endif
+
+    vec4 finalColor = diffuseColor;
 
     gl_FragColor = finalColor;
 }
