@@ -46,7 +46,8 @@ module feng3d
      */
     export class BoolMacros
     {
-        public HAS_DIFFUSE_MAP: boolean;
+        public HAS_DIFFUSE_SAMPLER: boolean;
+        public HAS_NORMAL_SAMPLER: boolean;
     }
 
     /**

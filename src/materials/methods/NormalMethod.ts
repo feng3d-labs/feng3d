@@ -9,7 +9,7 @@ module feng3d
         /**
          * 漫反射纹理
          */
-        public difuseTexture: Texture2D = new Texture2D();
+        public normalTexture: Texture2D = new Texture2D();
 
         /**
          * 构建
@@ -17,8 +17,7 @@ module feng3d
         constructor()
         {
             super();
-            this.difuseTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
-            Watcher.watch(this, ["baseColor"], this.invalidateRenderData, this);
+            this.normalTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
         }
 
         /**
@@ -26,14 +25,14 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            if (this.difuseTexture.checkRenderData())
+            if (this.normalTexture.checkRenderData())
             {
-                renderData.uniforms[RenderDataID.s_texture] = this.difuseTexture;
-                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_MAP = true;
+                renderData.uniforms[RenderDataID.s_normal] = this.normalTexture;
+                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_SAMPLER = true;
             } else
             {
                 renderData.uniforms[RenderDataID.s_texture] = null;
-                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_MAP = false;
+                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_SAMPLER = false;
             }
 
             //

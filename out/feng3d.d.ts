@@ -3104,6 +3104,10 @@ declare module feng3d {
          */
         static s_diffuse: string;
         /**
+         * 法线贴图
+         */
+        static s_normal: string;
+        /**
          * 天空盒纹理
          */
         static s_skyboxTexture: string;
@@ -3231,7 +3235,8 @@ declare module feng3d {
      * 没有默认值
      */
     class BoolMacros {
-        HAS_DIFFUSE_MAP: boolean;
+        HAS_DIFFUSE_SAMPLER: boolean;
+        HAS_NORMAL_SAMPLER: boolean;
     }
     /**
      * 递增类型宏
@@ -5095,7 +5100,7 @@ declare module feng3d {
         /**
          * 漫反射纹理
          */
-        difuseTexture: Texture2D;
+        normalTexture: Texture2D;
         /**
          * 构建
          */

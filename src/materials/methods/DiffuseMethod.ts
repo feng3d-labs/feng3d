@@ -36,11 +36,11 @@ module feng3d
             if (this.difuseTexture.checkRenderData())
             {
                 renderData.uniforms[RenderDataID.s_diffuse] = this.difuseTexture;
-                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_MAP = true;
+                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_SAMPLER = true;
             } else
             {
                 renderData.uniforms[RenderDataID.s_diffuse] = null;
-                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_MAP = false;
+                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_SAMPLER = false;
             }
 
             //

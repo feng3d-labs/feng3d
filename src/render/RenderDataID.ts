@@ -34,6 +34,10 @@ module feng3d
          */
         public static s_diffuse = "s_diffuse";
         /**
+         * 法线贴图
+         */
+        public static s_normal = "s_normal";
+        /**
          * 天空盒纹理
          */
         public static s_skyboxTexture = "s_skyboxTexture";
