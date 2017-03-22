@@ -30,6 +30,10 @@ module feng3d
          */
         public static s_texture = "s_texture";
         /**
+         * 漫反射贴图
+         */
+        public static s_diffuse = "s_diffuse";
+        /**
          * 天空盒纹理
          */
         public static s_skyboxTexture = "s_skyboxTexture";
@@ -80,7 +84,7 @@ module feng3d
         /**
          * 基本颜色
          */
-        public static u_baseColor = "u_baseColor";
+        public static u_diffuse = "u_diffuse";
 
         /**
          * 反射率

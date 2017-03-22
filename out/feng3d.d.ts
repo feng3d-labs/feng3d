@@ -3100,6 +3100,10 @@ declare module feng3d {
          */
         static s_texture: string;
         /**
+         * 漫反射贴图
+         */
+        static s_diffuse: string;
+        /**
          * 天空盒纹理
          */
         static s_skyboxTexture: string;
@@ -3146,7 +3150,7 @@ declare module feng3d {
         /**
          * 基本颜色
          */
-        static u_baseColor: string;
+        static u_diffuse: string;
         /**
          * 反射率
          */
@@ -5071,7 +5075,27 @@ declare module feng3d {
         /**
          * 基本颜色
          */
-        baseColor: Color;
+        color: Color;
+        /**
+         * 构建
+         */
+        constructor();
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 法线函数
+     * @author feng 2017-03-22
+     */
+    class NormalMethod extends RenderDataHolder {
+        /**
+         * 漫反射纹理
+         */
+        difuseTexture: Texture2D;
         /**
          * 构建
          */

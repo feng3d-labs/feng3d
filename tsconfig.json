@@ -131,6 +131,7 @@
         "src/materials/SkeletonAnimatorMaterial.ts",
         //
         "src/materials/methods/DiffuseMethod.ts",
+        "src/materials/methods/NormalMethod.ts",
         //灯光
         "src/light/LightType.ts",
         "src/light/Light.ts",
