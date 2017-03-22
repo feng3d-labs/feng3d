@@ -15,8 +15,9 @@ uniform vec4 u_diffuse;
 #ifdef HAS_DIFFUSE_SAMPLER
     uniform sampler2D s_diffuse;
 #endif
-
-#include<modules/pointLightShading.fragment>
+#if NUM_POINTLIGHT > 0
+    #include<modules/pointLightShading.fragment>
+#endif
 
 void main(void) {
 

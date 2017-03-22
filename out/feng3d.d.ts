@@ -3152,6 +3152,14 @@ declare module feng3d {
          */
         static u_pointLightIntensitys: string;
         /**
+         * 点光源光照范围数组
+         */
+        static u_pointLightRanges: string;
+        /**
+         * 场景环境光
+         */
+        static u_sceneAmbientColor: string;
+        /**
          * 基本颜色
          */
         static u_diffuse: string;
@@ -3283,6 +3291,10 @@ declare module feng3d {
          * 灯光
          */
         lights: Light[];
+        /**
+         * 场景环境光强度
+         */
+        sceneAmbientColor: any;
         /**
          * 更新渲染数据
          */
@@ -3866,6 +3878,10 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class Scene3D extends Object3D {
+        /**
+         * 环境光强度
+         */
+        ambientColor: Color;
         private _object3Ds;
         private _renderers;
         private _lights;
@@ -5190,13 +5206,9 @@ declare module feng3d {
      */
     class PointLight extends Light {
         /**
-         * 最小半径
+         * 光照范围
          */
-        radius: number;
-        /**
-         * 可照射最大距离
-         */
-        fallOff: number;
+        range: number;
         /**
          * 构建
          */

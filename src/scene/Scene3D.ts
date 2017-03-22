@@ -7,6 +7,11 @@ module feng3d
      */
     export class Scene3D extends Object3D
     {
+        /**
+         * 环境光强度
+         */
+        public ambientColor = new Color();
+
         private _object3Ds: Object3D[] = [];
         private _renderers: Model[] = [];
         private _lights: Light[] = [];

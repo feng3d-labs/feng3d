@@ -84,7 +84,14 @@ module feng3d
          * 点光源光照强度数组
          */
         public static u_pointLightIntensitys = "u_pointLightIntensitys";
-
+        /**
+         * 点光源光照范围数组
+         */
+        public static u_pointLightRanges = "u_pointLightRanges";
+        /**
+         * 场景环境光
+         */
+        public static u_sceneAmbientColor = "u_sceneAmbientColor";
         /**
          * 基本颜色
          */

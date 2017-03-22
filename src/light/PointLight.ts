@@ -7,16 +7,10 @@ module feng3d
      */
     export class PointLight extends Light
     {
-
         /**
-         * 最小半径
+         * 光照范围
          */
-        public radius = 0;
-
-        /**
-         * 可照射最大距离
-         */
-        public fallOff = 0;
+        public range = 600;
 
         /**
          * 构建

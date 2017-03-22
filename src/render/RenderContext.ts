@@ -15,33 +15,40 @@ module feng3d
         /**
          * 灯光
          */
-        public lights: Light[] = [];
+        public lights: Light[];
+
+        /**
+         * 场景环境光强度
+         */
+        public sceneAmbientColor;
 
         /**
 		 * 更新渲染数据
 		 */
         public updateRenderData(renderAtomic: RenderAtomic)
         {
-            var pointLights: Light[] = [];
+            var pointLights: PointLight[] = [];
             this.camera.updateRenderData(this, renderAtomic);
             var light: Light;
             for (var i = 0; i < this.lights.length; i++)
             {
                 light = this.lights[i];
                 light.updateRenderData(this, renderAtomic);
-                if (light.lightType == LightType.Point)
+                if (light instanceof PointLight)
                     pointLights.push(light);
             }
             //收集点光源数据
             var pointLightPositions: Vector3D[] = [];
             var pointLightDiffuses: Vector3D[] = [];
             var pointLightIntensitys: number[] = [];
+            var pointLightRadiuss: number[] = [];
             for (var i = 0; i < pointLights.length; i++)
             {
-                light = pointLights[i];
-                pointLightPositions.push(light.position);
-                pointLightDiffuses.push(light.color);
-                pointLightIntensitys.push(light.intensity);
+                var pointLight = pointLights[i];
+                pointLightPositions.push(pointLight.position);
+                pointLightDiffuses.push(pointLight.color);
+                pointLightIntensitys.push(pointLight.intensity);
+                pointLightRadiuss.push(pointLight.range);
             }
             //设置点光源数据
             renderAtomic.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
@@ -55,7 +62,9 @@ module feng3d
                 renderAtomic.uniforms[RenderDataID.u_pointLightPositions] = pointLightPositions;
                 renderAtomic.uniforms[RenderDataID.u_pointLightColors] = pointLightDiffuses;
                 renderAtomic.uniforms[RenderDataID.u_pointLightIntensitys] = pointLightIntensitys;
+                renderAtomic.uniforms[RenderDataID.u_pointLightRanges] = pointLightRadiuss;
             }
+            renderAtomic.uniforms[RenderDataID.u_sceneAmbientColor] = this.sceneAmbientColor;
         }
 
         /**

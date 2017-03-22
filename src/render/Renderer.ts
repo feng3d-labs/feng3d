@@ -18,6 +18,7 @@ module feng3d
             renderContext.clear();
             renderContext.camera = camera;
             renderContext.lights = scene3D.lights;
+            renderContext.sceneAmbientColor = scene3D.sceneAmbientColor;
             scene3D.renderers.forEach(element =>
             {
                 this.drawRenderables(gl, renderContext, element);
