@@ -805,11 +805,15 @@ declare module feng3d {
         /**
          * [广播事件] 进入新的一帧,监听此事件将会在下一帧开始时触发一次回调。这是一个广播事件，可以在任何一个显示对象上监听，无论它是否在显示列表中。
          */
+        static ENTER_FRAME: "enterFrame";
+        /**
+         * 发生变化时派发
+         */
         static CHANGE: "change";
         /**
-         * [广播事件] 进入新的一帧,监听此事件将会在下一帧开始时触发一次回调。这是一个广播事件，可以在任何一个显示对象上监听，无论它是否在显示列表中。
+         * 加载完成时派发
          */
-        static ENTER_FRAME: "enterFrame";
+        static LOADED: "loaded";
         private _type;
         private _bubbles;
         private _target;
@@ -3223,6 +3227,7 @@ declare module feng3d {
      * 没有默认值
      */
     class BoolMacros {
+        HAS_DIFFUSE_MAP: boolean;
     }
     /**
      * 递增类型宏
@@ -4760,7 +4765,7 @@ declare module feng3d {
      * 纹理信息
      * @author feng 2016-12-20
      */
-    class TextureInfo {
+    class TextureInfo extends EventDispatcher {
         /**
          * 纹理类型
          */
@@ -4806,6 +4811,10 @@ declare module feng3d {
          */
         constructor();
         /**
+         * 判断数据是否满足渲染需求
+         */
+        checkRenderData(): boolean;
+        /**
          * 使纹理失效
          */
         protected invalidate(): void;
@@ -4831,8 +4840,17 @@ declare module feng3d {
      * @author feng 2016-12-20
      */
     class Texture2D extends TextureInfo {
+        protected _pixels: HTMLImageElement;
         url: string;
         constructor(url?: string);
+        /**
+         * 处理加载完成
+         */
+        protected onLoad(): void;
+        /**
+         * 判断数据是否满足渲染需求
+         */
+        checkRenderData(): boolean;
     }
 }
 declare module feng3d {
@@ -4841,7 +4859,12 @@ declare module feng3d {
      * @author feng 2016-12-28
      */
     class TextureCube extends TextureInfo {
+        protected _pixels: HTMLImageElement[];
         constructor(images: string[]);
+        /**
+         * 判断数据是否满足渲染需求
+         */
+        checkRenderData(): boolean;
     }
 }
 declare module feng3d {

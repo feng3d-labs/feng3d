@@ -10,11 +10,15 @@ module feng3d
         /**
          * [广播事件] 进入新的一帧,监听此事件将会在下一帧开始时触发一次回调。这是一个广播事件，可以在任何一个显示对象上监听，无论它是否在显示列表中。
          */
+        public static ENTER_FRAME: "enterFrame" = "enterFrame";
+        /**
+         * 发生变化时派发
+         */
         public static CHANGE: "change" = "change";
         /**
-         * [广播事件] 进入新的一帧,监听此事件将会在下一帧开始时触发一次回调。这是一个广播事件，可以在任何一个显示对象上监听，无论它是否在显示列表中。
+         * 加载完成时派发
          */
-        public static ENTER_FRAME: "enterFrame" = "enterFrame";
+        public static LOADED: "loaded" = "loaded";
 
         private _type: string;
 

@@ -46,7 +46,7 @@ module feng3d
      */
     export class BoolMacros
     {
-
+        public HAS_DIFFUSE_MAP: boolean;
     }
 
     /**
@@ -74,7 +74,7 @@ module feng3d
         /**
          * 是否需要变量法线
          */
-        V_NORMAL_NEED: number = 0;
+        public V_NORMAL_NEED: number = 0;
         /**
          * 是否需要摄像机矩阵
          */

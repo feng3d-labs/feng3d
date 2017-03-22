@@ -7,6 +7,8 @@ module feng3d
      */
     export class TextureCube extends TextureInfo
     {
+        protected _pixels: HTMLImageElement[];
+
         constructor(images: string[])
         {
             super();
@@ -19,6 +21,24 @@ module feng3d
                 this._pixels[i].addEventListener("load", this.invalidate.bind(this));
                 this._pixels[i].src = images[i];
             }
+        }
+
+        /**
+         * 判断数据是否满足渲染需求
+         */
+        public checkRenderData()
+        {
+            if (!this._pixels)
+                return false;
+
+            for (var i = 0; i < this._pixels.length; i++)
+            {
+                var element = this._pixels[i];
+                if (!element.width || !element.height)
+                    return false;
+            }
+
+            return true;
         }
     }
 }

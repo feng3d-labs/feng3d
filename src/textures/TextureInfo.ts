@@ -4,7 +4,7 @@ module feng3d
      * 纹理信息
      * @author feng 2016-12-20
      */
-    export class TextureInfo
+    export class TextureInfo extends EventDispatcher
     {
         /**
          * 纹理类型
@@ -60,6 +60,7 @@ module feng3d
          */
         constructor()
         {
+            super();
             Watcher.watch(this, ["textureType"], this.invalidate, this);
             Watcher.watch(this, ["internalformat"], this.invalidate, this);
             Watcher.watch(this, ["format"], this.invalidate, this);
@@ -70,6 +71,16 @@ module feng3d
             // Watcher.watch(this, ["magFilter"], this.invalidate, this);
             // Watcher.watch(this, ["wrapS"], this.invalidate, this);
             // Watcher.watch(this, ["wrapT"], this.invalidate, this);
+        }
+
+        /**
+         * 判断数据是否满足渲染需求
+         */
+        public checkRenderData()
+        {
+            debuger && console.assert(false);
+
+            return false;
         }
 
         /**

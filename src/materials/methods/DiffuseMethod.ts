@@ -22,6 +22,8 @@ module feng3d
         constructor()
         {
             super();
+            this.difuseTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
+            Watcher.watch(this, ["baseColor"], this.invalidateRenderData, this);
         }
 
         /**
@@ -29,8 +31,18 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-
             renderData.uniforms[RenderDataID.u_baseColor] = this.baseColor;
+
+            if (this.difuseTexture.checkRenderData())
+            {
+                renderData.uniforms[RenderDataID.s_texture] = this.difuseTexture;
+                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_MAP = true;
+            } else
+            {
+                renderData.uniforms[RenderDataID.s_texture] = null;
+                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_MAP = false;
+            }
+
             //
             super.updateRenderData(renderContext, renderData);
         }

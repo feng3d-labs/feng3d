@@ -35,7 +35,7 @@ module feng3d
                 this.drawObject3D(gl, object3D.renderData);            //
             } catch (error)
             {
-
+                console.log(error);
             }
         }
 
