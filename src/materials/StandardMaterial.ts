@@ -8,13 +8,10 @@ module feng3d
      */
     export class StandardMaterial extends Material
     {
-
-        public difuseTexture: Texture2D;
-
         /**
-         * 基本颜色
+         * 漫反射函数
          */
-        public baseColor = new Color(1, 1, 1, 1);
+        public diffuseMethod = new DiffuseMethod();
 
         /**
          * 环境颜色
@@ -44,8 +41,8 @@ module feng3d
             super();
             this.shaderName = "standard";
 
-            Watcher.watch(this, ["difuseTexture"], this.invalidateRenderData, this);
-            Watcher.watch(this, ["baseColor"], this.invalidateRenderData, this);
+            this.addComponent(this.diffuseMethod);
+
             Watcher.watch(this, ["ambientColor"], this.invalidateRenderData, this);
             Watcher.watch(this, ["reflectance"], this.invalidateRenderData, this);
             Watcher.watch(this, ["roughness"], this.invalidateRenderData, this);
@@ -57,7 +54,6 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            renderData.uniforms[RenderDataID.u_baseColor] = this.baseColor.toVector3D();
             renderData.uniforms[RenderDataID.u_reflectance] = this.reflectance;
             renderData.uniforms[RenderDataID.u_roughness] = this.roughness;
             renderData.uniforms[RenderDataID.u_metalic] = this.metalic;

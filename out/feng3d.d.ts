@@ -1752,81 +1752,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 颜色
-     * @author feng 2016-09-24
-     */
-    class Color {
-        /**
-         * 红[0,1]
-         */
-        r: number;
-        /**
-         * 绿[0,1]
-         */
-        g: number;
-        /**
-         * 蓝[0,1]
-         */
-        b: number;
-        /**
-         * 透明度[0,1]
-         */
-        a: number;
-        /**
-         * 构建颜色
-         * @param r     红[0,1]
-         * @param g     绿[0,1]
-         * @param b     蓝[0,1]
-         * @param a     透明度[0,1]
-         */
-        constructor(r?: number, g?: number, b?: number, a?: number);
-        /**
-         * 从RGBA整型初始化颜色
-         * @param r     红[0,255]
-         * @param g     绿[0,255]
-         * @param b     蓝[0,255]
-         * @param a     透明度[0,255]
-         */
-        fromInts(r: number, g: number, b: number, a: number): void;
-        fromUnit(color: number, hasAlpha?: boolean): void;
-        /**
-         * 转换为数组
-         */
-        asArray(): number[];
-        /**
-         * 输出到数组
-         * @param array     数组
-         * @param index     存储在数组中的位置
-         */
-        toArray(array: number[], index?: number): Color;
-        /**
-         * 输出为向量
-         */
-        toVector3D(): Vector3D;
-        toInt(): number;
-        /**
-         * 输出16进制字符串
-         */
-        toHexString(): string;
-        /**
-         * 混合颜色
-         * @param color 混入的颜色
-         * @param rate  混入比例
-         */
-        mix(color: Color, rate?: number): this;
-        /**
-         * 输出字符串
-         */
-        toString(): string;
-        /**
-         * [0,15]数值转为16进制字符串
-         * param i  [0,15]数值
-         */
-        static ToHex(i: number): string;
-    }
-}
-declare module feng3d {
-    /**
      * 数学常量类
      */
     class MathConsts {
@@ -2221,7 +2146,7 @@ declare module feng3d {
         /**
          * 将 Vector3D 的成员设置为指定值
          */
-        setTo(xa: number, ya: number, za: number): void;
+        setTo(x: number, y: number, z: number, w?: number): void;
         /**
          * 从另一个 Vector3D 对象的 x、y 和 z 元素的值中减去当前 Vector3D 对象的 x、y 和 z 元素的值。
          */
@@ -2785,6 +2710,64 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 颜色
+     * @author feng 2016-09-24
+     */
+    class Color extends Vector3D {
+        /**
+         * 红[0,1]
+         */
+        r: number;
+        /**
+         * 绿[0,1]
+         */
+        g: number;
+        /**
+         * 蓝[0,1]
+         */
+        b: number;
+        /**
+         * 透明度[0,1]
+         */
+        a: number;
+        /**
+         * 构建颜色
+         * @param r     红[0,1]
+         * @param g     绿[0,1]
+         * @param b     蓝[0,1]
+         * @param a     透明度[0,1]
+         */
+        constructor(r?: number, g?: number, b?: number, a?: number);
+        /**
+         * 通过
+         * @param color
+         * @param hasAlpha
+         */
+        fromUnit(color: number, hasAlpha?: boolean): void;
+        toInt(): number;
+        /**
+         * 输出16进制字符串
+         */
+        toHexString(): string;
+        /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        mix(color: Color, rate?: number): this;
+        /**
+         * 输出字符串
+         */
+        toString(): string;
+        /**
+         * [0,15]数值转为16进制字符串
+         * param i  [0,15]数值
+         */
+        static ToHex(i: number): string;
+    }
+}
+declare module feng3d {
+    /**
      * 渲染模式
      * @author feng 2016-09-28
      */
@@ -2829,6 +2812,10 @@ declare module feng3d {
          * 创建GL数据缓冲
          */
         constructor();
+        /**
+         * 收集渲染数据拥有者
+         * @param renderAtomic 渲染原子
+         */
         collectRenderDataHolder(renderAtomic?: Object3DRenderAtomic): void;
         /**
          * 更新渲染数据
@@ -3820,7 +3807,14 @@ declare module feng3d {
          * 材质
          */
         material: Material;
+        /**
+         * 构建
+         */
         constructor();
+        /**
+         * 收集渲染数据拥有者
+         * @param renderAtomic 渲染原子
+         */
         collectRenderDataHolder(renderAtomic?: Object3DRenderAtomic): void;
         /**
          * 处理被添加组件事件
@@ -4838,7 +4832,7 @@ declare module feng3d {
      */
     class Texture2D extends TextureInfo {
         url: string;
-        constructor(url: string);
+        constructor(url?: string);
     }
 }
 declare module feng3d {
@@ -4985,11 +4979,10 @@ declare module feng3d {
      * @see 物理渲染-基于物理的光照模型 http://blog.csdn.net/leonwei/article/details/44539217
      */
     class StandardMaterial extends Material {
-        difuseTexture: Texture2D;
         /**
-         * 基本颜色
+         * 漫反射函数
          */
-        baseColor: Color;
+        diffuseMethod: DiffuseMethod;
         /**
          * 环境颜色
          */
@@ -5035,6 +5028,30 @@ declare module feng3d {
          * 纹理数据
          */
         texture: Texture2D;
+        constructor();
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 漫反射函数
+     * @author feng 2017-03-22
+     */
+    class DiffuseMethod extends RenderDataHolder {
+        /**
+         * 漫反射纹理
+         */
+        difuseTexture: Texture2D;
+        /**
+         * 基本颜色
+         */
+        baseColor: Color;
+        /**
+         * 构建
+         */
         constructor();
         /**
          * 更新渲染数据

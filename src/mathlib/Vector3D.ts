@@ -202,11 +202,12 @@ module feng3d
         /**
          * 将 Vector3D 的成员设置为指定值
          */
-        public setTo(xa: number, ya: number, za: number)
+        public setTo(x: number, y: number, z: number, w: number = 1)
         {
-            this.x = xa;
-            this.y = ya;
-            this.z = za;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
         }
 
         /**

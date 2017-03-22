@@ -135,7 +135,10 @@ module feng3d
          */
         public get colorData()
         {
-            return this.startColor.asArray().concat(this.endColor.asArray());
+            return [
+                this.startColor.r, this.startColor.g, this.startColor.b, this.startColor.a,
+                this.endColor.r, this.endColor.g, this.endColor.b, this.endColor.a,
+            ];
         }
     }
 }

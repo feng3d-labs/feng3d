@@ -40,7 +40,7 @@ module feng3d
             {
                 light = pointLights[i];
                 pointLightPositions.push(light.position);
-                pointLightDiffuses.push(light.color.toVector3D());
+                pointLightDiffuses.push(light.color);
                 pointLightIntensitys.push(light.intensity);
             }
             //设置点光源数据

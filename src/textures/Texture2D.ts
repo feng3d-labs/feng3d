@@ -9,7 +9,7 @@ module feng3d
     {
         public url = "";
 
-        constructor(url: string)
+        constructor(url = "")
         {
             super();
             this.textureType = GL.TEXTURE_2D;

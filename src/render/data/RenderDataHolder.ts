@@ -21,6 +21,10 @@ module feng3d
             super();
         }
 
+        /**
+         * 收集渲染数据拥有者
+         * @param renderAtomic 渲染原子
+         */
         public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
         {
             renderAtomic.addRenderDataHolder(this);

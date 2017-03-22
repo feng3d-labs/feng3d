@@ -46,7 +46,6 @@
         //基础工具
         "src/utils/ShaderLib.ts",
         //
-        "src/mathlib/Color.ts",
         "src/mathlib/MathConsts.ts",
         "src/mathlib/Point.ts",
         "src/mathlib/Rectangle.ts",
@@ -57,6 +56,7 @@
         "src/mathlib/Ray3D.ts",
         "src/mathlib/Plane3D.ts",
         "src/mathlib/PlaneClassification.ts",
+        "src/mathlib/Color.ts",
         //渲染
         "src/render/consts/RenderMode.ts",
         "src/render/data/ShaderParams.ts",
@@ -129,6 +129,8 @@
         "src/materials/StandardMaterial.ts",
         "src/materials/ParticleMaterial.ts",
         "src/materials/SkeletonAnimatorMaterial.ts",
+        //
+        "src/materials/methods/DiffuseMethod.ts",
         //灯光
         "src/light/LightType.ts",
         "src/light/Light.ts",

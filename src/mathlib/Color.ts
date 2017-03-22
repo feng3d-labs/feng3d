@@ -1,29 +1,31 @@
 module feng3d
 {
-
     /**
      * 颜色
      * @author feng 2016-09-24
      */
-    export class Color
+    export class Color extends Vector3D
     {
-
         /**
          * 红[0,1]
          */
-        public r: number = 1;
+        public get r() { return this.x };
+        public set r(value) { this.x = value; };
         /**
          * 绿[0,1]
          */
-        public g: number = 1;
+        public get g() { return this.y };
+        public set g(value) { this.y = value; };
         /**
          * 蓝[0,1]
          */
-        public b: number = 1;
+        public get b() { return this.z };
+        public set b(value) { this.z = value; };
         /**
          * 透明度[0,1]
          */
-        public a: number = 1;
+        public get a() { return this.w };
+        public set a(value) { this.w = value; };
 
         /**
          * 构建颜色
@@ -32,67 +34,22 @@ module feng3d
          * @param b     蓝[0,1]
          * @param a     透明度[0,1]
          */
-        constructor(r: number = 1, g: number = 1, b: number = 1, a: number = 1)
+        constructor(r = 1, g = 1, b = 1, a = 1)
         {
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.a = a;
+            super(r, g, b, a);
         }
 
         /**
-         * 从RGBA整型初始化颜色
-         * @param r     红[0,255]
-         * @param g     绿[0,255]
-         * @param b     蓝[0,255]
-         * @param a     透明度[0,255]
+         * 通过
+         * @param color 
+         * @param hasAlpha 
          */
-        public fromInts(r: number, g: number, b: number, a: number)
-        {
-            this.r = r / 0xff;
-            this.g = g / 0xff;
-            this.b = b / 0xff;
-            this.a = a / 0xff;
-        }
-
         public fromUnit(color: number, hasAlpha: boolean = false)
         {
             this.a = (hasAlpha ? (color >> 24) & 0xff : 0xff) / 0xff;
             this.r = ((color >> 16) & 0xff) / 0xff;
             this.g = ((color >> 8) & 0xff) / 0xff;
             this.b = (color & 0xff) / 0xff;
-        }
-
-        /**
-         * 转换为数组
-         */
-        public asArray(): number[]
-        {
-            var result = [];
-            this.toArray(result);
-            return result;
-        }
-
-        /**
-         * 输出到数组
-         * @param array     数组
-         * @param index     存储在数组中的位置
-         */
-        public toArray(array: number[], index: number = 0): Color
-        {
-            array[index] = this.r;
-            array[index + 1] = this.g;
-            array[index + 2] = this.b;
-            array[index + 3] = this.a;
-            return this;
-        }
-
-        /**
-         * 输出为向量
-         */
-        public toVector3D()
-        {
-            return new Vector3D(this.r, this.g, this.b, this.a);
         }
 
         public toInt()
@@ -149,6 +106,5 @@ module feng3d
             }
             return str.toUpperCase();
         }
-
     }
 }

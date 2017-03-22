@@ -2671,141 +2671,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 颜色
-     * @author feng 2016-09-24
-     */
-    var Color = (function () {
-        /**
-         * 构建颜色
-         * @param r     红[0,1]
-         * @param g     绿[0,1]
-         * @param b     蓝[0,1]
-         * @param a     透明度[0,1]
-         */
-        function Color(r, g, b, a) {
-            if (r === void 0) { r = 1; }
-            if (g === void 0) { g = 1; }
-            if (b === void 0) { b = 1; }
-            if (a === void 0) { a = 1; }
-            /**
-             * 红[0,1]
-             */
-            this.r = 1;
-            /**
-             * 绿[0,1]
-             */
-            this.g = 1;
-            /**
-             * 蓝[0,1]
-             */
-            this.b = 1;
-            /**
-             * 透明度[0,1]
-             */
-            this.a = 1;
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.a = a;
-        }
-        /**
-         * 从RGBA整型初始化颜色
-         * @param r     红[0,255]
-         * @param g     绿[0,255]
-         * @param b     蓝[0,255]
-         * @param a     透明度[0,255]
-         */
-        Color.prototype.fromInts = function (r, g, b, a) {
-            this.r = r / 0xff;
-            this.g = g / 0xff;
-            this.b = b / 0xff;
-            this.a = a / 0xff;
-        };
-        Color.prototype.fromUnit = function (color, hasAlpha) {
-            if (hasAlpha === void 0) { hasAlpha = false; }
-            this.a = (hasAlpha ? (color >> 24) & 0xff : 0xff) / 0xff;
-            this.r = ((color >> 16) & 0xff) / 0xff;
-            this.g = ((color >> 8) & 0xff) / 0xff;
-            this.b = (color & 0xff) / 0xff;
-        };
-        /**
-         * 转换为数组
-         */
-        Color.prototype.asArray = function () {
-            var result = [];
-            this.toArray(result);
-            return result;
-        };
-        /**
-         * 输出到数组
-         * @param array     数组
-         * @param index     存储在数组中的位置
-         */
-        Color.prototype.toArray = function (array, index) {
-            if (index === void 0) { index = 0; }
-            array[index] = this.r;
-            array[index + 1] = this.g;
-            array[index + 2] = this.b;
-            array[index + 3] = this.a;
-            return this;
-        };
-        /**
-         * 输出为向量
-         */
-        Color.prototype.toVector3D = function () {
-            return new feng3d.Vector3D(this.r, this.g, this.b, this.a);
-        };
-        Color.prototype.toInt = function () {
-            var value = (this.a * 0xff) << 24 + (this.r * 0xff) << 16 + (this.g * 0xff) << 8 + (this.b * 0xff);
-            return value;
-        };
-        /**
-         * 输出16进制字符串
-         */
-        Color.prototype.toHexString = function () {
-            var intR = (this.r * 0xff) | 0;
-            var intG = (this.g * 0xff) | 0;
-            var intB = (this.b * 0xff) | 0;
-            var intA = (this.a * 0xff) | 0;
-            return "#" + Color.ToHex(intA) + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
-        };
-        /**
-         * 混合颜色
-         * @param color 混入的颜色
-         * @param rate  混入比例
-         */
-        Color.prototype.mix = function (color, rate) {
-            if (rate === void 0) { rate = 0.5; }
-            this.r = this.r * (1 - rate) + color.r * rate;
-            this.g = this.g * (1 - rate) + color.g * rate;
-            this.b = this.b * (1 - rate) + color.b * rate;
-            this.a = this.a * (1 - rate) + color.a * rate;
-            return this;
-        };
-        /**
-         * 输出字符串
-         */
-        Color.prototype.toString = function () {
-            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
-        };
-        /**
-         * [0,15]数值转为16进制字符串
-         * param i  [0,15]数值
-         */
-        Color.ToHex = function (i) {
-            var str = i.toString(16);
-            if (i <= 0xf) {
-                return ("0" + str).toUpperCase();
-            }
-            return str.toUpperCase();
-        };
-        return Color;
-    }());
-    feng3d.Color = Color;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 数学常量类
      */
     var MathConsts = (function () {
@@ -3427,10 +3292,12 @@ var feng3d;
         /**
          * 将 Vector3D 的成员设置为指定值
          */
-        Vector3D.prototype.setTo = function (xa, ya, za) {
-            this.x = xa;
-            this.y = ya;
-            this.z = za;
+        Vector3D.prototype.setTo = function (x, y, z, w) {
+            if (w === void 0) { w = 1; }
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
         };
         /**
          * 从另一个 Vector3D 对象的 x、y 和 z 元素的值中减去当前 Vector3D 对象的 x、y 和 z 元素的值。
@@ -4768,6 +4635,132 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 颜色
+     * @author feng 2016-09-24
+     */
+    var Color = (function (_super) {
+        __extends(Color, _super);
+        /**
+         * 构建颜色
+         * @param r     红[0,1]
+         * @param g     绿[0,1]
+         * @param b     蓝[0,1]
+         * @param a     透明度[0,1]
+         */
+        function Color(r, g, b, a) {
+            if (r === void 0) { r = 1; }
+            if (g === void 0) { g = 1; }
+            if (b === void 0) { b = 1; }
+            if (a === void 0) { a = 1; }
+            _super.call(this, r, g, b, a);
+        }
+        Object.defineProperty(Color.prototype, "r", {
+            /**
+             * 红[0,1]
+             */
+            get: function () { return this.x; },
+            set: function (value) { this.x = value; },
+            enumerable: true,
+            configurable: true
+        });
+        ;
+        ;
+        Object.defineProperty(Color.prototype, "g", {
+            /**
+             * 绿[0,1]
+             */
+            get: function () { return this.y; },
+            set: function (value) { this.y = value; },
+            enumerable: true,
+            configurable: true
+        });
+        ;
+        ;
+        Object.defineProperty(Color.prototype, "b", {
+            /**
+             * 蓝[0,1]
+             */
+            get: function () { return this.z; },
+            set: function (value) { this.z = value; },
+            enumerable: true,
+            configurable: true
+        });
+        ;
+        ;
+        Object.defineProperty(Color.prototype, "a", {
+            /**
+             * 透明度[0,1]
+             */
+            get: function () { return this.w; },
+            set: function (value) { this.w = value; },
+            enumerable: true,
+            configurable: true
+        });
+        ;
+        ;
+        /**
+         * 通过
+         * @param color
+         * @param hasAlpha
+         */
+        Color.prototype.fromUnit = function (color, hasAlpha) {
+            if (hasAlpha === void 0) { hasAlpha = false; }
+            this.a = (hasAlpha ? (color >> 24) & 0xff : 0xff) / 0xff;
+            this.r = ((color >> 16) & 0xff) / 0xff;
+            this.g = ((color >> 8) & 0xff) / 0xff;
+            this.b = (color & 0xff) / 0xff;
+        };
+        Color.prototype.toInt = function () {
+            var value = (this.a * 0xff) << 24 + (this.r * 0xff) << 16 + (this.g * 0xff) << 8 + (this.b * 0xff);
+            return value;
+        };
+        /**
+         * 输出16进制字符串
+         */
+        Color.prototype.toHexString = function () {
+            var intR = (this.r * 0xff) | 0;
+            var intG = (this.g * 0xff) | 0;
+            var intB = (this.b * 0xff) | 0;
+            var intA = (this.a * 0xff) | 0;
+            return "#" + Color.ToHex(intA) + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
+        };
+        /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        Color.prototype.mix = function (color, rate) {
+            if (rate === void 0) { rate = 0.5; }
+            this.r = this.r * (1 - rate) + color.r * rate;
+            this.g = this.g * (1 - rate) + color.g * rate;
+            this.b = this.b * (1 - rate) + color.b * rate;
+            this.a = this.a * (1 - rate) + color.a * rate;
+            return this;
+        };
+        /**
+         * 输出字符串
+         */
+        Color.prototype.toString = function () {
+            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
+        };
+        /**
+         * [0,15]数值转为16进制字符串
+         * param i  [0,15]数值
+         */
+        Color.ToHex = function (i) {
+            var str = i.toString(16);
+            if (i <= 0xf) {
+                return ("0" + str).toUpperCase();
+            }
+            return str.toUpperCase();
+        };
+        return Color;
+    }(feng3d.Vector3D));
+    feng3d.Color = Color;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 渲染模式
      * @author feng 2016-09-28
      */
@@ -4809,6 +4802,10 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 收集渲染数据拥有者
+         * @param renderAtomic 渲染原子
+         */
         RenderDataHolder.prototype.collectRenderDataHolder = function (renderAtomic) {
             if (renderAtomic === void 0) { renderAtomic = null; }
             renderAtomic.addRenderDataHolder(this);
@@ -5604,7 +5601,7 @@ var feng3d;
             for (var i = 0; i < pointLights.length; i++) {
                 light = pointLights[i];
                 pointLightPositions.push(light.position);
-                pointLightDiffuses.push(light.color.toVector3D());
+                pointLightDiffuses.push(light.color);
                 pointLightIntensitys.push(light.intensity);
             }
             //设置点光源数据
@@ -6790,18 +6787,26 @@ var feng3d;
      */
     var Model = (function (_super) {
         __extends(Model, _super);
+        /**
+         * 构建
+         */
         function Model() {
             _super.call(this);
             this._single = true;
             feng3d.Watcher.watch(this, ["geometry"], this.invalidateRenderHolder, this);
             feng3d.Watcher.watch(this, ["material"], this.invalidateRenderHolder, this);
         }
+        /**
+         * 收集渲染数据拥有者
+         * @param renderAtomic 渲染原子
+         */
         Model.prototype.collectRenderDataHolder = function (renderAtomic) {
             if (renderAtomic === void 0) { renderAtomic = null; }
             var material = this.material || feng3d.defaultMaterial;
             var geometry = this.geometry || feng3d.defaultGeometry;
-            geometry && renderAtomic.addRenderDataHolder(geometry);
-            material && renderAtomic.addRenderDataHolder(material);
+            geometry && geometry.collectRenderDataHolder(renderAtomic);
+            material && material.collectRenderDataHolder(renderAtomic);
+            _super.prototype.collectRenderDataHolder.call(this, renderAtomic);
         };
         /**
          * 处理被添加组件事件
@@ -7491,7 +7496,10 @@ var feng3d;
              * 颜色数据
              */
             get: function () {
-                return this.startColor.asArray().concat(this.endColor.asArray());
+                return [
+                    this.startColor.r, this.startColor.g, this.startColor.b, this.startColor.a,
+                    this.endColor.r, this.endColor.g, this.endColor.b, this.endColor.a,
+                ];
             },
             enumerable: true,
             configurable: true
@@ -9423,6 +9431,7 @@ var feng3d;
     var Texture2D = (function (_super) {
         __extends(Texture2D, _super);
         function Texture2D(url) {
+            if (url === void 0) { url = ""; }
             _super.call(this);
             this.url = "";
             this.textureType = feng3d.GL.TEXTURE_2D;
@@ -9680,9 +9689,9 @@ var feng3d;
         function StandardMaterial() {
             _super.call(this);
             /**
-             * 基本颜色
+             * 漫反射函数
              */
-            this.baseColor = new feng3d.Color(1, 1, 1, 1);
+            this.diffuseMethod = new feng3d.DiffuseMethod();
             /**
              * 环境颜色
              */
@@ -9700,8 +9709,7 @@ var feng3d;
              */
             this.metalic = 1.0;
             this.shaderName = "standard";
-            feng3d.Watcher.watch(this, ["difuseTexture"], this.invalidateRenderData, this);
-            feng3d.Watcher.watch(this, ["baseColor"], this.invalidateRenderData, this);
+            this.addComponent(this.diffuseMethod);
             feng3d.Watcher.watch(this, ["ambientColor"], this.invalidateRenderData, this);
             feng3d.Watcher.watch(this, ["reflectance"], this.invalidateRenderData, this);
             feng3d.Watcher.watch(this, ["roughness"], this.invalidateRenderData, this);
@@ -9711,7 +9719,6 @@ var feng3d;
          * 更新渲染数据
          */
         StandardMaterial.prototype.updateRenderData = function (renderContext, renderData) {
-            renderData.uniforms[feng3d.RenderDataID.u_baseColor] = this.baseColor.toVector3D();
             renderData.uniforms[feng3d.RenderDataID.u_reflectance] = this.reflectance;
             renderData.uniforms[feng3d.RenderDataID.u_roughness] = this.roughness;
             renderData.uniforms[feng3d.RenderDataID.u_metalic] = this.metalic;
@@ -9762,6 +9769,40 @@ var feng3d;
         return SkeletonAnimatorMaterial;
     }(feng3d.Material));
     feng3d.SkeletonAnimatorMaterial = SkeletonAnimatorMaterial;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 漫反射函数
+     * @author feng 2017-03-22
+     */
+    var DiffuseMethod = (function (_super) {
+        __extends(DiffuseMethod, _super);
+        /**
+         * 构建
+         */
+        function DiffuseMethod() {
+            _super.call(this);
+            /**
+             * 漫反射纹理
+             */
+            this.difuseTexture = new feng3d.Texture2D();
+            /**
+             * 基本颜色
+             */
+            this.baseColor = new feng3d.Color(1, 1, 1, 1);
+        }
+        /**
+         * 更新渲染数据
+         */
+        DiffuseMethod.prototype.updateRenderData = function (renderContext, renderData) {
+            renderData.uniforms[feng3d.RenderDataID.u_baseColor] = this.baseColor;
+            //
+            _super.prototype.updateRenderData.call(this, renderContext, renderData);
+        };
+        return DiffuseMethod;
+    }(feng3d.RenderDataHolder));
+    feng3d.DiffuseMethod = DiffuseMethod;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
