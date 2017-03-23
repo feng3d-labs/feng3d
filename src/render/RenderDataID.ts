@@ -34,6 +34,10 @@ module feng3d
          */
         public static s_diffuse = "s_diffuse";
         /**
+         * 环境贴图
+         */
+        public static s_ambient = "s_ambient";
+        /**
          * 法线贴图
          */
         public static s_normal = "s_normal";
@@ -123,6 +127,10 @@ module feng3d
          * 镜面反射颜色
          */
         public static u_specular = "u_specular";
+        /**
+         * 环境颜色
+         */
+        public static u_ambient = "u_ambient";
         /**
          * 高光系数
          */

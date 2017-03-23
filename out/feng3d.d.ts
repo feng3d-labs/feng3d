@@ -3104,6 +3104,10 @@ declare module feng3d {
          */
         static s_diffuse: string;
         /**
+         * 环境贴图
+         */
+        static s_ambient: string;
+        /**
          * 法线贴图
          */
         static s_normal: string;
@@ -3187,6 +3191,10 @@ declare module feng3d {
          * 镜面反射颜色
          */
         static u_specular: string;
+        /**
+         * 环境颜色
+         */
+        static u_ambient: string;
         /**
          * 高光系数
          */
@@ -3291,6 +3299,10 @@ declare module feng3d {
          * 是否有镜面反射光泽图
          */
         HAS_SPECULAR_SAMPLER: boolean;
+        /**
+         * 是否有环境贴图
+         */
+        HAS_AMBIENT_SAMPLER: boolean;
     }
     /**
      * 递增类型宏
@@ -5085,9 +5097,9 @@ declare module feng3d {
          */
         specularMethod: SpecularMethod;
         /**
-         * 环境颜色
+         * 环境反射函数
          */
-        ambientColor: Color;
+        ambientMethod: AmbientMethod;
         /**
          * 构建
          */
@@ -5186,6 +5198,30 @@ declare module feng3d {
          * 高光系数
          */
         glossiness: number;
+        /**
+         * 构建
+         */
+        constructor();
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 漫反射函数
+     * @author feng 2017-03-22
+     */
+    class AmbientMethod extends RenderDataHolder {
+        /**
+         * 环境纹理
+         */
+        ambientTexture: Texture2D;
+        /**
+         * 颜色
+         */
+        color: Color;
         /**
          * 构建
          */

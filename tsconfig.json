@@ -133,6 +133,7 @@
         "src/materials/methods/DiffuseMethod.ts",
         "src/materials/methods/NormalMethod.ts",
         "src/materials/methods/SpecularMethod.ts",
+        "src/materials/methods/AmbientMethod.ts",
         //灯光
         "src/light/LightType.ts",
         "src/light/Light.ts",

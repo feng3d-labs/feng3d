@@ -23,9 +23,9 @@ module feng3d
         public specularMethod = new SpecularMethod();
 
         /**
-         * 环境颜色
+         * 环境反射函数
          */
-        public ambientColor = new Color(0, 0, 0, 1);
+        public ambientMethod = new AmbientMethod();
 
         // /**
         //  * 反射率
@@ -53,6 +53,7 @@ module feng3d
             this.addComponent(this.diffuseMethod);
             this.addComponent(this.normalMethod);
             this.addComponent(this.specularMethod);
+            this.addComponent(this.ambientMethod);
 
             Watcher.watch(this, ["ambientColor"], this.invalidateRenderData, this);
             Watcher.watch(this, ["reflectance"], this.invalidateRenderData, this);

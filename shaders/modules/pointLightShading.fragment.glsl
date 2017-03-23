@@ -48,7 +48,7 @@ float computeDistanceLightFalloff(float lightDistance, float range)
 }
 
 //渲染点光源
-vec3 pointLightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,float glossiness){
+vec3 pointLightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientColor,float glossiness){
 
     //视线方向
     vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_globalPosition);
@@ -92,5 +92,6 @@ vec3 pointLightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,float gl
     vec3 resultColor = vec3(0.0,0.0,0.0);
     resultColor = resultColor + totalDiffuseLightColor * diffuseColor;
     resultColor = resultColor + totalSpecularLightColor * specularColor;
+    resultColor = resultColor + ambientColor * diffuseColor;
     return resultColor;
 }
