@@ -5659,10 +5659,10 @@ var feng3d;
             //设置点光源数据
             renderAtomic.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
             if (pointLights.length > 0) {
-                renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED++;
-                renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED++;
-                renderAtomic.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED++;
-                renderAtomic.shaderMacro.addMacros.U_CAMERAmATRIX_NEED++;
+                renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.U_CAMERAmATRIX_NEED = 1;
                 //
                 renderAtomic.uniforms[feng3d.RenderDataID.u_pointLightPositions] = pointLightPositions;
                 renderAtomic.uniforms[feng3d.RenderDataID.u_pointLightColors] = pointLightColors;
@@ -5680,9 +5680,9 @@ var feng3d;
             }
             renderAtomic.shaderMacro.valueMacros.NUM_DIRECTIONALLIGHT = directionalLights.length;
             if (directionalLights.length > 0) {
-                renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED++;
-                renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED++;
-                renderAtomic.shaderMacro.addMacros.U_CAMERAmATRIX_NEED++;
+                renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.U_CAMERAmATRIX_NEED = 1;
                 //
                 renderAtomic.uniforms[feng3d.RenderDataID.u_directionalLightDirections] = directionalLightDirections;
                 renderAtomic.uniforms[feng3d.RenderDataID.u_directionalLightColors] = directionalLightColors;
