@@ -13193,9 +13193,15 @@ var feng3d;
             if (name === void 0) { name = "PointLight"; }
             _super.call(this, name);
             //
-            this.getOrCreateComponentByClass(feng3d.Model).geometry = new feng3d.SphereGeometry(5);
+            var model = new feng3d.Model();
+            model.geometry = new feng3d.SphereGeometry(5);
+            var material = model.material = new feng3d.ColorMaterial();
+            this.addComponent(model);
             //初始化点光源
-            this.addComponent(new feng3d.PointLight());
+            var pointLight = new feng3d.PointLight();
+            this.addComponent(pointLight);
+            material.color = pointLight.color;
+            feng3d.Binding.bindProperty(pointLight, ["color"], material, "color");
         }
         return PointLightObject3D;
     }(feng3d.Object3D));

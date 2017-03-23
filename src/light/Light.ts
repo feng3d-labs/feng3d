@@ -16,7 +16,7 @@ module feng3d
         /**
          * 颜色
          */
-        public color: Color = new Color();
+        public color = new Color();
 
         /**
          * 光照强度

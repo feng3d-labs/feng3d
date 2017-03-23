@@ -10,9 +10,17 @@ module feng3d
         {
             super(name);
             //
-            this.getOrCreateComponentByClass(Model).geometry = new SphereGeometry(5);
+            var model = new Model();
+            model.geometry = new SphereGeometry(5);
+            var material = model.material = new ColorMaterial();
+            this.addComponent(model);
+
             //初始化点光源
-            this.addComponent(new PointLight());
+            var pointLight = new PointLight();
+            this.addComponent(pointLight);
+
+            material.color = pointLight.color;
+            Binding.bindProperty(pointLight, ["color"], material, "color");
         }
     }
 }
