@@ -24,14 +24,6 @@ module feng3d
         public intensity: number = 1;
 
         /**
-         * 灯光位置
-         */
-        public get position()
-        {
-            return this.parentComponent.transform.globalPosition;
-        }
-
-        /**
          * 处理被添加组件事件
          */
         protected onBeAddedComponent(event: ComponentEvent): void

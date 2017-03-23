@@ -28,11 +28,20 @@ module feng3d
      */
     export class ValueMacros
     {
+        /**
+         * 光源数量
+         */
+        public NUM_LIGHT: number;
 
         /** 
          * 点光源数量
          */
         public NUM_POINTLIGHT: number;
+
+        /** 
+         * 方向光源数量
+         */
+        public NUM_DIRECTIONALLIGHT: number;
 
         /**
          * 骨骼关节数量

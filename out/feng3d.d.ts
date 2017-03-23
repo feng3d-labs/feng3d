@@ -3143,6 +3143,8 @@ declare module feng3d {
          * 地形块重复次数
          */
         static u_splatRepeats: string;
+        /******************************************************/
+        /******************************************************/
         /**
          * 点光源位置数组
          */
@@ -3159,6 +3161,20 @@ declare module feng3d {
          * 点光源光照范围数组
          */
         static u_pointLightRanges: string;
+        /******************************************************/
+        /******************************************************/
+        /**
+         * 方向光源方向数组
+         */
+        static u_directionalLightDirections: string;
+        /**
+         * 方向光源颜色数组
+         */
+        static u_directionalLightColors: string;
+        /**
+         * 方向光源光照强度数组
+         */
+        static u_directionalLightIntensitys: string;
         /**
          * 场景环境光
          */
@@ -3242,9 +3258,17 @@ declare module feng3d {
      */
     class ValueMacros {
         /**
+         * 光源数量
+         */
+        NUM_LIGHT: number;
+        /**
          * 点光源数量
          */
         NUM_POINTLIGHT: number;
+        /**
+         * 方向光源数量
+         */
+        NUM_DIRECTIONALLIGHT: number;
         /**
          * 骨骼关节数量
          */
@@ -5211,10 +5235,6 @@ declare module feng3d {
          */
         intensity: number;
         /**
-         * 灯光位置
-         */
-        readonly position: Vector3D;
-        /**
          * 处理被添加组件事件
          */
         protected onBeAddedComponent(event: ComponentEvent): void;
@@ -5239,6 +5259,10 @@ declare module feng3d {
      */
     class DirectionalLight extends Light {
         /**
+         * 光照方向
+         */
+        readonly direction: Vector3D;
+        /**
          * 构建
          */
         constructor();
@@ -5254,6 +5278,10 @@ declare module feng3d {
          * 光照范围
          */
         range: number;
+        /**
+         * 灯光位置
+         */
+        readonly position: Vector3D;
         /**
          * 构建
          */

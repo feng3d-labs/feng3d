@@ -76,6 +76,9 @@ module feng3d
          * 地形块重复次数
          */
         public static u_splatRepeats = "u_splatRepeats";
+        /******************************************************/
+        //                  点光源
+        /******************************************************/
         /**
          * 点光源位置数组
          */
@@ -92,6 +95,22 @@ module feng3d
          * 点光源光照范围数组
          */
         public static u_pointLightRanges = "u_pointLightRanges";
+        /******************************************************/
+        //                  方向光源
+        /******************************************************/
+        /**
+         * 方向光源方向数组
+         */
+        public static u_directionalLightDirections = "u_directionalLightDirections";
+        /**
+         * 方向光源颜色数组
+         */
+        public static u_directionalLightColors = "u_directionalLightColors";
+        /**
+         * 方向光源光照强度数组
+         */
+        public static u_directionalLightIntensitys = "u_directionalLightIntensitys";
+
         /**
          * 场景环境光
          */

@@ -32,7 +32,7 @@ uniform float u_glossiness;
     uniform sampler2D s_specular;
 #endif
 
-#if NUM_POINTLIGHT > 0
+#if NUM_LIGHT > 0
     #include<modules/pointLightShading.fragment>
 #endif
 
@@ -65,7 +65,7 @@ void main(void) {
     #endif
 
     //渲染灯光
-    #if NUM_POINTLIGHT > 0
+    #if NUM_LIGHT > 0
         finalColor.xyz = pointLightShading(normal, diffuseColor.xyz, specularColor, glossiness);
     #endif
 
