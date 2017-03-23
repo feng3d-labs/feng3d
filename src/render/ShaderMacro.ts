@@ -54,6 +54,10 @@ module feng3d
          * 是否有法线贴图
          */
         public HAS_NORMAL_SAMPLER: boolean;
+        /**
+         * 是否有镜面反射光泽图
+         */
+        public HAS_SPECULAR_SAMPLER: boolean;
     }
 
     /**

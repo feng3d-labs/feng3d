@@ -18,24 +18,29 @@ module feng3d
         public normalMethod = new NormalMethod();
 
         /**
+         * 镜面反射函数
+         */
+        public specularMethod = new SpecularMethod();
+
+        /**
          * 环境颜色
          */
         public ambientColor = new Color(0, 0, 0, 1);
 
-        /**
-         * 反射率
-         */
-        public reflectance: number = 1.0;
+        // /**
+        //  * 反射率
+        //  */
+        // public reflectance: number = 1.0;
 
-        /**
-         * 粗糙度
-         */
-        public roughness: number = 1.0;
+        // /**
+        //  * 粗糙度
+        //  */
+        // public roughness: number = 1.0;
 
-        /**
-         * 金属度
-         */
-        public metalic: number = 1.0;
+        // /**
+        //  * 金属度
+        //  */
+        // public metalic: number = 1.0;
 
         /**
          * 构建
@@ -47,6 +52,7 @@ module feng3d
 
             this.addComponent(this.diffuseMethod);
             this.addComponent(this.normalMethod);
+            this.addComponent(this.specularMethod);
 
             Watcher.watch(this, ["ambientColor"], this.invalidateRenderData, this);
             Watcher.watch(this, ["reflectance"], this.invalidateRenderData, this);
@@ -59,9 +65,9 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            renderData.uniforms[RenderDataID.u_reflectance] = this.reflectance;
-            renderData.uniforms[RenderDataID.u_roughness] = this.roughness;
-            renderData.uniforms[RenderDataID.u_metalic] = this.metalic;
+            // renderData.uniforms[RenderDataID.u_reflectance] = this.reflectance;
+            // renderData.uniforms[RenderDataID.u_roughness] = this.roughness;
+            // renderData.uniforms[RenderDataID.u_metalic] = this.metalic;
             //
             super.updateRenderData(renderContext, renderData);
         }

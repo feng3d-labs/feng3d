@@ -20,8 +20,16 @@ uniform vec4 u_diffuse;
 #ifdef HAS_DIFFUSE_SAMPLER
     uniform sampler2D s_diffuse;
 #endif
+
+//法线贴图
 #ifdef HAS_NORMAL_SAMPLER
     uniform sampler2D s_normal;
+#endif
+
+uniform vec3 u_specular;
+uniform float u_glossiness;
+#ifdef HAS_SPECULAR_SAMPLER
+    uniform sampler2D s_specular;
 #endif
 
 #if NUM_POINTLIGHT > 0
@@ -46,15 +54,19 @@ void main(void) {
         diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);
     #endif
 
-    //获取镜面反射基本颜色
-    vec4 specularColor = vec4(1.0,1.0,1.0,1.0);
-
     //获取高光值
-    float glossiness = 5.0;
+    float glossiness = u_glossiness;
+    //获取镜面反射基本颜色
+    vec3 specularColor = u_specular;
+    #ifdef HAS_SPECULAR_SAMPLER
+        vec4 specularMapColor = texture2D(s_specular, v_uv);
+        specularColor.xyz = specularMapColor.xyz;
+        glossiness = glossiness * specularMapColor.w;
+    #endif
 
     //渲染灯光
     #if NUM_POINTLIGHT > 0
-        finalColor.xyz = pointLightShading(normal,diffuseColor.xyz,specularColor.xyz,glossiness);
+        finalColor.xyz = pointLightShading(normal, diffuseColor.xyz, specularColor, glossiness);
     #endif
 
     gl_FragColor = finalColor;

@@ -38,6 +38,10 @@ module feng3d
          */
         public static s_normal = "s_normal";
         /**
+         * 镜面反射光泽图
+         */
+        public static s_specular = "s_specular";
+        /**
          * 天空盒纹理
          */
         public static s_skyboxTexture = "s_skyboxTexture";
@@ -96,6 +100,14 @@ module feng3d
          * 基本颜色
          */
         public static u_diffuse = "u_diffuse";
+        /**
+         * 镜面反射颜色
+         */
+        public static u_specular = "u_specular";
+        /**
+         * 高光系数
+         */
+        public static u_glossiness = "u_glossiness";
 
         /**
          * 反射率

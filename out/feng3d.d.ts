@@ -3108,6 +3108,10 @@ declare module feng3d {
          */
         static s_normal: string;
         /**
+         * 镜面反射光泽图
+         */
+        static s_specular: string;
+        /**
          * 天空盒纹理
          */
         static s_skyboxTexture: string;
@@ -3163,6 +3167,14 @@ declare module feng3d {
          * 基本颜色
          */
         static u_diffuse: string;
+        /**
+         * 镜面反射颜色
+         */
+        static u_specular: string;
+        /**
+         * 高光系数
+         */
+        static u_glossiness: string;
         /**
          * 反射率
          */
@@ -3251,6 +3263,10 @@ declare module feng3d {
          * 是否有法线贴图
          */
         HAS_NORMAL_SAMPLER: boolean;
+        /**
+         * 是否有镜面反射光泽图
+         */
+        HAS_SPECULAR_SAMPLER: boolean;
     }
     /**
      * 递增类型宏
@@ -5041,21 +5057,13 @@ declare module feng3d {
          */
         normalMethod: NormalMethod;
         /**
+         * 镜面反射函数
+         */
+        specularMethod: SpecularMethod;
+        /**
          * 环境颜色
          */
         ambientColor: Color;
-        /**
-         * 反射率
-         */
-        reflectance: number;
-        /**
-         * 粗糙度
-         */
-        roughness: number;
-        /**
-         * 金属度
-         */
-        metalic: number;
         /**
          * 构建
          */
@@ -5126,6 +5134,34 @@ declare module feng3d {
          * 漫反射纹理
          */
         normalTexture: Texture2D;
+        /**
+         * 构建
+         */
+        constructor();
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 法线函数
+     * @author feng 2017-03-22
+     */
+    class SpecularMethod extends RenderDataHolder {
+        /**
+         * 镜面反射光泽图
+         */
+        specularTexture: Texture2D;
+        /**
+         * 镜面反射颜色
+         */
+        specularColor: Color;
+        /**
+         * 高光系数
+         */
+        glossiness: number;
         /**
          * 构建
          */

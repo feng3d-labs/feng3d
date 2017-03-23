@@ -17,7 +17,7 @@ module feng3d
         private static tempRayDirection: Vector3D = new Vector3D();
 
         //
-        private _context3D: GL;
+        private _gl: GL;
         private _camera: CameraObject3D;
         private _scene: Scene3D;
         private _canvas: HTMLCanvasElement;
@@ -45,19 +45,18 @@ module feng3d
          */
         constructor(canvas, scene: Scene3D = null, camera: CameraObject3D = null)
         {
-
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
 
             try
             {
-                this._context3D = this._canvas.getContext("webgl", { antialias: false }) || this._canvas.getContext("experimental-webgl", { antialias: false });
+                this._gl = this._canvas.getContext("webgl", { antialias: false }) || this._canvas.getContext("experimental-webgl", { antialias: false });
             }
             catch (e)
             {
                 throw new Error("WebGL not supported");
             }
-            if (!this._context3D)
+            if (!this._gl)
             {
                 throw new Error("WebGL not supported");
             }
@@ -79,10 +78,10 @@ module feng3d
         private initGL()
         {
 
-            this._context3D.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-            this._context3D.clearDepth(1.0);                 // Clear everything
-            this._context3D.enable(GL.DEPTH_TEST);           // Enable depth testing
-            this._context3D.depthFunc(GL.LEQUAL);            // Near things obscure far things
+            this._gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
+            this._gl.clearDepth(1.0);                 // Clear everything
+            this._gl.enable(GL.DEPTH_TEST);           // Enable depth testing
+            this._gl.depthFunc(GL.LEQUAL);            // Near things obscure far things
         }
 
         /** 3d场景 */
@@ -107,18 +106,18 @@ module feng3d
 
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.copyFrom(viewRect);
-            this.mouse3DManager.draw(this._context3D, this._scene, this._camera.camera);
+            this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
 
             // 默认渲染
-            this._context3D.clearColor(this.background.r, this.background.g, this.background.b, this.background.a);
-            this._context3D.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-            this._context3D.viewport(0, 0, viewRect.width, viewRect.height);
+            this._gl.clearColor(this.background.r, this.background.g, this.background.b, this.background.a);
+            this._gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+            this._gl.viewport(0, 0, viewRect.width, viewRect.height);
             // Enable alpha blending
-            this._context3D.enable(GL.BLEND);
+            this._gl.enable(GL.BLEND);
             // Set blending function
-            this._context3D.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
-            this.defaultRenderer.draw(this._context3D, this._scene, this._camera.camera);
-            this._context3D.disable(GL.BLEND);
+            this._gl.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+            this.defaultRenderer.draw(this._gl, this._scene, this._camera.camera);
+            this._gl.disable(GL.BLEND);
         }
 
         /**

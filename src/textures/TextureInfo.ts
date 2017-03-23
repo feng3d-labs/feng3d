@@ -148,7 +148,7 @@ module feng3d
                     gl.generateMipmap(this.textureType);
                 }
                 //设置图片y轴方向
-                gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
+                // gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
                 // console.warn("flipY:" + this.flipY);
                 this._textureMap.push(gl, texture);
             }

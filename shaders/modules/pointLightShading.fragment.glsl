@@ -6,12 +6,6 @@ uniform vec3 u_pointLightColors[NUM_POINTLIGHT];
 uniform float u_pointLightIntensitys[NUM_POINTLIGHT];
 //点光源光照范围数组
 uniform float u_pointLightRanges[NUM_POINTLIGHT];
-//反射率
-uniform float u_reflectance;
-//粗糙度
-uniform float u_roughness;
-//金属度
-uniform float u_metalic;
 
 //计算光照漫反射系数
 vec3 calculateLightDiffuse(vec3 normal,vec3 lightDir,vec3 lightColor,float lightIntensity){
