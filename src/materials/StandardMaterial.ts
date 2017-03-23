@@ -46,6 +46,7 @@ module feng3d
             this.shaderName = "standard";
 
             this.addComponent(this.diffuseMethod);
+            this.addComponent(this.normalMethod);
 
             Watcher.watch(this, ["ambientColor"], this.invalidateRenderData, this);
             Watcher.watch(this, ["reflectance"], this.invalidateRenderData, this);

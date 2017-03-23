@@ -153,7 +153,7 @@ module feng3d
         if (!linked)
         {
             var error = gl.getProgramInfoLog(program);
-            console.log('Failed to link program: ' + error + `\n${vertexCode}\n${fragmentCode}`);
+            debuger && console.error('Failed to link program: ' + error + `\n${vertexCode}\n${fragmentCode}`);
             gl.deleteProgram(program);
             gl.deleteShader(fragmentShader);
             gl.deleteShader(vertexShader);
@@ -174,7 +174,7 @@ module feng3d
         var shader = gl.createShader(GL.VERTEX_SHADER);
         if (shader == null)
         {
-            console.log('unable to create shader');
+            debuger && console.error('unable to create shader');
             return null;
         }
         shader = compileShader(gl, shader, vertexCode);
@@ -192,7 +192,7 @@ module feng3d
         var shader = gl.createShader(GL.FRAGMENT_SHADER);
         if (shader == null)
         {
-            console.log('unable to create shader');
+            debuger && console.error('unable to create shader');
             return null;
         }
         shader = compileShader(gl, shader, fragmentCode);
@@ -215,7 +215,7 @@ module feng3d
         if (!compiled)
         {
             var error = gl.getShaderInfoLog(shader);
-            console.log(`编译渲染程序时发生错误: ${error} \n ${gl.getShaderInfoLog(shader)}\n${shaderCode}`);
+            debuger && console.error(`编译渲染程序时发生错误: ${error} \n ${gl.getShaderInfoLog(shader)}\n${shaderCode}`);
             gl.deleteShader(shader);
             return null;
         }

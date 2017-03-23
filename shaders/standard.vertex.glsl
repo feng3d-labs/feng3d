@@ -36,9 +36,9 @@ void main(void) {
     v_uv = a_uv;
 
     //计算法线
-    v_normal = normalize((u_modelMatrix * vec4(a_normal,1.0)).xyz - u_modelMatrix[3].xyz);
+    v_normal = normalize((u_modelMatrix * vec4(a_normal,0.0)).xyz);
     #ifdef HAS_NORMAL_SAMPLER
-        v_tangent = normalize((u_modelMatrix * vec4(a_tangent,1.0)).xyz - u_modelMatrix[3].xyz);
+        v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);
         v_bitangent = cross(v_normal,v_tangent);
     #endif
 }

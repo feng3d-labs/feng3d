@@ -71,7 +71,7 @@ vec3 pointLightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,float gl
     }
 
     vec3 resultColor = vec3(0.0,0.0,0.0);
-     resultColor = resultColor + totalDiffuseLightColor * diffuseColor;
-     resultColor = resultColor + totalSpecularLightColor * specularColor;
+    resultColor = resultColor + totalDiffuseLightColor * diffuseColor;
+    resultColor = resultColor + totalSpecularLightColor * specularColor;
     return resultColor;
 }
