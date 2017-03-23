@@ -28,11 +28,11 @@ module feng3d
             if (this.normalTexture.checkRenderData())
             {
                 renderData.uniforms[RenderDataID.s_normal] = this.normalTexture;
-                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_SAMPLER = true;
+                renderData.shaderMacro.boolMacros.HAS_NORMAL_SAMPLER = true;
             } else
             {
-                renderData.uniforms[RenderDataID.s_texture] = null;
-                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_SAMPLER = false;
+                renderData.uniforms[RenderDataID.s_normal] = null;
+                renderData.shaderMacro.boolMacros.HAS_NORMAL_SAMPLER = false;
             }
 
             //

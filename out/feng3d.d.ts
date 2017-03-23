@@ -3243,7 +3243,13 @@ declare module feng3d {
      * 没有默认值
      */
     class BoolMacros {
+        /**
+         * 是否有漫反射贴图
+         */
         HAS_DIFFUSE_SAMPLER: boolean;
+        /**
+         * 是否有法线贴图
+         */
         HAS_NORMAL_SAMPLER: boolean;
     }
     /**
@@ -5024,13 +5030,16 @@ declare module feng3d {
     /**
      * 标准材质
      * @author feng 2016-05-02
-     * @see 物理渲染-基于物理的光照模型 http://blog.csdn.net/leonwei/article/details/44539217
      */
     class StandardMaterial extends Material {
         /**
          * 漫反射函数
          */
         diffuseMethod: DiffuseMethod;
+        /**
+         * 法线函数
+         */
+        normalMethod: NormalMethod;
         /**
          * 环境颜色
          */

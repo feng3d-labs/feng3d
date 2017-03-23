@@ -46,7 +46,13 @@ module feng3d
      */
     export class BoolMacros
     {
+        /**
+         * 是否有漫反射贴图
+         */
         public HAS_DIFFUSE_SAMPLER: boolean;
+        /**
+         * 是否有法线贴图
+         */
         public HAS_NORMAL_SAMPLER: boolean;
     }
 

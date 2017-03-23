@@ -4,7 +4,6 @@ module feng3d
     /**
      * 标准材质
      * @author feng 2016-05-02
-     * @see 物理渲染-基于物理的光照模型 http://blog.csdn.net/leonwei/article/details/44539217
      */
     export class StandardMaterial extends Material
     {
@@ -12,6 +11,11 @@ module feng3d
          * 漫反射函数
          */
         public diffuseMethod = new DiffuseMethod();
+
+        /**
+         * 法线函数
+         */
+        public normalMethod = new NormalMethod();
 
         /**
          * 环境颜色
