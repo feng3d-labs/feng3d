@@ -6247,12 +6247,12 @@ var feng3d;
             feng3d.assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
             this._canvas = canvas;
             try {
-                this._context3D = this._canvas.getContext("webgl", { antialias: false }) || this._canvas.getContext("experimental-webgl", { antialias: false });
+                this._gl = this._canvas.getContext("webgl", { antialias: false }) || this._canvas.getContext("experimental-webgl", { antialias: false });
             }
             catch (e) {
                 throw new Error("WebGL not supported");
             }
-            if (!this._context3D) {
+            if (!this._gl) {
                 throw new Error("WebGL not supported");
             }
             this.initGL();
@@ -6266,10 +6266,10 @@ var feng3d;
          * 初始化GL
          */
         View3D.prototype.initGL = function () {
-            this._context3D.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
-            this._context3D.clearDepth(1.0); // Clear everything
-            this._context3D.enable(feng3d.GL.DEPTH_TEST); // Enable depth testing
-            this._context3D.depthFunc(feng3d.GL.LEQUAL); // Near things obscure far things
+            this._gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
+            this._gl.clearDepth(1.0); // Clear everything
+            this._gl.enable(feng3d.GL.DEPTH_TEST); // Enable depth testing
+            this._gl.depthFunc(feng3d.GL.LEQUAL); // Near things obscure far things
         };
         Object.defineProperty(View3D.prototype, "scene", {
             /** 3d场景 */
@@ -6290,17 +6290,17 @@ var feng3d;
             this.camera.camera.aspectRatio = viewRect.width / viewRect.height;
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.copyFrom(viewRect);
-            this.mouse3DManager.draw(this._context3D, this._scene, this._camera.camera);
+            this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
             // 默认渲染
-            this._context3D.clearColor(this.background.r, this.background.g, this.background.b, this.background.a);
-            this._context3D.clear(feng3d.GL.COLOR_BUFFER_BIT | feng3d.GL.DEPTH_BUFFER_BIT);
-            this._context3D.viewport(0, 0, viewRect.width, viewRect.height);
+            this._gl.clearColor(this.background.r, this.background.g, this.background.b, this.background.a);
+            this._gl.clear(feng3d.GL.COLOR_BUFFER_BIT | feng3d.GL.DEPTH_BUFFER_BIT);
+            this._gl.viewport(0, 0, viewRect.width, viewRect.height);
             // Enable alpha blending
-            this._context3D.enable(feng3d.GL.BLEND);
+            this._gl.enable(feng3d.GL.BLEND);
             // Set blending function
-            this._context3D.blendFunc(feng3d.GL.SRC_ALPHA, feng3d.GL.ONE_MINUS_SRC_ALPHA);
-            this.defaultRenderer.draw(this._context3D, this._scene, this._camera.camera);
-            this._context3D.disable(feng3d.GL.BLEND);
+            this._gl.blendFunc(feng3d.GL.SRC_ALPHA, feng3d.GL.ONE_MINUS_SRC_ALPHA);
+            this.defaultRenderer.draw(this._gl, this._scene, this._camera.camera);
+            this._gl.disable(feng3d.GL.BLEND);
         };
         Object.defineProperty(View3D.prototype, "viewRect", {
             /**
@@ -12963,7 +12963,7 @@ var feng3d;
             _super.call(this, name);
             var model = new feng3d.Model();
             model.geometry = new feng3d.PlaneGeometry(width, width);
-            model.material = new feng3d.ColorMaterial();
+            model.material = new feng3d.StandardMaterial();
             this.addComponent(model);
         }
         return PlaneObject3D;
@@ -12987,7 +12987,7 @@ var feng3d;
             _super.call(this, name);
             var model = new feng3d.Model();
             model.geometry = new feng3d.CubeGeometry(width, width, width);
-            model.material = new feng3d.ColorMaterial();
+            model.material = new feng3d.StandardMaterial();
             this.addComponent(model);
         }
         return CubeObject3D;
@@ -13010,7 +13010,7 @@ var feng3d;
             _super.call(this, name);
             var model = new feng3d.Model();
             this.torusGeometry = model.geometry = new feng3d.TorusGeometry();
-            model.material = new feng3d.ColorMaterial();
+            model.material = new feng3d.StandardMaterial();
             this.addComponent(model);
         }
         return TorusObect3D;
@@ -13033,7 +13033,7 @@ var feng3d;
             _super.call(this, name);
             var model = this.getOrCreateComponentByClass(feng3d.Model);
             model.geometry = new feng3d.SphereGeometry();
-            model.material = new feng3d.ColorMaterial();
+            model.material = new feng3d.StandardMaterial();
         }
         return SphereObject3D;
     }(feng3d.Object3D));
@@ -13055,7 +13055,7 @@ var feng3d;
             _super.call(this, name);
             var model = this.getOrCreateComponentByClass(feng3d.Model);
             model.geometry = new feng3d.CapsuleGeometry();
-            model.material = new feng3d.ColorMaterial();
+            model.material = new feng3d.StandardMaterial();
         }
         return CapsuleObject3D;
     }(feng3d.Object3D));
@@ -13086,7 +13086,7 @@ var feng3d;
             _super.call(this, name);
             var model = this.getOrCreateComponentByClass(feng3d.Model);
             model.geometry = new feng3d.CylinderGeometry(topRadius, bottomRadius, height, segmentsW, segmentsH, topClosed, bottomClosed, surfaceClosed, yUp);
-            model.material = new feng3d.ColorMaterial();
+            model.material = new feng3d.StandardMaterial();
         }
         return CylinderObject3D;
     }(feng3d.Object3D));
@@ -13110,7 +13110,7 @@ var feng3d;
             _super.call(this, name);
             var model = new feng3d.Model();
             model.geometry = new feng3d.ConeGeometry(radius, height);
-            model.material = new feng3d.ColorMaterial();
+            model.material = new feng3d.StandardMaterial();
             this.addComponent(model);
         }
         return ConeObject3D;
@@ -13362,7 +13362,7 @@ var feng3d;
     //快捷键
     feng3d.shortcut = new feng3d.ShortCut();
     //
-    feng3d.defaultMaterial = new feng3d.ColorMaterial();
+    feng3d.defaultMaterial = new feng3d.StandardMaterial();
     feng3d.defaultGeometry = new feng3d.CubeGeometry();
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

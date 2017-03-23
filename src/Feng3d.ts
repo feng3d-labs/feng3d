@@ -25,6 +25,6 @@ module feng3d
     export var shortcut = new ShortCut();
 
     //
-    export var defaultMaterial = new ColorMaterial();
+    export var defaultMaterial = new StandardMaterial();
     export var defaultGeometry = new CubeGeometry();
 }

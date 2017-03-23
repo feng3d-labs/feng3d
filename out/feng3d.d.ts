@@ -3551,7 +3551,7 @@ declare module feng3d {
          * 射线方向临时变量
          */
         private static tempRayDirection;
-        private _context3D;
+        private _gl;
         private _camera;
         private _scene;
         private _canvas;
@@ -6719,6 +6719,6 @@ declare module feng3d {
     var input: Input;
     var inputType: InputEventType;
     var shortcut: ShortCut;
-    var defaultMaterial: ColorMaterial;
+    var defaultMaterial: StandardMaterial;
     var defaultGeometry: CubeGeometry;
 }

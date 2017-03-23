@@ -15,7 +15,7 @@ module feng3d
             super(name);
             var model = this.getOrCreateComponentByClass(Model);
             model.geometry = new SphereGeometry();
-            model.material = new ColorMaterial();
+            model.material = new StandardMaterial();
         }
     }
 }
