@@ -20,6 +20,8 @@ module feng3d
         private _renderers: Model[] = [];
         private _lights: Light[] = [];
 
+        private _renderContext: RenderContext
+
         /**
          * 渲染列表
          */
@@ -37,12 +39,20 @@ module feng3d
         }
 
         /**
+         * 渲染环境
+         */
+        public get renderContext()
+        {
+            return this._renderContext;
+        }
+
+        /**
          * 构造3D场景
          */
         constructor()
         {
             super("root");
-            // Object.seal(this);
+            this._renderContext = new RenderContext(this);
             //
             this.addEventListener(Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
             this.addEventListener(Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);

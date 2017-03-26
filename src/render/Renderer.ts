@@ -13,12 +13,9 @@ module feng3d
 		 */
         public draw(gl: GL, scene3D: Scene3D, camera: Camera)
         {
-            var renderContext: RenderContext = new RenderContext();
+            var renderContext = scene3D.renderContext;
             //初始化渲染环境
-            renderContext.clear();
             renderContext.camera = camera;
-            renderContext.lights = scene3D.lights;
-            renderContext.sceneAmbientColor = scene3D.ambientColor;
             scene3D.renderers.forEach(element =>
             {
                 this.drawRenderables(gl, renderContext, element);

@@ -12,15 +12,12 @@ module feng3d
          */
         public camera: Camera;
 
-        /**
-         * 灯光
-         */
-        public lights: Light[];
+        private _scene3d: Scene3D;
 
-        /**
-         * 场景环境光强度
-         */
-        public sceneAmbientColor;
+        constructor(scene3d: Scene3D)
+        {
+            this._scene3d = scene3d;
+        }
 
         /**
 		 * 更新渲染数据
@@ -30,17 +27,18 @@ module feng3d
             var pointLights: PointLight[] = [];
             var directionalLights: DirectionalLight[] = [];
             this.camera.updateRenderData(this, renderAtomic);
+            var lights = this._scene3d.lights;
             var light: Light;
-            for (var i = 0; i < this.lights.length; i++)
+            for (var i = 0; i < lights.length; i++)
             {
-                light = this.lights[i];
+                light = lights[i];
                 light.updateRenderData(this, renderAtomic);
                 if (light instanceof PointLight)
                     pointLights.push(light);
                 if (light instanceof DirectionalLight)
                     directionalLights.push(light);
             }
-            renderAtomic.shaderMacro.valueMacros.NUM_LIGHT = this.lights.length;
+            renderAtomic.shaderMacro.valueMacros.NUM_LIGHT = lights.length;
             //收集点光源数据
             var pointLightPositions: Vector3D[] = [];
             var pointLightColors: Vector3D[] = [];
@@ -61,7 +59,7 @@ module feng3d
                 renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED = 1;
                 renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
                 renderAtomic.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.U_CAMERAmATRIX_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.U_CAMERAMATRIX_NEED = 1;
                 //
                 renderAtomic.uniforms[RenderDataID.u_pointLightPositions] = pointLightPositions;
                 renderAtomic.uniforms[RenderDataID.u_pointLightColors] = pointLightColors;
@@ -83,23 +81,14 @@ module feng3d
             {
                 renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED = 1;
                 renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.U_CAMERAmATRIX_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.U_CAMERAMATRIX_NEED = 1;
                 //
                 renderAtomic.uniforms[RenderDataID.u_directionalLightDirections] = directionalLightDirections;
                 renderAtomic.uniforms[RenderDataID.u_directionalLightColors] = directionalLightColors;
                 renderAtomic.uniforms[RenderDataID.u_directionalLightIntensitys] = directionalLightIntensitys;
             }
 
-            renderAtomic.uniforms[RenderDataID.u_sceneAmbientColor] = this.sceneAmbientColor;
-        }
-
-        /**
-         * 清理
-         */
-        public clear()
-        {
-            this.camera = null;
-            this.lights = [];
+            renderAtomic.uniforms[RenderDataID.u_sceneAmbientColor] = this._scene3d.ambientColor;
         }
     }
 }

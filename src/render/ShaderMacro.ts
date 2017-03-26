@@ -102,6 +102,6 @@ module feng3d
         /**
          * 是否需要摄像机矩阵
          */
-        public U_CAMERAmATRIX_NEED: number = 0;
+        public U_CAMERAMATRIX_NEED: number = 0;
     }
 }

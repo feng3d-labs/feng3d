@@ -3332,7 +3332,7 @@ declare module feng3d {
         /**
          * 是否需要摄像机矩阵
          */
-        U_CAMERAmATRIX_NEED: number;
+        U_CAMERAMATRIX_NEED: number;
     }
 }
 declare module feng3d {
@@ -3345,22 +3345,12 @@ declare module feng3d {
          * 摄像机
          */
         camera: Camera;
-        /**
-         * 灯光
-         */
-        lights: Light[];
-        /**
-         * 场景环境光强度
-         */
-        sceneAmbientColor: any;
+        private _scene3d;
+        constructor(scene3d: Scene3D);
         /**
          * 更新渲染数据
          */
         updateRenderData(renderAtomic: RenderAtomic): void;
-        /**
-         * 清理
-         */
-        clear(): void;
     }
 }
 declare module feng3d {
@@ -3972,6 +3962,7 @@ declare module feng3d {
         private _object3Ds;
         private _renderers;
         private _lights;
+        private _renderContext;
         /**
          * 渲染列表
          */
@@ -3980,6 +3971,10 @@ declare module feng3d {
          * 灯光列表
          */
         readonly lights: Light[];
+        /**
+         * 渲染环境
+         */
+        readonly renderContext: RenderContext;
         /**
          * 构造3D场景
          */
@@ -5099,7 +5094,6 @@ declare module feng3d {
      */
     class SkyBoxMaterial extends Material {
         skyBoxTextureCube: TextureCube;
-        private skyBoxSize;
         constructor(images: string[]);
         /**
          * 更新渲染数据

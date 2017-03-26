@@ -162,6 +162,8 @@ module feng3d
             renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
             var globalMatrix3d = this.parentComponent ? this.parentComponent.transform.globalMatrix3D : new Matrix3D();
             renderData.uniforms[RenderDataID.u_cameraMatrix] = globalMatrix3d;
+            //
+            renderData.uniforms[RenderDataID.u_skyBoxSize] = this.far / Math.sqrt(3);
             super.updateRenderData(renderContext, renderData);
         }
     }
