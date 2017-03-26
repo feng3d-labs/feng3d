@@ -3365,6 +3365,21 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 帧缓冲对象
+     * @author feng 2017-02-18
+     */
+    class FrameBufferObject {
+        OFFSCREEN_WIDTH: number;
+        OFFSCREEN_HEIGHT: number;
+        framebuffer: WebGLFramebuffer;
+        texture: WebGLTexture;
+        depthBuffer: WebGLRenderbuffer;
+        init(gl: GL): any;
+        clear(gl: GL): any;
+    }
+}
+declare module feng3d {
+    /**
      * 渲染器
      * @author feng 2016-05-01
      */
@@ -3390,8 +3405,22 @@ declare module feng3d {
      * @author feng 2017-02-20
      */
     class ForwardRenderer extends Renderer {
+        viewRect: Rectangle;
         constructor();
+        /**
+         * 渲染
+         */
+        draw(gl: GL, scene3D: Scene3D, camera: Camera): void;
         protected drawRenderables(gl: GL, renderContext: RenderContext, meshRenderer: Model): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 深度渲染器
+     * @author  feng    2017-03-25
+     */
+    class DepthRenderer extends Renderer {
+        constructor();
     }
 }
 declare module feng3d {
@@ -3599,10 +3628,6 @@ declare module feng3d {
          * 鼠标事件管理器
          */
         private mouse3DManager;
-        /**
-         * 背景颜色
-         */
-        background: Color;
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -3936,6 +3961,10 @@ declare module feng3d {
      * @author feng 2016-05-01
      */
     class Scene3D extends Object3D {
+        /**
+         * 背景颜色
+         */
+        background: Color;
         /**
          * 环境光强度
          */

@@ -33,11 +33,6 @@ module feng3d
         private mouse3DManager: Mouse3DManager;
 
         /**
-         * 背景颜色
-         */
-        public background = new Color(0, 0, 0);
-
-        /**
          * 构建3D视图
          * @param canvas    画布
          * @param scene     3D场景
@@ -109,15 +104,8 @@ module feng3d
             this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
 
             // 默认渲染
-            this._gl.clearColor(this.background.r, this.background.g, this.background.b, this.background.a);
-            this._gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-            this._gl.viewport(0, 0, viewRect.width, viewRect.height);
-            // Enable alpha blending
-            this._gl.enable(GL.BLEND);
-            // Set blending function
-            this._gl.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+            this.defaultRenderer.viewRect.copyFrom(viewRect);
             this.defaultRenderer.draw(this._gl, this._scene, this._camera.camera);
-            this._gl.disable(GL.BLEND);
         }
 
         /**

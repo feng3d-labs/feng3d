@@ -74,6 +74,7 @@
         "src/render/FrameBufferObject.ts",
         "src/render/Renderer.ts",
         "src/render/renderer/ForwardRenderer.ts",
+        "src/render/renderer/DepthRenderer.ts",
         "src/render/renderer/MouseRenderer.ts",
         "src/render/renderer/PostProcessRenderer.ts",
         //后处理效果

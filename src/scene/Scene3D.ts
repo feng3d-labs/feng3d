@@ -8,6 +8,10 @@ module feng3d
     export class Scene3D extends Object3D
     {
         /**
+         * 背景颜色
+         */
+        public background = new Color(0, 0, 0, 1);
+        /**
          * 环境光强度
          */
         public ambientColor = new Color();
