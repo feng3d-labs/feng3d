@@ -5755,6 +5755,12 @@ var feng3d;
             gl.bindTexture(gl.TEXTURE_2D, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         };
+        FrameBufferObject.prototype.active = function (gl) {
+            gl.bindFramebuffer(feng3d.GL.FRAMEBUFFER, this.framebuffer);
+        };
+        FrameBufferObject.prototype.deactive = function (gl) {
+            gl.bindFramebuffer(feng3d.GL.FRAMEBUFFER, null);
+        };
         FrameBufferObject.prototype.clear = function (gl) {
             if (this.framebuffer)
                 gl.deleteFramebuffer(this.framebuffer);
@@ -6039,6 +6045,41 @@ var feng3d;
         return PostProcessRenderer;
     }(feng3d.Renderer));
     feng3d.PostProcessRenderer = PostProcessRenderer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 阴影图渲染器
+     * @author  feng    2017-03-25
+     */
+    var ShadowRenderer = (function (_super) {
+        __extends(ShadowRenderer, _super);
+        function ShadowRenderer() {
+            _super.call(this);
+        }
+        /**
+         * 渲染
+         */
+        ShadowRenderer.prototype.draw = function (gl, scene3D, camera) {
+            var _this = this;
+            var renderContext = scene3D.renderContext;
+            //初始化渲染环境
+            renderContext.camera = camera;
+            var lights = scene3D.lights;
+            for (var i = 0; i < lights.length; i++) {
+                var light = lights[i];
+                var frameBufferObject = new feng3d.FrameBufferObject();
+                frameBufferObject.init(gl);
+                frameBufferObject.active(gl);
+                scene3D.renderers.forEach(function (element) {
+                    _this.drawRenderables(gl, renderContext, element);
+                });
+                frameBufferObject.deactive(gl);
+            }
+        };
+        return ShadowRenderer;
+    }(feng3d.Renderer));
+    feng3d.ShadowRenderer = ShadowRenderer;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6422,6 +6463,8 @@ var feng3d;
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.copyFrom(viewRect);
             this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
+            //绘制阴影图
+            this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
             // 默认渲染
             this.defaultRenderer.viewRect.copyFrom(viewRect);
             this.defaultRenderer.draw(this._gl, this._scene, this._camera.camera);
@@ -9575,16 +9618,10 @@ var feng3d;
                 gl.bindTexture(this.textureType, texture);
                 if (this.textureType == feng3d.GL.TEXTURE_2D) {
                     //设置纹理图片
-                    gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, this._pixels);
+                    this.initTexture2D(gl);
                 }
                 else if (this.textureType == feng3d.GL.TEXTURE_CUBE_MAP) {
-                    var faces = [
-                        feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_X, feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_Y, feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                        feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_X, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                    ];
-                    for (var i = 0; i < faces.length; i++) {
-                        gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this._pixels[i]);
-                    }
+                    this.initTextureCube(gl);
                 }
                 if (this.generateMipmap) {
                     gl.generateMipmap(this.textureType);
@@ -9595,6 +9632,24 @@ var feng3d;
                 this._textureMap.push(gl, texture);
             }
             return texture;
+        };
+        /**
+         * 初始化纹理
+         */
+        TextureInfo.prototype.initTexture2D = function (gl) {
+            gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, this._pixels);
+        };
+        /**
+         * 初始化纹理
+         */
+        TextureInfo.prototype.initTextureCube = function (gl) {
+            var faces = [
+                feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_X, feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_Y, feng3d.GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_X, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
+            ];
+            for (var i = 0; i < faces.length; i++) {
+                gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this._pixels[i]);
+            }
         };
         /**
          * 清理纹理
@@ -9683,6 +9738,20 @@ var feng3d;
         return TextureCube;
     }(feng3d.TextureInfo));
     feng3d.TextureCube = TextureCube;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 渲染目标纹理
+     */
+    var RenderTargetTexture = (function (_super) {
+        __extends(RenderTargetTexture, _super);
+        function RenderTargetTexture() {
+            _super.apply(this, arguments);
+        }
+        return RenderTargetTexture;
+    }(feng3d.TextureInfo));
+    feng3d.RenderTargetTexture = RenderTargetTexture;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -10199,7 +10268,7 @@ var feng3d;
     var Light = (function (_super) {
         __extends(Light, _super);
         function Light() {
-            _super.apply(this, arguments);
+            _super.call(this);
             /**
              * 颜色
              */
@@ -10208,7 +10277,15 @@ var feng3d;
              * 光照强度
              */
             this.intensity = 1;
+            this._shadowMap = new feng3d.Texture2D();
         }
+        Object.defineProperty(Light.prototype, "shadowMap", {
+            get: function () {
+                return this._shadowMap;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 处理被添加组件事件
          */

@@ -77,6 +77,7 @@
         "src/render/renderer/DepthRenderer.ts",
         "src/render/renderer/MouseRenderer.ts",
         "src/render/renderer/PostProcessRenderer.ts",
+        "src/render/renderer/ShadowRenderer.ts",
         //后处理效果
         "src/render/postEffect/PostEffect.ts",
         "src/render/postEffect/FXAAEffect.ts",
@@ -119,6 +120,7 @@
         "src/textures/TextureInfo.ts",
         "src/textures/Texture2D.ts",
         "src/textures/TextureCube.ts",
+        "src/textures/RenderTargetTexture.ts",
         //材质
         "src/materials/Material.ts",
         "src/materials/PointMaterial.ts",

@@ -33,6 +33,11 @@ module feng3d
         private mouse3DManager: Mouse3DManager;
 
         /**
+         * 阴影图渲染器
+         */
+        private shadowRenderer: ShadowRenderer;
+
+        /**
          * 构建3D视图
          * @param canvas    画布
          * @param scene     3D场景
@@ -102,6 +107,9 @@ module feng3d
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.copyFrom(viewRect);
             this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
+
+            //绘制阴影图
+            this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
 
             // 默认渲染
             this.defaultRenderer.viewRect.copyFrom(viewRect);

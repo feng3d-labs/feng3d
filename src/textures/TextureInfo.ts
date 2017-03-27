@@ -4,7 +4,7 @@ module feng3d
      * 纹理信息
      * @author feng 2016-12-20
      */
-    export class TextureInfo extends EventDispatcher
+    export abstract class TextureInfo extends EventDispatcher
     {
         /**
          * 纹理类型
@@ -49,7 +49,7 @@ module feng3d
         /**
          * 纹理缓冲
          */
-        private _textureMap = new Map<GL, WebGLTexture>();
+        protected _textureMap = new Map<GL, WebGLTexture>();
         /**
          * 是否失效
          */
@@ -131,17 +131,10 @@ module feng3d
                 if (this.textureType == GL.TEXTURE_2D)
                 {
                     //设置纹理图片
-                    gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, <HTMLImageElement>this._pixels);
+                    this.initTexture2D(gl);
                 } else if (this.textureType == GL.TEXTURE_CUBE_MAP)
                 {
-                    var faces = [
-                        GL.TEXTURE_CUBE_MAP_POSITIVE_X, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                        GL.TEXTURE_CUBE_MAP_NEGATIVE_X, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                    ];
-                    for (var i = 0; i < faces.length; i++)
-                    {
-                        gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this._pixels[i])
-                    }
+                    this.initTextureCube(gl);
                 }
                 if (this.generateMipmap)
                 {
@@ -153,6 +146,29 @@ module feng3d
                 this._textureMap.push(gl, texture);
             }
             return texture;
+        }
+
+        /**
+         * 初始化纹理
+         */
+        private initTexture2D(gl: GL)
+        {
+            gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, <HTMLImageElement>this._pixels);
+        }
+
+        /**
+         * 初始化纹理
+         */
+        private initTextureCube(gl: GL)
+        {
+            var faces = [
+                GL.TEXTURE_CUBE_MAP_POSITIVE_X, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                GL.TEXTURE_CUBE_MAP_NEGATIVE_X, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
+            ];
+            for (var i = 0; i < faces.length; i++)
+            {
+                gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this._pixels[i])
+            }
         }
 
         /**

@@ -20,7 +20,7 @@ module feng3d
         private _renderers: Model[] = [];
         private _lights: Light[] = [];
 
-        private _renderContext: RenderContext
+        private _renderContext: RenderContext;
 
         /**
          * 渲染列表

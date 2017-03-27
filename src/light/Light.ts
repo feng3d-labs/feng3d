@@ -23,6 +23,17 @@ module feng3d
          */
         public intensity: number = 1;
 
+        private _shadowMap: Texture2D = new Texture2D();
+        public get shadowMap()
+        {
+            return this._shadowMap;
+        }
+
+        constructor()
+        {
+            super();
+        }
+
         /**
          * 处理被添加组件事件
          */

@@ -3364,7 +3364,10 @@ declare module feng3d {
         framebuffer: WebGLFramebuffer;
         texture: WebGLTexture;
         depthBuffer: WebGLRenderbuffer;
+        t: Texture2D;
         init(gl: GL): any;
+        active(gl: GL): void;
+        deactive(gl: GL): void;
         clear(gl: GL): any;
     }
 }
@@ -3439,6 +3442,20 @@ declare module feng3d {
      * @author feng 2017-02-20
      */
     class PostProcessRenderer extends Renderer {
+    }
+}
+declare module feng3d {
+    /**
+     * 阴影图渲染器
+     * @author  feng    2017-03-25
+     */
+    class ShadowRenderer extends Renderer {
+        private frameBufferObject;
+        constructor();
+        /**
+         * 渲染
+         */
+        draw(gl: GL, scene3D: Scene3D, camera: Camera): void;
     }
 }
 declare module feng3d {
@@ -3618,6 +3635,10 @@ declare module feng3d {
          * 鼠标事件管理器
          */
         private mouse3DManager;
+        /**
+         * 阴影图渲染器
+         */
+        private shadowRenderer;
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -4872,7 +4893,7 @@ declare module feng3d {
      * 纹理信息
      * @author feng 2016-12-20
      */
-    class TextureInfo extends EventDispatcher {
+    abstract class TextureInfo extends EventDispatcher {
         /**
          * 纹理类型
          */
@@ -4908,7 +4929,7 @@ declare module feng3d {
         /**
          * 纹理缓冲
          */
-        private _textureMap;
+        protected _textureMap: Map<WebGLRenderingContext, WebGLTexture>;
         /**
          * 是否失效
          */
@@ -4935,6 +4956,14 @@ declare module feng3d {
          * @param data  数据
          */
         getTexture(gl: GL): WebGLTexture;
+        /**
+         * 初始化纹理
+         */
+        private initTexture2D(gl);
+        /**
+         * 初始化纹理
+         */
+        private initTextureCube(gl);
         /**
          * 清理纹理
          */
@@ -4972,6 +5001,13 @@ declare module feng3d {
          * 判断数据是否满足渲染需求
          */
         checkRenderData(): boolean;
+    }
+}
+declare module feng3d {
+    /**
+     * 渲染目标纹理
+     */
+    class RenderTargetTexture extends TextureInfo {
     }
 }
 declare module feng3d {
@@ -5293,6 +5329,9 @@ declare module feng3d {
          * 光照强度
          */
         intensity: number;
+        private _shadowMap;
+        readonly shadowMap: Texture2D;
+        constructor();
         /**
          * 处理被添加组件事件
          */

@@ -13,6 +13,8 @@ module feng3d
         texture: WebGLTexture;
         depthBuffer: WebGLRenderbuffer;
 
+        t: Texture2D;
+
         init(gl: GL)
         {
             // Create a framebuffer object (FBO)
@@ -62,6 +64,16 @@ module feng3d
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.bindTexture(gl.TEXTURE_2D, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        }
+
+        public active(gl: GL)
+        {
+            gl.bindFramebuffer(GL.FRAMEBUFFER, this.framebuffer);
+        }
+
+        public deactive(gl: GL)
+        {
+            gl.bindFramebuffer(GL.FRAMEBUFFER, null);
         }
 
         clear(gl: GL)
