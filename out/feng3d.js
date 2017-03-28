@@ -6432,6 +6432,7 @@ var feng3d;
             this.camera = camera || new feng3d.CameraObject3D();
             this.defaultRenderer = new feng3d.ForwardRenderer();
             this.mouse3DManager = new feng3d.Mouse3DManager();
+            this.shadowRenderer = new feng3d.ShadowRenderer();
             feng3d.ticker.addEventListener(feng3d.Event.ENTER_FRAME, this.drawScene, this);
         }
         /**
@@ -6464,7 +6465,7 @@ var feng3d;
             this.mouse3DManager.viewRect.copyFrom(viewRect);
             this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
             //绘制阴影图
-            this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
+            // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
             // 默认渲染
             this.defaultRenderer.viewRect.copyFrom(viewRect);
             this.defaultRenderer.draw(this._gl, this._scene, this._camera.camera);

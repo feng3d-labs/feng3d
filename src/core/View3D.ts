@@ -68,6 +68,7 @@ module feng3d
 
             this.defaultRenderer = new ForwardRenderer();
             this.mouse3DManager = new Mouse3DManager();
+            this.shadowRenderer = new ShadowRenderer();
 
             ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
         }
@@ -109,7 +110,7 @@ module feng3d
             this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
 
             //绘制阴影图
-            this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
+            // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
 
             // 默认渲染
             this.defaultRenderer.viewRect.copyFrom(viewRect);
