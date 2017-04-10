@@ -2583,98 +2583,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 渲染代码库
-     * @author feng 2016-12-16
-     */
-    var ShaderLib = (function () {
-        function ShaderLib() {
-        }
-        ShaderLib.getShaderContentByName = function (shaderName) {
-            var shaderPath = "shaders/" + shaderName + ".glsl";
-            return ShaderLib.shaderFileMap[shaderPath];
-        };
-        /**
-         * 获取shaderCode
-         */
-        ShaderLib.getShaderCode = function (shaderName) {
-            if (!_shaderMap[shaderName])
-                _shaderMap[shaderName] = ShaderLoader.loadText(shaderName);
-            return _shaderMap[shaderName];
-        };
-        /**
-         * 获取ShaderMacro代码
-         */
-        ShaderLib.getMacroCode = function (macro) {
-            var macroHeader = "";
-            var macroNames = Object.keys(macro.valueMacros);
-            macroNames = macroNames.sort();
-            macroNames.forEach(function (macroName) {
-                var value = macro.valueMacros[macroName];
-                macroHeader += "#define " + macroName + " " + value + "\n";
-            });
-            macroNames = Object.keys(macro.boolMacros);
-            macroNames = macroNames.sort();
-            macroNames.forEach(function (macroName) {
-                var value = macro.boolMacros[macroName];
-                value && (macroHeader += "#define " + macroName + "\n");
-            });
-            macroNames = Object.keys(macro.addMacros);
-            macroNames = macroNames.sort();
-            macroNames.forEach(function (macroName) {
-                var value = macro.addMacros[macroName];
-                macroHeader += "#define " + macroName + " " + value + "\n";
-            });
-            return macroHeader;
-        };
-        ShaderLib.shaderFileMap = {};
-        return ShaderLib;
-    }());
-    feng3d.ShaderLib = ShaderLib;
-    /**
-     * 渲染代码字典
-     */
-    var _shaderMap = {};
-    /**
-     * 渲染代码加载器字典
-     */
-    var _shaderLoaderMap = {};
-    /**
-     * 着色器加载器
-     * @author feng 2016-12-15
-     */
-    var ShaderLoader = (function () {
-        function ShaderLoader() {
-        }
-        /**
-         * 加载shader
-         * @param url   路径
-         */
-        ShaderLoader.loadText = function (shaderName) {
-            var shaderCode = ShaderLib.getShaderContentByName(shaderName);
-            //#include 正则表达式
-            var includeRegExp = /#include<(.+)>/g;
-            //
-            var match = includeRegExp.exec(shaderCode);
-            while (match != null) {
-                var subShaderName = match[1];
-                var subShaderCode = ShaderLib.getShaderCode(subShaderName);
-                if (subShaderCode) {
-                    shaderCode = shaderCode.replace(match[0], subShaderCode);
-                }
-                else {
-                    var subShaderCode = ShaderLoader.loadText(subShaderName);
-                    shaderCode = shaderCode.replace(match[0], subShaderCode);
-                }
-                match = includeRegExp.exec(shaderCode);
-            }
-            return shaderCode;
-        };
-        return ShaderLoader;
-    }());
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 数学常量类
      */
     var MathConsts = (function () {
@@ -5376,6 +5284,54 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * opengl顶点属性名称
+     */
+    var GLAttribute = (function () {
+        function GLAttribute() {
+        }
+        /**
+         * 坐标
+         */
+        GLAttribute.a_position = "a_position";
+        /**
+         * 颜色
+         */
+        GLAttribute.a_color = "a_color";
+        /**
+         * 法线
+         */
+        GLAttribute.a_normal = "a_normal";
+        /**
+         * 切线
+         */
+        GLAttribute.a_tangent = "a_tangent";
+        /**
+         * uv（纹理坐标）
+         */
+        GLAttribute.a_uv = "a_uv";
+        /**
+         * 关节索引
+         */
+        GLAttribute.a_jointindex0 = "a_jointindex0";
+        /**
+         * 关节权重
+         */
+        GLAttribute.a_jointweight0 = "a_jointweight0";
+        /**
+         * 关节索引
+         */
+        GLAttribute.a_jointindex1 = "a_jointindex1";
+        /**
+         * 关节权重
+         */
+        GLAttribute.a_jointweight1 = "a_jointweight1";
+        return GLAttribute;
+    }());
+    feng3d.GLAttribute = GLAttribute;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 渲染数据编号
      * @author feng 2016-06-20
      */
@@ -5536,16 +5492,80 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 渲染参数编号
-     * @author feng 2016-10-15
+     * 渲染环境
+     * @author feng 2017-01-04
      */
-    (function (ShaderParamID) {
+    var RenderContext = (function () {
+        function RenderContext(scene3d) {
+            this._scene3d = scene3d;
+        }
         /**
-         * 渲染模式
+         * 更新渲染数据
          */
-        ShaderParamID[ShaderParamID["renderMode"] = 0] = "renderMode";
-    })(feng3d.ShaderParamID || (feng3d.ShaderParamID = {}));
-    var ShaderParamID = feng3d.ShaderParamID;
+        RenderContext.prototype.updateRenderData = function (renderAtomic) {
+            var pointLights = [];
+            var directionalLights = [];
+            this.camera.updateRenderData(this, renderAtomic);
+            var lights = this._scene3d.lights;
+            var light;
+            for (var i = 0; i < lights.length; i++) {
+                light = lights[i];
+                light.updateRenderData(this, renderAtomic);
+                if (light instanceof feng3d.PointLight)
+                    pointLights.push(light);
+                if (light instanceof feng3d.DirectionalLight)
+                    directionalLights.push(light);
+            }
+            renderAtomic.shaderMacro.valueMacros.NUM_LIGHT = lights.length;
+            //收集点光源数据
+            var pointLightPositions = [];
+            var pointLightColors = [];
+            var pointLightIntensitys = [];
+            var pointLightRanges = [];
+            for (var i = 0; i < pointLights.length; i++) {
+                var pointLight = pointLights[i];
+                pointLightPositions.push(pointLight.position);
+                pointLightColors.push(pointLight.color);
+                pointLightIntensitys.push(pointLight.intensity);
+                pointLightRanges.push(pointLight.range);
+            }
+            //设置点光源数据
+            renderAtomic.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
+            if (pointLights.length > 0) {
+                renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.U_CAMERAMATRIX_NEED = 1;
+                //
+                renderAtomic.uniforms[feng3d.RenderDataID.u_pointLightPositions] = pointLightPositions;
+                renderAtomic.uniforms[feng3d.RenderDataID.u_pointLightColors] = pointLightColors;
+                renderAtomic.uniforms[feng3d.RenderDataID.u_pointLightIntensitys] = pointLightIntensitys;
+                renderAtomic.uniforms[feng3d.RenderDataID.u_pointLightRanges] = pointLightRanges;
+            }
+            var directionalLightDirections = [];
+            var directionalLightColors = [];
+            var directionalLightIntensitys = [];
+            for (var i = 0; i < directionalLights.length; i++) {
+                var directionalLight = directionalLights[i];
+                directionalLightDirections.push(directionalLight.direction);
+                directionalLightColors.push(directionalLight.color);
+                directionalLightIntensitys.push(directionalLight.intensity);
+            }
+            renderAtomic.shaderMacro.valueMacros.NUM_DIRECTIONALLIGHT = directionalLights.length;
+            if (directionalLights.length > 0) {
+                renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.addMacros.U_CAMERAMATRIX_NEED = 1;
+                //
+                renderAtomic.uniforms[feng3d.RenderDataID.u_directionalLightDirections] = directionalLightDirections;
+                renderAtomic.uniforms[feng3d.RenderDataID.u_directionalLightColors] = directionalLightColors;
+                renderAtomic.uniforms[feng3d.RenderDataID.u_directionalLightIntensitys] = directionalLightIntensitys;
+            }
+            renderAtomic.uniforms[feng3d.RenderDataID.u_sceneAmbientColor] = this._scene3d.ambientColor;
+        };
+        return RenderContext;
+    }());
+    feng3d.RenderContext = RenderContext;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -5629,80 +5649,94 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 渲染环境
-     * @author feng 2017-01-04
+     * 渲染代码库
+     * @author feng 2016-12-16
      */
-    var RenderContext = (function () {
-        function RenderContext(scene3d) {
-            this._scene3d = scene3d;
+    var ShaderLib = (function () {
+        function ShaderLib() {
+        }
+        ShaderLib.getShaderContentByName = function (shaderName) {
+            var shaderPath = "shaders/" + shaderName + ".glsl";
+            return ShaderLib.shaderFileMap[shaderPath];
+        };
+        /**
+         * 获取shaderCode
+         */
+        ShaderLib.getShaderCode = function (shaderName) {
+            if (!_shaderMap[shaderName])
+                _shaderMap[shaderName] = ShaderLoader.loadText(shaderName);
+            return _shaderMap[shaderName];
+        };
+        /**
+         * 获取ShaderMacro代码
+         */
+        ShaderLib.getMacroCode = function (macro) {
+            var macroHeader = "";
+            var macroNames = Object.keys(macro.valueMacros);
+            macroNames = macroNames.sort();
+            macroNames.forEach(function (macroName) {
+                var value = macro.valueMacros[macroName];
+                macroHeader += "#define " + macroName + " " + value + "\n";
+            });
+            macroNames = Object.keys(macro.boolMacros);
+            macroNames = macroNames.sort();
+            macroNames.forEach(function (macroName) {
+                var value = macro.boolMacros[macroName];
+                value && (macroHeader += "#define " + macroName + "\n");
+            });
+            macroNames = Object.keys(macro.addMacros);
+            macroNames = macroNames.sort();
+            macroNames.forEach(function (macroName) {
+                var value = macro.addMacros[macroName];
+                macroHeader += "#define " + macroName + " " + value + "\n";
+            });
+            return macroHeader;
+        };
+        ShaderLib.shaderFileMap = {};
+        return ShaderLib;
+    }());
+    feng3d.ShaderLib = ShaderLib;
+    /**
+     * 渲染代码字典
+     */
+    var _shaderMap = {};
+    /**
+     * 渲染代码加载器字典
+     */
+    var _shaderLoaderMap = {};
+    /**
+     * 着色器加载器
+     * @author feng 2016-12-15
+     */
+    var ShaderLoader = (function () {
+        function ShaderLoader() {
         }
         /**
-         * 更新渲染数据
+         * 加载shader
+         * @param url   路径
          */
-        RenderContext.prototype.updateRenderData = function (renderAtomic) {
-            var pointLights = [];
-            var directionalLights = [];
-            this.camera.updateRenderData(this, renderAtomic);
-            var lights = this._scene3d.lights;
-            var light;
-            for (var i = 0; i < lights.length; i++) {
-                light = lights[i];
-                light.updateRenderData(this, renderAtomic);
-                if (light instanceof feng3d.PointLight)
-                    pointLights.push(light);
-                if (light instanceof feng3d.DirectionalLight)
-                    directionalLights.push(light);
+        ShaderLoader.loadText = function (shaderName) {
+            var shaderCode = ShaderLib.getShaderContentByName(shaderName);
+            //#include 正则表达式
+            var includeRegExp = /#include<(.+)>/g;
+            //
+            var match = includeRegExp.exec(shaderCode);
+            while (match != null) {
+                var subShaderName = match[1];
+                var subShaderCode = ShaderLib.getShaderCode(subShaderName);
+                if (subShaderCode) {
+                    shaderCode = shaderCode.replace(match[0], subShaderCode);
+                }
+                else {
+                    var subShaderCode = ShaderLoader.loadText(subShaderName);
+                    shaderCode = shaderCode.replace(match[0], subShaderCode);
+                }
+                match = includeRegExp.exec(shaderCode);
             }
-            renderAtomic.shaderMacro.valueMacros.NUM_LIGHT = lights.length;
-            //收集点光源数据
-            var pointLightPositions = [];
-            var pointLightColors = [];
-            var pointLightIntensitys = [];
-            var pointLightRanges = [];
-            for (var i = 0; i < pointLights.length; i++) {
-                var pointLight = pointLights[i];
-                pointLightPositions.push(pointLight.position);
-                pointLightColors.push(pointLight.color);
-                pointLightIntensitys.push(pointLight.intensity);
-                pointLightRanges.push(pointLight.range);
-            }
-            //设置点光源数据
-            renderAtomic.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
-            if (pointLights.length > 0) {
-                renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.U_CAMERAMATRIX_NEED = 1;
-                //
-                renderAtomic.uniforms[feng3d.RenderDataID.u_pointLightPositions] = pointLightPositions;
-                renderAtomic.uniforms[feng3d.RenderDataID.u_pointLightColors] = pointLightColors;
-                renderAtomic.uniforms[feng3d.RenderDataID.u_pointLightIntensitys] = pointLightIntensitys;
-                renderAtomic.uniforms[feng3d.RenderDataID.u_pointLightRanges] = pointLightRanges;
-            }
-            var directionalLightDirections = [];
-            var directionalLightColors = [];
-            var directionalLightIntensitys = [];
-            for (var i = 0; i < directionalLights.length; i++) {
-                var directionalLight = directionalLights[i];
-                directionalLightDirections.push(directionalLight.direction);
-                directionalLightColors.push(directionalLight.color);
-                directionalLightIntensitys.push(directionalLight.intensity);
-            }
-            renderAtomic.shaderMacro.valueMacros.NUM_DIRECTIONALLIGHT = directionalLights.length;
-            if (directionalLights.length > 0) {
-                renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.U_CAMERAMATRIX_NEED = 1;
-                //
-                renderAtomic.uniforms[feng3d.RenderDataID.u_directionalLightDirections] = directionalLightDirections;
-                renderAtomic.uniforms[feng3d.RenderDataID.u_directionalLightColors] = directionalLightColors;
-                renderAtomic.uniforms[feng3d.RenderDataID.u_directionalLightIntensitys] = directionalLightIntensitys;
-            }
-            renderAtomic.uniforms[feng3d.RenderDataID.u_sceneAmbientColor] = this._scene3d.ambientColor;
+            return shaderCode;
         };
-        return RenderContext;
+        return ShaderLoader;
     }());
-    feng3d.RenderContext = RenderContext;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -7219,54 +7253,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * opengl顶点属性名称
-     */
-    var GLAttribute = (function () {
-        function GLAttribute() {
-        }
-        /**
-         * 坐标
-         */
-        GLAttribute.a_position = "a_position";
-        /**
-         * 颜色
-         */
-        GLAttribute.a_color = "a_color";
-        /**
-         * 法线
-         */
-        GLAttribute.a_normal = "a_normal";
-        /**
-         * 切线
-         */
-        GLAttribute.a_tangent = "a_tangent";
-        /**
-         * uv（纹理坐标）
-         */
-        GLAttribute.a_uv = "a_uv";
-        /**
-         * 关节索引
-         */
-        GLAttribute.a_jointindex0 = "a_jointindex0";
-        /**
-         * 关节权重
-         */
-        GLAttribute.a_jointweight0 = "a_jointweight0";
-        /**
-         * 关节索引
-         */
-        GLAttribute.a_jointindex1 = "a_jointindex1";
-        /**
-         * 关节权重
-         */
-        GLAttribute.a_jointweight1 = "a_jointweight1";
-        return GLAttribute;
-    }());
-    feng3d.GLAttribute = GLAttribute;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 几何体
      * @author feng 2016-04-28
      */
@@ -7546,56 +7532,6 @@ var feng3d;
         return PointInfo;
     }());
     feng3d.PointInfo = PointInfo;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 粒子几何体
-     * @author feng 2016-04-28
-     */
-    var ParticleGeometry = (function (_super) {
-        __extends(ParticleGeometry, _super);
-        function ParticleGeometry() {
-            _super.call(this);
-            /**
-             * 粒子数量
-             */
-            this._numParticle = 1;
-            this.isDirty = true;
-            this.elementGeometry = new feng3d.PlaneGeometry(10, 10, 1, 1, false);
-        }
-        Object.defineProperty(ParticleGeometry.prototype, "numParticle", {
-            /**
-             * 粒子数量
-             */
-            get: function () {
-                return this._numParticle;
-            },
-            set: function (value) {
-                if (this._numParticle != value) {
-                    this._numParticle = value;
-                    this.isDirty = true;
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 更新渲染数据
-         */
-        ParticleGeometry.prototype.updateRenderData = function (renderContext, renderData) {
-            if (this.isDirty) {
-                this.cloneFrom(new feng3d.PlaneGeometry(10, 10, 1, 1, false));
-                for (var i = 1; i < this.numParticle; i++) {
-                    this.addGeometry(this.elementGeometry);
-                }
-                this.isDirty = false;
-            }
-            _super.prototype.updateRenderData.call(this, renderContext, renderData);
-        };
-        return ParticleGeometry;
-    }(feng3d.Geometry));
-    feng3d.ParticleGeometry = ParticleGeometry;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -8023,36 +7959,6 @@ var feng3d;
      * 临时矩阵数据
      */
     var tempRawData = new Float32Array(16);
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 3D基元类型
-     * @author feng 2016-05-01
-     */
-    (function (PrimitiveType) {
-        /**
-         * 平面
-         */
-        PrimitiveType[PrimitiveType["Plane"] = 0] = "Plane";
-        /**
-         * 立方体
-         */
-        PrimitiveType[PrimitiveType["Cube"] = 1] = "Cube";
-        /**
-         * 球体
-         */
-        PrimitiveType[PrimitiveType["Sphere"] = 2] = "Sphere";
-        /**
-         * 胶囊
-         */
-        PrimitiveType[PrimitiveType["Capsule"] = 3] = "Capsule";
-        /**
-         * 圆柱体
-         */
-        PrimitiveType[PrimitiveType["Cylinder"] = 4] = "Cylinder";
-    })(feng3d.PrimitiveType || (feng3d.PrimitiveType = {}));
-    var PrimitiveType = feng3d.PrimitiveType;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

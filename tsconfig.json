@@ -44,8 +44,6 @@
         "src/net/LoaderEvent.ts",
         "src/net/LoaderDataFormat.ts",
         //基础工具
-        "src/utils/ShaderLib.ts",
-        //
         "src/mathlib/MathConsts.ts",
         "src/mathlib/Point.ts",
         "src/mathlib/Rectangle.ts",
@@ -66,13 +64,14 @@
         "src/render/data/AttributeRenderData.ts",
         "src/render/utils/RenderBufferPool.ts",
         "src/render/utils/RenderDataUtil.ts",
+        "src/render/GLAttribute.ts",
         "src/render/RenderDataID.ts",
-        "src/render/ShaderParamID.ts",
-        "src/render/ShaderMacro.ts",
         "src/render/RenderContext.ts",
+        "src/render/shader/ShaderMacro.ts",
+        "src/render/shader/ShaderLib.ts",
         //
         "src/render/FrameBufferObject.ts",
-        "src/render/Renderer.ts",
+        "src/render/renderer/Renderer.ts",
         "src/render/renderer/ForwardRenderer.ts",
         "src/render/renderer/DepthRenderer.ts",
         "src/render/renderer/MouseRenderer.ts",
@@ -94,20 +93,17 @@
         "src/scene/Scene3D.ts",
         "src/scene/Scene3DEvent.ts",
         //几何体
-        "src/geometry/GLAttribute.ts",
         "src/geometry/Geometry.ts",
         "src/geometry/GeometryEvent.ts",
         //几何体组件
         "src/geometry/PointGeometry.ts",
-        "src/geometry/ParticleGeometry.ts",
         "src/geometry/SegmentGeometry.ts",
         "src/geometry/components/GeometryComponent.ts",
         //摄像机
         "src/cameras/CoordinateSystem.ts",
         "src/cameras/Camera.ts",
         "src/cameras/PerspectiveCamera.ts",
-        //几何体基元
-        "src/primitives/PrimitiveType.ts",
+        //几何体
         "src/primitives/PlaneGeometry.ts",
         "src/primitives/CubeGeometry.ts",
         "src/primitives/SphereGeometry.ts",
@@ -188,17 +184,17 @@
         //
         "src/debug/Trident.ts",
         //
-        "src/factory/CameraObject3D.ts",
-        "src/factory/PlaneObject3D.ts",
-        "src/factory/CubeObject3D.ts",
-        "src/factory/TorusObect3D.ts",
-        "src/factory/SphereObject3D.ts",
-        "src/factory/CapsuleObject3D.ts",
-        "src/factory/CylinderObject3D.ts",
-        "src/factory/ConeObject3D.ts",
-        "src/factory/SegmentObject3D.ts",
-        "src/factory/ParticleObject3D.ts",
-        "src/factory/PointLightObject3D.ts",
+        "src/object3ds/CameraObject3D.ts",
+        "src/object3ds/PlaneObject3D.ts",
+        "src/object3ds/CubeObject3D.ts",
+        "src/object3ds/TorusObect3D.ts",
+        "src/object3ds/SphereObject3D.ts",
+        "src/object3ds/CapsuleObject3D.ts",
+        "src/object3ds/CylinderObject3D.ts",
+        "src/object3ds/ConeObject3D.ts",
+        "src/object3ds/SegmentObject3D.ts",
+        "src/object3ds/ParticleObject3D.ts",
+        "src/object3ds/PointLightObject3D.ts",
         //
         "src/core/Mouse3DManager.ts",
         //

@@ -1736,26 +1736,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 渲染代码库
-     * @author feng 2016-12-16
-     */
-    class ShaderLib {
-        static shaderFileMap: {
-            [filePath: string]: string;
-        };
-        static getShaderContentByName(shaderName: string): string;
-        /**
-         * 获取shaderCode
-         */
-        static getShaderCode(shaderName: string): string;
-        /**
-         * 获取ShaderMacro代码
-         */
-        static getMacroCode(macro: ShaderMacro): string;
-    }
-}
-declare module feng3d {
-    /**
      * 数学常量类
      */
     class MathConsts {
@@ -3078,6 +3058,49 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * opengl顶点属性名称
+     */
+    class GLAttribute {
+        /**
+         * 坐标
+         */
+        static readonly a_position: string;
+        /**
+         * 颜色
+         */
+        static readonly a_color: string;
+        /**
+         * 法线
+         */
+        static readonly a_normal: string;
+        /**
+         * 切线
+         */
+        static readonly a_tangent: string;
+        /**
+         * uv（纹理坐标）
+         */
+        static readonly a_uv: string;
+        /**
+         * 关节索引
+         */
+        static readonly a_jointindex0: string;
+        /**
+         * 关节权重
+         */
+        static readonly a_jointweight0: string;
+        /**
+         * 关节索引
+         */
+        static readonly a_jointindex1: string;
+        /**
+         * 关节权重
+         */
+        static readonly a_jointweight1: string;
+    }
+}
+declare module feng3d {
+    /**
      * 渲染数据编号
      * @author feng 2016-06-20
      */
@@ -3231,14 +3254,20 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 渲染参数编号
-     * @author feng 2016-10-15
+     * 渲染环境
+     * @author feng 2017-01-04
      */
-    enum ShaderParamID {
+    class RenderContext {
         /**
-         * 渲染模式
+         * 摄像机
          */
-        renderMode = 0,
+        camera: Camera;
+        private _scene3d;
+        constructor(scene3d: Scene3D);
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderAtomic: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -3337,20 +3366,22 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 渲染环境
-     * @author feng 2017-01-04
+     * 渲染代码库
+     * @author feng 2016-12-16
      */
-    class RenderContext {
+    class ShaderLib {
+        static shaderFileMap: {
+            [filePath: string]: string;
+        };
+        static getShaderContentByName(shaderName: string): string;
         /**
-         * 摄像机
+         * 获取shaderCode
          */
-        camera: Camera;
-        private _scene3d;
-        constructor(scene3d: Scene3D);
+        static getShaderCode(shaderName: string): string;
         /**
-         * 更新渲染数据
+         * 获取ShaderMacro代码
          */
-        updateRenderData(renderAtomic: RenderAtomic): void;
+        static getMacroCode(macro: ShaderMacro): string;
     }
 }
 declare module feng3d {
@@ -4092,49 +4123,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * opengl顶点属性名称
-     */
-    class GLAttribute {
-        /**
-         * 坐标
-         */
-        static readonly a_position: string;
-        /**
-         * 颜色
-         */
-        static readonly a_color: string;
-        /**
-         * 法线
-         */
-        static readonly a_normal: string;
-        /**
-         * 切线
-         */
-        static readonly a_tangent: string;
-        /**
-         * uv（纹理坐标）
-         */
-        static readonly a_uv: string;
-        /**
-         * 关节索引
-         */
-        static readonly a_jointindex0: string;
-        /**
-         * 关节权重
-         */
-        static readonly a_jointweight0: string;
-        /**
-         * 关节索引
-         */
-        static readonly a_jointindex1: string;
-        /**
-         * 关节权重
-         */
-        static readonly a_jointweight1: string;
-    }
-}
-declare module feng3d {
-    /**
      * 几何体
      * @author feng 2016-04-28
      */
@@ -4278,32 +4266,6 @@ declare module feng3d {
          * 坐标
          */
         readonly positionData: number[];
-    }
-}
-declare module feng3d {
-    /**
-     * 粒子几何体
-     * @author feng 2016-04-28
-     */
-    class ParticleGeometry extends Geometry {
-        /**
-         * 粒子数量
-         */
-        private _numParticle;
-        /**
-         * 单个粒子几何体
-         */
-        elementGeometry: Geometry;
-        private isDirty;
-        constructor();
-        /**
-         * 粒子数量
-         */
-        numParticle: number;
-        /**
-         * 更新渲染数据
-         */
-        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -4519,34 +4481,6 @@ declare module feng3d {
          * 更新投影矩阵
          */
         protected updateMatrix(): void;
-    }
-}
-declare module feng3d {
-    /**
-     * 3D基元类型
-     * @author feng 2016-05-01
-     */
-    enum PrimitiveType {
-        /**
-         * 平面
-         */
-        Plane = 0,
-        /**
-         * 立方体
-         */
-        Cube = 1,
-        /**
-         * 球体
-         */
-        Sphere = 2,
-        /**
-         * 胶囊
-         */
-        Capsule = 3,
-        /**
-         * 圆柱体
-         */
-        Cylinder = 4,
     }
 }
 declare module feng3d {
