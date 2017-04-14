@@ -173,6 +173,8 @@
         "src/animators/skeleton/AnimationClipNodeBase.ts",
         "src/animators/skeleton/SkeletonClipNode.ts",
         "src/animators/skeleton/SkeletonClipState.ts",
+        //
+        "src/animators/transform/TransformAnimator.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MtlParser.ts",
