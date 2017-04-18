@@ -29,7 +29,7 @@ module feng3d
 
             //处理其他数据结构
             var cls = ClassUtils.getDefinitionByName(data.__className__);
-            debuger && console.assert(cls != null);
+            engine.debuger && console.assert(cls != null);
             var object = new cls();
 
             var keys = Object.keys(data);

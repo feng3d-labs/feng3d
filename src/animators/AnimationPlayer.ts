@@ -52,7 +52,7 @@ module feng3d
         {
             this._isPlaying
             this.preTime = getTimer();
-            ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            engine.ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
         }
 
         /**
@@ -60,7 +60,7 @@ module feng3d
          */
         public pause()
         {
-            ticker.removeEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            engine.ticker.removeEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
         }
 
         /**

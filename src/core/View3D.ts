@@ -70,7 +70,7 @@ module feng3d
             this.mouse3DManager = new Mouse3DManager();
             this.shadowRenderer = new ShadowRenderer();
 
-            ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
+            engine.ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
         }
 
         /**

@@ -91,7 +91,7 @@ module feng3d
 
             this._isPlaying = true;
 
-            ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            engine.ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
 
             if (!this.hasEventListener(AnimatorEvent.START))
                 return;
@@ -111,8 +111,8 @@ module feng3d
 
             this._isPlaying = false;
 
-            if (ticker.hasEventListener(Event.ENTER_FRAME))
-                ticker.removeEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            if (engine.ticker.hasEventListener(Event.ENTER_FRAME))
+                engine.ticker.removeEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
 
             if (!this.hasEventListener(AnimatorEvent.STOP))
                 return;
