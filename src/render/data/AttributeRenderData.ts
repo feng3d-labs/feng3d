@@ -39,7 +39,7 @@ module feng3d
         /**
          * 使数据缓冲失效
          */
-        protected invalidate()
+        public invalidate()
         {
             this._invalid = true;
         }

@@ -7,16 +7,16 @@ module feng3d
      */
     export enum RenderMode
     {
-        DEFAULT = GL.TRIANGLES,
+        DEFAULT = WebGLRenderingContext.TRIANGLES,
         /**
          * 点渲染
          */
-        POINTS = GL.POINTS,
-        LINE_LOOP = GL.LINE_LOOP,
-        LINE_STRIP = GL.LINE_STRIP,
-        LINES = GL.LINES,
-        TRIANGLES = GL.TRIANGLES,
-        TRIANGLE_STRIP = GL.TRIANGLE_STRIP,
-        TRIANGLE_FAN = GL.TRIANGLE_FAN
+        POINTS = WebGLRenderingContext.POINTS,
+        LINE_LOOP = WebGLRenderingContext.LINE_LOOP,
+        LINE_STRIP = WebGLRenderingContext.LINE_STRIP,
+        LINES = WebGLRenderingContext.LINES,
+        TRIANGLES = WebGLRenderingContext.TRIANGLES,
+        TRIANGLE_STRIP = WebGLRenderingContext.TRIANGLE_STRIP,
+        TRIANGLE_FAN = WebGLRenderingContext.TRIANGLE_FAN
     }
 }

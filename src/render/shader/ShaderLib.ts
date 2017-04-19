@@ -7,12 +7,10 @@ module feng3d
      */
     export class ShaderLib
     {
-        public static shaderFileMap: { [filePath: string]: string } = {};
-
         public static getShaderContentByName(shaderName: string)
         {
             var shaderPath = "shaders/" + shaderName + ".glsl";
-            return ShaderLib.shaderFileMap[shaderPath];
+            return shaderFileMap[shaderPath];
         }
 
         /**

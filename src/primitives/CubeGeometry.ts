@@ -29,6 +29,7 @@ module feng3d
             Watcher.watch(this, ["segmentsD"], this.invalidateGeometry, this);
             Watcher.watch(this, ["tile6"], this.invalidateGeometry, this);
         }
+
         protected buildGeometry()
         {
             var vertexPositionData = this.buildPosition();

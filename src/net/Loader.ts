@@ -76,6 +76,7 @@ module feng3d
 
             this.dataFormat = LoaderDataFormat.IMAGE;
             this._image = new Image();
+            this._image.crossOrigin = "Anonymous";
             this._image.onload = this.onImageLoad.bind(this);
             this._image.onerror = this.onImageError.bind(this);
             this._image.src = url;

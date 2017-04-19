@@ -221,9 +221,4 @@ module feng3d
         }
         return shader;
     }
-
-    /**
-     * 3D环境对象池
-     */
-    export var context3DPool = new RenderBufferPool();
 }

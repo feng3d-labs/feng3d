@@ -5,6 +5,9 @@ module feng3d
      * @author feng 2015-03-20
      */
     export var revision: string = "0.0.0";
+    //webgl 1
+    export type GL = WebGLRenderingContext;
+    export var GL = WebGLRenderingContext;
     /**
      * 是否开启调试(主要用于断言)
      */
@@ -34,6 +37,14 @@ module feng3d
      * 心跳计时器单例
      */
     export var ticker: SystemTicker;
+    /**
+     * 着色器库，由shader.ts初始化
+     */
+    export var shaderFileMap: { [filePath: string]: string };
+    /**
+     * 3D环境对象池
+     */
+    export var context3DPool: RenderBufferPool;
 
     /**
      * 初始化引擎
@@ -51,6 +62,7 @@ module feng3d
             defaultMaterial = new StandardMaterial();
             defaultGeometry = new CubeGeometry();
             ticker = new SystemTicker();
+            context3DPool = new RenderBufferPool();
         }
     }
     var isInit = false;
