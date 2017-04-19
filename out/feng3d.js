@@ -892,7 +892,7 @@ var feng3d;
             while (index != -1) {
                 source.splice(index, 1);
                 deleteIndexs.push(index);
-                all || (index = -1);
+                all || (index = source.indexOf(item));
             }
             return { deleteIndexs: deleteIndexs, length: source.length };
         };
@@ -9589,18 +9589,28 @@ var feng3d;
         function Texture2D(url) {
             if (url === void 0) { url = ""; }
             _super.call(this);
-            this.url = "";
             this.textureType = feng3d.GL.TEXTURE_2D;
             this._pixels = new Image();
-            this._pixels.addEventListener("load", this.invalidate.bind(this));
+            // this._pixels.addEventListener("load", this.invalidate.bind(this));
             this._pixels.addEventListener("load", this.onLoad.bind(this));
             this._pixels.src = url;
-            feng3d.Binding.bindProperty(this, ["url"], this._pixels, "src");
+            // Binding.bindProperty(this, ["url"], this._pixels, "src");
         }
+        Object.defineProperty(Texture2D.prototype, "url", {
+            get: function () {
+                return this._pixels.src;
+            },
+            set: function (value) {
+                this._pixels.src = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 处理加载完成
          */
         Texture2D.prototype.onLoad = function () {
+            this.invalidate();
             this.dispatchEvent(new feng3d.Event(feng3d.Event.LOADED, this));
         };
         /**
@@ -10141,7 +10151,7 @@ var feng3d;
             }
             else {
                 renderData.uniforms[feng3d.RenderDataID.s_ambient] = null;
-                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_SAMPLER = false;
+                renderData.shaderMacro.boolMacros.HAS_AMBIENT_SAMPLER = false;
             }
             //
             _super.prototype.updateRenderData.call(this, renderContext, renderData);

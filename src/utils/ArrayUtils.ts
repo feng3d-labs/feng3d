@@ -21,7 +21,7 @@ module feng3d
             {
                 source.splice(index, 1);
                 deleteIndexs.push(index);
-                all || (index = -1);
+                all || (index = source.indexOf(item));
             }
             return { deleteIndexs: deleteIndexs, length: source.length };
         }

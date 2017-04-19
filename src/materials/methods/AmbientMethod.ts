@@ -40,7 +40,7 @@ module feng3d
             } else
             {
                 renderData.uniforms[RenderDataID.s_ambient] = null;
-                renderData.shaderMacro.boolMacros.HAS_DIFFUSE_SAMPLER = false;
+                renderData.shaderMacro.boolMacros.HAS_AMBIENT_SAMPLER = false;
             }
             //
             super.updateRenderData(renderContext, renderData);
