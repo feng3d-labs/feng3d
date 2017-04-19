@@ -46,8 +46,8 @@ module feng3d
 
         public set target(value: Transform)
         {
-            var input = engine.input;
-            var inputType = engine.inputType;
+            
+            
             if (this._target != null)
             {
                 input.removeEventListener(inputType.KEY_DOWN, this.onKeydown, this);
@@ -125,7 +125,7 @@ module feng3d
             if (this.target == null)
                 return;
 
-            var input = engine.input;
+            
             var mousePoint = new Point(input.clientX, input.clientY);
 
             if (this.preMousePoint == null)

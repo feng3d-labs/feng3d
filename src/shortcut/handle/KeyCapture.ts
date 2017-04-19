@@ -29,10 +29,7 @@ module feng3d
 		 */
 		constructor(shortCut: ShortCut)
 		{
-
 			this._keyState = shortCut.keyState;
-			var input = engine.input;
-			var inputType = engine.inputType;
 			//
 			input.addEventListener(inputType.KEY_DOWN, this.onKeydown, this);
 			input.addEventListener(inputType.KEY_UP, this.onKeyup, this);

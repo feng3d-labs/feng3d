@@ -78,7 +78,7 @@ module feng3d
          */
         public checkRenderData()
         {
-            engine.debuger && console.assert(false);
+            debuger && console.assert(false);
 
             return false;
         }

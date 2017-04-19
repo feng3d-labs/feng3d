@@ -207,7 +207,7 @@ module feng3d
             this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
             this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
 
-            engine.debuger && assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
+            debuger && assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
 
             return this;
         }

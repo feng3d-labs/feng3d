@@ -6,6 +6,6 @@ module feng3d
      */
     export function getTimer(): number
     {
-        return Date.now() - engine.ticker.startTime;
+        return Date.now() - ticker.startTime;
     }
 }

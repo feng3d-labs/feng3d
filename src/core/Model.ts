@@ -33,8 +33,8 @@ module feng3d
          */
         public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
         {
-            var material = this.material || engine.defaultMaterial;
-            var geometry = this.geometry || engine.defaultGeometry;
+            var material = this.material || defaultMaterial;
+            var geometry = this.geometry || defaultGeometry;
             geometry && geometry.collectRenderDataHolder(renderAtomic);
             material && material.collectRenderDataHolder(renderAtomic);
             super.collectRenderDataHolder(renderAtomic);

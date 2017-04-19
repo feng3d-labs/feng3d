@@ -6770,49 +6770,42 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    class Engine {
-        /**
-         * feng3d的版本号
-         * @author feng 2015-03-20
-         */
-        private revision;
-        private _serialization;
-        private _input;
-        private _inputType;
-        private _shortcut;
-        private _defaultMaterial;
-        private _defaultGeometry;
-        private _systemTicker;
-        constructor();
-        /**
-         * 是否开启调试(主要用于断言)
-         */
-        debuger: boolean;
-        /**
-         * 数据持久化
-         */
-        readonly serialization: Serialization;
-        /**
-         * 键盘鼠标输入
-         */
-        readonly input: Input;
-        readonly inputType: InputEventType;
-        /**
-         * 快捷键
-         */
-        readonly shortcut: ShortCut;
-        /**
-         * 默认材质
-         */
-        readonly defaultMaterial: StandardMaterial;
-        /**
-         * 默认几何体
-         */
-        readonly defaultGeometry: Geometry;
-        /**
-         * 心跳计时器单例
-         */
-        readonly ticker: SystemTicker;
-    }
-    var engine: Engine;
+    /**
+     * feng3d的版本号
+     * @author feng 2015-03-20
+     */
+    var revision: string;
+    /**
+     * 是否开启调试(主要用于断言)
+     */
+    var debuger: boolean;
+    /**
+     * 数据持久化
+     */
+    var serialization: Serialization;
+    /**
+     * 键盘鼠标输入
+     */
+    var input: Input;
+    var inputType: InputEventType;
+    /**
+     * 快捷键
+     */
+    var shortcut: ShortCut;
+    /**
+     * 默认材质
+     */
+    var defaultMaterial: StandardMaterial;
+    /**
+     * 默认几何体
+     */
+    var defaultGeometry: Geometry;
+    /**
+     * 心跳计时器单例
+     */
+    var ticker: SystemTicker;
+    /**
+     * 初始化引擎
+     */
+    function initEngine(): void;
 }

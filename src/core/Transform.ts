@@ -178,7 +178,7 @@ module feng3d
             this.rotation.copyFrom(vecs[1]);
             this.rotation.scaleBy(MathConsts.RADIANS_TO_DEGREES);
             this.scale.copyFrom(vecs[2]);
-            engine.debuger && this._debug();
+            debuger && this._debug();
             this.notifyMatrix3DChanged();
             this.invalidateGlobalMatrix3D();
 
@@ -242,7 +242,7 @@ module feng3d
         protected updateMatrix3D()
         {
             //矫正值
-            engine.debuger && this._debug();
+            debuger && this._debug();
             //
             var rotation = this.rotation.clone();
             rotation.scaleBy(MathConsts.DEGREES_TO_RADIANS);

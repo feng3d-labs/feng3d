@@ -182,7 +182,7 @@ module feng3d
          */
         public addChildAt(child: Object3D, index: number): void
         {
-            engine.debuger && console.assert(index >= 0 && index <= this.children_.length);
+            debuger && console.assert(index >= 0 && index <= this.children_.length);
             var childIndex = this.children_.indexOf(child);
             if (childIndex != -1)
             {
@@ -239,7 +239,7 @@ module feng3d
 		 */
         public removeChildAt(index: number): Object3D
         {
-            engine.debuger && console.assert(-1 < index && index < this.children_.length);
+            debuger && console.assert(-1 < index && index < this.children_.length);
             var child: Object3D = this.children_[index];
             this.children_.splice(index, 1);
             child.dispatchEvent(new Object3DEvent(Object3DEvent.REMOVED, { parent: this, child: child }, true));
@@ -253,7 +253,7 @@ module feng3d
 		 */
         public getChildAt(index: number): Object3D
         {
-            engine.debuger && console.assert(-1 < index && index < this.children_.length);
+            debuger && console.assert(-1 < index && index < this.children_.length);
             return this.children_[index];
         }
 
@@ -294,7 +294,7 @@ module feng3d
 		 */
         public addComponentAt(component: Object3DComponent, index: number): void
         {
-            engine.debuger && console.assert(component instanceof Object3DComponent, "只有Object3DComponent新增为Object3D组件！");
+            debuger && console.assert(component instanceof Object3DComponent, "只有Object3DComponent新增为Object3D组件！");
 
             if (component instanceof Transform)
             {

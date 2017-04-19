@@ -45,6 +45,9 @@ module feng3d
          */
         constructor(canvas, scene: Scene3D = null, camera: CameraObject3D = null)
         {
+            //初始化引擎
+            initEngine();
+
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
 
@@ -70,7 +73,7 @@ module feng3d
             this.mouse3DManager = new Mouse3DManager();
             this.shadowRenderer = new ShadowRenderer();
 
-            engine.ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
+            ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
         }
 
         /**
