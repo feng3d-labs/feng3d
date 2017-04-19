@@ -6,8 +6,8 @@ module feng3d
      */
     export class Transform extends Object3DComponent
     {
-        private readonly _transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
-        private readonly _sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
+        private _transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
+        private _sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
         /**
          * 位移
          */

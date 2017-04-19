@@ -7,7 +7,7 @@ module feng3d
 	 */
     export class EventDispatcher implements IEventDispatcher
     {
-        private readonly _listenermap: { [type: string]: ListenerVO[] } = {};
+        private _listenermap: { [type: string]: ListenerVO[] } = {};
 
         /**
          * 名称

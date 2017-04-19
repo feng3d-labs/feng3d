@@ -594,7 +594,7 @@ declare module feng3d {
      * @author feng 2016-3-22
      */
     class EventDispatcher implements IEventDispatcher {
-        private readonly _listenermap;
+        private _listenermap;
         /**
          * 名称
          */
@@ -745,39 +745,39 @@ declare module feng3d {
     }
     class InputEventType {
         /** 鼠标双击 */
-        readonly DOUBLE_CLICK: string;
+        DOUBLE_CLICK: string;
         /** 鼠标单击 */
-        readonly CLICK: string;
+        CLICK: string;
         /** 鼠标按下 */
-        readonly MOUSE_DOWN: string;
+        MOUSE_DOWN: string;
         /** 鼠标弹起 */
-        readonly MOUSE_UP: string;
+        MOUSE_UP: string;
         /** 鼠标中键单击 */
-        readonly MIDDLE_CLICK: string;
+        MIDDLE_CLICK: string;
         /** 鼠标中键按下 */
-        readonly MIDDLE_MOUSE_DOWN: string;
+        MIDDLE_MOUSE_DOWN: string;
         /** 鼠标中键弹起 */
-        readonly MIDDLE_MOUSE_UP: string;
+        MIDDLE_MOUSE_UP: string;
         /** 鼠标右键单击 */
-        readonly RIGHT_CLICK: string;
+        RIGHT_CLICK: string;
         /** 鼠标右键按下 */
-        readonly RIGHT_MOUSE_DOWN: string;
+        RIGHT_MOUSE_DOWN: string;
         /** 鼠标右键弹起 */
-        readonly RIGHT_MOUSE_UP: string;
+        RIGHT_MOUSE_UP: string;
         /** 鼠标移动 */
-        readonly MOUSE_MOVE: string;
+        MOUSE_MOVE: string;
         /** 鼠标移出 */
-        readonly MOUSE_OUT: string;
+        MOUSE_OUT: string;
         /** 鼠标移入 */
-        readonly MOUSE_OVER: string;
+        MOUSE_OVER: string;
         /** 鼠标滚动滚轮 */
-        readonly MOUSE_WHEEL: string;
+        MOUSE_WHEEL: string;
         /** 键盘按下 */
-        readonly KEY_DOWN: string;
+        KEY_DOWN: string;
         /** 键盘按着 */
-        readonly KEY_PRESS: string;
+        KEY_PRESS: string;
         /** 键盘弹起 */
-        readonly KEY_UP: string;
+        KEY_UP: string;
     }
     class InputEvent extends Event {
         data: Input;
@@ -2567,11 +2567,11 @@ declare module feng3d {
         /**
          * 数据是否失效，需要重新收集数据
          */
-        static readonly INVALIDATE: string;
+        static INVALIDATE: string;
         /**
          * 渲染拥有者失效，需要重新收集渲染数据拥有者
          */
-        static readonly INVALIDATE_RENDERHOLDER: string;
+        static INVALIDATE_RENDERHOLDER: string;
         private _invalidateRenderDataHolderList;
         renderHolderInvalid: boolean;
         private invalidate(event);
@@ -2750,39 +2750,39 @@ declare module feng3d {
         /**
          * 坐标
          */
-        static readonly a_position: string;
+        static a_position: string;
         /**
          * 颜色
          */
-        static readonly a_color: string;
+        static a_color: string;
         /**
          * 法线
          */
-        static readonly a_normal: string;
+        static a_normal: string;
         /**
          * 切线
          */
-        static readonly a_tangent: string;
+        static a_tangent: string;
         /**
          * uv（纹理坐标）
          */
-        static readonly a_uv: string;
+        static a_uv: string;
         /**
          * 关节索引
          */
-        static readonly a_jointindex0: string;
+        static a_jointindex0: string;
         /**
          * 关节权重
          */
-        static readonly a_jointweight0: string;
+        static a_jointweight0: string;
         /**
          * 关节索引
          */
-        static readonly a_jointindex1: string;
+        static a_jointindex1: string;
         /**
          * 关节权重
          */
-        static readonly a_jointweight1: string;
+        static a_jointweight1: string;
     }
 }
 declare module feng3d {
@@ -3442,8 +3442,8 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class Transform extends Object3DComponent {
-        private readonly _transformChanged;
-        private readonly _sceneTransformChanged;
+        private _transformChanged;
+        private _sceneTransformChanged;
         /**
          * 位移
          */

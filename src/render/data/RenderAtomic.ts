@@ -53,11 +53,11 @@ module feng3d
         /**
          * 数据是否失效，需要重新收集数据
          */
-        public static readonly INVALIDATE = "invalidate";
+        public static INVALIDATE = "invalidate";
         /**
          * 渲染拥有者失效，需要重新收集渲染数据拥有者
          */
-        public static readonly INVALIDATE_RENDERHOLDER = "invalidateRenderHolder";
+        public static INVALIDATE_RENDERHOLDER = "invalidateRenderHolder";
 
         private _invalidateRenderDataHolderList: RenderDataHolder[] = [];
         public renderHolderInvalid = true;

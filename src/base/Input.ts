@@ -50,39 +50,39 @@ module feng3d
     export class InputEventType
     {
         /** 鼠标双击 */
-        public readonly DOUBLE_CLICK = "dblclick";
+        public DOUBLE_CLICK = "dblclick";
         /** 鼠标单击 */
-        public readonly CLICK = "click";
+        public CLICK = "click";
         /** 鼠标按下 */
-        public readonly MOUSE_DOWN = "mousedown";
+        public MOUSE_DOWN = "mousedown";
         /** 鼠标弹起 */
-        public readonly MOUSE_UP = "mouseup";
+        public MOUSE_UP = "mouseup";
         /** 鼠标中键单击 */
-        public readonly MIDDLE_CLICK = "middleclick";
+        public MIDDLE_CLICK = "middleclick";
         /** 鼠标中键按下 */
-        public readonly MIDDLE_MOUSE_DOWN = "middlemousedown";
+        public MIDDLE_MOUSE_DOWN = "middlemousedown";
         /** 鼠标中键弹起 */
-        public readonly MIDDLE_MOUSE_UP = "middlemouseup";
+        public MIDDLE_MOUSE_UP = "middlemouseup";
         /** 鼠标右键单击 */
-        public readonly RIGHT_CLICK = "rightclick";
+        public RIGHT_CLICK = "rightclick";
         /** 鼠标右键按下 */
-        public readonly RIGHT_MOUSE_DOWN = "rightmousedown";
+        public RIGHT_MOUSE_DOWN = "rightmousedown";
         /** 鼠标右键弹起 */
-        public readonly RIGHT_MOUSE_UP = "rightmouseup";
+        public RIGHT_MOUSE_UP = "rightmouseup";
         /** 鼠标移动 */
-        public readonly MOUSE_MOVE = "mousemove";
+        public MOUSE_MOVE = "mousemove";
         /** 鼠标移出 */
-        public readonly MOUSE_OUT = "mouseout";
+        public MOUSE_OUT = "mouseout";
         /** 鼠标移入 */
-        public readonly MOUSE_OVER = "mouseover";
+        public MOUSE_OVER = "mouseover";
         /** 鼠标滚动滚轮 */
-        public readonly MOUSE_WHEEL = "mousewheel";
+        public MOUSE_WHEEL = "mousewheel";
         /** 键盘按下 */
-        public readonly KEY_DOWN = "keydown";
+        public KEY_DOWN = "keydown";
         /** 键盘按着 */
-        public readonly KEY_PRESS = "keypress";
+        public KEY_PRESS = "keypress";
         /** 键盘弹起 */
-        public readonly KEY_UP = "keyup";
+        public KEY_UP = "keyup";
     }
 
     export class InputEvent extends Event
