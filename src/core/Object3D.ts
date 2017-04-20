@@ -5,7 +5,7 @@ module feng3d
      * 3D对象
      * @author feng 2016-04-26
      */
-    export class Object3D extends RenderDataHolder
+    export class Object3D extends Transform
     {
         public get renderData() { return this._renderData; }
         private _renderData = new Object3DRenderAtomic();
@@ -29,8 +29,6 @@ module feng3d
 
         //-非序列化
         private _object3DID: number;
-
-        private _transform: Transform;
         /**
          * 父对象
          */
@@ -47,7 +45,7 @@ module feng3d
         {
             if (this.isBillboard)
             {
-                this.transform.lookAt(renderContext.camera.globalMatrix3D.position);
+                this.lookAt(renderContext.camera.globalMatrix3D.position);
             }
             if (this.renderData.renderHolderInvalid)
             {
@@ -64,22 +62,6 @@ module feng3d
         }
 
         /**
-         * 变换
-         */
-        public get transform(): Transform
-        {
-            return this._transform;
-        }
-
-        public set transform(value: Transform)
-        {
-            assert(value != null, "3D空间不能为null");
-            this._transform && this.removeComponent(this._transform);
-            this._transform = value;
-            this._transform && this.addComponentAt(this._transform, 0);
-        }
-
-        /**
          * 构建3D对象
          */
         constructor(name = "object")
@@ -89,8 +71,6 @@ module feng3d
             this._object3DID = object3DAutoID++;
             object3DMap[this._object3DID] = this;
             this.name = name;
-            //
-            this.transform = new Transform();
             //
             this.addEventListener(Object3DEvent.ADDED, this.onAdded, this);
             this.addEventListener(Object3DEvent.REMOVED, this.onRemoved, this);
@@ -304,25 +284,7 @@ module feng3d
         {
             debuger && console.assert(component instanceof Object3DComponent, "只有Object3DComponent新增为Object3D组件！");
 
-            if (component instanceof Transform)
-            {
-                this._transform = component;
-            }
             super.addComponentAt(component, index);
-        }
-
-        /**
-         * 移除组件
-         * @param index		要删除的 Component 的子索引。
-         */
-        public removeComponentAt(index: number): Object3DComponent
-        {
-            var component = <Object3DComponent>super.removeComponentAt(index);
-            if (component instanceof Transform)
-            {
-                this._transform = null;
-            }
-            return component;
         }
 
         public static getObject3D(id: number)

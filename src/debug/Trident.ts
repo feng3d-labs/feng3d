@@ -44,23 +44,23 @@ module feng3d
             this.addChild(this._zLine);
             //
             this._xArrow = new Object3D();
-            this._xArrow.transform.position.x = length;
-            this._xArrow.transform.rotation.z = -90;
+            this._xArrow.position.x = length;
+            this._xArrow.rotation.z = -90;
             this._xArrow.getOrCreateComponentByClass(Model).geometry = new ConeGeometry(5, 18);;
             var material = this._xArrow.getOrCreateComponentByClass(Model).material = new ColorMaterial();
             material.color = new Color(1, 0, 0);
             this.addChild(this._xArrow);
             //
             this._yArrow = new Object3D();
-            this._yArrow.transform.position.y = length;
+            this._yArrow.position.y = length;
             this._yArrow.getOrCreateComponentByClass(Model).geometry = new ConeGeometry(5, 18);
             var material = this._yArrow.getOrCreateComponentByClass(Model).material = new ColorMaterial();
             material.color = new Color(0, 1, 0);
             this.addChild(this._yArrow);
             //
             this._zArrow = new Object3D();
-            this._zArrow.transform.position.z = length;
-            this._zArrow.transform.rotation.x = 90;
+            this._zArrow.position.z = length;
+            this._zArrow.rotation.x = 90;
             this._zArrow.getOrCreateComponentByClass(Model).geometry = new ConeGeometry(5, 18);
             var material = this._zArrow.getOrCreateComponentByClass(Model).material = new ColorMaterial();
             material.color = new Color(0, 0, 1);

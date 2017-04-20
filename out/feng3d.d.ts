@@ -3194,258 +3194,10 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 3D对象
-     * @author feng 2016-04-26
-     */
-    class Object3D extends RenderDataHolder {
-        readonly renderData: Object3DRenderAtomic;
-        private _renderData;
-        /**
-         * 是否开启鼠标事件，默认false。
-         */
-        mouseEnabled: boolean;
-        /**
-         * 是否可见，默认true。
-         */
-        visible: boolean;
-        /**
-         * 组件列表
-         */
-        protected components_: Object3DComponent[];
-        /**
-         * 子对象列表
-         */
-        private children_;
-        private _object3DID;
-        private _transform;
-        /**
-         * 父对象
-         */
-        private _parent;
-        private _scene;
-        /**
-         * 是否为公告牌（默认永远朝向摄像机），默认false。
-         */
-        isBillboard: boolean;
-        updateRender(renderContext: RenderContext): void;
-        readonly object3DID: number;
-        /**
-         * 变换
-         */
-        transform: Transform;
-        /**
-         * 构建3D对象
-         */
-        constructor(name?: string);
-        /**
-         * 更新渲染数据
-         */
-        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
-        /**
-         * 父对象
-         */
-        readonly parent: Object3D;
-        private _setParent(value);
-        /**
-         * 场景
-         */
-        readonly scene: Scene3D;
-        private _setScene(value);
-        /**
-         * 真实是否支持鼠标事件
-         */
-        readonly realMouseEnable: any;
-        /**
-         * 真实是否可见
-         */
-        readonly realVisible: any;
-        /**
-         * 添加子对象
-         * @param child		子对象
-         * @return			新增的子对象
-         */
-        addChild(child: Object3D): void;
-        /**
-         * 添加子对象到指定位置
-         * @param   child   子对象
-         * @param   index   添加到的位置
-         */
-        addChildAt(child: Object3D, index: number): void;
-        /**
-         * 设置子对象在指定位置
-         * @param child 子对象
-         * @param index 索引
-         */
-        setChildAt(child: Object3D, index: number): void;
-        /**
-         * 移除子对象
-         * @param   child   子对象
-         * @return			被移除子对象索引
-         */
-        removeChild(child: Object3D): number;
-        /**
-         * 获取子对象索引
-         * @param   child   子对象
-         * @return  子对象位置
-         */
-        getChildIndex(child: Object3D): number;
-        /**
-         * 移出指定索引的子对象
-         * @param index         子对象索引
-         * @return				被移除对象
-         */
-        removeChildAt(index: number): Object3D;
-        /**
-         * 获取子对象
-         * @param index         子对象索引
-         * @return              指定索引的子对象
-         */
-        getChildAt(index: number): Object3D;
-        /**
-         * 获取子对象数量
-         */
-        readonly numChildren: number;
-        /**
-         * 处理添加子对象事件
-         */
-        private onAdded(event);
-        /**
-         * 处理删除子对象事件
-         */
-        private onRemoved(event);
-        /**
-         * 添加组件到指定位置
-         * @param component		被添加的组件
-         * @param index			插入的位置
-         */
-        addComponentAt(component: Object3DComponent, index: number): void;
-        /**
-         * 移除组件
-         * @param index		要删除的 Component 的子索引。
-         */
-        removeComponentAt(index: number): Object3DComponent;
-        static getObject3D(id: number): Object3D;
-    }
-}
-declare module feng3d {
-    /**
-     * 3D视图
-     * @author feng 2016-05-01
-     */
-    class View3D {
-        /**
-         * 射线坐标临时变量
-         */
-        private static tempRayPosition;
-        /**
-         * 射线方向临时变量
-         */
-        private static tempRayDirection;
-        private _gl;
-        private _camera;
-        private _scene;
-        private _canvas;
-        /**
-         * 默认渲染器
-         */
-        private defaultRenderer;
-        /**
-         * 鼠标事件管理器
-         */
-        private mouse3DManager;
-        /**
-         * 阴影图渲染器
-         */
-        private shadowRenderer;
-        /**
-         * 构建3D视图
-         * @param canvas    画布
-         * @param scene     3D场景
-         * @param camera    摄像机
-         */
-        constructor(canvas: any, scene?: Scene3D, camera?: CameraObject3D);
-        /**
-         * 初始化GL
-         */
-        private initGL();
-        /** 3d场景 */
-        scene: Scene3D;
-        /**
-         * 绘制场景
-         */
-        private drawScene(event);
-        /**
-         * 更新视窗区域
-         */
-        readonly viewRect: Rectangle;
-        /**
-         * 摄像机
-         */
-        camera: CameraObject3D;
-        /**
-         * 鼠标在3D视图中的位置
-         */
-        readonly mousePos: Point;
-        /**
-         * 获取鼠标射线（与鼠标重叠的摄像机射线）
-         */
-        getMouseRay3D(): Ray3D;
-        /**
-         * 获取与坐标重叠的射线
-         * @param x view3D上的X坐标
-         * @param y view3D上的X坐标
-         * @return
-         */
-        getRay3D(x: number, y: number): Ray3D;
-        /**
-         * 屏幕坐标投影到场景坐标
-         * @param nX 屏幕坐标X ([0-width])
-         * @param nY 屏幕坐标Y ([0-height])
-         * @param sZ 到屏幕的距离
-         * @param v 场景坐标（输出）
-         * @return 场景坐标
-         */
-        unproject(sX: number, sY: number, sZ: number, v?: Vector3D): Vector3D;
-        /**
-         * 屏幕坐标转GPU坐标
-         * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
-         * @return GPU坐标 (x:[-1,1],y:[-1-1])
-         */
-        screenToGpuPosition(screenPos: Point): Point;
-        /**
-         * 获取单位像素在指定深度映射的大小
-         * @param   depth   深度
-         */
-        getScaleByDepth(depth: number): number;
-    }
-}
-declare module feng3d {
-    /**
-     * 3D对象组件
-     * @author feng 2016-09-02
-     */
-    abstract class Object3DComponent extends RenderDataHolder {
-        /**
-         * 父组件,所属3d对象
-         */
-        parentComponent: Object3D;
-        /**
-         * 构建3D对象组件
-         */
-        constructor();
-        /**
-         * 派发事件，该事件将会强制冒泡到3D对象中
-         * @param event						调度到事件流中的 Event 对象。
-         */
-        dispatchEvent(event: Event): boolean;
-    }
-}
-declare module feng3d {
-    /**
      * 变换
      * @author feng 2016-04-26
      */
-    class Transform extends Object3DComponent {
+    class Transform extends RenderDataHolder {
         private _transformChanged;
         private _sceneTransformChanged;
         /**
@@ -3590,6 +3342,244 @@ declare module feng3d {
          * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
          */
         constructor(type: string, data: Transform, bubbles?: boolean);
+    }
+}
+declare module feng3d {
+    /**
+     * 3D对象
+     * @author feng 2016-04-26
+     */
+    class Object3D extends Transform {
+        readonly renderData: Object3DRenderAtomic;
+        private _renderData;
+        /**
+         * 是否开启鼠标事件，默认false。
+         */
+        mouseEnabled: boolean;
+        /**
+         * 是否可见，默认true。
+         */
+        visible: boolean;
+        /**
+         * 组件列表
+         */
+        protected components_: Object3DComponent[];
+        /**
+         * 子对象列表
+         */
+        private children_;
+        private _object3DID;
+        /**
+         * 父对象
+         */
+        private _parent;
+        private _scene;
+        /**
+         * 是否为公告牌（默认永远朝向摄像机），默认false。
+         */
+        isBillboard: boolean;
+        updateRender(renderContext: RenderContext): void;
+        readonly object3DID: number;
+        /**
+         * 构建3D对象
+         */
+        constructor(name?: string);
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 父对象
+         */
+        readonly parent: Object3D;
+        private _setParent(value);
+        /**
+         * 场景
+         */
+        readonly scene: Scene3D;
+        private _setScene(value);
+        /**
+         * 真实是否支持鼠标事件
+         */
+        readonly realMouseEnable: any;
+        /**
+         * 真实是否可见
+         */
+        readonly realVisible: any;
+        /**
+         * 添加子对象
+         * @param child		子对象
+         * @return			新增的子对象
+         */
+        addChild(child: Object3D): void;
+        /**
+         * 添加子对象到指定位置
+         * @param   child   子对象
+         * @param   index   添加到的位置
+         */
+        addChildAt(child: Object3D, index: number): void;
+        /**
+         * 设置子对象在指定位置
+         * @param child 子对象
+         * @param index 索引
+         */
+        setChildAt(child: Object3D, index: number): void;
+        /**
+         * 移除子对象
+         * @param   child   子对象
+         * @return			被移除子对象索引
+         */
+        removeChild(child: Object3D): number;
+        /**
+         * 获取子对象索引
+         * @param   child   子对象
+         * @return  子对象位置
+         */
+        getChildIndex(child: Object3D): number;
+        /**
+         * 移出指定索引的子对象
+         * @param index         子对象索引
+         * @return				被移除对象
+         */
+        removeChildAt(index: number): Object3D;
+        /**
+         * 获取子对象
+         * @param index         子对象索引
+         * @return              指定索引的子对象
+         */
+        getChildAt(index: number): Object3D;
+        /**
+         * 获取子对象数量
+         */
+        readonly numChildren: number;
+        /**
+         * 处理添加子对象事件
+         */
+        private onAdded(event);
+        /**
+         * 处理删除子对象事件
+         */
+        private onRemoved(event);
+        /**
+         * 添加组件到指定位置
+         * @param component		被添加的组件
+         * @param index			插入的位置
+         */
+        addComponentAt(component: Object3DComponent, index: number): void;
+        static getObject3D(id: number): Object3D;
+    }
+}
+declare module feng3d {
+    /**
+     * 3D视图
+     * @author feng 2016-05-01
+     */
+    class View3D {
+        /**
+         * 射线坐标临时变量
+         */
+        private static tempRayPosition;
+        /**
+         * 射线方向临时变量
+         */
+        private static tempRayDirection;
+        private _gl;
+        private _camera;
+        private _scene;
+        private _canvas;
+        /**
+         * 默认渲染器
+         */
+        private defaultRenderer;
+        /**
+         * 鼠标事件管理器
+         */
+        private mouse3DManager;
+        /**
+         * 阴影图渲染器
+         */
+        private shadowRenderer;
+        /**
+         * 构建3D视图
+         * @param canvas    画布
+         * @param scene     3D场景
+         * @param camera    摄像机
+         */
+        constructor(canvas: any, scene?: Scene3D, camera?: CameraObject3D);
+        /**
+         * 初始化GL
+         */
+        private initGL();
+        /** 3d场景 */
+        scene: Scene3D;
+        /**
+         * 绘制场景
+         */
+        private drawScene(event);
+        /**
+         * 更新视窗区域
+         */
+        readonly viewRect: Rectangle;
+        /**
+         * 摄像机
+         */
+        camera: CameraObject3D;
+        /**
+         * 鼠标在3D视图中的位置
+         */
+        readonly mousePos: Point;
+        /**
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
+        getMouseRay3D(): Ray3D;
+        /**
+         * 获取与坐标重叠的射线
+         * @param x view3D上的X坐标
+         * @param y view3D上的X坐标
+         * @return
+         */
+        getRay3D(x: number, y: number): Ray3D;
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X ([0-width])
+         * @param nY 屏幕坐标Y ([0-height])
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        unproject(sX: number, sY: number, sZ: number, v?: Vector3D): Vector3D;
+        /**
+         * 屏幕坐标转GPU坐标
+         * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
+         * @return GPU坐标 (x:[-1,1],y:[-1-1])
+         */
+        screenToGpuPosition(screenPos: Point): Point;
+        /**
+         * 获取单位像素在指定深度映射的大小
+         * @param   depth   深度
+         */
+        getScaleByDepth(depth: number): number;
+    }
+}
+declare module feng3d {
+    /**
+     * 3D对象组件
+     * @author feng 2016-09-02
+     */
+    abstract class Object3DComponent extends RenderDataHolder {
+        /**
+         * 父组件,所属3d对象
+         */
+        parentComponent: Object3D;
+        /**
+         * 构建3D对象组件
+         */
+        constructor();
+        /**
+         * 派发事件，该事件将会强制冒泡到3D对象中
+         * @param event						调度到事件流中的 Event 对象。
+         */
+        dispatchEvent(event: Event): boolean;
     }
 }
 declare module feng3d {
