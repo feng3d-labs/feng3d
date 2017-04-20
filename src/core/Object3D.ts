@@ -10,13 +10,12 @@ module feng3d
         public get renderData() { return this._renderData; }
         private _renderData = new Object3DRenderAtomic();
 
-        //-序列化
         /**
-		 * 是否开启鼠标事件
+		 * 是否开启鼠标事件，默认false。
 		 */
-        protected mouseEnabled: boolean = true;
+        public mouseEnabled: boolean = false;
         /**
-		 * 是否可见
+		 * 是否可见，默认true。
 		 */
         public visible = true;
         /**
@@ -39,8 +38,17 @@ module feng3d
 
         private _scene: Scene3D;
 
+        /**
+         * 是否为公告牌（默认永远朝向摄像机），默认false。
+         */
+        public isBillboard = false;
+
         public updateRender(renderContext: RenderContext)
         {
+            if (this.isBillboard)
+            {
+                this.transform.lookAt(renderContext.camera.globalMatrix3D.position);
+            }
             if (this.renderData.renderHolderInvalid)
             {
                 this.renderData.clear();

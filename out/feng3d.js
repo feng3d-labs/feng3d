@@ -6156,13 +6156,12 @@ var feng3d;
             if (name === void 0) { name = "object"; }
             _super.call(this);
             this._renderData = new feng3d.Object3DRenderAtomic();
-            //-序列化
             /**
-             * 是否开启鼠标事件
+             * 是否开启鼠标事件，默认false。
              */
-            this.mouseEnabled = true;
+            this.mouseEnabled = false;
             /**
-             * 是否可见
+             * 是否可见，默认true。
              */
             this.visible = true;
             /**
@@ -6177,6 +6176,10 @@ var feng3d;
              * 父对象
              */
             this._parent = null;
+            /**
+             * 是否为公告牌（默认永远朝向摄像机），默认false。
+             */
+            this.isBillboard = false;
             this._object3DID = object3DAutoID++;
             object3DMap[this._object3DID] = this;
             this.name = name;
@@ -6192,6 +6195,9 @@ var feng3d;
             configurable: true
         });
         Object3D.prototype.updateRender = function (renderContext) {
+            if (this.isBillboard) {
+                this.transform.lookAt(renderContext.camera.globalMatrix3D.position);
+            }
             if (this.renderData.renderHolderInvalid) {
                 this.renderData.clear();
                 this.collectRenderDataHolder(this.renderData);

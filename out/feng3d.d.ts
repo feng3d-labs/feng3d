@@ -3201,11 +3201,11 @@ declare module feng3d {
         readonly renderData: Object3DRenderAtomic;
         private _renderData;
         /**
-         * 是否开启鼠标事件
+         * 是否开启鼠标事件，默认false。
          */
-        protected mouseEnabled: boolean;
+        mouseEnabled: boolean;
         /**
-         * 是否可见
+         * 是否可见，默认true。
          */
         visible: boolean;
         /**
@@ -3223,6 +3223,10 @@ declare module feng3d {
          */
         private _parent;
         private _scene;
+        /**
+         * 是否为公告牌（默认永远朝向摄像机），默认false。
+         */
+        isBillboard: boolean;
         updateRender(renderContext: RenderContext): void;
         readonly object3DID: number;
         /**
