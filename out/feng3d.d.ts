@@ -3819,6 +3819,8 @@ declare module feng3d {
          */
         private _attributes;
         private _geometryInvalid;
+        private _scaleU;
+        private _scaleV;
         /**
          * 创建一个几何体
          */
@@ -3872,9 +3874,23 @@ declare module feng3d {
          */
         applyTransformation(transform: Matrix3D): void;
         /**
+         * 纹理U缩放，默认为1。
+         */
+        readonly scaleU: number;
+        /**
+         * 纹理V缩放，默认为1。
+         */
+        readonly scaleV: number;
+        /**
+         * 缩放UV
+         * @param scaleU 纹理U缩放，默认1。
+         * @param scaleV 纹理V缩放，默认1。
+         */
+        scaleUV(scaleU?: number, scaleV?: number): void;
+        /**
          * 克隆一个几何体
          */
-        clone(): any;
+        clone(): Geometry;
         /**
          * 从一个几何体中克隆数据
          */
@@ -4254,13 +4270,13 @@ declare module feng3d {
         tile6: boolean;
         /**
          * 创建立方几何体
-         * @param   width           宽度
-         * @param   height          高度
-         * @param   depth           深度
-         * @param   segmentsW       宽度方向分割
-         * @param   segmentsH       高度方向分割
-         * @param   segmentsD       深度方向分割
-         * @param   tile6           是否为6块贴图
+         * @param   width           宽度，默认为100。
+         * @param   height          高度，默认为100。
+         * @param   depth           深度，默认为100。
+         * @param   segmentsW       宽度方向分割，默认为1。
+         * @param   segmentsH       高度方向分割，默认为1。
+         * @param   segmentsD       深度方向分割，默认为1。
+         * @param   tile6           是否为6块贴图，默认true。
          */
         constructor(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean);
         protected buildGeometry(): void;
@@ -4543,9 +4559,13 @@ declare module feng3d {
          */
         generateMipmap: boolean;
         /**
-         * 图片y轴向
+         * 对图像进行Y轴反转。默认值为false
          */
-        flipY: number;
+        flipY: boolean;
+        /**
+         * 将图像RGB颜色值得每一个分量乘以A。默认为false
+         */
+        premulAlpha: boolean;
         minFilter: number;
         magFilter: number;
         wrapS: number;

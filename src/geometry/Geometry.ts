@@ -18,6 +18,9 @@ module feng3d
 
         private _geometryInvalid = true;
 
+        private _scaleU: number = 1;
+        private _scaleV: number = 1;
+
         /**
 		 * 创建一个几何体
 		 */
@@ -265,12 +268,54 @@ module feng3d
         }
 
         /**
+         * 纹理U缩放，默认为1。
+         */
+        public get scaleU(): number
+        {
+            return this._scaleU;
+        }
+
+        /**
+         * 纹理V缩放，默认为1。
+         */
+        public get scaleV(): number
+        {
+            return this._scaleV;
+        }
+
+        /**
+         * 缩放UV
+         * @param scaleU 纹理U缩放，默认1。
+         * @param scaleV 纹理V缩放，默认1。
+         */
+        public scaleUV(scaleU: number = 1, scaleV: number = 1)
+        {
+            this.updateGrometry();
+
+            var uvVaData = this.getVAData(GLAttribute.a_uv);
+            var uvs = uvVaData.data;
+            var len: number = uvs.length;
+            var ratioU: number = scaleU / this._scaleU;
+            var ratioV: number = scaleV / this._scaleV;
+
+            for (var i: number = 0; i < len; i += 2)
+            {
+                uvs[i] *= ratioU;
+                uvs[i + 1] *= ratioV;
+            }
+
+            this._scaleU = scaleU;
+            this._scaleV = scaleV;
+
+            uvVaData.invalidate();
+        }
+
+        /**
          * 克隆一个几何体
          */
         public clone()
         {
-            var cls = <any>this.constructor;
-            var geometry = new cls();
+            var geometry = new Geometry();
             geometry.cloneFrom(this);
             return geometry;
         }

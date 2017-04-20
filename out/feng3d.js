@@ -7266,6 +7266,8 @@ var feng3d;
              */
             this._attributes = {};
             this._geometryInvalid = true;
+            this._scaleU = 1;
+            this._scaleV = 1;
             this._single = true;
         }
         /**
@@ -7465,12 +7467,53 @@ var feng3d;
             normalRenderData.invalidate();
             normalRenderData.invalidate();
         };
+        Object.defineProperty(Geometry.prototype, "scaleU", {
+            /**
+             * 纹理U缩放，默认为1。
+             */
+            get: function () {
+                return this._scaleU;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Geometry.prototype, "scaleV", {
+            /**
+             * 纹理V缩放，默认为1。
+             */
+            get: function () {
+                return this._scaleV;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 缩放UV
+         * @param scaleU 纹理U缩放，默认1。
+         * @param scaleV 纹理V缩放，默认1。
+         */
+        Geometry.prototype.scaleUV = function (scaleU, scaleV) {
+            if (scaleU === void 0) { scaleU = 1; }
+            if (scaleV === void 0) { scaleV = 1; }
+            this.updateGrometry();
+            var uvVaData = this.getVAData(feng3d.GLAttribute.a_uv);
+            var uvs = uvVaData.data;
+            var len = uvs.length;
+            var ratioU = scaleU / this._scaleU;
+            var ratioV = scaleV / this._scaleV;
+            for (var i = 0; i < len; i += 2) {
+                uvs[i] *= ratioU;
+                uvs[i + 1] *= ratioV;
+            }
+            this._scaleU = scaleU;
+            this._scaleV = scaleV;
+            uvVaData.invalidate();
+        };
         /**
          * 克隆一个几何体
          */
         Geometry.prototype.clone = function () {
-            var cls = this.constructor;
-            var geometry = new cls();
+            var geometry = new Geometry();
             geometry.cloneFrom(this);
             return geometry;
         };
@@ -8227,13 +8270,13 @@ var feng3d;
         __extends(CubeGeometry, _super);
         /**
          * 创建立方几何体
-         * @param   width           宽度
-         * @param   height          高度
-         * @param   depth           深度
-         * @param   segmentsW       宽度方向分割
-         * @param   segmentsH       高度方向分割
-         * @param   segmentsD       深度方向分割
-         * @param   tile6           是否为6块贴图
+         * @param   width           宽度，默认为100。
+         * @param   height          高度，默认为100。
+         * @param   depth           深度，默认为100。
+         * @param   segmentsW       宽度方向分割，默认为1。
+         * @param   segmentsH       高度方向分割，默认为1。
+         * @param   segmentsD       深度方向分割，默认为1。
+         * @param   tile6           是否为6块贴图，默认true。
          */
         function CubeGeometry(width, height, depth, segmentsW, segmentsH, segmentsD, tile6) {
             if (width === void 0) { width = 100; }
@@ -9541,13 +9584,17 @@ var feng3d;
              */
             this.generateMipmap = true;
             /**
-             * 图片y轴向
+             * 对图像进行Y轴反转。默认值为false
              */
-            this.flipY = 1;
-            this.minFilter = feng3d.GL.LINEAR;
-            this.magFilter = feng3d.GL.NEAREST;
-            this.wrapS = feng3d.GL.CLAMP_TO_EDGE;
-            this.wrapT = feng3d.GL.CLAMP_TO_EDGE;
+            this.flipY = false;
+            /**
+             * 将图像RGB颜色值得每一个分量乘以A。默认为false
+             */
+            this.premulAlpha = false;
+            this.minFilter = feng3d.GL.NEAREST_MIPMAP_LINEAR;
+            this.magFilter = feng3d.GL.LINEAR;
+            this.wrapS = feng3d.GL.REPEAT;
+            this.wrapT = feng3d.GL.REPEAT;
             /**
              * 纹理缓冲
              */
@@ -9585,6 +9632,8 @@ var feng3d;
          * @param gl
          */
         TextureInfo.prototype.active = function (gl) {
+            if (!this.checkRenderData())
+                return;
             if (this._invalid) {
                 this.clear();
                 this._invalid = false;
@@ -9609,6 +9658,9 @@ var feng3d;
             var texture = this._textureMap.get(gl);
             if (!texture) {
                 texture = gl.createTexture(); // Create a texture object
+                //设置图片y轴方向
+                gl.pixelStorei(feng3d.GL.UNPACK_FLIP_Y_WEBGL, this.flipY ? 1 : 0);
+                gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premulAlpha ? 1 : 0);
                 //绑定纹理
                 gl.bindTexture(this.textureType, texture);
                 if (this.textureType == feng3d.GL.TEXTURE_2D) {
@@ -9621,8 +9673,6 @@ var feng3d;
                 if (this.generateMipmap) {
                     gl.generateMipmap(this.textureType);
                 }
-                //设置图片y轴方向
-                // gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
                 // console.warn("flipY:" + this.flipY);
                 this._textureMap.push(gl, texture);
             }

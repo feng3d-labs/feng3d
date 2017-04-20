@@ -29,16 +29,20 @@ module feng3d
         public generateMipmap: boolean = true;
 
         /**
-         * 图片y轴向
+         * 对图像进行Y轴反转。默认值为false
          */
-        public flipY = 1;
+        public flipY = false;
+        /**
+         * 将图像RGB颜色值得每一个分量乘以A。默认为false
+         */
+        public premulAlpha = false;
 
-        public minFilter = GL.LINEAR;
+        public minFilter = GL.NEAREST_MIPMAP_LINEAR;
 
-        public magFilter = GL.NEAREST;
+        public magFilter = GL.LINEAR;
 
-        public wrapS = GL.CLAMP_TO_EDGE;
-        public wrapT = GL.CLAMP_TO_EDGE;
+        public wrapS = GL.REPEAT;
+        public wrapT = GL.REPEAT;
 
         /**
          * 图片数据
@@ -97,6 +101,8 @@ module feng3d
          */
         public active(gl: GL)
         {
+            if (!this.checkRenderData())
+                return;
             if (this._invalid)
             {
                 this.clear();
@@ -126,6 +132,9 @@ module feng3d
             if (!texture)
             {
                 texture = gl.createTexture();   // Create a texture object
+                //设置图片y轴方向
+                gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY ? 1 : 0);
+                gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premulAlpha ? 1 : 0);
                 //绑定纹理
                 gl.bindTexture(this.textureType, texture);
                 if (this.textureType == GL.TEXTURE_2D)
@@ -140,8 +149,6 @@ module feng3d
                 {
                     gl.generateMipmap(this.textureType);
                 }
-                //设置图片y轴方向
-                // gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
                 // console.warn("flipY:" + this.flipY);
                 this._textureMap.push(gl, texture);
             }

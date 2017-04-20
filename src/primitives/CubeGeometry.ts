@@ -9,13 +9,13 @@ module feng3d
     {
         /**
          * 创建立方几何体
-         * @param   width           宽度
-         * @param   height          高度
-         * @param   depth           深度
-         * @param   segmentsW       宽度方向分割
-         * @param   segmentsH       高度方向分割
-         * @param   segmentsD       深度方向分割
-         * @param   tile6           是否为6块贴图
+         * @param   width           宽度，默认为100。
+         * @param   height          高度，默认为100。
+         * @param   depth           深度，默认为100。
+         * @param   segmentsW       宽度方向分割，默认为1。
+         * @param   segmentsH       高度方向分割，默认为1。
+         * @param   segmentsD       深度方向分割，默认为1。
+         * @param   tile6           是否为6块贴图，默认true。
          */
         constructor(public width = 100, public height = 100, public depth = 100, public segmentsW = 1, public segmentsH = 1, public segmentsD = 1, public tile6 = true)
         {
