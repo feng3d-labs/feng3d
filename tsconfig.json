@@ -17,7 +17,6 @@
         "src/utils/Binding.ts",
         "src/utils/gettimer.ts",
         "src/utils/StringUtils.ts",
-        "src/utils/ArrayUtils.ts",
         "src/utils/Map.ts",
         //数据持久化
         "src/serialization/Serialization.ts",

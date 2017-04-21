@@ -869,36 +869,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 数组工具
-     * @author feng 2017-01-03
-     */
-    var ArrayUtils = (function () {
-        function ArrayUtils() {
-        }
-        /**
-         * 删除数据元素
-         * @param source    数组源数据
-         * @param item      被删除数据
-         * @param all       是否删除所有相同数据
-         */
-        ArrayUtils.removeItem = function (source, item, all) {
-            if (all === void 0) { all = false; }
-            var deleteIndexs = [];
-            var index = source.indexOf(item);
-            while (index != -1) {
-                source.splice(index, 1);
-                deleteIndexs.push(index);
-                all || (index = source.indexOf(item));
-            }
-            return { deleteIndexs: deleteIndexs, length: source.length };
-        };
-        return ArrayUtils;
-    }());
-    feng3d.ArrayUtils = ArrayUtils;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 构建Map类代替Dictionary
      * @author feng 2017-01-03
      */
@@ -3810,7 +3780,7 @@ var feng3d;
         Matrix3D.prototype.moveRight = function (distance) {
             var direction = this.right;
             direction.scaleBy(distance);
-            this.position = this.add(direction);
+            this.position = this.position.add(direction);
             return this;
         };
         /**
@@ -3820,7 +3790,7 @@ var feng3d;
         Matrix3D.prototype.moveUp = function (distance) {
             var direction = this.up;
             direction.scaleBy(distance);
-            this.position = this.add(direction);
+            this.position = this.position.add(direction);
             return this;
         };
         /**
@@ -3830,7 +3800,7 @@ var feng3d;
         Matrix3D.prototype.moveForward = function (distance) {
             var direction = this.forward;
             direction.scaleBy(distance);
-            this.position = this.add(direction);
+            this.position = this.position.add(direction);
             return this;
         };
         /**
@@ -3920,9 +3890,9 @@ var feng3d;
             var yAxis = new feng3d.Vector3D();
             var zAxis = new feng3d.Vector3D();
             upAxis = upAxis || feng3d.Vector3D.Y_AXIS;
-            zAxis.x = target.x - this.x;
-            zAxis.y = target.y - this.y;
-            zAxis.z = target.z - this.z;
+            zAxis.x = target.x - this.position.x;
+            zAxis.y = target.y - this.position.y;
+            zAxis.z = target.z - this.position.z;
             zAxis.normalize();
             xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
             xAxis.y = upAxis.z * zAxis.x - upAxis.x * zAxis.z;
@@ -4342,7 +4312,7 @@ var feng3d;
             if (length === void 0) { length = 0; }
             var lengthDir = this.direction.clone();
             lengthDir.scaleBy(length);
-            var newPoint = this.add(lengthDir);
+            var newPoint = this.position.add(lengthDir);
             return newPoint;
         };
         return Line3D;
@@ -4522,7 +4492,7 @@ var feng3d;
             var distance = this.distance(line3D.position);
             var addVec = lineDir.clone();
             addVec.scaleBy(-distance / cosAngle);
-            var crossPos = line3D.add(addVec);
+            var crossPos = line3D.position.add(addVec);
             return crossPos;
         };
         /**
@@ -7602,38 +7572,6 @@ var feng3d;
             material && material.collectRenderDataHolder(renderAtomic);
             _super.prototype.collectRenderDataHolder.call(this, renderAtomic);
         };
-        /**
-         * 处理被添加组件事件
-         */
-        Model.prototype.onBeAddedComponent = function (event) {
-            this.parentComponent.addEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.parentComponent.addEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.parentComponent.scene) {
-                this.parentComponent.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_RENDERER_TO_SCENE, { renderer: this }));
-            }
-        };
-        /**
-         * 处理被移除组件事件
-         */
-        Model.prototype.onBeRemovedComponent = function (event) {
-            this.parentComponent.removeEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.parentComponent.removeEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.parentComponent.scene) {
-                this.parentComponent.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_RENDERER_FROM_SCENE, { renderer: this }));
-            }
-        };
-        /**
-         * 处理添加到场景事件
-         */
-        Model.prototype.onAddedToScene = function (event) {
-            event.data.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_RENDERER_TO_SCENE, { renderer: this }));
-        };
-        /**
-         * 处理从场景移除事件
-         */
-        Model.prototype.onRemovedFromScene = function (event) {
-            event.data.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_RENDERER_FROM_SCENE, { renderer: this }));
-        };
         return Model;
     }(feng3d.Object3DComponent));
     feng3d.Model = Model;
@@ -7681,14 +7619,12 @@ var feng3d;
             this._object3Ds = [];
             this._renderers = [];
             this._lights = [];
+            this._scene = this;
+            this._isRoot = true;
             this._renderContext = new feng3d.RenderContext(this);
             //
             this.addEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
             this.addEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            this.addEventListener(feng3d.Scene3DEvent.ADDED_RENDERER_TO_SCENE, this.onAddedRendererToScene, this);
-            this.addEventListener(feng3d.Scene3DEvent.REMOVED_RENDERER_FROM_SCENE, this.onRemovedRendererFromScene, this);
-            this.addEventListener(feng3d.Scene3DEvent.ADDED_LIGHT_TO_SCENE, this.onAddedLightToScene, this);
-            this.addEventListener(feng3d.Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, this.onRemovedLightFromScene, this);
         }
         Object.defineProperty(Scene3D.prototype, "renderers", {
             /**
@@ -7724,37 +7660,77 @@ var feng3d;
          * 处理添加对象事件
          */
         Scene3D.prototype.onAddedToScene = function (event) {
-            this._object3Ds.push(event.data.object3d);
+            if (event.data instanceof feng3d.GameObject) {
+                var gameObject = event.data;
+                var model = gameObject.getComponentByType(feng3d.Model);
+                model && this.renderers.push(model);
+                var light = gameObject.getComponentByType(feng3d.Light);
+                light && this.lights.push(light);
+                //
+                gameObject.addEventListener(feng3d.ComponentEvent.ADDED_COMPONENT, this.onAddedComponent, this);
+                gameObject.addEventListener(feng3d.ComponentEvent.REMOVED_COMPONENT, this.onRemovedComponent, this);
+                //
+                this._object3Ds.push(gameObject);
+            }
         };
         /**
          * 处理移除对象事件
          */
         Scene3D.prototype.onRemovedFromScene = function (event) {
-            feng3d.ArrayUtils.removeItem(this._object3Ds, event.data.object3d);
+            if (event.data instanceof feng3d.GameObject) {
+                var gameObject = event.data;
+                var model = gameObject.getComponentByType(feng3d.Model);
+                if (model) {
+                    var index = this.renderers.indexOf(model);
+                    if (index != -1) {
+                        this.renderers.splice(index, 1);
+                    }
+                }
+                var light = gameObject.getComponentByType(feng3d.Light);
+                if (light) {
+                    var index = this.lights.indexOf(light);
+                    if (index != -1) {
+                        this.lights.splice(index, 1);
+                    }
+                }
+                //
+                gameObject.removeEventListener(feng3d.ComponentEvent.ADDED_COMPONENT, this.onAddedComponent, this);
+                gameObject.removeEventListener(feng3d.ComponentEvent.REMOVED_COMPONENT, this.onRemovedComponent, this);
+                //
+                var index = this._object3Ds.indexOf(gameObject);
+                feng3d.debuger && feng3d.assert(index != -1);
+                this._object3Ds.splice(index, 1);
+            }
         };
         /**
-         * 处理添加对象事件
+         * 处理添加组件
          */
-        Scene3D.prototype.onAddedRendererToScene = function (event) {
-            this._renderers.push(event.data.renderer);
+        Scene3D.prototype.onAddedComponent = function (event) {
+            var component = event.data.child;
+            if (component instanceof feng3d.Light) {
+                this.lights.push(component);
+            }
+            if (component instanceof feng3d.Model) {
+                this.renderers.push(component);
+            }
         };
         /**
-         * 处理移除对象事件
+         * 处理删除组件
          */
-        Scene3D.prototype.onRemovedRendererFromScene = function (event) {
-            feng3d.ArrayUtils.removeItem(this._renderers, event.data.renderer);
-        };
-        /**
-         * 处理添加灯光事件
-         */
-        Scene3D.prototype.onAddedLightToScene = function (event) {
-            this._lights.push(event.data.light);
-        };
-        /**
-         * 处理移除灯光事件
-         */
-        Scene3D.prototype.onRemovedLightFromScene = function (event) {
-            feng3d.ArrayUtils.removeItem(this._lights, event.data.light);
+        Scene3D.prototype.onRemovedComponent = function (event) {
+            var component = event.data.child;
+            if (component instanceof feng3d.Light) {
+                var index = this.lights.indexOf(component);
+                if (index != -1) {
+                    this.lights.splice(index, 1);
+                }
+            }
+            if (component instanceof feng3d.Model) {
+                var index = this.renderers.indexOf(component);
+                if (index != -1) {
+                    this.renderers.splice(index, 1);
+                }
+            }
         };
         return Scene3D;
     }(feng3d.GameObject));
@@ -7780,29 +7756,13 @@ var feng3d;
             _super.call(this, type, data, bubbles);
         }
         /**
-         * 当Object3D的scene属性被设置是由Object3D与Scene3D分别派发不冒泡事件
+         * 当Object3D的scene属性被设置是由Scene3D派发
          */
         Scene3DEvent.ADDED_TO_SCENE = "addedToScene";
         /**
-         * 当Object3D的scene属性被清空时由Object3D与Scene3D分别派发不冒泡事件
+         * 当Object3D的scene属性被清空时由Scene3D派发
          */
         Scene3DEvent.REMOVED_FROM_SCENE = "removedFromScene";
-        /**
-         * 当拥有Light的Object3D添加到Scene3D或者Light添加到场景中的Object3D时派发不冒泡事件
-         */
-        Scene3DEvent.ADDED_LIGHT_TO_SCENE = "addedLightToScene";
-        /**
-         * 当拥有Light的Object3D从Scene3D中移除或者Light从场景中的Object3D移除时派发不冒泡事件
-         */
-        Scene3DEvent.REMOVED_LIGHT_FROM_SCENE = "removedLightFromScene";
-        /**
-         * 当拥有Renderer的Object3D添加到Scene3D或者Renderer添加到场景中的Object3D时派发不冒泡事件
-         */
-        Scene3DEvent.ADDED_RENDERER_TO_SCENE = "addedRendererToScene";
-        /**
-         * 当拥有Renderer的Object3D从Scene3D中移除或者Renderer从场景中的Object3D移除时派发不冒泡事件
-         */
-        Scene3DEvent.REMOVED_RENDERER_FROM_SCENE = "removedRendererFromScene";
         return Scene3DEvent;
     }(feng3d.Event));
     feng3d.Scene3DEvent = Scene3DEvent;
@@ -8214,7 +8174,7 @@ var feng3d;
              * 坐标
              */
             get: function () {
-                return [this.x, this.y, this.z];
+                return [this.position.x, this.position.y, this.position.z];
             },
             enumerable: true,
             configurable: true
@@ -10902,38 +10862,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        /**
-         * 处理被添加组件事件
-         */
-        Light.prototype.onBeAddedComponent = function (event) {
-            this.parentComponent.addEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.parentComponent.addEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.parentComponent.scene) {
-                this.parentComponent.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_LIGHT_TO_SCENE, { light: this }));
-            }
-        };
-        /**
-         * 处理被移除组件事件
-         */
-        Light.prototype.onBeRemovedComponent = function (event) {
-            this.parentComponent.removeEventListener(feng3d.Scene3DEvent.ADDED_TO_SCENE, this.onAddedToScene, this);
-            this.parentComponent.removeEventListener(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this.onRemovedFromScene, this);
-            if (this.parentComponent.scene) {
-                this.parentComponent.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, { light: this }));
-            }
-        };
-        /**
-         * 处理添加到场景事件
-         */
-        Light.prototype.onAddedToScene = function (event) {
-            event.data.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_LIGHT_TO_SCENE, { light: this }));
-        };
-        /**
-         * 处理从场景移除事件
-         */
-        Light.prototype.onRemovedFromScene = function (event) {
-            event.data.scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_LIGHT_FROM_SCENE, { light: this }));
-        };
         return Light;
     }(feng3d.Object3DComponent));
     feng3d.Light = Light;

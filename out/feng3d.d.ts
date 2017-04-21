@@ -407,24 +407,6 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 数组工具
-     * @author feng 2017-01-03
-     */
-    class ArrayUtils {
-        /**
-         * 删除数据元素
-         * @param source    数组源数据
-         * @param item      被删除数据
-         * @param all       是否删除所有相同数据
-         */
-        static removeItem<T>(source: T[], item: T, all?: boolean): {
-            deleteIndexs: number[];
-            length: number;
-        };
-    }
-}
-declare module feng3d {
-    /**
      * 构建Map类代替Dictionary
      * @author feng 2017-01-03
      */
@@ -2355,7 +2337,7 @@ declare module feng3d {
         /**
          * 获取与直线交点
          */
-        lineCross(line3D: Line3D): any;
+        lineCross(line3D: Line3D): Vector3D;
         /**
          * 输出字符串
          */
@@ -3585,22 +3567,6 @@ declare module feng3d {
          * @param renderAtomic 渲染原子
          */
         collectRenderDataHolder(renderAtomic?: Object3DRenderAtomic): void;
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: ComponentEvent): void;
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: ComponentEvent): void;
-        /**
-         * 处理添加到场景事件
-         */
-        private onAddedToScene(event);
-        /**
-         * 处理从场景移除事件
-         */
-        private onRemovedFromScene(event);
     }
 }
 declare module feng3d {
@@ -3658,21 +3624,13 @@ declare module feng3d {
          */
         private onRemovedFromScene(event);
         /**
-         * 处理添加对象事件
+         * 处理添加组件
          */
-        private onAddedRendererToScene(event);
+        private onAddedComponent(event);
         /**
-         * 处理移除对象事件
+         * 处理删除组件
          */
-        private onRemovedRendererFromScene(event);
-        /**
-         * 处理添加灯光事件
-         */
-        private onAddedLightToScene(event);
-        /**
-         * 处理移除灯光事件
-         */
-        private onRemovedLightFromScene(event);
+        private onRemovedComponent(event);
     }
 }
 declare module feng3d {
@@ -3682,61 +3640,24 @@ declare module feng3d {
      */
     class Scene3DEvent extends Event {
         /**
-         * 当Object3D的scene属性被设置是由Object3D与Scene3D分别派发不冒泡事件
+         * 当Object3D的scene属性被设置是由Scene3D派发
          */
         static ADDED_TO_SCENE: string;
         /**
-         * 当Object3D的scene属性被清空时由Object3D与Scene3D分别派发不冒泡事件
+         * 当Object3D的scene属性被清空时由Scene3D派发
          */
         static REMOVED_FROM_SCENE: string;
         /**
-         * 当拥有Light的Object3D添加到Scene3D或者Light添加到场景中的Object3D时派发不冒泡事件
-         */
-        static ADDED_LIGHT_TO_SCENE: string;
-        /**
-         * 当拥有Light的Object3D从Scene3D中移除或者Light从场景中的Object3D移除时派发不冒泡事件
-         */
-        static REMOVED_LIGHT_FROM_SCENE: string;
-        /**
-         * 当拥有Renderer的Object3D添加到Scene3D或者Renderer添加到场景中的Object3D时派发不冒泡事件
-         */
-        static ADDED_RENDERER_TO_SCENE: string;
-        /**
-         * 当拥有Renderer的Object3D从Scene3D中移除或者Renderer从场景中的Object3D移除时派发不冒泡事件
-         */
-        static REMOVED_RENDERER_FROM_SCENE: string;
-        /**
          * 事件数据
          */
-        data: IScene3DEventData;
+        data: ObjectContainer3D;
         /**
          * 创建一个作为参数传递给事件侦听器的 Event 对象。
          * @param type 事件的类型，可以作为 Event.type 访问。
          * @param data 携带数据
          * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
          */
-        constructor(type: string, data?: IScene3DEventData, bubbles?: boolean);
-    }
-    /**
-     * 3D对象事件数据
-     */
-    interface IScene3DEventData {
-        /**
-         * 3d对象
-         */
-        object3d?: GameObject;
-        /**
-         * 场景
-         */
-        scene?: Scene3D;
-        /**
-         * 灯光
-         */
-        light?: Light;
-        /**
-         * 渲染器
-         */
-        renderer?: Model;
+        constructor(type: string, data?: ObjectContainer3D, bubbles?: boolean);
     }
 }
 declare module feng3d {
@@ -3910,7 +3831,7 @@ declare module feng3d {
         /**
          * 坐标
          */
-        readonly positionData: any[];
+        readonly positionData: number[];
     }
 }
 declare module feng3d {
@@ -4915,22 +4836,6 @@ declare module feng3d {
         private _shadowMap;
         readonly shadowMap: Texture2D;
         constructor();
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: ComponentEvent): void;
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: ComponentEvent): void;
-        /**
-         * 处理添加到场景事件
-         */
-        private onAddedToScene(event);
-        /**
-         * 处理从场景移除事件
-         */
-        private onRemovedFromScene(event);
     }
 }
 declare module feng3d {
