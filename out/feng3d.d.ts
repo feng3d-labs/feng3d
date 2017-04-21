@@ -3372,36 +3372,24 @@ declare module feng3d {
      * 3D对象
      * @author feng 2016-04-26
      */
-    class GameObject extends Object3D {
+    class GameObject extends ObjectContainer3D {
         readonly renderData: Object3DRenderAtomic;
         private _renderData;
-        /**
-         * 是否开启鼠标事件，默认false。
-         */
-        mouseEnabled: boolean;
-        /**
-         * 是否可见，默认true。
-         */
-        visible: boolean;
         /**
          * 组件列表
          */
         protected components_: Object3DComponent[];
-        /**
-         * 子对象列表
-         */
-        private children_;
         private _object3DID;
-        /**
-         * 父对象
-         */
-        private _parent;
-        private _scene;
         /**
          * 是否为公告牌（默认永远朝向摄像机），默认false。
          */
         isBillboard: boolean;
         updateRender(renderContext: RenderContext): void;
+        /**
+         * 收集渲染数据拥有者
+         * @param renderAtomic 渲染原子
+         */
+        collectRenderDataHolder(renderAtomic?: Object3DRenderAtomic): void;
         readonly object3DID: number;
         /**
          * 构建3D对象
@@ -3411,84 +3399,6 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
-        /**
-         * 父对象
-         */
-        readonly parent: GameObject;
-        private _setParent(value);
-        /**
-         * 场景
-         */
-        readonly scene: Scene3D;
-        private _setScene(value);
-        /**
-         * 真实是否支持鼠标事件
-         */
-        readonly realMouseEnable: any;
-        /**
-         * 真实是否可见
-         */
-        readonly realVisible: any;
-        /**
-         * 添加子对象
-         * @param child		子对象
-         * @return			新增的子对象
-         */
-        addChild(child: GameObject): void;
-        /**
-         * 添加子对象到指定位置
-         * @param   child   子对象
-         * @param   index   添加到的位置
-         */
-        addChildAt(child: GameObject, index: number): void;
-        /**
-         * 设置子对象在指定位置
-         * @param child 子对象
-         * @param index 索引
-         */
-        setChildAt(child: GameObject, index: number): void;
-        /**
-         * 移除子对象
-         * @param   child   子对象
-         * @return			被移除子对象索引
-         */
-        removeChild(child: GameObject): number;
-        /**
-         * 获取子对象索引
-         * @param   child   子对象
-         * @return  子对象位置
-         */
-        getChildIndex(child: GameObject): number;
-        /**
-         * 移出指定索引的子对象
-         * @param index         子对象索引
-         * @return				被移除对象
-         */
-        removeChildAt(index: number): GameObject;
-        /**
-         * 获取子对象
-         * @param index         子对象索引
-         * @return              指定索引的子对象
-         */
-        getChildAt(index: number): GameObject;
-        /**
-         * 获取子对象数量
-         */
-        readonly numChildren: number;
-        /**
-         * 处理添加子对象事件
-         */
-        private onAdded(event);
-        /**
-         * 处理删除子对象事件
-         */
-        private onRemoved(event);
-        /**
-         * 添加组件到指定位置
-         * @param component		被添加的组件
-         * @param index			插入的位置
-         */
-        addComponentAt(component: Object3DComponent, index: number): void;
         static getObject3D(id: number): GameObject;
     }
 }

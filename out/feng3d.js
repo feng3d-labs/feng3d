@@ -7225,25 +7225,9 @@ var feng3d;
             _super.call(this);
             this._renderData = new feng3d.Object3DRenderAtomic();
             /**
-             * 是否开启鼠标事件，默认false。
-             */
-            this.mouseEnabled = false;
-            /**
-             * 是否可见，默认true。
-             */
-            this.visible = true;
-            /**
              * 组件列表
              */
             this.components_ = [];
-            /**
-             * 子对象列表
-             */
-            this.children_ = [];
-            /**
-             * 父对象
-             */
-            this._parent = null;
             /**
              * 是否为公告牌（默认永远朝向摄像机），默认false。
              */
@@ -7251,9 +7235,6 @@ var feng3d;
             this._object3DID = object3DAutoID++;
             object3DMap[this._object3DID] = this;
             this.name = name;
-            //
-            this.addEventListener(feng3d.Object3DEvent.ADDED, this.onAdded, this);
-            this.addEventListener(feng3d.Object3DEvent.REMOVED, this.onRemoved, this);
         }
         Object.defineProperty(GameObject.prototype, "renderData", {
             get: function () { return this._renderData; },
@@ -7269,7 +7250,20 @@ var feng3d;
                 this.collectRenderDataHolder(this.renderData);
                 this.renderData.renderHolderInvalid = false;
             }
+            this.updateRenderData(renderContext, this.renderData);
             this.renderData.update(renderContext);
+        };
+        /**
+         * 收集渲染数据拥有者
+         * @param renderAtomic 渲染原子
+         */
+        GameObject.prototype.collectRenderDataHolder = function (renderAtomic) {
+            if (renderAtomic === void 0) { renderAtomic = null; }
+            this.components_.forEach(function (element) {
+                if (element instanceof feng3d.RenderDataHolder) {
+                    element.collectRenderDataHolder(renderAtomic);
+                }
+            });
         };
         Object.defineProperty(GameObject.prototype, "object3DID", {
             get: function () {
@@ -7284,192 +7278,13 @@ var feng3d;
         GameObject.prototype.updateRenderData = function (renderContext, renderData) {
             //
             renderData.uniforms[feng3d.RenderDataID.u_objectID] = this._object3DID;
-            // renderData.uniforms[RenderDataID.u_modelMatrix] = this.globalMatrix3D;
-            _super.prototype.updateRenderData.call(this, renderContext, renderData);
-        };
-        Object.defineProperty(GameObject.prototype, "parent", {
-            /**
-             * 父对象
-             */
-            get: function () {
-                return this._parent;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        GameObject.prototype._setParent = function (value) {
-            if (this._parent == value)
-                return;
-            this._parent = value;
-            if (this._parent == null)
-                this._setScene(null);
-            else if (feng3d.ClassUtils.is(this.parent, feng3d.Scene3D))
-                this._setScene(this.parent);
-            else
-                this._setScene(this.parent.scene);
-        };
-        Object.defineProperty(GameObject.prototype, "scene", {
-            /**
-             * 场景
-             */
-            get: function () {
-                return this._scene;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        GameObject.prototype._setScene = function (value) {
-            var _this = this;
-            if (this._scene == value)
-                return;
-            if (this._scene) {
-                this.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
-                this._scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, { object3d: this, scene: this._scene }));
-            }
-            this._scene = value;
-            if (this._scene) {
-                this.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
-                this._scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_TO_SCENE, { object3d: this, scene: this._scene }));
-            }
-            this.children_.forEach(function (child) {
-                child._setScene(_this._scene);
-            });
-        };
-        Object.defineProperty(GameObject.prototype, "realMouseEnable", {
-            /**
-             * 真实是否支持鼠标事件
-             */
-            get: function () {
-                return this.mouseEnabled && (this.parent ? this.parent.realMouseEnable : true);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(GameObject.prototype, "realVisible", {
-            /**
-             * 真实是否可见
-             */
-            get: function () {
-                return this.visible && (this.parent ? this.parent.realVisible : true);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 添加子对象
-         * @param child		子对象
-         * @return			新增的子对象
-         */
-        GameObject.prototype.addChild = function (child) {
-            this.addChildAt(child, this.children_.length);
-        };
-        /**
-         * 添加子对象到指定位置
-         * @param   child   子对象
-         * @param   index   添加到的位置
-         */
-        GameObject.prototype.addChildAt = function (child, index) {
-            feng3d.debuger && console.assert(index >= 0 && index <= this.children_.length);
-            var childIndex = this.children_.indexOf(child);
-            if (childIndex != -1) {
-                this.children_.splice(childIndex, 1);
-                this.children_.splice(index, 0, child);
-            }
-            else {
-                this.children_.splice(index, 0, child);
-                child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.ADDED, { parent: this, child: child }, true));
-            }
-        };
-        /**
-         * 设置子对象在指定位置
-         * @param child 子对象
-         * @param index 索引
-         */
-        GameObject.prototype.setChildAt = function (child, index) {
-            if (-1 < index && index < this.children_.length) {
-                this.removeChildAt(index);
-            }
-            this.addChildAt(child, index);
-        };
-        /**
-         * 移除子对象
-         * @param   child   子对象
-         * @return			被移除子对象索引
-         */
-        GameObject.prototype.removeChild = function (child) {
-            var childIndex = this.children_.indexOf(child);
-            this.removeChildAt(childIndex);
-            return childIndex;
-        };
-        /**
-         * 获取子对象索引
-         * @param   child   子对象
-         * @return  子对象位置
-         */
-        GameObject.prototype.getChildIndex = function (child) {
-            return this.children_.indexOf(child);
-        };
-        /**
-         * 移出指定索引的子对象
-         * @param index         子对象索引
-         * @return				被移除对象
-         */
-        GameObject.prototype.removeChildAt = function (index) {
-            feng3d.debuger && console.assert(-1 < index && index < this.children_.length);
-            var child = this.children_[index];
-            this.children_.splice(index, 1);
-            child.dispatchEvent(new feng3d.Object3DEvent(feng3d.Object3DEvent.REMOVED, { parent: this, child: child }, true));
-            return child;
-        };
-        /**
-         * 获取子对象
-         * @param index         子对象索引
-         * @return              指定索引的子对象
-         */
-        GameObject.prototype.getChildAt = function (index) {
-            feng3d.debuger && console.assert(-1 < index && index < this.children_.length);
-            return this.children_[index];
-        };
-        Object.defineProperty(GameObject.prototype, "numChildren", {
-            /**
-             * 获取子对象数量
-             */
-            get: function () {
-                return this.children_.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 处理添加子对象事件
-         */
-        GameObject.prototype.onAdded = function (event) {
-            if (event.data.child == this) {
-                this._setParent(event.data.parent);
-            }
-        };
-        /**
-         * 处理删除子对象事件
-         */
-        GameObject.prototype.onRemoved = function (event) {
-            if (event.data.child == this) {
-                this._setParent(null);
-            }
-        };
-        /**
-         * 添加组件到指定位置
-         * @param component		被添加的组件
-         * @param index			插入的位置
-         */
-        GameObject.prototype.addComponentAt = function (component, index) {
-            feng3d.debuger && console.assert(component instanceof feng3d.Object3DComponent, "只有Object3DComponent新增为Object3D组件！");
-            _super.prototype.addComponentAt.call(this, component, index);
+            renderData.uniforms[feng3d.RenderDataID.u_modelMatrix] = this.sceneTransform;
         };
         GameObject.getObject3D = function (id) {
             return object3DMap[id];
         };
         return GameObject;
-    }(feng3d.Object3D));
+    }(feng3d.ObjectContainer3D));
     feng3d.GameObject = GameObject;
     var object3DAutoID = 1; //索引从1开始，因为索引拾取中默认值为0
     var object3DMap = {};
