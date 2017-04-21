@@ -6,14 +6,14 @@ module feng3d
      */
     export class MD5Loader extends Loader
     {
-        private _completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void;
+        private _completed: (object3D: GameObject, skeletonAnimator: SkeletonAnimator) => void;
         private _animCompleted: (skeletonClipNode: SkeletonClipNode) => void;
 
         /**
          * 加载资源
          * @param url   路径
          */
-        public load(url: string, completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void = null)
+        public load(url: string, completed: (object3D: GameObject, skeletonAnimator: SkeletonAnimator) => void = null)
         {
             this._url = url
             this._completed = completed;
@@ -46,7 +46,7 @@ module feng3d
         private _skeleton: Skeleton;
         private createMD5Mesh(md5MeshData: MD5MeshData)
         {
-            var object3D = new Object3D();
+            var object3D = new GameObject();
 
             //顶点最大关节关联数
             var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
@@ -59,7 +59,7 @@ module feng3d
             {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
 
-                var skeletonObject3D = new Object3D();
+                var skeletonObject3D = new GameObject();
                 var model = new Model();
                 model.geometry = geometry;
                 model.material = new SkeletonAnimatorMaterial();
@@ -257,7 +257,7 @@ module feng3d
 
         private createAnimator(md5AnimData: MD5AnimData)
         {
-            var object = new Object3D();
+            var object = new GameObject();
 
             var _clip = new SkeletonClipNode();
             for (var i: number = 0; i < md5AnimData.numFrames; ++i)

@@ -6,12 +6,12 @@ module feng3d
         /**
          * 控制对象
          */
-        protected _target: Transform;
+        protected _target: Object3D;
 
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(target: Transform)
+        constructor(target: Object3D)
         {
             this.target = target;
         }
@@ -24,12 +24,12 @@ module feng3d
             throw new Error("Abstract method");
         }
 
-        public get target(): Transform
+        public get target(): Object3D
         {
             return this._target;
         }
 
-        public set target(val: Transform)
+        public set target(val: Object3D)
         {
             this._target = val;
         }

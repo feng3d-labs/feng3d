@@ -8,13 +8,13 @@ module feng3d
     {
         private _objData: OBJ_OBJData;
         private _mtlData: Mtl_Mtl;
-        private _completed: (object3D: Object3D) => void;
+        private _completed: (object3D: GameObject) => void;
 
         /**
          * 加载资源
          * @param url   路径
          */
-        public load(url: string, completed: (object3D: Object3D) => void = null)
+        public load(url: string, completed: (object3D: GameObject) => void = null)
         {
             this._url = url
             this._completed = completed;
@@ -45,7 +45,7 @@ module feng3d
 
         private createObj()
         {
-            var object = new Object3D();
+            var object = new GameObject();
             var objData = this._objData;
             var objs = objData.objs;
             for (var i = 0; i < objs.length; i++)
@@ -62,7 +62,7 @@ module feng3d
 
         private createSubObj(obj: OBJ_OBJ)
         {
-            var object3D = new Object3D(obj.name);
+            var object3D = new GameObject(obj.name);
             var vertex = new Float32Array(obj.vertex);
 
             var subObjs = obj.subObjs;
@@ -77,7 +77,7 @@ module feng3d
 
         private createMaterialObj(vertex: Float32Array, subObj: OBJ_SubOBJ)
         {
-            var object3D = new Object3D();
+            var object3D = new GameObject();
             var model = object3D.getOrCreateComponentByClass(Model);
 
             var geometry = model.geometry = new Geometry();

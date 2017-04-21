@@ -4,7 +4,7 @@ module feng3d
      * 天空盒3D对象
      * @author feng 2017-02-06
      */
-    export class ParticleObject3D extends Object3D
+    export class ParticleObject3D extends GameObject
     {
         /**
          * 构建3D对象

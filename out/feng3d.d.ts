@@ -3153,7 +3153,7 @@ declare module feng3d {
      */
     class MouseRenderer extends Renderer {
         private _shaderName;
-        selectedObject3D: Object3D;
+        selectedObject3D: GameObject;
         constructor();
         /**
          * 渲染
@@ -3209,325 +3209,162 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    /**
-     * 位移时抛出
-     */
-    /**
-     * 旋转时抛出
-     */
-    /**
-     * 缩放时抛出
-     */
-    /**
-     * 变换状态抛出
-     */
-    /**
-     * 变换已更新
-     */
-    /**
-     * 3D元素<br/><br/>
-     *
-     * 主要功能:
-     * <ul>
-     *     <li>管理3D元素的位置、旋转、缩放状态</li>
-     * </ul>
-     * @author feng 2014-3-31
-     */
-    /**
-     * 3D元素状态变换<br/><br/>
-     *
-     * 主要功能:
-     * <ul>
-     *     <li>处理3d元素的平移、旋转、缩放等操作</li>
-     * </ul>
-     *
-     * @author feng 2014-3-31
-     */
-    class Transform extends RenderDataHolder {
+    class Object3D extends EventDispatcher {
+        _controller: ControllerBase;
         private _smallestNumber;
-        protected _transformDirty: boolean;
+        private _transformDirty;
         private _positionDirty;
         private _rotationDirty;
         private _scaleDirty;
         private _positionChanged;
         private _rotationChanged;
         private _scaleChanged;
-        private _transformChanged;
+        private _rotationX;
+        private _rotationY;
+        private _rotationZ;
         private _eulers;
+        private _flipY;
         private _listenToPositionChanged;
         private _listenToRotationChanged;
         private _listenToScaleChanged;
-        private _listenToTransformChanged;
+        protected _zOffset: number;
+        private invalidatePivot();
+        private invalidatePosition();
+        private notifyPositionChanged();
+        addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
+        removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
+        private invalidateRotation();
+        private notifyRotationChanged();
+        private invalidateScale();
+        private notifyScaleChanged();
         protected _transform: Matrix3D;
-        protected _x: number;
-        protected _y: number;
-        protected _z: number;
-        protected _rotationX: number;
-        protected _rotationY: number;
-        protected _rotationZ: number;
         protected _scaleX: number;
         protected _scaleY: number;
         protected _scaleZ: number;
+        protected _x: number;
+        protected _y: number;
+        protected _z: number;
         protected _pivotPoint: Vector3D;
         protected _pivotZero: boolean;
         protected _pos: Vector3D;
         protected _rot: Vector3D;
         protected _sca: Vector3D;
-        protected _transformComponents: Vector3D[];
-        /**
-         * 创建3D元素状态变换实例
-         */
-        constructor();
-        /**
-         * 相对父容器的X坐标
-         */
+        protected _transformComponents: Array<Vector3D>;
+        extra: any;
         x: number;
-        /**
-         * 相对父容器的Y坐标
-         */
         y: number;
-        /**
-         * 相对父容器的Z坐标
-         */
         z: number;
-        /**
-         * 绕X轴旋转角度
-         */
         rotationX: number;
-        /**
-         * 绕Y轴旋转角度
-         */
         rotationY: number;
-        /**
-         * 绕Z轴旋转角度
-         */
         rotationZ: number;
-        /**
-         * X轴旋方向缩放
-         */
         scaleX: number;
-        /**
-         * Y轴旋方向缩放
-         */
         scaleY: number;
-        /**
-         * Z轴旋方向缩放
-         */
         scaleZ: number;
-        /**
-         * 欧拉角
-         * <ul>
-         *     <li>使用Vector3D对象表示 相对x、y、z轴上的旋转角度</li>
-         * </ul>
-         */
         eulers: Vector3D;
-        /**
-         * 3d元素变换矩阵
-         */
         transform: Matrix3D;
-        /**
-         * 中心点坐标（本地对象旋转点）
-         */
         pivotPoint: Vector3D;
-        /**
-         * 获取在父容器中的坐标
-         */
         position: Vector3D;
-        /**
-         * 使位置数据无效
-         */
-        protected invalidatePosition(): void;
-        /**
-         * 发出平移事件
-         */
-        private notifyPositionChanged();
-        /**
-         * 使变换矩阵失效
-         */
-        invalidateTransform(): void;
-        /**
-         * 发出状态改变消息
-         */
-        private notifyTransformChanged();
-        /**
-         * 更新变换矩阵
-         */
-        protected updateTransform(): void;
-        /**
-         * 使中心点无效
-         */
-        protected invalidatePivot(): void;
-        /**
-         * 监听事件
-         * @param type 事件类型
-         * @param listener 回调函数
-         */
-        addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
-        /**
-         * 移除事件
-         * @param type 事件类型
-         * @param listener 回调函数
-         */
-        removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
-        /**
-         * 使旋转角度无效
-         */
-        protected invalidateRotation(): void;
-        /**
-         * 抛出旋转事件
-         */
-        private notifyRotationChanged();
-        /**
-         * 使缩放无效
-         */
-        protected invalidateScale(): void;
-        /**
-         * 抛出缩放事件
-         */
-        private notifyScaleChanged();
-        /**
-         * 等比缩放
-         * @param value 缩放比例
-         */
+        getPosition(v?: Vector3D): Vector3D;
+        readonly forwardVector: Vector3D;
+        readonly rightVector: Vector3D;
+        readonly upVector: Vector3D;
+        readonly backVector: Vector3D;
+        readonly leftVector: Vector3D;
+        readonly downVector: Vector3D;
+        constructor();
         scale(value: number): void;
-        /**
-         * 向前（Z轴方向）位移
-         * @param distance 位移距离
-         */
         moveForward(distance: number): void;
-        /**
-         * 向后（Z轴负方向）位移
-         * @param distance 位移距离
-         */
         moveBackward(distance: number): void;
-        /**
-         * 向左（X轴负方向）位移
-         * @param distance 位移距离
-         */
         moveLeft(distance: number): void;
-        /**
-         * 向右（X轴方向）位移
-         * @param distance 位移距离
-         */
         moveRight(distance: number): void;
-        /**
-         * 向上（Y轴方向）位移
-         * @param distance 位移距离
-         */
         moveUp(distance: number): void;
-        /**
-         * 向下（Y轴负方向）位移
-         * @param distance 位移距离
-         */
         moveDown(distance: number): void;
-        /**
-         * 直接移到空间的某个位置
-         * @param newX x坐标
-         * @param newY y坐标
-         * @param newZ z坐标
-         */
-        moveTo(newX: number, newY: number, newZ: number): void;
-        /**
-         * 移动中心点（旋转点）
-         * @param dx X轴方向位移
-         * @param dy Y轴方向位移
-         * @param dz Z轴方向位移
-         */
+        moveTo(dx: number, dy: number, dz: number): void;
         movePivot(dx: number, dy: number, dz: number): void;
-        /**
-         * 在自定义轴上位移
-         * @param axis 自定义轴
-         * @param distance 位移距离
-         */
         translate(axis: Vector3D, distance: number): void;
-        /**
-         * 在自定义轴上位移<br/>
-         *
-         * 注意：
-         * <ul>
-         * 		<li>没太理解 与 translate的区别</li>
-         * </ul>
-         * @param axis 自定义轴
-         * @param distance 位移距离
-         */
         translateLocal(axis: Vector3D, distance: number): void;
-        /**
-         * 绕X轴旋转
-         * @param angle 旋转角度
-         */
         pitch(angle: number): void;
-        /**
-         * 绕Y轴旋转
-         * @param angle 旋转角度
-         */
         yaw(angle: number): void;
-        /**
-         * 绕Z轴旋转
-         * @param angle 旋转角度
-         */
         roll(angle: number): void;
-        /**
-         * 直接修改欧拉角
-         * @param ax X轴旋转角度
-         * @param ay Y轴旋转角度
-         * @param az Z轴旋转角度
-         */
+        clone(): Object3D;
         rotateTo(ax: number, ay: number, az: number): void;
-        /**
-         * 绕所给轴旋转
-         * @param axis 任意轴
-         * @param angle 旋转角度
-         */
         rotate(axis: Vector3D, angle: number): void;
-        /**
-         * 观察目标
-         * <ul>
-         * 		<li>旋转至朝向给出的点</li>
-         * </ul>
-         * @param target 	目标点
-         * @param upAxis 	旋转后向上方向（并非绝对向上），默认为null，当值为null时会以Y轴为向上方向计算
-         */
+        static tempAxeX: Vector3D;
+        static tempAxeY: Vector3D;
+        static tempAxeZ: Vector3D;
         lookAt(target: Vector3D, upAxis?: Vector3D): void;
+        dispose(): void;
+        disposeAsset(): void;
+        invalidateTransform(): void;
+        protected updateTransform(): void;
+        zOffset: number;
     }
-    /**
-     * 3D对象事件(3D状态发生改变、位置、旋转、缩放)
-     * @author feng 2014-3-31
-     */
-    class Transform3DEvent extends Event {
-        /**
-         * 平移
-         */
-        static POSITION_CHANGED: string;
-        /**
-         * 旋转
-         */
-        static ROTATION_CHANGED: string;
-        /**
-         * 缩放
-         */
-        static SCALE_CHANGED: string;
-        /**
-         * 变换
-         */
-        static TRANSFORM_CHANGED: string;
-        /**
-         * 变换已更新
-         */
-        static TRANSFORM_UPDATED: string;
-        /**
-         * 场景变换矩阵发生变化
-         */
-        static SCENETRANSFORM_CHANGED: string;
-        /**
-         * 创建3D对象事件
-         * @param type			事件类型
-         * @param element3D		发出事件的3D元素
-         */
-        constructor(type: string, transform3D: Transform, bubbles?: boolean);
-        /**
-         * 发出事件的3D元素
-         */
-        readonly transform3D: Transform;
+}
+declare module feng3d {
+    class ObjectContainer3D extends Object3D {
+        _ancestorsAllowMouseEnabled: boolean;
+        _isRoot: boolean;
+        protected _scene: Scene3D;
+        protected _parent: ObjectContainer3D;
+        protected _sceneTransform: Matrix3D;
+        protected _sceneTransformDirty: boolean;
+        protected _mouseEnabled: boolean;
+        private _sceneTransformChanged;
+        private _scenechanged;
+        private _children;
+        private _mouseChildren;
+        private _oldScene;
+        private _inverseSceneTransform;
+        private _inverseSceneTransformDirty;
+        private _scenePosition;
+        private _scenePositionDirty;
+        private _explicitVisibility;
+        private _implicitVisibility;
+        private _listenToSceneTransformChanged;
+        private _listenToSceneChanged;
+        protected _ignoreTransform: boolean;
+        ignoreTransform: boolean;
+        readonly isVisible: boolean;
+        setParent(value: ObjectContainer3D): void;
+        private notifySceneTransformChange();
+        private notifySceneChange();
+        protected updateMouseChildren(): void;
+        mouseEnabled: boolean;
+        invalidateTransform(): void;
+        protected invalidateSceneTransform(): void;
+        protected updateSceneTransform(): void;
+        mouseChildren: boolean;
+        visible: boolean;
+        readonly scenePosition: Vector3D;
+        readonly minX: number;
+        readonly minY: number;
+        readonly minZ: number;
+        readonly maxX: number;
+        readonly maxY: number;
+        readonly maxZ: number;
+        readonly sceneTransform: Matrix3D;
+        scene: Scene3D;
+        readonly inverseSceneTransform: Matrix3D;
+        readonly parent: ObjectContainer3D;
+        constructor();
+        contains(child: ObjectContainer3D): boolean;
+        addChild(child: ObjectContainer3D): ObjectContainer3D;
+        addChildren(...childarray: any[]): void;
+        removeChild(child: ObjectContainer3D): void;
+        removeChildAt(index: number): void;
+        private removeChildInternal(childIndex, child);
+        getChildAt(index: number): ObjectContainer3D;
+        readonly numChildren: number;
+        lookAt(target: Vector3D, upAxis?: Vector3D): void;
+        translateLocal(axis: Vector3D, distance: number): void;
+        dispose(): void;
+        disposeWithChildren(): void;
+        clone(): ObjectContainer3D;
+        rotate(axis: Vector3D, angle: number): void;
+        dispatchEvent(event: Event): boolean;
+        updateImplicitVisibility(): void;
+        addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
+        removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
     }
 }
 declare module feng3d {
@@ -3535,7 +3372,7 @@ declare module feng3d {
      * 3D对象
      * @author feng 2016-04-26
      */
-    class Object3D extends Transform {
+    class GameObject extends Object3D {
         readonly renderData: Object3DRenderAtomic;
         private _renderData;
         /**
@@ -3577,7 +3414,7 @@ declare module feng3d {
         /**
          * 父对象
          */
-        readonly parent: Object3D;
+        readonly parent: GameObject;
         private _setParent(value);
         /**
          * 场景
@@ -3597,43 +3434,43 @@ declare module feng3d {
          * @param child		子对象
          * @return			新增的子对象
          */
-        addChild(child: Object3D): void;
+        addChild(child: GameObject): void;
         /**
          * 添加子对象到指定位置
          * @param   child   子对象
          * @param   index   添加到的位置
          */
-        addChildAt(child: Object3D, index: number): void;
+        addChildAt(child: GameObject, index: number): void;
         /**
          * 设置子对象在指定位置
          * @param child 子对象
          * @param index 索引
          */
-        setChildAt(child: Object3D, index: number): void;
+        setChildAt(child: GameObject, index: number): void;
         /**
          * 移除子对象
          * @param   child   子对象
          * @return			被移除子对象索引
          */
-        removeChild(child: Object3D): number;
+        removeChild(child: GameObject): number;
         /**
          * 获取子对象索引
          * @param   child   子对象
          * @return  子对象位置
          */
-        getChildIndex(child: Object3D): number;
+        getChildIndex(child: GameObject): number;
         /**
          * 移出指定索引的子对象
          * @param index         子对象索引
          * @return				被移除对象
          */
-        removeChildAt(index: number): Object3D;
+        removeChildAt(index: number): GameObject;
         /**
          * 获取子对象
          * @param index         子对象索引
          * @return              指定索引的子对象
          */
-        getChildAt(index: number): Object3D;
+        getChildAt(index: number): GameObject;
         /**
          * 获取子对象数量
          */
@@ -3652,7 +3489,7 @@ declare module feng3d {
          * @param index			插入的位置
          */
         addComponentAt(component: Object3DComponent, index: number): void;
-        static getObject3D(id: number): Object3D;
+        static getObject3D(id: number): GameObject;
     }
 }
 declare module feng3d {
@@ -3756,7 +3593,7 @@ declare module feng3d {
         /**
          * 父组件,所属3d对象
          */
-        parentComponent: Object3D;
+        parentComponent: GameObject;
         /**
          * 构建3D对象组件
          */
@@ -3773,6 +3610,12 @@ declare module feng3d {
      * 3D对象事件
      */
     class Object3DEvent extends Event {
+        static VISIBLITY_UPDATED: string;
+        static SCENETRANSFORM_CHANGED: string;
+        static SCENE_CHANGED: string;
+        static POSITION_CHANGED: string;
+        static ROTATION_CHANGED: string;
+        static SCALE_CHANGED: string;
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
@@ -3785,13 +3628,14 @@ declare module feng3d {
          * 事件数据
          */
         data: IObject3DEventData;
+        object: Object3D;
         /**
          * 创建一个作为参数传递给事件侦听器的 Event 对象。
          * @param type 事件的类型，可以作为 Event.type 访问。
          * @param data 携带数据
          * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
          */
-        constructor(type: string, data?: IObject3DEventData, bubbles?: boolean);
+        constructor(type: string, data?: IObject3DEventData | Object3D, bubbles?: boolean);
     }
     /**
      * 3D对象事件数据
@@ -3800,11 +3644,11 @@ declare module feng3d {
         /**
          * 父容器
          */
-        parent?: Object3D;
+        parent?: GameObject;
         /**
          * 子对象
          */
-        child?: Object3D;
+        child?: GameObject;
     }
 }
 declare module feng3d {
@@ -3865,7 +3709,7 @@ declare module feng3d {
      * 3D场景
      * @author feng 2016-05-01
      */
-    class Scene3D extends Object3D {
+    class Scene3D extends GameObject {
         /**
          * 背景颜色
          */
@@ -3969,7 +3813,7 @@ declare module feng3d {
         /**
          * 3d对象
          */
-        object3d?: Object3D;
+        object3d?: GameObject;
         /**
          * 场景
          */
@@ -5219,29 +5063,29 @@ declare module feng3d {
         /**
          * 控制对象
          */
-        protected _target: Transform;
+        protected _target: Object3D;
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(target: Transform);
+        constructor(target: Object3D);
         /**
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        target: Transform;
+        target: Object3D;
     }
 }
 declare module feng3d {
     class LookAtController extends ControllerBase {
         protected _lookAtPosition: Vector3D;
-        protected _lookAtObject: Transform;
+        protected _lookAtObject: Object3D;
         protected _origin: Vector3D;
         protected _upAxis: Vector3D;
         private _pos;
-        constructor(target?: Transform, lookAtObject?: Transform);
+        constructor(target?: Object3D, lookAtObject?: Object3D);
         upAxis: Vector3D;
         lookAtPosition: Vector3D;
-        lookAtObject: Transform;
+        lookAtObject: Object3D;
         update(interpolate?: boolean): void;
     }
 }
@@ -5271,8 +5115,8 @@ declare module feng3d {
          * 上次鼠标位置
          */
         private preMousePoint;
-        constructor(transform?: Transform);
-        target: Transform;
+        constructor(transform?: Object3D);
+        target: Object3D;
         /**
          * 初始化
          */
@@ -6416,7 +6260,7 @@ declare module feng3d {
          * 加载资源
          * @param url   路径
          */
-        load(url: string, completed?: (object3D: Object3D) => void): void;
+        load(url: string, completed?: (object3D: GameObject) => void): void;
         private createObj();
         private createSubObj(obj);
         private createMaterialObj(vertex, subObj);
@@ -6434,7 +6278,7 @@ declare module feng3d {
          * 加载资源
          * @param url   路径
          */
-        load(url: string, completed?: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void): void;
+        load(url: string, completed?: (object3D: GameObject, skeletonAnimator: SkeletonAnimator) => void): void;
         loadAnim(url: string, completed?: (object3D: SkeletonClipNode) => void): void;
         private _skeleton;
         private createMD5Mesh(md5MeshData);
@@ -6466,7 +6310,7 @@ declare module feng3d {
      * 坐标系，三叉戟
      * @author feng 2017-02-06
      */
-    class Trident extends Object3D {
+    class Trident extends GameObject {
         private _xLine;
         private _yLine;
         private _zLine;
@@ -6482,7 +6326,7 @@ declare module feng3d {
      * 摄像机3D对象
      * @author feng 2017-02-06
      */
-    class CameraObject3D extends Object3D {
+    class CameraObject3D extends GameObject {
         camera: Camera;
         constructor(name?: string);
     }
@@ -6492,7 +6336,7 @@ declare module feng3d {
      * 平面3D对象
      * @author feng 2017-02-06
      */
-    class PlaneObject3D extends Object3D {
+    class PlaneObject3D extends GameObject {
         /**
          * 构建3D对象
          */
@@ -6504,7 +6348,7 @@ declare module feng3d {
      * 立方体3D对象
      * @author feng 2017-02-06
      */
-    class CubeObject3D extends Object3D {
+    class CubeObject3D extends GameObject {
         /**
          * 构建3D对象
          */
@@ -6516,7 +6360,7 @@ declare module feng3d {
      * 圆环3D对象
      * @author feng 2017-02-06
      */
-    class TorusObect3D extends Object3D {
+    class TorusObect3D extends GameObject {
         torusGeometry: TorusGeometry;
         /**
          * 构建3D对象
@@ -6529,7 +6373,7 @@ declare module feng3d {
      * 球体3D对象
      * @author feng 2017-02-06
      */
-    class SphereObject3D extends Object3D {
+    class SphereObject3D extends GameObject {
         /**
          * 构建3D对象
          */
@@ -6541,7 +6385,7 @@ declare module feng3d {
      * 胶囊体3D对象
      * @author feng 2017-02-06
      */
-    class CapsuleObject3D extends Object3D {
+    class CapsuleObject3D extends GameObject {
         /**
          * 构建3D对象
          */
@@ -6553,7 +6397,7 @@ declare module feng3d {
      * 圆柱体3D对象
      * @author feng 2017-02-06
      */
-    class CylinderObject3D extends Object3D {
+    class CylinderObject3D extends GameObject {
         /**
          * 构建3D对象
          */
@@ -6565,7 +6409,7 @@ declare module feng3d {
      * 圆锥体3D对象
      * @author feng 2017-02-06
      */
-    class ConeObject3D extends Object3D {
+    class ConeObject3D extends GameObject {
         /**
          * 构建3D对象
          */
@@ -6577,7 +6421,7 @@ declare module feng3d {
      * 线条3D对象
      * @author feng 2017-02-06
      */
-    class SegmentObject3D extends Object3D {
+    class SegmentObject3D extends GameObject {
         constructor(name?: string);
     }
 }
@@ -6586,7 +6430,7 @@ declare module feng3d {
      * 天空盒3D对象
      * @author feng 2017-02-06
      */
-    class ParticleObject3D extends Object3D {
+    class ParticleObject3D extends GameObject {
         /**
          * 构建3D对象
          */
@@ -6598,7 +6442,7 @@ declare module feng3d {
      * 点光源3D对象
      * @author feng 2017-03-10
      */
-    class PointLightObject3D extends Object3D {
+    class PointLightObject3D extends GameObject {
         constructor(name?: string);
     }
 }

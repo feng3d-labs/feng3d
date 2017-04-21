@@ -80,8 +80,9 @@
         "src/render/postEffect/PostEffect.ts",
         "src/render/postEffect/FXAAEffect.ts",
         //
-        "src/core/Transform.ts",
         "src/core/Object3D.ts",
+        "src/core/ObjectContainer3D.ts",
+        "src/core/GameObject.ts",
         "src/core/View3D.ts",
         //3D对象组件
         "src/core/Object3DComponent.ts",

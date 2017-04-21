@@ -15,13 +15,13 @@ module feng3d
         public mouseX: number;
         public mouseY: number;
 
-        private selectedObject3D: Object3D;
+        private selectedObject3D: GameObject;
         private mouseEventTypes: string[] = [];
 
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
          */
-        private preMouseDownObject3D: Object3D;
+        private preMouseDownObject3D: GameObject;
         /**
          * 统计处理click次数，判断是否达到dblclick
          */
@@ -90,7 +90,7 @@ module feng3d
         /**
          * 设置选中对象
          */
-        private setSelectedObject3D(value: Object3D)
+        private setSelectedObject3D(value: GameObject)
         {
             
             if (this.selectedObject3D != value)

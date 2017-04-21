@@ -64,7 +64,7 @@ module feng3d
         /**
          * 3d对象
          */
-        object3d?: Object3D;
+        object3d?: GameObject;
 
         /**
          * 场景

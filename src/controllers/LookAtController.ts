@@ -3,12 +3,12 @@ module feng3d
     export class LookAtController extends ControllerBase
     {
         protected _lookAtPosition: Vector3D;
-        protected _lookAtObject: Transform;
+        protected _lookAtObject: Object3D;
         protected _origin: Vector3D = new Vector3D(0.0, 0.0, 0.0);
         protected _upAxis: Vector3D = Vector3D.Y_AXIS;
         private _pos: Vector3D = new Vector3D();
 
-        constructor(target: Transform = null, lookAtObject: Transform = null)
+        constructor(target: Object3D = null, lookAtObject: Object3D = null)
         {
             super(target);
 
@@ -38,12 +38,12 @@ module feng3d
             this._lookAtPosition = val;
         }
 
-        public get lookAtObject(): Transform
+        public get lookAtObject(): Object3D
         {
             return this._lookAtObject;
         }
 
-        public set lookAtObject(value: Transform)
+        public set lookAtObject(value: Object3D)
         {
             if (this._lookAtObject == value)
                 return;

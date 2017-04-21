@@ -988,7 +988,7 @@ var feng3d;
             return object;
         };
         Serialization.prototype.handle = function (object, key, data) {
-            if (feng3d.ClassUtils.is(object, feng3d.Object3D) && key == "children_") {
+            if (feng3d.ClassUtils.is(object, feng3d.GameObject) && key == "children_") {
                 var children = this.readObject(data);
                 var object3D = object;
                 for (var i = 0; i < children.length; i++) {
@@ -6093,7 +6093,7 @@ var feng3d;
             gl.readPixels(0, 0, 1, 1, feng3d.GL.RGBA, feng3d.GL.UNSIGNED_BYTE, data);
             var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3]; //最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
             // console.log(`选中索引3D对象${id}`, data.toString());
-            this.selectedObject3D = feng3d.Object3D.getObject3D(id);
+            this.selectedObject3D = feng3d.GameObject.getObject3D(id);
             // this.frameBufferObject.deactivate(gl);
         };
         MouseRenderer.prototype.drawRenderables = function (gl, renderContext, meshRenderer) {
@@ -6194,82 +6194,122 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 位移时抛出
-     */
-    //[Event(name = "positionChanged", type = "me.feng3d.events.Transform3DEvent")]
-    /**
-     * 旋转时抛出
-     */
-    //[Event(name = "rotationChanged", type = "me.feng3d.events.Transform3DEvent")]
-    /**
-     * 缩放时抛出
-     */
-    //[Event(name = "scaleChanged", type = "me.feng3d.events.Transform3DEvent")]
-    /**
-     * 变换状态抛出
-     */
-    //[Event(name = "transformChanged", type = "me.feng3d.events.Transform3DEvent")]
-    /**
-     * 变换已更新
-     */
-    //[Event(name = "transformUpdated", type = "me.feng3d.events.Transform3DEvent")]
-    /**
-     * 3D元素<br/><br/>
-     *
-     * 主要功能:
-     * <ul>
-     *     <li>管理3D元素的位置、旋转、缩放状态</li>
-     * </ul>
-     * @author feng 2014-3-31
-     */
-    /**
-     * 3D元素状态变换<br/><br/>
-     *
-     * 主要功能:
-     * <ul>
-     *     <li>处理3d元素的平移、旋转、缩放等操作</li>
-     * </ul>
-     *
-     * @author feng 2014-3-31
-     */
-    var Transform = (function (_super) {
-        __extends(Transform, _super);
-        /**
-         * 创建3D元素状态变换实例
-         */
-        function Transform() {
+    var Object3D = (function (_super) {
+        __extends(Object3D, _super);
+        function Object3D() {
             _super.call(this);
             this._smallestNumber = 0.0000000000000000000001;
             this._transformDirty = true;
-            this._eulers = new feng3d.Vector3D();
-            this._transform = new feng3d.Matrix3D();
-            this._x = 0;
-            this._y = 0;
-            this._z = 0;
+            this._positionDirty = false;
+            this._rotationDirty = false;
+            this._scaleDirty = false;
             this._rotationX = 0;
             this._rotationY = 0;
             this._rotationZ = 0;
+            this._eulers = new feng3d.Vector3D();
+            this._flipY = new feng3d.Matrix3D();
+            this._listenToPositionChanged = false;
+            this._listenToRotationChanged = false;
+            this._listenToScaleChanged = false;
+            this._zOffset = 0;
+            this._transform = new feng3d.Matrix3D();
             this._scaleX = 1;
             this._scaleY = 1;
             this._scaleZ = 1;
+            this._x = 0;
+            this._y = 0;
+            this._z = 0;
             this._pivotPoint = new feng3d.Vector3D();
             this._pivotZero = true;
             this._pos = new feng3d.Vector3D();
             this._rot = new feng3d.Vector3D();
             this._sca = new feng3d.Vector3D();
-            // Cached vector of transformation components used when
-            // recomposing the this.transform matrix in this.updateTransform()
             this._transformComponents = [];
             this._transformComponents[0] = this._pos;
             this._transformComponents[1] = this._rot;
             this._transformComponents[2] = this._sca;
             this._transform.identity();
+            this._flipY.appendScale(1, -1, 1);
         }
-        Object.defineProperty(Transform.prototype, "x", {
-            /**
-             * 相对父容器的X坐标
-             */
+        Object3D.prototype.invalidatePivot = function () {
+            this._pivotZero = (this._pivotPoint.x == 0) && (this._pivotPoint.y == 0) && (this._pivotPoint.z == 0);
+            this.invalidateTransform();
+        };
+        Object3D.prototype.invalidatePosition = function () {
+            if (this._positionDirty)
+                return;
+            this._positionDirty = true;
+            this.invalidateTransform();
+            if (this._listenToPositionChanged)
+                this.notifyPositionChanged();
+        };
+        Object3D.prototype.notifyPositionChanged = function () {
+            var _self__ = this;
+            if (!this._positionChanged)
+                this._positionChanged = new feng3d.Object3DEvent(feng3d.Object3DEvent.POSITION_CHANGED, this);
+            _self__.dispatchEvent(this._positionChanged);
+        };
+        Object3D.prototype.addEventListener = function (type, listener, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            _super.prototype.addEventListener.call(this, type, listener, thisObject, priority);
+            switch (type) {
+                case feng3d.Object3DEvent.POSITION_CHANGED:
+                    this._listenToPositionChanged = true;
+                    break;
+                case feng3d.Object3DEvent.ROTATION_CHANGED:
+                    this._listenToRotationChanged = true;
+                    break;
+                case feng3d.Object3DEvent.SCALE_CHANGED:
+                    this._listenToRotationChanged = true;
+                    break;
+            }
+        };
+        Object3D.prototype.removeEventListener = function (type, listener, thisObject) {
+            var _self__ = this;
+            _super.prototype.removeEventListener.call(this, type, listener, thisObject);
+            if (_self__.hasEventListener(type))
+                return;
+            switch (type) {
+                case feng3d.Object3DEvent.POSITION_CHANGED:
+                    this._listenToPositionChanged = false;
+                    break;
+                case feng3d.Object3DEvent.ROTATION_CHANGED:
+                    this._listenToRotationChanged = false;
+                    break;
+                case feng3d.Object3DEvent.SCALE_CHANGED:
+                    this._listenToScaleChanged = false;
+                    break;
+            }
+        };
+        Object3D.prototype.invalidateRotation = function () {
+            if (this._rotationDirty)
+                return;
+            this._rotationDirty = true;
+            this.invalidateTransform();
+            if (this._listenToRotationChanged)
+                this.notifyRotationChanged();
+        };
+        Object3D.prototype.notifyRotationChanged = function () {
+            var _self__ = this;
+            if (!this._rotationChanged)
+                this._rotationChanged = new feng3d.Object3DEvent(feng3d.Object3DEvent.ROTATION_CHANGED, this);
+            _self__.dispatchEvent(this._rotationChanged);
+        };
+        Object3D.prototype.invalidateScale = function () {
+            if (this._scaleDirty)
+                return;
+            this._scaleDirty = true;
+            this.invalidateTransform();
+            if (this._listenToScaleChanged)
+                this.notifyScaleChanged();
+        };
+        Object3D.prototype.notifyScaleChanged = function () {
+            var _self__ = this;
+            if (!this._scaleChanged)
+                this._scaleChanged = new feng3d.Object3DEvent(feng3d.Object3DEvent.SCALE_CHANGED, this);
+            _self__.dispatchEvent(this._scaleChanged);
+        };
+        Object.defineProperty(Object3D.prototype, "x", {
             get: function () {
                 return this._x;
             },
@@ -6282,10 +6322,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "y", {
-            /**
-             * 相对父容器的Y坐标
-             */
+        Object.defineProperty(Object3D.prototype, "y", {
             get: function () {
                 return this._y;
             },
@@ -6298,10 +6335,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "z", {
-            /**
-             * 相对父容器的Z坐标
-             */
+        Object.defineProperty(Object3D.prototype, "z", {
             get: function () {
                 return this._z;
             },
@@ -6314,10 +6348,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "rotationX", {
-            /**
-             * 绕X轴旋转角度
-             */
+        Object.defineProperty(Object3D.prototype, "rotationX", {
             get: function () {
                 return this._rotationX * feng3d.MathConsts.RADIANS_TO_DEGREES;
             },
@@ -6330,10 +6361,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "rotationY", {
-            /**
-             * 绕Y轴旋转角度
-             */
+        Object.defineProperty(Object3D.prototype, "rotationY", {
             get: function () {
                 return this._rotationY * feng3d.MathConsts.RADIANS_TO_DEGREES;
             },
@@ -6346,10 +6374,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "rotationZ", {
-            /**
-             * 绕Z轴旋转角度
-             */
+        Object.defineProperty(Object3D.prototype, "rotationZ", {
             get: function () {
                 return this._rotationZ * feng3d.MathConsts.RADIANS_TO_DEGREES;
             },
@@ -6362,10 +6387,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "scaleX", {
-            /**
-             * X轴旋方向缩放
-             */
+        Object.defineProperty(Object3D.prototype, "scaleX", {
             get: function () {
                 return this._scaleX;
             },
@@ -6378,10 +6400,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "scaleY", {
-            /**
-             * Y轴旋方向缩放
-             */
+        Object.defineProperty(Object3D.prototype, "scaleY", {
             get: function () {
                 return this._scaleY;
             },
@@ -6394,10 +6413,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "scaleZ", {
-            /**
-             * Z轴旋方向缩放
-             */
+        Object.defineProperty(Object3D.prototype, "scaleZ", {
             get: function () {
                 return this._scaleZ;
             },
@@ -6410,13 +6426,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "eulers", {
-            /**
-             * 欧拉角
-             * <ul>
-             *     <li>使用Vector3D对象表示 相对x、y、z轴上的旋转角度</li>
-             * </ul>
-             */
+        Object.defineProperty(Object3D.prototype, "eulers", {
             get: function () {
                 this._eulers.x = this._rotationX * feng3d.MathConsts.RADIANS_TO_DEGREES;
                 this._eulers.y = this._rotationY * feng3d.MathConsts.RADIANS_TO_DEGREES;
@@ -6432,17 +6442,13 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "transform", {
-            /**
-             * 3d元素变换矩阵
-             */
+        Object.defineProperty(Object3D.prototype, "transform", {
             get: function () {
                 if (this._transformDirty)
                     this.updateTransform();
                 return this._transform;
             },
             set: function (val) {
-                //ridiculous matrix error
                 var raw = feng3d.Matrix3D.RAW_DATA_CONTAINER;
                 val.copyRawDataTo(raw);
                 if (!raw[0]) {
@@ -6476,10 +6482,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "pivotPoint", {
-            /**
-             * 中心点坐标（本地对象旋转点）
-             */
+        Object.defineProperty(Object3D.prototype, "pivotPoint", {
             get: function () {
                 return this._pivotPoint;
             },
@@ -6494,10 +6497,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "position", {
-            /**
-             * 获取在父容器中的坐标
-             */
+        Object.defineProperty(Object3D.prototype, "position", {
             get: function () {
                 this.transform.copyColumnTo(3, this._pos);
                 return this._pos.clone();
@@ -6511,45 +6511,217 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        /**
-         * 使位置数据无效
-         */
-        Transform.prototype.invalidatePosition = function () {
-            if (this._positionDirty)
+        Object3D.prototype.getPosition = function (v) {
+            if (v === void 0) { v = null; }
+            if (!v)
+                v = new feng3d.Vector3D();
+            this.transform.copyColumnTo(3, v);
+            return v;
+        };
+        Object.defineProperty(Object3D.prototype, "forwardVector", {
+            get: function () {
+                return this.transform.forward;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Object3D.prototype, "rightVector", {
+            get: function () {
+                return this.transform.right;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Object3D.prototype, "upVector", {
+            get: function () {
+                return this.transform.up;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Object3D.prototype, "backVector", {
+            get: function () {
+                var director = this.transform.forward;
+                director.negate();
+                return director;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Object3D.prototype, "leftVector", {
+            get: function () {
+                var director = this.transform.left;
+                director.negate();
+                return director;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Object3D.prototype, "downVector", {
+            get: function () {
+                var director = this.transform.up;
+                director.negate();
+                return director;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object3D.prototype.scale = function (value) {
+            this._scaleX *= value;
+            this._scaleY *= value;
+            this._scaleZ *= value;
+            this.invalidateScale();
+        };
+        Object3D.prototype.moveForward = function (distance) {
+            this.translateLocal(feng3d.Vector3D.Z_AXIS, distance);
+        };
+        Object3D.prototype.moveBackward = function (distance) {
+            this.translateLocal(feng3d.Vector3D.Z_AXIS, -distance);
+        };
+        Object3D.prototype.moveLeft = function (distance) {
+            this.translateLocal(feng3d.Vector3D.X_AXIS, -distance);
+        };
+        Object3D.prototype.moveRight = function (distance) {
+            this.translateLocal(feng3d.Vector3D.X_AXIS, distance);
+        };
+        Object3D.prototype.moveUp = function (distance) {
+            this.translateLocal(feng3d.Vector3D.Y_AXIS, distance);
+        };
+        Object3D.prototype.moveDown = function (distance) {
+            this.translateLocal(feng3d.Vector3D.Y_AXIS, -distance);
+        };
+        Object3D.prototype.moveTo = function (dx, dy, dz) {
+            if (this._x == dx && this._y == dy && this._z == dz)
                 return;
-            this._positionDirty = true;
-            this.invalidateTransform();
-            if (this._listenToPositionChanged)
-                this.notifyPositionChanged();
+            this._x = dx;
+            this._y = dy;
+            this._z = dz;
+            this.invalidatePosition();
         };
-        /**
-         * 发出平移事件
-         */
-        Transform.prototype.notifyPositionChanged = function () {
-            if (!this._positionChanged)
-                this._positionChanged = new Transform3DEvent(Transform3DEvent.POSITION_CHANGED, this);
-            this.dispatchEvent(this._positionChanged);
+        Object3D.prototype.movePivot = function (dx, dy, dz) {
+            if (!this._pivotPoint)
+                this._pivotPoint = new feng3d.Vector3D();
+            this._pivotPoint.x += dx;
+            this._pivotPoint.y += dy;
+            this._pivotPoint.z += dz;
+            this.invalidatePivot();
         };
-        /**
-         * 使变换矩阵失效
-         */
-        Transform.prototype.invalidateTransform = function () {
+        Object3D.prototype.translate = function (axis, distance) {
+            var x = axis.x, y = axis.y, z = axis.z;
+            var len = distance / Math.sqrt(x * x + y * y + z * z);
+            this._x += x * len;
+            this._y += y * len;
+            this._z += z * len;
+            this.invalidatePosition();
+        };
+        Object3D.prototype.translateLocal = function (axis, distance) {
+            var x = axis.x, y = axis.y, z = axis.z;
+            var len = distance / Math.sqrt(x * x + y * y + z * z);
+            this.transform.prependTranslation(x * len, y * len, z * len);
+            this._transform.copyColumnTo(3, this._pos);
+            this._x = this._pos.x;
+            this._y = this._pos.y;
+            this._z = this._pos.z;
+            this.invalidatePosition();
+        };
+        Object3D.prototype.pitch = function (angle) {
+            this.rotate(feng3d.Vector3D.X_AXIS, angle);
+        };
+        Object3D.prototype.yaw = function (angle) {
+            this.rotate(feng3d.Vector3D.Y_AXIS, angle);
+        };
+        Object3D.prototype.roll = function (angle) {
+            this.rotate(feng3d.Vector3D.Z_AXIS, angle);
+        };
+        Object3D.prototype.clone = function () {
+            var clone = new Object3D();
+            clone.pivotPoint = this.pivotPoint;
+            clone.transform = this.transform;
+            clone.name = this.name;
+            return clone;
+        };
+        Object3D.prototype.rotateTo = function (ax, ay, az) {
+            this._rotationX = ax * feng3d.MathConsts.DEGREES_TO_RADIANS;
+            this._rotationY = ay * feng3d.MathConsts.DEGREES_TO_RADIANS;
+            this._rotationZ = az * feng3d.MathConsts.DEGREES_TO_RADIANS;
+            this.invalidateRotation();
+        };
+        Object3D.prototype.rotate = function (axis, angle) {
+            var m = new feng3d.Matrix3D();
+            m.prependRotation(angle, axis);
+            var vec = m.decompose()[1];
+            this._rotationX += vec.x;
+            this._rotationY += vec.y;
+            this._rotationZ += vec.z;
+            this.invalidateRotation();
+        };
+        Object3D.prototype.lookAt = function (target, upAxis) {
+            if (upAxis === void 0) { upAxis = null; }
+            if (!Object3D.tempAxeX)
+                Object3D.tempAxeX = new feng3d.Vector3D();
+            if (!Object3D.tempAxeY)
+                Object3D.tempAxeY = new feng3d.Vector3D();
+            if (!Object3D.tempAxeZ)
+                Object3D.tempAxeZ = new feng3d.Vector3D();
+            var xAxis = Object3D.tempAxeX;
+            var yAxis = Object3D.tempAxeY;
+            var zAxis = Object3D.tempAxeZ;
+            var raw;
+            upAxis = upAxis || feng3d.Vector3D.Y_AXIS;
+            if (this._transformDirty) {
+                this.updateTransform();
+            }
+            zAxis.x = target.x - this._x;
+            zAxis.y = target.y - this._y;
+            zAxis.z = target.z - this._z;
+            zAxis.normalize();
+            xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
+            xAxis.y = upAxis.z * zAxis.x - upAxis.x * zAxis.z;
+            xAxis.z = upAxis.x * zAxis.y - upAxis.y * zAxis.x;
+            xAxis.normalize();
+            if (xAxis.length < .05) {
+                xAxis.x = upAxis.y;
+                xAxis.y = upAxis.x;
+                xAxis.z = 0;
+                xAxis.normalize();
+            }
+            yAxis.x = zAxis.y * xAxis.z - zAxis.z * xAxis.y;
+            yAxis.y = zAxis.z * xAxis.x - zAxis.x * xAxis.z;
+            yAxis.z = zAxis.x * xAxis.y - zAxis.y * xAxis.x;
+            raw = feng3d.Matrix3D.RAW_DATA_CONTAINER;
+            raw[0] = this._scaleX * xAxis.x;
+            raw[1] = this._scaleX * xAxis.y;
+            raw[2] = this._scaleX * xAxis.z;
+            raw[3] = 0;
+            raw[4] = this._scaleY * yAxis.x;
+            raw[5] = this._scaleY * yAxis.y;
+            raw[6] = this._scaleY * yAxis.z;
+            raw[7] = 0;
+            raw[8] = this._scaleZ * zAxis.x;
+            raw[9] = this._scaleZ * zAxis.y;
+            raw[10] = this._scaleZ * zAxis.z;
+            raw[11] = 0;
+            raw[12] = this._x;
+            raw[13] = this._y;
+            raw[14] = this._z;
+            raw[15] = 1;
+            this._transform.copyRawDataFrom(raw);
+            this.transform = this.transform;
+            if (zAxis.z < 0) {
+                this.rotationY = (180 - this.rotationY);
+                this.rotationX -= 180;
+                this.rotationZ -= 180;
+            }
+        };
+        Object3D.prototype.dispose = function () {
+        };
+        Object3D.prototype.disposeAsset = function () {
+            this.dispose();
+        };
+        Object3D.prototype.invalidateTransform = function () {
             this._transformDirty = true;
-            if (this._listenToTransformChanged)
-                this.notifyTransformChanged();
         };
-        /**
-         * 发出状态改变消息
-         */
-        Transform.prototype.notifyTransformChanged = function () {
-            if (!this._transformChanged)
-                this._transformChanged = new Transform3DEvent(Transform3DEvent.TRANSFORM_CHANGED, this);
-            this.dispatchEvent(this._transformChanged);
-        };
-        /**
-         * 更新变换矩阵
-         */
-        Transform.prototype.updateTransform = function () {
+        Object3D.prototype.updateTransform = function () {
             this._pos.x = this._x;
             this._pos.y = this._y;
             this._pos.z = this._z;
@@ -6578,396 +6750,464 @@ var feng3d;
             this._positionDirty = false;
             this._rotationDirty = false;
             this._scaleDirty = false;
-            this.dispatchEvent(new Transform3DEvent(Transform3DEvent.TRANSFORM_UPDATED, this));
         };
-        /**
-         * 使中心点无效
-         */
-        Transform.prototype.invalidatePivot = function () {
-            this._pivotZero = (this._pivotPoint.x == 0) && (this._pivotPoint.y == 0) && (this._pivotPoint.z == 0);
-            this.invalidateTransform();
-        };
-        /**
-         * 监听事件
-         * @param type 事件类型
-         * @param listener 回调函数
-         */
-        Transform.prototype.addEventListener = function (type, listener, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            _super.prototype.addEventListener.call(this, type, listener, thisObject, priority);
-            switch (type) {
-                case Transform3DEvent.POSITION_CHANGED:
-                    this._listenToPositionChanged = true;
-                    break;
-                case Transform3DEvent.ROTATION_CHANGED:
-                    this._listenToRotationChanged = true;
-                    break;
-                case Transform3DEvent.SCALE_CHANGED:
-                    this._listenToRotationChanged = true;
-                    break;
-                case Transform3DEvent.TRANSFORM_CHANGED:
-                    this._listenToTransformChanged = true;
-                    break;
-            }
-        };
-        /**
-         * 移除事件
-         * @param type 事件类型
-         * @param listener 回调函数
-         */
-        Transform.prototype.removeEventListener = function (type, listener, thisObject) {
-            _super.prototype.removeEventListener.call(this, type, listener, thisObject);
-            if (this.hasEventListener(type))
-                return;
-            switch (type) {
-                case Transform3DEvent.POSITION_CHANGED:
-                    this._listenToPositionChanged = false;
-                    break;
-                case Transform3DEvent.ROTATION_CHANGED:
-                    this._listenToRotationChanged = false;
-                    break;
-                case Transform3DEvent.SCALE_CHANGED:
-                    this._listenToScaleChanged = false;
-                    break;
-                case Transform3DEvent.TRANSFORM_CHANGED:
-                    this._listenToTransformChanged = false;
-                    break;
-            }
-        };
-        /**
-         * 使旋转角度无效
-         */
-        Transform.prototype.invalidateRotation = function () {
-            if (this._rotationDirty)
-                return;
-            this._rotationDirty = true;
-            this.invalidateTransform();
-            if (this._listenToRotationChanged)
-                this.notifyRotationChanged();
-        };
-        /**
-         * 抛出旋转事件
-         */
-        Transform.prototype.notifyRotationChanged = function () {
-            if (!this._rotationChanged)
-                this._rotationChanged = new Transform3DEvent(Transform3DEvent.ROTATION_CHANGED, this);
-            this.dispatchEvent(this._rotationChanged);
-        };
-        /**
-         * 使缩放无效
-         */
-        Transform.prototype.invalidateScale = function () {
-            if (this._scaleDirty)
-                return;
-            this._scaleDirty = true;
-            this.invalidateTransform();
-            if (this._listenToScaleChanged)
-                this.notifyScaleChanged();
-        };
-        /**
-         * 抛出缩放事件
-         */
-        Transform.prototype.notifyScaleChanged = function () {
-            if (!this._scaleChanged)
-                this._scaleChanged = new Transform3DEvent(Transform3DEvent.SCALE_CHANGED, this);
-            this.dispatchEvent(this._scaleChanged);
-        };
-        /**
-         * 等比缩放
-         * @param value 缩放比例
-         */
-        Transform.prototype.scale = function (value) {
-            this._scaleX *= value;
-            this._scaleY *= value;
-            this._scaleZ *= value;
-            this.invalidateScale();
-        };
-        /**
-         * 向前（Z轴方向）位移
-         * @param distance 位移距离
-         */
-        Transform.prototype.moveForward = function (distance) {
-            this.translateLocal(feng3d.Vector3D.Z_AXIS, distance);
-        };
-        /**
-         * 向后（Z轴负方向）位移
-         * @param distance 位移距离
-         */
-        Transform.prototype.moveBackward = function (distance) {
-            this.translateLocal(feng3d.Vector3D.Z_AXIS, -distance);
-        };
-        /**
-         * 向左（X轴负方向）位移
-         * @param distance 位移距离
-         */
-        Transform.prototype.moveLeft = function (distance) {
-            this.translateLocal(feng3d.Vector3D.X_AXIS, -distance);
-        };
-        /**
-         * 向右（X轴方向）位移
-         * @param distance 位移距离
-         */
-        Transform.prototype.moveRight = function (distance) {
-            this.translateLocal(feng3d.Vector3D.X_AXIS, distance);
-        };
-        /**
-         * 向上（Y轴方向）位移
-         * @param distance 位移距离
-         */
-        Transform.prototype.moveUp = function (distance) {
-            this.translateLocal(feng3d.Vector3D.Y_AXIS, distance);
-        };
-        /**
-         * 向下（Y轴负方向）位移
-         * @param distance 位移距离
-         */
-        Transform.prototype.moveDown = function (distance) {
-            this.translateLocal(feng3d.Vector3D.Y_AXIS, -distance);
-        };
-        /**
-         * 直接移到空间的某个位置
-         * @param newX x坐标
-         * @param newY y坐标
-         * @param newZ z坐标
-         */
-        Transform.prototype.moveTo = function (newX, newY, newZ) {
-            if (this._x == newX && this._y == newY && this._z == newZ)
-                return;
-            this._x = newX;
-            this._y = newY;
-            this._z = newZ;
-            this.invalidatePosition();
-        };
-        /**
-         * 移动中心点（旋转点）
-         * @param dx X轴方向位移
-         * @param dy Y轴方向位移
-         * @param dz Z轴方向位移
-         */
-        Transform.prototype.movePivot = function (dx, dy, dz) {
-            if (!this._pivotPoint)
-                this._pivotPoint = new feng3d.Vector3D();
-            this._pivotPoint.x += dx;
-            this._pivotPoint.y += dy;
-            this._pivotPoint.z += dz;
-            this.invalidatePivot();
-        };
-        /**
-         * 在自定义轴上位移
-         * @param axis 自定义轴
-         * @param distance 位移距离
-         */
-        Transform.prototype.translate = function (axis, distance) {
-            var x = axis.x, y = axis.y, z = axis.z;
-            var len = distance / Math.sqrt(x * x + y * y + z * z);
-            this._x += x * len;
-            this._y += y * len;
-            this._z += z * len;
-            this.invalidatePosition();
-        };
-        /**
-         * 在自定义轴上位移<br/>
-         *
-         * 注意：
-         * <ul>
-         * 		<li>没太理解 与 translate的区别</li>
-         * </ul>
-         * @param axis 自定义轴
-         * @param distance 位移距离
-         */
-        Transform.prototype.translateLocal = function (axis, distance) {
-            var len = distance / axis.length;
-            this.transform.prependTranslation(axis.x * len, axis.y * len, axis.z * len);
-            this._transform.copyColumnTo(3, this._pos);
-            this._x = this._pos.x;
-            this._y = this._pos.y;
-            this._z = this._pos.z;
-            this.invalidatePosition();
-        };
-        /**
-         * 绕X轴旋转
-         * @param angle 旋转角度
-         */
-        Transform.prototype.pitch = function (angle) {
-            this.rotate(feng3d.Vector3D.X_AXIS, angle);
-        };
-        /**
-         * 绕Y轴旋转
-         * @param angle 旋转角度
-         */
-        Transform.prototype.yaw = function (angle) {
-            this.rotate(feng3d.Vector3D.Y_AXIS, angle);
-        };
-        /**
-         * 绕Z轴旋转
-         * @param angle 旋转角度
-         */
-        Transform.prototype.roll = function (angle) {
-            this.rotate(feng3d.Vector3D.Z_AXIS, angle);
-        };
-        /**
-         * 直接修改欧拉角
-         * @param ax X轴旋转角度
-         * @param ay Y轴旋转角度
-         * @param az Z轴旋转角度
-         */
-        Transform.prototype.rotateTo = function (ax, ay, az) {
-            this._rotationX = ax * feng3d.MathConsts.DEGREES_TO_RADIANS;
-            this._rotationY = ay * feng3d.MathConsts.DEGREES_TO_RADIANS;
-            this._rotationZ = az * feng3d.MathConsts.DEGREES_TO_RADIANS;
-            this.invalidateRotation();
-        };
-        /**
-         * 绕所给轴旋转
-         * @param axis 任意轴
-         * @param angle 旋转角度
-         */
-        Transform.prototype.rotate = function (axis, angle) {
-            var m = new feng3d.Matrix3D();
-            m.prependRotation(angle, axis);
-            var vec = m.decompose()[1];
-            this._rotationX += vec.x;
-            this._rotationY += vec.y;
-            this._rotationZ += vec.z;
-            this.invalidateRotation();
-        };
-        /**
-         * 观察目标
-         * <ul>
-         * 		<li>旋转至朝向给出的点</li>
-         * </ul>
-         * @param target 	目标点
-         * @param upAxis 	旋转后向上方向（并非绝对向上），默认为null，当值为null时会以Y轴为向上方向计算
-         */
-        Transform.prototype.lookAt = function (target, upAxis) {
-            if (upAxis === void 0) { upAxis = null; }
-            var tempAxeX;
-            var tempAxeY;
-            var tempAxeZ;
-            if (!tempAxeX)
-                tempAxeX = new feng3d.Vector3D();
-            if (!tempAxeY)
-                tempAxeY = new feng3d.Vector3D();
-            if (!tempAxeZ)
-                tempAxeZ = new feng3d.Vector3D();
-            //旋转后的X轴
-            var xAxis = tempAxeX;
-            //旋转后的Y轴
-            var yAxis = tempAxeY;
-            //旋转后的Z轴
-            var zAxis = tempAxeZ;
-            var raw;
-            //向上方向默认值为Y轴
-            if (upAxis == null)
-                upAxis = feng3d.Vector3D.Y_AXIS;
-            if (this._transformDirty) {
-                this.updateTransform();
-            }
-            //物体与目标点在相同位置时，稍作偏移
-            if (new feng3d.Vector3D(this._x, this._y, this._z).subtract(target).length == 0) {
-                this._z = target.z + 0.1;
-            }
-            //获得Z轴
-            zAxis.x = target.x - this._x;
-            zAxis.y = target.y - this._y;
-            zAxis.z = target.z - this._z;
-            zAxis.normalize();
-            //向上方向与Z轴 叉乘 得到X轴
-            xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
-            xAxis.y = upAxis.z * zAxis.x - upAxis.x * zAxis.z;
-            xAxis.z = upAxis.x * zAxis.y - upAxis.y * zAxis.x;
-            xAxis.normalize();
-            if (xAxis.length < .05) {
-                xAxis.x = upAxis.y;
-                xAxis.y = upAxis.x;
-                xAxis.z = 0;
-                xAxis.normalize();
-            }
-            //Z轴叉乘X轴 得到 Y轴，Z与X为标准化向量，得到的Y轴也将是标准化向量
-            yAxis.x = zAxis.y * xAxis.z - zAxis.z * xAxis.y;
-            yAxis.y = zAxis.z * xAxis.x - zAxis.x * xAxis.z;
-            yAxis.z = zAxis.x * xAxis.y - zAxis.y * xAxis.x;
-            raw = feng3d.Matrix3D.RAW_DATA_CONTAINER;
-            //根据XYZ轴计算变换矩阵
-            raw[0] = this._scaleX * xAxis.x;
-            raw[1] = this._scaleX * xAxis.y;
-            raw[2] = this._scaleX * xAxis.z;
-            raw[3] = 0;
-            raw[4] = this._scaleY * yAxis.x;
-            raw[5] = this._scaleY * yAxis.y;
-            raw[6] = this._scaleY * yAxis.z;
-            raw[7] = 0;
-            raw[8] = this._scaleZ * zAxis.x;
-            raw[9] = this._scaleZ * zAxis.y;
-            raw[10] = this._scaleZ * zAxis.z;
-            raw[11] = 0;
-            raw[12] = this._x;
-            raw[13] = this._y;
-            raw[14] = this._z;
-            raw[15] = 1;
-            this._transform.copyRawDataFrom(raw);
-            this.transform = this.transform;
-            if (zAxis.z < 0) {
-                this.rotationY = (180 - this.rotationY);
-                this.rotationX -= 180;
-                this.rotationZ -= 180;
-            }
-        };
-        return Transform;
-    }(feng3d.RenderDataHolder));
-    feng3d.Transform = Transform;
-    /**
-     * 3D对象事件(3D状态发生改变、位置、旋转、缩放)
-     * @author feng 2014-3-31
-     */
-    var Transform3DEvent = (function (_super) {
-        __extends(Transform3DEvent, _super);
-        /**
-         * 创建3D对象事件
-         * @param type			事件类型
-         * @param element3D		发出事件的3D元素
-         */
-        function Transform3DEvent(type, transform3D, bubbles) {
-            if (bubbles === void 0) { bubbles = false; }
-            _super.call(this, type, transform3D, bubbles);
-        }
-        Object.defineProperty(Transform3DEvent.prototype, "transform3D", {
-            /**
-             * 发出事件的3D元素
-             */
+        Object.defineProperty(Object3D.prototype, "zOffset", {
             get: function () {
-                return this.data;
+                return this._zOffset;
+            },
+            set: function (value) {
+                this._zOffset = value;
             },
             enumerable: true,
             configurable: true
         });
-        /**
-         * 平移
-         */
-        Transform3DEvent.POSITION_CHANGED = "positionChanged";
-        /**
-         * 旋转
-         */
-        Transform3DEvent.ROTATION_CHANGED = "rotationChanged";
-        /**
-         * 缩放
-         */
-        Transform3DEvent.SCALE_CHANGED = "scaleChanged";
-        /**
-         * 变换
-         */
-        Transform3DEvent.TRANSFORM_CHANGED = "transformChanged";
-        /**
-         * 变换已更新
-         */
-        Transform3DEvent.TRANSFORM_UPDATED = "transformUpdated";
-        /**
-         * 场景变换矩阵发生变化
-         */
-        Transform3DEvent.SCENETRANSFORM_CHANGED = "scenetransformChanged";
-        return Transform3DEvent;
-    }(feng3d.Event));
-    feng3d.Transform3DEvent = Transform3DEvent;
+        return Object3D;
+    }(feng3d.EventDispatcher));
+    feng3d.Object3D = Object3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var ObjectContainer3D = (function (_super) {
+        __extends(ObjectContainer3D, _super);
+        function ObjectContainer3D() {
+            _super.call(this);
+            this._ancestorsAllowMouseEnabled = false;
+            this._isRoot = false;
+            this._sceneTransform = new feng3d.Matrix3D();
+            this._sceneTransformDirty = true;
+            this._mouseEnabled = false;
+            this._children = [];
+            this._mouseChildren = true;
+            this._inverseSceneTransform = new feng3d.Matrix3D();
+            this._inverseSceneTransformDirty = true;
+            this._scenePosition = new feng3d.Vector3D();
+            this._scenePositionDirty = true;
+            this._explicitVisibility = true;
+            this._implicitVisibility = true;
+            this._listenToSceneTransformChanged = false;
+            this._listenToSceneChanged = false;
+            this._ignoreTransform = false;
+        }
+        Object.defineProperty(ObjectContainer3D.prototype, "ignoreTransform", {
+            get: function () {
+                return this._ignoreTransform;
+            },
+            set: function (value) {
+                this._ignoreTransform = value;
+                this._sceneTransformDirty = !value;
+                this._inverseSceneTransformDirty = !value;
+                this._scenePositionDirty = !value;
+                if (!value) {
+                    this._sceneTransform.identity();
+                    this._scenePosition.setTo(0, 0, 0);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "isVisible", {
+            get: function () {
+                return this._implicitVisibility && this._explicitVisibility;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObjectContainer3D.prototype.setParent = function (value) {
+            this._parent = value;
+            this.updateMouseChildren();
+            if (value == null) {
+                this.scene = null;
+                return;
+            }
+            this.notifySceneTransformChange();
+            this.notifySceneChange();
+        };
+        ObjectContainer3D.prototype.notifySceneTransformChange = function () {
+            if (this._sceneTransformDirty || this._ignoreTransform)
+                return;
+            this.invalidateSceneTransform();
+            var i;
+            var len = this._children.length;
+            while (i < len)
+                this._children[i++].notifySceneTransformChange();
+            if (this._listenToSceneTransformChanged) {
+                if (!this._sceneTransformChanged)
+                    this._sceneTransformChanged = new feng3d.Object3DEvent(feng3d.Object3DEvent.SCENETRANSFORM_CHANGED, this);
+                this.dispatchEvent(this._sceneTransformChanged);
+            }
+        };
+        ObjectContainer3D.prototype.notifySceneChange = function () {
+            this.notifySceneTransformChange();
+            var i;
+            var len = this._children.length;
+            while (i < len)
+                this._children[i++].notifySceneChange();
+            if (this._listenToSceneChanged) {
+                if (!this._scenechanged)
+                    this._scenechanged = new feng3d.Object3DEvent(feng3d.Object3DEvent.SCENE_CHANGED, this);
+                this.dispatchEvent(this._scenechanged);
+            }
+        };
+        ObjectContainer3D.prototype.updateMouseChildren = function () {
+            if (this._parent && !this._parent._isRoot) {
+                this._ancestorsAllowMouseEnabled = this.parent._ancestorsAllowMouseEnabled && this._parent.mouseChildren;
+            }
+            else
+                this._ancestorsAllowMouseEnabled = this.mouseChildren;
+            var len = this._children.length;
+            for (var i = 0; i < len; ++i)
+                this._children[i].updateMouseChildren();
+        };
+        Object.defineProperty(ObjectContainer3D.prototype, "mouseEnabled", {
+            get: function () {
+                return this._mouseEnabled;
+            },
+            set: function (value) {
+                this._mouseEnabled = value;
+                this.updateMouseChildren();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObjectContainer3D.prototype.invalidateTransform = function () {
+            _super.prototype.invalidateTransform.call(this);
+            this.notifySceneTransformChange();
+        };
+        ObjectContainer3D.prototype.invalidateSceneTransform = function () {
+            this._sceneTransformDirty = !this._ignoreTransform;
+            this._inverseSceneTransformDirty = !this._ignoreTransform;
+            this._scenePositionDirty = !this._ignoreTransform;
+        };
+        ObjectContainer3D.prototype.updateSceneTransform = function () {
+            if (this._parent && !this._parent._isRoot) {
+                this._sceneTransform.copyFrom(this._parent.sceneTransform);
+                this._sceneTransform.prepend(this.transform);
+            }
+            else
+                this._sceneTransform.copyFrom(this.transform);
+            this._sceneTransformDirty = false;
+        };
+        Object.defineProperty(ObjectContainer3D.prototype, "mouseChildren", {
+            get: function () {
+                return this._mouseChildren;
+            },
+            set: function (value) {
+                this._mouseChildren = value;
+                this.updateMouseChildren();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "visible", {
+            get: function () {
+                return this._explicitVisibility;
+            },
+            set: function (value) {
+                var len = this._children.length;
+                this._explicitVisibility = value;
+                for (var i = 0; i < len; ++i)
+                    this._children[i].updateImplicitVisibility();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "scenePosition", {
+            get: function () {
+                if (this._scenePositionDirty) {
+                    this.sceneTransform.copyColumnTo(3, this._scenePosition);
+                    this._scenePositionDirty = false;
+                }
+                return this._scenePosition;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "minX", {
+            get: function () {
+                var i;
+                var len = this._children.length;
+                var min = Number.POSITIVE_INFINITY;
+                var m = 0;
+                while (i < len) {
+                    var child = this._children[i++];
+                    m = child.minX + child.x;
+                    if (m < min)
+                        min = m;
+                }
+                return min;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "minY", {
+            get: function () {
+                var i;
+                var len = this._children.length;
+                var min = Number.POSITIVE_INFINITY;
+                var m = 0;
+                while (i < len) {
+                    var child = this._children[i++];
+                    m = child.minY + child.y;
+                    if (m < min)
+                        min = m;
+                }
+                return min;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "minZ", {
+            get: function () {
+                var i;
+                var len = this._children.length;
+                var min = Number.POSITIVE_INFINITY;
+                var m = 0;
+                while (i < len) {
+                    var child = this._children[i++];
+                    m = child.minZ + child.z;
+                    if (m < min)
+                        min = m;
+                }
+                return min;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "maxX", {
+            get: function () {
+                var i;
+                var len = this._children.length;
+                var max = Number.NEGATIVE_INFINITY;
+                var m = 0;
+                while (i < len) {
+                    var child = this._children[i++];
+                    m = child.maxX + child.x;
+                    if (m > max)
+                        max = m;
+                }
+                return max;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "maxY", {
+            get: function () {
+                var i;
+                var len = this._children.length;
+                var max = Number.NEGATIVE_INFINITY;
+                var m = 0;
+                while (i < len) {
+                    var child = this._children[i++];
+                    m = child.maxY + child.y;
+                    if (m > max)
+                        max = m;
+                }
+                return max;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "maxZ", {
+            get: function () {
+                var i;
+                var len = this._children.length;
+                var max = Number.NEGATIVE_INFINITY;
+                var m = 0;
+                while (i < len) {
+                    var child = this._children[i++];
+                    m = child.maxZ + child.z;
+                    if (m > max)
+                        max = m;
+                }
+                return max;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "sceneTransform", {
+            get: function () {
+                if (this._sceneTransformDirty)
+                    this.updateSceneTransform();
+                return this._sceneTransform;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "scene", {
+            get: function () {
+                return this._scene;
+            },
+            set: function (value) {
+                var i;
+                var len = this._children.length;
+                while (i < len)
+                    this._children[i++].scene = value;
+                if (this._scene == value)
+                    return;
+                if (value == null)
+                    this._oldScene = this._scene;
+                if (value)
+                    this._oldScene = null;
+                this._scene = value;
+                if (this._scene)
+                    this._scene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.ADDED_TO_SCENE, this));
+                else if (this._oldScene)
+                    this._oldScene.dispatchEvent(new feng3d.Scene3DEvent(feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this));
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "inverseSceneTransform", {
+            get: function () {
+                if (this._inverseSceneTransformDirty) {
+                    this._inverseSceneTransform.copyFrom(this.sceneTransform);
+                    this._inverseSceneTransform.invert();
+                    this._inverseSceneTransformDirty = false;
+                }
+                return this._inverseSceneTransform;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "parent", {
+            get: function () {
+                return this._parent;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObjectContainer3D.prototype.contains = function (child) {
+            return this._children.indexOf(child) >= 0;
+        };
+        ObjectContainer3D.prototype.addChild = function (child) {
+            if (child == null)
+                throw new Error("Parameter child cannot be null.").message;
+            if (child._parent)
+                child._parent.removeChild(child);
+            child.setParent(this);
+            child.scene = this._scene;
+            child.notifySceneTransformChange();
+            child.updateMouseChildren();
+            child.updateImplicitVisibility();
+            this._children.push(child);
+            return child;
+        };
+        ObjectContainer3D.prototype.addChildren = function () {
+            var childarray = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                childarray[_i - 0] = arguments[_i];
+            }
+            for (var child_key_a in childarray) {
+                var child = childarray[child_key_a];
+                this.addChild(child);
+            }
+        };
+        ObjectContainer3D.prototype.removeChild = function (child) {
+            if (child == null)
+                throw new Error("Parameter child cannot be null").message;
+            var childIndex = this._children.indexOf(child);
+            if (childIndex == -1)
+                throw new Error("Parameter is not a child of the caller").message;
+            this.removeChildInternal(childIndex, child);
+        };
+        ObjectContainer3D.prototype.removeChildAt = function (index) {
+            index = index;
+            var child = this._children[index];
+            this.removeChildInternal(index, child);
+        };
+        ObjectContainer3D.prototype.removeChildInternal = function (childIndex, child) {
+            childIndex = childIndex;
+            this._children.splice(childIndex, 1);
+            child.setParent(null);
+        };
+        ObjectContainer3D.prototype.getChildAt = function (index) {
+            index = index;
+            return this._children[index];
+        };
+        Object.defineProperty(ObjectContainer3D.prototype, "numChildren", {
+            get: function () {
+                return this._children.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObjectContainer3D.prototype.lookAt = function (target, upAxis) {
+            if (upAxis === void 0) { upAxis = null; }
+            _super.prototype.lookAt.call(this, target, upAxis);
+            this.notifySceneTransformChange();
+        };
+        ObjectContainer3D.prototype.translateLocal = function (axis, distance) {
+            _super.prototype.translateLocal.call(this, axis, distance);
+            this.notifySceneTransformChange();
+        };
+        ObjectContainer3D.prototype.dispose = function () {
+            if (this.parent)
+                this.parent.removeChild(this);
+        };
+        ObjectContainer3D.prototype.disposeWithChildren = function () {
+            this.dispose();
+            while (this.numChildren > 0)
+                this.getChildAt(0).dispose();
+        };
+        ObjectContainer3D.prototype.clone = function () {
+            var clone = new ObjectContainer3D();
+            clone.pivotPoint = this.pivotPoint;
+            clone.transform = this.transform;
+            clone.name = this.name;
+            var len = this._children.length;
+            for (var i = 0; i < len; ++i)
+                clone.addChild(this._children[i].clone());
+            return clone;
+        };
+        ObjectContainer3D.prototype.rotate = function (axis, angle) {
+            _super.prototype.rotate.call(this, axis, angle);
+            this.notifySceneTransformChange();
+        };
+        ObjectContainer3D.prototype.dispatchEvent = function (event) {
+            var ret = _super.prototype.dispatchEvent.call(this, event);
+            if (event.bubbles) {
+                if (this._parent)
+                    this._parent.dispatchEvent(event);
+                else if (this._scene)
+                    this._scene.dispatchEvent(event);
+            }
+            return ret;
+        };
+        ObjectContainer3D.prototype.updateImplicitVisibility = function () {
+            var len = this._children.length;
+            this._implicitVisibility = this._parent._explicitVisibility && this._parent._implicitVisibility;
+            for (var i = 0; i < len; ++i)
+                this._children[i].updateImplicitVisibility();
+        };
+        ObjectContainer3D.prototype.addEventListener = function (type, listener, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            _super.prototype.addEventListener.call(this, type, listener, thisObject, priority);
+            switch (type) {
+                case feng3d.Object3DEvent.SCENETRANSFORM_CHANGED:
+                    this._listenToSceneTransformChanged = true;
+                    break;
+                case feng3d.Object3DEvent.SCENE_CHANGED:
+                    this._listenToSceneChanged = true;
+                    break;
+            }
+        };
+        ObjectContainer3D.prototype.removeEventListener = function (type, listener, thisObject) {
+            var _self__ = this;
+            _super.prototype.removeEventListener.call(this, type, listener, thisObject);
+            if (_self__.hasEventListener(type))
+                return;
+            switch (type) {
+                case feng3d.Object3DEvent.SCENETRANSFORM_CHANGED:
+                    this._listenToSceneTransformChanged = false;
+                    break;
+                case feng3d.Object3DEvent.SCENE_CHANGED:
+                    this._listenToSceneChanged = false;
+                    break;
+            }
+        };
+        return ObjectContainer3D;
+    }(feng3d.Object3D));
+    feng3d.ObjectContainer3D = ObjectContainer3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6975,12 +7215,12 @@ var feng3d;
      * 3D对象
      * @author feng 2016-04-26
      */
-    var Object3D = (function (_super) {
-        __extends(Object3D, _super);
+    var GameObject = (function (_super) {
+        __extends(GameObject, _super);
         /**
          * 构建3D对象
          */
-        function Object3D(name) {
+        function GameObject(name) {
             if (name === void 0) { name = "object"; }
             _super.call(this);
             this._renderData = new feng3d.Object3DRenderAtomic();
@@ -7015,12 +7255,12 @@ var feng3d;
             this.addEventListener(feng3d.Object3DEvent.ADDED, this.onAdded, this);
             this.addEventListener(feng3d.Object3DEvent.REMOVED, this.onRemoved, this);
         }
-        Object.defineProperty(Object3D.prototype, "renderData", {
+        Object.defineProperty(GameObject.prototype, "renderData", {
             get: function () { return this._renderData; },
             enumerable: true,
             configurable: true
         });
-        Object3D.prototype.updateRender = function (renderContext) {
+        GameObject.prototype.updateRender = function (renderContext) {
             if (this.isBillboard) {
                 this.lookAt(renderContext.camera.globalMatrix3D.position);
             }
@@ -7031,7 +7271,7 @@ var feng3d;
             }
             this.renderData.update(renderContext);
         };
-        Object.defineProperty(Object3D.prototype, "object3DID", {
+        Object.defineProperty(GameObject.prototype, "object3DID", {
             get: function () {
                 return this._object3DID;
             },
@@ -7041,11 +7281,13 @@ var feng3d;
         /**
          * 更新渲染数据
          */
-        Object3D.prototype.updateRenderData = function (renderContext, renderData) {
+        GameObject.prototype.updateRenderData = function (renderContext, renderData) {
             //
             renderData.uniforms[feng3d.RenderDataID.u_objectID] = this._object3DID;
+            // renderData.uniforms[RenderDataID.u_modelMatrix] = this.globalMatrix3D;
+            _super.prototype.updateRenderData.call(this, renderContext, renderData);
         };
-        Object.defineProperty(Object3D.prototype, "parent", {
+        Object.defineProperty(GameObject.prototype, "parent", {
             /**
              * 父对象
              */
@@ -7055,7 +7297,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object3D.prototype._setParent = function (value) {
+        GameObject.prototype._setParent = function (value) {
             if (this._parent == value)
                 return;
             this._parent = value;
@@ -7066,7 +7308,7 @@ var feng3d;
             else
                 this._setScene(this.parent.scene);
         };
-        Object.defineProperty(Object3D.prototype, "scene", {
+        Object.defineProperty(GameObject.prototype, "scene", {
             /**
              * 场景
              */
@@ -7076,7 +7318,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object3D.prototype._setScene = function (value) {
+        GameObject.prototype._setScene = function (value) {
             var _this = this;
             if (this._scene == value)
                 return;
@@ -7093,7 +7335,7 @@ var feng3d;
                 child._setScene(_this._scene);
             });
         };
-        Object.defineProperty(Object3D.prototype, "realMouseEnable", {
+        Object.defineProperty(GameObject.prototype, "realMouseEnable", {
             /**
              * 真实是否支持鼠标事件
              */
@@ -7103,7 +7345,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Object3D.prototype, "realVisible", {
+        Object.defineProperty(GameObject.prototype, "realVisible", {
             /**
              * 真实是否可见
              */
@@ -7118,7 +7360,7 @@ var feng3d;
          * @param child		子对象
          * @return			新增的子对象
          */
-        Object3D.prototype.addChild = function (child) {
+        GameObject.prototype.addChild = function (child) {
             this.addChildAt(child, this.children_.length);
         };
         /**
@@ -7126,7 +7368,7 @@ var feng3d;
          * @param   child   子对象
          * @param   index   添加到的位置
          */
-        Object3D.prototype.addChildAt = function (child, index) {
+        GameObject.prototype.addChildAt = function (child, index) {
             feng3d.debuger && console.assert(index >= 0 && index <= this.children_.length);
             var childIndex = this.children_.indexOf(child);
             if (childIndex != -1) {
@@ -7143,7 +7385,7 @@ var feng3d;
          * @param child 子对象
          * @param index 索引
          */
-        Object3D.prototype.setChildAt = function (child, index) {
+        GameObject.prototype.setChildAt = function (child, index) {
             if (-1 < index && index < this.children_.length) {
                 this.removeChildAt(index);
             }
@@ -7154,7 +7396,7 @@ var feng3d;
          * @param   child   子对象
          * @return			被移除子对象索引
          */
-        Object3D.prototype.removeChild = function (child) {
+        GameObject.prototype.removeChild = function (child) {
             var childIndex = this.children_.indexOf(child);
             this.removeChildAt(childIndex);
             return childIndex;
@@ -7164,7 +7406,7 @@ var feng3d;
          * @param   child   子对象
          * @return  子对象位置
          */
-        Object3D.prototype.getChildIndex = function (child) {
+        GameObject.prototype.getChildIndex = function (child) {
             return this.children_.indexOf(child);
         };
         /**
@@ -7172,7 +7414,7 @@ var feng3d;
          * @param index         子对象索引
          * @return				被移除对象
          */
-        Object3D.prototype.removeChildAt = function (index) {
+        GameObject.prototype.removeChildAt = function (index) {
             feng3d.debuger && console.assert(-1 < index && index < this.children_.length);
             var child = this.children_[index];
             this.children_.splice(index, 1);
@@ -7184,11 +7426,11 @@ var feng3d;
          * @param index         子对象索引
          * @return              指定索引的子对象
          */
-        Object3D.prototype.getChildAt = function (index) {
+        GameObject.prototype.getChildAt = function (index) {
             feng3d.debuger && console.assert(-1 < index && index < this.children_.length);
             return this.children_[index];
         };
-        Object.defineProperty(Object3D.prototype, "numChildren", {
+        Object.defineProperty(GameObject.prototype, "numChildren", {
             /**
              * 获取子对象数量
              */
@@ -7201,7 +7443,7 @@ var feng3d;
         /**
          * 处理添加子对象事件
          */
-        Object3D.prototype.onAdded = function (event) {
+        GameObject.prototype.onAdded = function (event) {
             if (event.data.child == this) {
                 this._setParent(event.data.parent);
             }
@@ -7209,7 +7451,7 @@ var feng3d;
         /**
          * 处理删除子对象事件
          */
-        Object3D.prototype.onRemoved = function (event) {
+        GameObject.prototype.onRemoved = function (event) {
             if (event.data.child == this) {
                 this._setParent(null);
             }
@@ -7219,16 +7461,16 @@ var feng3d;
          * @param component		被添加的组件
          * @param index			插入的位置
          */
-        Object3D.prototype.addComponentAt = function (component, index) {
+        GameObject.prototype.addComponentAt = function (component, index) {
             feng3d.debuger && console.assert(component instanceof feng3d.Object3DComponent, "只有Object3DComponent新增为Object3D组件！");
             _super.prototype.addComponentAt.call(this, component, index);
         };
-        Object3D.getObject3D = function (id) {
+        GameObject.getObject3D = function (id) {
             return object3DMap[id];
         };
-        return Object3D;
-    }(feng3d.Transform));
-    feng3d.Object3D = Object3D;
+        return GameObject;
+    }(feng3d.Object3D));
+    feng3d.GameObject = GameObject;
     var object3DAutoID = 1; //索引从1开始，因为索引拾取中默认值为0
     var object3DMap = {};
 })(feng3d || (feng3d = {}));
@@ -7474,7 +7716,14 @@ var feng3d;
             if (data === void 0) { data = null; }
             if (bubbles === void 0) { bubbles = false; }
             _super.call(this, type, data, bubbles);
+            this.object = data;
         }
+        Object3DEvent.VISIBLITY_UPDATED = "visiblityUpdated";
+        Object3DEvent.SCENETRANSFORM_CHANGED = "scenetransformChanged";
+        Object3DEvent.SCENE_CHANGED = "sceneChanged";
+        Object3DEvent.POSITION_CHANGED = "positionChanged";
+        Object3DEvent.ROTATION_CHANGED = "rotationChanged";
+        Object3DEvent.SCALE_CHANGED = "scaleChanged";
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
@@ -7671,7 +7920,7 @@ var feng3d;
             feng3d.ArrayUtils.removeItem(this._lights, event.data.light);
         };
         return Scene3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.Scene3D = Scene3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13326,7 +13575,7 @@ var feng3d;
             loader.loadText(url);
         };
         ObjLoader.prototype.createObj = function () {
-            var object = new feng3d.Object3D();
+            var object = new feng3d.GameObject();
             var objData = this._objData;
             var objs = objData.objs;
             for (var i = 0; i < objs.length; i++) {
@@ -13339,7 +13588,7 @@ var feng3d;
             }
         };
         ObjLoader.prototype.createSubObj = function (obj) {
-            var object3D = new feng3d.Object3D(obj.name);
+            var object3D = new feng3d.GameObject(obj.name);
             var vertex = new Float32Array(obj.vertex);
             var subObjs = obj.subObjs;
             for (var i = 0; i < subObjs.length; i++) {
@@ -13349,7 +13598,7 @@ var feng3d;
             return object3D;
         };
         ObjLoader.prototype.createMaterialObj = function (vertex, subObj) {
-            var object3D = new feng3d.Object3D();
+            var object3D = new feng3d.GameObject();
             var model = object3D.getOrCreateComponentByClass(feng3d.Model);
             var geometry = model.geometry = new feng3d.Geometry();
             geometry.setVAData(feng3d.GLAttribute.a_position, vertex, 3);
@@ -13415,7 +13664,7 @@ var feng3d;
             loader.loadText(url);
         };
         MD5Loader.prototype.createMD5Mesh = function (md5MeshData) {
-            var object3D = new feng3d.Object3D();
+            var object3D = new feng3d.GameObject();
             //顶点最大关节关联数
             var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
             feng3d.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
@@ -13423,7 +13672,7 @@ var feng3d;
             var skeletonAnimator = new feng3d.SkeletonAnimator(this._skeleton);
             for (var i = 0; i < md5MeshData.meshs.length; i++) {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
-                var skeletonObject3D = new feng3d.Object3D();
+                var skeletonObject3D = new feng3d.GameObject();
                 var model = new feng3d.Model();
                 model.geometry = geometry;
                 model.material = new feng3d.SkeletonAnimatorMaterial();
@@ -13586,7 +13835,7 @@ var feng3d;
             return geometry;
         };
         MD5Loader.prototype.createAnimator = function (md5AnimData) {
-            var object = new feng3d.Object3D();
+            var object = new feng3d.GameObject();
             var _clip = new feng3d.SkeletonClipNode();
             for (var i = 0; i < md5AnimData.numFrames; ++i)
                 _clip.addFrame(this.translatePose(md5AnimData, md5AnimData.frame[i]), 1000 / md5AnimData.frameRate);
@@ -13678,28 +13927,28 @@ var feng3d;
             this.buildTrident(Math.abs((length == 0) ? 10 : length));
         }
         Trident.prototype.buildTrident = function (length) {
-            this._xLine = new feng3d.Object3D();
+            this._xLine = new feng3d.GameObject();
             var segmentGeometry = new feng3d.SegmentGeometry();
             segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(length, 0, 0), 0xff0000, 0xff0000));
             this._xLine.getOrCreateComponentByClass(feng3d.Model).geometry = segmentGeometry;
             this._xLine.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.SegmentMaterial();
             this.addChild(this._xLine);
             //
-            this._yLine = new feng3d.Object3D();
+            this._yLine = new feng3d.GameObject();
             var segmentGeometry = new feng3d.SegmentGeometry();
             segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, length, 0), 0x00ff00, 0x00ff00));
             this._yLine.getOrCreateComponentByClass(feng3d.Model).geometry = segmentGeometry;
             this._yLine.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.SegmentMaterial();
             this.addChild(this._yLine);
             //
-            this._zLine = new feng3d.Object3D();
+            this._zLine = new feng3d.GameObject();
             var segmentGeometry = new feng3d.SegmentGeometry();
             segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, 0, length), 0x0000ff, 0x0000ff));
             this._zLine.getOrCreateComponentByClass(feng3d.Model).geometry = segmentGeometry;
             this._zLine.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.SegmentMaterial();
             this.addChild(this._zLine);
             //
-            this._xArrow = new feng3d.Object3D();
+            this._xArrow = new feng3d.GameObject();
             this._xArrow.position.x = length;
             this._xArrow.rotation.z = -90;
             this._xArrow.getOrCreateComponentByClass(feng3d.Model).geometry = new feng3d.ConeGeometry(5, 18);
@@ -13708,14 +13957,14 @@ var feng3d;
             material.color = new feng3d.Color(1, 0, 0);
             this.addChild(this._xArrow);
             //
-            this._yArrow = new feng3d.Object3D();
+            this._yArrow = new feng3d.GameObject();
             this._yArrow.position.y = length;
             this._yArrow.getOrCreateComponentByClass(feng3d.Model).geometry = new feng3d.ConeGeometry(5, 18);
             var material = this._yArrow.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.ColorMaterial();
             material.color = new feng3d.Color(0, 1, 0);
             this.addChild(this._yArrow);
             //
-            this._zArrow = new feng3d.Object3D();
+            this._zArrow = new feng3d.GameObject();
             this._zArrow.position.z = length;
             this._zArrow.rotation.x = 90;
             this._zArrow.getOrCreateComponentByClass(feng3d.Model).geometry = new feng3d.ConeGeometry(5, 18);
@@ -13724,7 +13973,7 @@ var feng3d;
             this.addChild(this._zArrow);
         };
         return Trident;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.Trident = Trident;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13742,7 +13991,7 @@ var feng3d;
             this.addComponent(this.camera);
         }
         return CameraObject3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.CameraObject3D = CameraObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13766,7 +14015,7 @@ var feng3d;
             this.addComponent(model);
         }
         return PlaneObject3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.PlaneObject3D = PlaneObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13790,7 +14039,7 @@ var feng3d;
             this.addComponent(model);
         }
         return CubeObject3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.CubeObject3D = CubeObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13813,7 +14062,7 @@ var feng3d;
             this.addComponent(model);
         }
         return TorusObect3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.TorusObect3D = TorusObect3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13835,7 +14084,7 @@ var feng3d;
             model.material = new feng3d.StandardMaterial();
         }
         return SphereObject3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.SphereObject3D = SphereObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13857,7 +14106,7 @@ var feng3d;
             model.material = new feng3d.StandardMaterial();
         }
         return CapsuleObject3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.CapsuleObject3D = CapsuleObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13888,7 +14137,7 @@ var feng3d;
             model.material = new feng3d.StandardMaterial();
         }
         return CylinderObject3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.CylinderObject3D = CylinderObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13913,7 +14162,7 @@ var feng3d;
             this.addComponent(model);
         }
         return ConeObject3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.ConeObject3D = ConeObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13933,7 +14182,7 @@ var feng3d;
             this.addComponent(model);
         }
         return SegmentObject3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.SegmentObject3D = SegmentObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13977,7 +14226,7 @@ var feng3d;
             // });
         }
         return ParticleObject3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.ParticleObject3D = ParticleObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13997,7 +14246,7 @@ var feng3d;
             this.addComponent(new feng3d.PointLight());
         }
         return PointLightObject3D;
-    }(feng3d.Object3D));
+    }(feng3d.GameObject));
     feng3d.PointLightObject3D = PointLightObject3D;
 })(feng3d || (feng3d = {}));
 var feng3d;

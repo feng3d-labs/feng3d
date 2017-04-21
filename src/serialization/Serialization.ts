@@ -46,10 +46,10 @@ module feng3d
 
         private handle(object, key, data)
         {
-            if (ClassUtils.is(object, Object3D) && key == "children_")
+            if (ClassUtils.is(object, GameObject) && key == "children_")
             {
-                var children: Object3D[] = this.readObject(data);
-                var object3D: Object3D = object;
+                var children: GameObject[] = this.readObject(data);
+                var object3D: GameObject = object;
                 for (var i = 0; i < children.length; i++)
                 {
                     children[i] && object3D.setChildAt(children[i], i);

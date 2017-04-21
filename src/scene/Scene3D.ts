@@ -5,7 +5,7 @@ module feng3d
      * 3D场景
      * @author feng 2016-05-01
      */
-    export class Scene3D extends Object3D
+    export class Scene3D extends GameObject
     {
         /**
          * 背景颜色
@@ -16,7 +16,7 @@ module feng3d
          */
         public ambientColor = new Color();
 
-        private _object3Ds: Object3D[] = [];
+        private _object3Ds: GameObject[] = [];
         private _renderers: Model[] = [];
         private _lights: Light[] = [];
 

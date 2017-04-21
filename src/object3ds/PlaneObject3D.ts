@@ -4,7 +4,7 @@ module feng3d
      * 平面3D对象
      * @author feng 2017-02-06
      */
-    export class PlaneObject3D extends Object3D
+    export class PlaneObject3D extends GameObject
     {
         /**
          * 构建3D对象

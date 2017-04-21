@@ -33,18 +33,18 @@ module feng3d
          */
         private preMousePoint: Point;
 
-        constructor(transform: Transform = null)
+        constructor(transform: Object3D = null)
         {
             super(transform);
             this.init();
         }
 
-        public get target(): Transform
+        public get target(): Object3D
         {
             return this._target;
         }
 
-        public set target(value: Transform)
+        public set target(value: Object3D)
         {
             
             
