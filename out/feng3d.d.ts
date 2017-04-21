@@ -2355,7 +2355,7 @@ declare module feng3d {
         /**
          * 获取与直线交点
          */
-        lineCross(line3D: Line3D): Vector3D;
+        lineCross(line3D: Line3D): any;
         /**
          * 输出字符串
          */
@@ -3209,7 +3209,7 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    class Object3D extends EventDispatcher {
+    class Object3D extends Component {
         _controller: ControllerBase;
         private _smallestNumber;
         private _transformDirty;
@@ -3350,6 +3350,7 @@ declare module feng3d {
         contains(child: ObjectContainer3D): boolean;
         addChild(child: ObjectContainer3D): ObjectContainer3D;
         addChildren(...childarray: any[]): void;
+        setChildAt(child: ObjectContainer3D, index: number): void;
         removeChild(child: ObjectContainer3D): void;
         removeChildAt(index: number): void;
         private removeChildInternal(childIndex, child);
@@ -3909,7 +3910,7 @@ declare module feng3d {
         /**
          * 坐标
          */
-        readonly positionData: number[];
+        readonly positionData: any[];
     }
 }
 declare module feng3d {
@@ -4062,8 +4063,8 @@ declare module feng3d {
          * 场景投影矩阵，世界空间转投影空间
          */
         readonly viewProjection: Matrix3D;
-        readonly inverseGlobalMatrix3D: any;
-        readonly globalMatrix3D: any;
+        readonly inverseGlobalMatrix3D: Matrix3D;
+        readonly globalMatrix3D: Matrix3D;
         /**
          * 更新投影矩阵
          */
@@ -4941,7 +4942,7 @@ declare module feng3d {
         /**
          * 光照方向
          */
-        readonly direction: any;
+        readonly direction: Vector3D;
         /**
          * 构建
          */
@@ -4961,7 +4962,7 @@ declare module feng3d {
         /**
          * 灯光位置
          */
-        readonly position: any;
+        readonly position: Vector3D;
         /**
          * 构建
          */

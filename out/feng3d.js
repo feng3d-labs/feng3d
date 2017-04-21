@@ -3810,7 +3810,7 @@ var feng3d;
         Matrix3D.prototype.moveRight = function (distance) {
             var direction = this.right;
             direction.scaleBy(distance);
-            this.position = this.position.add(direction);
+            this.position = this.add(direction);
             return this;
         };
         /**
@@ -3820,7 +3820,7 @@ var feng3d;
         Matrix3D.prototype.moveUp = function (distance) {
             var direction = this.up;
             direction.scaleBy(distance);
-            this.position = this.position.add(direction);
+            this.position = this.add(direction);
             return this;
         };
         /**
@@ -3830,7 +3830,7 @@ var feng3d;
         Matrix3D.prototype.moveForward = function (distance) {
             var direction = this.forward;
             direction.scaleBy(distance);
-            this.position = this.position.add(direction);
+            this.position = this.add(direction);
             return this;
         };
         /**
@@ -3920,9 +3920,9 @@ var feng3d;
             var yAxis = new feng3d.Vector3D();
             var zAxis = new feng3d.Vector3D();
             upAxis = upAxis || feng3d.Vector3D.Y_AXIS;
-            zAxis.x = target.x - this.position.x;
-            zAxis.y = target.y - this.position.y;
-            zAxis.z = target.z - this.position.z;
+            zAxis.x = target.x - this.x;
+            zAxis.y = target.y - this.y;
+            zAxis.z = target.z - this.z;
             zAxis.normalize();
             xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
             xAxis.y = upAxis.z * zAxis.x - upAxis.x * zAxis.z;
@@ -4342,7 +4342,7 @@ var feng3d;
             if (length === void 0) { length = 0; }
             var lengthDir = this.direction.clone();
             lengthDir.scaleBy(length);
-            var newPoint = this.position.add(lengthDir);
+            var newPoint = this.add(lengthDir);
             return newPoint;
         };
         return Line3D;
@@ -4522,7 +4522,7 @@ var feng3d;
             var distance = this.distance(line3D.position);
             var addVec = lineDir.clone();
             addVec.scaleBy(-distance / cosAngle);
-            var crossPos = line3D.position.add(addVec);
+            var crossPos = line3D.add(addVec);
             return crossPos;
         };
         /**
@@ -6041,7 +6041,7 @@ var feng3d;
             gl.disable(feng3d.GL.BLEND);
         };
         ForwardRenderer.prototype.drawRenderables = function (gl, renderContext, meshRenderer) {
-            if (meshRenderer.parentComponent.realVisible)
+            if (meshRenderer.parentComponent.isVisible)
                 _super.prototype.drawRenderables.call(this, gl, renderContext, meshRenderer);
         };
         return ForwardRenderer;
@@ -6097,7 +6097,7 @@ var feng3d;
             // this.frameBufferObject.deactivate(gl);
         };
         MouseRenderer.prototype.drawRenderables = function (gl, renderContext, meshRenderer) {
-            if (meshRenderer.parentComponent.realMouseEnable)
+            if (meshRenderer.parentComponent.mouseEnabled)
                 _super.prototype.drawRenderables.call(this, gl, renderContext, meshRenderer);
         };
         /**
@@ -6762,7 +6762,7 @@ var feng3d;
             configurable: true
         });
         return Object3D;
-    }(feng3d.EventDispatcher));
+    }(feng3d.Component));
     feng3d.Object3D = Object3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -7100,6 +7100,28 @@ var feng3d;
             for (var child_key_a in childarray) {
                 var child = childarray[child_key_a];
                 this.addChild(child);
+            }
+        };
+        ObjectContainer3D.prototype.setChildAt = function (child, index) {
+            if (child == null)
+                throw new Error("Parameter child cannot be null.").message;
+            if (child._parent) {
+                if (child._parent != this) {
+                    child._parent.removeChild(child);
+                }
+                else {
+                    var oldIndex = this._children.indexOf(child);
+                    this._children.splice(oldIndex, 1);
+                    this._children.splice(index, 0, child);
+                }
+            }
+            else {
+                child.setParent(this);
+                child.scene = this._scene;
+                child.notifySceneTransformChange();
+                child.updateMouseChildren();
+                child.updateImplicitVisibility();
+                this._children[index] = child;
             }
         };
         ObjectContainer3D.prototype.removeChild = function (child) {
@@ -8192,7 +8214,7 @@ var feng3d;
              * 坐标
              */
             get: function () {
-                return [this.position.x, this.position.y, this.position.z];
+                return [this.x, this.y, this.z];
             },
             enumerable: true,
             configurable: true
@@ -8480,14 +8502,14 @@ var feng3d;
         });
         Object.defineProperty(Camera.prototype, "inverseGlobalMatrix3D", {
             get: function () {
-                return this.parentComponent ? this.parentComponent.inverseGlobalMatrix3D : new feng3d.Matrix3D();
+                return this.parentComponent ? this.parentComponent.inverseSceneTransform : new feng3d.Matrix3D();
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Camera.prototype, "globalMatrix3D", {
             get: function () {
-                return this.parentComponent ? this.parentComponent.globalMatrix3D : new feng3d.Matrix3D();
+                return this.parentComponent ? this.parentComponent.sceneTransform : new feng3d.Matrix3D();
             },
             enumerable: true,
             configurable: true
@@ -8496,13 +8518,13 @@ var feng3d;
          * 处理被添加组件事件
          */
         Camera.prototype.onBeAddedComponent = function (event) {
-            this.parentComponent.addEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.addEventListener(feng3d.Object3DEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         };
         /**
          * 处理被移除组件事件
          */
         Camera.prototype.onBeRemovedComponent = function (event) {
-            this.parentComponent.removeEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.removeEventListener(feng3d.Object3DEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         };
         Camera.prototype.onSpaceTransformChanged = function (event) {
             this._viewProjectionInvalid = true;
@@ -8513,7 +8535,7 @@ var feng3d;
         Camera.prototype.updateRenderData = function (renderContext, renderData) {
             //
             renderData.uniforms[feng3d.RenderDataID.u_viewProjection] = this.viewProjection;
-            var globalMatrix3d = this.parentComponent ? this.parentComponent.globalMatrix3D : new feng3d.Matrix3D();
+            var globalMatrix3d = this.parentComponent ? this.parentComponent.sceneTransform : new feng3d.Matrix3D();
             renderData.uniforms[feng3d.RenderDataID.u_cameraMatrix] = globalMatrix3d;
             //
             renderData.uniforms[feng3d.RenderDataID.u_skyBoxSize] = this.far / Math.sqrt(3);
@@ -10936,7 +10958,7 @@ var feng3d;
              * 光照方向
              */
             get: function () {
-                return this.parentComponent.globalMatrix3D.forward;
+                return this.parentComponent.sceneTransform.forward;
             },
             enumerable: true,
             configurable: true
@@ -10969,7 +10991,7 @@ var feng3d;
              * 灯光位置
              */
             get: function () {
-                return this.parentComponent.globalPosition;
+                return this.parentComponent.scenePosition;
             },
             enumerable: true,
             configurable: true
@@ -11149,9 +11171,9 @@ var feng3d;
             accelerationVec.scaleBy(this.acceleration);
             //计算速度
             this.velocity.incrementBy(accelerationVec);
-            var right = this.target.matrix3d.right;
-            var up = this.target.matrix3d.up;
-            var forward = this.target.matrix3d.forward;
+            var right = this.target.rightVector;
+            var up = this.target.upVector;
+            var forward = this.target.forwardVector;
             right.scaleBy(this.velocity.x);
             up.scaleBy(this.velocity.y);
             forward.scaleBy(this.velocity.z);
@@ -11159,9 +11181,9 @@ var feng3d;
             var displacement = right.clone();
             displacement.incrementBy(up);
             displacement.incrementBy(forward);
-            this.target.position.x += displacement.x;
-            this.target.position.y += displacement.y;
-            this.target.position.z += displacement.z;
+            this.target.x += displacement.x;
+            this.target.y += displacement.y;
+            this.target.z += displacement.z;
         };
         /**
          * 处理鼠标移动事件
@@ -11178,12 +11200,12 @@ var feng3d;
             var offsetPoint = mousePoint.subtract(this.preMousePoint);
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
-            var matrix3d = this.target.matrix3d;
+            var matrix3d = this.target.transform;
             var right = matrix3d.right;
             var position = matrix3d.position;
             matrix3d.appendRotation(offsetPoint.y, right, position);
             matrix3d.appendRotation(offsetPoint.x, feng3d.Vector3D.Y_AXIS, position);
-            this.target.matrix3d = matrix3d;
+            this.target.transform = matrix3d;
             //
             this.preMousePoint = mousePoint;
         };
@@ -13764,8 +13786,8 @@ var feng3d;
             this.addChild(this._zLine);
             //
             this._xArrow = new feng3d.GameObject();
-            this._xArrow.position.x = length;
-            this._xArrow.rotation.z = -90;
+            this._xArrow.x = length;
+            this._xArrow.rotationZ = -90;
             this._xArrow.getOrCreateComponentByClass(feng3d.Model).geometry = new feng3d.ConeGeometry(5, 18);
             ;
             var material = this._xArrow.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.ColorMaterial();
@@ -13773,15 +13795,15 @@ var feng3d;
             this.addChild(this._xArrow);
             //
             this._yArrow = new feng3d.GameObject();
-            this._yArrow.position.y = length;
+            this._yArrow.y = length;
             this._yArrow.getOrCreateComponentByClass(feng3d.Model).geometry = new feng3d.ConeGeometry(5, 18);
             var material = this._yArrow.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.ColorMaterial();
             material.color = new feng3d.Color(0, 1, 0);
             this.addChild(this._yArrow);
             //
             this._zArrow = new feng3d.GameObject();
-            this._zArrow.position.z = length;
-            this._zArrow.rotation.x = 90;
+            this._zArrow.z = length;
+            this._zArrow.rotationX = 90;
             this._zArrow.getOrCreateComponentByClass(feng3d.Model).geometry = new feng3d.ConeGeometry(5, 18);
             var material = this._zArrow.getOrCreateComponentByClass(feng3d.Model).material = new feng3d.ColorMaterial();
             material.color = new feng3d.Color(0, 0, 1);

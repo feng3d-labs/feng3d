@@ -11,7 +11,7 @@ module feng3d
          */
         public get direction()
         {
-            return this.parentComponent.globalMatrix3D.forward;
+            return this.parentComponent.sceneTransform.forward;
         }
 
         /**

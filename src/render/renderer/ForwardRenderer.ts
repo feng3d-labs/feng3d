@@ -33,7 +33,7 @@ module feng3d
 
         protected drawRenderables(gl: GL, renderContext: RenderContext, meshRenderer: Model)
         {
-            if (meshRenderer.parentComponent.realVisible)
+            if (meshRenderer.parentComponent.isVisible)
                 super.drawRenderables(gl, renderContext, meshRenderer);
         }
     }

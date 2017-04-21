@@ -17,7 +17,7 @@ module feng3d
          */
         public get position()
         {
-            return this.parentComponent.globalPosition;
+            return this.parentComponent.scenePosition;
         }
 
         /**

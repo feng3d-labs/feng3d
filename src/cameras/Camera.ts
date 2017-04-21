@@ -109,12 +109,12 @@ module feng3d
 
         public get inverseGlobalMatrix3D()
         {
-            return this.parentComponent ? this.parentComponent.inverseGlobalMatrix3D : new Matrix3D();
+            return this.parentComponent ? this.parentComponent.inverseSceneTransform : new Matrix3D();
         }
 
         public get globalMatrix3D()
         {
-            return this.parentComponent ? this.parentComponent.globalMatrix3D : new Matrix3D();
+            return this.parentComponent ? this.parentComponent.sceneTransform : new Matrix3D();
         }
 
 		/**
@@ -137,7 +137,7 @@ module feng3d
          */
         protected onBeAddedComponent(event: ComponentEvent): void
         {
-            this.parentComponent.addEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.addEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
         /**
@@ -145,10 +145,10 @@ module feng3d
          */
         protected onBeRemovedComponent(event: ComponentEvent): void
         {
-            this.parentComponent.removeEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.removeEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         }
 
-        private onSpaceTransformChanged(event: TransformEvent): void
+        private onSpaceTransformChanged(event: Object3DEvent): void
         {
             this._viewProjectionInvalid = true;
         }
@@ -160,7 +160,7 @@ module feng3d
         {
             //
             renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
-            var globalMatrix3d = this.parentComponent ? this.parentComponent.globalMatrix3D : new Matrix3D();
+            var globalMatrix3d = this.parentComponent ? this.parentComponent.sceneTransform : new Matrix3D();
             renderData.uniforms[RenderDataID.u_cameraMatrix] = globalMatrix3d;
             //
             renderData.uniforms[RenderDataID.u_skyBoxSize] = this.far / Math.sqrt(3);

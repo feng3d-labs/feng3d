@@ -102,9 +102,9 @@ module feng3d
             accelerationVec.scaleBy(this.acceleration);
             //计算速度
             this.velocity.incrementBy(accelerationVec);
-            var right = this.target.matrix3d.right;
-            var up = this.target.matrix3d.up;
-            var forward = this.target.matrix3d.forward;
+            var right = this.target.rightVector;
+            var up = this.target.upVector;
+            var forward = this.target.forwardVector;
             right.scaleBy(this.velocity.x);
             up.scaleBy(this.velocity.y);
             forward.scaleBy(this.velocity.z);
@@ -112,9 +112,9 @@ module feng3d
             var displacement = right.clone();
             displacement.incrementBy(up);
             displacement.incrementBy(forward);
-            this.target.position.x += displacement.x;
-            this.target.position.y += displacement.y;
-            this.target.position.z += displacement.z;
+            this.target.x += displacement.x;
+            this.target.y += displacement.y;
+            this.target.z += displacement.z;
         }
 
         /**
@@ -137,12 +137,12 @@ module feng3d
             var offsetPoint = mousePoint.subtract(this.preMousePoint)
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
-            var matrix3d = this.target.matrix3d;
+            var matrix3d = this.target.transform;
             var right = matrix3d.right;
             var position = matrix3d.position;
             matrix3d.appendRotation(offsetPoint.y, right, position);
             matrix3d.appendRotation(offsetPoint.x, Vector3D.Y_AXIS, position);
-            this.target.matrix3d = matrix3d;
+            this.target.transform = matrix3d;
             //
             this.preMousePoint = mousePoint;
         }

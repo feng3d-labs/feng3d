@@ -317,7 +317,6 @@ module feng3d
             return this._parent;
         }
 
-
         public constructor()
         {
             super();
@@ -349,6 +348,34 @@ module feng3d
             {
                 var child: ObjectContainer3D = childarray[child_key_a];
                 this.addChild(child);
+            }
+        }
+
+        public setChildAt(child: ObjectContainer3D, index: number)
+        {
+            if (child == null)
+                throw new Error("Parameter child cannot be null.").message;
+            if (child._parent)
+            {
+                if (child._parent != this)
+                {
+                    child._parent.removeChild(child);
+                }
+                else
+                {
+                    var oldIndex = this._children.indexOf(child);
+                    this._children.splice(oldIndex, 1);
+                    this._children.splice(index, 0, child);
+                }
+            }
+            else
+            {
+                child.setParent(this);
+                child.scene = this._scene;
+                child.notifySceneTransformChange();
+                child.updateMouseChildren();
+                child.updateImplicitVisibility();
+                this._children[index] = child;
             }
         }
 

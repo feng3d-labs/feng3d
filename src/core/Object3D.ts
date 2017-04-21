@@ -1,6 +1,6 @@
 module feng3d
 {
-    export class Object3D extends EventDispatcher
+    export class Object3D extends Component
     {
         public _controller: ControllerBase;
         private _smallestNumber: number = 0.0000000000000000000001;
