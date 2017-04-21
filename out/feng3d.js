@@ -7155,16 +7155,6 @@ var feng3d;
             _super.prototype.rotate.call(this, axis, angle);
             this.notifySceneTransformChange();
         };
-        ObjectContainer3D.prototype.dispatchEvent = function (event) {
-            var ret = _super.prototype.dispatchEvent.call(this, event);
-            if (event.bubbles) {
-                if (this._parent)
-                    this._parent.dispatchEvent(event);
-                else if (this._scene)
-                    this._scene.dispatchEvent(event);
-            }
-            return ret;
-        };
         ObjectContainer3D.prototype.updateImplicitVisibility = function () {
             var len = this._children.length;
             this._implicitVisibility = this._parent._explicitVisibility && this._parent._implicitVisibility;

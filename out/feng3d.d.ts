@@ -3344,7 +3344,6 @@ declare module feng3d {
         disposeWithChildren(): void;
         clone(): ObjectContainer3D;
         rotate(axis: Vector3D, angle: number): void;
-        dispatchEvent(event: Event): boolean;
         updateImplicitVisibility(): void;
         addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
         removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;

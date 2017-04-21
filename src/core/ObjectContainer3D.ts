@@ -457,19 +457,6 @@ module feng3d
             this.notifySceneTransformChange();
         }
 
-        public dispatchEvent(event: Event): boolean
-        {
-            var ret: boolean = super.dispatchEvent(event);
-            if (event.bubbles)
-            {
-                if (this._parent)
-                    this._parent.dispatchEvent(event);
-                else if (this._scene)
-                    this._scene.dispatchEvent(event);
-            }
-            return ret;
-        }
-
         public updateImplicitVisibility()
         {
             var len: number = this._children.length;
