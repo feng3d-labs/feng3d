@@ -1853,6 +1853,10 @@ declare module feng3d {
      */
     class Matrix3D {
         /**
+         * 用于运算临时变量
+         */
+        static RAW_DATA_CONTAINER: Float32Array;
+        /**
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
         rawData: Float32Array;
@@ -1876,6 +1880,18 @@ declare module feng3d {
          * 右方（+x轴方向）
          */
         readonly right: Vector3D;
+        /**
+         * 后方（-z轴方向）
+         */
+        readonly back: Vector3D;
+        /**
+         * 下方（-y轴方向）
+         */
+        readonly down: Vector3D;
+        /**
+         * 左方（-x轴方向）
+         */
+        readonly left: Vector3D;
         /**
          * 创建 Matrix3D 对象。
          * @param   datas    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
@@ -1961,7 +1977,7 @@ declare module feng3d {
          * @param   index       vector中的起始位置
          * @param   transpose   是否转置当前矩阵
          */
-        copyRawDataTo(vector: Array<number>, index?: number, transpose?: boolean): this;
+        copyRawDataTo(vector: number[] | Float32Array, index?: number, transpose?: boolean): this;
         /**
          * 将 Vector3D 对象复制到调用方 Matrix3D 对象的特定行中。
          * @param   row         要将数据复制到的行。
@@ -3194,154 +3210,324 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 变换
-     * @author feng 2016-04-26
+     * 位移时抛出
+     */
+    /**
+     * 旋转时抛出
+     */
+    /**
+     * 缩放时抛出
+     */
+    /**
+     * 变换状态抛出
+     */
+    /**
+     * 变换已更新
+     */
+    /**
+     * 3D元素<br/><br/>
+     *
+     * 主要功能:
+     * <ul>
+     *     <li>管理3D元素的位置、旋转、缩放状态</li>
+     * </ul>
+     * @author feng 2014-3-31
+     */
+    /**
+     * 3D元素状态变换<br/><br/>
+     *
+     * 主要功能:
+     * <ul>
+     *     <li>处理3d元素的平移、旋转、缩放等操作</li>
+     * </ul>
+     *
+     * @author feng 2014-3-31
      */
     class Transform extends RenderDataHolder {
+        private _smallestNumber;
+        protected _transformDirty: boolean;
+        private _positionDirty;
+        private _rotationDirty;
+        private _scaleDirty;
+        private _positionChanged;
+        private _rotationChanged;
+        private _scaleChanged;
         private _transformChanged;
-        private _sceneTransformChanged;
+        private _eulers;
+        private _listenToPositionChanged;
+        private _listenToRotationChanged;
+        private _listenToScaleChanged;
+        private _listenToTransformChanged;
+        protected _transform: Matrix3D;
+        protected _x: number;
+        protected _y: number;
+        protected _z: number;
+        protected _rotationX: number;
+        protected _rotationY: number;
+        protected _rotationZ: number;
+        protected _scaleX: number;
+        protected _scaleY: number;
+        protected _scaleZ: number;
+        protected _pivotPoint: Vector3D;
+        protected _pivotZero: boolean;
+        protected _pos: Vector3D;
+        protected _rot: Vector3D;
+        protected _sca: Vector3D;
+        protected _transformComponents: Vector3D[];
         /**
-         * 位移
+         * 创建3D元素状态变换实例
+         */
+        constructor();
+        /**
+         * 相对父容器的X坐标
+         */
+        x: number;
+        /**
+         * 相对父容器的Y坐标
+         */
+        y: number;
+        /**
+         * 相对父容器的Z坐标
+         */
+        z: number;
+        /**
+         * 绕X轴旋转角度
+         */
+        rotationX: number;
+        /**
+         * 绕Y轴旋转角度
+         */
+        rotationY: number;
+        /**
+         * 绕Z轴旋转角度
+         */
+        rotationZ: number;
+        /**
+         * X轴旋方向缩放
+         */
+        scaleX: number;
+        /**
+         * Y轴旋方向缩放
+         */
+        scaleY: number;
+        /**
+         * Z轴旋方向缩放
+         */
+        scaleZ: number;
+        /**
+         * 欧拉角
+         * <ul>
+         *     <li>使用Vector3D对象表示 相对x、y、z轴上的旋转角度</li>
+         * </ul>
+         */
+        eulers: Vector3D;
+        /**
+         * 3d元素变换矩阵
+         */
+        transform: Matrix3D;
+        /**
+         * 中心点坐标（本地对象旋转点）
+         */
+        pivotPoint: Vector3D;
+        /**
+         * 获取在父容器中的坐标
          */
         position: Vector3D;
         /**
-         * 旋转
+         * 使位置数据无效
          */
-        rotation: Vector3D;
+        protected invalidatePosition(): void;
         /**
-         * 缩放
+         * 发出平移事件
          */
-        scale: Vector3D;
-        protected _matrix3D: Matrix3D;
-        protected _inverseMatrix3D: Matrix3D;
+        private notifyPositionChanged();
         /**
-         * 全局矩阵
+         * 使变换矩阵失效
          */
-        protected _globalMatrix3D: Matrix3D;
-        protected _inverseGlobalMatrix3D: Matrix3D;
-        protected _matrix3DDirty: boolean;
-        protected _inverseMatrix3DDirty: boolean;
-        /**
-         * 全局矩阵是否变脏
-         */
-        protected _globalMatrix3DDirty: boolean;
-        protected _inverseGlobalMatrix3DDirty: boolean;
-        private _positionWatchers;
-        private _rotationWatchers;
-        private _scaleWatchers;
-        /**
-         * 父变换
-         */
-        private _parentTransform;
-        /**
-         * 构建变换
-         * @param x X坐标
-         * @param y Y坐标
-         * @param z Z坐标
-         * @param rx X旋转
-         * @param ry Y旋转
-         * @param rz Z旋转
-         * @param sx X缩放
-         * @param sy Y缩放
-         * @param sz Z缩放
-         */
-        constructor(x?: number, y?: number, z?: number, rx?: number, ry?: number, rz?: number, sx?: number, sy?: number, sz?: number);
-        /**
-         * 只写，提供给Binding.bindProperty使用
-         */
-        private parentTransform;
-        /**
-         * 位移旋转缩放组件失效
-         */
-        private invalidateComp();
-        /**
-         * 全局坐标
-         */
-        globalPosition: Vector3D;
-        /**
-         * 变换矩阵
-         */
-        matrix3d: Matrix3D;
-        /**
-         * 逆变换矩阵
-         */
-        readonly inverseMatrix3D: Matrix3D;
-        /**
-         * 看向目标位置
-         * @param target    目标位置
-         * @param upAxis    向上朝向
-         */
-        lookAt(target: Vector3D, upAxis?: Vector3D): void;
-        /**
-         * 全局矩阵
-         */
-        globalMatrix3D: Matrix3D;
-        /**
-         * 逆全局矩阵
-         */
-        readonly inverseGlobalMatrix3D: Matrix3D;
-        /**
-         * 变换矩阵
-         */
-        protected updateMatrix3D(): void;
-        /**
-         * 使变换矩阵无效
-         */
-        protected invalidateMatrix3D(): void;
-        /**
-         * 验证数值是否正确
-         */
-        private _debug();
+        invalidateTransform(): void;
         /**
          * 发出状态改变消息
          */
-        protected notifyMatrix3DChanged(): void;
+        private notifyTransformChanged();
         /**
-         * 更新全局矩阵
+         * 更新变换矩阵
          */
-        protected updateGlobalMatrix3D(): void;
+        protected updateTransform(): void;
         /**
-         * 更新逆全局矩阵
+         * 使中心点无效
          */
-        protected updateInverseGlobalMatrix3D(): void;
+        protected invalidatePivot(): void;
         /**
-         * 通知全局变换改变
+         * 监听事件
+         * @param type 事件类型
+         * @param listener 回调函数
          */
-        protected notifySceneTransformChange(): void;
+        addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
         /**
-         * 全局变换矩阵失效
-         * @private
+         * 移除事件
+         * @param type 事件类型
+         * @param listener 回调函数
          */
-        protected invalidateGlobalMatrix3D(): void;
+        removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
         /**
-         * 更新渲染数据
+         * 使旋转角度无效
          */
-        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        protected invalidateRotation(): void;
+        /**
+         * 抛出旋转事件
+         */
+        private notifyRotationChanged();
+        /**
+         * 使缩放无效
+         */
+        protected invalidateScale(): void;
+        /**
+         * 抛出缩放事件
+         */
+        private notifyScaleChanged();
+        /**
+         * 等比缩放
+         * @param value 缩放比例
+         */
+        scale(value: number): void;
+        /**
+         * 向前（Z轴方向）位移
+         * @param distance 位移距离
+         */
+        moveForward(distance: number): void;
+        /**
+         * 向后（Z轴负方向）位移
+         * @param distance 位移距离
+         */
+        moveBackward(distance: number): void;
+        /**
+         * 向左（X轴负方向）位移
+         * @param distance 位移距离
+         */
+        moveLeft(distance: number): void;
+        /**
+         * 向右（X轴方向）位移
+         * @param distance 位移距离
+         */
+        moveRight(distance: number): void;
+        /**
+         * 向上（Y轴方向）位移
+         * @param distance 位移距离
+         */
+        moveUp(distance: number): void;
+        /**
+         * 向下（Y轴负方向）位移
+         * @param distance 位移距离
+         */
+        moveDown(distance: number): void;
+        /**
+         * 直接移到空间的某个位置
+         * @param newX x坐标
+         * @param newY y坐标
+         * @param newZ z坐标
+         */
+        moveTo(newX: number, newY: number, newZ: number): void;
+        /**
+         * 移动中心点（旋转点）
+         * @param dx X轴方向位移
+         * @param dy Y轴方向位移
+         * @param dz Z轴方向位移
+         */
+        movePivot(dx: number, dy: number, dz: number): void;
+        /**
+         * 在自定义轴上位移
+         * @param axis 自定义轴
+         * @param distance 位移距离
+         */
+        translate(axis: Vector3D, distance: number): void;
+        /**
+         * 在自定义轴上位移<br/>
+         *
+         * 注意：
+         * <ul>
+         * 		<li>没太理解 与 translate的区别</li>
+         * </ul>
+         * @param axis 自定义轴
+         * @param distance 位移距离
+         */
+        translateLocal(axis: Vector3D, distance: number): void;
+        /**
+         * 绕X轴旋转
+         * @param angle 旋转角度
+         */
+        pitch(angle: number): void;
+        /**
+         * 绕Y轴旋转
+         * @param angle 旋转角度
+         */
+        yaw(angle: number): void;
+        /**
+         * 绕Z轴旋转
+         * @param angle 旋转角度
+         */
+        roll(angle: number): void;
+        /**
+         * 直接修改欧拉角
+         * @param ax X轴旋转角度
+         * @param ay Y轴旋转角度
+         * @param az Z轴旋转角度
+         */
+        rotateTo(ax: number, ay: number, az: number): void;
+        /**
+         * 绕所给轴旋转
+         * @param axis 任意轴
+         * @param angle 旋转角度
+         */
+        rotate(axis: Vector3D, angle: number): void;
+        /**
+         * 观察目标
+         * <ul>
+         * 		<li>旋转至朝向给出的点</li>
+         * </ul>
+         * @param target 	目标点
+         * @param upAxis 	旋转后向上方向（并非绝对向上），默认为null，当值为null时会以Y轴为向上方向计算
+         */
+        lookAt(target: Vector3D, upAxis?: Vector3D): void;
     }
     /**
-     * 变换事件(3D状态发生改变、位置、旋转、缩放)
+     * 3D对象事件(3D状态发生改变、位置、旋转、缩放)
      * @author feng 2014-3-31
      */
-    class TransformEvent extends Event {
+    class Transform3DEvent extends Event {
+        /**
+         * 平移
+         */
+        static POSITION_CHANGED: string;
+        /**
+         * 旋转
+         */
+        static ROTATION_CHANGED: string;
+        /**
+         * 缩放
+         */
+        static SCALE_CHANGED: string;
         /**
          * 变换
          */
         static TRANSFORM_CHANGED: string;
         /**
+         * 变换已更新
+         */
+        static TRANSFORM_UPDATED: string;
+        /**
          * 场景变换矩阵发生变化
          */
         static SCENETRANSFORM_CHANGED: string;
         /**
+         * 创建3D对象事件
+         * @param type			事件类型
+         * @param element3D		发出事件的3D元素
+         */
+        constructor(type: string, transform3D: Transform, bubbles?: boolean);
+        /**
          * 发出事件的3D元素
          */
-        data: Transform;
-        /**
-         * 创建一个作为参数传递给事件侦听器的 Event 对象。
-         * @param type 事件的类型，可以作为 Event.type 访问。
-         * @param data 携带数据
-         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
-         */
-        constructor(type: string, data: Transform, bubbles?: boolean);
+        readonly transform3D: Transform;
     }
 }
 declare module feng3d {
@@ -4122,8 +4308,8 @@ declare module feng3d {
          * 场景投影矩阵，世界空间转投影空间
          */
         readonly viewProjection: Matrix3D;
-        readonly inverseGlobalMatrix3D: Matrix3D;
-        readonly globalMatrix3D: Matrix3D;
+        readonly inverseGlobalMatrix3D: any;
+        readonly globalMatrix3D: any;
         /**
          * 更新投影矩阵
          */
@@ -5001,7 +5187,7 @@ declare module feng3d {
         /**
          * 光照方向
          */
-        readonly direction: Vector3D;
+        readonly direction: any;
         /**
          * 构建
          */
@@ -5021,7 +5207,7 @@ declare module feng3d {
         /**
          * 灯光位置
          */
-        readonly position: Vector3D;
+        readonly position: any;
         /**
          * 构建
          */

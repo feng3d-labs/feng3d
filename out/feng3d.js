@@ -3350,6 +3350,48 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Matrix3D.prototype, "back", {
+            /**
+             * 后方（-z轴方向）
+             */
+            get: function () {
+                var v = new feng3d.Vector3D(0.0, 0.0, 0.0);
+                this.copyColumnTo(2, v);
+                v.normalize();
+                v.negate();
+                return v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Matrix3D.prototype, "down", {
+            /**
+             * 下方（-y轴方向）
+             */
+            get: function () {
+                var v = new feng3d.Vector3D();
+                this.copyColumnTo(1, v);
+                v.normalize();
+                v.negate();
+                return v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Matrix3D.prototype, "left", {
+            /**
+             * 左方（-x轴方向）
+             */
+            get: function () {
+                var v = new feng3d.Vector3D();
+                this.copyColumnTo(0, v);
+                v.normalize();
+                v.negate();
+                return v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 创建旋转矩阵
          * @param   degrees         角度
@@ -3928,6 +3970,15 @@ var feng3d;
             }
             return str;
         };
+        /**
+         * 用于运算临时变量
+         */
+        Matrix3D.RAW_DATA_CONTAINER = new Float32Array([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1 //
+        ]);
         return Matrix3D;
     }());
     feng3d.Matrix3D = Matrix3D;
@@ -6144,331 +6195,779 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 变换
-     * @author feng 2016-04-26
+     * 位移时抛出
+     */
+    //[Event(name = "positionChanged", type = "me.feng3d.events.Transform3DEvent")]
+    /**
+     * 旋转时抛出
+     */
+    //[Event(name = "rotationChanged", type = "me.feng3d.events.Transform3DEvent")]
+    /**
+     * 缩放时抛出
+     */
+    //[Event(name = "scaleChanged", type = "me.feng3d.events.Transform3DEvent")]
+    /**
+     * 变换状态抛出
+     */
+    //[Event(name = "transformChanged", type = "me.feng3d.events.Transform3DEvent")]
+    /**
+     * 变换已更新
+     */
+    //[Event(name = "transformUpdated", type = "me.feng3d.events.Transform3DEvent")]
+    /**
+     * 3D元素<br/><br/>
+     *
+     * 主要功能:
+     * <ul>
+     *     <li>管理3D元素的位置、旋转、缩放状态</li>
+     * </ul>
+     * @author feng 2014-3-31
+     */
+    /**
+     * 3D元素状态变换<br/><br/>
+     *
+     * 主要功能:
+     * <ul>
+     *     <li>处理3d元素的平移、旋转、缩放等操作</li>
+     * </ul>
+     *
+     * @author feng 2014-3-31
      */
     var Transform = (function (_super) {
         __extends(Transform, _super);
         /**
-         * 构建变换
-         * @param x X坐标
-         * @param y Y坐标
-         * @param z Z坐标
-         * @param rx X旋转
-         * @param ry Y旋转
-         * @param rz Z旋转
-         * @param sx X缩放
-         * @param sy Y缩放
-         * @param sz Z缩放
+         * 创建3D元素状态变换实例
          */
-        function Transform(x, y, z, rx, ry, rz, sx, sy, sz) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            if (z === void 0) { z = 0; }
-            if (rx === void 0) { rx = 0; }
-            if (ry === void 0) { ry = 0; }
-            if (rz === void 0) { rz = 0; }
-            if (sx === void 0) { sx = 1; }
-            if (sy === void 0) { sy = 1; }
-            if (sz === void 0) { sz = 1; }
+        function Transform() {
             _super.call(this);
-            this._transformChanged = new TransformEvent(TransformEvent.TRANSFORM_CHANGED, this);
-            this._sceneTransformChanged = new TransformEvent(TransformEvent.SCENETRANSFORM_CHANGED, this);
-            /**
-             * 位移
-             */
-            this.position = new feng3d.Vector3D();
-            /**
-             * 旋转
-             */
-            this.rotation = new feng3d.Vector3D();
-            /**
-             * 缩放
-             */
-            this.scale = new feng3d.Vector3D(1, 1, 1);
-            //
-            this._matrix3D = new feng3d.Matrix3D();
-            this._inverseMatrix3D = new feng3d.Matrix3D();
-            /**
-             * 全局矩阵
-             */
-            this._globalMatrix3D = new feng3d.Matrix3D();
-            this._inverseGlobalMatrix3D = new feng3d.Matrix3D();
-            //
-            this._matrix3DDirty = true;
-            this._inverseMatrix3DDirty = true;
-            /**
-             * 全局矩阵是否变脏
-             */
-            this._globalMatrix3DDirty = true;
-            this._inverseGlobalMatrix3DDirty = true;
-            //
-            this._positionWatchers = [];
-            this._rotationWatchers = [];
-            this._scaleWatchers = [];
-            this._single = true;
-            //矫正值
-            this.position.setTo(x, y, z);
-            this.rotation.setTo(rx, ry, rz);
-            this.scale.setTo(sx, sy, sz);
-            //
-            this._positionWatchers.push(feng3d.Watcher.watch(this.position, ["y"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.position, ["z"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.position, ["x"], this.invalidateMatrix3D, this));
-            this._rotationWatchers.push(feng3d.Watcher.watch(this.rotation, ["x"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.rotation, ["y"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.rotation, ["z"], this.invalidateMatrix3D, this));
-            this._scaleWatchers.push(feng3d.Watcher.watch(this.scale, ["x"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.scale, ["y"], this.invalidateMatrix3D, this), feng3d.Watcher.watch(this.scale, ["z"], this.invalidateMatrix3D, this));
-            feng3d.Watcher.watch(this, ["position"], this.invalidateComp, this);
-            feng3d.Watcher.watch(this, ["rotation"], this.invalidateComp, this);
-            feng3d.Watcher.watch(this, ["scale"], this.invalidateComp, this);
-            //
-            feng3d.Binding.bindProperty(this, ["_parentComponent", "_parent", "_transform"], this, "parentTransform");
+            this._smallestNumber = 0.0000000000000000000001;
+            this._transformDirty = true;
+            this._eulers = new feng3d.Vector3D();
+            this._transform = new feng3d.Matrix3D();
+            this._x = 0;
+            this._y = 0;
+            this._z = 0;
+            this._rotationX = 0;
+            this._rotationY = 0;
+            this._rotationZ = 0;
+            this._scaleX = 1;
+            this._scaleY = 1;
+            this._scaleZ = 1;
+            this._pivotPoint = new feng3d.Vector3D();
+            this._pivotZero = true;
+            this._pos = new feng3d.Vector3D();
+            this._rot = new feng3d.Vector3D();
+            this._sca = new feng3d.Vector3D();
+            // Cached vector of transformation components used when
+            // recomposing the this.transform matrix in this.updateTransform()
+            this._transformComponents = [];
+            this._transformComponents[0] = this._pos;
+            this._transformComponents[1] = this._rot;
+            this._transformComponents[2] = this._sca;
+            this._transform.identity();
         }
-        Object.defineProperty(Transform.prototype, "parentTransform", {
+        Object.defineProperty(Transform.prototype, "x", {
             /**
-             * 只写，提供给Binding.bindProperty使用
+             * 相对父容器的X坐标
              */
-            set: function (value) {
-                if (this._parentTransform == value)
+            get: function () {
+                return this._x;
+            },
+            set: function (val) {
+                if (this._x == val)
                     return;
-                if (this._parentTransform) {
-                    this._parentTransform.removeEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.invalidateGlobalMatrix3D, this);
-                }
-                this._parentTransform = value;
-                if (this._parentTransform) {
-                    this._parentTransform.addEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.invalidateGlobalMatrix3D, this);
-                }
-                this.invalidateGlobalMatrix3D();
+                this._x = val;
+                this.invalidatePosition();
             },
             enumerable: true,
             configurable: true
         });
-        /**
-         * 位移旋转缩放组件失效
-         */
-        Transform.prototype.invalidateComp = function () {
-            var _this = this;
-            //延迟事件
-            this.lockEvent();
-            //
-            this.position || (this.position = new feng3d.Vector3D());
-            this.rotation || (this.rotation = new feng3d.Vector3D());
-            this.scale || (this.scale = new feng3d.Vector3D(1, 1, 1));
-            //
-            this._positionWatchers.forEach(function (element) {
-                element.reset(_this.position);
-            });
-            this._rotationWatchers.forEach(function (element) {
-                element.reset(_this.rotation);
-            });
-            this._scaleWatchers.forEach(function (element) {
-                element.reset(_this.scale);
-            });
-            //
-            this.invalidateMatrix3D();
-            this.unlockEvent();
-        };
-        Object.defineProperty(Transform.prototype, "globalPosition", {
+        Object.defineProperty(Transform.prototype, "y", {
             /**
-             * 全局坐标
+             * 相对父容器的Y坐标
              */
             get: function () {
-                return this.globalMatrix3D.position;
+                return this._y;
+            },
+            set: function (val) {
+                if (this._y == val)
+                    return;
+                this._y = val;
+                this.invalidatePosition();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "z", {
+            /**
+             * 相对父容器的Z坐标
+             */
+            get: function () {
+                return this._z;
+            },
+            set: function (val) {
+                if (this._z == val)
+                    return;
+                this._z = val;
+                this.invalidatePosition();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "rotationX", {
+            /**
+             * 绕X轴旋转角度
+             */
+            get: function () {
+                return this._rotationX * feng3d.MathConsts.RADIANS_TO_DEGREES;
+            },
+            set: function (val) {
+                if (this.rotationX == val)
+                    return;
+                this._rotationX = val * feng3d.MathConsts.DEGREES_TO_RADIANS;
+                this.invalidateRotation();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "rotationY", {
+            /**
+             * 绕Y轴旋转角度
+             */
+            get: function () {
+                return this._rotationY * feng3d.MathConsts.RADIANS_TO_DEGREES;
+            },
+            set: function (val) {
+                if (this.rotationY == val)
+                    return;
+                this._rotationY = val * feng3d.MathConsts.DEGREES_TO_RADIANS;
+                this.invalidateRotation();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "rotationZ", {
+            /**
+             * 绕Z轴旋转角度
+             */
+            get: function () {
+                return this._rotationZ * feng3d.MathConsts.RADIANS_TO_DEGREES;
+            },
+            set: function (val) {
+                if (this.rotationZ == val)
+                    return;
+                this._rotationZ = val * feng3d.MathConsts.DEGREES_TO_RADIANS;
+                this.invalidateRotation();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "scaleX", {
+            /**
+             * X轴旋方向缩放
+             */
+            get: function () {
+                return this._scaleX;
+            },
+            set: function (val) {
+                if (this._scaleX == val)
+                    return;
+                this._scaleX = val;
+                this.invalidateScale();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "scaleY", {
+            /**
+             * Y轴旋方向缩放
+             */
+            get: function () {
+                return this._scaleY;
+            },
+            set: function (val) {
+                if (this._scaleY == val)
+                    return;
+                this._scaleY = val;
+                this.invalidateScale();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "scaleZ", {
+            /**
+             * Z轴旋方向缩放
+             */
+            get: function () {
+                return this._scaleZ;
+            },
+            set: function (val) {
+                if (this._scaleZ == val)
+                    return;
+                this._scaleZ = val;
+                this.invalidateScale();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "eulers", {
+            /**
+             * 欧拉角
+             * <ul>
+             *     <li>使用Vector3D对象表示 相对x、y、z轴上的旋转角度</li>
+             * </ul>
+             */
+            get: function () {
+                this._eulers.x = this._rotationX * feng3d.MathConsts.RADIANS_TO_DEGREES;
+                this._eulers.y = this._rotationY * feng3d.MathConsts.RADIANS_TO_DEGREES;
+                this._eulers.z = this._rotationZ * feng3d.MathConsts.RADIANS_TO_DEGREES;
+                return this._eulers;
             },
             set: function (value) {
-                var globalMatrix3D = this.globalMatrix3D.clone();
-                globalMatrix3D.position = value;
-                this.globalMatrix3D = globalMatrix3D;
+                this._rotationX = value.x * feng3d.MathConsts.DEGREES_TO_RADIANS;
+                this._rotationY = value.y * feng3d.MathConsts.DEGREES_TO_RADIANS;
+                this._rotationZ = value.z * feng3d.MathConsts.DEGREES_TO_RADIANS;
+                this.invalidateRotation();
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "matrix3d", {
+        Object.defineProperty(Transform.prototype, "transform", {
             /**
-             * 变换矩阵
+             * 3d元素变换矩阵
              */
             get: function () {
-                if (this._matrix3DDirty)
-                    this.updateMatrix3D();
-                return this._matrix3D;
+                if (this._transformDirty)
+                    this.updateTransform();
+                return this._transform;
             },
-            set: function (value) {
-                //延迟事件
-                this.lockEvent();
-                this._matrix3DDirty = false;
-                this._matrix3D.rawData.set(value.rawData);
-                var vecs = this._matrix3D.decompose();
-                this.position.copyFrom(vecs[0]);
-                this.rotation.copyFrom(vecs[1]);
-                this.rotation.scaleBy(feng3d.MathConsts.RADIANS_TO_DEGREES);
-                this.scale.copyFrom(vecs[2]);
-                feng3d.debuger && this._debug();
-                this.notifyMatrix3DChanged();
-                this.invalidateGlobalMatrix3D();
-                //释放事件
-                this.unlockEvent();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Transform.prototype, "inverseMatrix3D", {
-            /**
-             * 逆变换矩阵
-             */
-            get: function () {
-                if (this._inverseMatrix3DDirty) {
-                    this._inverseMatrix3D.copyFrom(this.matrix3d);
-                    this._inverseMatrix3D.invert();
-                    this._inverseMatrix3DDirty = false;
+            set: function (val) {
+                //ridiculous matrix error
+                var raw = feng3d.Matrix3D.RAW_DATA_CONTAINER;
+                val.copyRawDataTo(raw);
+                if (!raw[0]) {
+                    raw[0] = this._smallestNumber;
+                    val.copyRawDataFrom(raw);
                 }
-                return this._inverseMatrix3D;
+                var elements = val.decompose();
+                var vec;
+                vec = elements[0];
+                if (this._x != vec.x || this._y != vec.y || this._z != vec.z) {
+                    this._x = vec.x;
+                    this._y = vec.y;
+                    this._z = vec.z;
+                    this.invalidatePosition();
+                }
+                vec = elements[1];
+                if (this._rotationX != vec.x || this._rotationY != vec.y || this._rotationZ != vec.z) {
+                    this._rotationX = vec.x;
+                    this._rotationY = vec.y;
+                    this._rotationZ = vec.z;
+                    this.invalidateRotation();
+                }
+                vec = elements[2];
+                if (this._scaleX != vec.x || this._scaleY != vec.y || this._scaleZ != vec.z) {
+                    this._scaleX = vec.x;
+                    this._scaleY = vec.y;
+                    this._scaleZ = vec.z;
+                    this.invalidateScale();
+                }
             },
             enumerable: true,
             configurable: true
         });
-        /**
-         * 看向目标位置
-         * @param target    目标位置
-         * @param upAxis    向上朝向
-         */
-        Transform.prototype.lookAt = function (target, upAxis) {
-            if (upAxis === void 0) { upAxis = null; }
-            this.matrix3d.lookAt(target, upAxis);
-            this.matrix3d = this.matrix3d;
-        };
-        Object.defineProperty(Transform.prototype, "globalMatrix3D", {
+        Object.defineProperty(Transform.prototype, "pivotPoint", {
             /**
-             * 全局矩阵
+             * 中心点坐标（本地对象旋转点）
              */
             get: function () {
-                this._globalMatrix3DDirty && this.updateGlobalMatrix3D();
-                return this._globalMatrix3D;
+                return this._pivotPoint;
+            },
+            set: function (pivot) {
+                if (!this._pivotPoint)
+                    this._pivotPoint = new feng3d.Vector3D();
+                this._pivotPoint.x = pivot.x;
+                this._pivotPoint.y = pivot.y;
+                this._pivotPoint.z = pivot.z;
+                this.invalidatePivot();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "position", {
+            /**
+             * 获取在父容器中的坐标
+             */
+            get: function () {
+                this.transform.copyColumnTo(3, this._pos);
+                return this._pos.clone();
             },
             set: function (value) {
-                value = value.clone();
-                this._parentTransform && value.append(this._parentTransform.inverseGlobalMatrix3D);
-                this.matrix3d = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Transform.prototype, "inverseGlobalMatrix3D", {
-            /**
-             * 逆全局矩阵
-             */
-            get: function () {
-                this._inverseGlobalMatrix3DDirty && this.updateInverseGlobalMatrix3D();
-                return this._inverseGlobalMatrix3D;
+                this._x = value.x;
+                this._y = value.y;
+                this._z = value.z;
+                this.invalidatePosition();
             },
             enumerable: true,
             configurable: true
         });
         /**
-         * 变换矩阵
+         * 使位置数据无效
          */
-        Transform.prototype.updateMatrix3D = function () {
-            //矫正值
-            feng3d.debuger && this._debug();
-            //
-            var rotation = this.rotation.clone();
-            rotation.scaleBy(feng3d.MathConsts.DEGREES_TO_RADIANS);
-            this._matrix3D.recompose([
-                this.position,
-                rotation,
-                this.scale
-            ]);
-            this._matrix3DDirty = false;
+        Transform.prototype.invalidatePosition = function () {
+            if (this._positionDirty)
+                return;
+            this._positionDirty = true;
+            this.invalidateTransform();
+            if (this._listenToPositionChanged)
+                this.notifyPositionChanged();
         };
         /**
-         * 使变换矩阵无效
+         * 发出平移事件
          */
-        Transform.prototype.invalidateMatrix3D = function () {
-            this._matrix3DDirty = true;
-            this._inverseMatrix3DDirty = true;
-            this.notifyMatrix3DChanged();
-            //
-            this.invalidateGlobalMatrix3D();
+        Transform.prototype.notifyPositionChanged = function () {
+            if (!this._positionChanged)
+                this._positionChanged = new Transform3DEvent(Transform3DEvent.POSITION_CHANGED, this);
+            this.dispatchEvent(this._positionChanged);
         };
         /**
-         * 验证数值是否正确
+         * 使变换矩阵失效
          */
-        Transform.prototype._debug = function () {
-            feng3d.assert(this.position.length !== NaN);
-            feng3d.assert(this.position.length !== NaN);
-            feng3d.assert(!!this.scale.length);
+        Transform.prototype.invalidateTransform = function () {
+            this._transformDirty = true;
+            if (this._listenToTransformChanged)
+                this.notifyTransformChanged();
         };
         /**
          * 发出状态改变消息
          */
-        Transform.prototype.notifyMatrix3DChanged = function () {
+        Transform.prototype.notifyTransformChanged = function () {
+            if (!this._transformChanged)
+                this._transformChanged = new Transform3DEvent(Transform3DEvent.TRANSFORM_CHANGED, this);
             this.dispatchEvent(this._transformChanged);
         };
         /**
-         * 更新全局矩阵
+         * 更新变换矩阵
          */
-        Transform.prototype.updateGlobalMatrix3D = function () {
-            this._globalMatrix3DDirty = false;
-            this._globalMatrix3D.copyFrom(this.matrix3d);
-            this._parentTransform && this._globalMatrix3D.append(this._parentTransform.globalMatrix3D);
+        Transform.prototype.updateTransform = function () {
+            this._pos.x = this._x;
+            this._pos.y = this._y;
+            this._pos.z = this._z;
+            this._rot.x = this._rotationX;
+            this._rot.y = this._rotationY;
+            this._rot.z = this._rotationZ;
+            if (!this._pivotZero) {
+                this._sca.x = 1;
+                this._sca.y = 1;
+                this._sca.z = 1;
+                this._transform.recompose(this._transformComponents);
+                this._transform.appendTranslation(this._pivotPoint.x, this._pivotPoint.y, this._pivotPoint.z);
+                this._transform.prependTranslation(-this._pivotPoint.x, -this._pivotPoint.y, -this._pivotPoint.z);
+                this._transform.prependScale(this._scaleX, this._scaleY, this._scaleZ);
+                this._sca.x = this._scaleX;
+                this._sca.y = this._scaleY;
+                this._sca.z = this._scaleZ;
+            }
+            else {
+                this._sca.x = this._scaleX;
+                this._sca.y = this._scaleY;
+                this._sca.z = this._scaleZ;
+                this._transform.recompose(this._transformComponents);
+            }
+            this._transformDirty = false;
+            this._positionDirty = false;
+            this._rotationDirty = false;
+            this._scaleDirty = false;
+            this.dispatchEvent(new Transform3DEvent(Transform3DEvent.TRANSFORM_UPDATED, this));
         };
         /**
-         * 更新逆全局矩阵
+         * 使中心点无效
          */
-        Transform.prototype.updateInverseGlobalMatrix3D = function () {
-            this._inverseGlobalMatrix3DDirty = false;
-            this._inverseGlobalMatrix3D.copyFrom(this.globalMatrix3D);
-            this._inverseGlobalMatrix3D.invert();
+        Transform.prototype.invalidatePivot = function () {
+            this._pivotZero = (this._pivotPoint.x == 0) && (this._pivotPoint.y == 0) && (this._pivotPoint.z == 0);
+            this.invalidateTransform();
         };
         /**
-         * 通知全局变换改变
+         * 监听事件
+         * @param type 事件类型
+         * @param listener 回调函数
          */
-        Transform.prototype.notifySceneTransformChange = function () {
-            this.dispatchEvent(this._sceneTransformChanged);
+        Transform.prototype.addEventListener = function (type, listener, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            _super.prototype.addEventListener.call(this, type, listener, thisObject, priority);
+            switch (type) {
+                case Transform3DEvent.POSITION_CHANGED:
+                    this._listenToPositionChanged = true;
+                    break;
+                case Transform3DEvent.ROTATION_CHANGED:
+                    this._listenToRotationChanged = true;
+                    break;
+                case Transform3DEvent.SCALE_CHANGED:
+                    this._listenToRotationChanged = true;
+                    break;
+                case Transform3DEvent.TRANSFORM_CHANGED:
+                    this._listenToTransformChanged = true;
+                    break;
+            }
         };
         /**
-         * 全局变换矩阵失效
-         * @private
+         * 移除事件
+         * @param type 事件类型
+         * @param listener 回调函数
          */
-        Transform.prototype.invalidateGlobalMatrix3D = function () {
-            this._globalMatrix3DDirty = true;
-            this._inverseGlobalMatrix3DDirty = true;
-            this.invalidateRenderData();
-            this.notifySceneTransformChange();
+        Transform.prototype.removeEventListener = function (type, listener, thisObject) {
+            _super.prototype.removeEventListener.call(this, type, listener, thisObject);
+            if (this.hasEventListener(type))
+                return;
+            switch (type) {
+                case Transform3DEvent.POSITION_CHANGED:
+                    this._listenToPositionChanged = false;
+                    break;
+                case Transform3DEvent.ROTATION_CHANGED:
+                    this._listenToRotationChanged = false;
+                    break;
+                case Transform3DEvent.SCALE_CHANGED:
+                    this._listenToScaleChanged = false;
+                    break;
+                case Transform3DEvent.TRANSFORM_CHANGED:
+                    this._listenToTransformChanged = false;
+                    break;
+            }
         };
         /**
-         * 更新渲染数据
+         * 使旋转角度无效
          */
-        Transform.prototype.updateRenderData = function (renderContext, renderData) {
-            renderData.uniforms[feng3d.RenderDataID.u_modelMatrix] = this.globalMatrix3D;
-            _super.prototype.updateRenderData.call(this, renderContext, renderData);
+        Transform.prototype.invalidateRotation = function () {
+            if (this._rotationDirty)
+                return;
+            this._rotationDirty = true;
+            this.invalidateTransform();
+            if (this._listenToRotationChanged)
+                this.notifyRotationChanged();
+        };
+        /**
+         * 抛出旋转事件
+         */
+        Transform.prototype.notifyRotationChanged = function () {
+            if (!this._rotationChanged)
+                this._rotationChanged = new Transform3DEvent(Transform3DEvent.ROTATION_CHANGED, this);
+            this.dispatchEvent(this._rotationChanged);
+        };
+        /**
+         * 使缩放无效
+         */
+        Transform.prototype.invalidateScale = function () {
+            if (this._scaleDirty)
+                return;
+            this._scaleDirty = true;
+            this.invalidateTransform();
+            if (this._listenToScaleChanged)
+                this.notifyScaleChanged();
+        };
+        /**
+         * 抛出缩放事件
+         */
+        Transform.prototype.notifyScaleChanged = function () {
+            if (!this._scaleChanged)
+                this._scaleChanged = new Transform3DEvent(Transform3DEvent.SCALE_CHANGED, this);
+            this.dispatchEvent(this._scaleChanged);
+        };
+        /**
+         * 等比缩放
+         * @param value 缩放比例
+         */
+        Transform.prototype.scale = function (value) {
+            this._scaleX *= value;
+            this._scaleY *= value;
+            this._scaleZ *= value;
+            this.invalidateScale();
+        };
+        /**
+         * 向前（Z轴方向）位移
+         * @param distance 位移距离
+         */
+        Transform.prototype.moveForward = function (distance) {
+            this.translateLocal(feng3d.Vector3D.Z_AXIS, distance);
+        };
+        /**
+         * 向后（Z轴负方向）位移
+         * @param distance 位移距离
+         */
+        Transform.prototype.moveBackward = function (distance) {
+            this.translateLocal(feng3d.Vector3D.Z_AXIS, -distance);
+        };
+        /**
+         * 向左（X轴负方向）位移
+         * @param distance 位移距离
+         */
+        Transform.prototype.moveLeft = function (distance) {
+            this.translateLocal(feng3d.Vector3D.X_AXIS, -distance);
+        };
+        /**
+         * 向右（X轴方向）位移
+         * @param distance 位移距离
+         */
+        Transform.prototype.moveRight = function (distance) {
+            this.translateLocal(feng3d.Vector3D.X_AXIS, distance);
+        };
+        /**
+         * 向上（Y轴方向）位移
+         * @param distance 位移距离
+         */
+        Transform.prototype.moveUp = function (distance) {
+            this.translateLocal(feng3d.Vector3D.Y_AXIS, distance);
+        };
+        /**
+         * 向下（Y轴负方向）位移
+         * @param distance 位移距离
+         */
+        Transform.prototype.moveDown = function (distance) {
+            this.translateLocal(feng3d.Vector3D.Y_AXIS, -distance);
+        };
+        /**
+         * 直接移到空间的某个位置
+         * @param newX x坐标
+         * @param newY y坐标
+         * @param newZ z坐标
+         */
+        Transform.prototype.moveTo = function (newX, newY, newZ) {
+            if (this._x == newX && this._y == newY && this._z == newZ)
+                return;
+            this._x = newX;
+            this._y = newY;
+            this._z = newZ;
+            this.invalidatePosition();
+        };
+        /**
+         * 移动中心点（旋转点）
+         * @param dx X轴方向位移
+         * @param dy Y轴方向位移
+         * @param dz Z轴方向位移
+         */
+        Transform.prototype.movePivot = function (dx, dy, dz) {
+            if (!this._pivotPoint)
+                this._pivotPoint = new feng3d.Vector3D();
+            this._pivotPoint.x += dx;
+            this._pivotPoint.y += dy;
+            this._pivotPoint.z += dz;
+            this.invalidatePivot();
+        };
+        /**
+         * 在自定义轴上位移
+         * @param axis 自定义轴
+         * @param distance 位移距离
+         */
+        Transform.prototype.translate = function (axis, distance) {
+            var x = axis.x, y = axis.y, z = axis.z;
+            var len = distance / Math.sqrt(x * x + y * y + z * z);
+            this._x += x * len;
+            this._y += y * len;
+            this._z += z * len;
+            this.invalidatePosition();
+        };
+        /**
+         * 在自定义轴上位移<br/>
+         *
+         * 注意：
+         * <ul>
+         * 		<li>没太理解 与 translate的区别</li>
+         * </ul>
+         * @param axis 自定义轴
+         * @param distance 位移距离
+         */
+        Transform.prototype.translateLocal = function (axis, distance) {
+            var len = distance / axis.length;
+            this.transform.prependTranslation(axis.x * len, axis.y * len, axis.z * len);
+            this._transform.copyColumnTo(3, this._pos);
+            this._x = this._pos.x;
+            this._y = this._pos.y;
+            this._z = this._pos.z;
+            this.invalidatePosition();
+        };
+        /**
+         * 绕X轴旋转
+         * @param angle 旋转角度
+         */
+        Transform.prototype.pitch = function (angle) {
+            this.rotate(feng3d.Vector3D.X_AXIS, angle);
+        };
+        /**
+         * 绕Y轴旋转
+         * @param angle 旋转角度
+         */
+        Transform.prototype.yaw = function (angle) {
+            this.rotate(feng3d.Vector3D.Y_AXIS, angle);
+        };
+        /**
+         * 绕Z轴旋转
+         * @param angle 旋转角度
+         */
+        Transform.prototype.roll = function (angle) {
+            this.rotate(feng3d.Vector3D.Z_AXIS, angle);
+        };
+        /**
+         * 直接修改欧拉角
+         * @param ax X轴旋转角度
+         * @param ay Y轴旋转角度
+         * @param az Z轴旋转角度
+         */
+        Transform.prototype.rotateTo = function (ax, ay, az) {
+            this._rotationX = ax * feng3d.MathConsts.DEGREES_TO_RADIANS;
+            this._rotationY = ay * feng3d.MathConsts.DEGREES_TO_RADIANS;
+            this._rotationZ = az * feng3d.MathConsts.DEGREES_TO_RADIANS;
+            this.invalidateRotation();
+        };
+        /**
+         * 绕所给轴旋转
+         * @param axis 任意轴
+         * @param angle 旋转角度
+         */
+        Transform.prototype.rotate = function (axis, angle) {
+            var m = new feng3d.Matrix3D();
+            m.prependRotation(angle, axis);
+            var vec = m.decompose()[1];
+            this._rotationX += vec.x;
+            this._rotationY += vec.y;
+            this._rotationZ += vec.z;
+            this.invalidateRotation();
+        };
+        /**
+         * 观察目标
+         * <ul>
+         * 		<li>旋转至朝向给出的点</li>
+         * </ul>
+         * @param target 	目标点
+         * @param upAxis 	旋转后向上方向（并非绝对向上），默认为null，当值为null时会以Y轴为向上方向计算
+         */
+        Transform.prototype.lookAt = function (target, upAxis) {
+            if (upAxis === void 0) { upAxis = null; }
+            var tempAxeX;
+            var tempAxeY;
+            var tempAxeZ;
+            if (!tempAxeX)
+                tempAxeX = new feng3d.Vector3D();
+            if (!tempAxeY)
+                tempAxeY = new feng3d.Vector3D();
+            if (!tempAxeZ)
+                tempAxeZ = new feng3d.Vector3D();
+            //旋转后的X轴
+            var xAxis = tempAxeX;
+            //旋转后的Y轴
+            var yAxis = tempAxeY;
+            //旋转后的Z轴
+            var zAxis = tempAxeZ;
+            var raw;
+            //向上方向默认值为Y轴
+            if (upAxis == null)
+                upAxis = feng3d.Vector3D.Y_AXIS;
+            if (this._transformDirty) {
+                this.updateTransform();
+            }
+            //物体与目标点在相同位置时，稍作偏移
+            if (new feng3d.Vector3D(this._x, this._y, this._z).subtract(target).length == 0) {
+                this._z = target.z + 0.1;
+            }
+            //获得Z轴
+            zAxis.x = target.x - this._x;
+            zAxis.y = target.y - this._y;
+            zAxis.z = target.z - this._z;
+            zAxis.normalize();
+            //向上方向与Z轴 叉乘 得到X轴
+            xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
+            xAxis.y = upAxis.z * zAxis.x - upAxis.x * zAxis.z;
+            xAxis.z = upAxis.x * zAxis.y - upAxis.y * zAxis.x;
+            xAxis.normalize();
+            if (xAxis.length < .05) {
+                xAxis.x = upAxis.y;
+                xAxis.y = upAxis.x;
+                xAxis.z = 0;
+                xAxis.normalize();
+            }
+            //Z轴叉乘X轴 得到 Y轴，Z与X为标准化向量，得到的Y轴也将是标准化向量
+            yAxis.x = zAxis.y * xAxis.z - zAxis.z * xAxis.y;
+            yAxis.y = zAxis.z * xAxis.x - zAxis.x * xAxis.z;
+            yAxis.z = zAxis.x * xAxis.y - zAxis.y * xAxis.x;
+            raw = feng3d.Matrix3D.RAW_DATA_CONTAINER;
+            //根据XYZ轴计算变换矩阵
+            raw[0] = this._scaleX * xAxis.x;
+            raw[1] = this._scaleX * xAxis.y;
+            raw[2] = this._scaleX * xAxis.z;
+            raw[3] = 0;
+            raw[4] = this._scaleY * yAxis.x;
+            raw[5] = this._scaleY * yAxis.y;
+            raw[6] = this._scaleY * yAxis.z;
+            raw[7] = 0;
+            raw[8] = this._scaleZ * zAxis.x;
+            raw[9] = this._scaleZ * zAxis.y;
+            raw[10] = this._scaleZ * zAxis.z;
+            raw[11] = 0;
+            raw[12] = this._x;
+            raw[13] = this._y;
+            raw[14] = this._z;
+            raw[15] = 1;
+            this._transform.copyRawDataFrom(raw);
+            this.transform = this.transform;
+            if (zAxis.z < 0) {
+                this.rotationY = (180 - this.rotationY);
+                this.rotationX -= 180;
+                this.rotationZ -= 180;
+            }
         };
         return Transform;
     }(feng3d.RenderDataHolder));
     feng3d.Transform = Transform;
     /**
-     * 变换事件(3D状态发生改变、位置、旋转、缩放)
+     * 3D对象事件(3D状态发生改变、位置、旋转、缩放)
      * @author feng 2014-3-31
      */
-    var TransformEvent = (function (_super) {
-        __extends(TransformEvent, _super);
+    var Transform3DEvent = (function (_super) {
+        __extends(Transform3DEvent, _super);
         /**
-         * 创建一个作为参数传递给事件侦听器的 Event 对象。
-         * @param type 事件的类型，可以作为 Event.type 访问。
-         * @param data 携带数据
-         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
+         * 创建3D对象事件
+         * @param type			事件类型
+         * @param element3D		发出事件的3D元素
          */
-        function TransformEvent(type, data, bubbles) {
+        function Transform3DEvent(type, transform3D, bubbles) {
             if (bubbles === void 0) { bubbles = false; }
-            _super.call(this, type, data, bubbles);
+            _super.call(this, type, transform3D, bubbles);
         }
+        Object.defineProperty(Transform3DEvent.prototype, "transform3D", {
+            /**
+             * 发出事件的3D元素
+             */
+            get: function () {
+                return this.data;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 平移
+         */
+        Transform3DEvent.POSITION_CHANGED = "positionChanged";
+        /**
+         * 旋转
+         */
+        Transform3DEvent.ROTATION_CHANGED = "rotationChanged";
+        /**
+         * 缩放
+         */
+        Transform3DEvent.SCALE_CHANGED = "scaleChanged";
         /**
          * 变换
          */
-        TransformEvent.TRANSFORM_CHANGED = "transformChanged";
+        Transform3DEvent.TRANSFORM_CHANGED = "transformChanged";
+        /**
+         * 变换已更新
+         */
+        Transform3DEvent.TRANSFORM_UPDATED = "transformUpdated";
         /**
          * 场景变换矩阵发生变化
          */
-        TransformEvent.SCENETRANSFORM_CHANGED = "scenetransformChanged";
-        return TransformEvent;
+        Transform3DEvent.SCENETRANSFORM_CHANGED = "scenetransformChanged";
+        return Transform3DEvent;
     }(feng3d.Event));
-    feng3d.TransformEvent = TransformEvent;
+    feng3d.Transform3DEvent = Transform3DEvent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -7933,13 +8432,13 @@ var feng3d;
          * 处理被添加组件事件
          */
         Camera.prototype.onBeAddedComponent = function (event) {
-            this.parentComponent.addEventListener(feng3d.TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.addEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         };
         /**
          * 处理被移除组件事件
          */
         Camera.prototype.onBeRemovedComponent = function (event) {
-            this.parentComponent.removeEventListener(feng3d.TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.removeEventListener(TransformEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
         };
         Camera.prototype.onSpaceTransformChanged = function (event) {
             this._viewProjectionInvalid = true;

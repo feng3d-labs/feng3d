@@ -101,6 +101,43 @@ module feng3d
         }
 
         /**
+         * 后方（-z轴方向）
+         */
+        public get back(): Vector3D
+        {
+            var v = new Vector3D(0.0, 0.0, 0.0);
+
+            this.copyColumnTo(2, v);
+            v.normalize();
+            v.negate();
+            return v;
+        }
+
+        /**
+         * 下方（-y轴方向）
+         */
+        public get down(): Vector3D
+        {
+            var v = new Vector3D();
+            this.copyColumnTo(1, v);
+            v.normalize();
+            v.negate();
+            return v;
+        }
+
+        /**
+         * 左方（-x轴方向）
+         */
+        public get left(): Vector3D
+        {
+            var v = new Vector3D();
+            this.copyColumnTo(0, v);
+            v.normalize();
+            v.negate();
+            return v;
+        }
+
+        /**
          * 创建 Matrix3D 对象。
          * @param   datas    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */

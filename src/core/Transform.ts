@@ -26,17 +26,17 @@ module feng3d
 	 */
     //[Event(name = "transformUpdated", type = "me.feng3d.events.Transform3DEvent")]
 
-
-	/**
-	 * 3D元素<br/><br/>
+    /**
+	 * 3D元素状态变换<br/><br/>
 	 *
 	 * 主要功能:
 	 * <ul>
-	 *     <li>管理3D元素的位置、旋转、缩放状态</li>
+	 *     <li>处理3d元素的平移、旋转、缩放等操作</li>
 	 * </ul>
+	 *
 	 * @author feng 2014-3-31
 	 */
-    export class Element3D extends Component
+    export class Transform extends RenderDataHolder
     {
         private _smallestNumber: number = 0.0000000000000000000001;
         protected _transformDirty: boolean = true;
@@ -74,6 +74,9 @@ module feng3d
         protected _sca: Vector3D = new Vector3D();
         protected _transformComponents: Vector3D[];
 
+		/**
+		 * 创建3D元素状态变换实例
+		 */
         constructor()
         {
             super();
@@ -581,156 +584,6 @@ module feng3d
 
             this.dispatchEvent(this._scaleChanged);
         }
-    }
-    /**
-     * 3D对象事件(3D状态发生改变、位置、旋转、缩放)
-     * @author feng 2014-3-31
-     */
-    export class Transform3DEvent extends Event
-    {
-        /**
-         * 平移
-         */
-        public static POSITION_CHANGED: string = "positionChanged";
-
-        /**
-         * 旋转
-         */
-        public static ROTATION_CHANGED: string = "rotationChanged";
-
-        /**
-         * 缩放
-         */
-        public static SCALE_CHANGED: string = "scaleChanged";
-
-        /**
-         * 变换
-         */
-        public static TRANSFORM_CHANGED: string = "transformChanged";
-
-        /**
-         * 变换已更新
-         */
-        public static TRANSFORM_UPDATED: string = "transformUpdated";
-
-        /**
-         * 场景变换矩阵发生变化
-         */
-        public static SCENETRANSFORM_CHANGED: string = "scenetransformChanged";
-
-        /**
-         * 创建3D对象事件
-         * @param type			事件类型
-         * @param element3D		发出事件的3D元素
-         */
-        constructor(type: string, element3D: Element3D, bubbles: boolean = false)
-        {
-            super(type, element3D, bubbles);
-        }
-
-        /**
-         * 发出事件的3D元素
-         */
-        public get element3D(): Element3D
-        {
-            return this.data as Element3D;
-        }
-    }
-
-    /**
-	 * 3D元素状态变换<br/><br/>
-	 *
-	 * 主要功能:
-	 * <ul>
-	 *     <li>处理3d元素的平移、旋转、缩放等操作</li>
-	 * </ul>
-	 *
-	 * @author feng 2014-3-31
-	 */
-    export class Transform3D extends Element3D
-    {
-		/**
-		 * 创建3D元素状态变换实例
-		 */
-        constructor()
-        {
-            super();
-        }
-
-		/**
-		 * 前方单位向量
-		 * <ul>
-		 * 		<li>自身的Z轴方向</li>
-		 * </ul>
-		 */
-        public get forwardVector(): Vector3D
-        {
-            return this.transform.forward;
-        }
-
-		/**
-		 * 右方单位向量
-		 * <ul>
-		 * 		<li>自身的X轴方向</li>
-		 * </ul>
-		 */
-        public get rightVector(): Vector3D
-        {
-            return this.transform.right;
-        }
-
-		/**
-		 * 上方单位向量
-		 * <ul>
-		 * 		<li>自身的Y轴方向</li>
-		 * </ul>
-		 */
-        public get upVector(): Vector3D
-        {
-            return this.transform.up;
-        }
-
-		/**
-		 * 后方单位向量
-		 * <ul>
-		 * 		<li>自身的Z轴负方向</li>
-		 * </ul>
-		 */
-        public get backVector(): Vector3D
-        {
-            var director: Vector3D = Matrix3DUtils.getForward(this.transform);
-            director.negate();
-
-            return director;
-        }
-
-		/**
-		 * 左方单位向量
-		 * <ul>
-		 * 		<li>自身的X轴负方向</li>
-		 * </ul>
-		 */
-        public get leftVector(): Vector3D
-        {
-            var director: Vector3D = Matrix3DUtils.getRight(this.transform);
-            director.negate();
-
-            return director;
-        }
-
-		/**
-		 * 下方单位向量
-		 * <ul>
-		 * 		<li>自身的Y轴负方向</li>
-		 * </ul>
-		 */
-        public get downVector(): Vector3D
-        {
-            var director: Vector3D = Matrix3DUtils.getUp(this.transform);
-            director.negate();
-
-            return director;
-        }
 
 		/**
 		 * 等比缩放
@@ -963,7 +816,7 @@ module feng3d
             //旋转后的Z轴
             var zAxis: Vector3D = tempAxeZ;
 
-            var raw: number[];
+            var raw: Float32Array;
 
             //向上方向默认值为Y轴
             if (upAxis == null)
@@ -1005,7 +858,7 @@ module feng3d
             yAxis.y = zAxis.z * xAxis.x - zAxis.x * xAxis.z;
             yAxis.z = zAxis.x * xAxis.y - zAxis.y * xAxis.x;
 
-            raw = Matrix3DUtils.RAW_DATA_CONTAINER;
+            raw = Matrix3D.RAW_DATA_CONTAINER;
 
             //根据XYZ轴计算变换矩阵
             raw[0] = this._scaleX * xAxis.x;
@@ -1040,5 +893,59 @@ module feng3d
             }
         }
     }
-}
 
+    /**
+     * 3D对象事件(3D状态发生改变、位置、旋转、缩放)
+     * @author feng 2014-3-31
+     */
+    export class Transform3DEvent extends Event
+    {
+        /**
+         * 平移
+         */
+        public static POSITION_CHANGED: string = "positionChanged";
+
+        /**
+         * 旋转
+         */
+        public static ROTATION_CHANGED: string = "rotationChanged";
+
+        /**
+         * 缩放
+         */
+        public static SCALE_CHANGED: string = "scaleChanged";
+
+        /**
+         * 变换
+         */
+        public static TRANSFORM_CHANGED: string = "transformChanged";
+
+        /**
+         * 变换已更新
+         */
+        public static TRANSFORM_UPDATED: string = "transformUpdated";
+
+        /**
+         * 场景变换矩阵发生变化
+         */
+        public static SCENETRANSFORM_CHANGED: string = "scenetransformChanged";
+
+        /**
+         * 创建3D对象事件
+         * @param type			事件类型
+         * @param element3D		发出事件的3D元素
+         */
+        constructor(type: string, transform3D: Transform, bubbles: boolean = false)
+        {
+            super(type, transform3D, bubbles);
+        }
+
+        /**
+         * 发出事件的3D元素
+         */
+        public get transform3D(): Transform
+        {
+            return this.data as Transform;
+        }
+    }
+}
