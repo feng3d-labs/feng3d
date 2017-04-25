@@ -63,6 +63,7 @@ module feng3d
             {
                 throw new Error("WebGL not supported");
             }
+            initWebGL(this._gl);
 
             this.initGL();
 

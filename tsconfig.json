@@ -54,6 +54,7 @@
         "src/mathlib/PlaneClassification.ts",
         "src/mathlib/Color.ts",
         //渲染
+        "src/render/webgl.ts",
         "src/render/consts/RenderMode.ts",
         "src/render/data/ShaderParams.ts",
         "src/render/data/RenderDataHolder.ts",

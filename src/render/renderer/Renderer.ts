@@ -132,14 +132,24 @@ module feng3d
 
         indexBuffer.active(gl);
 
+        var map = {};
+        map[RenderMode.POINTS] = GL.POINTS;
+        map[RenderMode.LINE_LOOP] = GL.LINE_LOOP;
+        map[RenderMode.LINE_STRIP] = GL.LINE_STRIP;
+        map[RenderMode.LINES] = GL.LINES;
+        map[RenderMode.TRIANGLES] = GL.TRIANGLES;
+        map[RenderMode.TRIANGLE_STRIP] = GL.TRIANGLE_STRIP;
+        map[RenderMode.TRIANGLE_FAN] = GL.TRIANGLE_FAN;
+
+        var renderMode = map[shaderParams.renderMode];
         if (instanceCount > 1)
         {
             _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
-            _ext.drawArraysInstancedANGLE(shaderParams.renderMode, 0, indexBuffer.count, instanceCount)
+            _ext.drawArraysInstancedANGLE(renderMode, 0, indexBuffer.count, instanceCount)
         }
         else
         {
-            gl.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+            gl.drawElements(renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
         }
     }
 

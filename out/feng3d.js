@@ -4694,22 +4694,33 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    function initWebGL(gl) {
+        for (var key in gl) {
+            var element = gl[key];
+            if (typeof element == "number") {
+                feng3d.GL[key] = element;
+            }
+        }
+    }
+    feng3d.initWebGL = initWebGL;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 渲染模式
      * @author feng 2016-09-28
      */
     (function (RenderMode) {
-        RenderMode[RenderMode["DEFAULT"] = WebGLRenderingContext.TRIANGLES] = "DEFAULT";
         /**
          * 点渲染
          */
-        RenderMode[RenderMode["POINTS"] = WebGLRenderingContext.POINTS] = "POINTS";
-        RenderMode[RenderMode["LINE_LOOP"] = WebGLRenderingContext.LINE_LOOP] = "LINE_LOOP";
-        RenderMode[RenderMode["LINE_STRIP"] = WebGLRenderingContext.LINE_STRIP] = "LINE_STRIP";
-        RenderMode[RenderMode["LINES"] = WebGLRenderingContext.LINES] = "LINES";
-        RenderMode[RenderMode["TRIANGLES"] = WebGLRenderingContext.TRIANGLES] = "TRIANGLES";
-        RenderMode[RenderMode["TRIANGLE_STRIP"] = WebGLRenderingContext.TRIANGLE_STRIP] = "TRIANGLE_STRIP";
-        RenderMode[RenderMode["TRIANGLE_FAN"] = WebGLRenderingContext.TRIANGLE_FAN] = "TRIANGLE_FAN";
+        RenderMode[RenderMode["POINTS"] = 0] = "POINTS";
+        RenderMode[RenderMode["LINE_LOOP"] = 1] = "LINE_LOOP";
+        RenderMode[RenderMode["LINE_STRIP"] = 2] = "LINE_STRIP";
+        RenderMode[RenderMode["LINES"] = 3] = "LINES";
+        RenderMode[RenderMode["TRIANGLES"] = 4] = "TRIANGLES";
+        RenderMode[RenderMode["TRIANGLE_STRIP"] = 5] = "TRIANGLE_STRIP";
+        RenderMode[RenderMode["TRIANGLE_FAN"] = 6] = "TRIANGLE_FAN";
     })(feng3d.RenderMode || (feng3d.RenderMode = {}));
     var RenderMode = feng3d.RenderMode;
 })(feng3d || (feng3d = {}));
@@ -5942,12 +5953,21 @@ var feng3d;
         if (instanceCount === void 0) { instanceCount = 1; }
         instanceCount = ~~instanceCount;
         indexBuffer.active(gl);
+        var map = {};
+        map[feng3d.RenderMode.POINTS] = feng3d.GL.POINTS;
+        map[feng3d.RenderMode.LINE_LOOP] = feng3d.GL.LINE_LOOP;
+        map[feng3d.RenderMode.LINE_STRIP] = feng3d.GL.LINE_STRIP;
+        map[feng3d.RenderMode.LINES] = feng3d.GL.LINES;
+        map[feng3d.RenderMode.TRIANGLES] = feng3d.GL.TRIANGLES;
+        map[feng3d.RenderMode.TRIANGLE_STRIP] = feng3d.GL.TRIANGLE_STRIP;
+        map[feng3d.RenderMode.TRIANGLE_FAN] = feng3d.GL.TRIANGLE_FAN;
+        var renderMode = map[shaderParams.renderMode];
         if (instanceCount > 1) {
             _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
-            _ext.drawArraysInstancedANGLE(shaderParams.renderMode, 0, indexBuffer.count, instanceCount);
+            _ext.drawArraysInstancedANGLE(renderMode, 0, indexBuffer.count, instanceCount);
         }
         else {
-            gl.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+            gl.drawElements(renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
         }
     }
     /**
@@ -7312,6 +7332,7 @@ var feng3d;
             if (!this._gl) {
                 throw new Error("WebGL not supported");
             }
+            feng3d.initWebGL(this._gl);
             this.initGL();
             this.scene = scene || new feng3d.Scene3D();
             this.camera = camera || new feng3d.CameraObject3D();

@@ -2439,22 +2439,24 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    function initWebGL(gl: GL): void;
+}
+declare module feng3d {
     /**
      * 渲染模式
      * @author feng 2016-09-28
      */
     enum RenderMode {
-        DEFAULT,
         /**
          * 点渲染
          */
-        POINTS,
-        LINE_LOOP,
-        LINE_STRIP,
-        LINES,
-        TRIANGLES,
-        TRIANGLE_STRIP,
-        TRIANGLE_FAN,
+        POINTS = 0,
+        LINE_LOOP = 1,
+        LINE_STRIP = 2,
+        LINES = 3,
+        TRIANGLES = 4,
+        TRIANGLE_STRIP = 5,
+        TRIANGLE_FAN = 6,
     }
 }
 declare module feng3d {
