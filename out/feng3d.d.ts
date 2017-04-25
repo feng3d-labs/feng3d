@@ -4398,10 +4398,6 @@ declare module feng3d {
          */
         textureType: number;
         /**
-         * 内部格式
-         */
-        internalformat: number;
-        /**
          * 格式
          */
         format: number;
@@ -4527,6 +4523,22 @@ declare module feng3d {
          * 着色器名称
          */
         protected shaderName: string;
+        /**
+         * 是否开启混合
+         */
+        enableBlend: boolean;
+        /**
+         * 混合方程
+         */
+        blendEquation: number;
+        /**
+         * 源混合因子
+         */
+        sfactor: number;
+        /**
+         * 目标混合因子
+         */
+        dfactor: number;
         /**
          * 构建材质
          */

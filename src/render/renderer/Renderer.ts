@@ -30,6 +30,18 @@ module feng3d
             try
             {
                 //绘制
+                var material = meshRenderer.material;
+                if (material.enableBlend)
+                {
+                    gl.enable(GL.BLEND);
+                    gl.blendEquation(material.blendEquation);
+                    gl.depthMask(false);
+                    gl.blendFunc(material.sfactor, material.dfactor);
+                } else
+                {
+                    gl.disable(GL.BLEND);
+                    gl.depthMask(true);
+                }
                 this.drawObject3D(gl, object3D.renderData);            //
             } catch (error)
             {

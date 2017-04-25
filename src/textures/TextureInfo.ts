@@ -11,13 +11,9 @@ module feng3d
          */
         public textureType: number;
         /**
-         * 内部格式
-         */
-        public internalformat: number = GL.RGB;
-        /**
          * 格式
          */
-        public format: number = GL.RGB;
+        public format: number = GL.RGBA;
         /**
          * 数据类型
          */
@@ -71,6 +67,7 @@ module feng3d
             Watcher.watch(this, ["type"], this.invalidate, this);
             Watcher.watch(this, ["generateMipmap"], this.invalidate, this);
             Watcher.watch(this, ["flipY"], this.invalidate, this);
+            Watcher.watch(this, ["premulAlpha"], this.invalidate, this);
             // Watcher.watch(this, ["minFilter"], this.invalidate, this);
             // Watcher.watch(this, ["magFilter"], this.invalidate, this);
             // Watcher.watch(this, ["wrapS"], this.invalidate, this);
@@ -160,7 +157,7 @@ module feng3d
          */
         private initTexture2D(gl: GL)
         {
-            gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, <HTMLImageElement>this._pixels);
+            gl.texImage2D(this.textureType, 0, this.format, this.format, this.type, <HTMLImageElement>this._pixels);
         }
 
         /**
@@ -174,7 +171,7 @@ module feng3d
             ];
             for (var i = 0; i < faces.length; i++)
             {
-                gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this._pixels[i])
+                gl.texImage2D(faces[i], 0, this.format, this.format, this.type, this._pixels[i])
             }
         }
 

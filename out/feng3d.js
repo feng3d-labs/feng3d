@@ -5852,6 +5852,17 @@ var feng3d;
             object3D.updateRender(renderContext);
             try {
                 //绘制
+                var material = meshRenderer.material;
+                if (material.enableBlend) {
+                    gl.enable(feng3d.GL.BLEND);
+                    gl.blendEquation(material.blendEquation);
+                    gl.depthMask(false);
+                    gl.blendFunc(material.sfactor, material.dfactor);
+                }
+                else {
+                    gl.disable(feng3d.GL.BLEND);
+                    gl.depthMask(true);
+                }
                 this.drawObject3D(gl, object3D.renderData); //
             }
             catch (error) {
@@ -6003,12 +6014,9 @@ var feng3d;
             gl.clearColor(scene3D.background.r, scene3D.background.g, scene3D.background.b, scene3D.background.a);
             gl.clear(feng3d.GL.COLOR_BUFFER_BIT | feng3d.GL.DEPTH_BUFFER_BIT);
             gl.viewport(0, 0, this.viewRect.width, this.viewRect.height);
-            // Enable alpha blending
-            gl.enable(feng3d.GL.BLEND);
-            // Set blending function
-            gl.blendFunc(feng3d.GL.SRC_ALPHA, feng3d.GL.ONE_MINUS_SRC_ALPHA);
+            gl.enable(feng3d.GL.DEPTH_TEST);
+            // gl.cullFace()
             _super.prototype.draw.call(this, gl, scene3D, camera);
-            gl.disable(feng3d.GL.BLEND);
         };
         ForwardRenderer.prototype.drawRenderables = function (gl, renderContext, meshRenderer) {
             if (meshRenderer.parentComponent.isVisible)
@@ -10077,13 +10085,9 @@ var feng3d;
         function TextureInfo() {
             _super.call(this);
             /**
-             * 内部格式
-             */
-            this.internalformat = feng3d.GL.RGB;
-            /**
              * 格式
              */
-            this.format = feng3d.GL.RGB;
+            this.format = feng3d.GL.RGBA;
             /**
              * 数据类型
              */
@@ -10118,6 +10122,7 @@ var feng3d;
             feng3d.Watcher.watch(this, ["type"], this.invalidate, this);
             feng3d.Watcher.watch(this, ["generateMipmap"], this.invalidate, this);
             feng3d.Watcher.watch(this, ["flipY"], this.invalidate, this);
+            feng3d.Watcher.watch(this, ["premulAlpha"], this.invalidate, this);
             // Watcher.watch(this, ["minFilter"], this.invalidate, this);
             // Watcher.watch(this, ["magFilter"], this.invalidate, this);
             // Watcher.watch(this, ["wrapS"], this.invalidate, this);
@@ -10191,7 +10196,7 @@ var feng3d;
          * 初始化纹理
          */
         TextureInfo.prototype.initTexture2D = function (gl) {
-            gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, this._pixels);
+            gl.texImage2D(this.textureType, 0, this.format, this.format, this.type, this._pixels);
         };
         /**
          * 初始化纹理
@@ -10202,7 +10207,7 @@ var feng3d;
                 feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_X, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
             ];
             for (var i = 0; i < faces.length; i++) {
-                gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this._pixels[i]);
+                gl.texImage2D(faces[i], 0, this.format, this.format, this.type, this._pixels[i]);
             }
         };
         /**
@@ -10336,6 +10341,22 @@ var feng3d;
             * 渲染模式
             */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
+            /**
+             * 是否开启混合
+             */
+            this.enableBlend = false;
+            /**
+             * 混合方程
+             */
+            this.blendEquation = feng3d.GL.FUNC_ADD;
+            /**
+             * 源混合因子
+             */
+            this.sfactor = feng3d.GL.ONE;
+            /**
+             * 目标混合因子
+             */
+            this.dfactor = feng3d.GL.ZERO;
             this._single = true;
             this._type = Material;
             feng3d.Watcher.watch(this, ["shaderName"], this.invalidateRenderData, this);
