@@ -6796,7 +6796,7 @@ var feng3d;
             if (this._sceneTransformDirty || this._ignoreTransform)
                 return;
             this.invalidateSceneTransform();
-            var i;
+            var i = 0;
             var len = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneTransformChange();
@@ -6808,7 +6808,7 @@ var feng3d;
         };
         ObjectContainer3D.prototype.notifySceneChange = function () {
             this.notifySceneTransformChange();
-            var i;
+            var i = 0;
             var len = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneChange();
@@ -6894,7 +6894,7 @@ var feng3d;
         });
         Object.defineProperty(ObjectContainer3D.prototype, "minX", {
             get: function () {
-                var i;
+                var i = 0;
                 var len = this._children.length;
                 var min = Number.POSITIVE_INFINITY;
                 var m = 0;
@@ -6911,7 +6911,7 @@ var feng3d;
         });
         Object.defineProperty(ObjectContainer3D.prototype, "minY", {
             get: function () {
-                var i;
+                var i = 0;
                 var len = this._children.length;
                 var min = Number.POSITIVE_INFINITY;
                 var m = 0;
@@ -6928,7 +6928,7 @@ var feng3d;
         });
         Object.defineProperty(ObjectContainer3D.prototype, "minZ", {
             get: function () {
-                var i;
+                var i = 0;
                 var len = this._children.length;
                 var min = Number.POSITIVE_INFINITY;
                 var m = 0;
@@ -6945,7 +6945,7 @@ var feng3d;
         });
         Object.defineProperty(ObjectContainer3D.prototype, "maxX", {
             get: function () {
-                var i;
+                var i = 0;
                 var len = this._children.length;
                 var max = Number.NEGATIVE_INFINITY;
                 var m = 0;
@@ -6962,7 +6962,7 @@ var feng3d;
         });
         Object.defineProperty(ObjectContainer3D.prototype, "maxY", {
             get: function () {
-                var i;
+                var i = 0;
                 var len = this._children.length;
                 var max = Number.NEGATIVE_INFINITY;
                 var m = 0;
@@ -6979,7 +6979,7 @@ var feng3d;
         });
         Object.defineProperty(ObjectContainer3D.prototype, "maxZ", {
             get: function () {
-                var i;
+                var i = 0;
                 var len = this._children.length;
                 var max = Number.NEGATIVE_INFINITY;
                 var m = 0;
@@ -7008,7 +7008,7 @@ var feng3d;
                 return this._scene;
             },
             set: function (value) {
-                var i;
+                var i = 0;
                 var len = this._children.length;
                 while (i < len)
                     this._children[i++].scene = value;

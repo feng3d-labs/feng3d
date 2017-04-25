@@ -64,7 +64,7 @@ module feng3d
             if (this._sceneTransformDirty || this._ignoreTransform)
                 return;
             this.invalidateSceneTransform();
-            var i: number;
+            var i: number = 0;
             var len: number = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneTransformChange();
@@ -79,7 +79,7 @@ module feng3d
         private notifySceneChange()
         {
             this.notifySceneTransformChange();
-            var i: number;
+            var i: number = 0;
             var len: number = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneChange();
@@ -176,7 +176,7 @@ module feng3d
 
         public get minX(): number
         {
-            var i: number;
+            var i: number = 0;
             var len: number = this._children.length;
             var min: number = Number.POSITIVE_INFINITY;
             var m: number = 0;
@@ -192,7 +192,7 @@ module feng3d
 
         public get minY(): number
         {
-            var i: number;
+            var i: number = 0;
             var len: number = this._children.length;
             var min: number = Number.POSITIVE_INFINITY;
             var m: number = 0;
@@ -208,7 +208,7 @@ module feng3d
 
         public get minZ(): number
         {
-            var i: number;
+            var i: number = 0;
             var len: number = this._children.length;
             var min: number = Number.POSITIVE_INFINITY;
             var m: number = 0;
@@ -224,7 +224,7 @@ module feng3d
 
         public get maxX(): number
         {
-            var i: number;
+            var i: number = 0;
             var len: number = this._children.length;
             var max: number = Number.NEGATIVE_INFINITY;
             var m: number = 0;
@@ -240,7 +240,7 @@ module feng3d
 
         public get maxY(): number
         {
-            var i: number;
+            var i: number = 0;
             var len: number = this._children.length;
             var max: number = Number.NEGATIVE_INFINITY;
             var m: number = 0;
@@ -256,7 +256,7 @@ module feng3d
 
         public get maxZ(): number
         {
-            var i: number;
+            var i: number = 0;
             var len: number = this._children.length;
             var max: number = Number.NEGATIVE_INFINITY;
             var m: number = 0;
@@ -284,7 +284,7 @@ module feng3d
 
         public set scene(value: Scene3D)
         {
-            var i: number;
+            var i: number = 0;
             var len: number = this._children.length;
             while (i < len)
                 this._children[i++].scene = value;
