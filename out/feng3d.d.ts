@@ -2803,6 +2803,10 @@ declare module feng3d {
         static u_viewProjection: string;
         static u_diffuseInput: string;
         /**
+         * 透明阈值，用于透明检测
+         */
+        static u_alphaThreshold: string;
+        /**
          * 漫反射贴图
          */
         static s_texture: string;
@@ -4724,6 +4728,10 @@ declare module feng3d {
          * 基本颜色
          */
         color: Color;
+        /**
+         * 透明阈值，透明度小于该值的像素被片段着色器丢弃
+         */
+        alphaThreshold: number;
         /**
          * 构建
          */

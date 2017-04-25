@@ -21,6 +21,7 @@ uniform vec4 u_ambient;
     uniform sampler2D s_ambient;
 #endif
 
+uniform float u_alphaThreshold;
 //漫反射
 uniform vec4 u_diffuse;
 #ifdef HAS_DIFFUSE_SAMPLER
@@ -68,18 +69,27 @@ void main(void) {
         diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);
     #endif
 
-    //获取高光值
-    float glossiness = u_glossiness;
-    //获取镜面反射基本颜色
-    vec3 specularColor = u_specular;
-    #ifdef HAS_SPECULAR_SAMPLER
-        vec4 specularMapColor = texture2D(s_specular, v_uv);
-        specularColor.xyz = specularMapColor.xyz;
-        glossiness = glossiness * specularMapColor.w;
-    #endif
+    if(diffuseColor.w < u_alphaThreshold)
+    {
+        discard;
+    }
+
+    finalColor = diffuseColor;
+
 
     //渲染灯光
     #if NUM_LIGHT > 0
+
+        //获取高光值
+        float glossiness = u_glossiness;
+        //获取镜面反射基本颜色
+        vec3 specularColor = u_specular;
+        #ifdef HAS_SPECULAR_SAMPLER
+            vec4 specularMapColor = texture2D(s_specular, v_uv);
+            specularColor.xyz = specularMapColor.xyz;
+            glossiness = glossiness * specularMapColor.w;
+        #endif
+        
         finalColor.xyz = pointLightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
     #endif
 

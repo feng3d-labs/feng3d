@@ -17,6 +17,11 @@ module feng3d
         public color = new Color(1, 1, 1, 1);
 
         /**
+         * 透明阈值，透明度小于该值的像素被片段着色器丢弃
+         */
+        public alphaThreshold = 0;
+
+        /**
          * 构建
          */
         constructor()
@@ -24,6 +29,7 @@ module feng3d
             super();
             this.difuseTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
             Watcher.watch(this, ["color"], this.invalidateRenderData, this);
+            Watcher.watch(this, ["alphaThreshold"], this.invalidateRenderData, this);
         }
 
         /**
@@ -42,6 +48,7 @@ module feng3d
                 renderData.uniforms[RenderDataID.s_diffuse] = null;
                 renderData.shaderMacro.boolMacros.HAS_DIFFUSE_SAMPLER = false;
             }
+            renderData.uniforms[RenderDataID.u_alphaThreshold] = this.alphaThreshold;
 
             //
             super.updateRenderData(renderContext, renderData);

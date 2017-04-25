@@ -26,6 +26,11 @@ module feng3d
         public static u_diffuseInput = "u_diffuseInput";
 
         /**
+         * 透明阈值，用于透明检测
+         */
+        public static u_alphaThreshold = "u_alphaThreshold";
+
+        /**
          * 漫反射贴图
          */
         public static s_texture = "s_texture";
