@@ -2439,7 +2439,64 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    function initWebGL(gl: GL): void;
+    /**
+     * @fileoverview This file contains functions every webgl program will need
+     * a version of one way or another.
+     *
+     * Instead of setting up a context manually it is recommended to
+     * use. This will check for success or failure. On failure it
+     * will attempt to present an approriate message to the user.
+     *
+     *       gl = WebGLUtils.setupWebGL(canvas);
+     *
+     * For animated WebGL apps use of setTimeout or setInterval are
+     * discouraged. It is recommended you structure your rendering
+     * loop like this.
+     *
+     *       function render() {
+     *         window.requestAnimationFrame(render, canvas);
+     *
+     *         // do rendering
+     *         ...
+     *       }
+     *       render();
+     *
+     * This will call your rendering function up to the refresh rate
+     * of your display but will stop rendering if your app is not
+     * visible.
+     */
+    var WebGLUtils: {
+        create3DContext: (canvas: any, opt_attribs: any) => any;
+        setupWebGL: (canvas: HTMLCanvasElement, opt_attribs?: any, opt_onError?: any) => any;
+    };
+}
+declare module feng3d {
+    var WebGLDebugUtils: {
+        'init': (ctx: any) => void;
+        'mightBeEnum': (value: any) => boolean;
+        'glEnumToString': (value: any) => any;
+        'glFunctionArgToString': (functionName: any, argumentIndex: any, value: any) => any;
+        'makeDebugContext': (ctx: WebGLRenderingContext, opt_onErrorFunc?: any) => any;
+        'makeLostContextSimulatingContext': (ctx: any) => any;
+        'resetToInitialState': (ctx: any) => void;
+    };
+}
+declare module feng3d {
+    /**
+     * Create the linked program object
+     * @param gl GL context
+     * @param vshader a vertex shader program (string)
+     * @param fshader a fragment shader program (string)
+     * @return created program object, or null if the creation has failed
+     */
+    function createProgram(gl: GL, vshader: string, fshader: string): WebGLProgram;
+    /**
+     * Initialize and get the rendering for WebGL
+     * @param canvas <cavnas> element
+     * @param opt_debug flag to initialize the context for debugging
+     * @return the rendering context for WebGL
+     */
+    function getWebGLContext(canvas: HTMLCanvasElement, opt_debug?: any): any;
 }
 declare module feng3d {
     /**
@@ -2702,20 +2759,6 @@ declare module feng3d {
          * @return  渲染程序
          */
         getWebGLProgram(gl: GL, vertexCode: string, fragmentCode: string): WebGLProgram;
-        /**
-         * 获取顶点渲染程序
-         * @param gl         3D环境
-         * @param vertexCode        顶点渲染代码
-         * @return                  顶点渲染程序
-         */
-        getVertexShader(gl: GL, vertexCode: string): WebGLShader;
-        /**
-         * 获取顶点渲染程序
-         * @param gl         3D环境
-         * @param fragmentCode      顶点渲染代码
-         * @return                  顶点渲染程序
-         */
-        getFragmentShader(gl: GL, fragmentCode: string): WebGLShader;
         /**
          * 3D环境缓冲池
          */

@@ -30,28 +30,6 @@ module feng3d
             return this.getContext3DBufferPool(gl).getWebGLProgram(vertexCode, fragmentCode);
         }
 
-	    /**
-         * 获取顶点渲染程序
-         * @param gl         3D环境
-         * @param vertexCode        顶点渲染代码
-         * @return                  顶点渲染程序
-         */
-        public getVertexShader(gl: GL, vertexCode: string)
-        {
-            return this.getContext3DBufferPool(gl).getVertexShader(vertexCode);
-        }
-
-	    /**
-         * 获取顶点渲染程序
-         * @param gl         3D环境
-         * @param fragmentCode      顶点渲染代码
-         * @return                  顶点渲染程序
-         */
-        public getFragmentShader(gl: GL, fragmentCode: string)
-        {
-            return this.getContext3DBufferPool(gl).getFragmentShader(fragmentCode);
-        }
-
         /**
          * 3D环境缓冲池
          */
@@ -89,136 +67,10 @@ module feng3d
             //获取3D环境唯一标识符
             var shaderCode = [vertexCode, fragmentCode].join("\n--- shaderCode ---\n");
             //获取3D环境中的渲染程序对象池
-            return this._webGLProgramPool[shaderCode] = this._webGLProgramPool[shaderCode] || getWebGLProgram(this.gl, vertexCode, fragmentCode);
-        }
-
-        /**
-         * 获取顶点渲染程序
-         * @param vertexCode        顶点渲染代码
-         * @return                  顶点渲染程序
-         */
-        public getVertexShader(vertexCode: string)
-        {
-            return this._vertexShaderPool[vertexCode] = this._vertexShaderPool[vertexCode] || getVertexShader(this.gl, vertexCode);
-        }
-
-        /**
-         * 获取顶点渲染程序
-         * @param fragmentCode      顶点渲染代码
-         * @return                  顶点渲染程序
-         */
-        public getFragmentShader(fragmentCode: string)
-        {
-            return this._fragmentShaderPool[fragmentCode] = this._fragmentShaderPool[fragmentCode] || getFragmentShader(this.gl, fragmentCode);
+            return this._webGLProgramPool[shaderCode] = this._webGLProgramPool[shaderCode] || createProgram(this.gl, vertexCode, fragmentCode);
         }
 
         /** 渲染程序对象池 */
         private _webGLProgramPool: { [shaderCode: string]: WebGLProgram } = {};
-
-        /** 顶点渲染程序对象池 */
-        private _vertexShaderPool: { [vertexCode: string]: WebGLShader } = {};
-
-        /** 顶点渲染程序对象池 */
-        private _fragmentShaderPool: { [fragmentCode: string]: WebGLShader } = {};
-    }
-
-    /**
-     * 获取WebGLProgram
-     * @param gl     3D环境上下文
-     * @param vertexCode    顶点着色器代码
-     * @param fragmentCode  片段着色器代码
-     * @return  WebGL程序
-     */
-    function getWebGLProgram(gl: GL, vertexCode: string, fragmentCode: string)
-    {
-        var vertexShader = context3DPool.getVertexShader(gl, vertexCode);
-        var fragmentShader = context3DPool.getFragmentShader(gl, fragmentCode);
-
-        if (!vertexShader || !fragmentShader)
-        {
-            return null;
-        }
-        // 创建渲染程序
-        var program = gl.createProgram();
-        if (!program)
-        {
-            return null;
-        }
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        gl.linkProgram(program);
-
-        // 渲染程序创建失败时给出弹框
-        var linked = gl.getProgramParameter(program, gl.LINK_STATUS);
-        if (!linked)
-        {
-            var error = gl.getProgramInfoLog(program);
-            debuger && console.error('Failed to link program: ' + error + `\n${vertexCode}\n${fragmentCode}`);
-            gl.deleteProgram(program);
-            gl.deleteShader(fragmentShader);
-            gl.deleteShader(vertexShader);
-            return null;
-        }
-
-        return program;
-    }
-
-    /**
-     * 获取顶点渲染程序
-     * @param gl         3D环境上下文
-     * @param vertexCode        顶点渲染代码
-     * @return                  顶点渲染程序
-     */
-    function getVertexShader(gl: GL, vertexCode: string)
-    {
-        var shader = gl.createShader(GL.VERTEX_SHADER);
-        if (shader == null)
-        {
-            debuger && console.error('unable to create shader');
-            return null;
-        }
-        shader = compileShader(gl, shader, vertexCode);
-        return shader;
-    }
-
-    /**
-     * 获取片段渲染程序
-     * @param gl         3D环境上下文
-     * @param fragmentCode      片段渲染代码
-     * @return                  片段渲染程序
-     */
-    function getFragmentShader(gl: GL, fragmentCode: string)
-    {
-        var shader = gl.createShader(GL.FRAGMENT_SHADER);
-        if (shader == null)
-        {
-            debuger && console.error('unable to create shader');
-            return null;
-        }
-        shader = compileShader(gl, shader, fragmentCode);
-        return shader;
-    }
-
-    /**
-     * 编译渲染程序
-     * @param gl         3D环境上下文
-     * @param shader            渲染程序
-     * @param shaderCode        渲染代码
-     * @return                  完成编译的渲染程序
-     */
-    function compileShader(gl: GL, shader: WebGLShader, shaderCode: string)
-    {
-        gl.shaderSource(shader, shaderCode);
-        gl.compileShader(shader);
-        // Check the result of compilation
-        var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-        if (!compiled)
-        {
-            var error = gl.getShaderInfoLog(shader);
-            debuger && console.error(`编译渲染程序时发生错误: ${error} \n ${gl.getShaderInfoLog(shader)}\n${shaderCode}`);
-            gl.deleteShader(shader);
-            return null;
-        }
-        return shader;
     }
 }

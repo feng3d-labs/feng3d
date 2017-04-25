@@ -51,19 +51,7 @@ module feng3d
             assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
 
-            try
-            {
-                this._gl = this._canvas.getContext("webgl", { antialias: false }) || this._canvas.getContext("experimental-webgl", { antialias: false });
-            }
-            catch (e)
-            {
-                throw new Error("WebGL not supported");
-            }
-            if (!this._gl)
-            {
-                throw new Error("WebGL not supported");
-            }
-            initWebGL(this._gl);
+            this._gl = getWebGLContext(canvas);
 
             this.initGL();
 

@@ -53,8 +53,11 @@
         "src/mathlib/Plane3D.ts",
         "src/mathlib/PlaneClassification.ts",
         "src/mathlib/Color.ts",
+        //
+        "src/render/webgl/WebGLUtils.ts",
+        "src/render/webgl/WebGLDebugUtils.ts",
+        "src/render/webgl/webgl.ts",
         //渲染
-        "src/render/webgl.ts",
         "src/render/consts/RenderMode.ts",
         "src/render/data/ShaderParams.ts",
         "src/render/data/RenderDataHolder.ts",
