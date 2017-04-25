@@ -3185,6 +3185,7 @@ declare module feng3d {
     class MouseRenderer extends Renderer {
         private _shaderName;
         selectedObject3D: GameObject;
+        private objects;
         constructor();
         /**
          * 渲染
@@ -3410,7 +3411,6 @@ declare module feng3d {
          * 组件列表
          */
         protected components_: Object3DComponent[];
-        private _object3DID;
         /**
          * 是否为公告牌（默认永远朝向摄像机），默认false。
          */
@@ -3421,7 +3421,6 @@ declare module feng3d {
          * @param renderAtomic 渲染原子
          */
         collectRenderDataHolder(renderAtomic?: Object3DRenderAtomic): void;
-        readonly object3DID: number;
         /**
          * 构建3D对象
          */
@@ -3430,7 +3429,6 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
-        static getObject3D(id: number): GameObject;
     }
 }
 declare module feng3d {

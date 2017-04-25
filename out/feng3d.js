@@ -6857,14 +6857,13 @@ var feng3d;
         function MouseRenderer() {
             _super.call(this);
             this._shaderName = "mouse";
+            this.objects = [null];
         }
         /**
          * 渲染
          */
         MouseRenderer.prototype.draw = function (gl, scene3D, camera) {
-            // this.frameBufferObject.activate(gl,
-            //     gl.drawingBufferWidth,
-            //     gl.drawingBufferHeight);
+            this.objects.length = 1;
             //启动裁剪，只绘制一个像素
             gl.enable(feng3d.GL.SCISSOR_TEST);
             gl.scissor(0, 0, 1, 1);
@@ -6876,12 +6875,15 @@ var feng3d;
             gl.readPixels(0, 0, 1, 1, feng3d.GL.RGBA, feng3d.GL.UNSIGNED_BYTE, data);
             var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3]; //最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
             // console.log(`选中索引3D对象${id}`, data.toString());
-            this.selectedObject3D = feng3d.GameObject.getObject3D(id);
-            // this.frameBufferObject.deactivate(gl);
+            this.selectedObject3D = this.objects[id];
         };
         MouseRenderer.prototype.drawRenderables = function (gl, renderContext, meshRenderer) {
-            if (meshRenderer.parentComponent.mouseEnabled)
+            if (meshRenderer.parentComponent.mouseEnabled) {
+                var object = meshRenderer.parentComponent;
+                this.objects.push(object);
+                object.renderData.uniforms[feng3d.RenderDataID.u_objectID] = this.objects.length - 1;
                 _super.prototype.drawRenderables.call(this, gl, renderContext, meshRenderer);
+            }
         };
         /**
          * 激活渲染程序
@@ -8027,8 +8029,6 @@ var feng3d;
              * 是否为公告牌（默认永远朝向摄像机），默认false。
              */
             this.isBillboard = false;
-            this._object3DID = object3DAutoID++;
-            object3DMap[this._object3DID] = this;
             this.name = name;
         }
         Object.defineProperty(GameObject.prototype, "renderData", {
@@ -8060,29 +8060,16 @@ var feng3d;
                 }
             });
         };
-        Object.defineProperty(GameObject.prototype, "object3DID", {
-            get: function () {
-                return this._object3DID;
-            },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 更新渲染数据
          */
         GameObject.prototype.updateRenderData = function (renderContext, renderData) {
             //
-            renderData.uniforms[feng3d.RenderDataID.u_objectID] = this._object3DID;
             renderData.uniforms[feng3d.RenderDataID.u_modelMatrix] = this.sceneTransform;
-        };
-        GameObject.getObject3D = function (id) {
-            return object3DMap[id];
         };
         return GameObject;
     }(feng3d.ObjectContainer3D));
     feng3d.GameObject = GameObject;
-    var object3DAutoID = 1; //索引从1开始，因为索引拾取中默认值为0
-    var object3DMap = {};
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

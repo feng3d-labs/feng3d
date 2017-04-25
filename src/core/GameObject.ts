@@ -14,9 +14,6 @@ module feng3d
 		 */
         protected components_: Object3DComponent[] = [];
 
-        //-非序列化
-        private _object3DID: number;
-
         /**
          * 是否为公告牌（默认永远朝向摄像机），默认false。
          */
@@ -53,20 +50,12 @@ module feng3d
             });
         }
 
-        public get object3DID()
-        {
-            return this._object3DID;
-        }
-
         /**
          * 构建3D对象
          */
         constructor(name = "object")
         {
             super();
-
-            this._object3DID = object3DAutoID++;
-            object3DMap[this._object3DID] = this;
             this.name = name;
         }
 
@@ -76,16 +65,7 @@ module feng3d
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
             //
-            renderData.uniforms[RenderDataID.u_objectID] = this._object3DID;
             renderData.uniforms[RenderDataID.u_modelMatrix] = this.sceneTransform;
         }
-
-        public static getObject3D(id: number)
-        {
-            return object3DMap[id];
-        }
     }
-
-    var object3DAutoID = 1;//索引从1开始，因为索引拾取中默认值为0
-    var object3DMap: { [id: number]: GameObject } = {};
 }
