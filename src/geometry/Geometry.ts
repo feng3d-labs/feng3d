@@ -84,6 +84,14 @@ module feng3d
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_INDEX_DATA));
         }
 
+        /**
+         * 获取顶点数据
+         */
+        public getIndexData()
+        {
+            return this._indexBuffer;
+        }
+
 		/**
 		 * 设置顶点属性数据
 		 * @param vaId          顶点属性编号

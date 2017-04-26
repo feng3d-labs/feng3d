@@ -8691,6 +8691,12 @@ var feng3d;
             this.dispatchEvent(new feng3d.GeometryEvent(feng3d.GeometryEvent.CHANGED_INDEX_DATA));
         };
         /**
+         * 获取顶点数据
+         */
+        Geometry.prototype.getIndexData = function () {
+            return this._indexBuffer;
+        };
+        /**
          * 设置顶点属性数据
          * @param vaId          顶点属性编号
          * @param data          顶点属性数据
@@ -8941,6 +8947,120 @@ var feng3d;
         return GeometryEvent;
     }(feng3d.Event));
     feng3d.GeometryEvent = GeometryEvent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var GeometryUtils = (function () {
+        function GeometryUtils() {
+        }
+        GeometryUtils.createFaceNormals = function (_indices, vertices, _useFaceWeights) {
+            if (_useFaceWeights === void 0) { _useFaceWeights = false; }
+            var i = 0, j = 0, k = 0;
+            var index = 0;
+            var len = _indices.length;
+            var x1 = 0, x2 = 0, x3 = 0;
+            var y1 = 0, y2 = 0, y3 = 0;
+            var z1 = 0, z2 = 0, z3 = 0;
+            var dx1 = 0, dy1 = 0, dz1 = 0;
+            var dx2 = 0, dy2 = 0, dz2 = 0;
+            var cx = 0, cy = 0, cz = 0;
+            var d = 0;
+            var posStride = 3;
+            var _faceNormals = new Array(len);
+            if (_useFaceWeights)
+                var _faceWeights = new Array(len / 3);
+            while (i < len) {
+                index = _indices[i++] * posStride;
+                x1 = vertices[index];
+                y1 = vertices[index + 1];
+                z1 = vertices[index + 2];
+                index = _indices[i++] * posStride;
+                x2 = vertices[index];
+                y2 = vertices[index + 1];
+                z2 = vertices[index + 2];
+                index = _indices[i++] * posStride;
+                x3 = vertices[index];
+                y3 = vertices[index + 1];
+                z3 = vertices[index + 2];
+                dx1 = x3 - x1;
+                dy1 = y3 - y1;
+                dz1 = z3 - z1;
+                dx2 = x2 - x1;
+                dy2 = y2 - y1;
+                dz2 = z2 - z1;
+                cx = dz1 * dy2 - dy1 * dz2;
+                cy = dx1 * dz2 - dz1 * dx2;
+                cz = dy1 * dx2 - dx1 * dy2;
+                d = Math.sqrt(cx * cx + cy * cy + cz * cz);
+                if (_useFaceWeights) {
+                    var w = d * 10000;
+                    if (w < 1)
+                        w = 1;
+                    _faceWeights[k++] = w;
+                }
+                d = 1 / d;
+                _faceNormals[j++] = cx * d;
+                _faceNormals[j++] = cy * d;
+                _faceNormals[j++] = cz * d;
+            }
+            return { faceNormals: _faceNormals, faceWeights: _faceWeights };
+        };
+        GeometryUtils.createVertexNormals = function (_indices, vertices, _useFaceWeights) {
+            if (_useFaceWeights === void 0) { _useFaceWeights = false; }
+            var faceNormalsResult = GeometryUtils.createFaceNormals(_indices, vertices, _useFaceWeights);
+            var _faceWeights = faceNormalsResult.faceWeights;
+            var _faceNormals = faceNormalsResult.faceNormals;
+            var v1 = 0;
+            var f1 = 0, f2 = 1, f3 = 2;
+            var lenV = vertices.length;
+            var normalStride = 3;
+            var normalOffset = 0;
+            var normals = new Float32Array(lenV);
+            v1 = 0;
+            while (v1 < lenV) {
+                normals[v1] = 0.0;
+                normals[v1 + 1] = 0.0;
+                normals[v1 + 2] = 0.0;
+                v1 += normalStride;
+            }
+            var i = 0, k = 0;
+            var lenI = _indices.length;
+            var index = 0;
+            var weight = 0;
+            while (i < lenI) {
+                weight = _useFaceWeights ? _faceWeights[k++] : 1;
+                index = normalOffset + _indices[i++] * normalStride;
+                normals[index++] += _faceNormals[f1] * weight;
+                normals[index++] += _faceNormals[f2] * weight;
+                normals[index] += _faceNormals[f3] * weight;
+                index = normalOffset + _indices[i++] * normalStride;
+                normals[index++] += _faceNormals[f1] * weight;
+                normals[index++] += _faceNormals[f2] * weight;
+                normals[index] += _faceNormals[f3] * weight;
+                index = normalOffset + _indices[i++] * normalStride;
+                normals[index++] += _faceNormals[f1] * weight;
+                normals[index++] += _faceNormals[f2] * weight;
+                normals[index] += _faceNormals[f3] * weight;
+                f1 += 3;
+                f2 += 3;
+                f3 += 3;
+            }
+            v1 = normalOffset;
+            while (v1 < lenV) {
+                var vx = normals[v1];
+                var vy = normals[v1 + 1];
+                var vz = normals[v1 + 2];
+                var d = 1.0 / Math.sqrt(vx * vx + vy * vy + vz * vz);
+                normals[v1] = vx * d;
+                normals[v1 + 1] = vy * d;
+                normals[v1 + 2] = vz * d;
+                v1 += normalStride;
+            }
+            return normals;
+        };
+        return GeometryUtils;
+    }());
+    feng3d.GeometryUtils = GeometryUtils;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -11499,30 +11619,6 @@ var feng3d;
         return ParticleMaterial;
     }(feng3d.Material));
     feng3d.ParticleMaterial = ParticleMaterial;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 粒子材质（为了使用独立的着色器，暂时设置粒子材质）
-     * @author feng 2017-01-09
-     */
-    var SkeletonAnimatorMaterial = (function (_super) {
-        __extends(SkeletonAnimatorMaterial, _super);
-        function SkeletonAnimatorMaterial() {
-            _super.call(this);
-            this.shaderName = "skeleton";
-            feng3d.Watcher.watch(this, ["texture"], this.invalidateRenderData, this);
-        }
-        /**
-         * 更新渲染数据
-         */
-        SkeletonAnimatorMaterial.prototype.updateRenderData = function (renderContext, renderData) {
-            renderData.uniforms[feng3d.RenderDataID.s_texture] = this.texture;
-            _super.prototype.updateRenderData.call(this, renderContext, renderData);
-        };
-        return SkeletonAnimatorMaterial;
-    }(feng3d.Material));
-    feng3d.SkeletonAnimatorMaterial = SkeletonAnimatorMaterial;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -14335,7 +14431,7 @@ var feng3d;
                 var skeletonObject3D = new feng3d.GameObject();
                 var model = new feng3d.Model();
                 model.geometry = geometry;
-                model.material = new feng3d.SkeletonAnimatorMaterial();
+                model.material = new feng3d.StandardMaterial();
                 skeletonObject3D.addComponent(model);
                 skeletonObject3D.addComponent(skeletonAnimator);
                 object3D.addChild(skeletonObject3D);
@@ -14487,6 +14583,9 @@ var feng3d;
             //更新顶点坐标与uv数据
             geometry.setVAData(feng3d.GLAttribute.a_position, new Float32Array(vertices), 3);
             geometry.setVAData(feng3d.GLAttribute.a_uv, new Float32Array(uvs), 2);
+            //
+            var normals = feng3d.GeometryUtils.createVertexNormals(indices, vertices);
+            geometry.setVAData(feng3d.GLAttribute.a_normal, new Float32Array(normals), 3);
             //更新关节索引与权重索引
             geometry.setVAData(feng3d.GLAttribute.a_jointindex0, new Float32Array(jointIndices0), 4);
             geometry.setVAData(feng3d.GLAttribute.a_jointweight0, new Float32Array(jointWeights0), 4);

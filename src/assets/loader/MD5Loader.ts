@@ -62,7 +62,7 @@ module feng3d
                 var skeletonObject3D = new GameObject();
                 var model = new Model();
                 model.geometry = geometry;
-                model.material = new SkeletonAnimatorMaterial();
+                model.material = new StandardMaterial();
                 skeletonObject3D.addComponent(model);
                 skeletonObject3D.addComponent(skeletonAnimator);
 
@@ -247,7 +247,9 @@ module feng3d
             //更新顶点坐标与uv数据
             geometry.setVAData(GLAttribute.a_position, new Float32Array(vertices), 3);
             geometry.setVAData(GLAttribute.a_uv, new Float32Array(uvs), 2);
-            
+            //
+            var normals = GeometryUtils.createVertexNormals(indices, vertices);
+            geometry.setVAData(GLAttribute.a_normal, new Float32Array(normals), 3);
             //更新关节索引与权重索引
             geometry.setVAData(GLAttribute.a_jointindex0, new Float32Array(jointIndices0), 4);
             geometry.setVAData(GLAttribute.a_jointweight0, new Float32Array(jointWeights0), 4);

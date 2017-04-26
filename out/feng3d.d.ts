@@ -3757,6 +3757,10 @@ declare module feng3d {
          */
         setIndices(indices: Uint16Array): void;
         /**
+         * 获取顶点数据
+         */
+        getIndexData(): IndexRenderData;
+        /**
          * 设置顶点属性数据
          * @param vaId          顶点属性编号
          * @param data          顶点属性数据
@@ -3834,6 +3838,15 @@ declare module feng3d {
          * 构建几何体事件
          */
         constructor(type: string, data?: any, bubbles?: boolean);
+    }
+}
+declare module feng3d {
+    class GeometryUtils {
+        static createFaceNormals(_indices: number[], vertices: number[], _useFaceWeights?: boolean): {
+            faceNormals: number[];
+            faceWeights: number[];
+        };
+        static createVertexNormals(_indices: number[], vertices: number[], _useFaceWeights?: boolean): Float32Array;
     }
 }
 declare module feng3d {
@@ -4751,23 +4764,6 @@ declare module feng3d {
      */
     class ParticleMaterial extends Material {
         constructor();
-    }
-}
-declare module feng3d {
-    /**
-     * 粒子材质（为了使用独立的着色器，暂时设置粒子材质）
-     * @author feng 2017-01-09
-     */
-    class SkeletonAnimatorMaterial extends Material {
-        /**
-         * 纹理数据
-         */
-        texture: Texture2D;
-        constructor();
-        /**
-         * 更新渲染数据
-         */
-        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {

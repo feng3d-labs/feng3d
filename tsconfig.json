@@ -99,6 +99,7 @@
         //几何体
         "src/geometry/Geometry.ts",
         "src/geometry/GeometryEvent.ts",
+        "src/geometry/GeometryUtils.ts",
         //几何体组件
         "src/geometry/PointGeometry.ts",
         "src/geometry/SegmentGeometry.ts",
@@ -131,7 +132,6 @@
         "src/materials/SkyBoxMaterial.ts",
         "src/materials/StandardMaterial.ts",
         "src/materials/ParticleMaterial.ts",
-        "src/materials/SkeletonAnimatorMaterial.ts",
         //
         "src/materials/methods/DiffuseMethod.ts",
         "src/materials/methods/NormalMethod.ts",
