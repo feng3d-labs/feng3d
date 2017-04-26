@@ -4469,6 +4469,10 @@ declare module feng3d {
         wrapS: number;
         wrapT: number;
         /**
+         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。
+         */
+        anisotropy: number;
+        /**
          * 图片数据
          */
         protected _pixels: HTMLImageElement | HTMLImageElement[];

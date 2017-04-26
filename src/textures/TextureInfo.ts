@@ -41,6 +41,11 @@ module feng3d
         public wrapT = GL.REPEAT;
 
         /**
+         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。
+         */
+        public anisotropy = 1;
+
+        /**
          * 图片数据
          */
         // ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement
@@ -117,6 +122,20 @@ module feng3d
             gl.texParameteri(this.textureType, GL.TEXTURE_MAG_FILTER, this.magFilter);
             gl.texParameteri(this.textureType, GL.TEXTURE_WRAP_S, this.wrapS);
             gl.texParameteri(this.textureType, GL.TEXTURE_WRAP_T, this.wrapT);
+            //
+            var ext = (
+                gl.getExtension('EXT_texture_filter_anisotropic') ||
+                gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
+                gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic')
+            );
+            if (ext)
+            {
+                var max = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+                gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, max));
+            } else
+            {
+                console.log("浏览器不支持各向异性过滤（anisotropy）特性！");
+            }
         }
 
         /**

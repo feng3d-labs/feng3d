@@ -8091,7 +8091,7 @@ var feng3d;
             feng3d.initEngine();
             feng3d.assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
             this._canvas = canvas;
-            this._gl = feng3d.getWebGLContext(canvas);
+            this._gl = feng3d.getWebGLContext(canvas, false);
             this.initGL();
             this.scene = scene || new feng3d.Scene3D();
             this.camera = camera || new feng3d.CameraObject3D();
@@ -10893,6 +10893,10 @@ var feng3d;
             this.wrapS = feng3d.GL.REPEAT;
             this.wrapT = feng3d.GL.REPEAT;
             /**
+             * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。
+             */
+            this.anisotropy = 1;
+            /**
              * 纹理缓冲
              */
             this._textureMap = new feng3d.Map();
@@ -10947,6 +10951,17 @@ var feng3d;
             gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_MAG_FILTER, this.magFilter);
             gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_WRAP_S, this.wrapS);
             gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_WRAP_T, this.wrapT);
+            //
+            var ext = (gl.getExtension('EXT_texture_filter_anisotropic') ||
+                gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
+                gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic'));
+            if (ext) {
+                var max = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+                gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, max));
+            }
+            else {
+                console.log("浏览器不支持各向异性过滤（anisotropy）特性！");
+            }
         };
         /**
          * 获取顶点属性缓冲
