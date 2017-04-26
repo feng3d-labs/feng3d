@@ -1,31 +1,12 @@
+attribute vec4 a_jointindex0;
+attribute vec4 a_jointweight0;
 
-precision mediump float;
+attribute vec4 a_jointindex1;
+attribute vec4 a_jointweight1;
+uniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];
 
-//此处将填充宏定义
-#define macros
+vec4 skeletonAnimation(vec4 position) {
 
-attribute vec3 a_position;
-attribute vec2 a_uv;
-
-uniform mat4 u_modelMatrix;
-uniform mat4 u_viewProjection;
-
-varying vec2 v_uv;
-
-#ifdef HAS_SKELETON_ANIMATION
-    attribute vec4 a_jointindex0;
-    attribute vec4 a_jointweight0;
-
-    attribute vec4 a_jointindex1;
-    attribute vec4 a_jointweight1;
-    uniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];
-#endif
-
-void main(void) {
-
-vec4 position = vec4(a_position,1.0);
-
-#ifdef HAS_SKELETON_ANIMATION
     int jointIndics[8];
     jointIndics[0] = int(a_jointindex0.x);
     jointIndics[1] = int(a_jointindex0.y);
@@ -51,11 +32,6 @@ vec4 position = vec4(a_position,1.0);
 
         totalPosition += u_skeletonGlobalMatriices[jointIndics[i]] * position * jointweights[i];
     }
-    position = totalPosition;
-    position.w = 1.0;
-#endif
-
-    vec4 globalPosition = u_modelMatrix * position;
-    gl_Position = u_viewProjection * globalPosition;
-    v_uv = a_uv;
+    position.xyz = totalPosition.xyz;
+    return position;
 }
