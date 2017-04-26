@@ -52,7 +52,7 @@ module feng3d
         if (!linked)
         {
             var error = gl.getProgramInfoLog(program);
-            console.log('Failed to link program: ' + error);
+            debuger && alert('Failed to link program: ' + error);
             gl.deleteProgram(program);
             gl.deleteShader(fragmentShader);
             gl.deleteShader(vertexShader);
@@ -119,7 +119,7 @@ module feng3d
         var shader = gl.createShader(type);
         if (shader == null)
         {
-            console.log('unable to create shader');
+            debuger && alert('unable to create shader');
             return null;
         }
 
@@ -134,7 +134,7 @@ module feng3d
         if (!compiled)
         {
             var error = gl.getShaderInfoLog(shader);
-            console.log('Failed to compile shader: ' + error);
+            debuger && alert('Failed to compile shader: ' + error);
             gl.deleteShader(shader);
             return null;
         }

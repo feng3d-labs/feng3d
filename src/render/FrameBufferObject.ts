@@ -21,7 +21,7 @@ module feng3d
             this.framebuffer = gl.createFramebuffer();
             if (!this.framebuffer)
             {
-                console.log('Failed to create frame buffer object');
+                debuger && alert('Failed to create frame buffer object');
                 return this.clear(gl);
             }
 
@@ -29,7 +29,7 @@ module feng3d
             this.texture = gl.createTexture(); // Create a texture object
             if (!this.texture)
             {
-                console.log('Failed to create texture object');
+                debuger && alert('Failed to create texture object');
                 return this.clear(gl);
             }
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -41,7 +41,7 @@ module feng3d
             this.depthBuffer = gl.createRenderbuffer(); // Create a renderbuffer object
             if (!this.depthBuffer)
             {
-                console.log('Failed to create renderbuffer object');
+                debuger && alert('Failed to create renderbuffer object');
                 return this.clear(gl);
             }
             gl.bindRenderbuffer(gl.RENDERBUFFER, this.depthBuffer);
@@ -56,7 +56,7 @@ module feng3d
             var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
             if (gl.FRAMEBUFFER_COMPLETE !== e)
             {
-                console.log('Frame buffer object is incomplete: ' + e.toString());
+                debuger && alert('Frame buffer object is incomplete: ' + e.toString());
                 return this.clear(gl);
             }
 

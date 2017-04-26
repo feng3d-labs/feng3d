@@ -48,7 +48,7 @@ module feng3d
             //初始化引擎
             initEngine();
 
-            assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
+            debuger && assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
 
             this._gl = getWebGLContext(canvas, false);

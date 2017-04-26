@@ -15,9 +15,7 @@ varying vec3 v_normal;
 
 #ifdef HAS_NORMAL_SAMPLER
     attribute vec3 a_tangent;
-#endif
 
-#ifdef HAS_NORMAL_SAMPLER
     varying vec3 v_tangent;
     varying vec3 v_bitangent;
 #endif

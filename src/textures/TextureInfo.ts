@@ -84,7 +84,7 @@ module feng3d
          */
         public checkRenderData()
         {
-            debuger && console.assert(false);
+            debuger && assert(false);
 
             return false;
         }
@@ -114,9 +114,6 @@ module feng3d
             var texture = this.getTexture(gl);
             //绑定纹理
             gl.bindTexture(this.textureType, texture);
-            // //设置图片y轴方向
-            // gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
-            // console.warn("flipY:" + this.flipY);
             //设置纹理参数
             gl.texParameteri(this.textureType, GL.TEXTURE_MIN_FILTER, this.minFilter);
             gl.texParameteri(this.textureType, GL.TEXTURE_MAG_FILTER, this.magFilter);
@@ -130,7 +127,7 @@ module feng3d
                 gl.texParameterf(gl.TEXTURE_2D, anisotropicExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, max));
             } else
             {
-                console.log("浏览器不支持各向异性过滤（anisotropy）特性！");
+                debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
             }
         }
 
@@ -161,7 +158,6 @@ module feng3d
                 {
                     gl.generateMipmap(this.textureType);
                 }
-                // console.warn("flipY:" + this.flipY);
                 this._textureMap.push(gl, texture);
             }
             return texture;

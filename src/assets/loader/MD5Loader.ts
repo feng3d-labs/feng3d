@@ -50,7 +50,7 @@ module feng3d
 
             //顶点最大关节关联数
             var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
-            assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
+            debuger && assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
 
             this._skeleton = this.createSkeleton(md5MeshData.joints);
             var skeletonAnimator = new SkeletonAnimator(this._skeleton);
