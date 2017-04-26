@@ -3846,7 +3846,12 @@ declare module feng3d {
             faceNormals: number[];
             faceWeights: number[];
         };
-        static createVertexNormals(_indices: number[], vertices: number[], _useFaceWeights?: boolean): Float32Array;
+        static createVertexNormals(_indices: number[], vertices: number[], _useFaceWeights?: boolean): number[];
+        static createVertexTangents(_indices: number[], vertices: Array<number>, uvs: Array<number>, _useFaceWeights?: boolean): Array<number>;
+        protected static createFaceTangents(_indices: number[], vertices: Array<number>, uvs: Array<number>, _useFaceWeights?: boolean): {
+            faceTangents: number[];
+            faceWeights: number[];
+        };
     }
 }
 declare module feng3d {
