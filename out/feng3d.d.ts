@@ -3070,6 +3070,10 @@ declare module feng3d {
          * 是否有环境贴图
          */
         HAS_AMBIENT_SAMPLER: boolean;
+        /**
+         * 是否有骨骼动画
+         */
+        HAS_SKELETON_ANIMATION: boolean;
     }
     /**
      * 递增类型宏
