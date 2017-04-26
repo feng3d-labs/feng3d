@@ -95,7 +95,7 @@ module feng3d
                 var uniformLocation: WebGLUniformLocation[] = activeInfo.uniformLocation = [];
                 for (var j = 0; j < activeInfo.size; j++)
                 {
-                    var location = gl.getUniformLocation(shaderProgram, activeInfo.name);
+                    var location = gl.getUniformLocation(shaderProgram, baseName + `[${j}]`);
                     uniformLocation.push(location);
                 }
             } else
