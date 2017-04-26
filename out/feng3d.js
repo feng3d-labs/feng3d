@@ -5602,9 +5602,43 @@ var feng3d;
             gl = feng3d.WebGLDebugUtils.makeDebugContext(gl);
         }
         supportIphone(gl);
+        initWebGLExtension(gl);
         return gl;
     }
     feng3d.getWebGLContext = getWebGLContext;
+    /**
+     * 初始化WebGL扩展
+     * @param gl WebGL
+     */
+    function initWebGLExtension(gl) {
+        var anisotropicExt;
+        gl.ext = {
+            getAnisotropicExt: function () {
+                if (anisotropicExt !== undefined)
+                    return anisotropicExt;
+                anisotropicExt =
+                    (gl.getExtension('EXT_texture_filter_anisotropic') ||
+                        gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
+                        gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic'));
+                initAnisotropicExt(gl, anisotropicExt);
+                return anisotropicExt;
+            }
+        };
+    }
+    /**
+     * 初始化纹理各向异性过滤扩展
+     * @param gl WebGL
+     * @param anisotropicExt 纹理各向异性过滤扩展
+     */
+    function initAnisotropicExt(gl, anisotropicExt) {
+        var maxAnisotropy;
+        anisotropicExt.getMaxAnisotropy = function () {
+            if (maxAnisotropy !== undefined)
+                return maxAnisotropy;
+            maxAnisotropy = gl.getParameter(anisotropicExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+            return maxAnisotropy;
+        };
+    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6744,7 +6778,7 @@ var feng3d;
         map[feng3d.RenderMode.TRIANGLE_FAN] = feng3d.GL.TRIANGLE_FAN;
         var renderMode = map[shaderParams.renderMode];
         if (instanceCount > 1) {
-            _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
+            var _ext = gl.getExtension('ANGLE_instanced_arrays');
             _ext.drawArraysInstancedANGLE(renderMode, 0, indexBuffer.count, instanceCount);
         }
         else {
@@ -6758,7 +6792,7 @@ var feng3d;
         var location = gl.getAttribLocation(shaderProgram, activeInfo.name);
         buffer.active(gl, location);
         if (buffer.divisor > 0) {
-            _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
+            var _ext = gl.getExtension('ANGLE_instanced_arrays');
             _ext.vertexAttribDivisorANGLE(location, buffer.divisor);
         }
     }
@@ -6797,7 +6831,6 @@ var feng3d;
                 throw "\u65E0\u6CD5\u8BC6\u522B\u7684uniform\u7C7B\u578B " + activeInfo.name + " " + data;
         }
     }
-    var _ext;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -8127,8 +8160,8 @@ var feng3d;
             var viewRect = this.viewRect;
             this.camera.camera.aspectRatio = viewRect.width / viewRect.height;
             //鼠标拾取渲染
-            this.mouse3DManager.viewRect.copyFrom(viewRect);
-            this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
+            // this.mouse3DManager.viewRect.copyFrom(viewRect);
+            // this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
             //绘制阴影图
             // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
             // 默认渲染
@@ -10952,12 +10985,10 @@ var feng3d;
             gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_WRAP_S, this.wrapS);
             gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_WRAP_T, this.wrapT);
             //
-            var ext = (gl.getExtension('EXT_texture_filter_anisotropic') ||
-                gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
-                gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic'));
-            if (ext) {
-                var max = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-                gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, max));
+            var anisotropicExt = gl.ext.getAnisotropicExt();
+            if (anisotropicExt) {
+                var max = anisotropicExt.getMaxAnisotropy();
+                gl.texParameterf(gl.TEXTURE_2D, anisotropicExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, max));
             }
             else {
                 console.log("浏览器不支持各向异性过滤（anisotropy）特性！");

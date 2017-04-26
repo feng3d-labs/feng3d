@@ -144,7 +144,7 @@ module feng3d
         var renderMode = map[shaderParams.renderMode];
         if (instanceCount > 1)
         {
-            _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
+            var _ext = gl.getExtension('ANGLE_instanced_arrays');
             _ext.drawArraysInstancedANGLE(renderMode, 0, indexBuffer.count, instanceCount)
         }
         else
@@ -164,7 +164,7 @@ module feng3d
 
         if (buffer.divisor > 0)
         {
-            _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
+            var _ext = gl.getExtension('ANGLE_instanced_arrays');
             _ext.vertexAttribDivisorANGLE(location, buffer.divisor);
         }
     }
@@ -206,6 +206,4 @@ module feng3d
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
     }
-
-    var _ext
 }

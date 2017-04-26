@@ -116,7 +116,47 @@ module feng3d
         }
 
         supportIphone(gl);
+        initWebGLExtension(gl);
 
         return gl;
+    }
+
+    /**
+     * 初始化WebGL扩展
+     * @param gl WebGL
+     */
+    function initWebGLExtension(gl: GL)
+    {
+        var anisotropicExt: EXTTextureFilterAnisotropic;
+        gl.ext = {
+            getAnisotropicExt: function ()
+            {
+                if (anisotropicExt !== undefined) return anisotropicExt;
+                anisotropicExt =
+                    (
+                        gl.getExtension('EXT_texture_filter_anisotropic') ||
+                        gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
+                        gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic')
+                    );
+                initAnisotropicExt(gl, anisotropicExt);
+                return anisotropicExt;
+            }
+        };
+    }
+
+    /**
+     * 初始化纹理各向异性过滤扩展
+     * @param gl WebGL
+     * @param anisotropicExt 纹理各向异性过滤扩展
+     */
+    function initAnisotropicExt(gl: GL, anisotropicExt: EXTTextureFilterAnisotropic)
+    {
+        var maxAnisotropy: number;
+        anisotropicExt.getMaxAnisotropy = () =>
+        {
+            if (maxAnisotropy !== undefined) return maxAnisotropy;
+            maxAnisotropy = gl.getParameter(anisotropicExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+            return maxAnisotropy;
+        }
     }
 }

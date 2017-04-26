@@ -251,7 +251,7 @@ module feng3d
             }
 
             // Override the getError function with one that returns our saved results.
-            wrapper.getError = function ()
+            wrapper.getError = function (): any
             {
                 for (var err in glErrorShadow)
                 {
