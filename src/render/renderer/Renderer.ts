@@ -13,12 +13,9 @@ module feng3d
 		 */
         public draw(gl: GL, scene3D: Scene3D, camera: Camera)
         {
-            var renderContext: RenderContext = new RenderContext();
+            var renderContext = scene3D.renderContext;
             //初始化渲染环境
-            renderContext.clear();
             renderContext.camera = camera;
-            renderContext.lights = scene3D.lights;
-            renderContext.sceneAmbientColor = scene3D.ambientColor;
             scene3D.renderers.forEach(element =>
             {
                 this.drawRenderables(gl, renderContext, element);
@@ -33,6 +30,18 @@ module feng3d
             // try
             // {
                 //绘制
+                var material = meshRenderer.material;
+                if (material.enableBlend)
+                {
+                    gl.enable(GL.BLEND);
+                    gl.blendEquation(material.blendEquation);
+                    gl.depthMask(false);
+                    gl.blendFunc(material.sfactor, material.dfactor);
+                } else
+                {
+                    gl.disable(GL.BLEND);
+                    gl.depthMask(true);
+                }
                 this.drawObject3D(gl, object3D.renderData);            //
             // } catch (error)
             // {
@@ -50,8 +59,8 @@ module feng3d
                 return;
             _samplerIndex = 0;
             //
-            activeAttributes(gl, shaderProgram, renderAtomic.attributes);
-            activeUniforms(gl, shaderProgram, renderAtomic.uniforms);
+            activeAttributes(gl, shaderProgram.attributes, renderAtomic.attributes);
+            activeUniforms(gl, shaderProgram.uniforms, renderAtomic.uniforms);
             dodraw(gl, renderAtomic.shaderParams, renderAtomic.indexBuffer, renderAtomic.instanceCount);
         }
 
@@ -79,40 +88,34 @@ module feng3d
     /**
      * 激活属性
      */
-    function activeAttributes(gl: GL, shaderProgram: WebGLProgram, attributes: { [name: string]: AttributeRenderData })
+    function activeAttributes(gl: GL, attributeInfos: WebGLActiveInfo[], attributes: { [name: string]: AttributeRenderData })
     {
-        var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
-        var i = 0;
-        while (i < numAttributes)
+        attributeInfos.forEach(activeInfo =>
         {
-            var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
-            setContext3DAttribute(gl, shaderProgram, activeInfo, attributes[activeInfo.name]);
-        }
+            setContext3DAttribute(gl, activeInfo, attributes[activeInfo.name]);
+        });
     }
 
     /**
      * 激活常量
      */
-    function activeUniforms(gl: GL, shaderProgram: WebGLProgram, uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[]; })
+    function activeUniforms(gl: GL, uniformInfos: WebGLActiveInfo[], uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[]; })
     {
-        var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
-        var i = 0;
-        while (i < numUniforms)
+        uniformInfos.forEach(activeInfo =>
         {
-            var activeInfo = gl.getActiveUniform(shaderProgram, i++);
             if (activeInfo.name.indexOf("[") != -1)
             {
                 //处理数组
-                var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
+                var baseName = activeInfo.uniformBaseName;
                 for (var j = 0; j < activeInfo.size; j++)
                 {
-                    setContext3DUniform(gl, shaderProgram, { name: baseName + `[${j}]`, type: activeInfo.type }, uniforms[baseName][j]);
+                    setContext3DUniform(gl, { name: baseName + `[${j}]`, type: activeInfo.type, uniformLocation: activeInfo.uniformLocation[j] }, uniforms[baseName][j]);
                 }
             } else
             {
-                setContext3DUniform(gl, shaderProgram, activeInfo, uniforms[activeInfo.name]);
+                setContext3DUniform(gl, activeInfo, uniforms[activeInfo.name]);
             }
-        }
+        });
     }
 
     /**
@@ -123,39 +126,38 @@ module feng3d
 
         indexBuffer.active(gl);
 
+        var renderMode = getRenderModeValue(shaderParams.renderMode);
         if (instanceCount > 1)
         {
-            _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
-            _ext.drawArraysInstancedANGLE(shaderParams.renderMode, 0, indexBuffer.count, instanceCount)
+            var _ext = gl.getExtension('ANGLE_instanced_arrays');
+            _ext.drawArraysInstancedANGLE(renderMode, 0, indexBuffer.count, instanceCount)
         }
         else
         {
-            gl.drawElements(shaderParams.renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+            gl.drawElements(renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
         }
     }
 
     /**
      * 设置环境属性数据
      */
-    function setContext3DAttribute(gl: GL, shaderProgram: WebGLProgram, activeInfo: WebGLActiveInfo, buffer: AttributeRenderData)
+    function setContext3DAttribute(gl: GL, activeInfo: WebGLActiveInfo, buffer: AttributeRenderData)
     {
-        var location = gl.getAttribLocation(shaderProgram, activeInfo.name);
-
-        buffer.active(gl, location);
+        buffer.active(gl, activeInfo.location);
 
         if (buffer.divisor > 0)
         {
-            _ext = _ext || gl.getExtension('ANGLE_instanced_arrays');
-            _ext.vertexAttribDivisorANGLE(location, buffer.divisor);
+            var _ext = gl.getExtension('ANGLE_instanced_arrays');
+            _ext.vertexAttribDivisorANGLE(activeInfo.location, buffer.divisor);
         }
     }
 
     /**
      * 设置环境Uniform数据
      */
-    function setContext3DUniform(gl: GL, shaderProgram: WebGLProgram, activeInfo: { name: string; type: number; }, data)
+    function setContext3DUniform(gl: GL, activeInfo: { name: string; uniformLocation: WebGLUniformLocation, type: number; }, data)
     {
-        var location = gl.getUniformLocation(shaderProgram, activeInfo.name);
+        var location = activeInfo.uniformLocation;
         switch (activeInfo.type)
         {
             case GL.INT:
@@ -187,6 +189,4 @@ module feng3d
                 throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
         }
     }
-
-    var _ext
 }

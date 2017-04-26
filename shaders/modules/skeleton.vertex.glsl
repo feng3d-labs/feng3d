@@ -1,26 +1,11 @@
-
-precision mediump float;
-
-//此处将填充宏定义
-#define macros
-
-attribute vec3 a_position;
-attribute vec2 a_uv;
-
 attribute vec4 a_jointindex0;
 attribute vec4 a_jointweight0;
 
 attribute vec4 a_jointindex1;
 attribute vec4 a_jointweight1;
-
-uniform mat4 u_modelMatrix;
-uniform mat4 u_viewProjection;
-
 uniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];
 
-varying vec2 v_uv;
-
-void main(void) {
+vec4 skeletonAnimation(vec4 position) {
 
     int jointIndics[8];
     jointIndics[0] = int(a_jointindex0.x);
@@ -42,20 +27,11 @@ void main(void) {
     jointweights[6] = a_jointweight1.z;
     jointweights[7] = a_jointweight1.w;
 
-    vec4 position = vec4(a_position,1.0);
     vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);
     for(int i = 0; i < 8; i++){
 
         totalPosition += u_skeletonGlobalMatriices[jointIndics[i]] * position * jointweights[i];
-
-        // totalPosition.x += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3]) * jointweights[i];
-        // totalPosition.y += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3 + 1]) * jointweights[i];
-        // totalPosition.z += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3 + 2]) * jointweights[i];
     }
-    position = totalPosition;
-    position.w = 1.0;
-
-    vec4 globalPosition = u_modelMatrix * position;
-    gl_Position = u_viewProjection * globalPosition;
-    v_uv = a_uv;
+    position.xyz = totalPosition.xyz;
+    return position;
 }

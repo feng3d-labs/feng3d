@@ -1,22 +1,27 @@
 module feng3d
 {
-
     /**
      * 心跳计时器
      */
     export class SystemTicker extends EventDispatcher
     {
+        private _startTime = -1;
+
+        /**
+         * 启动时间
+         */
+        public get startTime()
+        {
+            return this._startTime;
+        }
+
         /**
          * @private
          */
         public constructor()
         {
-            feng3dStartTime = Date.now();
             super();
-            if (ticker)
-            {
-                throw "心跳计时器为单例";
-            }
+            this._startTime = Date.now();
             this.init();
         }
 
@@ -38,6 +43,7 @@ module feng3d
             }
 
             requestAnimationFrame.call(window, onTick);
+            var ticker = this;
             function onTick(): void
             {
                 ticker.update();
@@ -54,10 +60,4 @@ module feng3d
             this.dispatchEvent(new Event(Event.ENTER_FRAME));
         }
     }
-
-    /**
-     * 心跳计时器单例
-     */
-    export var ticker: SystemTicker = new SystemTicker();
-    export var feng3dStartTime: number = -1;
 }

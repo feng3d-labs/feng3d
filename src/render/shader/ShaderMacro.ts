@@ -28,11 +28,20 @@ module feng3d
      */
     export class ValueMacros
     {
+        /**
+         * 光源数量
+         */
+        public NUM_LIGHT: number;
 
         /** 
          * 点光源数量
          */
         public NUM_POINTLIGHT: number;
+
+        /** 
+         * 方向光源数量
+         */
+        public NUM_DIRECTIONALLIGHT: number;
 
         /**
          * 骨骼关节数量
@@ -58,6 +67,14 @@ module feng3d
          * 是否有镜面反射光泽图
          */
         public HAS_SPECULAR_SAMPLER: boolean;
+        /**
+         * 是否有环境贴图
+         */
+        public HAS_AMBIENT_SAMPLER: boolean;
+        /**
+         * 是否有骨骼动画
+         */
+        public HAS_SKELETON_ANIMATION: boolean;
     }
 
     /**
@@ -89,6 +106,6 @@ module feng3d
         /**
          * 是否需要摄像机矩阵
          */
-        public U_CAMERAmATRIX_NEED: number = 0;
+        public U_CAMERAMATRIX_NEED: number = 0;
     }
 }

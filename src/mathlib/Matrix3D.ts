@@ -23,6 +23,15 @@ module feng3d
     export class Matrix3D
     {
         /**
+         * 用于运算临时变量
+         */
+        public static RAW_DATA_CONTAINER = new Float32Array([//
+            1, 0, 0, 0,// 
+            0, 1, 0, 0,// 
+            0, 0, 1, 0,//
+            0, 0, 0, 1//
+        ]);
+        /**
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
         public rawData: Float32Array;
@@ -88,6 +97,43 @@ module feng3d
             var v = new Vector3D();
             this.copyColumnTo(0, v);
             v.normalize();
+            return v;
+        }
+
+        /**
+         * 后方（-z轴方向）
+         */
+        public get back(): Vector3D
+        {
+            var v = new Vector3D(0.0, 0.0, 0.0);
+
+            this.copyColumnTo(2, v);
+            v.normalize();
+            v.negate();
+            return v;
+        }
+
+        /**
+         * 下方（-y轴方向）
+         */
+        public get down(): Vector3D
+        {
+            var v = new Vector3D();
+            this.copyColumnTo(1, v);
+            v.normalize();
+            v.negate();
+            return v;
+        }
+
+        /**
+         * 左方（-x轴方向）
+         */
+        public get left(): Vector3D
+        {
+            var v = new Vector3D();
+            this.copyColumnTo(0, v);
+            v.normalize();
+            v.negate();
             return v;
         }
 
@@ -344,7 +390,7 @@ module feng3d
          * @param   index       vector中的起始位置
          * @param   transpose   是否转置当前矩阵
          */
-        public copyRawDataTo(vector: Array<number>, index: number = 0, transpose: boolean = false)
+        public copyRawDataTo(vector: number[] | Float32Array, index: number = 0, transpose: boolean = false)
         {
             if (transpose)
             {

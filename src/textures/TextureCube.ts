@@ -18,6 +18,7 @@ module feng3d
             for (var i = 0; i < 6; i++)
             {
                 this._pixels[i] = new Image();
+                this._pixels[i].crossOrigin = "Anonymous";
                 this._pixels[i].addEventListener("load", this.invalidate.bind(this));
                 this._pixels[i].src = images[i];
             }

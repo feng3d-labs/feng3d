@@ -34,6 +34,7 @@ module feng3d
             Watcher.watch(this, ["minElevation"], this.invalidateGeometry, this);
 
             this._heightImage = new Image();
+            this._heightImage.crossOrigin = "Anonymous";
             this._heightImage.addEventListener("load", this.onHeightMapLoad.bind(this));
             this._heightImage.src = heightMapUrl;
 

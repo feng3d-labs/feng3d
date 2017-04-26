@@ -4,41 +4,48 @@ module feng3d
      * 纹理信息
      * @author feng 2016-12-20
      */
-    export class TextureInfo extends EventDispatcher
+    export abstract class TextureInfo extends EventDispatcher
     {
         /**
          * 纹理类型
          */
         public textureType: number;
         /**
-         * 内部格式
-         */
-        public internalformat: number = GL.RGB;
-        /**
          * 格式
          */
-        public format: number = GL.RGB;
+        public format: number = GL.RGBA;
         /**
          * 数据类型
          */
         public type: number = GL.UNSIGNED_BYTE;
-
         /**
          * 是否生成mipmap
          */
         public generateMipmap: boolean = true;
-
         /**
-         * 图片y轴向
+         * 对图像进行Y轴反转。默认值为false
          */
-        public flipY = 1;
+        public flipY = false;
+        /**
+         * 将图像RGB颜色值得每一个分量乘以A。默认为false
+         */
+        public premulAlpha = false;
 
-        public minFilter = GL.LINEAR;
+        public minFilter = GL.NEAREST_MIPMAP_LINEAR;
 
-        public magFilter = GL.NEAREST;
-
-        public wrapS = GL.CLAMP_TO_EDGE;
-        public wrapT = GL.CLAMP_TO_EDGE;
+        public magFilter = GL.LINEAR;
+        /**
+         * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
+         */
+        public wrapS = GL.REPEAT;
+        /**
+         * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
+         */
+        public wrapT = GL.REPEAT;
+        /**
+         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为1。
+         */
+        public anisotropy = 1;
 
         /**
          * 图片数据
@@ -49,7 +56,7 @@ module feng3d
         /**
          * 纹理缓冲
          */
-        private _textureMap = new Map<GL, WebGLTexture>();
+        protected _textureMap = new Map<GL, WebGLTexture>();
         /**
          * 是否失效
          */
@@ -67,6 +74,7 @@ module feng3d
             Watcher.watch(this, ["type"], this.invalidate, this);
             Watcher.watch(this, ["generateMipmap"], this.invalidate, this);
             Watcher.watch(this, ["flipY"], this.invalidate, this);
+            Watcher.watch(this, ["premulAlpha"], this.invalidate, this);
             // Watcher.watch(this, ["minFilter"], this.invalidate, this);
             // Watcher.watch(this, ["magFilter"], this.invalidate, this);
             // Watcher.watch(this, ["wrapS"], this.invalidate, this);
@@ -78,7 +86,7 @@ module feng3d
          */
         public checkRenderData()
         {
-            debuger && console.assert(false);
+            debuger && assert(false);
 
             return false;
         }
@@ -97,6 +105,8 @@ module feng3d
          */
         public active(gl: GL)
         {
+            if (!this.checkRenderData())
+                return;
             if (this._invalid)
             {
                 this.clear();
@@ -106,14 +116,21 @@ module feng3d
             var texture = this.getTexture(gl);
             //绑定纹理
             gl.bindTexture(this.textureType, texture);
-            // //设置图片y轴方向
-            // gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
-            // console.warn("flipY:" + this.flipY);
             //设置纹理参数
             gl.texParameteri(this.textureType, GL.TEXTURE_MIN_FILTER, this.minFilter);
             gl.texParameteri(this.textureType, GL.TEXTURE_MAG_FILTER, this.magFilter);
             gl.texParameteri(this.textureType, GL.TEXTURE_WRAP_S, this.wrapS);
             gl.texParameteri(this.textureType, GL.TEXTURE_WRAP_T, this.wrapT);
+            //
+            var anisotropicExt = gl.ext.getAnisotropicExt();
+            if (anisotropicExt)
+            {
+                var max = anisotropicExt.getMaxAnisotropy();
+                gl.texParameterf(gl.TEXTURE_2D, anisotropicExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, max));
+            } else
+            {
+                debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
+            }
         }
 
         /**
@@ -126,33 +143,49 @@ module feng3d
             if (!texture)
             {
                 texture = gl.createTexture();   // Create a texture object
+                //设置图片y轴方向
+                gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY ? 1 : 0);
+                gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premulAlpha ? 1 : 0);
                 //绑定纹理
                 gl.bindTexture(this.textureType, texture);
                 if (this.textureType == GL.TEXTURE_2D)
                 {
                     //设置纹理图片
-                    gl.texImage2D(this.textureType, 0, this.internalformat, this.format, this.type, <HTMLImageElement>this._pixels);
+                    this.initTexture2D(gl);
                 } else if (this.textureType == GL.TEXTURE_CUBE_MAP)
                 {
-                    var faces = [
-                        GL.TEXTURE_CUBE_MAP_POSITIVE_X, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                        GL.TEXTURE_CUBE_MAP_NEGATIVE_X, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                    ];
-                    for (var i = 0; i < faces.length; i++)
-                    {
-                        gl.texImage2D(faces[i], 0, this.internalformat, this.format, this.type, this._pixels[i])
-                    }
+                    this.initTextureCube(gl);
                 }
                 if (this.generateMipmap)
                 {
                     gl.generateMipmap(this.textureType);
                 }
-                //设置图片y轴方向
-                // gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
-                // console.warn("flipY:" + this.flipY);
                 this._textureMap.push(gl, texture);
             }
             return texture;
+        }
+
+        /**
+         * 初始化纹理
+         */
+        private initTexture2D(gl: GL)
+        {
+            gl.texImage2D(this.textureType, 0, this.format, this.format, this.type, <HTMLImageElement>this._pixels);
+        }
+
+        /**
+         * 初始化纹理
+         */
+        private initTextureCube(gl: GL)
+        {
+            var faces = [
+                GL.TEXTURE_CUBE_MAP_POSITIVE_X, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                GL.TEXTURE_CUBE_MAP_NEGATIVE_X, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
+            ];
+            for (var i = 0; i < faces.length; i++)
+            {
+                gl.texImage2D(faces[i], 0, this.format, this.format, this.type, this._pixels[i])
+            }
         }
 
         /**

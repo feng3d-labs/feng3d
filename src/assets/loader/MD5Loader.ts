@@ -6,14 +6,14 @@ module feng3d
      */
     export class MD5Loader extends Loader
     {
-        private _completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void;
+        private _completed: (object3D: GameObject, skeletonAnimator: SkeletonAnimator) => void;
         private _animCompleted: (skeletonClipNode: SkeletonClipNode) => void;
 
         /**
          * 加载资源
          * @param url   路径
          */
-        public load(url: string, completed: (object3D: Object3D, skeletonAnimator: SkeletonAnimator) => void = null)
+        public load(url: string, completed: (object3D: GameObject, skeletonAnimator: SkeletonAnimator) => void = null)
         {
             this._url = url
             this._completed = completed;
@@ -46,11 +46,11 @@ module feng3d
         private _skeleton: Skeleton;
         private createMD5Mesh(md5MeshData: MD5MeshData)
         {
-            var object3D = new Object3D();
+            var object3D = new GameObject();
 
             //顶点最大关节关联数
             var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
-            assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
+            debuger && assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
 
             this._skeleton = this.createSkeleton(md5MeshData.joints);
             var skeletonAnimator = new SkeletonAnimator(this._skeleton);
@@ -59,10 +59,10 @@ module feng3d
             {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
 
-                var skeletonObject3D = new Object3D();
+                var skeletonObject3D = new GameObject();
                 var model = new Model();
                 model.geometry = geometry;
-                model.material = new SkeletonAnimatorMaterial();
+                model.material = new StandardMaterial();
                 skeletonObject3D.addComponent(model);
                 skeletonObject3D.addComponent(skeletonAnimator);
 
@@ -247,6 +247,12 @@ module feng3d
             //更新顶点坐标与uv数据
             geometry.setVAData(GLAttribute.a_position, new Float32Array(vertices), 3);
             geometry.setVAData(GLAttribute.a_uv, new Float32Array(uvs), 2);
+            //生成法线
+            var normals = GeometryUtils.createVertexNormals(indices, vertices);
+            geometry.setVAData(GLAttribute.a_normal, new Float32Array(normals), 3);
+            //
+            var tangents = GeometryUtils.createVertexTangents(indices, vertices, uvs);
+            geometry.setVAData(GLAttribute.a_tangent, new Float32Array(tangents), 3);
             //更新关节索引与权重索引
             geometry.setVAData(GLAttribute.a_jointindex0, new Float32Array(jointIndices0), 4);
             geometry.setVAData(GLAttribute.a_jointweight0, new Float32Array(jointWeights0), 4);
@@ -257,7 +263,7 @@ module feng3d
 
         private createAnimator(md5AnimData: MD5AnimData)
         {
-            var object = new Object3D();
+            var object = new GameObject();
 
             var _clip = new SkeletonClipNode();
             for (var i: number = 0; i < md5AnimData.numFrames; ++i)

@@ -83,7 +83,7 @@ module feng3d
                 }
             }
 
-            assert(ClassUtils.getDefinitionByName(className) == prototype.constructor);
+            debuger && assert(ClassUtils.getDefinitionByName(className) == prototype.constructor);
             return className;
         }
 

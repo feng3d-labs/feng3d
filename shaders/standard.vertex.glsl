@@ -1,5 +1,3 @@
-
-
 //此处将填充宏定义
 #define macros
 
@@ -7,10 +5,6 @@
 attribute vec3 a_position;
 attribute vec2 a_uv;
 attribute vec3 a_normal;
-
-#ifdef HAS_NORMAL_SAMPLER
-    attribute vec3 a_tangent;
-#endif
 
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
@@ -20,14 +14,26 @@ varying vec3 v_globalPosition;
 varying vec3 v_normal;
 
 #ifdef HAS_NORMAL_SAMPLER
+    attribute vec3 a_tangent;
+
     varying vec3 v_tangent;
     varying vec3 v_bitangent;
 #endif
 
+#ifdef HAS_SKELETON_ANIMATION
+    #include<modules/skeleton.vertex>
+#endif
+
 void main(void) {
 
+    vec4 position = vec4(a_position,1.0);
+
+    #ifdef HAS_SKELETON_ANIMATION
+        position = skeletonAnimation(position);
+    #endif
+
     //获取全局坐标
-    vec4 globalPosition = u_modelMatrix * vec4(a_position, 1.0);
+    vec4 globalPosition = u_modelMatrix * position;
     //计算投影坐标
     gl_Position = u_viewProjection * globalPosition;
     //输出全局坐标

@@ -2,7 +2,7 @@ var fs = require("fs");
 
 var filesContent = readFiles(getFilePaths("shaders"));
 var contentStr = JSON.stringify(filesContent);
-writeFile("src/autofiles/shaders.ts", `feng3d.ShaderLib.shaderFileMap = ${contentStr}`);
+writeFile("src/autofiles/shaders.ts", `module feng3d\n{\nfeng3d.shaderFileMap = ${contentStr}\n}`);
 
 function writeFile(filePath, content) {
     fs.openSync(filePath, "w");

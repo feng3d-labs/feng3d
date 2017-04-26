@@ -13,6 +13,14 @@ module feng3d
         public range = 600;
 
         /**
+         * 灯光位置
+         */
+        public get position()
+        {
+            return this.parentComponent.scenePosition;
+        }
+
+        /**
          * 构建
          */
         constructor()

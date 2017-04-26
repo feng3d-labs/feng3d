@@ -10,7 +10,7 @@ module feng3d
         /**
          * 父组件,所属3d对象
          */
-        public parentComponent: Object3D;
+        public parentComponent: GameObject;
 
         /**
          * 构建3D对象组件

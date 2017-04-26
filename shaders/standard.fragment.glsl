@@ -15,7 +15,14 @@ varying vec3 v_normal;
 
 uniform mat4 u_cameraMatrix;
 
-//基本颜色
+//环境
+uniform vec4 u_ambient;
+#ifdef HAS_AMBIENT_SAMPLER
+    uniform sampler2D s_ambient;
+#endif
+
+uniform float u_alphaThreshold;
+//漫反射
 uniform vec4 u_diffuse;
 #ifdef HAS_DIFFUSE_SAMPLER
     uniform sampler2D s_diffuse;
@@ -26,19 +33,27 @@ uniform vec4 u_diffuse;
     uniform sampler2D s_normal;
 #endif
 
+//镜面反射
 uniform vec3 u_specular;
 uniform float u_glossiness;
 #ifdef HAS_SPECULAR_SAMPLER
     uniform sampler2D s_specular;
 #endif
 
-#if NUM_POINTLIGHT > 0
+#if NUM_LIGHT > 0
     #include<modules/pointLightShading.fragment>
 #endif
 
 void main(void) {
 
     vec4 finalColor = vec4(1.0,1.0,1.0,1.0);
+
+    //环境光
+    vec3 ambientColor = u_ambient.xyz;
+    #ifdef HAS_AMBIENT_SAMPLER
+        ambientColor = ambientColor * texture2D(s_diffuse, v_uv).xyz;
+    #endif
+
     //获取法线
     vec3 normal;
     #ifdef HAS_NORMAL_SAMPLER
@@ -54,19 +69,28 @@ void main(void) {
         diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);
     #endif
 
-    //获取高光值
-    float glossiness = u_glossiness;
-    //获取镜面反射基本颜色
-    vec3 specularColor = u_specular;
-    #ifdef HAS_SPECULAR_SAMPLER
-        vec4 specularMapColor = texture2D(s_specular, v_uv);
-        specularColor.xyz = specularMapColor.xyz;
-        glossiness = glossiness * specularMapColor.w;
-    #endif
+    if(diffuseColor.w < u_alphaThreshold)
+    {
+        discard;
+    }
+
+    finalColor = diffuseColor;
+
 
     //渲染灯光
-    #if NUM_POINTLIGHT > 0
-        finalColor.xyz = pointLightShading(normal, diffuseColor.xyz, specularColor, glossiness);
+    #if NUM_LIGHT > 0
+
+        //获取高光值
+        float glossiness = u_glossiness;
+        //获取镜面反射基本颜色
+        vec3 specularColor = u_specular;
+        #ifdef HAS_SPECULAR_SAMPLER
+            vec4 specularMapColor = texture2D(s_specular, v_uv);
+            specularColor.xyz = specularMapColor.xyz;
+            glossiness = glossiness * specularMapColor.w;
+        #endif
+        
+        finalColor.xyz = pointLightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
     #endif
 
     gl_FragColor = finalColor;

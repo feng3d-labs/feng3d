@@ -5,7 +5,7 @@ module feng3d
      * 圆环3D对象
      * @author feng 2017-02-06
      */
-    export class TorusObect3D extends Object3D
+    export class TorusObect3D extends GameObject
     {
         public torusGeometry: TorusGeometry;
 

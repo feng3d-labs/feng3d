@@ -8,17 +8,26 @@ module feng3d
     export class Texture2D extends TextureInfo
     {
         protected _pixels: HTMLImageElement;
-        public url = "";
+        public get url()
+        {
+            return this._pixels.src;
+        }
+
+        public set url(value: string)
+        {
+            this._pixels.src = value;
+        }
 
         constructor(url = "")
         {
             super();
             this.textureType = GL.TEXTURE_2D;
             this._pixels = new Image();
-            this._pixels.addEventListener("load", this.invalidate.bind(this));
+            this._pixels.crossOrigin = "Anonymous";
+            // this._pixels.addEventListener("load", this.invalidate.bind(this));
             this._pixels.addEventListener("load", this.onLoad.bind(this));
             this._pixels.src = url;
-            Binding.bindProperty(this, ["url"], this._pixels, "src");
+            // Binding.bindProperty(this, ["url"], this._pixels, "src");
         }
 
         /**
@@ -26,6 +35,7 @@ module feng3d
          */
         protected onLoad()
         {
+            this.invalidate();
             this.dispatchEvent(new Event(Event.LOADED, this));
         }
 

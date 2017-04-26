@@ -9,7 +9,8 @@ module feng3d
     {
 
         private _shaderName = "mouse";
-        public selectedObject3D: Object3D;
+        public selectedObject3D: GameObject;
+        private objects: GameObject[] = [null];
 
         constructor()
         {
@@ -21,9 +22,7 @@ module feng3d
 		 */
         public draw(gl: GL, scene3D: Scene3D, camera: Camera)
         {
-            // this.frameBufferObject.activate(gl,
-            //     gl.drawingBufferWidth,
-            //     gl.drawingBufferHeight);
+            this.objects.length = 1;
 
             //启动裁剪，只绘制一个像素
             gl.enable(GL.SCISSOR_TEST);
@@ -39,15 +38,18 @@ module feng3d
             var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3];//最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
             // console.log(`选中索引3D对象${id}`, data.toString());
 
-            this.selectedObject3D = Object3D.getObject3D(id);
-
-            // this.frameBufferObject.deactivate(gl);
+            this.selectedObject3D = this.objects[id];
         }
 
         protected drawRenderables(gl: GL, renderContext: RenderContext, meshRenderer: Model)
         {
-            if (meshRenderer.parentComponent.realMouseEnable)
+            if (meshRenderer.parentComponent.mouseEnabled)
+            {
+                var object = meshRenderer.parentComponent;
+                this.objects.push(object);
+                object.renderData.uniforms[RenderDataID.u_objectID] = this.objects.length - 1;
                 super.drawRenderables(gl, renderContext, meshRenderer);
+            }
         }
 
         /**

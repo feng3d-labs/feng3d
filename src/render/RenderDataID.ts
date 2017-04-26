@@ -26,6 +26,11 @@ module feng3d
         public static u_diffuseInput = "u_diffuseInput";
 
         /**
+         * 透明阈值，用于透明检测
+         */
+        public static u_alphaThreshold = "u_alphaThreshold";
+
+        /**
          * 漫反射贴图
          */
         public static s_texture = "s_texture";
@@ -33,6 +38,10 @@ module feng3d
          * 漫反射贴图
          */
         public static s_diffuse = "s_diffuse";
+        /**
+         * 环境贴图
+         */
+        public static s_ambient = "s_ambient";
         /**
          * 法线贴图
          */
@@ -76,6 +85,9 @@ module feng3d
          * 地形块重复次数
          */
         public static u_splatRepeats = "u_splatRepeats";
+        /******************************************************/
+        //                  点光源
+        /******************************************************/
         /**
          * 点光源位置数组
          */
@@ -92,6 +104,22 @@ module feng3d
          * 点光源光照范围数组
          */
         public static u_pointLightRanges = "u_pointLightRanges";
+        /******************************************************/
+        //                  方向光源
+        /******************************************************/
+        /**
+         * 方向光源方向数组
+         */
+        public static u_directionalLightDirections = "u_directionalLightDirections";
+        /**
+         * 方向光源颜色数组
+         */
+        public static u_directionalLightColors = "u_directionalLightColors";
+        /**
+         * 方向光源光照强度数组
+         */
+        public static u_directionalLightIntensitys = "u_directionalLightIntensitys";
+
         /**
          * 场景环境光
          */
@@ -104,6 +132,10 @@ module feng3d
          * 镜面反射颜色
          */
         public static u_specular = "u_specular";
+        /**
+         * 环境颜色
+         */
+        public static u_ambient = "u_ambient";
         /**
          * 高光系数
          */

@@ -18,6 +18,26 @@ module feng3d
         protected shaderName: string;
 
         /**
+         * 是否开启混合
+         */
+        public enableBlend = false;
+
+        /**
+         * 混合方程
+         */
+        public blendEquation = GL.FUNC_ADD;
+
+        /**
+         * 源混合因子
+         */
+        public sfactor = GL.ONE;
+
+        /**
+         * 目标混合因子
+         */
+        public dfactor = GL.ZERO;
+
+        /**
          * 构建材质
          */
         constructor()

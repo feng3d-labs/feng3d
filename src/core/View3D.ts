@@ -33,9 +33,9 @@ module feng3d
         private mouse3DManager: Mouse3DManager;
 
         /**
-         * 背景颜色
+         * 阴影图渲染器
          */
-        public background = new Color(0, 0, 0);
+        private shadowRenderer: ShadowRenderer;
 
         /**
          * 构建3D视图
@@ -45,21 +45,13 @@ module feng3d
          */
         constructor(canvas, scene: Scene3D = null, camera: CameraObject3D = null)
         {
-            assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
+            //初始化引擎
+            initEngine();
+
+            debuger && assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
 
-            try
-            {
-                this._gl = this._canvas.getContext("webgl", { antialias: false }) || this._canvas.getContext("experimental-webgl", { antialias: false });
-            }
-            catch (e)
-            {
-                throw new Error("WebGL not supported");
-            }
-            if (!this._gl)
-            {
-                throw new Error("WebGL not supported");
-            }
+            this._gl = getWebGLContext(canvas, false);
 
             this.initGL();
 
@@ -68,6 +60,7 @@ module feng3d
 
             this.defaultRenderer = new ForwardRenderer();
             this.mouse3DManager = new Mouse3DManager();
+            this.shadowRenderer = new ShadowRenderer();
 
             ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
         }
@@ -105,19 +98,15 @@ module feng3d
             this.camera.camera.aspectRatio = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
-            this.mouse3DManager.viewRect.copyFrom(viewRect);
-            this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
+            // this.mouse3DManager.viewRect.copyFrom(viewRect);
+            // this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
+
+            //绘制阴影图
+            // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
 
             // 默认渲染
-            this._gl.clearColor(this.background.r, this.background.g, this.background.b, this.background.a);
-            this._gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-            this._gl.viewport(0, 0, viewRect.width, viewRect.height);
-            // Enable alpha blending
-            this._gl.enable(GL.BLEND);
-            // Set blending function
-            this._gl.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+            this.defaultRenderer.viewRect.copyFrom(viewRect);
             this.defaultRenderer.draw(this._gl, this._scene, this._camera.camera);
-            this._gl.disable(GL.BLEND);
         }
 
         /**
