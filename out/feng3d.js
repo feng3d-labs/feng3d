@@ -5554,9 +5554,48 @@ var feng3d;
             gl.deleteShader(vertexShader);
             return null;
         }
+        program.gl = gl;
+        initProgram(program);
         return program;
     }
     feng3d.createProgram = createProgram;
+    /**
+     * 初始化渲染程序
+     * @param shaderProgram WebGL渲染程序
+     */
+    function initProgram(shaderProgram) {
+        var gl = shaderProgram.gl;
+        //获取属性信息
+        var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
+        shaderProgram.attributes = [];
+        var i = 0;
+        while (i < numAttributes) {
+            var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
+            activeInfo.location = gl.getAttribLocation(shaderProgram, activeInfo.name);
+            shaderProgram.attributes.push(activeInfo);
+        }
+        //获取uniform信息
+        var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
+        shaderProgram.uniforms = [];
+        var i = 0;
+        while (i < numUniforms) {
+            var activeInfo = gl.getActiveUniform(shaderProgram, i++);
+            if (activeInfo.name.indexOf("[") != -1) {
+                //处理数组
+                var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
+                activeInfo.uniformBaseName = baseName;
+                var uniformLocation = activeInfo.uniformLocation = [];
+                for (var j = 0; j < activeInfo.size; j++) {
+                    var location = gl.getUniformLocation(shaderProgram, activeInfo.name);
+                    uniformLocation.push(location);
+                }
+            }
+            else {
+                activeInfo.uniformLocation = gl.getUniformLocation(shaderProgram, activeInfo.name);
+            }
+            shaderProgram.uniforms.push(activeInfo);
+        }
+    }
     /**
      * Create a shader object
      * @param gl GL context
@@ -5659,6 +5698,25 @@ var feng3d;
         RenderMode[RenderMode["TRIANGLE_FAN"] = 6] = "TRIANGLE_FAN";
     })(feng3d.RenderMode || (feng3d.RenderMode = {}));
     var RenderMode = feng3d.RenderMode;
+    /**
+     * 根据枚举渲染模式获取真实值
+     * @param renderMode 渲染模式
+     */
+    function getRenderModeValue(renderMode) {
+        if (!renderModeMap) {
+            renderModeMap = {};
+            renderModeMap[RenderMode.POINTS] = feng3d.GL.POINTS;
+            renderModeMap[RenderMode.LINE_LOOP] = feng3d.GL.LINE_LOOP;
+            renderModeMap[RenderMode.LINE_STRIP] = feng3d.GL.LINE_STRIP;
+            renderModeMap[RenderMode.LINES] = feng3d.GL.LINES;
+            renderModeMap[RenderMode.TRIANGLES] = feng3d.GL.TRIANGLES;
+            renderModeMap[RenderMode.TRIANGLE_STRIP] = feng3d.GL.TRIANGLE_STRIP;
+            renderModeMap[RenderMode.TRIANGLE_FAN] = feng3d.GL.TRIANGLE_FAN;
+        }
+        return renderModeMap[renderMode];
+    }
+    feng3d.getRenderModeValue = getRenderModeValue;
+    var renderModeMap;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6708,8 +6766,8 @@ var feng3d;
                 return;
             _samplerIndex = 0;
             //
-            activeAttributes(gl, shaderProgram, renderAtomic.attributes);
-            activeUniforms(gl, shaderProgram, renderAtomic.uniforms);
+            activeAttributes(gl, shaderProgram.attributes, renderAtomic.attributes);
+            activeUniforms(gl, shaderProgram.uniforms, renderAtomic.uniforms);
             dodraw(gl, renderAtomic.shaderParams, renderAtomic.indexBuffer, renderAtomic.instanceCount);
         };
         /**
@@ -6734,33 +6792,27 @@ var feng3d;
     /**
      * 激活属性
      */
-    function activeAttributes(gl, shaderProgram, attributes) {
-        var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
-        var i = 0;
-        while (i < numAttributes) {
-            var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
-            setContext3DAttribute(gl, shaderProgram, activeInfo, attributes[activeInfo.name]);
-        }
+    function activeAttributes(gl, attributeInfos, attributes) {
+        attributeInfos.forEach(function (activeInfo) {
+            setContext3DAttribute(gl, activeInfo, attributes[activeInfo.name]);
+        });
     }
     /**
      * 激活常量
      */
-    function activeUniforms(gl, shaderProgram, uniforms) {
-        var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
-        var i = 0;
-        while (i < numUniforms) {
-            var activeInfo = gl.getActiveUniform(shaderProgram, i++);
+    function activeUniforms(gl, uniformInfos, uniforms) {
+        uniformInfos.forEach(function (activeInfo) {
             if (activeInfo.name.indexOf("[") != -1) {
                 //处理数组
-                var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
+                var baseName = activeInfo.uniformBaseName;
                 for (var j = 0; j < activeInfo.size; j++) {
-                    setContext3DUniform(gl, shaderProgram, { name: baseName + ("[" + j + "]"), type: activeInfo.type }, uniforms[baseName][j]);
+                    setContext3DUniform(gl, { name: baseName + ("[" + j + "]"), type: activeInfo.type, uniformLocation: activeInfo.uniformLocation[j] }, uniforms[baseName][j]);
                 }
             }
             else {
-                setContext3DUniform(gl, shaderProgram, activeInfo, uniforms[activeInfo.name]);
+                setContext3DUniform(gl, activeInfo, uniforms[activeInfo.name]);
             }
-        }
+        });
     }
     /**
      */
@@ -6768,15 +6820,7 @@ var feng3d;
         if (instanceCount === void 0) { instanceCount = 1; }
         instanceCount = ~~instanceCount;
         indexBuffer.active(gl);
-        var map = {};
-        map[feng3d.RenderMode.POINTS] = feng3d.GL.POINTS;
-        map[feng3d.RenderMode.LINE_LOOP] = feng3d.GL.LINE_LOOP;
-        map[feng3d.RenderMode.LINE_STRIP] = feng3d.GL.LINE_STRIP;
-        map[feng3d.RenderMode.LINES] = feng3d.GL.LINES;
-        map[feng3d.RenderMode.TRIANGLES] = feng3d.GL.TRIANGLES;
-        map[feng3d.RenderMode.TRIANGLE_STRIP] = feng3d.GL.TRIANGLE_STRIP;
-        map[feng3d.RenderMode.TRIANGLE_FAN] = feng3d.GL.TRIANGLE_FAN;
-        var renderMode = map[shaderParams.renderMode];
+        var renderMode = feng3d.getRenderModeValue(shaderParams.renderMode);
         if (instanceCount > 1) {
             var _ext = gl.getExtension('ANGLE_instanced_arrays');
             _ext.drawArraysInstancedANGLE(renderMode, 0, indexBuffer.count, instanceCount);
@@ -6788,19 +6832,18 @@ var feng3d;
     /**
      * 设置环境属性数据
      */
-    function setContext3DAttribute(gl, shaderProgram, activeInfo, buffer) {
-        var location = gl.getAttribLocation(shaderProgram, activeInfo.name);
-        buffer.active(gl, location);
+    function setContext3DAttribute(gl, activeInfo, buffer) {
+        buffer.active(gl, activeInfo.location);
         if (buffer.divisor > 0) {
             var _ext = gl.getExtension('ANGLE_instanced_arrays');
-            _ext.vertexAttribDivisorANGLE(location, buffer.divisor);
+            _ext.vertexAttribDivisorANGLE(activeInfo.location, buffer.divisor);
         }
     }
     /**
      * 设置环境Uniform数据
      */
-    function setContext3DUniform(gl, shaderProgram, activeInfo, data) {
-        var location = gl.getUniformLocation(shaderProgram, activeInfo.name);
+    function setContext3DUniform(gl, activeInfo, data) {
+        var location = activeInfo.uniformLocation;
         switch (activeInfo.type) {
             case feng3d.GL.INT:
                 gl.uniform1i(location, data);

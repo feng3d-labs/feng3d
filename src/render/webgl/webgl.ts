@@ -58,7 +58,52 @@ module feng3d
             gl.deleteShader(vertexShader);
             return null;
         }
+        program.gl = gl;
+        initProgram(program);
         return program;
+    }
+
+    /**
+     * 初始化渲染程序
+     * @param shaderProgram WebGL渲染程序
+     */
+    function initProgram(shaderProgram: WebGLProgram)
+    {
+        var gl = shaderProgram.gl;
+        //获取属性信息
+        var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
+        shaderProgram.attributes = [];
+        var i = 0;
+        while (i < numAttributes)
+        {
+            var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
+            activeInfo.location = gl.getAttribLocation(shaderProgram, activeInfo.name);
+            shaderProgram.attributes.push(activeInfo);
+        }
+        //获取uniform信息
+        var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
+        shaderProgram.uniforms = [];
+        var i = 0;
+        while (i < numUniforms)
+        {
+            var activeInfo = gl.getActiveUniform(shaderProgram, i++);
+            if (activeInfo.name.indexOf("[") != -1)
+            {
+                //处理数组
+                var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
+                activeInfo.uniformBaseName = baseName;
+                var uniformLocation: WebGLUniformLocation[] = activeInfo.uniformLocation = [];
+                for (var j = 0; j < activeInfo.size; j++)
+                {
+                    var location = gl.getUniformLocation(shaderProgram, activeInfo.name);
+                    uniformLocation.push(location);
+                }
+            } else
+            {
+                activeInfo.uniformLocation = gl.getUniformLocation(shaderProgram, activeInfo.name);
+            }
+            shaderProgram.uniforms.push(activeInfo);
+        }
     }
 
     /**

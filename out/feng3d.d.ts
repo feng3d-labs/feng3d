@@ -2515,6 +2515,11 @@ declare module feng3d {
         TRIANGLE_STRIP = 5,
         TRIANGLE_FAN = 6,
     }
+    /**
+     * 根据枚举渲染模式获取真实值
+     * @param renderMode 渲染模式
+     */
+    function getRenderModeValue(renderMode: RenderMode): number;
 }
 declare module feng3d {
     /**

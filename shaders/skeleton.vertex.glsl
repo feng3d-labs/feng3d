@@ -47,10 +47,6 @@ void main(void) {
     for(int i = 0; i < 8; i++){
 
         totalPosition += u_skeletonGlobalMatriices[jointIndics[i]] * position * jointweights[i];
-
-        // totalPosition.x += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3]) * jointweights[i];
-        // totalPosition.y += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3 + 1]) * jointweights[i];
-        // totalPosition.z += dot(position, u_skeletonGlobalMatriices[jointIndics[i] * 3 + 2]) * jointweights[i];
     }
     position = totalPosition;
     position.w = 1.0;
