@@ -20,14 +20,15 @@ module feng3d
         /**
 		 * 渲染
 		 */
-        public draw(gl: GL, scene3D: Scene3D, camera: Camera)
+        public draw(renderContext: RenderContext)
         {
             this.objects.length = 1;
 
+            var gl = renderContext.gl;
             //启动裁剪，只绘制一个像素
             gl.enable(GL.SCISSOR_TEST);
             gl.scissor(0, 0, 1, 1);
-            super.draw(gl, scene3D, camera);
+            super.draw(renderContext);
             gl.disable(GL.SCISSOR_TEST);
 
             //读取鼠标拾取索引
@@ -41,14 +42,14 @@ module feng3d
             this.selectedObject3D = this.objects[id];
         }
 
-        protected drawRenderables(gl: GL, renderContext: RenderContext, meshRenderer: Model)
+        protected drawRenderables(renderContext: RenderContext, meshRenderer: Model)
         {
             if (meshRenderer.parentComponent.mouseEnabled)
             {
                 var object = meshRenderer.parentComponent;
                 this.objects.push(object);
                 object.renderData.uniforms[RenderDataID.u_objectID] = this.objects.length - 1;
-                super.drawRenderables(gl, renderContext, meshRenderer);
+                super.drawRenderables(renderContext, meshRenderer);
             }
         }
 

@@ -17,11 +17,10 @@ module feng3d
         /**
 		 * 渲染
 		 */
-        public draw(gl: GL, scene3D: Scene3D, camera: Camera)
+        public draw(renderContext: RenderContext)
         {
-            var renderContext = scene3D.renderContext;
-            //初始化渲染环境
-            renderContext.camera = camera;
+            var gl = renderContext.gl;
+            var scene3D = renderContext.scene3d;
 
             var lights = scene3D.lights;
             for (var i = 0; i < lights.length; i++)
@@ -33,7 +32,7 @@ module feng3d
                 frameBufferObject.active(gl);
                 scene3D.renderers.forEach(element =>
                 {
-                    this.drawRenderables(gl, renderContext, element);
+                    this.drawRenderables(renderContext, element);
                 });
                 frameBufferObject.deactive(gl);
             }

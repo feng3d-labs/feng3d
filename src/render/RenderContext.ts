@@ -12,12 +12,20 @@ module feng3d
          */
         public camera: Camera;
 
-        private _scene3d: Scene3D;
+        /**
+         * 场景
+         */
+        public scene3d: Scene3D;
 
-        constructor(scene3d: Scene3D)
-        {
-            this._scene3d = scene3d;
-        }
+        /**
+         * 3D视窗
+         */
+        public view3D: View3D;
+
+        /**
+         * WebGL实例
+         */
+        public gl: GL;
 
         /**
 		 * 更新渲染数据
@@ -27,7 +35,7 @@ module feng3d
             var pointLights: PointLight[] = [];
             var directionalLights: DirectionalLight[] = [];
             this.camera.updateRenderData(this, renderAtomic);
-            var lights = this._scene3d.lights;
+            var lights = this.scene3d.lights;
             var light: Light;
             for (var i = 0; i < lights.length; i++)
             {
@@ -88,7 +96,7 @@ module feng3d
                 renderAtomic.uniforms[RenderDataID.u_directionalLightIntensitys] = directionalLightIntensitys;
             }
 
-            renderAtomic.uniforms[RenderDataID.u_sceneAmbientColor] = this._scene3d.ambientColor;
+            renderAtomic.uniforms[RenderDataID.u_sceneAmbientColor] = this.scene3d.ambientColor;
         }
     }
 }

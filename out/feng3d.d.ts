@@ -3000,8 +3000,18 @@ declare module feng3d {
          * 摄像机
          */
         camera: Camera;
-        private _scene3d;
-        constructor(scene3d: Scene3D);
+        /**
+         * 场景
+         */
+        scene3d: Scene3D;
+        /**
+         * 3D视窗
+         */
+        view3D: View3D;
+        /**
+         * WebGL实例
+         */
+        gl: GL;
         /**
          * 更新渲染数据
          */
@@ -3150,8 +3160,8 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene3D: Scene3D, camera: Camera): void;
-        protected drawRenderables(gl: GL, renderContext: RenderContext, meshRenderer: Model): void;
+        draw(renderContext: RenderContext): void;
+        protected drawRenderables(renderContext: RenderContext, meshRenderer: Model): void;
         /**
          * 绘制3D对象
          */
@@ -3173,8 +3183,8 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene3D: Scene3D, camera: Camera): void;
-        protected drawRenderables(gl: GL, renderContext: RenderContext, meshRenderer: Model): void;
+        draw(renderContext: RenderContext): void;
+        protected drawRenderables(renderContext: RenderContext, meshRenderer: Model): void;
     }
 }
 declare module feng3d {
@@ -3199,8 +3209,8 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene3D: Scene3D, camera: Camera): void;
-        protected drawRenderables(gl: GL, renderContext: RenderContext, meshRenderer: Model): void;
+        draw(renderContext: RenderContext): void;
+        protected drawRenderables(renderContext: RenderContext, meshRenderer: Model): void;
         /**
          * 激活渲染程序
          */
@@ -3226,7 +3236,7 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene3D: Scene3D, camera: Camera): void;
+        draw(renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
@@ -3304,8 +3314,12 @@ declare module feng3d {
         eulers: Vector3D;
         transform: Matrix3D;
         pivotPoint: Vector3D;
-        position: Vector3D;
-        getPosition(v?: Vector3D): Vector3D;
+        getPosition(position?: Vector3D): Vector3D;
+        setPosition(x?: number, y?: number, z?: number): void;
+        getRotation(rotation?: Vector3D): Vector3D;
+        setRotation(x?: number, y?: number, z?: number): void;
+        getScale(scale?: Vector3D): Vector3D;
+        setScale(x?: number, y?: number, z?: number): void;
         readonly forwardVector: Vector3D;
         readonly rightVector: Vector3D;
         readonly upVector: Vector3D;
@@ -3383,7 +3397,7 @@ declare module feng3d {
         readonly maxX: number;
         readonly maxY: number;
         readonly maxZ: number;
-        readonly sceneTransform: Matrix3D;
+        sceneTransform: Matrix3D;
         scene: Scene3D;
         readonly inverseSceneTransform: Matrix3D;
         readonly parent: ObjectContainer3D;
@@ -3424,7 +3438,9 @@ declare module feng3d {
          * 是否为公告牌（默认永远朝向摄像机），默认false。
          */
         isBillboard: boolean;
+        holdSize: number;
         updateRender(renderContext: RenderContext): void;
+        private getDepthScale(renderContext);
         /**
          * 收集渲染数据拥有者
          * @param renderAtomic 渲染原子
@@ -3470,6 +3486,10 @@ declare module feng3d {
          * 阴影图渲染器
          */
         private shadowRenderer;
+        /**
+         * 渲染环境
+         */
+        private _renderContext;
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -3653,7 +3673,6 @@ declare module feng3d {
         private _object3Ds;
         private _renderers;
         private _lights;
-        private _renderContext;
         /**
          * 渲染列表
          */
@@ -3662,10 +3681,6 @@ declare module feng3d {
          * 灯光列表
          */
         readonly lights: Light[];
-        /**
-         * 渲染环境
-         */
-        readonly renderContext: RenderContext;
         /**
          * 构造3D场景
          */
@@ -5878,6 +5893,17 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 变换动作
+     */
+    class TransformAnimator extends Object3DComponent {
+        /**
+         * 动作名称
+         */
+        animationName: string;
+    }
+}
+declare module feng3d {
+    /**
      * 面数据
      */
     type OBJ_Face = {
@@ -6379,7 +6405,7 @@ declare module feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene3D: Scene3D, camera: Camera): void;
+        draw(renderContext: RenderContext): void;
         /**
          * 设置选中对象
          */

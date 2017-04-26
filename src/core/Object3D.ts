@@ -323,26 +323,62 @@ module feng3d
             this.invalidatePivot();
         }
 
-        public get position(): Vector3D
+        public getPosition(position: Vector3D = null): Vector3D
         {
-            this.transform.copyColumnTo(3, this._pos);
-            return this._pos.clone();
+            position = position || new Vector3D();
+            position.setTo(this._x, this._y, this._z);
+            return position;
         }
 
-        public set position(value: Vector3D)
+        public setPosition(x = 0, y = 0, z = 0)
         {
-            this._x = value.x;
-            this._y = value.y;
-            this._z = value.z;
-            this.invalidatePosition();
+            if (this._x != x || this._y != y || this._z != z)
+            {
+                this._x = x;
+                this._y = y;
+                this._z = z;
+                this.invalidatePosition();
+            }
         }
 
-        public getPosition(v: Vector3D = null): Vector3D
+        public getRotation(rotation: Vector3D = null): Vector3D
         {
-            if (<any>!v)
-                v = new Vector3D();
-            this.transform.copyColumnTo(3, v);
-            return v;
+            rotation = rotation || new Vector3D();
+            rotation.setTo(this._rotationX, this._rotationY, this._rotationZ);
+            rotation.scaleBy(MathConsts.RADIANS_TO_DEGREES);
+            return rotation;
+        }
+
+        public setRotation(x = 0, y = 0, z = 0)
+        {
+            x = x * MathConsts.DEGREES_TO_RADIANS;
+            y = y * MathConsts.DEGREES_TO_RADIANS;
+            z = z * MathConsts.DEGREES_TO_RADIANS;
+            if (this._x != x || this._y != y || this._z != z)
+            {
+                this._x = x;
+                this._y = y;
+                this._z = z;
+                this.invalidatePosition();
+            }
+        }
+
+        public getScale(scale: Vector3D = null)
+        {
+            scale = scale || new Vector3D();
+            scale.setTo(this._scaleX, this._scaleY, this._scaleZ);
+            return scale;
+        }
+
+        public setScale(x = 1, y = 1, z = 1)
+        {
+            if (this._scaleX != x || this._scaleY != y || this._scaleZ != z)
+            {
+                this._scaleX = x;
+                this._scaleY = y;
+                this._scaleZ = z;
+                this.invalidateScale();
+            }
         }
 
         public get forwardVector(): Vector3D

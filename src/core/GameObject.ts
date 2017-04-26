@@ -18,12 +18,20 @@ module feng3d
          * 是否为公告牌（默认永远朝向摄像机），默认false。
          */
         public isBillboard = false;
+        public holdSize = NaN;
 
         public updateRender(renderContext: RenderContext)
         {
             if (this.isBillboard)
             {
                 this.lookAt(renderContext.camera.globalMatrix3D.position);
+            }
+            if (this.holdSize)
+            {
+                var depthScale = this.getDepthScale(renderContext);
+                var vec = this.sceneTransform.decompose();
+                vec[2].setTo(depthScale, depthScale, depthScale);
+                this.sceneTransform.recompose(vec);
             }
             if (this.renderData.renderHolderInvalid)
             {
@@ -33,6 +41,15 @@ module feng3d
             }
             this.updateRenderData(renderContext, this.renderData);
             this.renderData.update(renderContext);
+        }
+
+        private getDepthScale(renderContext: RenderContext)
+        {
+            var cameraTranform = renderContext.camera.globalMatrix3D;
+            var distance = this.scenePosition.subtract(cameraTranform.position);
+            var depth = distance.dotProduct(cameraTranform.forward);
+            var scale = renderContext.view3D.getScaleByDepth(depth);
+            return scale;
         }
 
         /**

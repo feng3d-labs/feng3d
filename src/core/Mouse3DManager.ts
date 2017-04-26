@@ -31,8 +31,8 @@ module feng3d
         {
             this.mouseRenderer = new MouseRenderer();
             //
-            
-            
+
+
             mouse3DEventMap[inputType.CLICK] = Mouse3DEvent.CLICK;
             mouse3DEventMap[inputType.DOUBLE_CLICK] = Mouse3DEvent.DOUBLE_CLICK;
             mouse3DEventMap[inputType.MOUSE_DOWN] = Mouse3DEvent.MOUSE_DOWN;
@@ -69,10 +69,12 @@ module feng3d
         /**
 		 * 渲染
 		 */
-        public draw(gl: GL, scene3D: Scene3D, camera: Camera)
+        public draw(renderContext: RenderContext)
         {
             if (!this.viewRect.contains(this.mouseX, this.mouseY))
                 return;
+
+            var gl = renderContext.gl;
 
             var offsetX = -(this.mouseX - this.viewRect.x);
             var offsetY = -(this.viewRect.height - (this.mouseY - this.viewRect.y));//y轴与window中坐标反向，所以需要 h = (maxHeight - h)
@@ -81,7 +83,7 @@ module feng3d
             gl.clearDepth(1);
             gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
             gl.viewport(offsetX, offsetY, this.viewRect.width, this.viewRect.height);
-            this.mouseRenderer.draw(gl, scene3D, camera);
+            this.mouseRenderer.draw(renderContext);
 
             var object3D = this.mouseRenderer.selectedObject3D;
             this.setSelectedObject3D(object3D);
@@ -92,7 +94,7 @@ module feng3d
          */
         private setSelectedObject3D(value: GameObject)
         {
-            
+
             if (this.selectedObject3D != value)
             {
                 if (this.selectedObject3D)

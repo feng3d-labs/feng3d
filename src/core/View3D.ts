@@ -38,6 +38,11 @@ module feng3d
         private shadowRenderer: ShadowRenderer;
 
         /**
+         * 渲染环境
+         */
+        private _renderContext: RenderContext;
+
+        /**
          * 构建3D视图
          * @param canvas    画布
          * @param scene     3D场景
@@ -61,6 +66,8 @@ module feng3d
             this.defaultRenderer = new ForwardRenderer();
             this.mouse3DManager = new Mouse3DManager();
             this.shadowRenderer = new ShadowRenderer();
+
+            this._renderContext = new RenderContext();
 
             ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
         }
@@ -93,6 +100,11 @@ module feng3d
          */
         private drawScene(event: Event)
         {
+            this._renderContext.camera = this._camera.camera;
+            this._renderContext.scene3d = this._scene;
+            this._renderContext.view3D = this;
+            this._renderContext.gl = this._gl;
+
             var viewRect: Rectangle = this.viewRect;
 
             this.camera.camera.aspectRatio = viewRect.width / viewRect.height;
@@ -106,7 +118,7 @@ module feng3d
 
             // 默认渲染
             this.defaultRenderer.viewRect.copyFrom(viewRect);
-            this.defaultRenderer.draw(this._gl, this._scene, this._camera.camera);
+            this.defaultRenderer.draw(this._renderContext);
         }
 
         /**

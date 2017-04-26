@@ -277,6 +277,13 @@ module feng3d
             return this._sceneTransform;
         }
 
+        public set sceneTransform(value: Matrix3D)
+        {
+            value = value.clone();
+            this._parent && value.append(this._parent.inverseSceneTransform);
+            this.transform = value;
+        }
+
         public get scene(): Scene3D
         {
             return this._scene;

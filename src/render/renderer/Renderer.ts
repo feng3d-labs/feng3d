@@ -11,24 +11,25 @@ module feng3d
         /**
 		 * 渲染
 		 */
-        public draw(gl: GL, scene3D: Scene3D, camera: Camera)
+        public draw(renderContext: RenderContext)
         {
-            var renderContext = scene3D.renderContext;
-            //初始化渲染环境
-            renderContext.camera = camera;
-            scene3D.renderers.forEach(element =>
+            var scene3D = renderContext.scene3d;
+            var renderers = scene3D.renderers;
+            for (var i = 0; i < renderers.length; i++)
             {
-                this.drawRenderables(gl, renderContext, element);
-            });
+                var element = renderers[i];
+                this.drawRenderables(renderContext, element);
+            }
         }
 
-        protected drawRenderables(gl: GL, renderContext: RenderContext, meshRenderer: Model)
+        protected drawRenderables(renderContext: RenderContext, meshRenderer: Model)
         {
             var object3D = meshRenderer.parentComponent;
             //更新数据
             object3D.updateRender(renderContext);
-            // try
-            // {
+            var gl = renderContext.gl;
+            try
+            {
                 //绘制
                 var material = meshRenderer.material;
                 if (material.enableBlend)
@@ -43,10 +44,10 @@ module feng3d
                     gl.depthMask(true);
                 }
                 this.drawObject3D(gl, object3D.renderData);            //
-            // } catch (error)
-            // {
-            //     console.log(error);
-            // }
+            } catch (error)
+            {
+                console.log(error);
+            }
         }
 
         /**
@@ -90,10 +91,11 @@ module feng3d
      */
     function activeAttributes(gl: GL, attributeInfos: WebGLActiveInfo[], attributes: { [name: string]: AttributeRenderData })
     {
-        attributeInfos.forEach(activeInfo =>
+        for (var i = 0; i < attributeInfos.length; i++)
         {
+            var activeInfo = attributeInfos[i];
             setContext3DAttribute(gl, activeInfo, attributes[activeInfo.name]);
-        });
+        }
     }
 
     /**
@@ -101,8 +103,9 @@ module feng3d
      */
     function activeUniforms(gl: GL, uniformInfos: WebGLActiveInfo[], uniforms: { [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[]; })
     {
-        uniformInfos.forEach(activeInfo =>
+        for (var o = 0; o < uniformInfos.length; o++)
         {
+            var activeInfo = uniformInfos[o];
             if (activeInfo.name.indexOf("[") != -1)
             {
                 //处理数组
@@ -115,7 +118,7 @@ module feng3d
             {
                 setContext3DUniform(gl, activeInfo, uniforms[activeInfo.name]);
             }
-        });
+        }
     }
 
     /**

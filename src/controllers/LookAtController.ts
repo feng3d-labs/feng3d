@@ -61,7 +61,7 @@ module feng3d
                 }
                 else if (this._lookAtObject)
                 {
-                    this._pos.copyFrom(this._lookAtObject.position);
+                    this._lookAtObject.getPosition(this._pos);
                     this._target.lookAt(this._pos, this._upAxis);
                 }
             }
