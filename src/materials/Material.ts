@@ -21,6 +21,7 @@ module feng3d
 
         /**
          * 是否开启混合
+         * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
          */
         public get enableBlend()
         {
@@ -33,19 +34,19 @@ module feng3d
         }
 
         /**
-         * 混合方程
+         * 混合方程，默认GL.FUNC_ADD
          */
-        public blendEquation = GL.FUNC_ADD;
+        public blendEquation = BlendEquation.FUNC_ADD;
 
         /**
-         * 源混合因子
+         * 源混合因子，默认BlendFactor.SRC_ALPHA
          */
-        public sfactor = GL.SRC_ALPHA;
+        public sfactor = BlendFactor.SRC_ALPHA;
 
         /**
-         * 目标混合因子
+         * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
          */
-        public dfactor = GL.ONE_MINUS_SRC_ALPHA;
+        public dfactor = BlendFactor.ONE_MINUS_SRC_ALPHA;
 
         /**
          * 构建材质

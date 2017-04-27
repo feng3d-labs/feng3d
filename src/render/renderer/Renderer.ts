@@ -34,10 +34,14 @@ module feng3d
                 var material = meshRenderer.material;
                 if (material.enableBlend)
                 {
+                    var blendEquation = getBlendEquationValue(material.blendEquation)
+                    var sfactor = getBlendFactorValue(material.sfactor);
+                    var dfactor = getBlendFactorValue(material.dfactor);
+                    //
                     gl.enable(GL.BLEND);
-                    gl.blendEquation(material.blendEquation);
+                    gl.blendEquation(blendEquation);
                     gl.depthMask(false);
-                    gl.blendFunc(material.sfactor, material.dfactor);
+                    gl.blendFunc(sfactor, dfactor);
                 } else
                 {
                     gl.disable(GL.BLEND);

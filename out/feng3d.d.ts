@@ -2523,6 +2523,86 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
+     * 混合因子（R分量系数，G分量系数，B分量系数）
+     */
+    enum BlendFactor {
+        /**
+         * 0.0  0.0 0.0
+         */
+        ZERO = 0,
+        /**
+         * 1.0  1.0 1.0
+         */
+        ONE = 1,
+        /**
+         * Rs   Gs  Bs
+         */
+        SRC_COLOR = 2,
+        /**
+         * 1-Rs   1-Gs  1-Bs
+         */
+        ONE_MINUS_SRC_COLOR = 3,
+        /**
+         * Rd   Gd  Bd
+         */
+        DST_COLOR = 4,
+        /**
+         * 1-Rd   1-Gd  1-Bd
+         */
+        ONE_MINUS_DST_COLOR = 5,
+        /**
+         * As   As  As
+         */
+        SRC_ALPHA = 6,
+        /**
+         * 1-As   1-As  1-As
+         */
+        ONE_MINUS_SRC_ALPHA = 7,
+        /**
+         * Ad   Ad  Ad
+         */
+        DST_ALPHA = 8,
+        /**
+         * 1-Ad   1-Ad  1-Ad
+         */
+        ONE_MINUS_DST_ALPHA = 9,
+        /**
+         * min(As-Ad)   min(As-Ad)  min(As-Ad)
+         */
+        SRC_ALPHA_SATURATE = 10,
+    }
+    /**
+     * 根据枚举混合因子获取真实值
+     * @param blendFactor 混合因子
+     */
+    function getBlendFactorValue(blendFactor: BlendFactor): number;
+}
+declare module feng3d {
+    /**
+     * 混合方法
+     */
+    enum BlendEquation {
+        /**
+         *  source + destination
+         */
+        FUNC_ADD = 0,
+        /**
+         * source - destination
+         */
+        FUNC_SUBTRACT = 1,
+        /**
+         * destination - source
+         */
+        FUNC_REVERSE_SUBTRACT = 2,
+    }
+    /**
+     * 根据枚举混合因子获取真实值
+     * @param blendEquation 混合因子
+     */
+    function getBlendEquationValue(blendEquation: BlendEquation): number;
+}
+declare module feng3d {
+    /**
      * 渲染参数
      * @author feng 2016-12-14
      */
@@ -4625,20 +4705,21 @@ declare module feng3d {
         protected shaderName: string;
         /**
          * 是否开启混合
+         * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
          */
         enableBlend: boolean;
         /**
-         * 混合方程
+         * 混合方程，默认GL.FUNC_ADD
          */
-        blendEquation: number;
+        blendEquation: BlendEquation;
         /**
-         * 源混合因子
+         * 源混合因子，默认BlendFactor.SRC_ALPHA
          */
-        sfactor: number;
+        sfactor: BlendFactor;
         /**
-         * 目标混合因子
+         * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
          */
-        dfactor: number;
+        dfactor: BlendFactor;
         /**
          * 构建材质
          */

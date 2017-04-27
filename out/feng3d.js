@@ -5721,6 +5721,118 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 混合因子（R分量系数，G分量系数，B分量系数）
+     */
+    (function (BlendFactor) {
+        /**
+         * 0.0  0.0 0.0
+         */
+        BlendFactor[BlendFactor["ZERO"] = 0] = "ZERO";
+        /**
+         * 1.0  1.0 1.0
+         */
+        BlendFactor[BlendFactor["ONE"] = 1] = "ONE";
+        /**
+         * Rs   Gs  Bs
+         */
+        BlendFactor[BlendFactor["SRC_COLOR"] = 2] = "SRC_COLOR";
+        /**
+         * 1-Rs   1-Gs  1-Bs
+         */
+        BlendFactor[BlendFactor["ONE_MINUS_SRC_COLOR"] = 3] = "ONE_MINUS_SRC_COLOR";
+        /**
+         * Rd   Gd  Bd
+         */
+        BlendFactor[BlendFactor["DST_COLOR"] = 4] = "DST_COLOR";
+        /**
+         * 1-Rd   1-Gd  1-Bd
+         */
+        BlendFactor[BlendFactor["ONE_MINUS_DST_COLOR"] = 5] = "ONE_MINUS_DST_COLOR";
+        /**
+         * As   As  As
+         */
+        BlendFactor[BlendFactor["SRC_ALPHA"] = 6] = "SRC_ALPHA";
+        /**
+         * 1-As   1-As  1-As
+         */
+        BlendFactor[BlendFactor["ONE_MINUS_SRC_ALPHA"] = 7] = "ONE_MINUS_SRC_ALPHA";
+        /**
+         * Ad   Ad  Ad
+         */
+        BlendFactor[BlendFactor["DST_ALPHA"] = 8] = "DST_ALPHA";
+        /**
+         * 1-Ad   1-Ad  1-Ad
+         */
+        BlendFactor[BlendFactor["ONE_MINUS_DST_ALPHA"] = 9] = "ONE_MINUS_DST_ALPHA";
+        /**
+         * min(As-Ad)   min(As-Ad)  min(As-Ad)
+         */
+        BlendFactor[BlendFactor["SRC_ALPHA_SATURATE"] = 10] = "SRC_ALPHA_SATURATE";
+    })(feng3d.BlendFactor || (feng3d.BlendFactor = {}));
+    var BlendFactor = feng3d.BlendFactor;
+    /**
+     * 根据枚举混合因子获取真实值
+     * @param blendFactor 混合因子
+     */
+    function getBlendFactorValue(blendFactor) {
+        if (!blendFactorMap) {
+            blendFactorMap = {};
+            blendFactorMap[BlendFactor.ZERO] = feng3d.GL.ZERO;
+            blendFactorMap[BlendFactor.ONE] = feng3d.GL.ONE;
+            blendFactorMap[BlendFactor.SRC_COLOR] = feng3d.GL.SRC_COLOR;
+            blendFactorMap[BlendFactor.ONE_MINUS_SRC_COLOR] = feng3d.GL.ONE_MINUS_SRC_COLOR;
+            blendFactorMap[BlendFactor.DST_COLOR] = feng3d.GL.DST_COLOR;
+            blendFactorMap[BlendFactor.ONE_MINUS_DST_COLOR] = feng3d.GL.ONE_MINUS_DST_COLOR;
+            blendFactorMap[BlendFactor.SRC_ALPHA] = feng3d.GL.SRC_ALPHA;
+            blendFactorMap[BlendFactor.ONE_MINUS_SRC_ALPHA] = feng3d.GL.ONE_MINUS_SRC_ALPHA;
+            blendFactorMap[BlendFactor.DST_ALPHA] = feng3d.GL.DST_ALPHA;
+            blendFactorMap[BlendFactor.ONE_MINUS_DST_ALPHA] = feng3d.GL.ONE_MINUS_DST_ALPHA;
+            blendFactorMap[BlendFactor.SRC_ALPHA_SATURATE] = feng3d.GL.SRC_ALPHA_SATURATE;
+        }
+        return blendFactorMap[blendFactor];
+    }
+    feng3d.getBlendFactorValue = getBlendFactorValue;
+    var blendFactorMap;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 混合方法
+     */
+    (function (BlendEquation) {
+        /**
+         *  source + destination
+         */
+        BlendEquation[BlendEquation["FUNC_ADD"] = 0] = "FUNC_ADD";
+        /**
+         * source - destination
+         */
+        BlendEquation[BlendEquation["FUNC_SUBTRACT"] = 1] = "FUNC_SUBTRACT";
+        /**
+         * destination - source
+         */
+        BlendEquation[BlendEquation["FUNC_REVERSE_SUBTRACT"] = 2] = "FUNC_REVERSE_SUBTRACT";
+    })(feng3d.BlendEquation || (feng3d.BlendEquation = {}));
+    var BlendEquation = feng3d.BlendEquation;
+    /**
+     * 根据枚举混合因子获取真实值
+     * @param blendEquation 混合因子
+     */
+    function getBlendEquationValue(blendEquation) {
+        if (!blendEquationMap) {
+            blendEquationMap = {};
+            blendEquationMap[BlendEquation.FUNC_ADD] = feng3d.GL.FUNC_ADD;
+            blendEquationMap[BlendEquation.FUNC_SUBTRACT] = feng3d.GL.FUNC_SUBTRACT;
+            blendEquationMap[BlendEquation.FUNC_REVERSE_SUBTRACT] = feng3d.GL.FUNC_REVERSE_SUBTRACT;
+        }
+        return blendEquationMap[blendEquation];
+    }
+    feng3d.getBlendEquationValue = getBlendEquationValue;
+    var blendEquationMap;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 渲染数据拥有者
      * @author feng 2016-6-7
      */
@@ -6741,10 +6853,14 @@ var feng3d;
                 //绘制
                 var material = meshRenderer.material;
                 if (material.enableBlend) {
+                    var blendEquation = feng3d.getBlendEquationValue(material.blendEquation);
+                    var sfactor = feng3d.getBlendFactorValue(material.sfactor);
+                    var dfactor = feng3d.getBlendFactorValue(material.dfactor);
+                    //
                     gl.enable(feng3d.GL.BLEND);
-                    gl.blendEquation(material.blendEquation);
+                    gl.blendEquation(blendEquation);
                     gl.depthMask(false);
-                    gl.blendFunc(material.sfactor, material.dfactor);
+                    gl.blendFunc(sfactor, dfactor);
                 }
                 else {
                     gl.disable(feng3d.GL.BLEND);
@@ -8264,8 +8380,8 @@ var feng3d;
             var viewRect = this.viewRect;
             this.camera.camera.aspectRatio = viewRect.width / viewRect.height;
             //鼠标拾取渲染
-            this.mouse3DManager.viewRect.copyFrom(viewRect);
-            this.mouse3DManager.draw(this._renderContext);
+            // this.mouse3DManager.viewRect.copyFrom(viewRect);
+            // this.mouse3DManager.draw(this._renderContext);
             //绘制阴影图
             // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
             // 默认渲染
@@ -11503,17 +11619,17 @@ var feng3d;
             */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
             /**
-             * 混合方程
+             * 混合方程，默认GL.FUNC_ADD
              */
-            this.blendEquation = feng3d.GL.FUNC_ADD;
+            this.blendEquation = feng3d.BlendEquation.FUNC_ADD;
             /**
-             * 源混合因子
+             * 源混合因子，默认BlendFactor.SRC_ALPHA
              */
-            this.sfactor = feng3d.GL.SRC_ALPHA;
+            this.sfactor = feng3d.BlendFactor.SRC_ALPHA;
             /**
-             * 目标混合因子
+             * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
              */
-            this.dfactor = feng3d.GL.ONE_MINUS_SRC_ALPHA;
+            this.dfactor = feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA;
             this._single = true;
             this._type = Material;
             feng3d.Watcher.watch(this, ["shaderName"], this.invalidateRenderData, this);
@@ -11522,6 +11638,7 @@ var feng3d;
         Object.defineProperty(Material.prototype, "enableBlend", {
             /**
              * 是否开启混合
+             * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
              */
             get: function () {
                 return this._enableBlend;

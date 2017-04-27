@@ -110,8 +110,8 @@ module feng3d
             this.camera.camera.aspectRatio = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
-            this.mouse3DManager.viewRect.copyFrom(viewRect);
-            this.mouse3DManager.draw(this._renderContext);
+            // this.mouse3DManager.viewRect.copyFrom(viewRect);
+            // this.mouse3DManager.draw(this._renderContext);
 
             //绘制阴影图
             // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
