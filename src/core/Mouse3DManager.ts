@@ -27,6 +27,11 @@ module feng3d
          */
         private Object3DClickNum: number;
 
+        /**
+         * 鼠标拾取器
+         */
+        public mousePicker: IPicker = new RaycastPicker(false);
+
         private _catchMouseMove = false;
         /**
          * 是否捕捉鼠标移动，默认false。

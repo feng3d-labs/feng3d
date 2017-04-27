@@ -148,6 +148,11 @@
         "src/controllers/ControllerBase.ts",
         "src/controllers/LookAtController.ts",
         "src/controllers/FPSController.ts",
+        //拾取
+        "src/pick/IPicker.ts",
+        "src/pick/PickingCollisionVO.ts",
+        "src/pick/PickingCollider.ts",
+        // "src/pick/RaycastPicker.ts",
         //地形
         "src/terrain/TerrainGeometry.ts",
         "src/terrain/TerrainMaterial.ts",

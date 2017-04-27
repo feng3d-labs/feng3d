@@ -5148,6 +5148,55 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    interface IPicker {
+        getViewCollision(x: number, y: number, view: View3D): PickingCollisionVO;
+        getSceneCollision(position: Vector3D, direction: Vector3D, scene: Scene3D): PickingCollisionVO;
+        onlyMouseEnabled: boolean;
+        dispose(): any;
+    }
+}
+declare module feng3d {
+    interface IPickingCollider {
+        setLocalRay(localPosition: Vector3D, localDirection: Vector3D): any;
+        testSubMeshCollision(subMesh: Model, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+    }
+}
+declare module feng3d {
+    class PickingCollisionVO {
+        entity: GameObject;
+        localPosition: Vector3D;
+        localNormal: Vector3D;
+        uv: Point;
+        index: number;
+        subGeometryIndex: number;
+        localRayPosition: Vector3D;
+        localRayDirection: Vector3D;
+        rayPosition: Vector3D;
+        rayDirection: Vector3D;
+        rayOriginIsInsideBounds: boolean;
+        rayEntryDistance: number;
+        renderable: Model;
+        constructor(entity: GameObject);
+    }
+}
+declare module feng3d {
+    class PickingColliderBase {
+        protected rayPosition: Vector3D;
+        protected rayDirection: Vector3D;
+        constructor();
+        protected getCollisionNormal(indexData: Array<number>, vertexData: Array<number>, triangleIndex: number, normal?: Vector3D): Vector3D;
+        protected getCollisionUV(indexData: Uint16Array, uvData: Float32Array, triangleIndex: number, v: number, w: number, u: number, uvOffset: number, uvStride: number, uv?: Point): Point;
+        setLocalRay(localPosition: Vector3D, localDirection: Vector3D): void;
+    }
+}
+declare module feng3d {
+    class AS3PickingCollider extends PickingColliderBase implements IPickingCollider {
+        private _findClosestCollision;
+        constructor(findClosestCollision?: boolean);
+        testSubMeshCollision(subMesh: Model, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+    }
+}
+declare module feng3d {
     /**
      * 地形几何体
      * @author feng 2016-04-28
@@ -6483,6 +6532,10 @@ declare module feng3d {
          * 统计处理click次数，判断是否达到dblclick
          */
         private Object3DClickNum;
+        /**
+         * 鼠标拾取器
+         */
+        mousePicker: IPicker;
         private _catchMouseMove;
         /**
          * 是否捕捉鼠标移动，默认false。

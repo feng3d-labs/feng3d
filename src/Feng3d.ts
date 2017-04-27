@@ -66,4 +66,9 @@ module feng3d
         }
     }
     var isInit = false;
+
+    /**
+     * 初始化函数列表
+     */
+    export var initFunctions: Function[];
 }
