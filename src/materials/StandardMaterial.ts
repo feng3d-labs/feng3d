@@ -43,6 +43,19 @@ module feng3d
         // public metalic: number = 1.0;
 
         /**
+         * 是否开启混合
+         */
+        public get enableBlend()
+        {
+            return this._enableBlend || this.diffuseMethod.color.a != 1.0;
+        }
+
+        public set enableBlend(value: boolean)
+        {
+            this._enableBlend = value;
+        }
+
+        /**
          * 构建
          */
         constructor()

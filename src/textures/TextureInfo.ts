@@ -13,7 +13,7 @@ module feng3d
         /**
          * 格式
          */
-        public format: number = GL.RGBA;
+        public format: number = GL.RGB;
         /**
          * 数据类型
          */
@@ -21,7 +21,7 @@ module feng3d
         /**
          * 是否生成mipmap
          */
-        public generateMipmap: boolean = true;
+        public generateMipmap: boolean = false;
         /**
          * 对图像进行Y轴反转。默认值为false
          */
@@ -31,9 +31,9 @@ module feng3d
          */
         public premulAlpha = false;
 
-        public minFilter = GL.NEAREST_MIPMAP_LINEAR;
+        public minFilter = GL.NEAREST;
 
-        public magFilter = GL.LINEAR;
+        public magFilter = GL.NEAREST;
         /**
          * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
          */
@@ -43,9 +43,9 @@ module feng3d
          */
         public wrapT = GL.REPEAT;
         /**
-         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为1。
+         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
          */
-        public anisotropy = 1;
+        public anisotropy = 0;
 
         /**
          * 图片数据
@@ -125,8 +125,11 @@ module feng3d
             var anisotropicExt = gl.ext.getAnisotropicExt();
             if (anisotropicExt)
             {
-                var max = anisotropicExt.getMaxAnisotropy();
-                gl.texParameterf(gl.TEXTURE_2D, anisotropicExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, max));
+                if (this.anisotropy)
+                {
+                    var max = anisotropicExt.getMaxAnisotropy();
+                    gl.texParameterf(gl.TEXTURE_2D, anisotropicExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, max));
+                }
             } else
             {
                 debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");

@@ -8264,8 +8264,8 @@ var feng3d;
             var viewRect = this.viewRect;
             this.camera.camera.aspectRatio = viewRect.width / viewRect.height;
             //鼠标拾取渲染
-            // this.mouse3DManager.viewRect.copyFrom(viewRect);
-            // this.mouse3DManager.draw(this._gl, this._scene, this._camera.camera);
+            this.mouse3DManager.viewRect.copyFrom(viewRect);
+            this.mouse3DManager.draw(this._renderContext);
             //绘制阴影图
             // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
             // 默认渲染
@@ -11230,7 +11230,7 @@ var feng3d;
             /**
              * 格式
              */
-            this.format = feng3d.GL.RGBA;
+            this.format = feng3d.GL.RGB;
             /**
              * 数据类型
              */
@@ -11238,7 +11238,7 @@ var feng3d;
             /**
              * 是否生成mipmap
              */
-            this.generateMipmap = true;
+            this.generateMipmap = false;
             /**
              * 对图像进行Y轴反转。默认值为false
              */
@@ -11247,8 +11247,8 @@ var feng3d;
              * 将图像RGB颜色值得每一个分量乘以A。默认为false
              */
             this.premulAlpha = false;
-            this.minFilter = feng3d.GL.NEAREST_MIPMAP_LINEAR;
-            this.magFilter = feng3d.GL.LINEAR;
+            this.minFilter = feng3d.GL.NEAREST;
+            this.magFilter = feng3d.GL.NEAREST;
             /**
              * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
              */
@@ -11258,9 +11258,9 @@ var feng3d;
              */
             this.wrapT = feng3d.GL.REPEAT;
             /**
-             * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为1。
+             * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
              */
-            this.anisotropy = 1;
+            this.anisotropy = 0;
             /**
              * 纹理缓冲
              */
@@ -11316,8 +11316,10 @@ var feng3d;
             //
             var anisotropicExt = gl.ext.getAnisotropicExt();
             if (anisotropicExt) {
-                var max = anisotropicExt.getMaxAnisotropy();
-                gl.texParameterf(gl.TEXTURE_2D, anisotropicExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, max));
+                if (this.anisotropy) {
+                    var max = anisotropicExt.getMaxAnisotropy();
+                    gl.texParameterf(gl.TEXTURE_2D, anisotropicExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, max));
+                }
             }
             else {
                 feng3d.debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
@@ -11495,14 +11497,11 @@ var feng3d;
          */
         function Material() {
             _super.call(this);
+            this._enableBlend = false;
             /**
             * 渲染模式
             */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
-            /**
-             * 是否开启混合
-             */
-            this.enableBlend = false;
             /**
              * 混合方程
              */
@@ -11510,16 +11509,29 @@ var feng3d;
             /**
              * 源混合因子
              */
-            this.sfactor = feng3d.GL.ONE;
+            this.sfactor = feng3d.GL.SRC_ALPHA;
             /**
              * 目标混合因子
              */
-            this.dfactor = feng3d.GL.ZERO;
+            this.dfactor = feng3d.GL.ONE_MINUS_SRC_ALPHA;
             this._single = true;
             this._type = Material;
             feng3d.Watcher.watch(this, ["shaderName"], this.invalidateRenderData, this);
             feng3d.Watcher.watch(this, ["renderMode"], this.invalidateRenderData, this);
         }
+        Object.defineProperty(Material.prototype, "enableBlend", {
+            /**
+             * 是否开启混合
+             */
+            get: function () {
+                return this._enableBlend;
+            },
+            set: function (value) {
+                this._enableBlend = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 更新渲染数据
          */
@@ -11710,18 +11722,6 @@ var feng3d;
      */
     var StandardMaterial = (function (_super) {
         __extends(StandardMaterial, _super);
-        // /**
-        //  * 反射率
-        //  */
-        // public reflectance: number = 1.0;
-        // /**
-        //  * 粗糙度
-        //  */
-        // public roughness: number = 1.0;
-        // /**
-        //  * 金属度
-        //  */
-        // public metalic: number = 1.0;
         /**
          * 构建
          */
@@ -11753,6 +11753,31 @@ var feng3d;
             feng3d.Watcher.watch(this, ["roughness"], this.invalidateRenderData, this);
             feng3d.Watcher.watch(this, ["metalic"], this.invalidateRenderData, this);
         }
+        Object.defineProperty(StandardMaterial.prototype, "enableBlend", {
+            // /**
+            //  * 反射率
+            //  */
+            // public reflectance: number = 1.0;
+            // /**
+            //  * 粗糙度
+            //  */
+            // public roughness: number = 1.0;
+            // /**
+            //  * 金属度
+            //  */
+            // public metalic: number = 1.0;
+            /**
+             * 是否开启混合
+             */
+            get: function () {
+                return this._enableBlend || this.diffuseMethod.color.a != 1.0;
+            },
+            set: function (value) {
+                this._enableBlend = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 更新渲染数据
          */

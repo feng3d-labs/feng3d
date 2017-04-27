@@ -7,6 +7,8 @@ module feng3d
      */
     export class Material extends RenderDataHolder
     {
+        protected _enableBlend = false;
+
         /**
         * 渲染模式
         */
@@ -20,7 +22,15 @@ module feng3d
         /**
          * 是否开启混合
          */
-        public enableBlend = false;
+        public get enableBlend()
+        {
+            return this._enableBlend;
+        }
+
+        public set enableBlend(value: boolean)
+        {
+            this._enableBlend = value;
+        }
 
         /**
          * 混合方程
@@ -30,12 +40,12 @@ module feng3d
         /**
          * 源混合因子
          */
-        public sfactor = GL.ONE;
+        public sfactor = GL.SRC_ALPHA;
 
         /**
          * 目标混合因子
          */
-        public dfactor = GL.ZERO;
+        public dfactor = GL.ONE_MINUS_SRC_ALPHA;
 
         /**
          * 构建材质

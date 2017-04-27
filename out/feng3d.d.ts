@@ -4517,7 +4517,7 @@ declare module feng3d {
          */
         wrapT: number;
         /**
-         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为1。
+         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
          */
         anisotropy: number;
         /**
@@ -4614,6 +4614,7 @@ declare module feng3d {
      * @author feng 2016-05-02
      */
     class Material extends RenderDataHolder {
+        protected _enableBlend: boolean;
         /**
         * 渲染模式
         */
@@ -4773,6 +4774,10 @@ declare module feng3d {
          * 环境反射函数
          */
         ambientMethod: AmbientMethod;
+        /**
+         * 是否开启混合
+         */
+        enableBlend: boolean;
         /**
          * 构建
          */
