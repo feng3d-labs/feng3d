@@ -11247,16 +11247,16 @@ var feng3d;
              * 将图像RGB颜色值得每一个分量乘以A。默认为false
              */
             this.premulAlpha = false;
-            this.minFilter = feng3d.GL.NEAREST;
-            this.magFilter = feng3d.GL.NEAREST;
+            this.minFilter = feng3d.GL.LINEAR;
+            this.magFilter = feng3d.GL.LINEAR;
             /**
              * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
              */
-            this.wrapS = feng3d.GL.REPEAT;
+            this.wrapS = feng3d.GL.CLAMP_TO_EDGE;
             /**
              * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
              */
-            this.wrapT = feng3d.GL.REPEAT;
+            this.wrapT = feng3d.GL.CLAMP_TO_EDGE;
             /**
              * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
              */
