@@ -88,6 +88,7 @@
         //
         "src/core/Object3D.ts",
         "src/core/ObjectContainer3D.ts",
+        "src/core/Entity.ts",
         "src/core/GameObject.ts",
         "src/core/View3D.ts",
         //3D对象组件
@@ -149,10 +150,9 @@
         "src/controllers/LookAtController.ts",
         "src/controllers/FPSController.ts",
         //拾取
-        "src/pick/IPicker.ts",
         "src/pick/PickingCollisionVO.ts",
         "src/pick/PickingCollider.ts",
-        // "src/pick/RaycastPicker.ts",
+        "src/pick/RaycastPicker.ts",
         //地形
         "src/terrain/TerrainGeometry.ts",
         "src/terrain/TerrainMaterial.ts",

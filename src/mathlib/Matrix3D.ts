@@ -505,7 +505,7 @@ module feng3d
          * @param   v   一个容纳要转换的坐标的 Vector3D 对象。
          * @return  一个包含转换后的坐标的 Vector3D 对象。
          */
-        public deltaTransformVector(v: Vector3D): Vector3D
+        public deltaTransformVector(v: Vector3D, vout?: Vector3D): Vector3D
         {
             var tempx = this.rawData[12];
             var tempy = this.rawData[13];
@@ -515,13 +515,13 @@ module feng3d
             this.rawData[13] = 0;
             this.rawData[14] = 0;
 
-            var result = this.transformVector(v)
+            vout = this.transformVector(v, vout)
 
             this.rawData[12] = tempx;
             this.rawData[13] = tempy;
             this.rawData[14] = tempz;
 
-            return result;
+            return vout;
         }
 
         /**
