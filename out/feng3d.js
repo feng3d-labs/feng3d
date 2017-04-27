@@ -8236,6 +8236,12 @@ var feng3d;
                     break;
             }
         };
+        /**
+         * 获取子对象列表（备份）
+         */
+        ObjectContainer3D.prototype.getChildren = function () {
+            return this._children.concat();
+        };
         return ObjectContainer3D;
     }(feng3d.Object3D));
     feng3d.ObjectContainer3D = ObjectContainer3D;
@@ -8380,8 +8386,8 @@ var feng3d;
             var viewRect = this.viewRect;
             this.camera.camera.aspectRatio = viewRect.width / viewRect.height;
             //鼠标拾取渲染
-            // this.mouse3DManager.viewRect.copyFrom(viewRect);
-            // this.mouse3DManager.draw(this._renderContext);
+            this.mouse3DManager.viewRect.copyFrom(viewRect);
+            this.mouse3DManager.draw(this._renderContext);
             //绘制阴影图
             // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
             // 默认渲染
@@ -15347,6 +15353,7 @@ var feng3d;
         function Mouse3DManager() {
             this.viewRect = new feng3d.Rectangle(0, 0, 100, 100);
             this.mouseEventTypes = [];
+            this._catchMouseMove = false;
             this.mouseRenderer = new feng3d.MouseRenderer();
             //
             mouse3DEventMap[feng3d.inputType.CLICK] = Mouse3DEvent.CLICK;
@@ -15354,25 +15361,39 @@ var feng3d;
             mouse3DEventMap[feng3d.inputType.MOUSE_DOWN] = Mouse3DEvent.MOUSE_DOWN;
             mouse3DEventMap[feng3d.inputType.MOUSE_MOVE] = Mouse3DEvent.MOUSE_MOVE;
             mouse3DEventMap[feng3d.inputType.MOUSE_UP] = Mouse3DEvent.MOUSE_UP;
-            feng3d.input.addEventListener(feng3d.inputType.MOUSE_MOVE, this.onMousemove, this);
             //
             feng3d.input.addEventListener(feng3d.inputType.CLICK, this.onMouseEvent, this);
             feng3d.input.addEventListener(feng3d.inputType.DOUBLE_CLICK, this.onMouseEvent, this);
             feng3d.input.addEventListener(feng3d.inputType.MOUSE_DOWN, this.onMouseEvent, this);
-            feng3d.input.addEventListener(feng3d.inputType.MOUSE_MOVE, this.onMouseEvent, this);
             feng3d.input.addEventListener(feng3d.inputType.MOUSE_UP, this.onMouseEvent, this);
         }
+        Object.defineProperty(Mouse3DManager.prototype, "catchMouseMove", {
+            /**
+             * 是否捕捉鼠标移动，默认false。
+             */
+            get: function () {
+                return this._catchMouseMove;
+            },
+            set: function (value) {
+                if (this._catchMouseMove == value)
+                    return;
+                if (this._catchMouseMove) {
+                    feng3d.input.removeEventListener(feng3d.inputType.MOUSE_MOVE, this.onMouseEvent, this);
+                }
+                this._catchMouseMove = value;
+                if (this._catchMouseMove) {
+                    feng3d.input.addEventListener(feng3d.inputType.MOUSE_MOVE, this.onMouseEvent, this);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 监听鼠标事件收集事件类型
          */
         Mouse3DManager.prototype.onMouseEvent = function (event) {
             if (this.mouseEventTypes.indexOf(event.type) == -1)
                 this.mouseEventTypes.push(event.type);
-        };
-        /**
-         * 监听鼠标移动事件获取鼠标位置
-         */
-        Mouse3DManager.prototype.onMousemove = function (event) {
             this.mouseX = event.clientX;
             this.mouseY = event.clientY;
         };
@@ -15381,6 +15402,9 @@ var feng3d;
          */
         Mouse3DManager.prototype.draw = function (renderContext) {
             if (!this.viewRect.contains(this.mouseX, this.mouseY))
+                return;
+            var results = this.getMouseCheckObjects(renderContext);
+            if (results.length == 0)
                 return;
             var gl = renderContext.gl;
             var offsetX = -(this.mouseX - this.viewRect.x);
@@ -15392,6 +15416,22 @@ var feng3d;
             this.mouseRenderer.draw(renderContext);
             var object3D = this.mouseRenderer.selectedObject3D;
             this.setSelectedObject3D(object3D);
+        };
+        Mouse3DManager.prototype.getMouseCheckObjects = function (renderContext) {
+            var scene3d = renderContext.scene3d;
+            var checkList = scene3d.getChildren();
+            var results = [];
+            var i = 0;
+            while (i < checkList.length) {
+                var checkObject = checkList[i++];
+                if (checkObject.mouseEnabled && checkObject.getComponentsByType(feng3d.Geometry)) {
+                    results.push(checkObject);
+                }
+                if (checkObject.mouseChildren) {
+                    checkList = checkList.concat(checkObject.getChildren());
+                }
+            }
+            return results;
         };
         /**
          * 设置选中对象

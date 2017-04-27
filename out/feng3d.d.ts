@@ -3500,6 +3500,10 @@ declare module feng3d {
         updateImplicitVisibility(): void;
         addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
         removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
+        /**
+         * 获取子对象列表（备份）
+         */
+        getChildren(): ObjectContainer3D[];
     }
 }
 declare module feng3d {
@@ -6479,19 +6483,21 @@ declare module feng3d {
          * 统计处理click次数，判断是否达到dblclick
          */
         private Object3DClickNum;
+        private _catchMouseMove;
+        /**
+         * 是否捕捉鼠标移动，默认false。
+         */
+        catchMouseMove: boolean;
         constructor();
         /**
          * 监听鼠标事件收集事件类型
          */
         private onMouseEvent(event);
         /**
-         * 监听鼠标移动事件获取鼠标位置
-         */
-        private onMousemove(event);
-        /**
          * 渲染
          */
         draw(renderContext: RenderContext): void;
+        private getMouseCheckObjects(renderContext);
         /**
          * 设置选中对象
          */

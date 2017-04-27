@@ -503,5 +503,13 @@ module feng3d
             }
         }
 
+        /**
+         * 获取子对象列表（备份）
+         */
+        public getChildren()
+        {
+            return this._children.concat();
+        }
+
     }
 }
