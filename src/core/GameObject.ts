@@ -84,5 +84,15 @@ module feng3d
             //
             renderData.uniforms[RenderDataID.u_modelMatrix] = this.sceneTransform;
         }
+
+        /**
+		 * @inheritDoc
+		 */
+        protected updateBounds()
+        {
+            var geometry = this.getComponentByType(Model).geometry;
+            this._bounds.fromGeometry(geometry);
+            this._boundsInvalid = false;
+        }
     }
 }

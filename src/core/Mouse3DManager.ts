@@ -30,7 +30,7 @@ module feng3d
         /**
          * 鼠标拾取器
          */
-        public mousePicker: IPicker = new RaycastPicker(false);
+        public mousePicker = new RaycastPicker(false);
 
         private _catchMouseMove = false;
         /**

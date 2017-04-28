@@ -6,15 +6,11 @@ module feng3d
 	 */
     export abstract class Entity extends ObjectContainer3D
     {
-        private _showBounds: boolean;
-        private _partitionNode: EntityNode;
-        private _boundsIsShown: boolean = false;
-
         protected _bounds: BoundingVolumeBase;
         protected _boundsInvalid: boolean = true;
 
         public _pickingCollisionVO: PickingCollisionVO;
-        public _pickingCollider: IPickingCollider;
+        public pickingCollider: AS3PickingCollider;
 
         private _worldBounds: BoundingVolumeBase;
         private _worldBoundsInvalid: boolean = true;
@@ -28,52 +24,6 @@ module feng3d
 
             this._bounds = this.getDefaultBoundingVolume();
             this._worldBounds = this.getDefaultBoundingVolume();
-        }
-
-		/**
-		 * 是否显示边界
-		 */
-        public get showBounds(): boolean
-        {
-            return this._showBounds;
-        }
-
-        public set showBounds(value: boolean)
-        {
-            if (value == this._showBounds)
-                return;
-
-            this._showBounds = value;
-
-            if (this._showBounds)
-                this.addBounds();
-            else
-                this.removeBounds();
-        }
-
-		/**
-		 * 添加边界
-		 */
-        private addBounds()
-        {
-            if (!this._boundsIsShown)
-            {
-                this._boundsIsShown = true;
-                this.addChild(this.bounds.boundingRenderable);
-            }
-        }
-
-		/**
-		 * 移除边界
-		 */
-        private removeBounds()
-        {
-            if (this._boundsIsShown)
-            {
-                this._boundsIsShown = false;
-                this.removeChild(this._bounds.boundingRenderable);
-                this._bounds.disposeRenderable();
-            }
         }
 
 		/**
@@ -194,11 +144,12 @@ module feng3d
 
             return this._pickingCollisionVO;
         }
-       /**
-		 * 判断射线是否穿过对象
-		 * @param ray3D
-		 * @return
-		 */
+
+        /**
+          * 判断射线是否穿过对象
+          * @param ray3D
+          * @return
+          */
         public isIntersectingRay(ray3D: Ray3D): boolean
         {
             if (!this.pickingCollisionVO.localNormal)
@@ -224,23 +175,6 @@ module feng3d
         }
 
 		/**
-		 * 获取采集的碰撞
-		 */
-        public get pickingCollider(): IPickingCollider
-        {
-            return this._pickingCollider;
-        }
-
-        public set pickingCollider(value: IPickingCollider)
-        {
-            this._pickingCollider = value;
-        }
-
-        public setPickingCollider(value: IPickingCollider)
-        {
-            this.pickingCollider = value;
-        }
-		/**
 		 * 碰撞前设置碰撞状态
 		 * @param shortestCollisionDistance 最短碰撞距离
 		 * @param findClosest 是否寻找最优碰撞
@@ -249,79 +183,6 @@ module feng3d
         public collidesBefore(shortestCollisionDistance: number, findClosest: boolean): boolean
         {
             return true;
-        }
-
-		/**
-		 * @inheritDoc
-		 */
-        public set implicitPartition(value: Partition3D)
-        {
-            if (value == this._implicitPartition)
-                return;
-
-            if (this._implicitPartition)
-                this.notifyPartitionUnassigned();
-
-            super.setImplicitPartition(value);
-
-            this.notifyPartitionAssigned();
-        }
-
-		/**
-		 * 通知场景一个新分区已分配
-		 */
-        private notifyPartitionAssigned()
-        {
-            if (this._scene)
-                this._scene.registerPartition(this);
-        }
-
-		/**
-		 * 通知场景一个分区取消分配
-		 */
-        private notifyPartitionUnassigned()
-        {
-            if (this._scene)
-                this._scene.unregisterPartition(this);
-        }
-
-		/**
-		 * @inheritDoc
-		 */
-        public set scene(value: Scene3D)
-        {
-            if (value == this._scene)
-                return;
-
-            if (this._scene)
-                this._scene.unregisterEntity(this);
-
-            if (value)
-                value.registerEntity(this);
-
-            super.setScene(value);
-        }
-
-		/**
-		 * 获取实体分区节点
-		 */
-        public getEntityPartitionNode(): EntityNode
-        {
-            return this._partitionNode = this._partitionNode || this.createEntityPartitionNode();
-        }
-
-		/**
-		 * 创建实体分区节点，该函数为虚函数，需要子类重写。
-		 */
-        protected abstract createEntityPartitionNode(): EntityNode;
-
-		/**
-		 * 内部更新
-		 */
-        public internalUpdate()
-        {
-            if (this._controller)
-                this._controller.update();
         }
 
 		/**
@@ -342,16 +203,6 @@ module feng3d
         {
             this._worldBounds.transformFrom(this.bounds, this.sceneTransform);
             this._worldBoundsInvalid = false;
-        }
-
-		/**
-		 * The transformation matrix that transforms from model to world space, adapted with any special operations needed to render.
-		 * For example, assuring certain alignedness which is not inherent in the scene transform. By default, this would
-		 * return the scene transform.
-		 */
-        public getRenderSceneTransform(camera: Camera3D): Matrix3D
-        {
-            return this.sceneTransform;
         }
     }
 }

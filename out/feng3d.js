@@ -3648,18 +3648,18 @@ var feng3d;
          * @param   v   一个容纳要转换的坐标的 Vector3D 对象。
          * @return  一个包含转换后的坐标的 Vector3D 对象。
          */
-        Matrix3D.prototype.deltaTransformVector = function (v) {
+        Matrix3D.prototype.deltaTransformVector = function (v, vout) {
             var tempx = this.rawData[12];
             var tempy = this.rawData[13];
             var tempz = this.rawData[14];
             this.rawData[12] = 0;
             this.rawData[13] = 0;
             this.rawData[14] = 0;
-            var result = this.transformVector(v);
+            vout = this.transformVector(v, vout);
             this.rawData[12] = tempx;
             this.rawData[13] = tempy;
             this.rawData[14] = tempz;
-            return result;
+            return vout;
         };
         /**
          * 将当前矩阵转换为恒等或单位矩阵。
@@ -6085,14 +6085,8 @@ var feng3d;
             if (data === void 0) { data = null; }
             if (stride === void 0) { stride = 3; }
             if (divisor === void 0) { divisor = 0; }
-            /**
-             * 数据步长
-             */
-            this.stride = 3;
-            /**
-             * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
-             */
-            this.divisor = 0;
+            this._stride = 3;
+            this._divisor = 0;
             /**
              * 顶点数据缓冲
              */
@@ -6101,10 +6095,38 @@ var feng3d;
              * 是否失效
              */
             this._invalid = true;
-            this.data = data;
-            this.stride = stride;
-            this.divisor = divisor;
+            this._data = data;
+            this._stride = stride;
+            this._divisor = divisor;
+            this._invalid = true;
         }
+        Object.defineProperty(AttributeRenderData.prototype, "data", {
+            /**
+             * 属性数据
+             */
+            get: function () { return this._data; },
+            set: function (value) { this.invalidate(); this._data = value; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AttributeRenderData.prototype, "stride", {
+            /**
+             * 数据步长
+             */
+            get: function () { return this._stride; },
+            set: function (value) { this.invalidate(); this._stride = value; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AttributeRenderData.prototype, "divisor", {
+            /**
+             * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
+             */
+            get: function () { return this._divisor; },
+            set: function (value) { this.invalidate(); this._divisor = value; },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 使数据缓冲失效
          */
@@ -8249,6 +8271,194 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * Entity为所有场景绘制对象提供一个基类，表示存在场景中。可以被entityCollector收集。
+     * @author feng 2014-3-24
+     */
+    var Entity = (function (_super) {
+        __extends(Entity, _super);
+        /**
+         * 创建一个实体，该类为虚类
+         */
+        function Entity() {
+            _super.call(this);
+            this._boundsInvalid = true;
+            this._worldBoundsInvalid = true;
+            this._bounds = this.getDefaultBoundingVolume();
+            this._worldBounds = this.getDefaultBoundingVolume();
+        }
+        Object.defineProperty(Entity.prototype, "minX", {
+            /**
+             * @inheritDoc
+             */
+            get: function () {
+                if (this._boundsInvalid)
+                    this.updateBounds();
+                return this._bounds.min.x;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Entity.prototype, "minY", {
+            /**
+             * @inheritDoc
+             */
+            get: function () {
+                if (this._boundsInvalid)
+                    this.updateBounds();
+                return this._bounds.min.y;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Entity.prototype, "minZ", {
+            /**
+             * @inheritDoc
+             */
+            get: function () {
+                if (this._boundsInvalid)
+                    this.updateBounds();
+                return this._bounds.min.z;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Entity.prototype, "maxX", {
+            /**
+             * @inheritDoc
+             */
+            get: function () {
+                if (this._boundsInvalid)
+                    this.updateBounds();
+                return this._bounds.max.x;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Entity.prototype, "maxY", {
+            /**
+             * @inheritDoc
+             */
+            get: function () {
+                if (this._boundsInvalid)
+                    this.updateBounds();
+                return this._bounds.max.y;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Entity.prototype, "maxZ", {
+            /**
+             * @inheritDoc
+             */
+            get: function () {
+                if (this._boundsInvalid)
+                    this.updateBounds();
+                return this._bounds.max.z;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Entity.prototype, "bounds", {
+            /**
+             * 边界
+             */
+            get: function () {
+                if (this._boundsInvalid)
+                    this.updateBounds();
+                return this._bounds;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * @inheritDoc
+         */
+        Entity.prototype.invalidateSceneTransform = function () {
+            _super.prototype.invalidateSceneTransform.call(this);
+            this._worldBoundsInvalid = true;
+        };
+        /**
+         * 边界失效
+         */
+        Entity.prototype.invalidateBounds = function () {
+            this._boundsInvalid = true;
+        };
+        /**
+         * 获取默认边界（默认盒子边界）
+         * @return
+         */
+        Entity.prototype.getDefaultBoundingVolume = function () {
+            return new feng3d.AxisAlignedBoundingBox();
+        };
+        Object.defineProperty(Entity.prototype, "pickingCollisionVO", {
+            /**
+             * 获取碰撞数据
+             */
+            get: function () {
+                if (!this._pickingCollisionVO)
+                    this._pickingCollisionVO = new feng3d.PickingCollisionVO(this);
+                return this._pickingCollisionVO;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+          * 判断射线是否穿过对象
+          * @param ray3D
+          * @return
+          */
+        Entity.prototype.isIntersectingRay = function (ray3D) {
+            if (!this.pickingCollisionVO.localNormal)
+                this.pickingCollisionVO.localNormal = new feng3d.Vector3D();
+            //转换到当前实体坐标系空间
+            var localRay = this.pickingCollisionVO.localRay;
+            this.inverseSceneTransform.transformVector(ray3D.position, localRay.position);
+            this.inverseSceneTransform.deltaTransformVector(ray3D.direction, localRay.direction);
+            //检测射线与边界的碰撞
+            var rayEntryDistance = this.bounds.rayIntersection(localRay, this.pickingCollisionVO.localNormal);
+            if (rayEntryDistance < 0)
+                return false;
+            //保存碰撞数据
+            this.pickingCollisionVO.rayEntryDistance = rayEntryDistance;
+            this.pickingCollisionVO.ray3D = ray3D;
+            this.pickingCollisionVO.rayOriginIsInsideBounds = rayEntryDistance == 0;
+            return true;
+        };
+        /**
+         * 碰撞前设置碰撞状态
+         * @param shortestCollisionDistance 最短碰撞距离
+         * @param findClosest 是否寻找最优碰撞
+         * @return
+         */
+        Entity.prototype.collidesBefore = function (shortestCollisionDistance, findClosest) {
+            return true;
+        };
+        Object.defineProperty(Entity.prototype, "worldBounds", {
+            /**
+             * 世界边界
+             */
+            get: function () {
+                if (this._worldBoundsInvalid)
+                    this.updateWorldBounds();
+                return this._worldBounds;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 更新世界边界
+         */
+        Entity.prototype.updateWorldBounds = function () {
+            this._worldBounds.transformFrom(this.bounds, this.sceneTransform);
+            this._worldBoundsInvalid = false;
+        };
+        return Entity;
+    }(feng3d.ObjectContainer3D));
+    feng3d.Entity = Entity;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 3D对象
      * @author feng 2016-04-26
      */
@@ -8321,8 +8531,16 @@ var feng3d;
             //
             renderData.uniforms[feng3d.RenderDataID.u_modelMatrix] = this.sceneTransform;
         };
+        /**
+         * @inheritDoc
+         */
+        GameObject.prototype.updateBounds = function () {
+            var geometry = this.getComponentByType(feng3d.Model).geometry;
+            this._bounds.fromGeometry(geometry);
+            this._boundsInvalid = false;
+        };
         return GameObject;
-    }(feng3d.ObjectContainer3D));
+    }(feng3d.Entity));
     feng3d.GameObject = GameObject;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -8819,6 +9037,27 @@ var feng3d;
             this._scaleV = 1;
             this._single = true;
         }
+        Object.defineProperty(Geometry.prototype, "positions", {
+            /**
+             * 坐标数据
+             */
+            get: function () {
+                var positionData = this._attributes[feng3d.GLAttribute.a_position];
+                return positionData && positionData.data;
+            },
+            set: function (value) {
+                if (value) {
+                    var positionData = this._attributes[feng3d.GLAttribute.a_position] = this._attributes[feng3d.GLAttribute.a_position] || new feng3d.AttributeRenderData(value, 3);
+                    ;
+                    positionData.data = value;
+                }
+                else {
+                    delete this._attributes[feng3d.GLAttribute.a_position];
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 更新渲染数据
          */
@@ -9872,6 +10111,332 @@ var feng3d;
      * 临时矩阵数据
      */
     var tempRawData = new Float32Array(16);
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 包围盒基类
+     * @author feng 2014-4-27
+     */
+    var BoundingVolumeBase = (function () {
+        /**
+         * 创建包围盒
+         */
+        function BoundingVolumeBase() {
+            this._aabbPointsDirty = true;
+            this._min = new feng3d.Vector3D();
+            this._max = new feng3d.Vector3D();
+        }
+        Object.defineProperty(BoundingVolumeBase.prototype, "max", {
+            /**
+             * The maximum extreme of the bounds
+             */
+            get: function () {
+                return this._max;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BoundingVolumeBase.prototype, "min", {
+            /**
+             * The minimum extreme of the bounds
+             */
+            get: function () {
+                return this._min;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 根据几何结构更新边界
+         */
+        BoundingVolumeBase.prototype.fromGeometry = function (geometry) {
+            var minX, minY, minZ;
+            var maxX, maxY, maxZ;
+            var vertices = geometry.positions;
+            var i = 0;
+            minX = maxX = vertices[i];
+            minY = maxY = vertices[i + 1];
+            minZ = maxZ = vertices[i + 2];
+            var vertexDataLen = vertices.length;
+            i = 0;
+            var stride = 3;
+            while (i < vertexDataLen) {
+                var v = vertices[i];
+                if (v < minX)
+                    minX = v;
+                else if (v > maxX)
+                    maxX = v;
+                v = vertices[i + 1];
+                if (v < minY)
+                    minY = v;
+                else if (v > maxY)
+                    maxY = v;
+                v = vertices[i + 2];
+                if (v < minZ)
+                    minZ = v;
+                else if (v > maxZ)
+                    maxZ = v;
+                i += stride;
+            }
+            this.fromExtremes(minX, minY, minZ, maxX, maxY, maxZ);
+        };
+        /**
+         * 根据所给极值设置边界
+         * @param minX 边界最小X坐标
+         * @param minY 边界最小Y坐标
+         * @param minZ 边界最小Z坐标
+         * @param maxX 边界最大X坐标
+         * @param maxY 边界最大Y坐标
+         * @param maxZ 边界最大Z坐标
+         */
+        BoundingVolumeBase.prototype.fromExtremes = function (minX, minY, minZ, maxX, maxY, maxZ) {
+            this._min.x = minX;
+            this._min.y = minY;
+            this._min.z = minZ;
+            this._max.x = maxX;
+            this._max.y = maxY;
+            this._max.z = maxZ;
+        };
+        /**
+         * 检测射线是否与边界交叉
+         * @param ray3D						射线
+         * @param targetNormal				交叉点法线值
+         * @return							射线起点到交点距离
+         */
+        BoundingVolumeBase.prototype.rayIntersection = function (ray3D, targetNormal) {
+            return -1;
+        };
+        /**
+         * 检测是否包含指定点
+         * @param position 		被检测点
+         * @return				true：包含指定点
+         */
+        BoundingVolumeBase.prototype.containsPoint = function (position) {
+            return false;
+        };
+        /**
+         * 从给出的球体设置边界
+         * @param center 		球心坐标
+         * @param radius 		球体半径
+         */
+        BoundingVolumeBase.prototype.fromSphere = function (center, radius) {
+            this.fromExtremes(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
+        };
+        return BoundingVolumeBase;
+    }());
+    feng3d.BoundingVolumeBase = BoundingVolumeBase;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 轴对其包围盒
+     * @author feng 2014-4-27
+     */
+    var AxisAlignedBoundingBox = (function (_super) {
+        __extends(AxisAlignedBoundingBox, _super);
+        /**
+         * 创建轴对其包围盒
+         */
+        function AxisAlignedBoundingBox() {
+            _super.call(this);
+            this._centerX = 0;
+            this._centerY = 0;
+            this._centerZ = 0;
+            this._halfExtentsX = 0;
+            this._halfExtentsY = 0;
+            this._halfExtentsZ = 0;
+        }
+        /**
+         * 测试轴对其包围盒是否出现在摄像机视锥体内
+         * @param planes 		视锥体面向量
+         * @return 				true：出现在视锥体内
+         * @see me.feng3d.cameras.Camera3D.updateFrustum()
+         */
+        AxisAlignedBoundingBox.prototype.isInFrustum = function (planes, numPlanes) {
+            for (var i = 0; i < numPlanes; ++i) {
+                var plane = planes[i];
+                var a = plane.a;
+                var b = plane.b;
+                var c = plane.c;
+                //最可能出现在平面内的点，即距离最可能大于0的点 (如果这个点都不在平面内的话，其他的点肯定会不在平面内)
+                var flippedExtentX = a < 0 ? -this._halfExtentsX : this._halfExtentsX;
+                var flippedExtentY = b < 0 ? -this._halfExtentsY : this._halfExtentsY;
+                var flippedExtentZ = c < 0 ? -this._halfExtentsZ : this._halfExtentsZ;
+                var projDist = a * (this._centerX + flippedExtentX) + b * (this._centerY + flippedExtentY) + c * (this._centerZ + flippedExtentZ) - plane.d;
+                //小于0表示包围盒8个点都在平面内，同时就表面不存在点在视锥体内。注：视锥体6个平面朝内
+                if (projDist < 0)
+                    return false;
+            }
+            return true;
+        };
+        /**
+         * @inheritDoc
+         */
+        AxisAlignedBoundingBox.prototype.fromExtremes = function (minX, minY, minZ, maxX, maxY, maxZ) {
+            this._centerX = (maxX + minX) * .5;
+            this._centerY = (maxY + minY) * .5;
+            this._centerZ = (maxZ + minZ) * .5;
+            this._halfExtentsX = (maxX - minX) * .5;
+            this._halfExtentsY = (maxY - minY) * .5;
+            this._halfExtentsZ = (maxZ - minZ) * .5;
+            _super.prototype.fromExtremes.call(this, minX, minY, minZ, maxX, maxY, maxZ);
+        };
+        /**
+         * @inheritDoc
+         */
+        AxisAlignedBoundingBox.prototype.rayIntersection = function (ray3D, targetNormal) {
+            var position = ray3D.position;
+            var direction = ray3D.direction;
+            if (this.containsPoint(position))
+                return 0;
+            var px = position.x - this._centerX, py = position.y - this._centerY, pz = position.z - this._centerZ;
+            var vx = direction.x, vy = direction.y, vz = direction.z;
+            var ix, iy, iz;
+            var rayEntryDistance;
+            // ray-plane tests
+            var intersects;
+            if (vx < 0) {
+                rayEntryDistance = (this._halfExtentsX - px) / vx;
+                if (rayEntryDistance > 0) {
+                    iy = py + rayEntryDistance * vy;
+                    iz = pz + rayEntryDistance * vz;
+                    if (iy > -this._halfExtentsY && iy < this._halfExtentsY && iz > -this._halfExtentsZ && iz < this._halfExtentsZ) {
+                        targetNormal.x = 1;
+                        targetNormal.y = 0;
+                        targetNormal.z = 0;
+                        intersects = true;
+                    }
+                }
+            }
+            if (!intersects && vx > 0) {
+                rayEntryDistance = (-this._halfExtentsX - px) / vx;
+                if (rayEntryDistance > 0) {
+                    iy = py + rayEntryDistance * vy;
+                    iz = pz + rayEntryDistance * vz;
+                    if (iy > -this._halfExtentsY && iy < this._halfExtentsY && iz > -this._halfExtentsZ && iz < this._halfExtentsZ) {
+                        targetNormal.x = -1;
+                        targetNormal.y = 0;
+                        targetNormal.z = 0;
+                        intersects = true;
+                    }
+                }
+            }
+            if (!intersects && vy < 0) {
+                rayEntryDistance = (this._halfExtentsY - py) / vy;
+                if (rayEntryDistance > 0) {
+                    ix = px + rayEntryDistance * vx;
+                    iz = pz + rayEntryDistance * vz;
+                    if (ix > -this._halfExtentsX && ix < this._halfExtentsX && iz > -this._halfExtentsZ && iz < this._halfExtentsZ) {
+                        targetNormal.x = 0;
+                        targetNormal.y = 1;
+                        targetNormal.z = 0;
+                        intersects = true;
+                    }
+                }
+            }
+            if (!intersects && vy > 0) {
+                rayEntryDistance = (-this._halfExtentsY - py) / vy;
+                if (rayEntryDistance > 0) {
+                    ix = px + rayEntryDistance * vx;
+                    iz = pz + rayEntryDistance * vz;
+                    if (ix > -this._halfExtentsX && ix < this._halfExtentsX && iz > -this._halfExtentsZ && iz < this._halfExtentsZ) {
+                        targetNormal.x = 0;
+                        targetNormal.y = -1;
+                        targetNormal.z = 0;
+                        intersects = true;
+                    }
+                }
+            }
+            if (!intersects && vz < 0) {
+                rayEntryDistance = (this._halfExtentsZ - pz) / vz;
+                if (rayEntryDistance > 0) {
+                    ix = px + rayEntryDistance * vx;
+                    iy = py + rayEntryDistance * vy;
+                    if (iy > -this._halfExtentsY && iy < this._halfExtentsY && ix > -this._halfExtentsX && ix < this._halfExtentsX) {
+                        targetNormal.x = 0;
+                        targetNormal.y = 0;
+                        targetNormal.z = 1;
+                        intersects = true;
+                    }
+                }
+            }
+            if (!intersects && vz > 0) {
+                rayEntryDistance = (-this._halfExtentsZ - pz) / vz;
+                if (rayEntryDistance > 0) {
+                    ix = px + rayEntryDistance * vx;
+                    iy = py + rayEntryDistance * vy;
+                    if (iy > -this._halfExtentsY && iy < this._halfExtentsY && ix > -this._halfExtentsX && ix < this._halfExtentsX) {
+                        targetNormal.x = 0;
+                        targetNormal.y = 0;
+                        targetNormal.z = -1;
+                        intersects = true;
+                    }
+                }
+            }
+            return intersects ? rayEntryDistance : -1;
+        };
+        /**
+         * @inheritDoc
+         */
+        AxisAlignedBoundingBox.prototype.containsPoint = function (position) {
+            var px = position.x - this._centerX, py = position.y - this._centerY, pz = position.z - this._centerZ;
+            return px <= this._halfExtentsX && px >= -this._halfExtentsX && py <= this._halfExtentsY && py >= -this._halfExtentsY && pz <= this._halfExtentsZ && pz >= -this._halfExtentsZ;
+        };
+        /**
+         * 对包围盒进行变换
+         * @param bounds		包围盒
+         * @param matrix		变换矩阵
+         * @see http://www.cppblog.com/lovedday/archive/2008/02/23/43122.html
+         */
+        AxisAlignedBoundingBox.prototype.transformFrom = function (bounds, matrix) {
+            var aabb = bounds;
+            var cx = aabb._centerX;
+            var cy = aabb._centerY;
+            var cz = aabb._centerZ;
+            var raw = feng3d.Matrix3D.RAW_DATA_CONTAINER;
+            matrix.copyRawDataTo(raw);
+            var m11 = raw[0], m12 = raw[4], m13 = raw[8], m14 = raw[12];
+            var m21 = raw[1], m22 = raw[5], m23 = raw[9], m24 = raw[13];
+            var m31 = raw[2], m32 = raw[6], m33 = raw[10], m34 = raw[14];
+            this._centerX = cx * m11 + cy * m12 + cz * m13 + m14;
+            this._centerY = cx * m21 + cy * m22 + cz * m23 + m24;
+            this._centerZ = cx * m31 + cy * m32 + cz * m33 + m34;
+            if (m11 < 0)
+                m11 = -m11;
+            if (m12 < 0)
+                m12 = -m12;
+            if (m13 < 0)
+                m13 = -m13;
+            if (m21 < 0)
+                m21 = -m21;
+            if (m22 < 0)
+                m22 = -m22;
+            if (m23 < 0)
+                m23 = -m23;
+            if (m31 < 0)
+                m31 = -m31;
+            if (m32 < 0)
+                m32 = -m32;
+            if (m33 < 0)
+                m33 = -m33;
+            var hx = aabb._halfExtentsX;
+            var hy = aabb._halfExtentsY;
+            var hz = aabb._halfExtentsZ;
+            this._halfExtentsX = hx * m11 + hy * m12 + hz * m13;
+            this._halfExtentsY = hx * m21 + hy * m22 + hz * m23;
+            this._halfExtentsZ = hx * m31 + hy * m32 + hz * m33;
+            this._min.x = this._centerX - this._halfExtentsX;
+            this._min.y = this._centerY - this._halfExtentsY;
+            this._min.z = this._centerZ - this._halfExtentsZ;
+            this._max.x = this._centerX + this._halfExtentsX;
+            this._max.y = this._centerY + this._halfExtentsY;
+            this._max.z = this._centerZ + this._halfExtentsZ;
+            this._aabbPointsDirty = true;
+        };
+        return AxisAlignedBoundingBox;
+    }(feng3d.BoundingVolumeBase));
+    feng3d.AxisAlignedBoundingBox = AxisAlignedBoundingBox;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -12480,79 +13045,56 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 拾取的碰撞数据
+     */
     var PickingCollisionVO = (function () {
+        /**
+         * 创建射线拾取碰撞数据
+         * @param entity
+         */
         function PickingCollisionVO(entity) {
-            this.index = 0;
-            this.subGeometryIndex = 0;
-            this.rayOriginIsInsideBounds = false;
-            this.rayEntryDistance = NaN;
-            this.entity = entity;
+            /**
+             * 本地坐标系射线
+             */
+            this.localRay = new feng3d.Ray3D();
+            /**
+             * 场景中碰撞射线
+             */
+            this.ray3D = new feng3d.Ray3D();
+            this.firstEntity = entity;
         }
+        Object.defineProperty(PickingCollisionVO.prototype, "scenePosition", {
+            /**
+             * 实体上碰撞世界坐标
+             */
+            get: function () {
+                return this.firstEntity.sceneTransform.transformVector(this.localPosition);
+            },
+            enumerable: true,
+            configurable: true
+        });
         return PickingCollisionVO;
     }());
     feng3d.PickingCollisionVO = PickingCollisionVO;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var PickingColliderBase = (function () {
-        function PickingColliderBase() {
-        }
-        PickingColliderBase.prototype.getCollisionNormal = function (indexData, vertexData, triangleIndex, normal) {
-            if (normal === void 0) { normal = null; }
-            var i0 = indexData[triangleIndex] * 3;
-            var i1 = indexData[triangleIndex + 1] * 3;
-            var i2 = indexData[triangleIndex + 2] * 3;
-            var side0x = vertexData[i1] - vertexData[i0];
-            var side0y = vertexData[i1 + 1] - vertexData[i0 + 1];
-            var side0z = vertexData[i1 + 2] - vertexData[i0 + 2];
-            var side1x = vertexData[i2] - vertexData[i0];
-            var side1y = vertexData[i2 + 1] - vertexData[i0 + 1];
-            var side1z = vertexData[i2 + 2] - vertexData[i0 + 2];
-            if (!normal)
-                normal = new feng3d.Vector3D();
-            normal["x"] = side0y * side1z - side0z * side1y;
-            normal["y"] = side0z * side1x - side0x * side1z;
-            normal["z"] = side0x * side1y - side0y * side1x;
-            normal["w"] = 1;
-            normal["normalize"]();
-            return normal;
-        };
-        PickingColliderBase.prototype.getCollisionUV = function (indexData, uvData, triangleIndex, v, w, u, uvOffset, uvStride, uv) {
-            if (uv === void 0) { uv = null; }
-            var uIndex = indexData[triangleIndex] * uvStride + uvOffset;
-            var uv0x = uvData[uIndex];
-            var uv0y = uvData[uIndex + 1];
-            uIndex = indexData[triangleIndex + 1] * uvStride + uvOffset;
-            var uv1x = uvData[uIndex];
-            var uv1y = uvData[uIndex + 1];
-            uIndex = indexData[triangleIndex + 2] * uvStride + uvOffset;
-            var uv2x = uvData[uIndex];
-            var uv2y = uvData[uIndex + 1];
-            if (!uv)
-                uv = new feng3d.Point();
-            uv.x = u * uv0x + v * uv1x + w * uv2x;
-            uv.y = u * uv0y + v * uv1y + w * uv2y;
-            return uv;
-        };
-        PickingColliderBase.prototype.setLocalRay = function (localPosition, localDirection) {
-            this.rayPosition = localPosition;
-            this.rayDirection = localDirection;
-        };
-        return PickingColliderBase;
-    }());
-    feng3d.PickingColliderBase = PickingColliderBase;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var AS3PickingCollider = (function (_super) {
-        __extends(AS3PickingCollider, _super);
+    /**
+     * 使用纯计算与实体相交
+     */
+    var AS3PickingCollider = (function () {
+        /**
+         * 创建一个AS碰撞检测器
+         * @param findClosestCollision 是否查找最短距离碰撞
+         */
         function AS3PickingCollider(findClosestCollision) {
             if (findClosestCollision === void 0) { findClosestCollision = false; }
-            _super.call(this);
-            this._findClosestCollision = false;
             this._findClosestCollision = findClosestCollision;
         }
-        AS3PickingCollider.prototype.testSubMeshCollision = function (subMesh, pickingCollisionVO, shortestCollisionDistance) {
+        AS3PickingCollider.prototype.testSubMeshCollision = function (subMesh, pickingCollisionVO, shortestCollisionDistance, bothSides) {
+            if (shortestCollisionDistance === void 0) { shortestCollisionDistance = 0; }
+            if (bothSides === void 0) { bothSides = true; }
             var geometry = subMesh.geometry;
             var indexData = geometry.getIndexData().indices;
             var vertexData = geometry.getVAData(feng3d.GLAttribute.a_position).data;
@@ -12571,16 +13113,17 @@ var feng3d;
             var nl = 0, nDotV = 0, D = 0, disToPlane = 0;
             var Q1Q2 = 0, Q1Q1 = 0, Q2Q2 = 0, RQ1 = 0, RQ2 = 0;
             var collisionTriangleIndex = -1;
-            var bothSides = (subMesh.material && subMesh.material["bothSides"]);
             var vertexStride = 3;
             var vertexOffset = 0;
             var uvStride = 2;
-            var uvOffset = 0;
             var numIndices = indexData.length;
+            //遍历每个三角形 检测碰撞
             for (var index = 0; index < numIndices; index += 3) {
+                //三角形三个顶点索引
                 i0 = vertexOffset + indexData[index] * vertexStride;
                 i1 = vertexOffset + indexData[index + 1] * vertexStride;
                 i2 = vertexOffset + indexData[index + 2] * vertexStride;
+                //三角形三个顶点数据
                 p0x = vertexData[i0];
                 p0y = vertexData[i0 + 1];
                 p0z = vertexData[i0 + 2];
@@ -12590,27 +13133,37 @@ var feng3d;
                 p2x = vertexData[i2];
                 p2y = vertexData[i2 + 1];
                 p2z = vertexData[i2 + 2];
-                s0x = p1x - p0x;
+                //计算出三角面的法线
+                s0x = p1x - p0x; // s0 = p1 - p0
                 s0y = p1y - p0y;
                 s0z = p1z - p0z;
-                s1x = p2x - p0x;
+                s1x = p2x - p0x; // s1 = p2 - p0
                 s1y = p2y - p0y;
                 s1z = p2z - p0z;
-                nx = s0y * s1z - s0z * s1y;
+                nx = s0y * s1z - s0z * s1y; // n = s0 x s1
                 ny = s0z * s1x - s0x * s1z;
                 nz = s0x * s1y - s0y * s1x;
-                nl = 1 / Math.sqrt(nx * nx + ny * ny + nz * nz);
+                nl = 1 / Math.sqrt(nx * nx + ny * ny + nz * nz); // normalize n
                 nx *= nl;
                 ny *= nl;
                 nz *= nl;
-                nDotV = nx * this.rayDirection.x + ny * +this.rayDirection.y + nz * this.rayDirection.z;
+                //初始化射线数据
+                var rayPosition = this.ray3D.position;
+                var rayDirection = this.ray3D.direction;
+                //计算射线与法线的点积，不等于零表示射线所在直线与三角面相交
+                nDotV = nx * rayDirection.x + ny * +rayDirection.y + nz * rayDirection.z; // rayDirection . normal
+                //判断射线是否与三角面相交
                 if ((!bothSides && nDotV < 0.0) || (bothSides && nDotV != 0.0)) {
+                    //计算平面方程D值，参考Plane3D
                     D = -(nx * p0x + ny * p0y + nz * p0z);
-                    disToPlane = -(nx * this.rayPosition.x + ny * this.rayPosition.y + nz * this.rayPosition.z + D);
+                    //射线点到平面的距离
+                    disToPlane = -(nx * rayPosition.x + ny * rayPosition.y + nz * rayPosition.z + D);
                     t = disToPlane / nDotV;
-                    cx = this.rayPosition.x + t * this.rayDirection.x;
-                    cy = this.rayPosition.y + t * this.rayDirection.y;
-                    cz = this.rayPosition.z + t * this.rayDirection.z;
+                    //得到交点
+                    cx = rayPosition.x + t * rayDirection.x;
+                    cy = rayPosition.y + t * rayDirection.y;
+                    cz = rayPosition.z + t * rayDirection.z;
+                    //判断交点是否在三角形内( using barycentric coordinates )
                     Q1Q2 = s0x * s1x + s0y * s1y + s0z * s1z;
                     Q1Q1 = s0x * s0x + s0y * s0y + s0z * s0z;
                     Q2Q2 = s1x * s1x + s1y * s1y + s1z * s1z;
@@ -12627,14 +13180,16 @@ var feng3d;
                     if (w < 0)
                         continue;
                     u = 1 - v - w;
+                    //u v w都大于0表示点在三角形内 射线的坐标t大于0表示射线朝向三角面
                     if (!(u < 0) && t > 0 && t < shortestCollisionDistance) {
                         shortestCollisionDistance = t;
-                        collisionTriangleIndex = ~~(index / 3);
+                        collisionTriangleIndex = index / 3;
                         pickingCollisionVO.rayEntryDistance = t;
                         pickingCollisionVO.localPosition = new feng3d.Vector3D(cx, cy, cz);
                         pickingCollisionVO.localNormal = new feng3d.Vector3D(nx, ny, nz);
-                        pickingCollisionVO.uv = this.getCollisionUV(indexData, uvData, index, v, w, u, uvOffset, uvStride);
+                        pickingCollisionVO.uv = this.getCollisionUV(indexData, uvData, index, v, w, u, 0, uvStride);
                         pickingCollisionVO.index = index;
+                        //是否继续寻找最优解
                         if (!this._findClosestCollision)
                             return true;
                     }
@@ -12644,9 +13199,167 @@ var feng3d;
                 return true;
             return false;
         };
+        /**
+         * 获取碰撞法线
+         * @param indexData 顶点索引数据
+         * @param vertexData 顶点数据
+         * @param triangleIndex 三角形索引
+         * @param normal 碰撞法线
+         * @return 碰撞法线
+         *
+         */
+        AS3PickingCollider.prototype.getCollisionNormal = function (indexData, vertexData, triangleIndex, normal) {
+            if (triangleIndex === void 0) { triangleIndex = 0; }
+            if (normal === void 0) { normal = null; }
+            var i0 = indexData[triangleIndex] * 3;
+            var i1 = indexData[triangleIndex + 1] * 3;
+            var i2 = indexData[triangleIndex + 2] * 3;
+            var side0x = vertexData[i1] - vertexData[i0];
+            var side0y = vertexData[i1 + 1] - vertexData[i0 + 1];
+            var side0z = vertexData[i1 + 2] - vertexData[i0 + 2];
+            var side1x = vertexData[i2] - vertexData[i0];
+            var side1y = vertexData[i2 + 1] - vertexData[i0 + 1];
+            var side1z = vertexData[i2 + 2] - vertexData[i0 + 2];
+            if (!normal)
+                normal = new feng3d.Vector3D();
+            normal.x = side0y * side1z - side0z * side1y;
+            normal.y = side0z * side1x - side0x * side1z;
+            normal.z = side0x * side1y - side0y * side1x;
+            normal.w = 1;
+            normal.normalize();
+            return normal;
+        };
+        /**
+         * 获取碰撞uv
+         * @param indexData 顶点数据
+         * @param uvData uv数据
+         * @param triangleIndex 三角形所有
+         * @param v
+         * @param w
+         * @param u
+         * @param uvOffset
+         * @param uvStride
+         * @param uv uv坐标
+         * @return 碰撞uv
+         */
+        AS3PickingCollider.prototype.getCollisionUV = function (indexData, uvData, triangleIndex, v, w, u, uvOffset, uvStride, uv) {
+            if (uv === void 0) { uv = null; }
+            var uIndex = indexData[triangleIndex] * uvStride + uvOffset;
+            var uv0x = uvData[uIndex];
+            var uv0y = uvData[uIndex + 1];
+            uIndex = indexData[triangleIndex + 1] * uvStride + uvOffset;
+            var uv1x = uvData[uIndex];
+            var uv1y = uvData[uIndex + 1];
+            uIndex = indexData[triangleIndex + 2] * uvStride + uvOffset;
+            var uv2x = uvData[uIndex];
+            var uv2y = uvData[uIndex + 1];
+            if (!uv)
+                uv = new feng3d.Point();
+            uv.x = u * uv0x + v * uv1x + w * uv2x;
+            uv.y = u * uv0y + v * uv1y + w * uv2y;
+            return uv;
+        };
+        /**
+         * 设置碰撞射线
+         */
+        AS3PickingCollider.prototype.setLocalRay = function (ray3D) {
+            this.ray3D = ray3D;
+        };
         return AS3PickingCollider;
-    }(feng3d.PickingColliderBase));
+    }());
     feng3d.AS3PickingCollider = AS3PickingCollider;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 射线投射拾取器
+     * @author feng 2014-4-29
+     */
+    var RaycastPicker = (function () {
+        /**
+         *
+         * @param findClosestCollision 是否需要寻找最接近的
+         */
+        function RaycastPicker(findClosestCollision) {
+            this._findClosestCollision = findClosestCollision;
+        }
+        /**
+         * 获取射线穿过的实体
+         * @param ray3D 射线
+         * @param entitys 实体列表
+         * @return
+         */
+        RaycastPicker.prototype.getViewCollision = function (ray3D, entitys) {
+            var _this = this;
+            this._entities = [];
+            if (entitys.length == 0)
+                return null;
+            entitys.forEach(function (entity) {
+                if (entity.isIntersectingRay(ray3D))
+                    _this._entities.push(entity);
+            });
+            if (this._entities.length == 0)
+                return null;
+            return this.getPickingCollisionVO();
+        };
+        /**
+         *获取射线穿过的实体
+         */
+        RaycastPicker.prototype.getPickingCollisionVO = function () {
+            // Sort entities from closest to furthest.
+            this._entities = this._entities.sort(this.sortOnNearT);
+            // ---------------------------------------------------------------------
+            // Evaluate triangle collisions when needed.
+            // Replaces collision data provided by bounds collider with more precise data.
+            // ---------------------------------------------------------------------
+            var shortestCollisionDistance = Number.MAX_VALUE;
+            var bestCollisionVO;
+            var pickingCollisionVO;
+            var entity;
+            var i;
+            for (i = 0; i < this._entities.length; ++i) {
+                entity = this._entities[i];
+                pickingCollisionVO = entity._pickingCollisionVO;
+                if (entity.pickingCollider) {
+                    // If a collision exists, update the collision data and stop all checks.
+                    if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && entity.collidesBefore(shortestCollisionDistance, this._findClosestCollision)) {
+                        shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
+                        bestCollisionVO = pickingCollisionVO;
+                        if (!this._findClosestCollision) {
+                            this.updateLocalPosition(pickingCollisionVO);
+                            return pickingCollisionVO;
+                        }
+                    }
+                }
+                else if (bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) {
+                    // Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
+                    // to enable the detection of a corresponsding triangle collision.
+                    // Therefore, bounds collisions with a ray origin inside its bounds can be ignored
+                    // if it has been established that there is NO triangle collider to test
+                    if (!pickingCollisionVO.rayOriginIsInsideBounds) {
+                        this.updateLocalPosition(pickingCollisionVO);
+                        return pickingCollisionVO;
+                    }
+                }
+            }
+            return bestCollisionVO;
+        };
+        /**
+         * 按与射线原点距离排序
+         */
+        RaycastPicker.prototype.sortOnNearT = function (entity1, entity2) {
+            return entity1.pickingCollisionVO.rayEntryDistance > entity2.pickingCollisionVO.rayEntryDistance ? 1 : -1;
+        };
+        /**
+         * 更新碰撞本地坐标
+         * @param pickingCollisionVO
+         */
+        RaycastPicker.prototype.updateLocalPosition = function (pickingCollisionVO) {
+            pickingCollisionVO.localPosition = pickingCollisionVO.localRay.getPoint(pickingCollisionVO.rayEntryDistance);
+        };
+        return RaycastPicker;
+    }());
+    feng3d.RaycastPicker = RaycastPicker;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -15526,7 +16239,7 @@ var feng3d;
             /**
              * 鼠标拾取器
              */
-            this.mousePicker = new RaycastPicker(false);
+            this.mousePicker = new feng3d.RaycastPicker(false);
             this._catchMouseMove = false;
             this.mouseRenderer = new feng3d.MouseRenderer();
             //

@@ -111,6 +111,9 @@
         "src/cameras/CoordinateSystem.ts",
         "src/cameras/Camera.ts",
         "src/cameras/PerspectiveCamera.ts",
+        //
+        "src/bounds/BoundingVolumeBase.ts",
+        "src/bounds/AxisAlignedBoundingBox.ts",
         //几何体
         "src/primitives/PlaneGeometry.ts",
         "src/primitives/CubeGeometry.ts",

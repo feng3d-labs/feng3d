@@ -9,17 +9,24 @@ module feng3d
         /**
          * 属性数据
          */
-        public data: Float32Array;
+        public get data() { return this._data; }
+        public set data(value) { this.invalidate(); this._data = value; }
+        private _data: Float32Array;
 
         /**
          * 数据步长
          */
-        public stride = 3;
+        public get stride() { return this._stride; }
+        public set stride(value) { this.invalidate(); this._stride = value; }
+        private _stride = 3;
 
         /**
          * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
          */
-        public divisor = 0;
+        public get divisor() { return this._divisor; }
+        public set divisor(value) { this.invalidate(); this._divisor = value; }
+        public _divisor = 0;
+
         /**
          * 顶点数据缓冲
          */
@@ -31,9 +38,10 @@ module feng3d
 
         constructor(data: Float32Array = null, stride: number = 3, divisor: number = 0)
         {
-            this.data = data;
-            this.stride = stride;
-            this.divisor = divisor;
+            this._data = data;
+            this._stride = stride;
+            this._divisor = divisor;
+            this._invalid = true;
         }
 
         /**
