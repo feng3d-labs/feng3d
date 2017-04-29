@@ -8430,7 +8430,7 @@ var feng3d;
          * @param findClosest 是否寻找最优碰撞
          * @return
          */
-        Entity.prototype.collidesBefore = function (shortestCollisionDistance, findClosest) {
+        Entity.prototype.collidesBefore = function (pickingCollider, shortestCollisionDistance, findClosest) {
             return true;
         };
         Object.defineProperty(Entity.prototype, "worldBounds", {
@@ -8538,6 +8538,21 @@ var feng3d;
             var geometry = this.getComponentByType(feng3d.Model).geometry;
             this._bounds.fromGeometry(geometry);
             this._boundsInvalid = false;
+        };
+        /**
+         * @inheritDoc
+         */
+        GameObject.prototype.collidesBefore = function (pickingCollider, shortestCollisionDistance, findClosest) {
+            pickingCollider.setLocalRay(this._pickingCollisionVO.localRay);
+            this._pickingCollisionVO.renderable = null;
+            var model = this.getComponentByType(feng3d.Model);
+            if (pickingCollider.testSubMeshCollision(model, this._pickingCollisionVO, shortestCollisionDistance)) {
+                shortestCollisionDistance = this._pickingCollisionVO.rayEntryDistance;
+                this._pickingCollisionVO.renderable = model;
+                if (!findClosest)
+                    return true;
+            }
+            return this._pickingCollisionVO.renderable != null;
         };
         return GameObject;
     }(feng3d.Entity));
@@ -12190,6 +12205,10 @@ var feng3d;
             */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
             /**
+             * 是否渲染双面
+             */
+            this.bothSides = true;
+            /**
              * 混合方程，默认GL.FUNC_ADD
              */
             this.blendEquation = feng3d.BlendEquation.FUNC_ADD;
@@ -13282,6 +13301,7 @@ var feng3d;
          */
         function RaycastPicker(findClosestCollision) {
             this._findClosestCollision = findClosestCollision;
+            RaycastPicker.pickingCollider = RaycastPicker.pickingCollider || new feng3d.AS3PickingCollider();
         }
         /**
          * 获取射线穿过的实体
@@ -13320,9 +13340,9 @@ var feng3d;
             for (i = 0; i < this._entities.length; ++i) {
                 entity = this._entities[i];
                 pickingCollisionVO = entity._pickingCollisionVO;
-                if (entity.pickingCollider) {
+                if (RaycastPicker.pickingCollider) {
                     // If a collision exists, update the collision data and stop all checks.
-                    if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && entity.collidesBefore(shortestCollisionDistance, this._findClosestCollision)) {
+                    if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && entity.collidesBefore(RaycastPicker.pickingCollider, shortestCollisionDistance, this._findClosestCollision)) {
                         shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
                         bestCollisionVO = pickingCollisionVO;
                         if (!this._findClosestCollision) {
@@ -16236,10 +16256,8 @@ var feng3d;
         function Mouse3DManager() {
             this.viewRect = new feng3d.Rectangle(0, 0, 100, 100);
             this.mouseEventTypes = [];
-            /**
-             * 鼠标拾取器
-             */
-            this.mousePicker = new feng3d.RaycastPicker(false);
+            /** 射线采集器(采集射线穿过场景中物体的列表) */
+            this._mousePicker = new feng3d.RaycastPicker(false);
             this._catchMouseMove = false;
             this.mouseRenderer = new feng3d.MouseRenderer();
             //
@@ -16290,9 +16308,23 @@ var feng3d;
         Mouse3DManager.prototype.draw = function (renderContext) {
             if (!this.viewRect.contains(this.mouseX, this.mouseY))
                 return;
-            var results = this.getMouseCheckObjects(renderContext);
-            if (results.length == 0)
+            if (this.mouseEventTypes.length == 0)
                 return;
+            var mouseCollisionEntitys = this.getMouseCheckObjects(renderContext);
+            if (mouseCollisionEntitys.length == 0)
+                return;
+            this.pick(renderContext);
+            // this.glPick(renderContext);
+        };
+        Mouse3DManager.prototype.pick = function (renderContext) {
+            var mouseCollisionEntitys = this.getMouseCheckObjects(renderContext);
+            var mouseRay3D = renderContext.view3D.getMouseRay3D();
+            //计算得到鼠标射线相交的物体
+            var _collidingObject = this._mousePicker.getViewCollision(mouseRay3D, mouseCollisionEntitys);
+            var object3D = _collidingObject && _collidingObject.firstEntity;
+            this.setSelectedObject3D(object3D);
+        };
+        Mouse3DManager.prototype.glPick = function (renderContext) {
             var gl = renderContext.gl;
             var offsetX = -(this.mouseX - this.viewRect.x);
             var offsetY = -(this.viewRect.height - (this.mouseY - this.viewRect.y)); //y轴与window中坐标反向，所以需要 h = (maxHeight - h)

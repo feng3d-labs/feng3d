@@ -27,10 +27,8 @@ module feng3d
          */
         private Object3DClickNum: number;
 
-        /**
-         * 鼠标拾取器
-         */
-        public mousePicker = new RaycastPicker(false);
+        /** 射线采集器(采集射线穿过场景中物体的列表) */
+        private _mousePicker: RaycastPicker = new RaycastPicker(false);
 
         private _catchMouseMove = false;
         /**
@@ -90,10 +88,31 @@ module feng3d
         {
             if (!this.viewRect.contains(this.mouseX, this.mouseY))
                 return;
-            var results = this.getMouseCheckObjects(renderContext);
-            if (results.length == 0)
+            if (this.mouseEventTypes.length == 0)
+                return;
+            var mouseCollisionEntitys = this.getMouseCheckObjects(renderContext);
+            if (mouseCollisionEntitys.length == 0)
                 return;
 
+            this.pick(renderContext);
+
+            // this.glPick(renderContext);
+        }
+
+        private pick(renderContext: RenderContext)
+        {
+            var mouseCollisionEntitys = this.getMouseCheckObjects(renderContext);
+            var mouseRay3D = renderContext.view3D.getMouseRay3D();
+            //计算得到鼠标射线相交的物体
+            var _collidingObject = this._mousePicker.getViewCollision(mouseRay3D, mouseCollisionEntitys);
+
+            var object3D = _collidingObject && _collidingObject.firstEntity;
+
+            this.setSelectedObject3D(object3D as GameObject);
+        }
+
+        private glPick(renderContext: RenderContext)
+        {
             var gl = renderContext.gl;
 
             var offsetX = -(this.mouseX - this.viewRect.x);

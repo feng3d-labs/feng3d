@@ -10,7 +10,6 @@ module feng3d
         protected _boundsInvalid: boolean = true;
 
         public _pickingCollisionVO: PickingCollisionVO;
-        public pickingCollider: AS3PickingCollider;
 
         private _worldBounds: BoundingVolumeBase;
         private _worldBoundsInvalid: boolean = true;
@@ -180,7 +179,7 @@ module feng3d
 		 * @param findClosest 是否寻找最优碰撞
 		 * @return
 		 */
-        public collidesBefore(shortestCollisionDistance: number, findClosest: boolean): boolean
+        public collidesBefore(pickingCollider: AS3PickingCollider, shortestCollisionDistance: number, findClosest: boolean): boolean
         {
             return true;
         }

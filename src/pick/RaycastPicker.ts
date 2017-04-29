@@ -11,6 +11,8 @@ module feng3d
 
         protected _entities: GameObject[];
 
+        private static pickingCollider: AS3PickingCollider;
+
 		/**
 		 *
 		 * @param findClosestCollision 是否需要寻找最接近的
@@ -18,6 +20,7 @@ module feng3d
         constructor(findClosestCollision: boolean)
         {
             this._findClosestCollision = findClosestCollision;
+            RaycastPicker.pickingCollider = RaycastPicker.pickingCollider || new AS3PickingCollider();
         }
 
 		/**
@@ -68,10 +71,10 @@ module feng3d
             {
                 entity = this._entities[i];
                 pickingCollisionVO = entity._pickingCollisionVO;
-                if (entity.pickingCollider)
+                if (RaycastPicker.pickingCollider)
                 {
                     // If a collision exists, update the collision data and stop all checks.
-                    if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && entity.collidesBefore(shortestCollisionDistance, this._findClosestCollision))
+                    if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && entity.collidesBefore(RaycastPicker.pickingCollider, shortestCollisionDistance, this._findClosestCollision))
                     {
                         shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
                         bestCollisionVO = pickingCollisionVO;

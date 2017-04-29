@@ -3518,7 +3518,6 @@ declare module feng3d {
         protected _bounds: BoundingVolumeBase;
         protected _boundsInvalid: boolean;
         _pickingCollisionVO: PickingCollisionVO;
-        pickingCollider: AS3PickingCollider;
         private _worldBounds;
         private _worldBoundsInvalid;
         /**
@@ -3586,7 +3585,7 @@ declare module feng3d {
          * @param findClosest 是否寻找最优碰撞
          * @return
          */
-        collidesBefore(shortestCollisionDistance: number, findClosest: boolean): boolean;
+        collidesBefore(pickingCollider: AS3PickingCollider, shortestCollisionDistance: number, findClosest: boolean): boolean;
         /**
          * 世界边界
          */
@@ -3633,6 +3632,10 @@ declare module feng3d {
          * @inheritDoc
          */
         protected updateBounds(): void;
+        /**
+         * @inheritDoc
+         */
+        collidesBefore(pickingCollider: AS3PickingCollider, shortestCollisionDistance: number, findClosest: boolean): boolean;
     }
 }
 declare module feng3d {
@@ -4922,6 +4925,10 @@ declare module feng3d {
          */
         protected shaderName: string;
         /**
+         * 是否渲染双面
+         */
+        bothSides: boolean;
+        /**
          * 是否开启混合
          * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
          */
@@ -5470,6 +5477,7 @@ declare module feng3d {
         /** 是否需要寻找最接近的 */
         private _findClosestCollision;
         protected _entities: GameObject[];
+        private static pickingCollider;
         /**
          *
          * @param findClosestCollision 是否需要寻找最接近的
@@ -6833,10 +6841,8 @@ declare module feng3d {
          * 统计处理click次数，判断是否达到dblclick
          */
         private Object3DClickNum;
-        /**
-         * 鼠标拾取器
-         */
-        mousePicker: RaycastPicker;
+        /** 射线采集器(采集射线穿过场景中物体的列表) */
+        private _mousePicker;
         private _catchMouseMove;
         /**
          * 是否捕捉鼠标移动，默认false。
@@ -6851,6 +6857,8 @@ declare module feng3d {
          * 渲染
          */
         draw(renderContext: RenderContext): void;
+        private pick(renderContext);
+        private glPick(renderContext);
         private getMouseCheckObjects(renderContext);
         /**
          * 设置选中对象

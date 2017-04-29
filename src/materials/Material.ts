@@ -20,6 +20,11 @@ module feng3d
         protected shaderName: string;
 
         /**
+         * 是否渲染双面
+         */
+        public bothSides = true;
+
+        /**
          * 是否开启混合
          * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
          */

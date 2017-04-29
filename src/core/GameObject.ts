@@ -94,5 +94,26 @@ module feng3d
             this._bounds.fromGeometry(geometry);
             this._boundsInvalid = false;
         }
+
+		/**
+		 * @inheritDoc
+		 */
+        public collidesBefore(pickingCollider: AS3PickingCollider, shortestCollisionDistance: number, findClosest: boolean): boolean
+        {
+            pickingCollider.setLocalRay(this._pickingCollisionVO.localRay);
+            this._pickingCollisionVO.renderable = null;
+
+            var model = this.getComponentByType(Model);
+
+            if (pickingCollider.testSubMeshCollision(model, this._pickingCollisionVO, shortestCollisionDistance))
+            {
+                shortestCollisionDistance = this._pickingCollisionVO.rayEntryDistance;
+                this._pickingCollisionVO.renderable = model;
+                if (!findClosest)
+                    return true;
+            }
+
+            return this._pickingCollisionVO.renderable != null;
+        }
     }
 }
