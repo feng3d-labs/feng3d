@@ -4237,6 +4237,8 @@ declare module feng3d {
         private _unprojectionInvalid;
         private _viewProjection;
         private _viewProjectionInvalid;
+        private _frustumPlanes;
+        private _frustumPlanesDirty;
         /**
          * 创建一个摄像机
          * @param lens 摄像机镜头
@@ -4253,7 +4255,7 @@ declare module feng3d {
         /**
          * 投影矩阵失效
          */
-        protected invalidateMatrix(): void;
+        protected invalidateProjectionMatrix(): void;
         /**
          * 场景投影矩阵，世界空间转投影空间
          */
@@ -4281,11 +4283,23 @@ declare module feng3d {
          * 处理被移除组件事件
          */
         protected onBeRemovedComponent(event: ComponentEvent): void;
-        private onSpaceTransformChanged(event);
+        /**
+         * 处理场景变换改变事件
+         */
+        protected onScenetransformChanged(): void;
         /**
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 视锥体面
+         */
+        readonly frustumPlanes: Plane3D[];
+        /**
+         * 更新视锥体6个面，平面均朝向视锥体内部
+         * @see http://www.linuxgraphics.cn/graphics/opengl_view_frustum_culling.html
+         */
+        private updateFrustum();
     }
 }
 declare module feng3d {

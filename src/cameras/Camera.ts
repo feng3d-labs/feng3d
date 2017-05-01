@@ -29,6 +29,9 @@ module feng3d
         private _viewProjection: Matrix3D = new Matrix3D();
         private _viewProjectionInvalid: boolean = true;
 
+        private _frustumPlanes: Plane3D[];
+        private _frustumPlanesDirty: boolean = true;
+
 		/**
 		 * 创建一个摄像机
 		 * @param lens 摄像机镜头
@@ -39,9 +42,14 @@ module feng3d
             this._single = true;
             this._projection = new Matrix3D();
 
-            Watcher.watch(this, ["near"], this.invalidateMatrix, this);
-            Watcher.watch(this, ["far"], this.invalidateMatrix, this);
-            Watcher.watch(this, ["aspectRatio"], this.invalidateMatrix, this);
+            this._frustumPlanes = [];
+
+            for (var i: number = 0; i < 6; ++i)
+                this._frustumPlanes[i] = new Plane3D();
+
+            Watcher.watch(this, ["near"], this.invalidateProjectionMatrix, this);
+            Watcher.watch(this, ["far"], this.invalidateProjectionMatrix, this);
+            Watcher.watch(this, ["aspectRatio"], this.invalidateProjectionMatrix, this);
         }
 
 		/**
@@ -60,7 +68,7 @@ module feng3d
         public set projection(value: Matrix3D)
         {
             this._projection = value;
-            this.invalidateMatrix();
+            this.invalidateProjectionMatrix();
         }
 
 		/**
@@ -83,11 +91,12 @@ module feng3d
 		/**
 		 * 投影矩阵失效
 		 */
-        protected invalidateMatrix()
+        protected invalidateProjectionMatrix()
         {
             this._projectionInvalid = true;
             this._unprojectionInvalid = true;
             this._viewProjectionInvalid = true;
+            this._frustumPlanesDirty = true;
         }
 
         /**
@@ -137,7 +146,9 @@ module feng3d
          */
         protected onBeAddedComponent(event: ComponentEvent): void
         {
-            this.parentComponent.addEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.addEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
+            this._viewProjectionInvalid = true;
+            this._frustumPlanesDirty = true;
         }
 
         /**
@@ -145,12 +156,17 @@ module feng3d
          */
         protected onBeRemovedComponent(event: ComponentEvent): void
         {
-            this.parentComponent.removeEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.removeEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
+
         }
 
-        private onSpaceTransformChanged(event: Object3DEvent): void
+        /**
+         * 处理场景变换改变事件
+         */
+        protected onScenetransformChanged()
         {
             this._viewProjectionInvalid = true;
+            this._frustumPlanesDirty = true;
         }
 
         /**
@@ -165,6 +181,122 @@ module feng3d
             //
             renderData.uniforms[RenderDataID.u_skyBoxSize] = this.far / Math.sqrt(3);
             super.updateRenderData(renderContext, renderData);
+        }
+
+
+		/**
+		 * 视锥体面
+		 */
+        public get frustumPlanes(): Plane3D[]
+        {
+            if (this._frustumPlanesDirty)
+                this.updateFrustum();
+
+            return this._frustumPlanes;
+        }
+
+		/**
+		 * 更新视锥体6个面，平面均朝向视锥体内部
+		 * @see http://www.linuxgraphics.cn/graphics/opengl_view_frustum_culling.html
+		 */
+        private updateFrustum()
+        {
+            var a: number, b: number, c: number;
+            //var d :number;
+            var c11: number, c12: number, c13: number, c14: number;
+            var c21: number, c22: number, c23: number, c24: number;
+            var c31: number, c32: number, c33: number, c34: number;
+            var c41: number, c42: number, c43: number, c44: number;
+            var p: Plane3D;
+            var raw = Matrix3D.RAW_DATA_CONTAINER;
+            //长度倒数
+            var invLen: number;
+            this.viewProjection.copyRawDataTo(raw);
+
+            c11 = raw[0];
+            c12 = raw[4];
+            c13 = raw[8];
+            c14 = raw[12];
+            c21 = raw[1];
+            c22 = raw[5];
+            c23 = raw[9];
+            c24 = raw[13];
+            c31 = raw[2];
+            c32 = raw[6];
+            c33 = raw[10];
+            c34 = raw[14];
+            c41 = raw[3];
+            c42 = raw[7];
+            c43 = raw[11];
+            c44 = raw[15];
+
+            // left plane
+            p = this._frustumPlanes[0];
+            a = c41 + c11;
+            b = c42 + c12;
+            c = c43 + c13;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = -(c44 + c14) * invLen;
+
+            // right plane
+            p = this._frustumPlanes[1];
+            a = c41 - c11;
+            b = c42 - c12;
+            c = c43 - c13;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = (c14 - c44) * invLen;
+
+            // bottom
+            p = this._frustumPlanes[2];
+            a = c41 + c21;
+            b = c42 + c22;
+            c = c43 + c23;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = -(c44 + c24) * invLen;
+
+            // top
+            p = this._frustumPlanes[3];
+            a = c41 - c21;
+            b = c42 - c22;
+            c = c43 - c23;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = (c24 - c44) * invLen;
+
+            // near
+            p = this._frustumPlanes[4];
+            a = c31;
+            b = c32;
+            c = c33;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = -c34 * invLen;
+
+            // far
+            p = this._frustumPlanes[5];
+            a = c41 - c31;
+            b = c42 - c32;
+            c = c43 - c33;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = (c34 - c44) * invLen;
+
+            this._frustumPlanesDirty = false;
         }
     }
 }

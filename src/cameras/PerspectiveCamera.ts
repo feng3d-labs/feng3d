@@ -25,8 +25,8 @@ module feng3d
         {
             super();
 
-            Watcher.watch(this, ["fieldOfView"], this.invalidateMatrix, this);
-            Watcher.watch(this, ["coordinateSystem"], this.invalidateMatrix, this);
+            Watcher.watch(this, ["fieldOfView"], this.invalidateProjectionMatrix, this);
+            Watcher.watch(this, ["coordinateSystem"], this.invalidateProjectionMatrix, this);
         }
 
         /**

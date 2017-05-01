@@ -7041,8 +7041,14 @@ var feng3d;
             _super.prototype.draw.call(this, renderContext);
         };
         ForwardRenderer.prototype.drawRenderables = function (renderContext, meshRenderer) {
-            if (meshRenderer.parentComponent.isVisible)
-                _super.prototype.drawRenderables.call(this, renderContext, meshRenderer);
+            if (meshRenderer.parentComponent.isVisible) {
+                var frustumPlanes = renderContext.camera.frustumPlanes;
+                var gameObject = meshRenderer.parentComponent;
+                var isIn = gameObject.worldBounds.isInFrustum(frustumPlanes, 6);
+                if (isIn) {
+                    _super.prototype.drawRenderables.call(this, renderContext, meshRenderer);
+                }
+            }
         };
         return ForwardRenderer;
     }(feng3d.Renderer));
@@ -9057,6 +9063,7 @@ var feng3d;
              * 坐标数据
              */
             get: function () {
+                this.updateGrometry();
                 var positionData = this._attributes[feng3d.GLAttribute.a_position];
                 return positionData && positionData.data;
             },
@@ -9911,11 +9918,15 @@ var feng3d;
             this._unprojectionInvalid = true;
             this._viewProjection = new feng3d.Matrix3D();
             this._viewProjectionInvalid = true;
+            this._frustumPlanesDirty = true;
             this._single = true;
             this._projection = new feng3d.Matrix3D();
-            feng3d.Watcher.watch(this, ["near"], this.invalidateMatrix, this);
-            feng3d.Watcher.watch(this, ["far"], this.invalidateMatrix, this);
-            feng3d.Watcher.watch(this, ["aspectRatio"], this.invalidateMatrix, this);
+            this._frustumPlanes = [];
+            for (var i = 0; i < 6; ++i)
+                this._frustumPlanes[i] = new feng3d.Plane3D();
+            feng3d.Watcher.watch(this, ["near"], this.invalidateProjectionMatrix, this);
+            feng3d.Watcher.watch(this, ["far"], this.invalidateProjectionMatrix, this);
+            feng3d.Watcher.watch(this, ["aspectRatio"], this.invalidateProjectionMatrix, this);
         }
         Object.defineProperty(Camera.prototype, "projection", {
             /**
@@ -9930,7 +9941,7 @@ var feng3d;
             },
             set: function (value) {
                 this._projection = value;
-                this.invalidateMatrix();
+                this.invalidateProjectionMatrix();
             },
             enumerable: true,
             configurable: true
@@ -9955,10 +9966,11 @@ var feng3d;
         /**
          * 投影矩阵失效
          */
-        Camera.prototype.invalidateMatrix = function () {
+        Camera.prototype.invalidateProjectionMatrix = function () {
             this._projectionInvalid = true;
             this._unprojectionInvalid = true;
             this._viewProjectionInvalid = true;
+            this._frustumPlanesDirty = true;
         };
         Object.defineProperty(Camera.prototype, "viewProjection", {
             /**
@@ -9995,16 +10007,22 @@ var feng3d;
          * 处理被添加组件事件
          */
         Camera.prototype.onBeAddedComponent = function (event) {
-            this.parentComponent.addEventListener(feng3d.Object3DEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.addEventListener(feng3d.Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
+            this._viewProjectionInvalid = true;
+            this._frustumPlanesDirty = true;
         };
         /**
          * 处理被移除组件事件
          */
         Camera.prototype.onBeRemovedComponent = function (event) {
-            this.parentComponent.removeEventListener(feng3d.Object3DEvent.SCENETRANSFORM_CHANGED, this.onSpaceTransformChanged, this);
+            this.parentComponent.removeEventListener(feng3d.Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
         };
-        Camera.prototype.onSpaceTransformChanged = function (event) {
+        /**
+         * 处理场景变换改变事件
+         */
+        Camera.prototype.onScenetransformChanged = function () {
             this._viewProjectionInvalid = true;
+            this._frustumPlanesDirty = true;
         };
         /**
          * 更新渲染数据
@@ -10017,6 +10035,112 @@ var feng3d;
             //
             renderData.uniforms[feng3d.RenderDataID.u_skyBoxSize] = this.far / Math.sqrt(3);
             _super.prototype.updateRenderData.call(this, renderContext, renderData);
+        };
+        Object.defineProperty(Camera.prototype, "frustumPlanes", {
+            /**
+             * 视锥体面
+             */
+            get: function () {
+                if (this._frustumPlanesDirty)
+                    this.updateFrustum();
+                return this._frustumPlanes;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 更新视锥体6个面，平面均朝向视锥体内部
+         * @see http://www.linuxgraphics.cn/graphics/opengl_view_frustum_culling.html
+         */
+        Camera.prototype.updateFrustum = function () {
+            var a, b, c;
+            //var d :number;
+            var c11, c12, c13, c14;
+            var c21, c22, c23, c24;
+            var c31, c32, c33, c34;
+            var c41, c42, c43, c44;
+            var p;
+            var raw = feng3d.Matrix3D.RAW_DATA_CONTAINER;
+            //长度倒数
+            var invLen;
+            this.viewProjection.copyRawDataTo(raw);
+            c11 = raw[0];
+            c12 = raw[4];
+            c13 = raw[8];
+            c14 = raw[12];
+            c21 = raw[1];
+            c22 = raw[5];
+            c23 = raw[9];
+            c24 = raw[13];
+            c31 = raw[2];
+            c32 = raw[6];
+            c33 = raw[10];
+            c34 = raw[14];
+            c41 = raw[3];
+            c42 = raw[7];
+            c43 = raw[11];
+            c44 = raw[15];
+            // left plane
+            p = this._frustumPlanes[0];
+            a = c41 + c11;
+            b = c42 + c12;
+            c = c43 + c13;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = -(c44 + c14) * invLen;
+            // right plane
+            p = this._frustumPlanes[1];
+            a = c41 - c11;
+            b = c42 - c12;
+            c = c43 - c13;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = (c14 - c44) * invLen;
+            // bottom
+            p = this._frustumPlanes[2];
+            a = c41 + c21;
+            b = c42 + c22;
+            c = c43 + c23;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = -(c44 + c24) * invLen;
+            // top
+            p = this._frustumPlanes[3];
+            a = c41 - c21;
+            b = c42 - c22;
+            c = c43 - c23;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = (c24 - c44) * invLen;
+            // near
+            p = this._frustumPlanes[4];
+            a = c31;
+            b = c32;
+            c = c33;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = -c34 * invLen;
+            // far
+            p = this._frustumPlanes[5];
+            a = c41 - c31;
+            b = c42 - c32;
+            c = c43 - c33;
+            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+            p.a = a * invLen;
+            p.b = b * invLen;
+            p.c = c * invLen;
+            p.d = (c34 - c44) * invLen;
+            this._frustumPlanesDirty = false;
         };
         return Camera;
     }(feng3d.Object3DComponent));
@@ -10045,8 +10169,8 @@ var feng3d;
              * 坐标系类型
              */
             this.coordinateSystem = feng3d.CoordinateSystem.LEFT_HANDED;
-            feng3d.Watcher.watch(this, ["fieldOfView"], this.invalidateMatrix, this);
-            feng3d.Watcher.watch(this, ["coordinateSystem"], this.invalidateMatrix, this);
+            feng3d.Watcher.watch(this, ["fieldOfView"], this.invalidateProjectionMatrix, this);
+            feng3d.Watcher.watch(this, ["coordinateSystem"], this.invalidateProjectionMatrix, this);
         }
         /**
          * 屏幕坐标投影到场景坐标

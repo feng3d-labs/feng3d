@@ -26,6 +26,7 @@ module feng3d
          */
         public get positions()
         {
+            this.updateGrometry();
             var positionData = this._attributes[GLAttribute.a_position];
             return positionData && positionData.data;
         }
