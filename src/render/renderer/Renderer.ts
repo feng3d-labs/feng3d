@@ -7,7 +7,6 @@ module feng3d
      */
     export class Renderer
     {
-
         /**
 		 * 渲染
 		 */
@@ -20,7 +19,7 @@ module feng3d
                 var element = renderers[i];
                 this.drawRenderables(renderContext, element);
             }
-        }
+        } 
 
         protected drawRenderables(renderContext: RenderContext, meshRenderer: Model)
         {
@@ -34,9 +33,9 @@ module feng3d
                 var material = meshRenderer.material;
                 if (material.enableBlend)
                 {
-                    var blendEquation = getBlendEquationValue(material.blendEquation)
-                    var sfactor = getBlendFactorValue(material.sfactor);
-                    var dfactor = getBlendFactorValue(material.dfactor);
+                    var blendEquation = BlendEquation.getBlendEquationValue(material.blendEquation)
+                    var sfactor = BlendFactor.getBlendFactorValue(material.sfactor);
+                    var dfactor = BlendFactor.getBlendFactorValue(material.dfactor);
                     //
                     gl.enable(GL.BLEND);
                     gl.blendEquation(blendEquation);
@@ -133,7 +132,7 @@ module feng3d
 
         indexBuffer.active(gl);
 
-        var renderMode = getRenderModeValue(shaderParams.renderMode);
+        var renderMode = RenderMode.getRenderModeValue(shaderParams.renderMode);
         if (instanceCount > 1)
         {
             var _ext = gl.getExtension('ANGLE_instanced_arrays');

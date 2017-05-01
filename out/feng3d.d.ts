@@ -2515,11 +2515,13 @@ declare module feng3d {
         TRIANGLE_STRIP = 5,
         TRIANGLE_FAN = 6,
     }
-    /**
-     * 根据枚举渲染模式获取真实值
-     * @param renderMode 渲染模式
-     */
-    function getRenderModeValue(renderMode: RenderMode): number;
+    namespace RenderMode {
+        /**
+         * 根据枚举渲染模式获取真实值
+         * @param renderMode 渲染模式
+         */
+        function getRenderModeValue(renderMode: RenderMode): number;
+    }
 }
 declare module feng3d {
     /**
@@ -2571,11 +2573,13 @@ declare module feng3d {
          */
         SRC_ALPHA_SATURATE = 10,
     }
-    /**
-     * 根据枚举混合因子获取真实值
-     * @param blendFactor 混合因子
-     */
-    function getBlendFactorValue(blendFactor: BlendFactor): number;
+    namespace BlendFactor {
+        /**
+         * 根据枚举混合因子获取真实值
+         * @param blendFactor 混合因子
+         */
+        function getBlendFactorValue(blendFactor: BlendFactor): number;
+    }
 }
 declare module feng3d {
     /**
@@ -2595,11 +2599,13 @@ declare module feng3d {
          */
         FUNC_REVERSE_SUBTRACT = 2,
     }
-    /**
-     * 根据枚举混合因子获取真实值
-     * @param blendEquation 混合因子
-     */
-    function getBlendEquationValue(blendEquation: BlendEquation): number;
+    namespace BlendEquation {
+        /**
+         * 根据枚举混合因子获取真实值
+         * @param blendEquation 混合因子
+         */
+        function getBlendEquationValue(blendEquation: BlendEquation): number;
+    }
 }
 declare module feng3d {
     /**

@@ -52,28 +52,31 @@ module feng3d
         SRC_ALPHA_SATURATE
     }
 
-    /**
-     * 根据枚举混合因子获取真实值
-     * @param blendFactor 混合因子
-     */
-    export function getBlendFactorValue(blendFactor: BlendFactor)
+    export namespace BlendFactor
     {
-        if (!blendFactorMap)
+        /**
+         * 根据枚举混合因子获取真实值
+         * @param blendFactor 混合因子
+         */
+        export function getBlendFactorValue(blendFactor: BlendFactor)
         {
-            blendFactorMap = {};
-            blendFactorMap[BlendFactor.ZERO] = GL.ZERO;
-            blendFactorMap[BlendFactor.ONE] = GL.ONE;
-            blendFactorMap[BlendFactor.SRC_COLOR] = GL.SRC_COLOR;
-            blendFactorMap[BlendFactor.ONE_MINUS_SRC_COLOR] = GL.ONE_MINUS_SRC_COLOR;
-            blendFactorMap[BlendFactor.DST_COLOR] = GL.DST_COLOR;
-            blendFactorMap[BlendFactor.ONE_MINUS_DST_COLOR] = GL.ONE_MINUS_DST_COLOR;
-            blendFactorMap[BlendFactor.SRC_ALPHA] = GL.SRC_ALPHA;
-            blendFactorMap[BlendFactor.ONE_MINUS_SRC_ALPHA] = GL.ONE_MINUS_SRC_ALPHA;
-            blendFactorMap[BlendFactor.DST_ALPHA] = GL.DST_ALPHA;
-            blendFactorMap[BlendFactor.ONE_MINUS_DST_ALPHA] = GL.ONE_MINUS_DST_ALPHA;
-            blendFactorMap[BlendFactor.SRC_ALPHA_SATURATE] = GL.SRC_ALPHA_SATURATE;
+            if (!blendFactorMap)
+            {
+                blendFactorMap = {};
+                blendFactorMap[BlendFactor.ZERO] = GL.ZERO;
+                blendFactorMap[BlendFactor.ONE] = GL.ONE;
+                blendFactorMap[BlendFactor.SRC_COLOR] = GL.SRC_COLOR;
+                blendFactorMap[BlendFactor.ONE_MINUS_SRC_COLOR] = GL.ONE_MINUS_SRC_COLOR;
+                blendFactorMap[BlendFactor.DST_COLOR] = GL.DST_COLOR;
+                blendFactorMap[BlendFactor.ONE_MINUS_DST_COLOR] = GL.ONE_MINUS_DST_COLOR;
+                blendFactorMap[BlendFactor.SRC_ALPHA] = GL.SRC_ALPHA;
+                blendFactorMap[BlendFactor.ONE_MINUS_SRC_ALPHA] = GL.ONE_MINUS_SRC_ALPHA;
+                blendFactorMap[BlendFactor.DST_ALPHA] = GL.DST_ALPHA;
+                blendFactorMap[BlendFactor.ONE_MINUS_DST_ALPHA] = GL.ONE_MINUS_DST_ALPHA;
+                blendFactorMap[BlendFactor.SRC_ALPHA_SATURATE] = GL.SRC_ALPHA_SATURATE;
+            }
+            return blendFactorMap[blendFactor];
         }
-        return blendFactorMap[blendFactor];
+        var blendFactorMap: { [key: number]: number };
     }
-    var blendFactorMap: { [key: number]: number };
 }

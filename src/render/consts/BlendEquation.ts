@@ -20,20 +20,23 @@ module feng3d
         FUNC_REVERSE_SUBTRACT
     }
 
-    /**
-     * 根据枚举混合因子获取真实值
-     * @param blendEquation 混合因子
-     */
-    export function getBlendEquationValue(blendEquation: BlendEquation)
+    export namespace BlendEquation
     {
-        if (!blendEquationMap)
+        /**
+         * 根据枚举混合因子获取真实值
+         * @param blendEquation 混合因子
+         */
+        export function getBlendEquationValue(blendEquation: BlendEquation)
         {
-            blendEquationMap = {};
-            blendEquationMap[BlendEquation.FUNC_ADD] = GL.FUNC_ADD;
-            blendEquationMap[BlendEquation.FUNC_SUBTRACT] = GL.FUNC_SUBTRACT;
-            blendEquationMap[BlendEquation.FUNC_REVERSE_SUBTRACT] = GL.FUNC_REVERSE_SUBTRACT;
+            if (!blendEquationMap)
+            {
+                blendEquationMap = {};
+                blendEquationMap[BlendEquation.FUNC_ADD] = GL.FUNC_ADD;
+                blendEquationMap[BlendEquation.FUNC_SUBTRACT] = GL.FUNC_SUBTRACT;
+                blendEquationMap[BlendEquation.FUNC_REVERSE_SUBTRACT] = GL.FUNC_REVERSE_SUBTRACT;
+            }
+            return blendEquationMap[blendEquation];
         }
-        return blendEquationMap[blendEquation];
+        var blendEquationMap: { [key: number]: number };
     }
-    var blendEquationMap: { [key: number]: number };
 }
