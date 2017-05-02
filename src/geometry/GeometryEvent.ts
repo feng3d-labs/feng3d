@@ -24,6 +24,11 @@ module feng3d
 		public static CHANGED_INDEX_DATA: string = "changedIndexData";
 
 		/**
+		 * 包围盒失效
+		 */
+		public static BOUNDS_INVALID = "boundsInvalid";
+
+		/**
 		 * 事件目标
 		 */
 		target: Geometry;

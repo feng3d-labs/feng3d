@@ -4,7 +4,7 @@ module feng3d
 	 * 包围盒基类
 	 * @author feng 2014-4-27
 	 */
-    export abstract class BoundingVolumeBase
+    export abstract class BoundingVolumeBase extends EventDispatcher
     {
         /** 最小坐标 */
         protected _min: Vector3D;
@@ -12,6 +12,28 @@ module feng3d
         protected _max: Vector3D;
 
         protected _aabbPointsDirty: boolean = true;
+
+        private _geometry: Geometry;
+        /**
+         * 用于生产包围盒的几何体
+         */
+        public get geometry()
+        {
+            return this._geometry;
+        }
+        public set geometry(value)
+        {
+            if (this._geometry)
+            {
+                this._geometry.removeEventListener(GeometryEvent.BOUNDS_INVALID, this.onGeometryBoundsInvalid, this);
+            }
+            this._geometry = value;
+            this.fromGeometry(this._geometry);
+            if (this._geometry)
+            {
+                this._geometry.addEventListener(GeometryEvent.BOUNDS_INVALID, this.onGeometryBoundsInvalid, this);
+            }
+        }
 
 		/**
 		 * The maximum extreme of the bounds
@@ -34,8 +56,18 @@ module feng3d
 		 */
         constructor()
         {
+            super();
             this._min = new Vector3D();
             this._max = new Vector3D();
+        }
+
+        /**
+         * 处理几何体包围盒失效
+         */
+        protected onGeometryBoundsInvalid()
+        {
+            this.fromGeometry(this.geometry);
+            this.dispatchEvent(new Event(Event.CHANGE));
         }
 
 		/**
@@ -47,7 +79,11 @@ module feng3d
             var maxX: number, maxY: number, maxZ: number;
 
             var vertices: Float32Array = geometry.positions;
-
+            if (!vertices)
+            {
+                this.fromExtremes(0, 0, 0, 0, 0, 0);
+                return;
+            }
             var i: number = 0;
             minX = maxX = vertices[i];
             minY = maxY = vertices[i + 1];

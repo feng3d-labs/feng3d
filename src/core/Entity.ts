@@ -23,6 +23,7 @@ module feng3d
 
             this._bounds = this.getDefaultBoundingVolume();
             this._worldBounds = this.getDefaultBoundingVolume();
+            this._bounds.addEventListener(Event.CHANGE, this.onBoundsChange, this);
         }
 
 		/**
@@ -202,6 +203,14 @@ module feng3d
         {
             this._worldBounds.transformFrom(this.bounds, this.sceneTransform);
             this._worldBoundsInvalid = false;
+        }
+
+        /**
+         * 处理包围盒变换事件
+         */
+        protected onBoundsChange()
+        {
+            this._worldBoundsInvalid = true;
         }
     }
 }

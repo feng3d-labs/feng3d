@@ -3600,6 +3600,10 @@ declare module feng3d {
          * 更新世界边界
          */
         private updateWorldBounds();
+        /**
+         * 处理包围盒变换事件
+         */
+        protected onBoundsChange(): void;
     }
 }
 declare module feng3d {
@@ -4010,6 +4014,10 @@ declare module feng3d {
          */
         scaleUV(scaleU?: number, scaleV?: number): void;
         /**
+         * 包围盒失效
+         */
+        invalidateBounds(): void;
+        /**
          * 克隆一个几何体
          */
         clone(): Geometry;
@@ -4037,6 +4045,10 @@ declare module feng3d {
          * 改变顶点索引数据事件
          */
         static CHANGED_INDEX_DATA: string;
+        /**
+         * 包围盒失效
+         */
+        static BOUNDS_INVALID: string;
         /**
          * 事件目标
          */
@@ -4348,12 +4360,17 @@ declare module feng3d {
      * 包围盒基类
      * @author feng 2014-4-27
      */
-    abstract class BoundingVolumeBase {
+    abstract class BoundingVolumeBase extends EventDispatcher {
         /** 最小坐标 */
         protected _min: Vector3D;
         /** 最大坐标 */
         protected _max: Vector3D;
         protected _aabbPointsDirty: boolean;
+        private _geometry;
+        /**
+         * 用于生产包围盒的几何体
+         */
+        geometry: Geometry;
         /**
          * The maximum extreme of the bounds
          */
@@ -4366,6 +4383,10 @@ declare module feng3d {
          * 创建包围盒
          */
         constructor();
+        /**
+         * 处理几何体包围盒失效
+         */
+        protected onGeometryBoundsInvalid(): void;
         /**
          * 根据几何结构更新边界
          */

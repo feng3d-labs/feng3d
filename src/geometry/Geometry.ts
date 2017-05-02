@@ -84,6 +84,7 @@ module feng3d
             {
                 this.buildGeometry();
                 this._geometryInvalid = false;
+                this.invalidateBounds();
             }
         }
 
@@ -338,6 +339,14 @@ module feng3d
             this._scaleV = scaleV;
 
             uvVaData.invalidate();
+        }
+
+        /**
+         * 包围盒失效
+         */
+        public invalidateBounds()
+        {
+            this.dispatchEvent(new GeometryEvent(GeometryEvent.BOUNDS_INVALID))
         }
 
         /**

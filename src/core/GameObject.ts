@@ -91,6 +91,7 @@ module feng3d
         protected updateBounds()
         {
             var geometry = this.getComponentByType(Model).geometry;
+            this._bounds.geometry = geometry;
             this._bounds.fromGeometry(geometry);
             this._boundsInvalid = false;
         }
