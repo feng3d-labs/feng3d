@@ -19,11 +19,15 @@ module feng3d
         TRIANGLE_FAN
     }
 
+    /**
+     * @private
+     */
     export namespace RenderMode
     {
         /**
          * 根据枚举渲染模式获取真实值
          * @param renderMode 渲染模式
+         * @private
          */
         export function getRenderModeValue(renderMode: RenderMode)
         {

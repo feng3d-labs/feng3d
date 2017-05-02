@@ -201,6 +201,21 @@ module feng3d
             return ray3D;
         }
 
+		/**
+		 * 投影坐标（世界坐标转换为3D视图坐标）
+		 * @param point3d 世界坐标
+		 * @return 屏幕的绝对坐标
+		 */
+        public project(point3d: Vector3D): Vector3D
+        {
+            var v: Vector3D = this._camera.camera.project(point3d);
+
+            v.x = (v.x + 1.0) * this._canvas.width / 2.0;
+            v.y = (v.y + 1.0) * this._canvas.height / 2.0;
+
+            return v;
+        }
+
         /**
 		 * 屏幕坐标投影到场景坐标
 		 * @param nX 屏幕坐标X ([0-width])

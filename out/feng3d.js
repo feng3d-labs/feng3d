@@ -5698,11 +5698,15 @@ var feng3d;
         RenderMode[RenderMode["TRIANGLE_FAN"] = 6] = "TRIANGLE_FAN";
     })(feng3d.RenderMode || (feng3d.RenderMode = {}));
     var RenderMode = feng3d.RenderMode;
+    /**
+     * @private
+     */
     var RenderMode;
     (function (RenderMode) {
         /**
          * 根据枚举渲染模式获取真实值
          * @param renderMode 渲染模式
+         * @private
          */
         function getRenderModeValue(renderMode) {
             if (!renderModeMap) {
@@ -6950,7 +6954,7 @@ var feng3d;
     function activeUniforms(gl, uniformInfos, uniforms) {
         for (var o = 0; o < uniformInfos.length; o++) {
             var activeInfo = uniformInfos[o];
-            if (activeInfo.name.indexOf("[") != -1) {
+            if (activeInfo.uniformBaseName) {
                 //处理数组
                 var baseName = activeInfo.uniformBaseName;
                 for (var j = 0; j < activeInfo.size; j++) {
@@ -8727,6 +8731,17 @@ var feng3d;
             return ray3D;
         };
         /**
+         * 投影坐标（世界坐标转换为3D视图坐标）
+         * @param point3d 世界坐标
+         * @return 屏幕的绝对坐标
+         */
+        View3D.prototype.project = function (point3d) {
+            var v = this._camera.camera.project(point3d);
+            v.x = (v.x + 1.0) * this._canvas.width / 2.0;
+            v.y = (v.y + 1.0) * this._canvas.height / 2.0;
+            return v;
+        };
+        /**
          * 屏幕坐标投影到场景坐标
          * @param nX 屏幕坐标X ([0-width])
          * @param nY 屏幕坐标Y ([0-height])
@@ -10031,6 +10046,25 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 场景坐标投影到屏幕坐标
+         * @param point3d 场景坐标
+         * @param v 屏幕坐标（输出）
+         * @return 屏幕坐标
+         */
+        Camera.prototype.project = function (point3d, v) {
+            if (v === void 0) { v = null; }
+            if (!v)
+                v = new feng3d.Vector3D();
+            this.inverseGlobalMatrix3D.transformVector(point3d, v);
+            var z = v.z;
+            this.projection.transformVector(v, v);
+            v.x = v.x / v.w;
+            v.y = -v.y / v.w;
+            //z is unaffected by transform
+            v.z = z;
+            return v;
+        };
         /**
          * 处理被添加组件事件
          */

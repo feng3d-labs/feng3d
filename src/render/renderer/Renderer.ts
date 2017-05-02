@@ -19,7 +19,7 @@ module feng3d
                 var element = renderers[i];
                 this.drawRenderables(renderContext, element);
             }
-        } 
+        }
 
         protected drawRenderables(renderContext: RenderContext, meshRenderer: Model)
         {
@@ -109,7 +109,7 @@ module feng3d
         for (var o = 0; o < uniformInfos.length; o++)
         {
             var activeInfo = uniformInfos[o];
-            if (activeInfo.name.indexOf("[") != -1)
+            if (activeInfo.uniformBaseName)
             {
                 //处理数组
                 var baseName = activeInfo.uniformBaseName;

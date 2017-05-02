@@ -2515,10 +2515,14 @@ declare module feng3d {
         TRIANGLE_STRIP = 5,
         TRIANGLE_FAN = 6,
     }
+    /**
+     * @private
+     */
     namespace RenderMode {
         /**
          * 根据枚举渲染模式获取真实值
          * @param renderMode 渲染模式
+         * @private
          */
         function getRenderModeValue(renderMode: RenderMode): number;
     }
@@ -3723,6 +3727,12 @@ declare module feng3d {
          */
         getRay3D(x: number, y: number): Ray3D;
         /**
+         * 投影坐标（世界坐标转换为3D视图坐标）
+         * @param point3d 世界坐标
+         * @return 屏幕的绝对坐标
+         */
+        project(point3d: Vector3D): Vector3D;
+        /**
          * 屏幕坐标投影到场景坐标
          * @param nX 屏幕坐标X ([0-width])
          * @param nY 屏幕坐标Y ([0-height])
@@ -4284,6 +4294,13 @@ declare module feng3d {
          * 更新投影矩阵
          */
         protected abstract updateMatrix(): any;
+        /**
+         * 场景坐标投影到屏幕坐标
+         * @param point3d 场景坐标
+         * @param v 屏幕坐标（输出）
+         * @return 屏幕坐标
+         */
+        project(point3d: Vector3D, v?: Vector3D): Vector3D;
         /**
          * 屏幕坐标投影到场景坐标
          * @param nX 屏幕坐标X -1（左） -> 1（右）

@@ -132,6 +132,29 @@ module feng3d
         protected abstract updateMatrix();
 
         /**
+		 * 场景坐标投影到屏幕坐标
+		 * @param point3d 场景坐标
+		 * @param v 屏幕坐标（输出）
+		 * @return 屏幕坐标
+		 */
+        public project(point3d: Vector3D, v: Vector3D = null): Vector3D
+        {
+            if (!v)
+                v = new Vector3D();
+            this.inverseGlobalMatrix3D.transformVector(point3d, v);
+
+            var z = v.z;
+            this.projection.transformVector(v, v);
+            v.x = v.x / v.w;
+            v.y = -v.y / v.w;
+
+            //z is unaffected by transform
+            v.z = z;
+
+            return v;
+        }
+
+        /**
 		 * 屏幕坐标投影到场景坐标
 		 * @param nX 屏幕坐标X -1（左） -> 1（右）
 		 * @param nY 屏幕坐标Y -1（上） -> 1（下）
