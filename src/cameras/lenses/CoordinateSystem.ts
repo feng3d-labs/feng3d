@@ -10,11 +10,11 @@ module feng3d
 		/**
 		 * 默认坐标系统，左手坐标系统
 		 */
-		public static LEFT_HANDED: number = 0;
+		public static LEFT_HANDED:number = 0;
 
 		/**
 		 * 右手坐标系统
 		 */
-		public static RIGHT_HANDED: number = 1;
+		public static RIGHT_HANDED:number = 1;
 	}
 }

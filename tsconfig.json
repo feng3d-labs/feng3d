@@ -109,7 +109,10 @@
         "src/geometry/SegmentGeometry.ts",
         "src/geometry/components/GeometryComponent.ts",
         //摄像机
-        "src/cameras/CoordinateSystem.ts",
+        "src/cameras/lenses/CoordinateSystem.ts",
+        "src/cameras/lenses/LensBase.ts",
+        "src/cameras/lenses/FreeMatrixLens.ts",
+        "src/cameras/lenses/PerspectiveLens.ts",
         "src/cameras/Camera.ts",
         "src/cameras/PerspectiveCamera.ts",
         //
