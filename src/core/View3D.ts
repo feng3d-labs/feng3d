@@ -101,6 +101,9 @@ module feng3d
          */
         private drawScene(event: Event)
         {
+            this._canvas.width = this._canvas.clientWidth;
+            this._canvas.height = this._canvas.clientHeight;
+
             this._renderContext.camera = this._camera.camera;
             this._renderContext.scene3d = this._scene;
             this._renderContext.view3D = this;

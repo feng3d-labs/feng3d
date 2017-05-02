@@ -8639,6 +8639,8 @@ var feng3d;
          * 绘制场景
          */
         View3D.prototype.drawScene = function (event) {
+            this._canvas.width = this._canvas.clientWidth;
+            this._canvas.height = this._canvas.clientHeight;
             this._renderContext.camera = this._camera.camera;
             this._renderContext.scene3d = this._scene;
             this._renderContext.view3D = this;
