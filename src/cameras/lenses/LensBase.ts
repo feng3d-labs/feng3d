@@ -10,8 +10,8 @@ module feng3d
 		protected _matrix: Matrix3D;
 		protected _scissorRect: Rectangle = new Rectangle();
 		protected _viewPort: Rectangle = new Rectangle();
-		protected _near: number = 20;
-		protected _far: number = 3000;
+		protected _near: number = 0.1;
+		protected _far: number = 10000;
 		protected _aspectRatio: number = 1;
 
 		protected _matrixInvalid: boolean = true;

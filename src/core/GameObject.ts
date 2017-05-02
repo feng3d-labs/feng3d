@@ -24,7 +24,7 @@ module feng3d
         {
             if (this.isBillboard)
             {
-                this.lookAt(renderContext.camera.globalMatrix3D.position);
+                this.lookAt(renderContext.camera.sceneTransform.position);
             }
             if (this.holdSize)
             {
@@ -45,7 +45,7 @@ module feng3d
 
         private getDepthScale(renderContext: RenderContext)
         {
-            var cameraTranform = renderContext.camera.globalMatrix3D;
+            var cameraTranform = renderContext.camera.sceneTransform;
             var distance = this.scenePosition.subtract(cameraTranform.position);
             var depth = distance.dotProduct(cameraTranform.forward);
             var scale = renderContext.view3D.getScaleByDepth(depth);

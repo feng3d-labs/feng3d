@@ -4,31 +4,11 @@ module feng3d
 	 * 摄像机
 	 * @author feng 2016-08-16
 	 */
-    export abstract class Camera extends Object3DComponent
+    export class Camera extends Object3DComponent
     {
-        protected _projection: Matrix3D;
-        public scissorRect: Rectangle = new Rectangle();
-        public viewPort: Rectangle = new Rectangle();
-        /**
-		 * 最近距离
-		 */
-        public near: number = 0.1;
-        /**
-         * 最远距离
-         */
-        public far: number = 10000;
-		/**
-		 * 视窗缩放比例(width/height)，在渲染器中设置
-		 */
-        public aspectRatio: number = 1;
-
-        protected _projectionInvalid: boolean = true;
-        private _unprojection: Matrix3D;
-        private _unprojectionInvalid: boolean = true;
-
         private _viewProjection: Matrix3D = new Matrix3D();
-        private _viewProjectionInvalid: boolean = true;
-
+        private _viewProjectionDirty: boolean = true;
+        private _lens: LensBase;
         private _frustumPlanes: Plane3D[];
         private _frustumPlanesDirty: boolean = true;
 
@@ -36,122 +16,80 @@ module feng3d
 		 * 创建一个摄像机
 		 * @param lens 摄像机镜头
 		 */
-        constructor()
+        constructor(lens: LensBase = null)
         {
             super();
             this._single = true;
-            this._projection = new Matrix3D();
+            this._lens = lens || new PerspectiveLens();
+            this._lens.addEventListener(LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
 
             this._frustumPlanes = [];
 
             for (var i: number = 0; i < 6; ++i)
                 this._frustumPlanes[i] = new Plane3D();
-
-            Watcher.watch(this, ["near"], this.invalidateProjectionMatrix, this);
-            Watcher.watch(this, ["far"], this.invalidateProjectionMatrix, this);
-            Watcher.watch(this, ["aspectRatio"], this.invalidateProjectionMatrix, this);
         }
 
 		/**
-		 * 投影矩阵
+		 * 处理镜头变化事件
 		 */
-        public get projection(): Matrix3D
+        private onLensMatrixChanged(event: LensEvent)
         {
-            if (this._projectionInvalid)
-            {
-                this.updateMatrix();
-                this._projectionInvalid = false;
-            }
-            return this._projection;
-        }
-
-        public set projection(value: Matrix3D)
-        {
-            this._projection = value;
-            this.invalidateProjectionMatrix();
-        }
-
-		/**
-		 * 投影逆矩阵
-		 */
-        public get unprojectionMatrix(): Matrix3D
-        {
-            if (this._unprojectionInvalid)
-            {
-                if (this._unprojection == null)
-                    this._unprojection = new Matrix3D();
-                this._unprojection.copyFrom(this.projection);
-                this._unprojection.invert();
-                this._unprojectionInvalid = false;
-            }
-
-            return this._unprojection;
-        }
-
-		/**
-		 * 投影矩阵失效
-		 */
-        protected invalidateProjectionMatrix()
-        {
-            this._projectionInvalid = true;
-            this._unprojectionInvalid = true;
-            this._viewProjectionInvalid = true;
+            this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
+
+            this.dispatchEvent(event);
         }
 
         /**
+		 * 镜头
+		 */
+        public get lens(): LensBase
+        {
+            return this._lens;
+        }
+
+        public set lens(value: LensBase)
+        {
+            if (this._lens == value)
+                return;
+
+            if (!value)
+                throw new Error("Lens cannot be null!");
+
+            this._lens.removeEventListener(LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
+
+            this._lens = value;
+
+            this._lens.addEventListener(LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
+
+            this.dispatchEvent(new CameraEvent(CameraEvent.LENS_CHANGED, this));
+        }
+
+		/**
 		 * 场景投影矩阵，世界空间转投影空间
 		 */
         public get viewProjection(): Matrix3D
         {
-            if (this._viewProjectionInvalid)
+            if (this._viewProjectionDirty)
             {
                 //场景空间转摄像机空间
-                this._viewProjection.copyFrom(this.inverseGlobalMatrix3D);
+                this._viewProjection.copyFrom(this.inverseSceneTransform);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
-                this._viewProjection.append(this.projection);
-                this._viewProjectionInvalid = false;
+                this._viewProjection.append(this._lens.matrix);
+                this._viewProjectionDirty = false;
             }
 
             return this._viewProjection;
         }
 
-        public get inverseGlobalMatrix3D()
+        public get inverseSceneTransform()
         {
             return this.parentComponent ? this.parentComponent.inverseSceneTransform : new Matrix3D();
         }
 
-        public get globalMatrix3D()
+        public get sceneTransform()
         {
             return this.parentComponent ? this.parentComponent.sceneTransform : new Matrix3D();
-        }
-
-		/**
-		 * 更新投影矩阵
-		 */
-        protected abstract updateMatrix();
-
-        /**
-		 * 场景坐标投影到屏幕坐标
-		 * @param point3d 场景坐标
-		 * @param v 屏幕坐标（输出）
-		 * @return 屏幕坐标
-		 */
-        public project(point3d: Vector3D, v: Vector3D = null): Vector3D
-        {
-            if (!v)
-                v = new Vector3D();
-            this.inverseGlobalMatrix3D.transformVector(point3d, v);
-
-            var z = v.z;
-            this.projection.transformVector(v, v);
-            v.x = v.x / v.w;
-            v.y = -v.y / v.w;
-
-            //z is unaffected by transform
-            v.z = z;
-
-            return v;
         }
 
         /**
@@ -162,7 +100,21 @@ module feng3d
 		 * @param v 场景坐标（输出）
 		 * @return 场景坐标
 		 */
-        abstract unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D;
+        public unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D
+        {
+            return this.sceneTransform.transformVector(this.lens.unproject(nX, nY, sZ, v), v);
+        }
+
+		/**
+		 * 场景坐标投影到屏幕坐标
+		 * @param point3d 场景坐标
+		 * @param v 屏幕坐标（输出）
+		 * @return 屏幕坐标
+		 */
+        public project(point3d: Vector3D, v: Vector3D = null): Vector3D
+        {
+            return this.lens.project(this.inverseSceneTransform.transformVector(point3d, v), v);
+        }
 
         /**
          * 处理被添加组件事件
@@ -170,7 +122,7 @@ module feng3d
         protected onBeAddedComponent(event: ComponentEvent): void
         {
             this.parentComponent.addEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
-            this._viewProjectionInvalid = true;
+            this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
         }
 
@@ -180,7 +132,6 @@ module feng3d
         protected onBeRemovedComponent(event: ComponentEvent): void
         {
             this.parentComponent.removeEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
-
         }
 
         /**
@@ -188,7 +139,7 @@ module feng3d
          */
         protected onScenetransformChanged()
         {
-            this._viewProjectionInvalid = true;
+            this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
         }
 
@@ -202,10 +153,9 @@ module feng3d
             var globalMatrix3d = this.parentComponent ? this.parentComponent.sceneTransform : new Matrix3D();
             renderData.uniforms[RenderDataID.u_cameraMatrix] = globalMatrix3d;
             //
-            renderData.uniforms[RenderDataID.u_skyBoxSize] = this.far / Math.sqrt(3);
+            renderData.uniforms[RenderDataID.u_skyBoxSize] = this._lens.far / Math.sqrt(3);
             super.updateRenderData(renderContext, renderData);
         }
-
 
 		/**
 		 * 视锥体面

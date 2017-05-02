@@ -11,7 +11,7 @@ module feng3d
         constructor(name = "camera")
         {
             super(name);
-            this.camera = new PerspectiveCamera();
+            this.camera = new Camera();
             this.addComponent(this.camera);
         }
     }

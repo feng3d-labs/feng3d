@@ -3670,6 +3670,7 @@ declare module feng3d {
         private _camera;
         private _scene;
         private _canvas;
+        private _viewRect;
         /**
          * 默认渲染器
          */
@@ -3703,10 +3704,6 @@ declare module feng3d {
          * 绘制场景
          */
         private drawScene(event);
-        /**
-         * 更新视窗区域
-         */
-        readonly viewRect: Rectangle;
         /**
          * 摄像机
          */
@@ -4241,13 +4238,32 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 摄像机
-     * @author feng 2016-08-16
+     * 摄像机镜头
+     * @author feng 2014-10-14
      */
-    abstract class Camera extends Object3DComponent {
-        protected _projection: Matrix3D;
-        scissorRect: Rectangle;
-        viewPort: Rectangle;
+    abstract class LensBase extends EventDispatcher {
+        protected _matrix: Matrix3D;
+        protected _scissorRect: Rectangle;
+        protected _viewPort: Rectangle;
+        protected _near: number;
+        protected _far: number;
+        protected _aspectRatio: number;
+        protected _matrixInvalid: boolean;
+        protected _frustumCorners: number[];
+        private _unprojection;
+        private _unprojectionInvalid;
+        /**
+         * 创建一个摄像机镜头
+         */
+        constructor();
+        /**
+         * Retrieves the corner points of the lens frustum.
+         */
+        frustumCorners: number[];
+        /**
+         * 投影矩阵
+         */
+        matrix: Matrix3D;
         /**
          * 最近距离
          */
@@ -4260,40 +4276,6 @@ declare module feng3d {
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
         aspectRatio: number;
-        protected _projectionInvalid: boolean;
-        private _unprojection;
-        private _unprojectionInvalid;
-        private _viewProjection;
-        private _viewProjectionInvalid;
-        private _frustumPlanes;
-        private _frustumPlanesDirty;
-        /**
-         * 创建一个摄像机
-         * @param lens 摄像机镜头
-         */
-        constructor();
-        /**
-         * 投影矩阵
-         */
-        projection: Matrix3D;
-        /**
-         * 投影逆矩阵
-         */
-        readonly unprojectionMatrix: Matrix3D;
-        /**
-         * 投影矩阵失效
-         */
-        protected invalidateProjectionMatrix(): void;
-        /**
-         * 场景投影矩阵，世界空间转投影空间
-         */
-        readonly viewProjection: Matrix3D;
-        readonly inverseGlobalMatrix3D: Matrix3D;
-        readonly globalMatrix3D: Matrix3D;
-        /**
-         * 更新投影矩阵
-         */
-        protected abstract updateMatrix(): any;
         /**
          * 场景坐标投影到屏幕坐标
          * @param point3d 场景坐标
@@ -4302,7 +4284,11 @@ declare module feng3d {
          */
         project(point3d: Vector3D, v?: Vector3D): Vector3D;
         /**
-         * 屏幕坐标投影到场景坐标
+         * 投影逆矩阵
+         */
+        readonly unprojectionMatrix: Matrix3D;
+        /**
+         * 屏幕坐标投影到摄像机空间坐标
          * @param nX 屏幕坐标X -1（左） -> 1（右）
          * @param nY 屏幕坐标Y -1（上） -> 1（下）
          * @param sZ 到屏幕的距离
@@ -4310,6 +4296,126 @@ declare module feng3d {
          * @return 场景坐标
          */
         abstract unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D;
+        /**
+         * 投影矩阵失效
+         */
+        protected invalidateMatrix(): void;
+        /**
+         * 更新投影矩阵
+         */
+        protected abstract updateMatrix(): any;
+    }
+}
+declare module feng3d {
+    /**
+     *
+     * @author feng 2015-5-28
+     */
+    class FreeMatrixLens extends LensBase {
+        constructor();
+        protected updateMatrix(): void;
+        /**
+         * 屏幕坐标投影到摄像机空间坐标
+         * @param nX 屏幕坐标X -1（左） -> 1（右）
+         * @param nY 屏幕坐标Y -1（上） -> 1（下）
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D;
+    }
+}
+declare module feng3d {
+    /**
+     * 透视摄像机镜头
+     * @author feng 2014-10-14
+     */
+    class PerspectiveLens extends LensBase {
+        private _fieldOfView;
+        private _focalLength;
+        private _focalLengthInv;
+        private _yMax;
+        private _xMax;
+        private _coordinateSystem;
+        /**
+         * 创建一个透视摄像机镜头
+         * @param fieldOfView 视野
+         * @param coordinateSystem 坐标系统类型
+         */
+        constructor(fieldOfView?: number, coordinateSystem?: number);
+        /**
+         * 视野
+         */
+        fieldOfView: number;
+        /**
+         * 焦距
+         */
+        focalLength: number;
+        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
+        /**
+         * 坐标系类型
+         */
+        coordinateSystem: number;
+        protected updateMatrix(): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 镜头事件
+     * @author feng 2014-10-14
+     */
+    class LensEvent extends Event {
+        static MATRIX_CHANGED: string;
+        constructor(type: string, lens?: LensBase, bubbles?: boolean);
+        readonly lens: LensBase;
+    }
+}
+declare module feng3d {
+    /**
+     * 摄像机
+     * @author feng 2016-08-16
+     */
+    class Camera extends Object3DComponent {
+        private _viewProjection;
+        private _viewProjectionDirty;
+        private _lens;
+        private _frustumPlanes;
+        private _frustumPlanesDirty;
+        /**
+         * 创建一个摄像机
+         * @param lens 摄像机镜头
+         */
+        constructor(lens?: LensBase);
+        /**
+         * 处理镜头变化事件
+         */
+        private onLensMatrixChanged(event);
+        /**
+         * 镜头
+         */
+        lens: LensBase;
+        /**
+         * 场景投影矩阵，世界空间转投影空间
+         */
+        readonly viewProjection: Matrix3D;
+        readonly inverseSceneTransform: Matrix3D;
+        readonly sceneTransform: Matrix3D;
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X -1（左） -> 1（右）
+         * @param nY 屏幕坐标Y -1（上） -> 1（下）
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
+        /**
+         * 场景坐标投影到屏幕坐标
+         * @param point3d 场景坐标
+         * @param v 屏幕坐标（输出）
+         * @return 屏幕坐标
+         */
+        project(point3d: Vector3D, v?: Vector3D): Vector3D;
         /**
          * 处理被添加组件事件
          */
@@ -4339,37 +4445,13 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * 透视摄像机
+     * 摄像机事件
      * @author feng 2014-10-14
      */
-    class PerspectiveCamera extends Camera {
-        /**
-         * 视角
-         */
-        fieldOfView: number;
-        /**
-         * 坐标系类型
-         */
-        coordinateSystem: number;
-        /**
-         * 创建一个透视摄像机
-         * @param fieldOfView 视角
-         * @param coordinateSystem 坐标系统类型
-         */
-        constructor();
-        /**
-         * 屏幕坐标投影到场景坐标
-         * @param nX 屏幕坐标X -1（左） -> 1（右）
-         * @param nY 屏幕坐标Y -1（上） -> 1（下）
-         * @param sZ 到屏幕的距离
-         * @param v 场景坐标（输出）
-         * @return 场景坐标
-         */
-        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
-        /**
-         * 更新投影矩阵
-         */
-        protected updateMatrix(): void;
+    class CameraEvent extends Event {
+        static LENS_CHANGED: string;
+        constructor(type: string, camera?: Camera, bubbles?: boolean);
+        readonly camera: Camera;
     }
 }
 declare module feng3d {

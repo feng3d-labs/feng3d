@@ -21,6 +21,7 @@ module feng3d
         private _camera: CameraObject3D;
         private _scene: Scene3D;
         private _canvas: HTMLCanvasElement;
+        private _viewRect: Rectangle;
 
         /**
          * 默认渲染器
@@ -105,9 +106,10 @@ module feng3d
             this._renderContext.view3D = this;
             this._renderContext.gl = this._gl;
 
-            var viewRect: Rectangle = this.viewRect;
-
-            this.camera.camera.aspectRatio = viewRect.width / viewRect.height;
+            var viewClientRect: ClientRect = this._canvas.getBoundingClientRect();
+            var viewRect = this._viewRect = this._viewRect || new Rectangle();
+            viewRect.setTo(viewClientRect.left, viewClientRect.top, viewClientRect.width, viewClientRect.height);
+            this.camera.camera.lens.aspectRatio = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.copyFrom(viewRect);
@@ -119,32 +121,6 @@ module feng3d
             // 默认渲染
             this.defaultRenderer.viewRect.copyFrom(viewRect);
             this.defaultRenderer.draw(this._renderContext);
-        }
-
-        /**
-         * 更新视窗区域
-         */
-        public get viewRect()
-        {
-            var viewRect: Rectangle = new Rectangle();
-
-            this._canvas.width = this._canvas.clientWidth;
-            this._canvas.height = this._canvas.clientHeight;
-            var viewWidth = this._canvas.width;
-            var viewHeight = this._canvas.height;
-            var x = 0;
-            var y = 0;
-            var obj: HTMLElement = this._canvas;
-            do
-            {
-                x += obj.offsetLeft;
-                y += obj.offsetTop;
-                obj = obj.parentElement;
-            }
-            while (obj);
-            viewRect.setTo(x, y, viewWidth, viewHeight);
-
-            return viewRect;
         }
 
         /**
@@ -165,7 +141,7 @@ module feng3d
          */
         public get mousePos()
         {
-            var viewRect: Rectangle = this.viewRect;
+            var viewRect: Rectangle = this._viewRect;
             var pos = new Point(this.mouse3DManager.mouseX - viewRect.x, this.mouse3DManager.mouseY - viewRect.y);
             return pos;
         }
@@ -249,8 +225,8 @@ module feng3d
          */
         public getScaleByDepth(depth: number)
         {
-            var centerX = this.viewRect.width / 2;
-            var centerY = this.viewRect.height / 2;
+            var centerX = this._viewRect.width / 2;
+            var centerY = this._viewRect.height / 2;
             var lt = this.unproject(centerX - 0.5, centerY - 0.5, depth);
             var rb = this.unproject(centerX + 0.5, centerY + 0.5, depth);
             var scale = lt.subtract(rb).length;
