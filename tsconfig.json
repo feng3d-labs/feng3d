@@ -116,7 +116,6 @@
         "src/cameras/lenses/LensEvent.ts",
         "src/cameras/Camera.ts",
         "src/cameras/CameraEvent.ts",
-        "src/cameras/PerspectiveCamera.ts",
         //
         "src/bounds/BoundingVolumeBase.ts",
         "src/bounds/AxisAlignedBoundingBox.ts",
