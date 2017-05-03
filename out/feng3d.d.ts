@@ -2503,112 +2503,93 @@ declare module feng3d {
      * 渲染模式
      * @author feng 2016-09-28
      */
-    enum RenderMode {
+    class RenderMode {
         /**
          * 点渲染
          */
-        POINTS = 0,
-        LINE_LOOP = 1,
-        LINE_STRIP = 2,
-        LINES = 3,
-        TRIANGLES = 4,
-        TRIANGLE_STRIP = 5,
-        TRIANGLE_FAN = 6,
-    }
-    /**
-     * @private
-     */
-    namespace RenderMode {
-        /**
-         * 根据枚举渲染模式获取真实值
-         * @param renderMode 渲染模式
-         * @private
-         */
-        function getRenderModeValue(renderMode: RenderMode): number;
+        static POINTS: number;
+        static LINE_LOOP: number;
+        static LINE_STRIP: number;
+        static LINES: number;
+        static TRIANGLES: number;
+        static TRIANGLE_STRIP: number;
+        static TRIANGLE_FAN: number;
     }
 }
 declare module feng3d {
     /**
      * 混合因子（R分量系数，G分量系数，B分量系数）
      */
-    enum BlendFactor {
+    class BlendFactor {
         /**
          * 0.0  0.0 0.0
          */
-        ZERO = 0,
+        static ZERO: number;
         /**
          * 1.0  1.0 1.0
          */
-        ONE = 1,
+        static ONE: number;
         /**
          * Rs   Gs  Bs
          */
-        SRC_COLOR = 2,
+        static SRC_COLOR: number;
         /**
          * 1-Rs   1-Gs  1-Bs
          */
-        ONE_MINUS_SRC_COLOR = 3,
+        static ONE_MINUS_SRC_COLOR: number;
         /**
          * Rd   Gd  Bd
          */
-        DST_COLOR = 4,
+        static DST_COLOR: number;
         /**
          * 1-Rd   1-Gd  1-Bd
          */
-        ONE_MINUS_DST_COLOR = 5,
+        static ONE_MINUS_DST_COLOR: number;
         /**
          * As   As  As
          */
-        SRC_ALPHA = 6,
+        static SRC_ALPHA: number;
         /**
          * 1-As   1-As  1-As
          */
-        ONE_MINUS_SRC_ALPHA = 7,
+        static ONE_MINUS_SRC_ALPHA: number;
         /**
          * Ad   Ad  Ad
          */
-        DST_ALPHA = 8,
+        static DST_ALPHA: number;
         /**
          * 1-Ad   1-Ad  1-Ad
          */
-        ONE_MINUS_DST_ALPHA = 9,
+        static ONE_MINUS_DST_ALPHA: number;
         /**
          * min(As-Ad)   min(As-Ad)  min(As-Ad)
          */
-        SRC_ALPHA_SATURATE = 10,
-    }
-    namespace BlendFactor {
-        /**
-         * 根据枚举混合因子获取真实值
-         * @param blendFactor 混合因子
-         */
-        function getBlendFactorValue(blendFactor: BlendFactor): number;
+        static SRC_ALPHA_SATURATE: number;
     }
 }
 declare module feng3d {
     /**
      * 混合方法
      */
-    enum BlendEquation {
+    class BlendEquation {
         /**
          *  source + destination
          */
-        FUNC_ADD = 0,
+        static FUNC_ADD: number;
         /**
          * source - destination
          */
-        FUNC_SUBTRACT = 1,
+        static FUNC_SUBTRACT: number;
         /**
          * destination - source
          */
-        FUNC_REVERSE_SUBTRACT = 2,
+        static FUNC_REVERSE_SUBTRACT: number;
     }
-    namespace BlendEquation {
-        /**
-         * 根据枚举混合因子获取真实值
-         * @param blendEquation 混合因子
-         */
-        function getBlendEquationValue(blendEquation: BlendEquation): number;
+}
+declare module feng3d {
+    class TextureType {
+        static TEXTURE_2D: number;
+        static TEXTURE_CUBE_MAP: number;
     }
 }
 declare module feng3d {
@@ -2620,7 +2601,7 @@ declare module feng3d {
         /**
          * 渲染模式
          */
-        renderMode: RenderMode;
+        renderMode: number;
     }
 }
 declare module feng3d {
@@ -4926,7 +4907,7 @@ declare module feng3d {
         /**
          * 纹理类型
          */
-        textureType: number;
+        protected textureType: number;
         /**
          * 格式
          */
@@ -5059,7 +5040,7 @@ declare module feng3d {
         /**
         * 渲染模式
         */
-        renderMode: RenderMode;
+        renderMode: number;
         /**
          * 着色器名称
          */
@@ -5076,15 +5057,15 @@ declare module feng3d {
         /**
          * 混合方程，默认GL.FUNC_ADD
          */
-        blendEquation: BlendEquation;
+        blendEquation: number;
         /**
          * 源混合因子，默认BlendFactor.SRC_ALPHA
          */
-        sfactor: BlendFactor;
+        sfactor: number;
         /**
          * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
          */
-        dfactor: BlendFactor;
+        dfactor: number;
         /**
          * 构建材质
          */

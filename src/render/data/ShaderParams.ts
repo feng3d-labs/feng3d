@@ -11,6 +11,6 @@ module feng3d
         /**
          * 渲染模式
          */
-        renderMode: RenderMode;
+        renderMode: number;
     }
 }

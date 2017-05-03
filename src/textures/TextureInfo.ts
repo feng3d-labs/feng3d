@@ -9,7 +9,7 @@ module feng3d
         /**
          * 纹理类型
          */
-        public textureType: number;
+        protected textureType: number;
         /**
          * 格式
          */

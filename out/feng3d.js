@@ -5685,163 +5685,76 @@ var feng3d;
      * 渲染模式
      * @author feng 2016-09-28
      */
-    (function (RenderMode) {
-        /**
-         * 点渲染
-         */
-        RenderMode[RenderMode["POINTS"] = 0] = "POINTS";
-        RenderMode[RenderMode["LINE_LOOP"] = 1] = "LINE_LOOP";
-        RenderMode[RenderMode["LINE_STRIP"] = 2] = "LINE_STRIP";
-        RenderMode[RenderMode["LINES"] = 3] = "LINES";
-        RenderMode[RenderMode["TRIANGLES"] = 4] = "TRIANGLES";
-        RenderMode[RenderMode["TRIANGLE_STRIP"] = 5] = "TRIANGLE_STRIP";
-        RenderMode[RenderMode["TRIANGLE_FAN"] = 6] = "TRIANGLE_FAN";
-    })(feng3d.RenderMode || (feng3d.RenderMode = {}));
-    var RenderMode = feng3d.RenderMode;
-    /**
-     * @private
-     */
-    var RenderMode;
-    (function (RenderMode) {
-        /**
-         * 根据枚举渲染模式获取真实值
-         * @param renderMode 渲染模式
-         * @private
-         */
-        function getRenderModeValue(renderMode) {
-            if (!renderModeMap) {
-                renderModeMap = {};
-                renderModeMap[RenderMode.POINTS] = feng3d.GL.POINTS;
-                renderModeMap[RenderMode.LINE_LOOP] = feng3d.GL.LINE_LOOP;
-                renderModeMap[RenderMode.LINE_STRIP] = feng3d.GL.LINE_STRIP;
-                renderModeMap[RenderMode.LINES] = feng3d.GL.LINES;
-                renderModeMap[RenderMode.TRIANGLES] = feng3d.GL.TRIANGLES;
-                renderModeMap[RenderMode.TRIANGLE_STRIP] = feng3d.GL.TRIANGLE_STRIP;
-                renderModeMap[RenderMode.TRIANGLE_FAN] = feng3d.GL.TRIANGLE_FAN;
-            }
-            return renderModeMap[renderMode];
+    var RenderMode = (function () {
+        function RenderMode() {
         }
-        RenderMode.getRenderModeValue = getRenderModeValue;
-        var renderModeMap;
-    })(RenderMode = feng3d.RenderMode || (feng3d.RenderMode = {}));
+        return RenderMode;
+    }());
+    feng3d.RenderMode = RenderMode;
+    (feng3d.initFunctions || (feng3d.initFunctions = [])).push(function () {
+        RenderMode.POINTS = feng3d.GL.POINTS;
+        RenderMode.LINE_LOOP = feng3d.GL.LINE_LOOP;
+        RenderMode.LINE_STRIP = feng3d.GL.LINE_STRIP;
+        RenderMode.LINES = feng3d.GL.LINES;
+        RenderMode.TRIANGLES = feng3d.GL.TRIANGLES;
+        RenderMode.TRIANGLE_STRIP = feng3d.GL.TRIANGLE_STRIP;
+        RenderMode.TRIANGLE_FAN = feng3d.GL.TRIANGLE_FAN;
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
      * 混合因子（R分量系数，G分量系数，B分量系数）
      */
-    (function (BlendFactor) {
-        /**
-         * 0.0  0.0 0.0
-         */
-        BlendFactor[BlendFactor["ZERO"] = 0] = "ZERO";
-        /**
-         * 1.0  1.0 1.0
-         */
-        BlendFactor[BlendFactor["ONE"] = 1] = "ONE";
-        /**
-         * Rs   Gs  Bs
-         */
-        BlendFactor[BlendFactor["SRC_COLOR"] = 2] = "SRC_COLOR";
-        /**
-         * 1-Rs   1-Gs  1-Bs
-         */
-        BlendFactor[BlendFactor["ONE_MINUS_SRC_COLOR"] = 3] = "ONE_MINUS_SRC_COLOR";
-        /**
-         * Rd   Gd  Bd
-         */
-        BlendFactor[BlendFactor["DST_COLOR"] = 4] = "DST_COLOR";
-        /**
-         * 1-Rd   1-Gd  1-Bd
-         */
-        BlendFactor[BlendFactor["ONE_MINUS_DST_COLOR"] = 5] = "ONE_MINUS_DST_COLOR";
-        /**
-         * As   As  As
-         */
-        BlendFactor[BlendFactor["SRC_ALPHA"] = 6] = "SRC_ALPHA";
-        /**
-         * 1-As   1-As  1-As
-         */
-        BlendFactor[BlendFactor["ONE_MINUS_SRC_ALPHA"] = 7] = "ONE_MINUS_SRC_ALPHA";
-        /**
-         * Ad   Ad  Ad
-         */
-        BlendFactor[BlendFactor["DST_ALPHA"] = 8] = "DST_ALPHA";
-        /**
-         * 1-Ad   1-Ad  1-Ad
-         */
-        BlendFactor[BlendFactor["ONE_MINUS_DST_ALPHA"] = 9] = "ONE_MINUS_DST_ALPHA";
-        /**
-         * min(As-Ad)   min(As-Ad)  min(As-Ad)
-         */
-        BlendFactor[BlendFactor["SRC_ALPHA_SATURATE"] = 10] = "SRC_ALPHA_SATURATE";
-    })(feng3d.BlendFactor || (feng3d.BlendFactor = {}));
-    var BlendFactor = feng3d.BlendFactor;
-    var BlendFactor;
-    (function (BlendFactor) {
-        /**
-         * 根据枚举混合因子获取真实值
-         * @param blendFactor 混合因子
-         */
-        function getBlendFactorValue(blendFactor) {
-            if (!blendFactorMap) {
-                blendFactorMap = {};
-                blendFactorMap[BlendFactor.ZERO] = feng3d.GL.ZERO;
-                blendFactorMap[BlendFactor.ONE] = feng3d.GL.ONE;
-                blendFactorMap[BlendFactor.SRC_COLOR] = feng3d.GL.SRC_COLOR;
-                blendFactorMap[BlendFactor.ONE_MINUS_SRC_COLOR] = feng3d.GL.ONE_MINUS_SRC_COLOR;
-                blendFactorMap[BlendFactor.DST_COLOR] = feng3d.GL.DST_COLOR;
-                blendFactorMap[BlendFactor.ONE_MINUS_DST_COLOR] = feng3d.GL.ONE_MINUS_DST_COLOR;
-                blendFactorMap[BlendFactor.SRC_ALPHA] = feng3d.GL.SRC_ALPHA;
-                blendFactorMap[BlendFactor.ONE_MINUS_SRC_ALPHA] = feng3d.GL.ONE_MINUS_SRC_ALPHA;
-                blendFactorMap[BlendFactor.DST_ALPHA] = feng3d.GL.DST_ALPHA;
-                blendFactorMap[BlendFactor.ONE_MINUS_DST_ALPHA] = feng3d.GL.ONE_MINUS_DST_ALPHA;
-                blendFactorMap[BlendFactor.SRC_ALPHA_SATURATE] = feng3d.GL.SRC_ALPHA_SATURATE;
-            }
-            return blendFactorMap[blendFactor];
+    var BlendFactor = (function () {
+        function BlendFactor() {
         }
-        BlendFactor.getBlendFactorValue = getBlendFactorValue;
-        var blendFactorMap;
-    })(BlendFactor = feng3d.BlendFactor || (feng3d.BlendFactor = {}));
+        return BlendFactor;
+    }());
+    feng3d.BlendFactor = BlendFactor;
+    (feng3d.initFunctions || (feng3d.initFunctions = [])).push(function () {
+        BlendFactor.ZERO = feng3d.GL.ZERO;
+        BlendFactor.ONE = feng3d.GL.ONE;
+        BlendFactor.SRC_COLOR = feng3d.GL.SRC_COLOR;
+        BlendFactor.ONE_MINUS_SRC_COLOR = feng3d.GL.ONE_MINUS_SRC_COLOR;
+        BlendFactor.DST_COLOR = feng3d.GL.DST_COLOR;
+        BlendFactor.ONE_MINUS_DST_COLOR = feng3d.GL.ONE_MINUS_DST_COLOR;
+        BlendFactor.SRC_ALPHA = feng3d.GL.SRC_ALPHA;
+        BlendFactor.ONE_MINUS_SRC_ALPHA = feng3d.GL.ONE_MINUS_SRC_ALPHA;
+        BlendFactor.DST_ALPHA = feng3d.GL.DST_ALPHA;
+        BlendFactor.ONE_MINUS_DST_ALPHA = feng3d.GL.ONE_MINUS_DST_ALPHA;
+        BlendFactor.SRC_ALPHA_SATURATE = feng3d.GL.SRC_ALPHA_SATURATE;
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
      * 混合方法
      */
-    (function (BlendEquation) {
-        /**
-         *  source + destination
-         */
-        BlendEquation[BlendEquation["FUNC_ADD"] = 0] = "FUNC_ADD";
-        /**
-         * source - destination
-         */
-        BlendEquation[BlendEquation["FUNC_SUBTRACT"] = 1] = "FUNC_SUBTRACT";
-        /**
-         * destination - source
-         */
-        BlendEquation[BlendEquation["FUNC_REVERSE_SUBTRACT"] = 2] = "FUNC_REVERSE_SUBTRACT";
-    })(feng3d.BlendEquation || (feng3d.BlendEquation = {}));
-    var BlendEquation = feng3d.BlendEquation;
-    var BlendEquation;
-    (function (BlendEquation) {
-        /**
-         * 根据枚举混合因子获取真实值
-         * @param blendEquation 混合因子
-         */
-        function getBlendEquationValue(blendEquation) {
-            if (!blendEquationMap) {
-                blendEquationMap = {};
-                blendEquationMap[BlendEquation.FUNC_ADD] = feng3d.GL.FUNC_ADD;
-                blendEquationMap[BlendEquation.FUNC_SUBTRACT] = feng3d.GL.FUNC_SUBTRACT;
-                blendEquationMap[BlendEquation.FUNC_REVERSE_SUBTRACT] = feng3d.GL.FUNC_REVERSE_SUBTRACT;
-            }
-            return blendEquationMap[blendEquation];
+    var BlendEquation = (function () {
+        function BlendEquation() {
         }
-        BlendEquation.getBlendEquationValue = getBlendEquationValue;
-        var blendEquationMap;
-    })(BlendEquation = feng3d.BlendEquation || (feng3d.BlendEquation = {}));
+        return BlendEquation;
+    }());
+    feng3d.BlendEquation = BlendEquation;
+    (feng3d.initFunctions || (feng3d.initFunctions = [])).push(function () {
+        BlendEquation.FUNC_ADD = feng3d.GL.FUNC_ADD;
+        BlendEquation.FUNC_SUBTRACT = feng3d.GL.FUNC_SUBTRACT;
+        BlendEquation.FUNC_REVERSE_SUBTRACT = feng3d.GL.FUNC_REVERSE_SUBTRACT;
+    });
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var TextureType = (function () {
+        function TextureType() {
+        }
+        return TextureType;
+    }());
+    feng3d.TextureType = TextureType;
+    (feng3d.initFunctions || (feng3d.initFunctions = [])).push(function () {
+        TextureType.TEXTURE_2D = feng3d.GL.TEXTURE_2D;
+        TextureType.TEXTURE_CUBE_MAP = feng3d.GL.TEXTURE_CUBE_MAP;
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -6888,14 +6801,11 @@ var feng3d;
                 //绘制
                 var material = meshRenderer.material;
                 if (material.enableBlend) {
-                    var blendEquation = feng3d.BlendEquation.getBlendEquationValue(material.blendEquation);
-                    var sfactor = feng3d.BlendFactor.getBlendFactorValue(material.sfactor);
-                    var dfactor = feng3d.BlendFactor.getBlendFactorValue(material.dfactor);
                     //
                     gl.enable(feng3d.GL.BLEND);
-                    gl.blendEquation(blendEquation);
+                    gl.blendEquation(material.blendEquation);
                     gl.depthMask(false);
-                    gl.blendFunc(sfactor, dfactor);
+                    gl.blendFunc(material.sfactor, material.dfactor);
                 }
                 else {
                     gl.disable(feng3d.GL.BLEND);
@@ -6972,7 +6882,8 @@ var feng3d;
         if (instanceCount === void 0) { instanceCount = 1; }
         instanceCount = ~~instanceCount;
         indexBuffer.active(gl);
-        var renderMode = feng3d.RenderMode.getRenderModeValue(shaderParams.renderMode);
+        // var renderMode = RenderMode.getRenderModeValue(shaderParams.renderMode);
+        var renderMode = shaderParams.renderMode;
         if (instanceCount > 1) {
             var _ext = gl.getExtension('ANGLE_instanced_arrays');
             _ext.drawArraysInstancedANGLE(renderMode, 0, indexBuffer.count, instanceCount);
@@ -7058,6 +6969,10 @@ var feng3d;
                 var frustumPlanes = renderContext.camera.frustumPlanes;
                 var gameObject = meshRenderer.parentComponent;
                 var isIn = gameObject.worldBounds.isInFrustum(frustumPlanes, 6);
+                var model = gameObject.getComponentByType(feng3d.Model);
+                if (model && model.geometry instanceof feng3d.SkyBoxGeometry) {
+                    isIn = true;
+                }
                 if (isIn) {
                     _super.prototype.drawRenderables.call(this, renderContext, meshRenderer);
                 }
@@ -12538,7 +12453,7 @@ var feng3d;
         function Texture2D(url) {
             if (url === void 0) { url = ""; }
             _super.call(this);
-            this.textureType = feng3d.GL.TEXTURE_2D;
+            this.textureType = feng3d.TextureType.TEXTURE_2D;
             this._pixels = new Image();
             this._pixels.crossOrigin = "Anonymous";
             // this._pixels.addEventListener("load", this.invalidate.bind(this));
@@ -12587,7 +12502,7 @@ var feng3d;
         __extends(TextureCube, _super);
         function TextureCube(images) {
             _super.call(this);
-            this.textureType = feng3d.GL.TEXTURE_CUBE_MAP;
+            this.textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
             this._pixels = [];
             for (var i = 0; i < 6; i++) {
                 this._pixels[i] = new Image();
@@ -16907,6 +16822,13 @@ var feng3d;
             feng3d.defaultGeometry = new feng3d.CubeGeometry();
             feng3d.ticker = new feng3d.SystemTicker();
             feng3d.context3DPool = new feng3d.RenderBufferPool();
+        }
+        if (feng3d.initFunctions) {
+            for (var i = 0; i < feng3d.initFunctions.length; i++) {
+                var element = feng3d.initFunctions[i];
+                element();
+            }
+            delete feng3d.initFunctions;
         }
     }
     feng3d.initEngine = initEngine;

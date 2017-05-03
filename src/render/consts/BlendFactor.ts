@@ -4,79 +4,66 @@ module feng3d
     /**
      * 混合因子（R分量系数，G分量系数，B分量系数）
      */
-    export enum BlendFactor
+    export class BlendFactor
     {
         /**
          * 0.0  0.0 0.0
          */
-        ZERO,
+        public static ZERO: number;
         /**
          * 1.0  1.0 1.0
          */
-        ONE,
+        public static ONE: number;
         /**
          * Rs   Gs  Bs
          */
-        SRC_COLOR,
+        public static SRC_COLOR: number;
         /**
          * 1-Rs   1-Gs  1-Bs
          */
-        ONE_MINUS_SRC_COLOR,
+        public static ONE_MINUS_SRC_COLOR: number;
         /**
          * Rd   Gd  Bd
          */
-        DST_COLOR,
+        public static DST_COLOR: number;
         /**
          * 1-Rd   1-Gd  1-Bd
          */
-        ONE_MINUS_DST_COLOR,
+        public static ONE_MINUS_DST_COLOR: number;
         /**
          * As   As  As
          */
-        SRC_ALPHA,
+        public static SRC_ALPHA: number;
         /**
          * 1-As   1-As  1-As
          */
-        ONE_MINUS_SRC_ALPHA,
+        public static ONE_MINUS_SRC_ALPHA: number;
         /**
          * Ad   Ad  Ad
          */
-        DST_ALPHA,
+        public static DST_ALPHA: number;
         /**
          * 1-Ad   1-Ad  1-Ad
          */
-        ONE_MINUS_DST_ALPHA,
+        public static ONE_MINUS_DST_ALPHA: number;
         /**
          * min(As-Ad)   min(As-Ad)  min(As-Ad)
          */
-        SRC_ALPHA_SATURATE
+        public static SRC_ALPHA_SATURATE: number;
     }
 
-    export namespace BlendFactor
+    (initFunctions || (initFunctions = [])).push(() =>
     {
-        /**
-         * 根据枚举混合因子获取真实值
-         * @param blendFactor 混合因子
-         */
-        export function getBlendFactorValue(blendFactor: BlendFactor)
-        {
-            if (!blendFactorMap)
-            {
-                blendFactorMap = {};
-                blendFactorMap[BlendFactor.ZERO] = GL.ZERO;
-                blendFactorMap[BlendFactor.ONE] = GL.ONE;
-                blendFactorMap[BlendFactor.SRC_COLOR] = GL.SRC_COLOR;
-                blendFactorMap[BlendFactor.ONE_MINUS_SRC_COLOR] = GL.ONE_MINUS_SRC_COLOR;
-                blendFactorMap[BlendFactor.DST_COLOR] = GL.DST_COLOR;
-                blendFactorMap[BlendFactor.ONE_MINUS_DST_COLOR] = GL.ONE_MINUS_DST_COLOR;
-                blendFactorMap[BlendFactor.SRC_ALPHA] = GL.SRC_ALPHA;
-                blendFactorMap[BlendFactor.ONE_MINUS_SRC_ALPHA] = GL.ONE_MINUS_SRC_ALPHA;
-                blendFactorMap[BlendFactor.DST_ALPHA] = GL.DST_ALPHA;
-                blendFactorMap[BlendFactor.ONE_MINUS_DST_ALPHA] = GL.ONE_MINUS_DST_ALPHA;
-                blendFactorMap[BlendFactor.SRC_ALPHA_SATURATE] = GL.SRC_ALPHA_SATURATE;
-            }
-            return blendFactorMap[blendFactor];
-        }
-        var blendFactorMap: { [key: number]: number };
-    }
+        BlendFactor.ZERO = GL.ZERO;
+        BlendFactor.ONE = GL.ONE;
+        BlendFactor.SRC_COLOR = GL.SRC_COLOR;
+        BlendFactor.ONE_MINUS_SRC_COLOR = GL.ONE_MINUS_SRC_COLOR;
+        BlendFactor.DST_COLOR = GL.DST_COLOR;
+        BlendFactor.ONE_MINUS_DST_COLOR = GL.ONE_MINUS_DST_COLOR;
+        BlendFactor.SRC_ALPHA = GL.SRC_ALPHA;
+        BlendFactor.ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA;
+        BlendFactor.DST_ALPHA = GL.DST_ALPHA;
+        BlendFactor.ONE_MINUS_DST_ALPHA = GL.ONE_MINUS_DST_ALPHA;
+        BlendFactor.SRC_ALPHA_SATURATE = GL.SRC_ALPHA_SATURATE;
+    });
 }

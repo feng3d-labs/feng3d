@@ -21,7 +21,7 @@ module feng3d
         constructor(url = "")
         {
             super();
-            this.textureType = GL.TEXTURE_2D;
+            this.textureType = TextureType.TEXTURE_2D;
             this._pixels = new Image();
             this._pixels.crossOrigin = "Anonymous";
             // this._pixels.addEventListener("load", this.invalidate.bind(this));

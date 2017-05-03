@@ -64,6 +64,15 @@ module feng3d
             ticker = new SystemTicker();
             context3DPool = new RenderBufferPool();
         }
+        if (initFunctions)
+        {
+            for (var i = 0; i < initFunctions.length; i++)
+            {
+                var element = initFunctions[i];
+                element();
+            }
+            delete feng3d.initFunctions;
+        }
     }
     var isInit = false;
 

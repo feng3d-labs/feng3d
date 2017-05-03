@@ -63,6 +63,8 @@
         "src/render/consts/RenderMode.ts",
         "src/render/consts/BlendFactor.ts",
         "src/render/consts/BlendEquation.ts",
+        "src/render/consts/TextureType.ts",
+        //
         "src/render/data/ShaderParams.ts",
         "src/render/data/RenderDataHolder.ts",
         "src/render/data/RenderAtomic.ts",

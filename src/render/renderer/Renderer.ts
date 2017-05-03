@@ -33,14 +33,11 @@ module feng3d
                 var material = meshRenderer.material;
                 if (material.enableBlend)
                 {
-                    var blendEquation = BlendEquation.getBlendEquationValue(material.blendEquation)
-                    var sfactor = BlendFactor.getBlendFactorValue(material.sfactor);
-                    var dfactor = BlendFactor.getBlendFactorValue(material.dfactor);
                     //
                     gl.enable(GL.BLEND);
-                    gl.blendEquation(blendEquation);
+                    gl.blendEquation(material.blendEquation);
                     gl.depthMask(false);
-                    gl.blendFunc(sfactor, dfactor);
+                    gl.blendFunc(material.sfactor, material.dfactor);
                 } else
                 {
                     gl.disable(GL.BLEND);
@@ -132,7 +129,8 @@ module feng3d
 
         indexBuffer.active(gl);
 
-        var renderMode = RenderMode.getRenderModeValue(shaderParams.renderMode);
+        // var renderMode = RenderMode.getRenderModeValue(shaderParams.renderMode);
+        var renderMode = shaderParams.renderMode;
         if (instanceCount > 1)
         {
             var _ext = gl.getExtension('ANGLE_instanced_arrays');

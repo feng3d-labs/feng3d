@@ -5,46 +5,28 @@ module feng3d
      * 渲染模式
      * @author feng 2016-09-28
      */
-    export enum RenderMode
+    export class RenderMode
     {
         /**
          * 点渲染
          */
-        POINTS,
-        LINE_LOOP,
-        LINE_STRIP,
-        LINES,
-        TRIANGLES,
-        TRIANGLE_STRIP,
-        TRIANGLE_FAN
+        public static POINTS: number;
+        public static LINE_LOOP: number;
+        public static LINE_STRIP: number;
+        public static LINES: number;
+        public static TRIANGLES: number;
+        public static TRIANGLE_STRIP: number;
+        public static TRIANGLE_FAN: number;
     }
 
-    /**
-     * @private
-     */
-    export namespace RenderMode
+    (initFunctions || (initFunctions = [])).push(() =>
     {
-        /**
-         * 根据枚举渲染模式获取真实值
-         * @param renderMode 渲染模式
-         * @private
-         */
-        export function getRenderModeValue(renderMode: RenderMode)
-        {
-            if (!renderModeMap)
-            {
-                renderModeMap = {};
-                renderModeMap[RenderMode.POINTS] = GL.POINTS;
-                renderModeMap[RenderMode.LINE_LOOP] = GL.LINE_LOOP;
-                renderModeMap[RenderMode.LINE_STRIP] = GL.LINE_STRIP;
-                renderModeMap[RenderMode.LINES] = GL.LINES;
-                renderModeMap[RenderMode.TRIANGLES] = GL.TRIANGLES;
-                renderModeMap[RenderMode.TRIANGLE_STRIP] = GL.TRIANGLE_STRIP;
-                renderModeMap[RenderMode.TRIANGLE_FAN] = GL.TRIANGLE_FAN;
-            }
-            return renderModeMap[renderMode];
-        }
-        var renderModeMap: { [key: number]: number };
-    }
-
+        RenderMode.POINTS = GL.POINTS;
+        RenderMode.LINE_LOOP = GL.LINE_LOOP;
+        RenderMode.LINE_STRIP = GL.LINE_STRIP;
+        RenderMode.LINES = GL.LINES;
+        RenderMode.TRIANGLES = GL.TRIANGLES;
+        RenderMode.TRIANGLE_STRIP = GL.TRIANGLE_STRIP;
+        RenderMode.TRIANGLE_FAN = GL.TRIANGLE_FAN;
+    });
 }
