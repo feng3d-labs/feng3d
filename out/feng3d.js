@@ -12285,26 +12285,11 @@ var feng3d;
          */
         function TextureInfo() {
             _super.call(this);
-            /**
-             * 格式
-             */
-            this.format = feng3d.GL.RGB;
-            /**
-             * 数据类型
-             */
-            this.type = feng3d.GL.UNSIGNED_BYTE;
-            /**
-             * 是否生成mipmap
-             */
-            this.generateMipmap = false;
-            /**
-             * 对图像进行Y轴反转。默认值为false
-             */
-            this.flipY = false;
-            /**
-             * 将图像RGB颜色值得每一个分量乘以A。默认为false
-             */
-            this.premulAlpha = false;
+            this._format = feng3d.GL.RGB;
+            this._type = feng3d.GL.UNSIGNED_BYTE;
+            this._generateMipmap = false;
+            this._flipY = false;
+            this._premulAlpha = false;
             this.minFilter = feng3d.GL.LINEAR;
             this.magFilter = feng3d.GL.LINEAR;
             /**
@@ -12339,6 +12324,69 @@ var feng3d;
             // Watcher.watch(this, ["wrapS"], this.invalidate, this);
             // Watcher.watch(this, ["wrapT"], this.invalidate, this);
         }
+        Object.defineProperty(TextureInfo.prototype, "textureType", {
+            /**
+             * 纹理类型
+             */
+            get: function () { return this._textureType; },
+            set: function (value) { this._textureType = value; this.invalidate(); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "pixels", {
+            /**
+             * 图片数据
+             */
+            get: function () { return this._pixels; },
+            set: function (value) { this._pixels = value; this.invalidate(); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "format", {
+            /**
+             * 格式
+             */
+            get: function () { return this._format; },
+            set: function (value) { this._format = value; this.invalidate(); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "type", {
+            /**
+             * 数据类型
+             */
+            get: function () { return this._type; },
+            set: function (value) { this._type = value; this.invalidate(); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "generateMipmap", {
+            /**
+             * 是否生成mipmap
+             */
+            get: function () { return this._generateMipmap; },
+            set: function (value) { this._generateMipmap = value; this.invalidate(); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "flipY", {
+            /**
+             * 对图像进行Y轴反转。默认值为false
+             */
+            get: function () { return this._flipY; },
+            set: function (value) { this._flipY = value; this.invalidate(); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "premulAlpha", {
+            /**
+             * 将图像RGB颜色值得每一个分量乘以A。默认为false
+             */
+            get: function () { return this._premulAlpha; },
+            set: function (value) { this._premulAlpha = value; this.invalidate(); },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 判断数据是否满足渲染需求
          */
@@ -12365,12 +12413,12 @@ var feng3d;
             }
             var texture = this.getTexture(gl);
             //绑定纹理
-            gl.bindTexture(this.textureType, texture);
+            gl.bindTexture(this._textureType, texture);
             //设置纹理参数
-            gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_MIN_FILTER, this.minFilter);
-            gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_MAG_FILTER, this.magFilter);
-            gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_WRAP_S, this.wrapS);
-            gl.texParameteri(this.textureType, feng3d.GL.TEXTURE_WRAP_T, this.wrapT);
+            gl.texParameteri(this._textureType, feng3d.GL.TEXTURE_MIN_FILTER, this.minFilter);
+            gl.texParameteri(this._textureType, feng3d.GL.TEXTURE_MAG_FILTER, this.magFilter);
+            gl.texParameteri(this._textureType, feng3d.GL.TEXTURE_WRAP_S, this.wrapS);
+            gl.texParameteri(this._textureType, feng3d.GL.TEXTURE_WRAP_T, this.wrapT);
             //
             var anisotropicExt = gl.ext.getAnisotropicExt();
             if (anisotropicExt) {
@@ -12395,16 +12443,16 @@ var feng3d;
                 gl.pixelStorei(feng3d.GL.UNPACK_FLIP_Y_WEBGL, this.flipY ? 1 : 0);
                 gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premulAlpha ? 1 : 0);
                 //绑定纹理
-                gl.bindTexture(this.textureType, texture);
-                if (this.textureType == feng3d.GL.TEXTURE_2D) {
+                gl.bindTexture(this._textureType, texture);
+                if (this._textureType == feng3d.GL.TEXTURE_2D) {
                     //设置纹理图片
                     this.initTexture2D(gl);
                 }
-                else if (this.textureType == feng3d.GL.TEXTURE_CUBE_MAP) {
+                else if (this._textureType == feng3d.GL.TEXTURE_CUBE_MAP) {
                     this.initTextureCube(gl);
                 }
-                if (this.generateMipmap) {
-                    gl.generateMipmap(this.textureType);
+                if (this._generateMipmap) {
+                    gl.generateMipmap(this._textureType);
                 }
                 this._textureMap.push(gl, texture);
             }
@@ -12414,7 +12462,7 @@ var feng3d;
          * 初始化纹理
          */
         TextureInfo.prototype.initTexture2D = function (gl) {
-            gl.texImage2D(this.textureType, 0, this.format, this.format, this.type, this._pixels);
+            gl.texImage2D(this._textureType, 0, this._format, this._format, this._type, this._pixels);
         };
         /**
          * 初始化纹理
@@ -12425,7 +12473,7 @@ var feng3d;
                 feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_X, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, feng3d.GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
             ];
             for (var i = 0; i < faces.length; i++) {
-                gl.texImage2D(faces[i], 0, this.format, this.format, this.type, this._pixels[i]);
+                gl.texImage2D(faces[i], 0, this._format, this._format, this._type, this._pixels[i]);
             }
         };
         /**
@@ -12453,7 +12501,7 @@ var feng3d;
         function Texture2D(url) {
             if (url === void 0) { url = ""; }
             _super.call(this);
-            this.textureType = feng3d.TextureType.TEXTURE_2D;
+            this._textureType = feng3d.TextureType.TEXTURE_2D;
             this._pixels = new Image();
             this._pixels.crossOrigin = "Anonymous";
             // this._pixels.addEventListener("load", this.invalidate.bind(this));
@@ -12502,7 +12550,7 @@ var feng3d;
         __extends(TextureCube, _super);
         function TextureCube(images) {
             _super.call(this);
-            this.textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
+            this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
             this._pixels = [];
             for (var i = 0; i < 6; i++) {
                 this._pixels[i] = new Image();
@@ -12557,7 +12605,7 @@ var feng3d;
             _super.call(this);
             this._enableBlend = false;
             /**
-            * 渲染模式
+            * 渲染模式，默认RenderMode.TRIANGLES
             */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
             /**
@@ -12565,7 +12613,7 @@ var feng3d;
              */
             this.bothSides = true;
             /**
-             * 混合方程，默认GL.FUNC_ADD
+             * 混合方程，默认BlendEquation.FUNC_ADD
              */
             this.blendEquation = feng3d.BlendEquation.FUNC_ADD;
             /**

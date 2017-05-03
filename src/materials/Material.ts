@@ -10,7 +10,7 @@ module feng3d
         protected _enableBlend = false;
 
         /**
-        * 渲染模式
+        * 渲染模式，默认RenderMode.TRIANGLES
         */
         public renderMode = RenderMode.TRIANGLES;
 
@@ -39,7 +39,7 @@ module feng3d
         }
 
         /**
-         * 混合方程，默认GL.FUNC_ADD
+         * 混合方程，默认BlendEquation.FUNC_ADD
          */
         public blendEquation = BlendEquation.FUNC_ADD;
 

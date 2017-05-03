@@ -12,7 +12,7 @@ module feng3d
         constructor(images: string[])
         {
             super();
-            this.textureType = TextureType.TEXTURE_CUBE_MAP;
+            this._textureType = TextureType.TEXTURE_CUBE_MAP;
 
             this._pixels = [];
             for (var i = 0; i < 6; i++)

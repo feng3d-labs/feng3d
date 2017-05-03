@@ -4907,27 +4907,38 @@ declare module feng3d {
         /**
          * 纹理类型
          */
-        protected textureType: number;
+        textureType: number;
+        protected _textureType: number;
+        /**
+         * 图片数据
+         */
+        pixels: HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageData[] | HTMLVideoElement[] | HTMLImageElement[] | HTMLCanvasElement[];
+        protected _pixels: ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement | ImageData[] | HTMLVideoElement[] | HTMLImageElement[] | HTMLCanvasElement[];
         /**
          * 格式
          */
         format: number;
+        protected _format: number;
         /**
          * 数据类型
          */
         type: number;
+        _type: number;
         /**
          * 是否生成mipmap
          */
         generateMipmap: boolean;
+        private _generateMipmap;
         /**
          * 对图像进行Y轴反转。默认值为false
          */
         flipY: boolean;
+        private _flipY;
         /**
          * 将图像RGB颜色值得每一个分量乘以A。默认为false
          */
         premulAlpha: boolean;
+        private _premulAlpha;
         minFilter: number;
         magFilter: number;
         /**
@@ -4942,10 +4953,6 @@ declare module feng3d {
          * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
          */
         anisotropy: number;
-        /**
-         * 图片数据
-         */
-        protected _pixels: HTMLImageElement | HTMLImageElement[];
         /**
          * 纹理缓冲
          */
@@ -5038,7 +5045,7 @@ declare module feng3d {
     class Material extends RenderDataHolder {
         protected _enableBlend: boolean;
         /**
-        * 渲染模式
+        * 渲染模式，默认RenderMode.TRIANGLES
         */
         renderMode: number;
         /**
@@ -5055,7 +5062,7 @@ declare module feng3d {
          */
         enableBlend: boolean;
         /**
-         * 混合方程，默认GL.FUNC_ADD
+         * 混合方程，默认BlendEquation.FUNC_ADD
          */
         blendEquation: number;
         /**
