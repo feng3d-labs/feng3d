@@ -8,7 +8,7 @@ module feng3d
         protected _upAxis: Vector3D = Vector3D.Y_AXIS;
         private _pos: Vector3D = new Vector3D();
 
-        constructor(target: Object3D = null, lookAtObject: Object3D = null)
+        constructor(target: GameObject = null, lookAtObject: Object3D = null)
         {
             super(target);
 
