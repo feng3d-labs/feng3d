@@ -24,7 +24,10 @@ module feng3d
         {
             if (this.isBillboard)
             {
-                this.lookAt(renderContext.camera.sceneTransform.position);
+                var parentInverseSceneTransform = (this.parent && this.parent.inverseSceneTransform) || new Matrix3D();
+                var cameraPos = parentInverseSceneTransform.transformVector(renderContext.camera.sceneTransform.position);
+                var yAxis = parentInverseSceneTransform.deltaTransformVector(Vector3D.Y_AXIS);
+                this.lookAt(cameraPos, yAxis);
             }
             if (this.holdSize)
             {
