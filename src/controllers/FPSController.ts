@@ -46,20 +46,40 @@ module feng3d
         {
             if (this._target != null)
             {
-                input.removeEventListener(inputType.KEY_DOWN, this.onKeydown, this);
-                input.removeEventListener(inputType.KEY_UP, this.onKeyup, this);
-                input.removeEventListener(inputType.MOUSE_MOVE, this.onMouseMove, this);
+                input.removeEventListener(inputType.MOUSE_DOWN, this.onMousedown, this);
+                input.removeEventListener(inputType.MOUSE_UP, this.onMouseup, this);
             }
             this._target = value;
             if (this._target != null)
             {
-                input.addEventListener(inputType.KEY_DOWN, this.onKeydown, this);
-                input.addEventListener(inputType.KEY_UP, this.onKeyup, this);
-                input.addEventListener(inputType.MOUSE_MOVE, this.onMouseMove, this);
-                this.preMousePoint = null;
-                this.velocity = new Vector3D();
-                this.keyDownDic = {};
+                input.addEventListener(inputType.MOUSE_DOWN, this.onMousedown, this);
+                input.addEventListener(inputType.MOUSE_UP, this.onMouseup, this);
             }
+        }
+
+        private onMousedown()
+        {
+            this.preMousePoint = null;
+            this.velocity = new Vector3D();
+            this.keyDownDic = {};
+
+            input.addEventListener(inputType.KEY_DOWN, this.onKeydown, this);
+            input.addEventListener(inputType.KEY_UP, this.onKeyup, this);
+            input.addEventListener(inputType.MOUSE_MOVE, this.onMouseMove, this);
+            ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+        }
+
+        private onMouseup()
+        {
+            input.removeEventListener(inputType.KEY_DOWN, this.onKeydown, this);
+            input.removeEventListener(inputType.KEY_UP, this.onKeyup, this);
+            input.removeEventListener(inputType.MOUSE_MOVE, this.onMouseMove, this);
+            ticker.removeEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+        }
+
+        private onEnterFrame()
+        {
+            this.update();
         }
 
         /**
