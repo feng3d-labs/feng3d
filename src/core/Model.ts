@@ -9,11 +9,15 @@ module feng3d
         /**
          * 几何体
          */
-        public geometry: Geometry;
+        public get geometry() { return this._geometry || defaultGeometry; }
+        public set geometry(value) { this._geometry = value; this.invalidateRenderHolder(); }
+        private _geometry: Geometry;
         /**
          * 材质
          */
-        public material: Material;
+        public get material() { return this._material || defaultMaterial; }
+        public set material(value) { this._material = value; this.invalidateRenderHolder(); }
+        private _material: Material;
 
         /**
          * 构建
@@ -22,9 +26,6 @@ module feng3d
         {
             super();
             this._single = true;
-
-            Watcher.watch(this, ["geometry"], this.invalidateRenderHolder, this);
-            Watcher.watch(this, ["material"], this.invalidateRenderHolder, this);
         }
 
         /**
@@ -33,10 +34,8 @@ module feng3d
          */
         public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
         {
-            var material = this.material || defaultMaterial;
-            var geometry = this.geometry || defaultGeometry;
-            geometry && geometry.collectRenderDataHolder(renderAtomic);
-            material && material.collectRenderDataHolder(renderAtomic);
+            this.geometry.collectRenderDataHolder(renderAtomic);
+            this.material.collectRenderDataHolder(renderAtomic);
             super.collectRenderDataHolder(renderAtomic);
         }
     }

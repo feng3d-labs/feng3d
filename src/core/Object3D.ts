@@ -420,6 +420,10 @@ module feng3d
         public constructor()
         {
             super();
+            tempAxeX = tempAxeX || new Vector3D();
+            tempAxeY = tempAxeY || new Vector3D();
+            tempAxeZ = tempAxeZ || new Vector3D();
+
             this._transformComponents = [];
             this._transformComponents[0] = this._pos;
             this._transformComponents[1] = this._rot;
@@ -551,20 +555,11 @@ module feng3d
             this.invalidateRotation();
         }
 
-        public static tempAxeX: Vector3D;
-        public static tempAxeY: Vector3D;
-        public static tempAxeZ: Vector3D;
         public lookAt(target: Vector3D, upAxis: Vector3D = null)
         {
-            if (<any>!Object3D.tempAxeX)
-                Object3D.tempAxeX = new Vector3D();
-            if (<any>!Object3D.tempAxeY)
-                Object3D.tempAxeY = new Vector3D();
-            if (<any>!Object3D.tempAxeZ)
-                Object3D.tempAxeZ = new Vector3D();
-            var xAxis: Vector3D = Object3D.tempAxeX;
-            var yAxis: Vector3D = Object3D.tempAxeY;
-            var zAxis: Vector3D = Object3D.tempAxeZ;
+            var xAxis: Vector3D = tempAxeX;
+            var yAxis: Vector3D = tempAxeY;
+            var zAxis: Vector3D = tempAxeZ;
             var raw: Float32Array;
             upAxis = upAxis || Vector3D.Y_AXIS;
             if (this._transformDirty)
@@ -674,4 +669,7 @@ module feng3d
             this._zOffset = value;
         }
     }
+    var tempAxeX: Vector3D;
+    var tempAxeY: Vector3D;
+    var tempAxeZ: Vector3D;
 }
