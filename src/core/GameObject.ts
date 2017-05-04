@@ -18,6 +18,9 @@ module feng3d
          * 是否为公告牌（默认永远朝向摄像机），默认false。
          */
         public isBillboard = false;
+        /**
+         * 保持缩放尺寸
+         */
         public holdSize = NaN;
 
         public updateRender(renderContext: RenderContext)
