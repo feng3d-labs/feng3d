@@ -46,7 +46,7 @@ module feng3d
          */
         private onHeightMapLoad()
         {
-            var canvasImg = <HTMLCanvasElement>document.createElement("canvas");
+            var canvasImg = document.createElement("canvas");
             canvasImg.width = this._heightImage.width;
             canvasImg.height = this._heightImage.height;
 
