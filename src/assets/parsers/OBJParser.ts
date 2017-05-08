@@ -34,11 +34,11 @@ module feng3d
         //模型名称
         name: string;
         /** 顶点坐标 */
-        vertex: {x:number,y:number,z:number}[];
+        vertex: { x: number, y: number, z: number }[];
         /** 顶点法线 */
-        vn: {x:number,y:number,z:number}[];
+        vn: { x: number, y: number, z: number }[];
         /** 顶点uv */
-        vt: {u:number,v:number,s:number}[];
+        vt: { u: number, v: number, s: number }[];
         /** 子对象 */
         subObjs: OBJ_SubOBJ[];
     };
@@ -128,13 +128,13 @@ module feng3d
                 currentObj = { name: "", vertex: [], subObjs: [], vn: [], vt: [] };
                 objData.objs.push(currentObj);
             }
-            currentObj.vertex.push({x:parseFloat(result[1]),y: parseFloat(result[2]), z:parseFloat(result[3])});
+            currentObj.vertex.push({ x: parseFloat(result[1]), y: parseFloat(result[2]), z: parseFloat(result[3]) });
         } else if ((result = vnReg.exec(line)) && result[0] == line)
         {
-            currentObj.vn.push({x:parseFloat(result[1]),y: parseFloat(result[2]),z: parseFloat(result[3])});
+            currentObj.vn.push({ x: parseFloat(result[1]), y: parseFloat(result[2]), z: parseFloat(result[3]) });
         } else if ((result = vtReg.exec(line)) && result[0] == line)
         {
-            currentObj.vt.push({u:parseFloat(result[1]),v: parseFloat(result[2]),s: parseFloat(result[3])});
+            currentObj.vt.push({ u: parseFloat(result[1]), v: 1 - parseFloat(result[2]), s: parseFloat(result[3]) });
         } else if ((result = gReg.exec(line)) && result[0] == line)
         {
             if (currentSubObj == null)

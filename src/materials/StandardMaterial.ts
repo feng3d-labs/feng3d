@@ -27,6 +27,24 @@ module feng3d
          */
         public ambientMethod = new AmbientMethod();
 
+        /**
+         * 地形函数
+         */
+        public get terrainMethod(){
+            return this._terrainMethod;
+        }
+        public set terrainMethod(value){
+            if(this._terrainMethod){
+                this.removeComponent(this._terrainMethod);
+            }
+            this._terrainMethod = value;
+            if(this._terrainMethod){
+                this.addComponent(this._terrainMethod);
+                this.invalidateRenderData();
+            }
+        }
+        private _terrainMethod:TerrainMethod;
+
         // /**
         //  * 反射率
         //  */
@@ -68,10 +86,10 @@ module feng3d
             this.addComponent(this.specularMethod);
             this.addComponent(this.ambientMethod);
 
-            Watcher.watch(this, ["ambientColor"], this.invalidateRenderData, this);
-            Watcher.watch(this, ["reflectance"], this.invalidateRenderData, this);
-            Watcher.watch(this, ["roughness"], this.invalidateRenderData, this);
-            Watcher.watch(this, ["metalic"], this.invalidateRenderData, this);
+            // Watcher.watch(this, ["ambientColor"], this.invalidateRenderData, this);
+            // Watcher.watch(this, ["reflectance"], this.invalidateRenderData, this);
+            // Watcher.watch(this, ["roughness"], this.invalidateRenderData, this);
+            // Watcher.watch(this, ["metalic"], this.invalidateRenderData, this);
         }
 
         /**

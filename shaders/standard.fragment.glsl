@@ -40,6 +40,10 @@ uniform float u_glossiness;
     uniform sampler2D s_specular;
 #endif
 
+#ifdef HAS_TERRAIN_METHOD
+    #include<terrain.fragment>
+#endif
+
 #if NUM_LIGHT > 0
     #include<modules/pointLightShading.fragment>
 #endif
@@ -73,6 +77,10 @@ void main(void) {
     {
         discard;
     }
+
+    #ifdef HAS_TERRAIN_METHOD
+        diffuseColor = terrainMethod(diffuseColor, v_uv);
+    #endif
 
     finalColor = diffuseColor;
 

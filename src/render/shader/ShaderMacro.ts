@@ -75,6 +75,10 @@ module feng3d
          * 是否有骨骼动画
          */
         public HAS_SKELETON_ANIMATION: boolean;
+        /**
+         * 是否有地形方法
+         */
+        public HAS_TERRAIN_METHOD: boolean;
     }
 
     /**

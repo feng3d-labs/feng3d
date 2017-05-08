@@ -421,7 +421,7 @@ module feng3d
          */
         public createVertexTangents()
         {
-            //生成法线
+            //生成切线
             var tangents = GeometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, this._useFaceWeights);
             this.tangents = new Float32Array(tangents);
         }

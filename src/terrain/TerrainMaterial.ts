@@ -5,9 +5,8 @@ module feng3d
      * 地形材质
      * @author feng 2016-04-28
      */
-    export class TerrainMaterial extends Material
+    export class TerrainMethod extends RenderDataHolder
     {
-        public diffuseTexture: Texture2D;
         public splatTexture1: Texture2D;
         public splatTexture2: Texture2D;
         public splatTexture3: Texture2D;
@@ -21,7 +20,7 @@ module feng3d
         constructor()
         {
             super();
-            this.shaderName = "terrain";
+            // this.shaderName = "terrain";
         }
 
         /**
@@ -29,7 +28,8 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            renderData.uniforms[RenderDataID.s_texture] = this.diffuseTexture;
+            renderData.shaderMacro.boolMacros.HAS_TERRAIN_METHOD = true;
+            
             renderData.uniforms[RenderDataID.s_blendTexture] = this.blendTexture;
             renderData.uniforms[RenderDataID.s_splatTexture1] = this.splatTexture1;
             renderData.uniforms[RenderDataID.s_splatTexture2] = this.splatTexture2;
