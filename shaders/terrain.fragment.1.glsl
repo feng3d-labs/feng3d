@@ -22,36 +22,36 @@ void main(void) {
     
     vec4 blend = texture2D(s_blendTexture,v_uv);
 
-    float offset = 1.0/512.0;
-    // float offset = 1.0 / 1024.0;
+    // float offset = 1.0/512.0;
     // float offset = 0.000000001;
-   // float width = 0.5 - offset;
-   // float delta = 0.5 + offset;
+    float offset = 1.0 / 1024.0;
+   float width = 0.5 - offset * 2.0;
 
-     float width = 0.5;
-     float delta = 0.5;
+    // float offset = 0.0;
+    //  float width = 0.5;
+     
 
     t_uv = v_uv.xy * u_splatRepeats.y;
     t_uv.x = fract(t_uv.x);
     t_uv.y = fract(t_uv.y);
-    t_uv.x = t_uv.x * width;
-    t_uv.y = t_uv.y * width;
+    t_uv.x = t_uv.x * width + offset;
+    t_uv.y = t_uv.y * width + offset;
     vec4 tColor = texture2D(s_splatTexture1,t_uv);
     finalColor = (tColor - finalColor) * blend.x + finalColor;
 
     t_uv = v_uv.xy * u_splatRepeats.z;
     t_uv.x = fract(t_uv.x);
     t_uv.y = fract(t_uv.y);
-    t_uv.x = t_uv.x * width + delta;
-    t_uv.y = t_uv.y * width;
+    t_uv.x = t_uv.x * width + offset + 0.5;
+    t_uv.y = t_uv.y * width + offset;
     tColor = texture2D(s_splatTexture1,t_uv);
     finalColor = (tColor - finalColor) * blend.y + finalColor;
 
     t_uv = v_uv.xy * u_splatRepeats.w;
     t_uv.x = fract(t_uv.x);
     t_uv.y = fract(t_uv.y);
-    t_uv.x = t_uv.x * width;
-    t_uv.y = t_uv.y * width + delta;
+    t_uv.x = t_uv.x * width + offset;
+    t_uv.y = t_uv.y * width + offset + 0.5;
     tColor = texture2D(s_splatTexture1,t_uv);
     finalColor = (tColor - finalColor) * blend.z + finalColor;
 

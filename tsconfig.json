@@ -208,16 +208,8 @@
         "src/debug/Trident.ts",
         //
         "src/object3ds/CameraObject3D.ts",
-        "src/object3ds/PlaneObject3D.ts",
-        "src/object3ds/CubeObject3D.ts",
-        "src/object3ds/TorusObect3D.ts",
-        "src/object3ds/SphereObject3D.ts",
-        "src/object3ds/CapsuleObject3D.ts",
-        "src/object3ds/CylinderObject3D.ts",
-        "src/object3ds/ConeObject3D.ts",
-        "src/object3ds/SegmentObject3D.ts",
-        "src/object3ds/ParticleObject3D.ts",
-        "src/object3ds/PointLightObject3D.ts",
+        //
+        "src/utils/GameObjectFactory.ts",
         //
         "src/core/Mouse3DManager.ts",
         //

@@ -10,9 +10,9 @@ module feng3d
         private _yLine: GameObject;
         private _zLine: GameObject;
 
-        private _xArrow: ConeObject3D;
-        private _yArrow: ConeObject3D;
-        private _zArrow: ConeObject3D;
+        private _xArrow: GameObject;
+        private _yArrow: GameObject;
+        private _zArrow: GameObject;
 
         constructor(length = 100)
         {

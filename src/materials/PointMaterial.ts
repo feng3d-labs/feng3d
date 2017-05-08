@@ -7,7 +7,6 @@ module feng3d
      */
     export class PointMaterial extends Material
     {
-
         public pointSize = 1;
 
         /**

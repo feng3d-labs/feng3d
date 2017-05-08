@@ -11,6 +11,8 @@ module feng3d
         uvIndices?: number[];
         /** 法线索引 */
         normalIndices?: number[];
+        /** 索引数据 */
+        indexIds: string[];
     };
 
     /**
@@ -32,11 +34,11 @@ module feng3d
         //模型名称
         name: string;
         /** 顶点坐标 */
-        vertex: number[];
+        vertex: {x:number,y:number,z:number}[];
         /** 顶点法线 */
-        vn: number[];
+        vn: {x:number,y:number,z:number}[];
         /** 顶点uv */
-        vt: number[];
+        vt: {u:number,v:number,s:number}[];
         /** 子对象 */
         subObjs: OBJ_SubOBJ[];
     };
@@ -91,7 +93,7 @@ module feng3d
     /** 面正则 vertex */
     var faceVReg = /f\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
     /** 面正则 vertex/uv/normal */
-    var faceVUNReg = /f\s+(\d+)\/(\d+)\/(\d+)\s+(\d+)\/(\d+)\/(\d+)\s+(\d+)\/(\d+)\/(\d+)/;
+    var faceVUNReg = /f\s+((\d+)\/(\d+)\/(\d+))\s+((\d+)\/(\d+)\/(\d+))\s+((\d+)\/(\d+)\/(\d+))/;
 
 
     var gReg = /g\s+(\w+)/;
@@ -126,13 +128,13 @@ module feng3d
                 currentObj = { name: "", vertex: [], subObjs: [], vn: [], vt: [] };
                 objData.objs.push(currentObj);
             }
-            currentObj.vertex.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
+            currentObj.vertex.push({x:parseFloat(result[1]),y: parseFloat(result[2]), z:parseFloat(result[3])});
         } else if ((result = vnReg.exec(line)) && result[0] == line)
         {
-            currentObj.vn.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
+            currentObj.vn.push({x:parseFloat(result[1]),y: parseFloat(result[2]),z: parseFloat(result[3])});
         } else if ((result = vtReg.exec(line)) && result[0] == line)
         {
-            currentObj.vt.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
+            currentObj.vt.push({u:parseFloat(result[1]),v: parseFloat(result[2]),s: parseFloat(result[3])});
         } else if ((result = gReg.exec(line)) && result[0] == line)
         {
             if (currentSubObj == null)
@@ -152,14 +154,16 @@ module feng3d
         } else if ((result = faceVReg.exec(line)) && result[0] == line)
         {
             currentSubObj.faces.push({
+                indexIds: [result[1], result[2], result[3], result[3]],
                 vertexIndices: [parseInt(result[1]), parseInt(result[2]), parseInt(result[3]), parseInt(result[4])]
             });
         } else if ((result = faceVUNReg.exec(line)) && result[0] == line)
         {
             currentSubObj.faces.push({
-                vertexIndices: [parseInt(result[1]), parseInt(result[4]), parseInt(result[7])],
-                uvIndices: [parseInt(result[2]), parseInt(result[5]), parseInt(result[8])],
-                normalIndices: [parseInt(result[3]), parseInt(result[6]), parseInt(result[9])]
+                indexIds: [result[1], result[5], result[9]],
+                vertexIndices: [parseInt(result[2]), parseInt(result[6]), parseInt(result[10])],
+                uvIndices: [parseInt(result[3]), parseInt(result[7]), parseInt(result[11])],
+                normalIndices: [parseInt(result[4]), parseInt(result[8]), parseInt(result[12])]
             });
         } else
         {
