@@ -40,12 +40,20 @@ uniform float u_glossiness;
     uniform sampler2D s_specular;
 #endif
 
+#ifdef IS_POINTS_MODE
+    uniform float u_PointSize;
+#endif
+
 #ifdef HAS_TERRAIN_METHOD
     #include<terrain.fragment>
 #endif
 
 #if NUM_LIGHT > 0
     #include<modules/pointLightShading.fragment>
+#endif
+
+#ifdef HAS_FOG_METHOD
+    #include<modules/fog.fragment>
 #endif
 
 void main(void) {
@@ -101,5 +109,13 @@ void main(void) {
         finalColor.xyz = pointLightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
     #endif
 
+    #ifdef HAS_FOG_METHOD
+        finalColor.xyz = fogMethod(finalColor.xyz);
+    #endif
+
     gl_FragColor = finalColor;
+
+    #ifdef IS_POINTS_MODE
+        gl_PointSize = u_PointSize;
+    #endif
 }

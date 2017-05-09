@@ -7,6 +7,7 @@ module feng3d
      */
     export class Material extends RenderDataHolder
     {
+        protected _pointSize = 1;
         protected _enableBlend = false;
 
         /**
@@ -36,6 +37,20 @@ module feng3d
         public set enableBlend(value: boolean)
         {
             this._enableBlend = value;
+        }
+
+        /**
+         * 点绘制时点的尺寸
+         */
+        public get pointSize()
+        {
+            return this._pointSize;
+        }
+
+        public set pointSize(value)
+        {
+            this._pointSize = value;
+            this.invalidateRenderData();
         }
 
         /**
@@ -82,6 +97,15 @@ module feng3d
             {
                 renderData.vertexCode = null;
                 renderData.fragmentCode = null;
+            }
+            if (this.renderMode == RenderMode.POINTS)
+            {
+                renderData.shaderMacro.boolMacros.IS_POINTS_MODE = true;
+                renderData.uniforms[RenderDataID.u_PointSize] = this.pointSize;
+            } else
+            {
+                renderData.shaderMacro.boolMacros.IS_POINTS_MODE = false;
+                delete renderData.uniforms[RenderDataID.u_PointSize];
             }
 
             super.updateRenderData(renderContext, renderData);

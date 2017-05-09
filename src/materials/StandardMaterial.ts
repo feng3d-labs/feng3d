@@ -30,20 +30,38 @@ module feng3d
         /**
          * 地形函数
          */
-        public get terrainMethod(){
+        public get terrainMethod()
+        {
             return this._terrainMethod;
         }
-        public set terrainMethod(value){
-            if(this._terrainMethod){
+        public set terrainMethod(value)
+        {
+            if (this._terrainMethod)
+            {
                 this.removeComponent(this._terrainMethod);
             }
             this._terrainMethod = value;
-            if(this._terrainMethod){
+            if (this._terrainMethod)
+            {
                 this.addComponent(this._terrainMethod);
                 this.invalidateRenderData();
             }
         }
-        private _terrainMethod:TerrainMethod;
+        private _terrainMethod: TerrainMethod;
+
+        private _methods: RenderDataHolder[] = [];
+
+        /**
+         * 添加方法
+         */
+        public addMethod(method: RenderDataHolder)
+        {
+            var index = this._methods.indexOf(method);
+            if (index != -1)
+                return;
+            this._methods.push(method);
+            this.invalidateRenderData();
+        }
 
         // /**
         //  * 反射率
@@ -100,6 +118,10 @@ module feng3d
             // renderData.uniforms[RenderDataID.u_reflectance] = this.reflectance;
             // renderData.uniforms[RenderDataID.u_roughness] = this.roughness;
             // renderData.uniforms[RenderDataID.u_metalic] = this.metalic;
+            for (var i = 0; i < this._methods.length; i++)
+            {
+                this._methods[i].updateRenderData(renderContext, renderData);
+            }
             //
             super.updateRenderData(renderContext, renderData);
         }

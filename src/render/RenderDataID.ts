@@ -175,5 +175,26 @@ module feng3d
          * 3D对象编号
          */
         public static u_objectID = "u_objectID";
+
+        /**
+         * 雾颜色
+         */
+        public static u_fogColor = "u_fogColor";
+        /**
+         * 雾最近距离
+         */
+        public static u_fogMinDistance = "u_fogMinDistance";
+        /**
+         * 雾最远距离
+         */
+        public static u_fogMaxDistance = "u_fogMaxDistance";
+        /**
+         * 雾浓度
+         */
+        public static u_fogDensity = "u_fogDensity";
+        /**
+         * 雾模式
+         */
+        public static u_fogMode = "u_fogMode";
     }
 }
