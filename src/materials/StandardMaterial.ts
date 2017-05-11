@@ -10,22 +10,62 @@ module feng3d
         /**
          * 漫反射函数
          */
-        public diffuseMethod = new DiffuseMethod();
+        public get diffuseMethod()
+        {
+            return this._diffuseMethod;
+        }
+        public set diffuseMethod(value)
+        {
+            this._diffuseMethod = value;
+            if (this._diffuseMethod)
+                this.addMethod(this._diffuseMethod);
+        }
+        private _diffuseMethod: DiffuseMethod;
 
         /**
          * 法线函数
          */
-        public normalMethod = new NormalMethod();
+        public get normalMethod()
+        {
+            return this._normalMethod;
+        }
+        public set normalMethod(value)
+        {
+            this._normalMethod = value;
+            if (this._normalMethod)
+                this.addMethod(this._normalMethod);
+        }
+        private _normalMethod: NormalMethod;
 
         /**
          * 镜面反射函数
          */
-        public specularMethod = new SpecularMethod();
+        public get specularMethod()
+        {
+            return this._specularMethod;
+        }
+        public set specularMethod(value)
+        {
+            this._specularMethod = value;
+            if (this._specularMethod)
+                this.addMethod(this._specularMethod);
+        }
+        private _specularMethod : SpecularMethod;
 
         /**
          * 环境反射函数
          */
-        public ambientMethod = new AmbientMethod();
+        public get ambientMethod()
+        {
+            return this._ambientMethod;
+        }
+        public set ambientMethod(value)
+        {
+            this._ambientMethod = value;
+            if (this._ambientMethod)
+                this.addMethod(this._ambientMethod);
+        }
+        private _ambientMethod : AmbientMethod;
 
         /**
          * 地形函数
@@ -47,21 +87,7 @@ module feng3d
                 this.invalidateRenderData();
             }
         }
-        private _terrainMethod: TerrainMethod;
-
-        private _methods: RenderDataHolder[] = [];
-
-        /**
-         * 添加方法
-         */
-        public addMethod(method: RenderDataHolder)
-        {
-            var index = this._methods.indexOf(method);
-            if (index != -1)
-                return;
-            this._methods.push(method);
-            this.invalidateRenderData();
-        }
+        private _terrainMethod: RenderDataHolder;
 
         // /**
         //  * 反射率
@@ -94,15 +120,15 @@ module feng3d
         /**
          * 构建
          */
-        constructor()
+        constructor(diffuseUrl = "", normalUrl = "",specularUrl = "",ambientUrl = "")
         {
             super();
             this.shaderName = "standard";
 
-            this.addComponent(this.diffuseMethod);
-            this.addComponent(this.normalMethod);
-            this.addComponent(this.specularMethod);
-            this.addComponent(this.ambientMethod);
+            this.diffuseMethod = new DiffuseMethod(diffuseUrl);
+            this.normalMethod = new NormalMethod(normalUrl);
+            this.specularMethod =  new SpecularMethod(specularUrl);
+            this.ambientMethod= new AmbientMethod(ambientUrl);
 
             // Watcher.watch(this, ["ambientColor"], this.invalidateRenderData, this);
             // Watcher.watch(this, ["reflectance"], this.invalidateRenderData, this);
@@ -118,10 +144,6 @@ module feng3d
             // renderData.uniforms[RenderDataID.u_reflectance] = this.reflectance;
             // renderData.uniforms[RenderDataID.u_roughness] = this.roughness;
             // renderData.uniforms[RenderDataID.u_metalic] = this.metalic;
-            for (var i = 0; i < this._methods.length; i++)
-            {
-                this._methods[i].updateRenderData(renderContext, renderData);
-            }
             //
             super.updateRenderData(renderContext, renderData);
         }

@@ -15,11 +15,6 @@ varying vec3 v_normal;
 
 uniform mat4 u_cameraMatrix;
 
-//环境
-uniform vec4 u_ambient;
-#ifdef HAS_AMBIENT_SAMPLER
-    uniform sampler2D s_ambient;
-#endif
 
 uniform float u_alphaThreshold;
 //漫反射
@@ -40,6 +35,12 @@ uniform float u_glossiness;
     uniform sampler2D s_specular;
 #endif
 
+//环境
+uniform vec4 u_ambient;
+#ifdef HAS_AMBIENT_SAMPLER
+    uniform sampler2D s_ambient;
+#endif
+
 #ifdef IS_POINTS_MODE
     uniform float u_PointSize;
 #endif
@@ -48,23 +49,19 @@ uniform float u_glossiness;
     #include<terrain.fragment>
 #endif
 
-#if NUM_LIGHT > 0
-    #include<modules/pointLightShading.fragment>
-#endif
+#include<modules/pointLightShading.fragment>
 
 #ifdef HAS_FOG_METHOD
     #include<modules/fog.fragment>
 #endif
 
+#ifdef HAS_ENV_METHOD
+    #include<modules/envmap.fragment>
+#endif
+
 void main(void) {
 
     vec4 finalColor = vec4(1.0,1.0,1.0,1.0);
-
-    //环境光
-    vec3 ambientColor = u_ambient.xyz;
-    #ifdef HAS_AMBIENT_SAMPLER
-        ambientColor = ambientColor * texture2D(s_diffuse, v_uv).xyz;
-    #endif
 
     //获取法线
     vec3 normal;
@@ -90,11 +87,16 @@ void main(void) {
         diffuseColor = terrainMethod(diffuseColor, v_uv);
     #endif
 
+    //环境光
+    vec3 ambientColor = u_ambient.w * u_ambient.xyz;
+    #ifdef HAS_AMBIENT_SAMPLER
+        ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;
+    #endif
+
     finalColor = diffuseColor;
 
-
     //渲染灯光
-    #if NUM_LIGHT > 0
+    // #if NUM_LIGHT > 0
 
         //获取高光值
         float glossiness = u_glossiness;
@@ -107,6 +109,10 @@ void main(void) {
         #endif
         
         finalColor.xyz = pointLightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
+    // #endif
+
+    #ifdef HAS_ENV_METHOD
+        finalColor = envmapMethod(finalColor);
     #endif
 
     #ifdef HAS_FOG_METHOD

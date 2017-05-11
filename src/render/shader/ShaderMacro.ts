@@ -84,9 +84,17 @@ module feng3d
          */
         public HAS_TERRAIN_METHOD: boolean;
         /**
+         * 使用合并地形贴图
+         */
+        public USE_TERRAIN_MERGE: boolean;
+        /**
          * 雾函数
          */
         public HAS_FOG_METHOD: boolean;
+        /**
+         * 环境映射函数
+         */
+        public HAS_ENV_METHOD: boolean;
     }
 
     /**

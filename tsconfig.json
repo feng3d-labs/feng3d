@@ -151,6 +151,7 @@
         "src/materials/methods/SpecularMethod.ts",
         "src/materials/methods/AmbientMethod.ts",
         "src/materials/methods/FogMethod.ts",
+        "src/materials/methods/EnvMapMethod.ts",
         //灯光
         "src/light/LightType.ts",
         "src/light/Light.ts",
@@ -159,6 +160,7 @@
         //镜头控制
         "src/controllers/ControllerBase.ts",
         "src/controllers/LookAtController.ts",
+        "src/controllers/HoverController.ts",
         "src/controllers/FPSController.ts",
         //拾取
         "src/pick/PickingCollisionVO.ts",
@@ -166,7 +168,8 @@
         "src/pick/RaycastPicker.ts",
         //地形
         "src/terrain/TerrainGeometry.ts",
-        "src/terrain/TerrainMaterial.ts",
+        "src/terrain/TerrainMethod.ts",
+        "src/terrain/TerrainMergeMethod.ts",
         //
         "src/animators/base/states/AnimationStateBase.ts",
         "src/animators/base/states/AnimationClipState.ts",

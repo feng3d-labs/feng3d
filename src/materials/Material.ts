@@ -68,6 +68,8 @@ module feng3d
          */
         public dfactor = BlendFactor.ONE_MINUS_SRC_ALPHA;
 
+        private _methods: RenderDataHolder[] = [];
+
         /**
          * 构建材质
          */
@@ -81,6 +83,44 @@ module feng3d
             Watcher.watch(this, ["renderMode"], this.invalidateRenderData, this);
         }
 
+        /**
+         * 添加方法
+         */
+        public addMethod(method: RenderDataHolder)
+        {
+            var index = this._methods.indexOf(method);
+            if (index != -1)
+                return;
+            this._methods.push(method);
+            this.invalidateRenderHolder();
+        }
+
+        /**
+         * 删除方法
+         */
+        public removeMethod(method: RenderDataHolder)
+        {
+            var index = this._methods.indexOf(method);
+            if (index != -1)
+            {
+                this._methods.splice(index, 1);
+                this.invalidateRenderData();
+            }
+        }
+        
+        /**
+         * 收集渲染数据拥有者
+         * @param renderAtomic 渲染原子
+         */
+        public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
+        {
+            for (var i = 0; i < this._methods.length; i++)
+            {
+                this._methods[i].collectRenderDataHolder(renderAtomic);
+            }
+            super.collectRenderDataHolder(renderAtomic);
+        }
+        
         /**
 		 * 更新渲染数据
 		 */
@@ -108,6 +148,10 @@ module feng3d
                 delete renderData.uniforms[RenderDataID.u_PointSize];
             }
 
+            for (var i = 0; i < this._methods.length; i++)
+            {
+                this._methods[i].updateRenderData(renderContext, renderData);
+            }
             super.updateRenderData(renderContext, renderData);
         }
     }

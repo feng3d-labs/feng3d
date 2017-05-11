@@ -37,20 +37,20 @@ module feng3d
             this.init();
         }
 
-        public get target(): GameObject
+        public get targetObject(): GameObject
         {
-            return this._target;
+            return this._targetObject;
         }
 
-        public set target(value: GameObject)
+        public set targetObject(value: GameObject)
         {
-            if (this._target != null)
+            if (this._targetObject != null)
             {
                 input.removeEventListener(inputType.MOUSE_DOWN, this.onMousedown, this);
                 input.removeEventListener(inputType.MOUSE_UP, this.onMouseup, this);
             }
-            this._target = value;
-            if (this._target != null)
+            this._targetObject = value;
+            if (this._targetObject != null)
             {
                 input.addEventListener(inputType.MOUSE_DOWN, this.onMousedown, this);
                 input.addEventListener(inputType.MOUSE_UP, this.onMouseup, this);
@@ -100,7 +100,7 @@ module feng3d
          */
         public update(interpolate: boolean = true): void
         {
-            if (this.target == null)
+            if (this.targetObject == null)
                 return;
 
             //计算加速度
@@ -116,9 +116,9 @@ module feng3d
             accelerationVec.scaleBy(this.acceleration);
             //计算速度
             this.velocity.incrementBy(accelerationVec);
-            var right = this.target.rightVector;
-            var up = this.target.upVector;
-            var forward = this.target.forwardVector;
+            var right = this.targetObject.rightVector;
+            var up = this.targetObject.upVector;
+            var forward = this.targetObject.forwardVector;
             right.scaleBy(this.velocity.x);
             up.scaleBy(this.velocity.y);
             forward.scaleBy(this.velocity.z);
@@ -126,9 +126,9 @@ module feng3d
             var displacement = right.clone();
             displacement.incrementBy(up);
             displacement.incrementBy(forward);
-            this.target.x += displacement.x;
-            this.target.y += displacement.y;
-            this.target.z += displacement.z;
+            this.targetObject.x += displacement.x;
+            this.targetObject.y += displacement.y;
+            this.targetObject.z += displacement.z;
         }
 
         /**
@@ -136,7 +136,7 @@ module feng3d
          */
         private onMouseMove(event: InputEvent)
         {
-            if (this.target == null)
+            if (this.targetObject == null)
                 return;
 
             var mousePoint = new Point(input.clientX, input.clientY);
@@ -150,7 +150,7 @@ module feng3d
             var offsetPoint = mousePoint.subtract(this.preMousePoint)
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
-            var matrix3d = this.target.sceneTransform;
+            var matrix3d = this.targetObject.sceneTransform;
             matrix3d.appendRotation(offsetPoint.y, matrix3d.right, matrix3d.position);
             var up = Vector3D.Y_AXIS;
             if (matrix3d.up.dotProduct(up) < 0)
@@ -159,7 +159,7 @@ module feng3d
                 up.scaleBy(-1);
             }
             matrix3d.appendRotation(offsetPoint.x, up, matrix3d.position);
-            this.target.sceneTransform = matrix3d;
+            this.targetObject.sceneTransform = matrix3d;
             //
             this.preMousePoint = mousePoint;
         }

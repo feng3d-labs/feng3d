@@ -9,21 +9,43 @@ module feng3d
         /**
          * 环境纹理
          */
-        public ambientTexture: Texture2D = new Texture2D();
+        public get ambientTexture()
+        {
+            return this._ambientTexture;
+        }
+        public set ambientTexture(value)
+        {
+            if(this.ambientTexture)
+                this.ambientTexture.removeEventListener(Event.LOADED, this.invalidateRenderData, this);
+            this._ambientTexture = value;
+            if(this.ambientTexture)
+                this.ambientTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
+            this.invalidateRenderData();
+        }
+        private _ambientTexture: Texture2D;
 
         /**
          * 颜色
          */
-        public color = new Color(0.7, 0.7, 0.7, 1);
+        public get color()
+        {
+            return this._color;
+        }
+        public set color(value)
+        {
+            this._color = value;
+            this.invalidateRenderData();
+        }
+        private _color :Color;
 
         /**
          * 构建
          */
-        constructor()
+        constructor(ambientUrl = "",color:Color = null)
         {
             super();
-            this.ambientTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
-            Watcher.watch(this, ["color"], this.invalidateRenderData, this);
+            this.ambientTexture = new Texture2D(ambientUrl);
+            this.color = color|| new Color();
         }
 
         /**
@@ -31,11 +53,11 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            renderData.uniforms[RenderDataID.u_ambient] = this.color;
+            renderData.uniforms[RenderDataID.u_ambient] = this._color;
 
             if (this.ambientTexture.checkRenderData())
             {
-                renderData.uniforms[RenderDataID.s_ambient] = this.ambientTexture;
+                renderData.uniforms[RenderDataID.s_ambient] = this._ambientTexture;
                 renderData.shaderMacro.boolMacros.HAS_AMBIENT_SAMPLER = true;
             } else
             {

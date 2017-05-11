@@ -5,14 +5,14 @@ module feng3d
         /**
          * 控制对象
          */
-        protected _target: GameObject;
+        protected _targetObject: GameObject;
 
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(target: GameObject)
+        constructor(targetObject: GameObject)
         {
-            this.target = target;
+            this.targetObject = targetObject;
         }
 
         /**
@@ -23,14 +23,19 @@ module feng3d
             throw new Error("Abstract method");
         }
 
-        public get target(): GameObject
+        public get targetObject(): GameObject
         {
-            return this._target;
+            return this._targetObject;
         }
 
-        public set target(val: GameObject)
+        public set targetObject(val: GameObject)
         {
-            this._target = val;
+            this._targetObject = val;
+        }
+
+        protected notifyUpdate()
+        {
+
         }
     }
 }
