@@ -38,18 +38,25 @@ module feng3d
             this.geometryDirty = false;
 
             var positionStep = 3;
+            var normalStep = 3;
+            var uvStep = 2;
             var numPoints = this._points.length;
             var indices = new Uint16Array(numPoints);
             var positionData = new Float32Array(numPoints * positionStep);
+            var normalData = new Float32Array(numPoints * normalStep);
+            var uvData = new Float32Array(numPoints * uvStep);
 
             for (var i = 0; i < numPoints; i++)
             {
                 var element = this._points[i];
                 indices[i] = i;
-                positionData.set(element.positionData, i * positionStep);
+                positionData.set(element.position.toArray(3), i * positionStep);
+                normalData.set(element.normal.toArray(3), i * normalStep);
+                uvData.set(element.uv.toArray(), i * uvStep);
             }
-
-            this.setVAData(GLAttribute.a_position, positionData, positionStep);
+            this.positions = positionData;
+            this.uvs = uvData;
+            this.normals = normalData;
             this.setIndices(indices);
         }
 
@@ -89,24 +96,19 @@ module feng3d
      */
     export class PointInfo
     {
-
         public position: Vector3D;
+        public normal: Vector3D;
+        public uv: Point;
 
         /**
 		 * 创建点
 		 * @param position 坐标
 		 */
-        constructor(position: Vector3D)
+        constructor(position = new Vector3D(), uv = new Point(), normal = new Vector3D(0, 1, 0))
         {
             this.position = position;
-        }
-
-        /**
-         * 坐标
-         */
-        public get positionData()
-        {
-            return [this.position.x, this.position.y, this.position.z];
+            this.normal = normal;
+            this.uv = uv;
         }
     }
 }

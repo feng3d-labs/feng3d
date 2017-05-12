@@ -15,11 +15,6 @@ varying vec3 v_normal;
 
 uniform mat4 u_cameraMatrix;
 
-//环境
-uniform vec4 u_ambient;
-#ifdef HAS_AMBIENT_SAMPLER
-    uniform sampler2D s_ambient;
-#endif
 
 uniform float u_alphaThreshold;
 //漫反射
@@ -40,31 +35,35 @@ uniform float u_glossiness;
     uniform sampler2D s_specular;
 #endif
 
-#ifdef IS_POINTS_MODE
-    uniform float u_PointSize;
+uniform vec4 u_sceneAmbientColor;
+
+//环境
+uniform vec4 u_ambient;
+#ifdef HAS_AMBIENT_SAMPLER
+    uniform sampler2D s_ambient;
 #endif
 
 #ifdef HAS_TERRAIN_METHOD
-    #include<terrain.fragment>
+    #include<modules/terrain.fragment>
 #endif
 
-#if NUM_LIGHT > 0
-    #include<modules/pointLightShading.fragment>
-#endif
+#include<modules/pointLightShading.fragment>
 
 #ifdef HAS_FOG_METHOD
     #include<modules/fog.fragment>
 #endif
 
+#ifdef HAS_ENV_METHOD
+    #include<modules/envmap.fragment>
+#endif
+
+#ifdef HAS_PARTICLE_ANIMATOR
+    #include<modules/particle.fragment>
+#endif
+
 void main(void) {
 
     vec4 finalColor = vec4(1.0,1.0,1.0,1.0);
-
-    //环境光
-    vec3 ambientColor = u_ambient.xyz;
-    #ifdef HAS_AMBIENT_SAMPLER
-        ambientColor = ambientColor * texture2D(s_diffuse, v_uv).xyz;
-    #endif
 
     //获取法线
     vec3 normal;
@@ -90,8 +89,13 @@ void main(void) {
         diffuseColor = terrainMethod(diffuseColor, v_uv);
     #endif
 
-    finalColor = diffuseColor;
+    //环境光
+    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;
+    #ifdef HAS_AMBIENT_SAMPLER
+        ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;
+    #endif
 
+    finalColor = diffuseColor;
 
     //渲染灯光
     #if NUM_LIGHT > 0
@@ -109,13 +113,17 @@ void main(void) {
         finalColor.xyz = pointLightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
     #endif
 
+    #ifdef HAS_ENV_METHOD
+        finalColor = envmapMethod(finalColor);
+    #endif
+
+    #ifdef HAS_PARTICLE_ANIMATOR
+        finalColor = particleAnimation(finalColor);
+    #endif
+
     #ifdef HAS_FOG_METHOD
-        finalColor.xyz = fogMethod(finalColor.xyz);
+        finalColor = fogMethod(finalColor);
     #endif
 
     gl_FragColor = finalColor;
-
-    #ifdef IS_POINTS_MODE
-        gl_PointSize = u_PointSize;
-    #endif
 }

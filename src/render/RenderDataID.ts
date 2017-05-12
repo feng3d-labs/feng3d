@@ -82,9 +82,17 @@ module feng3d
          */
         public static s_splatTexture3 = "s_splatTexture3";
         /**
+         * 地形块混合贴图
+         */
+        public static s_splatMergeTexture = "s_splatMergeTexture";
+        /**
          * 地形块重复次数
          */
         public static u_splatRepeats = "u_splatRepeats";
+        /**
+         * 地形混合贴图尺寸
+         */
+        public static u_splatMergeTextureSize = "u_splatMergeTextureSize";
         /******************************************************/
         //                  点光源
         /******************************************************/
@@ -196,5 +204,14 @@ module feng3d
          * 雾模式
          */
         public static u_fogMode = "u_fogMode";
+
+        /**
+         * 环境反射纹理
+         */
+        public static s_envMap = "s_envMap";
+		/**
+		 * 反射率
+		 */
+        public static u_reflectivity = "u_reflectivity";
     }
 }

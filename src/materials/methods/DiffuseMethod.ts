@@ -9,27 +9,57 @@ module feng3d
         /**
          * 漫反射纹理
          */
-        public difuseTexture: Texture2D = new Texture2D();
+        public get difuseTexture()
+        {
+            return this._difuseTexture;
+        }
+        public set difuseTexture(value)
+        {
+            if(this._difuseTexture)
+                this.difuseTexture.removeEventListener(Event.LOADED, this.invalidateRenderData, this);
+            this._difuseTexture = value;
+            if(this._difuseTexture)
+                this.difuseTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
+            this.invalidateRenderData();
+        }
+        private _difuseTexture: Texture2D;
 
         /**
          * 基本颜色
          */
-        public color = new Color(1, 1, 1, 1);
+        public get color()
+        {
+            return this._color;
+        }
+        public set color(value)
+        {
+            this._color = value;
+            this.invalidateRenderData();
+        }
+        private _color = new Color(1, 1, 1, 1);
 
         /**
          * 透明阈值，透明度小于该值的像素被片段着色器丢弃
          */
-        public alphaThreshold = 0;
+        public get alphaThreshold()
+        {
+            return this._alphaThreshold;
+        }
+        public set alphaThreshold(value)
+        {
+            this._alphaThreshold = value;
+            this.invalidateRenderData();
+        }
+        private _alphaThreshold = 0;
 
         /**
          * 构建
          */
-        constructor()
+        constructor(diffuseUrl: string = "")
         {
             super();
-            this.difuseTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
-            Watcher.watch(this, ["color"], this.invalidateRenderData, this);
-            Watcher.watch(this, ["alphaThreshold"], this.invalidateRenderData, this);
+            this.difuseTexture = new Texture2D(diffuseUrl);
+            this.color = new Color(1, 1, 1, 1);
         }
 
         /**

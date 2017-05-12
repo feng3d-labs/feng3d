@@ -76,6 +76,10 @@ module feng3d
          */
         public HAS_SKELETON_ANIMATION: boolean;
         /**
+         * 是否有粒子动画
+         */
+        public HAS_PARTICLE_ANIMATOR: boolean;
+        /**
          * 是否为点渲染模式
          */
         public IS_POINTS_MODE: boolean;
@@ -84,9 +88,17 @@ module feng3d
          */
         public HAS_TERRAIN_METHOD: boolean;
         /**
+         * 使用合并地形贴图
+         */
+        public USE_TERRAIN_MERGE: boolean;
+        /**
          * 雾函数
          */
         public HAS_FOG_METHOD: boolean;
+        /**
+         * 环境映射函数
+         */
+        public HAS_ENV_METHOD: boolean;
     }
 
     /**

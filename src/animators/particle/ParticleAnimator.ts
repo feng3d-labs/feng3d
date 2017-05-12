@@ -95,6 +95,7 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
+            renderData.shaderMacro.boolMacros.HAS_PARTICLE_ANIMATOR = true;
             if (this._isDirty)
             {
                 this.startTime = getTimer();
@@ -110,6 +111,12 @@ module feng3d
             {
                 renderData.attributes[attributeName] = this._attributes[attributeName];
             }
+
+            var components = this.getComponentsByType(ParticleComponent);
+            components.forEach(element =>
+            {
+                element.setRenderState(this.particleGlobal, this.parentComponent, renderContext);
+            });
 
             this.update(this.particleGlobal, renderData);
             super.updateRenderData(renderContext, renderData);
@@ -136,7 +143,7 @@ module feng3d
             }
 
             //更新宏定义
-            var boolMacros = renderData.shaderMacro.boolMacros = <any>{};
+            var boolMacros = renderData.shaderMacro.boolMacros;
             for (var attribute in renderData.attributes)
             {
                 boolMacros["D_" + attribute] = true;

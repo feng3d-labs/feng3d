@@ -46,7 +46,8 @@ module feng3d
          */
         public fromUnit(color: number, hasAlpha: boolean = false)
         {
-            this.a = (hasAlpha ? (color >> 24) & 0xff : 0xff) / 0xff;
+            if (hasAlpha)
+                this.a = ((color >> 24) & 0xff) / 0xff;
             this.r = ((color >> 16) & 0xff) / 0xff;
             this.g = ((color >> 8) & 0xff) / 0xff;
             this.b = (color & 0xff) / 0xff;

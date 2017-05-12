@@ -9,15 +9,36 @@ module feng3d
         /**
          * 漫反射纹理
          */
-        public normalTexture: Texture2D = new Texture2D();
+        public get normalTexture()
+        {
+            return this._normalTexture;
+        }
+        public set normalTexture(value)
+        {
+            if(this._normalTexture)
+                this._normalTexture.removeEventListener(Event.LOADED, this.onLoaded, this);
+            this._normalTexture = value;
+            if(this._normalTexture)
+                this._normalTexture.addEventListener(Event.LOADED, this.onLoaded, this);
+            this.invalidateRenderData();
+        }
+        private _normalTexture: Texture2D;
 
         /**
          * 构建
          */
-        constructor()
+        constructor(normalUrl: string = "")
         {
             super();
-            this.normalTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
+            this.normalTexture = new Texture2D(normalUrl);
+        }
+
+        /**
+         * 加载完成
+         */
+        private onLoaded()
+        {
+            this.invalidateRenderData();
         }
 
         /**

@@ -24,10 +24,8 @@ module feng3d
             this._textureType = TextureType.TEXTURE_2D;
             this._pixels = new Image();
             this._pixels.crossOrigin = "Anonymous";
-            // this._pixels.addEventListener("load", this.invalidate.bind(this));
             this._pixels.addEventListener("load", this.onLoad.bind(this));
             this._pixels.src = url;
-            // Binding.bindProperty(this, ["url"], this._pixels, "src");
         }
 
         /**

@@ -7,13 +7,16 @@ module feng3d
      */
     export class SkyBoxMaterial extends Material
     {
-        public skyBoxTextureCube: TextureCube;
+        public texture: TextureCube;
 
-        constructor(images: string[])
+        constructor(images: string[] = null)
         {
             super();
             this.shaderName = "skybox";
-            this.skyBoxTextureCube = new TextureCube(images);
+            if (images)
+            {
+                this.texture = new TextureCube(images);
+            }
 
             Watcher.watch(this, ["skyBoxTextureCube"], this.invalidateRenderData, this);
         }
@@ -24,7 +27,7 @@ module feng3d
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
             //
-            renderData.uniforms[RenderDataID.s_skyboxTexture] = this.skyBoxTextureCube;
+            renderData.uniforms[RenderDataID.s_skyboxTexture] = this.texture;
             super.updateRenderData(renderContext, renderData);
         }
     }
