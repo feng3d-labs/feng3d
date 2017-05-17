@@ -49,12 +49,29 @@ module feng3d
         public mousePos = new Point();
 
         /**
+         * 是否自动渲染
+         */
+        public get autoRender()
+        {
+            return this._autoRender;
+        }
+        public set autoRender(value)
+        {
+            if (this._autoRender)
+                ticker.removeEventListener(Event.ENTER_FRAME, this.render, this);
+            this._autoRender = value;
+            if (this._autoRender)
+                ticker.addEventListener(Event.ENTER_FRAME, this.render, this);
+        }
+        private _autoRender: boolean;
+
+        /**
          * 构建3D视图
          * @param canvas    画布
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas, scene: Scene3D = null, camera: CameraObject3D = null)
+        constructor(canvas, scene: Scene3D = null, camera: CameraObject3D = null, autoRender = true)
         {
             //初始化引擎
             initEngine();
@@ -71,6 +88,7 @@ module feng3d
             this._viewRect = new Rectangle(this._canvas.clientLeft, this._canvas.clientTop, this._canvas.clientWidth, this._canvas.clientHeight);
             this.scene = scene || new Scene3D();
             this.camera = camera || new CameraObject3D();
+            this.autoRender = autoRender;
 
             this.defaultRenderer = new ForwardRenderer();
             this.mouse3DManager = new Mouse3DManager();
@@ -79,7 +97,6 @@ module feng3d
             this._renderContext = new RenderContext();
 
             input.addEventListener(inputType.MOUSE_MOVE, this.onMouseEvent, this);
-            ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
         }
 
         /**
@@ -115,7 +132,7 @@ module feng3d
         /**
          * 绘制场景
          */
-        private drawScene(event: Event)
+        public render()
         {
             this._canvas.width = this._canvas.clientWidth;
             this._canvas.height = this._canvas.clientHeight;

@@ -27,7 +27,7 @@ module feng3d
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
             //
-            renderData.uniforms[RenderDataID.s_skyboxTexture] = this.texture;
+            renderData.uniforms.s_skyboxTexture = this.texture;
             super.updateRenderData(renderContext, renderData);
         }
     }

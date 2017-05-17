@@ -36,7 +36,7 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            renderData.uniforms[RenderDataID.u_diffuseInput] = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
+            renderData.uniforms.u_diffuseInput = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
             super.updateRenderData(renderContext, renderData);
         }
     }

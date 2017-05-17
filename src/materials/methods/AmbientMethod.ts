@@ -15,10 +15,10 @@ module feng3d
         }
         public set ambientTexture(value)
         {
-            if(this.ambientTexture)
+            if (this.ambientTexture)
                 this.ambientTexture.removeEventListener(Event.LOADED, this.invalidateRenderData, this);
             this._ambientTexture = value;
-            if(this.ambientTexture)
+            if (this.ambientTexture)
                 this.ambientTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
             this.invalidateRenderData();
         }
@@ -36,16 +36,16 @@ module feng3d
             this._color = value;
             this.invalidateRenderData();
         }
-        private _color :Color;
+        private _color: Color;
 
         /**
          * 构建
          */
-        constructor(ambientUrl = "",color:Color = null)
+        constructor(ambientUrl = "", color: Color = null)
         {
             super();
             this.ambientTexture = new Texture2D(ambientUrl);
-            this.color = color|| new Color();
+            this.color = color || new Color();
         }
 
         /**
@@ -53,15 +53,15 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            renderData.uniforms[RenderDataID.u_ambient] = this._color;
+            renderData.uniforms.u_ambient = this._color;
 
             if (this.ambientTexture.checkRenderData())
             {
-                renderData.uniforms[RenderDataID.s_ambient] = this._ambientTexture;
+                renderData.uniforms.s_ambient = this._ambientTexture;
                 renderData.shaderMacro.boolMacros.HAS_AMBIENT_SAMPLER = true;
             } else
             {
-                renderData.uniforms[RenderDataID.s_ambient] = null;
+                delete renderData.uniforms.s_ambient;
                 renderData.shaderMacro.boolMacros.HAS_AMBIENT_SAMPLER = false;
             }
             //

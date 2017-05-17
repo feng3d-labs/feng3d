@@ -29,7 +29,7 @@ float CalcFogFactor(float fogDistance)
 	return clamp(fogCoeff, 0.0, 1.0);
 }
 
-vec3 fogMethod(vec3 color)
+vec4 fogMethod(vec4 color)
 {
     vec3 fogDistance = u_cameraMatrix[3].xyz - v_globalPosition.xyz;
 	float fog = CalcFogFactor(length(fogDistance));

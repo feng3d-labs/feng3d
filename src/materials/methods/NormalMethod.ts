@@ -15,10 +15,10 @@ module feng3d
         }
         public set normalTexture(value)
         {
-            if(this._normalTexture)
+            if (this._normalTexture)
                 this._normalTexture.removeEventListener(Event.LOADED, this.onLoaded, this);
             this._normalTexture = value;
-            if(this._normalTexture)
+            if (this._normalTexture)
                 this._normalTexture.addEventListener(Event.LOADED, this.onLoaded, this);
             this.invalidateRenderData();
         }
@@ -48,11 +48,11 @@ module feng3d
         {
             if (this.normalTexture.checkRenderData())
             {
-                renderData.uniforms[RenderDataID.s_normal] = this.normalTexture;
+                renderData.uniforms.s_normal = this.normalTexture;
                 renderData.shaderMacro.boolMacros.HAS_NORMAL_SAMPLER = true;
             } else
             {
-                renderData.uniforms[RenderDataID.s_normal] = null;
+                delete renderData.uniforms.s_normal;
                 renderData.shaderMacro.boolMacros.HAS_NORMAL_SAMPLER = false;
             }
 

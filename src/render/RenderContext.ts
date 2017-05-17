@@ -69,10 +69,10 @@ module feng3d
                 renderAtomic.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
                 renderAtomic.shaderMacro.addMacros.U_CAMERAMATRIX_NEED = 1;
                 //
-                renderAtomic.uniforms[RenderDataID.u_pointLightPositions] = pointLightPositions;
-                renderAtomic.uniforms[RenderDataID.u_pointLightColors] = pointLightColors;
-                renderAtomic.uniforms[RenderDataID.u_pointLightIntensitys] = pointLightIntensitys;
-                renderAtomic.uniforms[RenderDataID.u_pointLightRanges] = pointLightRanges;
+                renderAtomic.uniforms.u_pointLightPositions = pointLightPositions;
+                renderAtomic.uniforms.u_pointLightColors = pointLightColors;
+                renderAtomic.uniforms.u_pointLightIntensitys = pointLightIntensitys;
+                renderAtomic.uniforms.u_pointLightRanges = pointLightRanges;
             }
             var directionalLightDirections: Vector3D[] = [];
             var directionalLightColors: Vector3D[] = [];
@@ -80,7 +80,7 @@ module feng3d
             for (var i = 0; i < directionalLights.length; i++)
             {
                 var directionalLight = directionalLights[i];
-                directionalLightDirections.push(directionalLight.direction);
+                directionalLightDirections.push(directionalLight.sceneDirection);
                 directionalLightColors.push(directionalLight.color);
                 directionalLightIntensitys.push(directionalLight.intensity);
             }
@@ -91,12 +91,14 @@ module feng3d
                 renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
                 renderAtomic.shaderMacro.addMacros.U_CAMERAMATRIX_NEED = 1;
                 //
-                renderAtomic.uniforms[RenderDataID.u_directionalLightDirections] = directionalLightDirections;
-                renderAtomic.uniforms[RenderDataID.u_directionalLightColors] = directionalLightColors;
-                renderAtomic.uniforms[RenderDataID.u_directionalLightIntensitys] = directionalLightIntensitys;
+                renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
+                renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;
+                renderAtomic.uniforms.u_directionalLightIntensitys = directionalLightIntensitys;
             }
 
-            renderAtomic.uniforms[RenderDataID.u_sceneAmbientColor] = this.scene3d.ambientColor;
+            renderAtomic.uniforms.u_sceneAmbientColor = this.scene3d.ambientColor;
+
+            renderAtomic.uniforms.u_scaleByDepth = this.view3D.getScaleByDepth(1);
         }
     }
 }

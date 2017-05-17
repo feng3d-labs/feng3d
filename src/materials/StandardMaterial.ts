@@ -141,9 +141,9 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            // renderData.uniforms[RenderDataID.u_reflectance] = this.reflectance;
-            // renderData.uniforms[RenderDataID.u_roughness] = this.roughness;
-            // renderData.uniforms[RenderDataID.u_metalic] = this.metalic;
+            // renderData.uniforms.u_reflectance = this.reflectance;
+            // renderData.uniforms.u_roughness = this.roughness;
+            // renderData.uniforms.u_metalic = this.metalic;
             //
             super.updateRenderData(renderContext, renderData);
         }

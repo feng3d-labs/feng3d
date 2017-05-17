@@ -9,16 +9,16 @@ module feng3d
         /**
          * 镜面反射光泽图
          */
-        public get specularTexture ()
+        public get specularTexture()
         {
             return this._specularTexture;
         }
-        public set specularTexture (value)
+        public set specularTexture(value)
         {
-            if(this._specularTexture)
+            if (this._specularTexture)
                 this._specularTexture.removeEventListener(Event.LOADED, this.invalidateRenderData, this);
             this._specularTexture = value;
-            if(this._specularTexture)
+            if (this._specularTexture)
                 this._specularTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
             this.invalidateRenderData();
         }
@@ -30,10 +30,12 @@ module feng3d
         /**
 		 * 镜面反射光反射强度
 		 */
-        public get specular(){
+        public get specular()
+        {
             return this.specularColor.a;
         }
-        public set specular(value){
+        public set specular(value)
+        {
             this.specularColor.a = value;
         }
         /**
@@ -57,15 +59,15 @@ module feng3d
         {
             if (this.specularTexture.checkRenderData())
             {
-                renderData.uniforms[RenderDataID.s_specular] = this.specularTexture;
+                renderData.uniforms.s_specular = this.specularTexture;
                 renderData.shaderMacro.boolMacros.HAS_SPECULAR_SAMPLER = true;
             } else
             {
-                renderData.uniforms[RenderDataID.s_specular] = null;
+                delete renderData.uniforms.s_specular;
                 renderData.shaderMacro.boolMacros.HAS_SPECULAR_SAMPLER = false;
             }
-            renderData.uniforms[RenderDataID.u_specular] = this.specularColor;
-            renderData.uniforms[RenderDataID.u_glossiness] = this.glossiness;
+            renderData.uniforms.u_specular = this.specularColor;
+            renderData.uniforms.u_glossiness = this.glossiness;
 
             //
             super.updateRenderData(renderContext, renderData);

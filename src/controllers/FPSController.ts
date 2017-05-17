@@ -19,7 +19,7 @@ module feng3d
         /**
          * 加速度
          */
-        private acceleration = 0.2;
+        private acceleration = 0.05;
 
         /**
          * 速度

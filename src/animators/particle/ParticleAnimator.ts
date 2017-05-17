@@ -104,7 +104,7 @@ module feng3d
             }
 
             this.time = ((getTimer() - this.startTime) / 1000) % this.cycle;
-            renderData.uniforms[RenderDataID.u_particleTime] = this.time;
+            renderData.uniforms.u_particleTime = this.time;
             renderData.instanceCount = this.numParticles;
 
             for (var attributeName in this._attributes)

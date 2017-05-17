@@ -62,7 +62,7 @@ module feng3d
             this.splatMergeTexture.magFilter = GL.NEAREST;
             this.splatMergeTexture.wrapS = GL.REPEAT;
             this.splatMergeTexture.wrapT = GL.REPEAT;
-            
+
             this.splatRepeats = splatRepeats;
         }
 
@@ -84,10 +84,22 @@ module feng3d
             renderData.shaderMacro.boolMacros.HAS_TERRAIN_METHOD = true;
             renderData.shaderMacro.boolMacros.USE_TERRAIN_MERGE = true;
 
-            renderData.uniforms[RenderDataID.s_blendTexture] = this.blendTexture;
-            renderData.uniforms[RenderDataID.s_splatMergeTexture] = this.splatMergeTexture;
-            renderData.uniforms[RenderDataID.u_splatMergeTextureSize] = this.splatMergeTexture.size;
-            renderData.uniforms[RenderDataID.u_splatRepeats] = this.splatRepeats;
+            renderData.uniforms.s_blendTexture = this.blendTexture;
+            renderData.uniforms.s_splatMergeTexture = this.splatMergeTexture;
+            renderData.uniforms.u_splatMergeTextureSize = this.splatMergeTexture.size;
+            renderData.uniforms.u_splatRepeats = this.splatRepeats;
+            //
+            renderData.uniforms.u_imageSize = new Point(2048.0, 1024.0);
+            renderData.uniforms.u_tileSize = new Point(512.0, 512.0);
+            renderData.uniforms.u_maxLod = 7;
+            renderData.uniforms.u_uvPositionScale = 0.001;
+            renderData.uniforms.u_tileOffset = [
+                new Vector3D(0.5, 0.5, 0.0, 0.0),
+                new Vector3D(0.5, 0.5, 0.5, 0.0),
+                new Vector3D(0.5, 0.5, 0.0, 0.5),
+            ];
+            renderData.uniforms.u_lod0vec = new Vector3D(0.5, 1, 0, 0);
+
 
             super.updateRenderData(renderContext, renderData);
         }

@@ -125,11 +125,11 @@ module feng3d
         {
             renderData.shaderMacro.boolMacros.HAS_TERRAIN_METHOD = true;
 
-            renderData.uniforms[RenderDataID.s_blendTexture] = this.blendTexture;
-            renderData.uniforms[RenderDataID.s_splatTexture1] = this.splatTexture1;
-            renderData.uniforms[RenderDataID.s_splatTexture2] = this.splatTexture2;
-            renderData.uniforms[RenderDataID.s_splatTexture3] = this.splatTexture3;
-            renderData.uniforms[RenderDataID.u_splatRepeats] = this.splatRepeats;
+            renderData.uniforms.s_blendTexture = this.blendTexture;
+            renderData.uniforms.s_splatTexture1 = this.splatTexture1;
+            renderData.uniforms.s_splatTexture2 = this.splatTexture2;
+            renderData.uniforms.s_splatTexture3 = this.splatTexture3;
+            renderData.uniforms.u_splatRepeats = this.splatRepeats;
 
             super.updateRenderData(renderContext, renderData);
         }

@@ -88,7 +88,7 @@ module feng3d
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
             //
-            renderData.uniforms[RenderDataID.u_modelMatrix] = this.sceneTransform;
+            renderData.uniforms.u_modelMatrix = this.sceneTransform;
         }
 
         /**

@@ -25,12 +25,12 @@ module feng3d
         /**
          * 属性数据列表
          */
-        public attributes: { [name: string]: AttributeRenderData } = {};
+        public attributes: AttributeRenderDataStuct = new AttributeRenderDataStuct();
 
         /**
-         * 常量数据（包含纹理）列表
+         * Uniform渲染数据
          */
-        public uniforms: { [name: string]: number | Point | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[] } = {};
+        public uniforms: UniformRenderData = new UniformRenderData();
 
         /**
          * 渲染参数

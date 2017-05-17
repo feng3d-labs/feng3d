@@ -141,11 +141,11 @@ module feng3d
             if (this.renderMode == RenderMode.POINTS)
             {
                 renderData.shaderMacro.boolMacros.IS_POINTS_MODE = true;
-                renderData.uniforms[RenderDataID.u_PointSize] = this.pointSize;
+                renderData.uniforms.u_PointSize = this.pointSize;
             } else
             {
                 renderData.shaderMacro.boolMacros.IS_POINTS_MODE = false;
-                delete renderData.uniforms[RenderDataID.u_PointSize];
+                delete renderData.uniforms.u_PointSize;
             }
 
             for (var i = 0; i < this._methods.length; i++)

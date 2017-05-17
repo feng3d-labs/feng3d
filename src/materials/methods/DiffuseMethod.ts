@@ -15,10 +15,10 @@ module feng3d
         }
         public set difuseTexture(value)
         {
-            if(this._difuseTexture)
+            if (this._difuseTexture)
                 this.difuseTexture.removeEventListener(Event.LOADED, this.invalidateRenderData, this);
             this._difuseTexture = value;
-            if(this._difuseTexture)
+            if (this._difuseTexture)
                 this.difuseTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
             this.invalidateRenderData();
         }
@@ -67,18 +67,18 @@ module feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            renderData.uniforms[RenderDataID.u_diffuse] = this.color;
+            renderData.uniforms.u_diffuse = this.color;
 
             if (this.difuseTexture.checkRenderData())
             {
-                renderData.uniforms[RenderDataID.s_diffuse] = this.difuseTexture;
+                renderData.uniforms.s_diffuse = this.difuseTexture;
                 renderData.shaderMacro.boolMacros.HAS_DIFFUSE_SAMPLER = true;
             } else
             {
-                renderData.uniforms[RenderDataID.s_diffuse] = null;
+                delete renderData.uniforms.s_diffuse;
                 renderData.shaderMacro.boolMacros.HAS_DIFFUSE_SAMPLER = false;
             }
-            renderData.uniforms[RenderDataID.u_alphaThreshold] = this.alphaThreshold;
+            renderData.uniforms.u_alphaThreshold = this.alphaThreshold;
 
             //
             super.updateRenderData(renderContext, renderData);

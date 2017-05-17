@@ -205,7 +205,7 @@ module feng3d
             for (var attributeName in this._attributes)
             {
                 var attributeRenderData = this._attributes[attributeName];
-                numVertex = attributeRenderData.data.length / attributeRenderData.stride;
+                numVertex = attributeRenderData.data.length / attributeRenderData.size;
                 break;
             }
             return numVertex;
@@ -255,7 +255,7 @@ module feng3d
             //合并属性数据
             for (var attributeName in attributes)
             {
-                var stride = attributes[attributeName].stride;
+                var stride = attributes[attributeName].size;
                 var data = new Float32Array(totalVertex * stride);
                 data.set(attributes[attributeName].data, 0);
                 data.set(addAttributes[attributeName].data, oldNumVertex * stride);
@@ -279,9 +279,9 @@ module feng3d
             var normals = normalRenderData.data;
             var tangents = tangentRenderData.data;
 
-            var posStride: number = positionRenderData.stride;
-            var normalStride: number = normalRenderData.stride;
-            var tangentStride: number = tangentRenderData.stride;
+            var posStride: number = positionRenderData.size;
+            var normalStride: number = normalRenderData.size;
+            var tangentStride: number = tangentRenderData.size;
 
             var len: number = vertices.length / posStride;
             var i: number, i1: number, i2: number;

@@ -88,11 +88,11 @@ module feng3d
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
             renderData.shaderMacro.boolMacros.HAS_FOG_METHOD = true;
-            renderData.uniforms[RenderDataID.u_fogColor] = this._fogColor;
-            renderData.uniforms[RenderDataID.u_fogMinDistance] = this._minDistance;
-            renderData.uniforms[RenderDataID.u_fogMaxDistance] = this._maxDistance;
-            renderData.uniforms[RenderDataID.u_fogDensity] = this._density;
-            renderData.uniforms[RenderDataID.u_fogMode] = this._mode;
+            renderData.uniforms.u_fogColor = this._fogColor;
+            renderData.uniforms.u_fogMinDistance = this._minDistance;
+            renderData.uniforms.u_fogMaxDistance = this._maxDistance;
+            renderData.uniforms.u_fogDensity = this._density;
+            renderData.uniforms.u_fogMode = this._mode;
             //
             renderData.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED++;
             //
