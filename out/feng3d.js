@@ -5008,6 +5008,15 @@ var feng3d;
     LoaderDataFormat.IMAGE = "image";
     feng3d.LoaderDataFormat = LoaderDataFormat;
 })(feng3d || (feng3d = {}));
+// Type definitions for WebGL Extensions
+// Project: http://webgl.org/
+// Definitions by: Arthur Langereis <https://github.com/zenmumbler/>
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped/webgl-ext
+//参考 
+//https://www.khronos.org/registry/webgl/specs/latest/2.0/
+//https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/webgl-ext/index.d.ts
+//使用工具  
+//http://regexr.com/
 var feng3d;
 (function (feng3d) {
     feng3d.GL = WebGL2RenderingContext || WebGLRenderingContext;
