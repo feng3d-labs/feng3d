@@ -3418,9 +3418,6 @@ declare module feng3d {
         clone(): Object3D;
         rotateTo(ax: number, ay: number, az: number): void;
         rotate(axis: Vector3D, angle: number): void;
-        static tempAxeX: Vector3D;
-        static tempAxeY: Vector3D;
-        static tempAxeZ: Vector3D;
         lookAt(target: Vector3D, upAxis?: Vector3D): void;
         dispose(): void;
         disposeAsset(): void;
@@ -3607,6 +3604,9 @@ declare module feng3d {
          * 是否为公告牌（默认永远朝向摄像机），默认false。
          */
         isBillboard: boolean;
+        /**
+         * 保持缩放尺寸
+         */
         holdSize: number;
         updateRender(renderContext: RenderContext): void;
         private getDepthScale(renderContext);
@@ -3809,10 +3809,12 @@ declare module feng3d {
          * 几何体
          */
         geometry: Geometry;
+        private _geometry;
         /**
          * 材质
          */
         material: Material;
+        private _material;
         /**
          * 构建
          */
@@ -5415,16 +5417,16 @@ declare module feng3d {
         /**
          * 控制对象
          */
-        protected _target: Object3D;
+        protected _target: GameObject;
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(target: Object3D);
+        constructor(target: GameObject);
         /**
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        target: Object3D;
+        target: GameObject;
     }
 }
 declare module feng3d {
@@ -5434,7 +5436,7 @@ declare module feng3d {
         protected _origin: Vector3D;
         protected _upAxis: Vector3D;
         private _pos;
-        constructor(target?: Object3D, lookAtObject?: Object3D);
+        constructor(target?: GameObject, lookAtObject?: Object3D);
         upAxis: Vector3D;
         lookAtPosition: Vector3D;
         lookAtObject: Object3D;
@@ -5467,8 +5469,11 @@ declare module feng3d {
          * 上次鼠标位置
          */
         private preMousePoint;
-        constructor(transform?: Object3D);
-        target: Object3D;
+        constructor(transform?: GameObject);
+        target: GameObject;
+        private onMousedown();
+        private onMouseup();
+        private onEnterFrame();
         /**
          * 初始化
          */
@@ -6529,24 +6534,7 @@ declare module feng3d {
      * @author feng 2017-01-13
      */
     class OBJParser {
-        static parser(context: string): {
-            mtl: string;
-            objs: {
-                name: string;
-                vertex: number[];
-                vn: number[];
-                vt: number[];
-                subObjs: {
-                    material?: string;
-                    g?: string;
-                    faces: {
-                        vertexIndices: number[];
-                        uvIndices?: number[];
-                        normalIndices?: number[];
-                    }[];
-                }[];
-            }[];
-        };
+        static parser(context: string): OBJ_OBJData;
     }
 }
 declare module feng3d {
@@ -6568,18 +6556,7 @@ declare module feng3d {
      * @author feng 2017-01-13
      */
     class MtlParser {
-        static parser(context: string): {
-            [name: string]: {
-                name: string;
-                ka: number[];
-                kd: number[];
-                ks: number[];
-                ns: number;
-                ni: number;
-                d: number;
-                illum: number;
-            };
-        };
+        static parser(context: string): Mtl_Mtl;
     }
 }
 declare module feng3d {
@@ -6633,38 +6610,7 @@ declare module feng3d {
         meshs: MD5_Mesh[];
     };
     class MD5MeshParser {
-        static parse(context: string): {
-            MD5Version: number;
-            commandline: string;
-            numJoints: number;
-            numMeshes: number;
-            joints: {
-                name: string;
-                parentIndex: number;
-                position: number[];
-                rotation: number[];
-            }[];
-            meshs: {
-                shader: string;
-                numverts: number;
-                verts: {
-                    index: number;
-                    u: number;
-                    v: number;
-                    startWeight: number;
-                    countWeight: number;
-                }[];
-                numtris: number;
-                tris: number[];
-                numweights: number;
-                weights: {
-                    index: number;
-                    joint: number;
-                    bias: number;
-                    pos: number[];
-                }[];
-            }[];
-        };
+        static parse(context: string): MD5MeshData;
     }
 }
 declare module feng3d {
@@ -6719,32 +6665,7 @@ declare module feng3d {
         frame: MD5_Frame[];
     };
     class MD5AnimParser {
-        static parse(context: string): {
-            MD5Version: number;
-            commandline: string;
-            numFrames: number;
-            numJoints: number;
-            frameRate: number;
-            numAnimatedComponents: number;
-            hierarchy: {
-                name: string;
-                parentIndex: number;
-                flags: number;
-                startIndex: number;
-            }[];
-            bounds: {
-                min: number[];
-                max: number[];
-            }[];
-            baseframe: {
-                position: number[];
-                orientation: number[];
-            }[];
-            frame: {
-                index: number;
-                components: number[];
-            }[];
-        };
+        static parse(context: string): MD5AnimData;
     }
 }
 declare module feng3d {
