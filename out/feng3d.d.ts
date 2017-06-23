@@ -8225,6 +8225,3 @@ declare namespace feng3d {
      */
     var initFunctions: Function[];
 }
-declare var defineProperty: (o: any, p: string, attributes: PropertyDescriptor & ThisType<any>) => any;
-declare var getPrototypeOf: (o: any) => any;
-declare var getOwnPropertyDescriptor: (o: any, p: string) => PropertyDescriptor;

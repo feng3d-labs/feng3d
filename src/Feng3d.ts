@@ -73,6 +73,3 @@ namespace feng3d
      */
     export var initFunctions: Function[];
 }
-var defineProperty = Object.defineProperty;
-var getPrototypeOf = Object.getPrototypeOf;
-var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;

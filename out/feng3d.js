@@ -18654,7 +18654,4 @@ var feng3d;
     feng3d.initEngine = initEngine;
     var isInit = false;
 })(feng3d || (feng3d = {}));
-var defineProperty = Object.defineProperty;
-var getPrototypeOf = Object.getPrototypeOf;
-var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
 //# sourceMappingURL=feng3d.js.map
