@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -13,12 +13,7 @@ module feng3d
         }
         public set splatTexture1(value)
         {
-            if (this._splatTexture1)
-                this._splatTexture1.removeEventListener(Event.LOADED, this.onSplatTextureLoaded, this);
             this._splatTexture1 = value;
-            if (this._splatTexture1)
-                this._splatTexture1.addEventListener(Event.LOADED, this.onSplatTextureLoaded, this);
-            this.invalidateRenderData();
         }
         private _splatTexture1: Texture2D;
 
@@ -28,12 +23,7 @@ module feng3d
         }
         public set splatTexture2(value)
         {
-            if (this._splatTexture2)
-                this._splatTexture2.removeEventListener(Event.LOADED, this.onSplatTextureLoaded, this);
             this._splatTexture2 = value;
-            if (this._splatTexture2)
-                this._splatTexture2.addEventListener(Event.LOADED, this.onSplatTextureLoaded, this);
-            this.invalidateRenderData();
         }
         private _splatTexture2: Texture2D;
 
@@ -43,12 +33,7 @@ module feng3d
         }
         public set splatTexture3(value)
         {
-            if (this._splatTexture3)
-                this._splatTexture3.removeEventListener(Event.LOADED, this.onSplatTextureLoaded, this);
             this._splatTexture3 = value;
-            if (this._splatTexture3)
-                this._splatTexture3.addEventListener(Event.LOADED, this.onSplatTextureLoaded, this);
-            this.invalidateRenderData();
         }
         private _splatTexture3: Texture2D;
 
@@ -58,12 +43,7 @@ module feng3d
         }
         public set blendTexture(value)
         {
-            if (this._blendTexture)
-                this._blendTexture.removeEventListener(Event.LOADED, this.onBlendTextureLoaded, this);
             this._blendTexture = value;
-            if (this._blendTexture)
-                this._blendTexture.addEventListener(Event.LOADED, this.onBlendTextureLoaded, this);
-            this.invalidateRenderData();
         }
         private _blendTexture: Texture2D;
 
@@ -74,7 +54,6 @@ module feng3d
         public set splatRepeats(value)
         {
             this._splatRepeats = value;
-            this.invalidateRenderData();
         }
         private _splatRepeats: Vector3D;
 
@@ -106,32 +85,20 @@ module feng3d
             this.splatTexture3.wrapT = GL.REPEAT;
 
             this.splatRepeats = splatRepeats;
-        }
 
-        private onSplatTextureLoaded()
-        {
-            this.invalidateRenderData();
-        }
-
-        private onBlendTextureLoaded()
-        {
-            this.invalidateRenderData();
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            renderData.shaderMacro.boolMacros.HAS_TERRAIN_METHOD = true;
-
-            renderData.uniforms.s_blendTexture = this.blendTexture;
-            renderData.uniforms.s_splatTexture1 = this.splatTexture1;
-            renderData.uniforms.s_splatTexture2 = this.splatTexture2;
-            renderData.uniforms.s_splatTexture3 = this.splatTexture3;
-            renderData.uniforms.u_splatRepeats = this.splatRepeats;
-
-            super.updateRenderData(renderContext, renderData);
+            //
+            this.createUniformData("s_blendTexture", () => this.blendTexture);
+            this.createUniformData("s_splatTexture1", () => this.splatTexture1);
+            this.createUniformData("s_splatTexture2", () => this.splatTexture2);
+            this.createUniformData("s_splatTexture3", () => this.splatTexture3);
+            this.createUniformData("u_splatRepeats", () => this.splatRepeats);
+            this.createBoolMacro("HAS_TERRAIN_METHOD", () =>
+            {
+                return this.blendTexture.checkRenderData()
+                    && this.splatTexture1.checkRenderData()
+                    && this.splatTexture2.checkRenderData()
+                    && this.splatTexture3.checkRenderData();
+            });
         }
     }
 }

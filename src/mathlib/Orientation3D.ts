@@ -1,4 +1,4 @@
-module feng3d {
+namespace feng3d {
     /**
      * Orientation3D 类是用于表示 Matrix3D 对象的方向样式的常量值枚举。方向的三个类型分别为欧拉角、轴角和四元数。Matrix3D 对象的 decompose 和 recompose 方法采用其中的某一个枚举类型来标识矩阵的旋转组件。
      * @author feng 2016-3-21

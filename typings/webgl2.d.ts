@@ -500,6 +500,8 @@ interface WebGL2RenderingContext extends WebGLRenderingContext
 declare var WebGL2RenderingContext: {
     prototype: WebGL2RenderingContext;
     new (): WebGL2RenderingContext;
+    //是否初始化支持iphone
+    isSupportIphone: boolean;
     // WebGL1:
     readonly ACTIVE_ATTRIBUTES: number;
     readonly ACTIVE_TEXTURE: number;

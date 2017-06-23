@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -7,6 +7,8 @@ module feng3d
      */
     export class ObjectUtils
     {
+        
+        
         /**
          * 深克隆
          * @param source        源数据

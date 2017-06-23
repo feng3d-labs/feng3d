@@ -1,16 +1,28 @@
-module feng3d
+namespace feng3d
 {
 
 	/**
 	 * 索引渲染数据
      * @author feng 2017-01-04
 	 */
-    export class IndexRenderData
+    export class IndexRenderData extends RenderElement
     {
         /**
          * 索引数据
          */
-        public indices: Uint16Array;
+        public get indices()
+        {
+            return this._indices;
+        }
+        public set indices(value)
+        {
+            if (this._indices == value)
+                return;
+            this._indices = value;
+            this._invalid = true;
+            this.count = this.indices ? this.indices.length : 0;
+        }
+        private _indices: Uint16Array;
 
         /**
          * 渲染数量
@@ -37,16 +49,7 @@ module feng3d
 
         constructor()
         {
-            Watcher.watch(this, ["indices"], this.invalidate, this);
-        }
-
-        /**
-         * 使缓冲失效
-         */
-        protected invalidate()
-        {
-            this._invalid = true;
-            this.count = this.indices ? this.indices.length : 0;
+            super();
         }
 
         /**
@@ -100,8 +103,9 @@ module feng3d
         {
             var cls = <any>this.constructor;
             var ins: this = new cls();
-            var indices = ins.indices = new Uint16Array(this.indices.length);
+            var indices = new Uint16Array(this.indices.length);
             indices.set(this.indices, 0);
+            ins.indices = indices;
             ins.count = this.count;
             ins.type = this.type;
             ins.offset = this.offset;

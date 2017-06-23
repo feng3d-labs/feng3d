@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 数据序列化
@@ -52,14 +52,14 @@ module feng3d
                 var object3D: GameObject = object;
                 for (var i = 0; i < children.length; i++)
                 {
-                    children[i] && object3D.setChildAt(children[i], i);
+                    children[i] && object3D.transform.setChildAt(children[i].transform, i);
                 }
                 return true;
             }
-            if (ClassUtils.is(object, Component) && key == "components_")
+            if (ClassUtils.is(object, GameObject) && key == "components_")
             {
                 var components: Component[] = this.readObject(data);
-                var component: Component = object;
+                var component: GameObject = object;
                 for (var i = 0; i < components.length; i++)
                 {
                     component.setComponentAt(components[i], i);

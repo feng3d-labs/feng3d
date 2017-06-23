@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -11,6 +11,6 @@ module feng3d
         /**
          * 渲染模式
          */
-        renderMode: number;
+        renderMode: number|(()=>number);
     }
 }

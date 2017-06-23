@@ -1,6 +1,8 @@
 //根据是否提供(a_particle_position)数据自动定义 #define D_(a_particle_position)
 
-attribute float a_particle_birthTime;
+#ifdef D_a_particle_birthTime
+    attribute float a_particle_birthTime;
+#endif
 
 #ifdef D_a_particle_position
     attribute vec3 a_particle_position;
@@ -31,6 +33,7 @@ uniform float u_particleTime;
 
 vec4 particleAnimation(vec4 position) {
 
+    #ifdef D_a_particle_birthTime
     float pTime = u_particleTime - a_particle_birthTime;
     if(pTime > 0.0){
 
@@ -62,6 +65,7 @@ vec4 particleAnimation(vec4 position) {
 
         position.xyz = position.xyz + pVelocity * pTime;
     }
+    #endif
     
     return position;
 }

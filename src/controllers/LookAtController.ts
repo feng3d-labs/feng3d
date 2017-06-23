@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class LookAtController extends ControllerBase
     {
@@ -57,12 +57,12 @@ module feng3d
             {
                 if (this._lookAtPosition)
                 {
-                    this._targetObject.lookAt(this.lookAtPosition, this._upAxis);
+                    this._targetObject.transform.lookAt(this.lookAtPosition, this._upAxis);
                 }
                 else if (this._lookAtObject)
                 {
-                    this._lookAtObject.getPosition(this._pos);
-                    this._targetObject.lookAt(this._pos, this._upAxis);
+                    this._lookAtObject.transform.getPosition(this._pos);
+                    this._targetObject.transform.lookAt(this._pos, this._upAxis);
                 }
             }
         }

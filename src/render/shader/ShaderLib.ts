@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -21,37 +21,6 @@ module feng3d
             if (!_shaderMap[shaderName])
                 _shaderMap[shaderName] = ShaderLoader.loadText(shaderName);
             return _shaderMap[shaderName];
-        }
-
-        /**
-         * 获取ShaderMacro代码
-         */
-        public static getMacroCode(macro: ShaderMacro)
-        {
-            var macroHeader = "";
-            var macroNames = Object.keys(macro.valueMacros);
-            macroNames = macroNames.sort();
-            macroNames.forEach(macroName =>
-            {
-                var value = macro.valueMacros[macroName];
-                macroHeader += `#define ${macroName} ${value}\n`;
-            });
-            macroNames = Object.keys(macro.boolMacros);
-            macroNames = macroNames.sort();
-            macroNames.forEach(macroName =>
-            {
-                var value = macro.boolMacros[macroName];
-                value && (macroHeader += `#define ${macroName}\n`);
-            });
-
-            macroNames = Object.keys(macro.addMacros);
-            macroNames = macroNames.sort();
-            macroNames.forEach(macroName =>
-            {
-                var value = macro.addMacros[macroName];
-                macroHeader += `#define ${macroName} ${value}\n`;
-            });
-            return macroHeader;
         }
     }
 

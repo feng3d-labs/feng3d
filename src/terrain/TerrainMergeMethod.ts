@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -13,12 +13,7 @@ module feng3d
         }
         public set splatMergeTexture(value)
         {
-            if (this._splatMergeTexture)
-                this._splatMergeTexture.removeEventListener(Event.LOADED, this.onSplatTextureLoaded, this);
             this._splatMergeTexture = value;
-            if (this._splatMergeTexture)
-                this._splatMergeTexture.addEventListener(Event.LOADED, this.onSplatTextureLoaded, this);
-            this.invalidateRenderData();
         }
         private _splatMergeTexture: Texture2D;
 
@@ -28,12 +23,7 @@ module feng3d
         }
         public set blendTexture(value)
         {
-            if (this._blendTexture)
-                this._blendTexture.removeEventListener(Event.LOADED, this.onBlendTextureLoaded, this);
             this._blendTexture = value;
-            if (this._blendTexture)
-                this._blendTexture.addEventListener(Event.LOADED, this.onBlendTextureLoaded, this);
-            this.invalidateRenderData();
         }
         private _blendTexture: Texture2D;
 
@@ -44,7 +34,6 @@ module feng3d
         public set splatRepeats(value)
         {
             this._splatRepeats = value;
-            this.invalidateRenderData();
         }
         private _splatRepeats: Vector3D;
 
@@ -64,44 +53,24 @@ module feng3d
             this.splatMergeTexture.wrapT = GL.REPEAT;
 
             this.splatRepeats = splatRepeats;
-        }
-
-        private onSplatTextureLoaded()
-        {
-            this.invalidateRenderData();
-        }
-
-        private onBlendTextureLoaded()
-        {
-            this.invalidateRenderData();
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            renderData.shaderMacro.boolMacros.HAS_TERRAIN_METHOD = true;
-            renderData.shaderMacro.boolMacros.USE_TERRAIN_MERGE = true;
-
-            renderData.uniforms.s_blendTexture = this.blendTexture;
-            renderData.uniforms.s_splatMergeTexture = this.splatMergeTexture;
-            renderData.uniforms.u_splatMergeTextureSize = this.splatMergeTexture.size;
-            renderData.uniforms.u_splatRepeats = this.splatRepeats;
             //
-            renderData.uniforms.u_imageSize = new Point(2048.0, 1024.0);
-            renderData.uniforms.u_tileSize = new Point(512.0, 512.0);
-            renderData.uniforms.u_maxLod = 7;
-            renderData.uniforms.u_uvPositionScale = 0.001;
-            renderData.uniforms.u_tileOffset = [
+            this.createUniformData("s_blendTexture", this.blendTexture);
+            this.createUniformData("s_splatMergeTexture", this.splatMergeTexture);
+            this.createUniformData("u_splatMergeTextureSize", this.splatMergeTexture.size);
+            this.createUniformData("u_splatRepeats", this.splatRepeats);
+            //
+            this.createUniformData("u_imageSize", new Point(2048.0, 1024.0));
+            this.createUniformData("u_tileSize", new Point(512.0, 512.0));
+            this.createUniformData("u_maxLod", 7);
+            this.createUniformData("u_uvPositionScale", 0.001);
+            this.createUniformData("u_tileOffset", [
                 new Vector3D(0.5, 0.5, 0.0, 0.0),
                 new Vector3D(0.5, 0.5, 0.5, 0.0),
                 new Vector3D(0.5, 0.5, 0.0, 0.5),
-            ];
-            renderData.uniforms.u_lod0vec = new Vector3D(0.5, 1, 0, 0);
-
-
-            super.updateRenderData(renderContext, renderData);
+            ]);
+            this.createUniformData("u_lod0vec", new Vector3D(0.5, 1, 0, 0));
+            this.createBoolMacro("HAS_TERRAIN_METHOD", true);
+            this.createBoolMacro("USE_TERRAIN_MERGE", true);
         }
     }
 }

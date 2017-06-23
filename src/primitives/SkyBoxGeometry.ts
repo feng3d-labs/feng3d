@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -25,7 +25,7 @@ module feng3d
                 1, -1, 1,//
                 -1, -1, 1 //
             ]);
-            this.setVAData(GLAttribute.a_position, vertexPositionData, 3);
+            this.setVAData("a_position", vertexPositionData, 3);
 
             //6个面，12个三角形，36个顶点索引
             var indices = new Uint16Array([ //

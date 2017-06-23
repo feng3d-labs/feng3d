@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -71,17 +71,25 @@ module feng3d
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas, scene: Scene3D = null, camera: CameraObject3D = null, autoRender = true)
+        constructor(canvas:HTMLCanvasElement = null, scene: Scene3D = null, camera: CameraObject3D = null, autoRender = true)
         {
             //初始化引擎
             initEngine();
 
+            if(!canvas)
+            {
+                canvas = document.createElement("canvas");
+                canvas.id = "glcanvas";
+                canvas.style.width = "100%";
+                canvas.style.height = "100%";
+                document.body.appendChild(canvas);
+            }
+
             debuger && assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
 
-            this._gl = getWebGLContext(canvas, false);
-            var ext = this._gl.getExtension('OES_standard_derivatives');
-            var ext1 = this._gl.getExtension('EXT_shader_texture_lod');
+            var glProxy = new GLProxy(canvas);
+            this._gl = glProxy.gl;
 
             this.initGL();
 

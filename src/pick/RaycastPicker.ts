@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 射线投射拾取器
@@ -38,7 +38,7 @@ module feng3d
 
             entitys.forEach(entity =>
             {
-                if (entity.isIntersectingRay(ray3D))
+                if (entity.transform.isIntersectingRay(ray3D))
                     this._entities.push(entity);
             });
 
@@ -70,11 +70,11 @@ module feng3d
             for (i = 0; i < this._entities.length; ++i)
             {
                 entity = this._entities[i];
-                pickingCollisionVO = entity._pickingCollisionVO;
+                pickingCollisionVO = entity.transform._pickingCollisionVO;
                 if (RaycastPicker.pickingCollider)
                 {
                     // If a collision exists, update the collision data and stop all checks.
-                    if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && entity.collidesBefore(RaycastPicker.pickingCollider, shortestCollisionDistance, this._findClosestCollision))
+                    if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && entity.transform.collidesBefore(RaycastPicker.pickingCollider, shortestCollisionDistance, this._findClosestCollision))
                     {
                         shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
                         bestCollisionVO = pickingCollisionVO;
@@ -107,7 +107,7 @@ module feng3d
 		 */
         private sortOnNearT(entity1: GameObject, entity2: GameObject): number
         {
-            return entity1.pickingCollisionVO.rayEntryDistance > entity2.pickingCollisionVO.rayEntryDistance ? 1 : -1;
+            return entity1.transform.pickingCollisionVO.rayEntryDistance > entity2.transform.pickingCollisionVO.rayEntryDistance ? 1 : -1;
         }
 
 		/**

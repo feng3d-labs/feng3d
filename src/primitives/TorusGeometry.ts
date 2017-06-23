@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
 	/**
@@ -6,6 +6,70 @@ module feng3d
 	 */
 	export class TorusGeometry extends Geometry
 	{
+		public get radius()
+		{
+			return this._radius;
+		}
+		public set radius(value)
+		{
+			if(this._radius == value)
+				return;
+			this._radius = value;
+			this.invalidateGeometry();
+		}
+		private _radius = 50;
+
+		public get tubeRadius()
+		{
+			return this._tubeRadius;
+		}
+		public set tubeRadius(value)
+		{
+			if(this._tubeRadius == value)
+				return;
+			this._tubeRadius = value;
+			this.invalidateGeometry();
+		}
+		private _tubeRadius = 10;
+
+		public get segmentsR()
+		{
+			return this._segmentsR;
+		}
+		public set segmentR(value)
+		{
+			if(this._segmentsR == value)
+				return;
+			this._segmentsR = value;
+			this.invalidateGeometry();
+		}
+		private _segmentsR = 16;
+
+		public get segmentsT()
+		{
+			return this._segmentsT;
+		}
+		public set segmentsT(value)
+		{
+			if(this._segmentsT == value)
+				return;
+			this._segmentsT = value;
+			this.invalidateGeometry();
+		}
+		private _segmentsT = 8;
+
+		public get yUp()
+		{
+			return this._yUp;
+		}
+		public set yUp(value)
+		{
+			if(this._yUp == value)
+				return;
+			this._yUp = value;
+			this.invalidateGeometry();
+		}
+		private _yUp = true;
 
 		/**
 		 * 创建<code>Torus</code>实例
@@ -15,15 +79,15 @@ module feng3d
 		 * @param segmentsT						纵向段数
 		 * @param yUp							Y轴是否朝上
 		 */
-		constructor(public radius = 50, public tubeRadius = 10, public segmentsR = 16, public segmentsT = 8, public yUp = true)
+		constructor(radius = 50, tubeRadius = 10, segmentsR = 16, segmentsT = 8, yUp = true)
 		{
 			super();
 
-			Watcher.watch(this, ["radius"], this.buildGeometry, this);
-			Watcher.watch(this, ["tubeRadius"], this.buildGeometry, this);
-			Watcher.watch(this, ["segmentsR"], this.buildGeometry, this);
-			Watcher.watch(this, ["segmentsT"], this.buildGeometry, this);
-			Watcher.watch(this, ["yUp"], this.buildGeometry, this);
+			this.radius = radius;
+			this.tubeRadius = tubeRadius;
+			this.segmentR = segmentsR;
+			this.segmentsT = segmentsT;
+			this.yUp = yUp;
 		}
 
 		//
@@ -166,9 +230,9 @@ module feng3d
 				}
 			}
 
-			this.setVAData(GLAttribute.a_position, this._vertexPositionData, 3);
-			this.setVAData(GLAttribute.a_normal, this._vertexNormalData, 3);
-			this.setVAData(GLAttribute.a_tangent, this._vertexTangentData, 3);
+			this.setVAData("a_position", this._vertexPositionData, 3);
+			this.setVAData("a_normal", this._vertexNormalData, 3);
+			this.setVAData("a_tangent", this._vertexTangentData, 3);
 			this.setIndices(this._rawIndices);
 		}
 
@@ -201,7 +265,7 @@ module feng3d
 			}
 
 			// build real data from raw data
-			this.setVAData(GLAttribute.a_uv, data, 2);
+			this.setVAData("a_uv", data, 2);
 
 		}
 	}

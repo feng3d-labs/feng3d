@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class HoverController extends LookAtController
     {
@@ -212,25 +212,25 @@ module feng3d
             }
             else if (this._lookAtObject)
             {
-                if (this._targetObject.parent && this._lookAtObject.parent)
+                if (this._targetObject.transform.parent && this._lookAtObject.transform.parent)
                 {
-                    if (this._targetObject.parent != this._lookAtObject.parent)
+                    if (this._targetObject.transform.parent != this._lookAtObject.transform.parent)
                     {
-                        this._pos["x"] = this._lookAtObject.scenePosition["x"];
-                        this._pos["y"] = this._lookAtObject.scenePosition["y"];
-                        this._pos["z"] = this._lookAtObject.scenePosition["z"];
-                        this._targetObject.parent.inverseSceneTransform.transformVector(this._pos, this._pos);
+                        this._pos["x"] = this._lookAtObject.transform.scenePosition["x"];
+                        this._pos["y"] = this._lookAtObject.transform.scenePosition["y"];
+                        this._pos["z"] = this._lookAtObject.transform.scenePosition["z"];
+                        this._targetObject.transform.parent.worldToLocalMatrix.transformVector(this._pos, this._pos);
                     }
                     else
                     {
                         this._pos.copyFrom(this._lookAtObject.transform.position);
                     }
                 }
-                else if (this._lookAtObject.scene)
+                else if (this._lookAtObject.transform.scene)
                 {
-                    this._pos["x"] = this._lookAtObject.scenePosition["x"];
-                    this._pos["y"] = this._lookAtObject.scenePosition["y"];
-                    this._pos["z"] = this._lookAtObject.scenePosition["z"];
+                    this._pos["x"] = this._lookAtObject.transform.scenePosition["x"];
+                    this._pos["y"] = this._lookAtObject.transform.scenePosition["y"];
+                    this._pos["z"] = this._lookAtObject.transform.scenePosition["z"];
                 }
                 else
                 {
@@ -243,9 +243,9 @@ module feng3d
                 this._pos["y"] = this._origin["y"];
                 this._pos["z"] = this._origin["z"];
             }
-            this._targetObject.x = this._pos["x"] + this._distance * Math.sin(this._currentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.cos(this._currentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
-            this._targetObject.z = this._pos["z"] + this._distance * Math.cos(this._currentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.cos(this._currentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
-            this._targetObject.y = this._pos["y"] + this._distance * Math.sin(this._currentTiltAngle * MathConsts.DEGREES_TO_RADIANS) * this._yFactor;
+            this._targetObject.transform.x = this._pos["x"] + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetObject.transform.z = this._pos["z"] + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetObject.transform.y = this._pos["y"] + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
             super.update();
         }
 

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     var DEG_TO_RAD: number = Math.PI / 180;

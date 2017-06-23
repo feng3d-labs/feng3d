@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class FogMethod extends RenderDataHolder
     {
@@ -12,7 +12,6 @@ module feng3d
         public set minDistance(value)
         {
             this._minDistance = value;
-            this.invalidateRenderData();
         }
         private _minDistance = 0;
 		/**
@@ -25,7 +24,6 @@ module feng3d
         public set maxDistance(value)
         {
             this._maxDistance = value;
-            this.invalidateRenderData();
         }
         private _maxDistance = 100;
         /**
@@ -38,7 +36,6 @@ module feng3d
         public set fogColor(value)
         {
             this._fogColor = value;
-            this.invalidateRenderData();
         }
         private _fogColor: Color;
         public get density()
@@ -48,7 +45,6 @@ module feng3d
         public set density(value)
         {
             this.density = value;
-            this.invalidateRenderData();
         }
         private _density: number;
         /**
@@ -61,7 +57,6 @@ module feng3d
         public set mode(value)
         {
             this._mode = value;
-            this.invalidateRenderData();
         }
         private _mode: FogMode;
 
@@ -79,24 +74,14 @@ module feng3d
             this._maxDistance = maxDistance;
             this._density = density;
             this._mode = mode;
-            this.invalidateRenderData();
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            renderData.shaderMacro.boolMacros.HAS_FOG_METHOD = true;
-            renderData.uniforms.u_fogColor = this._fogColor;
-            renderData.uniforms.u_fogMinDistance = this._minDistance;
-            renderData.uniforms.u_fogMaxDistance = this._maxDistance;
-            renderData.uniforms.u_fogDensity = this._density;
-            renderData.uniforms.u_fogMode = this._mode;
             //
-            renderData.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED++;
-            //
-            super.updateRenderData(renderContext, renderData);
+            this.createUniformData("u_fogColor", this._fogColor);
+            this.createUniformData("u_fogMinDistance", this._minDistance);
+            this.createUniformData("u_fogMaxDistance", this._maxDistance);
+            this.createUniformData("u_fogDensity", this._density);
+            this.createUniformData("u_fogMode", this._mode);
+            this.createBoolMacro("HAS_FOG_METHOD", true);
+            this.createAddMacro("V_GLOBAL_POSITION_NEED", 1);
         }
     }
 

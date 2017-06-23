@@ -1,105 +1,99 @@
-module feng3d
+namespace feng3d
 {
 
     /**
      * 渲染器
      * @author feng 2016-05-01
      */
-    export class Renderer
+    export class Renderer extends Component
     {
+        private static renderers: Renderer[] = [];
+
         /**
-		 * 渲染
-		 */
-        public draw(renderContext: RenderContext)
+         * 材质
+         * Returns the first instantiated Material assigned to the renderer.
+         */
+        public get material() { return this._material || defaultMaterial; }
+        public set material(value)
         {
-            var scene3D = renderContext.scene3d;
-            var renderers = scene3D.renderers;
-            for (var i = 0; i < renderers.length; i++)
-            {
-                var element = renderers[i];
-                this.drawRenderables(renderContext, element);
-            }
+            if (this._material == value)
+                return;
+            this.removeRenderDataHolder(this.material);
+            this._material = value;
+            this.addRenderDataHolder(this.material);
+        }
+        private _material: Material;
+
+        /**
+         * Makes the rendered 3D object visible if enabled.
+         */
+        public get enabled()
+        {
+            return this._enabled;
+        }
+        public set enable(value)
+        {
+            this._enabled = value;
+        }
+        private _enabled: boolean;
+
+        /**
+         * Is this renderer visible in any camera? (Read Only)
+         */
+        public get isVisible()
+        {
+            return this.gameObject.transform.visible;
         }
 
-        protected drawRenderables(renderContext: RenderContext, meshRenderer: Model)
+        constructor()
         {
-            var object3D = meshRenderer.parentComponent;
+            super();
+            this.addRenderDataHolder(this.material);
+            Renderer.renderers.push(this);
+        }
+
+        public drawRenderables(renderContext: RenderContext)
+        {
+            var object3D = this.gameObject;
             //更新数据
             object3D.updateRender(renderContext);
             var gl = renderContext.gl;
-            try
+            // try
+            // {
+            //绘制
+            var material = this.material;
+            if (material.enableBlend)
             {
-                //绘制
-                var material = meshRenderer.material;
-                if (material.enableBlend)
-                {
-                    //
-                    gl.enable(GL.BLEND);
-                    gl.blendEquation(material.blendEquation);
-                    gl.depthMask(false);
-                    gl.blendFunc(material.sfactor, material.dfactor);
-                } else
-                {
-                    gl.disable(GL.BLEND);
-                    gl.depthMask(true);
-                }
-                this.drawObject3D(gl, object3D.renderData);            //
-            } catch (error)
+                //
+                gl.enable(GL.BLEND);
+                gl.blendEquation(material.blendEquation);
+                gl.depthMask(false);
+                gl.blendFunc(material.sfactor, material.dfactor);
+            } else
             {
-                console.log(error);
+                gl.disable(GL.BLEND);
+                gl.depthMask(true);
             }
+            this.drawObject3D(gl, object3D.renderData);            //
+            // } catch (error)
+            // {
+            //     console.log(error);
+            // }
         }
 
         /**
          * 绘制3D对象
          */
-        protected drawObject3D(gl: GL, renderAtomic: RenderAtomic)
+        protected drawObject3D(gl: GL, renderAtomic: RenderAtomic, shader: ShaderRenderData = null)
         {
-            var shaderProgram = this.activeShaderProgram(gl, renderAtomic.vertexCode, renderAtomic.fragmentCode, renderAtomic.shaderMacro);
+            shader = shader || renderAtomic.shader;
+            var shaderProgram = shader.activeShaderProgram(gl);
             if (!shaderProgram)
                 return;
             //
-            renderAtomic.attributes.activeAttributes(gl, shaderProgram.attributes);
-            renderAtomic.uniforms.activeUniforms(gl, shaderProgram.uniforms);
-            dodraw(gl, renderAtomic.shaderParams, renderAtomic.indexBuffer, renderAtomic.instanceCount);
-        }
-
-        /**
-         * 激活渲染程序
-         */
-        protected activeShaderProgram(gl: GL, vertexCode: string, fragmentCode: string, shaderMacro: ShaderMacro)
-        {
-            if (!vertexCode || !fragmentCode)
-                return null;
-
-            //应用宏
-            var shaderMacroStr = ShaderLib.getMacroCode(shaderMacro);
-            vertexCode = vertexCode.replace(/#define\s+macros/, shaderMacroStr);
-            fragmentCode = fragmentCode.replace(/#define\s+macros/, shaderMacroStr);
-            //渲染程序
-            var shaderProgram = context3DPool.getWebGLProgram(gl, vertexCode, fragmentCode);
-            gl.useProgram(shaderProgram);
-            return shaderProgram;
-        }
-    }
-
-    /**
-     */
-    function dodraw(gl: GL, shaderParams: ShaderParams, indexBuffer: IndexRenderData, instanceCount: number = 1)
-    {
-        instanceCount = ~~instanceCount;
-
-        indexBuffer.active(gl);
-
-        var renderMode = shaderParams.renderMode;
-        if (instanceCount > 1)
-        {
-            var _ext = gl.getExtension('ANGLE_instanced_arrays');
-            _ext.drawElementsInstancedANGLE(renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset, instanceCount);
-        }
-        else
-        {
-            gl.drawElements(renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+            renderAtomic.activeAttributes(gl, shaderProgram.attributes);
+            renderAtomic.activeUniforms(gl, shaderProgram.uniforms);
+            renderAtomic.dodraw(gl);
         }
     }
 }

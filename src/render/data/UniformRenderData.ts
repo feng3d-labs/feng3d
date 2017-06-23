@@ -1,299 +1,230 @@
-module feng3d
+namespace feng3d
 {
-    /**
-     * Uniform渲染数据
-     */
-    export class UniformRenderData
+    export interface UniformRenderData
     {
         /**
          * 模型矩阵
          */
-        u_modelMatrix: Matrix3D;
+        u_modelMatrix: Matrix3D | (() => Matrix3D);
         /**
          * 世界投影矩阵
          */
-        u_viewProjection: Matrix3D;
+        u_viewProjection: Matrix3D | (() => Matrix3D);
         /**
          * 摄像机矩阵
          */
-        u_cameraMatrix: Matrix3D;
+        u_cameraMatrix: Matrix3D | (() => Matrix3D);
 
-        u_diffuseInput: Vector3D;
+        u_diffuseInput: Vector3D | (() => Vector3D);
         /**
          * 透明阈值，用于透明检测
          */
-        u_alphaThreshold: number;
+        u_alphaThreshold: number | (() => number);
         /**
          * 漫反射贴图
          */
-        s_texture: Texture2D;
+        s_texture: Texture2D | (() => Texture2D);
         /**
          * 漫反射贴图
          */
-        s_diffuse: Texture2D;
+        s_diffuse: Texture2D | (() => Texture2D);
         /**
          * 环境贴图
          */
-        s_ambient: Texture2D;
+        s_ambient: Texture2D | (() => Texture2D);
         /**
          * 法线贴图
          */
-        s_normal: Texture2D;
+        s_normal: Texture2D | (() => Texture2D);
         /**
          * 镜面反射光泽图
          */
-        s_specular: Texture2D;
+        s_specular: Texture2D | (() => Texture2D);
         /**
          * 天空盒纹理
          */
-        s_skyboxTexture: TextureCube;
+        s_skyboxTexture: TextureCube | (() => TextureCube);
         /**
          * 天空盒尺寸
          */
-        u_skyBoxSize: number;
+        u_skyBoxSize: number | (() => number);
 
         /**
          * 地形混合贴图
          */
-        s_blendTexture: Texture2D;
+        s_blendTexture: Texture2D | (() => Texture2D);
 
         /**
          * 地形块贴图1
          */
-        s_splatTexture1: Texture2D;
+        s_splatTexture1: Texture2D | (() => Texture2D);
         /**
          * 地形块贴图2
          */
-        s_splatTexture2: Texture2D;
+        s_splatTexture2: Texture2D | (() => Texture2D);
         /**
          * 地形块贴图3
          */
-        s_splatTexture3: Texture2D;
+        s_splatTexture3: Texture2D | (() => Texture2D);
         /**
          * 地形块混合贴图
          */
-        s_splatMergeTexture: Texture2D;
+        s_splatMergeTexture: Texture2D | (() => Texture2D);
         /**
          * 地形块重复次数
          */
-        u_splatRepeats: Vector3D;
+        u_splatRepeats: Vector3D | (() => Vector3D);
         /**
          * 地形混合贴图尺寸
          */
-        u_splatMergeTextureSize: Point;
+        u_splatMergeTextureSize: Point | (() => Point);
         /**
          * 图片尺寸
          */
-        u_imageSize: Point;
+        u_imageSize: Point | (() => Point);
         /**
          * 地形块尺寸
          */
-        u_tileSize: Point;
+        u_tileSize: Point | (() => Point);
         /**
          * 地形块偏移
          */
-        u_tileOffset: Vector3D[];
+        u_tileOffset: Vector3D[] | (() => Vector3D[]);
         /**
          * 最大lod
          */
-        u_maxLod: number;
+        u_maxLod: number | (() => number);
         /**
          * uv与坐标比
          */
-        u_uvPositionScale: number;
+        u_uvPositionScale: number | (() => number);
         /**
          * lod0时在贴图中的uv缩放偏移向量
          */
-        u_lod0vec: Vector3D;
+        u_lod0vec: Vector3D | (() => Vector3D);
         /******************************************************/
         //                  点光源
         /******************************************************/
         /**
          * 点光源位置数组
          */
-        u_pointLightPositions: Vector3D[];
+        u_pointLightPositions: Vector3D[] | (() => Vector3D[]);
         /**
          * 点光源颜色数组
          */
-        u_pointLightColors: Vector3D[];
+        u_pointLightColors: Vector3D[] | (() => Vector3D[]);
         /**
          * 点光源光照强度数组
          */
-        u_pointLightIntensitys: number[];
+        u_pointLightIntensitys: number[] | (() => number[]);
         /**
          * 点光源光照范围数组
          */
-        u_pointLightRanges: number[];
+        u_pointLightRanges: number[] | (() => number[]);
         /******************************************************/
         //                  方向光源
         /******************************************************/
         /**
          * 方向光源方向数组
          */
-        u_directionalLightDirections: Vector3D[];
+        u_directionalLightDirections: Vector3D[] | (() => Vector3D[]);
         /**
          * 方向光源颜色数组
          */
-        u_directionalLightColors: Vector3D[];
+        u_directionalLightColors: Vector3D[] | (() => Vector3D[]);
         /**
          * 方向光源光照强度数组
          */
-        u_directionalLightIntensitys: number[];
+        u_directionalLightIntensitys: number[] | (() => number[]);
 
         /**
          * 场景环境光
          */
-        u_sceneAmbientColor: Color;
+        u_sceneAmbientColor: Color | (() => Color);
         /**
          * 基本颜色
          */
-        u_diffuse: Color;
+        u_diffuse: Color | (() => Color);
         /**
          * 镜面反射颜色
          */
-        u_specular: Color;
+        u_specular: Color | (() => Color);
         /**
          * 环境颜色
          */
-        u_ambient: Color;
+        u_ambient: Color | (() => Color);
         /**
          * 高光系数
          */
-        u_glossiness: number;
+        u_glossiness: number | (() => number);
 
         /**
          * 反射率
          */
-        u_reflectance: number;
+        u_reflectance: number | (() => number);
 
         /**
          * 粗糙度
          */
-        u_roughness: number;
+        u_roughness: number | (() => number);
 
         /**
          * 金属度
          */
-        u_metalic: number;
+        u_metalic: number | (() => number);
 
         /**
          * 粒子时间
          */
-        u_particleTime: number;
+        u_particleTime: number | (() => number);
 
         /**
          * 点大小
          */
-        u_PointSize: number;
+        u_PointSize: number | (() => number);
 
         /**
          * 骨骼全局矩阵
          */
-        u_skeletonGlobalMatriices: Matrix3D[];
+        u_skeletonGlobalMatriices: Matrix3D[] | (() => Matrix3D[]);
 
         /**
          * 3D对象编号
          */
-        u_objectID: number;
+        u_objectID: number | (() => number);
 
         /**
          * 雾颜色
          */
-        u_fogColor: Color;
+        u_fogColor: Color | (() => Color);
         /**
          * 雾最近距离
          */
-        u_fogMinDistance: number;
+        u_fogMinDistance: number | (() => number);
         /**
          * 雾最远距离
          */
-        u_fogMaxDistance: number;
+        u_fogMaxDistance: number | (() => number);
         /**
          * 雾浓度
          */
-        u_fogDensity: number;
+        u_fogDensity: number | (() => number);
         /**
          * 雾模式
          */
-        u_fogMode: number;
+        u_fogMode: number | (() => number);
 
         /**
          * 环境反射纹理
          */
-        s_envMap: TextureCube;
+        s_envMap: TextureCube | (() => TextureCube);
 		/**
 		 * 反射率
 		 */
-        u_reflectivity: number;
+        u_reflectivity: number | (() => number);
         /**
          * 单位深度映射到屏幕像素值
          */
-        u_scaleByDepth: number;
-
-        /**
-         * 激活常量
-         */
-        public activeUniforms(gl: GL, uniformInfos: WebGLActiveInfo[])
-        {
-            _samplerIndex = 0;
-            for (var o = 0; o < uniformInfos.length; o++)
-            {
-                var activeInfo = uniformInfos[o];
-                if (activeInfo.uniformBaseName)
-                {
-                    //处理数组
-                    var baseName = activeInfo.uniformBaseName;
-                    for (var j = 0; j < activeInfo.size; j++)
-                    {
-                        this.setContext3DUniform(gl, { name: baseName + `[${j}]`, type: activeInfo.type, uniformLocation: activeInfo.uniformLocation[j] }, this[baseName][j]);
-                    }
-                } else
-                {
-                    this.setContext3DUniform(gl, activeInfo, this[activeInfo.name]);
-                }
-            }
-        }
-
-        /**
-         * 设置环境Uniform数据
-         */
-        private setContext3DUniform(gl: GL, activeInfo: { name: string; uniformLocation: WebGLUniformLocation, type: number; }, data)
-        {
-            var location = activeInfo.uniformLocation;
-            switch (activeInfo.type)
-            {
-                case GL.INT:
-                    gl.uniform1i(location, data);
-                    break;
-                case GL.FLOAT_MAT4:
-                    gl.uniformMatrix4fv(location, false, data.rawData);
-                    break;
-                case GL.FLOAT:
-                    gl.uniform1f(location, data);
-                    break;
-                case GL.FLOAT_VEC2:
-                    gl.uniform2f(location, data.x, data.y);
-                    break;
-                case GL.FLOAT_VEC3:
-                    gl.uniform3f(location, data.x, data.y, data.z);
-                    break;
-                case GL.FLOAT_VEC4:
-                    gl.uniform4f(location, data.x, data.y, data.z, data.w);
-                    break;
-                case GL.SAMPLER_2D:
-                case GL.SAMPLER_CUBE:
-                    var textureInfo = <TextureInfo>data;
-                    //激活纹理编号
-                    gl.activeTexture(GL["TEXTURE" + _samplerIndex]);
-                    textureInfo.active(gl);
-                    //设置纹理所在采样编号
-                    gl.uniform1i(location, _samplerIndex);
-                    _samplerIndex++;
-                    break;
-                default:
-                    throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
-            }
-        }
+        u_scaleByDepth: number | (() => number);
     }
-    var _samplerIndex = 0;
 }

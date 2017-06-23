@@ -1,17 +1,25 @@
-module feng3d
+namespace feng3d
 {
-
     /**
      * 颜色材质
      * @author feng 2016-05-02
      */
     export class ColorMaterial extends Material
     {
-
         /** 
          * 颜色 
          */
-        public color: Color;
+        public get color()
+        {
+            return this._color;
+        }
+        public set color(value)
+        {
+            if (this._color == value)
+                return;
+            this._color = value;
+        }
+        private _color: Color;
 
         /**
          * 构建颜色材质
@@ -21,23 +29,10 @@ module feng3d
         constructor(color: Color = null)
         {
             super();
-            this.shaderName = "color";
+            this.setShader("color");
             this.color = color || new Color();
-
-            Watcher.watch(this, ["color"], this.invalidateRenderData, this);
-            Watcher.watch(this, ["color", "r"], this.invalidateRenderData, this);
-            Watcher.watch(this, ["color", "g"], this.invalidateRenderData, this);
-            Watcher.watch(this, ["color", "b"], this.invalidateRenderData, this);
-            Watcher.watch(this, ["color", "a"], this.invalidateRenderData, this);
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            renderData.uniforms.u_diffuseInput = new Vector3D(this.color.r, this.color.g, this.color.b, this.color.a);
-            super.updateRenderData(renderContext, renderData);
+            //
+            this.createUniformData("u_diffuseInput", () => this.color);
         }
     }
 }

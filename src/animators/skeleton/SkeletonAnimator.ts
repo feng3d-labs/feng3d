@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 骨骼动画
@@ -11,7 +11,17 @@ module feng3d
 		/**
 		 * 骨骼
 		 */
-        public skeleton: Skeleton;
+        public get skeleton()
+        {
+            return this._skeleton;
+        }
+        public set skeleton(value)
+        {
+            if (this._skeleton == value)
+                return;
+            this._skeleton = value;
+        }
+        private _skeleton: Skeleton;
 
         private _globalMatrices: Matrix3D[] = [];
         private _globalPropertiesDirty: boolean = true;
@@ -38,6 +48,10 @@ module feng3d
             super();
 
             this.skeleton = skeleton;
+            //
+            this.createUniformData("u_skeletonGlobalMatriices", () => this.globalMatrices);
+            this.createValueMacro("NUM_SKELETONJOINT", () => this._skeleton.numJoints);
+            this.createBoolMacro("HAS_SKELETON_ANIMATION", () => !!this._activeSkeletonState);
         }
 
 		/**
@@ -58,25 +72,7 @@ module feng3d
             }
 
             this._activeSkeletonState = <SkeletonClipState>this._activeState;
-
             this.start();
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            if (this._activeSkeletonState)
-            {
-                renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this.skeleton.numJoints;
-                renderData.uniforms.u_skeletonGlobalMatriices = this.globalMatrices;
-                renderData.shaderMacro.boolMacros.HAS_SKELETON_ANIMATION = true;
-                super.updateRenderData(renderContext, renderData);
-            } else
-            {
-                renderData.shaderMacro.boolMacros.HAS_SKELETON_ANIMATION = false;
-            }
         }
 
 		/**
@@ -87,8 +83,6 @@ module feng3d
             super.updateDeltaTime(dt);
 
             this._globalPropertiesDirty = true;
-
-            this.invalidateRenderData();
         }
 
 		/**
@@ -96,6 +90,9 @@ module feng3d
 		 */
         private updateGlobalProperties()
         {
+            if (!this._activeSkeletonState)
+                return;
+
             this._globalPropertiesDirty = false;
 
             //获取全局骨骼姿势
@@ -103,10 +100,10 @@ module feng3d
             var globalMatrix3Ds = currentSkeletonPose.globalMatrix3Ds;
 
             //姿势变换矩阵
-            var joints: SkeletonJoint[] = this.skeleton.joints;
+            var joints: SkeletonJoint[] = this._skeleton.joints;
 
             //遍历每个关节
-            for (var i: number = 0; i < this.skeleton.numJoints; ++i)
+            for (var i: number = 0; i < this._skeleton.numJoints; ++i)
             {
                 var inverseMatrix3D: Matrix3D = joints[i].invertMatrix3D;
                 var matrix3D: Matrix3D = globalMatrix3Ds[i].clone();

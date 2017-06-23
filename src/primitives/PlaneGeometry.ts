@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -7,6 +7,70 @@ module feng3d
      */
     export class PlaneGeometry extends Geometry
     {
+        public get width()
+        {
+            return this._width;
+        }
+        public set width(value)
+        {
+            if(this._width == value)
+                return;
+            this._width = value;
+            this.invalidateGeometry();
+        }
+        private _width = 100;
+
+        public get height()
+        {
+            return this._height;
+        }
+        public set height(value)
+        {
+            if(this._height == value)
+                return;
+            this._height = value;
+            this.invalidateGeometry();
+        }
+        private _height = 100;
+
+        public get segmentsW()
+        {
+            return this._segmentsW;
+        }
+        public set segmentsW(value)
+        {
+            if(this._segmentsW == value)
+                return;
+            this._segmentsW = value;
+            this.invalidateGeometry();
+        }
+        private _segmentsW = 1;
+
+        public get segmentsH()
+        {
+            return this._segmentsH;
+        }
+        public set segmentsH(value)
+        {
+            if(this._segmentsH == value)
+                return;
+            this._segmentsH = value;
+            this.invalidateGeometry();
+        }
+        private _segmentsH = 1;
+
+        public get yUp()
+        {
+            return this._yUp;
+        }
+        public set yUp(value)
+        {
+            if(this._yUp == value)
+                return;
+            this._yUp = value;
+            this.invalidateGeometry();
+        }
+        private _yUp = true;
 
         /**
          * 创建平面几何体
@@ -16,15 +80,15 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(public width = 100, public height = 100, public segmentsW = 1, public segmentsH = 1, public yUp = true)
+        constructor(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true)
         {
             super();
 
-            Watcher.watch(this, ["width"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["height"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["yUp"], this.invalidateGeometry, this);
+            this.width = width;
+            this.height = height;
+            this.segmentsW = segmentsW;
+            this.segmentsH = segmentsH;
+            this.yUp = yUp;
         }
 
         /**
@@ -33,16 +97,16 @@ module feng3d
         protected buildGeometry()
         {
             var vertexPositionData = this.buildPosition();
-            this.setVAData(GLAttribute.a_position, vertexPositionData, 3);
+            this.setVAData("a_position", vertexPositionData, 3);
 
             var vertexNormalData = this.buildNormal();
-            this.setVAData(GLAttribute.a_normal, vertexNormalData, 3)
+            this.setVAData("a_normal", vertexNormalData, 3)
 
             var vertexTangentData = this.buildTangent();
-            this.setVAData(GLAttribute.a_tangent, vertexTangentData, 3)
+            this.setVAData("a_tangent", vertexTangentData, 3)
 
             var uvData = this.buildUVs();
-            this.setVAData(GLAttribute.a_uv, uvData, 2);
+            this.setVAData("a_uv", uvData, 2);
 
             var indices = this.buildIndices();
             this.setIndices(indices);

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -14,7 +14,7 @@ module feng3d
         constructor()
         {
             super();
-            this.shaderName = "segment";
+            this.setShader("segment");
             this.renderMode = RenderMode.LINES;
         }
     }

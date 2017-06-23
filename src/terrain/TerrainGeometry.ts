@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -7,6 +7,108 @@ module feng3d
      */
     export class TerrainGeometry extends Geometry
     {
+        public get heightMapUrl()
+        {
+            return this._heightImage.src;
+        }
+        public set heightMapUrl(value)
+        {
+            if(this._heightImage.src == value)
+                return;
+            this._heightImage.src = value;
+        }
+
+        public get width()
+        {
+            return this._width;
+        }
+        public set width(value)
+        {
+            if(this._width == value)
+                return;
+            this._width = value;
+            this.invalidateGeometry();
+        }
+        private _width: number = 1000;
+
+        public get height()
+        {
+            return this._height;
+        }
+        public set height(value)
+        {
+            if(this._height == value)
+                return;
+            this._height = value;
+            this.invalidateGeometry();
+        }
+        private _height: number = 100;
+
+        public get depth()
+        {
+            return this._depth;
+        }
+        public set depth(value)
+        {
+            if(this._depth == value)
+                return;
+            this._depth = value;
+            this.invalidateGeometry();
+        }
+        private _depth: number = 1000;
+
+        public get segmentsW()
+        {
+            return this._segmentsW;
+        }
+        public set segmentsW(value)
+        {
+            if(this._segmentsW == value)
+                return;
+            this._segmentsW = value;
+            this.invalidateGeometry();
+        }
+        private _segmentsW: number = 30;
+
+        public get segmentsH()
+        {
+            return this._segmentsH;
+        }
+        public set segmentsH(value)
+        {
+            if(this._segmentsH == value)
+                return;
+            this._segmentsH = value;
+            this.invalidateGeometry();
+        }
+        private _segmentsH: number = 30;
+
+        public get maxElevation()
+        {
+            return this._maxElevation;
+        }
+        public set maxElevation(value)
+        {
+            if(this._maxElevation == value)
+                return;
+            this._maxElevation = value;
+            this.invalidateGeometry();
+        }
+        private _maxElevation: number = 255;
+
+        public get minElevation()
+        {
+            return this._minElevation;
+        }
+        public set minElevation(value)
+        {
+            if(this._minElevation == value)
+                return;
+            this._minElevation = value;
+            this.invalidateGeometry();
+        }
+        private _minElevation: number = 0;
+        
         private _heightMap: ImageData;
         private _heightImage: HTMLImageElement;
 
@@ -21,24 +123,22 @@ module feng3d
 		 * @param    maxElevation	最大地形高度
 		 * @param    minElevation	最小地形高度
 		 */
-        constructor(public heightMapUrl: string, public width: number = 1000, public height: number = 100, public depth: number = 1000, public segmentsW: number = 30, public segmentsH: number = 30, public maxElevation: number = 255, public minElevation: number = 0)
+        constructor(heightMapUrl: string,width = 1000, height = 100, depth = 1000, segmentsW = 30, segmentsH = 30, maxElevation = 255, minElevation = 0)
         {
             super();
 
-            Watcher.watch(this, ["width"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["height"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["depth"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["maxElevation"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["minElevation"], this.invalidateGeometry, this);
+            this.width = width;
+            this.height = height;
+            this.depth = depth;
+            this.segmentsW = segmentsW;
+            this.segmentsH = segmentsH;
+            this.maxElevation = maxElevation;
+            this.minElevation = minElevation;
 
             this._heightImage = new Image();
             this._heightImage.crossOrigin = "Anonymous";
             this._heightImage.addEventListener("load", this.onHeightMapLoad.bind(this));
-            this._heightImage.src = heightMapUrl;
-
-            Binding.bindProperty(this, ["heightMapUrl"], this._heightImage, "src");
+            this.heightMapUrl = heightMapUrl;
         }
 
         /**
@@ -121,8 +221,8 @@ module feng3d
                 }
             }
             var uvs = this.buildUVs();
-            this.setVAData(GLAttribute.a_position, vertices, 3)
-            this.setVAData(GLAttribute.a_uv, uvs, 2);
+            this.setVAData("a_position", vertices, 3)
+            this.setVAData("a_uv", uvs, 2);
             this.setIndices(indices);
             var normals = GeometryUtils.createVertexNormals(indices, vertices);
             this.normals = new Float32Array(normals);

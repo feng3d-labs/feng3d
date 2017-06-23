@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 动画剪辑节点基类(用于控制动画播放，包含每帧持续时间，是否循环播放等)

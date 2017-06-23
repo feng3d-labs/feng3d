@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 法线函数
@@ -15,12 +15,7 @@ module feng3d
         }
         public set specularTexture(value)
         {
-            if (this._specularTexture)
-                this._specularTexture.removeEventListener(Event.LOADED, this.invalidateRenderData, this);
             this._specularTexture = value;
-            if (this._specularTexture)
-                this._specularTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
-            this.invalidateRenderData();
         }
         private _specularTexture: Texture2D;
         /**
@@ -50,27 +45,11 @@ module feng3d
         {
             super();
             this.specularTexture = new Texture2D(specularUrl);
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            if (this.specularTexture.checkRenderData())
-            {
-                renderData.uniforms.s_specular = this.specularTexture;
-                renderData.shaderMacro.boolMacros.HAS_SPECULAR_SAMPLER = true;
-            } else
-            {
-                delete renderData.uniforms.s_specular;
-                renderData.shaderMacro.boolMacros.HAS_SPECULAR_SAMPLER = false;
-            }
-            renderData.uniforms.u_specular = this.specularColor;
-            renderData.uniforms.u_glossiness = this.glossiness;
-
             //
-            super.updateRenderData(renderContext, renderData);
+            this.createUniformData("s_specular", () => this.specularTexture);
+            this.createUniformData("u_specular", () => this.specularColor);
+            this.createUniformData("u_glossiness", () => this.glossiness);
+            this.createBoolMacro("HAS_SPECULAR_SAMPLER", () => this.specularTexture.checkRenderData());
         }
     }
 }

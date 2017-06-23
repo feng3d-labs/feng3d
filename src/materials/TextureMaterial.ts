@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -7,26 +7,27 @@ module feng3d
      */
     export class TextureMaterial extends Material
     {
-
         /**
          * 纹理数据
          */
-        public texture: Texture2D;
+        public get texture()
+        {
+            return this._texture;
+        }
+        public set texture(value)
+        {
+            if (this._texture == value)
+                return;
+            this._texture = value;
+        }
+        private _texture: Texture2D;
 
         constructor()
         {
             super();
-            this.shaderName = "texture";
-            Watcher.watch(this, ["texture"], this.invalidateRenderData, this);
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            renderData.uniforms.s_texture = this.texture;
-            super.updateRenderData(renderContext, renderData);
+            this.setShader("texture");
+            //
+            this.createUniformData("s_texture", () => this.texture);
         }
     }
 }

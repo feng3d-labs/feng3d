@@ -1,11 +1,11 @@
-module feng3d
+namespace feng3d
 {
 
     /**
      * 构建Map类代替Dictionary
      * @author feng 2017-01-03
      */
-    export class Map<K, V>
+    export class Map<K extends { uuid: string }, V extends { uuid: string }>
     {
         private keyMap: { [kUid: string]: K } = {};
         private valueMap: { [kUid: string]: V } = {};
@@ -15,8 +15,8 @@ module feng3d
          */
         public delete(k: K)
         {
-            delete this.keyMap[UIDUtils.getUID(k)];
-            delete this.valueMap[UIDUtils.getUID(k)];
+            delete this.keyMap[k.uuid];
+            delete this.valueMap[k.uuid];
         }
 
         /**
@@ -24,8 +24,8 @@ module feng3d
          */
         public push(k: K, v: V)
         {
-            this.keyMap[UIDUtils.getUID(k)] = k;
-            this.valueMap[UIDUtils.getUID(k)] = v;
+            this.keyMap[k.uuid] = k;
+            this.valueMap[k.uuid] = v;
         }
 
         /**
@@ -33,7 +33,7 @@ module feng3d
          */
         public get(k: K): V
         {
-            return this.valueMap[UIDUtils.getUID(k)];
+            return this.valueMap[k.uuid];
         }
 
         /**

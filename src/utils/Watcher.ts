@@ -1,6 +1,6 @@
 //参考 egret https://github.com/egret-labs/egret-core/blob/master/src/extension/eui/binding/Watcher.ts
 
-module feng3d
+namespace feng3d
 {
     /**
      * @private

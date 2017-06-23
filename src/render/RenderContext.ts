@@ -1,16 +1,30 @@
-module feng3d
+namespace feng3d
 {
 
     /**
      * 渲染环境
      * @author feng 2017-01-04
      */
-    export class RenderContext
+    export class RenderContext extends RenderDataHolder
     {
         /**
          * 摄像机
          */
-        public camera: Camera;
+        public get camera()
+        {
+            return this._camera;
+        }
+        public set camera(value)
+        {
+            if(this._camera == value)
+            return;
+            if(this._camera)
+                this.removeRenderDataHolder(this._camera);
+            this._camera = value;
+            if(this._camera)
+                this.addRenderDataHolder(this._camera);
+        }
+        private _camera: Camera;
 
         /**
          * 场景
@@ -30,23 +44,12 @@ module feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderAtomic: RenderAtomic)
+        public updateRenderData1()
         {
-            var pointLights: PointLight[] = [];
-            var directionalLights: DirectionalLight[] = [];
-            this.camera.updateRenderData(this, renderAtomic);
-            var lights = this.scene3d.lights;
-            var light: Light;
-            for (var i = 0; i < lights.length; i++)
-            {
-                light = lights[i];
-                light.updateRenderData(this, renderAtomic);
-                if (light instanceof PointLight)
-                    pointLights.push(light);
-                if (light instanceof DirectionalLight)
-                    directionalLights.push(light);
-            }
-            renderAtomic.shaderMacro.valueMacros.NUM_LIGHT = lights.length;
+            var pointLights = PointLight.pointLights;
+            var directionalLights = DirectionalLight.directionalLights;
+
+            this.createValueMacro("NUM_LIGHT", Light.lights.length);
             //收集点光源数据
             var pointLightPositions: Vector3D[] = [];
             var pointLightColors: Vector3D[] = [];
@@ -61,18 +64,18 @@ module feng3d
                 pointLightRanges.push(pointLight.range);
             }
             //设置点光源数据
-            renderAtomic.shaderMacro.valueMacros.NUM_POINTLIGHT = pointLights.length;
+            this.createValueMacro("NUM_POINTLIGHT", pointLights.length);
             if (pointLights.length > 0)
             {
-                renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.V_GLOBAL_POSITION_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.U_CAMERAMATRIX_NEED = 1;
+                this.createAddMacro("A_NORMAL_NEED", 1);
+                this.createAddMacro("V_NORMAL_NEED", 1);
+                this.createAddMacro("V_GLOBAL_POSITION_NEED", 1);
+                this.createAddMacro("U_CAMERAMATRIX_NEED", 1);
                 //
-                renderAtomic.uniforms.u_pointLightPositions = pointLightPositions;
-                renderAtomic.uniforms.u_pointLightColors = pointLightColors;
-                renderAtomic.uniforms.u_pointLightIntensitys = pointLightIntensitys;
-                renderAtomic.uniforms.u_pointLightRanges = pointLightRanges;
+                this.createUniformData("u_pointLightPositions", pointLightPositions);
+                this.createUniformData("u_pointLightColors", pointLightColors);
+                this.createUniformData("u_pointLightIntensitys", pointLightIntensitys);
+                this.createUniformData("u_pointLightRanges", pointLightRanges);
             }
             var directionalLightDirections: Vector3D[] = [];
             var directionalLightColors: Vector3D[] = [];
@@ -84,21 +87,20 @@ module feng3d
                 directionalLightColors.push(directionalLight.color);
                 directionalLightIntensitys.push(directionalLight.intensity);
             }
-            renderAtomic.shaderMacro.valueMacros.NUM_DIRECTIONALLIGHT = directionalLights.length;
+            this.createValueMacro("NUM_DIRECTIONALLIGHT", directionalLights.length);
             if (directionalLights.length > 0)
             {
-                renderAtomic.shaderMacro.addMacros.A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.addMacros.U_CAMERAMATRIX_NEED = 1;
+                this.createAddMacro("A_NORMAL_NEED", 1);
+                this.createAddMacro("V_NORMAL_NEED", 1);
+                this.createAddMacro("U_CAMERAMATRIX_NEED", 1);
                 //
-                renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
-                renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;
-                renderAtomic.uniforms.u_directionalLightIntensitys = directionalLightIntensitys;
+                this.createUniformData("u_directionalLightDirections", directionalLightDirections);
+                this.createUniformData("u_directionalLightColors", directionalLightColors);
+                this.createUniformData("u_directionalLightIntensitys", directionalLightIntensitys);
             }
 
-            renderAtomic.uniforms.u_sceneAmbientColor = this.scene3d.ambientColor;
-
-            renderAtomic.uniforms.u_scaleByDepth = this.view3D.getScaleByDepth(1);
+            this.createUniformData("u_sceneAmbientColor", this.scene3d.ambientColor);
+            this.createUniformData("u_scaleByDepth", this.view3D.getScaleByDepth(1));
         }
     }
 }

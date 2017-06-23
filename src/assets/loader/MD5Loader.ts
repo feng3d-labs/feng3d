@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * MD5模型加载类
@@ -60,13 +60,11 @@ module feng3d
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
 
                 var skeletonObject3D = new GameObject();
-                var model = new Model();
-                model.geometry = geometry;
-                model.material = new StandardMaterial();
-                skeletonObject3D.addComponent(model);
+                skeletonObject3D.addComponent(MeshRenderer).material = new StandardMaterial();
+                skeletonObject3D.addComponent(MeshFilter).mesh = geometry;
                 skeletonObject3D.addComponent(skeletonAnimator);
 
-                object3D.addChild(skeletonObject3D);
+                object3D.transform.addChild(skeletonObject3D.transform);
             }
 
             if (this._completed)
@@ -245,17 +243,17 @@ module feng3d
             //更新索引数据
             geometry.setIndices(new Uint16Array(indices));
             //更新顶点坐标与uv数据
-            geometry.setVAData(GLAttribute.a_position, new Float32Array(vertices), 3);
-            geometry.setVAData(GLAttribute.a_uv, new Float32Array(uvs), 2);
+            geometry.setVAData("a_position", new Float32Array(vertices), 3);
+            geometry.setVAData("a_uv", new Float32Array(uvs), 2);
             geometry.createVertexNormals();
             //
             var tangents = GeometryUtils.createVertexTangents(indices, vertices, uvs);
-            geometry.setVAData(GLAttribute.a_tangent, new Float32Array(tangents), 3);
+            geometry.setVAData("a_tangent", new Float32Array(tangents), 3);
             //更新关节索引与权重索引
-            geometry.setVAData(GLAttribute.a_jointindex0, new Float32Array(jointIndices0), 4);
-            geometry.setVAData(GLAttribute.a_jointweight0, new Float32Array(jointWeights0), 4);
-            geometry.setVAData(GLAttribute.a_jointindex1, new Float32Array(jointIndices1), 4);
-            geometry.setVAData(GLAttribute.a_jointweight1, new Float32Array(jointWeights1), 4);
+            geometry.setVAData("a_jointindex0", new Float32Array(jointIndices0), 4);
+            geometry.setVAData("a_jointweight0", new Float32Array(jointWeights0), 4);
+            geometry.setVAData("a_jointindex1", new Float32Array(jointIndices1), 4);
+            geometry.setVAData("a_jointweight1", new Float32Array(jointWeights1), 4);
             return geometry;
         }
 

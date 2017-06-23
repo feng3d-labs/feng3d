@@ -1,10 +1,10 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 摄像机
 	 * @author feng 2016-08-16
 	 */
-    export class Camera extends Object3DComponent
+    export class Camera extends Component
     {
         private _viewProjection: Matrix3D = new Matrix3D();
         private _viewProjectionDirty: boolean = true;
@@ -27,6 +27,14 @@ module feng3d
 
             for (var i: number = 0; i < 6; ++i)
                 this._frustumPlanes[i] = new Plane3D();
+
+            //
+            this.createUniformData("u_viewProjection", () => this.viewProjection);
+            this.createUniformData("u_cameraMatrix", () =>
+            {
+                return this.gameObject ? this.gameObject.transform.localToWorldMatrix : new Matrix3D();
+            });
+            this.createUniformData("u_skyBoxSize", () => { return this._lens.far / Math.sqrt(3); });
         }
 
 		/**
@@ -84,12 +92,12 @@ module feng3d
 
         public get inverseSceneTransform()
         {
-            return this.parentComponent ? this.parentComponent.inverseSceneTransform : new Matrix3D();
+            return this.gameObject ? this.gameObject.transform.worldToLocalMatrix : new Matrix3D();
         }
 
         public get sceneTransform()
         {
-            return this.parentComponent ? this.parentComponent.sceneTransform : new Matrix3D();
+            return this.gameObject ? this.gameObject.transform.localToWorldMatrix : new Matrix3D();
         }
 
         /**
@@ -121,7 +129,7 @@ module feng3d
          */
         protected onBeAddedComponent(event: ComponentEvent): void
         {
-            this.parentComponent.addEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
+            this.gameObject.transform.addEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
         }
@@ -131,7 +139,7 @@ module feng3d
          */
         protected onBeRemovedComponent(event: ComponentEvent): void
         {
-            this.parentComponent.removeEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
+            this.gameObject.transform.removeEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
         }
 
         /**
@@ -141,20 +149,6 @@ module feng3d
         {
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            //
-            renderData.uniforms.u_viewProjection = this.viewProjection;
-            var globalMatrix3d = this.parentComponent ? this.parentComponent.sceneTransform : new Matrix3D();
-            renderData.uniforms.u_cameraMatrix = globalMatrix3d;
-            //
-            renderData.uniforms.u_skyBoxSize = this._lens.far / Math.sqrt(3);
-            super.updateRenderData(renderContext, renderData);
         }
 
 		/**

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -7,23 +7,139 @@ module feng3d
      */
     export class CylinderGeometry extends Geometry
     {
+        public get topRadius()
+        {
+            return this._topRadius;
+        }
+        public set topRadius(value)
+        {
+            if(this._topRadius == value)
+                return;
+            this._topRadius = value;
+            this.invalidateGeometry();
+        }
+        private _topRadius = 50;
+        
+        public get bottomRadius()
+        {
+            return this._bottomRadius;
+        }
+        public set bottomRadius(value)
+        {
+            if(this._bottomRadius == value)
+                return;
+            this._bottomRadius = value;
+            this.invalidateGeometry();
+        }
+        private _bottomRadius = 50;
+
+        public get height()
+        {
+            return this._height;
+        }
+        public set height(value)
+        {
+            if(this._height == value)
+                return;
+            this._height = value;
+            this.invalidateGeometry();
+        }
+        private _height = 100;
+
+        public get segmentsW()
+        {
+            return this._segmentsW;
+        }
+        public set segmentsW(value)
+        {
+            if(this._segmentsW == value)
+                return;
+            this._segmentsW = value;
+            this.invalidateGeometry();
+        }
+        private _segmentsW = 16;
+
+        public get segmentsH()
+        {
+            return this._segmentsH;
+        }
+        public set segmentsH(value)
+        {
+            if(this._segmentsH == value)
+                return;
+            this._segmentsH = value;
+            this.invalidateGeometry();
+        }
+        private _segmentsH = 1;
+
+        public get topClosed()
+        {
+            return this._topClosed;
+        }
+        public set topClosed(value)
+        {
+            if(this._topClosed == value)
+                return;
+            this._topClosed = value;
+            this.invalidateGeometry();
+        }
+        private _topClosed = true;
+
+        public get bottomClosed()
+        {
+            return this._bottomClosed;
+        }
+        public set bottomClosed(value)
+        {
+            if(this._bottomClosed == value)
+                return;
+            this._bottomClosed = value;
+            this.invalidateGeometry();
+        }
+        private _bottomClosed = true;
+
+        public get surfaceClosed()
+        {
+            return this._surfaceClosed;
+        }
+        public set surfaceClosed(value)
+        {
+            if(this._surfaceClosed == value)
+                return;
+            this._surfaceClosed = value;
+            this.invalidateGeometry();
+        }
+        private _surfaceClosed = true;
+
+        public get yUp()
+        {
+            return this._yUp;
+        }
+        public set yUp(value)
+        {
+            if(this._yUp == value)
+                return;
+            this._yUp = value;
+            this.invalidateGeometry();
+        }
+        private _yUp = true;
 
         /**
          * 创建圆柱体
          */
-        constructor(public topRadius = 50, public bottomRadius = 50, public height = 100, public segmentsW = 16, public segmentsH = 1, public topClosed = true, public bottomClosed = true, public surfaceClosed = true, public yUp = true)
+        constructor(topRadius = 50, bottomRadius = 50, height = 100, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true)
         {
             super();
 
-            Watcher.watch(this, ["topRadius"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["bottomRadius"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["height"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["topClosed"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["bottomClosed"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["surfaceClosed"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["yUp"], this.invalidateGeometry, this);
+            this.topRadius = topRadius;
+            this.bottomRadius = bottomRadius;
+            this.height = height;
+            this.segmentsW = segmentsW;
+            this.segmentsH = segmentsH;
+            this.topClosed = topClosed;
+            this.bottomClosed = bottomClosed;
+            this.surfaceClosed = surfaceClosed;
+            this.yUp = yUp;
         }
 
         /**
@@ -244,9 +360,9 @@ module feng3d
                 }
             }
 
-            this.setVAData(GLAttribute.a_position, vertexPositionData, 3);
-            this.setVAData(GLAttribute.a_normal, vertexNormalData, 3);
-            this.setVAData(GLAttribute.a_tangent, vertexTangentData, 3);
+            this.setVAData("a_position", vertexPositionData, 3);
+            this.setVAData("a_normal", vertexNormalData, 3);
+            this.setVAData("a_tangent", vertexTangentData, 3);
 
             function addVertex(px: number, py: number, pz: number, nx: number, ny: number, nz: number, tx: number, ty: number, tz: number)
             {
@@ -267,7 +383,7 @@ module feng3d
 
             //
             var uvData = this.buildUVs();
-            this.setVAData(GLAttribute.a_uv, uvData, 2);
+            this.setVAData("a_uv", uvData, 2);
 
             var indices = this.buildIndices();
             this.setIndices(indices);

@@ -1,12 +1,17 @@
-module feng3d
+namespace feng3d
 {
 
     /**
      * 灯光
      * @author feng 2016-12-12
      */
-    export class Light extends Object3DComponent
+    export class Light extends Component
     {
+        public static get lights()
+        {
+            return this._lights;
+        }
+        private static _lights: Light[] = [];
 
         /**
          * 灯光类型
@@ -37,6 +42,7 @@ module feng3d
         constructor()
         {
             super();
+            Light._lights.push(this);
         }
     }
 }

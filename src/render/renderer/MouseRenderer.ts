@@ -1,11 +1,11 @@
-module feng3d
+namespace feng3d
 {
 
     /**
      * 鼠标拾取渲染器
      * @author feng 2017-02-06
      */
-    export class MouseRenderer extends Renderer
+    export class MouseRenderer extends RenderDataHolder
     {
 
         private _shaderName = "mouse";
@@ -28,7 +28,7 @@ module feng3d
             //启动裁剪，只绘制一个像素
             gl.enable(GL.SCISSOR_TEST);
             gl.scissor(0, 0, 1, 1);
-            super.draw(renderContext);
+            // super.draw(renderContext);
             gl.disable(GL.SCISSOR_TEST);
 
             //读取鼠标拾取索引
@@ -42,25 +42,27 @@ module feng3d
             this.selectedObject3D = this.objects[id];
         }
 
-        protected drawRenderables(renderContext: RenderContext, meshRenderer: Model)
+        protected drawRenderables(renderContext: RenderContext, meshRenderer: MeshRenderer)
         {
-            if (meshRenderer.parentComponent.mouseEnabled)
+            if (meshRenderer.gameObject.transform.mouseEnabled)
             {
-                var object = meshRenderer.parentComponent;
+                var object = meshRenderer.gameObject;
                 this.objects.push(object);
-                object.renderData.uniforms.u_objectID = this.objects.length - 1;
-                super.drawRenderables(renderContext, meshRenderer);
+                object.renderData.addUniform(this.createUniformData("u_objectID", this.objects.length - 1));
+                // super.drawRenderables(renderContext, meshRenderer);
             }
         }
 
         /**
-         * 激活渲染程序
+         * 绘制3D对象
          */
-        protected activeShaderProgram(gl: GL, vertexCode: string, fragmentCode: string, shaderMacro: ShaderMacro)
+        protected drawObject3D(gl: GL, renderAtomic: RenderAtomic, shader: ShaderRenderData = null)
         {
             var vertexCode = ShaderLib.getShaderCode(this._shaderName + ".vertex");
             var fragmentCode = ShaderLib.getShaderCode(this._shaderName + ".fragment");
-            return super.activeShaderProgram(gl, vertexCode, fragmentCode, shaderMacro);
+            var shader = new ShaderRenderData();
+            shader.setShaderCode(this.createShaderCode({ vertexCode: vertexCode, fragmentCode: fragmentCode }));
+            // super.drawObject3D(gl, renderAtomic, shader);
         }
     }
 }

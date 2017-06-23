@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * Obj模型加载类
@@ -56,7 +56,7 @@ module feng3d
             {
                 var obj = objs[i];
                 var object3D = this.createSubObj(obj, material);
-                object.addChild(object3D);
+                object.transform.addChild(object3D.transform);
             }
             if (this._completed)
             {
@@ -72,28 +72,29 @@ module feng3d
             for (var i = 0; i < subObjs.length; i++)
             {
                 var materialObj = this.createMaterialObj(obj, subObjs[i], material);
-                object3D.addChild(materialObj);
+                object3D.transform.addChild(materialObj.transform);
             }
             return object3D;
         }
 
-        private _vertices: {x: number;y: number;z: number;}[];
-        private _vertexNormals :{x: number;y: number;z: number;}[];
-        private _uvs:{u:number,v:number,s:number}[];
-        private _realIndices:string[];
-        private _vertexIndex:number;
-        
+        private _vertices: { x: number; y: number; z: number; }[];
+        private _vertexNormals: { x: number; y: number; z: number; }[];
+        private _uvs: { u: number, v: number, s: number }[];
+        private _realIndices: string[];
+        private _vertexIndex: number;
+
         private createMaterialObj(obj: OBJ_OBJ, subObj: OBJ_SubOBJ, material: Material)
         {
-            var object3D = new GameObject();
-            var model = object3D.getOrCreateComponentByClass(Model);
+            var gameObject = new GameObject();
+            var model = gameObject.addComponent(MeshRenderer);
             model.material = material || new ColorMaterial();
 
             this._vertices = obj.vertex;
             this._vertexNormals = obj.vn;
             this._uvs = obj.vt;
 
-            var geometry = model.geometry = new Geometry();
+            var meshFilter = gameObject.addComponent(MeshFilter);
+            var geometry = meshFilter.mesh = new Geometry();
             var vertices: number[] = [];
             var normals: number[] = [];
             var uvs: number[] = [];
@@ -113,9 +114,9 @@ module feng3d
                 }
             }
             geometry.setIndices(new Uint16Array(indices));
-            geometry.setVAData(GLAttribute.a_position, new Float32Array(vertices), 3);
-            geometry.setVAData(GLAttribute.a_normal, new Float32Array(normals), 3);
-            geometry.setVAData(GLAttribute.a_uv, new Float32Array(uvs), 2);
+            geometry.setVAData("a_position", new Float32Array(vertices), 3);
+            geometry.setVAData("a_normal", new Float32Array(normals), 3);
+            geometry.setVAData("a_uv", new Float32Array(uvs), 2);
             geometry.createVertexTangents();
 
             if (this._mtlData && this._mtlData[subObj.material])
@@ -128,15 +129,15 @@ module feng3d
                 colorMaterial.color.b = kd[2];
                 model.material = colorMaterial;
             }
-            return object3D;
+            return gameObject;
         }
 
         private translateVertexData(face: OBJ_Face, vertexIndex: number, vertices: Array<number>, uvs: Array<number>, indices: Array<number>, normals: Array<number>)
         {
             var index: number;
-            var vertex: {x: number;y: number;z: number;};
-            var vertexNormal: {x: number;y: number;z: number;};
-            var uv: {u:number,v:number,s:number};
+            var vertex: { x: number; y: number; z: number; };
+            var vertexNormal: { x: number; y: number; z: number; };
+            var uv: { u: number, v: number, s: number };
             if (!this._realIndices[face.indexIds[vertexIndex]])
             {
                 index = this._vertexIndex;

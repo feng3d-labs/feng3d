@@ -1,17 +1,12 @@
-module feng3d
+namespace feng3d
 {
 
     /**
      * 粒子动画
      * @author feng 2017-01-09
      */
-    export class ParticleAnimator extends Object3DComponent
+    export class ParticleAnimator extends Component
     {
-        /**
-         * 属性数据列表
-         */
-        private _attributes: { [name: string]: AttributeRenderData } = {};
-
         /**
          * 是否正在播放
          */
@@ -33,26 +28,25 @@ module feng3d
         public playbackSpeed: number = 1;
 
         /**
-		 * 粒子数量
-		 */
-        public numParticles: number = 1000;
-
-        /**
          * 周期
          */
         public cycle: number = 10000;
 
-        private _isDirty = true;
-
-        /**
-         * 生成粒子函数列表，优先级越高先执行
-         */
-        public generateFunctions: ({ generate: (particle: Particle) => void, priority: number })[] = [];
-
-        /**
-         * 粒子全局属性，作用于所有粒子元素
-         */
-        public particleGlobal: ParticleGlobal = <any>{};
+        public get animatorSet()
+        {
+            return this._animatorSet;
+        }
+        public set animatorSet(value)
+        {
+            if (this._animatorSet == value)
+                return;
+            if (this._animatorSet)
+                this.removeRenderDataHolder(this._animatorSet);
+            this._animatorSet = value;
+            if (this._animatorSet)
+                this.addRenderDataHolder(this._animatorSet);
+        }
+        private _animatorSet: ParticleAnimationSet;
 
         constructor()
         {
@@ -60,148 +54,40 @@ module feng3d
             this._single = true;
 
             this._updateEverytime = true;
-        }
-
-        /**
-		 * 生成粒子
-		 */
-        private generateParticles()
-        {
-            var generateFunctions = this.generateFunctions.concat();
-
-            var components = this.getComponentsByType(ParticleComponent);
-            components.forEach(element =>
-            {
-                generateFunctions.push({ generate: element.generateParticle.bind(element), priority: element.priority });
-            });
-            //按优先级排序，优先级越高先执行
-            generateFunctions.sort((a: { priority: number; }, b: { priority: number; }) => { return b.priority - a.priority; })
             //
-            for (var i = 0; i < this.numParticles; i++)
-            {
-                var particle = <Particle>{};
-                particle.index = i;
-                particle.total = this.numParticles;
-                generateFunctions.forEach(element =>
-                {
-                    element.generate(particle);
-                });
-                this.collectionParticle(particle);
-            }
+            this.createUniformData("u_particleTime", () => this.time);
+            //
+            this.createBoolMacro("HAS_PARTICLE_ANIMATOR", () => this.isPlaying = true);
         }
 
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
+        public play()
         {
-            renderData.shaderMacro.boolMacros.HAS_PARTICLE_ANIMATOR = true;
-            if (this._isDirty)
+            if (this.isPlaying)
+                return;
+            if (!this.animatorSet)
             {
-                this.startTime = getTimer();
-                this.generateParticles();
-                this._isDirty = false;
+                return;
             }
 
+            this.startTime = getTimer();
+            this.isPlaying = true;
+            ticker.addEventListener(Event.ENTER_FRAME, this.update, this);
+        }
+
+        private update()
+        {
             this.time = ((getTimer() - this.startTime) / 1000) % this.cycle;
-            renderData.uniforms.u_particleTime = this.time;
-            renderData.instanceCount = this.numParticles;
-
-            for (var attributeName in this._attributes)
-            {
-                renderData.attributes[attributeName] = this._attributes[attributeName];
-            }
-
-            var components = this.getComponentsByType(ParticleComponent);
-            components.forEach(element =>
-            {
-                element.setRenderState(this.particleGlobal, this.parentComponent, renderContext);
-            });
-
-            this.update(this.particleGlobal, renderData);
-            super.updateRenderData(renderContext, renderData);
+            this.animatorSet.update(this);
         }
 
         /**
-         * 收集粒子数据
-         * @param particle      粒子
+         * 收集渲染数据拥有者
+         * @param renderAtomic 渲染原子
          */
-        private collectionParticle(particle: Particle)
+        public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
         {
-            for (var attribute in particle)
-            {
-                this.collectionParticleAttribute(attribute, particle);
-            }
-        }
-
-        private update(particleGlobal: ParticleGlobal, renderData: RenderAtomic)
-        {
-            //更新常量数据
-            for (var uniform in particleGlobal)
-            {
-                renderData.uniforms["u_particle_" + uniform] = particleGlobal[uniform];
-            }
-
-            //更新宏定义
-            var boolMacros = renderData.shaderMacro.boolMacros;
-            for (var attribute in renderData.attributes)
-            {
-                boolMacros["D_" + attribute] = true;
-            }
-            for (var uniform in particleGlobal)
-            {
-                boolMacros["D_u_particle_" + uniform] = true;
-            }
-        }
-
-        /**
-         * 收集粒子属性数据
-         * @param attributeID       属性编号
-         * @param index             粒子编号
-         * @param data              属性数据      
-         */
-        private collectionParticleAttribute(attribute: string, particle: Particle)
-        {
-            var attributeID = "a_particle_" + attribute;
-            var data = particle[attribute];
-            var index = particle.index;
-            var numParticles = particle.total;
-            //
-            var attributeRenderData = this._attributes[attributeID];
-            var vector3DData: Float32Array;
-            if (typeof data == "number")
-            {
-                if (!attributeRenderData)
-                {
-                    attributeRenderData = this._attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles), 1, 1)
-                }
-                vector3DData = attributeRenderData.data;
-                vector3DData[index] = data;
-            } else if (data instanceof Vector3D)
-            {
-                if (!attributeRenderData)
-                {
-                    attributeRenderData = this._attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 3), 3, 1)
-                }
-                vector3DData = attributeRenderData.data;
-                vector3DData[index * 3] = data.x;
-                vector3DData[index * 3 + 1] = data.y;
-                vector3DData[index * 3 + 2] = data.z;
-            } else if (data instanceof Color)
-            {
-                if (!attributeRenderData)
-                {
-                    attributeRenderData = this._attributes[attributeID] = new AttributeRenderData(new Float32Array(numParticles * 4), 4, 1)
-                }
-                vector3DData = attributeRenderData.data;
-                vector3DData[index * 4] = data.r;
-                vector3DData[index * 4 + 1] = data.g;
-                vector3DData[index * 4 + 2] = data.b;
-                vector3DData[index * 4 + 3] = data.a;
-            } else
-            {
-                throw new Error(`无法处理${ClassUtils.getQualifiedClassName(data)}粒子属性`);
-            }
+            this.animatorSet.collectRenderDataHolder(renderAtomic);
+            super.collectRenderDataHolder(renderAtomic);
         }
     }
 }

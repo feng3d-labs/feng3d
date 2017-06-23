@@ -1,17 +1,16 @@
-module feng3d
+namespace feng3d
 {
 
     /**
      * 前向渲染器
      * @author feng 2017-02-20
      */
-    export class ForwardRenderer extends Renderer
+    export class ForwardRenderer
     {
         public viewRect: Rectangle = new Rectangle(0, 0, 100, 100);
 
         constructor()
         {
-            super();
         }
 
         /**
@@ -27,26 +26,12 @@ module feng3d
             gl.viewport(0, 0, this.viewRect.width, this.viewRect.height);
             gl.enable(GL.DEPTH_TEST);
             // gl.cullFace()
-            super.draw(renderContext);
-        }
-
-        protected drawRenderables(renderContext: RenderContext, meshRenderer: Model)
-        {
-            if (meshRenderer.parentComponent.isVisible)
+            var meshRenderers = MeshRenderer.meshRenderers;
+            for (var i = 0; i < meshRenderers.length; i++)
             {
-                var frustumPlanes = renderContext.camera.frustumPlanes;
-                var gameObject = meshRenderer.parentComponent;
-                var isIn = gameObject.worldBounds.isInFrustum(frustumPlanes, 6);
-                var model = gameObject.getComponentByType(Model);
-                if (model && model.geometry instanceof SkyBoxGeometry)
-                {
-                    isIn = true;
-                }
-                if (isIn)
-                {
-                    super.drawRenderables(renderContext, meshRenderer);
-                }
+                meshRenderers[i].drawRenderables(renderContext);
             }
         }
+
     }
 }

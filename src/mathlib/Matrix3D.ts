@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -749,9 +749,9 @@ module feng3d
         {
             this.identity();
             this.appendScale(components[2].x, components[2].y, components[2].z);
-            this.appendRotation(components[1].x * MathConsts.RADIANS_TO_DEGREES, Vector3D.X_AXIS);
-            this.appendRotation(components[1].y * MathConsts.RADIANS_TO_DEGREES, Vector3D.Y_AXIS);
-            this.appendRotation(components[1].z * MathConsts.RADIANS_TO_DEGREES, Vector3D.Z_AXIS);
+            this.appendRotation(components[1].x * Math.RAD2DEG, Vector3D.X_AXIS);
+            this.appendRotation(components[1].y * Math.RAD2DEG, Vector3D.Y_AXIS);
+            this.appendRotation(components[1].z * Math.RAD2DEG, Vector3D.Z_AXIS);
             this.appendTranslation(components[0].x, components[0].y, components[0].z);
             return this;
         }

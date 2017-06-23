@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -22,7 +22,7 @@ module feng3d
 
         }
 
-        public setRenderState(particleGlobal: ParticleGlobal, gameObject: GameObject, renderContext: RenderContext)
+        public setRenderState(particleAnimator: ParticleAnimator)
         {
 
         }

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 摄像机3D对象
@@ -11,8 +11,7 @@ module feng3d
         constructor(name = "camera")
         {
             super(name);
-            this.camera = new Camera();
-            this.addComponent(this.camera);
+            this.camera = this.addComponent(Camera);
         }
     }
 }

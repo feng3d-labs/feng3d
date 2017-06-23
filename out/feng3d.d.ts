@@ -102,17 +102,6 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    class UIDUtils {
-        /**
-         * 获取对象UID
-         * @author feng 2016-05-08
-         */
-        static getUID(object: {
-            __uid__?: string;
-        }): any;
-    }
-}
-declare module feng3d {
     class VersionUtils {
         /**
          * 获取对象版本
@@ -410,7 +399,11 @@ declare module feng3d {
      * 构建Map类代替Dictionary
      * @author feng 2017-01-03
      */
-    class Map<K, V> {
+    class Map<K extends {
+        uuid: string;
+    }, V extends {
+        uuid: string;
+    }> {
         private keyMap;
         private valueMap;
         /**
@@ -435,990 +428,74 @@ declare module feng3d {
         clear(): void;
     }
 }
-declare module feng3d {
+interface Math {
     /**
-     * 数据序列化
-     * @author feng 2017-03-11
+     * 角度转弧度因子
      */
-    class Serialization {
-        /**
-         * 由纯数据对象（无循环引用）转换为复杂类型（例如feng3d对象）
-         */
-        readObject(data: {
-            __className__?: string;
-        }): any;
-        private handle(object, key, data);
-        /**
-         * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
-         */
-        writeObject(object: Object): any;
-        private getAttributes(object);
-        /**
-         * 获取新对象来判断存储的属性
-         */
-        private getNewObject(className);
-    }
-    var serializationConfig: {
-        excludeObject: any[];
-        excludeClass: any[];
-        classConfig: {
-            [className: string]: {
-                toJson?: Function;
-            };
-        };
-    };
+    DEG2RAD: number;
+    /**
+     * 弧度转角度因子
+     */
+    RAD2DEG: number;
+    /**
+     * http://www.broofa.com/Tools/Math.uuid.htm
+     */
+    generateUUID(): any;
+    clamp(value: any, min: any, max: any): any;
+    /**
+     * compute euclidian modulo of m % n
+     * https://en.wikipedia.org/wiki/Modulo_operation
+     */
+    euclideanModulo(n: any, m: any): any;
+    /**
+     * Linear mapping from range <a1, a2> to range <b1, b2>
+     */
+    mapLinear(x: any, a1: any, a2: any, b1: any, b2: any): any;
+    /**
+     * https://en.wikipedia.org/wiki/Linear_interpolation
+     */
+    lerp(x: any, y: any, t: any): any;
+    /**
+     * http://en.wikipedia.org/wiki/Smoothstep
+     */
+    smoothstep(x: any, min: any, max: any): any;
+    smootherstep(x: any, min: any, max: any): any;
+    /**
+     * Random integer from <low, high> interval
+     */
+    randInt(low: any, high: any): any;
+    /**
+     * Random float from <low, high> interval
+     */
+    randFloat(low: any, high: any): any;
+    /**
+     * Random float from <-range/2, range/2> interval
+     */
+    randFloatSpread(range: any): any;
+    degToRad(degrees: any): any;
+    radToDeg(radians: any): any;
+    isPowerOfTwo(value: any): any;
+    nearestPowerOfTwo(value: any): any;
+    nextPowerOfTwo(value: any): any;
 }
 declare module feng3d {
     /**
-     * 事件
-     * @author feng 2014-5-7
+     * Orientation3D 类是用于表示 Matrix3D 对象的方向样式的常量值枚举。方向的三个类型分别为欧拉角、轴角和四元数。Matrix3D 对象的 decompose 和 recompose 方法采用其中的某一个枚举类型来标识矩阵的旋转组件。
+     * @author feng 2016-3-21
      */
-    class Event {
-        /**
-         * [广播事件] 进入新的一帧,监听此事件将会在下一帧开始时触发一次回调。这是一个广播事件，可以在任何一个显示对象上监听，无论它是否在显示列表中。
-         */
-        static ENTER_FRAME: "enterFrame";
-        /**
-         * 发生变化时派发
-         */
-        static CHANGE: "change";
-        /**
-         * 加载完成时派发
-         */
-        static LOADED: "loaded";
-        private _type;
-        private _bubbles;
-        private _target;
-        private _currentTarget;
-        private _isStopBubbles;
-        private _isStop;
-        /**
-         * 事件携带的自定义数据
-         */
-        data: any;
-        /**
-         * 创建一个作为参数传递给事件侦听器的 Event 对象。
-         * @param type 事件的类型，可以作为 Event.type 访问。
-         * @param data 携带数据
-         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
-         */
-        constructor(type: string, data?: any, bubbles?: boolean);
-        /**
-         * 是否停止处理事件监听器
-         */
-        isStop: boolean;
-        /**
-         * 是否停止冒泡
-         */
-        isStopBubbles: boolean;
-        tostring(): string;
-        /**
-         * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
-         */
-        readonly bubbles: boolean;
-        /**
-         * 事件的类型。类型区分大小写。
-         */
-        readonly type: string;
-        /**
-         * 事件目标。
-         */
-        target: IEventDispatcher;
-        /**
-         * 当前正在使用某个事件侦听器处理 Event 对象的对象。
-         */
-        readonly currentTarget: IEventDispatcher;
-    }
-}
-declare module feng3d {
-    /**
-     * IEventDispatcher 接口定义用于添加或删除事件侦听器的方法，检查是否已注册特定类型的事件侦听器，并调度事件。
-     * @author feng 2016-3-22
-     */
-    interface IEventDispatcher {
-        /**
-         * 名称
-         */
-        name: string;
-        /**
-         * 使用 EventDispatcher 对象注册事件侦听器对象，以使侦听器能够接收事件通知。
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
-        /**
-         * 从 EventDispatcher 对象中删除侦听器. 如果没有向 IEventDispatcher 对象注册任何匹配的侦听器，则对此方法的调用没有任何效果。
-         *
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         * @param thisObject                listener函数作用域
-         */
-        removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
-        /**
-         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEventDispatcher 对象。
-         * @param event						调度到事件流中的 Event 对象。
-         */
-        dispatchEvent(event: Event): void;
-        /**
-         * 检查 EventDispatcher 对象是否为特定事件类型注册了任何侦听器.
-         *
-         * @param type		事件的类型。
-         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
-         */
-        hasEventListener(type: string): boolean;
-    }
-}
-declare module feng3d {
-    /**
-     * 为了实现非flash原生显示列表的冒泡事件，自定义事件适配器
-     * @author feng 2016-3-22
-     */
-    class EventDispatcher implements IEventDispatcher {
-        private _listenermap;
-        /**
-         * 名称
-         */
-        name: string;
-        /**
-         * 冒泡属性名称为“parent”
-         */
-        protected _bubbleAttribute: string;
-        /**
-         * 事件适配主体
-         */
-        private _target;
-        /**
-         * 延迟计数，当计数大于0时事件将会被收集，等到计数等于0时派发
-         */
-        private _delaycount;
-        /**
-         * 被延迟的事件列表
-         */
-        private _delayEvents;
-        /**
-         * 构建事件适配器
-         * @param target		事件适配主体
-         */
-        constructor(target?: IEventDispatcher);
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        once(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
-        /**
-         * 使用 EventDispatcher 对象注册事件侦听器对象，以使侦听器能够接收事件通知。
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
-        /**
-         * 从 EventDispatcher 对象中删除侦听器. 如果没有向 IEventDispatcher 对象注册任何匹配的侦听器，则对此方法的调用没有任何效果。
-         *
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         * @param thisObject                listener函数作用域
-         */
-        removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
-        /**
-         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEventDispatcher 对象。
-         * @param event						调度到事件流中的 Event 对象。
-         * @returns                         被延迟返回false，否则返回true
-         */
-        dispatchEvent(event: Event): boolean;
-        /**
-         * 锁住事件
-         * 当派发事件时先收集下来，调用unlockEvent派发被延迟的事件
-         * 每调用一次lockEvent计数加1、调用unlockEvent一次计数减1，当计数为0时派发所有被收集事件
-         * 与unlockEvent配合使用
-         */
-        lockEvent(): void;
-        /**
-         * 解锁事件，派发被锁住的事件
-         * 每调用一次lockEvent计数加1、调用unlockEvent一次计数减1，当计数为0时派发所有被收集事件
-         * 与delay配合使用
-         */
-        unlockEvent(): void;
-        /**
-         * 事件是否被锁住
-         */
-        readonly isLockEvent: boolean;
-        /**
-         * 检查 EventDispatcher 对象是否为特定事件类型注册了任何侦听器.
-         *
-         * @param type		事件的类型。
-         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
-         */
-        hasEventListener(type: string): boolean;
-        /**
-         * 派发冒泡事件
-         * @param event						调度到事件流中的 Event 对象。
-         */
-        private dispatchBubbleEvent(event);
-        /**
-         * 获取冒泡对象
-         * @param event						调度到事件流中的 Event 对象。
-         */
-        protected getBubbleTargets(event: Event): IEventDispatcher[];
-        /**
-         * 添加监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        private _addEventListener(type, listener, thisObject?, priority?, once?);
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         * @param thisObject                listener函数作用域
-         */
-        private _removeEventListener(type, listener, thisObject?);
-    }
-}
-declare module feng3d {
-    /**
-     * 心跳计时器
-     */
-    class SystemTicker extends EventDispatcher {
-        private _startTime;
-        /**
-         * 启动时间
-         */
-        readonly startTime: number;
-        /**
-         * @private
-         */
-        constructor();
-        private init();
-        /**
-         * @private
-         * 执行一次刷新
-         */
-        update(): void;
-    }
-}
-declare module feng3d {
-    /**
-     * 鼠标键盘输入，处理js事件中this关键字问题
-     * @author feng 2016-12-19
-     */
-    class Input extends EventDispatcher {
-        clientX: number;
-        clientY: number;
-        constructor();
-        /**
-         * 键盘按下事件
-         */
-        private onMouseKey(event);
-        /**
-         *
-         */
-        addEventListener(type: string, listener: (event: InputEvent) => void, thisObject: any, priority?: number): void;
-    }
-    class InputEventType {
-        /** 鼠标双击 */
-        DOUBLE_CLICK: string;
-        /** 鼠标单击 */
-        CLICK: string;
-        /** 鼠标按下 */
-        MOUSE_DOWN: string;
-        /** 鼠标弹起 */
-        MOUSE_UP: string;
-        /** 鼠标中键单击 */
-        MIDDLE_CLICK: string;
-        /** 鼠标中键按下 */
-        MIDDLE_MOUSE_DOWN: string;
-        /** 鼠标中键弹起 */
-        MIDDLE_MOUSE_UP: string;
-        /** 鼠标右键单击 */
-        RIGHT_CLICK: string;
-        /** 鼠标右键按下 */
-        RIGHT_MOUSE_DOWN: string;
-        /** 鼠标右键弹起 */
-        RIGHT_MOUSE_UP: string;
-        /** 鼠标移动 */
-        MOUSE_MOVE: string;
-        /** 鼠标移出 */
-        MOUSE_OUT: string;
-        /** 鼠标移入 */
-        MOUSE_OVER: string;
-        /** 鼠标滚动滚轮 */
-        MOUSE_WHEEL: string;
-        /** 键盘按下 */
-        KEY_DOWN: string;
-        /** 键盘按着 */
-        KEY_PRESS: string;
-        /** 键盘弹起 */
-        KEY_UP: string;
-    }
-    class InputEvent extends Event {
-        data: Input;
-        clientX: number;
-        clientY: number;
-        keyCode: number;
-        wheelDelta: number;
-        constructor(event: WheelEvent | MouseEvent | KeyboardEvent, data?: Input, bubbles?: boolean);
-    }
-}
-declare module feng3d {
-    /**
-     * 按键捕获
-     * @author feng 2016-4-26
-     */
-    class KeyCapture {
-        /**
-         * 键盘按键字典 （补充常量，a-z以及鼠标按键不必再次列出）
-         * 例如 boardKeyDic[17] = "ctrl";
-         */
-        private _boardKeyDic;
-        /**
-         * 捕获的按键字典
-         */
-        private _mouseKeyDic;
-        /**
-         * 按键状态
-         */
-        private _keyState;
-        /**
-         * 构建
-         * @param stage		舞台
-         */
-        constructor(shortCut: ShortCut);
-        /**
-         * 默认支持按键
-         */
-        private defaultSupportKeys();
-        /**
-         * 鼠标事件
-         */
-        private onMouseOnce(event);
-        /**
-         * 鼠标事件
-         */
-        private onMousewheel(event);
-        /**
-         * 键盘按下事件
-         */
-        private onKeydown(event);
-        /**
-         * 键盘弹起事件
-         */
-        private onKeyup(event);
-        /**
-         * 获取键盘按键名称
-         */
-        private getBoardKey(keyCode);
-    }
-}
-declare module feng3d {
-    /**
-     * 按键状态
-     * @author feng 2016-4-26
-     */
-    class KeyState extends EventDispatcher {
-        /**
-         * 按键状态{key:键名称,value:是否按下}
-         */
-        private _keyStateDic;
-        /**
-         * 构建
-         */
-        constructor();
-        /**
-         * 按下键
-         * @param key 	键名称
-         * @param data	携带数据
-         */
-        pressKey(key: string, data: InputEvent): void;
-        /**
-         * 释放键
-         * @param key	键名称
-         * @param data	携带数据
-         */
-        releaseKey(key: string, data: InputEvent): void;
-        /**
-         * 获取按键状态
-         * @param key 按键名称
-         */
-        getKeyState(key: string): boolean;
-    }
-}
-declare module feng3d {
-    /**
-     * 快捷键捕获
-     * @author feng 2016-4-26
-     */
-    class ShortCutCapture {
-        /**
-         * 快捷键环境
-         */
-        private _shortCut;
-        /**
-         * 快捷键
-         */
-        private _key;
-        /**
-         * 要执行的命令名称
-         */
-        private _command;
-        /**
-         * 可执行的状态命令
-         */
-        private _stateCommand;
-        /**
-         * 快捷键处于活动状态的条件
-         */
-        private _when;
-        /**
-         * 按键状态
-         */
-        private _keyState;
-        /**
-         * 按键列表
-         */
-        private _keys;
-        /**
-         * 状态列表
-         */
-        private _states;
-        /**
-         * 命令列表
-         */
-        private _commands;
-        /**
-         * 命令列表
-         */
-        private _stateCommands;
-        /**
-         * 构建快捷键捕获
-         * @param shortCut				快捷键环境
-         * @param key					快捷键；用“+”连接多个按键，“!”表示没按下某键；例如 “a+!b”表示按下“a”与没按下“b”时触发。
-         * @param command				要执行的command的id；使用“,”连接触发多个命令；例如 “commandA,commandB”表示满足触发条件后依次执行commandA与commandB命令。
-         * @param stateCommand			要执行的状态命令id；使用“,”连接触发多个状态命令，没带“!”表示激活该状态，否则表示使其处于非激活状态；例如 “stateA,!stateB”表示满足触发条件后激活状态“stateA，使“stateB处于非激活状态。
-         * @param when					快捷键激活的条件；使用“+”连接多个状态，没带“!”表示需要处于激活状态，否则需要处于非激活状态； 例如 “stateA+!stateB”表示stateA处于激活状态且stateB处于非激活状态时会判断按键是否满足条件。
-         */
-        constructor(shortCut: ShortCut, key: string, command?: string, stateCommand?: string, when?: string);
-        /**
-         * 初始化
-         */
-        private init();
-        /**
-         * 处理捕获事件
-         */
-        private onCapture(event);
-        /**
-         * 派发命令
-         */
-        private dispatchCommands(commands, data);
-        /**
-         * 执行状态命令
-         */
-        private executeStateCommands(stateCommands);
-        /**
-         * 检测快捷键是否处于活跃状态
-         */
-        private checkActivityStates(states);
-        /**
-         * 获取是否处于指定状态中（支持一个！取反）
-         * @param state 状态名称
-         */
-        private getState(state);
-        /**
-         * 检测是否按下给出的键
-         * @param keys 按键数组
-         */
-        private checkActivityKeys(keys);
-        /**
-         * 获取按键状态（true：按下状态，false：弹起状态）
-         */
-        private getKeyValue(key);
-        /**
-         * 获取状态列表
-         * @param when		状态字符串
-         */
-        private getStates(when);
-        /**
-         * 获取键列表
-         * @param key		快捷键
-         */
-        private getKeys(key);
-        /**
-         * 获取命令列表
-         * @param command	命令
-         */
-        private getCommands(command);
-        /**
-         * 获取状态命令列表
-         * @param stateCommand	状态命令
-         */
-        private getStateCommand(stateCommand);
-        /**
-         * 销毁
-         */
-        destroy(): void;
-    }
-}
-/**
- * 按键
- * @author feng 2016-6-6
- */
-declare class Key {
-    /**
-     * 是否取反
-     */
-    not: boolean;
-    /**
-     * 状态名称
-     */
-    key: string;
-    constructor(key: string);
-}
-/**
- * 状态
- * @author feng 2016-6-6
- */
-declare class State {
-    /**
-     * 是否取反
-     */
-    not: boolean;
-    /**
-     * 状态名称
-     */
-    state: string;
-    constructor(state: string);
-}
-/**
- * 状态命令
- * @author feng 2016-6-6
- */
-declare class StateCommand {
-    /**
-     * 是否取反
-     */
-    not: boolean;
-    /**
-     * 状态名称
-     */
-    state: string;
-    constructor(state: string);
-}
-declare module feng3d {
-    /**
-     * 快捷键命令事件
-     * @author feng 2016-4-27
-     */
-    class ShortCutEvent extends Event {
-        /**
-         * 携带数据
-         */
-        data: InputEvent;
-        /**
-         * 构建
-         * @param command		命令名称
-         */
-        constructor(command: string, data: InputEvent);
-    }
-}
-declare module feng3d {
-    /**
-     * 初始化快捷键模块
-     * @author feng 2016-4-26
-     *
-     * <pre>
-var shortcuts:Array = [ //
-//在按下key1时触发命令command1
-    {key: "key1", command: "command1", when: ""}, //
-     //在按下key1时触发状态命令改变stateCommand1为激活状态
-    {key: "key1", stateCommand: "stateCommand1", when: "state1"}, //
-     //处于state1状态时按下key1触发命令command1
-    {key: "key1", command: "command1", when: "state1"}, //
-    //处于state1状态不处于state2时按下key1与没按下key2触发command1与command2，改变stateCommand1为激活状态，stateCommand2为非激活状态
-    {key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
-    ];
-//添加快捷键
-shortCut.addShortCuts(shortcuts);
-//监听命令
-shortCut.addEventListener("run", function(e:Event):void
-{
-    trace("接受到命令：" + e.type);
-});
-     * </pre>
-     */
-    class ShortCut extends EventDispatcher {
-        /**
-         * 按键状态
-         */
-        keyState: KeyState;
-        /**
-         * 状态字典
-         */
-        stateDic: {};
-        /**
-         * 按键捕获
-         */
-        keyCapture: KeyCapture;
-        /**
-         * 捕获字典
-         */
-        captureDic: {};
-        /**
-         * 初始化快捷键模块
-         */
-        constructor();
-        /**
-         * 添加快捷键
-         * @param shortcuts		快捷键列表
-         */
-        addShortCuts(shortcuts: any[]): void;
-        /**
-         * 删除快捷键
-         * @param shortcuts		快捷键列表
-         */
-        removeShortCuts(shortcuts: any[]): void;
-        /**
-         * 移除所有快捷键
-         */
-        removeAllShortCuts(): void;
-        /**
-         * 激活状态
-         * @param state 状态名称
-         */
-        activityState(state: string): void;
-        /**
-         * 取消激活状态
-         * @param state 状态名称
-         */
-        deactivityState(state: string): void;
-        /**
-         * 获取状态
-         * @param state 状态名称
-         */
-        getState(state: string): boolean;
-        /**
-         * 获取快捷键唯一字符串
-         */
-        private getShortcutUniqueKey(shortcut);
-    }
-}
-declare module feng3d {
-    /**
-     * 组件事件
-     * @author feng 2015-12-2
-     */
-    class ComponentEvent extends Event {
-        /**
-         * 添加子组件事件
-         */
-        static ADDED_COMPONENT: string;
-        /**
-         * 移除子组件事件
-         */
-        static REMOVED_COMPONENT: string;
-        /**
-         * 组件事件数据
-         */
-        data: {
-            container: Component;
-            child: Component;
-        };
-        /**
-         * 事件目标。
-         */
-        target: Component;
-    }
-}
-declare module feng3d {
-    /**
-     * 组件容器（集合）
-     * @author feng 2015-5-6
-     */
-    class Component extends EventDispatcher {
-        /**
-         * 父组件
-         */
-        protected _parentComponent: Component;
-        /**
-         * 组件列表
-         */
-        protected components_: Component[];
-        /**
-         * 是否唯一，同类型3D对象组件只允许一个
-         */
-        readonly single: boolean;
-        protected _single: boolean;
-        /**
-         * 组件类型
-         */
-        readonly type: new () => Component;
-        protected _type: new () => Component;
-        /**
-         * 创建一个组件容器
-         */
-        constructor();
-        /**
-         * 初始化组件
-         */
-        protected initComponent(): void;
-        /**
-         * 父组件
-         */
-        readonly parentComponent: Component;
-        /**
-         * 子组件个数
-         */
-        readonly numComponents: number;
-        /**
-         * 获取组件列表，无法通过返回数组对该组件进行子组件增删等操作
-         */
-        readonly components: Component[];
-        /**
-         * 添加组件
-         * @param component 被添加组件
-         */
-        addComponent(component: Component): void;
-        /**
-         * 添加组件到指定位置
-         * @param component		被添加的组件
-         * @param index			插入的位置
-         */
-        addComponentAt(component: Component, index: number): void;
-        /**
-         * 设置组件到指定位置
-         * @param component		被设置的组件
-         * @param index			索引
-         */
-        setComponentAt(component: Component, index: number): void;
-        /**
-         * 移除组件
-         * @param component 被移除组件
-         */
-        removeComponent(component: Component): void;
-        /**
-         * 移除组件
-         * @param index		要删除的 Component 的子索引。
-         */
-        removeComponentAt(index: number): Component;
-        /**
-         * 获取组件在容器的索引位置
-         * @param component			查询的组件
-         * @return				    组件在容器的索引位置
-         */
-        getComponentIndex(component: Component): number;
-        /**
-         * 设置子组件的位置
-         * @param component				子组件
-         * @param index				位置索引
-         */
-        setComponentIndex(component: Component, index: number): void;
-        /**
-         * 获取指定位置索引的子组件
-         * @param index			位置索引
-         * @return				子组件
-         */
-        getComponentAt(index: number): Component;
-        /**
-         * 根据类定义获取组件
-         * <p>如果存在多个则返回第一个</p>
-         * @param type				类定义
-         * @return                  返回指定类型组件
-         */
-        getComponentByType<T extends Component>(type: new () => T): T;
-        /**
-         * 根据类定义查找组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsByType<T extends Component>(type: new () => T): T[];
-        /**
-         * 移除指定类型组件
-         * @param type 组件类型
-         */
-        removeComponentsByType<T extends Component>(type: new () => T): T[];
-        /**
-         * 根据类定义获取或创建组件
-         * <p>当不存在该类型对象时创建一个该组件并且添加到容器中</p>
-         * @param cls       类定义
-         * @return          返回与给出类定义一致的组件
-         */
-        getOrCreateComponentByClass<T extends Component>(cls: new () => T): T;
-        /**
-         * 判断是否拥有组件
-         * @param com	被检测的组件
-         * @return		true：拥有该组件；false：不拥有该组件。
-         */
-        hasComponent(com: Component): boolean;
-        /**
-         * 交换子组件位置
-         * @param index1		第一个子组件的索引位置
-         * @param index2		第二个子组件的索引位置
-         */
-        swapComponentsAt(index1: number, index2: number): void;
-        /**
-         * 交换子组件位置
-         * @param a		第一个子组件
-         * @param b		第二个子组件
-         */
-        swapComponents(a: Component, b: Component): void;
-        /**
-         * 派发子组件事件
-         * <p>事件广播给子组件</p>
-         * @param event     事件
-         * @param depth     广播深度
-         */
-        dispatchChildrenEvent(event: Event, depth?: number): void;
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: ComponentEvent): void;
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: ComponentEvent): void;
-        /**
-         * 获取冒泡对象
-         */
-        protected getBubbleTargets(event?: Event): IEventDispatcher[];
-        /**
-         * 处理添加组件事件，此处为被添加，设置父组件
-         */
-        private _onAddedComponent(event);
-        /**
-         * 处理移除组件事件，此处为被移除，清空父组件
-         */
-        private _onRemovedComponent(event);
-    }
-}
-declare module feng3d {
-    /**
-     * 加载类
-     * @author feng 2016-12-14
-     */
-    class Loader extends EventDispatcher {
-        private _request;
-        private _image;
-        /**
-         * 数据类型
-         */
-        dataFormat: string;
-        protected _url: string;
-        /**
-         * 已加载的字节数
-         */
-        bytesLoaded: number;
-        /**
-         * 文件中压缩的字节数
-         */
-        bytesTotal: number;
-        /**
-         * 加载内容
-         */
-        content: any;
-        /**
-         * 加载资源
-         * @param url   路径
-         */
-        load(url: string): void;
-        /**
-         * 加载文本
-         * @param url   路径
-         */
-        loadText(url: string): void;
-        /**
-         * 加载二进制
-         * @param url   路径
-         */
-        loadBinary(url: string): void;
-        /**
-         * 加载图片
-         * @param url   路径
-         */
-        loadImage(url: string): void;
-        /**
-         * 使用XMLHttpRequest加载
-         */
-        private xmlHttpRequestLoad();
-        /**
-         * 请求进度回调
-         */
-        private onRequestProgress(event);
-        /**
-         * 请求状态变化回调
-         */
-        private onRequestReadystatechange(ev);
-        /**
-         * 加载图片完成回调
-         */
-        private onImageLoad(event);
-        /**
-         * 加载图片出错回调
-         */
-        private onImageError(event);
-    }
-}
-declare module feng3d {
-    /**
-     * 加载事件
-     * @author feng 2016-12-14
-     */
-    class LoaderEvent extends Event {
-        /**
-         * 加载进度发生改变时调度。
-         */
-        static PROGRESS: string;
-        /**
-         * 加载完成后调度。
-         */
-        static COMPLETE: string;
-        /**
-         * 加载出错时调度。
-         */
-        static ERROR: string;
-    }
-}
-declare module feng3d {
-    /**
-     * 加载数据类型
-     * @author feng 2016-12-14
-     */
-    class LoaderDataFormat {
-        /**
-         * 以原始二进制数据形式接收下载的数据。
-         */
-        static BINARY: string;
-        /**
-         * 以文本形式接收已下载的数据。
-         */
-        static TEXT: string;
-        /**
-         * 图片数据
-         */
-        static IMAGE: string;
-    }
-}
-declare module feng3d {
-    /**
-     * 数学常量类
-     */
-    class MathConsts {
-        /**
-         * 弧度转角度因子
-         */
-        static RADIANS_TO_DEGREES: number;
-        /**
-         * 角度转弧度因子
-         */
-        static DEGREES_TO_RADIANS: number;
+    class Orientation3D {
+        /**
+        * 轴角方向结合使用轴和角度来确定方向。
+        */
+        static AXIS_ANGLE: string;
+        /**
+        * 欧拉角（decompose() 和 recompose() 方法的默认方向）通过三个不同的对应于每个轴的旋转角来定义方向。
+        */
+        static EULER_ANGLES: string;
+        /**
+        * 四元数方向使用复数。
+        */
+        static QUATERNION: string;
     }
 }
 declare module feng3d {
@@ -1517,6 +594,10 @@ declare module feng3d {
          * @returns 坐标的字符串表示形式。
          */
         toString(): string;
+        /**
+         * 返回包含 x 和 y 坐标值的数组
+         */
+        toArray(): number[];
     }
 }
 declare module feng3d {
@@ -1811,6 +892,10 @@ declare module feng3d {
          * 返回当前 Vector3D 对象的字符串表示形式。
          */
         toString(): string;
+        /**
+         * 返回当前 Vector3D 对象4个元素的数组
+         */
+        toArray(num?: 3 | 4): number[];
     }
 }
 declare module feng3d {
@@ -1981,7 +1066,7 @@ declare module feng3d {
          * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3D 对象组成的矢量返回。
          * @return      一个由三个 Vector3D 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
          */
-        decompose(): Vector3D[];
+        decompose(orientationStyle?: string, result?: Vector3D[]): Vector3D[];
         /**
          * 使用不含平移元素的转换矩阵将 Vector3D 对象从一个空间坐标转换到另一个空间坐标。
          * @param   v   一个容纳要转换的坐标的 Vector3D 对象。
@@ -2440,48 +1525,1284 @@ declare module feng3d {
 }
 declare module feng3d {
     /**
-     * @fileoverview This file contains functions every webgl program will need
-     * a version of one way or another.
-     *
-     * Instead of setting up a context manually it is recommended to
-     * use. This will check for success or failure. On failure it
-     * will attempt to present an approriate message to the user.
-     *
-     *       gl = WebGLUtils.setupWebGL(canvas);
-     *
-     * For animated WebGL apps use of setTimeout or setInterval are
-     * discouraged. It is recommended you structure your rendering
-     * loop like this.
-     *
-     *       function render() {
-     *         window.requestAnimationFrame(render, canvas);
-     *
-     *         // do rendering
-     *         ...
-     *       }
-     *       render();
-     *
-     * This will call your rendering function up to the refresh rate
-     * of your display but will stop rendering if your app is not
-     * visible.
+     * 数据序列化
+     * @author feng 2017-03-11
      */
-    var WebGLUtils: {
-        create3DContext: (canvas: any, opt_attribs: any) => any;
-        setupWebGL: (canvas: HTMLCanvasElement, opt_attribs?: any, opt_onError?: any) => any;
+    class Serialization {
+        /**
+         * 由纯数据对象（无循环引用）转换为复杂类型（例如feng3d对象）
+         */
+        readObject(data: {
+            __className__?: string;
+        }): any;
+        private handle(object, key, data);
+        /**
+         * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
+         */
+        writeObject(object: Object): any;
+        private getAttributes(object);
+        /**
+         * 获取新对象来判断存储的属性
+         */
+        private getNewObject(className);
+    }
+    var serializationConfig: {
+        excludeObject: any[];
+        excludeClass: any[];
+        classConfig: {
+            [className: string]: {
+                toJson?: Function;
+            };
+        };
     };
 }
 declare module feng3d {
-    var WebGLDebugUtils: {
-        'init': (ctx: any) => void;
-        'mightBeEnum': (value: any) => boolean;
-        'glEnumToString': (value: any) => any;
-        'glFunctionArgToString': (functionName: any, argumentIndex: any, value: any) => any;
-        'makeDebugContext': (ctx: WebGLRenderingContext, opt_onErrorFunc?: any) => any;
-        'makeLostContextSimulatingContext': (ctx: any) => any;
-        'resetToInitialState': (ctx: any) => void;
-    };
+    /**
+     * 事件
+     * @author feng 2014-5-7
+     */
+    class Event {
+        /**
+         * [广播事件] 进入新的一帧,监听此事件将会在下一帧开始时触发一次回调。这是一个广播事件，可以在任何一个显示对象上监听，无论它是否在显示列表中。
+         */
+        static ENTER_FRAME: "enterFrame";
+        /**
+         * 发生变化时派发
+         */
+        static CHANGE: "change";
+        /**
+         * 加载完成时派发
+         */
+        static LOADED: "loaded";
+        private _type;
+        private _bubbles;
+        private _target;
+        private _currentTarget;
+        private _isStopBubbles;
+        private _isStop;
+        /**
+         * 事件携带的自定义数据
+         */
+        data: any;
+        /**
+         * 创建一个作为参数传递给事件侦听器的 Event 对象。
+         * @param type 事件的类型，可以作为 Event.type 访问。
+         * @param data 携带数据
+         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
+         */
+        constructor(type: string, data?: any, bubbles?: boolean);
+        /**
+         * 是否停止处理事件监听器
+         */
+        isStop: boolean;
+        /**
+         * 是否停止冒泡
+         */
+        isStopBubbles: boolean;
+        tostring(): string;
+        /**
+         * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        readonly bubbles: boolean;
+        /**
+         * 事件的类型。类型区分大小写。
+         */
+        readonly type: string;
+        /**
+         * 事件目标。
+         */
+        target: IEventDispatcher;
+        /**
+         * 当前正在使用某个事件侦听器处理 Event 对象的对象。
+         */
+        readonly currentTarget: IEventDispatcher;
+    }
 }
 declare module feng3d {
+    /**
+     * IEventDispatcher 接口定义用于添加或删除事件侦听器的方法，检查是否已注册特定类型的事件侦听器，并调度事件。
+     * @author feng 2016-3-22
+     */
+    interface IEventDispatcher {
+        /**
+         * 名称
+         */
+        name: string;
+        /**
+         * 使用 EventDispatcher 对象注册事件侦听器对象，以使侦听器能够接收事件通知。
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
+        /**
+         * 从 EventDispatcher 对象中删除侦听器. 如果没有向 IEventDispatcher 对象注册任何匹配的侦听器，则对此方法的调用没有任何效果。
+         *
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         * @param thisObject                listener函数作用域
+         */
+        removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
+        /**
+         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEventDispatcher 对象。
+         * @param event						调度到事件流中的 Event 对象。
+         */
+        dispatchEvent(event: Event): void;
+        /**
+         * 检查 EventDispatcher 对象是否为特定事件类型注册了任何侦听器.
+         *
+         * @param type		事件的类型。
+         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
+         */
+        hasEventListener(type: string): boolean;
+    }
+}
+declare module feng3d {
+    /**
+     * 为了实现非flash原生显示列表的冒泡事件，自定义事件适配器
+     * @author feng 2016-3-22
+     */
+    class EventDispatcher implements IEventDispatcher {
+        private _listenermap;
+        /**
+         * 名称
+         */
+        name: string;
+        /**
+         * 冒泡属性名称为“parent”
+         */
+        protected _bubbleAttribute: string;
+        /**
+         * 事件适配主体
+         */
+        private _target;
+        /**
+         * 延迟计数，当计数大于0时事件将会被收集，等到计数等于0时派发
+         */
+        private _delaycount;
+        /**
+         * 被延迟的事件列表
+         */
+        private _delayEvents;
+        /**
+         * 构建事件适配器
+         * @param target		事件适配主体
+         */
+        constructor(target?: IEventDispatcher);
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
+        /**
+         * 使用 EventDispatcher 对象注册事件侦听器对象，以使侦听器能够接收事件通知。
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
+        /**
+         * 从 EventDispatcher 对象中删除侦听器. 如果没有向 IEventDispatcher 对象注册任何匹配的侦听器，则对此方法的调用没有任何效果。
+         *
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         * @param thisObject                listener函数作用域
+         */
+        removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
+        /**
+         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEventDispatcher 对象。
+         * @param event						调度到事件流中的 Event 对象。
+         * @returns                         被延迟返回false，否则返回true
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * 锁住事件
+         * 当派发事件时先收集下来，调用unlockEvent派发被延迟的事件
+         * 每调用一次lockEvent计数加1、调用unlockEvent一次计数减1，当计数为0时派发所有被收集事件
+         * 与unlockEvent配合使用
+         */
+        lockEvent(): void;
+        /**
+         * 解锁事件，派发被锁住的事件
+         * 每调用一次lockEvent计数加1、调用unlockEvent一次计数减1，当计数为0时派发所有被收集事件
+         * 与delay配合使用
+         */
+        unlockEvent(): void;
+        /**
+         * 事件是否被锁住
+         */
+        readonly isLockEvent: boolean;
+        /**
+         * 检查 EventDispatcher 对象是否为特定事件类型注册了任何侦听器.
+         *
+         * @param type		事件的类型。
+         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * 派发冒泡事件
+         * @param event						调度到事件流中的 Event 对象。
+         */
+        private dispatchBubbleEvent(event);
+        /**
+         * 获取冒泡对象
+         * @param event						调度到事件流中的 Event 对象。
+         */
+        protected getBubbleTargets(event: Event): IEventDispatcher[];
+        /**
+         * 添加监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        private _addEventListener(type, listener, thisObject?, priority?, once?);
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         * @param thisObject                listener函数作用域
+         */
+        private _removeEventListener(type, listener, thisObject?);
+    }
+}
+declare module feng3d {
+    /**
+     * 心跳计时器
+     */
+    class SystemTicker extends EventDispatcher {
+        private _startTime;
+        /**
+         * 启动时间
+         */
+        readonly startTime: number;
+        /**
+         * @private
+         */
+        constructor();
+        private init();
+        /**
+         * @private
+         * 执行一次刷新
+         */
+        update(): void;
+    }
+}
+declare module feng3d {
+    /**
+     * The Timer class is the interface to timers, which let you run code on a specified time sequence. Use the start()
+     * method to start a timer. Add an event listener for the timer event to set up code to be run on the timer interval.<br/>
+     * You can create Timer objects to run once or repeat at specified intervals to execute code on a schedule. Depending
+     * on the framerate or the runtime environment (available memory and other factors), the runtime may dispatchEvent events at
+     * slightly offset intervals.
+     * @see egret.TimerEvent
+     * @version Egret 2.4
+     * @platform Web,Native
+     * @includeExample egret/utils/Timer.ts
+     * @language en_US
+     */
+    /**
+     * Timer 类是计时器的接口，它使您能按指定的时间序列运行代码。
+     * 使用 start() 方法来启动计时器。为 timer 事件添加事件侦听器，以便将代码设置为按计时器间隔运行。
+     * 可以创建 Timer 对象以运行一次或按指定间隔重复运行，从而按计划执行代码。
+     * 根据 Egret 的帧速率或运行时环境（可用内存和其他因素），运行时调度事件的间隔可能稍有不同。
+     * @see egret.TimerEvent
+     * @version Egret 2.4
+     * @platform Web,Native
+     * @includeExample egret/utils/Timer.ts
+     * @language zh_CN
+     */
+    class Timer extends EventDispatcher {
+        /**
+         * Constructs a new Timer object with the specified delay and repeatCount states.
+         * @param delay The delay between timer events, in milliseconds. A delay lower than 20 milliseconds is not recommended.
+         * Timer frequency is limited to 60 frames per second, meaning a delay lower than 16.6 milliseconds causes runtime problems.
+         * @param repeatCount Specifies the number of repetitions. If zero, the timer repeats indefinitely.If nonzero,
+         * the timer runs the specified number of times and then stops.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 使用指定的 delay 和 repeatCount 状态构造新的 Timer 对象。
+         * @param delay 计时器事件间的延迟（以毫秒为单位）。建议 delay 不要低于 20 毫秒。计时器频率不得超过 60 帧/秒，这意味着低于 16.6 毫秒的延迟可导致出现运行时问题。
+         * @param repeatCount 指定重复次数。如果为零，则计时器将持续不断重复运行。如果不为 0，则将运行计时器，运行次数为指定的次数，然后停止。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        constructor(delay: number, repeatCount?: number);
+        /**
+         * @private
+         */
+        private _delay;
+        /**
+         * The delay between timer events, in milliseconds. A delay lower than 20 milliseconds is not recommended.<br/>
+         * Note: Timer frequency is limited to 60 frames per second, meaning a delay lower than 16.6 milliseconds causes runtime problems.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 计时器事件间的延迟（以毫秒为单位）。如果在计时器正在运行时设置延迟间隔，则计时器将按相同的 repeatCount 迭代重新启动。<br/>
+         * 注意：建议 delay 不要低于 20 毫秒。计时器频率不得超过 60 帧/秒，这意味着低于 16.6 毫秒的延迟可导致出现运行时问题。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        delay: number;
+        /**
+         * The total number of times the timer is set to run. If the repeat count is set to 0, the timer continues indefinitely,
+         * until the stop() method is invoked or the program stops. If the repeat count is nonzero, the timer runs the specified
+         * number of times. If repeatCount is set to a total that is the same or less then currentCount the timer stops and will not fire again.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 设置的计时器运行总次数。如果重复计数设置为 0，则计时器将持续不断运行，或直至调用了 stop() 方法或节目停止。
+         * 如果重复计数不为 0，则将运行计时器，运行次数为指定的次数。如果设置的 repeatCount 总数等于或小于 currentCount，则计时器将停止并且不会再次触发。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        repeatCount: number;
+        /**
+         * @private
+         */
+        private _currentCount;
+        /**
+         * The total number of times the timer has fired since it started at zero. If the timer has been reset, only the fires since the reset are counted.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 计时器从 0 开始后触发的总次数。如果已重置了计时器，则只会计入重置后的触发次数。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        readonly currentCount: number;
+        /**
+         * @private
+         */
+        private _running;
+        /**
+         * The timer's current state; true if the timer is running, otherwise false.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 计时器的当前状态；如果计时器正在运行，则为 true，否则为 false。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        readonly running: boolean;
+        /**
+         * Stops the timer, if it is running, and sets the currentCount property back to 0, like the reset button of a stopwatch.
+         * Then, when start() is called, the timer instance runs for the specified number of repetitions, as set by the repeatCount value.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。然后，在调用 start() 后，将运行计时器实例，运行次数为指定的重复次数（由 repeatCount 值设置）。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        reset(): void;
+        /**
+         * Starts the timer, if it is not already running.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 如果计时器尚未运行，则启动计时器。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        start(): void;
+        /**
+         * Stops the timer. When start() is called after stop(), the timer instance runs for the remaining number of
+         * repetitions, as set by the repeatCount property.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 停止计时器。如果在调用 stop() 后调用 start()，则将继续运行计时器实例，运行次数为剩余的 重复次数（由 repeatCount 属性设置）。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        stop(): void;
+        /**
+         * @private
+         */
+        private updateInterval;
+        /**
+         * @private
+         */
+        private lastCount;
+        /**
+         * @private
+         */
+        private lastTimeStamp;
+        /**
+         * @private
+         * Ticker以60FPS频率刷新此方法
+         */
+        $update(): boolean;
+    }
+}
+declare module feng3d {
+    interface Timer {
+        addEventListener<Z>(type: "timer" | "timerComplete", listener: (this: Z, e: TimerEvent) => void, thisObject: Z, priority?: number): any;
+        addEventListener(type: string, listener: Function, thisObject: any, priority?: number): any;
+    }
+    /**
+     * A Timer object dispatches a TimerEvent objects whenever the Timer object reaches the interval specified by the Timer.delay property.
+     * @see egret.Timer
+     * @version Egret 2.4
+     * @platform Web,Native
+     * @includeExample egret/events/TimerEvent.ts
+     * @language en_US
+     */
+    /**
+     * 每当 Timer 对象达到由 Timer.delay 属性指定的间隔时，Timer 对象即会调度 TimerEvent 对象。
+     * @see egret.Timer
+     * @version Egret 2.4
+     * @platform Web,Native
+     * @includeExample egret/events/TimerEvent.ts
+     * @language zh_CN
+     */
+    class TimerEvent extends Event {
+        /**
+         * Dispatched whenever a Timer object reaches an interval specified according to the Timer.delay property.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 每当 Timer 对象达到根据 Timer.delay 属性指定的间隔时调度。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        static TIMER: "timer";
+        /**
+         * Dispatched whenever it has completed the number of requests set by Timer.repeatCount.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 每当它完成 Timer.repeatCount 设置的请求数后调度。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        static TIMER_COMPLETE: "timerComplete";
+        /**
+         * Creates an Event object with specific information relevant to timer events.
+         * @param type The type of the event. Event listeners can access this information through the inherited type property.
+         * @param bubbles Determines whether the Event object bubbles. Event listeners can access this information through
+         * the inherited bubbles property.
+         * @param cancelable Determines whether the Event object can be canceled. Event listeners can access this information
+         * through the inherited cancelable property.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 创建一个 Event 对象，其中包含有关 timer 事件的特定信息。
+         * @param type 事件的类型。事件侦听器可以通过继承的 type 属性访问此信息。
+         * @param bubbles 确定 Event 对象是否冒泡。事件侦听器可以通过继承的 bubbles 属性访问此信息。
+         * @param cancelable 确定是否可以取消 Event 对象。事件侦听器可以通过继承的 cancelable 属性访问此信息。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        constructor(type: string, data?: any, bubbles?: boolean);
+    }
+}
+declare module feng3d {
+    /**
+     * 鼠标键盘输入，处理js事件中this关键字问题
+     * @author feng 2016-12-19
+     */
+    class Input extends EventDispatcher {
+        clientX: number;
+        clientY: number;
+        constructor();
+        /**
+         * 键盘按下事件
+         */
+        private onMouseKey(event);
+        /**
+         *
+         */
+        addEventListener(type: string, listener: (event: InputEvent) => void, thisObject: any, priority?: number): void;
+    }
+    class InputEventType {
+        /** 鼠标双击 */
+        DOUBLE_CLICK: string;
+        /** 鼠标单击 */
+        CLICK: string;
+        /** 鼠标按下 */
+        MOUSE_DOWN: string;
+        /** 鼠标弹起 */
+        MOUSE_UP: string;
+        /** 鼠标中键单击 */
+        MIDDLE_CLICK: string;
+        /** 鼠标中键按下 */
+        MIDDLE_MOUSE_DOWN: string;
+        /** 鼠标中键弹起 */
+        MIDDLE_MOUSE_UP: string;
+        /** 鼠标右键单击 */
+        RIGHT_CLICK: string;
+        /** 鼠标右键按下 */
+        RIGHT_MOUSE_DOWN: string;
+        /** 鼠标右键弹起 */
+        RIGHT_MOUSE_UP: string;
+        /** 鼠标移动 */
+        MOUSE_MOVE: string;
+        /** 鼠标移出 */
+        MOUSE_OUT: string;
+        /** 鼠标移入 */
+        MOUSE_OVER: string;
+        /** 鼠标滚动滚轮 */
+        MOUSE_WHEEL: string;
+        /** 键盘按下 */
+        KEY_DOWN: string;
+        /** 键盘按着 */
+        KEY_PRESS: string;
+        /** 键盘弹起 */
+        KEY_UP: string;
+    }
+    class InputEvent extends Event {
+        data: Input;
+        clientX: number;
+        clientY: number;
+        keyCode: number;
+        wheelDelta: number;
+        constructor(event: WheelEvent | MouseEvent | KeyboardEvent, data?: Input, bubbles?: boolean);
+    }
+}
+declare module feng3d {
+    /**
+     * 按键捕获
+     * @author feng 2016-4-26
+     */
+    class KeyCapture {
+        /**
+         * 键盘按键字典 （补充常量，a-z以及鼠标按键不必再次列出）
+         * 例如 boardKeyDic[17] = "ctrl";
+         */
+        private _boardKeyDic;
+        /**
+         * 捕获的按键字典
+         */
+        private _mouseKeyDic;
+        /**
+         * 按键状态
+         */
+        private _keyState;
+        /**
+         * 构建
+         * @param stage		舞台
+         */
+        constructor(shortCut: ShortCut);
+        /**
+         * 默认支持按键
+         */
+        private defaultSupportKeys();
+        /**
+         * 鼠标事件
+         */
+        private onMouseOnce(event);
+        /**
+         * 鼠标事件
+         */
+        private onMousewheel(event);
+        /**
+         * 键盘按下事件
+         */
+        private onKeydown(event);
+        /**
+         * 键盘弹起事件
+         */
+        private onKeyup(event);
+        /**
+         * 获取键盘按键名称
+         */
+        private getBoardKey(keyCode);
+    }
+}
+declare module feng3d {
+    /**
+     * 按键状态
+     * @author feng 2016-4-26
+     */
+    class KeyState extends EventDispatcher {
+        /**
+         * 按键状态{key:键名称,value:是否按下}
+         */
+        private _keyStateDic;
+        /**
+         * 构建
+         */
+        constructor();
+        /**
+         * 按下键
+         * @param key 	键名称
+         * @param data	携带数据
+         */
+        pressKey(key: string, data: InputEvent): void;
+        /**
+         * 释放键
+         * @param key	键名称
+         * @param data	携带数据
+         */
+        releaseKey(key: string, data: InputEvent): void;
+        /**
+         * 获取按键状态
+         * @param key 按键名称
+         */
+        getKeyState(key: string): boolean;
+    }
+}
+declare module feng3d {
+    /**
+     * 快捷键捕获
+     * @author feng 2016-4-26
+     */
+    class ShortCutCapture {
+        /**
+         * 快捷键环境
+         */
+        private _shortCut;
+        /**
+         * 快捷键
+         */
+        private _key;
+        /**
+         * 要执行的命令名称
+         */
+        private _command;
+        /**
+         * 可执行的状态命令
+         */
+        private _stateCommand;
+        /**
+         * 快捷键处于活动状态的条件
+         */
+        private _when;
+        /**
+         * 按键状态
+         */
+        private _keyState;
+        /**
+         * 按键列表
+         */
+        private _keys;
+        /**
+         * 状态列表
+         */
+        private _states;
+        /**
+         * 命令列表
+         */
+        private _commands;
+        /**
+         * 命令列表
+         */
+        private _stateCommands;
+        /**
+         * 构建快捷键捕获
+         * @param shortCut				快捷键环境
+         * @param key					快捷键；用“+”连接多个按键，“!”表示没按下某键；例如 “a+!b”表示按下“a”与没按下“b”时触发。
+         * @param command				要执行的command的id；使用“,”连接触发多个命令；例如 “commandA,commandB”表示满足触发条件后依次执行commandA与commandB命令。
+         * @param stateCommand			要执行的状态命令id；使用“,”连接触发多个状态命令，没带“!”表示激活该状态，否则表示使其处于非激活状态；例如 “stateA,!stateB”表示满足触发条件后激活状态“stateA，使“stateB处于非激活状态。
+         * @param when					快捷键激活的条件；使用“+”连接多个状态，没带“!”表示需要处于激活状态，否则需要处于非激活状态； 例如 “stateA+!stateB”表示stateA处于激活状态且stateB处于非激活状态时会判断按键是否满足条件。
+         */
+        constructor(shortCut: ShortCut, key: string, command?: string, stateCommand?: string, when?: string);
+        /**
+         * 初始化
+         */
+        private init();
+        /**
+         * 处理捕获事件
+         */
+        private onCapture(event);
+        /**
+         * 派发命令
+         */
+        private dispatchCommands(commands, data);
+        /**
+         * 执行状态命令
+         */
+        private executeStateCommands(stateCommands);
+        /**
+         * 检测快捷键是否处于活跃状态
+         */
+        private checkActivityStates(states);
+        /**
+         * 获取是否处于指定状态中（支持一个！取反）
+         * @param state 状态名称
+         */
+        private getState(state);
+        /**
+         * 检测是否按下给出的键
+         * @param keys 按键数组
+         */
+        private checkActivityKeys(keys);
+        /**
+         * 获取按键状态（true：按下状态，false：弹起状态）
+         */
+        private getKeyValue(key);
+        /**
+         * 获取状态列表
+         * @param when		状态字符串
+         */
+        private getStates(when);
+        /**
+         * 获取键列表
+         * @param key		快捷键
+         */
+        private getKeys(key);
+        /**
+         * 获取命令列表
+         * @param command	命令
+         */
+        private getCommands(command);
+        /**
+         * 获取状态命令列表
+         * @param stateCommand	状态命令
+         */
+        private getStateCommand(stateCommand);
+        /**
+         * 销毁
+         */
+        destroy(): void;
+    }
+}
+/**
+ * 按键
+ * @author feng 2016-6-6
+ */
+declare class Key {
+    /**
+     * 是否取反
+     */
+    not: boolean;
+    /**
+     * 状态名称
+     */
+    key: string;
+    constructor(key: string);
+}
+/**
+ * 状态
+ * @author feng 2016-6-6
+ */
+declare class State {
+    /**
+     * 是否取反
+     */
+    not: boolean;
+    /**
+     * 状态名称
+     */
+    state: string;
+    constructor(state: string);
+}
+/**
+ * 状态命令
+ * @author feng 2016-6-6
+ */
+declare class StateCommand {
+    /**
+     * 是否取反
+     */
+    not: boolean;
+    /**
+     * 状态名称
+     */
+    state: string;
+    constructor(state: string);
+}
+declare module feng3d {
+    /**
+     * 快捷键命令事件
+     * @author feng 2016-4-27
+     */
+    class ShortCutEvent extends Event {
+        /**
+         * 携带数据
+         */
+        data: InputEvent;
+        /**
+         * 构建
+         * @param command		命令名称
+         */
+        constructor(command: string, data: InputEvent);
+    }
+}
+declare module feng3d {
+    /**
+     * 初始化快捷键模块
+     * @author feng 2016-4-26
+     *
+     * <pre>
+var shortcuts:Array = [ //
+//在按下key1时触发命令command1
+    {key: "key1", command: "command1", when: ""}, //
+     //在按下key1时触发状态命令改变stateCommand1为激活状态
+    {key: "key1", stateCommand: "stateCommand1", when: "state1"}, //
+     //处于state1状态时按下key1触发命令command1
+    {key: "key1", command: "command1", when: "state1"}, //
+    //处于state1状态不处于state2时按下key1与没按下key2触发command1与command2，改变stateCommand1为激活状态，stateCommand2为非激活状态
+    {key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
+    ];
+//添加快捷键
+shortCut.addShortCuts(shortcuts);
+//监听命令
+shortCut.addEventListener("run", function(e:Event):void
+{
+    trace("接受到命令：" + e.type);
+});
+     * </pre>
+     */
+    class ShortCut extends EventDispatcher {
+        /**
+         * 按键状态
+         */
+        keyState: KeyState;
+        /**
+         * 状态字典
+         */
+        stateDic: {};
+        /**
+         * 按键捕获
+         */
+        keyCapture: KeyCapture;
+        /**
+         * 捕获字典
+         */
+        captureDic: {};
+        /**
+         * 初始化快捷键模块
+         */
+        constructor();
+        /**
+         * 添加快捷键
+         * @param shortcuts		快捷键列表
+         */
+        addShortCuts(shortcuts: any[]): void;
+        /**
+         * 删除快捷键
+         * @param shortcuts		快捷键列表
+         */
+        removeShortCuts(shortcuts: any[]): void;
+        /**
+         * 移除所有快捷键
+         */
+        removeAllShortCuts(): void;
+        /**
+         * 激活状态
+         * @param state 状态名称
+         */
+        activityState(state: string): void;
+        /**
+         * 取消激活状态
+         * @param state 状态名称
+         */
+        deactivityState(state: string): void;
+        /**
+         * 获取状态
+         * @param state 状态名称
+         */
+        getState(state: string): boolean;
+        /**
+         * 获取快捷键唯一字符串
+         */
+        private getShortcutUniqueKey(shortcut);
+    }
+}
+declare module feng3d {
+    /**
+     * 组件事件
+     * @author feng 2015-12-2
+     */
+    class ComponentEvent extends Event {
+        /**
+         * 添加子组件事件
+         */
+        static ADDED_COMPONENT: string;
+        /**
+         * 移除子组件事件
+         */
+        static REMOVED_COMPONENT: string;
+        /**
+         * 组件事件数据
+         */
+        data: {
+            container: GameObject;
+            child: Component;
+        };
+        /**
+         * 事件目标。
+         */
+        target: Component;
+    }
+}
+declare module feng3d {
+    /**
+     * 组件容器（集合）
+     * @author feng 2015-5-6
+     */
+    class Component extends EventDispatcher {
+        /**
+         * 游戏对象
+         */
+        gameObject: GameObject;
+        /**
+         * 组件列表
+         */
+        protected components_: Component[];
+        /**
+         * 是否唯一，同类型3D对象组件只允许一个
+         */
+        readonly single: boolean;
+        protected _single: boolean;
+        /**
+         * 组件类型
+         */
+        readonly type: new () => Component;
+        protected _type: new () => Component;
+        /**
+         * 创建一个组件容器
+         */
+        constructor();
+        /**
+         * 初始化组件
+         */
+        protected initComponent(): void;
+        /**
+         * 子组件个数
+         */
+        readonly numComponents: number;
+        /**
+         * 获取组件列表，无法通过返回数组对该组件进行子组件增删等操作
+         */
+        readonly components: Component[];
+        /**
+         * 添加组件
+         * @param component 被添加组件
+         */
+        addComponent(component: Component): void;
+        /**
+         * 添加组件到指定位置
+         * @param component		被添加的组件
+         * @param index			插入的位置
+         */
+        addComponentAt(component: Component, index: number): void;
+        /**
+         * 设置组件到指定位置
+         * @param component		被设置的组件
+         * @param index			索引
+         */
+        setComponentAt(component: Component, index: number): void;
+        /**
+         * 移除组件
+         * @param component 被移除组件
+         */
+        removeComponent(component: Component): void;
+        /**
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
+         */
+        removeComponentAt(index: number): Component;
+        /**
+         * 获取组件在容器的索引位置
+         * @param component			查询的组件
+         * @return				    组件在容器的索引位置
+         */
+        getComponentIndex(component: Component): number;
+        /**
+         * 设置子组件的位置
+         * @param component				子组件
+         * @param index				位置索引
+         */
+        setComponentIndex(component: Component, index: number): void;
+        /**
+         * 获取指定位置索引的子组件
+         * @param index			位置索引
+         * @return				子组件
+         */
+        getComponentAt(index: number): Component;
+        /**
+         * 根据类定义获取组件
+         * <p>如果存在多个则返回第一个</p>
+         * @param type				类定义
+         * @return                  返回指定类型组件
+         */
+        getComponentByType<T extends Component>(type: new () => T): T;
+        /**
+         * 根据类定义查找组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsByType<T extends Component>(type: new () => T): T[];
+        /**
+         * 移除指定类型组件
+         * @param type 组件类型
+         */
+        removeComponentsByType<T extends Component>(type: new () => T): T[];
+        /**
+         * 根据类定义获取或创建组件
+         * <p>当不存在该类型对象时创建一个该组件并且添加到容器中</p>
+         * @param cls       类定义
+         * @return          返回与给出类定义一致的组件
+         */
+        getOrCreateComponentByClass<T extends Component>(cls: new () => T): T;
+        /**
+         * 判断是否拥有组件
+         * @param com	被检测的组件
+         * @return		true：拥有该组件；false：不拥有该组件。
+         */
+        hasComponent(com: Component): boolean;
+        /**
+         * 交换子组件位置
+         * @param index1		第一个子组件的索引位置
+         * @param index2		第二个子组件的索引位置
+         */
+        swapComponentsAt(index1: number, index2: number): void;
+        /**
+         * 交换子组件位置
+         * @param a		第一个子组件
+         * @param b		第二个子组件
+         */
+        swapComponents(a: Component, b: Component): void;
+        /**
+         * 派发子组件事件
+         * <p>事件广播给子组件</p>
+         * @param event     事件
+         * @param depth     广播深度
+         */
+        dispatchChildrenEvent(event: Event, depth?: number): void;
+        /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void;
+        /**
+         * 处理被移除组件事件
+         */
+        protected onBeRemovedComponent(event: ComponentEvent): void;
+        /**
+         * 获取冒泡对象
+         */
+        protected getBubbleTargets(event?: Event): IEventDispatcher[];
+        /**
+         * 处理添加组件事件，此处为被添加，设置父组件
+         */
+        private _onAddedComponent(event);
+        /**
+         * 处理移除组件事件，此处为被移除，清空父组件
+         */
+        private _onRemovedComponent(event);
+    }
+}
+declare module feng3d {
+    /**
+     * 加载类
+     * @author feng 2016-12-14
+     */
+    class Loader extends EventDispatcher {
+        private _request;
+        private _image;
+        /**
+         * 数据类型
+         */
+        dataFormat: string;
+        protected _url: string;
+        /**
+         * 已加载的字节数
+         */
+        bytesLoaded: number;
+        /**
+         * 文件中压缩的字节数
+         */
+        bytesTotal: number;
+        /**
+         * 加载内容
+         */
+        content: any;
+        /**
+         * 加载资源
+         * @param url   路径
+         */
+        load(url: string): void;
+        /**
+         * 加载文本
+         * @param url   路径
+         */
+        loadText(url: string): void;
+        /**
+         * 加载二进制
+         * @param url   路径
+         */
+        loadBinary(url: string): void;
+        /**
+         * 加载图片
+         * @param url   路径
+         */
+        loadImage(url: string): void;
+        /**
+         * 使用XMLHttpRequest加载
+         */
+        private xmlHttpRequestLoad();
+        /**
+         * 请求进度回调
+         */
+        private onRequestProgress(event);
+        /**
+         * 请求状态变化回调
+         */
+        private onRequestReadystatechange(ev);
+        /**
+         * 加载图片完成回调
+         */
+        private onImageLoad(event);
+        /**
+         * 加载图片出错回调
+         */
+        private onImageError(event);
+    }
+}
+declare module feng3d {
+    /**
+     * 加载事件
+     * @author feng 2016-12-14
+     */
+    class LoaderEvent extends Event {
+        /**
+         * 加载进度发生改变时调度。
+         */
+        static PROGRESS: string;
+        /**
+         * 加载完成后调度。
+         */
+        static COMPLETE: string;
+        /**
+         * 加载出错时调度。
+         */
+        static ERROR: string;
+    }
+}
+declare module feng3d {
+    /**
+     * 加载数据类型
+     * @author feng 2016-12-14
+     */
+    class LoaderDataFormat {
+        /**
+         * 以原始二进制数据形式接收下载的数据。
+         */
+        static BINARY: string;
+        /**
+         * 以文本形式接收已下载的数据。
+         */
+        static TEXT: string;
+        /**
+         * 图片数据
+         */
+        static IMAGE: string;
+    }
+}
+interface WebGLTexture {
+    /**
+     * 唯一标识符
+     */
+    uuid: string;
+}
+interface WebGLBuffer {
+    /**
+     * 唯一标识符
+     */
+    uuid: string;
+}
+/**
+ * WebGL渲染程序
+ */
+interface WebGLProgram {
+    /**
+     * 版本号
+     */
+    version: number;
+    vertexCode: string;
+    fragmentCode: string;
+    /**
+     * WebGL渲染上下文
+     */
+    gl: WebGLRenderingContext;
+    /**
+     * 顶点shader
+     */
+    vertexShader: WebGLShader;
+    /**
+     * 片段shader
+     */
+    fragmentShader: WebGLShader;
+    /**
+     * 属性信息列表
+     */
+    attributes: WebGLActiveInfo[];
+    /**
+     * uniform信息列表
+     */
+    uniforms: WebGLActiveInfo[];
+    /**
+     * 销毁
+     */
+    destroy(): any;
+}
+/**
+ * WebGL渲染程序有效信息
+ */
+interface WebGLActiveInfo {
+    /**
+     * 属性地址
+     */
+    location: number;
+    /**
+     * uniform基础名称，例如 arr[10] 基础名称为 arr
+     */
+    uniformBaseName: string;
+    /**
+     * uniform地址
+     */
+    uniformLocation: WebGLUniformLocation | WebGLUniformLocation[];
+    /**
+     * texture索引
+     */
+    textureID: number;
+}
+interface WebGLRenderingContext {
     /**
      * Create the linked program object
      * @param gl GL context
@@ -2489,14 +2810,370 @@ declare module feng3d {
      * @param fshader a fragment shader program (string)
      * @return created program object, or null if the creation has failed
      */
-    function createProgram(gl: GL, vshader: string, fshader: string): WebGLProgram;
+    createProgram(vshader: string, fshader: string): WebGLProgram;
+    programs: {
+        [uuid: string]: WebGLProgram;
+    };
     /**
-     * Initialize and get the rendering for WebGL
-     * @param canvas <cavnas> element
-     * @param opt_debug flag to initialize the context for debugging
-     * @return the rendering context for WebGL
+     * 获取纹理各向异性过滤扩展
      */
-    function getWebGLContext(canvas: HTMLCanvasElement, opt_debug?: any): any;
+    anisotropicExt: EXTTextureFilterAnisotropic;
+    /**
+     * 纹理各向异性过滤最大值
+     */
+    maxAnisotropy: number;
+}
+declare module feng3d {
+    var GL: {
+        new (): WebGLRenderingContext;
+        prototype: WebGLRenderingContext;
+        readonly ACTIVE_ATTRIBUTES: number;
+        readonly ACTIVE_TEXTURE: number;
+        readonly ACTIVE_UNIFORMS: number;
+        readonly ALIASED_LINE_WIDTH_RANGE: number;
+        readonly ALIASED_POINT_SIZE_RANGE: number;
+        readonly ALPHA: number;
+        readonly ALPHA_BITS: number;
+        readonly ALWAYS: number;
+        readonly ARRAY_BUFFER: number;
+        readonly ARRAY_BUFFER_BINDING: number;
+        readonly ATTACHED_SHADERS: number;
+        readonly BACK: number;
+        readonly BLEND: number;
+        readonly BLEND_COLOR: number;
+        readonly BLEND_DST_ALPHA: number;
+        readonly BLEND_DST_RGB: number;
+        readonly BLEND_EQUATION: number;
+        readonly BLEND_EQUATION_ALPHA: number;
+        readonly BLEND_EQUATION_RGB: number;
+        readonly BLEND_SRC_ALPHA: number;
+        readonly BLEND_SRC_RGB: number;
+        readonly BLUE_BITS: number;
+        readonly BOOL: number;
+        readonly BOOL_VEC2: number;
+        readonly BOOL_VEC3: number;
+        readonly BOOL_VEC4: number;
+        readonly BROWSER_DEFAULT_WEBGL: number;
+        readonly BUFFER_SIZE: number;
+        readonly BUFFER_USAGE: number;
+        readonly BYTE: number;
+        readonly CCW: number;
+        readonly CLAMP_TO_EDGE: number;
+        readonly COLOR_ATTACHMENT0: number;
+        readonly COLOR_BUFFER_BIT: number;
+        readonly COLOR_CLEAR_VALUE: number;
+        readonly COLOR_WRITEMASK: number;
+        readonly COMPILE_STATUS: number;
+        readonly COMPRESSED_TEXTURE_FORMATS: number;
+        readonly CONSTANT_ALPHA: number;
+        readonly CONSTANT_COLOR: number;
+        readonly CONTEXT_LOST_WEBGL: number;
+        readonly CULL_FACE: number;
+        readonly CULL_FACE_MODE: number;
+        readonly CURRENT_PROGRAM: number;
+        readonly CURRENT_VERTEX_ATTRIB: number;
+        readonly CW: number;
+        readonly DECR: number;
+        readonly DECR_WRAP: number;
+        readonly DELETE_STATUS: number;
+        readonly DEPTH_ATTACHMENT: number;
+        readonly DEPTH_BITS: number;
+        readonly DEPTH_BUFFER_BIT: number;
+        readonly DEPTH_CLEAR_VALUE: number;
+        readonly DEPTH_COMPONENT: number;
+        readonly DEPTH_COMPONENT16: number;
+        readonly DEPTH_FUNC: number;
+        readonly DEPTH_RANGE: number;
+        readonly DEPTH_STENCIL: number;
+        readonly DEPTH_STENCIL_ATTACHMENT: number;
+        readonly DEPTH_TEST: number;
+        readonly DEPTH_WRITEMASK: number;
+        readonly DITHER: number;
+        readonly DONT_CARE: number;
+        readonly DST_ALPHA: number;
+        readonly DST_COLOR: number;
+        readonly DYNAMIC_DRAW: number;
+        readonly ELEMENT_ARRAY_BUFFER: number;
+        readonly ELEMENT_ARRAY_BUFFER_BINDING: number;
+        readonly EQUAL: number;
+        readonly FASTEST: number;
+        readonly FLOAT: number;
+        readonly FLOAT_MAT2: number;
+        readonly FLOAT_MAT3: number;
+        readonly FLOAT_MAT4: number;
+        readonly FLOAT_VEC2: number;
+        readonly FLOAT_VEC3: number;
+        readonly FLOAT_VEC4: number;
+        readonly FRAGMENT_SHADER: number;
+        readonly FRAMEBUFFER: number;
+        readonly FRAMEBUFFER_ATTACHMENT_OBJECT_NAME: number;
+        readonly FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE: number;
+        readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE: number;
+        readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL: number;
+        readonly FRAMEBUFFER_BINDING: number;
+        readonly FRAMEBUFFER_COMPLETE: number;
+        readonly FRAMEBUFFER_INCOMPLETE_ATTACHMENT: number;
+        readonly FRAMEBUFFER_INCOMPLETE_DIMENSIONS: number;
+        readonly FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: number;
+        readonly FRAMEBUFFER_UNSUPPORTED: number;
+        readonly FRONT: number;
+        readonly FRONT_AND_BACK: number;
+        readonly FRONT_FACE: number;
+        readonly FUNC_ADD: number;
+        readonly FUNC_REVERSE_SUBTRACT: number;
+        readonly FUNC_SUBTRACT: number;
+        readonly GENERATE_MIPMAP_HINT: number;
+        readonly GEQUAL: number;
+        readonly GREATER: number;
+        readonly GREEN_BITS: number;
+        readonly HIGH_FLOAT: number;
+        readonly HIGH_INT: number;
+        readonly IMPLEMENTATION_COLOR_READ_FORMAT: number;
+        readonly IMPLEMENTATION_COLOR_READ_TYPE: number;
+        readonly INCR: number;
+        readonly INCR_WRAP: number;
+        readonly INT: number;
+        readonly INT_VEC2: number;
+        readonly INT_VEC3: number;
+        readonly INT_VEC4: number;
+        readonly INVALID_ENUM: number;
+        readonly INVALID_FRAMEBUFFER_OPERATION: number;
+        readonly INVALID_OPERATION: number;
+        readonly INVALID_VALUE: number;
+        readonly INVERT: number;
+        readonly KEEP: number;
+        readonly LEQUAL: number;
+        readonly LESS: number;
+        readonly LINEAR: number;
+        readonly LINEAR_MIPMAP_LINEAR: number;
+        readonly LINEAR_MIPMAP_NEAREST: number;
+        readonly LINES: number;
+        readonly LINE_LOOP: number;
+        readonly LINE_STRIP: number;
+        readonly LINE_WIDTH: number;
+        readonly LINK_STATUS: number;
+        readonly LOW_FLOAT: number;
+        readonly LOW_INT: number;
+        readonly LUMINANCE: number;
+        readonly LUMINANCE_ALPHA: number;
+        readonly MAX_COMBINED_TEXTURE_IMAGE_UNITS: number;
+        readonly MAX_CUBE_MAP_TEXTURE_SIZE: number;
+        readonly MAX_FRAGMENT_UNIFORM_VECTORS: number;
+        readonly MAX_RENDERBUFFER_SIZE: number;
+        readonly MAX_TEXTURE_IMAGE_UNITS: number;
+        readonly MAX_TEXTURE_SIZE: number;
+        readonly MAX_VARYING_VECTORS: number;
+        readonly MAX_VERTEX_ATTRIBS: number;
+        readonly MAX_VERTEX_TEXTURE_IMAGE_UNITS: number;
+        readonly MAX_VERTEX_UNIFORM_VECTORS: number;
+        readonly MAX_VIEWPORT_DIMS: number;
+        readonly MEDIUM_FLOAT: number;
+        readonly MEDIUM_INT: number;
+        readonly MIRRORED_REPEAT: number;
+        readonly NEAREST: number;
+        readonly NEAREST_MIPMAP_LINEAR: number;
+        readonly NEAREST_MIPMAP_NEAREST: number;
+        readonly NEVER: number;
+        readonly NICEST: number;
+        readonly NONE: number;
+        readonly NOTEQUAL: number;
+        readonly NO_ERROR: number;
+        readonly ONE: number;
+        readonly ONE_MINUS_CONSTANT_ALPHA: number;
+        readonly ONE_MINUS_CONSTANT_COLOR: number;
+        readonly ONE_MINUS_DST_ALPHA: number;
+        readonly ONE_MINUS_DST_COLOR: number;
+        readonly ONE_MINUS_SRC_ALPHA: number;
+        readonly ONE_MINUS_SRC_COLOR: number;
+        readonly OUT_OF_MEMORY: number;
+        readonly PACK_ALIGNMENT: number;
+        readonly POINTS: number;
+        readonly POLYGON_OFFSET_FACTOR: number;
+        readonly POLYGON_OFFSET_FILL: number;
+        readonly POLYGON_OFFSET_UNITS: number;
+        readonly RED_BITS: number;
+        readonly RENDERBUFFER: number;
+        readonly RENDERBUFFER_ALPHA_SIZE: number;
+        readonly RENDERBUFFER_BINDING: number;
+        readonly RENDERBUFFER_BLUE_SIZE: number;
+        readonly RENDERBUFFER_DEPTH_SIZE: number;
+        readonly RENDERBUFFER_GREEN_SIZE: number;
+        readonly RENDERBUFFER_HEIGHT: number;
+        readonly RENDERBUFFER_INTERNAL_FORMAT: number;
+        readonly RENDERBUFFER_RED_SIZE: number;
+        readonly RENDERBUFFER_STENCIL_SIZE: number;
+        readonly RENDERBUFFER_WIDTH: number;
+        readonly RENDERER: number;
+        readonly REPEAT: number;
+        readonly REPLACE: number;
+        readonly RGB: number;
+        readonly RGB565: number;
+        readonly RGB5_A1: number;
+        readonly RGBA: number;
+        readonly RGBA4: number;
+        readonly SAMPLER_2D: number;
+        readonly SAMPLER_CUBE: number;
+        readonly SAMPLES: number;
+        readonly SAMPLE_ALPHA_TO_COVERAGE: number;
+        readonly SAMPLE_BUFFERS: number;
+        readonly SAMPLE_COVERAGE: number;
+        readonly SAMPLE_COVERAGE_INVERT: number;
+        readonly SAMPLE_COVERAGE_VALUE: number;
+        readonly SCISSOR_BOX: number;
+        readonly SCISSOR_TEST: number;
+        readonly SHADER_TYPE: number;
+        readonly SHADING_LANGUAGE_VERSION: number;
+        readonly SHORT: number;
+        readonly SRC_ALPHA: number;
+        readonly SRC_ALPHA_SATURATE: number;
+        readonly SRC_COLOR: number;
+        readonly STATIC_DRAW: number;
+        readonly STENCIL_ATTACHMENT: number;
+        readonly STENCIL_BACK_FAIL: number;
+        readonly STENCIL_BACK_FUNC: number;
+        readonly STENCIL_BACK_PASS_DEPTH_FAIL: number;
+        readonly STENCIL_BACK_PASS_DEPTH_PASS: number;
+        readonly STENCIL_BACK_REF: number;
+        readonly STENCIL_BACK_VALUE_MASK: number;
+        readonly STENCIL_BACK_WRITEMASK: number;
+        readonly STENCIL_BITS: number;
+        readonly STENCIL_BUFFER_BIT: number;
+        readonly STENCIL_CLEAR_VALUE: number;
+        readonly STENCIL_FAIL: number;
+        readonly STENCIL_FUNC: number;
+        readonly STENCIL_INDEX: number;
+        readonly STENCIL_INDEX8: number;
+        readonly STENCIL_PASS_DEPTH_FAIL: number;
+        readonly STENCIL_PASS_DEPTH_PASS: number;
+        readonly STENCIL_REF: number;
+        readonly STENCIL_TEST: number;
+        readonly STENCIL_VALUE_MASK: number;
+        readonly STENCIL_WRITEMASK: number;
+        readonly STREAM_DRAW: number;
+        readonly SUBPIXEL_BITS: number;
+        readonly TEXTURE: number;
+        readonly TEXTURE0: number;
+        readonly TEXTURE1: number;
+        readonly TEXTURE10: number;
+        readonly TEXTURE11: number;
+        readonly TEXTURE12: number;
+        readonly TEXTURE13: number;
+        readonly TEXTURE14: number;
+        readonly TEXTURE15: number;
+        readonly TEXTURE16: number;
+        readonly TEXTURE17: number;
+        readonly TEXTURE18: number;
+        readonly TEXTURE19: number;
+        readonly TEXTURE2: number;
+        readonly TEXTURE20: number;
+        readonly TEXTURE21: number;
+        readonly TEXTURE22: number;
+        readonly TEXTURE23: number;
+        readonly TEXTURE24: number;
+        readonly TEXTURE25: number;
+        readonly TEXTURE26: number;
+        readonly TEXTURE27: number;
+        readonly TEXTURE28: number;
+        readonly TEXTURE29: number;
+        readonly TEXTURE3: number;
+        readonly TEXTURE30: number;
+        readonly TEXTURE31: number;
+        readonly TEXTURE4: number;
+        readonly TEXTURE5: number;
+        readonly TEXTURE6: number;
+        readonly TEXTURE7: number;
+        readonly TEXTURE8: number;
+        readonly TEXTURE9: number;
+        readonly TEXTURE_2D: number;
+        readonly TEXTURE_BINDING_2D: number;
+        readonly TEXTURE_BINDING_CUBE_MAP: number;
+        readonly TEXTURE_CUBE_MAP: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
+        readonly TEXTURE_MAG_FILTER: number;
+        readonly TEXTURE_MIN_FILTER: number;
+        readonly TEXTURE_WRAP_S: number;
+        readonly TEXTURE_WRAP_T: number;
+        readonly TRIANGLES: number;
+        readonly TRIANGLE_FAN: number;
+        readonly TRIANGLE_STRIP: number;
+        readonly UNPACK_ALIGNMENT: number;
+        readonly UNPACK_COLORSPACE_CONVERSION_WEBGL: number;
+        readonly UNPACK_FLIP_Y_WEBGL: number;
+        readonly UNPACK_PREMULTIPLY_ALPHA_WEBGL: number;
+        readonly UNSIGNED_BYTE: number;
+        readonly UNSIGNED_INT: number;
+        readonly UNSIGNED_SHORT: number;
+        readonly UNSIGNED_SHORT_4_4_4_4: number;
+        readonly UNSIGNED_SHORT_5_5_5_1: number;
+        readonly UNSIGNED_SHORT_5_6_5: number;
+        readonly VALIDATE_STATUS: number;
+        readonly VENDOR: number;
+        readonly VERSION: number;
+        readonly VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: number;
+        readonly VERTEX_ATTRIB_ARRAY_ENABLED: number;
+        readonly VERTEX_ATTRIB_ARRAY_NORMALIZED: number;
+        readonly VERTEX_ATTRIB_ARRAY_POINTER: number;
+        readonly VERTEX_ATTRIB_ARRAY_SIZE: number;
+        readonly VERTEX_ATTRIB_ARRAY_STRIDE: number;
+        readonly VERTEX_ATTRIB_ARRAY_TYPE: number;
+        readonly VERTEX_SHADER: number;
+        readonly VIEWPORT: number;
+        readonly ZERO: number;
+    };
+    interface GL extends WebGL2RenderingContext {
+        /**
+         * 唯一标识符
+         */
+        uuid: string;
+        webgl2: boolean;
+        proxy: GLProxy;
+    }
+}
+declare module feng3d {
+    class GLProxy {
+        gl: GL;
+        constructor(canvas: HTMLCanvasElement, options?: any);
+        /**
+         * Initialize and get the rendering for WebGL
+         * @param canvas <cavnas> element
+         * @param opt_debug flag to initialize the context for debugging
+         * @return the rendering context for WebGL
+         */
+        private getWebGLContext(canvas, options?);
+    }
+}
+declare module feng3d {
+    /**
+     * GL扩展
+     */
+    class GLExtension {
+        constructor(gl: GL);
+        /**
+         * 在iphone中WebGLRenderingContext中静态变量值值未定义，因此此处初始化来支持iphone
+         * @param gl WebGL对象
+         */
+        private supportIphone(gl);
+        /**
+         * 扩展GL
+         * @param gl GL实例
+         */
+        private extensionWebGL(gl);
+        /**
+         * 缓存GL查询
+         * @param gl GL实例
+         */
+        private cacheGLQuery(gl);
+    }
+}
+declare module feng3d {
+    class GLProgramExtension {
+        constructor(gl: GL);
+    }
 }
 declare module feng3d {
     /**
@@ -2593,6 +3270,275 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    class UniformData<T> {
+        data: T;
+        constructor(data: T);
+        static getUniformData<T>(data: T): UniformData<T>;
+        /**
+         * 设置环境Uniform数据
+         */
+        setContext3DUniform(gl: GL, activeInfo: WebGLActiveInfo): void;
+    }
+}
+declare module feng3d {
+    /**
+     * Uniform渲染数据
+     */
+    class UniformRenderData {
+        /**
+         * 模型矩阵
+         */
+        u_modelMatrix: UniformData<Matrix3D>;
+        /**
+         * 世界投影矩阵
+         */
+        u_viewProjection: Matrix3D;
+        /**
+         * 摄像机矩阵
+         */
+        u_cameraMatrix: Matrix3D;
+        u_diffuseInput: Vector3D;
+        /**
+         * 透明阈值，用于透明检测
+         */
+        u_alphaThreshold: number;
+        /**
+         * 漫反射贴图
+         */
+        s_texture: Texture2D;
+        /**
+         * 漫反射贴图
+         */
+        s_diffuse: Texture2D;
+        /**
+         * 环境贴图
+         */
+        s_ambient: Texture2D;
+        /**
+         * 法线贴图
+         */
+        s_normal: Texture2D;
+        /**
+         * 镜面反射光泽图
+         */
+        s_specular: Texture2D;
+        /**
+         * 天空盒纹理
+         */
+        s_skyboxTexture: TextureCube;
+        /**
+         * 天空盒尺寸
+         */
+        u_skyBoxSize: number;
+        /**
+         * 地形混合贴图
+         */
+        s_blendTexture: Texture2D;
+        /**
+         * 地形块贴图1
+         */
+        s_splatTexture1: Texture2D;
+        /**
+         * 地形块贴图2
+         */
+        s_splatTexture2: Texture2D;
+        /**
+         * 地形块贴图3
+         */
+        s_splatTexture3: Texture2D;
+        /**
+         * 地形块混合贴图
+         */
+        s_splatMergeTexture: Texture2D;
+        /**
+         * 地形块重复次数
+         */
+        u_splatRepeats: Vector3D;
+        /**
+         * 地形混合贴图尺寸
+         */
+        u_splatMergeTextureSize: Point;
+        /**
+         * 图片尺寸
+         */
+        u_imageSize: Point;
+        /**
+         * 地形块尺寸
+         */
+        u_tileSize: Point;
+        /**
+         * 地形块偏移
+         */
+        u_tileOffset: Vector3D[];
+        /**
+         * 最大lod
+         */
+        u_maxLod: number;
+        /**
+         * uv与坐标比
+         */
+        u_uvPositionScale: number;
+        /**
+         * lod0时在贴图中的uv缩放偏移向量
+         */
+        u_lod0vec: Vector3D;
+        /******************************************************/
+        /******************************************************/
+        /**
+         * 点光源位置数组
+         */
+        u_pointLightPositions: Vector3D[];
+        /**
+         * 点光源颜色数组
+         */
+        u_pointLightColors: Vector3D[];
+        /**
+         * 点光源光照强度数组
+         */
+        u_pointLightIntensitys: number[];
+        /**
+         * 点光源光照范围数组
+         */
+        u_pointLightRanges: number[];
+        /******************************************************/
+        /******************************************************/
+        /**
+         * 方向光源方向数组
+         */
+        u_directionalLightDirections: Vector3D[];
+        /**
+         * 方向光源颜色数组
+         */
+        u_directionalLightColors: Vector3D[];
+        /**
+         * 方向光源光照强度数组
+         */
+        u_directionalLightIntensitys: number[];
+        /**
+         * 场景环境光
+         */
+        u_sceneAmbientColor: Color;
+        /**
+         * 基本颜色
+         */
+        u_diffuse: Color;
+        /**
+         * 镜面反射颜色
+         */
+        u_specular: Color;
+        /**
+         * 环境颜色
+         */
+        u_ambient: Color;
+        /**
+         * 高光系数
+         */
+        u_glossiness: number;
+        /**
+         * 反射率
+         */
+        u_reflectance: number;
+        /**
+         * 粗糙度
+         */
+        u_roughness: number;
+        /**
+         * 金属度
+         */
+        u_metalic: number;
+        /**
+         * 粒子时间
+         */
+        u_particleTime: number;
+        /**
+         * 点大小
+         */
+        u_PointSize: number;
+        /**
+         * 骨骼全局矩阵
+         */
+        u_skeletonGlobalMatriices: Matrix3D[];
+        /**
+         * 3D对象编号
+         */
+        u_objectID: number;
+        /**
+         * 雾颜色
+         */
+        u_fogColor: Color;
+        /**
+         * 雾最近距离
+         */
+        u_fogMinDistance: number;
+        /**
+         * 雾最远距离
+         */
+        u_fogMaxDistance: number;
+        /**
+         * 雾浓度
+         */
+        u_fogDensity: number;
+        /**
+         * 雾模式
+         */
+        u_fogMode: number;
+        /**
+         * 环境反射纹理
+         */
+        s_envMap: TextureCube;
+        /**
+         * 反射率
+         */
+        u_reflectivity: number;
+        /**
+         * 单位深度映射到屏幕像素值
+         */
+        u_scaleByDepth: number;
+        /**
+         * 激活常量
+         */
+        activeUniforms(gl: GL, uniformInfos: WebGLActiveInfo[]): void;
+        /**
+         * 设置环境Uniform数据
+         */
+        private setContext3DUniform(gl, activeInfo, data);
+    }
+}
+declare module feng3d {
+    class ShaderRenderData {
+        uuid: string;
+        version: number;
+        private _invalid;
+        private _resultVertexCode;
+        private _resultFragmentCode;
+        /**
+         * 顶点渲染程序代码
+         */
+        vertexCode: string;
+        private _vertexCode;
+        /**
+         * 片段渲染程序代码
+         */
+        fragmentCode: string;
+        private _fragmentCode;
+        /**
+         * 渲染参数
+         */
+        shaderParams: ShaderParams;
+        /**
+         * 着色器宏定义
+         */
+        shaderMacro: ShaderMacro;
+        constructor();
+        /**
+         * 激活渲染程序
+         */
+        activeShaderProgram(gl: GL): WebGLProgram;
+        private update();
+        invalidate(): void;
+    }
+}
+declare module feng3d {
     /**
      * 渲染参数
      * @author feng 2016-12-14
@@ -2629,6 +3575,10 @@ declare module feng3d {
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
         /**
+         * 更新渲染数据
+         */
+        updateRenderShader(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
          * 添加组件到指定位置
          * @param component		被添加的组件
          * @param index			插入的位置
@@ -2640,6 +3590,7 @@ declare module feng3d {
          */
         removeComponentAt(index: number): Component;
         protected invalidateRenderData(): void;
+        protected invalidateShader(): void;
         protected invalidateRenderHolder(): void;
     }
     interface IRenderDataHolder {
@@ -2664,37 +3615,23 @@ declare module feng3d {
          */
         indexBuffer: IndexRenderData;
         /**
-         * 顶点渲染程序代码
+         * 渲染程序
          */
-        vertexCode: string;
-        /**
-         * 片段渲染程序代码
-         */
-        fragmentCode: string;
+        shader: ShaderRenderData;
         /**
          * 属性数据列表
          */
-        attributes: {
-            [name: string]: AttributeRenderData;
-        };
+        attributes: AttributeRenderDataStuct;
         /**
-         * 常量数据（包含纹理）列表
+         * Uniform渲染数据
          */
-        uniforms: {
-            [name: string]: number | number[] | Matrix3D | Vector3D | TextureInfo | Vector3D[] | Matrix3D[];
-        };
-        /**
-         * 渲染参数
-         */
-        shaderParams: ShaderParams;
-        /**
-         * 着色器宏定义
-         */
-        shaderMacro: ShaderMacro;
+        uniforms: UniformRenderData;
         /**
          * 渲染实例数量
          */
         instanceCount: number;
+        constructor();
+        invalidateShader(): void;
     }
     class Object3DRenderAtomic extends RenderAtomic {
         /**
@@ -2705,11 +3642,18 @@ declare module feng3d {
          * 渲染拥有者失效，需要重新收集渲染数据拥有者
          */
         static INVALIDATE_RENDERHOLDER: string;
+        /**
+         * shader失效，需要重新收集shader数据
+         */
+        static INVALIDATE_SHADER: string;
         private _invalidateRenderDataHolderList;
+        private _invalidateShaderList;
         renderHolderInvalid: boolean;
-        private invalidate(event);
-        private invalidateRenderHolder();
+        private onInvalidate(event);
+        private onInvalidateShader(event);
+        private onInvalidateRenderHolder();
         private addInvalidateHolders(renderDataHolder);
+        private addInvalidateShader(renderDataHolder);
         private renderDataHolders;
         private updateEverytimeList;
         addRenderDataHolder(renderDataHolder: RenderDataHolder): void;
@@ -2727,6 +3671,7 @@ declare module feng3d {
          * 索引数据
          */
         indices: Uint16Array;
+        private _indices;
         /**
          * 渲染数量
          */
@@ -2772,9 +3717,52 @@ declare module feng3d {
     }
 }
 declare module feng3d {
+    class AttributeRenderDataStuct {
+        /**
+         * 坐标
+         */
+        a_position: AttributeRenderData;
+        /**
+         * 颜色
+         */
+        a_color: AttributeRenderData;
+        /**
+         * 法线
+         */
+        a_normal: AttributeRenderData;
+        /**
+         * 切线
+         */
+        a_tangent: AttributeRenderData;
+        /**
+         * uv（纹理坐标）
+         */
+        a_uv: AttributeRenderData;
+        /**
+         * 关节索引
+         */
+        a_jointindex0: AttributeRenderData;
+        /**
+         * 关节权重
+         */
+        a_jointweight0: AttributeRenderData;
+        /**
+         * 关节索引
+         */
+        a_jointindex1: AttributeRenderData;
+        /**
+         * 关节权重
+         */
+        a_jointweight1: AttributeRenderData;
+        /**
+         * 激活属性
+         */
+        activeAttributes(gl: GL, attributeInfos: WebGLActiveInfo[]): void;
+    }
     /**
      * 属性渲染数据
      * @author feng 2014-8-14
+     * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer}
      */
     class AttributeRenderData {
         /**
@@ -2783,12 +3771,43 @@ declare module feng3d {
         data: Float32Array;
         private _data;
         /**
-         * 数据步长
+         * 数据尺寸
+         *
+         * A GLint specifying the number of components per vertex attribute. Must be 1, 2, 3, or 4.
+         */
+        size: number;
+        private _size;
+        /**
+         *  A GLenum specifying the data type of each component in the array. Possible values:
+                - gl.BYTE: signed 8-bit integer, with values in [-128, 127]
+                - gl.SHORT: signed 16-bit integer, with values in [-32768, 32767]
+                - gl.UNSIGNED_BYTE: unsigned 8-bit integer, with values in [0, 255]
+                - gl.UNSIGNED_SHORT: unsigned 16-bit integer, with values in [0, 65535]
+                - gl.FLOAT: 32-bit floating point number
+            When using a WebGL 2 context, the following values are available additionally:
+               - gl.HALF_FLOAT: 16-bit floating point number
+         */
+        type: number;
+        /**
+         * A GLboolean specifying whether integer data values should be normalized when being casted to a float.
+              -  If true, signed integers are normalized to [-1, 1].
+              -  If true, unsigned integers are normalized to [0, 1].
+              -  For types gl.FLOAT and gl.HALF_FLOAT, this parameter has no effect.
+         */
+        normalized: boolean;
+        /**
+         * A GLsizei specifying the offset in bytes between the beginning of consecutive vertex attributes. Cannot be larger than 255.
          */
         stride: number;
-        private _stride;
+        /**
+         * A GLintptr specifying an offset in bytes of the first component in the vertex attribute array. Must be a multiple of type.
+         */
+        offset: number;
         /**
          * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
+         *
+         * A GLuint specifying the number of instances that will pass between updates of the generic attribute.
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/ANGLE_instanced_arrays/vertexAttribDivisorANGLE
          */
         divisor: number;
         _divisor: number;
@@ -2805,6 +3824,11 @@ declare module feng3d {
          * 使数据缓冲失效
          */
         invalidate(): void;
+        /**
+         *
+         * @param gl
+         * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
+         */
         active(gl: GL, location: number): void;
         /**
          * 获取缓冲
@@ -2818,50 +3842,6 @@ declare module feng3d {
          * 克隆
          */
         clone(): this;
-    }
-}
-declare module feng3d {
-    /**
-     * 对象池
-     * @author feng 2016-04-26
-     */
-    class RenderBufferPool {
-        /**
-         * @param gl     3D环境
-         */
-        private getContext3DBufferPool(gl);
-        /**
-         * 获取渲染程序
-         * @param gl     3D环境
-         * @param vertexCode    顶点着色器代码
-         * @param fragmentCode  片段着色器代码
-         * @return  渲染程序
-         */
-        getWebGLProgram(gl: GL, vertexCode: string, fragmentCode: string): WebGLProgram;
-        /**
-         * 3D环境缓冲池
-         */
-        private context3DBufferPools;
-    }
-}
-declare module feng3d {
-    /**
-     * 渲染数据工具
-     * @author feng 2016-05-02
-     */
-    class RenderDataUtil {
-        /**
-         * 激活渲染数据
-         * @param renderAtomic  渲染原子
-         * @param renderData    包含渲染数据的对象
-         */
-        static active(renderAtomic: RenderAtomic, renderData: RenderAtomic): void;
-        /**
-         * 释放渲染数据
-         * @param renderAtomic  渲染原子
-         * @param renderData    包含渲染数据的对象
-         */
-        static deactivate(renderAtomic: RenderAtomic, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -2905,163 +3885,6 @@ declare module feng3d {
          * 关节权重
          */
         static a_jointweight1: string;
-    }
-}
-declare module feng3d {
-    /**
-     * 渲染数据编号
-     * @author feng 2016-06-20
-     */
-    class RenderDataID {
-        /**
-         * 顶点索引
-         */
-        static index: string;
-        /**
-         * 模型矩阵
-         */
-        static u_modelMatrix: string;
-        /**
-         * 世界投影矩阵
-         */
-        static u_viewProjection: string;
-        static u_diffuseInput: string;
-        /**
-         * 透明阈值，用于透明检测
-         */
-        static u_alphaThreshold: string;
-        /**
-         * 漫反射贴图
-         */
-        static s_texture: string;
-        /**
-         * 漫反射贴图
-         */
-        static s_diffuse: string;
-        /**
-         * 环境贴图
-         */
-        static s_ambient: string;
-        /**
-         * 法线贴图
-         */
-        static s_normal: string;
-        /**
-         * 镜面反射光泽图
-         */
-        static s_specular: string;
-        /**
-         * 天空盒纹理
-         */
-        static s_skyboxTexture: string;
-        /**
-         * 摄像机矩阵
-         */
-        static u_cameraMatrix: string;
-        /**
-         * 天空盒尺寸
-         */
-        static u_skyBoxSize: string;
-        /**
-         * 地形混合贴图
-         */
-        static s_blendTexture: string;
-        /**
-         * 地形块贴图1
-         */
-        static s_splatTexture1: string;
-        /**
-         * 地形块贴图2
-         */
-        static s_splatTexture2: string;
-        /**
-         * 地形块贴图3
-         */
-        static s_splatTexture3: string;
-        /**
-         * 地形块重复次数
-         */
-        static u_splatRepeats: string;
-        /******************************************************/
-        /******************************************************/
-        /**
-         * 点光源位置数组
-         */
-        static u_pointLightPositions: string;
-        /**
-         * 点光源颜色数组
-         */
-        static u_pointLightColors: string;
-        /**
-         * 点光源光照强度数组
-         */
-        static u_pointLightIntensitys: string;
-        /**
-         * 点光源光照范围数组
-         */
-        static u_pointLightRanges: string;
-        /******************************************************/
-        /******************************************************/
-        /**
-         * 方向光源方向数组
-         */
-        static u_directionalLightDirections: string;
-        /**
-         * 方向光源颜色数组
-         */
-        static u_directionalLightColors: string;
-        /**
-         * 方向光源光照强度数组
-         */
-        static u_directionalLightIntensitys: string;
-        /**
-         * 场景环境光
-         */
-        static u_sceneAmbientColor: string;
-        /**
-         * 基本颜色
-         */
-        static u_diffuse: string;
-        /**
-         * 镜面反射颜色
-         */
-        static u_specular: string;
-        /**
-         * 环境颜色
-         */
-        static u_ambient: string;
-        /**
-         * 高光系数
-         */
-        static u_glossiness: string;
-        /**
-         * 反射率
-         */
-        static u_reflectance: string;
-        /**
-         * 粗糙度
-         */
-        static u_roughness: string;
-        /**
-         * 金属度
-         */
-        static u_metalic: string;
-        /**
-         * 粒子时间
-         */
-        static u_particleTime: string;
-        /**
-         * 点大小
-         */
-        static u_PointSize: string;
-        /**
-         * 骨骼全局矩阵
-         */
-        static u_skeletonGlobalMatriices: string;
-        /**
-         * 3D对象编号
-         */
-        static u_objectID: string;
     }
 }
 declare module feng3d {
@@ -3158,6 +3981,30 @@ declare module feng3d {
          * 是否有骨骼动画
          */
         HAS_SKELETON_ANIMATION: boolean;
+        /**
+         * 是否有粒子动画
+         */
+        HAS_PARTICLE_ANIMATOR: boolean;
+        /**
+         * 是否为点渲染模式
+         */
+        IS_POINTS_MODE: boolean;
+        /**
+         * 是否有地形方法
+         */
+        HAS_TERRAIN_METHOD: boolean;
+        /**
+         * 使用合并地形贴图
+         */
+        USE_TERRAIN_MERGE: boolean;
+        /**
+         * 雾函数
+         */
+        HAS_FOG_METHOD: boolean;
+        /**
+         * 环境映射函数
+         */
+        HAS_ENV_METHOD: boolean;
     }
     /**
      * 递增类型宏
@@ -3239,11 +4086,7 @@ declare module feng3d {
         /**
          * 绘制3D对象
          */
-        protected drawObject3D(gl: GL, renderAtomic: RenderAtomic): void;
-        /**
-         * 激活渲染程序
-         */
-        protected activeShaderProgram(gl: GL, vertexCode: string, fragmentCode: string, shaderMacro: ShaderMacro): WebGLProgram;
+        protected drawObject3D(gl: GL, renderAtomic: RenderAtomic, shader?: ShaderRenderData): void;
     }
 }
 declare module feng3d {
@@ -3286,9 +4129,9 @@ declare module feng3d {
         draw(renderContext: RenderContext): void;
         protected drawRenderables(renderContext: RenderContext, meshRenderer: Model): void;
         /**
-         * 激活渲染程序
+         * 绘制3D对象
          */
-        protected activeShaderProgram(gl: GL, vertexCode: string, fragmentCode: string, shaderMacro: ShaderMacro): WebGLProgram;
+        protected drawObject3D(gl: GL, renderAtomic: RenderAtomic, shader?: ShaderRenderData): void;
     }
 }
 declare module feng3d {
@@ -3390,6 +4233,8 @@ declare module feng3d {
         pivotPoint: Vector3D;
         getPosition(position?: Vector3D): Vector3D;
         setPosition(x?: number, y?: number, z?: number): void;
+        position: Vector3D;
+        private _position;
         getRotation(rotation?: Vector3D): Vector3D;
         setRotation(x?: number, y?: number, z?: number): void;
         getScale(scale?: Vector3D): Vector3D;
@@ -3594,6 +4439,7 @@ declare module feng3d {
      * @author feng 2016-04-26
      */
     class GameObject extends Entity {
+        uniformData: UniformRenderData;
         readonly renderData: Object3DRenderAtomic;
         private _renderData;
         /**
@@ -3619,10 +4465,6 @@ declare module feng3d {
          * 构建3D对象
          */
         constructor(name?: string);
-        /**
-         * 更新渲染数据
-         */
-        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
         /**
          * @inheritDoc
          */
@@ -3669,12 +4511,21 @@ declare module feng3d {
          */
         private _renderContext;
         /**
+         * 鼠标在3D视图中的位置
+         */
+        mousePos: Point;
+        /**
+         * 是否自动渲染
+         */
+        autoRender: boolean;
+        private _autoRender;
+        /**
          * 构建3D视图
          * @param canvas    画布
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas: any, scene?: Scene3D, camera?: CameraObject3D);
+        constructor(canvas: any, scene?: Scene3D, camera?: CameraObject3D, autoRender?: boolean);
         /**
          * 初始化GL
          */
@@ -3682,17 +4533,21 @@ declare module feng3d {
         /** 3d场景 */
         scene: Scene3D;
         /**
+         * 视窗宽度
+         */
+        readonly width: number;
+        /**
          * 绘制场景
          */
-        private drawScene(event);
+        render(): void;
         /**
          * 摄像机
          */
         camera: CameraObject3D;
         /**
-         * 鼠标在3D视图中的位置
+         * 监听鼠标事件收集事件类型
          */
-        readonly mousePos: Point;
+        private onMouseEvent(event);
         /**
          * 获取鼠标射线（与鼠标重叠的摄像机射线）
          */
@@ -3703,7 +4558,7 @@ declare module feng3d {
          * @param y view3D上的X坐标
          * @return
          */
-        getRay3D(x: number, y: number): Ray3D;
+        getRay3D(x: number, y: number, ray3D?: Ray3D): Ray3D;
         /**
          * 投影坐标（世界坐标转换为3D视图坐标）
          * @param point3d 世界坐标
@@ -3741,7 +4596,7 @@ declare module feng3d {
         /**
          * 父组件,所属3d对象
          */
-        parentComponent: GameObject;
+        gameObject: GameObject;
         /**
          * 构建3D对象组件
          */
@@ -3927,12 +4782,25 @@ declare module feng3d {
          */
         private _attributes;
         private _geometryInvalid;
+        private _useFaceWeights;
         private _scaleU;
         private _scaleV;
         /**
          * 坐标数据
          */
         positions: Float32Array;
+        /**
+         * uv数据
+         */
+        uvs: Float32Array;
+        /**
+         * 法线数据
+         */
+        normals: Float32Array;
+        /**
+         * 切线数据
+         */
+        tangents: Float32Array;
         /**
          * 创建一个几何体
          */
@@ -3954,6 +4822,10 @@ declare module feng3d {
          */
         protected buildGeometry(): void;
         /**
+         * 索引数据
+         */
+        readonly indices: Uint16Array;
+        /**
          * 更新顶点索引数据
          */
         setIndices(indices: Uint16Array): void;
@@ -3974,6 +4846,12 @@ declare module feng3d {
          * @return 顶点属性数据
          */
         getVAData(vaId: string): AttributeRenderData;
+        /**
+         * 获取顶点属性数据
+         * @param vaId 数据类型编号
+         * @return 顶点属性数据
+         */
+        getVAData1(vaId: string): Float32Array;
         /**
          * 顶点数量
          */
@@ -4007,6 +4885,14 @@ declare module feng3d {
          * 包围盒失效
          */
         invalidateBounds(): void;
+        /**
+         * 创建顶点法线
+         */
+        createVertexNormals(): void;
+        /**
+         * 创建顶点切线
+         */
+        createVertexTangents(): void;
         /**
          * 克隆一个几何体
          */
@@ -4051,13 +4937,13 @@ declare module feng3d {
 }
 declare module feng3d {
     class GeometryUtils {
-        static createFaceNormals(_indices: number[], vertices: number[], _useFaceWeights?: boolean): {
+        static createFaceNormals(indices: number[] | Uint16Array, positions: number[] | Float32Array, useFaceWeights?: boolean): {
             faceNormals: number[];
             faceWeights: number[];
         };
-        static createVertexNormals(_indices: number[], vertices: number[], _useFaceWeights?: boolean): number[];
-        static createVertexTangents(_indices: number[], vertices: Array<number>, uvs: Array<number>, _useFaceWeights?: boolean): Array<number>;
-        protected static createFaceTangents(_indices: number[], vertices: Array<number>, uvs: Array<number>, _useFaceWeights?: boolean): {
+        static createVertexNormals(_indices: number[] | Uint16Array, positions: number[] | Float32Array, useFaceWeights?: boolean): number[];
+        static createVertexTangents(indices: number[] | Uint16Array, positions: number[] | Float32Array, uvs: number[] | Float32Array, _useFaceWeights?: boolean): Array<number>;
+        protected static createFaceTangents(indices: number[] | Uint16Array, positions: number[] | Float32Array, uvs: number[] | Float32Array, useFaceWeights?: boolean): {
             faceTangents: number[];
             faceWeights: number[];
         };
@@ -4105,15 +4991,13 @@ declare module feng3d {
      */
     class PointInfo {
         position: Vector3D;
+        normal: Vector3D;
+        uv: Point;
         /**
          * 创建点
          * @param position 坐标
          */
-        constructor(position: Vector3D);
-        /**
-         * 坐标
-         */
-        readonly positionData: number[];
+        constructor(position?: Vector3D, uv?: Point, normal?: Vector3D);
     }
 }
 declare module feng3d {
@@ -4568,10 +5452,15 @@ declare module feng3d {
      */
     class PlaneGeometry extends Geometry {
         width: number;
+        private _width;
         height: number;
+        private _height;
         segmentsW: number;
+        private _segmentsW;
         segmentsH: number;
+        private _segmentsH;
         yUp: boolean;
+        private _yUp;
         /**
          * 创建平面几何体
          * @param width 宽度
@@ -4630,12 +5519,19 @@ declare module feng3d {
      */
     class CubeGeometry extends Geometry {
         width: number;
+        private _width;
         height: number;
+        private _height;
         depth: number;
+        private _depth;
         segmentsW: number;
+        private _segmentsW;
         segmentsH: number;
+        private _segmentsH;
         segmentsD: number;
+        private _segmentsD;
         tile6: boolean;
+        private _tile6;
         /**
          * 创建立方几何体
          * @param   width           宽度，默认为100。
@@ -4696,9 +5592,13 @@ declare module feng3d {
      */
     class SphereGeometry extends Geometry {
         radius: number;
+        private _radius;
         segmentsW: number;
+        private _segmentsW;
         segmentsH: number;
+        private _segmentsH;
         yUp: boolean;
+        private _yUp;
         /**
          * 创建球形几何体
          * @param radius 球体半径
@@ -4737,10 +5637,15 @@ declare module feng3d {
      */
     class CapsuleGeometry extends Geometry {
         radius: number;
+        private _radius;
         height: number;
+        private _height;
         segmentsW: number;
+        private _segmentsW;
         segmentsH: number;
+        private _segmentsH;
         yUp: boolean;
+        private _yUp;
         /**
          * 创建胶囊几何体
          * @param radius 胶囊体半径
@@ -4781,14 +5686,23 @@ declare module feng3d {
      */
     class CylinderGeometry extends Geometry {
         topRadius: number;
+        private _topRadius;
         bottomRadius: number;
+        private _bottomRadius;
         height: number;
+        private _height;
         segmentsW: number;
+        private _segmentsW;
         segmentsH: number;
+        private _segmentsH;
         topClosed: boolean;
+        private _topClosed;
         bottomClosed: boolean;
+        private _bottomClosed;
         surfaceClosed: boolean;
+        private _surfaceClosed;
         yUp: boolean;
+        private _yUp;
         /**
          * 创建圆柱体
          */
@@ -4843,10 +5757,16 @@ declare module feng3d {
      */
     class TorusGeometry extends Geometry {
         radius: number;
+        private _radius;
         tubeRadius: number;
-        segmentsR: number;
+        private _tubeRadius;
+        readonly segmentsR: number;
+        segmentR: any;
+        private _segmentsR;
         segmentsT: number;
+        private _segmentsT;
         yUp: boolean;
+        private _yUp;
         /**
          * 创建<code>Torus</code>实例
          * @param radius						圆环半径
@@ -4917,6 +5837,21 @@ declare module feng3d {
         pixels: HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageData[] | HTMLVideoElement[] | HTMLImageElement[] | HTMLCanvasElement[];
         protected _pixels: ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement | ImageData[] | HTMLVideoElement[] | HTMLImageElement[] | HTMLCanvasElement[];
         /**
+         * 纹理宽度
+         */
+        width: any;
+        protected _width: number;
+        /**
+         * 纹理高度
+         */
+        height: any;
+        protected _height: number;
+        /**
+         * 纹理尺寸
+         */
+        size: Point;
+        protected _size: Point;
+        /**
          * 格式
          */
         format: number;
@@ -4958,7 +5893,7 @@ declare module feng3d {
         /**
          * 纹理缓冲
          */
-        protected _textureMap: Map<WebGLRenderingContext, WebGLTexture>;
+        protected _textureMap: Map<GL, WebGLTexture>;
         /**
          * 是否失效
          */
@@ -5045,15 +5980,23 @@ declare module feng3d {
      * @author feng 2016-05-02
      */
     class Material extends RenderDataHolder {
+        protected _pointSize: number;
         protected _enableBlend: boolean;
         /**
         * 渲染模式，默认RenderMode.TRIANGLES
         */
         renderMode: number;
+        private _renderMode;
         /**
-         * 着色器名称
+         * 顶点渲染程序代码
          */
-        protected shaderName: string;
+        vertexCode: string;
+        private _vertexCode;
+        /**
+         * 片段渲染程序代码
+         */
+        fragmentCode: string;
+        private _fragmentCode;
         /**
          * 是否渲染双面
          */
@@ -5063,6 +6006,10 @@ declare module feng3d {
          * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
          */
         enableBlend: boolean;
+        /**
+         * 点绘制时点的尺寸
+         */
+        pointSize: number;
         /**
          * 混合方程，默认BlendEquation.FUNC_ADD
          */
@@ -5075,14 +6022,37 @@ declare module feng3d {
          * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
          */
         dfactor: number;
+        private _methods;
         /**
          * 构建材质
          */
         constructor();
         /**
+         * 设置渲染程序
+         * @param shaderName 渲染程序名称
+         */
+        setShader(shaderName: string): void;
+        /**
+         * 添加方法
+         */
+        addMethod(method: RenderDataHolder): void;
+        /**
+         * 删除方法
+         */
+        removeMethod(method: RenderDataHolder): void;
+        /**
+         * 收集渲染数据拥有者
+         * @param renderAtomic 渲染原子
+         */
+        collectRenderDataHolder(renderAtomic?: Object3DRenderAtomic): void;
+        /**
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderShader(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -5091,15 +6061,10 @@ declare module feng3d {
      * @author feng 2017-01-11
      */
     class PointMaterial extends Material {
-        pointSize: number;
         /**
          * 构建颜色材质
          */
         constructor();
-        /**
-         * 更新渲染数据
-         */
-        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -5112,6 +6077,7 @@ declare module feng3d {
          * 颜色
          */
         color: Color;
+        private _color;
         /**
          * 构建颜色材质
          * @param color 颜色
@@ -5167,6 +6133,7 @@ declare module feng3d {
          * 纹理数据
          */
         texture: Texture2D;
+        private _texture;
         constructor();
         /**
          * 更新渲染数据
@@ -5180,8 +6147,9 @@ declare module feng3d {
      * @author feng 2016-12-20
      */
     class SkyBoxMaterial extends Material {
-        skyBoxTextureCube: TextureCube;
-        constructor(images: string[]);
+        texture: TextureCube;
+        private _texture;
+        constructor(images?: string[]);
         /**
          * 更新渲染数据
          */
@@ -5198,18 +6166,27 @@ declare module feng3d {
          * 漫反射函数
          */
         diffuseMethod: DiffuseMethod;
+        private _diffuseMethod;
         /**
          * 法线函数
          */
         normalMethod: NormalMethod;
+        private _normalMethod;
         /**
          * 镜面反射函数
          */
         specularMethod: SpecularMethod;
+        private _specularMethod;
         /**
          * 环境反射函数
          */
         ambientMethod: AmbientMethod;
+        private _ambientMethod;
+        /**
+         * 地形函数
+         */
+        terrainMethod: RenderDataHolder;
+        private _terrainMethod;
         /**
          * 是否开启混合
          */
@@ -5217,20 +6194,11 @@ declare module feng3d {
         /**
          * 构建
          */
-        constructor();
+        constructor(diffuseUrl?: string, normalUrl?: string, specularUrl?: string, ambientUrl?: string);
         /**
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
-    }
-}
-declare module feng3d {
-    /**
-     * 粒子材质（为了使用独立的着色器，暂时设置粒子材质）
-     * @author feng 2017-01-09
-     */
-    class ParticleMaterial extends Material {
-        constructor();
     }
 }
 declare module feng3d {
@@ -5243,22 +6211,30 @@ declare module feng3d {
          * 漫反射纹理
          */
         difuseTexture: Texture2D;
+        private _difuseTexture;
         /**
          * 基本颜色
          */
         color: Color;
+        private _color;
         /**
          * 透明阈值，透明度小于该值的像素被片段着色器丢弃
          */
         alphaThreshold: number;
+        private _alphaThreshold;
         /**
          * 构建
          */
-        constructor();
+        constructor(diffuseUrl?: string);
+        private onLoaded();
         /**
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderShader(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -5271,14 +6247,23 @@ declare module feng3d {
          * 漫反射纹理
          */
         normalTexture: Texture2D;
+        private _normalTexture;
         /**
          * 构建
          */
-        constructor();
+        constructor(normalUrl?: string);
+        /**
+         * 加载完成
+         */
+        private onLoaded();
         /**
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderShader(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -5291,10 +6276,15 @@ declare module feng3d {
          * 镜面反射光泽图
          */
         specularTexture: Texture2D;
+        private _specularTexture;
         /**
          * 镜面反射颜色
          */
         specularColor: Color;
+        /**
+         * 镜面反射光反射强度
+         */
+        specular: number;
         /**
          * 高光系数
          */
@@ -5302,11 +6292,16 @@ declare module feng3d {
         /**
          * 构建
          */
-        constructor();
+        constructor(specularUrl?: string);
+        private onLoaded();
         /**
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderShader(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -5319,18 +6314,105 @@ declare module feng3d {
          * 环境纹理
          */
         ambientTexture: Texture2D;
+        private _ambientTexture;
         /**
          * 颜色
          */
         color: Color;
+        private _color;
         /**
          * 构建
          */
-        constructor();
+        constructor(ambientUrl?: string, color?: Color);
         /**
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderShader(renderContext: RenderContext, renderData: RenderAtomic): void;
+    }
+}
+declare module feng3d {
+    class FogMethod extends RenderDataHolder {
+        /**
+         * 出现雾效果的最近距离
+         */
+        minDistance: number;
+        private _minDistance;
+        /**
+         * 最远距离
+         */
+        maxDistance: number;
+        private _maxDistance;
+        /**
+         * 雾的颜色
+         */
+        fogColor: Color;
+        private _fogColor;
+        density: number;
+        private _density;
+        /**
+         * 雾模式
+         */
+        mode: FogMode;
+        private _mode;
+        /**
+         * @param fogColor      雾颜色
+         * @param minDistance   雾近距离
+         * @param maxDistance   雾远距离
+         * @param density       雾浓度
+         */
+        constructor(fogColor?: Color, minDistance?: number, maxDistance?: number, density?: number, mode?: FogMode);
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderShader(renderContext: RenderContext, renderData: RenderAtomic): void;
+    }
+    /**
+     * 雾模式
+     */
+    enum FogMode {
+        NONE = 0,
+        EXP = 1,
+        EXP2 = 2,
+        LINEAR = 3,
+    }
+}
+declare module feng3d {
+    /**
+     * 环境映射函数
+     */
+    class EnvMapMethod extends RenderDataHolder {
+        private _cubeTexture;
+        private _reflectivity;
+        /**
+         * 创建EnvMapMethod实例
+         * @param envMap		        环境映射贴图
+         * @param reflectivity			反射率
+         */
+        constructor(envMap: TextureCube, reflectivity?: number);
+        /**
+         * 环境映射贴图
+         */
+        envMap: TextureCube;
+        /**
+         * 反射率
+         */
+        reflectivity: number;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderShader(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -5371,6 +6453,10 @@ declare module feng3d {
          * 光照强度
          */
         intensity: number;
+        /**
+         * 是否生成阴影（未实现）
+         */
+        castsShadows: boolean;
         private _shadowMap;
         readonly shadowMap: Texture2D;
         constructor();
@@ -5382,14 +6468,26 @@ declare module feng3d {
      * @author feng 2016-12-13
      */
     class DirectionalLight extends Light {
-        /**
-         * 光照方向
-         */
-        readonly direction: Vector3D;
+        private _direction;
+        private _sceneDirection;
         /**
          * 构建
          */
-        constructor();
+        constructor(xDir?: number, yDir?: number, zDir?: number);
+        readonly sceneDirection: Vector3D;
+        /**
+         * 光照方向
+         */
+        direction: Vector3D;
+        /**
+         * 处理被添加组件事件
+         */
+        protected onBeAddedComponent(event: ComponentEvent): void;
+        /**
+         * 处理被移除组件事件
+         */
+        protected onBeRemovedComponent(event: ComponentEvent): void;
+        protected onScenetransformChanged(): void;
     }
 }
 declare module feng3d {
@@ -5417,29 +6515,57 @@ declare module feng3d {
         /**
          * 控制对象
          */
-        protected _target: GameObject;
+        protected _targetObject: GameObject;
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(target: GameObject);
+        constructor(targetObject: GameObject);
         /**
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        target: GameObject;
+        targetObject: GameObject;
     }
 }
 declare module feng3d {
     class LookAtController extends ControllerBase {
         protected _lookAtPosition: Vector3D;
-        protected _lookAtObject: Object3D;
+        protected _lookAtObject: GameObject;
         protected _origin: Vector3D;
         protected _upAxis: Vector3D;
-        private _pos;
-        constructor(target?: GameObject, lookAtObject?: Object3D);
+        protected _pos: Vector3D;
+        constructor(target?: GameObject, lookAtObject?: GameObject);
         upAxis: Vector3D;
         lookAtPosition: Vector3D;
-        lookAtObject: Object3D;
+        lookAtObject: GameObject;
+        update(interpolate?: boolean): void;
+    }
+}
+declare module feng3d {
+    class HoverController extends LookAtController {
+        _currentPanAngle: number;
+        _currentTiltAngle: number;
+        private _panAngle;
+        private _tiltAngle;
+        private _distance;
+        private _minPanAngle;
+        private _maxPanAngle;
+        private _minTiltAngle;
+        private _maxTiltAngle;
+        private _steps;
+        private _yFactor;
+        private _wrapPanAngle;
+        steps: number;
+        panAngle: number;
+        tiltAngle: number;
+        distance: number;
+        minPanAngle: number;
+        maxPanAngle: number;
+        minTiltAngle: number;
+        maxTiltAngle: number;
+        yFactor: number;
+        wrapPanAngle: boolean;
+        constructor(targetObject?: GameObject, lookAtObject?: GameObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
         update(interpolate?: boolean): void;
     }
 }
@@ -5470,7 +6596,7 @@ declare module feng3d {
          */
         private preMousePoint;
         constructor(transform?: GameObject);
-        target: GameObject;
+        targetObject: GameObject;
         private onMousedown();
         private onMouseup();
         private onEnterFrame();
@@ -5646,12 +6772,19 @@ declare module feng3d {
     class TerrainGeometry extends Geometry {
         heightMapUrl: string;
         width: number;
+        private _width;
         height: number;
+        private _height;
         depth: number;
+        private _depth;
         segmentsW: number;
+        private _segmentsW;
         segmentsH: number;
+        private _segmentsH;
         maxElevation: number;
+        private _maxElevation;
         minElevation: number;
+        private _minElevation;
         private _heightMap;
         private _heightImage;
         /**
@@ -5696,21 +6829,59 @@ declare module feng3d {
      * 地形材质
      * @author feng 2016-04-28
      */
-    class TerrainMaterial extends Material {
-        diffuseTexture: Texture2D;
+    class TerrainMethod extends RenderDataHolder {
         splatTexture1: Texture2D;
+        private _splatTexture1;
         splatTexture2: Texture2D;
+        private _splatTexture2;
         splatTexture3: Texture2D;
+        private _splatTexture3;
         blendTexture: Texture2D;
+        private _blendTexture;
         splatRepeats: Vector3D;
+        private _splatRepeats;
         /**
          * 构建材质
          */
-        constructor();
+        constructor(blendUrl?: string, splatUrls?: string[], splatRepeats?: Vector3D);
+        private onSplatTextureLoaded();
+        private onBlendTextureLoaded();
         /**
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderShader(renderContext: RenderContext, renderData: RenderAtomic): void;
+    }
+}
+declare module feng3d {
+    /**
+     * 地形材质
+     * @author feng 2016-04-28
+     */
+    class TerrainMergeMethod extends RenderDataHolder {
+        splatMergeTexture: Texture2D;
+        private _splatMergeTexture;
+        blendTexture: Texture2D;
+        private _blendTexture;
+        splatRepeats: Vector3D;
+        private _splatRepeats;
+        /**
+         * 构建材质
+         */
+        constructor(blendUrl?: string, splatMergeUrl?: string, splatRepeats?: Vector3D);
+        private onSplatTextureLoaded();
+        private onBlendTextureLoaded();
+        /**
+         * 更新渲染数据
+         */
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderShader(renderContext: RenderContext, renderData: RenderAtomic): void;
     }
 }
 declare module feng3d {
@@ -5879,6 +7050,10 @@ declare module feng3d {
          * 加速度
          */
         acceleration: Vector3D;
+        /**
+         * 公告牌矩阵
+         */
+        billboardMatrix: Matrix3D;
     }
 }
 declare module feng3d {
@@ -5966,6 +7141,7 @@ declare module feng3d {
          * @param particle                  粒子
          */
         generateParticle(particle: Particle): void;
+        setRenderState(particleGlobal: ParticleGlobal, gameObject: GameObject, renderContext: RenderContext): void;
     }
 }
 declare module feng3d {
@@ -6037,6 +7213,23 @@ declare module feng3d {
          * @param particle                  粒子
          */
         generateParticle(particle: Particle): void;
+    }
+}
+declare module feng3d {
+    class ParticleBillboard extends ParticleComponent {
+        private _matrix;
+        /** 广告牌轴线 */
+        private _billboardAxis;
+        /**
+         * 创建一个广告牌节点
+         * @param billboardAxis
+         */
+        constructor(billboardAxis?: Vector3D);
+        setRenderState(particleGlobal: ParticleGlobal, gameObject: GameObject, renderContext: RenderContext): void;
+        /**
+         * 广告牌轴线
+         */
+        billboardAxis: Vector3D;
     }
 }
 declare module feng3d {
@@ -6281,6 +7474,7 @@ declare module feng3d {
          * 骨骼
          */
         skeleton: Skeleton;
+        private _skeleton;
         private _globalMatrices;
         private _globalPropertiesDirty;
         private _activeSkeletonState;
@@ -6302,6 +7496,10 @@ declare module feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        /**
+         * 更新渲染数据
+         */
+        updateRenderShader(renderContext: RenderContext, renderData: RenderAtomic): void;
         /**
          * @inheritDoc
          */
@@ -6494,6 +7692,8 @@ declare module feng3d {
         uvIndices?: number[];
         /** 法线索引 */
         normalIndices?: number[];
+        /** 索引数据 */
+        indexIds: string[];
     };
     /**
      * 子对象
@@ -6512,11 +7712,23 @@ declare module feng3d {
     type OBJ_OBJ = {
         name: string;
         /** 顶点坐标 */
-        vertex: number[];
+        vertex: {
+            x: number;
+            y: number;
+            z: number;
+        }[];
         /** 顶点法线 */
-        vn: number[];
+        vn: {
+            x: number;
+            y: number;
+            z: number;
+        }[];
         /** 顶点uv */
-        vt: number[];
+        vt: {
+            u: number;
+            v: number;
+            s: number;
+        }[];
         /** 子对象 */
         subObjs: OBJ_SubOBJ[];
     };
@@ -6534,7 +7746,37 @@ declare module feng3d {
      * @author feng 2017-01-13
      */
     class OBJParser {
-        static parser(context: string): OBJ_OBJData;
+        static parser(context: string): {
+            mtl: string;
+            objs: {
+                name: string;
+                vertex: {
+                    x: number;
+                    y: number;
+                    z: number;
+                }[];
+                vn: {
+                    x: number;
+                    y: number;
+                    z: number;
+                }[];
+                vt: {
+                    u: number;
+                    v: number;
+                    s: number;
+                }[];
+                subObjs: {
+                    material?: string;
+                    g?: string;
+                    faces: {
+                        vertexIndices: number[];
+                        uvIndices?: number[];
+                        normalIndices?: number[];
+                        indexIds: string[];
+                    }[];
+                }[];
+            }[];
+        };
     }
 }
 declare module feng3d {
@@ -6556,7 +7798,18 @@ declare module feng3d {
      * @author feng 2017-01-13
      */
     class MtlParser {
-        static parser(context: string): Mtl_Mtl;
+        static parser(context: string): {
+            [name: string]: {
+                name: string;
+                ka: number[];
+                kd: number[];
+                ks: number[];
+                ns: number;
+                ni: number;
+                d: number;
+                illum: number;
+            };
+        };
     }
 }
 declare module feng3d {
@@ -6610,7 +7863,38 @@ declare module feng3d {
         meshs: MD5_Mesh[];
     };
     class MD5MeshParser {
-        static parse(context: string): MD5MeshData;
+        static parse(context: string): {
+            MD5Version: number;
+            commandline: string;
+            numJoints: number;
+            numMeshes: number;
+            joints: {
+                name: string;
+                parentIndex: number;
+                position: number[];
+                rotation: number[];
+            }[];
+            meshs: {
+                shader: string;
+                numverts: number;
+                verts: {
+                    index: number;
+                    u: number;
+                    v: number;
+                    startWeight: number;
+                    countWeight: number;
+                }[];
+                numtris: number;
+                tris: number[];
+                numweights: number;
+                weights: {
+                    index: number;
+                    joint: number;
+                    bias: number;
+                    pos: number[];
+                }[];
+            }[];
+        };
     }
 }
 declare module feng3d {
@@ -6665,7 +7949,32 @@ declare module feng3d {
         frame: MD5_Frame[];
     };
     class MD5AnimParser {
-        static parse(context: string): MD5AnimData;
+        static parse(context: string): {
+            MD5Version: number;
+            commandline: string;
+            numFrames: number;
+            numJoints: number;
+            frameRate: number;
+            numAnimatedComponents: number;
+            hierarchy: {
+                name: string;
+                parentIndex: number;
+                flags: number;
+                startIndex: number;
+            }[];
+            bounds: {
+                min: number[];
+                max: number[];
+            }[];
+            baseframe: {
+                position: number[];
+                orientation: number[];
+            }[];
+            frame: {
+                index: number;
+                components: number[];
+            }[];
+        };
     }
 }
 declare module feng3d {
@@ -6673,18 +7982,27 @@ declare module feng3d {
      * Obj模型加载类
      * @author feng 2017-01-18
      */
-    class ObjLoader extends Loader {
+    class ObjLoader {
         private _objData;
         private _mtlData;
         private _completed;
+        private _url;
+        private _material;
         /**
          * 加载资源
          * @param url   路径
          */
-        load(url: string, completed?: (object3D: GameObject) => void): void;
-        private createObj();
-        private createSubObj(obj);
-        private createMaterialObj(vertex, subObj);
+        load(url: string, material: Material, completed?: (object3D: GameObject) => void): void;
+        private onComplete(e);
+        private createObj(material);
+        private createSubObj(obj, material);
+        private _vertices;
+        private _vertexNormals;
+        private _uvs;
+        private _realIndices;
+        private _vertexIndex;
+        private createMaterialObj(obj, subObj, material);
+        private translateVertexData(face, vertexIndex, vertices, uvs, indices, normals);
     }
 }
 declare module feng3d {
@@ -6753,118 +8071,12 @@ declare module feng3d {
     }
 }
 declare module feng3d {
-    /**
-     * 平面3D对象
-     * @author feng 2017-02-06
-     */
-    class PlaneObject3D extends GameObject {
-        /**
-         * 构建3D对象
-         */
-        constructor(width?: number, name?: string);
-    }
-}
-declare module feng3d {
-    /**
-     * 立方体3D对象
-     * @author feng 2017-02-06
-     */
-    class CubeObject3D extends GameObject {
-        /**
-         * 构建3D对象
-         */
-        constructor(width?: number, name?: string);
-    }
-}
-declare module feng3d {
-    /**
-     * 圆环3D对象
-     * @author feng 2017-02-06
-     */
-    class TorusObect3D extends GameObject {
-        torusGeometry: TorusGeometry;
-        /**
-         * 构建3D对象
-         */
-        constructor(name?: string);
-    }
-}
-declare module feng3d {
-    /**
-     * 球体3D对象
-     * @author feng 2017-02-06
-     */
-    class SphereObject3D extends GameObject {
-        /**
-         * 构建3D对象
-         */
-        constructor(name?: string);
-    }
-}
-declare module feng3d {
-    /**
-     * 胶囊体3D对象
-     * @author feng 2017-02-06
-     */
-    class CapsuleObject3D extends GameObject {
-        /**
-         * 构建3D对象
-         */
-        constructor(name?: string);
-    }
-}
-declare module feng3d {
-    /**
-     * 圆柱体3D对象
-     * @author feng 2017-02-06
-     */
-    class CylinderObject3D extends GameObject {
-        /**
-         * 构建3D对象
-         */
-        constructor(name?: string, topRadius?: number, bottomRadius?: number, height?: number, segmentsW?: number, segmentsH?: number, topClosed?: boolean, bottomClosed?: boolean, surfaceClosed?: boolean, yUp?: boolean);
-    }
-}
-declare module feng3d {
-    /**
-     * 圆锥体3D对象
-     * @author feng 2017-02-06
-     */
-    class ConeObject3D extends GameObject {
-        /**
-         * 构建3D对象
-         */
-        constructor(radius?: number, height?: number, name?: string);
-    }
-}
-declare module feng3d {
-    /**
-     * 线条3D对象
-     * @author feng 2017-02-06
-     */
-    class SegmentObject3D extends GameObject {
-        constructor(name?: string);
-    }
-}
-declare module feng3d {
-    /**
-     * 天空盒3D对象
-     * @author feng 2017-02-06
-     */
-    class ParticleObject3D extends GameObject {
-        /**
-         * 构建3D对象
-         */
-        constructor(name?: string);
-    }
-}
-declare module feng3d {
-    /**
-     * 点光源3D对象
-     * @author feng 2017-03-10
-     */
-    class PointLightObject3D extends GameObject {
-        constructor(name?: string);
+    class GameObjectFactory {
+        static createCube(name?: string): GameObject;
+        static createPlane(name?: string): GameObject;
+        static createCylinder(name?: string): GameObject;
+        static createSphere(name?: string): GameObject;
+        static createCapsule(name?: string): GameObject;
     }
 }
 declare module feng3d {
@@ -6942,308 +8154,6 @@ declare module feng3d {
      * @author feng 2015-03-20
      */
     var revision: string;
-    type GL = WebGLRenderingContext;
-    var GL: {
-        new (): WebGLRenderingContext;
-        prototype: WebGLRenderingContext;
-        readonly ACTIVE_ATTRIBUTES: number;
-        readonly ACTIVE_TEXTURE: number;
-        readonly ACTIVE_UNIFORMS: number;
-        readonly ALIASED_LINE_WIDTH_RANGE: number;
-        readonly ALIASED_POINT_SIZE_RANGE: number;
-        readonly ALPHA: number;
-        readonly ALPHA_BITS: number;
-        readonly ALWAYS: number;
-        readonly ARRAY_BUFFER: number;
-        readonly ARRAY_BUFFER_BINDING: number;
-        readonly ATTACHED_SHADERS: number;
-        readonly BACK: number;
-        readonly BLEND: number;
-        readonly BLEND_COLOR: number;
-        readonly BLEND_DST_ALPHA: number;
-        readonly BLEND_DST_RGB: number;
-        readonly BLEND_EQUATION: number;
-        readonly BLEND_EQUATION_ALPHA: number;
-        readonly BLEND_EQUATION_RGB: number;
-        readonly BLEND_SRC_ALPHA: number;
-        readonly BLEND_SRC_RGB: number;
-        readonly BLUE_BITS: number;
-        readonly BOOL: number;
-        readonly BOOL_VEC2: number;
-        readonly BOOL_VEC3: number;
-        readonly BOOL_VEC4: number;
-        readonly BROWSER_DEFAULT_WEBGL: number;
-        readonly BUFFER_SIZE: number;
-        readonly BUFFER_USAGE: number;
-        readonly BYTE: number;
-        readonly CCW: number;
-        readonly CLAMP_TO_EDGE: number;
-        readonly COLOR_ATTACHMENT0: number;
-        readonly COLOR_BUFFER_BIT: number;
-        readonly COLOR_CLEAR_VALUE: number;
-        readonly COLOR_WRITEMASK: number;
-        readonly COMPILE_STATUS: number;
-        readonly COMPRESSED_TEXTURE_FORMATS: number;
-        readonly CONSTANT_ALPHA: number;
-        readonly CONSTANT_COLOR: number;
-        readonly CONTEXT_LOST_WEBGL: number;
-        readonly CULL_FACE: number;
-        readonly CULL_FACE_MODE: number;
-        readonly CURRENT_PROGRAM: number;
-        readonly CURRENT_VERTEX_ATTRIB: number;
-        readonly CW: number;
-        readonly DECR: number;
-        readonly DECR_WRAP: number;
-        readonly DELETE_STATUS: number;
-        readonly DEPTH_ATTACHMENT: number;
-        readonly DEPTH_BITS: number;
-        readonly DEPTH_BUFFER_BIT: number;
-        readonly DEPTH_CLEAR_VALUE: number;
-        readonly DEPTH_COMPONENT: number;
-        readonly DEPTH_COMPONENT16: number;
-        readonly DEPTH_FUNC: number;
-        readonly DEPTH_RANGE: number;
-        readonly DEPTH_STENCIL: number;
-        readonly DEPTH_STENCIL_ATTACHMENT: number;
-        readonly DEPTH_TEST: number;
-        readonly DEPTH_WRITEMASK: number;
-        readonly DITHER: number;
-        readonly DONT_CARE: number;
-        readonly DST_ALPHA: number;
-        readonly DST_COLOR: number;
-        readonly DYNAMIC_DRAW: number;
-        readonly ELEMENT_ARRAY_BUFFER: number;
-        readonly ELEMENT_ARRAY_BUFFER_BINDING: number;
-        readonly EQUAL: number;
-        readonly FASTEST: number;
-        readonly FLOAT: number;
-        readonly FLOAT_MAT2: number;
-        readonly FLOAT_MAT3: number;
-        readonly FLOAT_MAT4: number;
-        readonly FLOAT_VEC2: number;
-        readonly FLOAT_VEC3: number;
-        readonly FLOAT_VEC4: number;
-        readonly FRAGMENT_SHADER: number;
-        readonly FRAMEBUFFER: number;
-        readonly FRAMEBUFFER_ATTACHMENT_OBJECT_NAME: number;
-        readonly FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE: number;
-        readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE: number;
-        readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL: number;
-        readonly FRAMEBUFFER_BINDING: number;
-        readonly FRAMEBUFFER_COMPLETE: number;
-        readonly FRAMEBUFFER_INCOMPLETE_ATTACHMENT: number;
-        readonly FRAMEBUFFER_INCOMPLETE_DIMENSIONS: number;
-        readonly FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: number;
-        readonly FRAMEBUFFER_UNSUPPORTED: number;
-        readonly FRONT: number;
-        readonly FRONT_AND_BACK: number;
-        readonly FRONT_FACE: number;
-        readonly FUNC_ADD: number;
-        readonly FUNC_REVERSE_SUBTRACT: number;
-        readonly FUNC_SUBTRACT: number;
-        readonly GENERATE_MIPMAP_HINT: number;
-        readonly GEQUAL: number;
-        readonly GREATER: number;
-        readonly GREEN_BITS: number;
-        readonly HIGH_FLOAT: number;
-        readonly HIGH_INT: number;
-        readonly IMPLEMENTATION_COLOR_READ_FORMAT: number;
-        readonly IMPLEMENTATION_COLOR_READ_TYPE: number;
-        readonly INCR: number;
-        readonly INCR_WRAP: number;
-        readonly INT: number;
-        readonly INT_VEC2: number;
-        readonly INT_VEC3: number;
-        readonly INT_VEC4: number;
-        readonly INVALID_ENUM: number;
-        readonly INVALID_FRAMEBUFFER_OPERATION: number;
-        readonly INVALID_OPERATION: number;
-        readonly INVALID_VALUE: number;
-        readonly INVERT: number;
-        readonly KEEP: number;
-        readonly LEQUAL: number;
-        readonly LESS: number;
-        readonly LINEAR: number;
-        readonly LINEAR_MIPMAP_LINEAR: number;
-        readonly LINEAR_MIPMAP_NEAREST: number;
-        readonly LINES: number;
-        readonly LINE_LOOP: number;
-        readonly LINE_STRIP: number;
-        readonly LINE_WIDTH: number;
-        readonly LINK_STATUS: number;
-        readonly LOW_FLOAT: number;
-        readonly LOW_INT: number;
-        readonly LUMINANCE: number;
-        readonly LUMINANCE_ALPHA: number;
-        readonly MAX_COMBINED_TEXTURE_IMAGE_UNITS: number;
-        readonly MAX_CUBE_MAP_TEXTURE_SIZE: number;
-        readonly MAX_FRAGMENT_UNIFORM_VECTORS: number;
-        readonly MAX_RENDERBUFFER_SIZE: number;
-        readonly MAX_TEXTURE_IMAGE_UNITS: number;
-        readonly MAX_TEXTURE_SIZE: number;
-        readonly MAX_VARYING_VECTORS: number;
-        readonly MAX_VERTEX_ATTRIBS: number;
-        readonly MAX_VERTEX_TEXTURE_IMAGE_UNITS: number;
-        readonly MAX_VERTEX_UNIFORM_VECTORS: number;
-        readonly MAX_VIEWPORT_DIMS: number;
-        readonly MEDIUM_FLOAT: number;
-        readonly MEDIUM_INT: number;
-        readonly MIRRORED_REPEAT: number;
-        readonly NEAREST: number;
-        readonly NEAREST_MIPMAP_LINEAR: number;
-        readonly NEAREST_MIPMAP_NEAREST: number;
-        readonly NEVER: number;
-        readonly NICEST: number;
-        readonly NONE: number;
-        readonly NOTEQUAL: number;
-        readonly NO_ERROR: number;
-        readonly ONE: number;
-        readonly ONE_MINUS_CONSTANT_ALPHA: number;
-        readonly ONE_MINUS_CONSTANT_COLOR: number;
-        readonly ONE_MINUS_DST_ALPHA: number;
-        readonly ONE_MINUS_DST_COLOR: number;
-        readonly ONE_MINUS_SRC_ALPHA: number;
-        readonly ONE_MINUS_SRC_COLOR: number;
-        readonly OUT_OF_MEMORY: number;
-        readonly PACK_ALIGNMENT: number;
-        readonly POINTS: number;
-        readonly POLYGON_OFFSET_FACTOR: number;
-        readonly POLYGON_OFFSET_FILL: number;
-        readonly POLYGON_OFFSET_UNITS: number;
-        readonly RED_BITS: number;
-        readonly RENDERBUFFER: number;
-        readonly RENDERBUFFER_ALPHA_SIZE: number;
-        readonly RENDERBUFFER_BINDING: number;
-        readonly RENDERBUFFER_BLUE_SIZE: number;
-        readonly RENDERBUFFER_DEPTH_SIZE: number;
-        readonly RENDERBUFFER_GREEN_SIZE: number;
-        readonly RENDERBUFFER_HEIGHT: number;
-        readonly RENDERBUFFER_INTERNAL_FORMAT: number;
-        readonly RENDERBUFFER_RED_SIZE: number;
-        readonly RENDERBUFFER_STENCIL_SIZE: number;
-        readonly RENDERBUFFER_WIDTH: number;
-        readonly RENDERER: number;
-        readonly REPEAT: number;
-        readonly REPLACE: number;
-        readonly RGB: number;
-        readonly RGB565: number;
-        readonly RGB5_A1: number;
-        readonly RGBA: number;
-        readonly RGBA4: number;
-        readonly SAMPLER_2D: number;
-        readonly SAMPLER_CUBE: number;
-        readonly SAMPLES: number;
-        readonly SAMPLE_ALPHA_TO_COVERAGE: number;
-        readonly SAMPLE_BUFFERS: number;
-        readonly SAMPLE_COVERAGE: number;
-        readonly SAMPLE_COVERAGE_INVERT: number;
-        readonly SAMPLE_COVERAGE_VALUE: number;
-        readonly SCISSOR_BOX: number;
-        readonly SCISSOR_TEST: number;
-        readonly SHADER_TYPE: number;
-        readonly SHADING_LANGUAGE_VERSION: number;
-        readonly SHORT: number;
-        readonly SRC_ALPHA: number;
-        readonly SRC_ALPHA_SATURATE: number;
-        readonly SRC_COLOR: number;
-        readonly STATIC_DRAW: number;
-        readonly STENCIL_ATTACHMENT: number;
-        readonly STENCIL_BACK_FAIL: number;
-        readonly STENCIL_BACK_FUNC: number;
-        readonly STENCIL_BACK_PASS_DEPTH_FAIL: number;
-        readonly STENCIL_BACK_PASS_DEPTH_PASS: number;
-        readonly STENCIL_BACK_REF: number;
-        readonly STENCIL_BACK_VALUE_MASK: number;
-        readonly STENCIL_BACK_WRITEMASK: number;
-        readonly STENCIL_BITS: number;
-        readonly STENCIL_BUFFER_BIT: number;
-        readonly STENCIL_CLEAR_VALUE: number;
-        readonly STENCIL_FAIL: number;
-        readonly STENCIL_FUNC: number;
-        readonly STENCIL_INDEX: number;
-        readonly STENCIL_INDEX8: number;
-        readonly STENCIL_PASS_DEPTH_FAIL: number;
-        readonly STENCIL_PASS_DEPTH_PASS: number;
-        readonly STENCIL_REF: number;
-        readonly STENCIL_TEST: number;
-        readonly STENCIL_VALUE_MASK: number;
-        readonly STENCIL_WRITEMASK: number;
-        readonly STREAM_DRAW: number;
-        readonly SUBPIXEL_BITS: number;
-        readonly TEXTURE: number;
-        readonly TEXTURE0: number;
-        readonly TEXTURE1: number;
-        readonly TEXTURE10: number;
-        readonly TEXTURE11: number;
-        readonly TEXTURE12: number;
-        readonly TEXTURE13: number;
-        readonly TEXTURE14: number;
-        readonly TEXTURE15: number;
-        readonly TEXTURE16: number;
-        readonly TEXTURE17: number;
-        readonly TEXTURE18: number;
-        readonly TEXTURE19: number;
-        readonly TEXTURE2: number;
-        readonly TEXTURE20: number;
-        readonly TEXTURE21: number;
-        readonly TEXTURE22: number;
-        readonly TEXTURE23: number;
-        readonly TEXTURE24: number;
-        readonly TEXTURE25: number;
-        readonly TEXTURE26: number;
-        readonly TEXTURE27: number;
-        readonly TEXTURE28: number;
-        readonly TEXTURE29: number;
-        readonly TEXTURE3: number;
-        readonly TEXTURE30: number;
-        readonly TEXTURE31: number;
-        readonly TEXTURE4: number;
-        readonly TEXTURE5: number;
-        readonly TEXTURE6: number;
-        readonly TEXTURE7: number;
-        readonly TEXTURE8: number;
-        readonly TEXTURE9: number;
-        readonly TEXTURE_2D: number;
-        readonly TEXTURE_BINDING_2D: number;
-        readonly TEXTURE_BINDING_CUBE_MAP: number;
-        readonly TEXTURE_CUBE_MAP: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
-        readonly TEXTURE_MAG_FILTER: number;
-        readonly TEXTURE_MIN_FILTER: number;
-        readonly TEXTURE_WRAP_S: number;
-        readonly TEXTURE_WRAP_T: number;
-        readonly TRIANGLES: number;
-        readonly TRIANGLE_FAN: number;
-        readonly TRIANGLE_STRIP: number;
-        readonly UNPACK_ALIGNMENT: number;
-        readonly UNPACK_COLORSPACE_CONVERSION_WEBGL: number;
-        readonly UNPACK_FLIP_Y_WEBGL: number;
-        readonly UNPACK_PREMULTIPLY_ALPHA_WEBGL: number;
-        readonly UNSIGNED_BYTE: number;
-        readonly UNSIGNED_INT: number;
-        readonly UNSIGNED_SHORT: number;
-        readonly UNSIGNED_SHORT_4_4_4_4: number;
-        readonly UNSIGNED_SHORT_5_5_5_1: number;
-        readonly UNSIGNED_SHORT_5_6_5: number;
-        readonly VALIDATE_STATUS: number;
-        readonly VENDOR: number;
-        readonly VERSION: number;
-        readonly VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: number;
-        readonly VERTEX_ATTRIB_ARRAY_ENABLED: number;
-        readonly VERTEX_ATTRIB_ARRAY_NORMALIZED: number;
-        readonly VERTEX_ATTRIB_ARRAY_POINTER: number;
-        readonly VERTEX_ATTRIB_ARRAY_SIZE: number;
-        readonly VERTEX_ATTRIB_ARRAY_STRIDE: number;
-        readonly VERTEX_ATTRIB_ARRAY_TYPE: number;
-        readonly VERTEX_SHADER: number;
-        readonly VIEWPORT: number;
-        readonly ZERO: number;
-    };
     /**
      * 是否开启调试(主要用于断言)
      */
@@ -7279,10 +8189,6 @@ declare module feng3d {
     var shaderFileMap: {
         [filePath: string]: string;
     };
-    /**
-     * 3D环境对象池
-     */
-    var context3DPool: RenderBufferPool;
     /**
      * 初始化引擎
      */

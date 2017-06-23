@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -7,6 +7,12 @@ module feng3d
      */
     export class PointLight extends Light
     {
+        public static get pointLights()
+        {
+            return this._pointLights;
+        }
+        private static _pointLights: PointLight[] = [];
+
         /**
          * 光照范围
          */
@@ -17,7 +23,7 @@ module feng3d
          */
         public get position()
         {
-            return this.parentComponent.scenePosition;
+            return this.gameObject.transform.scenePosition;
         }
 
         /**
@@ -27,6 +33,7 @@ module feng3d
         {
             super();
             this.lightType = LightType.Point;
+            PointLight._pointLights.push(this);
         }
     }
 }

@@ -1,11 +1,11 @@
-module feng3d
+namespace feng3d
 {
 
 	/**
 	 * 动画基类
 	 * @author feng 2014-5-27
 	 */
-    export abstract class AnimatorBase extends Object3DComponent
+    export abstract class AnimatorBase extends Component
     {
 
         /** 是否正在播放动画 */

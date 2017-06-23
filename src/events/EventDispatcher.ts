@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
 	/**
@@ -7,33 +7,25 @@ module feng3d
 	 */
     export class EventDispatcher implements IEventDispatcher
     {
-        private _listenermap: { [type: string]: ListenerVO[] } = {};
-
+        //------------------------------------------
+        // Variables
+        //------------------------------------------
         /**
          * 名称
          */
         public name: string;
 
-        /** 
-         * 冒泡属性名称为“parent” 
-         */
-        protected _bubbleAttribute: string = "parent";
-
         /**
-         * 事件适配主体
+         * 事件是否被锁住
          */
-        private _target: IEventDispatcher;
+        public get isLockEvent()
+        {
+            return this._delaycount > 0;
+        }
 
-        /**
-         * 延迟计数，当计数大于0时事件将会被收集，等到计数等于0时派发
-         */
-        private _delaycount = 0;
-
-        /**
-         * 被延迟的事件列表
-         */
-        private _delayEvents: Event[] = [];
-
+        //------------------------------------------
+        // Public Functions
+        //------------------------------------------
 		/**
 		 * 构建事件适配器
 		 * @param target		事件适配主体
@@ -163,14 +155,6 @@ module feng3d
         }
 
         /**
-         * 事件是否被锁住
-         */
-        public get isLockEvent()
-        {
-            return this._delaycount > 0;
-        }
-
-        /**
 		 * 检查 EventDispatcher 对象是否为特定事件类型注册了任何侦听器. 
 		 *
 		 * @param type		事件的类型。
@@ -181,19 +165,17 @@ module feng3d
             return !!(this._listenermap[type] && this._listenermap[type].length);
         }
 
-        /**
-         * 派发冒泡事件
-         * @param event						调度到事件流中的 Event 对象。
+        //------------------------------------------
+        // Protected Properties
+        //------------------------------------------
+        /** 
+         * 冒泡属性名称为“parent” 
          */
-        private dispatchBubbleEvent(event: Event): void
-        {
-            var bubbleTargets = this.getBubbleTargets(event);
-            bubbleTargets && bubbleTargets.forEach(element =>
-            {
-                element && element.dispatchEvent(event);
-            });
-        }
+        protected _bubbleAttribute: string = "parent";
 
+        //------------------------------------------
+        // Protected Functions
+        //------------------------------------------
         /**
          * 获取冒泡对象
          * @param event						调度到事件流中的 Event 对象。
@@ -203,6 +185,28 @@ module feng3d
             return [this._target[this._bubbleAttribute]];
         }
 
+        //------------------------------------------
+        // Private Properties
+        //------------------------------------------
+        /**
+         * 事件适配主体
+         */
+        private _target: IEventDispatcher;
+
+        /**
+         * 延迟计数，当计数大于0时事件将会被收集，等到计数等于0时派发
+         */
+        private _delaycount = 0;
+
+        /**
+         * 被延迟的事件列表
+         */
+        private _delayEvents: Event[] = [];
+        private _listenermap: { [type: string]: ListenerVO[] } = {};
+
+        //------------------------------------------
+        // Private Methods
+        //------------------------------------------
         /**
          * 添加监听
          * @param dispatcher 派发器
@@ -252,6 +256,19 @@ module feng3d
                     delete this._listenermap[type];
                 }
             }
+        }
+
+        /**
+         * 派发冒泡事件
+         * @param event						调度到事件流中的 Event 对象。
+         */
+        private dispatchBubbleEvent(event: Event): void
+        {
+            var bubbleTargets = this.getBubbleTargets(event);
+            bubbleTargets && bubbleTargets.forEach(element =>
+            {
+                element && element.dispatchEvent(event);
+            });
         }
     }
 

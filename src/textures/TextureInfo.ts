@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 纹理信息
@@ -119,17 +119,6 @@ module feng3d
         constructor()
         {
             super();
-            Watcher.watch(this, ["textureType"], this.invalidate, this);
-            Watcher.watch(this, ["internalformat"], this.invalidate, this);
-            Watcher.watch(this, ["format"], this.invalidate, this);
-            Watcher.watch(this, ["type"], this.invalidate, this);
-            Watcher.watch(this, ["generateMipmap"], this.invalidate, this);
-            Watcher.watch(this, ["flipY"], this.invalidate, this);
-            Watcher.watch(this, ["premulAlpha"], this.invalidate, this);
-            // Watcher.watch(this, ["minFilter"], this.invalidate, this);
-            // Watcher.watch(this, ["magFilter"], this.invalidate, this);
-            // Watcher.watch(this, ["wrapS"], this.invalidate, this);
-            // Watcher.watch(this, ["wrapT"], this.invalidate, this);
         }
 
         /**
@@ -173,17 +162,15 @@ module feng3d
             gl.texParameteri(this._textureType, GL.TEXTURE_WRAP_S, this.wrapS);
             gl.texParameteri(this._textureType, GL.TEXTURE_WRAP_T, this.wrapT);
             //
-            var anisotropicExt = gl.ext.getAnisotropicExt();
-            if (anisotropicExt)
+            if (this.anisotropy)
             {
-                if (this.anisotropy)
+                if (gl.anisotropicExt)
                 {
-                    var max = anisotropicExt.getMaxAnisotropy();
-                    gl.texParameterf(gl.TEXTURE_2D, anisotropicExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, max));
+                    gl.texParameterf(gl.TEXTURE_2D, gl.anisotropicExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.anisotropy, gl.maxAnisotropy));
+                } else
+                {
+                    debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
                 }
-            } else
-            {
-                debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
             }
         }
 
@@ -197,6 +184,7 @@ module feng3d
             if (!texture)
             {
                 texture = gl.createTexture();   // Create a texture object
+                texture.uuid = Math.generateUUID();
                 //设置图片y轴方向
                 gl.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY ? 1 : 0);
                 gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premulAlpha ? 1 : 0);

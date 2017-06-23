@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 法线函数
@@ -15,12 +15,7 @@ module feng3d
         }
         public set normalTexture(value)
         {
-            if (this._normalTexture)
-                this._normalTexture.removeEventListener(Event.LOADED, this.onLoaded, this);
             this._normalTexture = value;
-            if (this._normalTexture)
-                this._normalTexture.addEventListener(Event.LOADED, this.onLoaded, this);
-            this.invalidateRenderData();
         }
         private _normalTexture: Texture2D;
 
@@ -31,33 +26,9 @@ module feng3d
         {
             super();
             this.normalTexture = new Texture2D(normalUrl);
-        }
-
-        /**
-         * 加载完成
-         */
-        private onLoaded()
-        {
-            this.invalidateRenderData();
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            if (this.normalTexture.checkRenderData())
-            {
-                renderData.uniforms.s_normal = this.normalTexture;
-                renderData.shaderMacro.boolMacros.HAS_NORMAL_SAMPLER = true;
-            } else
-            {
-                delete renderData.uniforms.s_normal;
-                renderData.shaderMacro.boolMacros.HAS_NORMAL_SAMPLER = false;
-            }
-
             //
-            super.updateRenderData(renderContext, renderData);
+            this.createUniformData("s_normal", () => this.normalTexture);
+            this.createBoolMacro("HAS_NORMAL_SAMPLER", () => this.normalTexture.checkRenderData());
         }
     }
 }

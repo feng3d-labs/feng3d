@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
 	/**
@@ -20,7 +20,7 @@ module feng3d
 		/**
 		 * 组件事件数据
 		 */
-		public data: { container: Component, child: Component };
+		public data: { container: GameObject, child: Component };
 
         /**
          * 事件目标。

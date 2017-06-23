@@ -1,11 +1,10 @@
-module feng3d
+namespace feng3d
 {
-
     /**
      * 几何体
      * @author feng 2016-04-28
      */
-    export class Geometry extends RenderDataHolder
+    export class Geometry extends Component
     {
         /**
          * 顶点索引缓冲
@@ -27,12 +26,12 @@ module feng3d
          */
         public get positions()
         {
-            return this.getVAData1(GLAttribute.a_position)
+            return this.getVAData1("a_position")
         }
 
         public set positions(value)
         {
-            this.setVAData(GLAttribute.a_position, value, 3);
+            this.setVAData("a_position", value, 3);
         }
 
         /**
@@ -40,12 +39,12 @@ module feng3d
          */
         public get uvs()
         {
-            return this.getVAData1(GLAttribute.a_uv)
+            return this.getVAData1("a_uv")
         }
 
         public set uvs(value)
         {
-            this.setVAData(GLAttribute.a_uv, value, 2);
+            this.setVAData("a_uv", value, 2);
         }
 
         /**
@@ -53,11 +52,11 @@ module feng3d
          */
         public get normals()
         {
-            return this.getVAData1(GLAttribute.a_normal);
+            return this.getVAData1("a_normal");
         }
         public set normals(value)
         {
-            this.setVAData(GLAttribute.a_normal, value, 3);
+            this.setVAData("a_normal", value, 3);
         }
 
         /**
@@ -65,11 +64,11 @@ module feng3d
          */
         public get tangents()
         {
-            return this.getVAData1(GLAttribute.a_tangent);
+            return this.getVAData1("a_tangent");
         }
         public set tangents(value)
         {
-            this.setVAData(GLAttribute.a_tangent, value, 3);
+            this.setVAData("a_tangent", value, 3);
         }
 
         /**
@@ -87,11 +86,6 @@ module feng3d
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
             this.updateGrometry();
-            renderData.indexBuffer = this._indexBuffer;
-            for (var attributeName in this._attributes)
-            {
-                renderData.attributes[attributeName] = this._attributes[attributeName];
-            }
             super.updateRenderData(renderContext, renderData);
         }
 
@@ -101,7 +95,6 @@ module feng3d
         protected invalidateGeometry()
         {
             this._geometryInvalid = true;
-            this.invalidateRenderData();
         }
 
         /**
@@ -137,10 +130,7 @@ module feng3d
 		 */
         public setIndices(indices: Uint16Array)
         {
-            this._indexBuffer = new IndexRenderData();
-            this._indexBuffer.indices = indices;
-            this._indexBuffer.count = indices.length;
-            this.invalidateRenderData();
+            this._indexBuffer = this.createIndexBuffer(indices);
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_INDEX_DATA));
         }
 
@@ -156,20 +146,19 @@ module feng3d
 		 * 设置顶点属性数据
 		 * @param vaId          顶点属性编号
 		 * @param data          顶点属性数据
-         * @param stride        顶点数据步长
+         * @param size          顶点数据尺寸
 		 */
-        public setVAData(vaId: string, data: Float32Array, stride: number)
+        public setVAData<K extends keyof AttributeRenderDataStuct>(vaId: K, data: Float32Array, size: number)
         {
             if (data)
             {
                 if (!this._attributes[vaId])
-                    this._attributes[vaId] = new AttributeRenderData(data, stride);
+                    this._attributes[vaId] = this.createAttributeRenderData(vaId, data, size);
                 this._attributes[vaId].data = data;
             } else
             {
                 delete this._attributes[vaId];
             }
-            this.invalidateRenderData();
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
         }
 
@@ -259,7 +248,7 @@ module feng3d
                 var data = new Float32Array(totalVertex * stride);
                 data.set(attributes[attributeName].data, 0);
                 data.set(addAttributes[attributeName].data, oldNumVertex * stride);
-                this.setVAData(attributeName, data, stride);
+                this.setVAData(<any>attributeName, data, stride);
             }
         }
 
@@ -271,9 +260,9 @@ module feng3d
         {
             this.updateGrometry();
 
-            var positionRenderData = this.getVAData(GLAttribute.a_position);
-            var normalRenderData = this.getVAData(GLAttribute.a_normal);
-            var tangentRenderData = this.getVAData(GLAttribute.a_tangent);
+            var positionRenderData = this.getVAData("a_position");
+            var normalRenderData = this.getVAData("a_normal");
+            var tangentRenderData = this.getVAData("a_tangent");
 
             var vertices = positionRenderData.data;
             var normals = normalRenderData.data;
@@ -380,7 +369,7 @@ module feng3d
         {
             this.updateGrometry();
 
-            var uvVaData = this.getVAData(GLAttribute.a_uv);
+            var uvVaData = this.getVAData("a_uv");
             var uvs = uvVaData.data;
             var len: number = uvs.length;
             var ratioU: number = scaleU / this._scaleU;
@@ -446,7 +435,8 @@ module feng3d
             this._attributes = {};
             for (var key in geometry._attributes)
             {
-                this._attributes[key] = geometry._attributes[key].clone();
+                var attributeRenderData = geometry._attributes[key];
+                this.setVAData(<any>key, attributeRenderData.data, attributeRenderData.size);
             }
         }
     }

@@ -1,17 +1,16 @@
-module feng3d
+namespace feng3d
 {
 
     /**
      * 阴影图渲染器
      * @author  feng    2017-03-25
      */
-    export class ShadowRenderer extends Renderer
+    export class ShadowRenderer
     {
         private frameBufferObject: FrameBufferObject;
 
         constructor()
         {
-            super();
         }
 
         /**
@@ -20,9 +19,8 @@ module feng3d
         public draw(renderContext: RenderContext)
         {
             var gl = renderContext.gl;
-            var scene3D = renderContext.scene3d;
 
-            var lights = scene3D.lights;
+            var lights = Light.lights;
             for (var i = 0; i < lights.length; i++)
             {
                 var light = lights[i];
@@ -30,9 +28,9 @@ module feng3d
                 var frameBufferObject = new FrameBufferObject();
                 frameBufferObject.init(gl);
                 frameBufferObject.active(gl);
-                scene3D.renderers.forEach(element =>
+                MeshRenderer.meshRenderers.forEach(element =>
                 {
-                    this.drawRenderables(renderContext, element);
+                    // this.drawRenderables(renderContext, element);
                 });
                 frameBufferObject.deactive(gl);
             }

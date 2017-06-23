@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 环境映射函数
@@ -18,6 +18,10 @@ module feng3d
             super();
             this._cubeTexture = envMap;
             this.reflectivity = reflectivity;
+            //
+            this.createUniformData("s_envMap", () => this._cubeTexture);
+            this.createUniformData("u_reflectivity", () => this._reflectivity);
+            this.createBoolMacro("HAS_ENV_METHOD", true);
         }
 
         /**
@@ -30,8 +34,9 @@ module feng3d
 
         public set envMap(value)
         {
+            if (this._cubeTexture == value)
+                return;
             this._cubeTexture = value;
-            this.invalidateRenderData();
         }
 
         /**
@@ -44,21 +49,9 @@ module feng3d
 
         public set reflectivity(value: number)
         {
+            if (this._reflectivity == value)
+                return;
             this._reflectivity = value;
-            this.invalidateRenderData();
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            renderData.shaderMacro.boolMacros.HAS_ENV_METHOD = true;
-            renderData.uniforms.s_envMap = this._cubeTexture;
-            renderData.uniforms.u_reflectivity = this._reflectivity;
-
-            //
-            super.updateRenderData(renderContext, renderData);
         }
     }
 }

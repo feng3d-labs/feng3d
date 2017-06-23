@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -13,12 +13,45 @@ module feng3d
         /**
         * 渲染模式，默认RenderMode.TRIANGLES
         */
-        public renderMode = RenderMode.TRIANGLES;
+        public get renderMode()
+        {
+            return this._renderMode;
+        }
+        public set renderMode(value)
+        {
+            this._renderMode = value;
+        }
+        private _renderMode = RenderMode.TRIANGLES;
 
         /**
-         * 着色器名称
+         * 顶点渲染程序代码
          */
-        protected shaderName: string;
+        public get vertexCode()
+        {
+            return this._vertexCode;
+        }
+        public set vertexCode(value)
+        {
+            if (this._vertexCode == value)
+                return;
+            this._vertexCode = value;
+        }
+        private _vertexCode: string;
+
+        /**
+         * 片段渲染程序代码
+         */
+        public get fragmentCode()
+        {
+            return this._fragmentCode;
+        }
+        public set fragmentCode(value)
+        {
+            if (this._fragmentCode == value)
+                return;
+            this._fragmentCode = value;
+        }
+        private _fragmentCode: string;
 
         /**
          * 是否渲染双面
@@ -50,7 +83,6 @@ module feng3d
         public set pointSize(value)
         {
             this._pointSize = value;
-            this.invalidateRenderData();
         }
 
         /**
@@ -76,11 +108,20 @@ module feng3d
         constructor()
         {
             super();
-            this._single = true;
-            this._type = Material;
+            this.createShaderCode(() => { return { vertexCode: this.vertexCode, fragmentCode: this.fragmentCode } });
+            this.createBoolMacro("IS_POINTS_MODE", () => this.renderMode == RenderMode.POINTS);
+            this.createUniformData("u_PointSize", () => this.pointSize);
+            this.createShaderParam("renderMode",() => this.renderMode);
+        }
 
-            Watcher.watch(this, ["shaderName"], this.invalidateRenderData, this);
-            Watcher.watch(this, ["renderMode"], this.invalidateRenderData, this);
+        /**
+         * 设置渲染程序
+         * @param shaderName 渲染程序名称
+         */
+        public setShader(shaderName: string)
+        {
+            this.vertexCode = ShaderLib.getShaderCode(shaderName + ".vertex");
+            this.fragmentCode = ShaderLib.getShaderCode(shaderName + ".fragment")
         }
 
         /**
@@ -92,7 +133,7 @@ module feng3d
             if (index != -1)
                 return;
             this._methods.push(method);
-            this.invalidateRenderHolder();
+            this.addRenderDataHolder(method);
         }
 
         /**
@@ -104,55 +145,8 @@ module feng3d
             if (index != -1)
             {
                 this._methods.splice(index, 1);
-                this.invalidateRenderData();
+                this.removeRenderDataHolder(method);
             }
-        }
-        
-        /**
-         * 收集渲染数据拥有者
-         * @param renderAtomic 渲染原子
-         */
-        public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
-        {
-            for (var i = 0; i < this._methods.length; i++)
-            {
-                this._methods[i].collectRenderDataHolder(renderAtomic);
-            }
-            super.collectRenderDataHolder(renderAtomic);
-        }
-        
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            //
-            renderData.shaderParams.renderMode = this.renderMode;
-            //
-            if (this.shaderName)
-            {
-                renderData.vertexCode = ShaderLib.getShaderCode(this.shaderName + ".vertex");
-                renderData.fragmentCode = ShaderLib.getShaderCode(this.shaderName + ".fragment");
-            } else
-            {
-                renderData.vertexCode = null;
-                renderData.fragmentCode = null;
-            }
-            if (this.renderMode == RenderMode.POINTS)
-            {
-                renderData.shaderMacro.boolMacros.IS_POINTS_MODE = true;
-                renderData.uniforms.u_PointSize = this.pointSize;
-            } else
-            {
-                renderData.shaderMacro.boolMacros.IS_POINTS_MODE = false;
-                delete renderData.uniforms.u_PointSize;
-            }
-
-            for (var i = 0; i < this._methods.length; i++)
-            {
-                this._methods[i].updateRenderData(renderContext, renderData);
-            }
-            super.updateRenderData(renderContext, renderData);
         }
     }
 }

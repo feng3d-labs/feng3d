@@ -1,6 +1,6 @@
-module feng3d
+namespace feng3d
 {
-    export class AttributeRenderDataStuct
+    export interface AttributeRenderDataStuct
     {
         /**
          * 坐标
@@ -46,19 +46,6 @@ module feng3d
          * 关节权重
          */
         a_jointweight1: AttributeRenderData;
-
-        /**
-         * 激活属性
-         */
-        public activeAttributes(gl: GL, attributeInfos: WebGLActiveInfo[])
-        {
-            for (var i = 0; i < attributeInfos.length; i++)
-            {
-                var activeInfo = attributeInfos[i];
-                var buffer: AttributeRenderData = this[activeInfo.name];
-                buffer.active(gl, activeInfo.location);
-            }
-        }
     }
 
 	/**
@@ -66,8 +53,10 @@ module feng3d
 	 * @author feng 2014-8-14
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer}
 	 */
-    export class AttributeRenderData
+    export class AttributeRenderData extends RenderElement
     {
+        public name: string;
+
         /**
          * 属性数据
          */
@@ -131,10 +120,12 @@ module feng3d
          */
         private _invalid = true;
 
-        constructor(data: Float32Array = null, stride: number = 3, divisor: number = 0)
+        constructor(name: string, data: Float32Array = null, size: number = 3, divisor: number = 0)
         {
+            super();
+            this.name = name;
             this._data = data;
-            this._size = stride;
+            this._size = size;
             this._divisor = divisor;
             this._invalid = true;
         }
@@ -166,8 +157,7 @@ module feng3d
 
             if (this.divisor > 0)
             {
-                var _ext = gl.getExtension('ANGLE_instanced_arrays');
-                _ext.vertexAttribDivisorANGLE(location, this.divisor);
+                gl.vertexAttribDivisor(location, this.divisor);
             }
         }
 
@@ -180,6 +170,7 @@ module feng3d
             if (!buffer)
             {
                 buffer = gl.createBuffer();
+                buffer.uuid = Math.generateUUID();
                 gl.bindBuffer(GL.ARRAY_BUFFER, buffer);
                 gl.bufferData(GL.ARRAY_BUFFER, this.data, GL.STATIC_DRAW);
                 this._indexBufferMap.push(gl, buffer);
@@ -207,6 +198,7 @@ module feng3d
         {
             var cls = <any>this.constructor;
             var ins: this = new cls();
+            ins.name = this.name;
             ins.data = new Float32Array(this.data.length);
             ins.data.set(this.data, 0);
             ins.size = this.size;

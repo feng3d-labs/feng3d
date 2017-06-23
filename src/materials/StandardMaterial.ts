@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -50,7 +50,7 @@ module feng3d
             if (this._specularMethod)
                 this.addMethod(this._specularMethod);
         }
-        private _specularMethod : SpecularMethod;
+        private _specularMethod: SpecularMethod;
 
         /**
          * 环境反射函数
@@ -65,29 +65,7 @@ module feng3d
             if (this._ambientMethod)
                 this.addMethod(this._ambientMethod);
         }
-        private _ambientMethod : AmbientMethod;
-
-        /**
-         * 地形函数
-         */
-        public get terrainMethod()
-        {
-            return this._terrainMethod;
-        }
-        public set terrainMethod(value)
-        {
-            if (this._terrainMethod)
-            {
-                this.removeComponent(this._terrainMethod);
-            }
-            this._terrainMethod = value;
-            if (this._terrainMethod)
-            {
-                this.addComponent(this._terrainMethod);
-                this.invalidateRenderData();
-            }
-        }
-        private _terrainMethod: RenderDataHolder;
+        private _ambientMethod: AmbientMethod;
 
         // /**
         //  * 反射率
@@ -120,32 +98,15 @@ module feng3d
         /**
          * 构建
          */
-        constructor(diffuseUrl = "", normalUrl = "",specularUrl = "",ambientUrl = "")
+        constructor(diffuseUrl = "", normalUrl = "", specularUrl = "", ambientUrl = "")
         {
             super();
-            this.shaderName = "standard";
+            this.setShader("standard");
 
             this.diffuseMethod = new DiffuseMethod(diffuseUrl);
             this.normalMethod = new NormalMethod(normalUrl);
-            this.specularMethod =  new SpecularMethod(specularUrl);
-            this.ambientMethod= new AmbientMethod(ambientUrl);
-
-            // Watcher.watch(this, ["ambientColor"], this.invalidateRenderData, this);
-            // Watcher.watch(this, ["reflectance"], this.invalidateRenderData, this);
-            // Watcher.watch(this, ["roughness"], this.invalidateRenderData, this);
-            // Watcher.watch(this, ["metalic"], this.invalidateRenderData, this);
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            // renderData.uniforms.u_reflectance = this.reflectance;
-            // renderData.uniforms.u_roughness = this.roughness;
-            // renderData.uniforms.u_metalic = this.metalic;
-            //
-            super.updateRenderData(renderContext, renderData);
+            this.specularMethod = new SpecularMethod(specularUrl);
+            this.ambientMethod = new AmbientMethod(ambientUrl);
         }
     }
 }

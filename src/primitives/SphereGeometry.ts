@@ -1,12 +1,62 @@
-module feng3d
+namespace feng3d
 {
-
     /**
      * 球体几何体
      * @author DawnKing 2016-09-12
      */
     export class SphereGeometry extends Geometry
     {
+        public get radius()
+        {
+            return this._radius;
+        }
+        public set radius(value)
+        {
+            if(this._radius == value)
+                return;
+            this._radius = value;
+            this.invalidateGeometry();
+        }
+        private _radius = 50;
+
+        public get segmentsW()
+        {
+            return this._segmentsW;
+        }
+        public set segmentsW(value)
+        {
+            if(this._segmentsW == value)
+                return;
+            this._segmentsW = value;
+            this.invalidateGeometry();
+        }
+        private _segmentsW = 16;
+
+        public get segmentsH()
+        {
+            return this._segmentsH;
+        }
+        public set segmentsH(value)
+        {
+            if(this._segmentsH == value)
+                return;
+            this._segmentsH = value;
+            this.invalidateGeometry();
+        }
+        private _segmentsH = 12;
+
+        public get yUp()
+        {
+            return this._yUp;
+        }
+        public set yUp(value)
+        {
+            if(this._yUp == value)
+                return;
+            this._yUp = value;
+            this.invalidateGeometry();
+        }
+        private _yUp = true;
 
         /**
          * 创建球形几何体
@@ -15,14 +65,14 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(public radius = 50, public segmentsW = 16, public segmentsH = 12, public yUp = true)
+        constructor(radius = 50, segmentsW = 16, segmentsH = 12, yUp = true)
         {
             super();
 
-            Watcher.watch(this, ["radius"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["yUp"], this.invalidateGeometry, this);
+            this.radius = radius;
+            this.segmentsW = this.segmentsW;
+            this.segmentsH = this.segmentsH;
+            this.yUp = yUp;
         }
 
         /**
@@ -116,12 +166,12 @@ module feng3d
                 }
             }
 
-            this.setVAData(GLAttribute.a_position, vertexPositionData, 3);
-            this.setVAData(GLAttribute.a_normal, vertexNormalData, 3);
-            this.setVAData(GLAttribute.a_tangent, vertexTangentData, 3);
+            this.setVAData("a_position", vertexPositionData, 3);
+            this.setVAData("a_normal", vertexNormalData, 3);
+            this.setVAData("a_tangent", vertexTangentData, 3);
 
             var uvData = this.buildUVs();
-            this.setVAData(GLAttribute.a_uv, uvData, 2);
+            this.setVAData("a_uv", uvData, 2);
 
             var indices = this.buildIndices();
             this.setIndices(indices);

@@ -1,136 +1,13 @@
-module feng3d
+namespace feng3d
 {
+    /**
+     * Position, rotation and scale of an object.
+     */
     export class Object3D extends Component
     {
-        public _controller: ControllerBase;
-        private _smallestNumber: number = 0.0000000000000000000001;
-        private _transformDirty: boolean = true;
-        private _positionDirty: boolean = false;
-        private _rotationDirty: boolean = false;
-        private _scaleDirty: boolean = false;
-        private _positionChanged: Object3DEvent;
-        private _rotationChanged: Object3DEvent;
-        private _scaleChanged: Object3DEvent;
-        private _rotationX: number = 0;
-        private _rotationY: number = 0;
-        private _rotationZ: number = 0;
-        private _eulers: Vector3D = new Vector3D();
-        private _flipY: Matrix3D = new Matrix3D();
-        private _listenToPositionChanged: boolean = false;
-        private _listenToRotationChanged: boolean = false;
-        private _listenToScaleChanged: boolean = false;
-        protected _zOffset: number = 0;
-        private invalidatePivot()
-        {
-            this._pivotZero = (this._pivotPoint.x == 0) && (this._pivotPoint.y == 0) && (this._pivotPoint.z == 0);
-            this.invalidateTransform();
-        }
-
-        private invalidatePosition()
-        {
-            if (this._positionDirty)
-                return;
-            this._positionDirty = true;
-            this.invalidateTransform();
-            if (this._listenToPositionChanged)
-                this.notifyPositionChanged();
-        }
-
-        private notifyPositionChanged()
-        {
-            var _self__: any = this;
-            if (<any>!this._positionChanged)
-                this._positionChanged = new Object3DEvent(Object3DEvent.POSITION_CHANGED, this);
-            _self__.dispatchEvent(this._positionChanged);
-        }
-
-        public addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority: number = 0)
-        {
-            super.addEventListener(type, listener, thisObject, priority);
-            switch (type)
-            {
-                case Object3DEvent.POSITION_CHANGED:
-                    this._listenToPositionChanged = true;
-                    break;
-                case Object3DEvent.ROTATION_CHANGED:
-                    this._listenToRotationChanged = true;
-                    break;
-                case Object3DEvent.SCALE_CHANGED:
-                    this._listenToRotationChanged = true;
-                    break;
-            }
-        }
-
-        public removeEventListener(type: string, listener: (event: Event) => void, thisObject: any)
-        {
-            var _self__: any = this;
-            super.removeEventListener(type, listener, thisObject);
-            if (_self__.hasEventListener(type))
-                return;
-            switch (type)
-            {
-                case Object3DEvent.POSITION_CHANGED:
-                    this._listenToPositionChanged = false;
-                    break;
-                case Object3DEvent.ROTATION_CHANGED:
-                    this._listenToRotationChanged = false;
-                    break;
-                case Object3DEvent.SCALE_CHANGED:
-                    this._listenToScaleChanged = false;
-                    break;
-            }
-        }
-
-        private invalidateRotation()
-        {
-            if (this._rotationDirty)
-                return;
-            this._rotationDirty = true;
-            this.invalidateTransform();
-            if (this._listenToRotationChanged)
-                this.notifyRotationChanged();
-        }
-
-        private notifyRotationChanged()
-        {
-            var _self__: any = this;
-            if (<any>!this._rotationChanged)
-                this._rotationChanged = new Object3DEvent(Object3DEvent.ROTATION_CHANGED, this);
-            _self__.dispatchEvent(this._rotationChanged);
-        }
-
-        private invalidateScale()
-        {
-            if (this._scaleDirty)
-                return;
-            this._scaleDirty = true;
-            this.invalidateTransform();
-            if (this._listenToScaleChanged)
-                this.notifyScaleChanged();
-        }
-
-        private notifyScaleChanged()
-        {
-            var _self__: any = this;
-            if (<any>!this._scaleChanged)
-                this._scaleChanged = new Object3DEvent(Object3DEvent.SCALE_CHANGED, this);
-            _self__.dispatchEvent(this._scaleChanged);
-        }
-
-        protected _transform: Matrix3D = new Matrix3D();
-        protected _scaleX: number = 1;
-        protected _scaleY: number = 1;
-        protected _scaleZ: number = 1;
-        protected _x: number = 0;
-        protected _y: number = 0;
-        protected _z: number = 0;
-        protected _pivotPoint: Vector3D = new Vector3D();
-        protected _pivotZero: boolean = true;
-        protected _pos: Vector3D = new Vector3D();
-        protected _rot: Vector3D = new Vector3D();
-        protected _sca: Vector3D = new Vector3D();
-        protected _transformComponents: Array<Vector3D>;
-        public extra: any;
+        //------------------------------------------
+        // Variables
+        //------------------------------------------
         public get x(): number
         {
             return this._x;
@@ -172,40 +49,40 @@ module feng3d
 
         public get rotationX(): number
         {
-            return this._rotationX * MathConsts.RADIANS_TO_DEGREES;
+            return this._rotationX * Math.RAD2DEG;
         }
 
         public set rotationX(val: number)
         {
             if (this.rotationX == val)
                 return;
-            this._rotationX = val * MathConsts.DEGREES_TO_RADIANS;
+            this._rotationX = val * Math.DEG2RAD;
             this.invalidateRotation();
         }
 
         public get rotationY(): number
         {
-            return this._rotationY * MathConsts.RADIANS_TO_DEGREES;
+            return this._rotationY * Math.RAD2DEG;
         }
 
         public set rotationY(val: number)
         {
             if (this.rotationY == val)
                 return;
-            this._rotationY = val * MathConsts.DEGREES_TO_RADIANS;
+            this._rotationY = val * Math.DEG2RAD;
             this.invalidateRotation();
         }
 
         public get rotationZ(): number
         {
-            return this._rotationZ * MathConsts.RADIANS_TO_DEGREES;
+            return this._rotationZ * Math.RAD2DEG;
         }
 
         public set rotationZ(val: number)
         {
             if (this.rotationZ == val)
                 return;
-            this._rotationZ = val * MathConsts.DEGREES_TO_RADIANS;
+            this._rotationZ = val * Math.DEG2RAD;
             this.invalidateRotation();
         }
 
@@ -250,28 +127,31 @@ module feng3d
 
         public get eulers(): Vector3D
         {
-            this._eulers.x = this._rotationX * MathConsts.RADIANS_TO_DEGREES;
-            this._eulers.y = this._rotationY * MathConsts.RADIANS_TO_DEGREES;
-            this._eulers.z = this._rotationZ * MathConsts.RADIANS_TO_DEGREES;
+            this._eulers.x = this._rotationX * Math.RAD2DEG;
+            this._eulers.y = this._rotationY * Math.RAD2DEG;
+            this._eulers.z = this._rotationZ * Math.RAD2DEG;
             return this._eulers;
         }
 
         public set eulers(value: Vector3D)
         {
-            this._rotationX = value.x * MathConsts.DEGREES_TO_RADIANS;
-            this._rotationY = value.y * MathConsts.DEGREES_TO_RADIANS;
-            this._rotationZ = value.z * MathConsts.DEGREES_TO_RADIANS;
+            this._rotationX = value.x * Math.DEG2RAD;
+            this._rotationY = value.y * Math.DEG2RAD;
+            this._rotationZ = value.z * Math.DEG2RAD;
             this.invalidateRotation();
         }
 
-        public get transform(): Matrix3D
+        /**
+         * @private
+         */
+        public get matrix3d(): Matrix3D
         {
             if (this._transformDirty)
-                this.updateTransform();
-            return this._transform;
+                this.updateMatrix3D();
+            return this._matrix3d;
         }
 
-        public set transform(val: Matrix3D)
+        public set matrix3d(val: Matrix3D)
         {
             var raw = Matrix3D.RAW_DATA_CONTAINER;
             val.copyRawDataTo(raw);
@@ -323,6 +203,87 @@ module feng3d
             this.invalidatePivot();
         }
 
+        public get position(): Vector3D
+        {
+            this._position.setTo(this._x, this._y, this._z);
+            return this._position;
+        }
+
+        public set position(value)
+        {
+            if (this._x != value.x || this._y != value.y || this._z != value.z)
+            {
+                this._x = value.x;
+                this._y = value.y;
+                this._z = value.z;
+                this.invalidatePosition();
+            }
+        }
+
+        public get forwardVector(): Vector3D
+        {
+            return this.matrix3d.forward;
+        }
+
+        public get rightVector(): Vector3D
+        {
+            return this.matrix3d.right;
+        }
+
+        public get upVector(): Vector3D
+        {
+            return this.matrix3d.up;
+        }
+
+        public get backVector(): Vector3D
+        {
+            var director: Vector3D = this.matrix3d.forward;
+            director.negate();
+            return director;
+        }
+
+        public get leftVector(): Vector3D
+        {
+            var director: Vector3D = this.matrix3d.left;
+            director.negate();
+            return director;
+        }
+
+        public get downVector(): Vector3D
+        {
+            var director: Vector3D = this.matrix3d.up;
+            director.negate();
+            return director;
+        }
+
+        public get zOffset(): number
+        {
+            return this._zOffset;
+        }
+
+        public set zOffset(value: number)
+        {
+            this._zOffset = value;
+        }
+
+        //------------------------------------------
+        // Public Functions
+        //------------------------------------------
+        public constructor()
+        {
+            super();
+            tempAxeX = tempAxeX || new Vector3D();
+            tempAxeY = tempAxeY || new Vector3D();
+            tempAxeZ = tempAxeZ || new Vector3D();
+
+            this._transformComponents = [];
+            this._transformComponents[0] = this._pos;
+            this._transformComponents[1] = this._rot;
+            this._transformComponents[2] = this._sca;
+            this._matrix3d.identity();
+            this._flipY.appendScale(1, -1, 1);
+        }
+
         public getPosition(position: Vector3D = null): Vector3D
         {
             position = position || new Vector3D();
@@ -341,37 +302,19 @@ module feng3d
             }
         }
 
-        public get position(): Vector3D
-        {
-            this._position.setTo(this._x, this._y, this._z);
-            return this._position;
-        }
-
-        public set position(value)
-        {
-            if (this._x != value.x || this._y != value.y || this._z != value.z)
-            {
-                this._x = value.x;
-                this._y = value.y;
-                this._z = value.z;
-                this.invalidatePosition();
-            }
-        }
-        private _position = new Vector3D();
-
         public getRotation(rotation: Vector3D = null): Vector3D
         {
             rotation = rotation || new Vector3D();
             rotation.setTo(this._rotationX, this._rotationY, this._rotationZ);
-            rotation.scaleBy(MathConsts.RADIANS_TO_DEGREES);
+            rotation.scaleBy(Math.RAD2DEG);
             return rotation;
         }
 
         public setRotation(x = 0, y = 0, z = 0)
         {
-            x = x * MathConsts.DEGREES_TO_RADIANS;
-            y = y * MathConsts.DEGREES_TO_RADIANS;
-            z = z * MathConsts.DEGREES_TO_RADIANS;
+            x = x * Math.DEG2RAD;
+            y = y * Math.DEG2RAD;
+            z = z * Math.DEG2RAD;
             if (this._x != x || this._y != y || this._z != z)
             {
                 this._x = x;
@@ -398,58 +341,6 @@ module feng3d
                 this.invalidateScale();
             }
         }
-
-        public get forwardVector(): Vector3D
-        {
-            return this.transform.forward;
-        }
-
-        public get rightVector(): Vector3D
-        {
-            return this.transform.right;
-        }
-
-        public get upVector(): Vector3D
-        {
-            return this.transform.up;
-        }
-
-        public get backVector(): Vector3D
-        {
-            var director: Vector3D = this.transform.forward;
-            director.negate();
-            return director;
-        }
-
-        public get leftVector(): Vector3D
-        {
-            var director: Vector3D = this.transform.left;
-            director.negate();
-            return director;
-        }
-
-        public get downVector(): Vector3D
-        {
-            var director: Vector3D = this.transform.up;
-            director.negate();
-            return director;
-        }
-
-        public constructor()
-        {
-            super();
-            tempAxeX = tempAxeX || new Vector3D();
-            tempAxeY = tempAxeY || new Vector3D();
-            tempAxeZ = tempAxeZ || new Vector3D();
-
-            this._transformComponents = [];
-            this._transformComponents[0] = this._pos;
-            this._transformComponents[1] = this._rot;
-            this._transformComponents[2] = this._sca;
-            this._transform.identity();
-            this._flipY.appendScale(1, -1, 1);
-        }
-
         public scale(value: number)
         {
             this._scaleX *= value;
@@ -522,8 +413,8 @@ module feng3d
         {
             var x: number = <any>axis.x, y: number = <any>axis.y, z: number = <any>axis.z;
             var len: number = distance / Math.sqrt(x * x + y * y + z * z);
-            this.transform.prependTranslation(x * len, y * len, z * len);
-            this._transform.copyColumnTo(3, this._pos);
+            this.matrix3d.prependTranslation(x * len, y * len, z * len);
+            this._matrix3d.copyColumnTo(3, this._pos);
             this._x = this._pos.x;
             this._y = this._pos.y;
             this._z = this._pos.z;
@@ -549,16 +440,16 @@ module feng3d
         {
             var clone: Object3D = new Object3D();
             clone.pivotPoint = this.pivotPoint;
-            clone.transform = this.transform;
+            clone.matrix3d = this.matrix3d;
             clone.name = this.name;
             return clone;
         }
 
         public rotateTo(ax: number, ay: number, az: number)
         {
-            this._rotationX = ax * MathConsts.DEGREES_TO_RADIANS;
-            this._rotationY = ay * MathConsts.DEGREES_TO_RADIANS;
-            this._rotationZ = az * MathConsts.DEGREES_TO_RADIANS;
+            this._rotationX = ax * Math.DEG2RAD;
+            this._rotationY = ay * Math.DEG2RAD;
+            this._rotationZ = az * Math.DEG2RAD;
             this.invalidateRotation();
         }
 
@@ -582,7 +473,7 @@ module feng3d
             upAxis = upAxis || Vector3D.Y_AXIS;
             if (this._transformDirty)
             {
-                this.updateTransform();
+                this.updateMatrix3D();
             }
             zAxis.x = target.x - this._x;
             zAxis.y = target.y - this._y;
@@ -619,8 +510,8 @@ module feng3d
             raw[13] = this._y;
             raw[14] = this._z;
             raw[15] = 1;
-            this._transform.copyRawDataFrom(raw);
-            this.transform = this.transform;
+            this._matrix3d.copyRawDataFrom(raw);
+            this.matrix3d = this.matrix3d;
             if (zAxis.z < 0)
             {
                 this.rotationY = (180 - this.rotationY);
@@ -643,7 +534,65 @@ module feng3d
             this._transformDirty = true;
         }
 
-        protected updateTransform()
+        public addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority: number = 0)
+        {
+            super.addEventListener(type, listener, thisObject, priority);
+            switch (type)
+            {
+                case Object3DEvent.POSITION_CHANGED:
+                    this._listenToPositionChanged = true;
+                    break;
+                case Object3DEvent.ROTATION_CHANGED:
+                    this._listenToRotationChanged = true;
+                    break;
+                case Object3DEvent.SCALE_CHANGED:
+                    this._listenToRotationChanged = true;
+                    break;
+            }
+        }
+
+        public removeEventListener(type: string, listener: (event: Event) => void, thisObject: any)
+        {
+            var _self__: any = this;
+            super.removeEventListener(type, listener, thisObject);
+            if (_self__.hasEventListener(type))
+                return;
+            switch (type)
+            {
+                case Object3DEvent.POSITION_CHANGED:
+                    this._listenToPositionChanged = false;
+                    break;
+                case Object3DEvent.ROTATION_CHANGED:
+                    this._listenToRotationChanged = false;
+                    break;
+                case Object3DEvent.SCALE_CHANGED:
+                    this._listenToScaleChanged = false;
+                    break;
+            }
+        }
+
+        //------------------------------------------
+        // Protected Properties
+        //------------------------------------------
+        protected _matrix3d: Matrix3D = new Matrix3D();
+        protected _scaleX: number = 1;
+        protected _scaleY: number = 1;
+        protected _scaleZ: number = 1;
+        protected _x: number = 0;
+        protected _y: number = 0;
+        protected _z: number = 0;
+        protected _pivotPoint: Vector3D = new Vector3D();
+        protected _pivotZero: boolean = true;
+        protected _pos: Vector3D = new Vector3D();
+        protected _rot: Vector3D = new Vector3D();
+        protected _sca: Vector3D = new Vector3D();
+        protected _transformComponents: Array<Vector3D>;
+        protected _zOffset: number = 0;
+
+        //------------------------------------------
+        // Protected Functions
+        //------------------------------------------
+        protected updateMatrix3D()
         {
             this._pos.x = this._x;
             this._pos.y = this._y;
@@ -656,10 +605,10 @@ module feng3d
                 this._sca.x = 1;
                 this._sca.y = 1;
                 this._sca.z = 1;
-                this._transform.recompose(this._transformComponents);
-                this._transform.appendTranslation(this._pivotPoint.x, this._pivotPoint.y, this._pivotPoint.z);
-                this._transform.prependTranslation(-this._pivotPoint.x, -this._pivotPoint.y, -this._pivotPoint.z);
-                this._transform.prependScale(this._scaleX, this._scaleY, this._scaleZ);
+                this._matrix3d.recompose(this._transformComponents);
+                this._matrix3d.appendTranslation(this._pivotPoint.x, this._pivotPoint.y, this._pivotPoint.z);
+                this._matrix3d.prependTranslation(-this._pivotPoint.x, -this._pivotPoint.y, -this._pivotPoint.z);
+                this._matrix3d.prependScale(this._scaleX, this._scaleY, this._scaleZ);
                 this._sca.x = this._scaleX;
                 this._sca.y = this._scaleY;
                 this._sca.z = this._scaleZ;
@@ -669,7 +618,7 @@ module feng3d
                 this._sca.x = this._scaleX;
                 this._sca.y = this._scaleY;
                 this._sca.z = this._scaleZ;
-                this._transform.recompose(this._transformComponents);
+                this._matrix3d.recompose(this._transformComponents);
             }
             this._transformDirty = false;
             this._positionDirty = false;
@@ -677,14 +626,88 @@ module feng3d
             this._scaleDirty = false;
         }
 
-        public get zOffset(): number
+        //------------------------------------------
+        // Private Properties
+        //------------------------------------------
+        private _smallestNumber: number = 0.0000000000000000000001;
+        private _transformDirty: boolean = true;
+        private _positionDirty: boolean = false;
+        private _rotationDirty: boolean = false;
+        private _scaleDirty: boolean = false;
+        private _positionChanged: Object3DEvent;
+        private _rotationChanged: Object3DEvent;
+        private _scaleChanged: Object3DEvent;
+        private _rotationX: number = 0;
+        private _rotationY: number = 0;
+        private _rotationZ: number = 0;
+        private _eulers: Vector3D = new Vector3D();
+        private _flipY: Matrix3D = new Matrix3D();
+        private _listenToPositionChanged: boolean = false;
+        private _listenToRotationChanged: boolean = false;
+        private _listenToScaleChanged: boolean = false;
+        private _position = new Vector3D();
+
+        //------------------------------------------
+        // Private Methods
+        //------------------------------------------
+        private invalidateRotation()
         {
-            return this._zOffset;
+            if (this._rotationDirty)
+                return;
+            this._rotationDirty = true;
+            this.invalidateTransform();
+            if (this._listenToRotationChanged)
+                this.notifyRotationChanged();
         }
 
-        public set zOffset(value: number)
+        private notifyRotationChanged()
         {
-            this._zOffset = value;
+            var _self__: any = this;
+            if (<any>!this._rotationChanged)
+                this._rotationChanged = new Object3DEvent(Object3DEvent.ROTATION_CHANGED, this);
+            _self__.dispatchEvent(this._rotationChanged);
+        }
+
+        private invalidateScale()
+        {
+            if (this._scaleDirty)
+                return;
+            this._scaleDirty = true;
+            this.invalidateTransform();
+            if (this._listenToScaleChanged)
+                this.notifyScaleChanged();
+        }
+
+        private notifyScaleChanged()
+        {
+            var _self__: any = this;
+            if (<any>!this._scaleChanged)
+                this._scaleChanged = new Object3DEvent(Object3DEvent.SCALE_CHANGED, this);
+            _self__.dispatchEvent(this._scaleChanged);
+        }
+
+        private invalidatePivot()
+        {
+            this._pivotZero = (this._pivotPoint.x == 0) && (this._pivotPoint.y == 0) && (this._pivotPoint.z == 0);
+            this.invalidateTransform();
+        }
+
+        private invalidatePosition()
+        {
+            if (this._positionDirty)
+                return;
+            this._positionDirty = true;
+            this.invalidateTransform();
+            if (this._listenToPositionChanged)
+                this.notifyPositionChanged();
+        }
+
+        private notifyPositionChanged()
+        {
+            var _self__: any = this;
+            if (<any>!this._positionChanged)
+                this._positionChanged = new Object3DEvent(Object3DEvent.POSITION_CHANGED, this);
+            _self__.dispatchEvent(this._positionChanged);
         }
     }
     var tempAxeX: Vector3D;

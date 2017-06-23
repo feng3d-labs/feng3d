@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 鼠标键盘输入，处理js事件中this关键字问题

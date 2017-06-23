@@ -1,20 +1,19 @@
 var fs = require("fs");
 const util = require("util");
+const debuglog = util.debuglog('foo');
 
-var changeHandler = (event, filename) => {
-    try {
-        var savePath = "src/autofiles/shaders.ts";
-        var filesContent = readFiles(getFilePaths("shaders"));
-        var contentStr = JSON.stringify(filesContent, null, '\t');
-        contentStr = contentStr.replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-        writeFile(savePath, `module feng3d\n{\nfeng3d.shaderFileMap = ${contentStr}\n}`);
-        console.log("自动生成" + savePath)
-    } catch (error) {
-        console.log("error!!!!!\n" + error);
-    }
-}
-
-fs.watch("./shaders", changeHandler);
+// fs.watch("./shaders", (event, filename) => {
+//     try {
+var savePath = "src/autofiles/shaders.ts";
+var filesContent = readFiles(getFilePaths("shaders"));
+var contentStr = JSON.stringify(filesContent, null, '\t');
+contentStr = contentStr.replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
+writeFile(savePath, `namespace feng3d\n{\nfeng3d.shaderFileMap = ${contentStr}\n}`);
+debuglog("自动生成" + savePath)
+//     } catch (error) {
+//         debuglog("error!!!!!\n" + error);
+//     }
+// });
 
 function writeFile(filePath, content) {
     fs.openSync(filePath, "w");

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * FPS模式控制器
@@ -116,9 +116,9 @@ module feng3d
             accelerationVec.scaleBy(this.acceleration);
             //计算速度
             this.velocity.incrementBy(accelerationVec);
-            var right = this.targetObject.rightVector;
-            var up = this.targetObject.upVector;
-            var forward = this.targetObject.forwardVector;
+            var right = this.targetObject.transform.rightVector;
+            var up = this.targetObject.transform.upVector;
+            var forward = this.targetObject.transform.forwardVector;
             right.scaleBy(this.velocity.x);
             up.scaleBy(this.velocity.y);
             forward.scaleBy(this.velocity.z);
@@ -126,9 +126,9 @@ module feng3d
             var displacement = right.clone();
             displacement.incrementBy(up);
             displacement.incrementBy(forward);
-            this.targetObject.x += displacement.x;
-            this.targetObject.y += displacement.y;
-            this.targetObject.z += displacement.z;
+            this.targetObject.transform.x += displacement.x;
+            this.targetObject.transform.y += displacement.y;
+            this.targetObject.transform.z += displacement.z;
         }
 
         /**
@@ -150,7 +150,7 @@ module feng3d
             var offsetPoint = mousePoint.subtract(this.preMousePoint)
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
-            var matrix3d = this.targetObject.sceneTransform;
+            var matrix3d = this.targetObject.transform.localToWorldMatrix;
             matrix3d.appendRotation(offsetPoint.y, matrix3d.right, matrix3d.position);
             var up = Vector3D.Y_AXIS;
             if (matrix3d.up.dotProduct(up) < 0)
@@ -159,7 +159,7 @@ module feng3d
                 up.scaleBy(-1);
             }
             matrix3d.appendRotation(offsetPoint.x, up, matrix3d.position);
-            this.targetObject.sceneTransform = matrix3d;
+            this.targetObject.transform.localToWorldMatrix = matrix3d;
             //
             this.preMousePoint = mousePoint;
         }

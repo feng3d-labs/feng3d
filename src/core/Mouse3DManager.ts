@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
 	/**
@@ -137,9 +137,9 @@ module feng3d
             while (i < checkList.length)
             {
                 var checkObject = checkList[i++];
-                if (checkObject.mouseEnabled && checkObject.getComponentsByType(Geometry))
+                if (checkObject.mouseEnabled && checkObject.getComponents(Geometry))
                 {
-                    results.push(checkObject as GameObject);
+                    results.push(checkObject.gameObject as GameObject);
                 }
                 if (checkObject.mouseChildren)
                 {

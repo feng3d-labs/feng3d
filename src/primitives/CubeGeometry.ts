@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -7,6 +7,97 @@ module feng3d
      */
     export class CubeGeometry extends Geometry
     {
+        public get width()
+        {
+            return this._width;
+        }
+        public set width(value)
+        {
+            if(this._width == value)
+                return;
+            this._width = value;
+            this.invalidateGeometry();
+        }
+        private _width = 100;
+
+        public get height()
+        {
+            return this._height;
+        }
+        public set height(value)
+        {
+            if(this._height == value)
+                return;
+            this._height = value;
+            this.invalidateGeometry();
+        }
+        private _height = 100;
+
+        public get depth()
+        {
+            return this._depth;
+        }
+        public set depth(value)
+        {
+            if(this._depth == value)
+                return;
+            this._depth = value;
+            this.invalidateGeometry();
+        }
+        private _depth = 100;
+
+        public get segmentsW()
+        {
+            return this._segmentsW;
+        }
+        public set segmentsW(value)
+        {
+            if(this._segmentsW == value)
+                return;
+            this._segmentsW = value;
+            this.invalidateGeometry();
+        }
+        private _segmentsW = 1;
+
+        public get segmentsH()
+        {
+            return this._segmentsH;
+        }
+        public set segmentsH(value)
+        {
+            if(this._segmentsH == value)
+                return;
+            this._segmentsH = value;
+            this.invalidateGeometry();
+        }
+        private _segmentsH = 1;
+
+        public get segmentsD()
+        {
+            return this._segmentsD;
+        }
+        public set segmentsD(value)
+        {
+            if(this._segmentsD == value)
+                return;
+            this._segmentsD = value;
+            this.invalidateGeometry();
+        }
+        private _segmentsD = 1;
+
+        public get tile6()
+        {
+            return this._tile6;
+        }
+        public set tile6(value)
+        {
+            if(this._tile6 == value)
+                return;
+            this._tile6 = value;
+            this.invalidateGeometry();
+        }
+        private _tile6 = true;
+        
         /**
          * 创建立方几何体
          * @param   width           宽度，默认为100。
@@ -17,29 +108,29 @@ module feng3d
          * @param   segmentsD       深度方向分割，默认为1。
          * @param   tile6           是否为6块贴图，默认true。
          */
-        constructor(public width = 100, public height = 100, public depth = 100, public segmentsW = 1, public segmentsH = 1, public segmentsD = 1, public tile6 = true)
+        constructor(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true)
         {
             super();
 
-            Watcher.watch(this, ["width"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["height"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["depth"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["segmentsW"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["segmentsH"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["segmentsD"], this.invalidateGeometry, this);
-            Watcher.watch(this, ["tile6"], this.invalidateGeometry, this);
+            this.width = width;
+            this.height = height;
+            this.depth = depth;
+            this.segmentsW = segmentsW;
+            this.segmentsH = segmentsH;
+            this.segmentsD = segmentsD;
+            this.tile6 = tile6;
         }
 
         protected buildGeometry()
         {
             var vertexPositionData = this.buildPosition();
-            this.setVAData(GLAttribute.a_position, vertexPositionData, 3);
+            this.setVAData("a_position", vertexPositionData, 3);
             var vertexNormalData = this.buildNormal();
-            this.setVAData(GLAttribute.a_normal, vertexNormalData, 3);
+            this.setVAData("a_normal", vertexNormalData, 3);
             var vertexTangentData = this.buildTangent();
-            this.setVAData(GLAttribute.a_tangent, vertexTangentData, 3);
+            this.setVAData("a_tangent", vertexTangentData, 3);
             var uvData = this.buildUVs();
-            this.setVAData(GLAttribute.a_uv, uvData, 2);
+            this.setVAData("a_uv", uvData, 2);
             var indices = this.buildIndices();
             this.setIndices(indices);
         }
