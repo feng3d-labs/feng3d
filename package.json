@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/feng3dTS/feng3d-ts.git"
+    "url": "git+https://github.com/feng3dTS/feng3d.git"
   },
   "keywords": [
     "feng3d",
@@ -19,7 +19,7 @@
   "author": "feng",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/feng3dTS/feng3d-ts/issues"
+    "url": "https://github.com/feng3dTS/feng3d/issues"
   },
-  "homepage": "https://github.com/feng3dTS/feng3d-ts#readme"
+  "homepage": "https://github.com/feng3dTS/feng3d#readme"
 }
