@@ -1,15 +1,4 @@
-
-precision mediump float;
-
 //根据是否提供(a_particle_position)数据自动定义 #define D_(a_particle_position)
-
-//此处将填充宏定义
-#define macros
-
-attribute vec3 a_position;
-
-uniform mat4 u_modelMatrix;
-uniform mat4 u_viewProjection;
 
 attribute float a_particle_birthTime;
 
@@ -19,6 +8,10 @@ attribute float a_particle_birthTime;
 
 #ifdef D_a_particle_velocity
     attribute vec3 a_particle_velocity;
+#endif
+
+#ifdef D_a_particle_lifetime
+    attribute float a_particle_lifetime;
 #endif
 
 #ifdef D_a_particle_color
@@ -32,18 +25,27 @@ uniform float u_particleTime;
     uniform vec3 u_particle_acceleration;
 #endif
 
-void main(void) {
+#ifdef D_u_particle_billboardMatrix
+    uniform mat4 u_particle_billboardMatrix;
+#endif
 
-    vec3 position = a_position;
+vec4 particleAnimation(vec4 position) {
 
     float pTime = u_particleTime - a_particle_birthTime;
     if(pTime > 0.0){
 
-        vec3 pPosition = vec3(0.0,0.0,0.0);
+        #ifdef D_a_particle_lifetime
+            pTime = mod(pTime,a_particle_lifetime);
+        #endif
+
         vec3 pVelocity = vec3(0.0,0.0,0.0);
 
+        #ifdef D_u_particle_billboardMatrix
+            position = u_particle_billboardMatrix * position;
+        #endif
+
         #ifdef D_a_particle_position
-            pPosition = pPosition + a_particle_position;
+            position.xyz = position.xyz + a_particle_position;
         #endif
 
         #ifdef D_a_particle_velocity
@@ -58,11 +60,8 @@ void main(void) {
             v_particle_color = a_particle_color;
         #endif
 
-        pPosition = pPosition + pVelocity * pTime;
-        position = position + pPosition;
+        position.xyz = position.xyz + pVelocity * pTime;
     }
     
-    vec4 globalPosition = u_modelMatrix * vec4(position, 1.0);
-    gl_Position = u_viewProjection * globalPosition;
-    gl_PointSize = 1.0;
+    return position;
 }

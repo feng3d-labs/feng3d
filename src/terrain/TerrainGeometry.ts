@@ -120,9 +120,15 @@ module feng3d
                     }
                 }
             }
+            var uvs = this.buildUVs();
             this.setVAData(GLAttribute.a_position, vertices, 3)
-            this.buildUVs();
+            this.setVAData(GLAttribute.a_uv, uvs, 2);
             this.setIndices(indices);
+            var normals = GeometryUtils.createVertexNormals(indices, vertices);
+            this.normals = new Float32Array(normals);
+            //生成切线
+            var tangents = GeometryUtils.createVertexTangents(indices, vertices, uvs);
+            this.tangents = new Float32Array(tangents);
         }
 
 		/**
@@ -144,7 +150,7 @@ module feng3d
                 }
             }
 
-            this.setVAData(GLAttribute.a_uv, uvs, 2);
+            return uvs;
         }
 
 		/**

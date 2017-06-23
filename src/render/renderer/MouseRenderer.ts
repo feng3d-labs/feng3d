@@ -48,7 +48,7 @@ module feng3d
             {
                 var object = meshRenderer.parentComponent;
                 this.objects.push(object);
-                object.renderData.uniforms[RenderDataID.u_objectID] = this.objects.length - 1;
+                object.renderData.uniforms.u_objectID = this.objects.length - 1;
                 super.drawRenderables(renderContext, meshRenderer);
             }
         }

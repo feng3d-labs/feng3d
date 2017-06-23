@@ -58,6 +58,11 @@ module feng3d
             return this._parentComponent;
         }
 
+        public set parentComponent(value)
+        {
+            this._parentComponent = value;
+        }
+
 		/**
 		 * 子组件个数
 		 */
@@ -352,7 +357,7 @@ module feng3d
             var data: { container: Component, child: Component } = event.data;
             if (data.child == this)
             {
-                this._parentComponent = data.container;
+                this.parentComponent = data.container;
                 this.onBeAddedComponent(event);
             }
         }
@@ -366,7 +371,7 @@ module feng3d
             if (event.data.child == this)
             {
                 this.onBeRemovedComponent(event);
-                this._parentComponent = null;
+                this.parentComponent = null;
             }
         }
     }

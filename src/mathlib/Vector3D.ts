@@ -225,5 +225,19 @@ module feng3d
         {
             return "<" + this.x + ", " + this.y + ", " + this.z + ">";
         }
+
+        /**
+         * 返回当前 Vector3D 对象4个元素的数组
+         */
+        public toArray(num: 3 | 4 = 4)
+        {
+            if (num == 3)
+            {
+                return [this.x, this.y, this.z];
+            } else
+            {
+                return [this.x, this.y, this.z, this.w];
+            }
+        }
     }
 }

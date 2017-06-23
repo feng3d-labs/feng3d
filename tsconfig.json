@@ -28,6 +28,8 @@
         "src/events/EventDispatcher.ts",
         //
         "src/sys/SystemTicker.ts",
+        "src/utils/Timer.ts",
+        "src/utils/events/TimerEvent.ts",
         //
         "src/base/Input.ts",
         //快捷键模块
@@ -45,6 +47,7 @@
         "src/net/LoaderDataFormat.ts",
         //基础工具
         "src/mathlib/MathConsts.ts",
+        "src/mathlib/Orientation3D.ts",
         "src/mathlib/Point.ts",
         "src/mathlib/Rectangle.ts",
         "src/mathlib/Vector3D.ts",
@@ -65,6 +68,7 @@
         "src/render/consts/BlendEquation.ts",
         "src/render/consts/TextureType.ts",
         //
+        "src/render/data/UniformRenderData.ts",
         "src/render/data/ShaderParams.ts",
         "src/render/data/RenderDataHolder.ts",
         "src/render/data/RenderAtomic.ts",
@@ -73,7 +77,6 @@
         "src/render/utils/RenderBufferPool.ts",
         "src/render/utils/RenderDataUtil.ts",
         "src/render/GLAttribute.ts",
-        "src/render/RenderDataID.ts",
         "src/render/RenderContext.ts",
         "src/render/shader/ShaderMacro.ts",
         "src/render/shader/ShaderLib.ts",
@@ -144,12 +147,13 @@
         "src/materials/TextureMaterial.ts",
         "src/materials/SkyBoxMaterial.ts",
         "src/materials/StandardMaterial.ts",
-        "src/materials/ParticleMaterial.ts",
         //
         "src/materials/methods/DiffuseMethod.ts",
         "src/materials/methods/NormalMethod.ts",
         "src/materials/methods/SpecularMethod.ts",
         "src/materials/methods/AmbientMethod.ts",
+        "src/materials/methods/FogMethod.ts",
+        "src/materials/methods/EnvMapMethod.ts",
         //灯光
         "src/light/LightType.ts",
         "src/light/Light.ts",
@@ -158,6 +162,7 @@
         //镜头控制
         "src/controllers/ControllerBase.ts",
         "src/controllers/LookAtController.ts",
+        "src/controllers/HoverController.ts",
         "src/controllers/FPSController.ts",
         //拾取
         "src/pick/PickingCollisionVO.ts",
@@ -165,7 +170,8 @@
         "src/pick/RaycastPicker.ts",
         //地形
         "src/terrain/TerrainGeometry.ts",
-        "src/terrain/TerrainMaterial.ts",
+        "src/terrain/TerrainMethod.ts",
+        "src/terrain/TerrainMergeMethod.ts",
         //
         "src/animators/base/states/AnimationStateBase.ts",
         "src/animators/base/states/AnimationClipState.ts",
@@ -178,6 +184,7 @@
         "src/animators/particle/ParticlePosition.ts",
         "src/animators/particle/ParticleVelocity.ts",
         "src/animators/particle/ParticleColor.ts",
+        "src/animators/particle/ParticleBillboard.ts",
         //
         "src/animators/events/AnimationStateEvent.ts",
         "src/animators/events/AnimatorEvent.ts",
@@ -208,16 +215,8 @@
         "src/debug/Trident.ts",
         //
         "src/object3ds/CameraObject3D.ts",
-        "src/object3ds/PlaneObject3D.ts",
-        "src/object3ds/CubeObject3D.ts",
-        "src/object3ds/TorusObect3D.ts",
-        "src/object3ds/SphereObject3D.ts",
-        "src/object3ds/CapsuleObject3D.ts",
-        "src/object3ds/CylinderObject3D.ts",
-        "src/object3ds/ConeObject3D.ts",
-        "src/object3ds/SegmentObject3D.ts",
-        "src/object3ds/ParticleObject3D.ts",
-        "src/object3ds/PointLightObject3D.ts",
+        //
+        "src/utils/GameObjectFactory.ts",
         //
         "src/core/Mouse3DManager.ts",
         //

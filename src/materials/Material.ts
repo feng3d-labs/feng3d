@@ -7,6 +7,7 @@ module feng3d
      */
     export class Material extends RenderDataHolder
     {
+        protected _pointSize = 1;
         protected _enableBlend = false;
 
         /**
@@ -39,6 +40,20 @@ module feng3d
         }
 
         /**
+         * 点绘制时点的尺寸
+         */
+        public get pointSize()
+        {
+            return this._pointSize;
+        }
+
+        public set pointSize(value)
+        {
+            this._pointSize = value;
+            this.invalidateRenderData();
+        }
+
+        /**
          * 混合方程，默认BlendEquation.FUNC_ADD
          */
         public blendEquation = BlendEquation.FUNC_ADD;
@@ -53,6 +68,8 @@ module feng3d
          */
         public dfactor = BlendFactor.ONE_MINUS_SRC_ALPHA;
 
+        private _methods: RenderDataHolder[] = [];
+
         /**
          * 构建材质
          */
@@ -66,6 +83,44 @@ module feng3d
             Watcher.watch(this, ["renderMode"], this.invalidateRenderData, this);
         }
 
+        /**
+         * 添加方法
+         */
+        public addMethod(method: RenderDataHolder)
+        {
+            var index = this._methods.indexOf(method);
+            if (index != -1)
+                return;
+            this._methods.push(method);
+            this.invalidateRenderHolder();
+        }
+
+        /**
+         * 删除方法
+         */
+        public removeMethod(method: RenderDataHolder)
+        {
+            var index = this._methods.indexOf(method);
+            if (index != -1)
+            {
+                this._methods.splice(index, 1);
+                this.invalidateRenderData();
+            }
+        }
+        
+        /**
+         * 收集渲染数据拥有者
+         * @param renderAtomic 渲染原子
+         */
+        public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
+        {
+            for (var i = 0; i < this._methods.length; i++)
+            {
+                this._methods[i].collectRenderDataHolder(renderAtomic);
+            }
+            super.collectRenderDataHolder(renderAtomic);
+        }
+        
         /**
 		 * 更新渲染数据
 		 */
@@ -83,7 +138,20 @@ module feng3d
                 renderData.vertexCode = null;
                 renderData.fragmentCode = null;
             }
+            if (this.renderMode == RenderMode.POINTS)
+            {
+                renderData.shaderMacro.boolMacros.IS_POINTS_MODE = true;
+                renderData.uniforms.u_PointSize = this.pointSize;
+            } else
+            {
+                renderData.shaderMacro.boolMacros.IS_POINTS_MODE = false;
+                delete renderData.uniforms.u_PointSize;
+            }
 
+            for (var i = 0; i < this._methods.length; i++)
+            {
+                this._methods[i].updateRenderData(renderContext, renderData);
+            }
             super.updateRenderData(renderContext, renderData);
         }
     }

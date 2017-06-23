@@ -44,12 +44,34 @@ module feng3d
         private _renderContext: RenderContext;
 
         /**
+         * 鼠标在3D视图中的位置
+         */
+        public mousePos = new Point();
+
+        /**
+         * 是否自动渲染
+         */
+        public get autoRender()
+        {
+            return this._autoRender;
+        }
+        public set autoRender(value)
+        {
+            if (this._autoRender)
+                ticker.removeEventListener(Event.ENTER_FRAME, this.render, this);
+            this._autoRender = value;
+            if (this._autoRender)
+                ticker.addEventListener(Event.ENTER_FRAME, this.render, this);
+        }
+        private _autoRender: boolean;
+
+        /**
          * 构建3D视图
          * @param canvas    画布
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas, scene: Scene3D = null, camera: CameraObject3D = null)
+        constructor(canvas, scene: Scene3D = null, camera: CameraObject3D = null, autoRender = true)
         {
             //初始化引擎
             initEngine();
@@ -58,11 +80,15 @@ module feng3d
             this._canvas = canvas;
 
             this._gl = getWebGLContext(canvas, false);
+            var ext = this._gl.getExtension('OES_standard_derivatives');
+            var ext1 = this._gl.getExtension('EXT_shader_texture_lod');
 
             this.initGL();
 
+            this._viewRect = new Rectangle(this._canvas.clientLeft, this._canvas.clientTop, this._canvas.clientWidth, this._canvas.clientHeight);
             this.scene = scene || new Scene3D();
             this.camera = camera || new CameraObject3D();
+            this.autoRender = autoRender;
 
             this.defaultRenderer = new ForwardRenderer();
             this.mouse3DManager = new Mouse3DManager();
@@ -70,7 +96,7 @@ module feng3d
 
             this._renderContext = new RenderContext();
 
-            ticker.addEventListener(Event.ENTER_FRAME, this.drawScene, this);
+            input.addEventListener(inputType.MOUSE_MOVE, this.onMouseEvent, this);
         }
 
         /**
@@ -78,7 +104,6 @@ module feng3d
          */
         private initGL()
         {
-
             this._gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
             this._gl.clearDepth(1.0);                 // Clear everything
             this._gl.enable(GL.DEPTH_TEST);           // Enable depth testing
@@ -97,9 +122,17 @@ module feng3d
         }
 
         /**
+         * 视窗宽度
+         */
+        public get width()
+        {
+            return this._canvas.width;
+        }
+
+        /**
          * 绘制场景
          */
-        private drawScene(event: Event)
+        public render()
         {
             this._canvas.width = this._canvas.clientWidth;
             this._canvas.height = this._canvas.clientHeight;
@@ -140,13 +173,11 @@ module feng3d
         }
 
         /**
-         * 鼠标在3D视图中的位置
+         * 监听鼠标事件收集事件类型
          */
-        public get mousePos()
+        private onMouseEvent(event: InputEvent)
         {
-            var viewRect: Rectangle = this._viewRect;
-            var pos = new Point(this.mouse3DManager.mouseX - viewRect.x, this.mouse3DManager.mouseY - viewRect.y);
-            return pos;
+            this.mousePos.setTo(event.clientX - this._viewRect.x, event.clientY - this._viewRect.y);
         }
 
         /**
@@ -164,7 +195,7 @@ module feng3d
 		 * @param y view3D上的X坐标
 		 * @return
 		 */
-        public getRay3D(x: number, y: number): Ray3D
+        public getRay3D(x: number, y: number, ray3D: Ray3D = null): Ray3D
         {
             //摄像机坐标
             var rayPosition: Vector3D = this.unproject(x, y, 0, View3D.tempRayPosition);
@@ -176,7 +207,7 @@ module feng3d
             rayDirection.z = rayDirection.z - rayPosition.z;
             rayDirection.normalize();
             //定义射线
-            var ray3D: Ray3D = new Ray3D(rayPosition, rayDirection);
+            ray3D = ray3D || new Ray3D(rayPosition, rayDirection);
             return ray3D;
         }
 

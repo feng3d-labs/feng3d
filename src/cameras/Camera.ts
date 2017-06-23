@@ -149,11 +149,11 @@ module feng3d
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
             //
-            renderData.uniforms[RenderDataID.u_viewProjection] = this.viewProjection;
+            renderData.uniforms.u_viewProjection = this.viewProjection;
             var globalMatrix3d = this.parentComponent ? this.parentComponent.sceneTransform : new Matrix3D();
-            renderData.uniforms[RenderDataID.u_cameraMatrix] = globalMatrix3d;
+            renderData.uniforms.u_cameraMatrix = globalMatrix3d;
             //
-            renderData.uniforms[RenderDataID.u_skyBoxSize] = this._lens.far / Math.sqrt(3);
+            renderData.uniforms.u_skyBoxSize = this._lens.far / Math.sqrt(3);
             super.updateRenderData(renderContext, renderData);
         }
 

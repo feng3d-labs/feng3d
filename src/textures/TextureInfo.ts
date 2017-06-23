@@ -21,6 +21,39 @@ module feng3d
         protected _pixels: ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement | ImageData[] | HTMLVideoElement[] | HTMLImageElement[] | HTMLCanvasElement[];
 
         /**
+         * 纹理宽度
+         */
+        public get width()
+        {
+            var o = {};
+            if (this._pixels && this._pixels.hasOwnProperty("width"))
+                return this._pixels["width"];
+            return this._width;
+        };
+        public set width(value) { this._width = value; }
+        protected _width: number = 100;
+
+        /**
+         * 纹理高度
+         */
+        public get height()
+        {
+            var o = {};
+            if (this._pixels && this._pixels.hasOwnProperty("height"))
+                return this._pixels["height"];
+            return this._height;
+        };
+        public set height(value) { this._height = value; }
+        protected _height: number = 100;
+
+        /**
+         * 纹理尺寸
+         */
+        public get size() { this._size.setTo(this.width, this.height); return this._size; }
+        public set size(value) { this.width = value.x; this.height = value.y; }
+        protected _size: Point = new Point(100, 100);
+
+        /**
          * 格式
          */
         public get format() { return this._format; }
@@ -61,11 +94,11 @@ module feng3d
         /**
          * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
          */
-        public wrapS = GL.CLAMP_TO_EDGE;
+        public wrapS = GL.REPEAT;
         /**
          * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
          */
-        public wrapT = GL.CLAMP_TO_EDGE;
+        public wrapT = GL.REPEAT;
         /**
          * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
          */
@@ -79,8 +112,6 @@ module feng3d
          * 是否失效
          */
         private _invalid = true;
-
-
 
         /**
          * 构建纹理

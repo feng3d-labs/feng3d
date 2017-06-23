@@ -12,5 +12,10 @@ module feng3d
          * 加速度
          */
         acceleration: Vector3D;
+
+        /**
+         * 公告牌矩阵
+         */
+        billboardMatrix: Matrix3D;
     }
 }

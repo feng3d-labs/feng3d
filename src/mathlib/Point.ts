@@ -167,5 +167,13 @@ module feng3d
         {
             return "(x=" + this.x + ", y=" + this.y + ")";
         }
+
+        /**
+         * 返回包含 x 和 y 坐标值的数组
+         */
+        public toArray()
+        {
+            return [this.x, this.y];
+        }
     }
 }

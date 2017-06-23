@@ -21,5 +21,10 @@ module feng3d
         {
 
         }
+
+        public setRenderState(particleGlobal: ParticleGlobal, gameObject: GameObject, renderContext: RenderContext)
+        {
+
+        }
     }
 }

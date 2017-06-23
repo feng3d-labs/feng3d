@@ -1,1 +1,0 @@
-/// <reference path="webgl2.d.ts" />

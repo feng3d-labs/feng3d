@@ -51,6 +51,15 @@ module feng3d
      */
     export function initEngine()
     {
+        if (initFunctions)
+        {
+            for (var i = 0; i < initFunctions.length; i++)
+            {
+                var element = initFunctions[i];
+                element();
+            }
+            delete feng3d.initFunctions;
+        }
         if (!isInit)
         {
             isInit = true;
@@ -63,15 +72,6 @@ module feng3d
             defaultGeometry = new CubeGeometry();
             ticker = new SystemTicker();
             context3DPool = new RenderBufferPool();
-        }
-        if (initFunctions)
-        {
-            for (var i = 0; i < initFunctions.length; i++)
-            {
-                var element = initFunctions[i];
-                element();
-            }
-            delete feng3d.initFunctions;
         }
     }
     var isInit = false;

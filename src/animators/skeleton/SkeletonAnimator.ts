@@ -70,7 +70,7 @@ module feng3d
             if (this._activeSkeletonState)
             {
                 renderData.shaderMacro.valueMacros.NUM_SKELETONJOINT = this.skeleton.numJoints;
-                renderData.uniforms[RenderDataID.u_skeletonGlobalMatriices] = this.globalMatrices;
+                renderData.uniforms.u_skeletonGlobalMatriices = this.globalMatrices;
                 renderData.shaderMacro.boolMacros.HAS_SKELETON_ANIMATION = true;
                 super.updateRenderData(renderContext, renderData);
             } else

@@ -23,6 +23,11 @@ module feng3d
          */
         public intensity: number = 1;
 
+        /**
+         * 是否生成阴影（未实现）
+         */
+        public castsShadows = false;
+
         private _shadowMap: Texture2D = new Texture2D();
         public get shadowMap()
         {

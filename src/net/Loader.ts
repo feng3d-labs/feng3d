@@ -7,7 +7,6 @@ module feng3d
      */
     export class Loader extends EventDispatcher
     {
-
         private _request: XMLHttpRequest;
         private _image: HTMLImageElement;
 
@@ -39,7 +38,6 @@ module feng3d
          */
         public load(url: string)
         {
-
             this._url = url;
         }
 
@@ -49,7 +47,6 @@ module feng3d
          */
         public loadText(url: string)
         {
-
             this._url = url;
             this.dataFormat = LoaderDataFormat.TEXT;
             this.xmlHttpRequestLoad();
@@ -61,7 +58,6 @@ module feng3d
          */
         public loadBinary(url: string)
         {
-
             this._url = url;
             this.dataFormat = LoaderDataFormat.BINARY;
             this.xmlHttpRequestLoad();
@@ -73,7 +69,6 @@ module feng3d
          */
         public loadImage(url: string)
         {
-
             this.dataFormat = LoaderDataFormat.IMAGE;
             this._image = new Image();
             this._image.crossOrigin = "Anonymous";
@@ -87,7 +82,6 @@ module feng3d
          */
         private xmlHttpRequestLoad()
         {
-
             this._request = new XMLHttpRequest();
             this._request.open('Get', this._url, true);
             this._request.responseType = this.dataFormat == LoaderDataFormat.BINARY ? "arraybuffer" : "";
@@ -101,7 +95,6 @@ module feng3d
          */
         private onRequestProgress(event: ProgressEvent)
         {
-
             this.bytesLoaded = event.loaded;
             this.bytesTotal = event.total;
             this.dispatchEvent(new LoaderEvent(LoaderEvent.PROGRESS, this));
@@ -112,7 +105,6 @@ module feng3d
          */
         private onRequestReadystatechange(ev: ProgressEvent)
         {
-
             if (this._request.readyState == 4)
             {// 4 = "loaded"
 
@@ -138,7 +130,6 @@ module feng3d
          */
         private onImageLoad(event)
         {
-
             this.content = this._image;
             this.dispatchEvent(new LoaderEvent(LoaderEvent.COMPLETE, this));
         }

@@ -449,55 +449,109 @@ module feng3d
          * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3D 对象组成的矢量返回。
          * @return      一个由三个 Vector3D 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
          */
-        public decompose(): Vector3D[]
+        public decompose(orientationStyle: string = "eulerAngles", result: Vector3D[] = null): Vector3D[]
         {
-            var vec: Vector3D[] = [];
-            var m = this.clone();
-            var mr = m.rawData;
+            var raw = this.rawData;
 
-            var pos: Vector3D = new Vector3D(mr[12], mr[13], mr[14]);
-            mr[12] = 0;
-            mr[13] = 0;
-            mr[14] = 0;
+            var a: number = raw[0];
+            var e: number = raw[1];
+            var i: number = raw[2];
+            var b: number = raw[4];
+            var f: number = raw[5];
+            var j: number = raw[6];
+            var c: number = raw[8];
+            var g: number = raw[9];
+            var k: number = raw[10];
 
-            var scale: Vector3D = new Vector3D();
+            var x: number = raw[12];
+            var y: number = raw[13];
+            var z: number = raw[14];
 
-            scale.x = Math.sqrt(mr[0] * mr[0] + mr[1] * mr[1] + mr[2] * mr[2]);
-            scale.y = Math.sqrt(mr[4] * mr[4] + mr[5] * mr[5] + mr[6] * mr[6]);
-            scale.z = Math.sqrt(mr[8] * mr[8] + mr[9] * mr[9] + mr[10] * mr[10]);
+            var tx: number = Math.sqrt(a * a + e * e + i * i);
+            var ty: number = Math.sqrt(b * b + f * f + j * j);
+            var tz: number = Math.sqrt(c * c + g * g + k * k);
+            var tw: number = 0;
 
-            if (mr[0] * (mr[5] * mr[10] - mr[6] * mr[9]) - mr[1] * (mr[4] * mr[10] - mr[6] * mr[8]) + mr[2] * (mr[4] * mr[9] - mr[5] * mr[8]) < 0)
-                scale.z = -scale.z;
+            var scaleX: number = tx;
+            var scaleY: number = ty;
+            var scaleZ: number = tz;
 
-            mr[0] /= scale.x;
-            mr[1] /= scale.x;
-            mr[2] /= scale.x;
-            mr[4] /= scale.y;
-            mr[5] /= scale.y;
-            mr[6] /= scale.y;
-            mr[8] /= scale.z;
-            mr[9] /= scale.z;
-            mr[10] /= scale.z;
-
-            var rot = new Vector3D();
-
-            rot.y = Math.asin(-mr[2]);
-
-            if (mr[2] != 1 && mr[2] != -1)
+            if (a * (f * k - j * g) - e * (b * k - j * c) + i * (b * g - f * c) < 0)
             {
-                rot.x = Math.atan2(mr[6], mr[10]);
-                rot.z = Math.atan2(mr[1], mr[0]);
-            } else
-            {
-                rot.z = 0;
-                rot.x = Math.atan2(mr[4], mr[5]);
+                scaleZ = -scaleZ;
             }
 
-            vec.push(pos);
-            vec.push(rot);
-            vec.push(scale);
+            a = a / scaleX;
+            e = e / scaleX;
+            i = i / scaleX;
+            b = b / scaleY;
+            f = f / scaleY;
+            j = j / scaleY;
+            c = c / scaleZ;
+            g = g / scaleZ;
+            k = k / scaleZ;
 
-            return vec;
+            if (orientationStyle == Orientation3D.EULER_ANGLES)
+            {
+                tx = Math.atan2(j, k);
+                ty = Math.atan2(-i, Math.sqrt(a * a + e * e));
+                var s1: number = Math.sin(tx);
+                var c1: number = Math.cos(tx);
+                tz = Math.atan2(s1 * c - c1 * b, c1 * f - s1 * g);
+            }
+            else if (orientationStyle == Orientation3D.AXIS_ANGLE)
+            {
+                tw = Math.acos((a + f + k - 1) / 2);
+                var len: number = Math.sqrt((j - g) * (j - g) + (c - i) * (c - i) + (e - b) * (e - b));
+                tx = (j - g) / len;
+                ty = (c - i) / len;
+                tz = (e - b) / len;
+            }
+            else
+            { //Orientation3D.QUATERNION
+                var tr: number = a + f + k;
+                if (tr > 0)
+                {
+                    tw = Math.sqrt(1 + tr) / 2;
+                    tx = (j - g) / (4 * tw);
+                    ty = (c - i) / (4 * tw);
+                    tz = (e - b) / (4 * tw);
+                }
+                else if ((a > f) && (a > k))
+                {
+                    tx = Math.sqrt(1 + a - f - k) / 2;
+                    tw = (j - g) / (4 * tx);
+                    ty = (e + b) / (4 * tx);
+                    tz = (c + i) / (4 * tx);
+                }
+                else if (f > k)
+                {
+                    ty = Math.sqrt(1 + f - a - k) / 2;
+                    tx = (e + b) / (4 * ty);
+                    tw = (c - i) / (4 * ty);
+                    tz = (j + g) / (4 * ty);
+                }
+                else
+                {
+                    tz = Math.sqrt(1 + k - a - f) / 2;
+                    tx = (c + i) / (4 * tz);
+                    ty = (j + g) / (4 * tz);
+                    tw = (e - b) / (4 * tz);
+                }
+            }
+
+            result = result || [new Vector3D(), new Vector3D(), new Vector3D()];
+            result[0].x = x;
+            result[0].y = y;
+            result[0].z = z;
+            result[1].x = tx;
+            result[1].y = ty;
+            result[1].z = tz;
+            result[1].w = tw;
+            result[2].x = scaleX;
+            result[2].y = scaleY;
+            result[2].z = scaleZ;
+            return result;
         }
 
         /**

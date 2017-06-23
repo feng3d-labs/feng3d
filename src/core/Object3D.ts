@@ -341,6 +341,24 @@ module feng3d
             }
         }
 
+        public get position(): Vector3D
+        {
+            this._position.setTo(this._x, this._y, this._z);
+            return this._position;
+        }
+
+        public set position(value)
+        {
+            if (this._x != value.x || this._y != value.y || this._z != value.z)
+            {
+                this._x = value.x;
+                this._y = value.y;
+                this._z = value.z;
+                this.invalidatePosition();
+            }
+        }
+        private _position = new Vector3D();
+
         public getRotation(rotation: Vector3D = null): Vector3D
         {
             rotation = rotation || new Vector3D();

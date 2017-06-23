@@ -17,6 +17,7 @@ module feng3d
         private _attributes: { [name: string]: AttributeRenderData } = {};
 
         private _geometryInvalid = true;
+        private _useFaceWeights = false;
 
         private _scaleU: number = 1;
         private _scaleV: number = 1;
@@ -26,21 +27,49 @@ module feng3d
          */
         public get positions()
         {
-            this.updateGrometry();
-            var positionData = this._attributes[GLAttribute.a_position];
-            return positionData && positionData.data;
+            return this.getVAData1(GLAttribute.a_position)
         }
 
         public set positions(value)
         {
-            if (value)
-            {
-                var positionData = this._attributes[GLAttribute.a_position] = this._attributes[GLAttribute.a_position] || new AttributeRenderData(value, 3);;
-                positionData.data = value;
-            } else
-            {
-                delete this._attributes[GLAttribute.a_position];
-            }
+            this.setVAData(GLAttribute.a_position, value, 3);
+        }
+
+        /**
+         * uv数据
+         */
+        public get uvs()
+        {
+            return this.getVAData1(GLAttribute.a_uv)
+        }
+
+        public set uvs(value)
+        {
+            this.setVAData(GLAttribute.a_uv, value, 2);
+        }
+
+        /**
+         * 法线数据
+         */
+        public get normals()
+        {
+            return this.getVAData1(GLAttribute.a_normal);
+        }
+        public set normals(value)
+        {
+            this.setVAData(GLAttribute.a_normal, value, 3);
+        }
+
+        /**
+         * 切线数据
+         */
+        public get tangents()
+        {
+            return this.getVAData1(GLAttribute.a_tangent);
+        }
+        public set tangents(value)
+        {
+            this.setVAData(GLAttribute.a_tangent, value, 3);
         }
 
         /**
@@ -95,6 +124,14 @@ module feng3d
         {
         }
 
+        /**
+         * 索引数据
+         */
+        public get indices()
+        {
+            return this._indexBuffer && this._indexBuffer.indices;
+        }
+
 		/**
 		 * 更新顶点索引数据
 		 */
@@ -123,7 +160,15 @@ module feng3d
 		 */
         public setVAData(vaId: string, data: Float32Array, stride: number)
         {
-            this._attributes[vaId] = new AttributeRenderData(data, stride);
+            if (data)
+            {
+                if (!this._attributes[vaId])
+                    this._attributes[vaId] = new AttributeRenderData(data, stride);
+                this._attributes[vaId].data = data;
+            } else
+            {
+                delete this._attributes[vaId];
+            }
             this.invalidateRenderData();
             this.dispatchEvent(new GeometryEvent(GeometryEvent.CHANGED_VA_DATA, vaId));
         }
@@ -133,10 +178,22 @@ module feng3d
 		 * @param vaId 数据类型编号
 		 * @return 顶点属性数据
 		 */
-        public getVAData(vaId: string): AttributeRenderData
+        public getVAData(vaId: string)
         {
+            this.updateGrometry();
             this.dispatchEvent(new GeometryEvent(GeometryEvent.GET_VA_DATA, vaId));
             return this._attributes[vaId];
+        }
+
+		/**
+		 * 获取顶点属性数据
+		 * @param vaId 数据类型编号
+		 * @return 顶点属性数据
+		 */
+        public getVAData1(vaId: string)
+        {
+            var attributeRenderData = this.getVAData(vaId);
+            return attributeRenderData && attributeRenderData.data;
         }
 
         /**
@@ -148,7 +205,7 @@ module feng3d
             for (var attributeName in this._attributes)
             {
                 var attributeRenderData = this._attributes[attributeName];
-                numVertex = attributeRenderData.data.length / attributeRenderData.stride;
+                numVertex = attributeRenderData.data.length / attributeRenderData.size;
                 break;
             }
             return numVertex;
@@ -198,7 +255,7 @@ module feng3d
             //合并属性数据
             for (var attributeName in attributes)
             {
-                var stride = attributes[attributeName].stride;
+                var stride = attributes[attributeName].size;
                 var data = new Float32Array(totalVertex * stride);
                 data.set(attributes[attributeName].data, 0);
                 data.set(addAttributes[attributeName].data, oldNumVertex * stride);
@@ -222,9 +279,9 @@ module feng3d
             var normals = normalRenderData.data;
             var tangents = tangentRenderData.data;
 
-            var posStride: number = positionRenderData.stride;
-            var normalStride: number = normalRenderData.stride;
-            var tangentStride: number = tangentRenderData.stride;
+            var posStride: number = positionRenderData.size;
+            var normalStride: number = normalRenderData.size;
+            var tangentStride: number = tangentRenderData.size;
 
             var len: number = vertices.length / posStride;
             var i: number, i1: number, i2: number;
@@ -347,6 +404,26 @@ module feng3d
         public invalidateBounds()
         {
             this.dispatchEvent(new GeometryEvent(GeometryEvent.BOUNDS_INVALID))
+        }
+
+        /**
+         * 创建顶点法线
+         */
+        public createVertexNormals()
+        {
+            //生成法线
+            var normals = GeometryUtils.createVertexNormals(this.indices, this.positions, this._useFaceWeights);
+            this.normals = new Float32Array(normals);
+        }
+
+        /**
+         * 创建顶点切线
+         */
+        public createVertexTangents()
+        {
+            //生成切线
+            var tangents = GeometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, this._useFaceWeights);
+            this.tangents = new Float32Array(tangents);
         }
 
         /**

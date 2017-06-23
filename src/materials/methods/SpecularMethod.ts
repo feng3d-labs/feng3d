@@ -9,23 +9,47 @@ module feng3d
         /**
          * 镜面反射光泽图
          */
-        public specularTexture = new Texture2D();
+        public get specularTexture()
+        {
+            return this._specularTexture;
+        }
+        public set specularTexture(value)
+        {
+            if (this._specularTexture)
+                this._specularTexture.removeEventListener(Event.LOADED, this.invalidateRenderData, this);
+            this._specularTexture = value;
+            if (this._specularTexture)
+                this._specularTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
+            this.invalidateRenderData();
+        }
+        private _specularTexture: Texture2D;
         /**
          * 镜面反射颜色
          */
         public specularColor = new Color();
         /**
+		 * 镜面反射光反射强度
+		 */
+        public get specular()
+        {
+            return this.specularColor.a;
+        }
+        public set specular(value)
+        {
+            this.specularColor.a = value;
+        }
+        /**
          * 高光系数
          */
-        public glossiness = 5;
+        public glossiness = 50;
 
         /**
          * 构建
          */
-        constructor()
+        constructor(specularUrl = "")
         {
             super();
-            this.specularTexture.addEventListener(Event.LOADED, this.invalidateRenderData, this);
+            this.specularTexture = new Texture2D(specularUrl);
         }
 
         /**
@@ -35,15 +59,15 @@ module feng3d
         {
             if (this.specularTexture.checkRenderData())
             {
-                renderData.uniforms[RenderDataID.s_specular] = this.specularTexture;
+                renderData.uniforms.s_specular = this.specularTexture;
                 renderData.shaderMacro.boolMacros.HAS_SPECULAR_SAMPLER = true;
             } else
             {
-                renderData.uniforms[RenderDataID.s_specular] = null;
+                delete renderData.uniforms.s_specular;
                 renderData.shaderMacro.boolMacros.HAS_SPECULAR_SAMPLER = false;
             }
-            renderData.uniforms[RenderDataID.u_specular] = this.specularColor;
-            renderData.uniforms[RenderDataID.u_glossiness] = this.glossiness;
+            renderData.uniforms.u_specular = this.specularColor;
+            renderData.uniforms.u_glossiness = this.glossiness;
 
             //
             super.updateRenderData(renderContext, renderData);
