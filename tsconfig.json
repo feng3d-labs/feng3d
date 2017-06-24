@@ -4,8 +4,7 @@
         "noImplicitAny": false,
         "sourceMap": true,
         "declaration": true,
-        // "outDir": "out"
-        "outFile": "out/feng3d.js"
+        "outFile": "../feng3d-examples/libs/feng3d.js"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //基础工具
