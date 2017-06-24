@@ -8,6 +8,8 @@
         "outFile": "out/feng3d.js"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
+        //event
+        "libs/event.d.ts",
         //基础工具
         "src/debug/assert.ts",
         "src/utils/ClassUtils.ts",
@@ -33,10 +35,6 @@
         "src/mathlib/Color.ts",
         //数据持久化
         "src/serialization/Serialization.ts",
-        //事件模块
-        "src/events/Event.ts",
-        "src/events/IEventDispatcher.ts",
-        "src/events/EventDispatcher.ts",
         //
         "src/collections/IList.ts",
         "src/collections/ArrayList.ts",
