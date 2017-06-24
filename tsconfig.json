@@ -33,10 +33,6 @@
         "src/mathlib/Color.ts",
         //数据持久化
         "src/serialization/Serialization.ts",
-        //事件模块
-        "src/events/Event.ts",
-        "src/events/IEventDispatcher.ts",
-        "src/events/EventDispatcher.ts",
         //
         "src/collections/IList.ts",
         "src/collections/ArrayList.ts",
