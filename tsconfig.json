@@ -4,56 +4,13 @@
         "noImplicitAny": false,
         "sourceMap": true,
         "declaration": true,
-        // "outDir": "out"
         "outFile": "out/feng3d.js"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
-        //event
         "libs/event.d.ts",
-        //基础工具
-        "src/debug/assert.ts",
-        "src/utils/ClassUtils.ts",
-        "src/utils/ObjectUtils.ts",
-        "src/utils/VersionUtils.ts",
-        "src/utils/Watcher.ts",
-        "src/utils/Binding.ts",
-        "src/utils/gettimer.ts",
-        "src/utils/StringUtils.ts",
-        "src/utils/Map.ts",
-        //基础工具
-        "src/mathlib/Math.ts",
-        "src/mathlib/Orientation3D.ts",
-        "src/mathlib/Point.ts",
-        "src/mathlib/Rectangle.ts",
-        "src/mathlib/Vector3D.ts",
-        "src/mathlib/Matrix3D.ts",
-        "src/mathlib/Quaternion.ts",
-        "src/mathlib/Line3D.ts",
-        "src/mathlib/Ray3D.ts",
-        "src/mathlib/Plane3D.ts",
-        "src/mathlib/PlaneClassification.ts",
-        "src/mathlib/Color.ts",
+        "libs/common.d.ts",
         //数据持久化
         "src/serialization/Serialization.ts",
-        //
-        "src/collections/IList.ts",
-        "src/collections/ArrayList.ts",
-        //
-        "src/sys/SystemTicker.ts",
-        "src/utils/Timer.ts",
-        "src/utils/events/TimerEvent.ts",
-        //
-        "src/base/Input.ts",
-        //快捷键模块
-        "src/shortcut/handle/KeyCapture.ts",
-        "src/shortcut/handle/KeyState.ts",
-        "src/shortcut/handle/ShortCutCapture.ts",
-        "src/shortcut/handle/ShortCutEvent.ts",
-        "src/shortcut/ShortCut.ts",
-        //加载模块
-        "src/net/Loader.ts",
-        "src/net/LoaderEvent.ts",
-        "src/net/LoaderDataFormat.ts",
         //
         "src/render/gl/webglExt.ts",
         "src/render/gl/webgl2.ts",

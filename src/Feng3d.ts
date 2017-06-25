@@ -14,15 +14,6 @@ namespace feng3d
      */
     export var serialization: Serialization;
     /**
-     * 键盘鼠标输入
-     */
-    export var input: Input;
-    export var inputType: InputEventType;
-    /**
-     * 快捷键
-     */
-    export var shortcut: ShortCut;
-    /**
      * 默认材质
      */
     export var defaultMaterial: StandardMaterial;
@@ -30,10 +21,6 @@ namespace feng3d
      * 默认几何体
      */
     export var defaultGeometry: Geometry;
-    /**
-     * 心跳计时器单例
-     */
-    export var ticker: SystemTicker;
     /**
      * 着色器库，由shader.ts初始化
      */
@@ -58,12 +45,11 @@ namespace feng3d
             isInit = true;
             console.log(`Feng3D version ${this.revision}`)
             serialization = new Serialization();
-            input = new Input();
-            inputType = new InputEventType();
-            shortcut = new ShortCut();
+            Input.init();
+            ShortCut.init();
+            SystemTicker.init();
             defaultMaterial = new StandardMaterial();
             defaultGeometry = new CubeGeometry();
-            ticker = new SystemTicker();
         }
     }
     var isInit = false;
