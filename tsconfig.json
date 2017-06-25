@@ -9,35 +9,15 @@
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         "libs/event.d.ts",
         "libs/common.d.ts",
+        "libs/feng3d-shader.d.ts",
         //数据持久化
         "src/serialization/Serialization.ts",
         //
-        "src/render/gl/webglExt.ts",
-        "src/render/gl/webgl2.ts",
-        "src/render/gl/GL.ts",
-        "src/render/gl/GLProxy.ts",
-        "src/render/gl/GLExtension.ts",
-        "src/render/gl/GLProgramExtension.ts",
-        //渲染
-        "src/render/consts/RenderMode.ts",
-        "src/render/consts/BlendFactor.ts",
-        "src/render/consts/BlendEquation.ts",
-        "src/render/consts/TextureType.ts",
-        //
-        "src/render/data/RenderElement.ts",
         "src/render/data/RenderData.ts",
-        "src/render/data/UniformData.ts",
-        "src/render/data/UniformRenderData.ts",
-        "src/render/data/ShaderRenderData.ts",
-        "src/render/data/ShaderParams.ts",
+		"src/render/data/UniformRenderData.ts",
         "src/render/data/RenderDataHolder.ts",
-        "src/render/data/RenderAtomic.ts",
         "src/render/data/Object3DRenderAtomic.ts",
-        "src/render/data/IndexRenderData.ts",
-        "src/render/data/AttributeRenderData.ts",
-        "src/render/GLAttribute.ts",
         "src/render/RenderContext.ts",
-        "src/render/shader/ShaderMacro.ts",
         "src/render/shader/ShaderLib.ts",
         //
         "src/core/HideFlags.ts",
@@ -99,7 +79,6 @@
         "src/primitives/TorusGeometry.ts",
         "src/primitives/SkyBoxGeometry.ts",
         //
-        "src/textures/TextureInfo.ts",
         "src/textures/Texture2D.ts",
         "src/textures/TextureCube.ts",
         "src/textures/RenderTargetTexture.ts",
