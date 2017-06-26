@@ -9,7 +9,7 @@
 
 ## 相关项目
 
-1. [feng3d-examples](https://github.com/feng3dTS/feng3d-examples)
+1. [examples](https://github.com/feng3dTS/examples)
 1. [feng3d-editor](https://github.com/feng3dTS/feng3d-editor)
 
 ## 交流
