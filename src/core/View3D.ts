@@ -65,6 +65,11 @@ namespace feng3d
         }
         private _autoRender: boolean;
 
+        public get viewRect()
+        {
+            return this._viewRect;
+        }
+
         /**
          * 构建3D视图
          * @param canvas    画布

@@ -438,7 +438,7 @@ declare namespace feng3d {
         /**
          * Returns the instance id of the Feng3dObject.
          */
-        getInstanceID(): string;
+        readonly uuid: string;
         /**
          * Returns the name of the game Feng3dObject.
          */
@@ -1178,6 +1178,7 @@ declare namespace feng3d {
          */
         autoRender: boolean;
         private _autoRender;
+        readonly viewRect: Rectangle;
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -1370,7 +1371,7 @@ declare namespace feng3d {
      * 几何体
      * @author feng 2016-04-28
      */
-    class Geometry extends Component {
+    class Geometry extends Feng3dObject {
         /**
          * 顶点索引缓冲
          */
@@ -4361,6 +4362,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class GameObjectFactory {
+        static create(name?: string): GameObject;
         static createCube(name?: string): GameObject;
         static createPlane(name?: string): GameObject;
         static createCylinder(name?: string): GameObject;

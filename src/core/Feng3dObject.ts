@@ -35,7 +35,7 @@ namespace feng3d
         /**
          * Returns the instance id of the Feng3dObject.
          */
-        public getInstanceID()
+        public get uuid()
         {
             return this._uuid;
         }
