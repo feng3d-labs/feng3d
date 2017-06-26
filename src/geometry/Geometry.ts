@@ -4,7 +4,7 @@ namespace feng3d
      * 几何体
      * @author feng 2016-04-28
      */
-    export class Geometry extends Component
+    export class Geometry extends Feng3dObject
     {
         /**
          * 顶点索引缓冲
@@ -77,7 +77,6 @@ namespace feng3d
         constructor()
         {
             super();
-            this._single = true;
         }
 
         /**
