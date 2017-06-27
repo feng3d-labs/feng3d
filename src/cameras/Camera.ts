@@ -14,13 +14,12 @@ namespace feng3d
 
 		/**
 		 * 创建一个摄像机
-		 * @param lens 摄像机镜头
 		 */
-        constructor(lens: LensBase = null)
+        constructor(gameObject: GameObject)
         {
-            super();
+            super(gameObject);
             this._single = true;
-            this._lens = lens || new PerspectiveLens();
+            this._lens = new PerspectiveLens();
             this._lens.addEventListener(LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
 
             this._frustumPlanes = [];

@@ -269,9 +269,9 @@ namespace feng3d
         //------------------------------------------
         // Public Functions
         //------------------------------------------
-        public constructor()
+        public constructor(gameObject: GameObject)
         {
-            super();
+            super(gameObject);
             tempAxeX = tempAxeX || new Vector3D();
             tempAxeY = tempAxeY || new Vector3D();
             tempAxeZ = tempAxeZ || new Vector3D();
@@ -434,15 +434,6 @@ namespace feng3d
         public roll(angle: number)
         {
             this.rotate(Vector3D.Z_AXIS, angle);
-        }
-
-        public clone(): Object3D
-        {
-            var clone: Object3D = new Object3D();
-            clone.pivotPoint = this.pivotPoint;
-            clone.matrix3d = this.matrix3d;
-            clone.name = this.name;
-            return clone;
         }
 
         public rotateTo(ax: number, ay: number, az: number)

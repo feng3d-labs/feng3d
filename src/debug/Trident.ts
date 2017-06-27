@@ -4,67 +4,63 @@ namespace feng3d
      * 坐标系，三叉戟
      * @author feng 2017-02-06
      */
-    export class Trident extends GameObject
+    export class Trident extends Component
     {
-        private _xLine: GameObject;
-        private _yLine: GameObject;
-        private _zLine: GameObject;
-
-        private _xArrow: GameObject;
-        private _yArrow: GameObject;
-        private _zArrow: GameObject;
-
-        constructor(length = 100)
+        constructor(gameObject: GameObject)
         {
-            super();
+            super(gameObject);
+            this.transform.mouseChildren = false;
+            this.transform.mouseEnabled = false;
+
+            length = 100;
             this.buildTrident(Math.abs((length == 0) ? 10 : length));
         }
 
         private buildTrident(length: number)
         {
-            this._xLine = new GameObject();
+            var xLine = new GameObject("xLine");
             var segmentGeometry = new SegmentGeometry();
             segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(length, 0, 0), 0xff0000, 0xff0000));
-            this._xLine.addComponent(MeshFilter).mesh = segmentGeometry;
-            this._xLine.addComponent(MeshRenderer).material = new SegmentMaterial();
-            this.transform.addChild(this._xLine.transform);
+            xLine.addComponent(MeshFilter).mesh = segmentGeometry;
+            xLine.addComponent(MeshRenderer).material = new SegmentMaterial();
+            this.transform.addChild(xLine.transform);
             //
-            this._yLine = new GameObject();
+            var yLine = new GameObject("yLine");
             var segmentGeometry = new SegmentGeometry();
             segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, length, 0), 0x00ff00, 0x00ff00));
-            this._yLine.addComponent(MeshFilter).mesh = segmentGeometry;
-            this._yLine.addComponent(MeshRenderer).material = new SegmentMaterial();
-            this.transform.addChild(this._yLine.transform);
+            yLine.addComponent(MeshFilter).mesh = segmentGeometry;
+            yLine.addComponent(MeshRenderer).material = new SegmentMaterial();
+            this.transform.addChild(yLine.transform);
             //
-            this._zLine = new GameObject();
+            var zLine = new GameObject("zLine");
             var segmentGeometry = new SegmentGeometry();
             segmentGeometry.addSegment(new Segment(new Vector3D(), new Vector3D(0, 0, length), 0x0000ff, 0x0000ff));
-            this._zLine.addComponent(MeshFilter).mesh = segmentGeometry;
-            this._zLine.addComponent(MeshRenderer).material = new SegmentMaterial();
-            this.transform.addChild(this._zLine.transform);
+            zLine.addComponent(MeshFilter).mesh = segmentGeometry;
+            zLine.addComponent(MeshRenderer).material = new SegmentMaterial();
+            this.transform.addChild(zLine.transform);
             //
-            this._xArrow = new GameObject();
-            this._xArrow.transform.x = length;
-            this._xArrow.transform.rotationZ = -90;
-            this._xArrow.addComponent(MeshFilter).mesh = new ConeGeometry(5, 18);;
-            var material = this._xArrow.addComponent(MeshRenderer).material = new ColorMaterial();
+            var xArrow = new GameObject("xArrow");
+            xArrow.transform.x = length;
+            xArrow.transform.rotationZ = -90;
+            xArrow.addComponent(MeshFilter).mesh = new ConeGeometry(5, 18);;
+            var material = xArrow.addComponent(MeshRenderer).material = new ColorMaterial();
             material.color = new Color(1, 0, 0);
-            this.transform.addChild(this._xArrow.transform);
+            this.transform.addChild(xArrow.transform);
             //
-            this._yArrow = new GameObject();
-            this._yArrow.transform.y = length;
-            this._yArrow.addComponent(MeshFilter).mesh = new ConeGeometry(5, 18);
-            var material = this._yArrow.addComponent(MeshRenderer).material = new ColorMaterial();
+            var yArrow = new GameObject("yArrow");
+            yArrow.transform.y = length;
+            yArrow.addComponent(MeshFilter).mesh = new ConeGeometry(5, 18);
+            var material = yArrow.addComponent(MeshRenderer).material = new ColorMaterial();
             material.color = new Color(0, 1, 0);
-            this.transform.addChild(this._yArrow.transform);
+            this.transform.addChild(yArrow.transform);
             //
-            this._zArrow = new GameObject();
-            this._zArrow.transform.z = length;
-            this._zArrow.transform.rotationX = 90;
-            this._zArrow.addComponent(MeshFilter).mesh = new ConeGeometry(5, 18);
-            var material = this._zArrow.addComponent(MeshRenderer).material = new ColorMaterial();
+            var zArrow = new GameObject("zArrow");
+            zArrow.transform.z = length;
+            zArrow.transform.rotationX = 90;
+            zArrow.addComponent(MeshFilter).mesh = new ConeGeometry(5, 18);
+            var material = zArrow.addComponent(MeshRenderer).material = new ColorMaterial();
             material.color = new Color(0, 0, 1);
-            this.transform.addChild(this._zArrow.transform);
+            this.transform.addChild(zArrow.transform);
         }
     }
 }

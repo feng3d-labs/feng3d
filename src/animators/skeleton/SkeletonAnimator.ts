@@ -43,11 +43,10 @@ namespace feng3d
 		/**
 		 * 创建一个骨骼动画类
 		 */
-        constructor(skeleton: Skeleton)
+        constructor(gameObject: GameObject)
         {
-            super();
+            super(gameObject);
 
-            this.skeleton = skeleton;
             //
             this.createUniformData("u_skeletonGlobalMatriices", () => this.globalMatrices);
             this.createValueMacro("NUM_SKELETONJOINT", () => this._skeleton.numJoints);

@@ -29,9 +29,9 @@ namespace feng3d
         /**
          * 构建
          */
-        constructor()
+        constructor(gameObject:GameObject)
         {
-            super();
+            super(gameObject);
             this.lightType = LightType.Point;
             PointLight._pointLights.push(this);
         }

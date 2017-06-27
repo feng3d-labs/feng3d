@@ -27,9 +27,9 @@ namespace feng3d
 		/**
 		 * 创建一个实体，该类为虚类
 		 */
-        constructor()
+        constructor(gameObject: GameObject)
         {
-            super();
+            super(gameObject);
 
             this._updateEverytime = true;
 
@@ -192,6 +192,10 @@ namespace feng3d
           */
         public isIntersectingRay(ray3D: Ray3D): boolean
         {
+            var meshFilter = this.gameObject.getComponent(MeshFilter);
+            if (!meshFilter || !meshFilter.mesh)
+                return false;
+
             if (!this.pickingCollisionVO.localNormal)
                 this.pickingCollisionVO.localNormal = new Vector3D();
 

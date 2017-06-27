@@ -56,11 +56,12 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    type Lazy<T> = T | (() => T);
     interface UniformRenderData {
         /**
          * 模型矩阵
          */
-        u_modelMatrix: Matrix3D | (() => Matrix3D);
+        u_modelMatrix: Lazy<Matrix3D>;
         /**
          * 世界投影矩阵
          */
@@ -532,19 +533,25 @@ declare namespace feng3d {
         /**
          * 创建一个组件容器
          */
-        constructor();
+        constructor(gameObject: GameObject);
         /**
          * Returns the component of Type type if the game object has one attached, null if it doesn't.
          * @param type				The type of Component to retrieve.
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Component>(type: new () => T): T;
+        getComponent<T extends Component>(type: ComponentConstructor<T>): T;
         /**
          * Returns all components of Type type in the GameObject.
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Component>(type?: new () => T): T[];
+        getComponents<T extends Component>(type?: ComponentConstructor<T>): T[];
+        /**
+         * Returns all components of Type type in the GameObject.
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInChildren<T extends Component>(type?: ComponentConstructor<T>): T[];
         /**
          * 派发事件，该事件将会强制冒泡到3D对象中
          * @param event						调度到事件流中的 Event 对象。
@@ -626,7 +633,7 @@ declare namespace feng3d {
          * Is this renderer visible in any camera? (Read Only)
          */
         readonly isVisible: boolean;
-        constructor();
+        constructor(gameObject: GameObject);
         drawRenderables(renderContext: RenderContext): void;
         /**
          * 绘制3D对象
@@ -731,7 +738,7 @@ declare namespace feng3d {
          */
         mesh: Geometry;
         private _mesh;
-        constructor();
+        constructor(gameObject: GameObject);
     }
 }
 declare namespace feng3d {
@@ -762,7 +769,7 @@ declare namespace feng3d {
         readonly leftVector: Vector3D;
         readonly downVector: Vector3D;
         zOffset: number;
-        constructor();
+        constructor(gameObject: GameObject);
         getPosition(position?: Vector3D): Vector3D;
         setPosition(x?: number, y?: number, z?: number): void;
         getRotation(rotation?: Vector3D): Vector3D;
@@ -783,7 +790,6 @@ declare namespace feng3d {
         pitch(angle: number): void;
         yaw(angle: number): void;
         roll(angle: number): void;
-        clone(): Object3D;
         rotateTo(ax: number, ay: number, az: number): void;
         rotate(axis: Vector3D, angle: number): void;
         lookAt(target: Vector3D, upAxis?: Vector3D): void;
@@ -854,26 +860,26 @@ declare namespace feng3d {
          * Matrix that transforms a point from local space into world space.
          */
         localToWorldMatrix: Matrix3D;
-        scene: Scene3D;
+        readonly scene: Scene3D;
+        private updateScene();
         /**
          * Matrix that transforms a point from world space into local space (Read Only).
          */
         readonly worldToLocalMatrix: Matrix3D;
-        readonly parent: ObjectContainer3D;
-        constructor();
-        contains(child: ObjectContainer3D): boolean;
-        addChild(child: ObjectContainer3D): ObjectContainer3D;
+        readonly parent: Transform;
+        constructor(gameObject: GameObject);
+        contains(child: Transform): boolean;
+        addChild(child: Transform): Transform;
         addChildren(...childarray: any[]): void;
-        setChildAt(child: ObjectContainer3D, index: number): void;
-        removeChild(child: ObjectContainer3D): void;
+        setChildAt(child: Transform, index: number): void;
+        removeChild(child: Transform): void;
         removeChildAt(index: number): void;
-        setParent(value: ObjectContainer3D): void;
-        getChildAt(index: number): ObjectContainer3D;
+        private _setParent(value);
+        getChildAt(index: number): Transform;
         lookAt(target: Vector3D, upAxis?: Vector3D): void;
         translateLocal(axis: Vector3D, distance: number): void;
         dispose(): void;
         disposeWithChildren(): void;
-        clone(): ObjectContainer3D;
         rotate(axis: Vector3D, angle: number): void;
         updateImplicitVisibility(): void;
         addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
@@ -881,10 +887,10 @@ declare namespace feng3d {
         /**
          * 获取子对象列表（备份）
          */
-        getChildren(): ObjectContainer3D[];
+        getChildren(): Transform[];
         invalidateTransform(): void;
         protected _scene: Scene3D;
-        protected _parent: ObjectContainer3D;
+        protected _parent: Transform;
         protected _sceneTransform: Matrix3D;
         protected _sceneTransformDirty: boolean;
         protected _mouseEnabled: boolean;
@@ -896,7 +902,6 @@ declare namespace feng3d {
         private _scenechanged;
         private _children;
         private _mouseChildren;
-        private _oldScene;
         private _worldToLocalMatrix;
         private _worldToLocalMatrixDirty;
         private _scenePosition;
@@ -933,7 +938,7 @@ declare namespace feng3d {
         /**
          * 创建一个实体，该类为虚类
          */
-        constructor();
+        constructor(gameObject: GameObject);
         /**
          * 更新渲染数据
          */
@@ -1016,6 +1021,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    type ComponentConstructor<T> = (new (gameObject: GameObject) => T);
     interface ComponentMap {
         camera: new () => Camera;
     }
@@ -1052,7 +1058,7 @@ declare namespace feng3d {
          * Adds a component class named className to the game object.
          * @param param 被添加组件
          */
-        addComponent<T extends Component>(param: (new () => T)): T;
+        addComponent<T extends Component>(param: ComponentConstructor<T>): T;
         /**
          * 判断是否拥有组件
          * @param com	被检测的组件
@@ -1064,13 +1070,19 @@ declare namespace feng3d {
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Component>(type: new () => T): T;
+        getComponent<T extends Component>(type: ComponentConstructor<T>): T;
         /**
          * Returns all components of Type type in the GameObject.
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Component>(type?: new () => T): T[];
+        getComponents<T extends Component>(type?: ComponentConstructor<T>): T[];
+        /**
+         * Returns the component of Type type in the GameObject or any of its children using depth first search.
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInChildren<T extends Component>(type?: ComponentConstructor<T>, result?: T[]): T[];
         /**
          * 设置子组件的位置
          * @param component				子组件
@@ -1115,7 +1127,7 @@ declare namespace feng3d {
          * 移除指定类型组件
          * @param type 组件类型
          */
-        removeComponentsByType<T extends Component>(type: new () => T): T[];
+        removeComponentsByType<T extends Component>(type: ComponentConstructor<T>): T[];
         private static _gameObjects;
         /**
          * Finds a game object by name and returns it.
@@ -1298,12 +1310,10 @@ declare namespace feng3d {
      * Renders meshes inserted by the MeshFilter or TextMesh.
      */
     class MeshRenderer extends Renderer {
-        static readonly meshRenderers: MeshRenderer[];
-        private static _meshRenderers;
         /**
          * 构建
          */
-        constructor();
+        constructor(gameObject: GameObject);
         drawRenderables(renderContext: RenderContext): void;
     }
 }
@@ -1324,7 +1334,7 @@ declare namespace feng3d {
      * 3D场景
      * @author feng 2016-05-01
      */
-    class Scene3D extends Transform {
+    class Scene3D extends Component {
         /**
          * 背景颜色
          */
@@ -1336,7 +1346,7 @@ declare namespace feng3d {
         /**
          * 构造3D场景
          */
-        constructor();
+        constructor(gameObject: GameObject);
     }
 }
 declare namespace feng3d {
@@ -1668,26 +1678,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 几何体组件
-     * @author feng 2016-10-16
-     */
-    class GeometryComponent extends Component {
-        /**
-         * 父组件
-         */
-        protected _parentComponent: Geometry;
-        /**
-         * 所属对象
-         */
-        readonly geometry: Geometry;
-        /**
-         * 构建几何体组件
-         */
-        constructor();
-    }
-}
-declare namespace feng3d {
-    /**
      * 坐标系统类型
      * @author feng 2014-10-14
      */
@@ -1849,9 +1839,8 @@ declare namespace feng3d {
         private _frustumPlanesDirty;
         /**
          * 创建一个摄像机
-         * @param lens 摄像机镜头
          */
-        constructor(lens?: LensBase);
+        constructor(gameObject: GameObject);
         /**
          * 处理镜头变化事件
          */
@@ -2569,26 +2558,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 材质组件
-     * @author feng 2016-11-01
-     */
-    class MaterialComponent extends Component {
-        /**
-         * 父组件
-         */
-        protected _parentComponent: Material;
-        /**
-         * 所属对象
-         */
-        readonly material: Material;
-        /**
-         * 构建材质组件
-         */
-        constructor();
-    }
-}
-declare namespace feng3d {
-    /**
      * 纹理材质
      * @author feng 2016-12-23
      */
@@ -2852,7 +2821,7 @@ declare namespace feng3d {
         castsShadows: boolean;
         private _shadowMap;
         readonly shadowMap: Texture2D;
-        constructor();
+        constructor(gameObject: GameObject);
     }
 }
 declare namespace feng3d {
@@ -2868,7 +2837,7 @@ declare namespace feng3d {
         /**
          * 构建
          */
-        constructor();
+        constructor(gameObject: GameObject);
         readonly sceneDirection: Vector3D;
         /**
          * 光照方向
@@ -2904,7 +2873,7 @@ declare namespace feng3d {
         /**
          * 构建
          */
-        constructor();
+        constructor(gameObject: GameObject);
     }
 }
 declare namespace feng3d {
@@ -3613,7 +3582,7 @@ declare namespace feng3d {
         cycle: number;
         animatorSet: ParticleAnimationSet;
         private _animatorSet;
-        constructor();
+        constructor(gameObject: GameObject);
         play(): void;
         private update();
         /**
@@ -3690,16 +3659,12 @@ declare namespace feng3d {
      * 动画节点基类
      * @author feng 2014-5-20
      */
-    class AnimationNodeBase extends Component {
+    class AnimationNodeBase extends EventDispatcher {
         protected _stateClass: any;
         /**
          * 状态类
          */
         readonly stateClass: any;
-        /**
-         * 创建一个动画节点基类
-         */
-        constructor();
     }
 }
 declare namespace feng3d {
@@ -3726,7 +3691,7 @@ declare namespace feng3d {
         /**
          * 创建一个动画基类
          */
-        constructor();
+        constructor(gameObject: GameObject);
         /**
          * 获取动画状态
          * @param node		动画节点
@@ -3846,7 +3811,7 @@ declare namespace feng3d {
      * 骨骼数据
      * @author feng 2014-5-20
      */
-    class Skeleton extends Component {
+    class Skeleton {
         /** 骨骼关节数据列表 */
         joints: SkeletonJoint[];
         constructor();
@@ -4041,7 +4006,7 @@ declare namespace feng3d {
         /**
          * 创建一个骨骼动画类
          */
-        constructor(skeleton: Skeleton);
+        constructor(gameObject: GameObject);
         /**
          * 播放动画
          * @param name 动作名称
@@ -4339,14 +4304,8 @@ declare namespace feng3d {
      * 坐标系，三叉戟
      * @author feng 2017-02-06
      */
-    class Trident extends GameObject {
-        private _xLine;
-        private _yLine;
-        private _zLine;
-        private _xArrow;
-        private _yArrow;
-        private _zArrow;
-        constructor(length?: number);
+    class Trident extends Component {
+        constructor(gameObject: GameObject);
         private buildTrident(length);
     }
 }

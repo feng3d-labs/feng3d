@@ -5,7 +5,7 @@ namespace feng3d
      * 3D场景
      * @author feng 2016-05-01
      */
-    export class Scene3D extends Transform
+    export class Scene3D extends Component
     {
         /**
          * 背景颜色
@@ -19,11 +19,12 @@ namespace feng3d
         /**
          * 构造3D场景
          */
-        constructor()
+        constructor(gameObject: GameObject)
         {
-            super();
-            this._scene = this;
-            this._isRoot = true;
+            super(gameObject);
+            gameObject.name = "scene";
+            gameObject.transform["_scene"] = this;
+            gameObject.transform._isRoot = true;
         }
     }
 }

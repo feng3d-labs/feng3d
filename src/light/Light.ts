@@ -39,9 +39,9 @@ namespace feng3d
             return this._shadowMap;
         }
 
-        constructor()
+        constructor(gameObject: GameObject)
         {
-            super();
+            super(gameObject);
             Light._lights.push(this);
         }
     }

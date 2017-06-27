@@ -29,9 +29,9 @@ namespace feng3d
 		/**
 		 * 创建一个动画基类
 		 */
-        constructor()
+        constructor(gameObject: GameObject)
         {
-            super();
+            super(gameObject);
         }
 
 		/**

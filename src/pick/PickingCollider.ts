@@ -23,7 +23,11 @@ namespace feng3d
         {
             var indexData = geometry.getIndexData().indices;
             var vertexData = geometry.getVAData("a_position").data;
-            var uvData = geometry.getVAData("a_uv").data;
+            var hasUV = !!geometry.getVAData("a_uv");
+            if (hasUV)
+            {
+                var uvData = geometry.getVAData("a_uv").data;
+            }
 
             var t = 0;
             var i0 = 0, i1 = 0, i2 = 0;
@@ -123,7 +127,10 @@ namespace feng3d
                         pickingCollisionVO.rayEntryDistance = t;
                         pickingCollisionVO.localPosition = new Vector3D(cx, cy, cz);
                         pickingCollisionVO.localNormal = new Vector3D(nx, ny, nz);
-                        pickingCollisionVO.uv = this.getCollisionUV(indexData, uvData, index, v, w, u, 0, uvStride);
+                        if (hasUV)
+                        {
+                            pickingCollisionVO.uv = this.getCollisionUV(indexData, uvData, index, v, w, u, 0, uvStride);
+                        }
                         pickingCollisionVO.index = index;
 
                         //是否继续寻找最优解

@@ -853,6 +853,8 @@ var feng3d;
          * 通过key获取value
          */
         Map.prototype.get = function (k) {
+            if (k == null)
+                return null;
             return this.valueMap[k.uuid];
         };
         /**

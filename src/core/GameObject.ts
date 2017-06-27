@@ -1,5 +1,8 @@
 namespace feng3d
 {
+
+    export type ComponentConstructor<T> = (new (gameObject: GameObject) => T);
+
     export interface ComponentMap
     {
         camera: new () => Camera;
@@ -77,7 +80,7 @@ namespace feng3d
          * Adds a component class named className to the game object.
 		 * @param param 被添加组件
 		 */
-        public addComponent<T extends Component>(param: (new () => T)): T
+        public addComponent<T extends Component>(param: ComponentConstructor<T>): T
         {
             var component: T;
             if (this.getComponent(param))
@@ -85,7 +88,7 @@ namespace feng3d
                 alert(`The compnent ${component.constructor["name"]} can't be added because ${this.name} already contains the same component.`);
                 return;
             }
-            component = new param();
+            component = new param(this);
             this.addComponentAt(component, this.components.length);
             return component;
         }
@@ -105,7 +108,7 @@ namespace feng3d
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        public getComponent<T extends Component>(type: new () => T): T
+        public getComponent<T extends Component>(type: ComponentConstructor<T>): T
         {
             var component = this.getComponents(type)[0];
             return component;
@@ -116,7 +119,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        public getComponents<T extends Component>(type: new () => T = null): T[]
+        public getComponents<T extends Component>(type: ComponentConstructor<T> = null): T[]
         {
             var filterResult: Component[];
             if (!type)
@@ -130,6 +133,31 @@ namespace feng3d
                 });
             }
             return <T[]>filterResult;
+        }
+
+        /**
+         * Returns the component of Type type in the GameObject or any of its children using depth first search.
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        public getComponentsInChildren<T extends Component>(type: ComponentConstructor<T> = null, result: T[] = null): T[]
+        {
+            result = result || [];
+            for (var i = 0, n = this.components.length; i < n; i++)
+            {
+                if (!type)
+                {
+                    result.push(<T>this.components[i]);
+                } else if (this.components[i] instanceof type)
+                {
+                    result.push(<T>this.components[i]);
+                }
+            }
+            for (var i = 0, n = this.transform.childCount; i < n; i++)
+            {
+                this.transform.getChildAt(i).gameObject.getComponentsInChildren(type, result);
+            }
+            return <T[]>result;
         }
 
         /**
@@ -235,7 +263,7 @@ namespace feng3d
          * 移除指定类型组件
          * @param type 组件类型
          */
-        public removeComponentsByType<T extends Component>(type: new () => T): T[]
+        public removeComponentsByType<T extends Component>(type: ComponentConstructor<T>): T[]
         {
             var removeComponents = [];
             for (var i = this.components.length - 1; i >= 0; i--)

@@ -28,10 +28,10 @@ namespace feng3d
                 var frameBufferObject = new FrameBufferObject();
                 frameBufferObject.init(gl);
                 frameBufferObject.active(gl);
-                MeshRenderer.meshRenderers.forEach(element =>
-                {
+                // MeshRenderer.meshRenderers.forEach(element =>
+                // {
                     // this.drawRenderables(renderContext, element);
-                });
+                // });
                 frameBufferObject.deactive(gl);
             }
         }

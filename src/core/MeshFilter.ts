@@ -17,7 +17,7 @@ namespace feng3d
         {
             if (this._mesh == value)
                 return;
-            if(this._mesh)
+            if (this._mesh)
             {
                 this.removeRenderDataHolder(this.mesh);
             }
@@ -26,9 +26,9 @@ namespace feng3d
         }
         private _mesh: Geometry;
 
-        constructor()
+        constructor(gameObject: GameObject)
         {
-            super();
+            super(gameObject);
             this.addRenderDataHolder(this.mesh);
         }
     }

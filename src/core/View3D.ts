@@ -76,12 +76,12 @@ namespace feng3d
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas:HTMLCanvasElement = null, scene: Scene3D = null, camera: CameraObject3D = null, autoRender = true)
+        constructor(canvas: HTMLCanvasElement = null, scene: Scene3D = null, camera: CameraObject3D = null, autoRender = true)
         {
             //初始化引擎
             initEngine();
 
-            if(!canvas)
+            if (!canvas)
             {
                 canvas = document.createElement("canvas");
                 canvas.id = "glcanvas";
@@ -99,7 +99,7 @@ namespace feng3d
             this.initGL();
 
             this._viewRect = new Rectangle(this._canvas.clientLeft, this._canvas.clientTop, this._canvas.clientWidth, this._canvas.clientHeight);
-            this.scene = scene || new Scene3D();
+            this.scene = scene || new GameObject().addComponent(Scene3D);
             this.camera = camera || new CameraObject3D();
             this.autoRender = autoRender;
 

@@ -88,7 +88,7 @@ namespace feng3d
             var m: number = 0;
             while (i < len)
             {
-                var child: ObjectContainer3D = this._children[i++];
+                var child: Transform = this._children[i++];
                 m = child.minX + child.x;
                 if (m < min)
                     min = m;
@@ -104,7 +104,7 @@ namespace feng3d
             var m: number = 0;
             while (i < len)
             {
-                var child: ObjectContainer3D = this._children[i++];
+                var child: Transform = this._children[i++];
                 m = child.minY + child.y;
                 if (m < min)
                     min = m;
@@ -120,7 +120,7 @@ namespace feng3d
             var m: number = 0;
             while (i < len)
             {
-                var child: ObjectContainer3D = this._children[i++];
+                var child: Transform = this._children[i++];
                 m = child.minZ + child.z;
                 if (m < min)
                     min = m;
@@ -136,7 +136,7 @@ namespace feng3d
             var m: number = 0;
             while (i < len)
             {
-                var child: ObjectContainer3D = this._children[i++];
+                var child: Transform = this._children[i++];
                 m = child.maxX + child.x;
                 if (m > max)
                     max = m;
@@ -152,7 +152,7 @@ namespace feng3d
             var m: number = 0;
             while (i < len)
             {
-                var child: ObjectContainer3D = this._children[i++];
+                var child: Transform = this._children[i++];
                 m = child.maxY + child.y;
                 if (m > max)
                     max = m;
@@ -168,7 +168,7 @@ namespace feng3d
             var m: number = 0;
             while (i < len)
             {
-                var child: ObjectContainer3D = this._children[i++];
+                var child: Transform = this._children[i++];
                 m = child.maxZ + child.z;
                 if (m > max)
                     max = m;
@@ -198,23 +198,20 @@ namespace feng3d
             return this._scene;
         }
 
-        public set scene(value: Scene3D)
+        private updateScene()
         {
-            var i: number = 0;
-            var len: number = this._children.length;
-            while (i < len)
-                this._children[i++].scene = value;
-            if (this._scene == value)
+            var newScene = this._parent ? this._parent._scene : null;
+            if (this._scene == newScene)
                 return;
-            if (value == null)
-                this._oldScene = this._scene;
-            if (value)
-                this._oldScene = null;
-            this._scene = value;
             if (this._scene)
-                this._scene.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_TO_SCENE, this));
-            else if (this._oldScene)
-                this._oldScene.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_FROM_SCENE, this));
+                this.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_FROM_SCENE, this));
+            this._scene = newScene;
+            if (this._scene)
+                this.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_TO_SCENE, this));
+            for (let i = 0, n = this._children.length; i < n; i++)
+            {
+                this._children[i].updateScene();
+            }
         }
 
         /**
@@ -231,7 +228,7 @@ namespace feng3d
             return this._worldToLocalMatrix;
         }
 
-        public get parent(): ObjectContainer3D
+        public get parent(): Transform
         {
             return this._parent;
         }
@@ -239,24 +236,23 @@ namespace feng3d
         //------------------------------------------
         // Public Functions
         //------------------------------------------
-        public constructor()
+        public constructor(gameObject: GameObject)
         {
-            super();
+            super(gameObject);
         }
 
-        public contains(child: ObjectContainer3D): boolean
+        public contains(child: Transform): boolean
         {
             return this._children.indexOf(child) >= 0;
         }
 
-        public addChild(child: ObjectContainer3D): ObjectContainer3D
+        public addChild(child: Transform): Transform
         {
             if (child == null)
                 throw new Error("Parameter child cannot be null.").message;
             if (child._parent)
                 child._parent.removeChild(child);
-            child.setParent(this);
-            child.scene = this._scene;
+            child._setParent(<any>this);
             child.notifySceneTransformChange();
             child.updateMouseChildren();
             child.updateImplicitVisibility();
@@ -268,18 +264,18 @@ namespace feng3d
         {
             for (var child_key_a in childarray)
             {
-                var child: ObjectContainer3D = childarray[child_key_a];
+                var child: Transform = childarray[child_key_a];
                 this.addChild(child);
             }
         }
 
-        public setChildAt(child: ObjectContainer3D, index: number)
+        public setChildAt(child: Transform, index: number)
         {
             if (child == null)
                 throw new Error("Parameter child cannot be null.").message;
             if (child._parent)
             {
-                if (child._parent != this)
+                if (child._parent != <Transform><any>this)
                 {
                     child._parent.removeChild(child);
                 }
@@ -292,8 +288,7 @@ namespace feng3d
             }
             else
             {
-                child.setParent(this);
-                child.scene = this._scene;
+                child._setParent(<any>this);
                 child.notifySceneTransformChange();
                 child.updateMouseChildren();
                 child.updateImplicitVisibility();
@@ -301,7 +296,7 @@ namespace feng3d
             }
         }
 
-        public removeChild(child: ObjectContainer3D)
+        public removeChild(child: Transform)
         {
             if (child == null)
                 throw new Error("Parameter child cannot be null").message;
@@ -314,24 +309,20 @@ namespace feng3d
         public removeChildAt(index: number)
         {
             index = index;
-            var child: ObjectContainer3D = this._children[index];
+            var child: Transform = this._children[index];
             this.removeChildInternal(index, child);
         }
 
-        public setParent(value: ObjectContainer3D)
+        private _setParent(value: Transform)
         {
             this._parent = value;
             this.updateMouseChildren();
-            if (value == null)
-            {
-                this.scene = null;
-                return;
-            }
+            this.updateScene();
             this.notifySceneTransformChange();
             this.notifySceneChange();
         }
 
-        public getChildAt(index: number): ObjectContainer3D
+        public getChildAt(index: number): Transform
         {
             index = index;
             return this._children[index];
@@ -352,7 +343,7 @@ namespace feng3d
         public dispose()
         {
             if (this.parent)
-                this.parent.removeChild(this);
+                this.parent.removeChild(<any>this);
         }
 
         public disposeWithChildren()
@@ -360,18 +351,6 @@ namespace feng3d
             this.dispose();
             while (this.childCount > 0)
                 this.getChildAt(0).dispose();
-        }
-
-        public clone(): ObjectContainer3D
-        {
-            var clone: ObjectContainer3D = new ObjectContainer3D();
-            clone.pivotPoint = this.pivotPoint;
-            clone.matrix3d = this.matrix3d;
-            clone.name = this.name;
-            var len: number = this._children.length;
-            for (var i: number = 0; i < len; ++i)
-                clone.addChild(this._children[i].clone());
-            return clone;
         }
 
         public rotate(axis: Vector3D, angle: number)
@@ -437,10 +416,10 @@ namespace feng3d
         // Protected Properties
         //------------------------------------------
         protected _scene: Scene3D;
-        protected _parent: ObjectContainer3D;
+        protected _parent: Transform;
         protected _sceneTransform: Matrix3D = new Matrix3D();
         protected _sceneTransformDirty: boolean = true;
-        protected _mouseEnabled: boolean = false;
+        protected _mouseEnabled: boolean = true;
         protected _ignoreTransform: boolean = false;
 
         //------------------------------------------
@@ -483,9 +462,8 @@ namespace feng3d
         //------------------------------------------
         private _sceneTransformChanged: Object3DEvent;
         private _scenechanged: Object3DEvent;
-        private _children: ObjectContainer3D[] = [];
+        private _children: Transform[] = [];
         private _mouseChildren: boolean = true;
-        private _oldScene: Scene3D;
         private _worldToLocalMatrix: Matrix3D = new Matrix3D();
         private _worldToLocalMatrixDirty: boolean = true;
         private _scenePosition: Vector3D = new Vector3D();
@@ -530,11 +508,11 @@ namespace feng3d
             }
         }
 
-        private removeChildInternal(childIndex: number, child: ObjectContainer3D)
+        private removeChildInternal(childIndex: number, child: Transform)
         {
             childIndex = childIndex;
             this._children.splice(childIndex, 1);
-            child.setParent(null);
+            child._setParent(null);
         }
     }
 }

@@ -1,11 +1,13 @@
 namespace feng3d
 {
+    export type Lazy<T> = T | (() => T);
+
     export interface UniformRenderData
     {
         /**
          * 模型矩阵
          */
-        u_modelMatrix: Matrix3D | (() => Matrix3D);
+        u_modelMatrix: Lazy<Matrix3D>;
         /**
          * 世界投影矩阵
          */

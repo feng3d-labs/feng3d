@@ -5,6 +5,7 @@ namespace feng3d
         public static create(name = "GameObject")
         {
             var gameobject = new GameObject(name);
+            gameobject.transform.mouseEnabled = true;
             if (name == "GameObject")
                 return gameobject;
             gameobject.addComponent(MeshRenderer).material = new StandardMaterial();

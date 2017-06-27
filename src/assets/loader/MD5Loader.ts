@@ -53,7 +53,7 @@ namespace feng3d
             debuger && assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
 
             this._skeleton = this.createSkeleton(md5MeshData.joints);
-            var skeletonAnimator = new SkeletonAnimator(this._skeleton);
+            var skeletonAnimator: SkeletonAnimator;
 
             for (var i = 0; i < md5MeshData.meshs.length; i++)
             {
@@ -62,8 +62,8 @@ namespace feng3d
                 var skeletonObject3D = new GameObject();
                 skeletonObject3D.addComponent(MeshRenderer).material = new StandardMaterial();
                 skeletonObject3D.addComponent(MeshFilter).mesh = geometry;
-                skeletonObject3D.addComponent(skeletonAnimator);
-
+                skeletonAnimator = skeletonObject3D.addComponent(SkeletonAnimator);
+                skeletonAnimator.skeleton = this._skeleton;
                 object3D.transform.addChild(skeletonObject3D.transform);
             }
 

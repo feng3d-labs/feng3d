@@ -15,13 +15,13 @@ namespace feng3d
         public mouseX: number = 0;
         public mouseY: number = 0;
 
-        private selectedObject3D: GameObject;
+        private selectedObject3D: Transform;
         private mouseEventTypes: string[] = [];
 
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
          */
-        private preMouseDownObject3D: GameObject;
+        private preMouseDownObject3D: Transform;
         /**
          * 统计处理click次数，判断是否达到dblclick
          */
@@ -108,7 +108,7 @@ namespace feng3d
 
             var object3D = _collidingObject && _collidingObject.firstEntity;
 
-            this.setSelectedObject3D(object3D as GameObject);
+            this.setSelectedObject3D(object3D ? object3D.transform : null);
         }
 
         private glPick(renderContext: RenderContext)
@@ -125,13 +125,13 @@ namespace feng3d
             this.mouseRenderer.draw(renderContext);
 
             var object3D = this.mouseRenderer.selectedObject3D;
-            this.setSelectedObject3D(object3D);
+            this.setSelectedObject3D(object3D.transform);
         }
 
         private getMouseCheckObjects(renderContext: RenderContext)
         {
             var scene3d = renderContext.scene3d;
-            var checkList = scene3d.getChildren();
+            var checkList = scene3d.transform.getChildren();
             var results: GameObject[] = [];
             var i = 0;
             while (i < checkList.length)
@@ -152,9 +152,8 @@ namespace feng3d
         /**
          * 设置选中对象
          */
-        private setSelectedObject3D(value: GameObject)
+        private setSelectedObject3D(value: Transform)
         {
-
             if (this.selectedObject3D != value)
             {
                 if (this.selectedObject3D)

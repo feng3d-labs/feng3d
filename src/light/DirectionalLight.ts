@@ -18,9 +18,9 @@ namespace feng3d
         /**
          * 构建
          */
-        constructor()
+        constructor(gameObject: GameObject)
         {
-            super();
+            super(gameObject);
             this.lightType = LightType.Directional;
             var xDir: number = 0, yDir: number = -1, zDir: number = 1
             this.direction = new Vector3D(xDir, yDir, zDir);

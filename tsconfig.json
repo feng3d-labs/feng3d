@@ -57,7 +57,6 @@
         //几何体组件
         "src/geometry/PointGeometry.ts",
         "src/geometry/SegmentGeometry.ts",
-        "src/geometry/components/GeometryComponent.ts",
         //摄像机
         "src/cameras/lenses/CoordinateSystem.ts",
         "src/cameras/lenses/LensBase.ts",
@@ -87,7 +86,6 @@
         "src/materials/PointMaterial.ts",
         "src/materials/ColorMaterial.ts",
         "src/materials/SegmentMaterial.ts",
-        "src/materials/components/MaterialComponent.ts",
         "src/materials/TextureMaterial.ts",
         "src/materials/SkyBoxMaterial.ts",
         "src/materials/StandardMaterial.ts",

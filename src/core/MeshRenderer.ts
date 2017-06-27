@@ -5,20 +5,13 @@ namespace feng3d
      */
     export class MeshRenderer extends Renderer
     {
-        public static get meshRenderers()
-        {
-            return this._meshRenderers;
-        }
-        private static _meshRenderers: MeshRenderer[] = [];
-
         /**
          * 构建
          */
-        constructor()
+        constructor(gameObject: GameObject)
         {
-            super();
+            super(gameObject);
             this._single = true;
-            MeshRenderer._meshRenderers.push(this);
         }
 
         public drawRenderables(renderContext: RenderContext)

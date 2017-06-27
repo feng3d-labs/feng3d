@@ -26,12 +26,11 @@ namespace feng3d
             gl.viewport(0, 0, this.viewRect.width, this.viewRect.height);
             gl.enable(GL.DEPTH_TEST);
             // gl.cullFace()
-            var meshRenderers = MeshRenderer.meshRenderers;
+            var meshRenderers = scene3D.getComponentsInChildren(MeshRenderer);
             for (var i = 0; i < meshRenderers.length; i++)
             {
                 meshRenderers[i].drawRenderables(renderContext);
             }
         }
-
     }
 }
