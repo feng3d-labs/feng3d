@@ -23,9 +23,8 @@ namespace feng3d
             super(gameObject);
             this.lightType = LightType.Directional;
             var xDir: number = 0, yDir: number = -1, zDir: number = 1
+            this._sceneDirection = new Vector3D();
             this.direction = new Vector3D(xDir, yDir, zDir);
-            this._sceneDirection = new Vector3D(xDir, yDir, zDir);
-            this._sceneDirection.normalize();
             //
             DirectionalLight._directionalLights.push(this);
         }
