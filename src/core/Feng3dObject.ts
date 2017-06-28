@@ -20,6 +20,7 @@ namespace feng3d
 
         /**
          * The name of the Feng3dObject.
+         * Components share the same name with the game object and all attached components.
          */
         public name: string;
 

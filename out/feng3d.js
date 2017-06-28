@@ -48,7 +48,7 @@ var feng3d;
             return object;
         };
         Serialization.prototype.handle = function (object, key, data) {
-            if (feng3d.ClassUtils.is(object, feng3d.GameObject) && key == "children_") {
+            if (object instanceof feng3d.GameObject && key == "children_") {
                 var children = this.readObject(data);
                 var object3D = object;
                 for (var i = 0; i < children.length; i++) {
@@ -56,7 +56,7 @@ var feng3d;
                 }
                 return true;
             }
-            if (feng3d.ClassUtils.is(object, feng3d.GameObject) && key == "components_") {
+            if (object instanceof feng3d.GameObject && key == "components_") {
                 var components = this.readObject(data);
                 var component = object;
                 for (var i = 0; i < components.length; i++) {
@@ -2956,6 +2956,10 @@ var feng3d;
                     return element;
             }
         };
+        GameObject.create = function (name) {
+            if (name === void 0) { name = "GameObject"; }
+            return new GameObject(name);
+        };
         //------------------------------------------
         // Protected Functions
         //------------------------------------------
@@ -3031,8 +3035,8 @@ var feng3d;
             this._gl = glProxy.gl;
             this.initGL();
             this._viewRect = new feng3d.Rectangle(this._canvas.clientLeft, this._canvas.clientTop, this._canvas.clientWidth, this._canvas.clientHeight);
-            this.scene = scene || new feng3d.GameObject().addComponent(feng3d.Scene3D);
-            this.camera = camera || new feng3d.CameraObject3D();
+            this.scene = scene || feng3d.GameObject.create("scene").addComponent(feng3d.Scene3D);
+            this.camera = camera || feng3d.GameObject.create("camera").addComponent(feng3d.Camera);
             this.autoRender = autoRender;
             this.defaultRenderer = new feng3d.ForwardRenderer();
             this.mouse3DManager = new feng3d.Mouse3DManager();
@@ -3100,14 +3104,14 @@ var feng3d;
         View3D.prototype.render = function () {
             this._canvas.width = this._canvas.clientWidth;
             this._canvas.height = this._canvas.clientHeight;
-            this._renderContext.camera = this._camera.camera;
+            this._renderContext.camera = this._camera;
             this._renderContext.scene3d = this._scene;
             this._renderContext.view3D = this;
             this._renderContext.gl = this._gl;
             var viewClientRect = this._canvas.getBoundingClientRect();
             var viewRect = this._viewRect = this._viewRect || new feng3d.Rectangle();
             viewRect.setTo(viewClientRect.left, viewClientRect.top, viewClientRect.width, viewClientRect.height);
-            this.camera.camera.lens.aspectRatio = viewRect.width / viewRect.height;
+            this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.copyFrom(viewRect);
             this.mouse3DManager.draw(this._renderContext);
@@ -3170,7 +3174,7 @@ var feng3d;
          * @return 屏幕的绝对坐标
          */
         View3D.prototype.project = function (point3d) {
-            var v = this._camera.camera.project(point3d);
+            var v = this._camera.project(point3d);
             v.x = (v.x + 1.0) * this._canvas.width / 2.0;
             v.y = (v.y + 1.0) * this._canvas.height / 2.0;
             return v;
@@ -3186,7 +3190,7 @@ var feng3d;
         View3D.prototype.unproject = function (sX, sY, sZ, v) {
             if (v === void 0) { v = null; }
             var gpuPos = this.screenToGpuPosition(new feng3d.Point(sX, sY));
-            return this._camera.camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
+            return this._camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
         };
         /**
          * 屏幕坐标转GPU坐标
@@ -3335,7 +3339,6 @@ var feng3d;
              * 环境光强度
              */
             _this.ambientColor = new feng3d.Color();
-            gameObject.name = "scene";
             gameObject.transform["_scene"] = _this;
             gameObject.transform._isRoot = true;
             return _this;
@@ -4221,8 +4224,8 @@ var feng3d;
          * @param thickness 线段厚度
          */
         function Segment(start, end, colorStart, colorEnd, thickness) {
-            if (colorStart === void 0) { colorStart = 0x333333; }
-            if (colorEnd === void 0) { colorEnd = 0x333333; }
+            if (colorStart === void 0) { colorStart = 0xffffff; }
+            if (colorEnd === void 0) { colorEnd = 0xffffff; }
             if (thickness === void 0) { thickness = 1; }
             this.thickness = thickness * .5;
             this.start = start;
@@ -7508,8 +7511,13 @@ var feng3d;
          */
         function SegmentMaterial() {
             var _this = _super.call(this) || this;
+            /**
+             * 线段颜色
+             */
+            _this.color = new feng3d.Color();
             _this.setShader("segment");
             _this.renderMode = feng3d.RenderMode.LINES;
+            _this.createUniformData("u_segmentColor", function () { return _this.color; });
             return _this;
         }
         return SegmentMaterial;
@@ -11664,7 +11672,7 @@ var feng3d;
             }
         };
         ObjLoader.prototype.createObj = function (material) {
-            var object = new feng3d.GameObject();
+            var object = feng3d.GameObject.create();
             var objData = this._objData;
             var objs = objData.objs;
             for (var i = 0; i < objs.length; i++) {
@@ -11677,7 +11685,7 @@ var feng3d;
             }
         };
         ObjLoader.prototype.createSubObj = function (obj, material) {
-            var object3D = new feng3d.GameObject(obj.name);
+            var object3D = feng3d.GameObject.create(obj.name);
             var subObjs = obj.subObjs;
             for (var i = 0; i < subObjs.length; i++) {
                 var materialObj = this.createMaterialObj(obj, subObjs[i], material);
@@ -11686,7 +11694,7 @@ var feng3d;
             return object3D;
         };
         ObjLoader.prototype.createMaterialObj = function (obj, subObj, material) {
-            var gameObject = new feng3d.GameObject();
+            var gameObject = feng3d.GameObject.create();
             var model = gameObject.addComponent(feng3d.MeshRenderer);
             model.material = material || new feng3d.ColorMaterial();
             this._vertices = obj.vertex;
@@ -11805,7 +11813,7 @@ var feng3d;
             loader.loadText(url);
         };
         MD5Loader.prototype.createMD5Mesh = function (md5MeshData) {
-            var object3D = new feng3d.GameObject();
+            var object3D = feng3d.GameObject.create();
             //顶点最大关节关联数
             var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
             feng3d.debuger && feng3d.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
@@ -11813,7 +11821,7 @@ var feng3d;
             var skeletonAnimator;
             for (var i = 0; i < md5MeshData.meshs.length; i++) {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
-                var skeletonObject3D = new feng3d.GameObject();
+                var skeletonObject3D = feng3d.GameObject.create();
                 skeletonObject3D.addComponent(feng3d.MeshRenderer).material = new feng3d.StandardMaterial();
                 skeletonObject3D.addComponent(feng3d.MeshFilter).mesh = geometry;
                 skeletonAnimator = skeletonObject3D.addComponent(feng3d.SkeletonAnimator);
@@ -11979,7 +11987,7 @@ var feng3d;
             return geometry;
         };
         MD5Loader.prototype.createAnimator = function (md5AnimData) {
-            var object = new feng3d.GameObject();
+            var object = feng3d.GameObject.create();
             var _clip = new feng3d.SkeletonClipNode();
             for (var i = 0; i < md5AnimData.numFrames; ++i)
                 _clip.addFrame(this.translatePose(md5AnimData, md5AnimData.frame[i]), 1000 / md5AnimData.frameRate);
@@ -12074,28 +12082,28 @@ var feng3d;
             return _this;
         }
         Trident.prototype.buildTrident = function (length) {
-            var xLine = new feng3d.GameObject("xLine");
+            var xLine = feng3d.GameObject.create("xLine");
             var segmentGeometry = new feng3d.SegmentGeometry();
             segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(length, 0, 0), 0xff0000, 0xff0000));
             xLine.addComponent(feng3d.MeshFilter).mesh = segmentGeometry;
             xLine.addComponent(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
             this.transform.addChild(xLine.transform);
             //
-            var yLine = new feng3d.GameObject("yLine");
+            var yLine = feng3d.GameObject.create("yLine");
             var segmentGeometry = new feng3d.SegmentGeometry();
             segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, length, 0), 0x00ff00, 0x00ff00));
             yLine.addComponent(feng3d.MeshFilter).mesh = segmentGeometry;
             yLine.addComponent(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
             this.transform.addChild(yLine.transform);
             //
-            var zLine = new feng3d.GameObject("zLine");
+            var zLine = feng3d.GameObject.create("zLine");
             var segmentGeometry = new feng3d.SegmentGeometry();
             segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, 0, length), 0x0000ff, 0x0000ff));
             zLine.addComponent(feng3d.MeshFilter).mesh = segmentGeometry;
             zLine.addComponent(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
             this.transform.addChild(zLine.transform);
             //
-            var xArrow = new feng3d.GameObject("xArrow");
+            var xArrow = feng3d.GameObject.create("xArrow");
             xArrow.transform.x = length;
             xArrow.transform.rotationZ = -90;
             xArrow.addComponent(feng3d.MeshFilter).mesh = new feng3d.ConeGeometry(5, 18);
@@ -12104,14 +12112,14 @@ var feng3d;
             material.color = new feng3d.Color(1, 0, 0);
             this.transform.addChild(xArrow.transform);
             //
-            var yArrow = new feng3d.GameObject("yArrow");
+            var yArrow = feng3d.GameObject.create("yArrow");
             yArrow.transform.y = length;
             yArrow.addComponent(feng3d.MeshFilter).mesh = new feng3d.ConeGeometry(5, 18);
             var material = yArrow.addComponent(feng3d.MeshRenderer).material = new feng3d.ColorMaterial();
             material.color = new feng3d.Color(0, 1, 0);
             this.transform.addChild(yArrow.transform);
             //
-            var zArrow = new feng3d.GameObject("zArrow");
+            var zArrow = feng3d.GameObject.create("zArrow");
             zArrow.transform.z = length;
             zArrow.transform.rotationX = 90;
             zArrow.addComponent(feng3d.MeshFilter).mesh = new feng3d.ConeGeometry(5, 18);
@@ -12125,30 +12133,12 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 摄像机3D对象
-     * @author feng 2017-02-06
-     */
-    var CameraObject3D = (function (_super) {
-        __extends(CameraObject3D, _super);
-        function CameraObject3D(name) {
-            if (name === void 0) { name = "camera"; }
-            var _this = _super.call(this, name) || this;
-            _this.camera = _this.addComponent(feng3d.Camera);
-            return _this;
-        }
-        return CameraObject3D;
-    }(feng3d.GameObject));
-    feng3d.CameraObject3D = CameraObject3D;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var GameObjectFactory = (function () {
         function GameObjectFactory() {
         }
         GameObjectFactory.create = function (name) {
             if (name === void 0) { name = "GameObject"; }
-            var gameobject = new feng3d.GameObject(name);
+            var gameobject = feng3d.GameObject.create(name);
             gameobject.transform.mouseEnabled = true;
             if (name == "GameObject")
                 return gameobject;
@@ -12181,7 +12171,7 @@ var feng3d;
         };
         GameObjectFactory.createCube = function (name) {
             if (name === void 0) { name = "cube"; }
-            var gameobject = new feng3d.GameObject(name);
+            var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.MeshRenderer);
             gameobject.addComponent(feng3d.MeshFilter).mesh = new feng3d.CubeGeometry();
             model.material = new feng3d.StandardMaterial();
@@ -12189,7 +12179,7 @@ var feng3d;
         };
         GameObjectFactory.createPlane = function (name) {
             if (name === void 0) { name = "plane"; }
-            var gameobject = new feng3d.GameObject(name);
+            var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.MeshRenderer);
             gameobject.addComponent(feng3d.MeshFilter).mesh = new feng3d.PlaneGeometry();
             model.material = new feng3d.StandardMaterial();
@@ -12197,7 +12187,7 @@ var feng3d;
         };
         GameObjectFactory.createCylinder = function (name) {
             if (name === void 0) { name = "cylinder"; }
-            var gameobject = new feng3d.GameObject(name);
+            var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.MeshRenderer);
             gameobject.addComponent(feng3d.MeshFilter).mesh = new feng3d.CylinderGeometry();
             model.material = new feng3d.StandardMaterial();
@@ -12205,7 +12195,7 @@ var feng3d;
         };
         GameObjectFactory.createSphere = function (name) {
             if (name === void 0) { name = "sphere"; }
-            var gameobject = new feng3d.GameObject(name);
+            var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.MeshRenderer);
             gameobject.addComponent(feng3d.MeshFilter).mesh = new feng3d.SphereGeometry();
             model.material = new feng3d.StandardMaterial();
@@ -12213,7 +12203,7 @@ var feng3d;
         };
         GameObjectFactory.createCapsule = function (name) {
             if (name === void 0) { name = "capsule"; }
-            var gameobject = new feng3d.GameObject(name);
+            var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.MeshRenderer);
             gameobject.addComponent(feng3d.MeshFilter).mesh = new feng3d.CapsuleGeometry();
             model.material = new feng3d.StandardMaterial();
@@ -12437,7 +12427,7 @@ var feng3d;
         "shaders/point.fragment.glsl": "\r\n\r\nprecision mediump float;\r\n\r\n\r\n\r\nvoid main(void) {\r\n   \r\n    gl_FragColor = vec4(1.0,1.0,1.0,1.0);\r\n}\r\n",
         "shaders/point.vertex.glsl": "\r\n\r\nattribute vec3 a_position;\r\n\r\nuniform float u_PointSize;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvoid main(void) {\r\n\r\n    vec4 globalPosition = u_modelMatrix * vec4(a_position, 1.0);\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    gl_PointSize = u_PointSize;\r\n}",
         "shaders/postEffect/fxaa.fragment.glsl": "\r\n\r\n#define FXAA_REDUCE_Mvarying   (1.0/128.0)\r\n#define FXAA_REDUCE_MUL   (1.0/8.0)\r\n#define FXAA_SPAN_MAX     8.0\r\n\r\nvarying vec2 vUV;\r\nuniform sampler2D textureSampler;\r\nuniform vec2 texelSize;\r\n\r\n\r\n\r\nvoid main(){\r\n\tvec2 localTexelSize = texelSize;\r\n\tvec4 rgbNW = texture2D(textureSampler, (vUV + vec2(-1.0, -1.0) * localTexelSize));\r\n\tvec4 rgbNE = texture2D(textureSampler, (vUV + vec2(1.0, -1.0) * localTexelSize));\r\n\tvec4 rgbSW = texture2D(textureSampler, (vUV + vec2(-1.0, 1.0) * localTexelSize));\r\n\tvec4 rgbSE = texture2D(textureSampler, (vUV + vec2(1.0, 1.0) * localTexelSize));\r\n\tvec4 rgbM = texture2D(textureSampler, vUV);\r\n\tvec4 luma = vec4(0.299, 0.587, 0.114, 1.0);\r\n\tfloat lumaNW = dot(rgbNW, luma);\r\n\tfloat lumaNE = dot(rgbNE, luma);\r\n\tfloat lumaSW = dot(rgbSW, luma);\r\n\tfloat lumaSE = dot(rgbSE, luma);\r\n\tfloat lumaM = dot(rgbM, luma);\r\n\tfloat lumaMvarying = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));\r\n\tfloat lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));\r\n\r\n\tvec2 dir = vec2(-((lumaNW + lumaNE) - (lumaSW + lumaSE)), ((lumaNW + lumaSW) - (lumaNE + lumaSE)));\r\n\r\n\tfloat dirReduce = max(\r\n\t\t(lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * FXAA_REDUCE_MUL),\r\n\t\tFXAA_REDUCE_MIN);\r\n\r\n\tfloat rcpDirMvarying = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);\r\n\tdir = min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX),\r\n\t\tmax(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),\r\n\t\tdir * rcpDirMin)) * localTexelSize;\r\n\r\n\tvec4 rgbA = 0.5 * (\r\n\t\ttexture2D(textureSampler, vUV + dir * (1.0 / 3.0 - 0.5)) +\r\n\t\ttexture2D(textureSampler, vUV + dir * (2.0 / 3.0 - 0.5)));\r\n\r\n\tvec4 rgbB = rgbA * 0.5 + 0.25 * (\r\n\t\ttexture2D(textureSampler, vUV + dir *  -0.5) +\r\n\t\ttexture2D(textureSampler, vUV + dir * 0.5));\r\n\tfloat lumaB = dot(rgbB, luma);\r\n\tif ((lumaB < lumaMin) || (lumaB > lumaMax)) {\r\n\t\tgl_FragColor = rgbA;\r\n\t}\r\n\telse {\r\n\t\tgl_FragColor = rgbB;\r\n\t}\r\n}",
-        "shaders/segment.fragment.glsl": "\r\nprecision mediump float;\r\n\r\nvarying vec4 v_color;\r\n\r\n\r\n\r\nvoid main(void) {\r\n    gl_FragColor = v_color;\r\n}",
+        "shaders/segment.fragment.glsl": "\r\nprecision mediump float;\r\n\r\nvarying vec4 v_color;\r\n\r\nuniform vec4 u_segmentColor;\r\n\r\nvoid main(void) {\r\n    gl_FragColor = v_color * u_segmentColor;\r\n}",
         "shaders/segment.vertex.glsl": "\r\n\r\nattribute vec3 a_position;\r\nattribute vec4 a_color;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main(void) {\r\n    gl_Position = u_viewProjection * u_modelMatrix * vec4(a_position, 1.0);\r\n    v_color = a_color;\r\n}",
         "shaders/shadow.fragment.glsl": "precision mediump float;\r\n\r\nvoid main() {\r\n    const vec4 bitShift = vec4(1.0, 256.0, 256.0 * 256.0, 256.0 * 256.0 * 256.0);\r\n    const vec4 bitMask = vec4(1.0/256.0, 1.0/256.0, 1.0/256.0, 0.0);\r\n    vec4 rgbaDepth = fract(gl_FragCoord.z * bitShift); // Calculate the value stored into each byte\r\n    rgbaDepth -= rgbaDepth.gbaa * bitMask; // Cut off the value which do not fit in 8 bits\r\n    gl_FragColor = rgbaDepth;\r\n}",
         "shaders/shadow.vertex.glsl": "attribute vec3 a_position;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvoid main(void) {\r\n\r\n    vec4 globalPosition = u_modelMatrix * vec4(a_position, 1.0);\r\n    gl_Position = u_viewProjection * globalPosition;\r\n}",

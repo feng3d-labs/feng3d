@@ -55,7 +55,7 @@ namespace feng3d
         /**
          * 构建3D对象
          */
-        constructor(name = "GameObject")
+        private constructor(name = "GameObject")
         {
             super();
             this.name = name;
@@ -289,6 +289,11 @@ namespace feng3d
                 if (element.name == name)
                     return element;
             }
+        }
+
+        public static create(name = "GameObject")
+        {
+            return new GameObject(name);
         }
 
         //------------------------------------------

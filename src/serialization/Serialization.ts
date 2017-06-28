@@ -46,7 +46,7 @@ namespace feng3d
 
         private handle(object, key, data)
         {
-            if (ClassUtils.is(object, GameObject) && key == "children_")
+            if (object instanceof GameObject && key == "children_")
             {
                 var children: GameObject[] = this.readObject(data);
                 var object3D: GameObject = object;
@@ -56,7 +56,7 @@ namespace feng3d
                 }
                 return true;
             }
-            if (ClassUtils.is(object, GameObject) && key == "components_")
+            if (object instanceof GameObject && key == "components_")
             {
                 var components: Component[] = this.readObject(data);
                 var component: GameObject = object;

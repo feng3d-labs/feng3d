@@ -46,7 +46,7 @@ namespace feng3d
         private _skeleton: Skeleton;
         private createMD5Mesh(md5MeshData: MD5MeshData)
         {
-            var object3D = new GameObject();
+            var object3D = GameObject.create();
 
             //顶点最大关节关联数
             var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
@@ -59,7 +59,7 @@ namespace feng3d
             {
                 var geometry = this.createGeometry(md5MeshData.meshs[i]);
 
-                var skeletonObject3D = new GameObject();
+                var skeletonObject3D = GameObject.create();
                 skeletonObject3D.addComponent(MeshRenderer).material = new StandardMaterial();
                 skeletonObject3D.addComponent(MeshFilter).mesh = geometry;
                 skeletonAnimator = skeletonObject3D.addComponent(SkeletonAnimator);
@@ -259,7 +259,7 @@ namespace feng3d
 
         private createAnimator(md5AnimData: MD5AnimData)
         {
-            var object = new GameObject();
+            var object = GameObject.create();
 
             var _clip = new SkeletonClipNode();
             for (var i: number = 0; i < md5AnimData.numFrames; ++i)

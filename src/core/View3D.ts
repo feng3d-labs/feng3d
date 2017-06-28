@@ -18,7 +18,7 @@ namespace feng3d
 
         //
         private _gl: GL;
-        private _camera: CameraObject3D;
+        private _camera: Camera;
         private _scene: Scene3D;
         private _canvas: HTMLCanvasElement;
         private _viewRect: Rectangle;
@@ -76,7 +76,7 @@ namespace feng3d
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas: HTMLCanvasElement = null, scene: Scene3D = null, camera: CameraObject3D = null, autoRender = true)
+        constructor(canvas: HTMLCanvasElement = null, scene: Scene3D = null, camera: Camera = null, autoRender = true)
         {
             //初始化引擎
             initEngine();
@@ -99,8 +99,8 @@ namespace feng3d
             this.initGL();
 
             this._viewRect = new Rectangle(this._canvas.clientLeft, this._canvas.clientTop, this._canvas.clientWidth, this._canvas.clientHeight);
-            this.scene = scene || new GameObject().addComponent(Scene3D);
-            this.camera = camera || new CameraObject3D();
+            this.scene = scene || GameObject.create("scene").addComponent(Scene3D);
+            this.camera = camera || GameObject.create("camera").addComponent(Camera);
             this.autoRender = autoRender;
 
             this.defaultRenderer = new ForwardRenderer();
@@ -150,7 +150,7 @@ namespace feng3d
             this._canvas.width = this._canvas.clientWidth;
             this._canvas.height = this._canvas.clientHeight;
 
-            this._renderContext.camera = this._camera.camera;
+            this._renderContext.camera = this._camera;
             this._renderContext.scene3d = this._scene;
             this._renderContext.view3D = this;
             this._renderContext.gl = this._gl;
@@ -158,7 +158,7 @@ namespace feng3d
             var viewClientRect: ClientRect = this._canvas.getBoundingClientRect();
             var viewRect = this._viewRect = this._viewRect || new Rectangle();
             viewRect.setTo(viewClientRect.left, viewClientRect.top, viewClientRect.width, viewClientRect.height);
-            this.camera.camera.lens.aspectRatio = viewRect.width / viewRect.height;
+            this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
             this.mouse3DManager.viewRect.copyFrom(viewRect);
@@ -231,7 +231,7 @@ namespace feng3d
 		 */
         public project(point3d: Vector3D): Vector3D
         {
-            var v: Vector3D = this._camera.camera.project(point3d);
+            var v: Vector3D = this._camera.project(point3d);
 
             v.x = (v.x + 1.0) * this._canvas.width / 2.0;
             v.y = (v.y + 1.0) * this._canvas.height / 2.0;
@@ -250,7 +250,7 @@ namespace feng3d
         public unproject(sX: number, sY: number, sZ: number, v: Vector3D = null): Vector3D
         {
             var gpuPos: Point = this.screenToGpuPosition(new Point(sX, sY));
-            return this._camera.camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
+            return this._camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
         }
 
         /**

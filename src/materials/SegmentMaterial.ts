@@ -1,5 +1,9 @@
 namespace feng3d
 {
+    export interface UniformRenderData
+    {
+        u_segmentColor: Lazy<Color>;
+    }
 
     /**
 	 * 线段材质
@@ -9,6 +13,11 @@ namespace feng3d
     export class SegmentMaterial extends Material
     {
         /**
+         * 线段颜色
+         */
+        public readonly color = new Color();
+
+        /**
          * 构建线段材质
          */
         constructor()
@@ -16,6 +25,7 @@ namespace feng3d
             super();
             this.setShader("segment");
             this.renderMode = RenderMode.LINES;
+            this.createUniformData("u_segmentColor", () => this.color);
         }
     }
 }

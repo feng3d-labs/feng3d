@@ -158,8 +158,6 @@
         //
         "src/debug/Trident.ts",
         //
-        "src/object3ds/CameraObject3D.ts",
-        //
         "src/utils/GameObjectFactory.ts",
         //
         "src/core/Mouse3DManager.ts",

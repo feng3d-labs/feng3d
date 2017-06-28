@@ -110,7 +110,7 @@ namespace feng3d
 		 * @param colorEnd 终点颜色
 		 * @param thickness 线段厚度
 		 */
-        constructor(start: Vector3D, end: Vector3D, colorStart: number = 0x333333, colorEnd: number = 0x333333, thickness: number = 1)
+        constructor(start: Vector3D, end: Vector3D, colorStart: number = 0xffffff, colorEnd: number = 0xffffff, thickness: number = 1)
         {
             this.thickness = thickness * .5;
             this.start = start;

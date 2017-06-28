@@ -22,7 +22,6 @@ namespace feng3d
         constructor(gameObject: GameObject)
         {
             super(gameObject);
-            gameObject.name = "scene";
             gameObject.transform["_scene"] = this;
             gameObject.transform._isRoot = true;
         }

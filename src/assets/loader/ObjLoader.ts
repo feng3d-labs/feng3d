@@ -49,7 +49,7 @@ namespace feng3d
 
         private createObj(material: Material)
         {
-            var object = new GameObject();
+            var object = GameObject.create();
             var objData = this._objData;
             var objs = objData.objs;
             for (var i = 0; i < objs.length; i++)
@@ -66,7 +66,7 @@ namespace feng3d
 
         private createSubObj(obj: OBJ_OBJ, material: Material)
         {
-            var object3D = new GameObject(obj.name);
+            var object3D = GameObject.create(obj.name);
 
             var subObjs = obj.subObjs;
             for (var i = 0; i < subObjs.length; i++)
@@ -85,7 +85,7 @@ namespace feng3d
 
         private createMaterialObj(obj: OBJ_OBJ, subObj: OBJ_SubOBJ, material: Material)
         {
-            var gameObject = new GameObject();
+            var gameObject = GameObject.create();
             var model = gameObject.addComponent(MeshRenderer);
             model.material = material || new ColorMaterial();
 

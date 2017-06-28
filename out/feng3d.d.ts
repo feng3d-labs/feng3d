@@ -433,6 +433,7 @@ declare namespace feng3d {
         hideFlags: HideFlags;
         /**
          * The name of the Feng3dObject.
+         * Components share the same name with the game object and all attached components.
          */
         name: string;
         constructor();
@@ -1046,7 +1047,7 @@ declare namespace feng3d {
         /**
          * 构建3D对象
          */
-        constructor(name?: string);
+        private constructor(name?);
         /**
          * 获取指定位置索引的子组件
          * @param index			位置索引
@@ -1134,6 +1135,7 @@ declare namespace feng3d {
          * @param name
          */
         static find(name: string): GameObject;
+        static create(name?: string): GameObject;
         /**
          * 组件列表
          */
@@ -1197,7 +1199,7 @@ declare namespace feng3d {
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas?: HTMLCanvasElement, scene?: Scene3D, camera?: CameraObject3D, autoRender?: boolean);
+        constructor(canvas?: HTMLCanvasElement, scene?: Scene3D, camera?: Camera, autoRender?: boolean);
         /**
          * 初始化GL
          */
@@ -1215,7 +1217,7 @@ declare namespace feng3d {
         /**
          * 摄像机
          */
-        camera: CameraObject3D;
+        camera: Camera;
         /**
          * 监听鼠标事件收集事件类型
          */
@@ -2544,12 +2546,19 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface UniformRenderData {
+        u_segmentColor: Lazy<Color>;
+    }
     /**
      * 线段材质
      * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
      * @author feng 2016-10-15
      */
     class SegmentMaterial extends Material {
+        /**
+         * 线段颜色
+         */
+        readonly color: Color;
         /**
          * 构建线段材质
          */
@@ -4307,16 +4316,6 @@ declare namespace feng3d {
     class Trident extends Component {
         constructor(gameObject: GameObject);
         private buildTrident(length);
-    }
-}
-declare namespace feng3d {
-    /**
-     * 摄像机3D对象
-     * @author feng 2017-02-06
-     */
-    class CameraObject3D extends GameObject {
-        camera: Camera;
-        constructor(name?: string);
     }
 }
 declare namespace feng3d {

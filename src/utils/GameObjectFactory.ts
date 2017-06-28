@@ -4,7 +4,7 @@ namespace feng3d
     {
         public static create(name = "GameObject")
         {
-            var gameobject = new GameObject(name);
+            var gameobject = GameObject.create(name);
             gameobject.transform.mouseEnabled = true;
             if (name == "GameObject")
                 return gameobject;
@@ -39,7 +39,7 @@ namespace feng3d
 
         public static createCube(name: string = "cube")
         {
-            var gameobject = new GameObject(name);
+            var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(MeshRenderer);
             gameobject.addComponent(MeshFilter).mesh = new CubeGeometry();
             model.material = new StandardMaterial();
@@ -48,7 +48,7 @@ namespace feng3d
 
         public static createPlane(name: string = "plane")
         {
-            var gameobject = new GameObject(name);
+            var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(MeshRenderer);
             gameobject.addComponent(MeshFilter).mesh = new PlaneGeometry();
             model.material = new StandardMaterial();
@@ -57,7 +57,7 @@ namespace feng3d
 
         public static createCylinder(name: string = "cylinder")
         {
-            var gameobject = new GameObject(name);
+            var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(MeshRenderer);
             gameobject.addComponent(MeshFilter).mesh = new CylinderGeometry();
             model.material = new StandardMaterial();
@@ -66,7 +66,7 @@ namespace feng3d
 
         public static createSphere(name: string = "sphere")
         {
-            var gameobject = new GameObject(name);
+            var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(MeshRenderer);
             gameobject.addComponent(MeshFilter).mesh = new SphereGeometry();
             model.material = new StandardMaterial();
@@ -75,7 +75,7 @@ namespace feng3d
 
         public static createCapsule(name: string = "capsule")
         {
-            var gameobject = new GameObject(name);
+            var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(MeshRenderer);
             gameobject.addComponent(MeshFilter).mesh = new CapsuleGeometry();
             model.material = new StandardMaterial();
