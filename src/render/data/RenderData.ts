@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export class RenderData extends EventDispatcher
+    export class RenderData 
     {
         private _elementMap = {};
 
@@ -126,7 +126,7 @@ namespace feng3d
             if (element instanceof RenderElement)
             {
                 this._elements.push(element);
-                this.dispatchEvent(new Event(Object3DRenderAtomic.ADD_RENDERELEMENT, element));
+                Event.dispatch(this,<any>Object3DRenderAtomic.ADD_RENDERELEMENT, element);
             } else
             {
                 for (var i = 0; i < element.length; i++)
@@ -144,7 +144,7 @@ namespace feng3d
                 if (index != -1)
                 {
                     this._elements.splice(i, 1);
-                    this.dispatchEvent(new Event(Object3DRenderAtomic.REMOVE_RENDERELEMENT, element));
+                    Event.dispatch(this,<any>Object3DRenderAtomic.REMOVE_RENDERELEMENT, element);
                 }
             } else
             {

@@ -8,6 +8,7 @@ namespace feng3d
 	 */
     export class SkeletonClipNode extends AnimationClipNodeBase
     {
+        public name:string;
         private _frames: SkeletonPose[] = [];
 
 		/**

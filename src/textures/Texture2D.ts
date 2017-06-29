@@ -34,7 +34,6 @@ namespace feng3d
         protected onLoad()
         {
             this.invalidate();
-            this.dispatchEvent(new Event(Event.LOADED, this));
         }
 
         /**

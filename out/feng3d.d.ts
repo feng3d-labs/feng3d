@@ -32,7 +32,7 @@ declare namespace feng3d {
     };
 }
 declare namespace feng3d {
-    class RenderData extends EventDispatcher {
+    class RenderData {
         private _elementMap;
         readonly elements: RenderElement[];
         private _elements;
@@ -486,7 +486,7 @@ declare namespace feng3d {
      * 组件事件
      * @author feng 2015-12-2
      */
-    class ComponentEvent extends Event {
+    class ComponentEvent {
         /**
          * 添加子组件事件
          */
@@ -554,11 +554,6 @@ declare namespace feng3d {
          */
         getComponentsInChildren<T extends Component>(type?: ComponentConstructor<T>): T[];
         /**
-         * 派发事件，该事件将会强制冒泡到3D对象中
-         * @param event						调度到事件流中的 Event 对象。
-         */
-        dispatchEvent(event: Event): boolean;
-        /**
          * 组件列表
          */
         protected _single: boolean;
@@ -569,15 +564,11 @@ declare namespace feng3d {
         /**
          * 处理被添加组件事件
          */
-        protected onBeAddedComponent(event: ComponentEvent): void;
+        protected onBeAddedComponent(event: EventVO<any>): void;
         /**
          * 处理被移除组件事件
          */
-        protected onBeRemovedComponent(event: ComponentEvent): void;
-        /**
-         * 获取冒泡对象
-         */
-        protected getBubbleTargets(event?: Event): IEventDispatcher[];
+        protected onBeRemovedComponent(event: EventVO<any>): void;
         private _gameObject;
         private _tag;
         private _transform;
@@ -797,8 +788,6 @@ declare namespace feng3d {
         dispose(): void;
         disposeAsset(): void;
         invalidateTransform(): void;
-        addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
-        removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
         protected _matrix3d: Matrix3D;
         protected _scaleX: number;
         protected _scaleY: number;
@@ -819,17 +808,11 @@ declare namespace feng3d {
         private _positionDirty;
         private _rotationDirty;
         private _scaleDirty;
-        private _positionChanged;
-        private _rotationChanged;
-        private _scaleChanged;
         private _rotationX;
         private _rotationY;
         private _rotationZ;
         private _eulers;
         private _flipY;
-        private _listenToPositionChanged;
-        private _listenToRotationChanged;
-        private _listenToScaleChanged;
         private _position;
         private invalidateRotation();
         private notifyRotationChanged();
@@ -883,8 +866,6 @@ declare namespace feng3d {
         disposeWithChildren(): void;
         rotate(axis: Vector3D, angle: number): void;
         updateImplicitVisibility(): void;
-        addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
-        removeEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
         /**
          * 获取子对象列表（备份）
          */
@@ -899,8 +880,6 @@ declare namespace feng3d {
         protected updateMouseChildren(): void;
         protected invalidateSceneTransform(): void;
         protected updateLocalToWorldMatrix(): void;
-        private _sceneTransformChanged;
-        private _scenechanged;
         private _children;
         private _mouseChildren;
         private _worldToLocalMatrix;
@@ -909,8 +888,6 @@ declare namespace feng3d {
         private _scenePositionDirty;
         private _explicitVisibility;
         private _implicitVisibility;
-        private _listenToSceneTransformChanged;
-        private _listenToSceneChanged;
         private notifySceneTransformChange();
         private notifySceneChange();
         private removeChildInternal(childIndex, child);
@@ -1265,7 +1242,7 @@ declare namespace feng3d {
     /**
      * 3D对象事件
      */
-    class Object3DEvent extends Event {
+    class Object3DEvent {
         static VISIBLITY_UPDATED: string;
         static SCENETRANSFORM_CHANGED: string;
         static SCENE_CHANGED: string;
@@ -1285,13 +1262,6 @@ declare namespace feng3d {
          */
         data: IObject3DEventData;
         object: Object3D;
-        /**
-         * 创建一个作为参数传递给事件侦听器的 Event 对象。
-         * @param type 事件的类型，可以作为 Event.type 访问。
-         * @param data 携带数据
-         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
-         */
-        constructor(type: string, data?: IObject3DEventData | Object3D, bubbles?: boolean);
     }
     /**
      * 3D对象事件数据
@@ -1356,7 +1326,7 @@ declare namespace feng3d {
      * 3D场景事件
      * @author feng 2016-01-03
      */
-    class Scene3DEvent extends Event {
+    class Scene3DEvent {
         /**
          * 当Object3D的scene属性被设置是由Scene3D派发
          */
@@ -1365,17 +1335,6 @@ declare namespace feng3d {
          * 当Object3D的scene属性被清空时由Scene3D派发
          */
         static REMOVED_FROM_SCENE: string;
-        /**
-         * 事件数据
-         */
-        data: ObjectContainer3D;
-        /**
-         * 创建一个作为参数传递给事件侦听器的 Event 对象。
-         * @param type 事件的类型，可以作为 Event.type 访问。
-         * @param data 携带数据
-         * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
-         */
-        constructor(type: string, data?: ObjectContainer3D, bubbles?: boolean);
     }
 }
 declare namespace feng3d {
@@ -1519,7 +1478,7 @@ declare namespace feng3d {
      * 几何体事件
      * @author feng 2015-12-8
      */
-    class GeometryEvent extends Event {
+    class GeometryEvent {
         /**
          * 获取几何体顶点数据
          */
@@ -1536,14 +1495,6 @@ declare namespace feng3d {
          * 包围盒失效
          */
         static BOUNDS_INVALID: string;
-        /**
-         * 事件目标
-         */
-        target: Geometry;
-        /**
-         * 构建几何体事件
-         */
-        constructor(type: string, data?: any, bubbles?: boolean);
     }
 }
 declare namespace feng3d {
@@ -1699,7 +1650,7 @@ declare namespace feng3d {
      * 摄像机镜头
      * @author feng 2014-10-14
      */
-    abstract class LensBase extends EventDispatcher {
+    abstract class LensBase {
         protected _matrix: Matrix3D;
         protected _scissorRect: Rectangle;
         protected _viewPort: Rectangle;
@@ -1822,10 +1773,8 @@ declare namespace feng3d {
      * 镜头事件
      * @author feng 2014-10-14
      */
-    class LensEvent extends Event {
+    class LensEvent {
         static MATRIX_CHANGED: string;
-        constructor(type: string, lens?: LensBase, bubbles?: boolean);
-        readonly lens: LensBase;
     }
 }
 declare namespace feng3d {
@@ -1876,11 +1825,11 @@ declare namespace feng3d {
         /**
          * 处理被添加组件事件
          */
-        protected onBeAddedComponent(event: ComponentEvent): void;
+        protected onBeAddedComponent(event: EventVO<any>): void;
         /**
          * 处理被移除组件事件
          */
-        protected onBeRemovedComponent(event: ComponentEvent): void;
+        protected onBeRemovedComponent(event: EventVO<any>): void;
         /**
          * 处理场景变换改变事件
          */
@@ -1901,10 +1850,8 @@ declare namespace feng3d {
      * 摄像机事件
      * @author feng 2014-10-14
      */
-    class CameraEvent extends Event {
+    class CameraEvent {
         static LENS_CHANGED: string;
-        constructor(type: string, camera?: Camera, bubbles?: boolean);
-        readonly camera: Camera;
     }
 }
 declare namespace feng3d {
@@ -1912,7 +1859,7 @@ declare namespace feng3d {
      * 包围盒基类
      * @author feng 2014-4-27
      */
-    abstract class BoundingVolumeBase extends EventDispatcher {
+    abstract class BoundingVolumeBase {
         /** 最小坐标 */
         protected _min: Vector3D;
         /** 最大坐标 */
@@ -2855,11 +2802,11 @@ declare namespace feng3d {
         /**
          * 处理被添加组件事件
          */
-        protected onBeAddedComponent(event: ComponentEvent): void;
+        protected onBeAddedComponent(event: EventVO<any>): void;
         /**
          * 处理被移除组件事件
          */
-        protected onBeRemovedComponent(event: ComponentEvent): void;
+        protected onBeRemovedComponent(event: EventVO<any>): void;
         protected onScenetransformChanged(): void;
     }
 }
@@ -3605,15 +3552,15 @@ declare namespace feng3d {
     /**
      * Dispatched to notify changes in an animation state's state.
      */
-    class AnimationStateEvent extends Event {
+    class AnimationStateEvent {
+        animator: AnimatorBase;
+        animationState: AnimationStateBase;
+        animationNode: AnimationNodeBase;
         /**
          * Dispatched when a non-looping clip node inside an animation state reaches the end of its timeline.
          */
         static PLAYBACK_COMPLETE: string;
         static TRANSITION_COMPLETE: string;
-        private _animator;
-        private _animationState;
-        private _animationNode;
         /**
          * Create a new <code>AnimatonStateEvent</code>
          *
@@ -3621,25 +3568,7 @@ declare namespace feng3d {
          * @param animator The animation state object that is the subject of this event.
          * @param animationNode The animation node inside the animation state from which the event originated.
          */
-        constructor(type: string, animator: AnimatorBase, animationState: AnimationStateBase, animationNode: AnimationNodeBase);
-        /**
-         * The animator object that is the subject of this event.
-         */
-        readonly animator: AnimatorBase;
-        /**
-         * The animation state object that is the subject of this event.
-         */
-        readonly animationState: AnimationStateBase;
-        /**
-         * The animation node inside the animation state from which the event originated.
-         */
-        readonly animationNode: AnimationNodeBase;
-        /**
-         * Clones the event.
-         *
-         * @return An exact duplicate of the current object.
-         */
-        clone(): Event;
+        constructor(animator: AnimatorBase, animationState: AnimationStateBase, animationNode: AnimationNodeBase);
     }
 }
 declare namespace feng3d {
@@ -3647,20 +3576,13 @@ declare namespace feng3d {
      * 动画事件
      * @author feng 2014-5-27
      */
-    class AnimatorEvent extends Event {
+    class AnimatorEvent {
         /** 开始播放动画 */
         static START: string;
         /** 继续播放动画 */
         static PLAY: string;
         /** 停止播放动画 */
         static STOP: string;
-        /**
-         * 创建一个动画时间
-         * @param type			事件类型
-         * @param data			事件数据
-         * @param bubbles		是否冒泡
-         */
-        constructor(type: string, data?: any, bubbles?: boolean);
     }
 }
 declare namespace feng3d {
@@ -3668,7 +3590,7 @@ declare namespace feng3d {
      * 动画节点基类
      * @author feng 2014-5-20
      */
-    class AnimationNodeBase extends EventDispatcher {
+    class AnimationNodeBase {
         protected _stateClass: any;
         /**
          * 状态类
@@ -3916,6 +3838,7 @@ declare namespace feng3d {
      * @author feng 2014-5-20
      */
     class SkeletonClipNode extends AnimationClipNodeBase {
+        name: string;
         private _frames;
         /**
          * 创建骨骼动画节点
@@ -4375,25 +4298,34 @@ declare namespace feng3d {
          */
         private setSelectedObject3D(value);
     }
+    interface EventType {
+        /** 鼠标单击 */
+        click: any;
+        /** 鼠标双击 */
+        doubleClick: "doubleClick";
+        /** 鼠标按下 */
+        mousedown: "mousedown";
+        /** 鼠标移动 */
+        mousemove: "mousemove";
+        /** 鼠标移出 */
+        mouseout: "mouseout";
+        /** 鼠标移入 */
+        mouseover: "mouseover";
+        /** 鼠标弹起 */
+        mouseup: "mouseup";
+    }
     /**
      * 3D鼠标事件
      */
-    class Mouse3DEvent extends Event {
-        /** 鼠标单击 */
-        static CLICK: string;
-        /** 鼠标双击 */
-        static DOUBLE_CLICK: "doubleClick3D";
-        /** 鼠标按下 */
-        static MOUSE_DOWN: string;
-        /** 鼠标移动 */
-        static MOUSE_MOVE: string;
-        /** 鼠标移出 */
-        static MOUSE_OUT: string;
-        /** 鼠标移入 */
-        static MOUSE_OVER: string;
-        /** 鼠标弹起 */
-        static MOUSE_UP: string;
-    }
+    var Mouse3DEvent: {
+        CLICK: string;
+        DOUBLE_CLICK: string;
+        MOUSE_DOWN: string;
+        MOUSE_MOVE: string;
+        MOUSE_OUT: string;
+        MOUSE_OVER: string;
+        MOUSE_UP: string;
+    };
 }
 declare namespace feng3d {
 }

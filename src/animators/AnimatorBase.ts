@@ -91,12 +91,12 @@ namespace feng3d
 
             this._isPlaying = true;
 
-            ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            Event.on(ticker, <any>"enterFrame", this.onEnterFrame, this);
 
-            if (!this.hasEventListener(AnimatorEvent.START))
+            if (!Event.has(this, <any>AnimatorEvent.START))
                 return;
 
-            this.dispatchEvent(new AnimatorEvent(AnimatorEvent.START, this));
+            Event.dispatch(this, <any>AnimatorEvent.START, this);
         }
 
 		/**
@@ -111,13 +111,13 @@ namespace feng3d
 
             this._isPlaying = false;
 
-            if (ticker.hasEventListener(Event.ENTER_FRAME))
-                ticker.removeEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            if (Event.has(ticker, <any>"enterFrame"))
+                Event.off(ticker, <any>"enterFrame", this.onEnterFrame, this);
 
-            if (!this.hasEventListener(AnimatorEvent.STOP))
+            if (!Event.has(this, <any>AnimatorEvent.STOP))
                 return;
 
-            this.dispatchEvent(new AnimatorEvent(AnimatorEvent.STOP, this));
+            Event.dispatch(this, <any>AnimatorEvent.STOP, this);
         }
 
 		/**

@@ -35,7 +35,7 @@ namespace feng3d
 
             this._bounds = this.getDefaultBoundingVolume();
             this._worldBounds = this.getDefaultBoundingVolume();
-            this._bounds.addEventListener(Event.CHANGE, this.onBoundsChange, this);
+            Event.on(this._bounds,"change", this.onBoundsChange, this);
             //
             this.createUniformData("u_modelMatrix", () => this.localToWorldMatrix);
         }

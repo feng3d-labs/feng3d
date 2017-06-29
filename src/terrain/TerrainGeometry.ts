@@ -137,7 +137,7 @@ namespace feng3d
 
             this._heightImage = new Image();
             this._heightImage.crossOrigin = "Anonymous";
-            this._heightImage.addEventListener("load", this.onHeightMapLoad.bind(this));
+            Event.on(this._heightImage,<any>"load", this.onHeightMapLoad.bind(this));
             this.heightMapUrl = heightMapUrl;
         }
 

@@ -204,10 +204,10 @@ namespace feng3d
             if (this._scene == newScene)
                 return;
             if (this._scene)
-                this.dispatchEvent(new Scene3DEvent(Scene3DEvent.REMOVED_FROM_SCENE, this));
+                Event.dispatch(this,<any>Scene3DEvent.REMOVED_FROM_SCENE, this);
             this._scene = newScene;
             if (this._scene)
-                this.dispatchEvent(new Scene3DEvent(Scene3DEvent.ADDED_TO_SCENE, this));
+                Event.dispatch(this,<any>Scene3DEvent.ADDED_TO_SCENE, this);
             for (let i = 0, n = this._children.length; i < n; i++)
             {
                 this._children[i].updateScene();
@@ -367,37 +367,6 @@ namespace feng3d
                 this._children[i].updateImplicitVisibility();
         }
 
-        public addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority: number = 0)
-        {
-            super.addEventListener(type, listener, thisObject, priority);
-            switch (type)
-            {
-                case Object3DEvent.SCENETRANSFORM_CHANGED:
-                    this._listenToSceneTransformChanged = true;
-                    break;
-                case Object3DEvent.SCENE_CHANGED:
-                    this._listenToSceneChanged = true;
-                    break;
-            }
-        }
-
-        public removeEventListener(type: string, listener: (event: Event) => void, thisObject: any)
-        {
-            var _self__: any = this;
-            super.removeEventListener(type, listener, thisObject);
-            if (_self__.hasEventListener(type))
-                return;
-            switch (type)
-            {
-                case Object3DEvent.SCENETRANSFORM_CHANGED:
-                    this._listenToSceneTransformChanged = false;
-                    break;
-                case Object3DEvent.SCENE_CHANGED:
-                    this._listenToSceneChanged = false;
-                    break;
-            }
-        }
-
         /**
          * 获取子对象列表（备份）
          */
@@ -460,8 +429,6 @@ namespace feng3d
         //------------------------------------------
         // Private Properties
         //------------------------------------------
-        private _sceneTransformChanged: Object3DEvent;
-        private _scenechanged: Object3DEvent;
         private _children: Transform[] = [];
         private _mouseChildren: boolean = true;
         private _worldToLocalMatrix: Matrix3D = new Matrix3D();
@@ -470,8 +437,6 @@ namespace feng3d
         private _scenePositionDirty: boolean = true;
         private _explicitVisibility: boolean = true;
         private _implicitVisibility: boolean = true;
-        private _listenToSceneTransformChanged: boolean = false;
-        private _listenToSceneChanged: boolean = false;
 
         //------------------------------------------
         // Private Methods
@@ -485,12 +450,7 @@ namespace feng3d
             var len: number = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneTransformChange();
-            if (this._listenToSceneTransformChanged)
-            {
-                if (<any>!this._sceneTransformChanged)
-                    this._sceneTransformChanged = new Object3DEvent(Object3DEvent.SCENETRANSFORM_CHANGED, this);
-                this.dispatchEvent(this._sceneTransformChanged);
-            }
+            Event.dispatch(this,<any>Object3DEvent.SCENETRANSFORM_CHANGED, this);
         }
 
         private notifySceneChange()
@@ -500,12 +460,7 @@ namespace feng3d
             var len: number = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneChange();
-            if (this._listenToSceneChanged)
-            {
-                if (<any>!this._scenechanged)
-                    this._scenechanged = new Object3DEvent(Object3DEvent.SCENE_CHANGED, this);
-                this.dispatchEvent(this._scenechanged);
-            }
+            Event.dispatch(this,<any>Object3DEvent.SCENE_CHANGED, this);
         }
 
         private removeChildInternal(childIndex: number, child: Transform)

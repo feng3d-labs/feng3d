@@ -39,7 +39,7 @@ namespace feng3d
         {
             if (this.childrenRenderDataHolder.indexOf(renderDataHolder) == -1)
                 this.childrenRenderDataHolder.push(renderDataHolder);
-            this.dispatchEvent(new Event(Object3DRenderAtomic.ADD_RENDERHOLDER, renderDataHolder));
+            Event.dispatch(this, <any>Object3DRenderAtomic.ADD_RENDERHOLDER, renderDataHolder);
         }
 
         public removeRenderDataHolder(renderDataHolder: RenderDataHolder)
@@ -47,7 +47,7 @@ namespace feng3d
             var index = this.childrenRenderDataHolder.indexOf(renderDataHolder);
             if (index != -1)
                 this.childrenRenderDataHolder.splice(index, 1);
-            this.dispatchEvent(new Event(Object3DRenderAtomic.REMOVE_RENDERHOLDER, renderDataHolder));
+            Event.dispatch(this, <any>Object3DRenderAtomic.REMOVE_RENDERHOLDER, renderDataHolder);
         }
 
 		/**

@@ -58,9 +58,9 @@ namespace feng3d
         /**
          * 处理被添加组件事件
          */
-        protected onBeAddedComponent(event: ComponentEvent): void
+        protected onBeAddedComponent(event: EventVO<any>): void
         {
-            this.gameObject.transform.addEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
+            Event.on(this.gameObject.transform, <any>Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
             var tmpLookAt = this.gameObject.transform.getPosition();
             tmpLookAt.incrementBy(this._direction);
             this.gameObject.transform.lookAt(tmpLookAt);
@@ -69,9 +69,9 @@ namespace feng3d
         /**
          * 处理被移除组件事件
          */
-        protected onBeRemovedComponent(event: ComponentEvent): void
+        protected onBeRemovedComponent(event: EventVO<any>): void
         {
-            this.gameObject.transform.removeEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
+            Event.off(this.gameObject.transform, <any>Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
         }
 
         protected onScenetransformChanged()

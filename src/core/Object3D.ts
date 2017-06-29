@@ -525,43 +525,6 @@ namespace feng3d
             this._transformDirty = true;
         }
 
-        public addEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority: number = 0)
-        {
-            super.addEventListener(type, listener, thisObject, priority);
-            switch (type)
-            {
-                case Object3DEvent.POSITION_CHANGED:
-                    this._listenToPositionChanged = true;
-                    break;
-                case Object3DEvent.ROTATION_CHANGED:
-                    this._listenToRotationChanged = true;
-                    break;
-                case Object3DEvent.SCALE_CHANGED:
-                    this._listenToRotationChanged = true;
-                    break;
-            }
-        }
-
-        public removeEventListener(type: string, listener: (event: Event) => void, thisObject: any)
-        {
-            var _self__: any = this;
-            super.removeEventListener(type, listener, thisObject);
-            if (_self__.hasEventListener(type))
-                return;
-            switch (type)
-            {
-                case Object3DEvent.POSITION_CHANGED:
-                    this._listenToPositionChanged = false;
-                    break;
-                case Object3DEvent.ROTATION_CHANGED:
-                    this._listenToRotationChanged = false;
-                    break;
-                case Object3DEvent.SCALE_CHANGED:
-                    this._listenToScaleChanged = false;
-                    break;
-            }
-        }
-
         //------------------------------------------
         // Protected Properties
         //------------------------------------------
@@ -625,17 +588,11 @@ namespace feng3d
         private _positionDirty: boolean = false;
         private _rotationDirty: boolean = false;
         private _scaleDirty: boolean = false;
-        private _positionChanged: Object3DEvent;
-        private _rotationChanged: Object3DEvent;
-        private _scaleChanged: Object3DEvent;
         private _rotationX: number = 0;
         private _rotationY: number = 0;
         private _rotationZ: number = 0;
         private _eulers: Vector3D = new Vector3D();
         private _flipY: Matrix3D = new Matrix3D();
-        private _listenToPositionChanged: boolean = false;
-        private _listenToRotationChanged: boolean = false;
-        private _listenToScaleChanged: boolean = false;
         private _position = new Vector3D();
 
         //------------------------------------------
@@ -647,16 +604,12 @@ namespace feng3d
                 return;
             this._rotationDirty = true;
             this.invalidateTransform();
-            if (this._listenToRotationChanged)
-                this.notifyRotationChanged();
+            this.notifyRotationChanged();
         }
 
         private notifyRotationChanged()
         {
-            var _self__: any = this;
-            if (<any>!this._rotationChanged)
-                this._rotationChanged = new Object3DEvent(Object3DEvent.ROTATION_CHANGED, this);
-            _self__.dispatchEvent(this._rotationChanged);
+            Event.dispatch(this,<any>Object3DEvent.ROTATION_CHANGED, this);
         }
 
         private invalidateScale()
@@ -665,16 +618,12 @@ namespace feng3d
                 return;
             this._scaleDirty = true;
             this.invalidateTransform();
-            if (this._listenToScaleChanged)
                 this.notifyScaleChanged();
         }
 
         private notifyScaleChanged()
         {
-            var _self__: any = this;
-            if (<any>!this._scaleChanged)
-                this._scaleChanged = new Object3DEvent(Object3DEvent.SCALE_CHANGED, this);
-            _self__.dispatchEvent(this._scaleChanged);
+            Event.dispatch(this,<any>Object3DEvent.SCALE_CHANGED, this);
         }
 
         private invalidatePivot()
@@ -689,16 +638,12 @@ namespace feng3d
                 return;
             this._positionDirty = true;
             this.invalidateTransform();
-            if (this._listenToPositionChanged)
-                this.notifyPositionChanged();
+            this.notifyPositionChanged();
         }
 
         private notifyPositionChanged()
         {
-            var _self__: any = this;
-            if (<any>!this._positionChanged)
-                this._positionChanged = new Object3DEvent(Object3DEvent.POSITION_CHANGED, this);
-            _self__.dispatchEvent(this._positionChanged);
+            Event.dispatch(this,<any>Object3DEvent.POSITION_CHANGED, this);
         }
     }
     var tempAxeX: Vector3D;

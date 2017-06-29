@@ -5,9 +5,8 @@ namespace feng3d
 	 * 几何体事件
 	 * @author feng 2015-12-8
 	 */
-	export class GeometryEvent extends Event
+	export class GeometryEvent
 	{
-
 		/**
 		 * 获取几何体顶点数据
 		 */
@@ -27,18 +26,5 @@ namespace feng3d
 		 * 包围盒失效
 		 */
 		public static BOUNDS_INVALID = "boundsInvalid";
-
-		/**
-		 * 事件目标
-		 */
-		target: Geometry;
-
-		/**
-		 * 构建几何体事件
-		 */
-		constructor(type: string, data = null, bubbles: boolean = false)
-		{
-			super(type, data, bubbles);
-		}
 	}
 }

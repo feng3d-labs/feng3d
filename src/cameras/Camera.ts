@@ -20,7 +20,7 @@ namespace feng3d
             super(gameObject);
             this._single = true;
             this._lens = new PerspectiveLens();
-            this._lens.addEventListener(LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
+            Event.on(this._lens, <any>LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
 
             this._frustumPlanes = [];
 
@@ -39,12 +39,12 @@ namespace feng3d
 		/**
 		 * 处理镜头变化事件
 		 */
-        private onLensMatrixChanged(event: LensEvent)
+        private onLensMatrixChanged(event: EventVO<any>)
         {
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
 
-            this.dispatchEvent(event);
+            Event.dispatch(this, event.type, event.data);
         }
 
         /**
@@ -63,13 +63,13 @@ namespace feng3d
             if (!value)
                 throw new Error("Lens cannot be null!");
 
-            this._lens.removeEventListener(LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
+            Event.off(this._lens, <any>LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
 
             this._lens = value;
 
-            this._lens.addEventListener(LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
+            Event.on(this._lens, <any>LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
 
-            this.dispatchEvent(new CameraEvent(CameraEvent.LENS_CHANGED, this));
+            Event.dispatch(this, <any>CameraEvent.LENS_CHANGED, this);
         }
 
 		/**
@@ -126,9 +126,9 @@ namespace feng3d
         /**
          * 处理被添加组件事件
          */
-        protected onBeAddedComponent(event: ComponentEvent): void
+        protected onBeAddedComponent(event: EventVO<any>): void
         {
-            this.gameObject.transform.addEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
+            Event.on(this.gameObject.transform, <any>Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
         }
@@ -136,9 +136,9 @@ namespace feng3d
         /**
          * 处理被移除组件事件
          */
-        protected onBeRemovedComponent(event: ComponentEvent): void
+        protected onBeRemovedComponent(event: EventVO<any>): void
         {
-            this.gameObject.transform.removeEventListener(Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
+            Event.off(this.gameObject.transform, <any>Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
         }
 
         /**

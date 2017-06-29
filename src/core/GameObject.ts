@@ -225,8 +225,8 @@ namespace feng3d
 
             var component: Component = this.components.splice(index, 1)[0];
             //派发移除组件事件
-            component.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }));
-            this.dispatchEvent(new ComponentEvent(ComponentEvent.REMOVED_COMPONENT, { container: this, child: component }));
+            Event.dispatch(component, <any>ComponentEvent.REMOVED_COMPONENT, { container: this, child: component });
+            Event.dispatch(this, <any>ComponentEvent.REMOVED_COMPONENT, { container: this, child: component });
             this.removeRenderDataHolder(component);
             return component;
         }
@@ -336,8 +336,8 @@ namespace feng3d
 
             this.components.splice(index, 0, component);
             //派发添加组件事件
-            component.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONENT, { container: this, child: component }));
-            this.dispatchEvent(new ComponentEvent(ComponentEvent.ADDED_COMPONENT, { container: this, child: component }));
+            Event.dispatch(component, <any>ComponentEvent.ADDED_COMPONENT, { container: this, child: component });
+            Event.dispatch(this, <any>ComponentEvent.ADDED_COMPONENT, { container: this, child: component });
             this.addRenderDataHolder(component);
         }
     }

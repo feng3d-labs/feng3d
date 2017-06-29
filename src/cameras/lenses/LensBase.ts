@@ -5,7 +5,7 @@ namespace feng3d
 	 * 摄像机镜头
 	 * @author feng 2014-10-14
 	 */
-	export abstract class LensBase extends EventDispatcher
+	export abstract class LensBase 
 	{
 		protected _matrix: Matrix3D;
 		protected _scissorRect: Rectangle = new Rectangle();
@@ -25,7 +25,6 @@ namespace feng3d
 		 */
 		constructor()
 		{
-			super();
 			this._matrix = new Matrix3D();
 		}
 
@@ -166,7 +165,7 @@ namespace feng3d
 			// notify the camera that the lens this.matrix is changing. this will mark the 
 			// viewProjectionMatrix in the camera as invalid, and force the this.matrix to
 			// be re-queried from the lens, and therefore rebuilt.
-			this.dispatchEvent(new LensEvent(LensEvent.MATRIX_CHANGED, this));
+			Event.dispatch(this,<any>LensEvent.MATRIX_CHANGED, this);
 		}
 
 		/**

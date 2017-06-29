@@ -46,14 +46,14 @@ namespace feng3d
         {
             if (this._targetObject != null)
             {
-                input.removeEventListener(inputType.MOUSE_DOWN, this.onMousedown, this);
-                input.removeEventListener(inputType.MOUSE_UP, this.onMouseup, this);
+                Event.off(input, <any>inputType.MOUSE_DOWN, this.onMousedown, this);
+                Event.off(input, <any>inputType.MOUSE_UP, this.onMouseup, this);
             }
             this._targetObject = value;
             if (this._targetObject != null)
             {
-                input.addEventListener(inputType.MOUSE_DOWN, this.onMousedown, this);
-                input.addEventListener(inputType.MOUSE_UP, this.onMouseup, this);
+                Event.on(input, <any>inputType.MOUSE_DOWN, this.onMousedown, this);
+                Event.on(input, <any>inputType.MOUSE_UP, this.onMouseup, this);
             }
         }
 
@@ -63,18 +63,18 @@ namespace feng3d
             this.velocity = new Vector3D();
             this.keyDownDic = {};
 
-            input.addEventListener(inputType.KEY_DOWN, this.onKeydown, this);
-            input.addEventListener(inputType.KEY_UP, this.onKeyup, this);
-            input.addEventListener(inputType.MOUSE_MOVE, this.onMouseMove, this);
-            ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            Event.on(input, <any>inputType.KEY_DOWN, this.onKeydown, this);
+            Event.on(input, <any>inputType.KEY_UP, this.onKeyup, this);
+            Event.on(input, <any>inputType.MOUSE_MOVE, this.onMouseMove, this);
+            Event.on(ticker, <any>"enterFrame", this.onEnterFrame, this);
         }
 
         private onMouseup()
         {
-            input.removeEventListener(inputType.KEY_DOWN, this.onKeydown, this);
-            input.removeEventListener(inputType.KEY_UP, this.onKeyup, this);
-            input.removeEventListener(inputType.MOUSE_MOVE, this.onMouseMove, this);
-            ticker.removeEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            Event.off(input, <any>inputType.KEY_DOWN, this.onKeydown, this);
+            Event.off(input, <any>inputType.KEY_UP, this.onKeyup, this);
+            Event.off(input, <any>inputType.MOUSE_MOVE, this.onMouseMove, this);
+            Event.off(ticker, <any>"enterFrame", this.onEnterFrame, this);
         }
 
         private onEnterFrame()
@@ -134,7 +134,7 @@ namespace feng3d
         /**
          * 处理鼠标移动事件
          */
-        private onMouseMove(event: InputEvent)
+        private onMouseMove(event: EventVO<any>)
         {
             if (this.targetObject == null)
                 return;
@@ -167,9 +167,10 @@ namespace feng3d
         /**
 		 * 键盘按下事件
 		 */
-        private onKeydown(event: InputEvent): void
+        private onKeydown(event: EventVO<any>): void
         {
-            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            var inputEvent: InputEvent = event.data;
+            var boardKey = String.fromCharCode(inputEvent.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
 
@@ -181,9 +182,10 @@ namespace feng3d
 		/**
 		 * 键盘弹起事件
 		 */
-        private onKeyup(event: InputEvent): void
+        private onKeyup(event: EventVO<any>): void
         {
-            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            var inputEvent: InputEvent = event.data;
+            var boardKey = String.fromCharCode(inputEvent.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
 

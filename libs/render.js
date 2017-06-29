@@ -349,16 +349,14 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var RenderElement = (function (_super) {
-        __extends(RenderElement, _super);
+    var RenderElement = (function () {
         function RenderElement() {
-            return _super !== null && _super.apply(this, arguments) || this;
         }
         RenderElement.prototype.invalidate = function () {
-            this.dispatchEvent(new feng3d.Event(feng3d.Event.CHANGE));
+            feng3d.Event.dispatch(this, "change");
         };
         return RenderElement;
-    }(feng3d.EventDispatcher));
+    }());
     feng3d.RenderElement = RenderElement;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -403,7 +401,7 @@ var feng3d;
             },
             set: function (value) {
                 this._code = value;
-                this.dispatchEvent(new feng3d.Event(feng3d.Event.CHANGE));
+                feng3d.Event.dispatch(this, "change");
             },
             enumerable: true,
             configurable: true
@@ -637,7 +635,7 @@ var feng3d;
                 else {
                     throw "未知RenderElement！";
                 }
-                element.addEventListener(feng3d.Event.CHANGE, this.onElementChange, this);
+                feng3d.Event.on(element, "change", this.onElementChange, this);
                 this.elements.push(element);
             }
             else {
@@ -672,7 +670,7 @@ var feng3d;
                 else {
                     throw "未知RenderElement！";
                 }
-                element.removeEventListener(feng3d.Event.CHANGE, this.onElementChange, this);
+                feng3d.Event.off(element, "change", this.onElementChange, this);
             }
             else {
                 for (var i = 0; i < element.length; i++) {
@@ -1082,44 +1080,41 @@ var feng3d;
      * 纹理信息
      * @author feng 2016-12-20
      */
-    var TextureInfo = (function (_super) {
-        __extends(TextureInfo, _super);
+    var TextureInfo = (function () {
         /**
          * 构建纹理
          */
         function TextureInfo() {
-            var _this = _super.call(this) || this;
-            _this._width = 100;
-            _this._height = 100;
-            _this._size = new feng3d.Point(100, 100);
-            _this._format = feng3d.GL.RGB;
-            _this._type = feng3d.GL.UNSIGNED_BYTE;
-            _this._generateMipmap = false;
-            _this._flipY = false;
-            _this._premulAlpha = false;
-            _this.minFilter = feng3d.GL.LINEAR;
-            _this.magFilter = feng3d.GL.LINEAR;
+            this._width = 100;
+            this._height = 100;
+            this._size = new feng3d.Point(100, 100);
+            this._format = feng3d.GL.RGB;
+            this._type = feng3d.GL.UNSIGNED_BYTE;
+            this._generateMipmap = false;
+            this._flipY = false;
+            this._premulAlpha = false;
+            this.minFilter = feng3d.GL.LINEAR;
+            this.magFilter = feng3d.GL.LINEAR;
             /**
              * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
              */
-            _this.wrapS = feng3d.GL.REPEAT;
+            this.wrapS = feng3d.GL.REPEAT;
             /**
              * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
              */
-            _this.wrapT = feng3d.GL.REPEAT;
+            this.wrapT = feng3d.GL.REPEAT;
             /**
              * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
              */
-            _this.anisotropy = 0;
+            this.anisotropy = 0;
             /**
              * 纹理缓冲
              */
-            _this._textureMap = new feng3d.Map();
+            this._textureMap = new feng3d.Map();
             /**
              * 是否失效
              */
-            _this._invalid = true;
-            return _this;
+            this._invalid = true;
         }
         Object.defineProperty(TextureInfo.prototype, "textureType", {
             /**
@@ -1322,7 +1317,7 @@ var feng3d;
             this._textureMap.clear();
         };
         return TextureInfo;
-    }(feng3d.EventDispatcher));
+    }());
     feng3d.TextureInfo = TextureInfo;
 })(feng3d || (feng3d = {}));
 var feng3d;

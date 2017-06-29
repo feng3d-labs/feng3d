@@ -22,35 +22,35 @@ namespace feng3d
         private _invalidateRenderDataHolderList: RenderDataHolder[] = [];
         public renderHolderInvalid = true;
 
-        private onInvalidate(event: Event)
+        private onInvalidate(event: EventVO<any>)
         {
             var renderDataHolder = <RenderDataHolder>event.target;
             this.addInvalidateHolders(renderDataHolder);
         }
 
-        private onAddElement(event: Event)
+        private onAddElement(event: EventVO<any>)
         {
             this.addRenderElement(event.data);
         }
 
-        private onRemoveElement(event: Event)
+        private onRemoveElement(event: EventVO<any>)
         {
             this.removeRenderElement(event.data);
         }
 
-        private onInvalidateShader(event: Event)
+        private onInvalidateShader(event: EventVO<any>)
         {
             var renderDataHolder = <RenderDataHolder>event.target;
             this.addInvalidateShader(renderDataHolder);
         }
 
-        private onAddRenderHolder(event: Event)
+        private onAddRenderHolder(event: EventVO<any>)
         {
             this.renderHolderInvalid = true;
             this.addRenderDataHolder(event.data);
         }
 
-        private onRemoveRenderHolder(event: Event)
+        private onRemoveRenderHolder(event: EventVO<any>)
         {
             this.renderHolderInvalid = true;
             this.removeRenderDataHolder(event.data);
@@ -84,10 +84,10 @@ namespace feng3d
                 }
                 this.addRenderElement(renderDataHolder.elements);
                 this.addInvalidateShader(renderDataHolder);
-                renderDataHolder.addEventListener(Object3DRenderAtomic.ADD_RENDERELEMENT, this.onAddElement, this);
-                renderDataHolder.addEventListener(Object3DRenderAtomic.REMOVE_RENDERELEMENT, this.onRemoveElement, this);
-                renderDataHolder.addEventListener(Object3DRenderAtomic.ADD_RENDERHOLDER, this.onAddRenderHolder, this);
-                renderDataHolder.addEventListener(Object3DRenderAtomic.REMOVE_RENDERHOLDER, this.onRemoveRenderHolder, this);
+                Event.on(renderDataHolder,<any>Object3DRenderAtomic.ADD_RENDERELEMENT, this.onAddElement, this);
+                Event.on(renderDataHolder,<any>Object3DRenderAtomic.REMOVE_RENDERELEMENT, this.onRemoveElement, this);
+                Event.on(renderDataHolder,<any>Object3DRenderAtomic.ADD_RENDERHOLDER, this.onAddRenderHolder, this);
+                Event.on(renderDataHolder,<any>Object3DRenderAtomic.REMOVE_RENDERHOLDER, this.onRemoveRenderHolder, this);
             }else{
                 for (var i = 0; i < renderDataHolder.length; i++) {
                     this.addRenderDataHolder(renderDataHolder[i]);
@@ -115,10 +115,10 @@ namespace feng3d
                 }
                 this.removeRenderElement(renderDataHolder.elements);
                 this.addInvalidateShader(renderDataHolder);
-                renderDataHolder.removeEventListener(Object3DRenderAtomic.ADD_RENDERELEMENT, this.onAddElement, this);
-                renderDataHolder.removeEventListener(Object3DRenderAtomic.REMOVE_RENDERELEMENT, this.onRemoveElement, this);
-                renderDataHolder.removeEventListener(Object3DRenderAtomic.ADD_RENDERHOLDER, this.onAddRenderHolder, this);
-                renderDataHolder.removeEventListener(Object3DRenderAtomic.REMOVE_RENDERHOLDER, this.onRemoveRenderHolder, this);
+                Event.off(renderDataHolder,<any>Object3DRenderAtomic.ADD_RENDERELEMENT, this.onAddElement, this);
+                Event.off(renderDataHolder,<any>Object3DRenderAtomic.REMOVE_RENDERELEMENT, this.onRemoveElement, this);
+                Event.off(renderDataHolder,<any>Object3DRenderAtomic.ADD_RENDERHOLDER, this.onAddRenderHolder, this);
+                Event.off(renderDataHolder,<any>Object3DRenderAtomic.REMOVE_RENDERHOLDER, this.onRemoveRenderHolder, this);
             }
         }
 

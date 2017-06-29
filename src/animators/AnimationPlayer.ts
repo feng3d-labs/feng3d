@@ -52,7 +52,7 @@ namespace feng3d
         {
             this._isPlaying
             this.preTime = getTimer();
-            ticker.addEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            Event.on(ticker,<any>"enterFrame", this.onEnterFrame, this);
         }
 
         /**
@@ -60,13 +60,13 @@ namespace feng3d
          */
         public pause()
         {
-            ticker.removeEventListener(Event.ENTER_FRAME, this.onEnterFrame, this);
+            Event.off(ticker,<any>"enterFrame", this.onEnterFrame, this);
         }
 
         /**
 		 * 自动更新动画时帧更新事件
 		 */
-        private onEnterFrame(event: Event)
+        private onEnterFrame(event: EventVO<any>)
         {
             var currentTime = getTimer();
             this.time = this.time + (currentTime - this.preTime) * this.playbackSpeed;

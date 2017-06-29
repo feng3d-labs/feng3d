@@ -5,7 +5,7 @@ namespace feng3d
 	 * 组件事件
 	 * @author feng 2015-12-2
 	 */
-	export class ComponentEvent extends Event
+	export class ComponentEvent
 	{
 		/**
 		 * 添加子组件事件

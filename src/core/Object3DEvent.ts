@@ -4,7 +4,7 @@ namespace feng3d
     /**
      * 3D对象事件
      */
-    export class Object3DEvent extends Event
+    export class Object3DEvent
     {
         public static VISIBLITY_UPDATED: string = "visiblityUpdated";
         public static SCENETRANSFORM_CHANGED: string = "scenetransformChanged";
@@ -29,18 +29,6 @@ namespace feng3d
         data: IObject3DEventData;
 
         public object: Object3D;
-
-		/**
-		 * 创建一个作为参数传递给事件侦听器的 Event 对象。
-		 * @param type 事件的类型，可以作为 Event.type 访问。
-         * @param data 携带数据
-		 * @param bubbles 确定 Event 对象是否参与事件流的冒泡阶段。默认值为 false。
-		 */
-        constructor(type: string, data: IObject3DEventData | Object3D = null, bubbles = false)
-        {
-            super(type, data, bubbles);
-            this.object = <Object3D>data;
-        }
     }
 
     /**

@@ -23,11 +23,11 @@ namespace feng3d
             this._material = material;
 
             var loader = new Loader();
-            loader.addEventListener(LoaderEvent.COMPLETE, this.onComplete, this)
+            Event.on(loader, <any>"complete", this.onComplete, this)
             loader.loadText(url);
         }
 
-        private onComplete(e: LoaderEvent)
+        private onComplete(e: EventVO<any>)
         {
             var objData = this._objData = OBJParser.parser(e.data.content);
             var mtl = objData.mtl;
@@ -36,7 +36,7 @@ namespace feng3d
                 var mtlRoot = this._url.substring(0, this._url.lastIndexOf("/") + 1);
                 var mtlLoader = new Loader();
                 mtlLoader.loadText(mtlRoot + mtl);
-                mtlLoader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent)
+                Event.on(mtlLoader, <any>"complete", function (e)
                 {
                     var mtlData = this._mtlData = MtlParser.parser(e.data.content);
                     this.createObj(this._material);

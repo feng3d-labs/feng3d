@@ -480,18 +480,18 @@ declare namespace feng3d {
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        addItemEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
+        addItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any, priority?: number): void;
         /**
          * 移除项事件
          * @param type						事件的类型。
          * @param listener					要删除的侦听器对象。
          * @param thisObject                listener函数作用域
          */
-        removeItemEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
+        removeItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any): void;
     }
 }
 declare namespace feng3d {
-    class ArrayList<T> extends EventDispatcher implements IList<T> {
+    class ArrayList<T> implements IList<T> {
         private readonly _source;
         private readonly _eventDispatcher;
         /**
@@ -542,14 +542,14 @@ declare namespace feng3d {
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        addItemEventListener(type: string, listener: (event: Event) => void, thisObject: any, priority?: number): void;
+        addItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any, priority?: number): void;
         /**
          * 移除项事件
          * @param type						事件的类型。
          * @param listener					要删除的侦听器对象。
          * @param thisObject                listener函数作用域
          */
-        removeItemEventListener(type: string, listener: (event: Event) => void, thisObject: any): void;
+        removeItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any): void;
     }
 }
 declare namespace feng3d {
@@ -1663,6 +1663,12 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface EventType {
+        /**
+         * [广播事件] 进入新的一帧,监听此事件将会在下一帧开始时触发一次回调。这是一个广播事件，可以在任何一个显示对象上监听，无论它是否在显示列表中。
+         */
+        enterFrame: any;
+    }
     /**
      * 心跳计时器单例
      */
@@ -1670,7 +1676,7 @@ declare namespace feng3d {
     /**
      * 心跳计时器
      */
-    class SystemTicker extends EventDispatcher {
+    class SystemTicker {
         static init(): void;
         private _startTime;
         /**
@@ -1713,7 +1719,7 @@ declare namespace feng3d {
      * @includeExample egret/utils/Timer.ts
      * @language zh_CN
      */
-    class Timer extends EventDispatcher {
+    class Timer {
         /**
          * Constructs a new Timer object with the specified delay and repeatCount states.
          * @param delay The delay between timer events, in milliseconds. A delay lower than 20 milliseconds is not recommended.
@@ -1863,10 +1869,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface Timer {
-        addEventListener<Z>(type: "timer" | "timerComplete", listener: (this: Z, e: TimerEvent) => void, thisObject: Z, priority?: number): any;
-        addEventListener(type: string, listener: Function, thisObject: any, priority?: number): any;
-    }
     /**
      * A Timer object dispatches a TimerEvent objects whenever the Timer object reaches the interval specified by the Timer.delay property.
      * @see egret.Timer
@@ -1883,7 +1885,7 @@ declare namespace feng3d {
      * @includeExample egret/events/TimerEvent.ts
      * @language zh_CN
      */
-    class TimerEvent extends Event {
+    class TimerEvent {
         /**
          * Dispatched whenever a Timer object reaches an interval specified according to the Timer.delay property.
          * @version Egret 2.4
@@ -1910,36 +1912,16 @@ declare namespace feng3d {
          * @language zh_CN
          */
         static TIMER_COMPLETE: "timerComplete";
-        /**
-         * Creates an Event object with specific information relevant to timer events.
-         * @param type The type of the event. Event listeners can access this information through the inherited type property.
-         * @param bubbles Determines whether the Event object bubbles. Event listeners can access this information through
-         * the inherited bubbles property.
-         * @param cancelable Determines whether the Event object can be canceled. Event listeners can access this information
-         * through the inherited cancelable property.
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 创建一个 Event 对象，其中包含有关 timer 事件的特定信息。
-         * @param type 事件的类型。事件侦听器可以通过继承的 type 属性访问此信息。
-         * @param bubbles 确定 Event 对象是否冒泡。事件侦听器可以通过继承的 bubbles 属性访问此信息。
-         * @param cancelable 确定是否可以取消 Event 对象。事件侦听器可以通过继承的 cancelable 属性访问此信息。
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        constructor(type: string, data?: any, bubbles?: boolean);
     }
 }
 declare namespace feng3d {
+    interface EventType {
+    }
     /**
      * 鼠标键盘输入，处理js事件中this关键字问题
      * @author feng 2016-12-19
      */
-    class Input extends EventDispatcher {
-        static init(): void;
+    class Input {
         clientX: number;
         clientY: number;
         constructor();
@@ -1947,60 +1929,38 @@ declare namespace feng3d {
          * 键盘按下事件
          */
         private onMouseKey(event);
-        /**
-         *
-         */
-        addEventListener(type: string, listener: (event: InputEvent) => void, thisObject: any, priority?: number): void;
     }
-    class InputEventType {
-        /** 鼠标双击 */
-        DOUBLE_CLICK: string;
-        /** 鼠标单击 */
-        CLICK: string;
-        /** 鼠标按下 */
-        MOUSE_DOWN: string;
-        /** 鼠标弹起 */
-        MOUSE_UP: string;
-        /** 鼠标中键单击 */
-        MIDDLE_CLICK: string;
-        /** 鼠标中键按下 */
-        MIDDLE_MOUSE_DOWN: string;
-        /** 鼠标中键弹起 */
-        MIDDLE_MOUSE_UP: string;
-        /** 鼠标右键单击 */
-        RIGHT_CLICK: string;
-        /** 鼠标右键按下 */
-        RIGHT_MOUSE_DOWN: string;
-        /** 鼠标右键弹起 */
-        RIGHT_MOUSE_UP: string;
-        /** 鼠标移动 */
-        MOUSE_MOVE: string;
-        /** 鼠标移出 */
-        MOUSE_OUT: string;
-        /** 鼠标移入 */
-        MOUSE_OVER: string;
-        /** 鼠标滚动滚轮 */
-        MOUSE_WHEEL: string;
-        /** 键盘按下 */
-        KEY_DOWN: string;
-        /** 键盘按着 */
-        KEY_PRESS: string;
-        /** 键盘弹起 */
-        KEY_UP: string;
-    }
-    class InputEvent extends Event {
-        data: Input;
+    class InputEvent {
         clientX: number;
         clientY: number;
         keyCode: number;
         wheelDelta: number;
-        constructor(event: WheelEvent | MouseEvent | KeyboardEvent, data?: Input, bubbles?: boolean);
+        type: string;
+        constructor(event: WheelEvent | MouseEvent | KeyboardEvent);
     }
     /**
      * 键盘鼠标输入
      */
     var input: Input;
-    var inputType: InputEventType;
+    var inputType: {
+        DOUBLE_CLICK: string;
+        CLICK: string;
+        MOUSE_DOWN: string;
+        MOUSE_UP: string;
+        MIDDLE_CLICK: string;
+        MIDDLE_MOUSE_DOWN: string;
+        MIDDLE_MOUSE_UP: string;
+        RIGHT_CLICK: string;
+        RIGHT_MOUSE_DOWN: string;
+        RIGHT_MOUSE_UP: string;
+        MOUSE_MOVE: string;
+        MOUSE_OUT: string;
+        MOUSE_OVER: string;
+        MOUSE_WHEEL: string;
+        KEY_DOWN: string;
+        KEY_PRESS: string;
+        KEY_UP: string;
+    };
 }
 declare namespace feng3d {
     /**
@@ -2057,7 +2017,7 @@ declare namespace feng3d {
      * 按键状态
      * @author feng 2016-4-26
      */
-    class KeyState extends EventDispatcher {
+    class KeyState {
         /**
          * 按键状态{key:键名称,value:是否按下}
          */
@@ -2246,21 +2206,6 @@ declare class StateCommand {
     constructor(state: string);
 }
 declare namespace feng3d {
-    /**
-     * 快捷键命令事件
-     * @author feng 2016-4-27
-     */
-    class ShortCutEvent extends Event {
-        /**
-         * 携带数据
-         */
-        data: InputEvent;
-        /**
-         * 构建
-         * @param command		命令名称
-         */
-        constructor(command: string, data: InputEvent);
-    }
 }
 declare namespace feng3d {
     /**
@@ -2285,13 +2230,13 @@ var shortcuts:Array = [ //
 //添加快捷键
 shortCut.addShortCuts(shortcuts);
 //监听命令
-shortCut.addEventListener("run", function(e:Event):void
+Event.on(shortCut,<any>"run", function(e:Event):void
 {
     trace("接受到命令：" + e.type);
 });
      * </pre>
      */
-    class ShortCut extends EventDispatcher {
+    class ShortCut {
         static init(): void;
         /**
          * 按键状态
@@ -2350,10 +2295,28 @@ shortCut.addEventListener("run", function(e:Event):void
 }
 declare namespace feng3d {
     /**
+     * 加载事件
+     * @author feng 2016-12-14
+     */
+    interface EventType {
+        /**
+         * 加载进度发生改变时调度。
+         */
+        progress: any;
+        /**
+         * 加载完成后调度。
+         */
+        complete: any;
+        /**
+         * 加载出错时调度。
+         */
+        error: any;
+    }
+    /**
      * 加载类
      * @author feng 2016-12-14
      */
-    class Loader extends EventDispatcher {
+    class Loader {
         private _request;
         private _image;
         /**
@@ -2416,24 +2379,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 加载事件
-     * @author feng 2016-12-14
-     */
-    class LoaderEvent extends Event {
-        /**
-         * 加载进度发生改变时调度。
-         */
-        static PROGRESS: string;
-        /**
-         * 加载完成后调度。
-         */
-        static COMPLETE: string;
-        /**
-         * 加载出错时调度。
-         */
-        static ERROR: string;
-    }
 }
 declare namespace feng3d {
     /**

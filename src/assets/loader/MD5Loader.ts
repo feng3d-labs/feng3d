@@ -19,7 +19,7 @@ namespace feng3d
             this._completed = completed;
 
             var loader = new Loader();
-            loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent)
+            Event.on(loader, "complete", function (e)
             {
                 var objData = MD5MeshParser.parse(e.data.content);
 
@@ -34,7 +34,7 @@ namespace feng3d
             this._animCompleted = completed;
 
             var loader = new Loader();
-            loader.addEventListener(LoaderEvent.COMPLETE, function (e: LoaderEvent)
+            Event.on(loader, "complete", function (e)
             {
                 var objData = MD5AnimParser.parse(e.data.content);
 

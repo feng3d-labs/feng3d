@@ -4,7 +4,7 @@ namespace feng3d
 	 * 包围盒基类
 	 * @author feng 2014-4-27
 	 */
-    export abstract class BoundingVolumeBase extends EventDispatcher
+    export abstract class BoundingVolumeBase 
     {
         /** 最小坐标 */
         protected _min: Vector3D;
@@ -25,13 +25,13 @@ namespace feng3d
         {
             if (this._geometry)
             {
-                this._geometry.removeEventListener(GeometryEvent.BOUNDS_INVALID, this.onGeometryBoundsInvalid, this);
+                Event.off(this._geometry, <any>GeometryEvent.BOUNDS_INVALID, this.onGeometryBoundsInvalid, this);
             }
             this._geometry = value;
             this.fromGeometry(this._geometry);
             if (this._geometry)
             {
-                this._geometry.addEventListener(GeometryEvent.BOUNDS_INVALID, this.onGeometryBoundsInvalid, this);
+                Event.on(this._geometry, <any>GeometryEvent.BOUNDS_INVALID, this.onGeometryBoundsInvalid, this);
             }
         }
 
@@ -56,7 +56,6 @@ namespace feng3d
 		 */
         constructor()
         {
-            super();
             this._min = new Vector3D();
             this._max = new Vector3D();
         }
@@ -67,7 +66,7 @@ namespace feng3d
         protected onGeometryBoundsInvalid()
         {
             this.fromGeometry(this.geometry);
-            this.dispatchEvent(new Event(Event.CHANGE));
+            Event.dispatch(this, "change");
         }
 
 		/**

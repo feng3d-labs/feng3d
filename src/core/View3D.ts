@@ -58,10 +58,10 @@ namespace feng3d
         public set autoRender(value)
         {
             if (this._autoRender)
-                ticker.removeEventListener(Event.ENTER_FRAME, this.render, this);
+                Event.off(ticker, <any>"enterFrame", this.render, this);
             this._autoRender = value;
             if (this._autoRender)
-                ticker.addEventListener(Event.ENTER_FRAME, this.render, this);
+                Event.on(ticker, <any>"enterFrame", this.render, this);
         }
         private _autoRender: boolean;
 
@@ -109,7 +109,7 @@ namespace feng3d
 
             this._renderContext = new RenderContext();
 
-            input.addEventListener(inputType.MOUSE_MOVE, this.onMouseEvent, this);
+            Event.on(input, <any>inputType.MOUSE_MOVE, this.onMouseEvent, this);
         }
 
         /**
@@ -188,9 +188,10 @@ namespace feng3d
         /**
          * 监听鼠标事件收集事件类型
          */
-        private onMouseEvent(event: InputEvent)
+        private onMouseEvent(event: EventVO<any>)
         {
-            this.mousePos.setTo(event.clientX - this._viewRect.x, event.clientY - this._viewRect.y);
+            var inputEvent: InputEvent = event.data;
+            this.mousePos.setTo(inputEvent.clientX - this._viewRect.x, inputEvent.clientY - this._viewRect.y);
         }
 
         /**

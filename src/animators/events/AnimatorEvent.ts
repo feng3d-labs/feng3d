@@ -1,12 +1,10 @@
 namespace feng3d
 {
-
-
 	/**
 	 * 动画事件
 	 * @author feng 2014-5-27
 	 */
-    export class AnimatorEvent extends Event
+    export class AnimatorEvent
     {
         /** 开始播放动画 */
         public static START: string = "start";
@@ -16,16 +14,5 @@ namespace feng3d
 
         /** 停止播放动画 */
         public static STOP: string = "stop";
-
-		/**
-		 * 创建一个动画时间
-		 * @param type			事件类型
-		 * @param data			事件数据
-		 * @param bubbles		是否冒泡
-		 */
-        constructor(type: string, data = null, bubbles: boolean = false)
-        {
-            super(type, data, bubbles);
-        }
     }
 }

@@ -1693,7 +1693,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class RenderElement extends EventDispatcher {
+    class RenderElement {
         invalidate(): void;
     }
 }
@@ -2306,7 +2306,7 @@ declare namespace feng3d {
      * 纹理信息
      * @author feng 2016-12-20
      */
-    abstract class TextureInfo extends EventDispatcher {
+    abstract class TextureInfo {
         /**
          * 纹理类型
          */

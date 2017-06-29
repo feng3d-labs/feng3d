@@ -45,7 +45,6 @@ namespace feng3d
             isInit = true;
             console.log(`Feng3D version ${this.revision}`)
             serialization = new Serialization();
-            Input.init();
             ShortCut.init();
             SystemTicker.init();
             defaultMaterial = new StandardMaterial();
