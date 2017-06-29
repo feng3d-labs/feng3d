@@ -51,8 +51,8 @@ namespace feng3d
         public continue()
         {
             this._isPlaying
-            this.preTime = getTimer();
-            Event.on(ticker,<any>"enterFrame", this.onEnterFrame, this);
+            this.preTime = Date.now();
+            Event.on(ticker, <any>"enterFrame", this.onEnterFrame, this);
         }
 
         /**
@@ -60,7 +60,7 @@ namespace feng3d
          */
         public pause()
         {
-            Event.off(ticker,<any>"enterFrame", this.onEnterFrame, this);
+            Event.off(ticker, <any>"enterFrame", this.onEnterFrame, this);
         }
 
         /**
@@ -68,9 +68,9 @@ namespace feng3d
 		 */
         private onEnterFrame(event: EventVO<any>)
         {
-            var currentTime = getTimer();
+            var currentTime = Date.now();
             this.time = this.time + (currentTime - this.preTime) * this.playbackSpeed;
-            this.preTime = getTimer();
+            this.preTime = currentTime;
         }
     }
 }

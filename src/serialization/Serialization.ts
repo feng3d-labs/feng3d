@@ -12,7 +12,7 @@ namespace feng3d
         public readObject(data: { __className__?: string })
         {
             //处理简单类型
-            if (ClassUtils.isBaseType(data))
+            if (!(data instanceof Object))
             {
                 return data;
             }
@@ -29,7 +29,7 @@ namespace feng3d
 
             //处理其他数据结构
             var cls = ClassUtils.getDefinitionByName(data.__className__);
-            debuger && assert(cls != null);
+            debuger && console.assert(cls != null);
             var object = new cls();
 
             var keys = Object.keys(data);
@@ -66,7 +66,7 @@ namespace feng3d
                 }
                 return true;
             }
-            if (ClassUtils.is(object, SegmentGeometry) && key == "segments_")
+            if (object instanceof SegmentGeometry && key == "segments_")
             {
                 var segments: Segment[] = this.readObject(data);
                 var segmentGeometry: SegmentGeometry = object;
@@ -90,7 +90,7 @@ namespace feng3d
                 return undefined;
             }
 
-            if (ClassUtils.isBaseType(object))
+            if (!(object instanceof Object))
             {
                 return object;
             }

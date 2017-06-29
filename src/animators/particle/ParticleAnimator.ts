@@ -69,14 +69,14 @@ namespace feng3d
                 return;
             }
 
-            this.startTime = getTimer();
+            this.startTime = Date.now();
             this.isPlaying = true;
             Event.on(ticker,<any>"enterFrame", this.update, this);
         }
 
         private update()
         {
-            this.time = ((getTimer() - this.startTime) / 1000) % this.cycle;
+            this.time = ((Date.now() - this.startTime) / 1000) % this.cycle;
             this.animatorSet.update(this);
         }
 

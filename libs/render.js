@@ -1222,7 +1222,7 @@ var feng3d;
          * 判断数据是否满足渲染需求
          */
         TextureInfo.prototype.checkRenderData = function () {
-            feng3d.debuger && feng3d.assert(false);
+            feng3d.debuger && console.assert(false);
             return false;
         };
         /**

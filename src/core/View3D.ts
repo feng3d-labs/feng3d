@@ -90,7 +90,7 @@ namespace feng3d
                 document.body.appendChild(canvas);
             }
 
-            debuger && assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
+            debuger && console.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
             this._canvas = canvas;
 
             var glProxy = new GLProxy(canvas);

@@ -22,7 +22,7 @@ var feng3d;
          */
         Serialization.prototype.readObject = function (data) {
             //处理简单类型
-            if (feng3d.ClassUtils.isBaseType(data)) {
+            if (!(data instanceof Object)) {
                 return data;
             }
             //处理数组
@@ -35,7 +35,7 @@ var feng3d;
             }
             //处理其他数据结构
             var cls = feng3d.ClassUtils.getDefinitionByName(data.__className__);
-            feng3d.debuger && feng3d.assert(cls != null);
+            feng3d.debuger && console.assert(cls != null);
             var object = new cls();
             var keys = Object.keys(data);
             for (var i = 0; i < keys.length; i++) {
@@ -64,7 +64,7 @@ var feng3d;
                 }
                 return true;
             }
-            if (feng3d.ClassUtils.is(object, feng3d.SegmentGeometry) && key == "segments_") {
+            if (object instanceof feng3d.SegmentGeometry && key == "segments_") {
                 var segments = this.readObject(data);
                 var segmentGeometry = object;
                 for (var i = 0; i < segments.length; i++) {
@@ -82,7 +82,7 @@ var feng3d;
             if (feng3d.serializationConfig.excludeObject.indexOf(object) != -1) {
                 return undefined;
             }
-            if (feng3d.ClassUtils.isBaseType(object)) {
+            if (!(object instanceof Object)) {
                 return object;
             }
             if (object instanceof Array) {
@@ -2676,7 +2676,7 @@ var feng3d;
          * @return				子组件
          */
         GameObject.prototype.getComponentAt = function (index) {
-            feng3d.debuger && feng3d.assert(index < this.numComponents, "给出索引超出范围");
+            feng3d.debuger && console.assert(index < this.numComponents, "给出索引超出范围");
             return this.components[index];
         };
         /**
@@ -2757,9 +2757,9 @@ var feng3d;
          * @param index				位置索引
          */
         GameObject.prototype.setComponentIndex = function (component, index) {
-            feng3d.debuger && feng3d.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            feng3d.debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var oldIndex = this.components.indexOf(component);
-            feng3d.debuger && feng3d.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
+            feng3d.debuger && console.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
             this.components.splice(oldIndex, 1);
             this.components.splice(index, 0, component);
         };
@@ -2779,7 +2779,7 @@ var feng3d;
          * @param component 被移除组件
          */
         GameObject.prototype.removeComponent = function (component) {
-            feng3d.debuger && feng3d.assert(this.hasComponent(component), "只能移除在容器中的组件");
+            feng3d.debuger && console.assert(this.hasComponent(component), "只能移除在容器中的组件");
             var index = this.getComponentIndex(component);
             this.removeComponentAt(index);
         };
@@ -2789,7 +2789,7 @@ var feng3d;
          * @return				    组件在容器的索引位置
          */
         GameObject.prototype.getComponentIndex = function (component) {
-            feng3d.debuger && feng3d.assert(this.components.indexOf(component) != -1, "组件不在容器中");
+            feng3d.debuger && console.assert(this.components.indexOf(component) != -1, "组件不在容器中");
             var index = this.components.indexOf(component);
             return index;
         };
@@ -2798,7 +2798,7 @@ var feng3d;
          * @param index		要删除的 Component 的子索引。
          */
         GameObject.prototype.removeComponentAt = function (index) {
-            feng3d.debuger && feng3d.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            feng3d.debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var component = this.components.splice(index, 1)[0];
             //派发移除组件事件
             feng3d.Event.dispatch(component, feng3d.ComponentEvent.REMOVED_COMPONENT, { container: this, child: component });
@@ -2812,8 +2812,8 @@ var feng3d;
          * @param index2		第二个子组件的索引位置
          */
         GameObject.prototype.swapComponentsAt = function (index1, index2) {
-            feng3d.debuger && feng3d.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
-            feng3d.debuger && feng3d.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
+            feng3d.debuger && console.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
+            feng3d.debuger && console.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
             var temp = this.components[index1];
             this.components[index1] = this.components[index2];
             this.components[index2] = temp;
@@ -2824,8 +2824,8 @@ var feng3d;
          * @param b		第二个子组件
          */
         GameObject.prototype.swapComponents = function (a, b) {
-            feng3d.debuger && feng3d.assert(this.hasComponent(a), "第一个子组件不在容器中");
-            feng3d.debuger && feng3d.assert(this.hasComponent(b), "第二个子组件不在容器中");
+            feng3d.debuger && console.assert(this.hasComponent(a), "第一个子组件不在容器中");
+            feng3d.debuger && console.assert(this.hasComponent(b), "第二个子组件不在容器中");
             this.swapComponentsAt(this.getComponentIndex(a), this.getComponentIndex(b));
         };
         /**
@@ -2870,7 +2870,7 @@ var feng3d;
          * @param index			插入的位置
          */
         GameObject.prototype.addComponentAt = function (component, index) {
-            feng3d.debuger && feng3d.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
+            feng3d.debuger && console.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
             if (this.hasComponent(component)) {
                 index = Math.min(index, this.components.length - 1);
                 this.setComponentIndex(component, index);
@@ -2924,7 +2924,7 @@ var feng3d;
                 canvas.style.height = "100%";
                 document.body.appendChild(canvas);
             }
-            feng3d.debuger && feng3d.assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
+            feng3d.debuger && console.assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
             this._canvas = canvas;
             var glProxy = new feng3d.GLProxy(canvas);
             this._gl = glProxy.gl;
@@ -10041,12 +10041,12 @@ var feng3d;
             if (!this.animatorSet) {
                 return;
             }
-            this.startTime = feng3d.getTimer();
+            this.startTime = Date.now();
             this.isPlaying = true;
             feng3d.Event.on(feng3d.ticker, "enterFrame", this.update, this);
         };
         ParticleAnimator.prototype.update = function () {
-            this.time = ((feng3d.getTimer() - this.startTime) / 1000) % this.cycle;
+            this.time = ((Date.now() - this.startTime) / 1000) % this.cycle;
             this.animatorSet.update(this);
         };
         /**
@@ -10204,7 +10204,7 @@ var feng3d;
         AnimatorBase.prototype.start = function () {
             if (this._isPlaying || !this._autoUpdate)
                 return;
-            this._time = this._absoluteTime = feng3d.getTimer();
+            this._time = this._absoluteTime = Date.now();
             this._isPlaying = true;
             feng3d.Event.on(feng3d.ticker, "enterFrame", this.onEnterFrame, this);
             if (!feng3d.Event.has(this, feng3d.AnimatorEvent.START))
@@ -10250,7 +10250,7 @@ var feng3d;
          */
         AnimatorBase.prototype.onEnterFrame = function (event) {
             if (event === void 0) { event = null; }
-            this.update(feng3d.getTimer());
+            this.update(Date.now());
         };
         /**
          * 应用位置偏移量
@@ -10313,7 +10313,7 @@ var feng3d;
          */
         AnimationPlayer.prototype.continue = function () {
             this._isPlaying;
-            this.preTime = feng3d.getTimer();
+            this.preTime = Date.now();
             feng3d.Event.on(feng3d.ticker, "enterFrame", this.onEnterFrame, this);
         };
         /**
@@ -10326,9 +10326,9 @@ var feng3d;
          * 自动更新动画时帧更新事件
          */
         AnimationPlayer.prototype.onEnterFrame = function (event) {
-            var currentTime = feng3d.getTimer();
+            var currentTime = Date.now();
             this.time = this.time + (currentTime - this.preTime) * this.playbackSpeed;
-            this.preTime = feng3d.getTimer();
+            this.preTime = currentTime;
         };
         return AnimationPlayer;
     }());
@@ -11602,7 +11602,7 @@ var feng3d;
             var object3D = feng3d.GameObject.create();
             //顶点最大关节关联数
             var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
-            feng3d.debuger && feng3d.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
+            feng3d.debuger && console.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
             this._skeleton = this.createSkeleton(md5MeshData.joints);
             var skeletonAnimator;
             for (var i = 0; i < md5MeshData.meshs.length; i++) {

@@ -87,7 +87,7 @@ namespace feng3d
             if (this._isPlaying || !this._autoUpdate)
                 return;
 
-            this._time = this._absoluteTime = getTimer();
+            this._time = this._absoluteTime = Date.now();
 
             this._isPlaying = true;
 
@@ -152,7 +152,7 @@ namespace feng3d
 		 */
         private onEnterFrame(event: Event = null)
         {
-            this.update(getTimer());
+            this.update(Date.now());
         }
 
         /**
