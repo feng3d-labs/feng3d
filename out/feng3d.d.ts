@@ -734,10 +734,20 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface Object3DEventType {
+        visiblityUpdated: GameObject;
+    }
+    interface EventType extends Object3DEventType {
+    }
+    class Object3DEventType1 {
+        visiblityUpdated: "visiblityUpdated";
+    }
     /**
      * Position, rotation and scale of an object.
      */
     class Object3D extends Component {
+        static eventtype: Object3DEventType1;
+        readonly eventtype: Object3DEventType1;
         x: number;
         y: number;
         z: number;
@@ -1243,7 +1253,7 @@ declare namespace feng3d {
      * 3D对象事件
      */
     class Object3DEvent {
-        static VISIBLITY_UPDATED: string;
+        static VISIBLITY_UPDATED: "visiblityUpdated";
         static SCENETRANSFORM_CHANGED: string;
         static SCENE_CHANGED: string;
         static POSITION_CHANGED: string;

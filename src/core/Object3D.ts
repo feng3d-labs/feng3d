@@ -1,10 +1,37 @@
 namespace feng3d
 {
+    export interface Object3DEventType
+    {
+        visiblityUpdated: GameObject;
+    }
+    export interface EventType extends Object3DEventType { }
+
+    export class Object3DEventType1
+    {
+        visiblityUpdated: "visiblityUpdated" = "visiblityUpdated";
+    }
+
+    //-------------- test ------------------
+    // function a()
+    // {
+    //     Event.on({}, Object3DEvent.VISIBLITY_UPDATED, (e) => { e.data }, this);
+    //     Event.on({}, Object3D.eventtype.visiblityUpdated, (e) => { e.data }, this);
+    //     var o = new Object3D(null);
+    //     Event.on(o, o.eventtype.visiblityUpdated, (e) => { e.data }, this);
+    // }
+    //-------------- test ------------------
+
     /**
      * Position, rotation and scale of an object.
      */
     export class Object3D extends Component
     {
+        public static eventtype = new Object3DEventType1();
+        public get eventtype()
+        {
+            return Object3D.eventtype;
+        }
+
         //------------------------------------------
         // Variables
         //------------------------------------------
@@ -609,7 +636,7 @@ namespace feng3d
 
         private notifyRotationChanged()
         {
-            Event.dispatch(this,<any>Object3DEvent.ROTATION_CHANGED, this);
+            Event.dispatch(this, <any>Object3DEvent.ROTATION_CHANGED, this);
         }
 
         private invalidateScale()
@@ -618,12 +645,12 @@ namespace feng3d
                 return;
             this._scaleDirty = true;
             this.invalidateTransform();
-                this.notifyScaleChanged();
+            this.notifyScaleChanged();
         }
 
         private notifyScaleChanged()
         {
-            Event.dispatch(this,<any>Object3DEvent.SCALE_CHANGED, this);
+            Event.dispatch(this, <any>Object3DEvent.SCALE_CHANGED, this);
         }
 
         private invalidatePivot()
@@ -643,7 +670,7 @@ namespace feng3d
 
         private notifyPositionChanged()
         {
-            Event.dispatch(this,<any>Object3DEvent.POSITION_CHANGED, this);
+            Event.dispatch(this, <any>Object3DEvent.POSITION_CHANGED, this);
         }
     }
     var tempAxeX: Vector3D;

@@ -1072,26 +1072,25 @@ var feng3d;
             //更新数据
             object3D.updateRender(renderContext);
             var gl = renderContext.gl;
-            // try
-            // {
-            //绘制
-            var material = this.material;
-            if (material.enableBlend) {
-                //
-                gl.enable(feng3d.GL.BLEND);
-                gl.blendEquation(material.blendEquation);
-                gl.depthMask(false);
-                gl.blendFunc(material.sfactor, material.dfactor);
+            try {
+                //绘制
+                var material = this.material;
+                if (material.enableBlend) {
+                    //
+                    gl.enable(feng3d.GL.BLEND);
+                    gl.blendEquation(material.blendEquation);
+                    gl.depthMask(false);
+                    gl.blendFunc(material.sfactor, material.dfactor);
+                }
+                else {
+                    gl.disable(feng3d.GL.BLEND);
+                    gl.depthMask(true);
+                }
+                this.drawObject3D(gl, object3D.renderData); //
             }
-            else {
-                gl.disable(feng3d.GL.BLEND);
-                gl.depthMask(true);
+            catch (error) {
+                console.log(error);
             }
-            this.drawObject3D(gl, object3D.renderData); //
-            // } catch (error)
-            // {
-            //     console.log(error);
-            // }
         };
         /**
          * 绘制3D对象
@@ -1324,6 +1323,22 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var Object3DEventType1 = (function () {
+        function Object3DEventType1() {
+            this.visiblityUpdated = "visiblityUpdated";
+        }
+        return Object3DEventType1;
+    }());
+    feng3d.Object3DEventType1 = Object3DEventType1;
+    //-------------- test ------------------
+    // function a()
+    // {
+    //     Event.on({}, Object3DEvent.VISIBLITY_UPDATED, (e) => { e.data }, this);
+    //     Event.on({}, Object3D.eventtype.visiblityUpdated, (e) => { e.data }, this);
+    //     var o = new Object3D(null);
+    //     Event.on(o, o.eventtype.visiblityUpdated, (e) => { e.data }, this);
+    // }
+    //-------------- test ------------------
     /**
      * Position, rotation and scale of an object.
      */
@@ -1375,6 +1390,13 @@ var feng3d;
             _this._flipY.appendScale(1, -1, 1);
             return _this;
         }
+        Object.defineProperty(Object3D.prototype, "eventtype", {
+            get: function () {
+                return Object3D.eventtype;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Object3D.prototype, "x", {
             //------------------------------------------
             // Variables
@@ -1912,6 +1934,7 @@ var feng3d;
         };
         return Object3D;
     }(feng3d.Component));
+    Object3D.eventtype = new Object3DEventType1();
     feng3d.Object3D = Object3D;
     var tempAxeX;
     var tempAxeY;
@@ -8985,7 +9008,7 @@ var feng3d;
             _this.minElevation = minElevation;
             _this._heightImage = new Image();
             _this._heightImage.crossOrigin = "Anonymous";
-            feng3d.Event.on(_this._heightImage, "load", _this.onHeightMapLoad.bind(_this));
+            _this._heightImage.addEventListener("load", _this.onHeightMapLoad.bind(_this));
             _this.heightMapUrl = heightMapUrl;
             return _this;
         }

@@ -13,7 +13,7 @@ namespace feng3d
         }
         public set heightMapUrl(value)
         {
-            if(this._heightImage.src == value)
+            if (this._heightImage.src == value)
                 return;
             this._heightImage.src = value;
         }
@@ -24,7 +24,7 @@ namespace feng3d
         }
         public set width(value)
         {
-            if(this._width == value)
+            if (this._width == value)
                 return;
             this._width = value;
             this.invalidateGeometry();
@@ -37,7 +37,7 @@ namespace feng3d
         }
         public set height(value)
         {
-            if(this._height == value)
+            if (this._height == value)
                 return;
             this._height = value;
             this.invalidateGeometry();
@@ -50,7 +50,7 @@ namespace feng3d
         }
         public set depth(value)
         {
-            if(this._depth == value)
+            if (this._depth == value)
                 return;
             this._depth = value;
             this.invalidateGeometry();
@@ -63,7 +63,7 @@ namespace feng3d
         }
         public set segmentsW(value)
         {
-            if(this._segmentsW == value)
+            if (this._segmentsW == value)
                 return;
             this._segmentsW = value;
             this.invalidateGeometry();
@@ -76,7 +76,7 @@ namespace feng3d
         }
         public set segmentsH(value)
         {
-            if(this._segmentsH == value)
+            if (this._segmentsH == value)
                 return;
             this._segmentsH = value;
             this.invalidateGeometry();
@@ -89,7 +89,7 @@ namespace feng3d
         }
         public set maxElevation(value)
         {
-            if(this._maxElevation == value)
+            if (this._maxElevation == value)
                 return;
             this._maxElevation = value;
             this.invalidateGeometry();
@@ -102,13 +102,13 @@ namespace feng3d
         }
         public set minElevation(value)
         {
-            if(this._minElevation == value)
+            if (this._minElevation == value)
                 return;
             this._minElevation = value;
             this.invalidateGeometry();
         }
         private _minElevation: number = 0;
-        
+
         private _heightMap: ImageData;
         private _heightImage: HTMLImageElement;
 
@@ -123,7 +123,7 @@ namespace feng3d
 		 * @param    maxElevation	最大地形高度
 		 * @param    minElevation	最小地形高度
 		 */
-        constructor(heightMapUrl: string,width = 1000, height = 100, depth = 1000, segmentsW = 30, segmentsH = 30, maxElevation = 255, minElevation = 0)
+        constructor(heightMapUrl: string, width = 1000, height = 100, depth = 1000, segmentsW = 30, segmentsH = 30, maxElevation = 255, minElevation = 0)
         {
             super();
 
@@ -137,7 +137,7 @@ namespace feng3d
 
             this._heightImage = new Image();
             this._heightImage.crossOrigin = "Anonymous";
-            Event.on(this._heightImage,<any>"load", this.onHeightMapLoad.bind(this));
+            this._heightImage.addEventListener("load", this.onHeightMapLoad.bind(this));
             this.heightMapUrl = heightMapUrl;
         }
 
