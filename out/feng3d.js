@@ -8840,7 +8840,7 @@ var feng3d;
             _this.minElevation = minElevation;
             _this._heightImage = new Image();
             _this._heightImage.crossOrigin = "Anonymous";
-            feng3d.Event.on(_this._heightImage, "load", _this.onHeightMapLoad.bind(_this));
+            _this._heightImage.addEventListener("load", _this.onHeightMapLoad.bind(_this));
             _this.heightMapUrl = heightMapUrl;
             return _this;
         }
