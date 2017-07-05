@@ -7,25 +7,41 @@ namespace feng3d
 	 */
 	export abstract class LensBase 
 	{
+		/**
+		 * 最近距离
+		 */
+		@watch("invalidateMatrix")
+		@serialize
+		public near = 0.1;
+		
+		/**
+		 * 最远距离
+		 */
+		@watch("invalidateMatrix")
+		@serialize
+		public far: number = 10000;
+
+		/**
+		 * 视窗缩放比例(width/height)，在渲染器中设置
+		 */
+		@watch("invalidateMatrix")
+		@serialize
+		public aspectRatio: number = 1;
+
+		//
 		protected _matrix: Matrix3D;
 		protected _scissorRect: Rectangle = new Rectangle();
 		protected _viewPort: Rectangle = new Rectangle();
-		protected _near: number = 0.1;
-		protected _far: number = 10000;
-		protected _aspectRatio: number = 1;
 
-		protected _matrixInvalid: boolean = true;
 		protected _frustumCorners: number[] = [];
 
 		private _unprojection: Matrix3D;
-		private _unprojectionInvalid: boolean = true;
 
 		/**
 		 * 创建一个摄像机镜头
 		 */
 		constructor()
 		{
-			this._matrix = new Matrix3D();
 		}
 
 		/**
@@ -46,10 +62,9 @@ namespace feng3d
 		 */
 		public get matrix(): Matrix3D
 		{
-			if (this._matrixInvalid)
+			if (!this._matrix)
 			{
 				this.updateMatrix();
-				this._matrixInvalid = false;
 			}
 			return this._matrix;
 		}
@@ -57,54 +72,7 @@ namespace feng3d
 		public set matrix(value: Matrix3D)
 		{
 			this._matrix = value;
-			this.invalidateMatrix();
-		}
-
-		/**
-		 * 最近距离
-		 */
-		public get near(): number
-		{
-			return this._near;
-		}
-
-		public set near(value: number)
-		{
-			if (value == this._near)
-				return;
-			this._near = value;
-			this.invalidateMatrix();
-		}
-
-		/**
-		 * 最远距离
-		 */
-		public get far(): number
-		{
-			return this._far;
-		}
-
-		public set far(value: number)
-		{
-			if (value == this._far)
-				return;
-			this._far = value;
-			this.invalidateMatrix();
-		}
-
-		/**
-		 * 视窗缩放比例(width/height)，在渲染器中设置
-		 */
-		public get aspectRatio(): number
-		{
-			return this._aspectRatio;
-		}
-
-		public set aspectRatio(value: number)
-		{
-			if (this._aspectRatio == value || (value * 0) != 0)
-				return;
-			this._aspectRatio = value;
+			Event.dispatch(this, <any>LensEvent.MATRIX_CHANGED, this);
 			this.invalidateMatrix();
 		}
 
@@ -133,13 +101,11 @@ namespace feng3d
 		 */
 		public get unprojectionMatrix(): Matrix3D
 		{
-			if (this._unprojectionInvalid)
+			if (!this._unprojection)
 			{
-				if (this._unprojection == null)
-					this._unprojection = new Matrix3D();
+				this._unprojection = new Matrix3D();
 				this._unprojection.copyFrom(this.matrix);
 				this._unprojection.invert();
-				this._unprojectionInvalid = false;
 			}
 
 			return this._unprojection;
@@ -160,12 +126,9 @@ namespace feng3d
 		 */
 		protected invalidateMatrix()
 		{
-			this._matrixInvalid = true;
-			this._unprojectionInvalid = true;
-			// notify the camera that the lens this.matrix is changing. this will mark the 
-			// viewProjectionMatrix in the camera as invalid, and force the this.matrix to
-			// be re-queried from the lens, and therefore rebuilt.
-			Event.dispatch(this,<any>LensEvent.MATRIX_CHANGED, this);
+			this._matrix = null;
+			Event.dispatch(this, <any>LensEvent.MATRIX_CHANGED, this);
+			this._unprojection = null;
 		}
 
 		/**

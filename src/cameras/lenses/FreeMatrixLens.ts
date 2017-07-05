@@ -14,7 +14,6 @@ namespace feng3d
 
 		protected updateMatrix()
 		{
-			this._matrixInvalid = false;
 		}
 
 		/**

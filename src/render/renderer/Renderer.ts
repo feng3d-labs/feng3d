@@ -58,27 +58,27 @@ namespace feng3d
             //更新数据
             object3D.updateRender(renderContext);
             var gl = renderContext.gl;
-            // try
-            // {
-            //绘制
-            var material = this.material;
-            if (material.enableBlend)
+            try
             {
-                //
-                gl.enable(GL.BLEND);
-                gl.blendEquation(material.blendEquation);
-                gl.depthMask(false);
-                gl.blendFunc(material.sfactor, material.dfactor);
-            } else
+                //绘制
+                var material = this.material;
+                if (material.enableBlend)
+                {
+                    //
+                    gl.enable(GL.BLEND);
+                    gl.blendEquation(material.blendEquation);
+                    gl.depthMask(false);
+                    gl.blendFunc(material.sfactor, material.dfactor);
+                } else
+                {
+                    gl.disable(GL.BLEND);
+                    gl.depthMask(true);
+                }
+                this.drawObject3D(gl, object3D.renderData);            //
+            } catch (error)
             {
-                gl.disable(GL.BLEND);
-                gl.depthMask(true);
+                console.log(error);
             }
-            this.drawObject3D(gl, object3D.renderData);            //
-            // } catch (error)
-            // {
-            //     console.log(error);
-            // }
         }
 
         /**

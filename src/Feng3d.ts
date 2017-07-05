@@ -10,10 +10,6 @@ namespace feng3d
      */
     export var debuger = true;
     /**
-     * 数据持久化
-     */
-    export var serialization: Serialization;
-    /**
      * 默认材质
      */
     export var defaultMaterial: StandardMaterial;
@@ -44,7 +40,6 @@ namespace feng3d
         {
             isInit = true;
             console.log(`Feng3D version ${this.revision}`)
-            serialization = new Serialization();
             ShortCut.init();
             SystemTicker.init();
             defaultMaterial = new StandardMaterial();

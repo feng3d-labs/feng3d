@@ -1,9 +1,11 @@
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 类工具
      * @author feng 2017-02-15
      */
-    class ClassUtils {
+    class ClassUtils
+    {
         /**
          * 返回对象的完全限定类名。
          * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
@@ -38,12 +40,14 @@ declare namespace feng3d {
         static addClassNameSpace(namespace: string): void;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 对象工具
      * @author feng 2017-02-15
      */
-    class ObjectUtils {
+    class ObjectUtils
+    {
         /**
          * 深克隆
          * @param source        源数据
@@ -79,8 +83,10 @@ declare namespace feng3d {
         static merge<T>(source: T, mergeData: Object, createNew?: boolean): T;
     }
 }
-declare namespace feng3d {
-    class StringUtils {
+declare namespace feng3d
+{
+    class StringUtils
+    {
         /**
          * 获取字符串
          * @param obj 转换为字符串的对象
@@ -91,7 +97,8 @@ declare namespace feng3d {
         static getString(obj: any, showLen?: number, fill?: string, tail?: boolean): string;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 构建Map类代替Dictionary
      * @author feng 2017-01-03
@@ -125,11 +132,37 @@ declare namespace feng3d {
         clear(): void;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
+    /**
+     * 序列化装饰器，被装饰属性将被序列化
+     */
+    function serialize(target: any, propertyKey: string): void;
+    /**
+     * 观察装饰器，观察被装饰属性的变化
+     * @param onChange 属性变化回调
+     */
+    function watch(onChange: string): (target: any, propertyKey: string) => void;
+}
+declare namespace feng3d
+{
+    /**
+     * 数据序列化
+     * @author feng 2017-03-11
+     */
+    class Serialization
+    {
+        static serialize(object: any, data?: any): any;
+        static deserialize(data: any, object?: any): any;
+    }
+}
+declare namespace feng3d
+{
     /**
      * 按顺序组织的项目的集合。提供基于索引的访问和处理方法。
      */
-    interface IList<T> {
+    interface IList<T>
+    {
         /**
          * 此集合中的项目数。
          */
@@ -187,7 +220,8 @@ declare namespace feng3d {
         removeItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any): void;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     class ArrayList<T> implements IList<T> {
         private readonly _source;
         private readonly _eventDispatcher;
@@ -249,11 +283,13 @@ declare namespace feng3d {
         removeItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any): void;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 数学常量类
      */
-    class MathConsts {
+    class MathConsts
+    {
         /**
          * 弧度转角度因子
          */
@@ -264,7 +300,8 @@ declare namespace feng3d {
         static DEGREES_TO_RADIANS: number;
     }
 }
-interface Math {
+interface Math
+{
     /**
      * 角度转弧度因子
      */
@@ -314,12 +351,14 @@ interface Math {
     nearestPowerOfTwo(value: any): any;
     nextPowerOfTwo(value: any): any;
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * Orientation3D 类是用于表示 Matrix3D 对象的方向样式的常量值枚举。方向的三个类型分别为欧拉角、轴角和四元数。Matrix3D 对象的 decompose 和 recompose 方法采用其中的某一个枚举类型来标识矩阵的旋转组件。
      * @author feng 2016-3-21
      */
-    class Orientation3D {
+    class Orientation3D
+    {
         /**
         * 轴角方向结合使用轴和角度来确定方向。
         */
@@ -334,11 +373,13 @@ declare namespace feng3d {
         static QUATERNION: string;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * Point 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
      */
-    class Point {
+    class Point
+    {
         /**
          * 创建一个 egret.Point 对象.若不传入任何参数，将会创建一个位于（0，0）位置的点。
          * @param x 该对象的x属性值，默认为0
@@ -436,7 +477,8 @@ declare namespace feng3d {
         toArray(): number[];
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 矩形
      *
@@ -446,7 +488,8 @@ declare namespace feng3d {
      * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
      * @author feng 2016-04-27
      */
-    class Rectangle {
+    class Rectangle
+    {
         /**
          * 创建一个新 Rectangle 对象，其左上角由 x 和 y 参数指定，并具有指定的 width 和 height 参数。
          * @param x 矩形左上角的 x 坐标。
@@ -610,12 +653,14 @@ declare namespace feng3d {
         union(toUnion: Rectangle): Rectangle;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * Vector3D 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
      * @author feng 2016-3-21
      */
-    class Vector3D {
+    class Vector3D
+    {
         /**
         * 定义为 Vector3D 对象的 x 轴，坐标为 (1,0,0)。
         */
@@ -732,14 +777,21 @@ declare namespace feng3d {
          * 返回当前 Vector3D 对象4个元素的数组
          */
         toArray(num?: 3 | 4): number[];
+        /**
+         * 比较矩阵是否相等
+         */
+        compare(matrix3D: Vector3D, num?: 3 | 4, precision?: number): boolean;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * Matrix3D 类表示一个转换矩阵，该矩阵确定三维 (3D) 显示对象的位置和方向。
+     * 
      * 该矩阵可以执行转换功能，包括平移（沿 x、y 和 z 轴重新定位）、旋转和缩放（调整大小）。
+     * 
      * Matrix3D 类还可以执行透视投影，这会将 3D 坐标空间中的点映射到二维 (2D) 视图。
-     *
+     *```
      *  ---            方向              平移 ---
      *  |   scaleX      0         0       tx    |
      *  |     0       scaleY      0       ty    |
@@ -753,8 +805,10 @@ declare namespace feng3d {
      *  |     2         6        10       14    |
      *  |     3         7        11       15    |
      *  ---  x轴        y轴      z轴          ---
+     * ```
      */
-    class Matrix3D {
+    class Matrix3D
+    {
         /**
          * 用于运算临时变量
          */
@@ -804,23 +858,44 @@ declare namespace feng3d {
          * 创建旋转矩阵
          * @param   degrees         角度
          * @param   axis            旋转轴
-         * @param   pivotPoint      旋转中心点
          */
-        static createRotationMatrix3D(degrees: number, axis: Vector3D): Matrix3D;
+        static fromAxisRotate(degrees: number, axis: Vector3D): Matrix3D;
+        /**
+         * 创建旋转矩阵
+         * @param   rx      用于沿 x 轴旋转对象的角度。
+         * @param   ry      用于沿 y 轴旋转对象的角度。
+         * @param   rz      用于沿 z 轴旋转对象的角度。
+         */
+        static fromRotation(rx: number, ry: number, rz: number): Matrix3D;
+        /**
+         * 创建旋转矩阵
+         * @param   degrees         角度
+         */
+        static fromRotation(euler: Vector3D): Matrix3D;
         /**
          * 创建缩放矩阵
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
          * @param   yScale      用于沿 y 轴缩放对象的乘数。
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
-        static createScaleMatrix3D(xScale: number, yScale: number, zScale: number): Matrix3D;
+        static fromScale(xScale: number, yScale: number, zScale: number): Matrix3D;
+        /**
+         * 创建缩放矩阵
+         * @param   scale       缩放值
+         */
+        static fromScale(scale: Vector3D): Matrix3D;
         /**
          * 创建位移矩阵
          * @param   x   沿 x 轴的增量平移。
          * @param   y   沿 y 轴的增量平移。
          * @param   z   沿 z 轴的增量平移。
          */
-        static createTranslationMatrix3D(x: number, y: number, z: number): Matrix3D;
+        static fromPosition(x: number, y: number, z: number): Matrix3D;
+        /**
+         * 创建位移矩阵
+         * @param   position        位置
+         */
+        static fromPosition(position: Vector3D): Matrix3D;
         /**
          * 通过将另一个 Matrix3D 对象与当前 Matrix3D 对象相乘来后置一个矩阵。
          */
@@ -996,11 +1071,13 @@ declare namespace feng3d {
         toString(): string;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * A Quaternion object which can be used to represent rotations.
      */
-    class Quaternion {
+    class Quaternion
+    {
         /**
          * The x value of the quaternion.
          */
@@ -1118,12 +1195,14 @@ declare namespace feng3d {
         copyFrom(q: Quaternion): void;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 3d直线
      * @author feng 2013-6-13
      */
-    class Line3D {
+    class Line3D
+    {
         /** 直线上某一点 */
         position: Vector3D;
         /** 直线方向 */
@@ -1153,20 +1232,24 @@ declare namespace feng3d {
         getPoint(length?: number): Vector3D;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 3D射线
      * @author feng 2013-6-13
      */
-    class Ray3D extends Line3D {
+    class Ray3D extends Line3D
+    {
         constructor(position?: Vector3D, direction?: Vector3D);
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 3d面
      */
-    class Plane3D {
+    class Plane3D
+    {
         /**
          * 平面A系数
          * <p>同样也是面法线x尺寸</p>
@@ -1265,12 +1348,14 @@ declare namespace feng3d {
         toString(): string;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 点与面的相对位置
      * @author feng
      */
-    class PlaneClassification {
+    class PlaneClassification
+    {
         /**
          * 在平面后面
          * <p>等价于平面内</p>
@@ -1301,12 +1386,14 @@ declare namespace feng3d {
         static INTERSECT: number;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 颜色
      * @author feng 2016-09-24
      */
-    class Color extends Vector3D {
+    class Color extends Vector3D
+    {
         /**
          * 红[0,1]
          */
@@ -1359,8 +1446,10 @@ declare namespace feng3d {
         static ToHex(i: number): string;
     }
 }
-declare namespace feng3d {
-    interface EventType {
+declare namespace feng3d
+{
+    interface EventType
+    {
         /**
          * [广播事件] 进入新的一帧,监听此事件将会在下一帧开始时触发一次回调。这是一个广播事件，可以在任何一个显示对象上监听，无论它是否在显示列表中。
          */
@@ -1373,7 +1462,8 @@ declare namespace feng3d {
     /**
      * 心跳计时器
      */
-    class SystemTicker {
+    class SystemTicker
+    {
         static init(): void;
         private _startTime;
         /**
@@ -1392,7 +1482,8 @@ declare namespace feng3d {
         update(): void;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * The Timer class is the interface to timers, which let you run code on a specified time sequence. Use the start()
      * method to start a timer. Add an event listener for the timer event to set up code to be run on the timer interval.<br/>
@@ -1416,7 +1507,8 @@ declare namespace feng3d {
      * @includeExample egret/utils/Timer.ts
      * @language zh_CN
      */
-    class Timer {
+    class Timer
+    {
         /**
          * Constructs a new Timer object with the specified delay and repeatCount states.
          * @param delay The delay between timer events, in milliseconds. A delay lower than 20 milliseconds is not recommended.
@@ -1565,7 +1657,8 @@ declare namespace feng3d {
         $update(): boolean;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * A Timer object dispatches a TimerEvent objects whenever the Timer object reaches the interval specified by the Timer.delay property.
      * @see egret.Timer
@@ -1582,7 +1675,8 @@ declare namespace feng3d {
      * @includeExample egret/events/TimerEvent.ts
      * @language zh_CN
      */
-    class TimerEvent {
+    class TimerEvent
+    {
         /**
          * Dispatched whenever a Timer object reaches an interval specified according to the Timer.delay property.
          * @version Egret 2.4
@@ -1611,14 +1705,17 @@ declare namespace feng3d {
         static TIMER_COMPLETE: "timerComplete";
     }
 }
-declare namespace feng3d {
-    interface EventType {
+declare namespace feng3d
+{
+    interface EventType
+    {
     }
     /**
      * 鼠标键盘输入，处理js事件中this关键字问题
      * @author feng 2016-12-19
      */
-    class Input {
+    class Input
+    {
         clientX: number;
         clientY: number;
         constructor();
@@ -1627,7 +1724,8 @@ declare namespace feng3d {
          */
         private onMouseKey(event);
     }
-    class InputEvent {
+    class InputEvent
+    {
         clientX: number;
         clientY: number;
         keyCode: number;
@@ -1659,12 +1757,14 @@ declare namespace feng3d {
         KEY_UP: string;
     };
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 按键捕获
      * @author feng 2016-4-26
      */
-    class KeyCapture {
+    class KeyCapture
+    {
         /**
          * 键盘按键字典 （补充常量，a-z以及鼠标按键不必再次列出）
          * 例如 boardKeyDic[17] = "ctrl";
@@ -1709,12 +1809,14 @@ declare namespace feng3d {
         private getBoardKey(keyCode);
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 按键状态
      * @author feng 2016-4-26
      */
-    class KeyState {
+    class KeyState
+    {
         /**
          * 按键状态{key:键名称,value:是否按下}
          */
@@ -1742,12 +1844,14 @@ declare namespace feng3d {
         getKeyState(key: string): boolean;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 快捷键捕获
      * @author feng 2016-4-26
      */
-    class ShortCutCapture {
+    class ShortCutCapture
+    {
         /**
          * 快捷键环境
          */
@@ -1861,7 +1965,8 @@ declare namespace feng3d {
  * 按键
  * @author feng 2016-6-6
  */
-declare class Key {
+declare class Key
+{
     /**
      * 是否取反
      */
@@ -1876,7 +1981,8 @@ declare class Key {
  * 状态
  * @author feng 2016-6-6
  */
-declare class State {
+declare class State
+{
     /**
      * 是否取反
      */
@@ -1891,7 +1997,8 @@ declare class State {
  * 状态命令
  * @author feng 2016-6-6
  */
-declare class StateCommand {
+declare class StateCommand
+{
     /**
      * 是否取反
      */
@@ -1902,9 +2009,11 @@ declare class StateCommand {
     state: string;
     constructor(state: string);
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 快捷键
      */
@@ -1933,7 +2042,8 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 });
      * </pre>
      */
-    class ShortCut {
+    class ShortCut
+    {
         static init(): void;
         /**
          * 按键状态
@@ -1990,12 +2100,14 @@ Event.on(shortCut,<any>"run", function(e:Event):void
         private getShortcutUniqueKey(shortcut);
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 加载事件
      * @author feng 2016-12-14
      */
-    interface EventType {
+    interface EventType
+    {
         /**
          * 加载进度发生改变时调度。
          */
@@ -2013,7 +2125,8 @@ declare namespace feng3d {
      * 加载类
      * @author feng 2016-12-14
      */
-    class Loader {
+    class Loader
+    {
         private _request;
         private _image;
         /**
@@ -2075,14 +2188,17 @@ declare namespace feng3d {
         private onImageError(event);
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 加载数据类型
      * @author feng 2016-12-14
      */
-    class LoaderDataFormat {
+    class LoaderDataFormat
+    {
         /**
          * 以原始二进制数据形式接收下载的数据。
          */
@@ -2097,7 +2213,8 @@ declare namespace feng3d {
         static IMAGE: string;
     }
 }
-declare namespace feng3d {
+declare namespace feng3d
+{
     /**
      * 是否开启调试(主要用于断言)
      */

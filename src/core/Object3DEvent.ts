@@ -1,12 +1,11 @@
 namespace feng3d
 {
-
     /**
      * 3D对象事件
      */
     export class Object3DEvent
     {
-        public static VISIBLITY_UPDATED: string = "visiblityUpdated";
+        public static VISIBLITY_UPDATED: "visiblityUpdated" = "visiblityUpdated";
         public static SCENETRANSFORM_CHANGED: string = "scenetransformChanged";
         public static SCENE_CHANGED: string = "sceneChanged";
         public static POSITION_CHANGED: string = "positionChanged";

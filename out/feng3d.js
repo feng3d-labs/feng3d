@@ -8,154 +8,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var feng3d;
-(function (feng3d) {
-    /**
-     * 数据序列化
-     * @author feng 2017-03-11
-     */
-    var Serialization = (function () {
-        function Serialization() {
-        }
-        /**
-         * 由纯数据对象（无循环引用）转换为复杂类型（例如feng3d对象）
-         */
-        Serialization.prototype.readObject = function (data) {
-            //处理简单类型
-            if (!(data instanceof Object)) {
-                return data;
-            }
-            //处理数组
-            if (data instanceof Array) {
-                var arr = [];
-                for (var i = 0; i < data.length; i++) {
-                    arr[i] = this.readObject(data[i]);
-                }
-                return arr;
-            }
-            //处理其他数据结构
-            var cls = feng3d.ClassUtils.getDefinitionByName(data.__className__);
-            feng3d.debuger && console.assert(cls != null);
-            var object = new cls();
-            var keys = Object.keys(data);
-            for (var i = 0; i < keys.length; i++) {
-                var key = keys[i];
-                var ishandle = this.handle(object, key, data[key]);
-                if (ishandle)
-                    continue;
-                object[key] = this.readObject(data[key]);
-            }
-            return object;
-        };
-        Serialization.prototype.handle = function (object, key, data) {
-            if (object instanceof feng3d.GameObject && key == "children_") {
-                var children = this.readObject(data);
-                var object3D = object;
-                for (var i = 0; i < children.length; i++) {
-                    children[i] && object3D.transform.setChildAt(children[i].transform, i);
-                }
-                return true;
-            }
-            if (object instanceof feng3d.GameObject && key == "components_") {
-                var components = this.readObject(data);
-                var component = object;
-                for (var i = 0; i < components.length; i++) {
-                    component.setComponentAt(components[i], i);
-                }
-                return true;
-            }
-            if (object instanceof feng3d.SegmentGeometry && key == "segments_") {
-                var segments = this.readObject(data);
-                var segmentGeometry = object;
-                for (var i = 0; i < segments.length; i++) {
-                    segmentGeometry.setSegmentAt(segments[i], i);
-                }
-                return true;
-            }
-            return false;
-        };
-        /**
-         * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
-         */
-        Serialization.prototype.writeObject = function (object) {
-            //排除指定对象
-            if (feng3d.serializationConfig.excludeObject.indexOf(object) != -1) {
-                return undefined;
-            }
-            if (!(object instanceof Object)) {
-                return object;
-            }
-            if (object instanceof Array) {
-                var arr = [];
-                for (var i = 0; i < object.length; i++) {
-                    var item = this.writeObject(object[i]);
-                    if (item !== undefined) {
-                        arr.push(item);
-                    }
-                }
-                if (arr.length == 0)
-                    return undefined;
-                return arr;
-            }
-            var className = feng3d.ClassUtils.getQualifiedClassName(object);
-            var toJson = feng3d.serializationConfig.classConfig[className] && feng3d.serializationConfig.classConfig[className].toJson;
-            if (toJson) {
-                return toJson(object);
-            }
-            var attributeNames = this.getAttributes(object);
-            attributeNames = attributeNames.sort();
-            //没有属性时不保存该对象
-            if (attributeNames.length == 0)
-                return undefined;
-            var json = {};
-            json.__className__ = className;
-            for (var i = 0; i < attributeNames.length; i++) {
-                var attributeName = attributeNames[i];
-                var value = this.writeObject(object[attributeName]);
-                if (value !== undefined) {
-                    json[attributeName] = value;
-                }
-            }
-            return json;
-        };
-        Serialization.prototype.getAttributes = function (object) {
-            var className = feng3d.ClassUtils.getQualifiedClassName(object);
-            //保存以字母开头或者纯数字的所有属性
-            var filterReg = /([a-zA-Z](\w*)|(\d+))/;
-            if (className == "Array" || className == "Object") {
-                var attributeNames = Object.keys(object);
-            }
-            else {
-                //
-                var attributeNames = Object.keys(this.getNewObject(className));
-                attributeNames = attributeNames.filter(function (value, index, array) {
-                    var result = filterReg.exec(value);
-                    return result[0] == value;
-                });
-            }
-            return attributeNames;
-        };
-        /**
-         * 获取新对象来判断存储的属性
-         */
-        Serialization.prototype.getNewObject = function (className) {
-            if (tempObjectMap[className]) {
-                return tempObjectMap[className];
-            }
-            var cls = feng3d.ClassUtils.getDefinitionByName(className);
-            tempObjectMap[className] = new cls();
-            return tempObjectMap[className];
-        };
-        return Serialization;
-    }());
-    feng3d.Serialization = Serialization;
-    var tempObjectMap = {};
-    feng3d.serializationConfig = {
-        // export var serializationConfig = {
-        excludeObject: [],
-        excludeClass: [], classConfig: {}
-    };
-})(feng3d || (feng3d = {}));
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var feng3d;
 (function (feng3d) {
     var RenderData = (function () {
@@ -1072,26 +930,25 @@ var feng3d;
             //更新数据
             object3D.updateRender(renderContext);
             var gl = renderContext.gl;
-            // try
-            // {
-            //绘制
-            var material = this.material;
-            if (material.enableBlend) {
-                //
-                gl.enable(feng3d.GL.BLEND);
-                gl.blendEquation(material.blendEquation);
-                gl.depthMask(false);
-                gl.blendFunc(material.sfactor, material.dfactor);
+            try {
+                //绘制
+                var material = this.material;
+                if (material.enableBlend) {
+                    //
+                    gl.enable(feng3d.GL.BLEND);
+                    gl.blendEquation(material.blendEquation);
+                    gl.depthMask(false);
+                    gl.blendFunc(material.sfactor, material.dfactor);
+                }
+                else {
+                    gl.disable(feng3d.GL.BLEND);
+                    gl.depthMask(true);
+                }
+                this.drawObject3D(gl, object3D.renderData); //
             }
-            else {
-                gl.disable(feng3d.GL.BLEND);
-                gl.depthMask(true);
+            catch (error) {
+                console.log(error);
             }
-            this.drawObject3D(gl, object3D.renderData); //
-            // } catch (error)
-            // {
-            //     console.log(error);
-            // }
         };
         /**
          * 绘制3D对象
@@ -1324,6 +1181,22 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var Object3DEventType1 = (function () {
+        function Object3DEventType1() {
+            this.visiblityUpdated = "visiblityUpdated";
+        }
+        return Object3DEventType1;
+    }());
+    feng3d.Object3DEventType1 = Object3DEventType1;
+    //-------------- test ------------------
+    // function a()
+    // {
+    //     Event.on({}, Object3DEvent.VISIBLITY_UPDATED, (e) => { e.data }, this);
+    //     Event.on({}, Object3D.eventtype.visiblityUpdated, (e) => { e.data }, this);
+    //     var o = new Object3D(null);
+    //     Event.on(o, o.eventtype.visiblityUpdated, (e) => { e.data }, this);
+    // }
+    //-------------- test ------------------
     /**
      * Position, rotation and scale of an object.
      */
@@ -1375,6 +1248,13 @@ var feng3d;
             _this._flipY.appendScale(1, -1, 1);
             return _this;
         }
+        Object.defineProperty(Object3D.prototype, "eventtype", {
+            get: function () {
+                return Object3D.eventtype;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Object3D.prototype, "x", {
             //------------------------------------------
             // Variables
@@ -1771,14 +1651,39 @@ var feng3d;
             this._rotationZ = az * Math.DEG2RAD;
             this.invalidateRotation();
         };
-        Object3D.prototype.rotate = function (axis, angle) {
-            var m = new feng3d.Matrix3D();
-            m.prependRotation(angle, axis);
-            var vec = m.decompose()[1];
-            this._rotationX += vec.x;
-            this._rotationY += vec.y;
-            this._rotationZ += vec.z;
-            this.invalidateRotation();
+        /**
+         * 绕指定轴旋转，不受位移与缩放影响
+         * @param    axis               旋转轴
+         * @param    angle              旋转角度
+         * @param    pivotPoint         旋转中心点
+         *
+         */
+        Object3D.prototype.rotate = function (axis, angle, pivotPoint) {
+            //转换位移
+            var positionMatrix3d = feng3d.Matrix3D.fromPosition(this.position);
+            positionMatrix3d.appendRotation(angle, axis, pivotPoint);
+            this.position.copyFrom(positionMatrix3d.position);
+            //转换旋转
+            var rotationMatrix3d = feng3d.Matrix3D.fromRotation(this.rotationX, this.rotationY, this.rotationZ);
+            rotationMatrix3d.appendRotation(angle, axis, pivotPoint);
+            var newrotation = rotationMatrix3d.decompose()[1];
+            newrotation.scaleBy(180 / Math.PI);
+            var v = Math.round((newrotation.x - this.rotationX) / 180);
+            if (v % 2 != 0) {
+                newrotation.x += 180;
+                newrotation.y = 180 - newrotation.y;
+                newrotation.z += 180;
+            }
+            //
+            var toRound = function (a, b, c) {
+                if (c === void 0) { c = 360; }
+                return Math.round((b - a) / c) * c + a;
+            };
+            newrotation.x = toRound(newrotation.x, this.rotationX);
+            newrotation.y = toRound(newrotation.y, this.rotationY);
+            newrotation.z = toRound(newrotation.z, this.rotationZ);
+            this.setRotation(newrotation.x, newrotation.y, newrotation.z);
+            //
         };
         Object3D.prototype.lookAt = function (target, upAxis) {
             if (upAxis === void 0) { upAxis = null; }
@@ -1912,6 +1817,7 @@ var feng3d;
         };
         return Object3D;
     }(feng3d.Component));
+    Object3D.eventtype = new Object3DEventType1();
     feng3d.Object3D = Object3D;
     var tempAxeX;
     var tempAxeY;
@@ -4161,15 +4067,21 @@ var feng3d;
          * 创建一个摄像机镜头
          */
         function LensBase() {
+            /**
+             * 最近距离
+             */
+            this.near = 0.1;
+            /**
+             * 最远距离
+             */
+            this.far = 10000;
+            /**
+             * 视窗缩放比例(width/height)，在渲染器中设置
+             */
+            this.aspectRatio = 1;
             this._scissorRect = new feng3d.Rectangle();
             this._viewPort = new feng3d.Rectangle();
-            this._near = 0.1;
-            this._far = 10000;
-            this._aspectRatio = 1;
-            this._matrixInvalid = true;
             this._frustumCorners = [];
-            this._unprojectionInvalid = true;
-            this._matrix = new feng3d.Matrix3D();
         }
         Object.defineProperty(LensBase.prototype, "frustumCorners", {
             /**
@@ -4189,62 +4101,14 @@ var feng3d;
              * 投影矩阵
              */
             get: function () {
-                if (this._matrixInvalid) {
+                if (!this._matrix) {
                     this.updateMatrix();
-                    this._matrixInvalid = false;
                 }
                 return this._matrix;
             },
             set: function (value) {
                 this._matrix = value;
-                this.invalidateMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LensBase.prototype, "near", {
-            /**
-             * 最近距离
-             */
-            get: function () {
-                return this._near;
-            },
-            set: function (value) {
-                if (value == this._near)
-                    return;
-                this._near = value;
-                this.invalidateMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LensBase.prototype, "far", {
-            /**
-             * 最远距离
-             */
-            get: function () {
-                return this._far;
-            },
-            set: function (value) {
-                if (value == this._far)
-                    return;
-                this._far = value;
-                this.invalidateMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LensBase.prototype, "aspectRatio", {
-            /**
-             * 视窗缩放比例(width/height)，在渲染器中设置
-             */
-            get: function () {
-                return this._aspectRatio;
-            },
-            set: function (value) {
-                if (this._aspectRatio == value || (value * 0) != 0)
-                    return;
-                this._aspectRatio = value;
+                feng3d.Event.dispatch(this, feng3d.LensEvent.MATRIX_CHANGED, this);
                 this.invalidateMatrix();
             },
             enumerable: true,
@@ -4272,12 +4136,10 @@ var feng3d;
              * 投影逆矩阵
              */
             get: function () {
-                if (this._unprojectionInvalid) {
-                    if (this._unprojection == null)
-                        this._unprojection = new feng3d.Matrix3D();
+                if (!this._unprojection) {
+                    this._unprojection = new feng3d.Matrix3D();
                     this._unprojection.copyFrom(this.matrix);
                     this._unprojection.invert();
-                    this._unprojectionInvalid = false;
                 }
                 return this._unprojection;
             },
@@ -4288,15 +4150,24 @@ var feng3d;
          * 投影矩阵失效
          */
         LensBase.prototype.invalidateMatrix = function () {
-            this._matrixInvalid = true;
-            this._unprojectionInvalid = true;
-            // notify the camera that the lens this.matrix is changing. this will mark the 
-            // viewProjectionMatrix in the camera as invalid, and force the this.matrix to
-            // be re-queried from the lens, and therefore rebuilt.
+            this._matrix = null;
             feng3d.Event.dispatch(this, feng3d.LensEvent.MATRIX_CHANGED, this);
+            this._unprojection = null;
         };
         return LensBase;
     }());
+    __decorate([
+        feng3d.watch("invalidateMatrix"),
+        feng3d.serialize
+    ], LensBase.prototype, "near", void 0);
+    __decorate([
+        feng3d.watch("invalidateMatrix"),
+        feng3d.serialize
+    ], LensBase.prototype, "far", void 0);
+    __decorate([
+        feng3d.watch("invalidateMatrix"),
+        feng3d.serialize
+    ], LensBase.prototype, "aspectRatio", void 0);
     feng3d.LensBase = LensBase;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -4311,7 +4182,6 @@ var feng3d;
             return _super.call(this) || this;
         }
         FreeMatrixLens.prototype.updateMatrix = function () {
-            this._matrixInvalid = false;
         };
         /**
          * 屏幕坐标投影到摄像机空间坐标
@@ -4349,38 +4219,27 @@ var feng3d;
             _this.coordinateSystem = coordinateSystem;
             return _this;
         }
-        Object.defineProperty(PerspectiveLens.prototype, "fieldOfView", {
-            /**
-             * 视野
-             */
-            get: function () {
-                return this._fieldOfView;
-            },
-            set: function (value) {
-                if (value == this._fieldOfView)
-                    return;
-                this._fieldOfView = value;
-                this._focalLengthInv = Math.tan(this._fieldOfView * Math.PI / 360);
-                this._focalLength = 1 / this._focalLengthInv;
-                this.invalidateMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
+        PerspectiveLens.prototype.fieldOfViewChange = function () {
+            delete this._focalLength;
+            this.invalidateMatrix();
+        };
+        PerspectiveLens.prototype.coordinateSystemChange = function () {
+            this.invalidateMatrix();
+        };
         Object.defineProperty(PerspectiveLens.prototype, "focalLength", {
             /**
              * 焦距
              */
             get: function () {
+                if (!this._focalLength)
+                    this._focalLength = 1 / Math.tan(this.fieldOfView * Math.PI / 360);
                 return this._focalLength;
             },
             set: function (value) {
                 if (value == this._focalLength)
                     return;
                 this._focalLength = value;
-                this._focalLengthInv = 1 / this._focalLength;
-                this._fieldOfView = Math.atan(this._focalLengthInv) * 360 / Math.PI;
-                this.invalidateMatrix();
+                this.fieldOfView = Math.atan(1 / this._focalLength) * 360 / Math.PI;
             },
             enumerable: true,
             configurable: true
@@ -4400,26 +4259,13 @@ var feng3d;
             v.z = sZ;
             return v;
         };
-        Object.defineProperty(PerspectiveLens.prototype, "coordinateSystem", {
-            /**
-             * 坐标系类型
-             */
-            get: function () {
-                return this._coordinateSystem;
-            },
-            set: function (value) {
-                if (value == this._coordinateSystem)
-                    return;
-                this._coordinateSystem = value;
-                this.invalidateMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
         PerspectiveLens.prototype.updateMatrix = function () {
-            var raw = feng3d.Matrix3D.RAW_DATA_CONTAINER;
-            this._yMax = this._near * this._focalLengthInv;
-            this._xMax = this._yMax * this._aspectRatio;
+            this._matrix = new feng3d.Matrix3D();
+            var raw = this._matrix.rawData;
+            this._focalLength = 1 / Math.tan(this.fieldOfView * Math.PI / 360);
+            var _focalLengthInv = 1 / this._focalLength;
+            this._yMax = this.near * _focalLengthInv;
+            this._xMax = this._yMax * this.aspectRatio;
             var left, right, top, bottom;
             if (this._scissorRect.x == 0 && this._scissorRect.y == 0 && this._scissorRect.width == this._viewPort.width && this._scissorRect.height == this._viewPort.height) {
                 // assume unscissored frustum
@@ -4428,12 +4274,12 @@ var feng3d;
                 top = -this._yMax;
                 bottom = this._yMax;
                 // assume unscissored frustum
-                raw[0] = this._near / this._xMax;
-                raw[5] = this._near / this._yMax;
-                raw[10] = this._far / (this._far - this._near);
+                raw[0] = this.near / this._xMax;
+                raw[5] = this.near / this._yMax;
+                raw[10] = this.far / (this.far - this.near);
                 raw[11] = 1;
                 raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
-                raw[14] = -this._near * raw[10];
+                raw[14] = -this.near * raw[10];
             }
             else {
                 // assume scissored frustum
@@ -4445,21 +4291,20 @@ var feng3d;
                 right = center + xWidth;
                 top = middle - yHgt;
                 bottom = middle + yHgt;
-                raw[0] = 2 * this._near / (right - left);
-                raw[5] = 2 * this._near / (bottom - top);
+                raw[0] = 2 * this.near / (right - left);
+                raw[5] = 2 * this.near / (bottom - top);
                 raw[8] = (right + left) / (right - left);
                 raw[9] = (bottom + top) / (bottom - top);
-                raw[10] = (this._far + this._near) / (this._far - this._near);
+                raw[10] = (this.far + this.near) / (this.far - this.near);
                 raw[11] = 1;
                 raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[12] = raw[13] = raw[15] = 0;
-                raw[14] = -2 * this._far * this._near / (this._far - this._near);
+                raw[14] = -2 * this.far * this.near / (this.far - this.near);
             }
             // Switch projection transform from left to right handed.
-            if (this._coordinateSystem == feng3d.CoordinateSystem.RIGHT_HANDED)
+            if (this.coordinateSystem == feng3d.CoordinateSystem.RIGHT_HANDED)
                 raw[5] = -raw[5];
-            this._matrix.copyRawDataFrom(raw);
-            var yMaxFar = this._far * this._focalLengthInv;
-            var xMaxFar = yMaxFar * this._aspectRatio;
+            var yMaxFar = this.far * _focalLengthInv;
+            var xMaxFar = yMaxFar * this.aspectRatio;
             this._frustumCorners[0] = this._frustumCorners[9] = left;
             this._frustumCorners[3] = this._frustumCorners[6] = right;
             this._frustumCorners[1] = this._frustumCorners[4] = top;
@@ -4468,12 +4313,19 @@ var feng3d;
             this._frustumCorners[15] = this._frustumCorners[18] = xMaxFar;
             this._frustumCorners[13] = this._frustumCorners[16] = -yMaxFar;
             this._frustumCorners[19] = this._frustumCorners[22] = yMaxFar;
-            this._frustumCorners[2] = this._frustumCorners[5] = this._frustumCorners[8] = this._frustumCorners[11] = this._near;
-            this._frustumCorners[14] = this._frustumCorners[17] = this._frustumCorners[20] = this._frustumCorners[23] = this._far;
-            this._matrixInvalid = false;
+            this._frustumCorners[2] = this._frustumCorners[5] = this._frustumCorners[8] = this._frustumCorners[11] = this.near;
+            this._frustumCorners[14] = this._frustumCorners[17] = this._frustumCorners[20] = this._frustumCorners[23] = this.far;
         };
         return PerspectiveLens;
     }(feng3d.LensBase));
+    __decorate([
+        feng3d.watch("fieldOfViewChange"),
+        feng3d.serialize
+    ], PerspectiveLens.prototype, "fieldOfView", void 0);
+    __decorate([
+        feng3d.watch("coordinateSystemChange"),
+        feng3d.serialize
+    ], PerspectiveLens.prototype, "coordinateSystem", void 0);
     feng3d.PerspectiveLens = PerspectiveLens;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -4730,6 +4582,9 @@ var feng3d;
         };
         return Camera;
     }(feng3d.Component));
+    __decorate([
+        feng3d.serialize
+    ], Camera.prototype, "_lens", void 0);
     feng3d.Camera = Camera;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -12247,7 +12102,6 @@ var feng3d;
         if (!isInit) {
             isInit = true;
             console.log("Feng3D version " + this.revision);
-            feng3d.serialization = new feng3d.Serialization();
             feng3d.ShortCut.init();
             feng3d.SystemTicker.init();
             feng3d.defaultMaterial = new feng3d.StandardMaterial();

@@ -41,7 +41,7 @@ namespace feng3d
             //
             var xArrow = GameObject.create("xArrow");
             xArrow.transform.x = length;
-            xArrow.transform.rotationZ = -90;
+            xArrow.transform.rz = -90;
             xArrow.addComponent(MeshFilter).mesh = new ConeGeometry(5, 18);;
             var material = xArrow.addComponent(MeshRenderer).material = new ColorMaterial();
             material.color = new Color(1, 0, 0);
@@ -56,7 +56,7 @@ namespace feng3d
             //
             var zArrow = GameObject.create("zArrow");
             zArrow.transform.z = length;
-            zArrow.transform.rotationX = 90;
+            zArrow.transform.rx = 90;
             zArrow.addComponent(MeshFilter).mesh = new ConeGeometry(5, 18);
             var material = zArrow.addComponent(MeshRenderer).material = new ColorMaterial();
             material.color = new Color(0, 0, 1);

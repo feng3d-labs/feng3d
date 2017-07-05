@@ -6,9 +6,10 @@ namespace feng3d
 	 */
     export class Camera extends Component
     {
+        @serialize
+        private _lens: LensBase;
         private _viewProjection: Matrix3D = new Matrix3D();
         private _viewProjectionDirty: boolean = true;
-        private _lens: LensBase;
         private _frustumPlanes: Plane3D[];
         private _frustumPlanesDirty: boolean = true;
 

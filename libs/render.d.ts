@@ -1548,13 +1548,16 @@ declare namespace feng3d {
         readonly VIEWPORT: number;
         readonly ZERO: number;
     };
-    interface GL extends WebGL2RenderingContext {
+    interface GL extends WebGLRenderingContext {
         /**
          * 唯一标识符
          */
         uuid: string;
         webgl2: boolean;
         proxy: GLProxy;
+        drawElementsInstanced(mode: GLenum, count: GLsizei, type: GLenum, offset: GLintptr, instanceCount: GLsizei): any;
+        vertexAttribDivisor(index: GLuint, divisor: GLuint): any;
+        drawArraysInstanced(mode: GLenum, first: GLint, count: GLsizei, instanceCount: GLsizei): any;
     }
 }
 declare namespace feng3d {

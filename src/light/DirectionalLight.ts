@@ -47,7 +47,7 @@ namespace feng3d
             this._direction = value;
             if (this.gameObject)
             {
-                var tmpLookAt = this.gameObject.transform.getPosition();
+                var tmpLookAt = this.gameObject.transform.position;
                 tmpLookAt.incrementBy(this._direction);
                 this.gameObject.transform.lookAt(tmpLookAt);
                 this.gameObject.transform.localToWorldMatrix.copyColumnTo(2, this._sceneDirection);
@@ -61,7 +61,7 @@ namespace feng3d
         protected onBeAddedComponent(event: EventVO<any>): void
         {
             Event.on(this.gameObject.transform, <any>Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
-            var tmpLookAt = this.gameObject.transform.getPosition();
+            var tmpLookAt = this.gameObject.transform.position;
             tmpLookAt.incrementBy(this._direction);
             this.gameObject.transform.lookAt(tmpLookAt);
         }

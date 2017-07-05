@@ -18,6 +18,8 @@ namespace feng3d
             if (this._color == value)
                 return;
             this._color = value;
+            if (this._color)
+                this.enableBlend = this._color.a != 1;
         }
         private _color: Color;
 
