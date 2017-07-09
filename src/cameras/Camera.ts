@@ -6,11 +6,24 @@ namespace feng3d
 	 */
     export class Camera extends Component
     {
+        private _lens: LensBase;
         private _viewProjection: Matrix3D = new Matrix3D();
         private _viewProjectionDirty: boolean = true;
-        private _lens: LensBase;
         private _frustumPlanes: Plane3D[];
         private _frustumPlanesDirty: boolean = true;
+        private _viewRect: Rectangle;
+
+        /**
+         * 视窗矩形
+         */
+        get viewRect()
+        {
+            return this._viewRect;
+        }
+        set viewRect(value)
+        {
+            this._viewRect = value;
+        }
 
 		/**
 		 * 创建一个摄像机
@@ -21,6 +34,10 @@ namespace feng3d
             this._single = true;
             this._lens = new PerspectiveLens();
             Event.on(this._lens, <any>LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
+
+            Event.on(this.gameObject.transform, <any>Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
+            this._viewProjectionDirty = true;
+            this._frustumPlanesDirty = true;
 
             this._frustumPlanes = [];
 
@@ -50,6 +67,7 @@ namespace feng3d
         /**
 		 * 镜头
 		 */
+        @serialize
         public get lens(): LensBase
         {
             return this._lens;
@@ -80,65 +98,13 @@ namespace feng3d
             if (this._viewProjectionDirty)
             {
                 //场景空间转摄像机空间
-                this._viewProjection.copyFrom(this.inverseSceneTransform);
+                this._viewProjection.copyFrom(this.transform.worldToLocalMatrix);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
                 this._viewProjection.append(this._lens.matrix);
                 this._viewProjectionDirty = false;
             }
 
             return this._viewProjection;
-        }
-
-        public get inverseSceneTransform()
-        {
-            return this.gameObject ? this.gameObject.transform.worldToLocalMatrix : new Matrix3D();
-        }
-
-        public get sceneTransform()
-        {
-            return this.gameObject ? this.gameObject.transform.localToWorldMatrix : new Matrix3D();
-        }
-
-        /**
-		 * 屏幕坐标投影到场景坐标
-		 * @param nX 屏幕坐标X -1（左） -> 1（右）
-		 * @param nY 屏幕坐标Y -1（上） -> 1（下）
-		 * @param sZ 到屏幕的距离
-		 * @param v 场景坐标（输出）
-		 * @return 场景坐标
-		 */
-        public unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D
-        {
-            return this.sceneTransform.transformVector(this.lens.unproject(nX, nY, sZ, v), v);
-        }
-
-		/**
-		 * 场景坐标投影到屏幕坐标
-		 * @param point3d 场景坐标
-		 * @param v 屏幕坐标（输出）
-		 * @return 屏幕坐标
-		 */
-        public project(point3d: Vector3D, v: Vector3D = null): Vector3D
-        {
-            return this.lens.project(this.inverseSceneTransform.transformVector(point3d, v), v);
-        }
-
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: EventVO<any>): void
-        {
-            Event.on(this.gameObject.transform, <any>Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
-            this._viewProjectionDirty = true;
-            this._frustumPlanesDirty = true;
-        }
-
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: EventVO<any>): void
-        {
-            Event.off(this.gameObject.transform, <any>Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
         }
 
         /**
@@ -148,6 +114,92 @@ namespace feng3d
         {
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
+        }
+
+        /**
+		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
+		 */
+        public getMouseRay3D(): Ray3D
+        {
+            return this.getRay3D(input.clientX - this._viewRect.x, input.clientY - this._viewRect.y);
+        }
+
+        /**
+		 * 获取与坐标重叠的射线
+		 * @param x view3D上的X坐标
+		 * @param y view3D上的X坐标
+		 * @return
+		 */
+        public getRay3D(x: number, y: number, ray3D: Ray3D = null): Ray3D
+        {
+            //摄像机坐标
+            var rayPosition: Vector3D = this.unproject(x, y, 0);
+            //摄像机前方1处坐标
+            var rayDirection: Vector3D = this.unproject(x, y, 1);
+            //射线方向
+            rayDirection.x = rayDirection.x - rayPosition.x;
+            rayDirection.y = rayDirection.y - rayPosition.y;
+            rayDirection.z = rayDirection.z - rayPosition.z;
+            rayDirection.normalize();
+            //定义射线
+            ray3D = ray3D || new Ray3D(rayPosition, rayDirection);
+            return ray3D;
+        }
+
+		/**
+		 * 投影坐标（世界坐标转换为3D视图坐标）
+		 * @param point3d 世界坐标
+		 * @return 屏幕的绝对坐标
+		 */
+        public project(point3d: Vector3D): Vector3D
+        {
+            var v: Vector3D = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
+
+            v.x = (v.x + 1.0) * this._viewRect.width / 2.0;
+            v.y = (v.y + 1.0) * this._viewRect.height / 2.0;
+
+            return v;
+        }
+
+        /**
+		 * 屏幕坐标投影到场景坐标
+		 * @param nX 屏幕坐标X ([0-width])
+		 * @param nY 屏幕坐标Y ([0-height])
+		 * @param sZ 到屏幕的距离
+		 * @param v 场景坐标（输出）
+		 * @return 场景坐标
+		 */
+        public unproject(sX: number, sY: number, sZ: number, v: Vector3D = null): Vector3D
+        {
+            var gpuPos: Point = this.screenToGpuPosition(new Point(sX, sY));
+            return this.transform.localToWorldMatrix.transformVector(this.lens.unproject(gpuPos.x, gpuPos.y, sZ, v), v);
+        }
+
+        /**
+		 * 屏幕坐标转GPU坐标
+		 * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
+		 * @return GPU坐标 (x:[-1,1],y:[-1-1])
+		 */
+        public screenToGpuPosition(screenPos: Point): Point
+        {
+            var gpuPos: Point = new Point();
+            gpuPos.x = (screenPos.x * 2 - this._viewRect.width) / this._viewRect.width;
+            gpuPos.y = (screenPos.y * 2 - this._viewRect.height) / this._viewRect.height;
+            return gpuPos;
+        }
+
+        /**
+         * 获取单位像素在指定深度映射的大小
+         * @param   depth   深度
+         */
+        public getScaleByDepth(depth: number)
+        {
+            var centerX = this._viewRect.width / 2;
+            var centerY = this._viewRect.height / 2;
+            var lt = this.unproject(centerX - 0.5, centerY - 0.5, depth);
+            var rb = this.unproject(centerX + 0.5, centerY + 0.5, depth);
+            var scale = lt.subtract(rb).length;
+            return scale;
         }
 
 		/**

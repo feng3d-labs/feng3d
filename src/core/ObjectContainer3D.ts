@@ -204,10 +204,10 @@ namespace feng3d
             if (this._scene == newScene)
                 return;
             if (this._scene)
-                Event.dispatch(this,<any>Scene3DEvent.REMOVED_FROM_SCENE, this);
+                Event.dispatch(this, <any>Scene3DEvent.REMOVED_FROM_SCENE, this);
             this._scene = newScene;
             if (this._scene)
-                Event.dispatch(this,<any>Scene3DEvent.ADDED_TO_SCENE, this);
+                Event.dispatch(this, <any>Scene3DEvent.ADDED_TO_SCENE, this);
             for (let i = 0, n = this._children.length; i < n; i++)
             {
                 this._children[i].updateScene();
@@ -353,9 +353,9 @@ namespace feng3d
                 this.getChildAt(0).dispose();
         }
 
-        public rotate(axis: Vector3D, angle: number)
+        public rotate(axis: Vector3D, angle: number, pivotPoint?: Vector3D)
         {
-            super.rotate(axis, angle);
+            super.rotate(axis, angle, pivotPoint);
             this.notifySceneTransformChange();
         }
 
@@ -450,7 +450,7 @@ namespace feng3d
             var len: number = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneTransformChange();
-            Event.dispatch(this,<any>Object3DEvent.SCENETRANSFORM_CHANGED, this);
+            Event.dispatch(this, <any>Object3DEvent.SCENETRANSFORM_CHANGED, this);
         }
 
         private notifySceneChange()
@@ -460,7 +460,7 @@ namespace feng3d
             var len: number = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneChange();
-            Event.dispatch(this,<any>Object3DEvent.SCENE_CHANGED, this);
+            Event.dispatch(this, <any>Object3DEvent.SCENE_CHANGED, this);
         }
 
         private removeChildInternal(childIndex: number, child: Transform)

@@ -150,15 +150,18 @@ namespace feng3d
             var offsetPoint = mousePoint.subtract(this.preMousePoint)
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
+            // this.targetObject.transform.rotate(Vector3D.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
+            // this.targetObject.transform.rotate(Vector3D.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
+
             var matrix3d = this.targetObject.transform.localToWorldMatrix;
-            matrix3d.appendRotation(offsetPoint.y, matrix3d.right, matrix3d.position);
+            matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.position);
             var up = Vector3D.Y_AXIS;
             if (matrix3d.up.dotProduct(up) < 0)
             {
                 up = up.clone();
                 up.scaleBy(-1);
             }
-            matrix3d.appendRotation(offsetPoint.x, up, matrix3d.position);
+            matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);
             this.targetObject.transform.localToWorldMatrix = matrix3d;
             //
             this.preMousePoint = mousePoint;

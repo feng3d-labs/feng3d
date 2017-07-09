@@ -1,37 +1,4 @@
 declare namespace feng3d {
-    /**
-     * 数据序列化
-     * @author feng 2017-03-11
-     */
-    class Serialization {
-        /**
-         * 由纯数据对象（无循环引用）转换为复杂类型（例如feng3d对象）
-         */
-        readObject(data: {
-            __className__?: string;
-        }): any;
-        private handle(object, key, data);
-        /**
-         * 由复杂类型（例如feng3d对象）转换为纯数据对象（无循环引用）
-         */
-        writeObject(object: Object): any;
-        private getAttributes(object);
-        /**
-         * 获取新对象来判断存储的属性
-         */
-        private getNewObject(className);
-    }
-    var serializationConfig: {
-        excludeObject: any[];
-        excludeClass: any[];
-        classConfig: {
-            [className: string]: {
-                toJson?: Function;
-            };
-        };
-    };
-}
-declare namespace feng3d {
     class RenderData {
         private _elementMap;
         readonly elements: RenderElement[];
@@ -751,84 +718,72 @@ declare namespace feng3d {
         x: number;
         y: number;
         z: number;
-        rotationX: number;
-        rotationY: number;
-        rotationZ: number;
-        scaleX: number;
-        scaleY: number;
-        scaleZ: number;
-        eulers: Vector3D;
+        rx: number;
+        ry: number;
+        rz: number;
+        sx: number;
+        sy: number;
+        sz: number;
         /**
          * @private
          */
         matrix3d: Matrix3D;
-        pivotPoint: Vector3D;
+        /**
+         * 返回保存位置数据的Vector3D对象
+         */
         position: Vector3D;
+        rotation: Vector3D;
+        scale: Vector3D;
         readonly forwardVector: Vector3D;
         readonly rightVector: Vector3D;
         readonly upVector: Vector3D;
         readonly backVector: Vector3D;
         readonly leftVector: Vector3D;
         readonly downVector: Vector3D;
-        zOffset: number;
         constructor(gameObject: GameObject);
-        getPosition(position?: Vector3D): Vector3D;
-        setPosition(x?: number, y?: number, z?: number): void;
-        getRotation(rotation?: Vector3D): Vector3D;
-        setRotation(x?: number, y?: number, z?: number): void;
-        getScale(scale?: Vector3D): Vector3D;
-        setScale(x?: number, y?: number, z?: number): void;
-        scale(value: number): void;
         moveForward(distance: number): void;
         moveBackward(distance: number): void;
         moveLeft(distance: number): void;
         moveRight(distance: number): void;
         moveUp(distance: number): void;
         moveDown(distance: number): void;
-        moveTo(dx: number, dy: number, dz: number): void;
-        movePivot(dx: number, dy: number, dz: number): void;
         translate(axis: Vector3D, distance: number): void;
         translateLocal(axis: Vector3D, distance: number): void;
         pitch(angle: number): void;
         yaw(angle: number): void;
         roll(angle: number): void;
         rotateTo(ax: number, ay: number, az: number): void;
-        rotate(axis: Vector3D, angle: number): void;
+        /**
+         * 绕指定轴旋转，不受位移与缩放影响
+         * @param    axis               旋转轴
+         * @param    angle              旋转角度
+         * @param    pivotPoint         旋转中心点
+         *
+         */
+        rotate(axis: Vector3D, angle: number, pivotPoint?: Vector3D): void;
         lookAt(target: Vector3D, upAxis?: Vector3D): void;
         dispose(): void;
         disposeAsset(): void;
         invalidateTransform(): void;
-        protected _matrix3d: Matrix3D;
-        protected _scaleX: number;
-        protected _scaleY: number;
-        protected _scaleZ: number;
-        protected _x: number;
-        protected _y: number;
-        protected _z: number;
-        protected _pivotPoint: Vector3D;
-        protected _pivotZero: boolean;
-        protected _pos: Vector3D;
-        protected _rot: Vector3D;
-        protected _sca: Vector3D;
-        protected _transformComponents: Array<Vector3D>;
-        protected _zOffset: number;
         protected updateMatrix3D(): void;
         private _smallestNumber;
-        private _transformDirty;
-        private _positionDirty;
-        private _rotationDirty;
-        private _scaleDirty;
-        private _rotationX;
-        private _rotationY;
-        private _rotationZ;
-        private _eulers;
-        private _flipY;
+        private _x;
+        private _y;
+        private _z;
+        private _rx;
+        private _ry;
+        private _rz;
+        private _sx;
+        private _sy;
+        private _sz;
         private _position;
+        private _rotation;
+        private _scale;
+        private _matrix3d;
         private invalidateRotation();
         private notifyRotationChanged();
         private invalidateScale();
         private notifyScaleChanged();
-        private invalidatePivot();
         private invalidatePosition();
         private notifyPositionChanged();
     }
@@ -874,7 +829,7 @@ declare namespace feng3d {
         translateLocal(axis: Vector3D, distance: number): void;
         dispose(): void;
         disposeWithChildren(): void;
-        rotate(axis: Vector3D, angle: number): void;
+        rotate(axis: Vector3D, angle: number, pivotPoint?: Vector3D): void;
         updateImplicitVisibility(): void;
         /**
          * 获取子对象列表（备份）
@@ -1661,28 +1616,6 @@ declare namespace feng3d {
      * @author feng 2014-10-14
      */
     abstract class LensBase {
-        protected _matrix: Matrix3D;
-        protected _scissorRect: Rectangle;
-        protected _viewPort: Rectangle;
-        protected _near: number;
-        protected _far: number;
-        protected _aspectRatio: number;
-        protected _matrixInvalid: boolean;
-        protected _frustumCorners: number[];
-        private _unprojection;
-        private _unprojectionInvalid;
-        /**
-         * 创建一个摄像机镜头
-         */
-        constructor();
-        /**
-         * Retrieves the corner points of the lens frustum.
-         */
-        frustumCorners: number[];
-        /**
-         * 投影矩阵
-         */
-        matrix: Matrix3D;
         /**
          * 最近距离
          */
@@ -1695,6 +1628,23 @@ declare namespace feng3d {
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
         aspectRatio: number;
+        protected _matrix: Matrix3D;
+        protected _scissorRect: Rectangle;
+        protected _viewPort: Rectangle;
+        protected _frustumCorners: number[];
+        private _unprojection;
+        /**
+         * 创建一个摄像机镜头
+         */
+        constructor();
+        /**
+         * Retrieves the corner points of the lens frustum.
+         */
+        frustumCorners: number[];
+        /**
+         * 投影矩阵
+         */
+        matrix: Matrix3D;
         /**
          * 场景坐标投影到屏幕坐标
          * @param point3d 场景坐标
@@ -1750,31 +1700,30 @@ declare namespace feng3d {
      * @author feng 2014-10-14
      */
     class PerspectiveLens extends LensBase {
-        private _fieldOfView;
-        private _focalLength;
-        private _focalLengthInv;
+        /**
+         * 视野
+         */
+        fieldOfView: number;
+        /**
+         * 坐标系类型
+         */
+        coordinateSystem: number;
+        _focalLength: number;
         private _yMax;
         private _xMax;
-        private _coordinateSystem;
         /**
          * 创建一个透视摄像机镜头
          * @param fieldOfView 视野
          * @param coordinateSystem 坐标系统类型
          */
         constructor(fieldOfView?: number, coordinateSystem?: number);
-        /**
-         * 视野
-         */
-        fieldOfView: number;
+        private fieldOfViewChange();
+        private coordinateSystemChange();
         /**
          * 焦距
          */
         focalLength: number;
         unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
-        /**
-         * 坐标系类型
-         */
-        coordinateSystem: number;
         protected updateMatrix(): void;
     }
 }
@@ -1793,9 +1742,9 @@ declare namespace feng3d {
      * @author feng 2016-08-16
      */
     class Camera extends Component {
+        private _lens;
         private _viewProjection;
         private _viewProjectionDirty;
-        private _lens;
         private _frustumPlanes;
         private _frustumPlanesDirty;
         /**
@@ -3966,17 +3915,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 变换动作
-     */
-    class TransformAnimator extends Component {
-        /**
-         * 动作名称
-         */
-        animationName: string;
-    }
-}
-declare namespace feng3d {
-    /**
      * 面数据
      */
     type OBJ_Face = {
@@ -4349,10 +4287,6 @@ declare namespace feng3d {
      * 是否开启调试(主要用于断言)
      */
     var debuger: boolean;
-    /**
-     * 数据持久化
-     */
-    var serialization: Serialization;
     /**
      * 默认材质
      */

@@ -26,8 +26,8 @@ namespace feng3d
      */
     export class Object3D extends Component
     {
-        public static eventtype = new Object3DEventType1();
-        public get eventtype()
+        static eventtype = new Object3DEventType1();
+        get eventtype()
         {
             return Object3D.eventtype;
         }
@@ -35,12 +35,13 @@ namespace feng3d
         //------------------------------------------
         // Variables
         //------------------------------------------
-        public get x(): number
+        @serialize
+        get x(): number
         {
             return this._x;
         }
 
-        public set x(val: number)
+        set x(val: number)
         {
             if (this._x == val)
                 return;
@@ -48,12 +49,12 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        public get y(): number
+        get y(): number
         {
             return this._y;
         }
 
-        public set y(val: number)
+        set y(val: number)
         {
             if (this._y == val)
                 return;
@@ -61,12 +62,12 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        public get z(): number
+        get z(): number
         {
             return this._z;
         }
 
-        public set z(val: number)
+        set z(val: number)
         {
             if (this._z == val)
                 return;
@@ -74,111 +75,95 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        public get rotationX(): number
+        get rx(): number
         {
-            return this._rotationX * Math.RAD2DEG;
+            return this._rx;
         }
 
-        public set rotationX(val: number)
+        set rx(val: number)
         {
-            if (this.rotationX == val)
+            if (this.rx == val)
                 return;
-            this._rotationX = val * Math.DEG2RAD;
+            this._rx = val;
             this.invalidateRotation();
         }
 
-        public get rotationY(): number
+        get ry(): number
         {
-            return this._rotationY * Math.RAD2DEG;
+            return this._ry;
         }
 
-        public set rotationY(val: number)
+        set ry(val: number)
         {
-            if (this.rotationY == val)
+            if (this.ry == val)
                 return;
-            this._rotationY = val * Math.DEG2RAD;
+            this._ry = val;
             this.invalidateRotation();
         }
 
-        public get rotationZ(): number
+        get rz(): number
         {
-            return this._rotationZ * Math.RAD2DEG;
+            return this._rz;
         }
 
-        public set rotationZ(val: number)
+        set rz(val: number)
         {
-            if (this.rotationZ == val)
+            if (this.rz == val)
                 return;
-            this._rotationZ = val * Math.DEG2RAD;
+            this._rz = val;
             this.invalidateRotation();
         }
 
-        public get scaleX(): number
+        get sx(): number
         {
-            return this._scaleX;
+            return this._sx;
         }
 
-        public set scaleX(val: number)
+        set sx(val: number)
         {
-            if (this._scaleX == val)
+            if (this._sx == val)
                 return;
-            this._scaleX = val;
+            this._sx = val;
             this.invalidateScale();
         }
 
-        public get scaleY(): number
+        get sy(): number
         {
-            return this._scaleY;
+            return this._sy;
         }
 
-        public set scaleY(val: number)
+        set sy(val: number)
         {
-            if (this._scaleY == val)
+            if (this._sy == val)
                 return;
-            this._scaleY = val;
+            this._sy = val;
             this.invalidateScale();
         }
 
-        public get scaleZ(): number
+        get sz(): number
         {
-            return this._scaleZ;
+            return this._sz;
         }
 
-        public set scaleZ(val: number)
+        set sz(val: number)
         {
-            if (this._scaleZ == val)
+            if (this._sz == val)
                 return;
-            this._scaleZ = val;
+            this._sz = val;
             this.invalidateScale();
-        }
-
-        public get eulers(): Vector3D
-        {
-            this._eulers.x = this._rotationX * Math.RAD2DEG;
-            this._eulers.y = this._rotationY * Math.RAD2DEG;
-            this._eulers.z = this._rotationZ * Math.RAD2DEG;
-            return this._eulers;
-        }
-
-        public set eulers(value: Vector3D)
-        {
-            this._rotationX = value.x * Math.DEG2RAD;
-            this._rotationY = value.y * Math.DEG2RAD;
-            this._rotationZ = value.z * Math.DEG2RAD;
-            this.invalidateRotation();
         }
 
         /**
          * @private
          */
-        public get matrix3d(): Matrix3D
+        get matrix3d(): Matrix3D
         {
-            if (this._transformDirty)
+            if (!this._matrix3d)
                 this.updateMatrix3D();
             return this._matrix3d;
         }
 
-        public set matrix3d(val: Matrix3D)
+        set matrix3d(val: Matrix3D)
         {
             var raw = Matrix3D.RAW_DATA_CONTAINER;
             val.copyRawDataTo(raw);
@@ -189,307 +174,225 @@ namespace feng3d
             }
             var elements: Array<Vector3D> = val.decompose();
             var vec: Vector3D;
-            vec = elements[0];
-            if (this._x != vec.x || this._y != vec.y || this._z != vec.z)
+            this.position = elements[0];
+            this.rotation = elements[1].scaleBy(180 / Math.PI);
+            this.scale = elements[2];
+        }
+
+        /**
+         * 返回保存位置数据的Vector3D对象
+         */
+        get position(): Vector3D
+        {
+            return new Vector3D(this._x, this._y, this._z);
+        }
+
+        set position({ x = 1, y = 1, z = 1 })
+        {
+            if (this._x != x || this._y != y || this._z != z)
             {
-                this._x = vec.x;
-                this._y = vec.y;
-                this._z = vec.z;
+                this._x = x;
+                this._y = y;
+                this._z = z;
                 this.invalidatePosition();
             }
-            vec = elements[1];
-            if (this._rotationX != vec.x || this._rotationY != vec.y || this._rotationZ != vec.z)
+        }
+
+        get rotation(): Vector3D
+        {
+            return new Vector3D(this._rx, this._ry, this._rz);
+        }
+
+        set rotation({ x = 1, y = 1, z = 1 })
+        {
+            if (this._rx != x || this._ry != y || this._rz != z)
             {
-                this._rotationX = vec.x;
-                this._rotationY = vec.y;
-                this._rotationZ = vec.z;
+                this._rx = x;
+                this._ry = y;
+                this._rz = z;
                 this.invalidateRotation();
             }
-            vec = elements[2];
-            if (this._scaleX != vec.x || this._scaleY != vec.y || this._scaleZ != vec.z)
+        }
+
+        get scale()
+        {
+            return new Vector3D(this._sx, this._sy, this._sz);
+        }
+
+        set scale({ x = 1, y = 1, z = 1 })
+        {
+            if (this._sx != x || this._sy != y || this._sz != z)
             {
-                this._scaleX = vec.x;
-                this._scaleY = vec.y;
-                this._scaleZ = vec.z;
+                this._sx = x;
+                this._sy = y;
+                this._sz = z;
                 this.invalidateScale();
             }
         }
 
-        public get pivotPoint(): Vector3D
-        {
-            return this._pivotPoint;
-        }
-
-        public set pivotPoint(pivot: Vector3D)
-        {
-            if (<any>!this._pivotPoint)
-                this._pivotPoint = new Vector3D();
-            this._pivotPoint.x = pivot.x;
-            this._pivotPoint.y = pivot.y;
-            this._pivotPoint.z = pivot.z;
-            this.invalidatePivot();
-        }
-
-        public get position(): Vector3D
-        {
-            this._position.setTo(this._x, this._y, this._z);
-            return this._position;
-        }
-
-        public set position(value)
-        {
-            if (this._x != value.x || this._y != value.y || this._z != value.z)
-            {
-                this._x = value.x;
-                this._y = value.y;
-                this._z = value.z;
-                this.invalidatePosition();
-            }
-        }
-
-        public get forwardVector(): Vector3D
+        get forwardVector(): Vector3D
         {
             return this.matrix3d.forward;
         }
 
-        public get rightVector(): Vector3D
+        get rightVector(): Vector3D
         {
             return this.matrix3d.right;
         }
 
-        public get upVector(): Vector3D
+        get upVector(): Vector3D
         {
             return this.matrix3d.up;
         }
 
-        public get backVector(): Vector3D
+        get backVector(): Vector3D
         {
             var director: Vector3D = this.matrix3d.forward;
             director.negate();
             return director;
         }
 
-        public get leftVector(): Vector3D
+        get leftVector(): Vector3D
         {
             var director: Vector3D = this.matrix3d.left;
             director.negate();
             return director;
         }
 
-        public get downVector(): Vector3D
+        get downVector(): Vector3D
         {
             var director: Vector3D = this.matrix3d.up;
             director.negate();
             return director;
         }
 
-        public get zOffset(): number
-        {
-            return this._zOffset;
-        }
-
-        public set zOffset(value: number)
-        {
-            this._zOffset = value;
-        }
-
         //------------------------------------------
-        // Public Functions
+        // Functions
         //------------------------------------------
-        public constructor(gameObject: GameObject)
+        constructor(gameObject: GameObject)
         {
             super(gameObject);
-            tempAxeX = tempAxeX || new Vector3D();
-            tempAxeY = tempAxeY || new Vector3D();
-            tempAxeZ = tempAxeZ || new Vector3D();
-
-            this._transformComponents = [];
-            this._transformComponents[0] = this._pos;
-            this._transformComponents[1] = this._rot;
-            this._transformComponents[2] = this._sca;
-            this._matrix3d.identity();
-            this._flipY.appendScale(1, -1, 1);
         }
 
-        public getPosition(position: Vector3D = null): Vector3D
-        {
-            position = position || new Vector3D();
-            position.setTo(this._x, this._y, this._z);
-            return position;
-        }
-
-        public setPosition(x = 0, y = 0, z = 0)
-        {
-            if (this._x != x || this._y != y || this._z != z)
-            {
-                this._x = x;
-                this._y = y;
-                this._z = z;
-                this.invalidatePosition();
-            }
-        }
-
-        public getRotation(rotation: Vector3D = null): Vector3D
-        {
-            rotation = rotation || new Vector3D();
-            rotation.setTo(this._rotationX, this._rotationY, this._rotationZ);
-            rotation.scaleBy(Math.RAD2DEG);
-            return rotation;
-        }
-
-        public setRotation(x = 0, y = 0, z = 0)
-        {
-            x = x * Math.DEG2RAD;
-            y = y * Math.DEG2RAD;
-            z = z * Math.DEG2RAD;
-            if (this._x != x || this._y != y || this._z != z)
-            {
-                this._x = x;
-                this._y = y;
-                this._z = z;
-                this.invalidatePosition();
-            }
-        }
-
-        public getScale(scale: Vector3D = null)
-        {
-            scale = scale || new Vector3D();
-            scale.setTo(this._scaleX, this._scaleY, this._scaleZ);
-            return scale;
-        }
-
-        public setScale(x = 1, y = 1, z = 1)
-        {
-            if (this._scaleX != x || this._scaleY != y || this._scaleZ != z)
-            {
-                this._scaleX = x;
-                this._scaleY = y;
-                this._scaleZ = z;
-                this.invalidateScale();
-            }
-        }
-        public scale(value: number)
-        {
-            this._scaleX *= value;
-            this._scaleY *= value;
-            this._scaleZ *= value;
-            this.invalidateScale();
-        }
-
-        public moveForward(distance: number)
+        moveForward(distance: number)
         {
             this.translateLocal(Vector3D.Z_AXIS, distance);
         }
 
-        public moveBackward(distance: number)
+        moveBackward(distance: number)
         {
             this.translateLocal(Vector3D.Z_AXIS, -distance);
         }
 
-        public moveLeft(distance: number)
+        moveLeft(distance: number)
         {
             this.translateLocal(Vector3D.X_AXIS, -distance);
         }
 
-        public moveRight(distance: number)
+        moveRight(distance: number)
         {
             this.translateLocal(Vector3D.X_AXIS, distance);
         }
 
-        public moveUp(distance: number)
+        moveUp(distance: number)
         {
             this.translateLocal(Vector3D.Y_AXIS, distance);
         }
 
-        public moveDown(distance: number)
+        moveDown(distance: number)
         {
             this.translateLocal(Vector3D.Y_AXIS, -distance);
         }
 
-        public moveTo(dx: number, dy: number, dz: number)
+        translate(axis: Vector3D, distance: number)
         {
-            if (this._x == dx && this._y == dy && this._z == dz)
-                return;
-            this._x = dx;
-            this._y = dy;
-            this._z = dz;
-            this.invalidatePosition();
-        }
-
-        public movePivot(dx: number, dy: number, dz: number)
-        {
-            if (<any>!this._pivotPoint)
-                this._pivotPoint = new Vector3D();
-            this._pivotPoint.x += dx;
-            this._pivotPoint.y += dy;
-            this._pivotPoint.z += dz;
-            this.invalidatePivot();
-        }
-
-        public translate(axis: Vector3D, distance: number)
-        {
-            var x: number = <any>axis.x, y: number = <any>axis.y, z: number = <any>axis.z;
-            var len: number = distance / Math.sqrt(x * x + y * y + z * z);
+            var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
+            var len = distance / Math.sqrt(x * x + y * y + z * z);
             this._x += x * len;
             this._y += y * len;
             this._z += z * len;
             this.invalidatePosition();
         }
 
-        public translateLocal(axis: Vector3D, distance: number)
+        translateLocal(axis: Vector3D, distance: number)
         {
-            var x: number = <any>axis.x, y: number = <any>axis.y, z: number = <any>axis.z;
-            var len: number = distance / Math.sqrt(x * x + y * y + z * z);
-            this.matrix3d.prependTranslation(x * len, y * len, z * len);
-            this._matrix3d.copyColumnTo(3, this._pos);
-            this._x = this._pos.x;
-            this._y = this._pos.y;
-            this._z = this._pos.z;
+            var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
+            var len = distance / Math.sqrt(x * x + y * y + z * z);
+            var matrix3d = this.matrix3d.clone();
+            matrix3d.prependTranslation(x * len, y * len, z * len);
+            this._x = matrix3d.position.x;
+            this._y = matrix3d.position.y;
+            this._z = matrix3d.position.z;
             this.invalidatePosition();
         }
 
-        public pitch(angle: number)
+        pitch(angle: number)
         {
             this.rotate(Vector3D.X_AXIS, angle);
         }
 
-        public yaw(angle: number)
+        yaw(angle: number)
         {
             this.rotate(Vector3D.Y_AXIS, angle);
         }
 
-        public roll(angle: number)
+        roll(angle: number)
         {
             this.rotate(Vector3D.Z_AXIS, angle);
         }
 
-        public rotateTo(ax: number, ay: number, az: number)
+        rotateTo(ax: number, ay: number, az: number)
         {
-            this._rotationX = ax * Math.DEG2RAD;
-            this._rotationY = ay * Math.DEG2RAD;
-            this._rotationZ = az * Math.DEG2RAD;
+            this._rx = ax;
+            this._ry = ay;
+            this._rz = az;
             this.invalidateRotation();
         }
 
-        public rotate(axis: Vector3D, angle: number)
+        /**
+         * 绕指定轴旋转，不受位移与缩放影响
+         * @param    axis               旋转轴
+         * @param    angle              旋转角度
+         * @param    pivotPoint         旋转中心点
+         * 
+         */
+        rotate(axis: Vector3D, angle: number, pivotPoint?: Vector3D): void
         {
-            var m: Matrix3D = new Matrix3D();
-            m.prependRotation(angle, axis);
-            var vec: Vector3D = <any>m.decompose()[1];
-            this._rotationX += vec.x;
-            this._rotationY += vec.y;
-            this._rotationZ += vec.z;
-            this.invalidateRotation();
+            //转换位移
+            var positionMatrix3d = Matrix3D.fromPosition(this.position);
+            positionMatrix3d.appendRotation(axis, angle, pivotPoint);
+            this.position = positionMatrix3d.position;
+            //转换旋转
+            var rotationMatrix3d = Matrix3D.fromRotation(this.rx, this.ry, this.rz);
+            rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
+            var newrotation = rotationMatrix3d.decompose()[1];
+            newrotation.scaleBy(180 / Math.PI);
+            var v = Math.round((newrotation.x - this.rx) / 180);
+            if (v % 2 != 0)
+            {
+                newrotation.x += 180;
+                newrotation.y = 180 - newrotation.y;
+                newrotation.z += 180;
+            }
+            //
+            var toRound = (a: number, b: number, c = 360) =>
+            {
+                return Math.round((b - a) / c) * c + a;
+            }
+            newrotation.x = toRound(newrotation.x, this.rx);
+            newrotation.y = toRound(newrotation.y, this.ry);
+            newrotation.z = toRound(newrotation.z, this.rz);
+            this.rotation = newrotation;
         }
 
-        public lookAt(target: Vector3D, upAxis: Vector3D = null)
+        lookAt(target: Vector3D, upAxis: Vector3D = null)
         {
-            var xAxis: Vector3D = tempAxeX;
-            var yAxis: Vector3D = tempAxeY;
-            var zAxis: Vector3D = tempAxeZ;
+            var xAxis = new Vector3D();
+            var yAxis = new Vector3D();
+            var zAxis = new Vector3D();
             var raw: Float32Array;
             upAxis = upAxis || Vector3D.Y_AXIS;
-            if (this._transformDirty)
+            if (!this._matrix3d)
             {
                 this.updateMatrix3D();
             }
@@ -512,17 +415,17 @@ namespace feng3d
             yAxis.y = zAxis.z * xAxis.x - zAxis.x * xAxis.z;
             yAxis.z = zAxis.x * xAxis.y - zAxis.y * xAxis.x;
             raw = Matrix3D.RAW_DATA_CONTAINER;
-            raw[0] = this._scaleX * xAxis.x;
-            raw[1] = this._scaleX * xAxis.y;
-            raw[2] = this._scaleX * xAxis.z;
+            raw[0] = this._sx * xAxis.x;
+            raw[1] = this._sx * xAxis.y;
+            raw[2] = this._sx * xAxis.z;
             raw[3] = 0;
-            raw[4] = this._scaleY * yAxis.x;
-            raw[5] = this._scaleY * yAxis.y;
-            raw[6] = this._scaleY * yAxis.z;
+            raw[4] = this._sy * yAxis.x;
+            raw[5] = this._sy * yAxis.y;
+            raw[6] = this._sy * yAxis.z;
             raw[7] = 0;
-            raw[8] = this._scaleZ * zAxis.x;
-            raw[9] = this._scaleZ * zAxis.y;
-            raw[10] = this._scaleZ * zAxis.z;
+            raw[8] = this._sz * zAxis.x;
+            raw[9] = this._sz * zAxis.y;
+            raw[10] = this._sz * zAxis.z;
             raw[11] = 0;
             raw[12] = this._x;
             raw[13] = this._y;
@@ -532,104 +435,70 @@ namespace feng3d
             this.matrix3d = this.matrix3d;
             if (zAxis.z < 0)
             {
-                this.rotationY = (180 - this.rotationY);
-                this.rotationX -= 180;
-                this.rotationZ -= 180;
+                this.ry = (180 - this.ry);
+                this.rx -= 180;
+                this.rz -= 180;
             }
         }
 
-        public dispose()
+        dispose()
         {
         }
 
-        public disposeAsset()
+        disposeAsset()
         {
             this.dispose();
         }
 
-        public invalidateTransform()
+        invalidateTransform()
         {
-            this._transformDirty = true;
+            this._matrix3d = null;
         }
 
         //------------------------------------------
         // Protected Properties
         //------------------------------------------
-        protected _matrix3d: Matrix3D = new Matrix3D();
-        protected _scaleX: number = 1;
-        protected _scaleY: number = 1;
-        protected _scaleZ: number = 1;
-        protected _x: number = 0;
-        protected _y: number = 0;
-        protected _z: number = 0;
-        protected _pivotPoint: Vector3D = new Vector3D();
-        protected _pivotZero: boolean = true;
-        protected _pos: Vector3D = new Vector3D();
-        protected _rot: Vector3D = new Vector3D();
-        protected _sca: Vector3D = new Vector3D();
-        protected _transformComponents: Array<Vector3D>;
-        protected _zOffset: number = 0;
 
         //------------------------------------------
         // Protected Functions
         //------------------------------------------
         protected updateMatrix3D()
         {
-            this._pos.x = this._x;
-            this._pos.y = this._y;
-            this._pos.z = this._z;
-            this._rot.x = this._rotationX;
-            this._rot.y = this._rotationY;
-            this._rot.z = this._rotationZ;
-            if (<any>!this._pivotZero)
-            {
-                this._sca.x = 1;
-                this._sca.y = 1;
-                this._sca.z = 1;
-                this._matrix3d.recompose(this._transformComponents);
-                this._matrix3d.appendTranslation(this._pivotPoint.x, this._pivotPoint.y, this._pivotPoint.z);
-                this._matrix3d.prependTranslation(-this._pivotPoint.x, -this._pivotPoint.y, -this._pivotPoint.z);
-                this._matrix3d.prependScale(this._scaleX, this._scaleY, this._scaleZ);
-                this._sca.x = this._scaleX;
-                this._sca.y = this._scaleY;
-                this._sca.z = this._scaleZ;
-            }
-            else
-            {
-                this._sca.x = this._scaleX;
-                this._sca.y = this._scaleY;
-                this._sca.z = this._scaleZ;
-                this._matrix3d.recompose(this._transformComponents);
-            }
-            this._transformDirty = false;
-            this._positionDirty = false;
-            this._rotationDirty = false;
-            this._scaleDirty = false;
+            if (!this._position)
+                this._position = new Vector3D(this._x, this._y, this._z);
+            if (!this._rotation)
+                this._rotation = new Vector3D(this._rx, this._ry, this._rz);
+            if (!this._scale)
+                this._scale = new Vector3D(this._sx, this._sy, this._sz);
+            this._matrix3d = new Matrix3D().recompose([this._position, this._rotation.clone().scaleBy(Math.PI / 180), this._scale]);
         }
 
         //------------------------------------------
         // Private Properties
         //------------------------------------------
-        private _smallestNumber: number = 0.0000000000000000000001;
-        private _transformDirty: boolean = true;
-        private _positionDirty: boolean = false;
-        private _rotationDirty: boolean = false;
-        private _scaleDirty: boolean = false;
-        private _rotationX: number = 0;
-        private _rotationY: number = 0;
-        private _rotationZ: number = 0;
-        private _eulers: Vector3D = new Vector3D();
-        private _flipY: Matrix3D = new Matrix3D();
-        private _position = new Vector3D();
+        private _smallestNumber = 0.0000000000000000000001;
+        private _x = 0;
+        private _y = 0;
+        private _z = 0;
+        private _rx = 0;
+        private _ry = 0;
+        private _rz = 0;
+        private _sx = 1;
+        private _sy = 1;
+        private _sz = 1;
+        private _position: Vector3D;
+        private _rotation: Vector3D;
+        private _scale: Vector3D;
+        private _matrix3d: Matrix3D;
 
         //------------------------------------------
         // Private Methods
         //------------------------------------------
         private invalidateRotation()
         {
-            if (this._rotationDirty)
+            if (!this._rotation)
                 return;
-            this._rotationDirty = true;
+            this._rotation = null;
             this.invalidateTransform();
             this.notifyRotationChanged();
         }
@@ -641,9 +510,9 @@ namespace feng3d
 
         private invalidateScale()
         {
-            if (this._scaleDirty)
+            if (!this._scale)
                 return;
-            this._scaleDirty = true;
+            this._scale = null;
             this.invalidateTransform();
             this.notifyScaleChanged();
         }
@@ -653,17 +522,11 @@ namespace feng3d
             Event.dispatch(this, <any>Object3DEvent.SCALE_CHANGED, this);
         }
 
-        private invalidatePivot()
-        {
-            this._pivotZero = (this._pivotPoint.x == 0) && (this._pivotPoint.y == 0) && (this._pivotPoint.z == 0);
-            this.invalidateTransform();
-        }
-
         private invalidatePosition()
         {
-            if (this._positionDirty)
+            if (!this._position)
                 return;
-            this._positionDirty = true;
+            this._position = null;
             this.invalidateTransform();
             this.notifyPositionChanged();
         }
@@ -673,7 +536,4 @@ namespace feng3d
             Event.dispatch(this, <any>Object3DEvent.POSITION_CHANGED, this);
         }
     }
-    var tempAxeX: Vector3D;
-    var tempAxeY: Vector3D;
-    var tempAxeZ: Vector3D;
 }

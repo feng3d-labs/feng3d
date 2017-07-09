@@ -5,11 +5,29 @@ namespace feng3d
      */
     export class Object3DEvent
     {
+        /**
+         * 显示变化
+         */
         public static VISIBLITY_UPDATED: "visiblityUpdated" = "visiblityUpdated";
+        /**
+         * 场景矩阵变化
+         */
         public static SCENETRANSFORM_CHANGED: string = "scenetransformChanged";
+        /**
+         * 场景变化
+         */
         public static SCENE_CHANGED: string = "sceneChanged";
+        /**
+         * 位置变化
+         */
         public static POSITION_CHANGED: string = "positionChanged";
+        /**
+         * 旋转变化
+         */
         public static ROTATION_CHANGED: string = "rotationChanged";
+        /**
+         * 缩放变化
+         */
         public static SCALE_CHANGED: string = "scaleChanged";
 
         /**

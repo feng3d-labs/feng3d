@@ -100,7 +100,7 @@ namespace feng3d
             }
 
             this.createUniformData("u_sceneAmbientColor", this.scene3d.ambientColor);
-            this.createUniformData("u_scaleByDepth", this.view3D.getScaleByDepth(1));
+            this.createUniformData("u_scaleByDepth", this.camera.getScaleByDepth(1));
         }
     }
 }

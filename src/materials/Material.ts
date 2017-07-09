@@ -23,11 +23,28 @@ namespace feng3d
         }
         private _renderMode = RenderMode.TRIANGLES;
 
+
+        get shaderName()
+        {
+            return this._shaderName;
+        }
+        set shaderName(value)
+        {
+            if (this._shaderName == value)
+                return;
+            this._shaderName = value;
+            this._vertexCode = null;
+            this._fragmentCode = null;
+        }
+        private _shaderName: string;
+
         /**
          * 顶点渲染程序代码
          */
         public get vertexCode()
         {
+            if (!this._vertexCode && this._shaderName)
+                this._vertexCode = ShaderLib.getShaderCode(this._shaderName + ".vertex");
             return this._vertexCode;
         }
         public set vertexCode(value)
@@ -43,6 +60,8 @@ namespace feng3d
          */
         public get fragmentCode()
         {
+            if (!this._fragmentCode && this._shaderName)
+                this._fragmentCode = ShaderLib.getShaderCode(this._shaderName + ".fragment")
             return this._fragmentCode;
         }
         public set fragmentCode(value)
@@ -111,17 +130,7 @@ namespace feng3d
             this.createShaderCode(() => { return { vertexCode: this.vertexCode, fragmentCode: this.fragmentCode } });
             this.createBoolMacro("IS_POINTS_MODE", () => this.renderMode == RenderMode.POINTS);
             this.createUniformData("u_PointSize", () => this.pointSize);
-            this.createShaderParam("renderMode",() => this.renderMode);
-        }
-
-        /**
-         * 设置渲染程序
-         * @param shaderName 渲染程序名称
-         */
-        public setShader(shaderName: string)
-        {
-            this.vertexCode = ShaderLib.getShaderCode(shaderName + ".vertex");
-            this.fragmentCode = ShaderLib.getShaderCode(shaderName + ".fragment")
+            this.createShaderParam("renderMode", () => this.renderMode);
         }
 
         /**

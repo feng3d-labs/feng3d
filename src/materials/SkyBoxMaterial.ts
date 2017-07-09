@@ -22,7 +22,7 @@ namespace feng3d
         constructor(images: string[] = null)
         {
             super();
-            this.setShader("skybox");
+            this.shaderName = "skybox";
             if (images)
             {
                 this.texture = new TextureCube(images);

@@ -127,6 +127,29 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 序列化装饰器，被装饰属性将被序列化
+     */
+    function serialize(target: any, propertyKey: string): void;
+    /**
+     * 观察装饰器，观察被装饰属性的变化
+     *
+     * *对使用watch修饰的属性赋值比未使用的性能差距100倍左右*
+     * @param onChange 属性变化回调
+     */
+    function watch(onChange: string): (target: any, propertyKey: string) => void;
+}
+declare namespace feng3d {
+    /**
+     * 数据序列化
+     * @author feng 2017-03-11
+     */
+    class Serialization {
+        static serialize(object: any, data?: any): any;
+        static deserialize(data: any, object?: any): any;
+    }
+}
+declare namespace feng3d {
+    /**
      * 按顺序组织的项目的集合。提供基于索引的访问和处理方法。
      */
     interface IList<T> {
@@ -715,11 +738,11 @@ declare namespace feng3d {
         /**
          * 按标量（大小）缩放当前的 Vector3D 对象。
          */
-        scaleBy(s: number): void;
+        scaleBy(s: number): this;
         /**
          * 将 Vector3D 的成员设置为指定值
          */
-        setTo(x: number, y: number, z: number, w?: number): void;
+        setTo(x: number, y: number, z: number, w?: number): this;
         /**
          * 从另一个 Vector3D 对象的 x、y 和 z 元素的值中减去当前 Vector3D 对象的 x、y 和 z 元素的值。
          */
@@ -732,6 +755,10 @@ declare namespace feng3d {
          * 返回当前 Vector3D 对象4个元素的数组
          */
         toArray(num?: 3 | 4): number[];
+        /**
+         * 比较矩阵是否相等
+         */
+        compare(matrix3D: Vector3D, num?: 3 | 4, precision?: number): boolean;
     }
 }
 declare namespace feng3d {
@@ -739,7 +766,7 @@ declare namespace feng3d {
      * Matrix3D 类表示一个转换矩阵，该矩阵确定三维 (3D) 显示对象的位置和方向。
      * 该矩阵可以执行转换功能，包括平移（沿 x、y 和 z 轴重新定位）、旋转和缩放（调整大小）。
      * Matrix3D 类还可以执行透视投影，这会将 3D 坐标空间中的点映射到二维 (2D) 视图。
-     *
+     * ```
      *  ---            方向              平移 ---
      *  |   scaleX      0         0       tx    |
      *  |     0       scaleY      0       ty    |
@@ -753,6 +780,7 @@ declare namespace feng3d {
      *  |     2         6        10       14    |
      *  |     3         7        11       15    |
      *  ---  x轴        y轴      z轴          ---
+     * ```
      */
     class Matrix3D {
         /**
@@ -804,23 +832,44 @@ declare namespace feng3d {
          * 创建旋转矩阵
          * @param   degrees         角度
          * @param   axis            旋转轴
-         * @param   pivotPoint      旋转中心点
          */
-        static createRotationMatrix3D(degrees: number, axis: Vector3D): Matrix3D;
+        static fromAxisRotate(degrees: number, axis: Vector3D): Matrix3D;
+        /**
+         * 创建旋转矩阵
+         * @param   rx      用于沿 x 轴旋转对象的角度。
+         * @param   ry      用于沿 y 轴旋转对象的角度。
+         * @param   rz      用于沿 z 轴旋转对象的角度。
+         */
+        static fromRotation(rx: number, ry: number, rz: number): Matrix3D;
+        /**
+         * 创建旋转矩阵
+         * @param   degrees         角度
+         */
+        static fromRotation(euler: Vector3D): Matrix3D;
         /**
          * 创建缩放矩阵
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
          * @param   yScale      用于沿 y 轴缩放对象的乘数。
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
-        static createScaleMatrix3D(xScale: number, yScale: number, zScale: number): Matrix3D;
+        static fromScale(xScale: number, yScale: number, zScale: number): Matrix3D;
+        /**
+         * 创建缩放矩阵
+         * @param   scale       缩放值
+         */
+        static fromScale(scale: Vector3D): Matrix3D;
         /**
          * 创建位移矩阵
          * @param   x   沿 x 轴的增量平移。
          * @param   y   沿 y 轴的增量平移。
          * @param   z   沿 z 轴的增量平移。
          */
-        static createTranslationMatrix3D(x: number, y: number, z: number): Matrix3D;
+        static fromPosition(x: number, y: number, z: number): Matrix3D;
+        /**
+         * 创建位移矩阵
+         * @param   position        位置
+         */
+        static fromPosition(position: Vector3D): Matrix3D;
         /**
          * 通过将另一个 Matrix3D 对象与当前 Matrix3D 对象相乘来后置一个矩阵。
          */
@@ -976,6 +1025,7 @@ declare namespace feng3d {
          * @param   vout    一个由多个数字组成的矢量，其中每三个数字构成一个已转换的 3D 坐标 (x,y,z)。
          */
         transformVectors(vin: number[], vout: number[]): void;
+        transformRotation(vin: Vector3D, vout?: Vector3D): Vector3D;
         /**
          * 将当前 Matrix3D 对象转换为一个矩阵，并将互换其中的行和列。
          */

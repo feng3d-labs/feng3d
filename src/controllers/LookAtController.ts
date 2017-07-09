@@ -61,7 +61,7 @@ namespace feng3d
                 }
                 else if (this._lookAtObject)
                 {
-                    this._lookAtObject.transform.getPosition(this._pos);
+                    this._pos = this._lookAtObject.transform.position;
                     this._targetObject.transform.lookAt(this._pos, this._upAxis);
                 }
             }

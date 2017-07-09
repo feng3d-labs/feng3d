@@ -4,17 +4,16 @@
         "noImplicitAny": false,
         "sourceMap": true,
         "declaration": true,
+        "experimentalDecorators":true,
         "outFile": "out/feng3d.js"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         "libs/event.d.ts",
         "libs/common.d.ts",
         "libs/render.d.ts",
-        //数据持久化
-        "src/serialization/Serialization.ts",
         //
         "src/render/data/RenderData.ts",
-		"src/render/data/UniformRenderData.ts",
+        "src/render/data/UniformRenderData.ts",
         "src/render/data/RenderDataHolder.ts",
         "src/render/data/Object3DRenderAtomic.ts",
         "src/render/RenderContext.ts",
@@ -145,8 +144,6 @@
         "src/animators/skeleton/SkeletonClipState.ts",
         "src/animators/skeleton/SkeletonAnimationSet.ts",
         "src/animators/skeleton/SkeletonAnimator.ts",
-        //
-        "src/animators/transform/TransformAnimator.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MtlParser.ts",

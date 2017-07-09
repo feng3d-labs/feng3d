@@ -1,5 +1,9 @@
 namespace feng3d
 {
+    /**
+     * 着色器库，由shader.ts初始化
+     */
+    export var shaderFileMap: { [filePath: string]: string };
 
     /**
      * 渲染代码库

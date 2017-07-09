@@ -25,7 +25,7 @@ namespace feng3d
         constructor()
         {
             super();
-            this.setShader("texture");
+            this.shaderName = "texture";
             //
             this.createUniformData("s_texture", () => this.texture);
         }

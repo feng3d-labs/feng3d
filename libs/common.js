@@ -333,6 +333,89 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 序列化装饰器，被装饰属性将被序列化
+     */
+    function serialize(target, propertyKey) {
+        if (!target.__serializableMembers) {
+            target.__serializableMembers = [];
+        }
+        target.__serializableMembers.push(propertyKey);
+    }
+    feng3d.serialize = serialize;
+    /**
+     * 观察装饰器，观察被装饰属性的变化
+     *
+     * *对使用watch修饰的属性赋值比未使用的性能差距100倍左右*
+     * @param onChange 属性变化回调
+     */
+    function watch(onChange) {
+        return function (target, propertyKey) {
+            console.assert(target[onChange], "\u5BF9\u8C61 " + target + " \u4E2D\u672A\u627E\u5230\u65B9\u6CD5 " + onChange);
+            var key = "_" + propertyKey;
+            Object.defineProperty(target, propertyKey, {
+                get: function () {
+                    return this[key];
+                },
+                set: function (value) {
+                    if (this[key] === value) {
+                        return;
+                    }
+                    var oldValue = this[key];
+                    var newValue = this[key] = value;
+                    target[onChange].apply(this, [propertyKey, oldValue, newValue]);
+                },
+                enumerable: true,
+                configurable: true
+            });
+        };
+    }
+    feng3d.watch = watch;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 数据序列化
+     * @author feng 2017-03-11
+     */
+    var Serialization = (function () {
+        function Serialization() {
+        }
+        Serialization.serialize = function (object, data) {
+            if (!data) {
+                data = {};
+            }
+            var serializableMembers = object.__serializableMembers;
+            if (serializableMembers) {
+                var property = void 0;
+                for (var i = 0, n = serializableMembers.length; i < n; i++) {
+                    property = serializableMembers[i];
+                    if (object.hasOwnProperty(property))
+                        data[property] = object[property];
+                }
+            }
+            return data;
+        };
+        Serialization.deserialize = function (data, object) {
+            if (!object) {
+                object = {};
+            }
+            var serializableMembers = data.__serializableMembers;
+            if (serializableMembers) {
+                var property = void 0;
+                for (var i = 0, n = serializableMembers.length; i < n; i++) {
+                    property = serializableMembers[i];
+                    object[property] = data[property];
+                }
+            }
+            return object;
+        };
+        return Serialization;
+    }());
+    feng3d.Serialization = Serialization;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var ArrayList = (function () {
         function ArrayList(source) {
             if (source === void 0) { source = null; }
@@ -1214,6 +1297,7 @@ var feng3d;
             this.x *= s;
             this.y *= s;
             this.z *= s;
+            return this;
         };
         /**
          * 将 Vector3D 的成员设置为指定值
@@ -1224,6 +1308,7 @@ var feng3d;
             this.y = y;
             this.z = z;
             this.w = w;
+            return this;
         };
         /**
          * 从另一个 Vector3D 对象的 x、y 和 z 元素的值中减去当前 Vector3D 对象的 x、y 和 z 元素的值。
@@ -1249,6 +1334,22 @@ var feng3d;
                 return [this.x, this.y, this.z, this.w];
             }
         };
+        /**
+         * 比较矩阵是否相等
+         */
+        Vector3D.prototype.compare = function (matrix3D, num, precision) {
+            if (num === void 0) { num = 3; }
+            if (precision === void 0) { precision = 0.0001; }
+            if (Math.abs(this.x - matrix3D.x) > precision)
+                return false;
+            if (Math.abs(this.y - matrix3D.y) > precision)
+                return false;
+            if (Math.abs(this.z - matrix3D.z) > precision)
+                return false;
+            if (num == 4 && Math.abs(this.w - matrix3D.z) > precision)
+                return false;
+            return true;
+        };
         return Vector3D;
     }());
     /**
@@ -1271,7 +1372,7 @@ var feng3d;
      * Matrix3D 类表示一个转换矩阵，该矩阵确定三维 (3D) 显示对象的位置和方向。
      * 该矩阵可以执行转换功能，包括平移（沿 x、y 和 z 轴重新定位）、旋转和缩放（调整大小）。
      * Matrix3D 类还可以执行透视投影，这会将 3D 坐标空间中的点映射到二维 (2D) 视图。
-     *
+     * ```
      *  ---            方向              平移 ---
      *  |   scaleX      0         0       tx    |
      *  |     0       scaleY      0       ty    |
@@ -1285,6 +1386,7 @@ var feng3d;
      *  |     2         6        10       14    |
      *  |     3         7        11       15    |
      *  ---  x轴        y轴      z轴          ---
+     * ```
      */
     var Matrix3D = (function () {
         /**
@@ -1421,9 +1523,8 @@ var feng3d;
          * 创建旋转矩阵
          * @param   degrees         角度
          * @param   axis            旋转轴
-         * @param   pivotPoint      旋转中心点
          */
-        Matrix3D.createRotationMatrix3D = function (degrees, axis) {
+        Matrix3D.fromAxisRotate = function (degrees, axis) {
             var n = axis.clone();
             n.normalize();
             var q = degrees * Math.PI / 180;
@@ -1438,13 +1539,36 @@ var feng3d;
             ]);
             return rotationMat;
         };
-        /**
-         * 创建缩放矩阵
-         * @param   xScale      用于沿 x 轴缩放对象的乘数。
-         * @param   yScale      用于沿 y 轴缩放对象的乘数。
-         * @param   zScale      用于沿 z 轴缩放对象的乘数。
-         */
-        Matrix3D.createScaleMatrix3D = function (xScale, yScale, zScale) {
+        Matrix3D.fromRotation = function () {
+            var rx = 0, ry = 0, rz = 0;
+            if (arguments[0] instanceof Object) {
+                rx = arguments[0].x;
+                ry = arguments[0].y;
+                rz = arguments[0].z;
+            }
+            else {
+                rx = arguments[0];
+                ry = arguments[1];
+                rz = arguments[2];
+            }
+            var rotationMat = new Matrix3D();
+            rotationMat.appendRotation(rx, feng3d.Vector3D.X_AXIS);
+            rotationMat.appendRotation(ry, feng3d.Vector3D.Y_AXIS);
+            rotationMat.appendRotation(rz, feng3d.Vector3D.Z_AXIS);
+            return rotationMat;
+        };
+        Matrix3D.fromScale = function () {
+            var xScale = 1, yScale = 1, zScale = 1;
+            if (arguments[0] instanceof Object) {
+                xScale = arguments[0].x;
+                yScale = arguments[0].y;
+                zScale = arguments[0].z;
+            }
+            else {
+                xScale = arguments[0];
+                yScale = arguments[1];
+                zScale = arguments[2];
+            }
             var rotationMat = new Matrix3D([
                 xScale, 0.0000, 0.0000, 0,
                 0.0000, yScale, 0.0000, 0,
@@ -1453,13 +1577,18 @@ var feng3d;
             ]);
             return rotationMat;
         };
-        /**
-         * 创建位移矩阵
-         * @param   x   沿 x 轴的增量平移。
-         * @param   y   沿 y 轴的增量平移。
-         * @param   z   沿 z 轴的增量平移。
-         */
-        Matrix3D.createTranslationMatrix3D = function (x, y, z) {
+        Matrix3D.fromPosition = function () {
+            var x = 0, y = 0, z = 0;
+            if (arguments[0] instanceof Object) {
+                x = arguments[0].x;
+                y = arguments[0].y;
+                z = arguments[0].z;
+            }
+            else {
+                x = arguments[0];
+                y = arguments[1];
+                z = arguments[2];
+            }
             var rotationMat = new Matrix3D([
                 1, 0, 0, 0,
                 0, 1, 0, 0,
@@ -1507,8 +1636,7 @@ var feng3d;
          * @param   pivotPoint      旋转中心点
          */
         Matrix3D.prototype.appendRotation = function (degrees, axis, pivotPoint) {
-            if (pivotPoint === void 0) { pivotPoint = new feng3d.Vector3D(); }
-            var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
+            var rotationMat = Matrix3D.fromAxisRotate(degrees, axis);
             if (pivotPoint != null) {
                 this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
             }
@@ -1525,7 +1653,7 @@ var feng3d;
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
         Matrix3D.prototype.appendScale = function (xScale, yScale, zScale) {
-            var scaleMat = Matrix3D.createScaleMatrix3D(xScale, yScale, zScale);
+            var scaleMat = Matrix3D.fromScale(xScale, yScale, zScale);
             this.append(scaleMat);
             return this;
         };
@@ -1853,7 +1981,7 @@ var feng3d;
          */
         Matrix3D.prototype.prependRotation = function (degrees, axis, pivotPoint) {
             if (pivotPoint === void 0) { pivotPoint = new feng3d.Vector3D(); }
-            var rotationMat = Matrix3D.createRotationMatrix3D(degrees, axis);
+            var rotationMat = Matrix3D.fromAxisRotate(degrees, axis);
             this.prepend(rotationMat);
             return this;
         };
@@ -1864,7 +1992,7 @@ var feng3d;
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
         Matrix3D.prototype.prependScale = function (xScale, yScale, zScale) {
-            var scaleMat = Matrix3D.createScaleMatrix3D(xScale, yScale, zScale);
+            var scaleMat = Matrix3D.fromScale(xScale, yScale, zScale);
             this.prepend(scaleMat);
             return this;
         };
@@ -1875,7 +2003,7 @@ var feng3d;
          * @param   z   沿 z 轴的增量平移。
          */
         Matrix3D.prototype.prependTranslation = function (x, y, z) {
-            var translationMat = Matrix3D.createTranslationMatrix3D(x, y, z);
+            var translationMat = Matrix3D.fromPosition(x, y, z);
             this.prepend(translationMat);
             return this;
         };
@@ -1952,6 +2080,33 @@ var feng3d;
                 vout[i + 1] = vec.y;
                 vout[i + 2] = vec.z;
             }
+        };
+        Matrix3D.prototype.transformRotation = function (vin, vout) {
+            //转换旋转
+            var rotationMatrix3d = Matrix3D.fromRotation(vin);
+            rotationMatrix3d.append(this);
+            var newrotation = rotationMatrix3d.decompose()[1];
+            newrotation.scaleBy(180 / Math.PI);
+            var v = Math.round((newrotation.x - vin.x) / 180);
+            if (v % 2 != 0) {
+                newrotation.x += 180;
+                newrotation.y = 180 - newrotation.y;
+                newrotation.z += 180;
+            }
+            //
+            var toRound = function (a, b, c) {
+                if (c === void 0) { c = 360; }
+                return Math.round((b - a) / c) * c + a;
+            };
+            newrotation.x = toRound(newrotation.x, vin.x);
+            newrotation.y = toRound(newrotation.y, vin.y);
+            newrotation.z = toRound(newrotation.z, vin.z);
+            //
+            vout = vout || new feng3d.Vector3D();
+            vout.x = newrotation.x;
+            vout.y = newrotation.y;
+            vout.z = newrotation.z;
+            return vout;
         };
         /**
          * 将当前 Matrix3D 对象转换为一个矩阵，并将互换其中的行和列。

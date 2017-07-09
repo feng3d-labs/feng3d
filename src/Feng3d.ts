@@ -9,52 +9,26 @@ namespace feng3d
      * 是否开启调试(主要用于断言)
      */
     export var debuger = true;
+
     /**
-     * 数据持久化
+     * 心跳计时器单例
      */
-    export var serialization: Serialization;
-    /**
-     * 默认材质
-     */
-    export var defaultMaterial: StandardMaterial;
+    export var ticker = new SystemTicker();
+
     /**
      * 默认几何体
      */
-    export var defaultGeometry: Geometry;
-    /**
-     * 着色器库，由shader.ts初始化
-     */
-    export var shaderFileMap: { [filePath: string]: string };
+    export var defaultGeometry = new CubeGeometry();
 
     /**
-     * 初始化引擎
+     * 默认材质
      */
-    export function initEngine()
-    {
-        if (initFunctions)
-        {
-            for (var i = 0; i < initFunctions.length; i++)
-            {
-                var element = initFunctions[i];
-                element();
-            }
-            delete feng3d.initFunctions;
-        }
-        if (!isInit)
-        {
-            isInit = true;
-            console.log(`Feng3D version ${this.revision}`)
-            serialization = new Serialization();
-            ShortCut.init();
-            SystemTicker.init();
-            defaultMaterial = new StandardMaterial();
-            defaultGeometry = new CubeGeometry();
-        }
-    }
-    var isInit = false;
+    export var defaultMaterial = new StandardMaterial();
 
-    /**
-     * 初始化函数列表
+	/**
+     * 快捷键
      */
-    export var initFunctions: Function[];
+    export var shortcut = new ShortCut();
+
+    console.log(`Feng3D version ${revision}`)
 }

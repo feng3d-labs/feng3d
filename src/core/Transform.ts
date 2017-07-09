@@ -35,7 +35,7 @@ namespace feng3d
 
             this._bounds = this.getDefaultBoundingVolume();
             this._worldBounds = this.getDefaultBoundingVolume();
-            Event.on(this._bounds,"change", this.onBoundsChange, this);
+            Event.on(this._bounds, "change", this.onBoundsChange, this);
             //
             this.createUniformData("u_modelMatrix", () => this.localToWorldMatrix);
         }
@@ -45,16 +45,17 @@ namespace feng3d
 		 */
         public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
+            var camera = renderContext.camera;
             if (this.isBillboard)
             {
                 var parentInverseSceneTransform = (this.parent && this.parent.worldToLocalMatrix) || new Matrix3D();
-                var cameraPos = parentInverseSceneTransform.transformVector(renderContext.camera.sceneTransform.position);
+                var cameraPos = parentInverseSceneTransform.transformVector(camera.transform.localToWorldMatrix.position);
                 var yAxis = parentInverseSceneTransform.deltaTransformVector(Vector3D.Y_AXIS);
                 this.lookAt(cameraPos, yAxis);
             }
             if (this.holdSize)
             {
-                var depthScale = this.getDepthScale(renderContext);
+                var depthScale = this.getDepthScale(camera);
                 var vec = this.localToWorldMatrix.decompose();
                 vec[2].setTo(depthScale, depthScale, depthScale);
                 this.localToWorldMatrix.recompose(vec);
@@ -62,12 +63,12 @@ namespace feng3d
             super.updateRenderData(renderContext, renderData);
         }
 
-        private getDepthScale(renderContext: RenderContext)
+        private getDepthScale(camera: Camera)
         {
-            var cameraTranform = renderContext.camera.sceneTransform;
+            var cameraTranform = camera.transform.localToWorldMatrix;
             var distance = this.scenePosition.subtract(cameraTranform.position);
             var depth = distance.dotProduct(cameraTranform.forward);
-            var scale = renderContext.view3D.getScaleByDepth(depth);
+            var scale = camera.getScaleByDepth(depth);
             return scale;
         }
 

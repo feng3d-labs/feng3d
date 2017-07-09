@@ -19,7 +19,7 @@ var __extends = (this && this.__extends) || (function () {
 //http://regexr.com/
 var feng3d;
 (function (feng3d) {
-    feng3d.GL = WebGL2RenderingContext || WebGLRenderingContext;
+    feng3d.GL = WebGLRenderingContext;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

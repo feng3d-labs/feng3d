@@ -46,7 +46,10 @@ namespace feng3d
         /**
          * 鼠标在3D视图中的位置
          */
-        public mousePos = new Point();
+        public get mousePos()
+        {
+            return new Point(input.clientX - this._viewRect.x, input.clientY - this._viewRect.y);
+        }
 
         /**
          * 是否自动渲染
@@ -78,9 +81,6 @@ namespace feng3d
          */
         constructor(canvas: HTMLCanvasElement = null, scene: Scene3D = null, camera: Camera = null, autoRender = true)
         {
-            //初始化引擎
-            initEngine();
-
             if (!canvas)
             {
                 canvas = document.createElement("canvas");
@@ -108,8 +108,6 @@ namespace feng3d
             this.shadowRenderer = new ShadowRenderer();
 
             this._renderContext = new RenderContext();
-
-            Event.on(input, <any>inputType.MOUSE_MOVE, this.onMouseEvent, this);
         }
 
         /**
@@ -158,6 +156,7 @@ namespace feng3d
             var viewClientRect: ClientRect = this._canvas.getBoundingClientRect();
             var viewRect = this._viewRect = this._viewRect || new Rectangle();
             viewRect.setTo(viewClientRect.left, viewClientRect.top, viewClientRect.width, viewClientRect.height);
+            this.camera.viewRect = viewRect;
             this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
@@ -183,102 +182,6 @@ namespace feng3d
         public set camera(value)
         {
             this._camera = value;
-        }
-
-        /**
-         * 监听鼠标事件收集事件类型
-         */
-        private onMouseEvent(event: EventVO<any>)
-        {
-            var inputEvent: InputEvent = event.data;
-            this.mousePos.setTo(inputEvent.clientX - this._viewRect.x, inputEvent.clientY - this._viewRect.y);
-        }
-
-        /**
-		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
-		 */
-        public getMouseRay3D(): Ray3D
-        {
-            var pos = this.mousePos;
-            return this.getRay3D(pos.x, pos.y);
-        }
-
-        /**
-		 * 获取与坐标重叠的射线
-		 * @param x view3D上的X坐标
-		 * @param y view3D上的X坐标
-		 * @return
-		 */
-        public getRay3D(x: number, y: number, ray3D: Ray3D = null): Ray3D
-        {
-            //摄像机坐标
-            var rayPosition: Vector3D = this.unproject(x, y, 0, View3D.tempRayPosition);
-            //摄像机前方1处坐标
-            var rayDirection: Vector3D = this.unproject(x, y, 1, View3D.tempRayDirection);
-            //射线方向
-            rayDirection.x = rayDirection.x - rayPosition.x;
-            rayDirection.y = rayDirection.y - rayPosition.y;
-            rayDirection.z = rayDirection.z - rayPosition.z;
-            rayDirection.normalize();
-            //定义射线
-            ray3D = ray3D || new Ray3D(rayPosition, rayDirection);
-            return ray3D;
-        }
-
-		/**
-		 * 投影坐标（世界坐标转换为3D视图坐标）
-		 * @param point3d 世界坐标
-		 * @return 屏幕的绝对坐标
-		 */
-        public project(point3d: Vector3D): Vector3D
-        {
-            var v: Vector3D = this._camera.project(point3d);
-
-            v.x = (v.x + 1.0) * this._canvas.width / 2.0;
-            v.y = (v.y + 1.0) * this._canvas.height / 2.0;
-
-            return v;
-        }
-
-        /**
-		 * 屏幕坐标投影到场景坐标
-		 * @param nX 屏幕坐标X ([0-width])
-		 * @param nY 屏幕坐标Y ([0-height])
-		 * @param sZ 到屏幕的距离
-		 * @param v 场景坐标（输出）
-		 * @return 场景坐标
-		 */
-        public unproject(sX: number, sY: number, sZ: number, v: Vector3D = null): Vector3D
-        {
-            var gpuPos: Point = this.screenToGpuPosition(new Point(sX, sY));
-            return this._camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
-        }
-
-        /**
-		 * 屏幕坐标转GPU坐标
-		 * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
-		 * @return GPU坐标 (x:[-1,1],y:[-1-1])
-		 */
-        public screenToGpuPosition(screenPos: Point): Point
-        {
-            var gpuPos: Point = new Point();
-            gpuPos.x = (screenPos.x * 2 - this._canvas.width) / this._canvas.width;
-            gpuPos.y = (screenPos.y * 2 - this._canvas.height) / this._canvas.height;
-            return gpuPos;
-        }
-
-        /**
-         * 获取单位像素在指定深度映射的大小
-         * @param   depth   深度
-         */
-        public getScaleByDepth(depth: number)
-        {
-            var centerX = this._viewRect.width / 2;
-            var centerY = this._viewRect.height / 2;
-            var lt = this.unproject(centerX - 0.5, centerY - 0.5, depth);
-            var rb = this.unproject(centerX + 0.5, centerY + 0.5, depth);
-            var scale = lt.subtract(rb).length;
-            return scale;
         }
     }
 }

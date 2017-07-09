@@ -13,7 +13,7 @@ namespace feng3d
         }
         public set width(value)
         {
-            if(this._width == value)
+            if (this._width == value)
                 return;
             this._width = value;
             this.invalidateGeometry();
@@ -26,7 +26,7 @@ namespace feng3d
         }
         public set height(value)
         {
-            if(this._height == value)
+            if (this._height == value)
                 return;
             this._height = value;
             this.invalidateGeometry();
@@ -39,7 +39,7 @@ namespace feng3d
         }
         public set depth(value)
         {
-            if(this._depth == value)
+            if (this._depth == value)
                 return;
             this._depth = value;
             this.invalidateGeometry();
@@ -52,7 +52,7 @@ namespace feng3d
         }
         public set segmentsW(value)
         {
-            if(this._segmentsW == value)
+            if (this._segmentsW == value)
                 return;
             this._segmentsW = value;
             this.invalidateGeometry();
@@ -65,7 +65,7 @@ namespace feng3d
         }
         public set segmentsH(value)
         {
-            if(this._segmentsH == value)
+            if (this._segmentsH == value)
                 return;
             this._segmentsH = value;
             this.invalidateGeometry();
@@ -78,7 +78,7 @@ namespace feng3d
         }
         public set segmentsD(value)
         {
-            if(this._segmentsD == value)
+            if (this._segmentsD == value)
                 return;
             this._segmentsD = value;
             this.invalidateGeometry();
@@ -91,13 +91,13 @@ namespace feng3d
         }
         public set tile6(value)
         {
-            if(this._tile6 == value)
+            if (this._tile6 == value)
                 return;
             this._tile6 = value;
             this.invalidateGeometry();
         }
         private _tile6 = true;
-        
+
         /**
          * 创建立方几何体
          * @param   width           宽度，默认为100。

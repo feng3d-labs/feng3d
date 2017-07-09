@@ -18,6 +18,8 @@ namespace feng3d
             if (this._color == value)
                 return;
             this._color = value;
+            if (this._color)
+                this.enableBlend = this._color.a != 1;
         }
         private _color: Color;
 
@@ -29,7 +31,7 @@ namespace feng3d
         constructor(color: Color = null)
         {
             super();
-            this.setShader("color");
+            this.shaderName = "color";
             this.color = color || new Color();
             //
             this.createUniformData("u_diffuseInput", () => this.color);
