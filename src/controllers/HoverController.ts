@@ -2,24 +2,24 @@ namespace feng3d
 {
     export class HoverController extends LookAtController
     {
-        public _currentPanAngle: number = 0;
-        public _currentTiltAngle: number = 90;
-        private _panAngle: number = 0;
-        private _tiltAngle: number = 90;
-        private _distance: number = 1000;
-        private _minPanAngle: number = -Infinity;
-        private _maxPanAngle: number = Infinity;
-        private _minTiltAngle: number = -90;
-        private _maxTiltAngle: number = 90;
-        private _steps: number = 8;
-        private _yFactor: number = 2;
-        private _wrapPanAngle: boolean = false;
-        public get steps(): number
+        _currentPanAngle = 0;
+        _currentTiltAngle = 90;
+        private _panAngle = 0;
+        private _tiltAngle = 90;
+        private _distance = 1000;
+        private _minPanAngle = -Infinity;
+        private _maxPanAngle = Infinity;
+        private _minTiltAngle = -90;
+        private _maxTiltAngle = 90;
+        private _steps = 8;
+        private _yFactor = 2;
+        private _wrapPanAngle = false;
+        get steps(): number
         {
             return this._steps;
         }
 
-        public set steps(val: number)
+        set steps(val: number)
         {
             val = (val < 1) ? 1 : val;
             if (this._steps == val)
@@ -28,12 +28,12 @@ namespace feng3d
             this.update();
         }
 
-        public get panAngle(): number
+        get panAngle(): number
         {
             return this._panAngle;
         }
 
-        public set panAngle(val: number)
+        set panAngle(val: number)
         {
             val = Math.max(this._minPanAngle, Math.min(this._maxPanAngle, val));
             if (this._panAngle == val)
@@ -42,12 +42,12 @@ namespace feng3d
             this.update();
         }
 
-        public get tiltAngle(): number
+        get tiltAngle(): number
         {
             return this._tiltAngle;
         }
 
-        public set tiltAngle(val: number)
+        set tiltAngle(val: number)
         {
             val = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, val));
             if (this._tiltAngle == val)
@@ -56,12 +56,12 @@ namespace feng3d
             this.update();
         }
 
-        public get distance(): number
+        get distance(): number
         {
             return this._distance;
         }
 
-        public set distance(val: number)
+        set distance(val: number)
         {
             if (this._distance == val)
                 return;
@@ -69,12 +69,12 @@ namespace feng3d
             this.update();
         }
 
-        public get minPanAngle(): number
+        get minPanAngle(): number
         {
             return this._minPanAngle;
         }
 
-        public set minPanAngle(val: number)
+        set minPanAngle(val: number)
         {
             if (this._minPanAngle == val)
                 return;
@@ -82,12 +82,12 @@ namespace feng3d
             this.panAngle = Math.max(this._minPanAngle, Math.min(this._maxPanAngle, this._panAngle));
         }
 
-        public get maxPanAngle(): number
+        get maxPanAngle(): number
         {
             return this._maxPanAngle;
         }
 
-        public set maxPanAngle(val: number)
+        set maxPanAngle(val: number)
         {
             if (this._maxPanAngle == val)
                 return;
@@ -95,12 +95,12 @@ namespace feng3d
             this.panAngle = Math.max(this._minPanAngle, Math.min(this._maxPanAngle, this._panAngle));
         }
 
-        public get minTiltAngle(): number
+        get minTiltAngle(): number
         {
             return this._minTiltAngle;
         }
 
-        public set minTiltAngle(val: number)
+        set minTiltAngle(val: number)
         {
             if (this._minTiltAngle == val)
                 return;
@@ -108,12 +108,12 @@ namespace feng3d
             this.tiltAngle = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, this._tiltAngle));
         }
 
-        public get maxTiltAngle(): number
+        get maxTiltAngle(): number
         {
             return this._maxTiltAngle;
         }
 
-        public set maxTiltAngle(val: number)
+        set maxTiltAngle(val: number)
         {
             if (this._maxTiltAngle == val)
                 return;
@@ -121,12 +121,12 @@ namespace feng3d
             this.tiltAngle = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, this._tiltAngle));
         }
 
-        public get yFactor(): number
+        get yFactor(): number
         {
             return this._yFactor;
         }
 
-        public set yFactor(val: number)
+        set yFactor(val: number)
         {
             if (this._yFactor == val)
                 return;
@@ -134,12 +134,12 @@ namespace feng3d
             this.update();
         }
 
-        public get wrapPanAngle(): boolean
+        get wrapPanAngle(): boolean
         {
             return this._wrapPanAngle;
         }
 
-        public set wrapPanAngle(val: boolean)
+        set wrapPanAngle(val: boolean)
         {
             if (this._wrapPanAngle == val)
                 return;
@@ -148,7 +148,7 @@ namespace feng3d
         }
 
 
-        public constructor(targetObject: GameObject = null, lookAtObject: GameObject = null, panAngle: number = 0, tiltAngle: number = 90, distance: number = 1000, minTiltAngle: number = -90, maxTiltAngle: number = 90, minPanAngle: number = NaN, maxPanAngle: number = NaN, steps: number = 8, yFactor: number = 2, wrapPanAngle: boolean = false)
+        constructor(targetObject: GameObject = null, lookAtObject: GameObject = null, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
         {
             super(targetObject, lookAtObject);
             this.distance = distance;
@@ -165,7 +165,7 @@ namespace feng3d
             this._currentTiltAngle = this._tiltAngle;
         }
 
-        public update(interpolate: boolean = true)
+        update(interpolate = true)
         {
             if (this._tiltAngle != this._currentTiltAngle || this._panAngle != this._currentPanAngle)
             {

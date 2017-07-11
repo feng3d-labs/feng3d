@@ -9,11 +9,11 @@ namespace feng3d
         /** 
          * 颜色 
          */
-        public get color()
+        get color()
         {
             return this._color;
         }
-        public set color(value)
+        set color(value)
         {
             if (this._color == value)
                 return;

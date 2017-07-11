@@ -12,21 +12,21 @@ namespace feng3d
 		 */
 		@watch("invalidateMatrix")
 		@serialize
-		public near = 0.1;
+		near = 0.1;
 		
 		/**
 		 * 最远距离
 		 */
 		@watch("invalidateMatrix")
 		@serialize
-		public far: number = 10000;
+		far = 10000;
 
 		/**
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
 		@watch("invalidateMatrix")
 		@serialize
-		public aspectRatio: number = 1;
+		aspectRatio = 1;
 
 		//
 		protected _matrix: Matrix3D;
@@ -47,12 +47,12 @@ namespace feng3d
 		/**
 		 * Retrieves the corner points of the lens frustum.
 		 */
-		public get frustumCorners(): number[]
+		get frustumCorners(): number[]
 		{
 			return this._frustumCorners;
 		}
 
-		public set frustumCorners(frustumCorners: number[])
+		set frustumCorners(frustumCorners: number[])
 		{
 			this._frustumCorners = frustumCorners;
 		}
@@ -60,7 +60,7 @@ namespace feng3d
 		/**
 		 * 投影矩阵
 		 */
-		public get matrix(): Matrix3D
+		get matrix(): Matrix3D
 		{
 			if (!this._matrix)
 			{
@@ -69,7 +69,7 @@ namespace feng3d
 			return this._matrix;
 		}
 
-		public set matrix(value: Matrix3D)
+		set matrix(value: Matrix3D)
 		{
 			this._matrix = value;
 			Event.dispatch(this, <any>LensEvent.MATRIX_CHANGED, this);
@@ -82,7 +82,7 @@ namespace feng3d
 		 * @param v 屏幕坐标（输出）
 		 * @return 屏幕坐标
 		 */
-		public project(point3d: Vector3D, v: Vector3D = null): Vector3D
+		project(point3d: Vector3D, v: Vector3D = null): Vector3D
 		{
 			if (!v)
 				v = new Vector3D();
@@ -99,7 +99,7 @@ namespace feng3d
 		/**
 		 * 投影逆矩阵
 		 */
-		public get unprojectionMatrix(): Matrix3D
+		get unprojectionMatrix(): Matrix3D
 		{
 			if (!this._unprojection)
 			{
@@ -119,7 +119,7 @@ namespace feng3d
 		 * @param v 场景坐标（输出）
 		 * @return 场景坐标
 		 */
-		public abstract unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D;
+		abstract unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D;
 
 		/**
 		 * 投影矩阵失效

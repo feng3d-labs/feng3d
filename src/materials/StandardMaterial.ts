@@ -10,11 +10,11 @@ namespace feng3d
         /**
          * 漫反射函数
          */
-        public get diffuseMethod()
+        get diffuseMethod()
         {
             return this._diffuseMethod;
         }
-        public set diffuseMethod(value)
+        set diffuseMethod(value)
         {
             this._diffuseMethod = value;
             if (this._diffuseMethod)
@@ -25,11 +25,11 @@ namespace feng3d
         /**
          * 法线函数
          */
-        public get normalMethod()
+        get normalMethod()
         {
             return this._normalMethod;
         }
-        public set normalMethod(value)
+        set normalMethod(value)
         {
             this._normalMethod = value;
             if (this._normalMethod)
@@ -40,11 +40,11 @@ namespace feng3d
         /**
          * 镜面反射函数
          */
-        public get specularMethod()
+        get specularMethod()
         {
             return this._specularMethod;
         }
-        public set specularMethod(value)
+        set specularMethod(value)
         {
             this._specularMethod = value;
             if (this._specularMethod)
@@ -55,11 +55,11 @@ namespace feng3d
         /**
          * 环境反射函数
          */
-        public get ambientMethod()
+        get ambientMethod()
         {
             return this._ambientMethod;
         }
-        public set ambientMethod(value)
+        set ambientMethod(value)
         {
             this._ambientMethod = value;
             if (this._ambientMethod)
@@ -70,27 +70,27 @@ namespace feng3d
         // /**
         //  * 反射率
         //  */
-        // public reflectance: number = 1.0;
+        // reflectance = 1.0;
 
         // /**
         //  * 粗糙度
         //  */
-        // public roughness: number = 1.0;
+        // roughness = 1.0;
 
         // /**
         //  * 金属度
         //  */
-        // public metalic: number = 1.0;
+        // metalic = 1.0;
 
         /**
          * 是否开启混合
          */
-        public get enableBlend()
+        get enableBlend()
         {
             return this._enableBlend || this.diffuseMethod.color.a != 1.0;
         }
 
-        public set enableBlend(value: boolean)
+        set enableBlend(value: boolean)
         {
             this._enableBlend = value;
         }

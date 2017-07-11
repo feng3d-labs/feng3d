@@ -49,6 +49,7 @@ namespace feng3d
             this.invalidatePosition();
         }
 
+        @serialize
         get y(): number
         {
             return this._y;
@@ -62,6 +63,7 @@ namespace feng3d
             this.invalidatePosition();
         }
 
+        @serialize
         get z(): number
         {
             return this._z;
@@ -75,6 +77,7 @@ namespace feng3d
             this.invalidatePosition();
         }
 
+        @serialize
         get rx(): number
         {
             return this._rx;
@@ -88,6 +91,7 @@ namespace feng3d
             this.invalidateRotation();
         }
 
+        @serialize
         get ry(): number
         {
             return this._ry;
@@ -101,6 +105,7 @@ namespace feng3d
             this.invalidateRotation();
         }
 
+        @serialize
         get rz(): number
         {
             return this._rz;
@@ -114,6 +119,7 @@ namespace feng3d
             this.invalidateRotation();
         }
 
+        @serialize
         get sx(): number
         {
             return this._sx;
@@ -127,6 +133,7 @@ namespace feng3d
             this.invalidateScale();
         }
 
+        @serialize
         get sy(): number
         {
             return this._sy;
@@ -140,6 +147,7 @@ namespace feng3d
             this.invalidateScale();
         }
 
+        @serialize
         get sz(): number
         {
             return this._sz;
@@ -152,6 +160,18 @@ namespace feng3d
             this._sz = val;
             this.invalidateScale();
         }
+
+        /**
+         * 是否显示
+         */
+        @serialize
+        visible = true;
+
+        /**
+         * 自身以及子对象是否支持鼠标拾取
+         */
+        @serialize
+        mouseEnabled = true;
 
         /**
          * @private
@@ -177,6 +197,16 @@ namespace feng3d
             this.position = elements[0];
             this.rotation = elements[1].scaleBy(180 / Math.PI);
             this.scale = elements[2];
+        }
+
+        /**
+         * 旋转矩阵
+         */
+        get rotationMatrix()
+        {
+            if (!this._rotationMatrix3d)
+                this._rotationMatrix3d = Matrix3D.fromRotation(this._rx, this._ry, this._rz);
+            return this._rotationMatrix3d;
         }
 
         /**
@@ -269,7 +299,7 @@ namespace feng3d
         //------------------------------------------
         // Functions
         //------------------------------------------
-        constructor(gameObject: GameObject)
+        protected constructor(gameObject: GameObject)
         {
             super(gameObject);
         }
@@ -452,7 +482,10 @@ namespace feng3d
 
         invalidateTransform()
         {
+            if (!this._matrix3d)
+                return;
             this._matrix3d = null;
+            Event.dispatch(this, <any>Object3DEvent.TRANSFORM_CHANGED, this);
         }
 
         //------------------------------------------
@@ -476,20 +509,27 @@ namespace feng3d
         //------------------------------------------
         // Private Properties
         //------------------------------------------
-        private _smallestNumber = 0.0000000000000000000001;
-        private _x = 0;
-        private _y = 0;
-        private _z = 0;
-        private _rx = 0;
-        private _ry = 0;
-        private _rz = 0;
-        private _sx = 1;
-        private _sy = 1;
-        private _sz = 1;
-        private _position: Vector3D;
-        private _rotation: Vector3D;
-        private _scale: Vector3D;
-        private _matrix3d: Matrix3D;
+        protected _smallestNumber = 0.0000000000000000000001;
+        protected _x = 0;
+        protected _y = 0;
+        protected _z = 0;
+        protected _rx = 0;
+        protected _ry = 0;
+        protected _rz = 0;
+        protected _sx = 1;
+        protected _sy = 1;
+        protected _sz = 1;
+        protected _position: Vector3D;
+        protected _rotation: Vector3D;
+        protected _scale: Vector3D;
+        protected _matrix3d: Matrix3D;
+        protected _rotationMatrix3d: Matrix3D;
+        protected _children: Transform[] = [];
+        protected _scene: Scene3D;
+        protected _parent: Transform;
+        protected _localToWorldMatrix: Matrix3D;
+        protected _worldToLocalMatrix: Matrix3D;
+        protected _localToWorldRotationMatrix: Matrix3D;
 
         //------------------------------------------
         // Private Methods
@@ -499,13 +539,10 @@ namespace feng3d
             if (!this._rotation)
                 return;
             this._rotation = null;
-            this.invalidateTransform();
-            this.notifyRotationChanged();
-        }
-
-        private notifyRotationChanged()
-        {
+            this._rotationMatrix3d = null;
+            this._localToWorldRotationMatrix = null;
             Event.dispatch(this, <any>Object3DEvent.ROTATION_CHANGED, this);
+            this.invalidateTransform();
         }
 
         private invalidateScale()
@@ -513,13 +550,8 @@ namespace feng3d
             if (!this._scale)
                 return;
             this._scale = null;
-            this.invalidateTransform();
-            this.notifyScaleChanged();
-        }
-
-        private notifyScaleChanged()
-        {
             Event.dispatch(this, <any>Object3DEvent.SCALE_CHANGED, this);
+            this.invalidateTransform();
         }
 
         private invalidatePosition()
@@ -527,13 +559,8 @@ namespace feng3d
             if (!this._position)
                 return;
             this._position = null;
-            this.invalidateTransform();
-            this.notifyPositionChanged();
-        }
-
-        private notifyPositionChanged()
-        {
             Event.dispatch(this, <any>Object3DEvent.POSITION_CHANGED, this);
+            this.invalidateTransform();
         }
     }
 }

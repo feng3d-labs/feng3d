@@ -7,11 +7,11 @@ namespace feng3d
      */
     export class CylinderGeometry extends Geometry
     {
-        public get topRadius()
+        get topRadius()
         {
             return this._topRadius;
         }
-        public set topRadius(value)
+        set topRadius(value)
         {
             if(this._topRadius == value)
                 return;
@@ -20,11 +20,11 @@ namespace feng3d
         }
         private _topRadius = 50;
         
-        public get bottomRadius()
+        get bottomRadius()
         {
             return this._bottomRadius;
         }
-        public set bottomRadius(value)
+        set bottomRadius(value)
         {
             if(this._bottomRadius == value)
                 return;
@@ -33,11 +33,11 @@ namespace feng3d
         }
         private _bottomRadius = 50;
 
-        public get height()
+        get height()
         {
             return this._height;
         }
-        public set height(value)
+        set height(value)
         {
             if(this._height == value)
                 return;
@@ -46,11 +46,11 @@ namespace feng3d
         }
         private _height = 100;
 
-        public get segmentsW()
+        get segmentsW()
         {
             return this._segmentsW;
         }
-        public set segmentsW(value)
+        set segmentsW(value)
         {
             if(this._segmentsW == value)
                 return;
@@ -59,11 +59,11 @@ namespace feng3d
         }
         private _segmentsW = 16;
 
-        public get segmentsH()
+        get segmentsH()
         {
             return this._segmentsH;
         }
-        public set segmentsH(value)
+        set segmentsH(value)
         {
             if(this._segmentsH == value)
                 return;
@@ -72,11 +72,11 @@ namespace feng3d
         }
         private _segmentsH = 1;
 
-        public get topClosed()
+        get topClosed()
         {
             return this._topClosed;
         }
-        public set topClosed(value)
+        set topClosed(value)
         {
             if(this._topClosed == value)
                 return;
@@ -85,11 +85,11 @@ namespace feng3d
         }
         private _topClosed = true;
 
-        public get bottomClosed()
+        get bottomClosed()
         {
             return this._bottomClosed;
         }
-        public set bottomClosed(value)
+        set bottomClosed(value)
         {
             if(this._bottomClosed == value)
                 return;
@@ -98,11 +98,11 @@ namespace feng3d
         }
         private _bottomClosed = true;
 
-        public get surfaceClosed()
+        get surfaceClosed()
         {
             return this._surfaceClosed;
         }
-        public set surfaceClosed(value)
+        set surfaceClosed(value)
         {
             if(this._surfaceClosed == value)
                 return;
@@ -111,11 +111,11 @@ namespace feng3d
         }
         private _surfaceClosed = true;
 
-        public get yUp()
+        get yUp()
         {
             return this._yUp;
         }
-        public set yUp(value)
+        set yUp(value)
         {
             if(this._yUp == value)
                 return;
@@ -147,7 +147,7 @@ namespace feng3d
          */
         private getNumVertices()
         {
-            var numVertices: number = 0;
+            var numVertices = 0;
             if (this.surfaceClosed)
                 numVertices += (this.segmentsH + 1) * (this.segmentsW + 1);
             if (this.topClosed)
@@ -162,7 +162,7 @@ namespace feng3d
          */
         private getNumTriangles()
         {
-            var numTriangles: number = 0;
+            var numTriangles = 0;
             if (this.surfaceClosed)
                 numTriangles += this.segmentsH * this.segmentsW * 2;
             if (this.topClosed)
@@ -177,21 +177,21 @@ namespace feng3d
          */
         protected buildGeometry()
         {
-            var i: number, j: number, index: number = 0;
+            var i: number, j: number, index = 0;
             var x: number, y: number, z: number, radius: number, revolutionAngle: number;
             var dr: number, latNormElev: number, latNormBase: number;
 
             var comp1: number, comp2: number;
-            var startIndex: number = 0;
+            var startIndex = 0;
             var t1: number, t2: number;
 
-            var numVertices: number = this.getNumVertices();
+            var numVertices = this.getNumVertices();
 
             var vertexPositionData = new Float32Array(numVertices * 3);
             var vertexNormalData = new Float32Array(numVertices * 3);
             var vertexTangentData = new Float32Array(numVertices * 3);
 
-            var revolutionAngleDelta: number = 2 * Math.PI / this.segmentsW;
+            var revolutionAngleDelta = 2 * Math.PI / this.segmentsW;
 
             // 顶部
             if (this.topClosed && this.topRadius > 0)
@@ -398,8 +398,8 @@ namespace feng3d
         private buildIndices()
         {
 
-            var i: number, j: number, index: number = 0;
-            var numTriangles: number = this.getNumTriangles();
+            var i: number, j: number, index = 0;
+            var numTriangles = this.getNumTriangles();
 
             var indices = new Uint16Array(numTriangles * 3);
             var numIndices = 0;
@@ -467,11 +467,11 @@ namespace feng3d
         {
             var i: number, j: number;
             var x: number, y: number, revolutionAngle: number;
-            var numVertices: number = this.getNumVertices()
+            var numVertices = this.getNumVertices()
 
             var data = new Float32Array(numVertices * 2);
-            var revolutionAngleDelta: number = 2 * Math.PI / this.segmentsW;
-            var index: number = 0;
+            var revolutionAngleDelta = 2 * Math.PI / this.segmentsW;
+            var index = 0;
 
             // 顶部
             if (this.topClosed)

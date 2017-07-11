@@ -7,7 +7,7 @@ namespace feng3d
      */
     export class Light extends Component
     {
-        public static get lights()
+        static get lights()
         {
             return this._lights;
         }
@@ -16,25 +16,25 @@ namespace feng3d
         /**
          * 灯光类型
          */
-        public lightType: LightType;
+        lightType: LightType;
 
         /**
          * 颜色
          */
-        public color = new Color();
+        color = new Color();
 
         /**
          * 光照强度
          */
-        public intensity: number = 1;
+        intensity = 1;
 
         /**
          * 是否生成阴影（未实现）
          */
-        public castsShadows = false;
+        castsShadows = false;
 
         private _shadowMap: Texture2D = new Texture2D();
-        public get shadowMap()
+        get shadowMap()
         {
             return this._shadowMap;
         }

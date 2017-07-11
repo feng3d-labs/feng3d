@@ -7,14 +7,14 @@ namespace feng3d
     export class Skeleton
     {
         /** 骨骼关节数据列表 */
-        public joints: SkeletonJoint[];
+        joints: SkeletonJoint[];
 
         constructor()
         {
             this.joints = [];
         }
 
-        public get numJoints(): number
+        get numJoints(): number
         {
             return this.joints.length;
         }

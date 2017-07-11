@@ -16,7 +16,7 @@ namespace feng3d
          * 加载资源
          * @param url   路径
          */
-        public load(url: string, material: Material, completed: (object3D: GameObject) => void = null)
+        load(url: string, material: Material, completed: (object3D: GameObject) => void = null)
         {
             this._completed = completed;
             this._url = url;

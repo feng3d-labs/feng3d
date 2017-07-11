@@ -9,15 +9,15 @@ namespace feng3d
         /**
          * Returns the instantiated Mesh assigned to the mesh filter.
          */
-        public get mesh()
+        get mesh()
         {
             return this._mesh || defaultGeometry;
         }
-        public set mesh(value)
+        set mesh(value)
         {
             if (this._mesh == value)
                 return;
-            if (this._mesh)
+            if (this.mesh)
             {
                 this.removeRenderDataHolder(this.mesh);
             }

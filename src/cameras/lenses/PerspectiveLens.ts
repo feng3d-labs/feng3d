@@ -12,17 +12,17 @@ namespace feng3d
 		 */
         @watch("fieldOfViewChange")
         @serialize
-        public fieldOfView: number;
+        fieldOfView: number;
 
 		/**
 		 * 坐标系类型
 		 */
         @watch("coordinateSystemChange")
         @serialize
-        public coordinateSystem: number;
+        coordinateSystem: number;
 
         //
-        public _focalLength: number;
+        _focalLength: number;
         private _yMax: number;
         private _xMax: number;
 
@@ -31,7 +31,7 @@ namespace feng3d
 		 * @param fieldOfView 视野
 		 * @param coordinateSystem 坐标系统类型
 		 */
-        constructor(fieldOfView: number = 60, coordinateSystem: number = CoordinateSystem.LEFT_HANDED)
+        constructor(fieldOfView = 60, coordinateSystem = CoordinateSystem.LEFT_HANDED)
         {
             super();
 
@@ -53,14 +53,14 @@ namespace feng3d
 		/**
 		 * 焦距
 		 */
-        public get focalLength(): number
+        get focalLength(): number
         {
             if(!this._focalLength)
                 this._focalLength = 1 / Math.tan(this.fieldOfView * Math.PI / 360);
             return this._focalLength;
         }
 
-        public set focalLength(value: number)
+        set focalLength(value: number)
         {
             if (value == this._focalLength)
                 return;
@@ -70,7 +70,7 @@ namespace feng3d
             this.fieldOfView = Math.atan( 1 / this._focalLength) * 360 / Math.PI;
         }
 
-        public unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D
+        unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D
         {
             if (!v)
                 v = new Vector3D();
@@ -120,10 +120,10 @@ namespace feng3d
             else
             {
                 // assume scissored frustum
-                var xWidth: number = this._xMax * (this._viewPort.width / this._scissorRect.width);
-                var yHgt: number = this._yMax * (this._viewPort.height / this._scissorRect.height);
-                var center: number = this._xMax * (this._scissorRect.x * 2 - this._viewPort.width) / this._scissorRect.width + this._xMax;
-                var middle: number = -this._yMax * (this._scissorRect.y * 2 - this._viewPort.height) / this._scissorRect.height - this._yMax;
+                var xWidth = this._xMax * (this._viewPort.width / this._scissorRect.width);
+                var yHgt = this._yMax * (this._viewPort.height / this._scissorRect.height);
+                var center = this._xMax * (this._scissorRect.x * 2 - this._viewPort.width) / this._scissorRect.width + this._xMax;
+                var middle = -this._yMax * (this._scissorRect.y * 2 - this._viewPort.height) / this._scissorRect.height - this._yMax;
 
                 left = center - xWidth;
                 right = center + xWidth;
@@ -144,8 +144,8 @@ namespace feng3d
             if (this.coordinateSystem == CoordinateSystem.RIGHT_HANDED)
                 raw[5] = -raw[5];
 
-            var yMaxFar: number = this.far * _focalLengthInv;
-            var xMaxFar: number = yMaxFar * this.aspectRatio;
+            var yMaxFar = this.far * _focalLengthInv;
+            var xMaxFar = yMaxFar * this.aspectRatio;
 
             this._frustumCorners[0] = this._frustumCorners[9] = left;
             this._frustumCorners[3] = this._frustumCorners[6] = right;

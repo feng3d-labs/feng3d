@@ -20,7 +20,7 @@ namespace feng3d
             this._camera = camera;
         }
 
-        public setRenderState(particleAnimator: ParticleAnimator)
+        setRenderState(particleAnimator: ParticleAnimator)
         {
             var gameObject = particleAnimator.gameObject;
             var comps: Vector3D[];
@@ -61,12 +61,12 @@ namespace feng3d
 		/**
 		 * 广告牌轴线
 		 */
-        public get billboardAxis(): Vector3D
+        get billboardAxis(): Vector3D
         {
             return this._billboardAxis;
         }
 
-        public set billboardAxis(value: Vector3D)
+        set billboardAxis(value: Vector3D)
         {
             this._billboardAxis = value ? value.clone() : null;
             if (this._billboardAxis)

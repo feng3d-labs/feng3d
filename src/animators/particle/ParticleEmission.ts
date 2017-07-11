@@ -9,14 +9,14 @@ namespace feng3d
         /**
          * 发射率，每秒发射粒子数量
          */
-        public rate = 10;
+        rate = 10;
 
         /**
          * 爆发，在time时刻额外喷射particles粒子
          */
-        public bursts: { time: number, particles: number }[] = [];
+        bursts: { time: number, particles: number }[] = [];
 
-        public isDirty = true;
+        isDirty = true;
 
         private _numParticles;
 
@@ -32,7 +32,7 @@ namespace feng3d
 		 * 创建粒子属性
          * @param particle                  粒子
 		 */
-        public generateParticle(particle: Particle)
+        generateParticle(particle: Particle)
         {
             if (this._numParticles != particle.total)
                 this.isDirty = true;

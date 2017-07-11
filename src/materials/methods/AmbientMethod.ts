@@ -9,11 +9,11 @@ namespace feng3d
         /**
          * 环境纹理
          */
-        public get ambientTexture()
+        get ambientTexture()
         {
             return this._ambientTexture;
         }
-        public set ambientTexture(value)
+        set ambientTexture(value)
         {
             this._ambientTexture = value;
         }
@@ -22,11 +22,11 @@ namespace feng3d
         /**
          * 颜色
          */
-        public get color()
+        get color()
         {
             return this._color;
         }
-        public set color(value)
+        set color(value)
         {
             this._color = value;
         }

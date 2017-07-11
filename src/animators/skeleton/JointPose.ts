@@ -11,20 +11,20 @@ namespace feng3d
         /** 父节点序号 */
         parentIndex: number;
         /** 旋转信息 */
-        public orientation: Quaternion = new Quaternion();
+        orientation: Quaternion = new Quaternion();
 
         /** 位移信息 */
-        public translation: Vector3D = new Vector3D();
+        translation: Vector3D = new Vector3D();
 
         private _matrix3D: Matrix3D;
         private _invertMatrix3D: Matrix3D;
 
-        public set matrix3D(value: Matrix3D)
+        set matrix3D(value: Matrix3D)
         {
             this._matrix3D = value;
         }
 
-        public get matrix3D()
+        get matrix3D()
         {
             if (!this._matrix3D)
             {
@@ -34,7 +34,7 @@ namespace feng3d
             return this._matrix3D;
         }
 
-        public get invertMatrix3D()
+        get invertMatrix3D()
         {
             if (!this._invertMatrix3D)
             {
@@ -44,7 +44,7 @@ namespace feng3d
             return this._invertMatrix3D;
         }
 
-        public invalid()
+        invalid()
         {
             this._matrix3D = null;
             this._invertMatrix3D = null;

@@ -9,11 +9,11 @@ namespace feng3d
         /**
          * 当Object3D的scene属性被设置是由Scene3D派发
          */
-        public static ADDED_TO_SCENE: string = "addedToScene";
+        static ADDED_TO_SCENE: string = "addedToScene";
 
         /**
          * 当Object3D的scene属性被清空时由Scene3D派发
          */
-        public static REMOVED_FROM_SCENE: string = "removedFromScene";
+        static REMOVED_FROM_SCENE: string = "removedFromScene";
     }
 }

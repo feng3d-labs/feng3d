@@ -29,7 +29,7 @@ namespace feng3d
 		 * @param entitys 实体列表
 		 * @return
 		 */
-        public getViewCollision(ray3D: Ray3D, entitys: GameObject[]): PickingCollisionVO
+        getViewCollision(ray3D: Ray3D, entitys: GameObject[]): PickingCollisionVO
         {
             this._entities = [];
 
@@ -61,7 +61,7 @@ namespace feng3d
             // Replaces collision data provided by bounds collider with more precise data.
             // ---------------------------------------------------------------------
 
-            var shortestCollisionDistance: number = Number.MAX_VALUE;
+            var shortestCollisionDistance = Number.MAX_VALUE;
             var bestCollisionVO: PickingCollisionVO;
             var pickingCollisionVO: PickingCollisionVO;
             var entity: GameObject;

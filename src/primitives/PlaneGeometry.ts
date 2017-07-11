@@ -7,11 +7,11 @@ namespace feng3d
      */
     export class PlaneGeometry extends Geometry
     {
-        public get width()
+        get width()
         {
             return this._width;
         }
-        public set width(value)
+        set width(value)
         {
             if(this._width == value)
                 return;
@@ -20,11 +20,11 @@ namespace feng3d
         }
         private _width = 100;
 
-        public get height()
+        get height()
         {
             return this._height;
         }
-        public set height(value)
+        set height(value)
         {
             if(this._height == value)
                 return;
@@ -33,11 +33,11 @@ namespace feng3d
         }
         private _height = 100;
 
-        public get segmentsW()
+        get segmentsW()
         {
             return this._segmentsW;
         }
-        public set segmentsW(value)
+        set segmentsW(value)
         {
             if(this._segmentsW == value)
                 return;
@@ -46,11 +46,11 @@ namespace feng3d
         }
         private _segmentsW = 1;
 
-        public get segmentsH()
+        get segmentsH()
         {
             return this._segmentsH;
         }
-        public set segmentsH(value)
+        set segmentsH(value)
         {
             if(this._segmentsH == value)
                 return;
@@ -59,11 +59,11 @@ namespace feng3d
         }
         private _segmentsH = 1;
 
-        public get yUp()
+        get yUp()
         {
             return this._yUp;
         }
-        public set yUp(value)
+        set yUp(value)
         {
             if(this._yUp == value)
                 return;
@@ -124,10 +124,10 @@ namespace feng3d
         {
             var vertexPositionData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
             var x: number, y: number;
-            var positionIndex: number = 0;
-            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
+            var positionIndex = 0;
+            for (var yi = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
+                for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
                     x = (xi / this.segmentsW - .5) * this.width;
                     y = (yi / this.segmentsH - .5) * this.height;
@@ -159,10 +159,10 @@ namespace feng3d
         {
             var vertexNormalData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
 
-            var normalIndex: number = 0;
-            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
+            var normalIndex = 0;
+            for (var yi = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
+                for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
 
                     //设置法线数据
@@ -191,10 +191,10 @@ namespace feng3d
         private buildTangent()
         {
             var vertexTangentData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
-            var tangentIndex: number = 0;
-            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
+            var tangentIndex = 0;
+            for (var yi = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
+                for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
 
                     vertexTangentData[tangentIndex++] = 1;
@@ -214,13 +214,13 @@ namespace feng3d
         private buildIndices()
         {
             var indices = new Uint16Array(this.segmentsH * this.segmentsW * 6);
-            var tw: number = this.segmentsW + 1;
+            var tw = this.segmentsW + 1;
 
             var numIndices = 0;
             var base: number;
-            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
+            for (var yi = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
+                for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
 
                     //生成索引数据
@@ -249,11 +249,11 @@ namespace feng3d
         private buildUVs()
         {
             var data = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 2);
-            var index: number = 0;
+            var index = 0;
 
-            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
+            for (var yi = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
+                for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
                     data[index++] = xi / this.segmentsW;
                     data[index++] = 1 - yi / this.segmentsH;

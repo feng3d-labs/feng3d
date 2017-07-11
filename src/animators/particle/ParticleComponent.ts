@@ -11,18 +11,18 @@ namespace feng3d
         /**
          * 优先级
          */
-        public priority: number = 0;
+        priority = 0;
 
         /**
 		 * 创建粒子属性
          * @param particle                  粒子
 		 */
-        public generateParticle(particle: Particle)
+        generateParticle(particle: Particle)
         {
 
         }
 
-        public setRenderState(particleAnimator: ParticleAnimator)
+        setRenderState(particleAnimator: ParticleAnimator)
         {
 
         }

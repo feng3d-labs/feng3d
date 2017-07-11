@@ -9,11 +9,11 @@ namespace feng3d
         /**
          * 漫反射纹理
          */
-        public get normalTexture()
+        get normalTexture()
         {
             return this._normalTexture;
         }
-        public set normalTexture(value)
+        set normalTexture(value)
         {
             this._normalTexture = value;
         }

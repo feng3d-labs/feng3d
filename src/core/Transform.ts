@@ -8,21 +8,21 @@ namespace feng3d
     export class Transform extends ObjectContainer3D
     {
         protected _bounds: BoundingVolumeBase;
-        protected _boundsInvalid: boolean = true;
+        protected _boundsInvalid = true;
 
-        public _pickingCollisionVO: PickingCollisionVO;
+        _pickingCollisionVO: PickingCollisionVO;
 
         private _worldBounds: BoundingVolumeBase;
-        private _worldBoundsInvalid: boolean = true;
+        private _worldBoundsInvalid = true;
 
         /**
          * 是否为公告牌（默认永远朝向摄像机），默认false。
          */
-        public isBillboard = false;
+        isBillboard = false;
         /**
          * 保持缩放尺寸
          */
-        public holdSize = NaN;
+        holdSize = NaN;
 
 		/**
 		 * 创建一个实体，该类为虚类
@@ -43,7 +43,7 @@ namespace feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
             var camera = renderContext.camera;
             if (this.isBillboard)
@@ -75,7 +75,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public get minX(): number
+        get minX(): number
         {
             if (this._boundsInvalid)
                 this.updateBounds();
@@ -86,7 +86,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public get minY(): number
+        get minY(): number
         {
             if (this._boundsInvalid)
                 this.updateBounds();
@@ -97,7 +97,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public get minZ(): number
+        get minZ(): number
         {
             if (this._boundsInvalid)
                 this.updateBounds();
@@ -108,7 +108,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public get maxX(): number
+        get maxX(): number
         {
             if (this._boundsInvalid)
                 this.updateBounds();
@@ -119,7 +119,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public get maxY(): number
+        get maxY(): number
         {
             if (this._boundsInvalid)
                 this.updateBounds();
@@ -130,7 +130,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public get maxZ(): number
+        get maxZ(): number
         {
             if (this._boundsInvalid)
                 this.updateBounds();
@@ -141,7 +141,7 @@ namespace feng3d
 		/**
 		 * 边界
 		 */
-        public get bounds(): BoundingVolumeBase
+        get bounds(): BoundingVolumeBase
         {
             if (this._boundsInvalid)
                 this.updateBounds();
@@ -178,7 +178,7 @@ namespace feng3d
 		/**
 		 * 获取碰撞数据
 		 */
-        public get pickingCollisionVO(): PickingCollisionVO
+        get pickingCollisionVO(): PickingCollisionVO
         {
             if (!this._pickingCollisionVO)
                 this._pickingCollisionVO = new PickingCollisionVO(this.gameObject);
@@ -191,7 +191,7 @@ namespace feng3d
           * @param ray3D
           * @return
           */
-        public isIntersectingRay(ray3D: Ray3D): boolean
+        isIntersectingRay(ray3D: Ray3D): boolean
         {
             var meshFilter = this.gameObject.getComponent(MeshFilter);
             if (!meshFilter || !meshFilter.mesh)
@@ -207,7 +207,7 @@ namespace feng3d
             this.worldToLocalMatrix.deltaTransformVector(ray3D.direction, localRay.direction);
 
             //检测射线与边界的碰撞
-            var rayEntryDistance: number = this.bounds.rayIntersection(localRay, this.pickingCollisionVO.localNormal);
+            var rayEntryDistance = this.bounds.rayIntersection(localRay, this.pickingCollisionVO.localNormal);
             if (rayEntryDistance < 0)
                 return false;
 
@@ -222,7 +222,7 @@ namespace feng3d
 		/**
 		 * 世界边界
 		 */
-        public get worldBounds(): BoundingVolumeBase
+        get worldBounds(): BoundingVolumeBase
         {
             if (this._worldBoundsInvalid)
                 this.updateWorldBounds();
@@ -264,7 +264,7 @@ namespace feng3d
 		 * @param findClosest 是否寻找最优碰撞
 		 * @return
 		 */
-        public collidesBefore(pickingCollider: AS3PickingCollider, shortestCollisionDistance: number, findClosest: boolean): boolean
+        collidesBefore(pickingCollider: AS3PickingCollider, shortestCollisionDistance: number, findClosest: boolean): boolean
         {
             pickingCollider.setLocalRay(this._pickingCollisionVO.localRay);
             this._pickingCollisionVO.renderable = null;

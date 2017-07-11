@@ -37,12 +37,12 @@ namespace feng3d
             this.init();
         }
 
-        public get targetObject(): GameObject
+        get targetObject(): GameObject
         {
             return this._targetObject;
         }
 
-        public set targetObject(value: GameObject)
+        set targetObject(value: GameObject)
         {
             if (this._targetObject != null)
             {
@@ -98,7 +98,7 @@ namespace feng3d
         /**
          * 手动应用更新到目标3D对象
          */
-        public update(interpolate: boolean = true): void
+        update(interpolate = true): void
         {
             if (this.targetObject == null)
                 return;

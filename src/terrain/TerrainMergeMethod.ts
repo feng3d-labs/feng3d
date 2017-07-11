@@ -7,31 +7,31 @@ namespace feng3d
      */
     export class TerrainMergeMethod extends RenderDataHolder
     {
-        public get splatMergeTexture()
+        get splatMergeTexture()
         {
             return this._splatMergeTexture;
         }
-        public set splatMergeTexture(value)
+        set splatMergeTexture(value)
         {
             this._splatMergeTexture = value;
         }
         private _splatMergeTexture: Texture2D;
 
-        public get blendTexture()
+        get blendTexture()
         {
             return this._blendTexture;
         }
-        public set blendTexture(value)
+        set blendTexture(value)
         {
             this._blendTexture = value;
         }
         private _blendTexture: Texture2D;
 
-        public get splatRepeats()
+        get splatRepeats()
         {
             return this._splatRepeats;
         }
-        public set splatRepeats(value)
+        set splatRepeats(value)
         {
             this._splatRepeats = value;
         }

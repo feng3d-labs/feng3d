@@ -27,7 +27,7 @@ namespace feng3d
         /**
          * 判断数据是否满足渲染需求
          */
-        public checkRenderData()
+        checkRenderData()
         {
             if (!this._pixels)
                 return false;

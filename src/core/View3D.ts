@@ -46,7 +46,7 @@ namespace feng3d
         /**
          * 鼠标在3D视图中的位置
          */
-        public get mousePos()
+        get mousePos()
         {
             return new Point(input.clientX - this._viewRect.x, input.clientY - this._viewRect.y);
         }
@@ -54,11 +54,11 @@ namespace feng3d
         /**
          * 是否自动渲染
          */
-        public get autoRender()
+        get autoRender()
         {
             return this._autoRender;
         }
-        public set autoRender(value)
+        set autoRender(value)
         {
             if (this._autoRender)
                 Event.off(ticker, <any>"enterFrame", this.render, this);
@@ -68,7 +68,7 @@ namespace feng3d
         }
         private _autoRender: boolean;
 
-        public get viewRect()
+        get viewRect()
         {
             return this._viewRect;
         }
@@ -122,12 +122,12 @@ namespace feng3d
         }
 
         /** 3d场景 */
-        public get scene(): Scene3D
+        get scene(): Scene3D
         {
             return this._scene;
         }
 
-        public set scene(value: Scene3D)
+        set scene(value: Scene3D)
         {
             this._scene = value;
         }
@@ -135,7 +135,7 @@ namespace feng3d
         /**
          * 视窗宽度
          */
-        public get width()
+        get width()
         {
             return this._canvas.width;
         }
@@ -143,7 +143,7 @@ namespace feng3d
         /**
          * 绘制场景
          */
-        public render()
+        render()
         {
             this._canvas.width = this._canvas.clientWidth;
             this._canvas.height = this._canvas.clientHeight;
@@ -174,12 +174,12 @@ namespace feng3d
         /**
          * 摄像机
          */
-        public get camera()
+        get camera()
         {
             return this._camera;
         }
 
-        public set camera(value)
+        set camera(value)
         {
             this._camera = value;
         }

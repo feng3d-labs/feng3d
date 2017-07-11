@@ -9,6 +9,6 @@ namespace feng3d
         /**
          * 脚本路径
          */
-        public script: string = "";
+        script: string = "";
     }
 }

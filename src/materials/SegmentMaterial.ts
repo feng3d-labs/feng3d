@@ -15,7 +15,7 @@ namespace feng3d
         /**
          * 线段颜色
          */
-        public readonly color = new Color();
+        readonly color = new Color();
 
         /**
          * 构建线段材质

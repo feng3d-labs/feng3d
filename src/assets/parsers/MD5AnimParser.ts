@@ -58,7 +58,7 @@ namespace feng3d
 
     export class MD5AnimParser
     {
-        public static parse(context: string)
+        static parse(context: string)
         {
             var md5AnimData = <MD5AnimData>{};
             var lines = context.split("\n").reverse();

@@ -8,28 +8,31 @@ namespace feng3d
         /**
          * 显示变化
          */
-        public static VISIBLITY_UPDATED: "visiblityUpdated" = "visiblityUpdated";
+        static VISIBLITY_UPDATED: "visiblityUpdated" = "visiblityUpdated";
         /**
          * 场景矩阵变化
          */
-        public static SCENETRANSFORM_CHANGED: string = "scenetransformChanged";
+        static SCENETRANSFORM_CHANGED: string = "scenetransformChanged";
         /**
          * 场景变化
          */
-        public static SCENE_CHANGED: string = "sceneChanged";
+        static SCENE_CHANGED: string = "sceneChanged";
         /**
          * 位置变化
          */
-        public static POSITION_CHANGED: string = "positionChanged";
+        static POSITION_CHANGED: string = "positionChanged";
         /**
          * 旋转变化
          */
-        public static ROTATION_CHANGED: string = "rotationChanged";
+        static ROTATION_CHANGED: string = "rotationChanged";
         /**
          * 缩放变化
          */
-        public static SCALE_CHANGED: string = "scaleChanged";
-
+        static SCALE_CHANGED: string = "scaleChanged";
+        /**
+         * 变换矩阵变化
+         */
+        static TRANSFORM_CHANGED: string = "transformChanged";
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
@@ -45,7 +48,7 @@ namespace feng3d
          */
         data: IObject3DEventData;
 
-        public object: Object3D;
+        object: Object3D;
     }
 
     /**

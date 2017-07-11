@@ -9,11 +9,11 @@ namespace feng3d
         /**
          * 漫反射纹理
          */
-        public get difuseTexture()
+        get difuseTexture()
         {
             return this._difuseTexture;
         }
-        public set difuseTexture(value)
+        set difuseTexture(value)
         {
             this._difuseTexture = value;
         }
@@ -22,12 +22,12 @@ namespace feng3d
         /**
          * 基本颜色
          */
-        public color = new Color(1, 1, 1, 1);
+        color = new Color(1, 1, 1, 1);
 
         /**
          * 透明阈值，透明度小于该值的像素被片段着色器丢弃
          */
-        public alphaThreshold = 0;
+        alphaThreshold = 0;
 
         /**
          * 构建

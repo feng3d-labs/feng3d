@@ -8,20 +8,20 @@ namespace feng3d
     export class SkeletonJoint
     {
         /** 父关节索引 （-1说明本身是总父节点，这个序号其实就是行号了，譬如上面”origin“节点的序号就是0，无父节点； "body"节点序号是1，父节点序号是0，也就是说父节点是”origin“）*/
-        public parentIndex: number = -1;
+        parentIndex = -1;
 
         /** 关节名字 */
-        public name: string;
+        name: string;
 
         /** 位移 */
-        public translation: Vector3D;
+        translation: Vector3D;
         /** 旋转 */
-        public orientation: Quaternion;
+        orientation: Quaternion;
 
         private _matrix3D: Matrix3D;
         private _invertMatrix3D: Matrix3D;
 
-        public get matrix3D()
+        get matrix3D()
         {
             if (!this._matrix3D)
             {
@@ -31,7 +31,7 @@ namespace feng3d
             return this._matrix3D;
         }
 
-        public get invertMatrix3D()
+        get invertMatrix3D()
         {
             if (!this._invertMatrix3D)
             {
@@ -41,12 +41,12 @@ namespace feng3d
             return this._invertMatrix3D;
         }
 
-        public get inverseBindPose()
+        get inverseBindPose()
         {
             return this.invertMatrix3D.rawData;
         }
 
-        public invalid()
+        invalid()
         {
             this._matrix3D = null;
             this._invertMatrix3D = null;

@@ -66,12 +66,12 @@ namespace feng3d
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         }
 
-        public active(gl: GL)
+        active(gl: GL)
         {
             gl.bindFramebuffer(GL.FRAMEBUFFER, this.framebuffer);
         }
 
-        public deactive(gl: GL)
+        deactive(gl: GL)
         {
             gl.bindFramebuffer(GL.FRAMEBUFFER, null);
         }

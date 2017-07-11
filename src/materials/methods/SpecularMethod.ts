@@ -9,11 +9,11 @@ namespace feng3d
         /**
          * 镜面反射光泽图
          */
-        public get specularTexture()
+        get specularTexture()
         {
             return this._specularTexture;
         }
-        public set specularTexture(value)
+        set specularTexture(value)
         {
             this._specularTexture = value;
         }
@@ -21,22 +21,22 @@ namespace feng3d
         /**
          * 镜面反射颜色
          */
-        public specularColor = new Color();
+        specularColor = new Color();
         /**
 		 * 镜面反射光反射强度
 		 */
-        public get specular()
+        get specular()
         {
             return this.specularColor.a;
         }
-        public set specular(value)
+        set specular(value)
         {
             this.specularColor.a = value;
         }
         /**
          * 高光系数
          */
-        public glossiness = 50;
+        glossiness = 50;
 
         /**
          * 构建

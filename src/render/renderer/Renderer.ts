@@ -13,8 +13,8 @@ namespace feng3d
          * 材质
          * Returns the first instantiated Material assigned to the renderer.
          */
-        public get material() { return this._material || defaultMaterial; }
-        public set material(value)
+        get material() { return this._material || defaultMaterial; }
+        set material(value)
         {
             if (this._material == value)
                 return;
@@ -27,11 +27,11 @@ namespace feng3d
         /**
          * Makes the rendered 3D object visible if enabled.
          */
-        public get enabled()
+        get enabled()
         {
             return this._enabled;
         }
-        public set enable(value)
+        set enable(value)
         {
             this._enabled = value;
         }
@@ -40,7 +40,7 @@ namespace feng3d
         /**
          * Is this renderer visible in any camera? (Read Only)
          */
-        public get isVisible()
+        get isVisible()
         {
             return this.gameObject.transform.visible;
         }
@@ -52,7 +52,7 @@ namespace feng3d
             Renderer.renderers.push(this);
         }
 
-        public drawRenderables(renderContext: RenderContext)
+        drawRenderables(renderContext: RenderContext)
         {
             var object3D = this.gameObject;
             //更新数据

@@ -18,18 +18,18 @@ namespace feng3d
         private _geometryInvalid = true;
         private _useFaceWeights = false;
 
-        private _scaleU: number = 1;
-        private _scaleV: number = 1;
+        private _scaleU = 1;
+        private _scaleV = 1;
 
         /**
          * 坐标数据
          */
-        public get positions()
+        get positions()
         {
             return this.getVAData1("a_position")
         }
 
-        public set positions(value)
+        set positions(value)
         {
             this.setVAData("a_position", value, 3);
         }
@@ -37,12 +37,12 @@ namespace feng3d
         /**
          * uv数据
          */
-        public get uvs()
+        get uvs()
         {
             return this.getVAData1("a_uv")
         }
 
-        public set uvs(value)
+        set uvs(value)
         {
             this.setVAData("a_uv", value, 2);
         }
@@ -50,11 +50,11 @@ namespace feng3d
         /**
          * 法线数据
          */
-        public get normals()
+        get normals()
         {
             return this.getVAData1("a_normal");
         }
-        public set normals(value)
+        set normals(value)
         {
             this.setVAData("a_normal", value, 3);
         }
@@ -62,11 +62,11 @@ namespace feng3d
         /**
          * 切线数据
          */
-        public get tangents()
+        get tangents()
         {
             return this.getVAData1("a_tangent");
         }
-        public set tangents(value)
+        set tangents(value)
         {
             this.setVAData("a_tangent", value, 3);
         }
@@ -82,8 +82,9 @@ namespace feng3d
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
+            console.log("Geometry.updateRenderData");
             this.updateGrometry();
             super.updateRenderData(renderContext, renderData);
         }
@@ -94,6 +95,7 @@ namespace feng3d
         protected invalidateGeometry()
         {
             this._geometryInvalid = true;
+            this.invalidate();
         }
 
         /**
@@ -119,7 +121,7 @@ namespace feng3d
         /**
          * 索引数据
          */
-        public get indices()
+        get indices()
         {
             return this._indexBuffer && this._indexBuffer.indices;
         }
@@ -127,7 +129,7 @@ namespace feng3d
 		/**
 		 * 更新顶点索引数据
 		 */
-        public setIndices(indices: Uint16Array)
+        setIndices(indices: Uint16Array)
         {
             this._indexBuffer = this.createIndexBuffer(indices);
             Event.dispatch(this, <any>GeometryEvent.CHANGED_INDEX_DATA);
@@ -136,7 +138,7 @@ namespace feng3d
         /**
          * 获取顶点数据
          */
-        public getIndexData()
+        getIndexData()
         {
             return this._indexBuffer;
         }
@@ -147,13 +149,14 @@ namespace feng3d
 		 * @param data          顶点属性数据
          * @param size          顶点数据尺寸
 		 */
-        public setVAData<K extends keyof AttributeRenderDataStuct>(vaId: K, data: Float32Array, size: number)
+        setVAData<K extends keyof AttributeRenderDataStuct>(vaId: K, data: Float32Array, size: number)
         {
             if (data)
             {
                 if (!this._attributes[vaId])
                     this._attributes[vaId] = this.createAttributeRenderData(vaId, data, size);
                 this._attributes[vaId].data = data;
+                this._attributes[vaId].updateGrometry = this.updateGrometry.bind(this);
             } else
             {
                 delete this._attributes[vaId];
@@ -166,7 +169,7 @@ namespace feng3d
 		 * @param vaId 数据类型编号
 		 * @return 顶点属性数据
 		 */
-        public getVAData(vaId: string)
+        getVAData(vaId: string)
         {
             this.updateGrometry();
             Event.dispatch(this, <any>GeometryEvent.GET_VA_DATA, vaId);
@@ -178,7 +181,7 @@ namespace feng3d
 		 * @param vaId 数据类型编号
 		 * @return 顶点属性数据
 		 */
-        public getVAData1(vaId: string)
+        getVAData1(vaId: string)
         {
             var attributeRenderData = this.getVAData(vaId);
             return attributeRenderData && attributeRenderData.data;
@@ -187,7 +190,7 @@ namespace feng3d
         /**
          * 顶点数量
          */
-        public get numVertex()
+        get numVertex()
         {
             var numVertex = 0;
             for (var attributeName in this._attributes)
@@ -204,7 +207,7 @@ namespace feng3d
          * @param geometry          被添加的几何体
          * @param transform         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
          */
-        public addGeometry(geometry: Geometry, transform: Matrix3D = null)
+        addGeometry(geometry: Geometry, transform: Matrix3D = null)
         {
             //更新几何体
             this.updateGrometry();
@@ -255,7 +258,7 @@ namespace feng3d
 		 * 应用变换矩阵
 		 * @param transform 变换矩阵
 		 */
-        public applyTransformation(transform: Matrix3D)
+        applyTransformation(transform: Matrix3D)
         {
             this.updateGrometry();
 
@@ -267,16 +270,16 @@ namespace feng3d
             var normals = normalRenderData.data;
             var tangents = tangentRenderData.data;
 
-            var posStride: number = positionRenderData.size;
-            var normalStride: number = normalRenderData.size;
-            var tangentStride: number = tangentRenderData.size;
+            var posStride = positionRenderData.size;
+            var normalStride = normalRenderData.size;
+            var tangentStride = tangentRenderData.size;
 
-            var len: number = vertices.length / posStride;
+            var len = vertices.length / posStride;
             var i: number, i1: number, i2: number;
             var vector: Vector3D = new Vector3D();
 
-            var bakeNormals: boolean = normals != null;
-            var bakeTangents: boolean = tangents != null;
+            var bakeNormals = normals != null;
+            var bakeTangents = tangents != null;
             var invTranspose: Matrix3D;
 
             if (bakeNormals || bakeTangents)
@@ -286,9 +289,9 @@ namespace feng3d
                 invTranspose.transpose();
             }
 
-            var vi0: number = 0;
-            var ni0: number = 0;
-            var ti0: number = 0;
+            var vi0 = 0;
+            var ni0 = 0;
+            var ti0 = 0;
 
             for (i = 0; i < len; ++i)
             {
@@ -346,7 +349,7 @@ namespace feng3d
         /**
          * 纹理U缩放，默认为1。
          */
-        public get scaleU(): number
+        get scaleU(): number
         {
             return this._scaleU;
         }
@@ -354,7 +357,7 @@ namespace feng3d
         /**
          * 纹理V缩放，默认为1。
          */
-        public get scaleV(): number
+        get scaleV(): number
         {
             return this._scaleV;
         }
@@ -364,17 +367,17 @@ namespace feng3d
          * @param scaleU 纹理U缩放，默认1。
          * @param scaleV 纹理V缩放，默认1。
          */
-        public scaleUV(scaleU: number = 1, scaleV: number = 1)
+        scaleUV(scaleU = 1, scaleV = 1)
         {
             this.updateGrometry();
 
             var uvVaData = this.getVAData("a_uv");
             var uvs = uvVaData.data;
-            var len: number = uvs.length;
-            var ratioU: number = scaleU / this._scaleU;
-            var ratioV: number = scaleV / this._scaleV;
+            var len = uvs.length;
+            var ratioU = scaleU / this._scaleU;
+            var ratioV = scaleV / this._scaleV;
 
-            for (var i: number = 0; i < len; i += 2)
+            for (var i = 0; i < len; i += 2)
             {
                 uvs[i] *= ratioU;
                 uvs[i + 1] *= ratioV;
@@ -389,7 +392,7 @@ namespace feng3d
         /**
          * 包围盒失效
          */
-        public invalidateBounds()
+        invalidateBounds()
         {
             Event.dispatch(this, <any>GeometryEvent.BOUNDS_INVALID)
         }
@@ -397,7 +400,7 @@ namespace feng3d
         /**
          * 创建顶点法线
          */
-        public createVertexNormals()
+        createVertexNormals()
         {
             //生成法线
             var normals = GeometryUtils.createVertexNormals(this.indices, this.positions, this._useFaceWeights);
@@ -407,7 +410,7 @@ namespace feng3d
         /**
          * 创建顶点切线
          */
-        public createVertexTangents()
+        createVertexTangents()
         {
             //生成切线
             var tangents = GeometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, this._useFaceWeights);
@@ -417,7 +420,7 @@ namespace feng3d
         /**
          * 克隆一个几何体
          */
-        public clone()
+        clone()
         {
             var geometry = new Geometry();
             geometry.cloneFrom(this);
@@ -427,7 +430,7 @@ namespace feng3d
         /**
          * 从一个几何体中克隆数据
          */
-        public cloneFrom(geometry: Geometry)
+        cloneFrom(geometry: Geometry)
         {
             geometry.updateGrometry();
             this._indexBuffer = geometry._indexBuffer.clone();

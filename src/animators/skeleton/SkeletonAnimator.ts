@@ -7,15 +7,15 @@ namespace feng3d
     export class SkeletonAnimator extends AnimatorBase
     {
         /** 动画节点列表 */
-        public animations: AnimationNodeBase[] = [];
+        animations: AnimationNodeBase[] = [];
 		/**
 		 * 骨骼
 		 */
-        public get skeleton()
+        get skeleton()
         {
             return this._skeleton;
         }
-        public set skeleton(value)
+        set skeleton(value)
         {
             if (this._skeleton == value)
                 return;
@@ -24,7 +24,7 @@ namespace feng3d
         private _skeleton: Skeleton;
 
         private _globalMatrices: Matrix3D[] = [];
-        private _globalPropertiesDirty: boolean = true;
+        private _globalPropertiesDirty = true;
 
         private _activeSkeletonState: SkeletonClipState;
 
@@ -32,7 +32,7 @@ namespace feng3d
 		 * 当前骨骼姿势的全局矩阵
 		 * @see #globalPose
 		 */
-        public get globalMatrices(): Matrix3D[]
+        get globalMatrices(): Matrix3D[]
         {
             if (this._globalPropertiesDirty)
                 this.updateGlobalProperties();
@@ -57,7 +57,7 @@ namespace feng3d
 		 * 播放动画
 		 * @param name 动作名称
 		 */
-        public play()
+        play()
         {
             if (!this._activeNode)
                 this._activeNode = this.animations[0];
@@ -102,7 +102,7 @@ namespace feng3d
             var joints: SkeletonJoint[] = this._skeleton.joints;
 
             //遍历每个关节
-            for (var i: number = 0; i < this._skeleton.numJoints; ++i)
+            for (var i = 0; i < this._skeleton.numJoints; ++i)
             {
                 var inverseMatrix3D: Matrix3D = joints[i].invertMatrix3D;
                 var matrix3D: Matrix3D = globalMatrix3Ds[i].clone();

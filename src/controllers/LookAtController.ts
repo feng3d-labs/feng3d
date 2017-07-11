@@ -18,32 +18,32 @@ namespace feng3d
                 this.lookAtPosition = new Vector3D();
         }
 
-        public get upAxis(): Vector3D
+        get upAxis(): Vector3D
         {
             return this._upAxis;
         }
 
-        public set upAxis(upAxis: Vector3D)
+        set upAxis(upAxis: Vector3D)
         {
             this._upAxis = upAxis;
         }
 
-        public get lookAtPosition(): Vector3D
+        get lookAtPosition(): Vector3D
         {
             return this._lookAtPosition;
         }
 
-        public set lookAtPosition(val: Vector3D)
+        set lookAtPosition(val: Vector3D)
         {
             this._lookAtPosition = val;
         }
 
-        public get lookAtObject()
+        get lookAtObject()
         {
             return this._lookAtObject;
         }
 
-        public set lookAtObject(value)
+        set lookAtObject(value)
         {
             if (this._lookAtObject == value)
                 return;
@@ -51,7 +51,7 @@ namespace feng3d
             this._lookAtObject = value;
         }
 
-        public update(interpolate: boolean = true): void
+        update(interpolate = true): void
         {
             if (this._targetObject)
             {

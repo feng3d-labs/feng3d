@@ -13,11 +13,11 @@ namespace feng3d
         /**
         * 渲染模式，默认RenderMode.TRIANGLES
         */
-        public get renderMode()
+        get renderMode()
         {
             return this._renderMode;
         }
-        public set renderMode(value)
+        set renderMode(value)
         {
             this._renderMode = value;
         }
@@ -41,13 +41,13 @@ namespace feng3d
         /**
          * 顶点渲染程序代码
          */
-        public get vertexCode()
+        get vertexCode()
         {
             if (!this._vertexCode && this._shaderName)
                 this._vertexCode = ShaderLib.getShaderCode(this._shaderName + ".vertex");
             return this._vertexCode;
         }
-        public set vertexCode(value)
+        set vertexCode(value)
         {
             if (this._vertexCode == value)
                 return;
@@ -58,13 +58,13 @@ namespace feng3d
         /**
          * 片段渲染程序代码
          */
-        public get fragmentCode()
+        get fragmentCode()
         {
             if (!this._fragmentCode && this._shaderName)
                 this._fragmentCode = ShaderLib.getShaderCode(this._shaderName + ".fragment")
             return this._fragmentCode;
         }
-        public set fragmentCode(value)
+        set fragmentCode(value)
         {
             if (this._fragmentCode == value)
                 return;
@@ -75,18 +75,18 @@ namespace feng3d
         /**
          * 是否渲染双面
          */
-        public bothSides = true;
+        bothSides = true;
 
         /**
          * 是否开启混合
          * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
          */
-        public get enableBlend()
+        get enableBlend()
         {
             return this._enableBlend;
         }
 
-        public set enableBlend(value: boolean)
+        set enableBlend(value: boolean)
         {
             this._enableBlend = value;
         }
@@ -94,12 +94,12 @@ namespace feng3d
         /**
          * 点绘制时点的尺寸
          */
-        public get pointSize()
+        get pointSize()
         {
             return this._pointSize;
         }
 
-        public set pointSize(value)
+        set pointSize(value)
         {
             this._pointSize = value;
         }
@@ -107,17 +107,17 @@ namespace feng3d
         /**
          * 混合方程，默认BlendEquation.FUNC_ADD
          */
-        public blendEquation = BlendEquation.FUNC_ADD;
+        blendEquation = BlendEquation.FUNC_ADD;
 
         /**
          * 源混合因子，默认BlendFactor.SRC_ALPHA
          */
-        public sfactor = BlendFactor.SRC_ALPHA;
+        sfactor = BlendFactor.SRC_ALPHA;
 
         /**
          * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
          */
-        public dfactor = BlendFactor.ONE_MINUS_SRC_ALPHA;
+        dfactor = BlendFactor.ONE_MINUS_SRC_ALPHA;
 
         private _methods: RenderDataHolder[] = [];
 
@@ -136,7 +136,7 @@ namespace feng3d
         /**
          * 添加方法
          */
-        public addMethod(method: RenderDataHolder)
+        addMethod(method: RenderDataHolder)
         {
             var index = this._methods.indexOf(method);
             if (index != -1)
@@ -148,7 +148,7 @@ namespace feng3d
         /**
          * 删除方法
          */
-        public removeMethod(method: RenderDataHolder)
+        removeMethod(method: RenderDataHolder)
         {
             var index = this._methods.indexOf(method);
             if (index != -1)

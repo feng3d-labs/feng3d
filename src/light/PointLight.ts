@@ -7,7 +7,7 @@ namespace feng3d
      */
     export class PointLight extends Light
     {
-        public static get pointLights()
+        static get pointLights()
         {
             return this._pointLights;
         }
@@ -16,12 +16,12 @@ namespace feng3d
         /**
          * 光照范围
          */
-        public range = 600;
+        range = 600;
 
         /**
          * 灯光位置
          */
-        public get position()
+        get position()
         {
             return this.gameObject.transform.scenePosition;
         }

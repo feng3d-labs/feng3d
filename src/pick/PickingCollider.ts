@@ -14,12 +14,12 @@ namespace feng3d
 		 * 创建一个AS碰撞检测器
 		 * @param findClosestCollision 是否查找最短距离碰撞
 		 */
-        constructor(findClosestCollision: boolean = false)
+        constructor(findClosestCollision = false)
         {
             this._findClosestCollision = findClosestCollision;
         }
 
-        public testSubMeshCollision(geometry: Geometry, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance = 0, bothSides: boolean = true): boolean
+        testSubMeshCollision(geometry: Geometry, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance = 0, bothSides = true): boolean
         {
             var indexData = geometry.getIndexData().indices;
             var vertexData = geometry.getVAData("a_position").data;
@@ -43,15 +43,15 @@ namespace feng3d
             var nl = 0, nDotV = 0, D = 0, disToPlane = 0;
             var Q1Q2 = 0, Q1Q1 = 0, Q2Q2 = 0, RQ1 = 0, RQ2 = 0;
 
-            var collisionTriangleIndex: number = -1;
+            var collisionTriangleIndex = -1;
 
-            var vertexStride: number = 3;
-            var vertexOffset: number = 0;
-            var uvStride: number = 2;
-            var numIndices: number = indexData.length;
+            var vertexStride = 3;
+            var vertexOffset = 0;
+            var uvStride = 2;
+            var numIndices = indexData.length;
 
             //遍历每个三角形 检测碰撞
-            for (var index: number = 0; index < numIndices; index += 3)
+            for (var index = 0; index < numIndices; index += 3)
             { // sweep all triangles
                 //三角形三个顶点索引
                 i0 = vertexOffset + indexData[index] * vertexStride;
@@ -158,16 +158,16 @@ namespace feng3d
 		 */
         protected getCollisionNormal(indexData: number[], vertexData: number[], triangleIndex = 0, normal: Vector3D = null): Vector3D
         {
-            var i0: number = indexData[triangleIndex] * 3;
-            var i1: number = indexData[triangleIndex + 1] * 3;
-            var i2: number = indexData[triangleIndex + 2] * 3;
+            var i0 = indexData[triangleIndex] * 3;
+            var i1 = indexData[triangleIndex + 1] * 3;
+            var i2 = indexData[triangleIndex + 2] * 3;
 
-            var side0x: number = vertexData[i1] - vertexData[i0];
-            var side0y: number = vertexData[i1 + 1] - vertexData[i0 + 1];
-            var side0z: number = vertexData[i1 + 2] - vertexData[i0 + 2];
-            var side1x: number = vertexData[i2] - vertexData[i0];
-            var side1y: number = vertexData[i2 + 1] - vertexData[i0 + 1];
-            var side1z: number = vertexData[i2 + 2] - vertexData[i0 + 2];
+            var side0x = vertexData[i1] - vertexData[i0];
+            var side0y = vertexData[i1 + 1] - vertexData[i0 + 1];
+            var side0z = vertexData[i1 + 2] - vertexData[i0 + 2];
+            var side1x = vertexData[i2] - vertexData[i0];
+            var side1y = vertexData[i2 + 1] - vertexData[i0 + 1];
+            var side1z = vertexData[i2 + 2] - vertexData[i0 + 2];
 
             if (!normal)
                 normal = new Vector3D();
@@ -194,15 +194,15 @@ namespace feng3d
 		 */
         protected getCollisionUV(indexData: Uint16Array, uvData: Float32Array, triangleIndex: number, v: number, w: number, u: number, uvOffset: number, uvStride: number, uv: Point = null): Point
         {
-            var uIndex: number = indexData[triangleIndex] * uvStride + uvOffset;
-            var uv0x: number = uvData[uIndex];
-            var uv0y: number = uvData[uIndex + 1];
+            var uIndex = indexData[triangleIndex] * uvStride + uvOffset;
+            var uv0x = uvData[uIndex];
+            var uv0y = uvData[uIndex + 1];
             uIndex = indexData[triangleIndex + 1] * uvStride + uvOffset;
-            var uv1x: number = uvData[uIndex];
-            var uv1y: number = uvData[uIndex + 1];
+            var uv1x = uvData[uIndex];
+            var uv1y = uvData[uIndex + 1];
             uIndex = indexData[triangleIndex + 2] * uvStride + uvOffset;
-            var uv2x: number = uvData[uIndex];
-            var uv2y: number = uvData[uIndex + 1];
+            var uv2x = uvData[uIndex];
+            var uv2y = uvData[uIndex + 1];
             if (!uv)
                 uv = new Point();
             uv.x = u * uv0x + v * uv1x + w * uv2x;
@@ -213,7 +213,7 @@ namespace feng3d
 		/**
 		 * 设置碰撞射线
 		 */
-        public setLocalRay(ray3D: Ray3D)
+        setLocalRay(ray3D: Ray3D)
         {
             this.ray3D = ray3D;
         }

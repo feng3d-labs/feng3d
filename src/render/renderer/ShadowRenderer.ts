@@ -16,7 +16,7 @@ namespace feng3d
         /**
 		 * 渲染
 		 */
-        public draw(renderContext: RenderContext)
+        draw(renderContext: RenderContext)
         {
             var gl = renderContext.gl;
 

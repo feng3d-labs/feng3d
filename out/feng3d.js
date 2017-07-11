@@ -531,12 +531,12 @@ var feng3d;
     /**
      * Base class for all objects feng3d can reference.
      *
-     * Any public variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
+     * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
      */
     var Feng3dObject = (function (_super) {
         __extends(Feng3dObject, _super);
         //------------------------------------------
-        // Public Functions
+        // Functions
         //------------------------------------------
         function Feng3dObject() {
             var _this = _super.call(this) || this;
@@ -645,7 +645,7 @@ var feng3d;
     var Component = (function (_super) {
         __extends(Component, _super);
         //------------------------------------------
-        // Public Functions
+        // Functions
         //------------------------------------------
         /**
          * 创建一个组件容器
@@ -1203,7 +1203,7 @@ var feng3d;
     var Object3D = (function (_super) {
         __extends(Object3D, _super);
         //------------------------------------------
-        // Public Functions
+        // Functions
         //------------------------------------------
         function Object3D(gameObject) {
             var _this = _super.call(this, gameObject) || this;
@@ -1678,7 +1678,7 @@ var feng3d;
     var ObjectContainer3D = (function (_super) {
         __extends(ObjectContainer3D, _super);
         //------------------------------------------
-        // Public Functions
+        // Functions
         //------------------------------------------
         function ObjectContainer3D(gameObject) {
             var _this = _super.call(this, gameObject) || this;
@@ -2370,7 +2370,7 @@ var feng3d;
     var GameObject = (function (_super) {
         __extends(GameObject, _super);
         //------------------------------------------
-        // Public Functions
+        // Functions
         //------------------------------------------
         /**
          * 构建3D对象
@@ -7226,15 +7226,15 @@ var feng3d;
             // /**
             //  * 反射率
             //  */
-            // public reflectance: number = 1.0;
+            // reflectance = 1.0;
             // /**
             //  * 粗糙度
             //  */
-            // public roughness: number = 1.0;
+            // roughness = 1.0;
             // /**
             //  * 金属度
             //  */
-            // public metalic: number = 1.0;
+            // metalic = 1.0;
             /**
              * 是否开启混合
              */

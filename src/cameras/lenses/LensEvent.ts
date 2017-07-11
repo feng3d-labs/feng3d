@@ -6,6 +6,6 @@ namespace feng3d
 	 */
     export class LensEvent
     {
-        public static MATRIX_CHANGED: string = "matrixChanged";
+        static MATRIX_CHANGED: string = "matrixChanged";
     }
 }

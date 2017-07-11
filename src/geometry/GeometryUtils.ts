@@ -2,19 +2,19 @@ namespace feng3d
 {
     export class GeometryUtils
     {
-        public static createFaceNormals(indices: number[] | Uint16Array, positions: number[] | Float32Array, useFaceWeights = false)
+        static createFaceNormals(indices: number[] | Uint16Array, positions: number[] | Float32Array, useFaceWeights = false)
         {
-            var i: number = 0, j: number = 0, k: number = 0;
-            var index: number = 0;
-            var len: number = indices.length;
-            var x1: number = 0, x2: number = 0, x3: number = 0;
-            var y1: number = 0, y2: number = 0, y3: number = 0;
-            var z1: number = 0, z2: number = 0, z3: number = 0;
-            var dx1: number = 0, dy1: number = 0, dz1: number = 0;
-            var dx2: number = 0, dy2: number = 0, dz2: number = 0;
-            var cx: number = 0, cy: number = 0, cz: number = 0;
-            var d: number = 0;
-            var posStride: number = 3;
+            var i = 0, j = 0, k = 0;
+            var index = 0;
+            var len = indices.length;
+            var x1 = 0, x2 = 0, x3 = 0;
+            var y1 = 0, y2 = 0, y3 = 0;
+            var z1 = 0, z2 = 0, z3 = 0;
+            var dx1 = 0, dy1 = 0, dz1 = 0;
+            var dx2 = 0, dy2 = 0, dz2 = 0;
+            var cx = 0, cy = 0, cz = 0;
+            var d = 0;
+            var posStride = 3;
             var faceNormals = new Array<number>(len);
             if (useFaceWeights)
                 var faceWeights = new Array<number>(len / 3);
@@ -44,7 +44,7 @@ namespace feng3d
                 d = Math.sqrt(cx * cx + cy * cy + cz * cz);
                 if (useFaceWeights)
                 {
-                    var w: number = d * 10000;
+                    var w = d * 10000;
                     if (w < 1)
                         w = 1;
                     faceWeights[k++] = w;
@@ -57,16 +57,16 @@ namespace feng3d
             return { faceNormals: faceNormals, faceWeights: faceWeights };
         }
 
-        public static createVertexNormals(_indices: number[] | Uint16Array, positions: number[] | Float32Array, useFaceWeights = false)
+        static createVertexNormals(_indices: number[] | Uint16Array, positions: number[] | Float32Array, useFaceWeights = false)
         {
             var faceNormalsResult = GeometryUtils.createFaceNormals(_indices, positions, useFaceWeights);
             var faceWeights = faceNormalsResult.faceWeights;
             var faceNormals = faceNormalsResult.faceNormals;
 
-            var v1: number = 0;
-            var f1: number = 0, f2: number = 1, f3: number = 2;
-            var lenV: number = positions.length;
-            var normalStride: number = 3;
+            var v1 = 0;
+            var f1 = 0, f2 = 1, f3 = 2;
+            var lenV = positions.length;
+            var normalStride = 3;
             var normalOffset = 0;
             var normals = new Array<number>(lenV);
             v1 = 0;
@@ -77,10 +77,10 @@ namespace feng3d
                 normals[v1 + 2] = 0.0;
                 v1 += normalStride;
             }
-            var i: number = 0, k: number = 0;
-            var lenI: number = _indices.length;
-            var index: number = 0;
-            var weight: number = 0;
+            var i = 0, k = 0;
+            var lenI = _indices.length;
+            var index = 0;
+            var weight = 0;
             while (i < lenI)
             {
                 weight = useFaceWeights ? faceWeights[k++] : 1;
@@ -103,10 +103,10 @@ namespace feng3d
             v1 = normalOffset;
             while (v1 < lenV)
             {
-                var vx: number = normals[v1];
-                var vy: number = normals[v1 + 1];
-                var vz: number = normals[v1 + 2];
-                var d: number = 1.0 / Math.sqrt(vx * vx + vy * vy + vz * vz);
+                var vx = normals[v1];
+                var vy = normals[v1 + 1];
+                var vz = normals[v1 + 2];
+                var d = 1.0 / Math.sqrt(vx * vx + vy * vy + vz * vz);
                 normals[v1] = vx * d;
                 normals[v1 + 1] = vy * d;
                 normals[v1 + 2] = vz * d;
@@ -115,16 +115,16 @@ namespace feng3d
             return normals;
         }
 
-        public static createVertexTangents(indices: number[] | Uint16Array, positions: number[] | Float32Array, uvs: number[] | Float32Array, _useFaceWeights = false): Array<number>
+        static createVertexTangents(indices: number[] | Uint16Array, positions: number[] | Float32Array, uvs: number[] | Float32Array, _useFaceWeights = false): Array<number>
         {
             var faceTangentsResult = GeometryUtils.createFaceTangents(indices, positions, uvs);
             var faceWeights = faceTangentsResult.faceWeights;
             var faceTangents = faceTangentsResult.faceTangents;
 
-            var i: number = 0;
-            var lenV: number = positions.length;
-            var tangentStride: number = 3;
-            var tangentOffset: number = 0;
+            var i = 0;
+            var lenV = positions.length;
+            var tangentStride = 3;
+            var tangentOffset = 0;
             var target = new Array<number>(lenV);
             i = tangentOffset;
             while (i < lenV)
@@ -134,11 +134,11 @@ namespace feng3d
                 target[i + 2] = 0.0;
                 i += tangentStride;
             }
-            var k: number = 0;
-            var lenI: number = indices.length;
-            var index: number = 0;
-            var weight: number = 0;
-            var f1: number = 0, f2: number = 1, f3: number = 2;
+            var k = 0;
+            var lenI = indices.length;
+            var index = 0;
+            var weight = 0;
+            var f1 = 0, f2 = 1, f3 = 2;
             i = 0;
             while (i < lenI)
             {
@@ -162,10 +162,10 @@ namespace feng3d
             i = tangentOffset;
             while (i < lenV)
             {
-                var vx: number = target[i];
-                var vy: number = target[i + 1];
-                var vz: number = target[i + 2];
-                var d: number = 1.0 / Math.sqrt(vx * vx + vy * vy + vz * vz);
+                var vx = target[i];
+                var vy = target[i + 1];
+                var vz = target[i + 2];
+                var d = 1.0 / Math.sqrt(vx * vx + vy * vy + vz * vz);
                 target[i] = vx * d;
                 target[i + 1] = vy * d;
                 target[i + 2] = vz * d;
@@ -176,21 +176,21 @@ namespace feng3d
 
         protected static createFaceTangents(indices: number[] | Uint16Array, positions: number[] | Float32Array, uvs: number[] | Float32Array, useFaceWeights = false)
         {
-            var i: number = 0, k: number = 0;
-            var index1: number = 0, index2: number = 0, index3: number = 0;
-            var len: number = indices.length;
-            var ui: number = 0, vi: number = 0;
-            var v0: number = 0;
-            var dv1: number = 0, dv2: number = 0;
-            var denom: number = 0;
-            var x0: number = 0, y0: number = 0, z0: number = 0;
-            var dx1: number = 0, dy1: number = 0, dz1: number = 0;
-            var dx2: number = 0, dy2: number = 0, dz2: number = 0;
-            var cx: number = 0, cy: number = 0, cz: number = 0;
-            var posStride: number = 3;
-            var posOffset: number = 0;
-            var texStride: number = 2;
-            var texOffset: number = 0;
+            var i = 0, k = 0;
+            var index1 = 0, index2 = 0, index3 = 0;
+            var len = indices.length;
+            var ui = 0, vi = 0;
+            var v0 = 0;
+            var dv1 = 0, dv2 = 0;
+            var denom = 0;
+            var x0 = 0, y0 = 0, z0 = 0;
+            var dx1 = 0, dy1 = 0, dz1 = 0;
+            var dx2 = 0, dy2 = 0, dz2 = 0;
+            var cx = 0, cy = 0, cz = 0;
+            var posStride = 3;
+            var posOffset = 0;
+            var texStride = 2;
+            var texOffset = 0;
             var faceTangents = new Array<number>(indices.length);
             if (useFaceWeights)
                 var faceWeights = new Array<number>(len / 3);
@@ -223,7 +223,7 @@ namespace feng3d
                 denom = Math.sqrt(cx * cx + cy * cy + cz * cz);
                 if (useFaceWeights)
                 {
-                    var w: number = denom * 10000;
+                    var w = denom * 10000;
                     if (w < 1)
                         w = 1;
                     faceWeights[k++] = w;

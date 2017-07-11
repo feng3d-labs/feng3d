@@ -2,7 +2,7 @@ namespace feng3d
 {
     export class GameObjectFactory
     {
-        public static create(name = "GameObject")
+        static create(name = "GameObject")
         {
             var gameobject = GameObject.create(name);
             gameobject.transform.mouseEnabled = true;
@@ -37,7 +37,7 @@ namespace feng3d
             return gameobject;
         }
 
-        public static createCube(name: string = "cube")
+        static createCube(name: string = "cube")
         {
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(MeshRenderer);
@@ -46,7 +46,7 @@ namespace feng3d
             return gameobject;
         }
 
-        public static createPlane(name: string = "plane")
+        static createPlane(name: string = "plane")
         {
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(MeshRenderer);
@@ -55,7 +55,7 @@ namespace feng3d
             return gameobject;
         }
 
-        public static createCylinder(name: string = "cylinder")
+        static createCylinder(name: string = "cylinder")
         {
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(MeshRenderer);
@@ -64,7 +64,7 @@ namespace feng3d
             return gameobject;
         }
 
-        public static createSphere(name: string = "sphere")
+        static createSphere(name: string = "sphere")
         {
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(MeshRenderer);
@@ -73,7 +73,7 @@ namespace feng3d
             return gameobject;
         }
 
-        public static createCapsule(name: string = "capsule")
+        static createCapsule(name: string = "capsule")
         {
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(MeshRenderer);

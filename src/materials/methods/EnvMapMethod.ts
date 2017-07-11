@@ -13,7 +13,7 @@ namespace feng3d
 		 * @param envMap		        环境映射贴图
 		 * @param reflectivity			反射率
 		 */
-        constructor(envMap: TextureCube, reflectivity: number = 1)
+        constructor(envMap: TextureCube, reflectivity = 1)
         {
             super();
             this._cubeTexture = envMap;
@@ -27,12 +27,12 @@ namespace feng3d
         /**
 		 * 环境映射贴图
 		 */
-        public get envMap()
+        get envMap()
         {
             return this._cubeTexture;
         }
 
-        public set envMap(value)
+        set envMap(value)
         {
             if (this._cubeTexture == value)
                 return;
@@ -42,12 +42,12 @@ namespace feng3d
         /**
 		 * 反射率
 		 */
-        public get reflectivity(): number
+        get reflectivity(): number
         {
             return this._reflectivity;
         }
 
-        public set reflectivity(value: number)
+        set reflectivity(value: number)
         {
             if (this._reflectivity == value)
                 return;
