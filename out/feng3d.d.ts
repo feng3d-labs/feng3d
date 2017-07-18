@@ -263,6 +263,7 @@ declare namespace feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
+        invalidate(): void;
     }
 }
 declare namespace feng3d {
@@ -283,6 +284,10 @@ declare namespace feng3d {
          * 移除渲染数据拥有者
          */
         static REMOVE_RENDERHOLDER: string;
+        /**
+         * 渲染数据拥有者数据失效
+         */
+        static INVALIDATE_RENDERHOLDER: string;
         private _invalidateRenderDataHolderList;
         renderHolderInvalid: boolean;
         private onInvalidate(event);
@@ -331,6 +336,12 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 着色器库，由shader.ts初始化
+     */
+    var shaderFileMap: {
+        [filePath: string]: string;
+    };
     /**
      * 渲染代码库
      * @author feng 2016-12-16
@@ -391,7 +402,7 @@ declare namespace feng3d {
     /**
      * Base class for all objects feng3d can reference.
      *
-     * Any public variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
+     * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
      */
     class Feng3dObject extends RenderDataHolder {
         /**
@@ -524,49 +535,11 @@ declare namespace feng3d {
          * 组件列表
          */
         protected _single: boolean;
-        /**
-         * 初始化组件
-         */
-        protected initComponent(): void;
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: EventVO<any>): void;
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: EventVO<any>): void;
         private _gameObject;
         private _tag;
         private _transform;
-        /**
-         * 处理添加组件事件，此处为被添加，设置父组件
-         */
-        private _onAddedComponent(event);
-        /**
-         * 处理移除组件事件，此处为被移除，清空父组件
-         */
-        private _onRemovedComponent(event);
         private internalGetTransform();
         private internalGetGameObject();
-    }
-}
-declare namespace feng3d {
-    /**
-     * 帧缓冲对象
-     * @author feng 2017-02-18
-     */
-    class FrameBufferObject {
-        OFFSCREEN_WIDTH: number;
-        OFFSCREEN_HEIGHT: number;
-        framebuffer: WebGLFramebuffer;
-        texture: WebGLTexture;
-        depthBuffer: WebGLRenderbuffer;
-        t: Texture2D;
-        init(gl: GL): any;
-        active(gl: GL): void;
-        deactive(gl: GL): void;
-        clear(gl: GL): any;
     }
 }
 declare namespace feng3d {
@@ -725,9 +698,21 @@ declare namespace feng3d {
         sy: number;
         sz: number;
         /**
+         * 是否显示
+         */
+        visible: boolean;
+        /**
+         * 自身以及子对象是否支持鼠标拾取
+         */
+        mouseEnabled: boolean;
+        /**
          * @private
          */
         matrix3d: Matrix3D;
+        /**
+         * 旋转矩阵
+         */
+        readonly rotationMatrix: Matrix3D;
         /**
          * 返回保存位置数据的Vector3D对象
          */
@@ -740,7 +725,7 @@ declare namespace feng3d {
         readonly backVector: Vector3D;
         readonly leftVector: Vector3D;
         readonly downVector: Vector3D;
-        constructor(gameObject: GameObject);
+        protected constructor(gameObject: GameObject);
         moveForward(distance: number): void;
         moveBackward(distance: number): void;
         moveLeft(distance: number): void;
@@ -766,38 +751,39 @@ declare namespace feng3d {
         disposeAsset(): void;
         invalidateTransform(): void;
         protected updateMatrix3D(): void;
-        private _smallestNumber;
-        private _x;
-        private _y;
-        private _z;
-        private _rx;
-        private _ry;
-        private _rz;
-        private _sx;
-        private _sy;
-        private _sz;
-        private _position;
-        private _rotation;
-        private _scale;
-        private _matrix3d;
+        protected _smallestNumber: number;
+        protected _x: number;
+        protected _y: number;
+        protected _z: number;
+        protected _rx: number;
+        protected _ry: number;
+        protected _rz: number;
+        protected _sx: number;
+        protected _sy: number;
+        protected _sz: number;
+        protected _position: Vector3D;
+        protected _rotation: Vector3D;
+        protected _scale: Vector3D;
+        protected _matrix3d: Matrix3D;
+        protected _rotationMatrix3d: Matrix3D;
+        protected _children: Transform[];
+        protected _scene: Scene3D;
+        protected _parent: Transform;
+        protected _localToWorldMatrix: Matrix3D;
+        protected _worldToLocalMatrix: Matrix3D;
+        protected _localToWorldRotationMatrix: Matrix3D;
         private invalidateRotation();
-        private notifyRotationChanged();
         private invalidateScale();
-        private notifyScaleChanged();
         private invalidatePosition();
-        private notifyPositionChanged();
     }
 }
 declare namespace feng3d {
     class ObjectContainer3D extends Object3D {
-        _ancestorsAllowMouseEnabled: boolean;
-        _isRoot: boolean;
-        readonly childCount: number;
-        ignoreTransform: boolean;
-        readonly isVisible: boolean;
-        mouseEnabled: boolean;
-        mouseChildren: boolean;
-        visible: boolean;
+        /**
+         * 子对象
+         */
+        children: Transform[];
+        readonly numChildren: number;
         readonly scenePosition: Vector3D;
         readonly minX: number;
         readonly minY: number;
@@ -815,8 +801,33 @@ declare namespace feng3d {
          * Matrix that transforms a point from world space into local space (Read Only).
          */
         readonly worldToLocalMatrix: Matrix3D;
+        readonly localToWorldRotationMatrix: Matrix3D;
         readonly parent: Transform;
-        constructor(gameObject: GameObject);
+        protected constructor(gameObject: GameObject);
+        /**
+         * Transforms direction from local space to world space.
+         */
+        transformDirection(direction: Vector3D): Vector3D;
+        /**
+         * Transforms position from local space to world space.
+         */
+        transformPoint(position: Vector3D): Vector3D;
+        /**
+         * Transforms vector from local space to world space.
+         */
+        transformVector(vector: Vector3D): Vector3D;
+        /**
+         * Transforms a direction from world space to local space. The opposite of Transform.TransformDirection.
+         */
+        inverseTransformDirection(direction: Vector3D): Vector3D;
+        /**
+         * Transforms position from world space to local space.
+         */
+        inverseTransformPoint(position: Vector3D): Vector3D;
+        /**
+         * Transforms a vector from world space to local space. The opposite of Transform.TransformVector.
+         */
+        inverseTransformVector(vector: Vector3D): Vector3D;
         contains(child: Transform): boolean;
         addChild(child: Transform): Transform;
         addChildren(...childarray: any[]): void;
@@ -830,29 +841,13 @@ declare namespace feng3d {
         dispose(): void;
         disposeWithChildren(): void;
         rotate(axis: Vector3D, angle: number, pivotPoint?: Vector3D): void;
-        updateImplicitVisibility(): void;
         /**
          * 获取子对象列表（备份）
          */
         getChildren(): Transform[];
         invalidateTransform(): void;
-        protected _scene: Scene3D;
-        protected _parent: Transform;
-        protected _sceneTransform: Matrix3D;
-        protected _sceneTransformDirty: boolean;
-        protected _mouseEnabled: boolean;
-        protected _ignoreTransform: boolean;
-        protected updateMouseChildren(): void;
         protected invalidateSceneTransform(): void;
         protected updateLocalToWorldMatrix(): void;
-        private _children;
-        private _mouseChildren;
-        private _worldToLocalMatrix;
-        private _worldToLocalMatrixDirty;
-        private _scenePosition;
-        private _scenePositionDirty;
-        private _explicitVisibility;
-        private _implicitVisibility;
         private notifySceneTransformChange();
         private notifySceneChange();
         private removeChildInternal(childIndex, child);
@@ -886,7 +881,7 @@ declare namespace feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
-        private getDepthScale(renderContext);
+        private getDepthScale(camera);
         /**
          * @inheritDoc
          */
@@ -1128,7 +1123,7 @@ declare namespace feng3d {
         /**
          * 鼠标在3D视图中的位置
          */
-        mousePos: Point;
+        readonly mousePos: Point;
         /**
          * 是否自动渲染
          */
@@ -1160,47 +1155,6 @@ declare namespace feng3d {
          * 摄像机
          */
         camera: Camera;
-        /**
-         * 监听鼠标事件收集事件类型
-         */
-        private onMouseEvent(event);
-        /**
-         * 获取鼠标射线（与鼠标重叠的摄像机射线）
-         */
-        getMouseRay3D(): Ray3D;
-        /**
-         * 获取与坐标重叠的射线
-         * @param x view3D上的X坐标
-         * @param y view3D上的X坐标
-         * @return
-         */
-        getRay3D(x: number, y: number, ray3D?: Ray3D): Ray3D;
-        /**
-         * 投影坐标（世界坐标转换为3D视图坐标）
-         * @param point3d 世界坐标
-         * @return 屏幕的绝对坐标
-         */
-        project(point3d: Vector3D): Vector3D;
-        /**
-         * 屏幕坐标投影到场景坐标
-         * @param nX 屏幕坐标X ([0-width])
-         * @param nY 屏幕坐标Y ([0-height])
-         * @param sZ 到屏幕的距离
-         * @param v 场景坐标（输出）
-         * @return 场景坐标
-         */
-        unproject(sX: number, sY: number, sZ: number, v?: Vector3D): Vector3D;
-        /**
-         * 屏幕坐标转GPU坐标
-         * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
-         * @return GPU坐标 (x:[-1,1],y:[-1-1])
-         */
-        screenToGpuPosition(screenPos: Point): Point;
-        /**
-         * 获取单位像素在指定深度映射的大小
-         * @param   depth   深度
-         */
-        getScaleByDepth(depth: number): number;
     }
 }
 declare namespace feng3d {
@@ -1208,12 +1162,34 @@ declare namespace feng3d {
      * 3D对象事件
      */
     class Object3DEvent {
+        /**
+         * 显示变化
+         */
         static VISIBLITY_UPDATED: "visiblityUpdated";
+        /**
+         * 场景矩阵变化
+         */
         static SCENETRANSFORM_CHANGED: string;
+        /**
+         * 场景变化
+         */
         static SCENE_CHANGED: string;
+        /**
+         * 位置变化
+         */
         static POSITION_CHANGED: string;
+        /**
+         * 旋转变化
+         */
         static ROTATION_CHANGED: string;
+        /**
+         * 缩放变化
+         */
         static SCALE_CHANGED: string;
+        /**
+         * 变换矩阵变化
+         */
+        static TRANSFORM_CHANGED: string;
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
@@ -1259,11 +1235,25 @@ declare namespace feng3d {
      * 3d对象脚本
      * @author feng 2017-03-11
      */
-    class Object3dScript extends Component {
+    class Script extends Component {
         /**
          * 脚本路径
          */
         script: string;
+        private _enabled;
+        constructor(gameObject: GameObject);
+        /**
+         * Enabled Behaviours are Updated, disabled Behaviours are not.
+         */
+        enabled: boolean;
+        /**
+         * 初始化
+         */
+        init(): void;
+        /**
+         * 更新
+         */
+        update(): void;
     }
 }
 declare namespace feng3d {
@@ -1747,6 +1737,11 @@ declare namespace feng3d {
         private _viewProjectionDirty;
         private _frustumPlanes;
         private _frustumPlanesDirty;
+        private _viewRect;
+        /**
+         * 视窗矩形
+         */
+        viewRect: Rectangle;
         /**
          * 创建一个摄像机
          */
@@ -1763,36 +1758,47 @@ declare namespace feng3d {
          * 场景投影矩阵，世界空间转投影空间
          */
         readonly viewProjection: Matrix3D;
-        readonly inverseSceneTransform: Matrix3D;
-        readonly sceneTransform: Matrix3D;
-        /**
-         * 屏幕坐标投影到场景坐标
-         * @param nX 屏幕坐标X -1（左） -> 1（右）
-         * @param nY 屏幕坐标Y -1（上） -> 1（下）
-         * @param sZ 到屏幕的距离
-         * @param v 场景坐标（输出）
-         * @return 场景坐标
-         */
-        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
-        /**
-         * 场景坐标投影到屏幕坐标
-         * @param point3d 场景坐标
-         * @param v 屏幕坐标（输出）
-         * @return 屏幕坐标
-         */
-        project(point3d: Vector3D, v?: Vector3D): Vector3D;
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: EventVO<any>): void;
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: EventVO<any>): void;
         /**
          * 处理场景变换改变事件
          */
         protected onScenetransformChanged(): void;
+        /**
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
+        getMouseRay3D(): Ray3D;
+        /**
+         * 获取与坐标重叠的射线
+         * @param x view3D上的X坐标
+         * @param y view3D上的X坐标
+         * @return
+         */
+        getRay3D(x: number, y: number, ray3D?: Ray3D): Ray3D;
+        /**
+         * 投影坐标（世界坐标转换为3D视图坐标）
+         * @param point3d 世界坐标
+         * @return 屏幕的绝对坐标
+         */
+        project(point3d: Vector3D): Vector3D;
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X ([0-width])
+         * @param nY 屏幕坐标Y ([0-height])
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        unproject(sX: number, sY: number, sZ: number, v?: Vector3D): Vector3D;
+        /**
+         * 屏幕坐标转GPU坐标
+         * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
+         * @return GPU坐标 (x:[-1,1],y:[-1-1])
+         */
+        screenToGpuPosition(screenPos: Point): Point;
+        /**
+         * 获取单位像素在指定深度映射的大小
+         * @param   depth   深度
+         */
+        getScaleByDepth(depth: number): number;
         /**
          * 视锥体面
          */
@@ -2365,6 +2371,8 @@ declare namespace feng3d {
         */
         renderMode: number;
         private _renderMode;
+        shaderName: string;
+        private _shaderName;
         /**
          * 顶点渲染程序代码
          */
@@ -2405,11 +2413,6 @@ declare namespace feng3d {
          * 构建材质
          */
         constructor();
-        /**
-         * 设置渲染程序
-         * @param shaderName 渲染程序名称
-         */
-        setShader(shaderName: string): void;
         /**
          * 添加方法
          */
@@ -3512,14 +3515,14 @@ declare namespace feng3d {
      * Dispatched to notify changes in an animation state's state.
      */
     class AnimationStateEvent {
-        animator: AnimatorBase;
-        animationState: AnimationStateBase;
-        animationNode: AnimationNodeBase;
         /**
          * Dispatched when a non-looping clip node inside an animation state reaches the end of its timeline.
          */
         static PLAYBACK_COMPLETE: string;
         static TRANSITION_COMPLETE: string;
+        animator: AnimatorBase;
+        animationState: AnimationStateBase;
+        animationNode: AnimationNodeBase;
         /**
          * Create a new <code>AnimatonStateEvent</code>
          *
@@ -4288,25 +4291,19 @@ declare namespace feng3d {
      */
     var debuger: boolean;
     /**
+     * 心跳计时器单例
+     */
+    var ticker: SystemTicker;
+    /**
+     * 默认几何体
+     */
+    var defaultGeometry: CubeGeometry;
+    /**
      * 默认材质
      */
     var defaultMaterial: StandardMaterial;
     /**
-     * 默认几何体
+     * 快捷键
      */
-    var defaultGeometry: Geometry;
-    /**
-     * 着色器库，由shader.ts初始化
-     */
-    var shaderFileMap: {
-        [filePath: string]: string;
-    };
-    /**
-     * 初始化引擎
-     */
-    function initEngine(): void;
-    /**
-     * 初始化函数列表
-     */
-    var initFunctions: Function[];
+    var shortcut: ShortCut;
 }

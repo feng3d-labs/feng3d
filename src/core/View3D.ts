@@ -81,8 +81,6 @@ namespace feng3d
          */
         constructor(canvas: HTMLCanvasElement = null, scene: Scene3D = null, camera: Camera = null, autoRender = true)
         {
-            //初始化引擎
-            initEngine();
 
             if (!canvas)
             {

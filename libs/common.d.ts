@@ -1,4 +1,14 @@
 declare namespace feng3d {
+    interface XYZ {
+        x: number;
+        y: number;
+        z: number;
+    }
+    interface XYZW extends XYZ {
+        w: number;
+    }
+}
+declare namespace feng3d {
     /**
      * 类工具
      * @author feng 2017-02-15
@@ -146,6 +156,38 @@ declare namespace feng3d {
     class Serialization {
         static serialize(object: any, data?: any): any;
         static deserialize(data: any, object?: any): any;
+    }
+}
+/**
+ * @author mrdoob / http://mrdoob.com/
+ */
+interface Performance {
+    memory: any;
+}
+interface Element {
+    style: {
+        display;
+    };
+}
+declare namespace feng3d {
+    class Stats {
+        private static instance;
+        static init(parent?: HTMLElement): void;
+        REVISION: number;
+        dom: HTMLDivElement;
+        domElement: HTMLDivElement;
+        addPanel: (panel: StatsPanel) => StatsPanel;
+        showPanel: (id: number) => void;
+        setMode: (id: number) => void;
+        begin: () => void;
+        end: () => number;
+        update: () => void;
+        constructor();
+    }
+    class StatsPanel {
+        dom: HTMLCanvasElement;
+        update: (value: number, maxValue: number) => void;
+        constructor(name: string, fg: string, bg: string);
     }
 }
 declare namespace feng3d {
@@ -336,6 +378,20 @@ interface Math {
     isPowerOfTwo(value: any): any;
     nearestPowerOfTwo(value: any): any;
     nextPowerOfTwo(value: any): any;
+    /**
+     * 获取目标最近的值
+     *
+     * source增加或者减少整数倍precision后得到离target最近的值
+     *
+     * ```
+     * Math.toRound(71,0,5);//运算结果为1
+     * ```
+     *
+     * @param source 初始值
+     * @param target 目标值
+     * @param precision 精度
+     */
+    toRound(source: number, target: number, precision: number): any;
 }
 declare namespace feng3d {
     /**
@@ -652,6 +708,11 @@ declare namespace feng3d {
         */
         static Z_AXIS: Vector3D;
         /**
+         * 从数据初始化向量
+         * @param xyz 向量数据
+         */
+        static from(xyz: XYZ | XYZW): Vector3D;
+        /**
         * Vector3D 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
         */
         x: number;
@@ -682,7 +743,9 @@ declare namespace feng3d {
          * @param z 第三个元素，例如 z 坐标。
          * @param w 表示额外数据的可选元素，例如旋转角度
          */
-        constructor(x?: number, y?: number, z?: number, w?: number);
+        constructor(x: number, y: number, z: number, w?: number);
+        constructor(value: XYZ | XYZW);
+        constructor();
         /**
          * 将当前 Vector3D 对象的 x、y 和 z 元素的值与另一个 Vector3D 对象的 x、y 和 z 元素的值相加。
          * @param a 要与当前 Vector3D 对象相加的 Vector3D 对象。
@@ -722,7 +785,7 @@ declare namespace feng3d {
         /**
          * 通过将当前 Vector3D 对象的 x、y 和 z 元素与指定的 Vector3D 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
          */
-        equals(toCompare: Vector3D, allFour?: boolean): boolean;
+        equals(object: XYZ | XYZW, allFour?: boolean, precision?: number): boolean;
         /**
          * 按照指定的 Vector3D 对象的 x、y 和 z 元素的值递增当前 Vector3D 对象的 x、y 和 z 元素的值。
          */
@@ -755,10 +818,6 @@ declare namespace feng3d {
          * 返回当前 Vector3D 对象4个元素的数组
          */
         toArray(num?: 3 | 4): number[];
-        /**
-         * 比较矩阵是否相等
-         */
-        compare(matrix3D: Vector3D, num?: 3 | 4, precision?: number): boolean;
     }
 }
 declare namespace feng3d {
@@ -830,10 +889,10 @@ declare namespace feng3d {
         constructor(datas?: Float32Array | number[]);
         /**
          * 创建旋转矩阵
-         * @param   degrees         角度
          * @param   axis            旋转轴
+         * @param   degrees         角度
          */
-        static fromAxisRotate(degrees: number, axis: Vector3D): Matrix3D;
+        static fromAxisRotate(axis: XYZ, degrees: number): Matrix3D;
         /**
          * 创建旋转矩阵
          * @param   rx      用于沿 x 轴旋转对象的角度。
@@ -845,7 +904,11 @@ declare namespace feng3d {
          * 创建旋转矩阵
          * @param   degrees         角度
          */
-        static fromRotation(euler: Vector3D): Matrix3D;
+        static fromRotation(euler: {
+            x: number;
+            y: number;
+            z: number;
+        }): Matrix3D;
         /**
          * 创建缩放矩阵
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
@@ -876,11 +939,11 @@ declare namespace feng3d {
         append(lhs: Matrix3D): this;
         /**
          * 在 Matrix3D 对象上后置一个增量旋转。
-         * @param   degrees         角度
          * @param   axis            旋转轴
+         * @param   degrees         角度
          * @param   pivotPoint      旋转中心点
          */
-        appendRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): this;
+        appendRotation(axis: XYZ, degrees: number, pivotPoint?: XYZ): this;
         /**
          * 在 Matrix3D 对象上后置一个增量缩放，沿 x、y 和 z 轴改变位置。
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
@@ -974,11 +1037,11 @@ declare namespace feng3d {
         prepend(rhs: Matrix3D): this;
         /**
          * 在 Matrix3D 对象上前置一个增量旋转。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行旋转，然后再执行其他转换。
-         * @param   degrees     旋转的角度。
          * @param   axis        旋转的轴或方向。常见的轴为 X_AXIS (Vector3D(1,0,0))、Y_AXIS (Vector3D(0,1,0)) 和 Z_AXIS (Vector3D(0,0,1))。此矢量的长度应为 1。
+         * @param   degrees     旋转的角度。
          * @param   pivotPoint  一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
          */
-        prependRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): this;
+        prependRotation(axis: Vector3D, degrees: number, pivotPoint?: Vector3D): this;
         /**
          * 在 Matrix3D 对象上前置一个增量缩放，沿 x、y 和 z 轴改变位置。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行缩放更改，然后再执行其他转换。
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
@@ -1025,7 +1088,7 @@ declare namespace feng3d {
          * @param   vout    一个由多个数字组成的矢量，其中每三个数字构成一个已转换的 3D 坐标 (x,y,z)。
          */
         transformVectors(vin: number[], vout: number[]): void;
-        transformRotation(vin: Vector3D, vout?: Vector3D): Vector3D;
+        transformRotation(vin: XYZ, vout?: XYZ): XYZ;
         /**
          * 将当前 Matrix3D 对象转换为一个矩阵，并将互换其中的行和列。
          */
@@ -1033,7 +1096,7 @@ declare namespace feng3d {
         /**
          * 比较矩阵是否相等
          */
-        compare(matrix3D: Matrix3D, precision?: number): boolean;
+        equals(matrix3D: Matrix3D, precision?: number): boolean;
         /**
          * 看向目标位置
          * @param target    目标位置
@@ -1166,6 +1229,86 @@ declare namespace feng3d {
          * @param q The quaternion to copy from.
          */
         copyFrom(q: Quaternion): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 欧拉角，使用分别绕x，y，z轴旋转角度表示方位
+     */
+    class Euler {
+        /**
+         * x轴旋转角度
+         */
+        x: number;
+        /**
+         * y轴旋转角度
+         */
+        y: number;
+        /**
+         * z轴旋转角度
+         */
+        z: number;
+        /**
+         * 构建欧拉角
+         * @param x x轴旋转角度
+         * @param y y轴旋转角度
+         * @param z z轴旋转角度
+         */
+        constructor(x?: number, y?: number, z?: number);
+        /**
+         * 构建欧拉角
+         * @param euler 欧拉角
+         */
+        constructor(euler?: XYZ);
+        constructor();
+        /**
+         * 反转当前欧拉角
+         */
+        invert(): void;
+        /**
+         * 绕指定轴旋转
+         * @param    axis               旋转轴
+         * @param    angle              旋转角度
+         */
+        rotate(axis: XYZ, angle: number): this;
+        /**
+         * 通过将另一个 Euler 对象与当前 Euler 对象相乘来后置一个欧拉角。
+         * @param euler     欧拉角
+         */
+        append(euler: XYZ): void;
+        /**
+         * 通过将当前 Euler 对象与另一个 Euler 对象相乘来前置一个欧拉角。
+         * @param   euler     个右侧矩阵，它与当前 Matrix3D 对象相乘。
+         */
+        prepend(euler: XYZ): this;
+        /**
+         * 后置 逆向euler
+         * @param euler     欧拉角
+         */
+        appendInvert(euler: XYZ): void;
+        /**
+         * 变换欧拉角数据
+         * @param source 需要转换的欧拉角数据
+         * @param target 转换后的欧拉角数据
+         */
+        transformRotation<T extends XYZ>(source: XYZ, target?: T): T;
+        /**
+         * 将源 Euler 对象中的所有矩阵数据复制到调用方 Euler 对象中。
+         * @param   source      要从中复制数据的 Euler 对象。
+         */
+        copyFrom(source: XYZ): this;
+        /**
+         * 输出为矩阵
+         */
+        toMatrix3D(): Matrix3D;
+        /**
+         * 通过将当前 Euler 对象的 x、y 和 z 元素与指定的 Euler 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
+         */
+        equals(object: XYZ, precision?: number): boolean;
+        /**
+         * 返回一个新 Euler 对象，它是与当前 Euler 对象完全相同的副本。
+         */
+        clone(): Euler;
     }
 }
 declare namespace feng3d {
@@ -1417,14 +1560,9 @@ declare namespace feng3d {
         enterFrame: any;
     }
     /**
-     * 心跳计时器单例
-     */
-    var ticker: SystemTicker;
-    /**
      * 心跳计时器
      */
     class SystemTicker {
-        static init(): void;
         private _startTime;
         /**
          * 启动时间
@@ -1956,10 +2094,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 快捷键
-     */
-    var shortcut: ShortCut;
-    /**
      * 初始化快捷键模块
      * @author feng 2016-4-26
      *
@@ -1984,7 +2118,6 @@ Event.on(shortCut,<any>"run", function(e:Event):void
      * </pre>
      */
     class ShortCut {
-        static init(): void;
         /**
          * 按键状态
          */
@@ -2066,11 +2199,11 @@ declare namespace feng3d {
     class Loader {
         private _request;
         private _image;
+        protected _url: string;
         /**
          * 数据类型
          */
         dataFormat: string;
-        protected _url: string;
         /**
          * 已加载的字节数
          */
@@ -2092,7 +2225,7 @@ declare namespace feng3d {
          * 加载文本
          * @param url   路径
          */
-        loadText(url: string): void;
+        loadText(url: string, onCompleted?: (content: string) => void): void;
         /**
          * 加载二进制
          * @param url   路径
@@ -2106,7 +2239,7 @@ declare namespace feng3d {
         /**
          * 使用XMLHttpRequest加载
          */
-        private xmlHttpRequestLoad();
+        private xmlHttpRequestLoad(onCompleted?);
         /**
          * 请求进度回调
          */
@@ -2114,7 +2247,7 @@ declare namespace feng3d {
         /**
          * 请求状态变化回调
          */
-        private onRequestReadystatechange(ev);
+        private onRequestReadystatechange(onCompleted?);
         /**
          * 加载图片完成回调
          */
