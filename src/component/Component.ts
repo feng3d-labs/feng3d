@@ -59,7 +59,6 @@ namespace feng3d
         {
             super();
             this._gameObject = gameObject;
-            this.initComponent();
         }
 
         /**
@@ -107,32 +106,6 @@ namespace feng3d
         //------------------------------------------
         // Protected Functions
         //------------------------------------------
-        /**
-         * 初始化组件
-         */
-        protected initComponent(): void
-        {
-            //以最高优先级监听组件被添加，设置父组件
-            Event.on(this, <any>ComponentEvent.ADDED_COMPONENT, this._onAddedComponent, this, Number.MAX_VALUE);
-            //以最低优先级监听组件被删除，清空父组件
-            Event.on(this, <any>ComponentEvent.REMOVED_COMPONENT, this._onRemovedComponent, this, Number.MIN_VALUE);
-        }
-
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: EventVO<any>): void
-        {
-
-        }
-
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: EventVO<any>): void
-        {
-
-        }
 
         //------------------------------------------
         // Private Properties
@@ -144,32 +117,6 @@ namespace feng3d
         //------------------------------------------
         // Private Methods
         //------------------------------------------
-        /**
-         * 处理添加组件事件，此处为被添加，设置父组件
-         */
-        private _onAddedComponent(event: EventVO<any>): void
-        {
-            var data: { container: GameObject, child: Component } = event.data;
-            if (data.child == this)
-            {
-                this._gameObject = data.container;
-                this.onBeAddedComponent(event);
-            }
-        }
-
-        /**
-         * 处理移除组件事件，此处为被移除，清空父组件
-         */
-        private _onRemovedComponent(event: EventVO<any>): void
-        {
-            var data: { container: GameObject, child: Component } = event.data;
-            if (event.data.child == this)
-            {
-                this.onBeRemovedComponent(event);
-                this._gameObject = null;
-            }
-        }
-
         private internalGetTransform()
         {
             if (this._gameObject)

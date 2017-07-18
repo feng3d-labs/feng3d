@@ -103,7 +103,7 @@ namespace feng3d
         private pick(renderContext: RenderContext)
         {
             var mouseCollisionEntitys = this.getMouseCheckObjects(renderContext);
-            var mouseRay3D = renderContext.view3D.getMouseRay3D();
+            var mouseRay3D = renderContext.camera.getMouseRay3D();
             //计算得到鼠标射线相交的物体
             var _collidingObject = this._mousePicker.getViewCollision(mouseRay3D, mouseCollisionEntitys);
 

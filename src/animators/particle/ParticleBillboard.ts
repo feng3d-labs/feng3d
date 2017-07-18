@@ -27,7 +27,7 @@ namespace feng3d
             if (this._billboardAxis)
             {
                 var pos: Vector3D = gameObject.transform.localToWorldMatrix.position;
-                var look: Vector3D = this._camera.sceneTransform.position.subtract(pos);
+                var look: Vector3D = this._camera.transform.localToWorldMatrix.position.subtract(pos);
                 var right: Vector3D = look.crossProduct(this._billboardAxis);
                 right.normalize();
                 look = this._billboardAxis.crossProduct(right);
@@ -46,7 +46,7 @@ namespace feng3d
             {
                 //create a quick inverse projection matrix
                 this._matrix.copyFrom(gameObject.transform.localToWorldMatrix);
-                this._matrix.append(this._camera.inverseSceneTransform);
+                this._matrix.append(this._camera.transform.worldToLocalMatrix);
 
                 //decompose using axis angle rotations
                 comps = this._matrix.decompose(Orientation3D.AXIS_ANGLE);

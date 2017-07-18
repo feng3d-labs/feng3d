@@ -345,6 +345,8 @@ var feng3d;
     feng3d.serialize = serialize;
     /**
      * 观察装饰器，观察被装饰属性的变化
+     *
+     * *对使用watch修饰的属性赋值比未使用的性能差距100倍左右*
      * @param onChange 属性变化回调
      */
     function watch(onChange) {
@@ -1295,6 +1297,7 @@ var feng3d;
             this.x *= s;
             this.y *= s;
             this.z *= s;
+            return this;
         };
         /**
          * 将 Vector3D 的成员设置为指定值
@@ -1305,6 +1308,7 @@ var feng3d;
             this.y = y;
             this.z = z;
             this.w = w;
+            return this;
         };
         /**
          * 从另一个 Vector3D 对象的 x、y 和 z 元素的值中减去当前 Vector3D 对象的 x、y 和 z 元素的值。
@@ -1368,7 +1372,7 @@ var feng3d;
      * Matrix3D 类表示一个转换矩阵，该矩阵确定三维 (3D) 显示对象的位置和方向。
      * 该矩阵可以执行转换功能，包括平移（沿 x、y 和 z 轴重新定位）、旋转和缩放（调整大小）。
      * Matrix3D 类还可以执行透视投影，这会将 3D 坐标空间中的点映射到二维 (2D) 视图。
-     *
+     * ```
      *  ---            方向              平移 ---
      *  |   scaleX      0         0       tx    |
      *  |     0       scaleY      0       ty    |
@@ -1382,6 +1386,7 @@ var feng3d;
      *  |     2         6        10       14    |
      *  |     3         7        11       15    |
      *  ---  x轴        y轴      z轴          ---
+     * ```
      */
     var Matrix3D = (function () {
         /**
@@ -2075,6 +2080,33 @@ var feng3d;
                 vout[i + 1] = vec.y;
                 vout[i + 2] = vec.z;
             }
+        };
+        Matrix3D.prototype.transformRotation = function (vin, vout) {
+            //转换旋转
+            var rotationMatrix3d = Matrix3D.fromRotation(vin);
+            rotationMatrix3d.append(this);
+            var newrotation = rotationMatrix3d.decompose()[1];
+            newrotation.scaleBy(180 / Math.PI);
+            var v = Math.round((newrotation.x - vin.x) / 180);
+            if (v % 2 != 0) {
+                newrotation.x += 180;
+                newrotation.y = 180 - newrotation.y;
+                newrotation.z += 180;
+            }
+            //
+            var toRound = function (a, b, c) {
+                if (c === void 0) { c = 360; }
+                return Math.round((b - a) / c) * c + a;
+            };
+            newrotation.x = toRound(newrotation.x, vin.x);
+            newrotation.y = toRound(newrotation.y, vin.y);
+            newrotation.z = toRound(newrotation.z, vin.z);
+            //
+            vout = vout || new feng3d.Vector3D();
+            vout.x = newrotation.x;
+            vout.y = newrotation.y;
+            vout.z = newrotation.z;
+            return vout;
         };
         /**
          * 将当前 Matrix3D 对象转换为一个矩阵，并将互换其中的行和列。

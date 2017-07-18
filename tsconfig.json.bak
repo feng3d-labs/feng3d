@@ -144,8 +144,6 @@
         "src/animators/skeleton/SkeletonClipState.ts",
         "src/animators/skeleton/SkeletonAnimationSet.ts",
         "src/animators/skeleton/SkeletonAnimator.ts",
-        //
-        "src/animators/transform/TransformAnimator.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MtlParser.ts",

@@ -718,42 +718,35 @@ declare namespace feng3d {
         x: number;
         y: number;
         z: number;
-        rotationX: number;
-        rotationY: number;
-        rotationZ: number;
-        scaleX: number;
-        scaleY: number;
-        scaleZ: number;
-        eulers: Vector3D;
+        rx: number;
+        ry: number;
+        rz: number;
+        sx: number;
+        sy: number;
+        sz: number;
         /**
          * @private
          */
         matrix3d: Matrix3D;
-        pivotPoint: Vector3D;
+        /**
+         * 返回保存位置数据的Vector3D对象
+         */
         position: Vector3D;
+        rotation: Vector3D;
+        scale: Vector3D;
         readonly forwardVector: Vector3D;
         readonly rightVector: Vector3D;
         readonly upVector: Vector3D;
         readonly backVector: Vector3D;
         readonly leftVector: Vector3D;
         readonly downVector: Vector3D;
-        zOffset: number;
         constructor(gameObject: GameObject);
-        getPosition(position?: Vector3D): Vector3D;
-        setPosition(x?: number, y?: number, z?: number): void;
-        getRotation(rotation?: Vector3D): Vector3D;
-        setRotation(x?: number, y?: number, z?: number): void;
-        getScale(scale?: Vector3D): Vector3D;
-        setScale(x?: number, y?: number, z?: number): void;
-        scale(value: number): void;
         moveForward(distance: number): void;
         moveBackward(distance: number): void;
         moveLeft(distance: number): void;
         moveRight(distance: number): void;
         moveUp(distance: number): void;
         moveDown(distance: number): void;
-        moveTo(dx: number, dy: number, dz: number): void;
-        movePivot(dx: number, dy: number, dz: number): void;
         translate(axis: Vector3D, distance: number): void;
         translateLocal(axis: Vector3D, distance: number): void;
         pitch(angle: number): void;
@@ -772,37 +765,25 @@ declare namespace feng3d {
         dispose(): void;
         disposeAsset(): void;
         invalidateTransform(): void;
-        protected _matrix3d: Matrix3D;
-        protected _scaleX: number;
-        protected _scaleY: number;
-        protected _scaleZ: number;
-        protected _x: number;
-        protected _y: number;
-        protected _z: number;
-        protected _pivotPoint: Vector3D;
-        protected _pivotZero: boolean;
-        protected _pos: Vector3D;
-        protected _rot: Vector3D;
-        protected _sca: Vector3D;
-        protected _transformComponents: Array<Vector3D>;
-        protected _zOffset: number;
         protected updateMatrix3D(): void;
         private _smallestNumber;
-        private _transformDirty;
-        private _positionDirty;
-        private _rotationDirty;
-        private _scaleDirty;
-        private _rotationX;
-        private _rotationY;
-        private _rotationZ;
-        private _eulers;
-        private _flipY;
+        private _x;
+        private _y;
+        private _z;
+        private _rx;
+        private _ry;
+        private _rz;
+        private _sx;
+        private _sy;
+        private _sz;
         private _position;
+        private _rotation;
+        private _scale;
+        private _matrix3d;
         private invalidateRotation();
         private notifyRotationChanged();
         private invalidateScale();
         private notifyScaleChanged();
-        private invalidatePivot();
         private invalidatePosition();
         private notifyPositionChanged();
     }
@@ -848,7 +829,7 @@ declare namespace feng3d {
         translateLocal(axis: Vector3D, distance: number): void;
         dispose(): void;
         disposeWithChildren(): void;
-        rotate(axis: Vector3D, angle: number): void;
+        rotate(axis: Vector3D, angle: number, pivotPoint?: Vector3D): void;
         updateImplicitVisibility(): void;
         /**
          * 获取子对象列表（备份）
@@ -3930,17 +3911,6 @@ declare namespace feng3d {
          * 更新骨骼全局变换矩阵
          */
         private updateGlobalProperties();
-    }
-}
-declare namespace feng3d {
-    /**
-     * 变换动作
-     */
-    class TransformAnimator extends Component {
-        /**
-         * 动作名称
-         */
-        animationName: string;
     }
 }
 declare namespace feng3d {
