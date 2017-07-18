@@ -9,11 +9,11 @@ namespace feng3d
         /** 
          * 颜色 
          */
-        public get color()
+        get color()
         {
             return this._color;
         }
-        public set color(value)
+        set color(value)
         {
             if (this._color == value)
                 return;
@@ -31,7 +31,7 @@ namespace feng3d
         constructor(color: Color = null)
         {
             super();
-            this.setShader("color");
+            this.shaderName = "color";
             this.color = color || new Color();
             //
             this.createUniformData("u_diffuseInput", () => this.color);

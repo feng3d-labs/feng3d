@@ -10,33 +10,33 @@ namespace feng3d
         /**
          * 是否正在播放
          */
-        public isPlaying: boolean;
+        isPlaying: boolean;
 
         /**
          * 粒子时间
          */
-        public time: number = 0;
+        time = 0;
 
         /**
          * 起始时间
          */
-        public startTime: number = 0;
+        startTime = 0;
 
         /**
          * 播放速度
          */
-        public playbackSpeed: number = 1;
+        playbackSpeed = 1;
 
         /**
          * 周期
          */
-        public cycle: number = 10000;
+        cycle = 10000;
 
-        public get animatorSet()
+        get animatorSet()
         {
             return this._animatorSet;
         }
-        public set animatorSet(value)
+        set animatorSet(value)
         {
             if (this._animatorSet == value)
                 return;
@@ -60,7 +60,7 @@ namespace feng3d
             this.createBoolMacro("HAS_PARTICLE_ANIMATOR", () => this.isPlaying = true);
         }
 
-        public play()
+        play()
         {
             if (this.isPlaying)
                 return;
@@ -84,7 +84,7 @@ namespace feng3d
          * 收集渲染数据拥有者
          * @param renderAtomic 渲染原子
          */
-        public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
+        collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
         {
             this.animatorSet.collectRenderDataHolder(renderAtomic);
             super.collectRenderDataHolder(renderAtomic);

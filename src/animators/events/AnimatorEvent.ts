@@ -7,12 +7,12 @@ namespace feng3d
     export class AnimatorEvent
     {
         /** 开始播放动画 */
-        public static START: string = "start";
+        static START: string = "start";
 
         /** 继续播放动画 */
-        public static PLAY: string = "play";
+        static PLAY: string = "play";
 
         /** 停止播放动画 */
-        public static STOP: string = "stop";
+        static STOP: string = "stop";
     }
 }

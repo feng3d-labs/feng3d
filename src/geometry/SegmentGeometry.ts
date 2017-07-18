@@ -18,7 +18,7 @@ namespace feng3d
 		 * 添加线段
 		 * @param segment		            线段数据
 		 */
-        public addSegment(segment: Segment)
+        addSegment(segment: Segment)
         {
             this.segments_.push(segment);
             this.invalidateGeometry();
@@ -29,7 +29,7 @@ namespace feng3d
 		 * @param segment		            线段数据
 		 * @param index		                线段索引
 		 */
-        public setSegmentAt(segment: Segment, index: number)
+        setSegmentAt(segment: Segment, index: number)
         {
             this.segments_[index] = segment;
             this.invalidateGeometry();
@@ -65,7 +65,7 @@ namespace feng3d
 		 * @param index 		线段索引
 		 * @return				线段数据
 		 */
-        public getSegment(index: number): Segment
+        getSegment(index: number): Segment
         {
             if (index < this.segments_.length)
                 return this.segments_[index];
@@ -75,7 +75,7 @@ namespace feng3d
 		/**
 		 * 移除所有线段
 		 */
-        public removeAllSegments()
+        removeAllSegments()
         {
             this.segments.length = 0;
             this.invalidateGeometry();
@@ -84,7 +84,7 @@ namespace feng3d
 		/**
 		 * 线段列表
 		 */
-        public get segments(): Segment[]
+        get segments(): Segment[]
         {
             return this.segments_;
         }
@@ -96,11 +96,11 @@ namespace feng3d
      */
     export class Segment
     {
-        public thickness: number;
-        public start: Vector3D;
-        public end: Vector3D;
-        public startColor: Color;
-        public endColor: Color;
+        thickness: number;
+        start: Vector3D;
+        end: Vector3D;
+        startColor: Color;
+        endColor: Color;
 
         /**
 		 * 创建线段
@@ -110,7 +110,7 @@ namespace feng3d
 		 * @param colorEnd 终点颜色
 		 * @param thickness 线段厚度
 		 */
-        constructor(start: Vector3D, end: Vector3D, colorStart: number = 0xffffff, colorEnd: number = 0xffffff, thickness: number = 1)
+        constructor(start: Vector3D, end: Vector3D, colorStart = 0xffffff, colorEnd = 0xffffff, thickness = 1)
         {
             this.thickness = thickness * .5;
             this.start = start;
@@ -124,7 +124,7 @@ namespace feng3d
         /**
          * 坐标数据
          */
-        public get positionData()
+        get positionData()
         {
             return [this.start.x, this.start.y, this.start.z, this.end.x, this.end.y, this.end.z];
         }
@@ -132,7 +132,7 @@ namespace feng3d
         /**
          * 颜色数据
          */
-        public get colorData()
+        get colorData()
         {
             return [
                 this.startColor.r, this.startColor.g, this.startColor.b, this.startColor.a,

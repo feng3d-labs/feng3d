@@ -9,7 +9,7 @@ namespace feng3d
     {
 
         private _shaderName = "mouse";
-        public selectedObject3D: GameObject;
+        selectedObject3D: GameObject;
         private objects: GameObject[] = [null];
 
         constructor()
@@ -20,7 +20,7 @@ namespace feng3d
         /**
 		 * 渲染
 		 */
-        public draw(renderContext: RenderContext)
+        draw(renderContext: RenderContext)
         {
             this.objects.length = 1;
 

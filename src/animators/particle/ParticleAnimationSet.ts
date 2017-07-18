@@ -12,14 +12,14 @@ namespace feng3d
         /**
          * 生成粒子函数列表，优先级越高先执行
          */
-        public generateFunctions: ({ generate: (particle: Particle) => void, priority: number })[] = [];
+        generateFunctions: ({ generate: (particle: Particle) => void, priority: number })[] = [];
 
         private particleGlobal: ParticleGlobal = <any>{};
 
         /**
 		 * 粒子数量
 		 */
-        public numParticles: number = 1000;
+        numParticles = 1000;
 
         private _isDirty = true;
 
@@ -32,20 +32,20 @@ namespace feng3d
         /**
          * 粒子全局属性，作用于所有粒子元素
          */
-        public setGlobal<K extends keyof ParticleGlobal>(property: K, value: ParticleGlobal[K])
+        setGlobal<K extends keyof ParticleGlobal>(property: K, value: ParticleGlobal[K])
         {
             this.particleGlobal[property] = value;
             this.createUniformData(<any>("u_particle_" + property), value);
             this.createBoolMacro(<any>("D_u_particle_" + property), true);
         }
 
-        public addAnimation(animation: ParticleComponent)
+        addAnimation(animation: ParticleComponent)
         {
             if (this._animations.indexOf(animation) == -1)
                 this._animations.push(animation);
         }
 
-        public update(particleAnimator: ParticleAnimator)
+        update(particleAnimator: ParticleAnimator)
         {
             if (this._isDirty)
             {

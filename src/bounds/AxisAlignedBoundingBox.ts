@@ -6,12 +6,12 @@ namespace feng3d
 	 */
     export class AxisAlignedBoundingBox extends BoundingVolumeBase
     {
-        private _centerX: number = 0;
-        private _centerY: number = 0;
-        private _centerZ: number = 0;
-        private _halfExtentsX: number = 0;
-        private _halfExtentsY: number = 0;
-        private _halfExtentsZ: number = 0;
+        private _centerX = 0;
+        private _centerY = 0;
+        private _centerZ = 0;
+        private _halfExtentsX = 0;
+        private _halfExtentsY = 0;
+        private _halfExtentsZ = 0;
 
 		/**
 		 * 创建轴对其包围盒
@@ -27,19 +27,19 @@ namespace feng3d
 		 * @return 				true：出现在视锥体内
 		 * @see me.feng3d.cameras.Camera3D.updateFrustum()
 		 */
-        public isInFrustum(planes: Plane3D[], numPlanes: number): boolean
+        isInFrustum(planes: Plane3D[], numPlanes: number): boolean
         {
-            for (var i: number = 0; i < numPlanes; ++i)
+            for (var i = 0; i < numPlanes; ++i)
             {
                 var plane: Plane3D = planes[i];
-                var a: number = plane.a;
-                var b: number = plane.b;
-                var c: number = plane.c;
+                var a = plane.a;
+                var b = plane.b;
+                var c = plane.c;
                 //最可能出现在平面内的点，即距离最可能大于0的点 (如果这个点都不在平面内的话，其他的点肯定会不在平面内)
-                var flippedExtentX: number = a < 0 ? -this._halfExtentsX : this._halfExtentsX;
-                var flippedExtentY: number = b < 0 ? -this._halfExtentsY : this._halfExtentsY;
-                var flippedExtentZ: number = c < 0 ? -this._halfExtentsZ : this._halfExtentsZ;
-                var projDist: number = a * (this._centerX + flippedExtentX) + b * (this._centerY + flippedExtentY) + c * (this._centerZ + flippedExtentZ) - plane.d;
+                var flippedExtentX = a < 0 ? -this._halfExtentsX : this._halfExtentsX;
+                var flippedExtentY = b < 0 ? -this._halfExtentsY : this._halfExtentsY;
+                var flippedExtentZ = c < 0 ? -this._halfExtentsZ : this._halfExtentsZ;
+                var projDist = a * (this._centerX + flippedExtentX) + b * (this._centerY + flippedExtentY) + c * (this._centerZ + flippedExtentZ) - plane.d;
                 //小于0表示包围盒8个点都在平面内，同时就表面不存在点在视锥体内。注：视锥体6个平面朝内
                 if (projDist < 0)
                     return false;
@@ -51,7 +51,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public fromExtremes(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number)
+        fromExtremes(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number)
         {
             this._centerX = (maxX + minX) * .5;
             this._centerY = (maxY + minY) * .5;
@@ -65,15 +65,15 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public rayIntersection(ray3D: Ray3D, targetNormal: Vector3D): number
+        rayIntersection(ray3D: Ray3D, targetNormal: Vector3D): number
         {
             var position: Vector3D = ray3D.position;
             var direction: Vector3D = ray3D.direction;
             if (this.containsPoint(position))
                 return 0;
 
-            var px: number = position.x - this._centerX, py: number = position.y - this._centerY, pz: number = position.z - this._centerZ;
-            var vx: number = direction.x, vy: number = direction.y, vz: number = direction.z;
+            var px = position.x - this._centerX, py = position.y - this._centerY, pz = position.z - this._centerZ;
+            var vx = direction.x, vy = direction.y, vz = direction.z;
             var ix: number, iy: number, iz: number;
             var rayEntryDistance: number;
 
@@ -183,9 +183,9 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public containsPoint(position: Vector3D): boolean
+        containsPoint(position: Vector3D): boolean
         {
-            var px: number = position.x - this._centerX, py: number = position.y - this._centerY, pz: number = position.z - this._centerZ;
+            var px = position.x - this._centerX, py = position.y - this._centerY, pz = position.z - this._centerZ;
             return px <= this._halfExtentsX && px >= -this._halfExtentsX && py <= this._halfExtentsY && py >= -this._halfExtentsY && pz <= this._halfExtentsZ && pz >= -this._halfExtentsZ;
         }
 
@@ -195,17 +195,17 @@ namespace feng3d
 		 * @param matrix		变换矩阵
 		 * @see http://www.cppblog.com/lovedday/archive/2008/02/23/43122.html
 		 */
-        public transformFrom(bounds: BoundingVolumeBase, matrix: Matrix3D)
+        transformFrom(bounds: BoundingVolumeBase, matrix: Matrix3D)
         {
             var aabb: AxisAlignedBoundingBox = bounds as AxisAlignedBoundingBox;
-            var cx: number = aabb._centerX;
-            var cy: number = aabb._centerY;
-            var cz: number = aabb._centerZ;
+            var cx = aabb._centerX;
+            var cy = aabb._centerY;
+            var cz = aabb._centerZ;
             var raw = Matrix3D.RAW_DATA_CONTAINER;
             matrix.copyRawDataTo(raw);
-            var m11: number = raw[0], m12: number = raw[4], m13: number = raw[8], m14: number = raw[12];
-            var m21: number = raw[1], m22: number = raw[5], m23: number = raw[9], m24: number = raw[13];
-            var m31: number = raw[2], m32: number = raw[6], m33: number = raw[10], m34: number = raw[14];
+            var m11 = raw[0], m12 = raw[4], m13 = raw[8], m14 = raw[12];
+            var m21 = raw[1], m22 = raw[5], m23 = raw[9], m24 = raw[13];
+            var m31 = raw[2], m32 = raw[6], m33 = raw[10], m34 = raw[14];
 
             this._centerX = cx * m11 + cy * m12 + cz * m13 + m14;
             this._centerY = cx * m21 + cy * m22 + cz * m23 + m24;
@@ -229,9 +229,9 @@ namespace feng3d
                 m32 = -m32;
             if (m33 < 0)
                 m33 = -m33;
-            var hx: number = aabb._halfExtentsX;
-            var hy: number = aabb._halfExtentsY;
-            var hz: number = aabb._halfExtentsZ;
+            var hx = aabb._halfExtentsX;
+            var hy = aabb._halfExtentsY;
+            var hz = aabb._halfExtentsZ;
             this._halfExtentsX = hx * m11 + hy * m12 + hz * m13;
             this._halfExtentsY = hx * m21 + hy * m22 + hz * m23;
             this._halfExtentsZ = hx * m31 + hy * m32 + hz * m33;

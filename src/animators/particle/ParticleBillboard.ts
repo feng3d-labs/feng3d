@@ -2,7 +2,7 @@ namespace feng3d
 {
     export class ParticleBillboard extends ParticleComponent
     {
-        private _camera:Camera;
+        private _camera: Camera;
 
         private _matrix: Matrix3D = new Matrix3D;
 
@@ -13,14 +13,14 @@ namespace feng3d
 		 * 创建一个广告牌节点
 		 * @param billboardAxis
 		 */
-        constructor(camera:Camera,billboardAxis: Vector3D = null)
+        constructor(camera: Camera, billboardAxis: Vector3D = null)
         {
             super();
             this.billboardAxis = billboardAxis;
             this._camera = camera;
         }
 
-        public setRenderState(particleAnimator: ParticleAnimator)
+        setRenderState(particleAnimator: ParticleAnimator)
         {
             var gameObject = particleAnimator.gameObject;
             var comps: Vector3D[];
@@ -40,7 +40,7 @@ namespace feng3d
                 this._matrix.copyColumnFrom(1, this._billboardAxis);
                 this._matrix.copyColumnFrom(2, look);
                 this._matrix.copyColumnFrom(3, pos);
-                this._matrix.appendRotation(-comps[1].w * Math.RAD2DEG, comps[1]);
+                this._matrix.appendRotation(comps[1], -comps[1].w * Math.RAD2DEG);
             }
             else
             {
@@ -53,20 +53,20 @@ namespace feng3d
 
                 //recreate the matrix with just the rotation data
                 this._matrix.identity();
-                this._matrix.appendRotation(-comps[1].w * Math.RAD2DEG, comps[1]);
+                this._matrix.appendRotation(comps[1], -comps[1].w * Math.RAD2DEG);
             }
-            particleAnimator.animatorSet.setGlobal("billboardMatrix",this._matrix);
+            particleAnimator.animatorSet.setGlobal("billboardMatrix", this._matrix);
         }
 
 		/**
 		 * 广告牌轴线
 		 */
-        public get billboardAxis(): Vector3D
+        get billboardAxis(): Vector3D
         {
             return this._billboardAxis;
         }
 
-        public set billboardAxis(value: Vector3D)
+        set billboardAxis(value: Vector3D)
         {
             this._billboardAxis = value ? value.clone() : null;
             if (this._billboardAxis)

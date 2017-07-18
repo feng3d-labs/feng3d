@@ -8,11 +8,11 @@ namespace feng3d
     export class SkeletonPose
     {
         /** 关节pose列表 */
-        public jointPoses: JointPose[];
+        jointPoses: JointPose[];
 
         private _globalMatrix3Ds: Matrix3D[];
 
-        public get numJointPoses(): number
+        get numJointPoses(): number
         {
             return this.jointPoses.length;
         }
@@ -22,7 +22,7 @@ namespace feng3d
             this.jointPoses = [];
         }
 
-        public get globalMatrix3Ds()
+        get globalMatrix3Ds()
         {
             if (!this._globalMatrix3Ds)
             {
@@ -41,7 +41,7 @@ namespace feng3d
             return this._globalMatrix3Ds;
         }
 
-        public invalid()
+        invalid()
         {
             this._globalMatrix3Ds = null;
         }

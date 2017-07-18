@@ -10,7 +10,7 @@ namespace feng3d
 		 * 创建粒子属性
          * @param particle                  粒子
 		 */
-        public generateParticle(particle: Particle)
+        generateParticle(particle: Particle)
         {
             var baseVelocity = 100;
 

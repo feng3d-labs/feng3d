@@ -5,22 +5,26 @@ namespace feng3d
         /**
          * 添加渲染元素
          */
-        public static ADD_RENDERELEMENT = "addRenderElement";
+        static ADD_RENDERELEMENT = "addRenderElement";
         /**
          * 移除渲染元素
          */
-        public static REMOVE_RENDERELEMENT = "removeRenderElement";
+        static REMOVE_RENDERELEMENT = "removeRenderElement";
         /**
          * 添加渲染数据拥有者
          */
-        public static ADD_RENDERHOLDER = "addRenderHolder";
+        static ADD_RENDERHOLDER = "addRenderHolder";
         /**
          * 移除渲染数据拥有者
          */
-        public static REMOVE_RENDERHOLDER = "removeRenderHolder";
+        static REMOVE_RENDERHOLDER = "removeRenderHolder";
+        /**
+         * 渲染数据拥有者数据失效
+         */
+        static INVALIDATE_RENDERHOLDER = "invalidateRenderHolder";
 
         private _invalidateRenderDataHolderList: RenderDataHolder[] = [];
-        public renderHolderInvalid = true;
+        renderHolderInvalid = true;
 
         private onInvalidate(event: EventVO<any>)
         {
@@ -72,11 +76,14 @@ namespace feng3d
         private renderDataHolders: RenderDataHolder[] = [];
         private updateEverytimeList: RenderDataHolder[] = [];
 
-        public addRenderDataHolder(renderDataHolder: RenderDataHolder|RenderDataHolder[])
+        addRenderDataHolder(renderDataHolder: RenderDataHolder | RenderDataHolder[])
         {
-            if(renderDataHolder instanceof RenderDataHolder)
+            if (renderDataHolder instanceof RenderDataHolder)
             {
                 this.addRenderDataHolder(renderDataHolder.childrenRenderDataHolder);
+                var index = this.renderDataHolders.indexOf(renderDataHolder);
+                if (index != -1)
+                    return;
                 this.renderDataHolders.push(renderDataHolder);
                 if (renderDataHolder.updateEverytime)
                 {
@@ -84,25 +91,31 @@ namespace feng3d
                 }
                 this.addRenderElement(renderDataHolder.elements);
                 this.addInvalidateShader(renderDataHolder);
-                Event.on(renderDataHolder,<any>Object3DRenderAtomic.ADD_RENDERELEMENT, this.onAddElement, this);
-                Event.on(renderDataHolder,<any>Object3DRenderAtomic.REMOVE_RENDERELEMENT, this.onRemoveElement, this);
-                Event.on(renderDataHolder,<any>Object3DRenderAtomic.ADD_RENDERHOLDER, this.onAddRenderHolder, this);
-                Event.on(renderDataHolder,<any>Object3DRenderAtomic.REMOVE_RENDERHOLDER, this.onRemoveRenderHolder, this);
-            }else{
-                for (var i = 0; i < renderDataHolder.length; i++) {
+                this.addInvalidateHolders(renderDataHolder);
+                Event.on(renderDataHolder, <any>Object3DRenderAtomic.ADD_RENDERELEMENT, this.onAddElement, this);
+                Event.on(renderDataHolder, <any>Object3DRenderAtomic.REMOVE_RENDERELEMENT, this.onRemoveElement, this);
+                Event.on(renderDataHolder, <any>Object3DRenderAtomic.ADD_RENDERHOLDER, this.onAddRenderHolder, this);
+                Event.on(renderDataHolder, <any>Object3DRenderAtomic.REMOVE_RENDERHOLDER, this.onRemoveRenderHolder, this);
+                Event.on(renderDataHolder, <any>Object3DRenderAtomic.INVALIDATE_RENDERHOLDER, this.onInvalidate, this);
+            } else
+            {
+                for (var i = 0; i < renderDataHolder.length; i++)
+                {
                     this.addRenderDataHolder(renderDataHolder[i]);
                 }
             }
         }
 
-        public removeRenderDataHolder(renderDataHolder: RenderDataHolder|RenderDataHolder[])
+        removeRenderDataHolder(renderDataHolder: RenderDataHolder | RenderDataHolder[])
         {
-            if(renderDataHolder instanceof Array)
+            if (renderDataHolder instanceof Array)
             {
-                for (var i = 0; i < renderDataHolder.length; i++) {
+                for (var i = 0; i < renderDataHolder.length; i++)
+                {
                     this.removeRenderDataHolder(renderDataHolder[i]);
                 }
-            }else{
+            } else
+            {
                 this.removeRenderDataHolder(renderDataHolder.childrenRenderDataHolder);
                 var index = this.renderDataHolders.indexOf(renderDataHolder);
                 if (index != -1)
@@ -115,14 +128,14 @@ namespace feng3d
                 }
                 this.removeRenderElement(renderDataHolder.elements);
                 this.addInvalidateShader(renderDataHolder);
-                Event.off(renderDataHolder,<any>Object3DRenderAtomic.ADD_RENDERELEMENT, this.onAddElement, this);
-                Event.off(renderDataHolder,<any>Object3DRenderAtomic.REMOVE_RENDERELEMENT, this.onRemoveElement, this);
-                Event.off(renderDataHolder,<any>Object3DRenderAtomic.ADD_RENDERHOLDER, this.onAddRenderHolder, this);
-                Event.off(renderDataHolder,<any>Object3DRenderAtomic.REMOVE_RENDERHOLDER, this.onRemoveRenderHolder, this);
+                Event.off(renderDataHolder, <any>Object3DRenderAtomic.ADD_RENDERELEMENT, this.onAddElement, this);
+                Event.off(renderDataHolder, <any>Object3DRenderAtomic.REMOVE_RENDERELEMENT, this.onRemoveElement, this);
+                Event.off(renderDataHolder, <any>Object3DRenderAtomic.ADD_RENDERHOLDER, this.onAddRenderHolder, this);
+                Event.off(renderDataHolder, <any>Object3DRenderAtomic.REMOVE_RENDERHOLDER, this.onRemoveRenderHolder, this);
             }
         }
 
-        public update(renderContext: RenderContext)
+        update(renderContext: RenderContext)
         {
             renderContext.updateRenderData1();
             this.addRenderDataHolder(renderContext);
@@ -143,7 +156,7 @@ namespace feng3d
             }
         }
 
-        public clear()
+        clear()
         {
             this.renderDataHolders.forEach(element =>
             {

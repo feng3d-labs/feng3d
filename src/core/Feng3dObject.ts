@@ -6,7 +6,7 @@ namespace feng3d
     /**
      * Base class for all objects feng3d can reference.
      * 
-     * Any public variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
+     * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
      */
     export class Feng3dObject extends RenderDataHolder
     {
@@ -16,16 +16,16 @@ namespace feng3d
         /**
          * Should the Feng3dObject be hidden, saved with the scene or modifiable by the user?
          */
-        public hideFlags: HideFlags;
+        hideFlags: HideFlags;
 
         /**
          * The name of the Feng3dObject.
          * Components share the same name with the game object and all attached components.
          */
-        public name: string;
+        name: string;
 
         //------------------------------------------
-        // Public Functions
+        // Functions
         //------------------------------------------
         constructor()
         {
@@ -36,7 +36,7 @@ namespace feng3d
         /**
          * Returns the instance id of the Feng3dObject.
          */
-        public get uuid()
+        get uuid()
         {
             return this._uuid;
         }
@@ -44,7 +44,7 @@ namespace feng3d
         /**
          * Returns the name of the game Feng3dObject.
          */
-        public toString()
+        toString()
         {
             return this.name;
         }
@@ -57,7 +57,7 @@ namespace feng3d
          * @param obj	The Feng3dObject to destroy.
          * @param t	    The optional amount of time to delay before destroying the Feng3dObject.
          */
-        public static destroy(obj: Feng3dObject, t: number = 0)
+        static destroy(obj: Feng3dObject, t = 0)
         {
 
         }
@@ -67,7 +67,7 @@ namespace feng3d
          * @param obj	                    Feng3dObject to be destroyed.
          * @param allowDestroyingAssets	    Set to true to allow assets to be destoyed.
          */
-        public static destroyImmediate(obj: Feng3dObject, allowDestroyingAssets = false)
+        static destroyImmediate(obj: Feng3dObject, allowDestroyingAssets = false)
         {
 
         }
@@ -75,7 +75,7 @@ namespace feng3d
         /**
          * Makes the Feng3dObject target not be destroyed automatically when loading a new scene.
          */
-        public static dontDestroyOnLoad(target: Feng3dObject)
+        static dontDestroyOnLoad(target: Feng3dObject)
         {
 
         }
@@ -83,7 +83,7 @@ namespace feng3d
         /**
          * Returns the first active loaded Feng3dObject of Type type.
          */
-        public static findObjectOfType<T extends Feng3dObject>(type: Type<T>): T
+        static findObjectOfType<T extends Feng3dObject>(type: Type<T>): T
         {
 
             return null;
@@ -92,7 +92,7 @@ namespace feng3d
         /**
          * Returns a list of all active loaded objects of Type type.
          */
-        public static findObjectsOfType<T extends Feng3dObject>(type: Type<T>): T[]
+        static findObjectsOfType<T extends Feng3dObject>(type: Type<T>): T[]
         {
             return null;
         }
@@ -105,7 +105,7 @@ namespace feng3d
          * @param parent	The transform the Feng3dObject will be parented to.
          * @param worldPositionStays	If when assigning the parent the original world position should be maintained.
          */
-        public static instantiate<T extends Feng3dObject>(original: T, position: Vector3D = null, rotation: Quaternion = null, parent: Transform = null, worldPositionStays: boolean = false): T
+        static instantiate<T extends Feng3dObject>(original: T, position: Vector3D = null, rotation: Quaternion = null, parent: Transform = null, worldPositionStays = false): T
         {
             return null;
         }

@@ -8,19 +8,19 @@ namespace feng3d
     {
         private _animationClipNode: AnimationClipNodeBase;
         protected _blendWeight: number;
-        protected _currentFrame: number = 0;
+        protected _currentFrame = 0;
         protected _nextFrame: number;
 
         protected _oldFrame: number;
         protected _timeDir: number;
-        protected _framesDirty: boolean = true;
+        protected _framesDirty = true;
 
 		/**
 		 * 混合权重	(0[当前帧],1[下一帧])
 		 * @see #currentFrame
 		 * @see #nextFrame
 		 */
-        public get blendWeight(): number
+        get blendWeight(): number
         {
             if (this._framesDirty)
                 this.updateFrames();
@@ -31,7 +31,7 @@ namespace feng3d
 		/**
 		 * 当前帧
 		 */
-        public get currentFrame(): number
+        get currentFrame(): number
         {
             if (this._framesDirty)
                 this.updateFrames();
@@ -42,7 +42,7 @@ namespace feng3d
 		/**
 		 * 下一帧
 		 */
-        public get nextFrame(): number
+        get nextFrame(): number
         {
             if (this._framesDirty)
                 this.updateFrames();
@@ -65,7 +65,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public update(time: number)
+        update(time: number)
         {
             if (!this._animationClipNode.looping)
             {
@@ -84,9 +84,9 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public phase(value: number)
+        phase(value: number)
         {
-            var time: number = value * this._animationClipNode.totalDuration + this._startTime;
+            var time = value * this._animationClipNode.totalDuration + this._startTime;
 
             if (this._time == time - this._startTime)
                 return;
@@ -117,10 +117,10 @@ namespace feng3d
         {
             this._framesDirty = false;
 
-            var looping: boolean = this._animationClipNode.looping;
-            var totalDuration: number = this._animationClipNode.totalDuration;
-            var lastFrame: number = this._animationClipNode.lastFrame;
-            var time: number = this._time;
+            var looping = this._animationClipNode.looping;
+            var totalDuration = this._animationClipNode.totalDuration;
+            var lastFrame = this._animationClipNode.lastFrame;
+            var time = this._time;
 
             //trace("time", time, totalDuration)
             if (looping && (time >= totalDuration || time < 0))
@@ -145,7 +145,7 @@ namespace feng3d
             }
             else if (this._animationClipNode.fixedFrameRate)
             {
-                var t: number = time / totalDuration * lastFrame;
+                var t = time / totalDuration * lastFrame;
                 this._currentFrame = ~~t;
                 this._blendWeight = t - this._currentFrame;
                 this._nextFrame = this._currentFrame + 1;
@@ -155,7 +155,7 @@ namespace feng3d
                 this._currentFrame = 0;
                 this._nextFrame = 0;
 
-                var dur: number = 0, frameTime: number;
+                var dur = 0, frameTime: number;
                 var durations: number[] = this._animationClipNode.durations;
 
                 do

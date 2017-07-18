@@ -6,11 +6,11 @@ namespace feng3d
      */
     export class SphereGeometry extends Geometry
     {
-        public get radius()
+        get radius()
         {
             return this._radius;
         }
-        public set radius(value)
+        set radius(value)
         {
             if(this._radius == value)
                 return;
@@ -19,11 +19,11 @@ namespace feng3d
         }
         private _radius = 50;
 
-        public get segmentsW()
+        get segmentsW()
         {
             return this._segmentsW;
         }
-        public set segmentsW(value)
+        set segmentsW(value)
         {
             if(this._segmentsW == value)
                 return;
@@ -32,11 +32,11 @@ namespace feng3d
         }
         private _segmentsW = 16;
 
-        public get segmentsH()
+        get segmentsH()
         {
             return this._segmentsH;
         }
-        public set segmentsH(value)
+        set segmentsH(value)
         {
             if(this._segmentsH == value)
                 return;
@@ -45,11 +45,11 @@ namespace feng3d
         }
         private _segmentsH = 12;
 
-        public get yUp()
+        get yUp()
         {
             return this._yUp;
         }
-        public set yUp(value)
+        set yUp(value)
         {
             if(this._yUp == value)
                 return;
@@ -89,23 +89,23 @@ namespace feng3d
             var vertexTangentData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
 
             var startIndex: number;
-            var index: number = 0;
+            var index = 0;
             var comp1: number, comp2: number, t1: number, t2: number;
-            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
+            for (var yi = 0; yi <= this.segmentsH; ++yi)
             {
                 startIndex = index;
 
-                var horangle: number = Math.PI * yi / this.segmentsH;
-                var z: number = -this.radius * Math.cos(horangle);
-                var ringradius: number = this.radius * Math.sin(horangle);
+                var horangle = Math.PI * yi / this.segmentsH;
+                var z = -this.radius * Math.cos(horangle);
+                var ringradius = this.radius * Math.sin(horangle);
 
-                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
+                for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
-                    var verangle: number = 2 * Math.PI * xi / this.segmentsW;
-                    var x: number = ringradius * Math.cos(verangle);
-                    var y: number = ringradius * Math.sin(verangle);
-                    var normLen: number = 1 / Math.sqrt(x * x + y * y + z * z);
-                    var tanLen: number = Math.sqrt(y * y + x * x);
+                    var verangle = 2 * Math.PI * xi / this.segmentsW;
+                    var x = ringradius * Math.cos(verangle);
+                    var y = ringradius * Math.sin(verangle);
+                    var normLen = 1 / Math.sqrt(x * x + y * y + z * z);
+                    var tanLen = Math.sqrt(y * y + x * x);
 
                     if (this.yUp)
                     {
@@ -188,16 +188,16 @@ namespace feng3d
             var indices = new Uint16Array(this.segmentsH * this.segmentsW * 6);
 
             var numIndices = 0;
-            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
+            for (var yi = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
+                for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
                     if (xi > 0 && yi > 0)
                     {
-                        var a: number = (this.segmentsW + 1) * yi + xi;
-                        var b: number = (this.segmentsW + 1) * yi + xi - 1;
-                        var c: number = (this.segmentsW + 1) * (yi - 1) + xi - 1;
-                        var d: number = (this.segmentsW + 1) * (yi - 1) + xi;
+                        var a = (this.segmentsW + 1) * yi + xi;
+                        var b = (this.segmentsW + 1) * yi + xi - 1;
+                        var c = (this.segmentsW + 1) * (yi - 1) + xi - 1;
+                        var d = (this.segmentsW + 1) * (yi - 1) + xi;
 
                         if (yi == this.segmentsH)
                         {
@@ -235,11 +235,11 @@ namespace feng3d
         private buildUVs()
         {
             var data = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 2);
-            var index: number = 0;
+            var index = 0;
 
-            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
+            for (var yi = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
+                for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
                     data[index++] = xi / this.segmentsW;
                     data[index++] = yi / this.segmentsH;

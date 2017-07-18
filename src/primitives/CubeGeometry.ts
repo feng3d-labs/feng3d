@@ -7,97 +7,97 @@ namespace feng3d
      */
     export class CubeGeometry extends Geometry
     {
-        public get width()
+        get width()
         {
             return this._width;
         }
-        public set width(value)
+        set width(value)
         {
-            if(this._width == value)
+            if (this._width == value)
                 return;
             this._width = value;
             this.invalidateGeometry();
         }
         private _width = 100;
 
-        public get height()
+        get height()
         {
             return this._height;
         }
-        public set height(value)
+        set height(value)
         {
-            if(this._height == value)
+            if (this._height == value)
                 return;
             this._height = value;
             this.invalidateGeometry();
         }
         private _height = 100;
 
-        public get depth()
+        get depth()
         {
             return this._depth;
         }
-        public set depth(value)
+        set depth(value)
         {
-            if(this._depth == value)
+            if (this._depth == value)
                 return;
             this._depth = value;
             this.invalidateGeometry();
         }
         private _depth = 100;
 
-        public get segmentsW()
+        get segmentsW()
         {
             return this._segmentsW;
         }
-        public set segmentsW(value)
+        set segmentsW(value)
         {
-            if(this._segmentsW == value)
+            if (this._segmentsW == value)
                 return;
             this._segmentsW = value;
             this.invalidateGeometry();
         }
         private _segmentsW = 1;
 
-        public get segmentsH()
+        get segmentsH()
         {
             return this._segmentsH;
         }
-        public set segmentsH(value)
+        set segmentsH(value)
         {
-            if(this._segmentsH == value)
+            if (this._segmentsH == value)
                 return;
             this._segmentsH = value;
             this.invalidateGeometry();
         }
         private _segmentsH = 1;
 
-        public get segmentsD()
+        get segmentsD()
         {
             return this._segmentsD;
         }
-        public set segmentsD(value)
+        set segmentsD(value)
         {
-            if(this._segmentsD == value)
+            if (this._segmentsD == value)
                 return;
             this._segmentsD = value;
             this.invalidateGeometry();
         }
         private _segmentsD = 1;
 
-        public get tile6()
+        get tile6()
         {
             return this._tile6;
         }
-        public set tile6(value)
+        set tile6(value)
         {
-            if(this._tile6 == value)
+            if (this._tile6 == value)
                 return;
             this._tile6 = value;
             this.invalidateGeometry();
         }
         private _tile6 = true;
-        
+
         /**
          * 创建立方几何体
          * @param   width           宽度，默认为100。
@@ -156,7 +156,7 @@ namespace feng3d
             var outer_pos: number;
 
             // Indices
-            var positionIndex: number = 0;
+            var positionIndex = 0;
 
             // half cube dimensions
             hw = this.width / 2;
@@ -238,7 +238,7 @@ namespace feng3d
             var i: number, j: number;
 
             // Indices
-            var normalIndex: number = 0;
+            var normalIndex = 0;
 
             for (i = 0; i <= this.segmentsW; i++)
             {
@@ -304,7 +304,7 @@ namespace feng3d
             var i: number, j: number;
 
             // Indices
-            var tangentIndex: number = 0;
+            var tangentIndex = 0;
 
             for (i = 0; i <= this.segmentsW; i++)
             {
@@ -371,9 +371,9 @@ namespace feng3d
             var indices = new Uint16Array((this.segmentsW * this.segmentsH + this.segmentsW * this.segmentsD + this.segmentsH * this.segmentsD) * 12);
 
             var tl: number, tr: number, bl: number, br: number;
-            var i: number, j: number, inc: number = 0;
+            var i: number, j: number, inc = 0;
 
-            var fidx: number = 0;
+            var fidx = 0;
 
             for (i = 0; i <= this.segmentsW; i++)
             {

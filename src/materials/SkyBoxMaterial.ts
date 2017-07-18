@@ -7,11 +7,11 @@ namespace feng3d
      */
     export class SkyBoxMaterial extends Material
     {
-        public get texture()
+        get texture()
         {
             return this._texture;
         }
-        public set texture(value)
+        set texture(value)
         {
             if (this._texture == value)
                 return;
@@ -22,7 +22,7 @@ namespace feng3d
         constructor(images: string[] = null)
         {
             super();
-            this.setShader("skybox");
+            this.shaderName = "skybox";
             if (images)
             {
                 this.texture = new TextureCube(images);

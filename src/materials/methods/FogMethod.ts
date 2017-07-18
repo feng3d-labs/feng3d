@@ -5,11 +5,11 @@ namespace feng3d
         /**
 		 * 出现雾效果的最近距离
 		 */
-        public get minDistance()
+        get minDistance()
         {
             return this._minDistance;
         }
-        public set minDistance(value)
+        set minDistance(value)
         {
             this._minDistance = value;
         }
@@ -17,11 +17,11 @@ namespace feng3d
 		/**
 		 * 最远距离
 		 */
-        public get maxDistance()
+        get maxDistance()
         {
             return this._maxDistance;
         }
-        public set maxDistance(value)
+        set maxDistance(value)
         {
             this._maxDistance = value;
         }
@@ -29,20 +29,20 @@ namespace feng3d
         /**
 		 * 雾的颜色
 		 */
-        public get fogColor()
+        get fogColor()
         {
             return this._fogColor;
         }
-        public set fogColor(value)
+        set fogColor(value)
         {
             this._fogColor = value;
         }
         private _fogColor: Color;
-        public get density()
+        get density()
         {
             return this._density;
         }
-        public set density(value)
+        set density(value)
         {
             this.density = value;
         }
@@ -50,11 +50,11 @@ namespace feng3d
         /**
          * 雾模式
          */
-        public get mode()
+        get mode()
         {
             return this._mode;
         }
-        public set mode(value)
+        set mode(value)
         {
             this._mode = value;
         }

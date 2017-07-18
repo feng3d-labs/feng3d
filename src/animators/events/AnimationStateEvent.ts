@@ -8,9 +8,13 @@ namespace feng3d
 		/**
 		 * Dispatched when a non-looping clip node inside an animation state reaches the end of its timeline.
 		 */
-		public static PLAYBACK_COMPLETE: string = "playbackComplete";
+		static PLAYBACK_COMPLETE: string = "playbackComplete";
 
-		public static TRANSITION_COMPLETE: string = "transitionComplete";
+		static TRANSITION_COMPLETE: string = "transitionComplete";
+
+		animator: AnimatorBase;
+		animationState: AnimationStateBase;
+		animationNode: AnimationNodeBase;
 
 		/**
 		 * Create a new <code>AnimatonStateEvent</code>
@@ -19,8 +23,11 @@ namespace feng3d
 		 * @param animator The animation state object that is the subject of this event.
 		 * @param animationNode The animation node inside the animation state from which the event originated.
 		 */
-		constructor(public animator: AnimatorBase,public animationState: AnimationStateBase,public animationNode: AnimationNodeBase)
+		constructor(animator: AnimatorBase, animationState: AnimationStateBase, animationNode: AnimationNodeBase)
 		{
+			this.animator = animator;
+			this.animationState = animationState;
+			this.animationNode = animationNode;
 		}
 	}
 }

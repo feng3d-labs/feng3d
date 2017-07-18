@@ -18,17 +18,17 @@ namespace feng3d
         /**
          * 手动应用更新到目标3D对象
          */
-        public update(interpolate: boolean = true): void
+        update(interpolate = true): void
         {
             throw new Error("Abstract method");
         }
 
-        public get targetObject(): GameObject
+        get targetObject(): GameObject
         {
             return this._targetObject;
         }
 
-        public set targetObject(val: GameObject)
+        set targetObject(val: GameObject)
         {
             this._targetObject = val;
         }

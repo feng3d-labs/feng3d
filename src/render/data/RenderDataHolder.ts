@@ -9,10 +9,10 @@ namespace feng3d
         /**
          * 是否每次必须更新
          */
-        public get updateEverytime() { return this._updateEverytime; }
+        get updateEverytime() { return this._updateEverytime; }
         protected _updateEverytime = false;
 
-        public childrenRenderDataHolder: RenderDataHolder[] = [];
+        childrenRenderDataHolder: RenderDataHolder[] = [];
 
 		/**
 		 * 创建GL数据缓冲
@@ -26,7 +26,7 @@ namespace feng3d
          * 收集渲染数据拥有者
          * @param renderAtomic 渲染原子
          */
-        public collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
+        collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
         {
             renderAtomic.addRenderDataHolder(this);
             for (var i = 0; i < this.childrenRenderDataHolder.length; i++)
@@ -35,14 +35,14 @@ namespace feng3d
             }
         }
 
-        public addRenderDataHolder(renderDataHolder: RenderDataHolder)
+        addRenderDataHolder(renderDataHolder: RenderDataHolder)
         {
             if (this.childrenRenderDataHolder.indexOf(renderDataHolder) == -1)
                 this.childrenRenderDataHolder.push(renderDataHolder);
             Event.dispatch(this, <any>Object3DRenderAtomic.ADD_RENDERHOLDER, renderDataHolder);
         }
 
-        public removeRenderDataHolder(renderDataHolder: RenderDataHolder)
+        removeRenderDataHolder(renderDataHolder: RenderDataHolder)
         {
             var index = this.childrenRenderDataHolder.indexOf(renderDataHolder);
             if (index != -1)
@@ -53,8 +53,14 @@ namespace feng3d
 		/**
 		 * 更新渲染数据
 		 */
-        public updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
+        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
         }
+
+        invalidate()
+        {
+            Event.dispatch(this, <any>Object3DRenderAtomic.INVALIDATE_RENDERHOLDER, this);
+        }
+
     }
 }

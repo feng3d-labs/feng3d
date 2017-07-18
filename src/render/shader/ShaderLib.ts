@@ -1,5 +1,9 @@
 namespace feng3d
 {
+    /**
+     * 着色器库，由shader.ts初始化
+     */
+    export var shaderFileMap: { [filePath: string]: string };
 
     /**
      * 渲染代码库
@@ -7,7 +11,7 @@ namespace feng3d
      */
     export class ShaderLib
     {
-        public static getShaderContentByName(shaderName: string)
+        static getShaderContentByName(shaderName: string)
         {
             var shaderPath = "shaders/" + shaderName + ".glsl";
             return shaderFileMap[shaderPath];
@@ -16,7 +20,7 @@ namespace feng3d
         /**
          * 获取shaderCode
          */
-        public static getShaderCode(shaderName: string)
+        static getShaderCode(shaderName: string)
         {
             if (!_shaderMap[shaderName])
                 _shaderMap[shaderName] = ShaderLoader.loadText(shaderName);
@@ -44,7 +48,7 @@ namespace feng3d
          * 加载shader
          * @param url   路径
          */
-        public static loadText(shaderName: string)
+        static loadText(shaderName: string)
         {
             var shaderCode = ShaderLib.getShaderContentByName(shaderName);
 

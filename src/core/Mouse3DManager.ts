@@ -7,13 +7,13 @@ namespace feng3d
 	 */
     export class Mouse3DManager
     {
-        public viewRect: Rectangle = new Rectangle(0, 0, 100, 100);
+        viewRect: Rectangle = new Rectangle(0, 0, 100, 100);
         /**
          * 鼠标拾取渲染器
          */
         private mouseRenderer: MouseRenderer;
-        public mouseX: number = 0;
-        public mouseY: number = 0;
+        mouseX = 0;
+        mouseY = 0;
 
         private selectedObject3D: Transform;
         private mouseEventTypes: string[] = [];
@@ -34,11 +34,11 @@ namespace feng3d
         /**
          * 是否捕捉鼠标移动，默认false。
          */
-        public get catchMouseMove()
+        get catchMouseMove()
         {
             return this._catchMouseMove;
         }
-        public set catchMouseMove(value)
+        set catchMouseMove(value)
         {
             if (this._catchMouseMove == value)
                 return;
@@ -85,7 +85,7 @@ namespace feng3d
         /**
 		 * 渲染
 		 */
-        public draw(renderContext: RenderContext)
+        draw(renderContext: RenderContext)
         {
             if (!this.viewRect.contains(this.mouseX, this.mouseY))
                 return;
@@ -138,12 +138,12 @@ namespace feng3d
             while (i < checkList.length)
             {
                 var checkObject = checkList[i++];
-                if (checkObject.mouseEnabled && checkObject.getComponents(MeshFilter))
+                if (checkObject.mouseEnabled)
                 {
-                    results.push(checkObject.gameObject as GameObject);
-                }
-                if (checkObject.mouseChildren)
-                {
+                    if (checkObject.getComponents(MeshFilter))
+                    {
+                        results.push(checkObject.gameObject as GameObject);
+                    }
                     checkList = checkList.concat(checkObject.getChildren());
                 }
             }

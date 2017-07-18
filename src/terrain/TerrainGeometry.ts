@@ -7,107 +7,107 @@ namespace feng3d
      */
     export class TerrainGeometry extends Geometry
     {
-        public get heightMapUrl()
+        get heightMapUrl()
         {
             return this._heightImage.src;
         }
-        public set heightMapUrl(value)
+        set heightMapUrl(value)
         {
             if (this._heightImage.src == value)
                 return;
             this._heightImage.src = value;
         }
 
-        public get width()
+        get width()
         {
             return this._width;
         }
-        public set width(value)
+        set width(value)
         {
             if (this._width == value)
                 return;
             this._width = value;
             this.invalidateGeometry();
         }
-        private _width: number = 1000;
+        private _width = 1000;
 
-        public get height()
+        get height()
         {
             return this._height;
         }
-        public set height(value)
+        set height(value)
         {
             if (this._height == value)
                 return;
             this._height = value;
             this.invalidateGeometry();
         }
-        private _height: number = 100;
+        private _height = 100;
 
-        public get depth()
+        get depth()
         {
             return this._depth;
         }
-        public set depth(value)
+        set depth(value)
         {
             if (this._depth == value)
                 return;
             this._depth = value;
             this.invalidateGeometry();
         }
-        private _depth: number = 1000;
+        private _depth = 1000;
 
-        public get segmentsW()
+        get segmentsW()
         {
             return this._segmentsW;
         }
-        public set segmentsW(value)
+        set segmentsW(value)
         {
             if (this._segmentsW == value)
                 return;
             this._segmentsW = value;
             this.invalidateGeometry();
         }
-        private _segmentsW: number = 30;
+        private _segmentsW = 30;
 
-        public get segmentsH()
+        get segmentsH()
         {
             return this._segmentsH;
         }
-        public set segmentsH(value)
+        set segmentsH(value)
         {
             if (this._segmentsH == value)
                 return;
             this._segmentsH = value;
             this.invalidateGeometry();
         }
-        private _segmentsH: number = 30;
+        private _segmentsH = 30;
 
-        public get maxElevation()
+        get maxElevation()
         {
             return this._maxElevation;
         }
-        public set maxElevation(value)
+        set maxElevation(value)
         {
             if (this._maxElevation == value)
                 return;
             this._maxElevation = value;
             this.invalidateGeometry();
         }
-        private _maxElevation: number = 255;
+        private _maxElevation = 255;
 
-        public get minElevation()
+        get minElevation()
         {
             return this._minElevation;
         }
-        public set minElevation(value)
+        set minElevation(value)
         {
             if (this._minElevation == value)
                 return;
             this._minElevation = value;
             this.invalidateGeometry();
         }
-        private _minElevation: number = 0;
+        private _minElevation = 0;
 
         private _heightMap: ImageData;
         private _heightImage: HTMLImageElement;
@@ -156,7 +156,6 @@ namespace feng3d
             var terrainHeightData = ctxt.getImageData(0, 0, this._heightImage.width, this._heightImage.height);//读取整张图片的像素。
             ctxt.putImageData(terrainHeightData, terrainHeightData.width, terrainHeightData.height);
             this._heightMap = terrainHeightData;
-
             this.invalidateGeometry();
         }
 
@@ -168,16 +167,16 @@ namespace feng3d
             if (!this._heightMap)
                 return;
             var x: number, z: number;
-            var numInds: number = 0;
-            var base: number = 0;
+            var numInds = 0;
+            var base = 0;
             //一排顶点数据
-            var tw: number = this.segmentsW + 1;
+            var tw = this.segmentsW + 1;
             //总顶点数量
-            var numVerts: number = (this.segmentsH + 1) * tw;
+            var numVerts = (this.segmentsH + 1) * tw;
             //一个格子所占高度图X轴像素数
-            var uDiv: number = (this._heightMap.width - 1) / this.segmentsW;
+            var uDiv = (this._heightMap.width - 1) / this.segmentsW;
             //一个格子所占高度图Y轴像素数
-            var vDiv: number = (this._heightMap.height - 1) / this.segmentsH;
+            var vDiv = (this._heightMap.height - 1) / this.segmentsH;
             var u: number, v: number;
             var y: number;
 
@@ -186,9 +185,9 @@ namespace feng3d
 
             numVerts = 0;
             var col: number;
-            for (var zi: number = 0; zi <= this.segmentsH; ++zi)
+            for (var zi = 0; zi <= this.segmentsH; ++zi)
             {
-                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
+                for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
                     //顶点坐标
                     x = (xi / this.segmentsW - .5) * this.width;
@@ -236,14 +235,14 @@ namespace feng3d
 		 */
         private buildUVs()
         {
-            var numUvs: number = (this.segmentsH + 1) * (this.segmentsW + 1) * 2;
+            var numUvs = (this.segmentsH + 1) * (this.segmentsW + 1) * 2;
             var uvs = new Float32Array(numUvs);
 
             numUvs = 0;
             //计算每个顶点的uv坐标
-            for (var yi: number = 0; yi <= this.segmentsH; ++yi)
+            for (var yi = 0; yi <= this.segmentsH; ++yi)
             {
-                for (var xi: number = 0; xi <= this.segmentsW; ++xi)
+                for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
                     uvs[numUvs++] = xi / this.segmentsW;
                     uvs[numUvs++] = 1 - yi / this.segmentsH;
@@ -259,14 +258,14 @@ namespace feng3d
 		 * @param z z坐标
 		 * @return 高度
 		 */
-        public getHeightAt(x: number, z: number): number
+        getHeightAt(x: number, z: number): number
         {
 
             //得到高度图中的值
-            var u: number = (x / this.width + .5) * (this._heightMap.width - 1);
-            var v: number = (-z / this.depth + .5) * (this._heightMap.height - 1);
+            var u = (x / this.width + .5) * (this._heightMap.width - 1);
+            var v = (-z / this.depth + .5) * (this._heightMap.height - 1);
 
-            var col: number = this.getPixel(this._heightMap, u, v) & 0xff;
+            var col = this.getPixel(this._heightMap, u, v) & 0xff;
 
             var h: number;
             if (col > this.maxElevation)

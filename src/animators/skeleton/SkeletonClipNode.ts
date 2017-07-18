@@ -8,7 +8,7 @@ namespace feng3d
 	 */
     export class SkeletonClipNode extends AnimationClipNodeBase
     {
-        public name:string;
+        name:string;
         private _frames: SkeletonPose[] = [];
 
 		/**
@@ -23,7 +23,7 @@ namespace feng3d
 		/**
 		 * 骨骼姿势动画帧列表
 		 */
-        public get frames(): SkeletonPose[]
+        get frames(): SkeletonPose[]
         {
             return this._frames;
         }
@@ -33,7 +33,7 @@ namespace feng3d
 		 * @param skeletonPose 骨骼姿势
 		 * @param duration 持续时间
 		 */
-        public addFrame(skeletonPose: SkeletonPose, duration: number)
+        addFrame(skeletonPose: SkeletonPose, duration: number)
         {
             this._frames.push(skeletonPose);
             this._durations.push(duration);
@@ -51,7 +51,7 @@ namespace feng3d
         {
             super.updateStitch();
 
-            var i: number = this._numFrames - 1;
+            var i = this._numFrames - 1;
             var p1: Vector3D, p2: Vector3D, delta: Vector3D;
             while (i--)
             {

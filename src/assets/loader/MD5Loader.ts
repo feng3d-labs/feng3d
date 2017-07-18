@@ -13,7 +13,7 @@ namespace feng3d
          * 加载资源
          * @param url   路径
          */
-        public load(url: string, completed: (object3D: GameObject, skeletonAnimator: SkeletonAnimator) => void = null)
+        load(url: string, completed: (object3D: GameObject, skeletonAnimator: SkeletonAnimator) => void = null)
         {
             this._url = url
             this._completed = completed;
@@ -28,7 +28,7 @@ namespace feng3d
             loader.loadText(url);
         }
 
-        public loadAnim(url: string, completed: (object3D: SkeletonClipNode) => void = null)
+        loadAnim(url: string, completed: (object3D: SkeletonClipNode) => void = null)
         {
             this._url = url
             this._animCompleted = completed;
@@ -81,18 +81,18 @@ namespace feng3d
             var _maxJointCount = 0;
 
             //遍历所有的网格数据
-            var numMeshData: number = md5MeshData.meshs.length;
-            for (var i: number = 0; i < numMeshData; ++i)
+            var numMeshData = md5MeshData.meshs.length;
+            for (var i = 0; i < numMeshData; ++i)
             {
                 var meshData: MD5_Mesh = md5MeshData.meshs[i];
                 var vertexData: MD5_Vertex[] = meshData.verts;
-                var numVerts: number = vertexData.length;
+                var numVerts = vertexData.length;
 
                 //遍历每个顶点 寻找关节关联最大数量
-                for (var j: number = 0; j < numVerts; ++j)
+                for (var j = 0; j < numVerts; ++j)
                 {
-                    var zeroWeights: number = this.countZeroWeightJoints(vertexData[j], meshData.weights);
-                    var totalJoints: number = vertexData[j].countWeight - zeroWeights;
+                    var zeroWeights = this.countZeroWeightJoints(vertexData[j], meshData.weights);
+                    var totalJoints = vertexData[j].countWeight - zeroWeights;
                     if (totalJoints > _maxJointCount)
                         _maxJointCount = totalJoints;
                 }
@@ -108,12 +108,12 @@ namespace feng3d
 		 */
         private countZeroWeightJoints(vertex: MD5_Vertex, weights: MD5_Weight[]): number
         {
-            var start: number = vertex.startWeight;
-            var end: number = vertex.startWeight + vertex.countWeight;
-            var count: number = 0;
+            var start = vertex.startWeight;
+            var end = vertex.startWeight + vertex.countWeight;
+            var count = 0;
             var weight: number;
 
-            for (var i: number = start; i < end; ++i)
+            for (var i = start; i < end; ++i)
             {
                 weight = weights[i].bias;
                 if (weight == 0)
@@ -143,7 +143,7 @@ namespace feng3d
             var rotation = joint.rotation;
             var quat = new Quaternion(rotation[0], -rotation[1], -rotation[2]);
             // quat supposed to be unit length
-            var t: number = 1 - quat.x * quat.x - quat.y * quat.y - quat.z * quat.z;
+            var t = 1 - quat.x * quat.x - quat.y * quat.y - quat.z * quat.z;
             quat.w = t < 0 ? 0 : -Math.sqrt(t);
             //
             skeletonJoint.translation = new Vector3D(-position[0], position[1], position[2]);
@@ -161,7 +161,7 @@ namespace feng3d
 
             var geometry = new Geometry();
 
-            var len: number = vertexData.length;
+            var len = vertexData.length;
             var vertex: MD5_Vertex;
             var weight: MD5_Weight;
             var bindPose: Matrix3D;
@@ -183,7 +183,7 @@ namespace feng3d
             var jointWeights1: number[] = [];
             jointWeights1.length = len * 4;
 
-            for (var i: number = 0; i < len; ++i)
+            for (var i = 0; i < len; ++i)
             {
                 vertex = vertexData[i];
                 vertices[i * 3] = vertices[i * 3 + 1] = vertices[i * 3 + 2] = 0;
@@ -262,7 +262,7 @@ namespace feng3d
             var object = GameObject.create();
 
             var _clip = new SkeletonClipNode();
-            for (var i: number = 0; i < md5AnimData.numFrames; ++i)
+            for (var i = 0; i < md5AnimData.numFrames; ++i)
                 _clip.addFrame(this.translatePose(md5AnimData, md5AnimData.frame[i]), 1000 / md5AnimData.frameRate);
 
             if (this._animCompleted)
@@ -293,7 +293,7 @@ namespace feng3d
             //骨骼pose列表
             var jointPoses: JointPose[] = skelPose.jointPoses;
 
-            for (var i: number = 0; i < md5AnimData.numJoints; ++i)
+            for (var i = 0; i < md5AnimData.numJoints; ++i)
             {
                 //通过原始帧数据与层级数据计算出当前骨骼pose数据
                 j = 0;
@@ -325,7 +325,7 @@ namespace feng3d
                     orientation.z = components[hierarchy.startIndex + (j++)];
 
                 //计算四元素w值
-                var w: number = 1 - orientation.x * orientation.x - orientation.y * orientation.y - orientation.z * orientation.z;
+                var w = 1 - orientation.x * orientation.x - orientation.y * orientation.y - orientation.z * orientation.z;
                 orientation.w = w < 0 ? 0 : -Math.sqrt(w);
 
                 //创建关节pose数据

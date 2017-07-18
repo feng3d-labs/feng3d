@@ -12,7 +12,7 @@ namespace feng3d
         constructor()
         {
             super();
-            this.setShader("point");
+            this.shaderName = "point";
             this.renderMode = RenderMode.POINTS;
         }
     }

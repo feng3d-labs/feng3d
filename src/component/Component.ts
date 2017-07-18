@@ -13,7 +13,7 @@ namespace feng3d
         /**
          * The game object this component is attached to. A component is always attached to a game object.
          */
-        public get gameObject()
+        get gameObject()
         {
             return this.internalGetGameObject();
         }
@@ -21,11 +21,11 @@ namespace feng3d
         /**
          * The tag of this game object.
          */
-        public get tag()
+        get tag()
         {
             return this._tag;
         }
-        public set tag(value)
+        set tag(value)
         {
             this._tag = value;
         }
@@ -33,7 +33,7 @@ namespace feng3d
         /**
          * The Transform attached to this GameObject (null if there is none attached).
          */
-        public get transform()
+        get transform()
         {
             if (this._transform == null)
             {
@@ -44,13 +44,13 @@ namespace feng3d
         /**
          * 是否唯一，同类型3D对象组件只允许一个
          */
-        public get single()
+        get single()
         {
             return this._single;
         }
 
         //------------------------------------------
-        // Public Functions
+        // Functions
         //------------------------------------------
 		/**
 		 * 创建一个组件容器
@@ -66,7 +66,7 @@ namespace feng3d
          * @param type				The type of Component to retrieve.
          * @return                  返回指定类型组件
          */
-        public getComponent<T extends Component>(type: ComponentConstructor<T>): T
+        getComponent<T extends Component>(type: ComponentConstructor<T>): T
         {
             return this.gameObject.getComponent(type);
         }
@@ -76,7 +76,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        public getComponents<T extends Component>(type: ComponentConstructor<T> = null): T[]
+        getComponents<T extends Component>(type: ComponentConstructor<T> = null): T[]
         {
             return this.gameObject.getComponents(type);
         }
@@ -86,7 +86,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        public getComponentsInChildren<T extends Component>(type: ComponentConstructor<T> = null): T[]
+        getComponentsInChildren<T extends Component>(type: ComponentConstructor<T> = null): T[]
         {
             return this.gameObject.getComponentsInChildren(type);
         }

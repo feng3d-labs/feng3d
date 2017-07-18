@@ -24,7 +24,7 @@ namespace feng3d
 		 * @param v 场景坐标（输出）
 		 * @return 场景坐标
 		 */
-		public unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D
+		unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D
 		{
 			return null;
 		}

@@ -10,11 +10,11 @@ namespace feng3d
         /**
          * 摄像机
          */
-        public get camera()
+        get camera()
         {
             return this._camera;
         }
-        public set camera(value)
+        set camera(value)
         {
             if(this._camera == value)
             return;
@@ -29,22 +29,22 @@ namespace feng3d
         /**
          * 场景
          */
-        public scene3d: Scene3D;
+        scene3d: Scene3D;
 
         /**
          * 3D视窗
          */
-        public view3D: View3D;
+        view3D: View3D;
 
         /**
          * WebGL实例
          */
-        public gl: GL;
+        gl: GL;
 
         /**
 		 * 更新渲染数据
 		 */
-        public updateRenderData1()
+        updateRenderData1()
         {
             var pointLights = PointLight.pointLights;
             var directionalLights = DirectionalLight.directionalLights;

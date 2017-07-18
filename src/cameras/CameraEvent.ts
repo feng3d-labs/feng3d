@@ -6,6 +6,6 @@ namespace feng3d
 	 */
     export class CameraEvent
     {
-        public static LENS_CHANGED: string = "lensChanged";
+        static LENS_CHANGED: string = "lensChanged";
     }
 }

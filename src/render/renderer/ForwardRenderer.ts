@@ -7,7 +7,7 @@ namespace feng3d
      */
     export class ForwardRenderer
     {
-        public viewRect: Rectangle = new Rectangle(0, 0, 100, 100);
+        viewRect: Rectangle = new Rectangle(0, 0, 100, 100);
 
         constructor()
         {
@@ -16,7 +16,7 @@ namespace feng3d
         /**
 		 * 渲染
 		 */
-        public draw(renderContext: RenderContext)
+        draw(renderContext: RenderContext)
         {
             var gl = renderContext.gl;
             var scene3D = renderContext.scene3d;

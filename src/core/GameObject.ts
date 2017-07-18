@@ -19,7 +19,7 @@ namespace feng3d
         /**
          * The Transform attached to this GameObject. (null if there is none attached).
          */
-        public get transform()
+        get transform()
         {
             return this._transform;
         }
@@ -28,17 +28,17 @@ namespace feng3d
         /**
          * @private
          */
-        public readonly renderData = new Object3DRenderAtomic();
+        readonly renderData = new Object3DRenderAtomic();
 
 		/**
 		 * 子组件个数
 		 */
-        public get numComponents(): number
+        get numComponents(): number
         {
             return this.components.length;
         }
 
-        public updateRender(renderContext: RenderContext)
+        updateRender(renderContext: RenderContext)
         {
             if (this.renderData.renderHolderInvalid)
             {
@@ -50,7 +50,7 @@ namespace feng3d
         }
 
         //------------------------------------------
-        // Public Functions
+        // Functions
         //------------------------------------------
         /**
          * 构建3D对象
@@ -69,7 +69,7 @@ namespace feng3d
          * @param index			位置索引
          * @return				子组件
          */
-        public getComponentAt(index: number): Component
+        getComponentAt(index: number): Component
         {
             debuger && console.assert(index < this.numComponents, "给出索引超出范围");
             return this.components[index];
@@ -80,7 +80,7 @@ namespace feng3d
          * Adds a component class named className to the game object.
 		 * @param param 被添加组件
 		 */
-        public addComponent<T extends Component>(param: ComponentConstructor<T>): T
+        addComponent<T extends Component>(param: ComponentConstructor<T>): T
         {
             var component: T;
             if (this.getComponent(param))
@@ -108,7 +108,7 @@ namespace feng3d
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        public getComponent<T extends Component>(type: ComponentConstructor<T>): T
+        getComponent<T extends Component>(type: ComponentConstructor<T>): T
         {
             var component = this.getComponents(type)[0];
             return component;
@@ -119,7 +119,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        public getComponents<T extends Component>(type: ComponentConstructor<T> = null): T[]
+        getComponents<T extends Component>(type: ComponentConstructor<T> = null): T[]
         {
             var filterResult: Component[];
             if (!type)
@@ -140,7 +140,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        public getComponentsInChildren<T extends Component>(type: ComponentConstructor<T> = null, result: T[] = null): T[]
+        getComponentsInChildren<T extends Component>(type: ComponentConstructor<T> = null, result: T[] = null): T[]
         {
             result = result || [];
             for (var i = 0, n = this.components.length; i < n; i++)
@@ -153,7 +153,7 @@ namespace feng3d
                     result.push(<T>this.components[i]);
                 }
             }
-            for (var i = 0, n = this.transform.childCount; i < n; i++)
+            for (var i = 0, n = this.transform.numChildren; i < n; i++)
             {
                 this.transform.getChildAt(i).gameObject.getComponentsInChildren(type, result);
             }
@@ -165,11 +165,11 @@ namespace feng3d
          * @param component				子组件
          * @param index				位置索引
          */
-        public setComponentIndex(component: Component, index: number): void
+        setComponentIndex(component: Component, index: number): void
         {
             debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
-            var oldIndex: number = this.components.indexOf(component);
+            var oldIndex = this.components.indexOf(component);
             debuger && console.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
 
             this.components.splice(oldIndex, 1);
@@ -181,7 +181,7 @@ namespace feng3d
 		 * @param component		被设置的组件
 		 * @param index			索引
 		 */
-        public setComponentAt(component: Component, index: number)
+        setComponentAt(component: Component, index: number)
         {
             if (this.components[index])
             {
@@ -194,11 +194,11 @@ namespace feng3d
 		 * 移除组件
 		 * @param component 被移除组件
 		 */
-        public removeComponent(component: Component): void
+        removeComponent(component: Component): void
         {
             debuger && console.assert(this.hasComponent(component), "只能移除在容器中的组件");
 
-            var index: number = this.getComponentIndex(component);
+            var index = this.getComponentIndex(component);
             this.removeComponentAt(index);
         }
 
@@ -207,11 +207,11 @@ namespace feng3d
          * @param component			查询的组件
          * @return				    组件在容器的索引位置
          */
-        public getComponentIndex(component: Component): number
+        getComponentIndex(component: Component): number
         {
             debuger && console.assert(this.components.indexOf(component) != -1, "组件不在容器中");
 
-            var index: number = this.components.indexOf(component);
+            var index = this.components.indexOf(component);
             return index;
         }
 
@@ -219,7 +219,7 @@ namespace feng3d
          * 移除组件
          * @param index		要删除的 Component 的子索引。
          */
-        public removeComponentAt(index: number): Component
+        removeComponentAt(index: number): Component
         {
             debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
@@ -236,7 +236,7 @@ namespace feng3d
          * @param index1		第一个子组件的索引位置
          * @param index2		第二个子组件的索引位置
          */
-        public swapComponentsAt(index1: number, index2: number): void
+        swapComponentsAt(index1: number, index2: number): void
         {
             debuger && console.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
             debuger && console.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
@@ -251,7 +251,7 @@ namespace feng3d
          * @param a		第一个子组件
          * @param b		第二个子组件
          */
-        public swapComponents(a: Component, b: Component): void
+        swapComponents(a: Component, b: Component): void
         {
             debuger && console.assert(this.hasComponent(a), "第一个子组件不在容器中");
             debuger && console.assert(this.hasComponent(b), "第二个子组件不在容器中");
@@ -263,7 +263,7 @@ namespace feng3d
          * 移除指定类型组件
          * @param type 组件类型
          */
-        public removeComponentsByType<T extends Component>(type: ComponentConstructor<T>): T[]
+        removeComponentsByType<T extends Component>(type: ComponentConstructor<T>): T[]
         {
             var removeComponents = [];
             for (var i = this.components.length - 1; i >= 0; i--)
@@ -281,7 +281,7 @@ namespace feng3d
          * Finds a game object by name and returns it.
          * @param name 
          */
-        public static find(name: string)
+        static find(name: string)
         {
             for (var i = 0; i < this._gameObjects.length; i++)
             {
@@ -291,7 +291,7 @@ namespace feng3d
             }
         }
 
-        public static create(name = "GameObject")
+        static create(name = "GameObject")
         {
             return new GameObject(name);
         }

@@ -10,11 +10,11 @@ namespace feng3d
         /**
          * 背景颜色
          */
-        public background = new Color(0, 0, 0, 1);
+        background = new Color(0, 0, 0, 1);
         /**
          * 环境光强度
          */
-        public ambientColor = new Color();
+        ambientColor = new Color();
 
         /**
          * 构造3D场景
@@ -23,7 +23,6 @@ namespace feng3d
         {
             super(gameObject);
             gameObject.transform["_scene"] = this;
-            gameObject.transform._isRoot = true;
         }
     }
 }

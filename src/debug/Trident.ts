@@ -9,10 +9,9 @@ namespace feng3d
         constructor(gameObject: GameObject)
         {
             super(gameObject);
-            this.transform.mouseChildren = false;
             this.transform.mouseEnabled = false;
 
-            length = 100;
+            var length = 100;
             this.buildTrident(Math.abs((length == 0) ? 10 : length));
         }
 

@@ -10,11 +10,11 @@ namespace feng3d
         /**
          * 纹理数据
          */
-        public get texture()
+        get texture()
         {
             return this._texture;
         }
-        public set texture(value)
+        set texture(value)
         {
             if (this._texture == value)
                 return;
@@ -25,7 +25,7 @@ namespace feng3d
         constructor()
         {
             super();
-            this.setShader("texture");
+            this.shaderName = "texture";
             //
             this.createUniformData("s_texture", () => this.texture);
         }

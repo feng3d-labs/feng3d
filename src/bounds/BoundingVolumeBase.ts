@@ -11,17 +11,17 @@ namespace feng3d
         /** 最大坐标 */
         protected _max: Vector3D;
 
-        protected _aabbPointsDirty: boolean = true;
+        protected _aabbPointsDirty = true;
 
         private _geometry: Geometry;
         /**
          * 用于生产包围盒的几何体
          */
-        public get geometry()
+        get geometry()
         {
             return this._geometry;
         }
-        public set geometry(value)
+        set geometry(value)
         {
             if (this._geometry)
             {
@@ -38,7 +38,7 @@ namespace feng3d
 		/**
 		 * The maximum extreme of the bounds
 		 */
-        public get max(): Vector3D
+        get max(): Vector3D
         {
             return this._max;
         }
@@ -46,7 +46,7 @@ namespace feng3d
 		/**
 		 * The minimum extreme of the bounds
 		 */
-        public get min(): Vector3D
+        get min(): Vector3D
         {
             return this._min;
         }
@@ -72,7 +72,7 @@ namespace feng3d
 		/**
 		 * 根据几何结构更新边界
 		 */
-        public fromGeometry(geometry: Geometry)
+        fromGeometry(geometry: Geometry)
         {
             var minX: number, minY: number, minZ: number;
             var maxX: number, maxY: number, maxZ: number;
@@ -83,18 +83,18 @@ namespace feng3d
                 this.fromExtremes(0, 0, 0, 0, 0, 0);
                 return;
             }
-            var i: number = 0;
+            var i = 0;
             minX = maxX = vertices[i];
             minY = maxY = vertices[i + 1];
             minZ = maxZ = vertices[i + 2];
 
-            var vertexDataLen: number = vertices.length;
+            var vertexDataLen = vertices.length;
             i = 0;
-            var stride: number = 3;
+            var stride = 3;
 
             while (i < vertexDataLen)
             {
-                var v: number = vertices[i];
+                var v = vertices[i];
                 if (v < minX)
                     minX = v;
                 else if (v > maxX)
@@ -124,7 +124,7 @@ namespace feng3d
 		 * @param maxY 边界最大Y坐标
 		 * @param maxZ 边界最大Z坐标
 		 */
-        public fromExtremes(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number)
+        fromExtremes(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number)
         {
             this._min.x = minX;
             this._min.y = minY;
@@ -140,7 +140,7 @@ namespace feng3d
 		 * @param targetNormal				交叉点法线值
 		 * @return							射线起点到交点距离
 		 */
-        public rayIntersection(ray3D: Ray3D, targetNormal: Vector3D): number
+        rayIntersection(ray3D: Ray3D, targetNormal: Vector3D): number
         {
             return -1;
         }
@@ -150,7 +150,7 @@ namespace feng3d
 		 * @param position 		被检测点
 		 * @return				true：包含指定点
 		 */
-        public containsPoint(position: Vector3D): boolean
+        containsPoint(position: Vector3D): boolean
         {
             return false;
         }
@@ -161,21 +161,21 @@ namespace feng3d
 		 * @param numPlanes		面数
 		 * @return 				true：出现在视锥体内
 		 */
-        public abstract isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+        abstract isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
 
 		/**
 		 * 对包围盒进行变换
 		 * @param bounds		包围盒
 		 * @param matrix		变换矩阵
 		 */
-        public abstract transformFrom(bounds: BoundingVolumeBase, matrix: Matrix3D);
+        abstract transformFrom(bounds: BoundingVolumeBase, matrix: Matrix3D);
 
 		/**
 		 * 从给出的球体设置边界
 		 * @param center 		球心坐标
 		 * @param radius 		球体半径
 		 */
-        public fromSphere(center: Vector3D, radius: number)
+        fromSphere(center: Vector3D, radius: number)
         {
             this.fromExtremes(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
         }

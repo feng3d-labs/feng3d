@@ -8,12 +8,12 @@ namespace feng3d
     export class Texture2D extends TextureInfo
     {
         protected _pixels: HTMLImageElement;
-        public get url()
+        get url()
         {
             return this._pixels.src;
         }
 
-        public set url(value: string)
+        set url(value: string)
         {
             this._pixels.src = value;
         }
@@ -39,7 +39,7 @@ namespace feng3d
         /**
          * 判断数据是否满足渲染需求
          */
-        public checkRenderData()
+        checkRenderData()
         {
             if (!this._pixels)
                 return false;

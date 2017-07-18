@@ -26,8 +26,8 @@ namespace feng3d
      */
     export class Object3D extends Component
     {
-        public static eventtype = new Object3DEventType1();
-        public get eventtype()
+        static eventtype = new Object3DEventType1();
+        get eventtype()
         {
             return Object3D.eventtype;
         }
@@ -36,12 +36,12 @@ namespace feng3d
         // Variables
         //------------------------------------------
         @serialize
-        public get x(): number
+        get x(): number
         {
             return this._x;
         }
 
-        public set x(val: number)
+        set x(val: number)
         {
             if (this._x == val)
                 return;
@@ -49,12 +49,13 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        public get y(): number
+        @serialize
+        get y(): number
         {
             return this._y;
         }
 
-        public set y(val: number)
+        set y(val: number)
         {
             if (this._y == val)
                 return;
@@ -62,12 +63,13 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        public get z(): number
+        @serialize
+        get z(): number
         {
             return this._z;
         }
 
-        public set z(val: number)
+        set z(val: number)
         {
             if (this._z == val)
                 return;
@@ -75,12 +77,13 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        public get rx(): number
+        @serialize
+        get rx(): number
         {
             return this._rx;
         }
 
-        public set rx(val: number)
+        set rx(val: number)
         {
             if (this.rx == val)
                 return;
@@ -88,12 +91,13 @@ namespace feng3d
             this.invalidateRotation();
         }
 
-        public get ry(): number
+        @serialize
+        get ry(): number
         {
             return this._ry;
         }
 
-        public set ry(val: number)
+        set ry(val: number)
         {
             if (this.ry == val)
                 return;
@@ -101,12 +105,13 @@ namespace feng3d
             this.invalidateRotation();
         }
 
-        public get rz(): number
+        @serialize
+        get rz(): number
         {
             return this._rz;
         }
 
-        public set rz(val: number)
+        set rz(val: number)
         {
             if (this.rz == val)
                 return;
@@ -114,12 +119,13 @@ namespace feng3d
             this.invalidateRotation();
         }
 
-        public get sx(): number
+        @serialize
+        get sx(): number
         {
             return this._sx;
         }
 
-        public set sx(val: number)
+        set sx(val: number)
         {
             if (this._sx == val)
                 return;
@@ -127,12 +133,13 @@ namespace feng3d
             this.invalidateScale();
         }
 
-        public get sy(): number
+        @serialize
+        get sy(): number
         {
             return this._sy;
         }
 
-        public set sy(val: number)
+        set sy(val: number)
         {
             if (this._sy == val)
                 return;
@@ -140,12 +147,13 @@ namespace feng3d
             this.invalidateScale();
         }
 
-        public get sz(): number
+        @serialize
+        get sz(): number
         {
             return this._sz;
         }
 
-        public set sz(val: number)
+        set sz(val: number)
         {
             if (this._sz == val)
                 return;
@@ -154,16 +162,28 @@ namespace feng3d
         }
 
         /**
+         * 是否显示
+         */
+        @serialize
+        visible = true;
+
+        /**
+         * 自身以及子对象是否支持鼠标拾取
+         */
+        @serialize
+        mouseEnabled = true;
+
+        /**
          * @private
          */
-        public get matrix3d(): Matrix3D
+        get matrix3d(): Matrix3D
         {
             if (!this._matrix3d)
                 this.updateMatrix3D();
             return this._matrix3d;
         }
 
-        public set matrix3d(val: Matrix3D)
+        set matrix3d(val: Matrix3D)
         {
             var raw = Matrix3D.RAW_DATA_CONTAINER;
             val.copyRawDataTo(raw);
@@ -180,14 +200,24 @@ namespace feng3d
         }
 
         /**
+         * 旋转矩阵
+         */
+        get rotationMatrix()
+        {
+            if (!this._rotationMatrix3d)
+                this._rotationMatrix3d = Matrix3D.fromRotation(this._rx, this._ry, this._rz);
+            return this._rotationMatrix3d;
+        }
+
+        /**
          * 返回保存位置数据的Vector3D对象
          */
-        public get position(): Vector3D
+        get position(): Vector3D
         {
             return new Vector3D(this._x, this._y, this._z);
         }
 
-        public set position({ x = 1, y = 1, z = 1 })
+        set position({ x = 1, y = 1, z = 1 })
         {
             if (this._x != x || this._y != y || this._z != z)
             {
@@ -198,12 +228,12 @@ namespace feng3d
             }
         }
 
-        public get rotation(): Vector3D
+        get rotation(): Vector3D
         {
             return new Vector3D(this._rx, this._ry, this._rz);
         }
 
-        public set rotation({ x = 1, y = 1, z = 1 })
+        set rotation({ x = 1, y = 1, z = 1 })
         {
             if (this._rx != x || this._ry != y || this._rz != z)
             {
@@ -214,12 +244,12 @@ namespace feng3d
             }
         }
 
-        public get scale()
+        get scale()
         {
             return new Vector3D(this._sx, this._sy, this._sz);
         }
 
-        public set scale({ x = 1, y = 1, z = 1 })
+        set scale({ x = 1, y = 1, z = 1 })
         {
             if (this._sx != x || this._sy != y || this._sz != z)
             {
@@ -230,36 +260,36 @@ namespace feng3d
             }
         }
 
-        public get forwardVector(): Vector3D
+        get forwardVector(): Vector3D
         {
             return this.matrix3d.forward;
         }
 
-        public get rightVector(): Vector3D
+        get rightVector(): Vector3D
         {
             return this.matrix3d.right;
         }
 
-        public get upVector(): Vector3D
+        get upVector(): Vector3D
         {
             return this.matrix3d.up;
         }
 
-        public get backVector(): Vector3D
+        get backVector(): Vector3D
         {
             var director: Vector3D = this.matrix3d.forward;
             director.negate();
             return director;
         }
 
-        public get leftVector(): Vector3D
+        get leftVector(): Vector3D
         {
             var director: Vector3D = this.matrix3d.left;
             director.negate();
             return director;
         }
 
-        public get downVector(): Vector3D
+        get downVector(): Vector3D
         {
             var director: Vector3D = this.matrix3d.up;
             director.negate();
@@ -267,44 +297,44 @@ namespace feng3d
         }
 
         //------------------------------------------
-        // Public Functions
+        // Functions
         //------------------------------------------
-        public constructor(gameObject: GameObject)
+        protected constructor(gameObject: GameObject)
         {
             super(gameObject);
         }
 
-        public moveForward(distance: number)
+        moveForward(distance: number)
         {
             this.translateLocal(Vector3D.Z_AXIS, distance);
         }
 
-        public moveBackward(distance: number)
+        moveBackward(distance: number)
         {
             this.translateLocal(Vector3D.Z_AXIS, -distance);
         }
 
-        public moveLeft(distance: number)
+        moveLeft(distance: number)
         {
             this.translateLocal(Vector3D.X_AXIS, -distance);
         }
 
-        public moveRight(distance: number)
+        moveRight(distance: number)
         {
             this.translateLocal(Vector3D.X_AXIS, distance);
         }
 
-        public moveUp(distance: number)
+        moveUp(distance: number)
         {
             this.translateLocal(Vector3D.Y_AXIS, distance);
         }
 
-        public moveDown(distance: number)
+        moveDown(distance: number)
         {
             this.translateLocal(Vector3D.Y_AXIS, -distance);
         }
 
-        public translate(axis: Vector3D, distance: number)
+        translate(axis: Vector3D, distance: number)
         {
             var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
             var len = distance / Math.sqrt(x * x + y * y + z * z);
@@ -314,7 +344,7 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        public translateLocal(axis: Vector3D, distance: number)
+        translateLocal(axis: Vector3D, distance: number)
         {
             var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
             var len = distance / Math.sqrt(x * x + y * y + z * z);
@@ -326,22 +356,22 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        public pitch(angle: number)
+        pitch(angle: number)
         {
             this.rotate(Vector3D.X_AXIS, angle);
         }
 
-        public yaw(angle: number)
+        yaw(angle: number)
         {
             this.rotate(Vector3D.Y_AXIS, angle);
         }
 
-        public roll(angle: number)
+        roll(angle: number)
         {
             this.rotate(Vector3D.Z_AXIS, angle);
         }
 
-        public rotateTo(ax: number, ay: number, az: number)
+        rotateTo(ax: number, ay: number, az: number)
         {
             this._rx = ax;
             this._ry = ay;
@@ -360,11 +390,11 @@ namespace feng3d
         {
             //转换位移
             var positionMatrix3d = Matrix3D.fromPosition(this.position);
-            positionMatrix3d.appendRotation(angle, axis, pivotPoint);
+            positionMatrix3d.appendRotation(axis, angle, pivotPoint);
             this.position = positionMatrix3d.position;
             //转换旋转
             var rotationMatrix3d = Matrix3D.fromRotation(this.rx, this.ry, this.rz);
-            rotationMatrix3d.appendRotation(angle, axis, pivotPoint);
+            rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
             var newrotation = rotationMatrix3d.decompose()[1];
             newrotation.scaleBy(180 / Math.PI);
             var v = Math.round((newrotation.x - this.rx) / 180);
@@ -385,7 +415,7 @@ namespace feng3d
             this.rotation = newrotation;
         }
 
-        public lookAt(target: Vector3D, upAxis: Vector3D = null)
+        lookAt(target: Vector3D, upAxis: Vector3D = null)
         {
             var xAxis = new Vector3D();
             var yAxis = new Vector3D();
@@ -441,18 +471,21 @@ namespace feng3d
             }
         }
 
-        public dispose()
+        dispose()
         {
         }
 
-        public disposeAsset()
+        disposeAsset()
         {
             this.dispose();
         }
 
-        public invalidateTransform()
+        invalidateTransform()
         {
+            if (!this._matrix3d)
+                return;
             this._matrix3d = null;
+            Event.dispatch(this, <any>Object3DEvent.TRANSFORM_CHANGED, this);
         }
 
         //------------------------------------------
@@ -476,20 +509,27 @@ namespace feng3d
         //------------------------------------------
         // Private Properties
         //------------------------------------------
-        private _smallestNumber = 0.0000000000000000000001;
-        private _x = 0;
-        private _y = 0;
-        private _z = 0;
-        private _rx = 0;
-        private _ry = 0;
-        private _rz = 0;
-        private _sx = 1;
-        private _sy = 1;
-        private _sz = 1;
-        private _position: Vector3D;
-        private _rotation: Vector3D;
-        private _scale: Vector3D;
-        private _matrix3d: Matrix3D;
+        protected _smallestNumber = 0.0000000000000000000001;
+        protected _x = 0;
+        protected _y = 0;
+        protected _z = 0;
+        protected _rx = 0;
+        protected _ry = 0;
+        protected _rz = 0;
+        protected _sx = 1;
+        protected _sy = 1;
+        protected _sz = 1;
+        protected _position: Vector3D;
+        protected _rotation: Vector3D;
+        protected _scale: Vector3D;
+        protected _matrix3d: Matrix3D;
+        protected _rotationMatrix3d: Matrix3D;
+        protected _children: Transform[] = [];
+        protected _scene: Scene3D;
+        protected _parent: Transform;
+        protected _localToWorldMatrix: Matrix3D;
+        protected _worldToLocalMatrix: Matrix3D;
+        protected _localToWorldRotationMatrix: Matrix3D;
 
         //------------------------------------------
         // Private Methods
@@ -499,13 +539,10 @@ namespace feng3d
             if (!this._rotation)
                 return;
             this._rotation = null;
-            this.invalidateTransform();
-            this.notifyRotationChanged();
-        }
-
-        private notifyRotationChanged()
-        {
+            this._rotationMatrix3d = null;
+            this._localToWorldRotationMatrix = null;
             Event.dispatch(this, <any>Object3DEvent.ROTATION_CHANGED, this);
+            this.invalidateTransform();
         }
 
         private invalidateScale()
@@ -513,13 +550,8 @@ namespace feng3d
             if (!this._scale)
                 return;
             this._scale = null;
-            this.invalidateTransform();
-            this.notifyScaleChanged();
-        }
-
-        private notifyScaleChanged()
-        {
             Event.dispatch(this, <any>Object3DEvent.SCALE_CHANGED, this);
+            this.invalidateTransform();
         }
 
         private invalidatePosition()
@@ -527,13 +559,8 @@ namespace feng3d
             if (!this._position)
                 return;
             this._position = null;
-            this.invalidateTransform();
-            this.notifyPositionChanged();
-        }
-
-        private notifyPositionChanged()
-        {
             Event.dispatch(this, <any>Object3DEvent.POSITION_CHANGED, this);
+            this.invalidateTransform();
         }
     }
 }

@@ -6,7 +6,7 @@ namespace feng3d
      */
     export class DirectionalLight extends Light
     {
-        public static get directionalLights()
+        static get directionalLights()
         {
             return this._directionalLights;
         }
@@ -22,14 +22,14 @@ namespace feng3d
         {
             super(gameObject);
             this.lightType = LightType.Directional;
-            var xDir: number = 0, yDir: number = -1, zDir: number = 1
+            var xDir = 0, yDir = -1, zDir = 1
             this._sceneDirection = new Vector3D();
             this.direction = new Vector3D(xDir, yDir, zDir);
             //
             DirectionalLight._directionalLights.push(this);
         }
 
-        public get sceneDirection(): Vector3D
+        get sceneDirection(): Vector3D
         {
             return this._sceneDirection;
         }
@@ -37,12 +37,12 @@ namespace feng3d
         /**
          * 光照方向
          */
-        public get direction(): Vector3D
+        get direction(): Vector3D
         {
             return this._direction;
         }
 
-        public set direction(value: Vector3D)
+        set direction(value: Vector3D)
         {
             this._direction = value;
             if (this.gameObject)

@@ -23,7 +23,7 @@ namespace feng3d
 		 * 添加点
 		 * @param point		点数据
 		 */
-        public addPoint(point: PointInfo, needUpdateGeometry: boolean = true)
+        addPoint(point: PointInfo, needUpdateGeometry = true)
         {
             this._points.push(point);
             this.geometryDirty = true;
@@ -33,7 +33,7 @@ namespace feng3d
         /**
          * 更新几何体
          */
-        public updateGeometry()
+        updateGeometry()
         {
             this.geometryDirty = false;
 
@@ -65,7 +65,7 @@ namespace feng3d
 		 * @param index 		线段索引
 		 * @return				线段数据
 		 */
-        public getPoint(index: number): PointInfo
+        getPoint(index: number): PointInfo
         {
             if (index < this._points.length)
                 return this._points[index];
@@ -75,7 +75,7 @@ namespace feng3d
 		/**
 		 * 移除所有线段
 		 */
-        public removeAllPoints()
+        removeAllPoints()
         {
             this.points.length = 0;
             this.geometryDirty = true;
@@ -84,7 +84,7 @@ namespace feng3d
 		/**
 		 * 线段列表
 		 */
-        public get points(): PointInfo[]
+        get points(): PointInfo[]
         {
             return this._points;
         }
@@ -96,9 +96,9 @@ namespace feng3d
      */
     export class PointInfo
     {
-        public position: Vector3D;
-        public normal: Vector3D;
-        public uv: Point;
+        position: Vector3D;
+        normal: Vector3D;
+        uv: Point;
 
         /**
 		 * 创建点

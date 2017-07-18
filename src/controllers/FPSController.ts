@@ -37,12 +37,12 @@ namespace feng3d
             this.init();
         }
 
-        public get targetObject(): GameObject
+        get targetObject(): GameObject
         {
             return this._targetObject;
         }
 
-        public set targetObject(value: GameObject)
+        set targetObject(value: GameObject)
         {
             if (this._targetObject != null)
             {
@@ -98,7 +98,7 @@ namespace feng3d
         /**
          * 手动应用更新到目标3D对象
          */
-        public update(interpolate: boolean = true): void
+        update(interpolate = true): void
         {
             if (this.targetObject == null)
                 return;
@@ -154,14 +154,14 @@ namespace feng3d
             // this.targetObject.transform.rotate(Vector3D.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
 
             var matrix3d = this.targetObject.transform.localToWorldMatrix;
-            matrix3d.appendRotation(offsetPoint.y, matrix3d.right, matrix3d.position);
+            matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.position);
             var up = Vector3D.Y_AXIS;
             if (matrix3d.up.dotProduct(up) < 0)
             {
                 up = up.clone();
                 up.scaleBy(-1);
             }
-            matrix3d.appendRotation(offsetPoint.x, up, matrix3d.position);
+            matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);
             this.targetObject.transform.localToWorldMatrix = matrix3d;
             //
             this.preMousePoint = mousePoint;

@@ -7,51 +7,51 @@ namespace feng3d
      */
     export class TerrainMethod extends RenderDataHolder
     {
-        public get splatTexture1()
+        get splatTexture1()
         {
             return this._splatTexture1;
         }
-        public set splatTexture1(value)
+        set splatTexture1(value)
         {
             this._splatTexture1 = value;
         }
         private _splatTexture1: Texture2D;
 
-        public get splatTexture2()
+        get splatTexture2()
         {
             return this._splatTexture2;
         }
-        public set splatTexture2(value)
+        set splatTexture2(value)
         {
             this._splatTexture2 = value;
         }
         private _splatTexture2: Texture2D;
 
-        public get splatTexture3()
+        get splatTexture3()
         {
             return this._splatTexture3;
         }
-        public set splatTexture3(value)
+        set splatTexture3(value)
         {
             this._splatTexture3 = value;
         }
         private _splatTexture3: Texture2D;
 
-        public get blendTexture()
+        get blendTexture()
         {
             return this._blendTexture;
         }
-        public set blendTexture(value)
+        set blendTexture(value)
         {
             this._blendTexture = value;
         }
         private _blendTexture: Texture2D;
 
-        public get splatRepeats()
+        get splatRepeats()
         {
             return this._splatRepeats;
         }
-        public set splatRepeats(value)
+        set splatRepeats(value)
         {
             this._splatRepeats = value;
         }

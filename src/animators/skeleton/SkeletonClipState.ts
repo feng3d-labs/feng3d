@@ -10,14 +10,14 @@ namespace feng3d
         private _frames: SkeletonPose[];
         private _skeletonClipNode: SkeletonClipNode;
         private _skeletonPose: SkeletonPose = new SkeletonPose();
-        private _skeletonPoseDirty: boolean = true;
+        private _skeletonPoseDirty = true;
         private _currentPose: SkeletonPose;
         private _nextPose: SkeletonPose;
 
 		/**
 		 * 当前骨骼姿势
 		 */
-        public get currentPose(): SkeletonPose
+        get currentPose(): SkeletonPose
         {
             if (this._framesDirty)
                 this.updateFrames();
@@ -28,7 +28,7 @@ namespace feng3d
 		/**
 		 * 下个姿势
 		 */
-        public get nextPose(): SkeletonPose
+        get nextPose(): SkeletonPose
         {
             if (this._framesDirty)
                 this.updateFrames();
@@ -52,7 +52,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public getSkeletonPose(): SkeletonPose
+        getSkeletonPose(): SkeletonPose
         {
             if (this._skeletonPoseDirty)
                 this.updateSkeletonPose();
@@ -103,14 +103,14 @@ namespace feng3d
 
             var currentPose: JointPose[] = this._currentPose.jointPoses;
             var nextPose: JointPose[] = this._nextPose.jointPoses;
-            var numJoints: number = this._currentPose.numJointPoses;
+            var numJoints = this._currentPose.numJointPoses;
             var p1: Vector3D, p2: Vector3D;
             var pose1: JointPose, pose2: JointPose;
             var showPoses: JointPose[] = this._skeletonPose.jointPoses;
             var showPose: JointPose;
             var tr: Vector3D;
 
-            for (var i: number = 0; i < numJoints; ++i)
+            for (var i = 0; i < numJoints; ++i)
             {
                 pose1 = currentPose[i];
                 pose2 = nextPose[i];
@@ -163,9 +163,9 @@ namespace feng3d
             }
 
             /** 保存骨骼根节点原位置 */
-            var dx: number = this._rootPos.x;
-            var dy: number = this._rootPos.y;
-            var dz: number = this._rootPos.z;
+            var dx = this._rootPos.x;
+            var dy = this._rootPos.y;
+            var dz = this._rootPos.z;
 
             //计算骨骼根节点位置
             if (this._skeletonClipNode.stitchFinalFrame && this._nextFrame == this._skeletonClipNode.lastFrame)

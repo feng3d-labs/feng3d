@@ -6,11 +6,11 @@ namespace feng3d
 	 */
 	export class TorusGeometry extends Geometry
 	{
-		public get radius()
+		get radius()
 		{
 			return this._radius;
 		}
-		public set radius(value)
+		set radius(value)
 		{
 			if(this._radius == value)
 				return;
@@ -19,11 +19,11 @@ namespace feng3d
 		}
 		private _radius = 50;
 
-		public get tubeRadius()
+		get tubeRadius()
 		{
 			return this._tubeRadius;
 		}
-		public set tubeRadius(value)
+		set tubeRadius(value)
 		{
 			if(this._tubeRadius == value)
 				return;
@@ -32,11 +32,11 @@ namespace feng3d
 		}
 		private _tubeRadius = 10;
 
-		public get segmentsR()
+		get segmentsR()
 		{
 			return this._segmentsR;
 		}
-		public set segmentR(value)
+		set segmentR(value)
 		{
 			if(this._segmentsR == value)
 				return;
@@ -45,11 +45,11 @@ namespace feng3d
 		}
 		private _segmentsR = 16;
 
-		public get segmentsT()
+		get segmentsT()
 		{
 			return this._segmentsT;
 		}
-		public set segmentsT(value)
+		set segmentsT(value)
 		{
 			if(this._segmentsT == value)
 				return;
@@ -58,11 +58,11 @@ namespace feng3d
 		}
 		private _segmentsT = 8;
 
-		public get yUp()
+		get yUp()
 		{
 			return this._yUp;
 		}
-		public set yUp(value)
+		set yUp(value)
 		{
 			if(this._yUp == value)
 				return;
@@ -98,9 +98,9 @@ namespace feng3d
 		private _vertexIndex: number;
 		private _currentTriangleIndex: number;
 		private _numVertices: number;
-		private _vertexPositionStride: number = 3;
-		private _vertexNormalStride: number = 3;
-		private _vertexTangentStride: number = 3;
+		private _vertexPositionStride = 3;
+		private _vertexNormalStride = 3;
+		private _vertexTangentStride = 3;
 
 		/**
 		 * 添加顶点数据
@@ -156,8 +156,8 @@ namespace feng3d
 			this.buildUVs();
 
 			// evaluate revolution steps
-			var revolutionAngleDeltaR: number = 2 * Math.PI / this.segmentsR;
-			var revolutionAngleDeltaT: number = 2 * Math.PI / this.segmentsT;
+			var revolutionAngleDeltaR = 2 * Math.PI / this.segmentsR;
+			var revolutionAngleDeltaT = 2 * Math.PI / this.segmentsT;
 
 			var comp1: number, comp2: number;
 			var t1: number, t2: number, n1: number, n2: number;
@@ -242,16 +242,16 @@ namespace feng3d
 		protected buildUVs()
 		{
 			var i: number, j: number;
-			var stride: number = 2;
+			var stride = 2;
 			var data = new Float32Array(this._numVertices * stride);
 
 			// evaluate num uvs
-			var numUvs: number = this._numVertices * stride;
+			var numUvs = this._numVertices * stride;
 
 			// current uv component index
-			var currentUvCompIndex: number = 0;
+			var currentUvCompIndex = 0;
 
-			var index: number = 0;
+			var index = 0;
 			// surface
 			for (j = 0; j <= this.segmentsT; ++j)
 			{

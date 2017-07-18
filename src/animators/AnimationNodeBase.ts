@@ -11,7 +11,7 @@ namespace feng3d
 		/**
 		 * 状态类
 		 */
-		public get stateClass()
+		get stateClass()
 		{
 			return this._stateClass;
 		}

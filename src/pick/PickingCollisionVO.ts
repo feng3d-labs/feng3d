@@ -9,52 +9,52 @@ namespace feng3d
 		/**
 		 * 第一个穿过的物体
 		 */
-		public firstEntity: GameObject;
+		firstEntity: GameObject;
 
 		/**
 		 * 碰撞的uv坐标
 		 */
-		public uv: Point;
+		uv: Point;
 
 		/**
 		 * 实体上碰撞本地坐标
 		 */
-		public localPosition: Vector3D;
+		localPosition: Vector3D;
 
 		/**
 		 * 射线顶点到实体的距离
 		 */
-		public rayEntryDistance: number;
+		rayEntryDistance: number;
 
 		/**
 		 * 本地坐标系射线
 		 */
-		public localRay: Ray3D = new Ray3D();
+		localRay: Ray3D = new Ray3D();
 
 		/**
 		 * 本地坐标碰撞法线
 		 */
-		public localNormal: Vector3D;
+		localNormal: Vector3D;
 
 		/**
 		 * 场景中碰撞射线
 		 */
-		public ray3D: Ray3D = new Ray3D();
+		ray3D: Ray3D = new Ray3D();
 
 		/**
 		 * 射线坐标是否在边界内
 		 */
-		public rayOriginIsInsideBounds: boolean;
+		rayOriginIsInsideBounds: boolean;
 
 		/**
 		 * 碰撞三角形索引
 		 */
-		public index: number;
+		index: number;
 
 		/**
 		 * 碰撞关联的渲染对象
 		 */
-		public renderable: Geometry;
+		renderable: Geometry;
 
 		/**
 		 * 创建射线拾取碰撞数据
@@ -68,7 +68,7 @@ namespace feng3d
 		/**
 		 * 实体上碰撞世界坐标
 		 */
-		public get scenePosition(): Vector3D
+		get scenePosition(): Vector3D
 		{
 			return this.firstEntity.transform.localToWorldMatrix.transformVector(this.localPosition);
 		}

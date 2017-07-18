@@ -6,24 +6,24 @@ namespace feng3d
 	 */
     export class AnimationPlayer
     {
-        private _time: number = 0;
-        private preTime: number = 0;
+        private _time = 0;
+        private preTime = 0;
         private _isPlaying = false;
 
         /**
          * 播放速度
          */
-        public playbackSpeed = 1;
+        playbackSpeed = 1;
 
         /**
          * 动画时间
          */
-        public get time()
+        get time()
         {
             return this._time;
         }
 
-        public set time(value: number)
+        set time(value: number)
         {
             this._time = value;
         }
@@ -31,7 +31,7 @@ namespace feng3d
         /**
          * 开始
          */
-        public start()
+        start()
         {
             this.time = 0;
             this.continue();
@@ -40,7 +40,7 @@ namespace feng3d
         /**
          * 停止
          */
-        public stop()
+        stop()
         {
             this.pause();
         }
@@ -48,7 +48,7 @@ namespace feng3d
         /**
          * 继续
          */
-        public continue()
+        continue()
         {
             this._isPlaying
             this.preTime = Date.now();
@@ -58,7 +58,7 @@ namespace feng3d
         /**
          * 暂停
          */
-        public pause()
+        pause()
         {
             Event.off(ticker, <any>"enterFrame", this.onEnterFrame, this);
         }

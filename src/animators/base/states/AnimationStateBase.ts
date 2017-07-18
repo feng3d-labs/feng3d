@@ -9,16 +9,16 @@ namespace feng3d
     {
         protected _animationNode: AnimationNodeBase;
         protected _rootDelta: Vector3D = new Vector3D();
-        protected _positionDeltaDirty: boolean = true;
+        protected _positionDeltaDirty = true;
 
-        protected _time: number = 0;
-        protected _startTime: number = 0;
+        protected _time = 0;
+        protected _startTime = 0;
         protected _animator: AnimatorBase;
 
 		/**
 		 * @inheritDoc
 		 */
-        public get positionDelta(): Vector3D
+        get positionDelta(): Vector3D
         {
             if (this._positionDeltaDirty)
                 this.updatePositionDelta();
@@ -40,7 +40,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public offset(startTime: number)
+        offset(startTime: number)
         {
             this._startTime = startTime;
 
@@ -50,7 +50,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public update(time: number)
+        update(time: number)
         {
             if (this._time == time - this._startTime)
                 return;
@@ -61,7 +61,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        public phase(value: number)
+        phase(value: number)
         {
         }
 

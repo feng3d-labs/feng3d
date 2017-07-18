@@ -10,21 +10,21 @@ namespace feng3d
 		/**
 		 * 添加子组件事件
 		 */
-		public static ADDED_COMPONENT = "addedComponent";
+		static ADDED_COMPONENT = "addedComponent";
 
 		/**
 		 * 移除子组件事件
 		 */
-		public static REMOVED_COMPONENT = "removedComponent";
+		static REMOVED_COMPONENT = "removedComponent";
 
 		/**
 		 * 组件事件数据
 		 */
-		public data: { container: GameObject, child: Component };
+		data: { container: GameObject, child: Component };
 
         /**
          * 事件目标。
          */
-		public target: Component;
+		target: Component;
 	}
 }
