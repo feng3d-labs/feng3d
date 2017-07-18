@@ -140,9 +140,9 @@ var feng3d;
                 }
             }
         };
+        Event.listenermap = {};
         return Event;
     }());
-    Event.listenermap = {};
     feng3d.Event = Event;
     /**
      * 生成uuid

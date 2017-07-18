@@ -31,4 +31,6 @@ namespace feng3d
     export var shortcut = new ShortCut();
 
     console.log(`Feng3D version ${revision}`)
+
+    Stats.init();
 }

@@ -84,7 +84,6 @@ namespace feng3d
 		 */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
         {
-            console.log("Geometry.updateRenderData");
             this.updateGrometry();
             super.updateRenderData(renderContext, renderData);
         }
@@ -433,7 +432,7 @@ namespace feng3d
         cloneFrom(geometry: Geometry)
         {
             geometry.updateGrometry();
-            this._indexBuffer = geometry._indexBuffer.clone();
+            this.setIndices(geometry.indices);
             this._attributes = {};
             for (var key in geometry._attributes)
             {

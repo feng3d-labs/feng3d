@@ -1367,13 +1367,13 @@ declare namespace feng3d {
         readonly KEEP: number;
         readonly LEQUAL: number;
         readonly LESS: number;
+        readonly LINE_LOOP: number;
+        readonly LINE_STRIP: number;
+        readonly LINE_WIDTH: number;
         readonly LINEAR: number;
         readonly LINEAR_MIPMAP_LINEAR: number;
         readonly LINEAR_MIPMAP_NEAREST: number;
         readonly LINES: number;
-        readonly LINE_LOOP: number;
-        readonly LINE_STRIP: number;
-        readonly LINE_WIDTH: number;
         readonly LINK_STATUS: number;
         readonly LOW_FLOAT: number;
         readonly LOW_INT: number;
@@ -1398,9 +1398,9 @@ declare namespace feng3d {
         readonly NEAREST_MIPMAP_NEAREST: number;
         readonly NEVER: number;
         readonly NICEST: number;
+        readonly NO_ERROR: number;
         readonly NONE: number;
         readonly NOTEQUAL: number;
-        readonly NO_ERROR: number;
         readonly ONE: number;
         readonly ONE_MINUS_CONSTANT_ALPHA: number;
         readonly ONE_MINUS_CONSTANT_COLOR: number;
@@ -1430,18 +1430,18 @@ declare namespace feng3d {
         readonly REPEAT: number;
         readonly REPLACE: number;
         readonly RGB: number;
-        readonly RGB565: number;
         readonly RGB5_A1: number;
+        readonly RGB565: number;
         readonly RGBA: number;
         readonly RGBA4: number;
-        readonly SAMPLER_2D: number;
-        readonly SAMPLER_CUBE: number;
-        readonly SAMPLES: number;
         readonly SAMPLE_ALPHA_TO_COVERAGE: number;
         readonly SAMPLE_BUFFERS: number;
         readonly SAMPLE_COVERAGE: number;
         readonly SAMPLE_COVERAGE_INVERT: number;
         readonly SAMPLE_COVERAGE_VALUE: number;
+        readonly SAMPLER_2D: number;
+        readonly SAMPLER_CUBE: number;
+        readonly SAMPLES: number;
         readonly SCISSOR_BOX: number;
         readonly SCISSOR_TEST: number;
         readonly SHADER_TYPE: number;
@@ -1475,6 +1475,20 @@ declare namespace feng3d {
         readonly STREAM_DRAW: number;
         readonly SUBPIXEL_BITS: number;
         readonly TEXTURE: number;
+        readonly TEXTURE_2D: number;
+        readonly TEXTURE_BINDING_2D: number;
+        readonly TEXTURE_BINDING_CUBE_MAP: number;
+        readonly TEXTURE_CUBE_MAP: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
+        readonly TEXTURE_MAG_FILTER: number;
+        readonly TEXTURE_MIN_FILTER: number;
+        readonly TEXTURE_WRAP_S: number;
+        readonly TEXTURE_WRAP_T: number;
         readonly TEXTURE0: number;
         readonly TEXTURE1: number;
         readonly TEXTURE10: number;
@@ -1507,23 +1521,9 @@ declare namespace feng3d {
         readonly TEXTURE7: number;
         readonly TEXTURE8: number;
         readonly TEXTURE9: number;
-        readonly TEXTURE_2D: number;
-        readonly TEXTURE_BINDING_2D: number;
-        readonly TEXTURE_BINDING_CUBE_MAP: number;
-        readonly TEXTURE_CUBE_MAP: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
-        readonly TEXTURE_MAG_FILTER: number;
-        readonly TEXTURE_MIN_FILTER: number;
-        readonly TEXTURE_WRAP_S: number;
-        readonly TEXTURE_WRAP_T: number;
-        readonly TRIANGLES: number;
         readonly TRIANGLE_FAN: number;
         readonly TRIANGLE_STRIP: number;
+        readonly TRIANGLES: number;
         readonly UNPACK_ALIGNMENT: number;
         readonly UNPACK_COLORSPACE_CONVERSION_WEBGL: number;
         readonly UNPACK_FLIP_Y_WEBGL: number;
@@ -1559,49 +1559,10 @@ declare namespace feng3d {
         vertexAttribDivisor(index: GLuint, divisor: GLuint): any;
         drawArraysInstanced(mode: GLenum, first: GLint, count: GLsizei, instanceCount: GLsizei): any;
     }
-}
-declare namespace feng3d {
     class GLProxy {
         gl: GL;
         constructor(canvas: HTMLCanvasElement, options?: any);
-        /**
-         * Initialize and get the rendering for WebGL
-         * @param canvas <cavnas> element
-         * @param opt_debug flag to initialize the context for debugging
-         * @return the rendering context for WebGL
-         */
-        private getWebGLContext(canvas, options?);
     }
-}
-declare namespace feng3d {
-    /**
-     * GL扩展
-     */
-    class GLExtension {
-        constructor(gl: GL);
-        /**
-         * 在iphone中WebGLRenderingContext中静态变量值值未定义，因此此处初始化来支持iphone
-         * @param gl WebGL对象
-         */
-        private supportIphone(gl);
-        /**
-         * 扩展GL
-         * @param gl GL实例
-         */
-        private extensionWebGL(gl);
-        /**
-         * 缓存GL查询
-         * @param gl GL实例
-         */
-        private cacheGLQuery(gl);
-    }
-}
-declare namespace feng3d {
-    class GLProgramExtension {
-        constructor(gl: GL);
-    }
-}
-declare namespace feng3d {
     /**
      * 渲染模式
      * @author feng 2016-09-28
@@ -1618,8 +1579,30 @@ declare namespace feng3d {
         static TRIANGLE_STRIP: number;
         static TRIANGLE_FAN: number;
     }
-}
-declare namespace feng3d {
+    /**
+     * 纹理类型
+     */
+    class TextureType {
+        static TEXTURE_2D: number;
+        static TEXTURE_CUBE_MAP: number;
+    }
+    /**
+     * 混合方法
+     */
+    class BlendEquation {
+        /**
+         *  source + destination
+         */
+        static FUNC_ADD: number;
+        /**
+         * source - destination
+         */
+        static FUNC_SUBTRACT: number;
+        /**
+         * destination - source
+         */
+        static FUNC_REVERSE_SUBTRACT: number;
+    }
     /**
      * 混合因子（R分量系数，G分量系数，B分量系数）
      */
@@ -1672,27 +1655,25 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 混合方法
+     * GL扩展
      */
-    class BlendEquation {
+    class GLExtension {
+        constructor(gl: GL);
         /**
-         *  source + destination
+         * 扩展GL
+         * @param gl GL实例
          */
-        static FUNC_ADD: number;
+        private extensionWebGL(gl);
         /**
-         * source - destination
+         * 缓存GL查询
+         * @param gl GL实例
          */
-        static FUNC_SUBTRACT: number;
-        /**
-         * destination - source
-         */
-        static FUNC_REVERSE_SUBTRACT: number;
+        private cacheGLQuery(gl);
     }
 }
 declare namespace feng3d {
-    class TextureType {
-        static TEXTURE_2D: number;
-        static TEXTURE_CUBE_MAP: number;
+    class GLProgramExtension {
+        constructor(gl: GL);
     }
 }
 declare namespace feng3d {
@@ -1924,8 +1905,8 @@ declare namespace feng3d {
         constructor(name: string, value: number | (() => number));
     }
     class ShaderParam extends RenderElement {
-        name: string;
         value: any;
+        name: string;
         constructor(name: string);
     }
     class ShaderRenderData {
@@ -1970,7 +1951,6 @@ declare namespace feng3d {
      * @author feng 2016-06-20
      */
     class RenderAtomic {
-        private readonly elements;
         addRenderElement(element: RenderElement | RenderElement[]): void;
         removeRenderElement(element: RenderElement | RenderElement[]): void;
         private onElementChange(event);
@@ -1978,7 +1958,6 @@ declare namespace feng3d {
         removeUniform(uniformData: UniformData): void;
         addAttribute(attributeData: AttributeRenderData): void;
         removeAttribute(attributeData: AttributeRenderData): void;
-        setIndexBuffer(indexBuffer: IndexRenderData): void;
         /**
          * 顶点索引缓冲
          */
@@ -1998,7 +1977,7 @@ declare namespace feng3d {
         /**
          * 渲染实例数量
          */
-        instanceCount: number | (() => number);
+        private instanceCount;
         constructor();
         invalidateShader(): void;
         /**
@@ -2161,6 +2140,7 @@ declare namespace feng3d {
          */
         divisor: number;
         _divisor: number;
+        updateGrometry: Function;
         /**
          * 顶点数据缓冲
          */
@@ -2419,8 +2399,4 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 初始化函数列表
-     */
-    var initFunctions: Function[];
 }

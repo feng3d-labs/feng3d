@@ -416,6 +416,122 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var Stats = (function () {
+        function Stats() {
+            var _this = this;
+            var mode = 0;
+            var container = document.createElement('div');
+            container.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;z-index:10000';
+            container.addEventListener('click', function (event) {
+                event.preventDefault();
+                showPanel(++mode % container.children.length);
+            }, false);
+            //
+            function addPanel(panel) {
+                container.appendChild(panel.dom);
+                return panel;
+            }
+            function showPanel(id) {
+                for (var i = 0; i < container.children.length; i++) {
+                    container.children[i].style.display = i === id ? 'block' : 'none';
+                }
+                mode = id;
+            }
+            //
+            var beginTime = (performance || Date).now(), prevTime = beginTime, frames = 0;
+            var fpsPanel = addPanel(new StatsPanel('FPS', '#0ff', '#002'));
+            var msPanel = addPanel(new StatsPanel('MS', '#0f0', '#020'));
+            if (self.performance && self.performance.memory) {
+                var memPanel = addPanel(new StatsPanel('MB', '#f08', '#201'));
+            }
+            showPanel(0);
+            this.REVISION = 16;
+            this.dom = container;
+            this.addPanel = addPanel;
+            this.showPanel = showPanel;
+            this.begin = function () {
+                beginTime = (performance || Date).now();
+            };
+            this.end = function () {
+                frames++;
+                var time = (performance || Date).now();
+                msPanel.update(time - beginTime, 200);
+                if (time > prevTime + 1000) {
+                    fpsPanel.update((frames * 1000) / (time - prevTime), 100);
+                    prevTime = time;
+                    frames = 0;
+                    if (memPanel) {
+                        var memory = performance.memory;
+                        memPanel.update(memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576);
+                    }
+                }
+                return time;
+            };
+            this.update = function () {
+                beginTime = _this.end();
+            };
+            // Backwards Compatibility
+            this.domElement = container;
+            this.setMode = showPanel;
+        }
+        Stats.init = function (parent) {
+            var _this = this;
+            if (parent === void 0) { parent = null; }
+            if (!this.instance) {
+                this.instance = new Stats();
+                parent = parent || document.body;
+                parent.appendChild(this.instance.dom);
+            }
+            feng3d.Event.on(feng3d.ticker, "enterFrame", function () {
+                _this.instance.update();
+            });
+        };
+        ;
+        return Stats;
+    }());
+    feng3d.Stats = Stats;
+    var StatsPanel = (function () {
+        function StatsPanel(name, fg, bg) {
+            var min = Infinity, max = 0, round = Math.round;
+            var PR = round(window.devicePixelRatio || 1);
+            var WIDTH = 80 * PR, HEIGHT = 48 * PR, TEXT_X = 3 * PR, TEXT_Y = 2 * PR, GRAPH_X = 3 * PR, GRAPH_Y = 15 * PR, GRAPH_WIDTH = 74 * PR, GRAPH_HEIGHT = 30 * PR;
+            var canvas = document.createElement('canvas');
+            canvas.width = WIDTH;
+            canvas.height = HEIGHT;
+            canvas.style.cssText = 'width:80px;height:48px';
+            var context = canvas.getContext('2d');
+            context.font = 'bold ' + (9 * PR) + 'px Helvetica,Arial,sans-serif';
+            context.textBaseline = 'top';
+            context.fillStyle = bg;
+            context.fillRect(0, 0, WIDTH, HEIGHT);
+            context.fillStyle = fg;
+            context.fillText(name, TEXT_X, TEXT_Y);
+            context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
+            context.fillStyle = bg;
+            context.globalAlpha = 0.9;
+            context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
+            this.dom = canvas;
+            this.update = function (value, maxValue) {
+                min = Math.min(min, value);
+                max = Math.max(max, value);
+                context.fillStyle = bg;
+                context.globalAlpha = 1;
+                context.fillRect(0, 0, WIDTH, GRAPH_Y);
+                context.fillStyle = fg;
+                context.fillText(round(value) + ' ' + name + ' (' + round(min) + '-' + round(max) + ')', TEXT_X, TEXT_Y);
+                context.drawImage(canvas, GRAPH_X + PR, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT, GRAPH_X, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT);
+                context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, GRAPH_HEIGHT);
+                context.fillStyle = bg;
+                context.globalAlpha = 0.9;
+                context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, round((1 - (value / maxValue)) * GRAPH_HEIGHT));
+            };
+        }
+        return StatsPanel;
+    }());
+    feng3d.StatsPanel = StatsPanel;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var ArrayList = (function () {
         function ArrayList(source) {
             if (source === void 0) { source = null; }
@@ -569,16 +685,16 @@ var feng3d;
     var MathConsts = (function () {
         function MathConsts() {
         }
+        /**
+         * 弧度转角度因子
+         */
+        MathConsts.RADIANS_TO_DEGREES = 180 / Math.PI;
+        /**
+         * 角度转弧度因子
+         */
+        MathConsts.DEGREES_TO_RADIANS = Math.PI / 180;
         return MathConsts;
     }());
-    /**
-     * 弧度转角度因子
-     */
-    MathConsts.RADIANS_TO_DEGREES = 180 / Math.PI;
-    /**
-     * 角度转弧度因子
-     */
-    MathConsts.DEGREES_TO_RADIANS = Math.PI / 180;
     feng3d.MathConsts = MathConsts;
 })(feng3d || (feng3d = {}));
 Math.DEG2RAD = Math.PI / 180;
@@ -666,6 +782,10 @@ Math.nextPowerOfTwo = function (value) {
     value++;
     return value;
 };
+Math.toRound = function (source, target, precision) {
+    if (precision === void 0) { precision = 360; }
+    return source + Math.round((target - source) / precision) * precision;
+};
 var feng3d;
 (function (feng3d) {
     /**
@@ -675,20 +795,20 @@ var feng3d;
     var Orientation3D = (function () {
         function Orientation3D() {
         }
+        /**
+        * 轴角方向结合使用轴和角度来确定方向。
+        */
+        Orientation3D.AXIS_ANGLE = "axisAngle";
+        /**
+        * 欧拉角（decompose() 和 recompose() 方法的默认方向）通过三个不同的对应于每个轴的旋转角来定义方向。
+        */
+        Orientation3D.EULER_ANGLES = "eulerAngles";
+        /**
+        * 四元数方向使用复数。
+        */
+        Orientation3D.QUATERNION = "quaternion";
         return Orientation3D;
     }());
-    /**
-    * 轴角方向结合使用轴和角度来确定方向。
-    */
-    Orientation3D.AXIS_ANGLE = "axisAngle";
-    /**
-    * 欧拉角（decompose() 和 recompose() 方法的默认方向）通过三个不同的对应于每个轴的旋转角来定义方向。
-    */
-    Orientation3D.EULER_ANGLES = "eulerAngles";
-    /**
-    * 四元数方向使用复数。
-    */
-    Orientation3D.QUATERNION = "quaternion";
     feng3d.Orientation3D = Orientation3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -1160,23 +1280,45 @@ var feng3d;
      * @author feng 2016-3-21
      */
     var Vector3D = (function () {
-        /**
-         * 创建 Vector3D 对象的实例。如果未指定构造函数的参数，则将使用元素 (0,0,0,0) 创建 Vector3D 对象。
-         * @param x 第一个元素，例如 x 坐标。
-         * @param y 第二个元素，例如 y 坐标。
-         * @param z 第三个元素，例如 z 坐标。
-         * @param w 表示额外数据的可选元素，例如旋转角度
-         */
-        function Vector3D(x, y, z, w) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            if (z === void 0) { z = 0; }
-            if (w === void 0) { w = 0; }
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
+        function Vector3D() {
+            /**
+            * Vector3D 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
+            */
+            this.x = 0;
+            /**
+            * Vector3D 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
+            */
+            this.y = 0;
+            /**
+            * Vector3D 对象中的第三个元素，例如，三维空间中某个点的 z 坐标。默认值为 0
+            */
+            this.z = 0;
+            /**
+            * Vector3D 对象的第四个元素（除了 x、y 和 z 属性之外）可以容纳数据，例如旋转角度。默认值为 0
+            */
+            this.w = 0;
+            if (arguments.length == 1) {
+                this.x = arguments[0].x || 0;
+                this.y = arguments[0].y || 0;
+                this.z = arguments[0].z || 0;
+                this.w = arguments[0].w || 0;
+            }
+            else if (arguments.length > 1) {
+                this.x = arguments[0] || 0;
+                this.y = arguments[1] || 0;
+                this.z = arguments[2] || 0;
+                this.w = arguments[3] || 0;
+            }
         }
+        /**
+         * 从数据初始化向量
+         * @param xyz 向量数据
+         */
+        Vector3D.from = function (xyz) {
+            if (xyz instanceof Vector3D)
+                return xyz;
+            return new Vector3D(xyz);
+        };
         Object.defineProperty(Vector3D.prototype, "length", {
             /**
             * 当前 Vector3D 对象的长度（大小），即从原点 (0,0,0) 到该对象的 x、y 和 z 坐标的距离。w 属性将被忽略。单位矢量具有的长度或大小为一。
@@ -1257,9 +1399,18 @@ var feng3d;
         /**
          * 通过将当前 Vector3D 对象的 x、y 和 z 元素与指定的 Vector3D 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
          */
-        Vector3D.prototype.equals = function (toCompare, allFour) {
+        Vector3D.prototype.equals = function (object, allFour, precision) {
             if (allFour === void 0) { allFour = false; }
-            return (this.x == toCompare.x && this.y == toCompare.y && this.z == toCompare.z && (!allFour || this.w == toCompare.w));
+            if (precision === void 0) { precision = 0.0001; }
+            if (Math.abs(this.x - object.x) > precision)
+                return false;
+            if (Math.abs(this.y - object.y) > precision)
+                return false;
+            if (Math.abs(this.z - object.z) > precision)
+                return false;
+            if (allFour && Math.abs(this.w - object.w) > precision)
+                return false;
+            return true;
         };
         /**
          * 按照指定的 Vector3D 对象的 x、y 和 z 元素的值递增当前 Vector3D 对象的 x、y 和 z 元素的值。
@@ -1335,35 +1486,19 @@ var feng3d;
             }
         };
         /**
-         * 比较矩阵是否相等
-         */
-        Vector3D.prototype.compare = function (matrix3D, num, precision) {
-            if (num === void 0) { num = 3; }
-            if (precision === void 0) { precision = 0.0001; }
-            if (Math.abs(this.x - matrix3D.x) > precision)
-                return false;
-            if (Math.abs(this.y - matrix3D.y) > precision)
-                return false;
-            if (Math.abs(this.z - matrix3D.z) > precision)
-                return false;
-            if (num == 4 && Math.abs(this.w - matrix3D.z) > precision)
-                return false;
-            return true;
-        };
+        * 定义为 Vector3D 对象的 x 轴，坐标为 (1,0,0)。
+        */
+        Vector3D.X_AXIS = new Vector3D(1, 0, 0);
+        /**
+        * 定义为 Vector3D 对象的 y 轴，坐标为 (0,1,0)
+        */
+        Vector3D.Y_AXIS = new Vector3D(0, 1, 0);
+        /**
+        * 定义为 Vector3D 对象的 z 轴，坐标为 (0,0,1)
+        */
+        Vector3D.Z_AXIS = new Vector3D(0, 0, 1);
         return Vector3D;
     }());
-    /**
-    * 定义为 Vector3D 对象的 x 轴，坐标为 (1,0,0)。
-    */
-    Vector3D.X_AXIS = new Vector3D(1, 0, 0);
-    /**
-    * 定义为 Vector3D 对象的 y 轴，坐标为 (0,1,0)
-    */
-    Vector3D.Y_AXIS = new Vector3D(0, 1, 0);
-    /**
-    * 定义为 Vector3D 对象的 z 轴，坐标为 (0,0,1)
-    */
-    Vector3D.Z_AXIS = new Vector3D(0, 0, 1);
     feng3d.Vector3D = Vector3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -1521,11 +1656,11 @@ var feng3d;
         });
         /**
          * 创建旋转矩阵
-         * @param   degrees         角度
          * @param   axis            旋转轴
+         * @param   degrees         角度
          */
-        Matrix3D.fromAxisRotate = function (degrees, axis) {
-            var n = axis.clone();
+        Matrix3D.fromAxisRotate = function (axis, degrees) {
+            var n = feng3d.Vector3D.from(axis);
             n.normalize();
             var q = degrees * Math.PI / 180;
             var sinq = Math.sin(q);
@@ -1552,9 +1687,9 @@ var feng3d;
                 rz = arguments[2];
             }
             var rotationMat = new Matrix3D();
-            rotationMat.appendRotation(rx, feng3d.Vector3D.X_AXIS);
-            rotationMat.appendRotation(ry, feng3d.Vector3D.Y_AXIS);
-            rotationMat.appendRotation(rz, feng3d.Vector3D.Z_AXIS);
+            rotationMat.appendRotation(feng3d.Vector3D.X_AXIS, rx);
+            rotationMat.appendRotation(feng3d.Vector3D.Y_AXIS, ry);
+            rotationMat.appendRotation(feng3d.Vector3D.Z_AXIS, rz);
             return rotationMat;
         };
         Matrix3D.fromScale = function () {
@@ -1631,12 +1766,12 @@ var feng3d;
         };
         /**
          * 在 Matrix3D 对象上后置一个增量旋转。
-         * @param   degrees         角度
          * @param   axis            旋转轴
+         * @param   degrees         角度
          * @param   pivotPoint      旋转中心点
          */
-        Matrix3D.prototype.appendRotation = function (degrees, axis, pivotPoint) {
-            var rotationMat = Matrix3D.fromAxisRotate(degrees, axis);
+        Matrix3D.prototype.appendRotation = function (axis, degrees, pivotPoint) {
+            var rotationMat = Matrix3D.fromAxisRotate(axis, degrees);
             if (pivotPoint != null) {
                 this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
             }
@@ -1975,13 +2110,13 @@ var feng3d;
         };
         /**
          * 在 Matrix3D 对象上前置一个增量旋转。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行旋转，然后再执行其他转换。
-         * @param   degrees     旋转的角度。
          * @param   axis        旋转的轴或方向。常见的轴为 X_AXIS (Vector3D(1,0,0))、Y_AXIS (Vector3D(0,1,0)) 和 Z_AXIS (Vector3D(0,0,1))。此矢量的长度应为 1。
+         * @param   degrees     旋转的角度。
          * @param   pivotPoint  一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
          */
-        Matrix3D.prototype.prependRotation = function (degrees, axis, pivotPoint) {
+        Matrix3D.prototype.prependRotation = function (axis, degrees, pivotPoint) {
             if (pivotPoint === void 0) { pivotPoint = new feng3d.Vector3D(); }
-            var rotationMat = Matrix3D.fromAxisRotate(degrees, axis);
+            var rotationMat = Matrix3D.fromAxisRotate(axis, degrees);
             this.prepend(rotationMat);
             return this;
         };
@@ -2044,9 +2179,9 @@ var feng3d;
         Matrix3D.prototype.recompose = function (components) {
             this.identity();
             this.appendScale(components[2].x, components[2].y, components[2].z);
-            this.appendRotation(components[1].x * Math.RAD2DEG, feng3d.Vector3D.X_AXIS);
-            this.appendRotation(components[1].y * Math.RAD2DEG, feng3d.Vector3D.Y_AXIS);
-            this.appendRotation(components[1].z * Math.RAD2DEG, feng3d.Vector3D.Z_AXIS);
+            this.appendRotation(feng3d.Vector3D.X_AXIS, components[1].x * Math.RAD2DEG);
+            this.appendRotation(feng3d.Vector3D.Y_AXIS, components[1].y * Math.RAD2DEG);
+            this.appendRotation(feng3d.Vector3D.Z_AXIS, components[1].z * Math.RAD2DEG);
             this.appendTranslation(components[0].x, components[0].y, components[0].z);
             return this;
         };
@@ -2126,7 +2261,7 @@ var feng3d;
         /**
          * 比较矩阵是否相等
          */
-        Matrix3D.prototype.compare = function (matrix3D, precision) {
+        Matrix3D.prototype.equals = function (matrix3D, precision) {
             if (precision === void 0) { precision = 0.0001; }
             var r2 = matrix3D.rawData;
             for (var i = 0; i < 16; ++i) {
@@ -2201,17 +2336,17 @@ var feng3d;
             }
             return str;
         };
+        /**
+         * 用于运算临时变量
+         */
+        Matrix3D.RAW_DATA_CONTAINER = new Float32Array([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1 //
+        ]);
         return Matrix3D;
     }());
-    /**
-     * 用于运算临时变量
-     */
-    Matrix3D.RAW_DATA_CONTAINER = new Float32Array([
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1 //
-    ]);
     feng3d.Matrix3D = Matrix3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -2532,6 +2667,143 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 欧拉角，使用分别绕x，y，z轴旋转角度表示方位
+     */
+    var Euler = (function () {
+        function Euler() {
+            /**
+             * x轴旋转角度
+             */
+            this.x = 0;
+            /**
+             * y轴旋转角度
+             */
+            this.y = 0;
+            /**
+             * z轴旋转角度
+             */
+            this.z = 0;
+            if (arguments.length == 3) {
+                this.x = arguments[0];
+                this.y = arguments[1];
+                this.z = arguments[2];
+            }
+            else if (arguments.length == 1) {
+                this.x = arguments[0].x;
+                this.y = arguments[0].y;
+                this.z = arguments[0].z;
+            }
+        }
+        /**
+         * 反转当前欧拉角
+         */
+        Euler.prototype.invert = function () {
+            var euler = new Euler();
+            euler.rotate(feng3d.Vector3D.Z_AXIS, -this.z);
+            euler.rotate(feng3d.Vector3D.Y_AXIS, -this.y);
+            euler.rotate(feng3d.Vector3D.X_AXIS, -this.x);
+            this.copyFrom(euler);
+        };
+        /**
+         * 绕指定轴旋转
+         * @param    axis               旋转轴
+         * @param    angle              旋转角度
+         */
+        Euler.prototype.rotate = function (axis, angle) {
+            var leftAngle = angle;
+            if (Math.abs(leftAngle) >= 90) {
+                var step = leftAngle / Math.abs(leftAngle) * 80;
+                var stepMatrix = feng3d.Matrix3D.fromAxisRotate(axis, step);
+                while (Math.abs(leftAngle) > 80) {
+                    stepMatrix.transformRotation(this, this);
+                    leftAngle = leftAngle - step;
+                }
+            }
+            feng3d.Matrix3D.fromAxisRotate(axis, leftAngle).transformRotation(this, this);
+            return this;
+        };
+        /**
+         * 通过将另一个 Euler 对象与当前 Euler 对象相乘来后置一个欧拉角。
+         * @param euler     欧拉角
+         */
+        Euler.prototype.append = function (euler) {
+            this.rotate(feng3d.Vector3D.X_AXIS, euler.x);
+            this.rotate(feng3d.Vector3D.Y_AXIS, euler.y);
+            this.rotate(feng3d.Vector3D.Z_AXIS, euler.z);
+        };
+        /**
+         * 通过将当前 Euler 对象与另一个 Euler 对象相乘来前置一个欧拉角。
+         * @param   euler     个右侧矩阵，它与当前 Matrix3D 对象相乘。
+         */
+        Euler.prototype.prepend = function (euler) {
+            var eul = this.clone();
+            this.copyFrom(euler);
+            this.append(eul);
+            return this;
+        };
+        /**
+         * 后置 逆向euler
+         * @param euler     欧拉角
+         */
+        Euler.prototype.appendInvert = function (euler) {
+            this.rotate(feng3d.Vector3D.Z_AXIS, -euler.z);
+            this.rotate(feng3d.Vector3D.Y_AXIS, -euler.y);
+            this.rotate(feng3d.Vector3D.X_AXIS, -euler.x);
+        };
+        /**
+         * 变换欧拉角数据
+         * @param source 需要转换的欧拉角数据
+         * @param target 转换后的欧拉角数据
+         */
+        Euler.prototype.transformRotation = function (source, target) {
+            var thismatrix3d = this.toMatrix3D();
+            target = target || {};
+            thismatrix3d.transformRotation(source, target);
+            return target;
+        };
+        /**
+         * 将源 Euler 对象中的所有矩阵数据复制到调用方 Euler 对象中。
+         * @param   source      要从中复制数据的 Euler 对象。
+         */
+        Euler.prototype.copyFrom = function (source) {
+            this.x = source.x;
+            this.y = source.y;
+            this.z = source.z;
+            return this;
+        };
+        /**
+         * 输出为矩阵
+         */
+        Euler.prototype.toMatrix3D = function () {
+            return feng3d.Matrix3D.fromRotation(this);
+        };
+        /**
+         * 通过将当前 Euler 对象的 x、y 和 z 元素与指定的 Euler 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
+         */
+        Euler.prototype.equals = function (object, precision) {
+            if (precision === void 0) { precision = 0.0001; }
+            if (Math.abs(this.x - object.x) > precision)
+                return false;
+            if (Math.abs(this.y - object.y) > precision)
+                return false;
+            if (Math.abs(this.z - object.z) > precision)
+                return false;
+            return true;
+        };
+        /**
+         * 返回一个新 Euler 对象，它是与当前 Euler 对象完全相同的副本。
+         */
+        Euler.prototype.clone = function () {
+            var ret = new Euler(this);
+            return ret;
+        };
+        return Euler;
+    }());
+    feng3d.Euler = Euler;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 3d直线
      * @author feng 2013-6-13
      */
@@ -2762,28 +3034,28 @@ var feng3d;
         Plane3D.prototype.toString = function () {
             return "Plane3D [this.a:" + this.a + ", this.b:" + this.b + ", this.c:" + this.c + ", this.d:" + this.d + "]";
         };
+        /**
+         * 普通平面
+         * <p>不与对称轴平行或垂直</p>
+         */
+        Plane3D.ALIGN_ANY = 0;
+        /**
+         * XY方向平面
+         * <p>法线与Z轴平行</p>
+         */
+        Plane3D.ALIGN_XY_AXIS = 1;
+        /**
+         * YZ方向平面
+         * <p>法线与X轴平行</p>
+         */
+        Plane3D.ALIGN_YZ_AXIS = 2;
+        /**
+         * XZ方向平面
+         * <p>法线与Y轴平行</p>
+         */
+        Plane3D.ALIGN_XZ_AXIS = 3;
         return Plane3D;
     }());
-    /**
-     * 普通平面
-     * <p>不与对称轴平行或垂直</p>
-     */
-    Plane3D.ALIGN_ANY = 0;
-    /**
-     * XY方向平面
-     * <p>法线与Z轴平行</p>
-     */
-    Plane3D.ALIGN_XY_AXIS = 1;
-    /**
-     * YZ方向平面
-     * <p>法线与X轴平行</p>
-     */
-    Plane3D.ALIGN_YZ_AXIS = 2;
-    /**
-     * XZ方向平面
-     * <p>法线与Y轴平行</p>
-     */
-    Plane3D.ALIGN_XZ_AXIS = 3;
     feng3d.Plane3D = Plane3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -2795,36 +3067,36 @@ var feng3d;
     var PlaneClassification = (function () {
         function PlaneClassification() {
         }
+        /**
+         * 在平面后面
+         * <p>等价于平面内</p>
+         * @see #IN
+         */
+        PlaneClassification.BACK = 0;
+        /**
+         * 在平面前面
+         * <p>等价于平面外</p>
+         * @see #OUT
+         */
+        PlaneClassification.FRONT = 1;
+        /**
+         * 在平面内
+         * <p>等价于在平面后</p>
+         * @see #BACK
+         */
+        PlaneClassification.IN = 0;
+        /**
+         * 在平面外
+         * <p>等价于平面前面</p>
+         * @see #FRONT
+         */
+        PlaneClassification.OUT = 1;
+        /**
+         * 与平面相交
+         */
+        PlaneClassification.INTERSECT = 2;
         return PlaneClassification;
     }());
-    /**
-     * 在平面后面
-     * <p>等价于平面内</p>
-     * @see #IN
-     */
-    PlaneClassification.BACK = 0;
-    /**
-     * 在平面前面
-     * <p>等价于平面外</p>
-     * @see #OUT
-     */
-    PlaneClassification.FRONT = 1;
-    /**
-     * 在平面内
-     * <p>等价于在平面后</p>
-     * @see #BACK
-     */
-    PlaneClassification.IN = 0;
-    /**
-     * 在平面外
-     * <p>等价于平面前面</p>
-     * @see #FRONT
-     */
-    PlaneClassification.OUT = 1;
-    /**
-     * 与平面相交
-     */
-    PlaneClassification.INTERSECT = 2;
     feng3d.PlaneClassification = PlaneClassification;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -2968,9 +3240,6 @@ var feng3d;
             this._startTime = Date.now();
             this.init();
         }
-        SystemTicker.init = function () {
-            feng3d.ticker = new SystemTicker();
-        };
         Object.defineProperty(SystemTicker.prototype, "startTime", {
             /**
              * 启动时间
@@ -3317,34 +3586,34 @@ var feng3d;
     var TimerEvent = (function () {
         function TimerEvent() {
         }
+        /**
+         * Dispatched whenever a Timer object reaches an interval specified according to the Timer.delay property.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 每当 Timer 对象达到根据 Timer.delay 属性指定的间隔时调度。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        TimerEvent.TIMER = "timer";
+        /**
+         * Dispatched whenever it has completed the number of requests set by Timer.repeatCount.
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language en_US
+         */
+        /**
+         * 每当它完成 Timer.repeatCount 设置的请求数后调度。
+         * @version Egret 2.4
+         * @platform Web,Native
+         * @language zh_CN
+         */
+        TimerEvent.TIMER_COMPLETE = "timerComplete";
         return TimerEvent;
     }());
-    /**
-     * Dispatched whenever a Timer object reaches an interval specified according to the Timer.delay property.
-     * @version Egret 2.4
-     * @platform Web,Native
-     * @language en_US
-     */
-    /**
-     * 每当 Timer 对象达到根据 Timer.delay 属性指定的间隔时调度。
-     * @version Egret 2.4
-     * @platform Web,Native
-     * @language zh_CN
-     */
-    TimerEvent.TIMER = "timer";
-    /**
-     * Dispatched whenever it has completed the number of requests set by Timer.repeatCount.
-     * @version Egret 2.4
-     * @platform Web,Native
-     * @language en_US
-     */
-    /**
-     * 每当它完成 Timer.repeatCount 设置的请求数后调度。
-     * @version Egret 2.4
-     * @platform Web,Native
-     * @language zh_CN
-     */
-    TimerEvent.TIMER_COMPLETE = "timerComplete";
     feng3d.TimerEvent = TimerEvent;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -3857,9 +4126,6 @@ Event.on(shortCut,<any>"run", function(e:Event):void
             this.captureDic = {};
             this.stateDic = {};
         }
-        ShortCut.init = function () {
-            feng3d.shortcut = new ShortCut();
-        };
         /**
          * 添加快捷键
          * @param shortcuts		快捷键列表
@@ -3952,10 +4218,11 @@ var feng3d;
          * 加载文本
          * @param url   路径
          */
-        Loader.prototype.loadText = function (url) {
+        Loader.prototype.loadText = function (url, onCompleted) {
+            if (onCompleted === void 0) { onCompleted = null; }
             this._url = url;
             this.dataFormat = feng3d.LoaderDataFormat.TEXT;
-            this.xmlHttpRequestLoad();
+            this.xmlHttpRequestLoad(onCompleted);
         };
         /**
          * 加载二进制
@@ -3981,11 +4248,12 @@ var feng3d;
         /**
          * 使用XMLHttpRequest加载
          */
-        Loader.prototype.xmlHttpRequestLoad = function () {
+        Loader.prototype.xmlHttpRequestLoad = function (onCompleted) {
+            if (onCompleted === void 0) { onCompleted = null; }
             this._request = new XMLHttpRequest();
             this._request.open('Get', this._url, true);
             this._request.responseType = this.dataFormat == feng3d.LoaderDataFormat.BINARY ? "arraybuffer" : "";
-            this._request.onreadystatechange = this.onRequestReadystatechange.bind(this);
+            this._request.onreadystatechange = this.onRequestReadystatechange(onCompleted).bind(this);
             this._request.onprogress = this.onRequestProgress.bind(this);
             this._request.send();
         };
@@ -4000,20 +4268,25 @@ var feng3d;
         /**
          * 请求状态变化回调
          */
-        Loader.prototype.onRequestReadystatechange = function (ev) {
-            if (this._request.readyState == 4) {
-                this._request.onreadystatechange = null;
-                if (this._request.status >= 200 && this._request.status < 300) {
-                    this.content = this.dataFormat == feng3d.LoaderDataFormat.TEXT ? this._request.responseText : this._request.response;
-                    feng3d.Event.dispatch(this, "complete", this);
-                }
-                else {
-                    if (!feng3d.Event.has(this, "error")) {
-                        throw new Error("Error status: " + this._request + " - Unable to load " + this._url);
+        Loader.prototype.onRequestReadystatechange = function (onCompleted) {
+            var _this = this;
+            if (onCompleted === void 0) { onCompleted = null; }
+            return function (ev) {
+                if (_this._request.readyState == 4) {
+                    _this._request.onreadystatechange = null;
+                    if (_this._request.status >= 200 && _this._request.status < 300) {
+                        _this.content = _this.dataFormat == feng3d.LoaderDataFormat.TEXT ? _this._request.responseText : _this._request.response;
+                        onCompleted && onCompleted(_this.content);
+                        feng3d.Event.dispatch(_this, "complete", _this);
                     }
-                    feng3d.Event.dispatch(this, "error", this);
+                    else {
+                        if (!feng3d.Event.has(_this, "error")) {
+                            throw new Error("Error status: " + _this._request + " - Unable to load " + _this._url);
+                        }
+                        feng3d.Event.dispatch(_this, "error", _this);
+                    }
                 }
-            }
+            };
         };
         /**
          * 加载图片完成回调
@@ -4046,20 +4319,20 @@ var feng3d;
     var LoaderDataFormat = (function () {
         function LoaderDataFormat() {
         }
+        /**
+         * 以原始二进制数据形式接收下载的数据。
+         */
+        LoaderDataFormat.BINARY = "binary";
+        /**
+         * 以文本形式接收已下载的数据。
+         */
+        LoaderDataFormat.TEXT = "text";
+        /**
+         * 图片数据
+         */
+        LoaderDataFormat.IMAGE = "image";
         return LoaderDataFormat;
     }());
-    /**
-     * 以原始二进制数据形式接收下载的数据。
-     */
-    LoaderDataFormat.BINARY = "binary";
-    /**
-     * 以文本形式接收已下载的数据。
-     */
-    LoaderDataFormat.TEXT = "text";
-    /**
-     * 图片数据
-     */
-    LoaderDataFormat.IMAGE = "image";
     feng3d.LoaderDataFormat = LoaderDataFormat;
 })(feng3d || (feng3d = {}));
 var feng3d;
