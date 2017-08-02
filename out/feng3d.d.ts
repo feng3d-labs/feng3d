@@ -841,14 +841,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface XYZ {
-        x: number;
-        y: number;
-        z: number;
-    }
-    interface XYZW extends XYZ {
-        w: number;
-    }
     /**
      * Vector3D 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
      * @author feng 2016-3-21
@@ -866,11 +858,6 @@ declare namespace feng3d {
         * 定义为 Vector3D 对象的 z 轴，坐标为 (0,0,1)
         */
         static Z_AXIS: Vector3D;
-        /**
-         * 从数据初始化向量
-         * @param xyz 向量数据
-         */
-        static from(xyz: XYZ | XYZW): Vector3D;
         /**
         * Vector3D 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
         */
@@ -902,9 +889,7 @@ declare namespace feng3d {
          * @param z 第三个元素，例如 z 坐标。
          * @param w 表示额外数据的可选元素，例如旋转角度
          */
-        constructor(x: number, y: number, z: number, w?: number);
-        constructor(value: XYZ | XYZW);
-        constructor();
+        constructor(x?: number, y?: number, z?: number, w?: number);
         /**
          * 将当前 Vector3D 对象的 x、y 和 z 元素的值与另一个 Vector3D 对象的 x、y 和 z 元素的值相加。
          * @param a 要与当前 Vector3D 对象相加的 Vector3D 对象。
@@ -944,7 +929,7 @@ declare namespace feng3d {
         /**
          * 通过将当前 Vector3D 对象的 x、y 和 z 元素与指定的 Vector3D 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
          */
-        equals(object: XYZ | XYZW, allFour?: boolean, precision?: number): boolean;
+        equals(object: Vector3D, allFour?: boolean, precision?: number): boolean;
         /**
          * 按照指定的 Vector3D 对象的 x、y 和 z 元素的值递增当前 Vector3D 对象的 x、y 和 z 元素的值。
          */
@@ -1051,7 +1036,7 @@ declare namespace feng3d {
          * @param   axis            旋转轴
          * @param   degrees         角度
          */
-        static fromAxisRotate(axis: XYZ, degrees: number): Matrix3D;
+        static fromAxisRotate(axis: Vector3D, degrees: number): Matrix3D;
         /**
          * 创建旋转矩阵
          * @param   rx      用于沿 x 轴旋转对象的角度。
@@ -1102,7 +1087,7 @@ declare namespace feng3d {
          * @param   degrees         角度
          * @param   pivotPoint      旋转中心点
          */
-        appendRotation(axis: XYZ, degrees: number, pivotPoint?: XYZ): this;
+        appendRotation(axis: Vector3D, degrees: number, pivotPoint?: Vector3D): this;
         /**
          * 在 Matrix3D 对象上后置一个增量缩放，沿 x、y 和 z 轴改变位置。
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
@@ -1247,7 +1232,7 @@ declare namespace feng3d {
          * @param   vout    一个由多个数字组成的矢量，其中每三个数字构成一个已转换的 3D 坐标 (x,y,z)。
          */
         transformVectors(vin: number[], vout: number[]): void;
-        transformRotation(vin: XYZ, vout?: XYZ): XYZ;
+        transformRotation(vin: Vector3D, vout?: Vector3D): Vector3D;
         /**
          * 将当前 Matrix3D 对象转换为一个矩阵，并将互换其中的行和列。
          */
@@ -1391,84 +1376,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 欧拉角，使用分别绕x，y，z轴旋转角度表示方位
-     */
-    class Euler {
-        /**
-         * x轴旋转角度
-         */
-        x: number;
-        /**
-         * y轴旋转角度
-         */
-        y: number;
-        /**
-         * z轴旋转角度
-         */
-        z: number;
-        /**
-         * 构建欧拉角
-         * @param x x轴旋转角度
-         * @param y y轴旋转角度
-         * @param z z轴旋转角度
-         */
-        constructor(x?: number, y?: number, z?: number);
-        /**
-         * 构建欧拉角
-         * @param euler 欧拉角
-         */
-        constructor(euler?: XYZ);
-        constructor();
-        /**
-         * 反转当前欧拉角
-         */
-        invert(): void;
-        /**
-         * 绕指定轴旋转
-         * @param    axis               旋转轴
-         * @param    angle              旋转角度
-         */
-        rotate(axis: XYZ, angle: number): this;
-        /**
-         * 通过将另一个 Euler 对象与当前 Euler 对象相乘来后置一个欧拉角。
-         * @param euler     欧拉角
-         */
-        append(euler: XYZ): void;
-        /**
-         * 通过将当前 Euler 对象与另一个 Euler 对象相乘来前置一个欧拉角。
-         * @param   euler     个右侧矩阵，它与当前 Matrix3D 对象相乘。
-         */
-        prepend(euler: XYZ): this;
-        /**
-         * 后置 逆向euler
-         * @param euler     欧拉角
-         */
-        appendInvert(euler: XYZ): void;
-        /**
-         * 变换欧拉角数据
-         * @param source 需要转换的欧拉角数据
-         * @param target 转换后的欧拉角数据
-         */
-        transformRotation<T extends XYZ>(source: XYZ, target?: T): T;
-        /**
-         * 将源 Euler 对象中的所有矩阵数据复制到调用方 Euler 对象中。
-         * @param   source      要从中复制数据的 Euler 对象。
-         */
-        copyFrom(source: XYZ): this;
-        /**
-         * 输出为矩阵
-         */
-        toMatrix3D(): Matrix3D;
-        /**
-         * 通过将当前 Euler 对象的 x、y 和 z 元素与指定的 Euler 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
-         */
-        equals(object: XYZ, precision?: number): boolean;
-        /**
-         * 返回一个新 Euler 对象，它是与当前 Euler 对象完全相同的副本。
-         */
-        clone(): Euler;
-    }
 }
 declare namespace feng3d {
     /**
@@ -5491,6 +5398,14 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface Mouse3DEventMap {
+        /**
+         * 当Object3D的scene属性被设置是由Scene3D派发
+         */
+        addedToScene: any;
+        /**
+         * 当Object3D的scene属性被清空时由Scene3D派发
+         */
+        removedFromScene: any;
         mouseout: any;
         mouseover: any;
         mousedown: any;
@@ -5811,6 +5726,11 @@ declare namespace feng3d {
          * 渲染环境
          */
         private renderContext;
+        /**
+         * 鼠标在3D视图中的位置
+         */
+        readonly mousePos: Point;
+        viewRect: Rectangle;
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -7521,8 +7441,11 @@ declare namespace feng3d {
          */
         private preMousePoint;
         private ischange;
-        private onMousedown();
-        private onMouseup();
+        private _auto;
+        auto: boolean;
+        constructor(gameobject: GameObject);
+        onMousedown(): void;
+        onMouseup(): void;
         /**
          * 初始化
          */
@@ -9523,14 +9446,6 @@ declare namespace feng3d {
     class EulerTest {
         constructor();
         test(): void;
-        testRotate0(): void;
-        testRotate(): void;
-        testTransformRotation(): void;
-        testAppend(): void;
-        testInvert(): void;
-        testAppendInvert(): void;
-        testMatrix3d(): void;
-        testMatrix3d1(): void;
     }
 }
 declare namespace feng3d {

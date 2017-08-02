@@ -40,6 +40,16 @@ namespace feng3d
         private renderContext: RenderContext;
 
         /**
+         * 鼠标在3D视图中的位置
+         */
+        public get mousePos()
+        {
+            return new Point(input.clientX - this.canvas.clientLeft, input.clientY - this.canvas.clientTop);
+        }
+
+        viewRect: Rectangle;
+
+        /**
          * 构建3D视图
          * @param canvas    画布
          * @param scene     3D场景
@@ -103,19 +113,19 @@ namespace feng3d
             this.renderContext.view3D = this;
             this.renderContext.gl = this.gl;
 
-            var viewClientRect: ClientRect = this.canvas.getBoundingClientRect();
-            var viewRect = new Rectangle(viewClientRect.left, viewClientRect.top, viewClientRect.width, viewClientRect.height);
-            this.camera.viewRect = viewRect;
-            this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
+            var clientRect = this.canvas.getBoundingClientRect();
+            this.viewRect = new Rectangle(clientRect.left, clientRect.top, clientRect.width, clientRect.height);
+            this.camera.viewRect = this.viewRect;
+            this.camera.lens.aspectRatio = this.viewRect.width / this.viewRect.height;
 
             //鼠标拾取渲染
-            this.mouse3DManager.draw(this.renderContext, viewRect);
+            this.mouse3DManager.draw(this.renderContext, this.viewRect);
 
             //绘制阴影图
             // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
 
             // 默认渲染
-            this.defaultRenderer.draw(this.renderContext, viewRect);
+            this.defaultRenderer.draw(this.renderContext, this.viewRect);
         }
 
         static get(canvas: HTMLCanvasElement = null)

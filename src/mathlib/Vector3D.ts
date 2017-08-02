@@ -1,16 +1,5 @@
 namespace feng3d
 {
-    export interface XYZ
-    {
-        x: number;
-        y: number;
-        z: number;
-    }
-    export interface XYZW extends XYZ
-    {
-        w: number;
-    }
-
     /**
      * Vector3D 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
      * @author feng 2016-3-21
@@ -32,17 +21,6 @@ namespace feng3d
         * 定义为 Vector3D 对象的 z 轴，坐标为 (0,0,1)
         */
         static Z_AXIS = new Vector3D(0, 0, 1);
-
-        /**
-         * 从数据初始化向量
-         * @param xyz 向量数据
-         */
-        static from(xyz: XYZ | XYZW)
-        {
-            if (xyz instanceof Vector3D)
-                return xyz;
-            return new Vector3D(xyz);
-        }
 
         /**
         * Vector3D 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
@@ -87,24 +65,12 @@ namespace feng3d
          * @param z 第三个元素，例如 z 坐标。
          * @param w 表示额外数据的可选元素，例如旋转角度
          */
-        constructor(x: number, y: number, z: number, w?: number)
-        constructor(value: XYZ | XYZW)
-        constructor()
-        constructor()
+        constructor(x = 0, y = 0, z = 0, w = 0)
         {
-            if (arguments.length == 1)
-            {
-                this.x = arguments[0].x || 0;
-                this.y = arguments[0].y || 0;
-                this.z = arguments[0].z || 0;
-                this.w = arguments[0].w || 0;
-            } else if (arguments.length > 1)
-            {
-                this.x = arguments[0] || 0;
-                this.y = arguments[1] || 0;
-                this.z = arguments[2] || 0;
-                this.w = arguments[3] || 0;
-            }
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
         }
 
         /**
@@ -183,7 +149,7 @@ namespace feng3d
         /**
          * 通过将当前 Vector3D 对象的 x、y 和 z 元素与指定的 Vector3D 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
          */
-        equals(object: XYZ | XYZW, allFour = false, precision = 0.0001)
+        equals(object: Vector3D, allFour = false, precision = 0.0001)
         {
             if (Math.abs(this.x - object.x) > precision)
                 return false;
@@ -191,7 +157,7 @@ namespace feng3d
                 return false;
             if (Math.abs(this.z - object.z) > precision)
                 return false;
-            if (allFour && Math.abs(this.w - (<XYZW>object).w) > precision)
+            if (allFour && Math.abs(this.w - object.w) > precision)
                 return false;
             return true;
         }

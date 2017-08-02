@@ -164,9 +164,9 @@ namespace feng3d
          * @param   axis            旋转轴
          * @param   degrees         角度
          */
-        static fromAxisRotate(axis: XYZ, degrees: number): Matrix3D
+        static fromAxisRotate(axis: Vector3D, degrees: number): Matrix3D
         {
-            var n = Vector3D.from(axis);
+            var n = axis.clone();
             n.normalize();
             var q = degrees * Math.PI / 180;
 
@@ -333,7 +333,7 @@ namespace feng3d
          * @param   degrees         角度
          * @param   pivotPoint      旋转中心点
          */
-        appendRotation(axis: XYZ, degrees: number, pivotPoint?: XYZ)
+        appendRotation(axis: Vector3D, degrees: number, pivotPoint?: Vector3D)
         {
             var rotationMat = Matrix3D.fromAxisRotate(axis, degrees);
 
@@ -863,7 +863,7 @@ namespace feng3d
             }
         }
 
-        transformRotation(vin: XYZ, vout?: XYZ)
+        transformRotation(vin: Vector3D, vout?: Vector3D)
         {
             //转换旋转
             var rotationMatrix3d = Matrix3D.fromRotation(vin);

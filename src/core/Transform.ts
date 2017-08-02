@@ -2,6 +2,16 @@ namespace feng3d
 {
     export interface Mouse3DEventMap
     {
+        /**
+         * 当Object3D的scene属性被设置是由Scene3D派发
+         */
+        addedToScene
+
+        /**
+         * 当Object3D的scene属性被清空时由Scene3D派发
+         */
+        removedFromScene
+
         mouseout
         mouseover
         mousedown

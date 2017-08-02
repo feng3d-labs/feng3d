@@ -1921,7 +1921,18 @@ var feng3d;
      * @author feng 2016-3-21
      */
     var Vector3D = (function () {
-        function Vector3D() {
+        /**
+         * 创建 Vector3D 对象的实例。如果未指定构造函数的参数，则将使用元素 (0,0,0,0) 创建 Vector3D 对象。
+         * @param x 第一个元素，例如 x 坐标。
+         * @param y 第二个元素，例如 y 坐标。
+         * @param z 第三个元素，例如 z 坐标。
+         * @param w 表示额外数据的可选元素，例如旋转角度
+         */
+        function Vector3D(x, y, z, w) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            if (z === void 0) { z = 0; }
+            if (w === void 0) { w = 0; }
             /**
             * Vector3D 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
             */
@@ -1938,28 +1949,11 @@ var feng3d;
             * Vector3D 对象的第四个元素（除了 x、y 和 z 属性之外）可以容纳数据，例如旋转角度。默认值为 0
             */
             this.w = 0;
-            if (arguments.length == 1) {
-                this.x = arguments[0].x || 0;
-                this.y = arguments[0].y || 0;
-                this.z = arguments[0].z || 0;
-                this.w = arguments[0].w || 0;
-            }
-            else if (arguments.length > 1) {
-                this.x = arguments[0] || 0;
-                this.y = arguments[1] || 0;
-                this.z = arguments[2] || 0;
-                this.w = arguments[3] || 0;
-            }
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
         }
-        /**
-         * 从数据初始化向量
-         * @param xyz 向量数据
-         */
-        Vector3D.from = function (xyz) {
-            if (xyz instanceof Vector3D)
-                return xyz;
-            return new Vector3D(xyz);
-        };
         Object.defineProperty(Vector3D.prototype, "length", {
             /**
             * 当前 Vector3D 对象的长度（大小），即从原点 (0,0,0) 到该对象的 x、y 和 z 坐标的距离。w 属性将被忽略。单位矢量具有的长度或大小为一。
@@ -2301,7 +2295,7 @@ var feng3d;
          * @param   degrees         角度
          */
         Matrix3D.fromAxisRotate = function (axis, degrees) {
-            var n = feng3d.Vector3D.from(axis);
+            var n = axis.clone();
             n.normalize();
             var q = degrees * Math.PI / 180;
             var sinq = Math.sin(q);
@@ -3304,143 +3298,6 @@ var feng3d;
         return Quaternion;
     }());
     feng3d.Quaternion = Quaternion;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 欧拉角，使用分别绕x，y，z轴旋转角度表示方位
-     */
-    var Euler = (function () {
-        function Euler() {
-            /**
-             * x轴旋转角度
-             */
-            this.x = 0;
-            /**
-             * y轴旋转角度
-             */
-            this.y = 0;
-            /**
-             * z轴旋转角度
-             */
-            this.z = 0;
-            if (arguments.length == 3) {
-                this.x = arguments[0];
-                this.y = arguments[1];
-                this.z = arguments[2];
-            }
-            else if (arguments.length == 1) {
-                this.x = arguments[0].x;
-                this.y = arguments[0].y;
-                this.z = arguments[0].z;
-            }
-        }
-        /**
-         * 反转当前欧拉角
-         */
-        Euler.prototype.invert = function () {
-            var euler = new Euler();
-            euler.rotate(feng3d.Vector3D.Z_AXIS, -this.z);
-            euler.rotate(feng3d.Vector3D.Y_AXIS, -this.y);
-            euler.rotate(feng3d.Vector3D.X_AXIS, -this.x);
-            this.copyFrom(euler);
-        };
-        /**
-         * 绕指定轴旋转
-         * @param    axis               旋转轴
-         * @param    angle              旋转角度
-         */
-        Euler.prototype.rotate = function (axis, angle) {
-            var leftAngle = angle;
-            if (Math.abs(leftAngle) >= 90) {
-                var step = leftAngle / Math.abs(leftAngle) * 80;
-                var stepMatrix = feng3d.Matrix3D.fromAxisRotate(axis, step);
-                while (Math.abs(leftAngle) > 80) {
-                    stepMatrix.transformRotation(this, this);
-                    leftAngle = leftAngle - step;
-                }
-            }
-            feng3d.Matrix3D.fromAxisRotate(axis, leftAngle).transformRotation(this, this);
-            return this;
-        };
-        /**
-         * 通过将另一个 Euler 对象与当前 Euler 对象相乘来后置一个欧拉角。
-         * @param euler     欧拉角
-         */
-        Euler.prototype.append = function (euler) {
-            this.rotate(feng3d.Vector3D.X_AXIS, euler.x);
-            this.rotate(feng3d.Vector3D.Y_AXIS, euler.y);
-            this.rotate(feng3d.Vector3D.Z_AXIS, euler.z);
-        };
-        /**
-         * 通过将当前 Euler 对象与另一个 Euler 对象相乘来前置一个欧拉角。
-         * @param   euler     个右侧矩阵，它与当前 Matrix3D 对象相乘。
-         */
-        Euler.prototype.prepend = function (euler) {
-            var eul = this.clone();
-            this.copyFrom(euler);
-            this.append(eul);
-            return this;
-        };
-        /**
-         * 后置 逆向euler
-         * @param euler     欧拉角
-         */
-        Euler.prototype.appendInvert = function (euler) {
-            this.rotate(feng3d.Vector3D.Z_AXIS, -euler.z);
-            this.rotate(feng3d.Vector3D.Y_AXIS, -euler.y);
-            this.rotate(feng3d.Vector3D.X_AXIS, -euler.x);
-        };
-        /**
-         * 变换欧拉角数据
-         * @param source 需要转换的欧拉角数据
-         * @param target 转换后的欧拉角数据
-         */
-        Euler.prototype.transformRotation = function (source, target) {
-            var thismatrix3d = this.toMatrix3D();
-            target = target || {};
-            thismatrix3d.transformRotation(source, target);
-            return target;
-        };
-        /**
-         * 将源 Euler 对象中的所有矩阵数据复制到调用方 Euler 对象中。
-         * @param   source      要从中复制数据的 Euler 对象。
-         */
-        Euler.prototype.copyFrom = function (source) {
-            this.x = source.x;
-            this.y = source.y;
-            this.z = source.z;
-            return this;
-        };
-        /**
-         * 输出为矩阵
-         */
-        Euler.prototype.toMatrix3D = function () {
-            return feng3d.Matrix3D.fromRotation(this);
-        };
-        /**
-         * 通过将当前 Euler 对象的 x、y 和 z 元素与指定的 Euler 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
-         */
-        Euler.prototype.equals = function (object, precision) {
-            if (precision === void 0) { precision = 0.0001; }
-            if (Math.abs(this.x - object.x) > precision)
-                return false;
-            if (Math.abs(this.y - object.y) > precision)
-                return false;
-            if (Math.abs(this.z - object.z) > precision)
-                return false;
-            return true;
-        };
-        /**
-         * 返回一个新 Euler 对象，它是与当前 Euler 对象完全相同的副本。
-         */
-        Euler.prototype.clone = function () {
-            var ret = new Euler(this);
-            return ret;
-        };
-        return Euler;
-    }());
-    feng3d.Euler = Euler;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -8811,6 +8668,16 @@ var feng3d;
             this.renderContext = new feng3d.RenderContext();
             engines[canvas.id] = this;
         }
+        Object.defineProperty(Engine.prototype, "mousePos", {
+            /**
+             * 鼠标在3D视图中的位置
+             */
+            get: function () {
+                return new feng3d.Point(feng3d.input.clientX - this.canvas.clientLeft, feng3d.input.clientY - this.canvas.clientTop);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Engine.prototype.start = function () {
             feng3d.ticker.on("enterFrame", this.update, this);
         };
@@ -8830,16 +8697,16 @@ var feng3d;
             this.renderContext.scene3d = this.scene;
             this.renderContext.view3D = this;
             this.renderContext.gl = this.gl;
-            var viewClientRect = this.canvas.getBoundingClientRect();
-            var viewRect = new feng3d.Rectangle(viewClientRect.left, viewClientRect.top, viewClientRect.width, viewClientRect.height);
-            this.camera.viewRect = viewRect;
-            this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
+            var clientRect = this.canvas.getBoundingClientRect();
+            this.viewRect = new feng3d.Rectangle(clientRect.left, clientRect.top, clientRect.width, clientRect.height);
+            this.camera.viewRect = this.viewRect;
+            this.camera.lens.aspectRatio = this.viewRect.width / this.viewRect.height;
             //鼠标拾取渲染
-            this.mouse3DManager.draw(this.renderContext, viewRect);
+            this.mouse3DManager.draw(this.renderContext, this.viewRect);
             //绘制阴影图
             // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
             // 默认渲染
-            this.defaultRenderer.draw(this.renderContext, viewRect);
+            this.defaultRenderer.draw(this.renderContext, this.viewRect);
         };
         Engine.get = function (canvas) {
             if (canvas === void 0) { canvas = null; }
@@ -14207,11 +14074,32 @@ var feng3d;
      */
     var FPSController = (function (_super) {
         __extends(FPSController, _super);
-        function FPSController() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function FPSController(gameobject) {
+            var _this = _super.call(this, gameobject) || this;
             _this.ischange = false;
             return _this;
         }
+        Object.defineProperty(FPSController.prototype, "auto", {
+            get: function () {
+                return this._auto;
+            },
+            set: function (value) {
+                if (this._auto == value)
+                    return;
+                if (this._auto) {
+                    feng3d.input.off("mousedown", this.onMousedown, this);
+                    feng3d.input.off("mouseup", this.onMouseup, this);
+                    this.onMouseup();
+                }
+                this._auto = value;
+                if (this._auto) {
+                    feng3d.input.on("mousedown", this.onMousedown, this);
+                    feng3d.input.on("mouseup", this.onMouseup, this);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         FPSController.prototype.onMousedown = function () {
             this.ischange = true;
             this.preMousePoint = null;
@@ -14240,17 +14128,14 @@ var feng3d;
             this.keyDirectionDic["q"] = new feng3d.Vector3D(0, -1, 0); //下
             this.keyDownDic = {};
             this.acceleration = 0.05;
-            feng3d.input.on("mousedown", this.onMousedown, this);
-            feng3d.input.on("mouseup", this.onMouseup, this);
+            this.auto = true;
             this.enabled = true;
         };
         /**
          * 销毁
          */
         FPSController.prototype.dispose = function () {
-            feng3d.input.off("mousedown", this.onMousedown, this);
-            feng3d.input.off("mouseup", this.onMouseup, this);
-            this.onMouseup();
+            this.auto = false;
         };
         /**
          * 手动应用更新到目标3D对象
@@ -20093,154 +19978,14 @@ var feng3d;
             this.test();
         }
         EulerTest.prototype.test = function () {
-            this.testRotate0();
-            this.testRotate();
-            this.testTransformRotation();
-            this.testAppend();
-            // this.testInvert();
-            // this.testAppendInvert();
-            // this.testMatrix3d();
-            this.testMatrix3d1();
-        };
-        EulerTest.prototype.testRotate0 = function () {
-            for (var i = 0; i < 100; i++) {
-                var euler = new feng3d.Euler(0, 0, 0);
-                var rotation = new feng3d.Vector3D(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-                rotation.scaleBy(360);
-                euler.rotate(feng3d.Vector3D.X_AXIS, rotation.x);
-                euler.rotate(feng3d.Vector3D.Y_AXIS, rotation.y);
-                euler.rotate(feng3d.Vector3D.Z_AXIS, rotation.z);
-                console.assert(euler.equals(rotation, 0.01));
-            }
-        };
-        EulerTest.prototype.testRotate = function () {
-            var euler = new feng3d.Euler(0, 0, 0);
-            var rotateMatrix3d = new feng3d.Matrix3D();
-            for (var i = 0; i < 100; i++) {
-                var axis = { x: Math.random(), y: Math.random(), z: Math.random() }, angle = Math.random() * 90;
-                euler.rotate(axis, angle);
-                rotateMatrix3d.appendRotation(axis, angle);
-                var eulerMatrix3d = euler.toMatrix3D();
-                console.assert(eulerMatrix3d.equals(rotateMatrix3d));
-            }
-        };
-        EulerTest.prototype.testTransformRotation = function () {
-            var rotation = { x: Math.random() * 360, y: Math.random() * 360, z: Math.random() * 360 };
-            var euler = new feng3d.Euler(rotation);
-            var rotateMatrix3d = feng3d.Matrix3D.fromRotation(rotation);
-            for (var i = 0; i < 100; i++) {
-                var randomRotation = { x: Math.random() * 360, y: Math.random() * 360, z: Math.random() * 360 };
-                var resultRotation1 = new feng3d.Vector3D();
-                var resultRotation2 = new feng3d.Vector3D();
-                euler.transformRotation(randomRotation, resultRotation1);
-                rotateMatrix3d.transformRotation(randomRotation, resultRotation2);
-                console.assert(resultRotation1.equals(resultRotation2));
-            }
-        };
-        EulerTest.prototype.testAppend = function () {
-            var rotation = { x: Math.random() * 360, y: Math.random() * 360, z: Math.random() * 360 };
-            var euler = new feng3d.Euler(rotation);
-            var rotateMatrix3d = feng3d.Matrix3D.fromRotation(rotation);
-            for (var i = 0; i < 100; i++) {
-                var changeRotation = { x: Math.random() * 360, y: Math.random() * 360, z: Math.random() * 360 };
-                euler.append(changeRotation);
-                rotateMatrix3d.append(feng3d.Matrix3D.fromRotation(changeRotation));
-                var eulerMatrix3d = euler.toMatrix3D();
-                console.assert(eulerMatrix3d.equals(rotateMatrix3d));
-            }
-        };
-        EulerTest.prototype.testInvert = function () {
-            for (var i = 0; i < 100; i++) {
-                var rotation = new feng3d.Vector3D(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-                rotation.scaleBy(1000);
-                var euler = new feng3d.Euler(0, 0, 0);
-                euler.rotate(feng3d.Vector3D.X_AXIS, rotation.x);
-                euler.rotate(feng3d.Vector3D.Y_AXIS, rotation.y);
-                euler.rotate(feng3d.Vector3D.Z_AXIS, rotation.z);
-                console.assert(euler.equals(rotation, 0.001));
-                euler.rotate(feng3d.Vector3D.Z_AXIS, -rotation.z);
-                euler.rotate(feng3d.Vector3D.Y_AXIS, -rotation.y);
-                euler.rotate(feng3d.Vector3D.X_AXIS, -rotation.x);
-                console.assert(euler.equals(new feng3d.Vector3D()));
-                var euler1 = new feng3d.Euler();
-                euler1.rotate(feng3d.Vector3D.X_AXIS, rotation.x);
-                euler1.rotate(feng3d.Vector3D.Y_AXIS, rotation.y);
-                euler1.rotate(feng3d.Vector3D.Z_AXIS, rotation.z);
-                console.assert(euler1.equals(rotation, 0.001));
-                var euler2 = new feng3d.Euler();
-                euler2.rotate(feng3d.Vector3D.Z_AXIS, -rotation.z);
-                euler2.rotate(feng3d.Vector3D.Y_AXIS, -rotation.y);
-                euler2.rotate(feng3d.Vector3D.X_AXIS, -rotation.x);
-                var mergeEuler = euler1.clone();
-                mergeEuler.append(euler2);
-                console.assert(mergeEuler.equals(new feng3d.Vector3D()));
-                // euler.copyFrom(rotation);
-                // var inverteuler = euler.clone();
-                // inverteuler.invert();
-                // var result = euler.clone();
-                // result.append(inverteuler);
-                // console.assert(result.equals(new Vector3D(), 0.0001));
-                var euler = new feng3d.Euler(0, 0, 0);
-                euler.append(new feng3d.Euler().rotate(feng3d.Vector3D.X_AXIS, rotation.x));
-                var euler1 = new feng3d.Euler();
-                euler1.append(new feng3d.Euler().rotate(feng3d.Vector3D.Y_AXIS, rotation.y));
-                euler1.append(new feng3d.Euler().rotate(feng3d.Vector3D.Z_AXIS, rotation.z));
-                euler.append(euler1);
-                console.assert(euler.equals(rotation, 0.0001));
-            }
-        };
-        EulerTest.prototype.testAppendInvert = function () {
-            for (var i = 0; i < 100; i++) {
-                var rotation = new feng3d.Vector3D(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-                rotation.scaleBy(1000);
-                // rotation.x = -204.35293458336056;
-                // rotation.y = 53.6719294679584;
-                // rotation.z = -108.44530012851261;
-                var changeRotation = new feng3d.Vector3D(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-                changeRotation.scaleBy(1000);
-                // changeRotation.x = 0;
-                // changeRotation.y = 0;
-                // changeRotation.z = 0;
-                // changeRotation.x = 0;
-                // changeRotation.y = -343.32008752043055;
-                // changeRotation.z = -326.93672932807874;
-                var changeEuler = new feng3d.Euler(changeRotation);
-                var euler = new feng3d.Euler(rotation);
-                euler.append(changeEuler);
-                euler.appendInvert(changeEuler);
-                console.assert(euler.equals(rotation, 0.001));
-                euler.appendInvert(euler);
-                console.assert(euler.equals(new feng3d.Vector3D()));
-            }
-        };
-        EulerTest.prototype.testMatrix3d = function () {
-            for (var i = 0; i < 100; i++) {
-                var rotation = new feng3d.Vector3D(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-                rotation.scaleBy(1000);
-                var scale = new feng3d.Vector3D(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-                scale.scaleBy(1000);
-                var rotationmatrix3d = feng3d.Matrix3D.fromRotation(rotation);
-                var scalematrix3d = feng3d.Matrix3D.fromScale(scale);
-                var matrix3d1 = scalematrix3d.clone().append(rotationmatrix3d);
-                var matrix3d2 = rotationmatrix3d.clone().append(scalematrix3d);
-                console.log(matrix3d1.decompose()[2]);
-                console.log(matrix3d2.decompose()[2]);
-                console.assert(matrix3d1.equals(matrix3d2));
-            }
-        };
-        EulerTest.prototype.testMatrix3d1 = function () {
-            for (var i = 0; i < 100; i++) {
-                var rotation = new feng3d.Vector3D(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-                rotation.scaleBy(1000);
-                rotation.y = 90;
-                var matrix3d1 = feng3d.Matrix3D.fromRotation(rotation);
-                // var matrix3d2 = new Matrix3D();
-                // matrix3d2.appendRotation(matrix3d2.up, rotation.y);
-                // matrix3d2.appendRotation(matrix3d2.right, rotation.x);
-                // matrix3d2.appendRotation(matrix3d2.forward, rotation.z);
-                // console.assert(matrix3d1.equals(matrix3d2));
-                // console.log(rotation, matrix3d1.decompose()[1].scaleBy(180 / Math.PI));
-            }
+            // this.testRotate0();
+            // this.testRotate();
+            // this.testTransformRotation();
+            // this.testAppend();
+            // // this.testInvert();
+            // // this.testAppendInvert();
+            // // this.testMatrix3d();
+            // this.testMatrix3d1();
         };
         return EulerTest;
     }());

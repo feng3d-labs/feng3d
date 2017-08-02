@@ -33,7 +33,35 @@ namespace feng3d
 
         private ischange = false;
 
-        private onMousedown()
+        private _auto: boolean;
+        get auto()
+        {
+            return this._auto;
+        }
+        set auto(value)
+        {
+            if (this._auto == value)
+                return;
+            if (this._auto)
+            {
+                input.off("mousedown", this.onMousedown, this);
+                input.off("mouseup", this.onMouseup, this);
+                this.onMouseup();
+            }
+            this._auto = value;
+            if (this._auto)
+            {
+                input.on("mousedown", this.onMousedown, this);
+                input.on("mouseup", this.onMouseup, this);
+            }
+        }
+
+        constructor(gameobject: GameObject)
+        {
+            super(gameobject);
+        }
+
+        onMousedown()
         {
             this.ischange = true;
 
@@ -46,7 +74,7 @@ namespace feng3d
             input.on("mousemove", this.onMouseMove, this);
         }
 
-        private onMouseup()
+        onMouseup()
         {
             this.ischange = false;
 
@@ -71,9 +99,7 @@ namespace feng3d
             this.keyDownDic = {};
             this.acceleration = 0.05
 
-            input.on("mousedown", this.onMousedown, this);
-            input.on("mouseup", this.onMouseup, this);
-
+            this.auto = true;
             this.enabled = true;
         }
 
@@ -82,10 +108,7 @@ namespace feng3d
          */
         dispose()
         {
-            input.off("mousedown", this.onMousedown, this);
-            input.off("mouseup", this.onMouseup, this);
-
-            this.onMouseup();
+            this.auto = false;
         }
 
         /**
