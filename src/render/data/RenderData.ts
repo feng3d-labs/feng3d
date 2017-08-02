@@ -129,7 +129,7 @@ namespace feng3d
                 if (index == -1)
                 {
                     this._elements.push(element);
-                    Event.dispatch(this, Object3DRenderAtomic.ADD_RENDERELEMENT, element);
+                    this.dispatch("addRenderElement", element);
                 }
             } else
             {
@@ -148,7 +148,7 @@ namespace feng3d
                 if (index != -1)
                 {
                     this._elements.splice(i, 1);
-                    Event.dispatch(this, Object3DRenderAtomic.REMOVE_RENDERELEMENT, element);
+                    this.dispatch("removeRenderElement", element);
                 }
             } else
             {

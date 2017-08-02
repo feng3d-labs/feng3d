@@ -21,7 +21,7 @@ namespace feng3d
         dblclick
     }
 
-    export interface TransformEventMap extends Mouse3DEventMap
+    export interface TransformEventMap extends Mouse3DEventMap, ComponentEventMap
     {
         /**
          * 显示变化
@@ -59,6 +59,15 @@ namespace feng3d
          * 删除了子对象，当child被parent移除时派发冒泡事件
          */
         removed
+        /**
+         * 当Object3D的scene属性被设置是由Scene3D派发
+         */
+        addedToScene;
+
+        /**
+         * 当Object3D的scene属性被清空时由Scene3D派发
+         */
+        removedFromScene;
     }
 
     export interface Object3D
@@ -105,7 +114,7 @@ namespace feng3d
 
             this._bounds = this.getDefaultBoundingVolume();
             this._worldBounds = this.getDefaultBoundingVolume();
-            Event.on(this._bounds, "change", this.onBoundsChange, this);
+            this._bounds.on("change", this.onBoundsChange, this);
             //
             this.createUniformData("u_modelMatrix", () => this.localToWorldMatrix);
         }

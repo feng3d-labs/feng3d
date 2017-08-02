@@ -1,5 +1,30 @@
 namespace feng3d
 {
+    /**
+	 * 组件事件
+	 */
+    export interface ComponentEventMap extends RenderDataHolderEventMap
+    {
+		/**
+		 * 添加子组件事件
+		 */
+        addedComponent: { container: GameObject, child: Component };
+
+		/**
+		 * 移除子组件事件
+		 */
+        removedComponent;
+    }
+
+    export interface Component
+    {
+        once<K extends keyof ComponentEventMap>(type: K, listener: (event: ComponentEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof ComponentEventMap>(type: K, data?: ComponentEventMap[K], bubbles?: boolean);
+        has<K extends keyof ComponentEventMap>(type: K): boolean;
+        on<K extends keyof ComponentEventMap>(type: K, listener: (event: ComponentEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: ComponentEventMap[K]) => any, thisObject?: any);
+    }
+
 	/**
      * Base class for everything attached to GameObjects.
      * 

@@ -24,7 +24,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 });
 	 * </pre>
 	 */
-	export class ShortCut 
+	export class ShortCut extends Event
 	{
 		/**
 		 * 按键状态
@@ -51,6 +51,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 		 */
 		constructor()
 		{
+			super();
 			this.keyState = new KeyState();
 			this.keyCapture = new KeyCapture(this)
 

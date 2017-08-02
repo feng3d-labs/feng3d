@@ -1,11 +1,27 @@
 namespace feng3d
 {
+	/**
+	 * 镜头事件
+	 */
+	export interface LensEventMap
+	{
+		matrixChanged;
+	}
+
+	export interface LensBase
+	{
+		once<K extends keyof LensEventMap>(type: K, listener: (event: LensEventMap[K]) => void, thisObject?: any, priority?: number): void;
+		dispatch<K extends keyof LensEventMap>(type: K, data?: LensEventMap[K], bubbles?: boolean);
+		has<K extends keyof LensEventMap>(type: K): boolean;
+		on<K extends keyof LensEventMap>(type: K, listener: (event: LensEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
+		off<K extends keyof LensEventMap>(type?: K, listener?: (event: LensEventMap[K]) => any, thisObject?: any);
+	}
 
 	/**
 	 * 摄像机镜头
 	 * @author feng 2014-10-14
 	 */
-	export abstract class LensBase 
+	export abstract class LensBase extends Event
 	{
 		/**
 		 * 最近距离
@@ -13,7 +29,7 @@ namespace feng3d
 		@watch("invalidateMatrix")
 		@serialize
 		near = 0.1;
-		
+
 		/**
 		 * 最远距离
 		 */
@@ -42,6 +58,7 @@ namespace feng3d
 		 */
 		constructor()
 		{
+			super();
 		}
 
 		/**
@@ -72,7 +89,7 @@ namespace feng3d
 		set matrix(value: Matrix3D)
 		{
 			this._matrix = value;
-			Event.dispatch(this, LensEvent.MATRIX_CHANGED, this);
+			this.dispatch("matrixChanged", this);
 			this.invalidateMatrix();
 		}
 
@@ -127,7 +144,7 @@ namespace feng3d
 		protected invalidateMatrix()
 		{
 			this._matrix = null;
-			Event.dispatch(this, LensEvent.MATRIX_CHANGED, this);
+			this.dispatch("matrixChanged", this);
 			this._unprojection = null;
 		}
 

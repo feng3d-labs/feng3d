@@ -71,7 +71,7 @@ namespace feng3d
 
             this.startTime = Date.now();
             this.isPlaying = true;
-            Event.on(ticker,<any>"enterFrame", this.update, this);
+            ticker.on("enterFrame", this.update, this);
         }
 
         private update()

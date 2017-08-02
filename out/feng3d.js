@@ -4214,12 +4214,15 @@ var feng3d;
      * 按键状态
      * @author feng 2016-4-26
      */
-    var KeyState = (function () {
+    var KeyState = (function (_super) {
+        __extends(KeyState, _super);
         /**
          * 构建
          */
         function KeyState() {
-            this._keyStateDic = {};
+            var _this = _super.call(this) || this;
+            _this._keyStateDic = {};
+            return _this;
         }
         /**
          * 按下键
@@ -4228,7 +4231,7 @@ var feng3d;
          */
         KeyState.prototype.pressKey = function (key, data) {
             this._keyStateDic[key] = true;
-            feng3d.Event.dispatch(this, key, data);
+            this.dispatch(key, data);
         };
         /**
          * 释放键
@@ -4237,7 +4240,7 @@ var feng3d;
          */
         KeyState.prototype.releaseKey = function (key, data) {
             this._keyStateDic[key] = false;
-            feng3d.Event.dispatch(this, key, data);
+            this.dispatch(key, data);
         };
         /**
          * 获取按键状态
@@ -4247,7 +4250,7 @@ var feng3d;
             return !!this._keyStateDic[key];
         };
         return KeyState;
-    }());
+    }(feng3d.Event));
     feng3d.KeyState = KeyState;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -4286,7 +4289,7 @@ var feng3d;
          */
         ShortCutCapture.prototype.init = function () {
             for (var i = 0; i < this._keys.length; i++) {
-                feng3d.Event.on(this._keyState, this._keys[i].key, this.onCapture, this);
+                this._keyState.on(this._keys[i].key, this.onCapture, this);
             }
         };
         /**
@@ -4305,7 +4308,7 @@ var feng3d;
          */
         ShortCutCapture.prototype.dispatchCommands = function (commands, data) {
             for (var i = 0; i < commands.length; i++) {
-                feng3d.Event.dispatch(this._shortCut, commands[i], data);
+                this._shortCut.dispatch(commands[i], data);
             }
         };
         /**
@@ -4433,7 +4436,7 @@ var feng3d;
          */
         ShortCutCapture.prototype.destroy = function () {
             for (var i = 0; i < this._keys.length; i++) {
-                feng3d.Event.off(this._keyState, this._keys[i].key, this.onCapture, this);
+                this._keyState.off(this._keys[i].key, this.onCapture, this);
             }
             this._shortCut = null;
             this._keys = null;
@@ -4514,15 +4517,18 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 });
      * </pre>
      */
-    var ShortCut = (function () {
+    var ShortCut = (function (_super) {
+        __extends(ShortCut, _super);
         /**
          * 初始化快捷键模块
          */
         function ShortCut() {
-            this.keyState = new feng3d.KeyState();
-            this.keyCapture = new feng3d.KeyCapture(this);
-            this.captureDic = {};
-            this.stateDic = {};
+            var _this = _super.call(this) || this;
+            _this.keyState = new feng3d.KeyState();
+            _this.keyCapture = new feng3d.KeyCapture(_this);
+            _this.captureDic = {};
+            _this.stateDic = {};
+            return _this;
         }
         /**
          * 添加快捷键
@@ -4593,7 +4599,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
             return shortcut.key + "," + shortcut.command + "," + shortcut.when;
         };
         return ShortCut;
-    }());
+    }(feng3d.Event));
     feng3d.ShortCut = ShortCut;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -5146,7 +5152,7 @@ var feng3d;
             },
             set: function (value) {
                 this._code = value;
-                feng3d.Event.dispatch(this, "change");
+                this.dispatch("change");
             },
             enumerable: true,
             configurable: true
@@ -5379,7 +5385,7 @@ var feng3d;
                 else {
                     throw "未知RenderElement！";
                 }
-                feng3d.Event.on(element, "change", this.onElementChange, this);
+                element.on("change", this.onElementChange, this);
             }
             else {
                 for (var i = 0; i < element.length; i++) {
@@ -5413,7 +5419,7 @@ var feng3d;
                 else {
                     throw "未知RenderElement！";
                 }
-                feng3d.Event.off(element, "change", this.onElementChange, this);
+                element.off("change", this.onElementChange, this);
             }
             else {
                 for (var i = 0; i < element.length; i++) {
@@ -6168,7 +6174,7 @@ var feng3d;
                 var index = this._elements.indexOf(element);
                 if (index == -1) {
                     this._elements.push(element);
-                    feng3d.Event.dispatch(this, feng3d.Object3DRenderAtomic.ADD_RENDERELEMENT, element);
+                    this.dispatch("addRenderElement", element);
                 }
             }
             else {
@@ -6182,7 +6188,7 @@ var feng3d;
                 var index = this._elements.indexOf(element);
                 if (index != -1) {
                     this._elements.splice(i, 1);
-                    feng3d.Event.dispatch(this, feng3d.Object3DRenderAtomic.REMOVE_RENDERELEMENT, element);
+                    this.dispatch("removeRenderElement", element);
                 }
             }
             else {
@@ -6234,13 +6240,13 @@ var feng3d;
         RenderDataHolder.prototype.addRenderDataHolder = function (renderDataHolder) {
             if (this.childrenRenderDataHolder.indexOf(renderDataHolder) == -1)
                 this.childrenRenderDataHolder.push(renderDataHolder);
-            feng3d.Event.dispatch(this, feng3d.Object3DRenderAtomic.ADD_RENDERHOLDER, renderDataHolder);
+            this.dispatch("addRenderHolder", renderDataHolder);
         };
         RenderDataHolder.prototype.removeRenderDataHolder = function (renderDataHolder) {
             var index = this.childrenRenderDataHolder.indexOf(renderDataHolder);
             if (index != -1)
                 this.childrenRenderDataHolder.splice(index, 1);
-            feng3d.Event.dispatch(this, feng3d.Object3DRenderAtomic.REMOVE_RENDERHOLDER, renderDataHolder);
+            this.dispatch("removeRenderHolder", renderDataHolder);
         };
         /**
          * 更新渲染数据
@@ -6248,7 +6254,7 @@ var feng3d;
         RenderDataHolder.prototype.updateRenderData = function (renderContext, renderData) {
         };
         RenderDataHolder.prototype.invalidate = function () {
-            feng3d.Event.dispatch(this, feng3d.Object3DRenderAtomic.INVALIDATE_RENDERHOLDER, this);
+            this.dispatch("invalidateRenderHolder", this);
         };
         return RenderDataHolder;
     }(feng3d.RenderData));
@@ -6309,11 +6315,11 @@ var feng3d;
                 this.addRenderElement(renderDataHolder.elements);
                 this.addInvalidateShader(renderDataHolder);
                 this.addInvalidateHolders(renderDataHolder);
-                feng3d.Event.on(renderDataHolder, Object3DRenderAtomic.ADD_RENDERELEMENT, this.onAddElement, this);
-                feng3d.Event.on(renderDataHolder, Object3DRenderAtomic.REMOVE_RENDERELEMENT, this.onRemoveElement, this);
-                feng3d.Event.on(renderDataHolder, Object3DRenderAtomic.ADD_RENDERHOLDER, this.onAddRenderHolder, this);
-                feng3d.Event.on(renderDataHolder, Object3DRenderAtomic.REMOVE_RENDERHOLDER, this.onRemoveRenderHolder, this);
-                feng3d.Event.on(renderDataHolder, Object3DRenderAtomic.INVALIDATE_RENDERHOLDER, this.onInvalidate, this);
+                renderDataHolder.on("addRenderElement", this.onAddElement, this);
+                renderDataHolder.on("removeRenderElement", this.onRemoveElement, this);
+                renderDataHolder.on("addRenderHolder", this.onAddRenderHolder, this);
+                renderDataHolder.on("removeRenderHolder", this.onRemoveRenderHolder, this);
+                renderDataHolder.on("invalidateRenderHolder", this.onInvalidate, this);
             }
             else {
                 for (var i = 0; i < renderDataHolder.length; i++) {
@@ -6339,10 +6345,10 @@ var feng3d;
                 }
                 this.removeRenderElement(renderDataHolder.elements);
                 this.addInvalidateShader(renderDataHolder);
-                feng3d.Event.off(renderDataHolder, Object3DRenderAtomic.ADD_RENDERELEMENT, this.onAddElement, this);
-                feng3d.Event.off(renderDataHolder, Object3DRenderAtomic.REMOVE_RENDERELEMENT, this.onRemoveElement, this);
-                feng3d.Event.off(renderDataHolder, Object3DRenderAtomic.ADD_RENDERHOLDER, this.onAddRenderHolder, this);
-                feng3d.Event.off(renderDataHolder, Object3DRenderAtomic.REMOVE_RENDERHOLDER, this.onRemoveRenderHolder, this);
+                renderDataHolder.off("addRenderElement", this.onAddElement, this);
+                renderDataHolder.off("removeRenderElement", this.onRemoveElement, this);
+                renderDataHolder.off("addRenderHolder", this.onAddRenderHolder, this);
+                renderDataHolder.off("removeRenderHolder", this.onRemoveRenderHolder, this);
             }
         };
         Object3DRenderAtomic.prototype.update = function (renderContext) {
@@ -6367,26 +6373,6 @@ var feng3d;
                 _this.removeRenderDataHolder(element);
             });
         };
-        /**
-         * 添加渲染元素
-         */
-        Object3DRenderAtomic.ADD_RENDERELEMENT = "addRenderElement";
-        /**
-         * 移除渲染元素
-         */
-        Object3DRenderAtomic.REMOVE_RENDERELEMENT = "removeRenderElement";
-        /**
-         * 添加渲染数据拥有者
-         */
-        Object3DRenderAtomic.ADD_RENDERHOLDER = "addRenderHolder";
-        /**
-         * 移除渲染数据拥有者
-         */
-        Object3DRenderAtomic.REMOVE_RENDERHOLDER = "removeRenderHolder";
-        /**
-         * 渲染数据拥有者数据失效
-         */
-        Object3DRenderAtomic.INVALIDATE_RENDERHOLDER = "invalidateRenderHolder";
         return Object3DRenderAtomic;
     }(feng3d.RenderAtomic));
     feng3d.Object3DRenderAtomic = Object3DRenderAtomic;
@@ -7833,10 +7819,10 @@ var feng3d;
             if (this._scene == newScene)
                 return;
             if (this._scene)
-                feng3d.Event.dispatch(this, feng3d.Scene3DEvent.REMOVED_FROM_SCENE, this);
+                this.dispatch("removedFromScene", this);
             this._scene = newScene;
             if (this._scene)
-                feng3d.Event.dispatch(this, feng3d.Scene3DEvent.ADDED_TO_SCENE, this);
+                this.dispatch("addedToScene", this);
             for (var i = 0, n = this._children.length; i < n; i++) {
                 this._children[i].updateScene();
             }
@@ -8058,7 +8044,7 @@ var feng3d;
             var len = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneTransformChange();
-            feng3d.Event.dispatch(this, "scenetransformChanged", this);
+            this.dispatch("scenetransformChanged", this);
         };
         ObjectContainer3D.prototype.notifySceneChange = function () {
             this.notifySceneTransformChange();
@@ -8066,7 +8052,7 @@ var feng3d;
             var len = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneChange();
-            feng3d.Event.dispatch(this, "sceneChanged", this);
+            this.dispatch("sceneChanged", this);
         };
         ObjectContainer3D.prototype.removeChildInternal = function (childIndex, child) {
             childIndex = childIndex;
@@ -8107,7 +8093,7 @@ var feng3d;
             _this._updateEverytime = true;
             _this._bounds = _this.getDefaultBoundingVolume();
             _this._worldBounds = _this.getDefaultBoundingVolume();
-            feng3d.Event.on(_this._bounds, "change", _this.onBoundsChange, _this);
+            _this._bounds.on("change", _this.onBoundsChange, _this);
             //
             _this.createUniformData("u_modelMatrix", function () { return _this.localToWorldMatrix; });
             return _this;
@@ -8531,8 +8517,8 @@ var feng3d;
             feng3d.debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var component = this.components.splice(index, 1)[0];
             //派发移除组件事件
-            feng3d.Event.dispatch(component, feng3d.ComponentEvent.REMOVED_COMPONENT, { container: this, child: component });
-            feng3d.Event.dispatch(this, feng3d.ComponentEvent.REMOVED_COMPONENT, { container: this, child: component });
+            component.dispatch("removedComponent", { container: this, child: component });
+            this.dispatch("removedComponent", { container: this, child: component });
             this.removeRenderDataHolder(component);
             component.dispose();
             return component;
@@ -8612,8 +8598,8 @@ var feng3d;
                 this.removeComponentsByType(component.constructor);
             this.components.splice(index, 0, component);
             //派发添加组件事件
-            feng3d.Event.dispatch(component, feng3d.ComponentEvent.ADDED_COMPONENT, { container: this, child: component });
-            feng3d.Event.dispatch(this, feng3d.ComponentEvent.ADDED_COMPONENT, { container: this, child: component });
+            component.dispatch("addedComponent", { container: this, child: component });
+            this.dispatch("addedComponent", { container: this, child: component });
             this.addRenderDataHolder(component);
         };
         /**
@@ -8990,7 +8976,7 @@ var feng3d;
          */
         Geometry.prototype.setIndices = function (indices) {
             this._indexBuffer = this.createIndexBuffer(indices);
-            feng3d.Event.dispatch(this, feng3d.GeometryEvent.CHANGED_INDEX_DATA);
+            this.dispatch("changedIndexData");
         };
         /**
          * 获取顶点数据
@@ -9014,7 +9000,7 @@ var feng3d;
             else {
                 delete this._attributes[vaId];
             }
-            feng3d.Event.dispatch(this, feng3d.GeometryEvent.CHANGED_VA_DATA, vaId);
+            this.dispatch("changedVAData", vaId);
         };
         /**
          * 获取顶点属性数据
@@ -9023,7 +9009,7 @@ var feng3d;
          */
         Geometry.prototype.getVAData = function (vaId) {
             this.updateGrometry();
-            feng3d.Event.dispatch(this, feng3d.GeometryEvent.GET_VA_DATA, vaId);
+            this.dispatch("getVAData", vaId);
             return this._attributes[vaId];
         };
         /**
@@ -9216,7 +9202,7 @@ var feng3d;
          * 包围盒失效
          */
         Geometry.prototype.invalidateBounds = function () {
-            feng3d.Event.dispatch(this, feng3d.GeometryEvent.BOUNDS_INVALID);
+            this.dispatch("boundsInvalid");
         };
         /**
          * 创建顶点法线
@@ -9775,26 +9761,29 @@ var feng3d;
      * 摄像机镜头
      * @author feng 2014-10-14
      */
-    var LensBase = (function () {
+    var LensBase = (function (_super) {
+        __extends(LensBase, _super);
         /**
          * 创建一个摄像机镜头
          */
         function LensBase() {
+            var _this = _super.call(this) || this;
             /**
              * 最近距离
              */
-            this.near = 0.1;
+            _this.near = 0.1;
             /**
              * 最远距离
              */
-            this.far = 10000;
+            _this.far = 10000;
             /**
              * 视窗缩放比例(width/height)，在渲染器中设置
              */
-            this.aspectRatio = 1;
-            this._scissorRect = new feng3d.Rectangle();
-            this._viewPort = new feng3d.Rectangle();
-            this._frustumCorners = [];
+            _this.aspectRatio = 1;
+            _this._scissorRect = new feng3d.Rectangle();
+            _this._viewPort = new feng3d.Rectangle();
+            _this._frustumCorners = [];
+            return _this;
         }
         Object.defineProperty(LensBase.prototype, "frustumCorners", {
             /**
@@ -9821,7 +9810,7 @@ var feng3d;
             },
             set: function (value) {
                 this._matrix = value;
-                feng3d.Event.dispatch(this, feng3d.LensEvent.MATRIX_CHANGED, this);
+                this.dispatch("matrixChanged", this);
                 this.invalidateMatrix();
             },
             enumerable: true,
@@ -9864,7 +9853,7 @@ var feng3d;
          */
         LensBase.prototype.invalidateMatrix = function () {
             this._matrix = null;
-            feng3d.Event.dispatch(this, feng3d.LensEvent.MATRIX_CHANGED, this);
+            this.dispatch("matrixChanged", this);
             this._unprojection = null;
         };
         __decorate([
@@ -9880,7 +9869,7 @@ var feng3d;
             feng3d.serialize
         ], LensBase.prototype, "aspectRatio", void 0);
         return LensBase;
-    }());
+    }(feng3d.Event));
     feng3d.LensBase = LensBase;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -10074,8 +10063,8 @@ var feng3d;
             _this._viewRect = new feng3d.Rectangle(0, 0, 1, 1);
             _this._single = true;
             _this._lens = new feng3d.PerspectiveLens();
-            feng3d.Event.on(_this._lens, feng3d.LensEvent.MATRIX_CHANGED, _this.onLensMatrixChanged, _this);
-            feng3d.Event.on(_this.gameObject.transform, "scenetransformChanged", _this.onScenetransformChanged, _this);
+            _this._lens.on("matrixChanged", _this.onLensMatrixChanged, _this);
+            _this.gameObject.transform.on("scenetransformChanged", _this.onScenetransformChanged, _this);
             _this._viewProjectionDirty = true;
             _this._frustumPlanesDirty = true;
             _this._frustumPlanes = [];
@@ -10108,7 +10097,7 @@ var feng3d;
         Camera.prototype.onLensMatrixChanged = function (event) {
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
-            feng3d.Event.dispatch(this, event.type, event.data);
+            this.dispatch(event.type, event.data);
         };
         Object.defineProperty(Camera.prototype, "lens", {
             /**
@@ -10122,10 +10111,10 @@ var feng3d;
                     return;
                 if (!value)
                     throw new Error("Lens cannot be null!");
-                feng3d.Event.off(this._lens, feng3d.LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
+                this._lens.off("matrixChanged", this.onLensMatrixChanged, this);
                 this._lens = value;
-                feng3d.Event.on(this._lens, feng3d.LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
-                feng3d.Event.dispatch(this, feng3d.CameraEvent.LENS_CHANGED, this);
+                this._lens.on("matrixChanged", this.onLensMatrixChanged, this);
+                this.dispatch("lensChanged", this);
             },
             enumerable: true,
             configurable: true
@@ -10382,12 +10371,12 @@ var feng3d;
             },
             set: function (value) {
                 if (this._geometry) {
-                    feng3d.Event.off(this._geometry, feng3d.GeometryEvent.BOUNDS_INVALID, this.onGeometryBoundsInvalid, this);
+                    this._geometry.off("boundsInvalid", this.onGeometryBoundsInvalid, this);
                 }
                 this._geometry = value;
                 this.fromGeometry(this._geometry);
                 if (this._geometry) {
-                    feng3d.Event.on(this._geometry, feng3d.GeometryEvent.BOUNDS_INVALID, this.onGeometryBoundsInvalid, this);
+                    this._geometry.on("boundsInvalid", this.onGeometryBoundsInvalid, this);
                 }
             },
             enumerable: true,
@@ -13659,7 +13648,7 @@ var feng3d;
          * 处理被添加组件事件
          */
         DirectionalLight.prototype.onBeAddedComponent = function (event) {
-            feng3d.Event.on(this.gameObject.transform, "scenetransformChanged", this.onScenetransformChanged, this);
+            this.gameObject.transform.on("scenetransformChanged", this.onScenetransformChanged, this);
             var tmpLookAt = this.gameObject.transform.position;
             tmpLookAt.incrementBy(this._direction);
             this.gameObject.transform.lookAt(tmpLookAt);
@@ -13668,7 +13657,7 @@ var feng3d;
          * 处理被移除组件事件
          */
         DirectionalLight.prototype.onBeRemovedComponent = function (event) {
-            feng3d.Event.off(this.gameObject.transform, "scenetransformChanged", this.onScenetransformChanged, this);
+            this.gameObject.transform.off("scenetransformChanged", this.onScenetransformChanged, this);
         };
         DirectionalLight.prototype.onScenetransformChanged = function () {
             this.gameObject.transform.localToWorldMatrix.copyColumnTo(2, this._sceneDirection);
@@ -15664,7 +15653,7 @@ var feng3d;
             }
             this.startTime = Date.now();
             this.isPlaying = true;
-            feng3d.Event.on(feng3d.ticker, "enterFrame", this.update, this);
+            feng3d.ticker.on("enterFrame", this.update, this);
         };
         ParticleAnimator.prototype.update = function () {
             this.time = ((Date.now() - this.startTime) / 1000) % this.cycle;
@@ -15819,7 +15808,7 @@ var feng3d;
             if (!this._isPlaying)
                 return;
             this._isPlaying = false;
-            if (feng3d.Event.has(feng3d.ticker, "enterFrame"))
+            if (feng3d.ticker.has("enterFrame"))
                 feng3d.ticker.off("enterFrame", this.onEnterFrame, this);
             if (!this.has("stop"))
                 return;

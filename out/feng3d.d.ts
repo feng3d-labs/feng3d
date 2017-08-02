@@ -88,7 +88,7 @@ declare namespace feng3d {
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        static once(target: any, type: string, listener: (event: EventVO) => void, thisObject: any, priority?: number): void;
+        private static once(target, type, listener, thisObject, priority?);
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
          * @param target                    事件主体
@@ -96,7 +96,7 @@ declare namespace feng3d {
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        static dispatch(target: any, type: string, data?: any, bubbles?: boolean): void;
+        private static dispatch(target, type, data?, bubbles?);
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
          * @param target                    事件主体
@@ -109,7 +109,7 @@ declare namespace feng3d {
          * @param type		事件的类型。
          * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
          */
-        static has(target: any, type: string): boolean;
+        private static has(target, type);
         /**
          * 添加监听
          * @param dispatcher 派发器
@@ -119,7 +119,7 @@ declare namespace feng3d {
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        static on(target: any, type: string, listener: (event: EventVO) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        private static on(target, type, listener, thisObject?, priority?, once?);
         /**
          * 移除监听
          * @param dispatcher 派发器
@@ -128,7 +128,7 @@ declare namespace feng3d {
          * @param listener					要删除的侦听器对象。
          * @param thisObject                listener函数作用域
          */
-        static off(target: any, type: string, listener: (event: EventVO) => any, thisObject?: any): void;
+        private static off(target, type, listener, thisObject?);
     }
 }
 declare namespace feng3d {
@@ -1999,7 +1999,7 @@ declare namespace feng3d {
      * 按键状态
      * @author feng 2016-4-26
      */
-    class KeyState {
+    class KeyState extends Event {
         /**
          * 按键状态{key:键名称,value:是否按下}
          */
@@ -2214,7 +2214,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 });
      * </pre>
      */
-    class ShortCut {
+    class ShortCut extends Event {
         /**
          * 按键状态
          */
@@ -4783,6 +4783,35 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface RenderDataHolderEventMap {
+        /**
+         * 添加渲染元素
+         */
+        addRenderElement: any;
+        /**
+         * 移除渲染元素
+         */
+        removeRenderElement: any;
+        /**
+         * 添加渲染数据拥有者
+         */
+        addRenderHolder: any;
+        /**
+         * 移除渲染数据拥有者
+         */
+        removeRenderHolder: any;
+        /**
+         * 渲染数据拥有者数据失效
+         */
+        invalidateRenderHolder: any;
+    }
+    interface RenderDataHolder {
+        once<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: RenderDataHolderEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof RenderDataHolderEventMap>(type: K, data?: RenderDataHolderEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof RenderDataHolderEventMap>(type: K): boolean;
+        on<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: RenderDataHolderEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof RenderDataHolderEventMap>(type?: K, listener?: (event: RenderDataHolderEventMap[K]) => any, thisObject?: any): any;
+    }
     /**
      * 渲染数据拥有者
      * @author feng 2016-6-7
@@ -4814,26 +4843,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class Object3DRenderAtomic extends RenderAtomic {
-        /**
-         * 添加渲染元素
-         */
-        static ADD_RENDERELEMENT: string;
-        /**
-         * 移除渲染元素
-         */
-        static REMOVE_RENDERELEMENT: string;
-        /**
-         * 添加渲染数据拥有者
-         */
-        static ADD_RENDERHOLDER: string;
-        /**
-         * 移除渲染数据拥有者
-         */
-        static REMOVE_RENDERHOLDER: string;
-        /**
-         * 渲染数据拥有者数据失效
-         */
-        static INVALIDATE_RENDERHOLDER: string;
         private _invalidateRenderDataHolderList;
         renderHolderInvalid: boolean;
         private onInvalidate(event);
@@ -5033,6 +5042,29 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 组件事件
+     */
+    interface ComponentEventMap extends RenderDataHolderEventMap {
+        /**
+         * 添加子组件事件
+         */
+        addedComponent: {
+            container: GameObject;
+            child: Component;
+        };
+        /**
+         * 移除子组件事件
+         */
+        removedComponent: any;
+    }
+    interface Component {
+        once<K extends keyof ComponentEventMap>(type: K, listener: (event: ComponentEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof ComponentEventMap>(type: K, data?: ComponentEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof ComponentEventMap>(type: K): boolean;
+        on<K extends keyof ComponentEventMap>(type: K, listener: (event: ComponentEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: ComponentEventMap[K]) => any, thisObject?: any): any;
+    }
     /**
      * Base class for everything attached to GameObjects.
      *
@@ -5414,7 +5446,7 @@ declare namespace feng3d {
         click: any;
         dblclick: any;
     }
-    interface TransformEventMap extends Mouse3DEventMap {
+    interface TransformEventMap extends Mouse3DEventMap, ComponentEventMap {
         /**
          * 显示变化
          */
@@ -5451,6 +5483,14 @@ declare namespace feng3d {
          * 删除了子对象，当child被parent移除时派发冒泡事件
          */
         removed: any;
+        /**
+         * 当Object3D的scene属性被设置是由Scene3D派发
+         */
+        addedToScene: any;
+        /**
+         * 当Object3D的scene属性被清空时由Scene3D派发
+         */
+        removedFromScene: any;
     }
     interface Object3D {
         once<K extends keyof TransformEventMap>(type: K, listener: (event: TransformEventMap[K]) => void, thisObject?: any, priority?: number): void;
@@ -5567,6 +5607,17 @@ declare namespace feng3d {
     type ComponentConstructor<T> = (new (gameObject: GameObject) => T);
     interface ComponentMap {
         camera: new () => Camera;
+    }
+    interface GameObjectEventMap extends RenderDataHolderEventMap {
+        addedComponent: any;
+        removedComponent: any;
+    }
+    interface GameObject {
+        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: GameObjectEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof GameObjectEventMap>(type: K): boolean;
+        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: GameObjectEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: GameObjectEventMap[K]) => any, thisObject?: any): any;
     }
     /**
      * Base class for all entities in feng3d scenes.
@@ -5852,6 +5903,31 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface GeometryEventMap extends RenderDataHolderEventMap {
+        /**
+         * 获取几何体顶点数据
+         */
+        getVAData: any;
+        /**
+         * 改变几何体顶点数据事件
+         */
+        changedVAData: any;
+        /**
+         * 改变顶点索引数据事件
+         */
+        changedIndexData: any;
+        /**
+         * 包围盒失效
+         */
+        boundsInvalid: any;
+    }
+    interface Geometry {
+        once<K extends keyof GeometryEventMap>(type: K, listener: (event: GeometryEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof GeometryEventMap>(type: K): boolean;
+        on<K extends keyof GeometryEventMap>(type: K, listener: (event: GeometryEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: GeometryEventMap[K]) => any, thisObject?: any): any;
+    }
     /**
      * 几何体
      * @author feng 2016-04-28
@@ -6153,10 +6229,23 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 镜头事件
+     */
+    interface LensEventMap {
+        matrixChanged: any;
+    }
+    interface LensBase {
+        once<K extends keyof LensEventMap>(type: K, listener: (event: LensEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof LensEventMap>(type: K, data?: LensEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof LensEventMap>(type: K): boolean;
+        on<K extends keyof LensEventMap>(type: K, listener: (event: LensEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof LensEventMap>(type?: K, listener?: (event: LensEventMap[K]) => any, thisObject?: any): any;
+    }
+    /**
      * 摄像机镜头
      * @author feng 2014-10-14
      */
-    abstract class LensBase {
+    abstract class LensBase extends Event {
         /**
          * 最近距离
          */
@@ -6278,6 +6367,19 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * @author feng 2014-10-14
+     */
+    interface CameraEventMap extends ComponentEventMap {
+        lensChanged: any;
+    }
+    interface Camera {
+        once<K extends keyof CameraEventMap>(type: K, listener: (event: CameraEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof CameraEventMap>(type: K, data?: CameraEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof CameraEventMap>(type: K): boolean;
+        on<K extends keyof CameraEventMap>(type: K, listener: (event: CameraEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof CameraEventMap>(type?: K, listener?: (event: CameraEventMap[K]) => any, thisObject?: any): any;
+    }
     /**
      * 摄像机
      * @author feng 2016-08-16
@@ -8110,7 +8212,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface AnimatorBaseEventMap {
+    interface AnimatorBaseEventMap extends ComponentEventMap {
         /** 开始播放动画 */
         start: any;
         /** 继续播放动画 */

@@ -8,6 +8,21 @@ namespace feng3d
         camera: new () => Camera;
     }
 
+    export interface GameObjectEventMap extends RenderDataHolderEventMap
+    {
+        addedComponent
+        removedComponent
+    }
+
+    export interface GameObject
+    {
+        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: GameObjectEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean);
+        has<K extends keyof GameObjectEventMap>(type: K): boolean;
+        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: GameObjectEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: GameObjectEventMap[K]) => any, thisObject?: any);
+    }
+
     /**
      * Base class for all entities in feng3d scenes.
      */
@@ -225,8 +240,8 @@ namespace feng3d
 
             var component: Component = this.components.splice(index, 1)[0];
             //派发移除组件事件
-            Event.dispatch(component, <any>ComponentEvent.REMOVED_COMPONENT, { container: this, child: component });
-            Event.dispatch(this, ComponentEvent.REMOVED_COMPONENT, { container: this, child: component });
+            component.dispatch("removedComponent", { container: this, child: component });
+            this.dispatch("removedComponent", { container: this, child: component });
             this.removeRenderDataHolder(component);
             component.dispose();
             return component;
@@ -337,8 +352,8 @@ namespace feng3d
 
             this.components.splice(index, 0, component);
             //派发添加组件事件
-            Event.dispatch(component, <any>ComponentEvent.ADDED_COMPONENT, { container: this, child: component });
-            Event.dispatch(this, ComponentEvent.ADDED_COMPONENT, { container: this, child: component });
+            component.dispatch("addedComponent", { container: this, child: component });
+            this.dispatch("addedComponent", { container: this, child: component });
             this.addRenderDataHolder(component);
         }
 

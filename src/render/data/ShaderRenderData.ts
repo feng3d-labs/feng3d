@@ -13,7 +13,7 @@ namespace feng3d
         set code(value)
         {
             this._code = value;
-            Event.dispatch(this, "change");
+            this.dispatch("change");
         }
 
         private _code: { vertexCode: string, fragmentCode: string } | (() => { vertexCode: string, fragmentCode: string });

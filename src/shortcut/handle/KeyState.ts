@@ -5,7 +5,7 @@ namespace feng3d
 	 * 按键状态
 	 * @author feng 2016-4-26
 	 */
-	export class KeyState 
+	export class KeyState extends Event
 	{
 		/**
 		 * 按键状态{key:键名称,value:是否按下}
@@ -17,6 +17,7 @@ namespace feng3d
 		 */
 		constructor()
 		{
+			super();
 			this._keyStateDic = {};
 		}
 
@@ -28,7 +29,7 @@ namespace feng3d
 		pressKey(key: string, data: InputEvent): void
 		{
 			this._keyStateDic[key] = true;
-			Event.dispatch(this,<any>key, data);
+			this.dispatch(key, data);
 		}
 
 		/**
@@ -39,14 +40,14 @@ namespace feng3d
 		releaseKey(key: string, data: InputEvent): void
 		{
 			this._keyStateDic[key] = false;
-			Event.dispatch(this,<any>key, data);
+			this.dispatch(key, data);
 		}
 
 		/**
 		 * 获取按键状态
 		 * @param key 按键名称
 		 */
-		getKeyState(key: string):boolean
+		getKeyState(key: string): boolean
 		{
 			return !!this._keyStateDic[key];
 		}

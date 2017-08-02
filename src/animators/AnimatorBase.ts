@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface AnimatorBaseEventMap
+    export interface AnimatorBaseEventMap extends ComponentEventMap
     {
         /** 开始播放动画 */
         start
@@ -131,7 +131,7 @@ namespace feng3d
 
             this._isPlaying = false;
 
-            if (Event.has(ticker, <any>"enterFrame"))
+            if (ticker.has("enterFrame"))
                 ticker.off("enterFrame", this.onEnterFrame, this);
 
             if (!this.has("stop"))

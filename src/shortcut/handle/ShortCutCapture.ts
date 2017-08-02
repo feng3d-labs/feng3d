@@ -89,7 +89,7 @@ namespace feng3d
 		{
 			for (var i = 0; i < this._keys.length; i++)
 			{
-				Event.on(this._keyState, <any>this._keys[i].key, this.onCapture, this);
+				this._keyState.on(this._keys[i].key, this.onCapture, this);
 			}
 		}
 
@@ -115,7 +115,7 @@ namespace feng3d
 		{
 			for (var i = 0; i < commands.length; i++)
 			{
-				Event.dispatch(this._shortCut, <any>commands[i], data);
+				this._shortCut.dispatch(commands[i], data);
 			}
 		}
 
@@ -292,7 +292,7 @@ namespace feng3d
 		{
 			for (var i = 0; i < this._keys.length; i++)
 			{
-				Event.off(this._keyState, <any>this._keys[i].key, this.onCapture, this);
+				this._keyState.off(this._keys[i].key, this.onCapture, this);
 			}
 			this._shortCut = null;
 			this._keys = null;

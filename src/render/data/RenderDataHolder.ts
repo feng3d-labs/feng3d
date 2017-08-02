@@ -1,5 +1,38 @@
 namespace feng3d
 {
+    export interface RenderDataHolderEventMap
+    {
+        /**
+         * 添加渲染元素
+         */
+        addRenderElement;
+        /**
+         * 移除渲染元素
+         */
+        removeRenderElement;
+        /**
+         * 添加渲染数据拥有者
+         */
+        addRenderHolder;
+        /**
+         * 移除渲染数据拥有者
+         */
+        removeRenderHolder;
+        /**
+         * 渲染数据拥有者数据失效
+         */
+        invalidateRenderHolder;
+    }
+
+    export interface RenderDataHolder
+    {
+        once<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: RenderDataHolderEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof RenderDataHolderEventMap>(type: K, data?: RenderDataHolderEventMap[K], bubbles?: boolean);
+        has<K extends keyof RenderDataHolderEventMap>(type: K): boolean;
+        on<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: RenderDataHolderEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof RenderDataHolderEventMap>(type?: K, listener?: (event: RenderDataHolderEventMap[K]) => any, thisObject?: any);
+    }
+
     /**
 	 * 渲染数据拥有者
 	 * @author feng 2016-6-7
@@ -39,7 +72,7 @@ namespace feng3d
         {
             if (this.childrenRenderDataHolder.indexOf(renderDataHolder) == -1)
                 this.childrenRenderDataHolder.push(renderDataHolder);
-            Event.dispatch(this, Object3DRenderAtomic.ADD_RENDERHOLDER, renderDataHolder);
+            this.dispatch("addRenderHolder", renderDataHolder);
         }
 
         removeRenderDataHolder(renderDataHolder: RenderDataHolder)
@@ -47,7 +80,7 @@ namespace feng3d
             var index = this.childrenRenderDataHolder.indexOf(renderDataHolder);
             if (index != -1)
                 this.childrenRenderDataHolder.splice(index, 1);
-            Event.dispatch(this, Object3DRenderAtomic.REMOVE_RENDERHOLDER, renderDataHolder);
+            this.dispatch("removeRenderHolder", renderDataHolder);
         }
 
 		/**
@@ -59,7 +92,7 @@ namespace feng3d
 
         invalidate()
         {
-            Event.dispatch(this, Object3DRenderAtomic.INVALIDATE_RENDERHOLDER, this);
+            this.dispatch("invalidateRenderHolder", this);
         }
 
     }

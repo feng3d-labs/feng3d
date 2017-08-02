@@ -35,7 +35,7 @@ namespace feng3d
                 {
                     throw "未知RenderElement！";
                 }
-                Event.on(element, "change", this.onElementChange, this);
+                element.on("change", this.onElementChange, this);
             } else
             {
                 for (var i = 0; i < element.length; i++)
@@ -74,7 +74,7 @@ namespace feng3d
                 {
                     throw "未知RenderElement！";
                 }
-                Event.off(element, "change", this.onElementChange, this);
+                element.off("change", this.onElementChange, this);
             } else
             {
                 for (var i = 0; i < element.length; i++)

@@ -1,5 +1,22 @@
 namespace feng3d
 {
+    /**
+	 * @author feng 2014-10-14
+	 */
+    export interface CameraEventMap extends ComponentEventMap
+    {
+        lensChanged;
+    }
+
+    export interface Camera
+    {
+        once<K extends keyof CameraEventMap>(type: K, listener: (event: CameraEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof CameraEventMap>(type: K, data?: CameraEventMap[K], bubbles?: boolean);
+        has<K extends keyof CameraEventMap>(type: K): boolean;
+        on<K extends keyof CameraEventMap>(type: K, listener: (event: CameraEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof CameraEventMap>(type?: K, listener?: (event: CameraEventMap[K]) => any, thisObject?: any);
+    }
+
 	/**
 	 * 摄像机
 	 * @author feng 2016-08-16
@@ -33,9 +50,9 @@ namespace feng3d
             super(gameObject);
             this._single = true;
             this._lens = new PerspectiveLens();
-            Event.on(this._lens, <any>LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
+            this._lens.on("matrixChanged", this.onLensMatrixChanged, this);
 
-            Event.on(this.gameObject.transform, "scenetransformChanged", this.onScenetransformChanged, this);
+            this.gameObject.transform.on("scenetransformChanged", this.onScenetransformChanged, this);
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
 
@@ -61,7 +78,7 @@ namespace feng3d
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
 
-            Event.dispatch(this, event.type, event.data);
+            this.dispatch(<any>event.type, event.data);
         }
 
         /**
@@ -81,13 +98,13 @@ namespace feng3d
             if (!value)
                 throw new Error("Lens cannot be null!");
 
-            Event.off(this._lens, <any>LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
+            this._lens.off("matrixChanged", this.onLensMatrixChanged, this);
 
             this._lens = value;
 
-            Event.on(this._lens, <any>LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
+            this._lens.on("matrixChanged", this.onLensMatrixChanged, this);
 
-            Event.dispatch(this, CameraEvent.LENS_CHANGED, this);
+            this.dispatch("lensChanged", this);
         }
 
 		/**

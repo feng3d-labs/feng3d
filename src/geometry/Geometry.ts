@@ -1,5 +1,37 @@
 namespace feng3d
 {
+    export interface GeometryEventMap extends RenderDataHolderEventMap
+    {
+		/**
+		 * 获取几何体顶点数据
+		 */
+        getVAData;
+
+		/**
+		 * 改变几何体顶点数据事件
+		 */
+        changedVAData;
+
+		/**
+		 * 改变顶点索引数据事件
+		 */
+        changedIndexData;
+
+		/**
+		 * 包围盒失效
+		 */
+        boundsInvalid;
+    }
+
+    export interface Geometry
+    {
+        once<K extends keyof GeometryEventMap>(type: K, listener: (event: GeometryEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean);
+        has<K extends keyof GeometryEventMap>(type: K): boolean;
+        on<K extends keyof GeometryEventMap>(type: K, listener: (event: GeometryEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: GeometryEventMap[K]) => any, thisObject?: any);
+    }
+
     /**
      * 几何体
      * @author feng 2016-04-28
@@ -131,7 +163,7 @@ namespace feng3d
         setIndices(indices: Uint16Array)
         {
             this._indexBuffer = this.createIndexBuffer(indices);
-            Event.dispatch(this, GeometryEvent.CHANGED_INDEX_DATA);
+            this.dispatch("changedIndexData");
         }
 
         /**
@@ -160,7 +192,7 @@ namespace feng3d
             {
                 delete this._attributes[vaId];
             }
-            Event.dispatch(this, GeometryEvent.CHANGED_VA_DATA, vaId);
+            this.dispatch("changedVAData", vaId);
         }
 
 		/**
@@ -171,7 +203,7 @@ namespace feng3d
         getVAData(vaId: string)
         {
             this.updateGrometry();
-            Event.dispatch(this, GeometryEvent.GET_VA_DATA, vaId);
+            this.dispatch("getVAData", vaId);
             return this._attributes[vaId];
         }
 
@@ -393,7 +425,7 @@ namespace feng3d
          */
         invalidateBounds()
         {
-            Event.dispatch(this, GeometryEvent.BOUNDS_INVALID)
+            this.dispatch("boundsInvalid");
         }
 
         /**

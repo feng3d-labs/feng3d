@@ -60,7 +60,7 @@ namespace feng3d
          */
         protected onBeAddedComponent(event: EventVO): void
         {
-            Event.on(this.gameObject.transform, "scenetransformChanged", this.onScenetransformChanged, this);
+            this.gameObject.transform.on("scenetransformChanged", this.onScenetransformChanged, this);
             var tmpLookAt = this.gameObject.transform.position;
             tmpLookAt.incrementBy(this._direction);
             this.gameObject.transform.lookAt(tmpLookAt);
@@ -71,7 +71,7 @@ namespace feng3d
          */
         protected onBeRemovedComponent(event: EventVO): void
         {
-            Event.off(this.gameObject.transform, "scenetransformChanged", this.onScenetransformChanged, this);
+            this.gameObject.transform.off("scenetransformChanged", this.onScenetransformChanged, this);
         }
 
         protected onScenetransformChanged()

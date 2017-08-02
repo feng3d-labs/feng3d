@@ -39,13 +39,13 @@ namespace feng3d
         {
             if (this._geometry)
             {
-                Event.off(this._geometry, <any>GeometryEvent.BOUNDS_INVALID, this.onGeometryBoundsInvalid, this);
+                this._geometry.off("boundsInvalid", this.onGeometryBoundsInvalid, this);
             }
             this._geometry = value;
             this.fromGeometry(this._geometry);
             if (this._geometry)
             {
-                Event.on(this._geometry, <any>GeometryEvent.BOUNDS_INVALID, this.onGeometryBoundsInvalid, this);
+                this._geometry.on("boundsInvalid", this.onGeometryBoundsInvalid, this);
             }
         }
 

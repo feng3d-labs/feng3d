@@ -157,10 +157,10 @@ namespace feng3d
             if (this._scene == newScene)
                 return;
             if (this._scene)
-                Event.dispatch(this, Scene3DEvent.REMOVED_FROM_SCENE, this);
+                this.dispatch("removedFromScene", this);
             this._scene = newScene;
             if (this._scene)
-                Event.dispatch(this, Scene3DEvent.ADDED_TO_SCENE, this);
+                this.dispatch("addedToScene", this);
             for (let i = 0, n = this._children.length; i < n; i++)
             {
                 this._children[i].updateScene();
@@ -438,7 +438,7 @@ namespace feng3d
             var len = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneTransformChange();
-            Event.dispatch(this, "scenetransformChanged", this);
+            this.dispatch("scenetransformChanged", this);
         }
 
         private notifySceneChange()
@@ -448,7 +448,7 @@ namespace feng3d
             var len = this._children.length;
             while (i < len)
                 this._children[i++].notifySceneChange();
-            Event.dispatch(this, "sceneChanged", this);
+            this.dispatch("sceneChanged", this);
         }
 
         private removeChildInternal(childIndex: number, child: Transform)
