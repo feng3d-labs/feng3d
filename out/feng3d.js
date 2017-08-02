@@ -6255,7 +6255,7 @@ var feng3d;
          */
         RenderDataHolder.prototype.updateRenderData = function (renderContext, renderData) {
         };
-        RenderDataHolder.prototype.invalidate = function () {
+        RenderDataHolder.prototype.invalidateRenderHolder = function () {
             this.dispatch("invalidateRenderHolder", this);
         };
         return RenderDataHolder;
@@ -8689,15 +8689,76 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 3D对象事件
-     */
-    var Object3DEvent = (function () {
-        function Object3DEvent() {
+    var HoldSizeComponent = (function (_super) {
+        __extends(HoldSizeComponent, _super);
+        function HoldSizeComponent(gameobject) {
+            var _this = _super.call(this, gameobject) || this;
+            _this._holdSize = 1;
+            _this.transform.on("scenetransformChanged", _this.invalidHoldSizeMatrix);
+            _this.createUniformData("u_holdSizeMatrix", function () { return _this.holdSizeMatrix; });
+            return _this;
         }
-        return Object3DEvent;
-    }());
-    feng3d.Object3DEvent = Object3DEvent;
+        Object.defineProperty(HoldSizeComponent.prototype, "holdSize", {
+            /**
+             * 保持缩放尺寸
+             */
+            get: function () {
+                return this._holdSize;
+            },
+            set: function (value) {
+                if (this._holdSize == value)
+                    return;
+                this._holdSize = value;
+                this.invalidHoldSizeMatrix();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(HoldSizeComponent.prototype, "camera", {
+            /**
+             * 相对
+             */
+            get: function () {
+                return this._camera;
+            },
+            set: function (value) {
+                if (this._camera == value)
+                    return;
+                if (!this._camera)
+                    this._camera.transform.off("scenetransformChanged", this.invalidHoldSizeMatrix);
+                this._camera = value;
+                if (!this._camera)
+                    this._camera.transform.on("scenetransformChanged", this.invalidHoldSizeMatrix);
+                this.invalidHoldSizeMatrix();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        HoldSizeComponent.prototype.invalidHoldSizeMatrix = function () {
+            this._holdSizeMatrix = null;
+        };
+        Object.defineProperty(HoldSizeComponent.prototype, "holdSizeMatrix", {
+            get: function () {
+                if (!this.camera)
+                    throw "\u8BF7\u7ED9" + this + "\u8BBE\u7F6Ecamera\u5C5E\u6027";
+                var cameraTranform = this.camera.transform.localToWorldMatrix;
+                var distance = this.transform.scenePosition.subtract(cameraTranform.position);
+                var depth = distance.dotProduct(cameraTranform.forward);
+                var scale = this.camera.getScaleByDepth(depth);
+                this._holdSizeMatrix = feng3d.Matrix3D.fromScale(scale * this.holdSize, scale * this.holdSize, scale * this.holdSize);
+                return this._holdSizeMatrix;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        HoldSizeComponent.prototype.dispose = function () {
+            this.camera = null;
+            this.transform.off("scenetransformChanged", this.invalidHoldSizeMatrix);
+            _super.prototype.dispose.call(this);
+        };
+        return HoldSizeComponent;
+    }(feng3d.Component));
+    feng3d.HoldSizeComponent = HoldSizeComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -8904,7 +8965,7 @@ var feng3d;
          */
         Geometry.prototype.invalidateGeometry = function () {
             this._geometryInvalid = true;
-            this.invalidate();
+            this.invalidateRenderHolder();
         };
         /**
          * 更新几何体

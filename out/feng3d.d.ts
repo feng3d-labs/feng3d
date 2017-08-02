@@ -4012,6 +4012,10 @@ declare namespace feng3d {
          */
         u_modelMatrix: Lazy<Matrix3D>;
         /**
+         * 保持缩放矩阵
+         */
+        u_holdSizeMatrix: Lazy<Matrix3D>;
+        /**
          * 世界投影矩阵
          */
         u_viewProjection: Matrix3D | (() => Matrix3D);
@@ -4838,7 +4842,7 @@ declare namespace feng3d {
          * 更新渲染数据
          */
         updateRenderData(renderContext: RenderContext, renderData: RenderAtomic): void;
-        invalidate(): void;
+        invalidateRenderHolder(): void;
     }
 }
 declare namespace feng3d {
@@ -5773,28 +5777,22 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 3D对象事件
-     */
-    class Object3DEvent {
+    class HoldSizeComponent extends Component {
         /**
-         * 事件数据
+         * 保持缩放尺寸
          */
-        data: IObject3DEventData;
-        object: Object3D;
-    }
-    /**
-     * 3D对象事件数据
-     */
-    interface IObject3DEventData {
+        holdSize: number;
         /**
-         * 父容器
+         * 相对
          */
-        parent?: GameObject;
-        /**
-         * 子对象
-         */
-        child?: GameObject;
+        camera: Camera;
+        private _holdSize;
+        private _camera;
+        private _holdSizeMatrix;
+        constructor(gameobject: GameObject);
+        private invalidHoldSizeMatrix();
+        private readonly holdSizeMatrix;
+        dispose(): void;
     }
 }
 declare namespace feng3d {

@@ -90,7 +90,7 @@ namespace feng3d
         {
         }
 
-        invalidate()
+        invalidateRenderHolder()
         {
             this.dispatch("invalidateRenderHolder", this);
         }

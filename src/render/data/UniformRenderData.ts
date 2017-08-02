@@ -9,6 +9,10 @@ namespace feng3d
          */
         u_modelMatrix: Lazy<Matrix3D>;
         /**
+         * 保持缩放矩阵
+         */
+        u_holdSizeMatrix: Lazy<Matrix3D>;
+        /**
          * 世界投影矩阵
          */
         u_viewProjection: Matrix3D | (() => Matrix3D);

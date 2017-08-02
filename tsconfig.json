@@ -100,7 +100,7 @@
         "src/core/GameObject.ts",
         "src/core/View3D.ts",
         //3D对象组件
-        "src/core/Object3DEvent.ts",
+        "src/component/HoldSizeComponent.ts",
         "src/core/MeshRenderer.ts",
         "src/core/Object3dScript.ts",
         //3D场景

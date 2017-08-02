@@ -126,7 +126,7 @@ namespace feng3d
         protected invalidateGeometry()
         {
             this._geometryInvalid = true;
-            this.invalidate();
+            this.invalidateRenderHolder();
         }
 
         /**
