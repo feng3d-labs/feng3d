@@ -7,13 +7,11 @@ namespace feng3d
      */
     export class Renderer extends Component
     {
-        private static renderers: Renderer[] = [];
-
         /**
          * 材质
          * Returns the first instantiated Material assigned to the renderer.
          */
-        get material() { return this._material || defaultMaterial; }
+        get material() { return this._material }
         set material(value)
         {
             if (this._material == value)
@@ -48,8 +46,6 @@ namespace feng3d
         constructor(gameObject: GameObject)
         {
             super(gameObject);
-            this.addRenderDataHolder(this.material);
-            Renderer.renderers.push(this);
         }
 
         drawRenderables(renderContext: RenderContext)
@@ -94,6 +90,15 @@ namespace feng3d
             renderAtomic.activeAttributes(gl, shaderProgram.attributes);
             renderAtomic.activeUniforms(gl, shaderProgram.uniforms);
             renderAtomic.dodraw(gl);
+        }
+
+        /**
+         * 销毁
+         */
+        dispose()
+        {
+            super.dispose();
+            this.material = null;
         }
     }
 }

@@ -1,37 +1,11 @@
 namespace feng3d
 {
-    export interface Object3DEventType
-    {
-        visiblityUpdated: GameObject;
-    }
-    export interface EventType extends Object3DEventType { }
-
-    export class Object3DEventType1
-    {
-        visiblityUpdated: "visiblityUpdated" = "visiblityUpdated";
-    }
-
-    //-------------- test ------------------
-    // function a()
-    // {
-    //     Event.on({}, Object3DEvent.VISIBLITY_UPDATED, (e) => { e.data }, this);
-    //     Event.on({}, Object3D.eventtype.visiblityUpdated, (e) => { e.data }, this);
-    //     var o = new Object3D(null);
-    //     Event.on(o, o.eventtype.visiblityUpdated, (e) => { e.data }, this);
-    // }
-    //-------------- test ------------------
 
     /**
      * Position, rotation and scale of an object.
      */
     export class Object3D extends Component
     {
-        static eventtype = new Object3DEventType1();
-        get eventtype()
-        {
-            return Object3D.eventtype;
-        }
-
         //------------------------------------------
         // Variables
         //------------------------------------------
@@ -471,10 +445,6 @@ namespace feng3d
             }
         }
 
-        dispose()
-        {
-        }
-
         disposeAsset()
         {
             this.dispose();
@@ -485,7 +455,7 @@ namespace feng3d
             if (!this._matrix3d)
                 return;
             this._matrix3d = null;
-            Event.dispatch(this, <any>Object3DEvent.TRANSFORM_CHANGED, this);
+            this.dispatch("transformChanged", this);
         }
 
         //------------------------------------------
@@ -541,7 +511,7 @@ namespace feng3d
             this._rotation = null;
             this._rotationMatrix3d = null;
             this._localToWorldRotationMatrix = null;
-            Event.dispatch(this, <any>Object3DEvent.ROTATION_CHANGED, this);
+            this.dispatch("rotationChanged", this);
             this.invalidateTransform();
         }
 
@@ -550,7 +520,7 @@ namespace feng3d
             if (!this._scale)
                 return;
             this._scale = null;
-            Event.dispatch(this, <any>Object3DEvent.SCALE_CHANGED, this);
+            this.dispatch("scaleChanged", this);
             this.invalidateTransform();
         }
 
@@ -559,7 +529,7 @@ namespace feng3d
             if (!this._position)
                 return;
             this._position = null;
-            Event.dispatch(this, <any>Object3DEvent.POSITION_CHANGED, this);
+            this.dispatch("positionChanged", this);
             this.invalidateTransform();
         }
     }

@@ -1,10 +1,24 @@
 namespace feng3d
 {
+    export interface BoundingVolumeBaseEventMap
+    {
+        change;
+    }
+
+    export interface BoundingVolumeBase extends IEvent<BoundingVolumeBaseEventMap>
+    {
+        once<K extends keyof BoundingVolumeBaseEventMap>(type: K, listener: (event: BoundingVolumeBaseEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof BoundingVolumeBaseEventMap>(type: K, data?: BoundingVolumeBaseEventMap[K], bubbles?: boolean);
+        has<K extends keyof BoundingVolumeBaseEventMap>(type: K): boolean;
+        on<K extends keyof BoundingVolumeBaseEventMap>(type: K, listener: (event: BoundingVolumeBaseEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof BoundingVolumeBaseEventMap>(type?: K, listener?: (event: BoundingVolumeBaseEventMap[K]) => any, thisObject?: any);
+    }
+
 	/**
 	 * 包围盒基类
 	 * @author feng 2014-4-27
 	 */
-    export abstract class BoundingVolumeBase 
+    export abstract class BoundingVolumeBase extends Event
     {
         /** 最小坐标 */
         protected _min: Vector3D;
@@ -56,6 +70,7 @@ namespace feng3d
 		 */
         constructor()
         {
+            super();
             this._min = new Vector3D();
             this._max = new Vector3D();
         }
@@ -66,7 +81,7 @@ namespace feng3d
         protected onGeometryBoundsInvalid()
         {
             this.fromGeometry(this.geometry);
-            Event.dispatch(this, "change");
+            this.dispatch("change");
         }
 
 		/**

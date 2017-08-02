@@ -4,156 +4,133 @@ namespace feng3d
      * Obj模型加载类
      * @author feng 2017-01-18
      */
-    export class ObjLoader
-    {
-        private _objData: OBJ_OBJData;
-        private _mtlData: Mtl_Mtl;
-        private _completed: (object3D: GameObject) => void;
-        private _url: string;
-        private _material: Material;
-
+    export var ObjLoader = {
         /**
-         * 加载资源
-         * @param url   路径
+         * 加载Obj模型
          */
-        load(url: string, material: Material, completed: (object3D: GameObject) => void = null)
-        {
-            this._completed = completed;
-            this._url = url;
-            this._material = material;
+        load: load
+    }
 
-            var loader = new Loader();
-            Event.on(loader, <any>"complete", this.onComplete, this)
-            loader.loadText(url);
-        }
-
-        private onComplete(e: EventVO<any>)
+    /**
+     * 加载资源
+     * @param url   路径
+     */
+    function load(url: string, material: Material, completed: (object3D: GameObject) => void = null)
+    {
+        Loader.loadText(url, (content: string) =>
         {
-            var objData = this._objData = OBJParser.parser(e.data.content);
+            var objData = OBJParser.parser(content);
             var mtl = objData.mtl;
             if (mtl)
             {
-                var mtlRoot = this._url.substring(0, this._url.lastIndexOf("/") + 1);
-                var mtlLoader = new Loader();
-                mtlLoader.loadText(mtlRoot + mtl);
-                Event.on(mtlLoader, <any>"complete", function (e)
+                var mtlRoot = url.substring(0, url.lastIndexOf("/") + 1);
+                Loader.loadText(mtlRoot + mtl, (content) =>
                 {
-                    var mtlData = this._mtlData = MtlParser.parser(e.data.content);
-                    this.createObj(this._material);
-                }, this);
+                    var mtlData = MtlParser.parser(content);
+                    createObj(objData, material, mtlData, completed);
+                });
             } else
             {
-                this.createObj(this._material);
+                createObj(objData, material, null, completed);
             }
-        }
+        });
+    }
 
-        private createObj(material: Material)
+    function createObj(objData: OBJ_OBJData, material: Material, mtlData: Mtl_Mtl, completed: (object3D: GameObject) => void)
+    {
+        var object = GameObject.create();
+        var objs = objData.objs;
+        for (var i = 0; i < objs.length; i++)
         {
-            var object = GameObject.create();
-            var objData = this._objData;
-            var objs = objData.objs;
-            for (var i = 0; i < objs.length; i++)
-            {
-                var obj = objs[i];
-                var object3D = this.createSubObj(obj, material);
-                object.transform.addChild(object3D.transform);
-            }
-            if (this._completed)
-            {
-                this._completed(object);
-            }
+            var obj = objs[i];
+            var object3D = createSubObj(obj, material, mtlData);
+            object.transform.addChild(object3D.transform);
         }
+        completed && completed(object);
+    }
 
-        private createSubObj(obj: OBJ_OBJ, material: Material)
+    function createSubObj(obj: OBJ_OBJ, material: Material, mtlData: Mtl_Mtl)
+    {
+        var object3D = GameObject.create(obj.name);
+
+        var subObjs = obj.subObjs;
+        for (var i = 0; i < subObjs.length; i++)
         {
-            var object3D = GameObject.create(obj.name);
-
-            var subObjs = obj.subObjs;
-            for (var i = 0; i < subObjs.length; i++)
-            {
-                var materialObj = this.createMaterialObj(obj, subObjs[i], material);
-                object3D.transform.addChild(materialObj.transform);
-            }
-            return object3D;
+            var materialObj = createMaterialObj(obj, subObjs[i], material, mtlData);
+            object3D.transform.addChild(materialObj.transform);
         }
+        return object3D;
+    }
 
-        private _vertices: { x: number; y: number; z: number; }[];
-        private _vertexNormals: { x: number; y: number; z: number; }[];
-        private _uvs: { u: number, v: number, s: number }[];
-        private _realIndices: string[];
-        private _vertexIndex: number;
+    var _realIndices: string[];
+    var _vertexIndex: number;
 
-        private createMaterialObj(obj: OBJ_OBJ, subObj: OBJ_SubOBJ, material: Material)
+    function createMaterialObj(obj: OBJ_OBJ, subObj: OBJ_SubOBJ, material: Material, mtlData: Mtl_Mtl)
+    {
+        var gameObject = GameObject.create();
+        var model = gameObject.addComponent(MeshRenderer);
+        model.material = material || new ColorMaterial();
+
+        var meshFilter = gameObject.addComponent(MeshFilter);
+        var geometry = meshFilter.mesh = new Geometry();
+        var vertices: number[] = [];
+        var normals: number[] = [];
+        var uvs: number[] = [];
+        _realIndices = [];
+        _vertexIndex = 0;
+        var faces = subObj.faces;
+        var indices: number[] = [];
+        for (var i = 0; i < faces.length; i++)
         {
-            var gameObject = GameObject.create();
-            var model = gameObject.addComponent(MeshRenderer);
-            model.material = material || new ColorMaterial();
-
-            this._vertices = obj.vertex;
-            this._vertexNormals = obj.vn;
-            this._uvs = obj.vt;
-
-            var meshFilter = gameObject.addComponent(MeshFilter);
-            var geometry = meshFilter.mesh = new Geometry();
-            var vertices: number[] = [];
-            var normals: number[] = [];
-            var uvs: number[] = [];
-            this._realIndices = [];
-            this._vertexIndex = 0;
-            var faces = subObj.faces;
-            var indices: number[] = [];
-            for (var i = 0; i < faces.length; i++)
+            var face = faces[i];
+            var numVerts = face.indexIds.length - 1;
+            for (var j = 1; j < numVerts; ++j)
             {
-                var face = faces[i];
-                var numVerts = face.indexIds.length - 1;
-                for (var j = 1; j < numVerts; ++j)
-                {
-                    this.translateVertexData(face, j, vertices, uvs, indices, normals);
-                    this.translateVertexData(face, 0, vertices, uvs, indices, normals);
-                    this.translateVertexData(face, j + 1, vertices, uvs, indices, normals);
-                }
+                translateVertexData(face, j, vertices, uvs, indices, normals, obj);
+                translateVertexData(face, 0, vertices, uvs, indices, normals, obj);
+                translateVertexData(face, j + 1, vertices, uvs, indices, normals, obj);
             }
-            geometry.setIndices(new Uint16Array(indices));
-            geometry.setVAData("a_position", new Float32Array(vertices), 3);
-            geometry.setVAData("a_normal", new Float32Array(normals), 3);
-            geometry.setVAData("a_uv", new Float32Array(uvs), 2);
-            geometry.createVertexTangents();
-
-            if (this._mtlData && this._mtlData[subObj.material])
-            {
-                var materialInfo = this._mtlData[subObj.material];
-                var kd = materialInfo.kd;
-                var colorMaterial = new ColorMaterial();
-                colorMaterial.color.r = kd[0];
-                colorMaterial.color.g = kd[1];
-                colorMaterial.color.b = kd[2];
-                model.material = colorMaterial;
-            }
-            return gameObject;
         }
+        geometry.setIndices(new Uint16Array(indices));
+        geometry.setVAData("a_position", new Float32Array(vertices), 3);
+        geometry.setVAData("a_normal", new Float32Array(normals), 3);
+        geometry.setVAData("a_uv", new Float32Array(uvs), 2);
+        geometry.createVertexTangents();
 
-        private translateVertexData(face: OBJ_Face, vertexIndex: number, vertices: Array<number>, uvs: Array<number>, indices: Array<number>, normals: Array<number>)
+        if (mtlData && mtlData[subObj.material])
+        {
+            var materialInfo = mtlData[subObj.material];
+            var kd = materialInfo.kd;
+            var colorMaterial = new ColorMaterial();
+            colorMaterial.color.r = kd[0];
+            colorMaterial.color.g = kd[1];
+            colorMaterial.color.b = kd[2];
+            model.material = colorMaterial;
+        }
+        return gameObject;
+
+        function translateVertexData(face: OBJ_Face, vertexIndex: number, vertices: Array<number>, uvs: Array<number>, indices: Array<number>, normals: Array<number>, obj: OBJ_OBJ)
         {
             var index: number;
             var vertex: { x: number; y: number; z: number; };
             var vertexNormal: { x: number; y: number; z: number; };
             var uv: { u: number, v: number, s: number };
-            if (!this._realIndices[face.indexIds[vertexIndex]])
+            if (!_realIndices[face.indexIds[vertexIndex]])
             {
-                index = this._vertexIndex;
-                this._realIndices[face.indexIds[vertexIndex]] = ++this._vertexIndex;
-                vertex = this._vertices[face.vertexIndices[vertexIndex] - 1];
+                index = _vertexIndex;
+                _realIndices[face.indexIds[vertexIndex]] = ++_vertexIndex;
+                vertex = obj.vertex[face.vertexIndices[vertexIndex] - 1];
                 vertices.push(vertex.x, vertex.y, vertex.z);
                 if (face.normalIndices.length > 0)
                 {
-                    vertexNormal = this._vertexNormals[face.normalIndices[vertexIndex] - 1];
+                    vertexNormal = obj.vn[face.normalIndices[vertexIndex] - 1];
                     normals.push(vertexNormal.x, vertexNormal.y, vertexNormal.z);
                 }
                 if (face.uvIndices.length > 0)
                 {
                     try 
                     {
-                        uv = this._uvs[face.uvIndices[vertexIndex] - 1];
+                        uv = obj.vt[face.uvIndices[vertexIndex] - 1];
                         uvs.push(uv.u, uv.v);
                     }
                     catch (e)
@@ -173,8 +150,9 @@ namespace feng3d
                 }
             }
             else
-                index = this._realIndices[face.indexIds[vertexIndex]] - 1;
+                index = _realIndices[face.indexIds[vertexIndex]] - 1;
             indices.push(index);
         }
     }
+
 }

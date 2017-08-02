@@ -5,13 +5,6 @@ namespace feng3d
 	 */
 	export class AnimationStateEvent
 	{
-		/**
-		 * Dispatched when a non-looping clip node inside an animation state reaches the end of its timeline.
-		 */
-		static PLAYBACK_COMPLETE: string = "playbackComplete";
-
-		static TRANSITION_COMPLETE: string = "transitionComplete";
-
 		animator: AnimatorBase;
 		animationState: AnimationStateBase;
 		animationNode: AnimationNodeBase;

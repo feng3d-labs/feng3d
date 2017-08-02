@@ -1,20 +1,18 @@
 namespace feng3d
 {
-
 	/**
 	 * 鼠标事件管理
 	 * @author feng 2014-4-29
 	 */
     export class Mouse3DManager
     {
-        viewRect: Rectangle = new Rectangle(0, 0, 100, 100);
+        mouseX = 0;
+        mouseY = 0;
+
         /**
          * 鼠标拾取渲染器
          */
         private mouseRenderer: MouseRenderer;
-        mouseX = 0;
-        mouseY = 0;
-
         private selectedObject3D: Transform;
         private mouseEventTypes: string[] = [];
 
@@ -44,38 +42,32 @@ namespace feng3d
                 return;
             if (this._catchMouseMove)
             {
-                Event.off(input, <any>inputType.MOUSE_MOVE, this.onMouseEvent, this);
+                input.off("mousemove", this.onMouseEvent, this);
             }
             this._catchMouseMove = value;
             if (this._catchMouseMove)
             {
-                Event.on(input, <any>inputType.MOUSE_MOVE, this.onMouseEvent, this);
+                input.on("mousemove", this.onMouseEvent, this);
             }
         }
 
         constructor()
         {
             this.mouseRenderer = new MouseRenderer();
-            //
-            mouse3DEventMap[inputType.CLICK] = Mouse3DEvent.CLICK;
-            mouse3DEventMap[inputType.DOUBLE_CLICK] = Mouse3DEvent.DOUBLE_CLICK;
-            mouse3DEventMap[inputType.MOUSE_DOWN] = Mouse3DEvent.MOUSE_DOWN;
-            mouse3DEventMap[inputType.MOUSE_MOVE] = Mouse3DEvent.MOUSE_MOVE;
-            mouse3DEventMap[inputType.MOUSE_UP] = Mouse3DEvent.MOUSE_UP;
 
             //
-            Event.on(input, <any>inputType.CLICK, this.onMouseEvent, this);
-            Event.on(input, <any>inputType.DOUBLE_CLICK, this.onMouseEvent, this);
-            Event.on(input, <any>inputType.MOUSE_DOWN, this.onMouseEvent, this);
-            Event.on(input, <any>inputType.MOUSE_UP, this.onMouseEvent, this);
+            input.on("click", this.onMouseEvent, this);
+            input.on("dblclick", this.onMouseEvent, this);
+            input.on("mousedown", this.onMouseEvent, this);
+            input.on("mouseup", this.onMouseEvent, this);
         }
 
         /**
          * 监听鼠标事件收集事件类型
          */
-        private onMouseEvent(event: EventVO<any>)
+        private onMouseEvent(event: InputEvent)
         {
-            var inputEvent: InputEvent = event.data;
+            var inputEvent: InputEvent = event;
             if (this.mouseEventTypes.indexOf(inputEvent.type) == -1)
                 this.mouseEventTypes.push(inputEvent.type);
             this.mouseX = inputEvent.clientX;
@@ -85,9 +77,9 @@ namespace feng3d
         /**
 		 * 渲染
 		 */
-        draw(renderContext: RenderContext)
+        draw(renderContext: RenderContext, viewRect: Rectangle)
         {
-            if (!this.viewRect.contains(this.mouseX, this.mouseY))
+            if (!viewRect.contains(this.mouseX, this.mouseY))
                 return;
             if (this.mouseEventTypes.length == 0)
                 return;
@@ -112,17 +104,17 @@ namespace feng3d
             this.setSelectedObject3D(object3D ? object3D.transform : null);
         }
 
-        private glPick(renderContext: RenderContext)
+        private glPick(renderContext: RenderContext, viewRect: Rectangle)
         {
             var gl = renderContext.gl;
 
-            var offsetX = -(this.mouseX - this.viewRect.x);
-            var offsetY = -(this.viewRect.height - (this.mouseY - this.viewRect.y));//y轴与window中坐标反向，所以需要 h = (maxHeight - h)
+            var offsetX = -(this.mouseX - viewRect.x);
+            var offsetY = -(viewRect.height - (this.mouseY - viewRect.y));//y轴与window中坐标反向，所以需要 h = (maxHeight - h)
 
             gl.clearColor(0, 0, 0, 0);
             gl.clearDepth(1);
             gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-            gl.viewport(offsetX, offsetY, this.viewRect.width, this.viewRect.height);
+            gl.viewport(offsetX, offsetY, viewRect.width, viewRect.height);
             this.mouseRenderer.draw(renderContext);
 
             var object3D = this.mouseRenderer.selectedObject3D;
@@ -158,9 +150,9 @@ namespace feng3d
             if (this.selectedObject3D != value)
             {
                 if (this.selectedObject3D)
-                    Event.dispatch(this.selectedObject3D, <any>Mouse3DEvent.MOUSE_OUT, null, true);
+                    this.selectedObject3D.dispatch("mouseout", null, true);
                 if (value)
-                    Event.dispatch(value, <any>Mouse3DEvent.MOUSE_OVER, null, true);
+                    value.dispatch("mouseover", null, true);
             }
             this.selectedObject3D = value;
             if (this.selectedObject3D)
@@ -169,15 +161,15 @@ namespace feng3d
                 {
                     switch (element)
                     {
-                        case inputType.MOUSE_DOWN:
+                        case "mousedown":
                             if (this.preMouseDownObject3D != this.selectedObject3D)
                             {
                                 this.Object3DClickNum = 0;
                                 this.preMouseDownObject3D = this.selectedObject3D;
                             }
-                            Event.dispatch(this.selectedObject3D, <any>mouse3DEventMap[element], null, true);
+                            this.selectedObject3D.dispatch(element, null, true);
                             break;
-                        case inputType.MOUSE_UP:
+                        case "mouseup":
                             if (this.selectedObject3D == this.preMouseDownObject3D)
                             {
                                 this.Object3DClickNum++;
@@ -186,18 +178,18 @@ namespace feng3d
                                 this.Object3DClickNum = 0;
                                 this.preMouseDownObject3D = null;
                             }
-                            Event.dispatch(this.selectedObject3D, <any>mouse3DEventMap[element], null, true);
+                            this.selectedObject3D.dispatch(element, null, true);
                             break;
-                        case inputType.MOUSE_MOVE:
-                            Event.dispatch(this.selectedObject3D, <any>mouse3DEventMap[element], null, true);
+                        case "mousemove":
+                            this.selectedObject3D.dispatch(element, null, true);
                             break;
-                        case inputType.CLICK:
+                        case "click":
                             if (this.Object3DClickNum > 0)
-                                Event.dispatch(this.selectedObject3D, <any>mouse3DEventMap[element], null, true);
+                                this.selectedObject3D.dispatch(element, null, true);
                             break;
-                        case inputType.DOUBLE_CLICK:
+                        case "dblclick":
                             if (this.Object3DClickNum > 1)
-                                Event.dispatch(this.selectedObject3D, <any>mouse3DEventMap[element], null, true);
+                                this.selectedObject3D.dispatch(element, null, true);
                             break;
                     }
 
@@ -210,47 +202,4 @@ namespace feng3d
             this.mouseEventTypes.length = 0;
         }
     }
-
-    export interface EventType
-    {
-        /** 鼠标单击 */
-        click: any;
-        /** 鼠标双击 */
-        doubleClick: "doubleClick";
-        /** 鼠标按下 */
-        mousedown: "mousedown";
-        /** 鼠标移动 */
-        mousemove: "mousemove";
-        /** 鼠标移出 */
-        mouseout: "mouseout";
-        /** 鼠标移入 */
-        mouseover: "mouseover";
-        /** 鼠标弹起 */
-        mouseup: "mouseup";
-    }
-
-    /**
-     * 3D鼠标事件
-     */
-    export var Mouse3DEvent = {
-        /** 鼠标单击 */
-        CLICK: "click",
-        /** 鼠标双击 */
-        DOUBLE_CLICK: "doubleClick",
-        /** 鼠标按下 */
-        MOUSE_DOWN: "mousedown",
-        /** 鼠标移动 */
-        MOUSE_MOVE: "mousemove",
-        /** 鼠标移出 */
-        MOUSE_OUT: "mouseout",
-        /** 鼠标移入 */
-        MOUSE_OVER: "mouseover",
-        /** 鼠标弹起 */
-        MOUSE_UP: "mouseup",
-    }
-
-    /** 
-     * 鼠标事件与3D鼠标事件类型映射
-     */
-    var mouse3DEventMap: { [mouseEventType: string]: string } = {};
 }

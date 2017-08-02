@@ -8,10 +8,10 @@ namespace feng3d
     {
         private _lens: LensBase;
         private _viewProjection: Matrix3D = new Matrix3D();
-        private _viewProjectionDirty: boolean = true;
+        private _viewProjectionDirty = true;
         private _frustumPlanes: Plane3D[];
-        private _frustumPlanesDirty: boolean = true;
-        private _viewRect: Rectangle;
+        private _frustumPlanesDirty = true;
+        private _viewRect: Rectangle = new Rectangle(0, 0, 1, 1);
 
         /**
          * 视窗矩形
@@ -35,13 +35,13 @@ namespace feng3d
             this._lens = new PerspectiveLens();
             Event.on(this._lens, <any>LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
 
-            Event.on(this.gameObject.transform, <any>Object3DEvent.SCENETRANSFORM_CHANGED, this.onScenetransformChanged, this);
+            Event.on(this.gameObject.transform, "scenetransformChanged", this.onScenetransformChanged, this);
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
 
             this._frustumPlanes = [];
 
-            for (var i: number = 0; i < 6; ++i)
+            for (var i = 0; i < 6; ++i)
                 this._frustumPlanes[i] = new Plane3D();
 
             //
@@ -56,7 +56,7 @@ namespace feng3d
 		/**
 		 * 处理镜头变化事件
 		 */
-        private onLensMatrixChanged(event: EventVO<any>)
+        private onLensMatrixChanged(event: EventVO)
         {
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
@@ -68,12 +68,12 @@ namespace feng3d
 		 * 镜头
 		 */
         @serialize
-        public get lens(): LensBase
+        get lens(): LensBase
         {
             return this._lens;
         }
 
-        public set lens(value: LensBase)
+        set lens(value: LensBase)
         {
             if (this._lens == value)
                 return;
@@ -87,13 +87,13 @@ namespace feng3d
 
             Event.on(this._lens, <any>LensEvent.MATRIX_CHANGED, this.onLensMatrixChanged, this);
 
-            Event.dispatch(this, <any>CameraEvent.LENS_CHANGED, this);
+            Event.dispatch(this, CameraEvent.LENS_CHANGED, this);
         }
 
 		/**
 		 * 场景投影矩阵，世界空间转投影空间
 		 */
-        public get viewProjection(): Matrix3D
+        get viewProjection(): Matrix3D
         {
             if (this._viewProjectionDirty)
             {
@@ -119,7 +119,7 @@ namespace feng3d
         /**
 		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
 		 */
-        public getMouseRay3D(): Ray3D
+        getMouseRay3D(): Ray3D
         {
             return this.getRay3D(input.clientX - this._viewRect.x, input.clientY - this._viewRect.y);
         }
@@ -130,7 +130,7 @@ namespace feng3d
 		 * @param y view3D上的X坐标
 		 * @return
 		 */
-        public getRay3D(x: number, y: number, ray3D: Ray3D = null): Ray3D
+        getRay3D(x: number, y: number, ray3D: Ray3D = null): Ray3D
         {
             //摄像机坐标
             var rayPosition: Vector3D = this.unproject(x, y, 0);
@@ -151,7 +151,7 @@ namespace feng3d
 		 * @param point3d 世界坐标
 		 * @return 屏幕的绝对坐标
 		 */
-        public project(point3d: Vector3D): Vector3D
+        project(point3d: Vector3D): Vector3D
         {
             var v: Vector3D = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
 
@@ -169,7 +169,7 @@ namespace feng3d
 		 * @param v 场景坐标（输出）
 		 * @return 场景坐标
 		 */
-        public unproject(sX: number, sY: number, sZ: number, v: Vector3D = null): Vector3D
+        unproject(sX: number, sY: number, sZ: number, v: Vector3D = null): Vector3D
         {
             var gpuPos: Point = this.screenToGpuPosition(new Point(sX, sY));
             return this.transform.localToWorldMatrix.transformVector(this.lens.unproject(gpuPos.x, gpuPos.y, sZ, v), v);
@@ -180,7 +180,7 @@ namespace feng3d
 		 * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
 		 * @return GPU坐标 (x:[-1,1],y:[-1-1])
 		 */
-        public screenToGpuPosition(screenPos: Point): Point
+        screenToGpuPosition(screenPos: Point): Point
         {
             var gpuPos: Point = new Point();
             gpuPos.x = (screenPos.x * 2 - this._viewRect.width) / this._viewRect.width;
@@ -192,7 +192,7 @@ namespace feng3d
          * 获取单位像素在指定深度映射的大小
          * @param   depth   深度
          */
-        public getScaleByDepth(depth: number)
+        getScaleByDepth(depth: number)
         {
             var centerX = this._viewRect.width / 2;
             var centerY = this._viewRect.height / 2;
@@ -205,7 +205,7 @@ namespace feng3d
 		/**
 		 * 视锥体面
 		 */
-        public get frustumPlanes(): Plane3D[]
+        get frustumPlanes(): Plane3D[]
         {
             if (this._frustumPlanesDirty)
                 this.updateFrustum();

@@ -7,7 +7,7 @@ namespace feng3d
      */
     export class ShadowRenderer
     {
-        private frameBufferObject: FrameBufferObject;
+        // private frameBufferObject: FrameBufferObject;
 
         constructor()
         {
@@ -25,14 +25,14 @@ namespace feng3d
             {
                 var light = lights[i];
 
-                var frameBufferObject = new FrameBufferObject();
-                frameBufferObject.init(gl);
-                frameBufferObject.active(gl);
+                // var frameBufferObject = new FrameBufferObject();
+                // frameBufferObject.init(gl);
+                // frameBufferObject.active(gl);
                 // MeshRenderer.meshRenderers.forEach(element =>
                 // {
                     // this.drawRenderables(renderContext, element);
                 // });
-                frameBufferObject.deactive(gl);
+                // frameBufferObject.deactive(gl);
             }
         }
     }

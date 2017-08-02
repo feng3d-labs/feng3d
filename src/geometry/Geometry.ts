@@ -131,7 +131,7 @@ namespace feng3d
         setIndices(indices: Uint16Array)
         {
             this._indexBuffer = this.createIndexBuffer(indices);
-            Event.dispatch(this, <any>GeometryEvent.CHANGED_INDEX_DATA);
+            Event.dispatch(this, GeometryEvent.CHANGED_INDEX_DATA);
         }
 
         /**
@@ -160,7 +160,7 @@ namespace feng3d
             {
                 delete this._attributes[vaId];
             }
-            Event.dispatch(this, <any>GeometryEvent.CHANGED_VA_DATA, vaId);
+            Event.dispatch(this, GeometryEvent.CHANGED_VA_DATA, vaId);
         }
 
 		/**
@@ -171,7 +171,7 @@ namespace feng3d
         getVAData(vaId: string)
         {
             this.updateGrometry();
-            Event.dispatch(this, <any>GeometryEvent.GET_VA_DATA, vaId);
+            Event.dispatch(this, GeometryEvent.GET_VA_DATA, vaId);
             return this._attributes[vaId];
         }
 
@@ -393,7 +393,7 @@ namespace feng3d
          */
         invalidateBounds()
         {
-            Event.dispatch(this, <any>GeometryEvent.BOUNDS_INVALID)
+            Event.dispatch(this, GeometryEvent.BOUNDS_INVALID)
         }
 
         /**

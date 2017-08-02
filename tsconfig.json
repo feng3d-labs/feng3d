@@ -9,6 +9,68 @@
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //
+        "src/core/Event.ts",
+        "src/resources/load.ts",
+        //基础工具
+        "src/utils/ClassUtils.ts",
+        "src/utils/ObjectUtils.ts",
+        "src/utils/StringUtils.ts",
+        "src/utils/Map.ts",
+        "src/utils/Decorators.ts",
+        "src/utils/Serialization.ts",
+        "src/utils/Stats.ts",
+        //
+        "src/collections/IList.ts",
+        "src/collections/ArrayList.ts",
+        //基础工具
+        "src/mathlib/MathConsts.ts",
+        "src/mathlib/Math.ts",
+        "src/mathlib/Orientation3D.ts",
+        "src/mathlib/Point.ts",
+        "src/mathlib/Rectangle.ts",
+        "src/mathlib/Vector3D.ts",
+        "src/mathlib/Matrix3D.ts",
+        "src/mathlib/Quaternion.ts",
+        "src/mathlib/Euler.ts",
+        "src/mathlib/Line3D.ts",
+        "src/mathlib/Ray3D.ts",
+        "src/mathlib/Plane3D.ts",
+        "src/mathlib/PlaneClassification.ts",
+        "src/mathlib/Color.ts",
+        //
+        "src/sys/SystemTicker.ts",
+        "src/utils/Timer.ts",
+        //
+        "src/base/Input.ts",
+        //快捷键模块
+        "src/shortcut/handle/KeyCapture.ts",
+        "src/shortcut/handle/KeyState.ts",
+        "src/shortcut/handle/ShortCutCapture.ts",
+        "src/shortcut/handle/ShortCutEvent.ts",
+        "src/shortcut/ShortCut.ts",
+        //加载模块
+        "src/net/Loader.ts",
+        "src/net/LoaderEvent.ts",
+        "src/net/LoaderDataFormat.ts",
+        //
+        "src/render/gl/webglExt.ts",
+        "src/render/gl/webgl2.ts",
+        "src/render/gl/GLInterface.ts",
+        "src/render/gl/GL.ts",
+        "src/render/gl/GLExtension.ts",
+        "src/render/gl/GLProgramExtension.ts",
+        //
+        "src/render/data/RenderElement.ts",
+        "src/render/data/UniformData.ts",
+        "src/render/data/UniformRenderData.ts",
+        "src/render/data/ShaderRenderData.ts",
+        "src/render/data/ShaderParams.ts",
+        "src/render/data/RenderAtomic.ts",
+        "src/render/data/IndexRenderData.ts",
+        "src/render/data/AttributeRenderData.ts",
+        "src/render/shader/ShaderMacro.ts",
+        "src/render/TextureInfo.ts",
+        //
         "src/render/data/RenderData.ts",
         "src/render/data/UniformRenderData.ts",
         "src/render/data/RenderDataHolder.ts",
@@ -152,18 +214,44 @@
         "src/debug/Trident.ts",
         //
         "src/utils/GameObjectFactory.ts",
+        "src/utils/GameObjectUtil.ts",
         //
         "src/core/Mouse3DManager.ts",
         //
         "src/autofiles/shaders.ts",
         //
-        "src/Feng3d.ts"
-    ],
-    "include": [
-        "../**/*.ts",
-        "../**/out/*.d.ts"
-    ],
-    "exclude": [
-        "../**/*.d.ts"
+        "src/Feng3d.ts",
+        //war3模型
+        "src/war3model/animators/war3/data/JointPoseWar3.ts",
+        "src/war3model/animators/war3/data/SkeletonPoseWar3.ts",
+        "src/war3model/animators/war3/nodes/SkeletonClipNodeWar3.ts",
+        "src/war3model/animators/war3/SkeletonAnimatorWar3.ts",
+        "src/war3model/parsers/mdl/AnimAlpha.ts",
+        "src/war3model/parsers/mdl/AnimInfo.ts",
+        "src/war3model/parsers/mdl/AnimInfo1.ts",
+        "src/war3model/parsers/mdl/BoneObject.ts",
+        "src/war3model/parsers/mdl/BoneRotation.ts",
+        "src/war3model/parsers/mdl/BoneTranslation.ts",
+        "src/war3model/parsers/mdl/FBitmap.ts",
+        "src/war3model/parsers/mdl/Geoset.ts",
+        "src/war3model/parsers/mdl/GeosetAnim.ts",
+        "src/war3model/parsers/mdl/Globalsequences.ts",
+        "src/war3model/parsers/mdl/Interval.ts",
+        "src/war3model/parsers/mdl/Layer.ts",
+        "src/war3model/parsers/mdl/Material.ts",
+        "src/war3model/parsers/mdl/Model.ts",
+        "src/war3model/parsers/mdl/Rotation.ts",
+        "src/war3model/parsers/mdl/Scaling.ts",
+        "src/war3model/parsers/mdl/Translation.ts",
+        "src/war3model/parsers/mdl/War3Model.ts",
+        "src/war3model/parsers/MdlParser.ts",
+        "src/war3model/utils/War3Utils.ts",
+        "src/war3model/parsers/mdl/BoneScaling.ts",
+        //
+        "tests/common/ClassUtilsTest.ts",
+        "tests/common/EulerTest.ts",
+        "tests/common/ArrayListTest.ts",
+        //
+        "tests/UnitTest.ts"
     ]
 }

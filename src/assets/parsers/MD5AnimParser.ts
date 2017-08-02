@@ -1,5 +1,8 @@
 namespace feng3d
 {
+    export var MD5AnimParser = {
+        parse: parse
+    }
 
     /**
      * 帧数据
@@ -56,19 +59,16 @@ namespace feng3d
         frame: MD5_Frame[];
     }
 
-    export class MD5AnimParser
+    function parse(context: string)
     {
-        static parse(context: string)
+        var md5AnimData = <MD5AnimData>{};
+        var lines = context.split("\n").reverse();
+        do
         {
-            var md5AnimData = <MD5AnimData>{};
-            var lines = context.split("\n").reverse();
-            do
-            {
-                var line = lines.pop();
-                parserLine(line, md5AnimData);
-            } while (line);
-            return md5AnimData;
-        }
+            var line = lines.pop();
+            parserLine(line, md5AnimData);
+        } while (line);
+        return md5AnimData;
     }
 
     var MD5VersionReg = /MD5Version\s+(\d+)/;
@@ -104,7 +104,6 @@ namespace feng3d
 
     function parserLine(line: string, md5AnimData: MD5AnimData)
     {
-
         if (!line)
             return;
         line = line.trim();
@@ -206,6 +205,5 @@ namespace feng3d
         {
             throw new Error(`无法解析${line}`);
         }
-
     }
 }

@@ -11,7 +11,7 @@ namespace feng3d
          */
         get mesh()
         {
-            return this._mesh || defaultGeometry;
+            return this._mesh;
         }
         set mesh(value)
         {
@@ -22,14 +22,25 @@ namespace feng3d
                 this.removeRenderDataHolder(this.mesh);
             }
             this._mesh = value;
-            this.addRenderDataHolder(this.mesh);
+            if (this.mesh)
+            {
+                this.addRenderDataHolder(this.mesh);
+            }
         }
         private _mesh: Geometry;
 
         constructor(gameObject: GameObject)
         {
             super(gameObject);
-            this.addRenderDataHolder(this.mesh);
+        }
+
+        /**
+         * 销毁
+         */
+        dispose()
+        {
+            this.mesh = null;
+            super.dispose();
         }
     }
 }

@@ -1,5 +1,65 @@
 namespace feng3d
 {
+    export interface Mouse3DEventMap
+    {
+        mouseout
+        mouseover
+        mousedown
+        mouseup
+        mousemove
+        click
+        dblclick
+    }
+
+    export interface TransformEventMap extends Mouse3DEventMap
+    {
+        /**
+         * 显示变化
+         */
+        visiblityUpdated
+        /**
+         * 场景矩阵变化
+         */
+        scenetransformChanged
+        /**
+         * 场景变化
+         */
+        sceneChanged
+        /**
+         * 位置变化
+         */
+        positionChanged
+        /**
+         * 旋转变化
+         */
+        rotationChanged
+        /**
+         * 缩放变化
+         */
+        scaleChanged
+        /**
+         * 变换矩阵变化
+         */
+        transformChanged
+        /**
+         * 添加了子对象，当child被添加到parent中时派发冒泡事件
+         */
+        added
+        /**
+         * 删除了子对象，当child被parent移除时派发冒泡事件
+         */
+        removed
+    }
+
+    export interface Object3D
+    {
+        once<K extends keyof TransformEventMap>(type: K, listener: (event: TransformEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof TransformEventMap>(type: K, data?: TransformEventMap[K], bubbles?: boolean);
+        has<K extends keyof TransformEventMap>(type: K): boolean;
+        on<K extends keyof TransformEventMap>(type: K, listener: (event: TransformEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof TransformEventMap>(type?: K, listener?: (event: TransformEventMap[K]) => any, thisObject?: any);
+    }
+
 	/**
 	 * Position, rotation and scale of an object.
      * 

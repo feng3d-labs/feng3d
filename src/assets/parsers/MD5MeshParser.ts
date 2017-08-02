@@ -2,6 +2,13 @@ namespace feng3d
 {
 
     /**
+     * MD5模型解析
+     */
+    export var MD5MeshParser = {
+        parse: parse
+    }
+
+    /**
      * 关节权重数据
      */
     export type MD5_Weight = {
@@ -55,20 +62,17 @@ namespace feng3d
         meshs: MD5_Mesh[];
     }
 
-    export class MD5MeshParser
+    function parse(context: string)
     {
-        static parse(context: string)
+        //
+        var md5MeshData = <MD5MeshData>{};
+        var lines = context.split("\n").reverse();
+        do
         {
-            //
-            var md5MeshData = <MD5MeshData>{};
-            var lines = context.split("\n").reverse();
-            do
-            {
-                var line = lines.pop();
-                parserLine(line, md5MeshData);
-            } while (line);
-            return md5MeshData;
-        }
+            var line = lines.pop();
+            parserLine(line, md5MeshData);
+        } while (line);
+        return md5MeshData;
     }
 
     var MD5VersionReg = /MD5Version\s+(\d+)/;

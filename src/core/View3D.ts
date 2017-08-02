@@ -5,23 +5,19 @@ namespace feng3d
      * 3D视图
      * @author feng 2016-05-01
      */
-    export class View3D
+    export class Engine
     {
-		/**
-		 * 射线坐标临时变量
-		 */
-        private static tempRayPosition: Vector3D = new Vector3D();
-        /**
-		 * 射线方向临时变量
-		 */
-        private static tempRayDirection: Vector3D = new Vector3D();
-
         //
-        private _gl: GL;
-        private _camera: Camera;
-        private _scene: Scene3D;
-        private _canvas: HTMLCanvasElement;
-        private _viewRect: Rectangle;
+        gl: GL;
+        /**
+         * 摄像机
+         */
+        camera: Camera;
+        /**
+         * 3d场景
+         */
+        scene: Scene3D;
+        canvas: HTMLCanvasElement;
 
         /**
          * 默认渲染器
@@ -41,37 +37,7 @@ namespace feng3d
         /**
          * 渲染环境
          */
-        private _renderContext: RenderContext;
-
-        /**
-         * 鼠标在3D视图中的位置
-         */
-        public get mousePos()
-        {
-            return new Point(input.clientX - this._viewRect.x, input.clientY - this._viewRect.y);
-        }
-
-        /**
-         * 是否自动渲染
-         */
-        public get autoRender()
-        {
-            return this._autoRender;
-        }
-        public set autoRender(value)
-        {
-            if (this._autoRender)
-                Event.off(ticker, <any>"enterFrame", this.render, this);
-            this._autoRender = value;
-            if (this._autoRender)
-                Event.on(ticker, <any>"enterFrame", this.render, this);
-        }
-        private _autoRender: boolean;
-
-        public get viewRect()
-        {
-            return this._viewRect;
-        }
+        private renderContext: RenderContext;
 
         /**
          * 构建3D视图
@@ -79,9 +45,8 @@ namespace feng3d
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas: HTMLCanvasElement = null, scene: Scene3D = null, camera: Camera = null, autoRender = true)
+        constructor(canvas: HTMLCanvasElement = null, scene: Scene3D = null, camera: Camera = null)
         {
-
             if (!canvas)
             {
                 canvas = document.createElement("canvas");
@@ -92,97 +57,75 @@ namespace feng3d
             }
 
             debuger && console.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
-            this._canvas = canvas;
+            this.canvas = canvas;
 
-            var glProxy = new GLProxy(canvas);
-            this._gl = glProxy.gl;
+            this.gl = getGL(canvas);
 
-            this.initGL();
-
-            this._viewRect = new Rectangle(this._canvas.clientLeft, this._canvas.clientTop, this._canvas.clientWidth, this._canvas.clientHeight);
             this.scene = scene || GameObject.create("scene").addComponent(Scene3D);
             this.camera = camera || GameObject.create("camera").addComponent(Camera);
-            this.autoRender = autoRender;
+
+            this.start();
 
             this.defaultRenderer = new ForwardRenderer();
             this.mouse3DManager = new Mouse3DManager();
             this.shadowRenderer = new ShadowRenderer();
 
-            this._renderContext = new RenderContext();
+            this.renderContext = new RenderContext();
+
+            engines[canvas.id] = this;
         }
 
-        /**
-         * 初始化GL
-         */
-        private initGL()
+        start()
         {
-            this._gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-            this._gl.clearDepth(1.0);                 // Clear everything
-            this._gl.enable(GL.DEPTH_TEST);           // Enable depth testing
-            this._gl.depthFunc(GL.LEQUAL);            // Near things obscure far things
+            ticker.on("enterFrame", this.update, this);
         }
 
-        /** 3d场景 */
-        public get scene(): Scene3D
+        stop()
         {
-            return this._scene;
+            ticker.off("enterFrame", this.update, this);
         }
 
-        public set scene(value: Scene3D)
+        update()
         {
-            this._scene = value;
-        }
-
-        /**
-         * 视窗宽度
-         */
-        public get width()
-        {
-            return this._canvas.width;
+            this.render();
         }
 
         /**
          * 绘制场景
          */
-        public render()
+        render()
         {
-            this._canvas.width = this._canvas.clientWidth;
-            this._canvas.height = this._canvas.clientHeight;
+            this.canvas.width = this.canvas.clientWidth;
+            this.canvas.height = this.canvas.clientHeight;
 
-            this._renderContext.camera = this._camera;
-            this._renderContext.scene3d = this._scene;
-            this._renderContext.view3D = this;
-            this._renderContext.gl = this._gl;
+            this.renderContext.camera = this.camera;
+            this.renderContext.scene3d = this.scene;
+            this.renderContext.view3D = this;
+            this.renderContext.gl = this.gl;
 
-            var viewClientRect: ClientRect = this._canvas.getBoundingClientRect();
-            var viewRect = this._viewRect = this._viewRect || new Rectangle();
-            viewRect.setTo(viewClientRect.left, viewClientRect.top, viewClientRect.width, viewClientRect.height);
+            var viewClientRect: ClientRect = this.canvas.getBoundingClientRect();
+            var viewRect = new Rectangle(viewClientRect.left, viewClientRect.top, viewClientRect.width, viewClientRect.height);
             this.camera.viewRect = viewRect;
             this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
-            this.mouse3DManager.viewRect.copyFrom(viewRect);
-            this.mouse3DManager.draw(this._renderContext);
+            this.mouse3DManager.draw(this.renderContext, viewRect);
 
             //绘制阴影图
             // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
 
             // 默认渲染
-            this.defaultRenderer.viewRect.copyFrom(viewRect);
-            this.defaultRenderer.draw(this._renderContext);
+            this.defaultRenderer.draw(this.renderContext, viewRect);
         }
 
-        /**
-         * 摄像机
-         */
-        public get camera()
+        static get(canvas: HTMLCanvasElement = null)
         {
-            return this._camera;
-        }
-
-        public set camera(value)
-        {
-            this._camera = value;
+            if (canvas)
+            {
+                return engines[canvas.id];
+            }
+            return engines["feng3dcanvas"] || new Engine(canvas);
         }
     }
+    var engines: { [id: string]: Engine } = {};
 }

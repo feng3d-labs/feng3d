@@ -9,7 +9,7 @@ namespace feng3d
         /**
          * 脚本路径
          */
-        script: string = "";
+        url = "";
 
         private _enabled = false;
 
@@ -28,11 +28,13 @@ namespace feng3d
         }
         set enabled(value)
         {
+            if (this._enabled == value)
+                return;
             if (this._enabled)
-                Event.off(ticker, "enterFrame", this.update, this);
+                ticker.off("enterFrame", this.update, this);
             this._enabled = value;
             if (this._enabled)
-                Event.on(ticker, "enterFrame", this.update, this);
+                ticker.on("enterFrame", this.update, this);
         }
 
         /**
@@ -49,6 +51,14 @@ namespace feng3d
         update()
         {
 
+        }
+
+        /**
+         * 销毁
+         */
+        dispose()
+        {
+            this.enabled = false;
         }
     }
 }

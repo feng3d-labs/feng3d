@@ -7,6 +7,8 @@
 
     `ctrl+shift+B`
 
+    `node ShaderPack.js`
+
 ## 相关项目
 
 1. [examples](https://git.oschina.net/feng3d/examples.git)

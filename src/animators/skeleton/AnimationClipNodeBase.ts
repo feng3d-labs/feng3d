@@ -1,5 +1,24 @@
 namespace feng3d
 {
+    export interface AnimationStateEventMap
+    {
+        /**
+		 * Dispatched when a non-looping clip node inside an animation state reaches the end of its timeline.
+		 */
+        playbackComplete: AnimationStateEvent;
+
+        transitionComplete: AnimationStateEvent;
+    }
+
+    export interface AnimationClipNodeBase
+    {
+        once<K extends keyof AnimationStateEventMap>(type: K, listener: (event: AnimationStateEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof AnimationStateEventMap>(type: K, data?: AnimationStateEventMap[K], bubbles?: boolean);
+        has<K extends keyof AnimationStateEventMap>(type: K): boolean;
+        on<K extends keyof AnimationStateEventMap>(type: K, listener: (event: AnimationStateEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof AnimationStateEventMap>(type?: K, listener?: (event: AnimationStateEventMap[K]) => any, thisObject?: any);
+    }
+
 	/**
 	 * 动画剪辑节点基类(用于控制动画播放，包含每帧持续时间，是否循环播放等)
 	 * @author feng 2014-5-20

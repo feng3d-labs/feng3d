@@ -128,5 +128,13 @@ namespace feng3d
         {
             return this._gameObject;
         }
+
+        /**
+         * 销毁
+         */
+        dispose()
+        {
+
+        }
     }
 }

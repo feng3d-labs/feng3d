@@ -180,7 +180,7 @@ namespace feng3d
 		 */
         private notifyPlaybackComplete()
         {
-            Event.dispatch(this._animationClipNode,<any>AnimationStateEvent.PLAYBACK_COMPLETE,new AnimationStateEvent(this._animator, this, this._animationClipNode))
+            this._animationClipNode.dispatch("playbackComplete", new AnimationStateEvent(this._animator, this, this._animationClipNode))
         }
     }
 }

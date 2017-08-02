@@ -34,7 +34,7 @@ namespace feng3d
         /**
          * 3D视窗
          */
-        view3D: View3D;
+        view3D: Engine;
 
         /**
          * WebGL实例

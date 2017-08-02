@@ -1,6 +1,14 @@
 namespace feng3d
 {
 
+	/**
+	 * Obj模型解析器
+     * @author feng 2017-01-13
+	 */
+    export var OBJParser = {
+        parser: parser
+    }
+
     /**
      * 面数据
      */
@@ -53,29 +61,18 @@ namespace feng3d
         objs: OBJ_OBJ[];
     }
 
-	/**
-	 * Obj模型解析器
-     * @author feng 2017-01-13
-	 */
-    export class OBJParser
+    function parser(context: string)
     {
-
-        static parser(context: string)
+        var objData: OBJ_OBJData = { mtl: null, objs: [] };
+        var lines = context.split("\n").reverse();
+        do
         {
-
-            var objData: OBJ_OBJData = { mtl: null, objs: [] };
-            var lines = context.split("\n").reverse();
-            do
-            {
-                var line = lines.pop();
-                parserLine(line, objData);
-            } while (line);
-            currentObj = null;
-            currentSubObj = null;
-            return objData;
-        }
-
-
+            var line = lines.pop();
+            parserLine(line, objData);
+        } while (line);
+        currentObj = null;
+        currentSubObj = null;
+        return objData;
     }
 
     /** mtl正则 */

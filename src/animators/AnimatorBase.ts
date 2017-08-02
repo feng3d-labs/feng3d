@@ -1,5 +1,25 @@
 namespace feng3d
 {
+    export interface AnimatorBaseEventMap
+    {
+        /** 开始播放动画 */
+        start
+
+        /** 继续播放动画 */
+        play
+
+        /** 停止播放动画 */
+        stop
+    }
+
+    export interface AnimatorBase
+    {
+        once<K extends keyof AnimatorBaseEventMap>(type: K, listener: (event: AnimatorBaseEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof AnimatorBaseEventMap>(type: K, data?: AnimatorBaseEventMap[K], bubbles?: boolean);
+        has<K extends keyof AnimatorBaseEventMap>(type: K): boolean;
+        on<K extends keyof AnimatorBaseEventMap>(type: K, listener: (event: AnimatorBaseEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof AnimatorBaseEventMap>(type?: K, listener?: (event: AnimatorBaseEventMap[K]) => any, thisObject?: any);
+    }
 
 	/**
 	 * 动画基类
@@ -91,12 +111,12 @@ namespace feng3d
 
             this._isPlaying = true;
 
-            Event.on(ticker, <any>"enterFrame", this.onEnterFrame, this);
+            ticker.on("enterFrame", this.onEnterFrame, this);
 
-            if (!Event.has(this, <any>AnimatorEvent.START))
+            if (!this.has("start"))
                 return;
 
-            Event.dispatch(this, <any>AnimatorEvent.START, this);
+            this.dispatch("start", this);
         }
 
 		/**
@@ -112,12 +132,11 @@ namespace feng3d
             this._isPlaying = false;
 
             if (Event.has(ticker, <any>"enterFrame"))
-                Event.off(ticker, <any>"enterFrame", this.onEnterFrame, this);
+                ticker.off("enterFrame", this.onEnterFrame, this);
 
-            if (!Event.has(this, <any>AnimatorEvent.STOP))
+            if (!this.has("stop"))
                 return;
-
-            Event.dispatch(this, <any>AnimatorEvent.STOP, this);
+            this.dispatch("stop", this);
         }
 
 		/**
@@ -150,7 +169,7 @@ namespace feng3d
 		/**
 		 * 自动更新动画时帧更新事件
 		 */
-        private onEnterFrame(event: Event = null)
+        private onEnterFrame(event: EventVO = null)
         {
             this.update(Date.now());
         }

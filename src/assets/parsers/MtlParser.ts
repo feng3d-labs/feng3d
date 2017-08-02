@@ -1,6 +1,14 @@
 namespace feng3d
 {
 
+	/**
+	 * Obj模型Mtl解析器
+     * @author feng 2017-01-13
+	 */
+    export var MtlParser = {
+        parser: parser
+    }
+
     export type Mtl_Material = {
         name: string;
         ka: number[];
@@ -13,25 +21,16 @@ namespace feng3d
     };
     export type Mtl_Mtl = { [name: string]: Mtl_Material }
 
-	/**
-	 * Obj模型Mtl解析器
-     * @author feng 2017-01-13
-	 */
-    export class MtlParser
+    function parser(context: string)
     {
-
-        static parser(context: string)
+        var mtl: Mtl_Mtl = {};
+        var lines = context.split("\n").reverse();
+        do
         {
-
-            var mtl: Mtl_Mtl = {};
-            var lines = context.split("\n").reverse();
-            do
-            {
-                var line = lines.pop();
-                parserLine(line, mtl);
-            } while (line);
-            return mtl;
-        }
+            var line = lines.pop();
+            parserLine(line, mtl);
+        } while (line);
+        return mtl;
     }
 
 

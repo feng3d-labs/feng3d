@@ -72,7 +72,7 @@ namespace feng3d
 		set matrix(value: Matrix3D)
 		{
 			this._matrix = value;
-			Event.dispatch(this, <any>LensEvent.MATRIX_CHANGED, this);
+			Event.dispatch(this, LensEvent.MATRIX_CHANGED, this);
 			this.invalidateMatrix();
 		}
 
@@ -127,7 +127,7 @@ namespace feng3d
 		protected invalidateMatrix()
 		{
 			this._matrix = null;
-			Event.dispatch(this, <any>LensEvent.MATRIX_CHANGED, this);
+			Event.dispatch(this, LensEvent.MATRIX_CHANGED, this);
 			this._unprojection = null;
 		}
 
