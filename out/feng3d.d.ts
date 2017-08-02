@@ -3672,13 +3672,13 @@ declare namespace feng3d {
         readonly KEEP: number;
         readonly LEQUAL: number;
         readonly LESS: number;
-        readonly LINE_LOOP: number;
-        readonly LINE_STRIP: number;
-        readonly LINE_WIDTH: number;
         readonly LINEAR: number;
         readonly LINEAR_MIPMAP_LINEAR: number;
         readonly LINEAR_MIPMAP_NEAREST: number;
         readonly LINES: number;
+        readonly LINE_LOOP: number;
+        readonly LINE_STRIP: number;
+        readonly LINE_WIDTH: number;
         readonly LINK_STATUS: number;
         readonly LOW_FLOAT: number;
         readonly LOW_INT: number;
@@ -3703,9 +3703,9 @@ declare namespace feng3d {
         readonly NEAREST_MIPMAP_NEAREST: number;
         readonly NEVER: number;
         readonly NICEST: number;
-        readonly NO_ERROR: number;
         readonly NONE: number;
         readonly NOTEQUAL: number;
+        readonly NO_ERROR: number;
         readonly ONE: number;
         readonly ONE_MINUS_CONSTANT_ALPHA: number;
         readonly ONE_MINUS_CONSTANT_COLOR: number;
@@ -3735,18 +3735,18 @@ declare namespace feng3d {
         readonly REPEAT: number;
         readonly REPLACE: number;
         readonly RGB: number;
-        readonly RGB5_A1: number;
         readonly RGB565: number;
+        readonly RGB5_A1: number;
         readonly RGBA: number;
         readonly RGBA4: number;
+        readonly SAMPLER_2D: number;
+        readonly SAMPLER_CUBE: number;
+        readonly SAMPLES: number;
         readonly SAMPLE_ALPHA_TO_COVERAGE: number;
         readonly SAMPLE_BUFFERS: number;
         readonly SAMPLE_COVERAGE: number;
         readonly SAMPLE_COVERAGE_INVERT: number;
         readonly SAMPLE_COVERAGE_VALUE: number;
-        readonly SAMPLER_2D: number;
-        readonly SAMPLER_CUBE: number;
-        readonly SAMPLES: number;
         readonly SCISSOR_BOX: number;
         readonly SCISSOR_TEST: number;
         readonly SHADER_TYPE: number;
@@ -3780,20 +3780,6 @@ declare namespace feng3d {
         readonly STREAM_DRAW: number;
         readonly SUBPIXEL_BITS: number;
         readonly TEXTURE: number;
-        readonly TEXTURE_2D: number;
-        readonly TEXTURE_BINDING_2D: number;
-        readonly TEXTURE_BINDING_CUBE_MAP: number;
-        readonly TEXTURE_CUBE_MAP: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
-        readonly TEXTURE_MAG_FILTER: number;
-        readonly TEXTURE_MIN_FILTER: number;
-        readonly TEXTURE_WRAP_S: number;
-        readonly TEXTURE_WRAP_T: number;
         readonly TEXTURE0: number;
         readonly TEXTURE1: number;
         readonly TEXTURE10: number;
@@ -3826,9 +3812,23 @@ declare namespace feng3d {
         readonly TEXTURE7: number;
         readonly TEXTURE8: number;
         readonly TEXTURE9: number;
+        readonly TEXTURE_2D: number;
+        readonly TEXTURE_BINDING_2D: number;
+        readonly TEXTURE_BINDING_CUBE_MAP: number;
+        readonly TEXTURE_CUBE_MAP: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
+        readonly TEXTURE_MAG_FILTER: number;
+        readonly TEXTURE_MIN_FILTER: number;
+        readonly TEXTURE_WRAP_S: number;
+        readonly TEXTURE_WRAP_T: number;
+        readonly TRIANGLES: number;
         readonly TRIANGLE_FAN: number;
         readonly TRIANGLE_STRIP: number;
-        readonly TRIANGLES: number;
         readonly UNPACK_ALIGNMENT: number;
         readonly UNPACK_COLORSPACE_CONVERSION_WEBGL: number;
         readonly UNPACK_FLIP_Y_WEBGL: number;
@@ -5017,33 +5017,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 组件事件
-     * @author feng 2015-12-2
-     */
-    class ComponentEvent {
-        /**
-         * 添加子组件事件
-         */
-        static ADDED_COMPONENT: string;
-        /**
-         * 移除子组件事件
-         */
-        static REMOVED_COMPONENT: string;
-        /**
-         * 组件事件数据
-         */
-        data: {
-            container: GameObject;
-            child: Component;
-        };
-        /**
-         * 事件目标。
-         */
-        target: Component;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 组件事件
      */
     interface ComponentEventMap extends RenderDataHolderEventMap {
         /**
@@ -5640,7 +5613,7 @@ declare namespace feng3d {
         /**
          * 构建3D对象
          */
-        private constructor();
+        private constructor(name?);
         /**
          * 获取指定位置索引的子组件
          * @param index			位置索引
@@ -5887,22 +5860,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 3D场景事件
-     * @author feng 2016-01-03
-     */
-    class Scene3DEvent {
-        /**
-         * 当Object3D的scene属性被设置是由Scene3D派发
-         */
-        static ADDED_TO_SCENE: string;
-        /**
-         * 当Object3D的scene属性被清空时由Scene3D派发
-         */
-        static REMOVED_FROM_SCENE: string;
-    }
-}
-declare namespace feng3d {
     interface GeometryEventMap extends RenderDataHolderEventMap {
         /**
          * 获取几何体顶点数据
@@ -6061,30 +6018,6 @@ declare namespace feng3d {
          * 从一个几何体中克隆数据
          */
         cloneFrom(geometry: Geometry): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 几何体事件
-     * @author feng 2015-12-8
-     */
-    class GeometryEvent {
-        /**
-         * 获取几何体顶点数据
-         */
-        static GET_VA_DATA: string;
-        /**
-         * 改变几何体顶点数据事件
-         */
-        static CHANGED_VA_DATA: string;
-        /**
-         * 改变顶点索引数据事件
-         */
-        static CHANGED_INDEX_DATA: string;
-        /**
-         * 包围盒失效
-         */
-        static BOUNDS_INVALID: string;
     }
 }
 declare namespace feng3d {
@@ -6359,15 +6292,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 镜头事件
-     * @author feng 2014-10-14
-     */
-    class LensEvent {
-        static MATRIX_CHANGED: string;
-    }
-}
-declare namespace feng3d {
-    /**
      * @author feng 2014-10-14
      */
     interface CameraEventMap extends ComponentEventMap {
@@ -6461,15 +6385,6 @@ declare namespace feng3d {
          * @see http://www.linuxgraphics.cn/graphics/opengl_view_frustum_culling.html
          */
         private updateFrustum();
-    }
-}
-declare namespace feng3d {
-    /**
-     * 摄像机事件
-     * @author feng 2014-10-14
-     */
-    class CameraEvent {
-        static LENS_CHANGED: string;
     }
 }
 declare namespace feng3d {

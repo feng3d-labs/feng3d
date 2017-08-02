@@ -81,7 +81,6 @@
         "src/core/HideFlags.ts",
         "src/core/Feng3dObject.ts",
         //组件模块
-        "src/component/event/ComponentEvent.ts",
         "src/component/Component.ts",
         //
         "src/render/renderer/Renderer.ts",
@@ -106,10 +105,8 @@
         "src/core/Object3dScript.ts",
         //3D场景
         "src/scene/Scene3D.ts",
-        "src/scene/Scene3DEvent.ts",
         //几何体
         "src/geometry/Geometry.ts",
-        "src/geometry/GeometryEvent.ts",
         "src/geometry/GeometryUtils.ts",
         //几何体组件
         "src/geometry/PointGeometry.ts",
@@ -119,9 +116,7 @@
         "src/cameras/lenses/LensBase.ts",
         "src/cameras/lenses/FreeMatrixLens.ts",
         "src/cameras/lenses/PerspectiveLens.ts",
-        "src/cameras/lenses/LensEvent.ts",
         "src/cameras/Camera.ts",
-        "src/cameras/CameraEvent.ts",
         //
         "src/bounds/BoundingVolumeBase.ts",
         "src/bounds/AxisAlignedBoundingBox.ts",

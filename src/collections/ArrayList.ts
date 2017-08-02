@@ -3,7 +3,7 @@ namespace feng3d
     export class ArrayList<T> implements IList<T>
     {
         private readonly _source: T[];
-        private readonly _eventDispatcher: { uuid?: string };
+        private readonly _eventDispatcher: Event;
 
         /**
          * 此集合中的项目数。
@@ -16,7 +16,7 @@ namespace feng3d
         constructor(source: T[] = null)
         {
             this._source = source || [];
-            this._eventDispatcher = {};
+            this._eventDispatcher = new Event();
         }
 
         /**
@@ -41,16 +41,16 @@ namespace feng3d
             } else
             {
                 this._source.splice(index, 0, item);
-                if (item instanceof Object)
+                if (item instanceof Event)
                 {
-                    var _listenermap = Event["listenermap"][this._eventDispatcher.uuid];
+                    var _listenermap = Event["listenermap"][this._eventDispatcher["uuid"]];
                     for (var type in _listenermap)
                     {
                         var listenerVOs = _listenermap[type];
                         for (var i = 0; i < listenerVOs.length; i++)
                         {
                             var element = listenerVOs[i];
-                            Event.on(item, <any>type, element.listener, element.thisObject, element.priority);
+                            item.on(type, element.listener, element.thisObject, element.priority);
                         }
                     }
                 }
@@ -109,16 +109,16 @@ namespace feng3d
         removeItemAt(index: number): T
         {
             var item = this._source.splice(index, 1)[0];
-            if (item instanceof Object)
+            if (item instanceof Event)
             {
-                var _listenermap = Event["listenermap"][this._eventDispatcher.uuid];
+                var _listenermap = Event["listenermap"][this._eventDispatcher["uuid"]];
                 for (var type in _listenermap)
                 {
                     var listenerVOs = _listenermap[type];
                     for (var i = 0; i < listenerVOs.length; i++)
                     {
                         var element = listenerVOs[i];
-                        Event.off(item, type, element.listener, element.thisObject);
+                        item.off(type, element.listener, element.thisObject);
                     }
                 }
             }
@@ -152,12 +152,13 @@ namespace feng3d
          */
         addItemEventListener(type: string, listener: (event: EventVO) => void, thisObject: any, priority = 0): void
         {
-            Event.on(this._eventDispatcher, type, listener, thisObject, priority);
+            this._eventDispatcher.on(type, listener, thisObject, priority);
             for (var i = 0; i < this._source.length; i++)
             {
-                if (this._source[i] instanceof Object)
+                var item = this._source[i];
+                if (item instanceof Event)
                 {
-                    Event.on(this._source[i], type, listener, thisObject, priority);
+                    item.on(type, listener, thisObject, priority);
                 }
             }
         }
@@ -170,12 +171,13 @@ namespace feng3d
          */
         removeItemEventListener(type: string, listener: (event: EventVO) => void, thisObject: any): void
         {
-            Event.off(this._eventDispatcher, type, listener, thisObject);
+            this._eventDispatcher.off(type, listener, thisObject);
             for (var i = 0; i < this._source.length; i++)
             {
-                if (this._source[i] instanceof Object)
+                var item = this._source[i];
+                if (item instanceof Event)
                 {
-                    Event.off(this._source[i], type, listener, thisObject);
+                    item.off(type, listener, thisObject);
                 }
             }
         }

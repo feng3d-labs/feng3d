@@ -178,9 +178,9 @@ namespace feng3d
             {
                 changeItem = event.target;
             }, null);
-            var eventDispatcher = {};
+            var eventDispatcher = new Event();
             arrayList.addItem(eventDispatcher);
-            Event.dispatch(eventDispatcher, "change");
+            eventDispatcher.dispatch("change");
             console.assert(eventDispatcher == changeItem);
         }
 
@@ -199,13 +199,13 @@ namespace feng3d
                 changeItem = event.target;
             }
             arrayList.addItemEventListener("change", onChange, null);
-            var eventDispatcher = {};
+            var eventDispatcher = new Event();
             arrayList.addItem(eventDispatcher);
-            Event.dispatch(eventDispatcher, "change");
+            eventDispatcher.dispatch("change");
             console.assert(eventDispatcher == changeItem);
             changeItem = null;
             arrayList.removeItemEventListener("change", onChange, null);
-            Event.dispatch(eventDispatcher, "change");
+            eventDispatcher.dispatch("change");
             console.assert(null === changeItem);
         }
     }
