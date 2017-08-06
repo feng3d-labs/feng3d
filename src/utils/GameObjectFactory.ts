@@ -40,6 +40,9 @@ namespace feng3d
             case "Torus":
                 meshFilter.mesh = new TorusGeometry();
                 break;
+            case "Particle":
+                meshFilter.mesh = new TorusGeometry();
+                break;
         }
         return gameobject;
     }
@@ -87,5 +90,32 @@ namespace feng3d
         gameobject.addComponent(MeshFilter).mesh = new CapsuleGeometry();
         model.material = new StandardMaterial();
         return gameobject;
+    }
+
+    function createParticle(name = "Particle")
+    {
+        var _particleMesh = GameObject.create("particle");
+        _particleMesh.addComponent(MeshFilter).mesh = new PlaneGeometry(10, 10, 1, 1, false);
+        var material = _particleMesh.addComponent(MeshRenderer).material = new PointMaterial();
+        material.enableBlend = true;
+
+        var particleAnimationSet = new ParticleAnimationSet();
+        particleAnimationSet.numParticles = 20000;
+        //通过函数来创建粒子初始状态
+        particleAnimationSet.generateFunctions.push({
+            generate: (particle) =>
+            {
+                particle.birthTime = Math.random() * 5 - 5;
+                particle.lifetime = 5;
+                var degree1 = Math.random() * Math.PI;
+                var degree2 = Math.random() * Math.PI * 2;
+                var r = Math.random() * 50 + 400;
+                particle.velocity = new Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
+            }, priority: 0
+        });
+        var particleAnimator = _particleMesh.addComponent(ParticleAnimator);
+        particleAnimator.animatorSet = particleAnimationSet;
+        particleAnimator.cycle = 10;
+        return _particleMesh;
     }
 }

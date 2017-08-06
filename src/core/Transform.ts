@@ -1,27 +1,7 @@
 namespace feng3d
 {
-    export interface Mouse3DEventMap
-    {
-        /**
-         * 当Object3D的scene属性被设置是由Scene3D派发
-         */
-        addedToScene
 
-        /**
-         * 当Object3D的scene属性被清空时由Scene3D派发
-         */
-        removedFromScene
-
-        mouseout
-        mouseover
-        mousedown
-        mouseup
-        mousemove
-        click
-        dblclick
-    }
-
-    export interface TransformEventMap extends Mouse3DEventMap, ComponentEventMap
+    export interface TransformEventMap extends ComponentEventMap
     {
         /**
          * 显示变化
@@ -31,10 +11,6 @@ namespace feng3d
          * 场景矩阵变化
          */
         scenetransformChanged
-        /**
-         * 场景变化
-         */
-        sceneChanged
         /**
          * 位置变化
          */
@@ -52,31 +28,18 @@ namespace feng3d
          */
         transformChanged
         /**
-         * 添加了子对象，当child被添加到parent中时派发冒泡事件
+         * 
          */
-        added
-        /**
-         * 删除了子对象，当child被parent移除时派发冒泡事件
-         */
-        removed
-        /**
-         * 当Object3D的scene属性被设置是由Scene3D派发
-         */
-        addedToScene;
-
-        /**
-         * 当Object3D的scene属性被清空时由Scene3D派发
-         */
-        removedFromScene;
+        updateLocalToWorldMatrix
     }
 
     export interface Object3D
     {
-        once<K extends keyof TransformEventMap>(type: K, listener: (event: TransformEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof TransformEventMap>(type: K, listener: (event: EventVO<TransformEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof TransformEventMap>(type: K, data?: TransformEventMap[K], bubbles?: boolean);
         has<K extends keyof TransformEventMap>(type: K): boolean;
-        on<K extends keyof TransformEventMap>(type: K, listener: (event: TransformEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof TransformEventMap>(type?: K, listener?: (event: TransformEventMap[K]) => any, thisObject?: any);
+        on<K extends keyof TransformEventMap>(type: K, listener: (event: EventVO<TransformEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof TransformEventMap>(type?: K, listener?: (event: EventVO<TransformEventMap[K]>) => any, thisObject?: any);
     }
 
 	/**
@@ -94,15 +57,6 @@ namespace feng3d
         private _worldBounds: BoundingVolumeBase;
         private _worldBoundsInvalid = true;
 
-        /**
-         * 是否为公告牌（默认永远朝向摄像机），默认false。
-         */
-        isBillboard = false;
-        /**
-         * 保持缩放尺寸
-         */
-        holdSize = NaN;
-
 		/**
 		 * 创建一个实体，该类为虚类
 		 */
@@ -110,45 +64,11 @@ namespace feng3d
         {
             super(gameObject);
 
-            this._updateEverytime = true;
-
             this._bounds = this.getDefaultBoundingVolume();
             this._worldBounds = this.getDefaultBoundingVolume();
             this._bounds.on("change", this.onBoundsChange, this);
             //
             this.createUniformData("u_modelMatrix", () => this.localToWorldMatrix);
-        }
-
-        /**
-		 * 更新渲染数据
-		 */
-        updateRenderData(renderContext: RenderContext, renderData: RenderAtomic)
-        {
-            var camera = renderContext.camera;
-            if (this.isBillboard)
-            {
-                var parentInverseSceneTransform = (this.parent && this.parent.worldToLocalMatrix) || new Matrix3D();
-                var cameraPos = parentInverseSceneTransform.transformVector(camera.transform.localToWorldMatrix.position);
-                var yAxis = parentInverseSceneTransform.deltaTransformVector(Vector3D.Y_AXIS);
-                this.lookAt(cameraPos, yAxis);
-            }
-            if (this.holdSize)
-            {
-                var depthScale = this.getDepthScale(camera);
-                var vec = this.localToWorldMatrix.decompose();
-                vec[2].setTo(depthScale, depthScale, depthScale);
-                this.localToWorldMatrix.recompose(vec);
-            }
-            super.updateRenderData(renderContext, renderData);
-        }
-
-        private getDepthScale(camera: Camera)
-        {
-            var cameraTranform = camera.transform.localToWorldMatrix;
-            var distance = this.scenePosition.subtract(cameraTranform.position);
-            var depth = distance.dotProduct(cameraTranform.forward);
-            var scale = camera.getScaleByDepth(depth);
-            return scale;
         }
 
 		/**
@@ -231,7 +151,7 @@ namespace feng3d
 		/**
 		 * @inheritDoc
 		 */
-        protected invalidateSceneTransform()
+        invalidateSceneTransform()
         {
             super.invalidateSceneTransform();
             this._worldBoundsInvalid = true;

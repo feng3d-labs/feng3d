@@ -975,16 +975,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 序列化装饰器，被装饰属性将被序列化
-     */
-    function serialize(target, propertyKey) {
-        if (!target.__serializableMembers) {
-            target.__serializableMembers = [];
-        }
-        target.__serializableMembers.push(propertyKey);
-    }
-    feng3d.serialize = serialize;
-    /**
      * 观察装饰器，观察被装饰属性的变化
      *
      * *对使用watch修饰的属性赋值比未使用的性能差距100倍左右*
@@ -1013,48 +1003,51 @@ var feng3d;
     }
     feng3d.watch = watch;
 })(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 数据序列化
-     * @author feng 2017-03-11
-     */
-    var Serialization = (function () {
-        function Serialization() {
+/**
+ * 序列化装饰器，被装饰属性将被序列化
+ * @param {*} target                序列化原型
+ * @param {string} propertyKey      序列化属性
+ */
+function serialize(target, propertyKey) {
+    if (!Object.getOwnPropertyDescriptor(target, "__serializableMembers"))
+        target.__serializableMembers = [];
+    target.__serializableMembers.push(propertyKey);
+    if (!Object.getOwnPropertyDescriptor(target, "serializableMembers")) {
+        Object.defineProperty(target, "serializableMembers", {
+            get: function () {
+                var serializableMembers = [];
+                var superserializableMembers = target["__proto__"] && target["__proto__"]["serializableMembers"];
+                if (superserializableMembers) {
+                    serializableMembers = serializableMembers.concat(superserializableMembers);
+                }
+                serializableMembers = serializableMembers.concat(target.__serializableMembers);
+                return serializableMembers;
+            },
+            enumerable: true,
+            configurable: true
+        });
+    }
+}
+Object.prototype.serialize = function () {
+    var object = {};
+    var serializableMembers = this["serializableMembers"];
+    if (serializableMembers) {
+        for (var i = 0, n = serializableMembers.length; i < n; i++) {
+            var property = serializableMembers[i];
+            object[property] = this[property];
         }
-        Serialization.serialize = function (object, data) {
-            if (!data) {
-                data = {};
-            }
-            var serializableMembers = object.__serializableMembers;
-            if (serializableMembers) {
-                var property = void 0;
-                for (var i = 0, n = serializableMembers.length; i < n; i++) {
-                    property = serializableMembers[i];
-                    if (object.hasOwnProperty(property))
-                        data[property] = object[property];
-                }
-            }
-            return data;
-        };
-        Serialization.deserialize = function (data, object) {
-            if (!object) {
-                object = {};
-            }
-            var serializableMembers = data.__serializableMembers;
-            if (serializableMembers) {
-                var property = void 0;
-                for (var i = 0, n = serializableMembers.length; i < n; i++) {
-                    property = serializableMembers[i];
-                    object[property] = data[property];
-                }
-            }
-            return object;
-        };
-        return Serialization;
-    }());
-    feng3d.Serialization = Serialization;
-})(feng3d || (feng3d = {}));
+    }
+    return object;
+};
+Object.prototype.deserialize = function (object) {
+    var serializableMembers = this["serializableMembers"];
+    if (serializableMembers) {
+        for (var i = 0, n = serializableMembers.length; i < n; i++) {
+            var property = serializableMembers[i];
+            this[property] = object[property];
+        }
+    }
+};
 var feng3d;
 (function (feng3d) {
     var Stats = (function () {
@@ -6592,25 +6585,9 @@ var feng3d;
         //------------------------------------------
         function Feng3dObject() {
             var _this = _super.call(this) || this;
-            _this._uuid = Math.generateUUID();
+            _this.uuid = Math.generateUUID();
             return _this;
         }
-        Object.defineProperty(Feng3dObject.prototype, "uuid", {
-            /**
-             * Returns the instance id of the Feng3dObject.
-             */
-            get: function () {
-                return this._uuid;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * Returns the name of the game Feng3dObject.
-         */
-        Feng3dObject.prototype.toString = function () {
-            return this.name;
-        };
         //------------------------------------------
         // Static Functions
         //------------------------------------------
@@ -6662,8 +6639,34 @@ var feng3d;
             if (worldPositionStays === void 0) { worldPositionStays = false; }
             return null;
         };
+        Feng3dObject.prototype.serialize = function () {
+            var data = {};
+            var serializableMembers = this["__serializableMembers"];
+            if (serializableMembers) {
+                var property = void 0;
+                for (var i = 0, n = serializableMembers.length; i < n; i++) {
+                    property = serializableMembers[i];
+                    if (this.hasOwnProperty(property))
+                        data[property] = this[property];
+                }
+            }
+            return data;
+        };
+        Feng3dObject.prototype.deserialize = function (data) {
+            var serializableMembers = this["__serializableMembers"];
+            if (serializableMembers) {
+                var property = void 0;
+                for (var i = 0, n = serializableMembers.length; i < n; i++) {
+                    property = serializableMembers[i];
+                    this[property] = data[property];
+                }
+            }
+        };
         return Feng3dObject;
     }(feng3d.RenderDataHolder));
+    __decorate([
+        serialize
+    ], Feng3dObject.prototype, "uuid", void 0);
     feng3d.Feng3dObject = Feng3dObject;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -6683,16 +6686,6 @@ var feng3d;
          */
         function Component(gameObject) {
             var _this = _super.call(this) || this;
-            //------------------------------------------
-            // Static Functions
-            //------------------------------------------
-            //------------------------------------------
-            // Protected Properties
-            //------------------------------------------
-            /**
-             * 组件列表
-             */
-            _this._single = false;
             _this._gameObject = gameObject;
             return _this;
         }
@@ -6704,7 +6697,7 @@ var feng3d;
              * The game object this component is attached to. A component is always attached to a game object.
              */
             get: function () {
-                return this.internalGetGameObject();
+                return this._gameObject;
             },
             enumerable: true,
             configurable: true
@@ -6727,10 +6720,7 @@ var feng3d;
              * The Transform attached to this GameObject (null if there is none attached).
              */
             get: function () {
-                if (this._transform == null) {
-                    this._transform = this.internalGetTransform();
-                }
-                return this._transform;
+                return this._gameObject.transform;
             },
             enumerable: true,
             configurable: true
@@ -6740,7 +6730,7 @@ var feng3d;
              * 是否唯一，同类型3D对象组件只允许一个
              */
             get: function () {
-                return this._single;
+                return false;
             },
             enumerable: true,
             configurable: true
@@ -6771,24 +6761,17 @@ var feng3d;
             if (type === void 0) { type = null; }
             return this.gameObject.getComponentsInChildren(type);
         };
-        //------------------------------------------
-        // Private Methods
-        //------------------------------------------
-        Component.prototype.internalGetTransform = function () {
-            if (this._gameObject)
-                return this._gameObject.transform;
-            return null;
-        };
-        Component.prototype.internalGetGameObject = function () {
-            return this._gameObject;
-        };
         /**
          * 销毁
          */
         Component.prototype.dispose = function () {
+            this._gameObject = null;
         };
         return Component;
     }(feng3d.Feng3dObject));
+    __decorate([
+        serialize
+    ], Component.prototype, "tag", null);
     feng3d.Component = Component;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -7145,7 +7128,6 @@ var feng3d;
             _this._sx = 1;
             _this._sy = 1;
             _this._sz = 1;
-            _this._children = [];
             return _this;
         }
         Object.defineProperty(Object3D.prototype, "x", {
@@ -7593,37 +7575,37 @@ var feng3d;
         return Object3D;
     }(feng3d.Component));
     __decorate([
-        feng3d.serialize
+        serialize
     ], Object3D.prototype, "x", null);
     __decorate([
-        feng3d.serialize
+        serialize
     ], Object3D.prototype, "y", null);
     __decorate([
-        feng3d.serialize
+        serialize
     ], Object3D.prototype, "z", null);
     __decorate([
-        feng3d.serialize
+        serialize
     ], Object3D.prototype, "rx", null);
     __decorate([
-        feng3d.serialize
+        serialize
     ], Object3D.prototype, "ry", null);
     __decorate([
-        feng3d.serialize
+        serialize
     ], Object3D.prototype, "rz", null);
     __decorate([
-        feng3d.serialize
+        serialize
     ], Object3D.prototype, "sx", null);
     __decorate([
-        feng3d.serialize
+        serialize
     ], Object3D.prototype, "sy", null);
     __decorate([
-        feng3d.serialize
+        serialize
     ], Object3D.prototype, "sz", null);
     __decorate([
-        feng3d.serialize
+        serialize
     ], Object3D.prototype, "visible", void 0);
     __decorate([
-        feng3d.serialize
+        serialize
     ], Object3D.prototype, "mouseEnabled", void 0);
     feng3d.Object3D = Object3D;
 })(feng3d || (feng3d = {}));
@@ -7637,31 +7619,6 @@ var feng3d;
         function ObjectContainer3D(gameObject) {
             return _super.call(this, gameObject) || this;
         }
-        Object.defineProperty(ObjectContainer3D.prototype, "children", {
-            /**
-             * 子对象
-             */
-            get: function () {
-                return this._children.concat();
-            },
-            set: function (value) {
-                for (var i = 0, n = this._children.length; i < n; i++) {
-                    this.removeChildAt(i);
-                }
-                for (var i = 0; i < value.length; i++) {
-                    this.addChild(value[i]);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ObjectContainer3D.prototype, "numChildren", {
-            get: function () {
-                return this._children.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(ObjectContainer3D.prototype, "scenePosition", {
             get: function () {
                 return this.localToWorldMatrix.position;
@@ -7672,11 +7629,11 @@ var feng3d;
         Object.defineProperty(ObjectContainer3D.prototype, "minX", {
             get: function () {
                 var i = 0;
-                var len = this._children.length;
+                var len = this.gameObject.numChildren;
                 var min = Number.POSITIVE_INFINITY;
                 var m = 0;
                 while (i < len) {
-                    var child = this._children[i++];
+                    var child = this.gameObject.getChildAt(i++).transform;
                     m = child.minX + child.x;
                     if (m < min)
                         min = m;
@@ -7689,11 +7646,11 @@ var feng3d;
         Object.defineProperty(ObjectContainer3D.prototype, "minY", {
             get: function () {
                 var i = 0;
-                var len = this._children.length;
+                var len = this.gameObject.numChildren;
                 var min = Number.POSITIVE_INFINITY;
                 var m = 0;
                 while (i < len) {
-                    var child = this._children[i++];
+                    var child = this.gameObject.getChildAt(i++).transform;
                     m = child.minY + child.y;
                     if (m < min)
                         min = m;
@@ -7706,11 +7663,11 @@ var feng3d;
         Object.defineProperty(ObjectContainer3D.prototype, "minZ", {
             get: function () {
                 var i = 0;
-                var len = this._children.length;
+                var len = this.gameObject.numChildren;
                 var min = Number.POSITIVE_INFINITY;
                 var m = 0;
                 while (i < len) {
-                    var child = this._children[i++];
+                    var child = this.gameObject.getChildAt(i++).transform;
                     m = child.minZ + child.z;
                     if (m < min)
                         min = m;
@@ -7723,11 +7680,11 @@ var feng3d;
         Object.defineProperty(ObjectContainer3D.prototype, "maxX", {
             get: function () {
                 var i = 0;
-                var len = this._children.length;
+                var len = this.gameObject.numChildren;
                 var max = Number.NEGATIVE_INFINITY;
                 var m = 0;
                 while (i < len) {
-                    var child = this._children[i++];
+                    var child = this.gameObject.getChildAt(i++).transform;
                     m = child.maxX + child.x;
                     if (m > max)
                         max = m;
@@ -7740,11 +7697,11 @@ var feng3d;
         Object.defineProperty(ObjectContainer3D.prototype, "maxY", {
             get: function () {
                 var i = 0;
-                var len = this._children.length;
+                var len = this.gameObject.numChildren;
                 var max = Number.NEGATIVE_INFINITY;
                 var m = 0;
                 while (i < len) {
-                    var child = this._children[i++];
+                    var child = this.gameObject.getChildAt(i++).transform;
                     m = child.maxY + child.y;
                     if (m > max)
                         max = m;
@@ -7757,16 +7714,23 @@ var feng3d;
         Object.defineProperty(ObjectContainer3D.prototype, "maxZ", {
             get: function () {
                 var i = 0;
-                var len = this._children.length;
+                var len = this.gameObject.numChildren;
                 var max = Number.NEGATIVE_INFINITY;
                 var m = 0;
                 while (i < len) {
-                    var child = this._children[i++];
+                    var child = this.gameObject.getChildAt(i++).transform;
                     m = child.maxZ + child.z;
                     if (m > max)
                         max = m;
                 }
                 return max;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectContainer3D.prototype, "parent", {
+            get: function () {
+                return this.gameObject.parent && this.gameObject.parent.transform;
             },
             enumerable: true,
             configurable: true
@@ -7782,32 +7746,12 @@ var feng3d;
             },
             set: function (value) {
                 value = value.clone();
-                this._parent && value.append(this._parent.worldToLocalMatrix);
+                this.parent && value.append(this.parent.worldToLocalMatrix);
                 this.matrix3d = value;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ObjectContainer3D.prototype, "scene", {
-            get: function () {
-                return this._scene;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ObjectContainer3D.prototype.updateScene = function () {
-            var newScene = this._parent ? this._parent._scene : null;
-            if (this._scene == newScene)
-                return;
-            if (this._scene)
-                this.dispatch("removedFromScene", this);
-            this._scene = newScene;
-            if (this._scene)
-                this.dispatch("addedToScene", this);
-            for (var i = 0, n = this._children.length; i < n; i++) {
-                this._children[i].updateScene();
-            }
-        };
         Object.defineProperty(ObjectContainer3D.prototype, "worldToLocalMatrix", {
             /**
              * Matrix that transforms a point from world space into local space (Read Only).
@@ -7824,17 +7768,10 @@ var feng3d;
             get: function () {
                 if (!this._localToWorldRotationMatrix) {
                     this._localToWorldRotationMatrix = this.rotationMatrix.clone();
-                    if (this._parent)
-                        this._localToWorldRotationMatrix.append(this._parent.localToWorldRotationMatrix);
+                    if (this.parent)
+                        this._localToWorldRotationMatrix.append(this.parent.localToWorldRotationMatrix);
                 }
                 return this._localToWorldRotationMatrix;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ObjectContainer3D.prototype, "parent", {
-            get: function () {
-                return this._parent;
             },
             enumerable: true,
             configurable: true
@@ -7843,9 +7780,9 @@ var feng3d;
          * Transforms direction from local space to world space.
          */
         ObjectContainer3D.prototype.transformDirection = function (direction) {
-            if (!this._parent)
+            if (!this.parent)
                 return direction.clone();
-            var matrix3d = this._parent.localToWorldRotationMatrix;
+            var matrix3d = this.parent.localToWorldRotationMatrix;
             direction = matrix3d.transformVector(direction);
             return direction;
         };
@@ -7853,9 +7790,9 @@ var feng3d;
          * Transforms position from local space to world space.
          */
         ObjectContainer3D.prototype.transformPoint = function (position) {
-            if (!this._parent)
+            if (!this.parent)
                 return position.clone();
-            var matrix3d = this._parent.localToWorldMatrix;
+            var matrix3d = this.parent.localToWorldMatrix;
             position = matrix3d.transformVector(position);
             return position;
         };
@@ -7863,9 +7800,9 @@ var feng3d;
          * Transforms vector from local space to world space.
          */
         ObjectContainer3D.prototype.transformVector = function (vector) {
-            if (!this._parent)
+            if (!this.parent)
                 return vector.clone();
-            var matrix3d = this._parent.localToWorldMatrix;
+            var matrix3d = this.parent.localToWorldMatrix;
             vector = matrix3d.deltaTransformVector(vector);
             return vector;
         };
@@ -7873,9 +7810,9 @@ var feng3d;
          * Transforms a direction from world space to local space. The opposite of Transform.TransformDirection.
          */
         ObjectContainer3D.prototype.inverseTransformDirection = function (direction) {
-            if (!this._parent)
+            if (!this.parent)
                 return direction.clone();
-            var matrix3d = this._parent.localToWorldRotationMatrix.clone().invert();
+            var matrix3d = this.parent.localToWorldRotationMatrix.clone().invert();
             direction = matrix3d.transformVector(direction);
             return direction;
         };
@@ -7883,9 +7820,9 @@ var feng3d;
          * Transforms position from world space to local space.
          */
         ObjectContainer3D.prototype.inverseTransformPoint = function (position) {
-            if (!this._parent)
+            if (!this.parent)
                 return position.clone();
-            var matrix3d = this._parent.localToWorldMatrix.clone().invert();
+            var matrix3d = this.parent.localToWorldMatrix.clone().invert();
             position = matrix3d.transformVector(position);
             return position;
         };
@@ -7893,108 +7830,31 @@ var feng3d;
          * Transforms a vector from world space to local space. The opposite of Transform.TransformVector.
          */
         ObjectContainer3D.prototype.inverseTransformVector = function (vector) {
-            if (!this._parent)
+            if (!this.parent)
                 return vector.clone();
-            var matrix3d = this._parent.localToWorldMatrix.clone().invert();
+            var matrix3d = this.parent.localToWorldMatrix.clone().invert();
             vector = matrix3d.deltaTransformVector(vector);
             return vector;
-        };
-        ObjectContainer3D.prototype.contains = function (child) {
-            return this._children.indexOf(child) >= 0;
-        };
-        ObjectContainer3D.prototype.addChild = function (child) {
-            if (child == null)
-                throw new Error("Parameter child cannot be null.").message;
-            if (child._parent)
-                child._parent.removeChild(child);
-            child._setParent(this);
-            child.notifySceneTransformChange();
-            this._children.push(child);
-            return child;
-        };
-        ObjectContainer3D.prototype.addChildren = function () {
-            var childarray = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                childarray[_i] = arguments[_i];
-            }
-            for (var child_key_a in childarray) {
-                var child = childarray[child_key_a];
-                this.addChild(child);
-            }
-        };
-        ObjectContainer3D.prototype.setChildAt = function (child, index) {
-            if (child == null)
-                throw new Error("Parameter child cannot be null.").message;
-            if (child._parent) {
-                if (child._parent != this) {
-                    child._parent.removeChild(child);
-                }
-                else {
-                    var oldIndex = this._children.indexOf(child);
-                    this._children.splice(oldIndex, 1);
-                    this._children.splice(index, 0, child);
-                }
-            }
-            else {
-                child._setParent(this);
-                child.notifySceneTransformChange();
-                this._children[index] = child;
-            }
-        };
-        ObjectContainer3D.prototype.removeChild = function (child) {
-            if (child == null)
-                throw new Error("Parameter child cannot be null").message;
-            var childIndex = this._children.indexOf(child);
-            if (childIndex == -1)
-                throw new Error("Parameter is not a child of the caller").message;
-            this.removeChildInternal(childIndex, child);
-        };
-        ObjectContainer3D.prototype.removeChildAt = function (index) {
-            var child = this._children[index];
-            this.removeChildInternal(index, child);
-        };
-        ObjectContainer3D.prototype._setParent = function (value) {
-            this._parent = value;
-            this.updateScene();
-            this.notifySceneTransformChange();
-            this.notifySceneChange();
-        };
-        ObjectContainer3D.prototype.getChildAt = function (index) {
-            index = index;
-            return this._children[index];
         };
         ObjectContainer3D.prototype.lookAt = function (target, upAxis) {
             if (upAxis === void 0) { upAxis = null; }
             _super.prototype.lookAt.call(this, target, upAxis);
-            this.notifySceneTransformChange();
+            this.invalidateSceneTransform();
         };
         ObjectContainer3D.prototype.translateLocal = function (axis, distance) {
             _super.prototype.translateLocal.call(this, axis, distance);
-            this.notifySceneTransformChange();
+            this.invalidateSceneTransform();
         };
         ObjectContainer3D.prototype.dispose = function () {
-            if (this.parent)
-                this.parent.removeChild(this);
             _super.prototype.dispose.call(this);
-        };
-        ObjectContainer3D.prototype.disposeWithChildren = function () {
-            this.dispose();
-            while (this.numChildren > 0)
-                this.getChildAt(0).dispose();
         };
         ObjectContainer3D.prototype.rotate = function (axis, angle, pivotPoint) {
             _super.prototype.rotate.call(this, axis, angle, pivotPoint);
-            this.notifySceneTransformChange();
-        };
-        /**
-         * 获取子对象列表（备份）
-         */
-        ObjectContainer3D.prototype.getChildren = function () {
-            return this._children.concat();
+            this.invalidateSceneTransform();
         };
         ObjectContainer3D.prototype.invalidateTransform = function () {
             _super.prototype.invalidateTransform.call(this);
-            this.notifySceneTransformChange();
+            this.invalidateSceneTransform();
         };
         //------------------------------------------
         // Protected Properties
@@ -8002,14 +7862,11 @@ var feng3d;
         //------------------------------------------
         // Protected Functions
         //------------------------------------------
-        ObjectContainer3D.prototype.invalidateSceneTransform = function () {
-            this._localToWorldMatrix = null;
-            this._worldToLocalMatrix = null;
-        };
         ObjectContainer3D.prototype.updateLocalToWorldMatrix = function () {
             this._localToWorldMatrix = this.matrix3d.clone();
-            if (this._parent)
-                this._localToWorldMatrix.append(this._parent.localToWorldMatrix);
+            if (this.parent)
+                this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
+            this.dispatch("updateLocalToWorldMatrix");
         };
         //------------------------------------------
         // Private Properties
@@ -8017,34 +7874,19 @@ var feng3d;
         //------------------------------------------
         // Private Methods
         //------------------------------------------
-        ObjectContainer3D.prototype.notifySceneTransformChange = function () {
+        ObjectContainer3D.prototype.invalidateSceneTransform = function () {
             if (!this._localToWorldMatrix)
                 return;
-            this.invalidateSceneTransform();
-            var i = 0;
-            var len = this._children.length;
-            while (i < len)
-                this._children[i++].notifySceneTransformChange();
+            this._localToWorldMatrix = null;
+            this._worldToLocalMatrix = null;
             this.dispatch("scenetransformChanged", this);
-        };
-        ObjectContainer3D.prototype.notifySceneChange = function () {
-            this.notifySceneTransformChange();
-            var i = 0;
-            var len = this._children.length;
-            while (i < len)
-                this._children[i++].notifySceneChange();
-            this.dispatch("sceneChanged", this);
-        };
-        ObjectContainer3D.prototype.removeChildInternal = function (childIndex, child) {
-            childIndex = childIndex;
-            this._children.splice(childIndex, 1);
-            child._setParent(null);
+            //
+            for (var i = 0, n = this.gameObject.numChildren; i < n; i++) {
+                this.gameObject.getChildAt(i).transform.invalidateSceneTransform();
+            }
         };
         return ObjectContainer3D;
     }(feng3d.Object3D));
-    __decorate([
-        feng3d.serialize
-    ], ObjectContainer3D.prototype, "children", null);
     feng3d.ObjectContainer3D = ObjectContainer3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -8063,15 +7905,6 @@ var feng3d;
             var _this = _super.call(this, gameObject) || this;
             _this._boundsInvalid = true;
             _this._worldBoundsInvalid = true;
-            /**
-             * 是否为公告牌（默认永远朝向摄像机），默认false。
-             */
-            _this.isBillboard = false;
-            /**
-             * 保持缩放尺寸
-             */
-            _this.holdSize = NaN;
-            _this._updateEverytime = true;
             _this._bounds = _this.getDefaultBoundingVolume();
             _this._worldBounds = _this.getDefaultBoundingVolume();
             _this._bounds.on("change", _this.onBoundsChange, _this);
@@ -8079,32 +7912,6 @@ var feng3d;
             _this.createUniformData("u_modelMatrix", function () { return _this.localToWorldMatrix; });
             return _this;
         }
-        /**
-         * 更新渲染数据
-         */
-        Transform.prototype.updateRenderData = function (renderContext, renderData) {
-            var camera = renderContext.camera;
-            if (this.isBillboard) {
-                var parentInverseSceneTransform = (this.parent && this.parent.worldToLocalMatrix) || new feng3d.Matrix3D();
-                var cameraPos = parentInverseSceneTransform.transformVector(camera.transform.localToWorldMatrix.position);
-                var yAxis = parentInverseSceneTransform.deltaTransformVector(feng3d.Vector3D.Y_AXIS);
-                this.lookAt(cameraPos, yAxis);
-            }
-            if (this.holdSize) {
-                var depthScale = this.getDepthScale(camera);
-                var vec = this.localToWorldMatrix.decompose();
-                vec[2].setTo(depthScale, depthScale, depthScale);
-                this.localToWorldMatrix.recompose(vec);
-            }
-            _super.prototype.updateRenderData.call(this, renderContext, renderData);
-        };
-        Transform.prototype.getDepthScale = function (camera) {
-            var cameraTranform = camera.transform.localToWorldMatrix;
-            var distance = this.scenePosition.subtract(cameraTranform.position);
-            var depth = distance.dotProduct(cameraTranform.forward);
-            var scale = camera.getScaleByDepth(depth);
-            return scale;
-        };
         Object.defineProperty(Transform.prototype, "minX", {
             /**
              * @inheritDoc
@@ -8319,6 +8126,7 @@ var feng3d;
         function GameObject(name) {
             if (name === void 0) { name = "GameObject"; }
             var _this = _super.call(this) || this;
+            _this._children = [];
             /**
              * @private
              */
@@ -8349,6 +8157,38 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(GameObject.prototype, "parent", {
+            get: function () {
+                return this._parent;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GameObject.prototype, "children", {
+            /**
+             * 子对象
+             */
+            get: function () {
+                return this._children.concat();
+            },
+            set: function (value) {
+                for (var i = 0, n = this._children.length; i < n; i++) {
+                    this.removeChildAt(i);
+                }
+                for (var i = 0; i < value.length; i++) {
+                    this.addChild(value[i]);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GameObject.prototype, "numChildren", {
+            get: function () {
+                return this._children.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(GameObject.prototype, "numComponents", {
             /**
              * 子组件个数
@@ -8366,6 +8206,101 @@ var feng3d;
                 this.renderData.renderHolderInvalid = false;
             }
             this.renderData.update(renderContext);
+        };
+        GameObject.prototype.contains = function (child) {
+            return this._children.indexOf(child) >= 0;
+        };
+        GameObject.prototype.addChild = function (child) {
+            if (child == null)
+                throw new Error("Parameter child cannot be null.").message;
+            if (child._parent)
+                child._parent.removeChild(child);
+            child._setParent(this);
+            child.transform.invalidateSceneTransform();
+            this._children.push(child);
+            return child;
+        };
+        GameObject.prototype.addChildren = function () {
+            var childarray = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                childarray[_i] = arguments[_i];
+            }
+            for (var child_key_a in childarray) {
+                var child = childarray[child_key_a];
+                this.addChild(child);
+            }
+        };
+        GameObject.prototype.setChildAt = function (child, index) {
+            if (child == null)
+                throw new Error("Parameter child cannot be null.").message;
+            if (child._parent) {
+                if (child._parent != this) {
+                    child._parent.removeChild(child);
+                }
+                else {
+                    var oldIndex = this._children.indexOf(child);
+                    this._children.splice(oldIndex, 1);
+                    this._children.splice(index, 0, child);
+                }
+            }
+            else {
+                child._setParent(this);
+                child.transform.invalidateSceneTransform();
+                this._children[index] = child;
+            }
+        };
+        GameObject.prototype.removeChild = function (child) {
+            if (child == null)
+                throw new Error("Parameter child cannot be null").message;
+            var childIndex = this._children.indexOf(child);
+            if (childIndex == -1)
+                throw new Error("Parameter is not a child of the caller").message;
+            this.removeChildInternal(childIndex, child);
+        };
+        GameObject.prototype.removeChildAt = function (index) {
+            var child = this._children[index];
+            this.removeChildInternal(index, child);
+        };
+        GameObject.prototype._setParent = function (value) {
+            this._parent = value;
+            this.updateScene();
+            this.transform.invalidateSceneTransform();
+        };
+        GameObject.prototype.getChildAt = function (index) {
+            index = index;
+            return this._children[index];
+        };
+        Object.defineProperty(GameObject.prototype, "scene", {
+            get: function () {
+                return this._scene;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        GameObject.prototype.updateScene = function () {
+            var newScene = this._parent ? this._parent._scene : null;
+            if (this._scene == newScene)
+                return;
+            if (this._scene)
+                this.dispatch("removedFromScene", this);
+            this._scene = newScene;
+            if (this._scene)
+                this.dispatch("addedToScene", this);
+            for (var i = 0, n = this._children.length; i < n; i++) {
+                this._children[i].updateScene();
+            }
+            this.dispatch("sceneChanged", this);
+        };
+        /**
+         * 获取子对象列表（备份）
+         */
+        GameObject.prototype.getChildren = function () {
+            return this._children.concat();
+        };
+        GameObject.prototype.removeChildInternal = function (childIndex, child) {
+            childIndex = childIndex;
+            this._children.splice(childIndex, 1);
+            child._setParent(null);
         };
         /**
          * 获取指定位置索引的子组件
@@ -8443,8 +8378,8 @@ var feng3d;
                     result.push(this.components[i]);
                 }
             }
-            for (var i = 0, n = this.transform.numChildren; i < n; i++) {
-                this.transform.getChildAt(i).gameObject.getComponentsInChildren(type, result);
+            for (var i = 0, n = this.numChildren; i < n; i++) {
+                this.getChildAt(i).getComponentsInChildren(type, result);
             }
             return result;
         };
@@ -8587,9 +8522,16 @@ var feng3d;
          * 销毁
          */
         GameObject.prototype.dispose = function () {
+            if (this.parent)
+                this.parent.removeChild(this);
             for (var i = this.components.length - 1; i >= 0; i--) {
                 this.removeComponentAt(i);
             }
+        };
+        GameObject.prototype.disposeWithChildren = function () {
+            this.dispose();
+            while (this.numChildren > 0)
+                this.getChildAt(0).dispose();
         };
         return GameObject;
     }(feng3d.Feng3dObject));
@@ -8597,6 +8539,15 @@ var feng3d;
     // Static Functions
     //------------------------------------------
     GameObject._gameObjects = [];
+    __decorate([
+        serialize
+    ], GameObject.prototype, "name", void 0);
+    __decorate([
+        serialize
+    ], GameObject.prototype, "children", null);
+    __decorate([
+        serialize
+    ], GameObject.prototype, "components", void 0);
     feng3d.GameObject = GameObject;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -8694,8 +8645,7 @@ var feng3d;
         function HoldSizeComponent(gameobject) {
             var _this = _super.call(this, gameobject) || this;
             _this._holdSize = 1;
-            _this.transform.on("scenetransformChanged", _this.invalidHoldSizeMatrix);
-            _this.createUniformData("u_holdSizeMatrix", function () { return _this.holdSizeMatrix; });
+            _this.transform.on("updateLocalToWorldMatrix", _this.updateLocalToWorldMatrix, _this);
             return _this;
         }
         Object.defineProperty(HoldSizeComponent.prototype, "holdSize", {
@@ -8709,7 +8659,7 @@ var feng3d;
                 if (this._holdSize == value)
                     return;
                 this._holdSize = value;
-                this.invalidHoldSizeMatrix();
+                this.invalidateSceneTransform();
             },
             enumerable: true,
             configurable: true
@@ -8724,41 +8674,97 @@ var feng3d;
             set: function (value) {
                 if (this._camera == value)
                     return;
-                if (!this._camera)
-                    this._camera.transform.off("scenetransformChanged", this.invalidHoldSizeMatrix);
+                if (this._camera)
+                    this._camera.transform.off("scenetransformChanged", this.invalidateSceneTransform, this);
                 this._camera = value;
-                if (!this._camera)
-                    this._camera.transform.on("scenetransformChanged", this.invalidHoldSizeMatrix);
-                this.invalidHoldSizeMatrix();
+                if (this._camera)
+                    this._camera.transform.on("scenetransformChanged", this.invalidateSceneTransform, this);
+                this.invalidateSceneTransform();
             },
             enumerable: true,
             configurable: true
         });
-        HoldSizeComponent.prototype.invalidHoldSizeMatrix = function () {
-            this._holdSizeMatrix = null;
+        HoldSizeComponent.prototype.invalidateSceneTransform = function () {
+            this.transform.invalidateSceneTransform();
         };
-        Object.defineProperty(HoldSizeComponent.prototype, "holdSizeMatrix", {
-            get: function () {
-                if (!this.camera)
-                    throw "\u8BF7\u7ED9" + this + "\u8BBE\u7F6Ecamera\u5C5E\u6027";
-                var cameraTranform = this.camera.transform.localToWorldMatrix;
-                var distance = this.transform.scenePosition.subtract(cameraTranform.position);
-                var depth = distance.dotProduct(cameraTranform.forward);
-                var scale = this.camera.getScaleByDepth(depth);
-                this._holdSizeMatrix = feng3d.Matrix3D.fromScale(scale * this.holdSize, scale * this.holdSize, scale * this.holdSize);
-                return this._holdSizeMatrix;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        HoldSizeComponent.prototype.updateLocalToWorldMatrix = function () {
+            var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
+            if (this.holdSize && this._camera) {
+                var depthScale = this.getDepthScale(this._camera);
+                var vec = _localToWorldMatrix.decompose();
+                vec[2].setTo(depthScale, depthScale, depthScale);
+                _localToWorldMatrix.recompose(vec);
+            }
+        };
+        HoldSizeComponent.prototype.getDepthScale = function (camera) {
+            var cameraTranform = camera.transform.localToWorldMatrix;
+            var distance = this.transform.scenePosition.subtract(cameraTranform.position);
+            if (distance.length == 0)
+                distance.x = 1;
+            var depth = distance.dotProduct(cameraTranform.forward);
+            var scale = camera.getScaleByDepth(depth);
+            return scale;
+        };
         HoldSizeComponent.prototype.dispose = function () {
             this.camera = null;
-            this.transform.off("scenetransformChanged", this.invalidHoldSizeMatrix);
+            this.transform.off("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
             _super.prototype.dispose.call(this);
         };
         return HoldSizeComponent;
     }(feng3d.Component));
     feng3d.HoldSizeComponent = HoldSizeComponent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var BillboardComponent = (function (_super) {
+        __extends(BillboardComponent, _super);
+        function BillboardComponent(gameobject) {
+            var _this = _super.call(this, gameobject) || this;
+            _this._holdSize = 1;
+            _this.transform.on("updateLocalToWorldMatrix", _this.updateLocalToWorldMatrix, _this);
+            return _this;
+        }
+        Object.defineProperty(BillboardComponent.prototype, "camera", {
+            /**
+             * 相对
+             */
+            get: function () {
+                return this._camera;
+            },
+            set: function (value) {
+                if (this._camera == value)
+                    return;
+                if (this._camera)
+                    this._camera.transform.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+                this._camera = value;
+                if (this._camera)
+                    this._camera.transform.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+                this.invalidHoldSizeMatrix();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        BillboardComponent.prototype.invalidHoldSizeMatrix = function () {
+            this.transform.invalidateSceneTransform();
+        };
+        BillboardComponent.prototype.updateLocalToWorldMatrix = function () {
+            var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
+            if (this._camera) {
+                var camera = this._camera;
+                var parentInverseSceneTransform = (this.transform.parent && this.transform.parent.worldToLocalMatrix) || new feng3d.Matrix3D();
+                var cameraPos = parentInverseSceneTransform.transformVector(camera.transform.localToWorldMatrix.position);
+                var yAxis = parentInverseSceneTransform.deltaTransformVector(feng3d.Vector3D.Y_AXIS);
+                this.transform.lookAt(cameraPos, yAxis);
+            }
+        };
+        BillboardComponent.prototype.dispose = function () {
+            this.camera = null;
+            this.transform.off("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+            _super.prototype.dispose.call(this);
+        };
+        return BillboardComponent;
+    }(feng3d.Component));
+    feng3d.BillboardComponent = BillboardComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -8771,10 +8777,13 @@ var feng3d;
          * 构建
          */
         function MeshRenderer(gameObject) {
-            var _this = _super.call(this, gameObject) || this;
-            _this._single = true;
-            return _this;
+            return _super.call(this, gameObject) || this;
         }
+        Object.defineProperty(MeshRenderer.prototype, "single", {
+            get: function () { return true; },
+            enumerable: true,
+            configurable: true
+        });
         MeshRenderer.prototype.drawRenderables = function (renderContext) {
             if (this.gameObject.transform.visible) {
                 var frustumPlanes = renderContext.camera.frustumPlanes;
@@ -8871,11 +8880,17 @@ var feng3d;
              * 环境光强度
              */
             _this.ambientColor = new feng3d.Color();
-            gameObject.transform["_scene"] = _this;
+            gameObject["_scene"] = _this;
             return _this;
         }
         return Scene3D;
     }(feng3d.Component));
+    __decorate([
+        serialize
+    ], Scene3D.prototype, "background", void 0);
+    __decorate([
+        serialize
+    ], Scene3D.prototype, "ambientColor", void 0);
     feng3d.Scene3D = Scene3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -9687,11 +9702,9 @@ var feng3d;
          * @param colorEnd 终点颜色
          * @param thickness 线段厚度
          */
-        function Segment(start, end, colorStart, colorEnd, thickness) {
+        function Segment(start, end, colorStart, colorEnd) {
             if (colorStart === void 0) { colorStart = 0xffffff; }
             if (colorEnd === void 0) { colorEnd = 0xffffff; }
-            if (thickness === void 0) { thickness = 1; }
-            this.thickness = thickness * .5;
             this.start = start;
             this.end = end;
             this.startColor = new feng3d.Color();
@@ -9852,15 +9865,15 @@ var feng3d;
     }(feng3d.Event));
     __decorate([
         feng3d.watch("invalidateMatrix"),
-        feng3d.serialize
+        serialize
     ], LensBase.prototype, "near", void 0);
     __decorate([
         feng3d.watch("invalidateMatrix"),
-        feng3d.serialize
+        serialize
     ], LensBase.prototype, "far", void 0);
     __decorate([
         feng3d.watch("invalidateMatrix"),
-        feng3d.serialize
+        serialize
     ], LensBase.prototype, "aspectRatio", void 0);
     feng3d.LensBase = LensBase;
 })(feng3d || (feng3d = {}));
@@ -10014,11 +10027,11 @@ var feng3d;
     }(feng3d.LensBase));
     __decorate([
         feng3d.watch("fieldOfViewChange"),
-        feng3d.serialize
+        serialize
     ], PerspectiveLens.prototype, "fieldOfView", void 0);
     __decorate([
         feng3d.watch("coordinateSystemChange"),
-        feng3d.serialize
+        serialize
     ], PerspectiveLens.prototype, "coordinateSystem", void 0);
     feng3d.PerspectiveLens = PerspectiveLens;
 })(feng3d || (feng3d = {}));
@@ -10039,7 +10052,6 @@ var feng3d;
             _this._viewProjectionDirty = true;
             _this._frustumPlanesDirty = true;
             _this._viewRect = new feng3d.Rectangle(0, 0, 1, 1);
-            _this._single = true;
             _this._lens = new feng3d.PerspectiveLens();
             _this._lens.on("matrixChanged", _this.onLensMatrixChanged, _this);
             _this.gameObject.transform.on("scenetransformChanged", _this.onScenetransformChanged, _this);
@@ -10066,6 +10078,11 @@ var feng3d;
             set: function (value) {
                 this._viewRect = value;
             },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera.prototype, "single", {
+            get: function () { return true; },
             enumerable: true,
             configurable: true
         });
@@ -10304,7 +10321,7 @@ var feng3d;
         return Camera;
     }(feng3d.Component));
     __decorate([
-        feng3d.serialize
+        serialize
     ], Camera.prototype, "lens", null);
     feng3d.Camera = Camera;
 })(feng3d || (feng3d = {}));
@@ -10379,11 +10396,11 @@ var feng3d;
         BoundingVolumeBase.prototype.fromGeometry = function (geometry) {
             var minX, minY, minZ;
             var maxX, maxY, maxZ;
-            var vertices = geometry.positions;
-            if (!vertices) {
+            if (!geometry || !geometry.positions) {
                 this.fromExtremes(0, 0, 0, 0, 0, 0);
                 return;
             }
+            var vertices = geometry.positions;
             var i = 0;
             minX = maxX = vertices[i];
             minY = maxY = vertices[i + 1];
@@ -13996,7 +14013,7 @@ var feng3d;
                         this._pos.copyFrom(this._lookAtObject.transform.position);
                     }
                 }
-                else if (this._lookAtObject.transform.scene) {
+                else if (this._lookAtObject.scene) {
                     this._pos["x"] = this._lookAtObject.transform.scenePosition["x"];
                     this._pos["y"] = this._lookAtObject.transform.scenePosition["y"];
                     this._pos["z"] = this._lookAtObject.transform.scenePosition["z"];
@@ -15585,7 +15602,6 @@ var feng3d;
              * 周期
              */
             _this.cycle = 10000;
-            _this._single = true;
             _this._updateEverytime = true;
             //
             _this.createUniformData("u_particleTime", function () { return _this.time; });
@@ -15606,6 +15622,11 @@ var feng3d;
                 if (this._animatorSet)
                     this.addRenderDataHolder(this._animatorSet);
             },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleAnimator.prototype, "single", {
+            get: function () { return true; },
             enumerable: true,
             configurable: true
         });
@@ -16987,7 +17008,7 @@ var feng3d;
         for (var i = 0; i < objs.length; i++) {
             var obj = objs[i];
             var object3D = createSubObj(obj, material, mtlData);
-            object.transform.addChild(object3D.transform);
+            object.addChild(object3D);
         }
         completed && completed(object);
     }
@@ -16996,7 +17017,7 @@ var feng3d;
         var subObjs = obj.subObjs;
         for (var i = 0; i < subObjs.length; i++) {
             var materialObj = createMaterialObj(obj, subObjs[i], material, mtlData);
-            object3D.transform.addChild(materialObj.transform);
+            object3D.addChild(materialObj);
         }
         return object3D;
     }
@@ -17120,7 +17141,7 @@ var feng3d;
             skeletonObject3D.addComponent(feng3d.MeshFilter).mesh = geometry;
             skeletonAnimator = skeletonObject3D.addComponent(feng3d.SkeletonAnimator);
             skeletonAnimator.skeleton = skeleton;
-            object3D.transform.addChild(skeletonObject3D.transform);
+            object3D.addChild(skeletonObject3D);
         }
         completed && completed(object3D, skeletonAnimator);
     }
@@ -17373,21 +17394,21 @@ var feng3d;
             segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(length, 0, 0), 0xff0000, 0xff0000));
             xLine.addComponent(feng3d.MeshFilter).mesh = segmentGeometry;
             xLine.addComponent(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
-            this.transform.addChild(xLine.transform);
+            this.gameObject.addChild(xLine);
             //
             var yLine = feng3d.GameObject.create("yLine");
             var segmentGeometry = new feng3d.SegmentGeometry();
             segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, length, 0), 0x00ff00, 0x00ff00));
             yLine.addComponent(feng3d.MeshFilter).mesh = segmentGeometry;
             yLine.addComponent(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
-            this.transform.addChild(yLine.transform);
+            this.gameObject.addChild(yLine);
             //
             var zLine = feng3d.GameObject.create("zLine");
             var segmentGeometry = new feng3d.SegmentGeometry();
             segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3D(), new feng3d.Vector3D(0, 0, length), 0x0000ff, 0x0000ff));
             zLine.addComponent(feng3d.MeshFilter).mesh = segmentGeometry;
             zLine.addComponent(feng3d.MeshRenderer).material = new feng3d.SegmentMaterial();
-            this.transform.addChild(zLine.transform);
+            this.gameObject.addChild(zLine);
             //
             var xArrow = feng3d.GameObject.create("xArrow");
             xArrow.transform.x = length;
@@ -17396,14 +17417,14 @@ var feng3d;
             ;
             var material = xArrow.addComponent(feng3d.MeshRenderer).material = new feng3d.ColorMaterial();
             material.color = new feng3d.Color(1, 0, 0);
-            this.transform.addChild(xArrow.transform);
+            this.gameObject.addChild(xArrow);
             //
             var yArrow = feng3d.GameObject.create("yArrow");
             yArrow.transform.y = length;
             yArrow.addComponent(feng3d.MeshFilter).mesh = new feng3d.ConeGeometry(5, 18);
             var material = yArrow.addComponent(feng3d.MeshRenderer).material = new feng3d.ColorMaterial();
             material.color = new feng3d.Color(0, 1, 0);
-            this.transform.addChild(yArrow.transform);
+            this.gameObject.addChild(yArrow);
             //
             var zArrow = feng3d.GameObject.create("zArrow");
             zArrow.transform.z = length;
@@ -17411,7 +17432,7 @@ var feng3d;
             zArrow.addComponent(feng3d.MeshFilter).mesh = new feng3d.ConeGeometry(5, 18);
             var material = zArrow.addComponent(feng3d.MeshRenderer).material = new feng3d.ColorMaterial();
             material.color = new feng3d.Color(0, 0, 1);
-            this.transform.addChild(zArrow.transform);
+            this.gameObject.addChild(zArrow);
         };
         return Trident;
     }(feng3d.Component));
@@ -17457,6 +17478,9 @@ var feng3d;
             case "Torus":
                 meshFilter.mesh = new feng3d.TorusGeometry();
                 break;
+            case "Particle":
+                meshFilter.mesh = new feng3d.TorusGeometry();
+                break;
         }
         return gameobject;
     }
@@ -17499,6 +17523,30 @@ var feng3d;
         gameobject.addComponent(feng3d.MeshFilter).mesh = new feng3d.CapsuleGeometry();
         model.material = new feng3d.StandardMaterial();
         return gameobject;
+    }
+    function createParticle(name) {
+        if (name === void 0) { name = "Particle"; }
+        var _particleMesh = feng3d.GameObject.create("particle");
+        _particleMesh.addComponent(feng3d.MeshFilter).mesh = new feng3d.PlaneGeometry(10, 10, 1, 1, false);
+        var material = _particleMesh.addComponent(feng3d.MeshRenderer).material = new feng3d.PointMaterial();
+        material.enableBlend = true;
+        var particleAnimationSet = new feng3d.ParticleAnimationSet();
+        particleAnimationSet.numParticles = 20000;
+        //通过函数来创建粒子初始状态
+        particleAnimationSet.generateFunctions.push({
+            generate: function (particle) {
+                particle.birthTime = Math.random() * 5 - 5;
+                particle.lifetime = 5;
+                var degree1 = Math.random() * Math.PI;
+                var degree2 = Math.random() * Math.PI * 2;
+                var r = Math.random() * 50 + 400;
+                particle.velocity = new feng3d.Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
+            }, priority: 0
+        });
+        var particleAnimator = _particleMesh.addComponent(feng3d.ParticleAnimator);
+        particleAnimator.animatorSet = particleAnimationSet;
+        particleAnimator.cycle = 10;
+        return _particleMesh;
     }
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -17642,7 +17690,7 @@ var feng3d;
             //计算得到鼠标射线相交的物体
             var _collidingObject = this._mousePicker.getViewCollision(mouseRay3D, mouseCollisionEntitys);
             var object3D = _collidingObject && _collidingObject.firstEntity;
-            this.setSelectedObject3D(object3D ? object3D.transform : null);
+            this.setSelectedObject3D(object3D);
         };
         Mouse3DManager.prototype.glPick = function (renderContext, viewRect) {
             var gl = renderContext.gl;
@@ -17654,18 +17702,18 @@ var feng3d;
             gl.viewport(offsetX, offsetY, viewRect.width, viewRect.height);
             this.mouseRenderer.draw(renderContext);
             var object3D = this.mouseRenderer.selectedObject3D;
-            this.setSelectedObject3D(object3D.transform);
+            this.setSelectedObject3D(object3D);
         };
         Mouse3DManager.prototype.getMouseCheckObjects = function (renderContext) {
             var scene3d = renderContext.scene3d;
-            var checkList = scene3d.transform.getChildren();
+            var checkList = scene3d.gameObject.getChildren();
             var results = [];
             var i = 0;
             while (i < checkList.length) {
                 var checkObject = checkList[i++];
-                if (checkObject.mouseEnabled) {
+                if (checkObject.transform.mouseEnabled) {
                     if (checkObject.getComponents(feng3d.MeshFilter)) {
-                        results.push(checkObject.gameObject);
+                        results.push(checkObject);
                     }
                     checkList = checkList.concat(checkObject.getChildren());
                 }
@@ -18391,7 +18439,7 @@ var feng3d;
                     var mesh = this.meshs[i] = feng3d.GameObject.create();
                     mesh.addComponent(feng3d.MeshFilter).mesh = geometry;
                     mesh.addComponent(feng3d.MeshRenderer).material = material1;
-                    this.container.transform.addChild(mesh.transform);
+                    this.container.addChild(mesh);
                 }
                 return this.container;
             };
@@ -20121,6 +20169,63 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var ObjectBase = (function () {
+        function ObjectBase() {
+            this.id = 1;
+        }
+        return ObjectBase;
+    }());
+    __decorate([
+        serialize
+    ], ObjectBase.prototype, "id", void 0);
+    feng3d.ObjectBase = ObjectBase;
+    var C = (function (_super) {
+        __extends(C, _super);
+        function C() {
+            // @serialize()
+            // id = 2;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.a = 1;
+            _this.c = 1;
+            return _this;
+        }
+        C.prototype.change = function () {
+            console.log("change", this.a, arguments);
+        };
+        return C;
+    }(ObjectBase));
+    __decorate([
+        serialize
+    ], C.prototype, "a", void 0);
+    __decorate([
+        serialize
+    ], C.prototype, "c", void 0);
+    feng3d.C = C;
+    var SerializationTest = (function () {
+        function SerializationTest() {
+            var base = new ObjectBase();
+            base.id = Math.random();
+            var resultb = base.serialize();
+            var base1 = new ObjectBase();
+            base1.deserialize(resultb);
+            console.assert(base.id == base1.id);
+            var c = new C();
+            c.id = Math.random();
+            c.a = Math.random();
+            c.c = Math.random();
+            var result = c.serialize();
+            var c1 = new C();
+            c1.deserialize(result);
+            console.assert(c.id == c1.id);
+            console.assert(c.a == c1.a);
+            console.assert(c.c == c1.c);
+        }
+        return SerializationTest;
+    }());
+    feng3d.SerializationTest = SerializationTest;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var UnitTest = (function () {
         function UnitTest() {
             console.log("\u6267\u884C\u5355\u5143\u6D4B\u8BD5");
@@ -20133,6 +20238,7 @@ var feng3d;
                 feng3d.ArrayListTest,
                 feng3d.ClassUtilsTest,
                 feng3d.EulerTest,
+                feng3d.SerializationTest,
             ]);
         };
         UnitTest.prototype.testClass = function (cls) {

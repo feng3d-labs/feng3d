@@ -1,6 +1,5 @@
 namespace feng3d
 {
-
     /**
      * 3D场景
      * @author feng 2016-05-01
@@ -10,10 +9,12 @@ namespace feng3d
         /**
          * 背景颜色
          */
+        @serialize
         background = new Color(0, 0, 0, 1);
         /**
          * 环境光强度
          */
+        @serialize
         ambientColor = new Color();
 
         /**
@@ -22,7 +23,7 @@ namespace feng3d
         constructor(gameObject: GameObject)
         {
             super(gameObject);
-            gameObject.transform["_scene"] = this;
+            gameObject["_scene"] = this;
         }
     }
 }

@@ -42,13 +42,14 @@ namespace feng3d
             this._viewRect = value;
         }
 
+        get single() { return true; }
+
 		/**
 		 * 创建一个摄像机
 		 */
         constructor(gameObject: GameObject)
         {
             super(gameObject);
-            this._single = true;
             this._lens = new PerspectiveLens();
             this._lens.on("matrixChanged", this.onLensMatrixChanged, this);
 
@@ -73,7 +74,7 @@ namespace feng3d
 		/**
 		 * 处理镜头变化事件
 		 */
-        private onLensMatrixChanged(event: EventVO)
+        private onLensMatrixChanged(event: EventVO<any>)
         {
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;

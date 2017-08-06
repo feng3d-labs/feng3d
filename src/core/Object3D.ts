@@ -494,9 +494,6 @@ namespace feng3d
         protected _scale: Vector3D;
         protected _matrix3d: Matrix3D;
         protected _rotationMatrix3d: Matrix3D;
-        protected _children: Transform[] = [];
-        protected _scene: Scene3D;
-        protected _parent: Transform;
         protected _localToWorldMatrix: Matrix3D;
         protected _worldToLocalMatrix: Matrix3D;
         protected _localToWorldRotationMatrix: Matrix3D;

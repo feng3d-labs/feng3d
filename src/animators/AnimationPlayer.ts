@@ -66,7 +66,7 @@ namespace feng3d
         /**
 		 * 自动更新动画时帧更新事件
 		 */
-        private onEnterFrame(event: EventVO)
+        private onEnterFrame(event: EventVO<any>)
         {
             var currentTime = Date.now();
             this.time = this.time + (currentTime - this.preTime) * this.playbackSpeed;

@@ -16,6 +16,7 @@ namespace feng3d
                 ArrayListTest,
                 ClassUtilsTest,
                 EulerTest,
+                SerializationTest,
             ]);
         }
 

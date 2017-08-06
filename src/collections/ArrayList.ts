@@ -150,7 +150,7 @@ namespace feng3d
 		 * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        addItemEventListener(type: string, listener: (event: EventVO) => void, thisObject: any, priority = 0): void
+        addItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any, priority = 0): void
         {
             this._eventDispatcher.on(type, listener, thisObject, priority);
             for (var i = 0; i < this._source.length; i++)
@@ -169,7 +169,7 @@ namespace feng3d
 		 * @param listener					要删除的侦听器对象。
          * @param thisObject                listener函数作用域
          */
-        removeItemEventListener(type: string, listener: (event: EventVO) => void, thisObject: any): void
+        removeItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any): void
         {
             this._eventDispatcher.off(type, listener, thisObject);
             for (var i = 0; i < this._source.length; i++)

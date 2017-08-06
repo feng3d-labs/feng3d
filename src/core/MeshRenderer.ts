@@ -5,13 +5,14 @@ namespace feng3d
      */
     export class MeshRenderer extends Renderer
     {
+        get single() { return true; }
+        
         /**
          * 构建
          */
         constructor(gameObject: GameObject)
         {
             super(gameObject);
-            this._single = true;
         }
 
         drawRenderables(renderContext: RenderContext)

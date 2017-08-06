@@ -92,12 +92,12 @@ namespace feng3d
             var minX: number, minY: number, minZ: number;
             var maxX: number, maxY: number, maxZ: number;
 
-            var vertices: Float32Array = geometry.positions;
-            if (!vertices)
+            if (!geometry || !geometry.positions)
             {
                 this.fromExtremes(0, 0, 0, 0, 0, 0);
                 return;
             }
+            var vertices: Float32Array = geometry.positions;
             var i = 0;
             minX = maxX = vertices[i];
             minY = maxY = vertices[i + 1];

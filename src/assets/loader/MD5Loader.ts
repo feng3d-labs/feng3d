@@ -51,7 +51,7 @@ namespace feng3d
             skeletonObject3D.addComponent(MeshFilter).mesh = geometry;
             skeletonAnimator = skeletonObject3D.addComponent(SkeletonAnimator);
             skeletonAnimator.skeleton = skeleton;
-            object3D.transform.addChild(skeletonObject3D.transform);
+            object3D.addChild(skeletonObject3D);
         }
 
         completed && completed(object3D, skeletonAnimator);

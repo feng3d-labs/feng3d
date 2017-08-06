@@ -14,7 +14,7 @@ namespace feng3d
             if (this._holdSize == value)
                 return;
             this._holdSize = value;
-            this.invalidHoldSizeMatrix();
+            this.invalidateSceneTransform();
         }
 
         /**
@@ -28,47 +28,55 @@ namespace feng3d
         {
             if (this._camera == value)
                 return;
-            if (!this._camera)
-                this._camera.transform.off("scenetransformChanged", this.invalidHoldSizeMatrix);
+            if (this._camera)
+                this._camera.transform.off("scenetransformChanged", this.invalidateSceneTransform, this);
             this._camera = value;
-            if (!this._camera)
-                this._camera.transform.on("scenetransformChanged", this.invalidHoldSizeMatrix);
-            this.invalidHoldSizeMatrix();
+            if (this._camera)
+                this._camera.transform.on("scenetransformChanged", this.invalidateSceneTransform, this);
+            this.invalidateSceneTransform();
         }
 
         private _holdSize = 1;
         private _camera: Camera;
-        private _holdSizeMatrix: Matrix3D;
 
         constructor(gameobject: GameObject)
         {
             super(gameobject);
-            this.transform.on("scenetransformChanged", this.invalidHoldSizeMatrix);
-
-            this.createUniformData("u_holdSizeMatrix", () => this.holdSizeMatrix);
+            this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
         }
 
-        private invalidHoldSizeMatrix()
+        private invalidateSceneTransform()
         {
-            this._holdSizeMatrix = null;
+            this.transform.invalidateSceneTransform();
         }
 
-        private get holdSizeMatrix()
+        private updateLocalToWorldMatrix()
         {
-            if (!this.camera)
-                throw `请给${this}设置camera属性`;
-            var cameraTranform = this.camera.transform.localToWorldMatrix;
+            var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
+            if (this.holdSize && this._camera)
+            {
+                var depthScale = this.getDepthScale(this._camera);
+                var vec = _localToWorldMatrix.decompose();
+                vec[2].setTo(depthScale, depthScale, depthScale);
+                _localToWorldMatrix.recompose(vec);
+            }
+        }
+
+        private getDepthScale(camera: Camera)
+        {
+            var cameraTranform = camera.transform.localToWorldMatrix;
             var distance = this.transform.scenePosition.subtract(cameraTranform.position);
+            if (distance.length == 0)
+                distance.x = 1;
             var depth = distance.dotProduct(cameraTranform.forward);
-            var scale = this.camera.getScaleByDepth(depth);
-            this._holdSizeMatrix = Matrix3D.fromScale(scale * this.holdSize, scale * this.holdSize, scale * this.holdSize);
-            return this._holdSizeMatrix;
+            var scale = camera.getScaleByDepth(depth);
+            return scale;
         }
 
         dispose()
         {
             this.camera = null;
-            this.transform.off("scenetransformChanged", this.invalidHoldSizeMatrix);
+            this.transform.off("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
             super.dispose();
         }
     }

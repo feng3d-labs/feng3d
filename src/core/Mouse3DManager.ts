@@ -13,13 +13,13 @@ namespace feng3d
          * 鼠标拾取渲染器
          */
         private mouseRenderer: MouseRenderer;
-        private selectedObject3D: Transform;
+        private selectedObject3D: GameObject;
         private mouseEventTypes: string[] = [];
 
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
          */
-        private preMouseDownObject3D: Transform;
+        private preMouseDownObject3D: GameObject;
         /**
          * 统计处理click次数，判断是否达到dblclick
          */
@@ -101,7 +101,7 @@ namespace feng3d
 
             var object3D = _collidingObject && _collidingObject.firstEntity;
 
-            this.setSelectedObject3D(object3D ? object3D.transform : null);
+            this.setSelectedObject3D(object3D);
         }
 
         private glPick(renderContext: RenderContext, viewRect: Rectangle)
@@ -118,23 +118,23 @@ namespace feng3d
             this.mouseRenderer.draw(renderContext);
 
             var object3D = this.mouseRenderer.selectedObject3D;
-            this.setSelectedObject3D(object3D.transform);
+            this.setSelectedObject3D(object3D);
         }
 
         private getMouseCheckObjects(renderContext: RenderContext)
         {
             var scene3d = renderContext.scene3d;
-            var checkList = scene3d.transform.getChildren();
+            var checkList = scene3d.gameObject.getChildren();
             var results: GameObject[] = [];
             var i = 0;
             while (i < checkList.length)
             {
                 var checkObject = checkList[i++];
-                if (checkObject.mouseEnabled)
+                if (checkObject.transform.mouseEnabled)
                 {
                     if (checkObject.getComponents(MeshFilter))
                     {
-                        results.push(checkObject.gameObject as GameObject);
+                        results.push(checkObject as GameObject);
                     }
                     checkList = checkList.concat(checkObject.getChildren());
                 }
@@ -145,7 +145,7 @@ namespace feng3d
         /**
          * 设置选中对象
          */
-        private setSelectedObject3D(value: Transform)
+        private setSelectedObject3D(value: GameObject)
         {
             if (this.selectedObject3D != value)
             {

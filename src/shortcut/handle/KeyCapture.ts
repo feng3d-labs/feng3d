@@ -75,7 +75,7 @@ namespace feng3d
 		/**
 		 * 鼠标事件
 		 */
-		private onMouseOnce(event: EventVO): void
+		private onMouseOnce(event: EventVO<any>): void
 		{
 			var mouseKey: string = event.type;
 			this._keyState.pressKey(mouseKey, event.data);
@@ -85,7 +85,7 @@ namespace feng3d
 		/**
 		 * 鼠标事件
 		 */
-		private onMousewheel(event: EventVO): void
+		private onMousewheel(event: EventVO<any>): void
 		{
 			var mouseKey: string = event.type;
 			this._keyState.pressKey(mouseKey, event.data);
@@ -95,7 +95,7 @@ namespace feng3d
 		/**
 		 * 键盘按下事件
 		 */
-		private onKeydown(event: EventVO): void
+		private onKeydown(event: EventVO<any>): void
 		{
 			var boardKey: string = this.getBoardKey(event.data.keyCode);
 			if (boardKey != null)
@@ -105,7 +105,7 @@ namespace feng3d
 		/**
 		 * 键盘弹起事件
 		 */
-		private onKeyup(event: EventVO): void
+		private onKeyup(event: EventVO<any>): void
 		{
 			var boardKey: string = this.getBoardKey(event.data.keyCode);
 			if (boardKey)

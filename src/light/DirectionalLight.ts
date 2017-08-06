@@ -58,7 +58,7 @@ namespace feng3d
         /**
          * 处理被添加组件事件
          */
-        protected onBeAddedComponent(event: EventVO): void
+        protected onBeAddedComponent(event: EventVO<any>): void
         {
             this.gameObject.transform.on("scenetransformChanged", this.onScenetransformChanged, this);
             var tmpLookAt = this.gameObject.transform.position;
@@ -69,7 +69,7 @@ namespace feng3d
         /**
          * 处理被移除组件事件
          */
-        protected onBeRemovedComponent(event: EventVO): void
+        protected onBeRemovedComponent(event: EventVO<any>): void
         {
             this.gameObject.transform.off("scenetransformChanged", this.onScenetransformChanged, this);
         }

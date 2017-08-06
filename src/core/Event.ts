@@ -3,7 +3,7 @@ namespace feng3d
 	/**
 	 * 事件
 	 */
-    export interface EventVO
+    export interface EventVO<T>
     {
 		/**
 		 * 事件的类型。类型区分大小写。
@@ -13,7 +13,7 @@ namespace feng3d
         /**
          * 事件携带的自定义数据
          */
-        data?: any;
+        data?: T;
 
 		/**
 		 * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
@@ -151,7 +151,7 @@ namespace feng3d
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        private static once(target: any, type: string, listener: (event: EventVO) => void, thisObject: any, priority = 0): void
+        private static once(target: any, type: string, listener: (event: EventVO<any>) => void, thisObject: any, priority = 0): void
         {
             this.on(target, type, listener, thisObject, priority, true);
         }
@@ -165,7 +165,7 @@ namespace feng3d
          */
         private static dispatch(target: any, type: string, data = null, bubbles = false)
         {
-            var eventVO: EventVO = { ...data };
+            var eventVO: EventVO<any> = { ...data };
             eventVO.type = type;
             eventVO.data = data;
             eventVO.bubbles = bubbles;
@@ -177,7 +177,7 @@ namespace feng3d
          * @param target                    事件主体
          * @param event						调度到事件流中的 Event 对象。
          */
-        private static _dispatch(target: any, event: EventVO)
+        private static _dispatch(target: any, event: EventVO<any>)
         {
             //设置目标
             event.target || (event.target = target);
@@ -233,7 +233,7 @@ namespace feng3d
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        private static on(target: any, type: string, listener: (event: EventVO) => any, thisObject: any = null, priority = 0, once = false)
+        private static on(target: any, type: string, listener: (event: EventVO<any>) => any, thisObject: any = null, priority = 0, once = false)
         {
             var uuid = target.uuid || (target.uuid = generateUUID());
             var objectListener = this.listenermap[uuid] || (this.listenermap[uuid] = {});
@@ -266,7 +266,7 @@ namespace feng3d
          * @param listener					要删除的侦听器对象。
          * @param thisObject                listener函数作用域
          */
-        private static off(target: any, type: string = null, listener: (event: EventVO) => any, thisObject: any = null)
+        private static off(target: any, type: string = null, listener: (event: EventVO<any>) => any, thisObject: any = null)
         {
             if (!type)
             {
@@ -317,7 +317,7 @@ namespace feng3d
         /**
          * 监听函数
          */
-        listener: (event: EventVO) => void;
+        listener: (event: EventVO<any>) => void;
         /**
          * 监听函数作用域
          */

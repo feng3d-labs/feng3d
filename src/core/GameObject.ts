@@ -8,19 +8,51 @@ namespace feng3d
         camera: new () => Camera;
     }
 
-    export interface GameObjectEventMap extends RenderDataHolderEventMap
+    export interface Mouse3DEventMap
+    {
+        mouseout
+        mouseover
+        mousedown
+        mouseup
+        mousemove
+        click
+        dblclick
+    }
+
+    export interface GameObjectEventMap extends Mouse3DEventMap, RenderDataHolderEventMap
     {
         addedComponent
         removedComponent
+        /**
+         * 添加了子对象，当child被添加到parent中时派发冒泡事件
+         */
+        added
+        /**
+         * 删除了子对象，当child被parent移除时派发冒泡事件
+         */
+        removed
+        /**
+         * 当Object3D的scene属性被设置是由Scene3D派发
+         */
+        addedToScene: GameObject;
+
+        /**
+         * 当Object3D的scene属性被清空时由Scene3D派发
+         */
+        removedFromScene: GameObject;
+        /**
+         * 场景变化
+         */
+        sceneChanged: GameObject
     }
 
     export interface GameObject
     {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: GameObjectEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: EventVO<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean);
         has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: GameObjectEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: GameObjectEventMap[K]) => any, thisObject?: any);
+        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: EventVO<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: EventVO<GameObjectEventMap[K]>) => any, thisObject?: any);
     }
 
     /**
@@ -28,6 +60,16 @@ namespace feng3d
      */
     export class GameObject extends Feng3dObject
     {
+        protected _children: GameObject[] = [];
+        protected _scene: Scene3D;
+        protected _parent: GameObject;
+        /**
+         * The name of the Feng3dObject.
+         * Components share the same name with the game object and all attached components.
+         */
+        @serialize
+        name: string;
+
         //------------------------------------------
         // Variables
         //------------------------------------------
@@ -44,6 +86,37 @@ namespace feng3d
          * @private
          */
         readonly renderData = new Object3DRenderAtomic();
+
+        get parent(): GameObject
+        {
+            return this._parent;
+        }
+
+        /**
+         * 子对象
+         */
+        @serialize
+        get children()
+        {
+            return this._children.concat();
+        }
+
+        set children(value)
+        {
+            for (var i = 0, n = this._children.length; i < n; i++)
+            {
+                this.removeChildAt(i)
+            }
+            for (var i = 0; i < value.length; i++)
+            {
+                this.addChild(value[i]);
+            }
+        }
+
+        get numChildren(): number
+        {
+            return this._children.length;
+        }
 
 		/**
 		 * 子组件个数
@@ -77,6 +150,123 @@ namespace feng3d
             this._transform = this.addComponent(Transform);
             //
             GameObject._gameObjects.push(this);
+        }
+
+        contains(child: GameObject)
+        {
+            return this._children.indexOf(child) >= 0;
+        }
+
+        addChild(child: GameObject)
+        {
+            if (child == null)
+                throw new Error("Parameter child cannot be null.").message;
+            if (child._parent)
+                child._parent.removeChild(child);
+            child._setParent(<any>this);
+            child.transform.invalidateSceneTransform();
+            this._children.push(child);
+            return child;
+        }
+
+        addChildren(...childarray)
+        {
+            for (var child_key_a in childarray)
+            {
+                var child: GameObject = childarray[child_key_a];
+                this.addChild(child);
+            }
+        }
+
+        setChildAt(child: GameObject, index: number)
+        {
+            if (child == null)
+                throw new Error("Parameter child cannot be null.").message;
+            if (child._parent)
+            {
+                if (child._parent != this)
+                {
+                    child._parent.removeChild(child);
+                }
+                else
+                {
+                    var oldIndex = this._children.indexOf(child);
+                    this._children.splice(oldIndex, 1);
+                    this._children.splice(index, 0, child);
+                }
+            }
+            else
+            {
+                child._setParent(<any>this);
+                child.transform.invalidateSceneTransform();
+                this._children[index] = child;
+            }
+        }
+
+        removeChild(child: GameObject)
+        {
+            if (child == null)
+                throw new Error("Parameter child cannot be null").message;
+            var childIndex = this._children.indexOf(child);
+            if (childIndex == -1)
+                throw new Error("Parameter is not a child of the caller").message;
+            this.removeChildInternal(childIndex, child);
+        }
+
+        removeChildAt(index: number)
+        {
+            var child = this._children[index];
+            this.removeChildInternal(index, child);
+        }
+
+        private _setParent(value: GameObject)
+        {
+            this._parent = value;
+            this.updateScene();
+            this.transform.invalidateSceneTransform();
+        }
+
+        getChildAt(index: number)
+        {
+            index = index;
+            return this._children[index];
+        }
+
+        get scene(): Scene3D
+        {
+            return this._scene;
+        }
+
+        private updateScene()
+        {
+            var newScene = this._parent ? this._parent._scene : null;
+            if (this._scene == newScene)
+                return;
+            if (this._scene)
+                this.dispatch("removedFromScene", this);
+            this._scene = newScene;
+            if (this._scene)
+                this.dispatch("addedToScene", this);
+            for (let i = 0, n = this._children.length; i < n; i++)
+            {
+                this._children[i].updateScene();
+            }
+            this.dispatch("sceneChanged", this);
+        }
+
+        /**
+         * 获取子对象列表（备份）
+         */
+        getChildren()
+        {
+            return this._children.concat();
+        }
+
+        private removeChildInternal(childIndex: number, child: GameObject)
+        {
+            childIndex = childIndex;
+            this._children.splice(childIndex, 1);
+            child._setParent(null);
         }
 
         /**
@@ -168,9 +358,9 @@ namespace feng3d
                     result.push(<T>this.components[i]);
                 }
             }
-            for (var i = 0, n = this.transform.numChildren; i < n; i++)
+            for (var i = 0, n = this.numChildren; i < n; i++)
             {
-                this.transform.getChildAt(i).gameObject.getComponentsInChildren(type, result);
+                this.getChildAt(i).getComponentsInChildren(type, result);
             }
             return <T[]>result;
         }
@@ -318,6 +508,7 @@ namespace feng3d
         /**
 		 * 组件列表
 		 */
+        @serialize
         protected components: Component[] = [];
 
         //------------------------------------------
@@ -362,10 +553,19 @@ namespace feng3d
          */
         dispose()
         {
+            if (this.parent)
+                this.parent.removeChild(this);
             for (var i = this.components.length - 1; i >= 0; i--)
             {
                 this.removeComponentAt(i);
             }
+        }
+
+        disposeWithChildren()
+        {
+            this.dispose();
+            while (this.numChildren > 0)
+                this.getChildAt(0).dispose();
         }
     }
 }

@@ -1,18 +1,6 @@
 namespace feng3d
 {
     /**
-     * 序列化装饰器，被装饰属性将被序列化
-     */
-    export function serialize(target: any, propertyKey: string)
-    {
-        if (!target.__serializableMembers)
-        {
-            target.__serializableMembers = [];
-        }
-        target.__serializableMembers.push(propertyKey);
-    }
-
-    /**
      * 观察装饰器，观察被装饰属性的变化
      * 
      * *对使用watch修饰的属性赋值比未使用的性能差距100倍左右*

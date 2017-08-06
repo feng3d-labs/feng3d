@@ -3,6 +3,12 @@ namespace feng3d
     // export type Type = new () => Feng3dObject;
     export type Type<T extends Feng3dObject> = new () => T;
 
+    export interface Feng3dObjectVO
+    {
+        uuid: string
+        class: string
+    }
+
     /**
      * Base class for all objects feng3d can reference.
      * 
@@ -19,10 +25,10 @@ namespace feng3d
         hideFlags: HideFlags;
 
         /**
-         * The name of the Feng3dObject.
-         * Components share the same name with the game object and all attached components.
+         * Returns the instance id of the Feng3dObject.
          */
-        name: string;
+        @serialize
+        public uuid: string;
 
         //------------------------------------------
         // Functions
@@ -30,24 +36,9 @@ namespace feng3d
         constructor()
         {
             super();
-            this._uuid = Math.generateUUID();
+            this.uuid = Math.generateUUID();
         }
 
-        /**
-         * Returns the instance id of the Feng3dObject.
-         */
-        get uuid()
-        {
-            return this._uuid;
-        }
-
-        /**
-         * Returns the name of the game Feng3dObject.
-         */
-        toString()
-        {
-            return this.name;
-        }
 
         //------------------------------------------
         // Static Functions
@@ -110,13 +101,35 @@ namespace feng3d
             return null;
         }
 
-        //------------------------------------------
-        // Private Properties
-        //------------------------------------------
-        private _uuid: string;
+        serialize()
+        {
+            var data = {};
+            var serializableMembers: string[] = this["__serializableMembers"];
+            if (serializableMembers)
+            {
+                let property: string;
+                for (var i = 0, n = serializableMembers.length; i < n; i++)
+                {
+                    property = serializableMembers[i]
+                    if (this.hasOwnProperty(property))
+                        data[property] = this[property];
+                }
+            }
+            return data;
+        }
 
-        //------------------------------------------
-        // Private Methods
-        //------------------------------------------
+        deserialize(data: Feng3dObjectVO)
+        {
+            var serializableMembers: string[] = this["__serializableMembers"];
+            if (serializableMembers)
+            {
+                let property: string;
+                for (var i = 0, n = serializableMembers.length; i < n; i++)
+                {
+                    property = serializableMembers[i]
+                    this[property] = data[property];
+                }
+            }
+        }
     }
 }

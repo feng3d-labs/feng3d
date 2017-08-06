@@ -226,7 +226,7 @@ namespace feng3d
                         this._pos.copyFrom(this._lookAtObject.transform.position);
                     }
                 }
-                else if (this._lookAtObject.transform.scene)
+                else if (this._lookAtObject.scene)
                 {
                     this._pos["x"] = this._lookAtObject.transform.scenePosition["x"];
                     this._pos["y"] = this._lookAtObject.transform.scenePosition["y"];

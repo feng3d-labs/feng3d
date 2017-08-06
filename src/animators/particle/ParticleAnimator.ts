@@ -48,10 +48,11 @@ namespace feng3d
         }
         private _animatorSet: ParticleAnimationSet;
 
+        get single() { return true; }
+
         constructor(gameObject: GameObject)
         {
             super(gameObject);
-            this._single = true;
 
             this._updateEverytime = true;
             //

@@ -2,32 +2,6 @@ namespace feng3d
 {
     export class ObjectContainer3D extends Object3D 
     {
-        /**
-         * 子对象
-         */
-        @serialize
-        get children()
-        {
-            return this._children.concat();
-        }
-
-        set children(value)
-        {
-            for (var i = 0, n = this._children.length; i < n; i++)
-            {
-                this.removeChildAt(i)
-            }
-            for (var i = 0; i < value.length; i++)
-            {
-                this.addChild(value[i]);
-            }
-        }
-
-        get numChildren(): number
-        {
-            return this._children.length;
-        }
-
         get scenePosition()
         {
             return this.localToWorldMatrix.position;
@@ -36,12 +10,12 @@ namespace feng3d
         get minX(): number
         {
             var i = 0;
-            var len = this._children.length;
+            var len = this.gameObject.numChildren;
             var min = Number.POSITIVE_INFINITY;
             var m = 0;
             while (i < len)
             {
-                var child: Transform = this._children[i++];
+                var child: Transform = this.gameObject.getChildAt(i++).transform;
                 m = child.minX + child.x;
                 if (m < min)
                     min = m;
@@ -52,12 +26,12 @@ namespace feng3d
         get minY(): number
         {
             var i = 0;
-            var len = this._children.length;
+            var len = this.gameObject.numChildren;
             var min = Number.POSITIVE_INFINITY;
             var m = 0;
             while (i < len)
             {
-                var child: Transform = this._children[i++];
+                var child: Transform = this.gameObject.getChildAt(i++).transform;
                 m = child.minY + child.y;
                 if (m < min)
                     min = m;
@@ -68,12 +42,12 @@ namespace feng3d
         get minZ(): number
         {
             var i = 0;
-            var len = this._children.length;
+            var len = this.gameObject.numChildren;
             var min = Number.POSITIVE_INFINITY;
             var m = 0;
             while (i < len)
             {
-                var child: Transform = this._children[i++];
+                var child: Transform = this.gameObject.getChildAt(i++).transform;
                 m = child.minZ + child.z;
                 if (m < min)
                     min = m;
@@ -84,12 +58,12 @@ namespace feng3d
         get maxX(): number
         {
             var i = 0;
-            var len = this._children.length;
+            var len = this.gameObject.numChildren;
             var max = Number.NEGATIVE_INFINITY;
             var m = 0;
             while (i < len)
             {
-                var child: Transform = this._children[i++];
+                var child: Transform = this.gameObject.getChildAt(i++).transform;
                 m = child.maxX + child.x;
                 if (m > max)
                     max = m;
@@ -100,12 +74,12 @@ namespace feng3d
         get maxY(): number
         {
             var i = 0;
-            var len = this._children.length;
+            var len = this.gameObject.numChildren;
             var max = Number.NEGATIVE_INFINITY;
             var m = 0;
             while (i < len)
             {
-                var child: Transform = this._children[i++];
+                var child: Transform = this.gameObject.getChildAt(i++).transform;
                 m = child.maxY + child.y;
                 if (m > max)
                     max = m;
@@ -116,17 +90,22 @@ namespace feng3d
         get maxZ(): number
         {
             var i = 0;
-            var len = this._children.length;
+            var len = this.gameObject.numChildren;
             var max = Number.NEGATIVE_INFINITY;
             var m = 0;
             while (i < len)
             {
-                var child: Transform = this._children[i++];
+                var child: Transform = this.gameObject.getChildAt(i++).transform;
                 m = child.maxZ + child.z;
                 if (m > max)
                     max = m;
             }
             return max;
+        }
+
+        get parent()
+        {
+            return this.gameObject.parent && this.gameObject.parent.transform;
         }
 
         /**
@@ -142,29 +121,8 @@ namespace feng3d
         set localToWorldMatrix(value: Matrix3D)
         {
             value = value.clone();
-            this._parent && value.append(this._parent.worldToLocalMatrix);
+            this.parent && value.append(this.parent.worldToLocalMatrix);
             this.matrix3d = value;
-        }
-
-        get scene(): Scene3D
-        {
-            return this._scene;
-        }
-
-        private updateScene()
-        {
-            var newScene = this._parent ? this._parent._scene : null;
-            if (this._scene == newScene)
-                return;
-            if (this._scene)
-                this.dispatch("removedFromScene", this);
-            this._scene = newScene;
-            if (this._scene)
-                this.dispatch("addedToScene", this);
-            for (let i = 0, n = this._children.length; i < n; i++)
-            {
-                this._children[i].updateScene();
-            }
         }
 
         /**
@@ -182,15 +140,10 @@ namespace feng3d
             if (!this._localToWorldRotationMatrix)
             {
                 this._localToWorldRotationMatrix = this.rotationMatrix.clone();
-                if (this._parent)
-                    this._localToWorldRotationMatrix.append(this._parent.localToWorldRotationMatrix);
+                if (this.parent)
+                    this._localToWorldRotationMatrix.append(this.parent.localToWorldRotationMatrix);
             }
             return this._localToWorldRotationMatrix;
-        }
-
-        get parent(): Transform
-        {
-            return this._parent;
         }
 
         //------------------------------------------
@@ -206,9 +159,9 @@ namespace feng3d
          */
         transformDirection(direction: Vector3D)
         {
-            if (!this._parent)
+            if (!this.parent)
                 return direction.clone();
-            var matrix3d = this._parent.localToWorldRotationMatrix;
+            var matrix3d = this.parent.localToWorldRotationMatrix;
             direction = matrix3d.transformVector(direction);
             return direction;
         }
@@ -218,9 +171,9 @@ namespace feng3d
          */
         transformPoint(position: Vector3D)
         {
-            if (!this._parent)
+            if (!this.parent)
                 return position.clone();
-            var matrix3d = this._parent.localToWorldMatrix;
+            var matrix3d = this.parent.localToWorldMatrix;
             position = matrix3d.transformVector(position);
             return position;
         }
@@ -230,9 +183,9 @@ namespace feng3d
          */
         transformVector(vector: Vector3D)
         {
-            if (!this._parent)
+            if (!this.parent)
                 return vector.clone();
-            var matrix3d = this._parent.localToWorldMatrix;
+            var matrix3d = this.parent.localToWorldMatrix;
             vector = matrix3d.deltaTransformVector(vector);
             return vector;
         }
@@ -242,9 +195,9 @@ namespace feng3d
          */
         inverseTransformDirection(direction: Vector3D)
         {
-            if (!this._parent)
+            if (!this.parent)
                 return direction.clone();
-            var matrix3d = this._parent.localToWorldRotationMatrix.clone().invert();
+            var matrix3d = this.parent.localToWorldRotationMatrix.clone().invert();
             direction = matrix3d.transformVector(direction);
             return direction;
         }
@@ -254,9 +207,9 @@ namespace feng3d
          */
         inverseTransformPoint(position: Vector3D)
         {
-            if (!this._parent)
+            if (!this.parent)
                 return position.clone();
-            var matrix3d = this._parent.localToWorldMatrix.clone().invert();
+            var matrix3d = this.parent.localToWorldMatrix.clone().invert();
             position = matrix3d.transformVector(position);
             return position;
         }
@@ -266,138 +219,40 @@ namespace feng3d
          */
         inverseTransformVector(vector: Vector3D)
         {
-            if (!this._parent)
+            if (!this.parent)
                 return vector.clone();
-            var matrix3d = this._parent.localToWorldMatrix.clone().invert();
+            var matrix3d = this.parent.localToWorldMatrix.clone().invert();
             vector = matrix3d.deltaTransformVector(vector);
             return vector;
-        }
-
-        contains(child: Transform): boolean
-        {
-            return this._children.indexOf(child) >= 0;
-        }
-
-        addChild(child: Transform): Transform
-        {
-            if (child == null)
-                throw new Error("Parameter child cannot be null.").message;
-            if (child._parent)
-                child._parent.removeChild(child);
-            child._setParent(<any>this);
-            child.notifySceneTransformChange();
-            this._children.push(child);
-            return child;
-        }
-
-        addChildren(...childarray)
-        {
-            for (var child_key_a in childarray)
-            {
-                var child: Transform = childarray[child_key_a];
-                this.addChild(child);
-            }
-        }
-
-        setChildAt(child: Transform, index: number)
-        {
-            if (child == null)
-                throw new Error("Parameter child cannot be null.").message;
-            if (child._parent)
-            {
-                if (child._parent != <Transform><any>this)
-                {
-                    child._parent.removeChild(child);
-                }
-                else
-                {
-                    var oldIndex = this._children.indexOf(child);
-                    this._children.splice(oldIndex, 1);
-                    this._children.splice(index, 0, child);
-                }
-            }
-            else
-            {
-                child._setParent(<any>this);
-                child.notifySceneTransformChange();
-                this._children[index] = child;
-            }
-        }
-
-        removeChild(child: Transform)
-        {
-            if (child == null)
-                throw new Error("Parameter child cannot be null").message;
-            var childIndex = this._children.indexOf(child);
-            if (childIndex == -1)
-                throw new Error("Parameter is not a child of the caller").message;
-            this.removeChildInternal(childIndex, child);
-        }
-
-        removeChildAt(index: number)
-        {
-            var child: Transform = this._children[index];
-            this.removeChildInternal(index, child);
-        }
-
-        private _setParent(value: Transform)
-        {
-            this._parent = value;
-            this.updateScene();
-            this.notifySceneTransformChange();
-            this.notifySceneChange();
-        }
-
-        getChildAt(index: number): Transform
-        {
-            index = index;
-            return this._children[index];
         }
 
         lookAt(target: Vector3D, upAxis: Vector3D = null)
         {
             super.lookAt(target, upAxis);
-            this.notifySceneTransformChange();
+            this.invalidateSceneTransform();
         }
 
         translateLocal(axis: Vector3D, distance: number)
         {
             super.translateLocal(axis, distance);
-            this.notifySceneTransformChange();
+            this.invalidateSceneTransform();
         }
 
         dispose()
         {
-            if (this.parent)
-                this.parent.removeChild(<any>this);
             super.dispose();
-        }
-
-        disposeWithChildren()
-        {
-            this.dispose();
-            while (this.numChildren > 0)
-                this.getChildAt(0).dispose();
         }
 
         rotate(axis: Vector3D, angle: number, pivotPoint?: Vector3D)
         {
             super.rotate(axis, angle, pivotPoint);
-            this.notifySceneTransformChange();
-        }
-
-        /**
-         * 获取子对象列表（备份）
-         */
-        getChildren()
-        {
-            return this._children.concat();
+            this.invalidateSceneTransform();
         }
 
         invalidateTransform()
         {
             super.invalidateTransform();
-            this.notifySceneTransformChange();
+            this.invalidateSceneTransform();
         }
 
         //------------------------------------------
@@ -408,17 +263,12 @@ namespace feng3d
         //------------------------------------------
         // Protected Functions
         //------------------------------------------
-        protected invalidateSceneTransform()
-        {
-            this._localToWorldMatrix = null;
-            this._worldToLocalMatrix = null;
-        }
-
         protected updateLocalToWorldMatrix()
         {
             this._localToWorldMatrix = this.matrix3d.clone();
-            if (this._parent)
-                this._localToWorldMatrix.append(this._parent.localToWorldMatrix);
+            if (this.parent)
+                this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
+            this.dispatch("updateLocalToWorldMatrix");
         }
 
         //------------------------------------------
@@ -429,33 +279,18 @@ namespace feng3d
         //------------------------------------------
         // Private Methods
         //------------------------------------------
-        private notifySceneTransformChange()
+        protected invalidateSceneTransform()
         {
             if (!this._localToWorldMatrix)
                 return;
-            this.invalidateSceneTransform();
-            var i = 0;
-            var len = this._children.length;
-            while (i < len)
-                this._children[i++].notifySceneTransformChange();
+            this._localToWorldMatrix = null;
+            this._worldToLocalMatrix = null;
             this.dispatch("scenetransformChanged", this);
-        }
-
-        private notifySceneChange()
-        {
-            this.notifySceneTransformChange();
-            var i = 0;
-            var len = this._children.length;
-            while (i < len)
-                this._children[i++].notifySceneChange();
-            this.dispatch("sceneChanged", this);
-        }
-
-        private removeChildInternal(childIndex: number, child: Transform)
-        {
-            childIndex = childIndex;
-            this._children.splice(childIndex, 1);
-            child._setParent(null);
+            //
+            for (var i = 0, n = this.gameObject.numChildren; i < n; i++)
+            {
+                this.gameObject.getChildAt(i).transform.invalidateSceneTransform();
+            }
         }
     }
 }

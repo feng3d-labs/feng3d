@@ -5,35 +5,35 @@ namespace feng3d
         private _invalidateRenderDataHolderList: RenderDataHolder[] = [];
         renderHolderInvalid = true;
 
-        private onInvalidate(event: EventVO)
+        private onInvalidate(event: EventVO<any>)
         {
             var renderDataHolder = <RenderDataHolder>event.target;
             this.addInvalidateHolders(renderDataHolder);
         }
 
-        private onAddElement(event: EventVO)
+        private onAddElement(event: EventVO<any>)
         {
             this.addRenderElement(event.data);
         }
 
-        private onRemoveElement(event: EventVO)
+        private onRemoveElement(event: EventVO<any>)
         {
             this.removeRenderElement(event.data);
         }
 
-        private onInvalidateShader(event: EventVO)
+        private onInvalidateShader(event: EventVO<any>)
         {
             var renderDataHolder = <RenderDataHolder>event.target;
             this.addInvalidateShader(renderDataHolder);
         }
 
-        private onAddRenderHolder(event: EventVO)
+        private onAddRenderHolder(event: EventVO<any>)
         {
             this.renderHolderInvalid = true;
             this.addRenderDataHolder(event.data);
         }
 
-        private onRemoveRenderHolder(event: EventVO)
+        private onRemoveRenderHolder(event: EventVO<any>)
         {
             this.renderHolderInvalid = true;
             this.removeRenderDataHolder(event.data);

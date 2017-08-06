@@ -84,7 +84,7 @@ namespace feng3d
             }
         }
 
-        private onElementChange(event: EventVO)
+        private onElementChange(event: EventVO<any>)
         {
             var element = <RenderElement>event.target;
             if (element instanceof UniformData)

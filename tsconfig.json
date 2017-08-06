@@ -17,7 +17,7 @@
         "src/utils/StringUtils.ts",
         "src/utils/Map.ts",
         "src/utils/Decorators.ts",
-        "src/utils/Serialization.ts",
+        "src/serialization/Serialization.ts",
         "src/utils/Stats.ts",
         //
         "src/collections/IList.ts",
@@ -101,6 +101,7 @@
         "src/core/View3D.ts",
         //3D对象组件
         "src/component/HoldSizeComponent.ts",
+        "src/component/BillboardComponent.ts",
         "src/core/MeshRenderer.ts",
         "src/core/Object3dScript.ts",
         //3D场景
@@ -246,6 +247,8 @@
         "tests/common/ClassUtilsTest.ts",
         "tests/common/EulerTest.ts",
         "tests/common/ArrayListTest.ts",
+        //
+        "tests/SerializationTest.ts",
         //
         "tests/UnitTest.ts"
     ]

@@ -5,16 +5,16 @@ namespace feng3d
         /**
          * [广播事件] 进入新的一帧,监听此事件将会在下一帧开始时触发一次回调。这是一个广播事件，可以在任何一个显示对象上监听，无论它是否在显示列表中。
          */
-        enterFrame: EventVO;
+        enterFrame;
     }
 
     export interface SystemTicker
     {
-        once<K extends keyof TickerEventMap>(type: K, listener: (event: TickerEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof TickerEventMap>(type: K, listener: (event: EventVO<TickerEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof TickerEventMap>(type: K, data?: TickerEventMap[K], bubbles?: boolean);
         has<K extends keyof TickerEventMap>(type: K): boolean;
-        on<K extends keyof TickerEventMap>(type: K, listener: (event: TickerEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof TickerEventMap>(type?: K, listener?: (event: TickerEventMap[K]) => any, thisObject?: any);
+        on<K extends keyof TickerEventMap>(type: K, listener: (event: EventVO<TickerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof TickerEventMap>(type?: K, listener?: (event: EventVO<TickerEventMap[K]>) => any, thisObject?: any);
     }
 
     /**

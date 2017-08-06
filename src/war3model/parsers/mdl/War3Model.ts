@@ -91,7 +91,7 @@ namespace feng3d.war3
 				mesh.addComponent(MeshFilter).mesh = geometry;
 				mesh.addComponent(MeshRenderer).material = material1;
 
-				this.container.transform.addChild(mesh.transform);
+				this.container.addChild(mesh);
 			}
 
 			return this.container;

@@ -169,7 +169,7 @@ namespace feng3d
 		/**
 		 * 自动更新动画时帧更新事件
 		 */
-        private onEnterFrame(event: EventVO = null)
+        private onEnterFrame(event: EventVO<any> = null)
         {
             this.update(Date.now());
         }

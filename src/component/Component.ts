@@ -40,12 +40,13 @@ namespace feng3d
          */
         get gameObject()
         {
-            return this.internalGetGameObject();
+            return this._gameObject;
         }
 
         /**
          * The tag of this game object.
          */
+        @serialize
         get tag()
         {
             return this._tag;
@@ -60,18 +61,15 @@ namespace feng3d
          */
         get transform()
         {
-            if (this._transform == null)
-            {
-                this._transform = this.internalGetTransform();
-            }
-            return this._transform;
+            return this._gameObject.transform;
         }
+
         /**
          * 是否唯一，同类型3D对象组件只允许一个
          */
         get single()
         {
-            return this._single;
+            return false;
         }
 
         //------------------------------------------
@@ -123,10 +121,6 @@ namespace feng3d
         //------------------------------------------
         // Protected Properties
         //------------------------------------------
-		/**
-		 * 组件列表
-		 */
-        protected _single = false;
 
         //------------------------------------------
         // Protected Functions
@@ -137,29 +131,13 @@ namespace feng3d
         //------------------------------------------
         private _gameObject: GameObject;
         private _tag: string;
-        private _transform: Transform;
-
-        //------------------------------------------
-        // Private Methods
-        //------------------------------------------
-        private internalGetTransform()
-        {
-            if (this._gameObject)
-                return this._gameObject.transform;
-            return null;
-        }
-
-        private internalGetGameObject()
-        {
-            return this._gameObject;
-        }
 
         /**
          * 销毁
          */
         dispose()
         {
-
+            this._gameObject = null;
         }
     }
 }

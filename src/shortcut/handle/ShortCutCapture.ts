@@ -96,7 +96,7 @@ namespace feng3d
 		/**
 		 * 处理捕获事件
 		 */
-		private onCapture(event: EventVO): void
+		private onCapture(event: EventVO<any>): void
 		{
 			var inWhen = this.checkActivityStates(this._states);
 			var pressKeys = this.checkActivityKeys(this._keys);

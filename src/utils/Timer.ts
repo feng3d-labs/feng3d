@@ -288,16 +288,16 @@ namespace feng3d
 
     export interface TimerEventMap
     {
-        timer: EventVO;
-        timerComplete: EventVO;
+        timer;
+        timerComplete;
     }
 
     export interface Timer
     {
-        once<K extends keyof TimerEventMap>(type: K, listener: (event: TimerEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof TimerEventMap>(type: K, listener: (event: EventVO<TimerEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof TimerEventMap>(type: K, data?: TimerEventMap[K], bubbles?: boolean);
         has<K extends keyof TimerEventMap>(type: K): boolean;
-        on<K extends keyof TimerEventMap>(type: K, listener: (event: TimerEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof TimerEventMap>(type?: K, listener?: (event: TimerEventMap[K]) => any, thisObject?: any);
+        on<K extends keyof TimerEventMap>(type: K, listener: (event: EventVO<TimerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof TimerEventMap>(type?: K, listener?: (event: EventVO<TimerEventMap[K]>) => any, thisObject?: any);
     };
 }

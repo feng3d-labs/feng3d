@@ -44,7 +44,7 @@ namespace feng3d
         {
             var obj = objs[i];
             var object3D = createSubObj(obj, material, mtlData);
-            object.transform.addChild(object3D.transform);
+            object.addChild(object3D);
         }
         completed && completed(object);
     }
@@ -57,7 +57,7 @@ namespace feng3d
         for (var i = 0; i < subObjs.length; i++)
         {
             var materialObj = createMaterialObj(obj, subObjs[i], material, mtlData);
-            object3D.transform.addChild(materialObj.transform);
+            object3D.addChild(materialObj);
         }
         return object3D;
     }
