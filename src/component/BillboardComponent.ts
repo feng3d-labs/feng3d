@@ -41,10 +41,9 @@ namespace feng3d
             if (this._camera)
             {
                 var camera = this._camera;
-                var parentInverseSceneTransform = (this.transform.parent && this.transform.parent.worldToLocalMatrix) || new Matrix3D();
-                var cameraPos = parentInverseSceneTransform.transformVector(camera.transform.localToWorldMatrix.position);
-                var yAxis = parentInverseSceneTransform.deltaTransformVector(Vector3D.Y_AXIS);
-                this.transform.lookAt(cameraPos, yAxis);
+                var cameraPos = camera.transform.scenePosition;
+                var yAxis = camera.transform.localToWorldMatrix.up;
+                _localToWorldMatrix.lookAt(cameraPos, yAxis);
             }
         }
 

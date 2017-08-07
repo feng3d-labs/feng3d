@@ -11,20 +11,24 @@ namespace feng3d
          * 材质
          * Returns the first instantiated Material assigned to the renderer.
          */
+        @serialize
         get material() { return this._material }
         set material(value)
         {
             if (this._material == value)
                 return;
-            this.removeRenderDataHolder(this.material);
+            if (this._material)
+                this.removeRenderDataHolder(this._material);
             this._material = value;
-            this.addRenderDataHolder(this.material);
+            if (this._material)
+                this.addRenderDataHolder(this.material);
         }
         private _material: Material;
 
         /**
          * Makes the rendered 3D object visible if enabled.
          */
+        @serialize
         get enabled()
         {
             return this._enabled;
@@ -54,27 +58,27 @@ namespace feng3d
             //更新数据
             object3D.updateRender(renderContext);
             var gl = renderContext.gl;
-            try
+            // try
+            // {
+            //绘制
+            var material = this.material;
+            if (material.enableBlend)
             {
-                //绘制
-                var material = this.material;
-                if (material.enableBlend)
-                {
-                    //
-                    gl.enable(GL.BLEND);
-                    gl.blendEquation(material.blendEquation);
-                    gl.depthMask(false);
-                    gl.blendFunc(material.sfactor, material.dfactor);
-                } else
-                {
-                    gl.disable(GL.BLEND);
-                    gl.depthMask(true);
-                }
-                this.drawObject3D(gl, object3D.renderData);            //
-            } catch (error)
+                //
+                gl.enable(GL.BLEND);
+                gl.blendEquation(material.blendEquation);
+                gl.depthMask(false);
+                gl.blendFunc(material.sfactor, material.dfactor);
+            } else
             {
-                console.log(error);
+                gl.disable(GL.BLEND);
+                gl.depthMask(true);
             }
+            this.drawObject3D(gl, object3D.renderData);            //
+            // } catch (error)
+            // {
+            //     console.log(error);
+            // }
         }
 
         /**

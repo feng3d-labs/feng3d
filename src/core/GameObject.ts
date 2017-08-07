@@ -63,6 +63,12 @@ namespace feng3d
         protected _children: GameObject[] = [];
         protected _scene: Scene3D;
         protected _parent: GameObject;
+
+        /**
+         * 是否可序列化
+         */
+        serializable = true;
+
         /**
          * The name of the Feng3dObject.
          * Components share the same name with the game object and all attached components.
@@ -290,8 +296,8 @@ namespace feng3d
             var component: T;
             if (this.getComponent(param))
             {
-                alert(`The compnent ${component.constructor["name"]} can't be added because ${this.name} already contains the same component.`);
-                return;
+                // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
+                return this.getComponent(param);
             }
             component = new param(this);
             this.addComponentAt(component, this.components.length);
@@ -566,6 +572,45 @@ namespace feng3d
             this.dispose();
             while (this.numChildren > 0)
                 this.getChildAt(0).dispose();
+        }
+
+        deserialize(object: any)
+        {
+            for (var key in object)
+            {
+                var item = object[key];
+                switch (key)
+                {
+                    case "components":
+                        var components: any[] = item;
+                        for (var i = 0; i < components.length; i++)
+                        {
+                            var element = components[i];
+                            var cls = ClassUtils.getDefinitionByName(element["__class__"]);
+                            var compnent: Component;
+                            if (cls == Transform)
+                            {
+                                compnent = this.transform;
+                            } else
+                            {
+                                compnent = this.addComponent(cls);
+                            }
+                            serialization.deserialize(element, compnent);
+                        }
+                        break;
+                    case "children":
+                        var children: any[] = item;
+                        for (var i = 0; i < children.length; i++)
+                        {
+                            var gameObject: GameObject = serialization.deserialize(children[i]);
+                            this.addChild(gameObject);
+                        }
+                        break;
+                    default:
+                        this[key] = serialization.deserialize(item);
+                        break;
+                }
+            }
         }
     }
 }

@@ -9,6 +9,7 @@ namespace feng3d
         /**
          * 环境纹理
          */
+        @serialize
         get ambientTexture()
         {
             return this._ambientTexture;
@@ -22,6 +23,7 @@ namespace feng3d
         /**
          * 颜色
          */
+        @serialize
         get color()
         {
             return this._color;

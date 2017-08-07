@@ -9,6 +9,7 @@ namespace feng3d
         /**
          * 纹理类型
          */
+        @serialize
         get textureType() { return this._textureType; }
         set textureType(value) { this._textureType = value; this.invalidate(); }
         protected _textureType: number;
@@ -23,6 +24,7 @@ namespace feng3d
         /**
          * 纹理宽度
          */
+        @serialize
         get width()
         {
             if (this._pixels && this._pixels.hasOwnProperty("width"))
@@ -35,6 +37,7 @@ namespace feng3d
         /**
          * 纹理高度
          */
+        @serialize
         get height()
         {
             if (this._pixels && this._pixels.hasOwnProperty("height"))
@@ -47,6 +50,7 @@ namespace feng3d
         /**
          * 纹理尺寸
          */
+        @serialize
         get size() { this._size.setTo(this.width, this.height); return this._size; }
         set size(value) { this.width = value.x; this.height = value.y; }
         protected _size: Point = new Point(100, 100);
@@ -54,6 +58,7 @@ namespace feng3d
         /**
          * 格式
          */
+        @serialize
         get format() { return this._format; }
         set format(value) { this._format = value; this.invalidate(); }
         protected _format = GL.RGB;
@@ -61,6 +66,7 @@ namespace feng3d
         /**
          * 数据类型
          */
+        @serialize
         get type() { return this._type; }
         set type(value) { this._type = value; this.invalidate(); }
         _type = GL.UNSIGNED_BYTE;
@@ -68,6 +74,7 @@ namespace feng3d
         /**
          * 是否生成mipmap
          */
+        @serialize
         get generateMipmap() { return this._generateMipmap; }
         set generateMipmap(value) { this._generateMipmap = value; this.invalidate(); }
         private _generateMipmap = false;
@@ -75,6 +82,7 @@ namespace feng3d
         /**
          * 对图像进行Y轴反转。默认值为false
          */
+        @serialize
         get flipY() { return this._flipY; }
         set flipY(value) { this._flipY = value; this.invalidate(); }
         private _flipY = false;
@@ -82,24 +90,30 @@ namespace feng3d
         /**
          * 将图像RGB颜色值得每一个分量乘以A。默认为false
          */
+        @serialize
         get premulAlpha() { return this._premulAlpha; }
         set premulAlpha(value) { this._premulAlpha = value; this.invalidate(); }
         private _premulAlpha = false;
 
+        @serialize
         minFilter = GL.LINEAR;
 
+        @serialize
         magFilter = GL.LINEAR;
         /**
          * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
          */
+        @serialize
         wrapS = GL.REPEAT;
         /**
          * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
          */
+        @serialize
         wrapT = GL.REPEAT;
         /**
          * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
          */
+        @serialize
         anisotropy = 0;
 
         /**

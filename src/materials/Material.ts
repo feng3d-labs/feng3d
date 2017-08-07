@@ -13,6 +13,7 @@ namespace feng3d
         /**
         * 渲染模式，默认RenderMode.TRIANGLES
         */
+        @serialize
         get renderMode()
         {
             return this._renderMode;
@@ -23,7 +24,7 @@ namespace feng3d
         }
         private _renderMode = RenderMode.TRIANGLES;
 
-
+        @serialize
         get shaderName()
         {
             return this._shaderName;
@@ -75,12 +76,14 @@ namespace feng3d
         /**
          * 是否渲染双面
          */
+        @serialize
         bothSides = true;
 
         /**
          * 是否开启混合
          * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
          */
+        @serialize
         get enableBlend()
         {
             return this._enableBlend;
@@ -94,6 +97,7 @@ namespace feng3d
         /**
          * 点绘制时点的尺寸
          */
+        @serialize
         get pointSize()
         {
             return this._pointSize;
@@ -107,19 +111,40 @@ namespace feng3d
         /**
          * 混合方程，默认BlendEquation.FUNC_ADD
          */
+        @serialize
         blendEquation = BlendEquation.FUNC_ADD;
 
         /**
          * 源混合因子，默认BlendFactor.SRC_ALPHA
          */
+        @serialize
         sfactor = BlendFactor.SRC_ALPHA;
 
         /**
          * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
          */
+        @serialize
         dfactor = BlendFactor.ONE_MINUS_SRC_ALPHA;
 
         private _methods: RenderDataHolder[] = [];
+
+        @serialize
+        get methods()
+        {
+            return this._methods;
+        }
+
+        set methods(value)
+        {
+            for (var i = 0, n = this._methods.length; i < n; i++)
+            {
+                this.removeMethod(this._methods[i]);
+            }
+            for (var i = 0, n = value.length; i < n; i++)
+            {
+                this.addMethod(value[i]);
+            }
+        }
 
         /**
          * 构建材质

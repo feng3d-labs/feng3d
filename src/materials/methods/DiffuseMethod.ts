@@ -9,6 +9,7 @@ namespace feng3d
         /**
          * 漫反射纹理
          */
+        @serialize
         get difuseTexture()
         {
             return this._difuseTexture;
@@ -22,11 +23,13 @@ namespace feng3d
         /**
          * 基本颜色
          */
+        @serialize
         color = new Color(1, 1, 1, 1);
 
         /**
          * 透明阈值，透明度小于该值的像素被片段着色器丢弃
          */
+        @serialize
         alphaThreshold = 0;
 
         /**

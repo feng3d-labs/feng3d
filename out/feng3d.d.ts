@@ -295,26 +295,20 @@ declare namespace feng3d {
      */
     function watch(onChange: string): (target: any, propertyKey: string) => void;
 }
-interface Object {
+declare namespace feng3d {
     /**
-     * 序列化
-     * @returns {*}         序列化数据
-     * @memberof Object
+     * 序列化装饰器，被装饰属性将被序列化
+     * @param {*} target                序列化原型
+     * @param {string} propertyKey      序列化属性
      */
-    serialize(): any;
-    /**
-     * 反序列化
-     * @param {*} object    序列化数据
-     * @memberof Object
-     */
-    deserialize(object: any): any;
+    function serialize(target: any, propertyKey: string): void;
 }
-/**
- * 序列化装饰器，被装饰属性将被序列化
- * @param {*} target                序列化原型
- * @param {string} propertyKey      序列化属性
- */
-declare function serialize(target: any, propertyKey: string): void;
+declare namespace feng3d {
+    var serialization: {
+        serialize: (target: any) => any;
+        deserialize: (object: any, target?: any) => any;
+    };
+}
 /**
  * @author mrdoob / http://mrdoob.com/
  */
@@ -3676,13 +3670,13 @@ declare namespace feng3d {
         readonly KEEP: number;
         readonly LEQUAL: number;
         readonly LESS: number;
+        readonly LINE_LOOP: number;
+        readonly LINE_STRIP: number;
+        readonly LINE_WIDTH: number;
         readonly LINEAR: number;
         readonly LINEAR_MIPMAP_LINEAR: number;
         readonly LINEAR_MIPMAP_NEAREST: number;
         readonly LINES: number;
-        readonly LINE_LOOP: number;
-        readonly LINE_STRIP: number;
-        readonly LINE_WIDTH: number;
         readonly LINK_STATUS: number;
         readonly LOW_FLOAT: number;
         readonly LOW_INT: number;
@@ -3707,9 +3701,9 @@ declare namespace feng3d {
         readonly NEAREST_MIPMAP_NEAREST: number;
         readonly NEVER: number;
         readonly NICEST: number;
+        readonly NO_ERROR: number;
         readonly NONE: number;
         readonly NOTEQUAL: number;
-        readonly NO_ERROR: number;
         readonly ONE: number;
         readonly ONE_MINUS_CONSTANT_ALPHA: number;
         readonly ONE_MINUS_CONSTANT_COLOR: number;
@@ -3739,18 +3733,18 @@ declare namespace feng3d {
         readonly REPEAT: number;
         readonly REPLACE: number;
         readonly RGB: number;
-        readonly RGB565: number;
         readonly RGB5_A1: number;
+        readonly RGB565: number;
         readonly RGBA: number;
         readonly RGBA4: number;
-        readonly SAMPLER_2D: number;
-        readonly SAMPLER_CUBE: number;
-        readonly SAMPLES: number;
         readonly SAMPLE_ALPHA_TO_COVERAGE: number;
         readonly SAMPLE_BUFFERS: number;
         readonly SAMPLE_COVERAGE: number;
         readonly SAMPLE_COVERAGE_INVERT: number;
         readonly SAMPLE_COVERAGE_VALUE: number;
+        readonly SAMPLER_2D: number;
+        readonly SAMPLER_CUBE: number;
+        readonly SAMPLES: number;
         readonly SCISSOR_BOX: number;
         readonly SCISSOR_TEST: number;
         readonly SHADER_TYPE: number;
@@ -3784,6 +3778,20 @@ declare namespace feng3d {
         readonly STREAM_DRAW: number;
         readonly SUBPIXEL_BITS: number;
         readonly TEXTURE: number;
+        readonly TEXTURE_2D: number;
+        readonly TEXTURE_BINDING_2D: number;
+        readonly TEXTURE_BINDING_CUBE_MAP: number;
+        readonly TEXTURE_CUBE_MAP: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
+        readonly TEXTURE_MAG_FILTER: number;
+        readonly TEXTURE_MIN_FILTER: number;
+        readonly TEXTURE_WRAP_S: number;
+        readonly TEXTURE_WRAP_T: number;
         readonly TEXTURE0: number;
         readonly TEXTURE1: number;
         readonly TEXTURE10: number;
@@ -3816,23 +3824,9 @@ declare namespace feng3d {
         readonly TEXTURE7: number;
         readonly TEXTURE8: number;
         readonly TEXTURE9: number;
-        readonly TEXTURE_2D: number;
-        readonly TEXTURE_BINDING_2D: number;
-        readonly TEXTURE_BINDING_CUBE_MAP: number;
-        readonly TEXTURE_CUBE_MAP: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
-        readonly TEXTURE_MAG_FILTER: number;
-        readonly TEXTURE_MIN_FILTER: number;
-        readonly TEXTURE_WRAP_S: number;
-        readonly TEXTURE_WRAP_T: number;
-        readonly TRIANGLES: number;
         readonly TRIANGLE_FAN: number;
         readonly TRIANGLE_STRIP: number;
+        readonly TRIANGLES: number;
         readonly UNPACK_ALIGNMENT: number;
         readonly UNPACK_COLORSPACE_CONVERSION_WEBGL: number;
         readonly UNPACK_FLIP_Y_WEBGL: number;
@@ -4977,6 +4971,7 @@ declare namespace feng3d {
          */
         uuid: string;
         constructor();
+        static get(uuid: any): Feng3dObject;
         /**
          * Removes a gameobject, component or asset.
          * @param obj	The Feng3dObject to destroy.
@@ -5010,8 +5005,6 @@ declare namespace feng3d {
          * @param worldPositionStays	If when assigning the parent the original world position should be maintained.
          */
         static instantiate<T extends Feng3dObject>(original: T, position?: Vector3D, rotation?: Quaternion, parent?: Transform, worldPositionStays?: boolean): T;
-        serialize(): {};
-        deserialize(data: Feng3dObjectVO): void;
     }
 }
 declare namespace feng3d {
@@ -5550,6 +5543,10 @@ declare namespace feng3d {
         protected _scene: Scene3D;
         protected _parent: GameObject;
         /**
+         * 是否可序列化
+         */
+        serializable: boolean;
+        /**
          * The name of the Feng3dObject.
          * Components share the same name with the game object and all attached components.
          */
@@ -5577,7 +5574,7 @@ declare namespace feng3d {
         /**
          * 构建3D对象
          */
-        private constructor(name?);
+        private constructor();
         contains(child: GameObject): boolean;
         addChild(child: GameObject): GameObject;
         addChildren(...childarray: any[]): void;
@@ -5696,6 +5693,7 @@ declare namespace feng3d {
          */
         dispose(): void;
         disposeWithChildren(): void;
+        deserialize(object: any): void;
     }
 }
 declare namespace feng3d {
@@ -6976,6 +6974,7 @@ declare namespace feng3d {
          */
         dfactor: number;
         private _methods;
+        methods: RenderDataHolder[];
         /**
          * 构建材质
          */

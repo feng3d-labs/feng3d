@@ -10,6 +10,7 @@ namespace feng3d
         {
             super(gameObject);
             this.transform.mouseEnabled = false;
+            gameObject.serializable = false;
 
             var length = 100;
             this.buildTrident(Math.abs((length == 0) ? 10 : length));

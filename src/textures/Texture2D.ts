@@ -8,6 +8,7 @@ namespace feng3d
     export class Texture2D extends TextureInfo
     {
         protected _pixels: HTMLImageElement;
+        @serialize
         get url()
         {
             return this._pixels.src;

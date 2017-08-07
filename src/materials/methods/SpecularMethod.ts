@@ -9,6 +9,7 @@ namespace feng3d
         /**
          * 镜面反射光泽图
          */
+        @serialize
         get specularTexture()
         {
             return this._specularTexture;
@@ -21,10 +22,12 @@ namespace feng3d
         /**
          * 镜面反射颜色
          */
+        @serialize
         specularColor = new Color();
         /**
 		 * 镜面反射光反射强度
 		 */
+        @serialize
         get specular()
         {
             return this.specularColor.a;
@@ -36,6 +39,7 @@ namespace feng3d
         /**
          * 高光系数
          */
+        @serialize
         glossiness = 50;
 
         /**

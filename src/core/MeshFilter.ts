@@ -9,6 +9,7 @@ namespace feng3d
         /**
          * Returns the instantiated Mesh assigned to the mesh filter.
          */
+        @serialize
         get mesh()
         {
             return this._mesh;
@@ -17,14 +18,14 @@ namespace feng3d
         {
             if (this._mesh == value)
                 return;
-            if (this.mesh)
+            if (this._mesh)
             {
-                this.removeRenderDataHolder(this.mesh);
+                this.removeRenderDataHolder(this._mesh);
             }
             this._mesh = value;
-            if (this.mesh)
+            if (this._mesh)
             {
-                this.addRenderDataHolder(this.mesh);
+                this.addRenderDataHolder(this._mesh);
             }
         }
         private _mesh: Geometry;

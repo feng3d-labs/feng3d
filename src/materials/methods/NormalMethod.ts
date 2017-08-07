@@ -9,6 +9,7 @@ namespace feng3d
         /**
          * 漫反射纹理
          */
+        @serialize
         get normalTexture()
         {
             return this._normalTexture;

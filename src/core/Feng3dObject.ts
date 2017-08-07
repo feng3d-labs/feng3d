@@ -9,6 +9,8 @@ namespace feng3d
         class: string
     }
 
+    var uuidMap: { [uuid: string]: Feng3dObject } = {};
+
     /**
      * Base class for all objects feng3d can reference.
      * 
@@ -37,12 +39,18 @@ namespace feng3d
         {
             super();
             this.uuid = Math.generateUUID();
+            uuidMap[this.uuid] = this;
         }
 
 
         //------------------------------------------
         // Static Functions
         //------------------------------------------
+        static get(uuid)
+        {
+            return uuidMap[uuid];
+        }
+
         /**
          * Removes a gameobject, component or asset.
          * @param obj	The Feng3dObject to destroy.
@@ -99,37 +107,6 @@ namespace feng3d
         static instantiate<T extends Feng3dObject>(original: T, position: Vector3D = null, rotation: Quaternion = null, parent: Transform = null, worldPositionStays = false): T
         {
             return null;
-        }
-
-        serialize()
-        {
-            var data = {};
-            var serializableMembers: string[] = this["__serializableMembers"];
-            if (serializableMembers)
-            {
-                let property: string;
-                for (var i = 0, n = serializableMembers.length; i < n; i++)
-                {
-                    property = serializableMembers[i]
-                    if (this.hasOwnProperty(property))
-                        data[property] = this[property];
-                }
-            }
-            return data;
-        }
-
-        deserialize(data: Feng3dObjectVO)
-        {
-            var serializableMembers: string[] = this["__serializableMembers"];
-            if (serializableMembers)
-            {
-                let property: string;
-                for (var i = 0, n = serializableMembers.length; i < n; i++)
-                {
-                    property = serializableMembers[i]
-                    this[property] = data[property];
-                }
-            }
         }
     }
 }
