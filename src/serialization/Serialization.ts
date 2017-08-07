@@ -38,36 +38,46 @@ function serialize(target: any, propertyKey: string)
                 serializableMembers = serializableMembers.concat(target.__serializableMembers);
                 return serializableMembers;
             },
-            enumerable: true,
-            configurable: true
+            enumerable: false,
+            configurable: false
         });
     }
 }
 
-Object.prototype.serialize = function ()
-{
-    var object = {};
-    var serializableMembers: string[] = this["serializableMembers"];
-    if (serializableMembers)
-    {
-        for (var i = 0, n = serializableMembers.length; i < n; i++)
-        {
-            var property = serializableMembers[i]
-            object[property] = this[property];
-        }
-    }
-    return object;
-}
 
-Object.prototype.deserialize = function (object?: any)
-{
-    var serializableMembers: string[] = this["serializableMembers"];
-    if (serializableMembers)
+
+Object.defineProperty(Object.prototype, "serialize", {
+    value: function ()
     {
-        for (var i = 0, n = serializableMembers.length; i < n; i++)
+        var object = {};
+        var serializableMembers: string[] = this["serializableMembers"];
+        if (serializableMembers)
         {
-            var property = serializableMembers[i];
-            this[property] = object[property];
+            for (var i = 0, n = serializableMembers.length; i < n; i++)
+            {
+                var property = serializableMembers[i]
+                object[property] = this[property];
+            }
         }
-    }
-}
+        return object;
+    },
+    enumerable: false,
+    configurable: false
+});
+
+Object.defineProperty(Object.prototype, "deserialize", {
+    value: function (object?: any)
+    {
+        var serializableMembers: string[] = this["serializableMembers"];
+        if (serializableMembers)
+        {
+            for (var i = 0, n = serializableMembers.length; i < n; i++)
+            {
+                var property = serializableMembers[i];
+                this[property] = object[property];
+            }
+        }
+    },
+    enumerable: false,
+    configurable: false
+});
