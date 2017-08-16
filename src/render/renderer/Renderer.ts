@@ -39,14 +39,6 @@ namespace feng3d
         }
         private _enabled: boolean;
 
-        /**
-         * Is this renderer visible in any camera? (Read Only)
-         */
-        get isVisible()
-        {
-            return this.gameObject.transform.visible;
-        }
-
         constructor(gameObject: GameObject)
         {
             super(gameObject);
@@ -74,7 +66,7 @@ namespace feng3d
                 gl.disable(GL.BLEND);
                 gl.depthMask(true);
             }
-            this.drawObject3D(gl, object3D.renderData);            //
+            this.drawObject3D(gl, object3D._renderData);            //
             // } catch (error)
             // {
             //     console.log(error);

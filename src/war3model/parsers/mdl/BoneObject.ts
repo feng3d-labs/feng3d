@@ -37,7 +37,7 @@ namespace feng3d.war3
 		/** 当前全局变换矩阵 */
 		c_globalTransformation: Matrix3D;
 
-		public calculateTransformation(keyFrameTime: number): void
+		calculateTransformation(keyFrameTime: number): void
 		{
 			var pScalingCenter = this.pivotPoint;
 			var pScalingRotation: Quaternion = null;

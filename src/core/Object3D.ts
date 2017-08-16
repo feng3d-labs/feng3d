@@ -136,18 +136,6 @@ namespace feng3d
         }
 
         /**
-         * 是否显示
-         */
-        @serialize
-        visible = true;
-
-        /**
-         * 自身以及子对象是否支持鼠标拾取
-         */
-        @serialize
-        mouseEnabled = true;
-
-        /**
          * @private
          */
         get matrix3d(): Matrix3D

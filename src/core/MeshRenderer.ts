@@ -17,7 +17,7 @@ namespace feng3d
 
         drawRenderables(renderContext: RenderContext)
         {
-            if (this.gameObject.transform.visible)
+            if (this.gameObject.visible)
             {
                 var frustumPlanes = renderContext.camera.frustumPlanes;
                 var gameObject = this.gameObject;

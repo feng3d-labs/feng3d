@@ -44,11 +44,11 @@ namespace feng3d
 
         protected drawRenderables(renderContext: RenderContext, meshRenderer: MeshRenderer)
         {
-            if (meshRenderer.gameObject.transform.mouseEnabled)
+            if (meshRenderer.gameObject.mouseEnabled)
             {
                 var object = meshRenderer.gameObject;
                 this.objects.push(object);
-                object.renderData.addUniform(this.createUniformData("u_objectID", this.objects.length - 1));
+                object._renderData.addUniform(this.createUniformData("u_objectID", this.objects.length - 1));
                 // super.drawRenderables(renderContext, meshRenderer);
             }
         }

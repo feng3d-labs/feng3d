@@ -21,8 +21,14 @@ namespace feng3d
 
     export interface GameObjectEventMap extends Mouse3DEventMap, RenderDataHolderEventMap
     {
-        addedComponent
-        removedComponent
+        /**
+		 * 添加子组件事件
+		 */
+        addedComponent: Component;
+		/**
+		 * 移除子组件事件
+		 */
+        removedComponent: Component;
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
@@ -76,6 +82,18 @@ namespace feng3d
         @serialize
         name: string;
 
+        /**
+         * 是否显示
+         */
+        @serialize
+        visible = true;
+
+        /**
+         * 自身以及子对象是否支持鼠标拾取
+         */
+        @serialize
+        mouseEnabled = true;
+
         //------------------------------------------
         // Variables
         //------------------------------------------
@@ -91,7 +109,7 @@ namespace feng3d
         /**
          * @private
          */
-        readonly renderData = new Object3DRenderAtomic();
+        readonly _renderData = new Object3DRenderAtomic();
 
         get parent(): GameObject
         {
@@ -129,18 +147,18 @@ namespace feng3d
 		 */
         get numComponents(): number
         {
-            return this.components.length;
+            return this._components.length;
         }
 
         updateRender(renderContext: RenderContext)
         {
-            if (this.renderData.renderHolderInvalid)
+            if (this._renderData.renderHolderInvalid)
             {
-                this.renderData.clear();
-                this.collectRenderDataHolder(this.renderData);
-                this.renderData.renderHolderInvalid = false;
+                this._renderData.clear();
+                this.collectRenderDataHolder(this._renderData);
+                this._renderData.renderHolderInvalid = false;
             }
-            this.renderData.update(renderContext);
+            this._renderData.update(renderContext);
         }
 
         //------------------------------------------
@@ -283,7 +301,7 @@ namespace feng3d
         getComponentAt(index: number): Component
         {
             debuger && console.assert(index < this.numComponents, "给出索引超出范围");
-            return this.components[index];
+            return this._components[index];
         }
 
 		/**
@@ -300,7 +318,7 @@ namespace feng3d
                 return this.getComponent(param);
             }
             component = new param(this);
-            this.addComponentAt(component, this.components.length);
+            this.addComponentAt(component, this._components.length);
             return component;
         }
 
@@ -311,7 +329,7 @@ namespace feng3d
          */
         private hasComponent(com: Component): boolean
         {
-            return this.components.indexOf(com) != -1;
+            return this._components.indexOf(com) != -1;
         }
 
         /**
@@ -335,10 +353,10 @@ namespace feng3d
             var filterResult: Component[];
             if (!type)
             {
-                filterResult = this.components.concat();
+                filterResult = this._components.concat();
             } else
             {
-                filterResult = this.components.filter(function (value: Component, index: number, array: Component[]): boolean
+                filterResult = this._components.filter(function (value: Component, index: number, array: Component[]): boolean
                 {
                     return value instanceof type;
                 });
@@ -354,14 +372,14 @@ namespace feng3d
         getComponentsInChildren<T extends Component>(type: ComponentConstructor<T> = null, result: T[] = null): T[]
         {
             result = result || [];
-            for (var i = 0, n = this.components.length; i < n; i++)
+            for (var i = 0, n = this._components.length; i < n; i++)
             {
                 if (!type)
                 {
-                    result.push(<T>this.components[i]);
-                } else if (this.components[i] instanceof type)
+                    result.push(<T>this._components[i]);
+                } else if (this._components[i] instanceof type)
                 {
-                    result.push(<T>this.components[i]);
+                    result.push(<T>this._components[i]);
                 }
             }
             for (var i = 0, n = this.numChildren; i < n; i++)
@@ -380,11 +398,11 @@ namespace feng3d
         {
             debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
-            var oldIndex = this.components.indexOf(component);
+            var oldIndex = this._components.indexOf(component);
             debuger && console.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
 
-            this.components.splice(oldIndex, 1);
-            this.components.splice(index, 0, component);
+            this._components.splice(oldIndex, 1);
+            this._components.splice(index, 0, component);
         }
 
 		/**
@@ -394,7 +412,7 @@ namespace feng3d
 		 */
         setComponentAt(component: Component, index: number)
         {
-            if (this.components[index])
+            if (this._components[index])
             {
                 this.removeComponentAt(index);
             }
@@ -420,9 +438,9 @@ namespace feng3d
          */
         getComponentIndex(component: Component): number
         {
-            debuger && console.assert(this.components.indexOf(component) != -1, "组件不在容器中");
+            debuger && console.assert(this._components.indexOf(component) != -1, "组件不在容器中");
 
-            var index = this.components.indexOf(component);
+            var index = this._components.indexOf(component);
             return index;
         }
 
@@ -434,10 +452,9 @@ namespace feng3d
         {
             debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
-            var component: Component = this.components.splice(index, 1)[0];
+            var component: Component = this._components.splice(index, 1)[0];
             //派发移除组件事件
-            component.dispatch("removedComponent", { container: this, child: component });
-            this.dispatch("removedComponent", { container: this, child: component });
+            this.dispatch("removedComponent", component);
             this.removeRenderDataHolder(component);
             component.dispose();
             return component;
@@ -453,9 +470,9 @@ namespace feng3d
             debuger && console.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
             debuger && console.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
 
-            var temp: Component = this.components[index1];
-            this.components[index1] = this.components[index2];
-            this.components[index2] = temp;
+            var temp: Component = this._components[index1];
+            this._components[index1] = this._components[index2];
+            this._components[index2] = temp;
         }
 
         /**
@@ -478,9 +495,9 @@ namespace feng3d
         removeComponentsByType<T extends Component>(type: ComponentConstructor<T>): T[]
         {
             var removeComponents = [];
-            for (var i = this.components.length - 1; i >= 0; i--)
+            for (var i = this._components.length - 1; i >= 0; i--)
             {
-                if (this.components[i].constructor == type)
+                if (this._components[i].constructor == type)
                     removeComponents.push(this.removeComponentAt(i));
             }
             return removeComponents;
@@ -515,7 +532,22 @@ namespace feng3d
 		 * 组件列表
 		 */
         @serialize
-        protected components: Component[] = [];
+        protected _components: Component[] = [];
+        get components()
+        {
+            return this._components.concat();
+        }
+        set components(value)
+        {
+            for (var i = this._components.length - 1; i >= 0; i--)
+            {
+                this.removeComponentAt(i);
+            }
+            for (var i = 0, n = value.length; i < n; i++)
+            {
+                this.addComponentAt(value[i], this.numComponents);
+            }
+        }
 
         //------------------------------------------
         // Protected Functions
@@ -539,7 +571,7 @@ namespace feng3d
 
             if (this.hasComponent(component))
             {
-                index = Math.min(index, this.components.length - 1);
+                index = Math.min(index, this._components.length - 1);
                 this.setComponentIndex(component, index)
                 return;
             }
@@ -547,10 +579,9 @@ namespace feng3d
             if (component.single)
                 this.removeComponentsByType(<new () => Component>component.constructor);
 
-            this.components.splice(index, 0, component);
+            this._components.splice(index, 0, component);
             //派发添加组件事件
-            component.dispatch("addedComponent", { container: this, child: component });
-            this.dispatch("addedComponent", { container: this, child: component });
+            this.dispatch("addedComponent", component);
             this.addRenderDataHolder(component);
         }
 
@@ -561,7 +592,11 @@ namespace feng3d
         {
             if (this.parent)
                 this.parent.removeChild(this);
-            for (var i = this.components.length - 1; i >= 0; i--)
+            for (var i = this._children.length - 1; i >= 0; i--)
+            {
+                this.removeChildAt(i);
+            }
+            for (var i = this._components.length - 1; i >= 0; i--)
             {
                 this.removeComponentAt(i);
             }
@@ -587,15 +622,15 @@ namespace feng3d
                         {
                             var element = components[i];
                             var cls = ClassUtils.getDefinitionByName(element["__class__"]);
-                            var compnent: Component;
+                            var component: Component;
                             if (cls == Transform)
                             {
-                                compnent = this.transform;
+                                component = this.transform;
                             } else
                             {
-                                compnent = this.addComponent(cls);
+                                component = this.addComponent(cls);
                             }
-                            serialization.deserialize(element, compnent);
+                            serialization.deserialize(element, component);
                         }
                         break;
                     case "children":

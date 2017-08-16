@@ -5,18 +5,22 @@ namespace feng3d
      * 构建Map类代替Dictionary
      * @author feng 2017-01-03
      */
-    export class Map<K extends { uuid: string }, V extends { uuid: string }>
+    export class Map<K, V>
     {
-        private keyMap: { [kUid: string]: K } = {};
-        private valueMap: { [kUid: string]: V } = {};
+        private kv: { k: K, v: V }[] = [];
 
         /**
          * 删除
          */
         delete(k: K)
         {
-            delete this.keyMap[k.uuid];
-            delete this.valueMap[k.uuid];
+            for (var i = this.kv.length - 1; i >= 0; i--)
+            {
+                if (k == this.kv[i].k)
+                {
+                    this.kv.splice(i, 1);
+                }
+            }
         }
 
         /**
@@ -24,30 +28,34 @@ namespace feng3d
          */
         push(k: K, v: V)
         {
-            this.keyMap[k.uuid] = k;
-            this.valueMap[k.uuid] = v;
+            this.delete(k);
+            this.kv.push({ k: k, v: v });
         }
 
         /**
          * 通过key获取value
          */
-        get(k: K): V
+        get(k: K)
         {
-            if (k == null)
-                return null;
-            return this.valueMap[k.uuid];
+            var v: V;
+            this.kv.forEach(element =>
+            {
+                if (element.k == k)
+                    v = element.v;
+            });
+            return v;
         }
 
         /**
          * 获取键列表
          */
-        getKeys(): K[]
+        getKeys()
         {
             var keys: K[] = [];
-            for (var key in this.keyMap)
+            this.kv.forEach(element =>
             {
-                keys.push(this.keyMap[key]);
-            }
+                keys.push(element.k);
+            });
             return keys;
         }
 
@@ -56,8 +64,7 @@ namespace feng3d
          */
         clear()
         {
-            this.keyMap = {};
-            this.valueMap = {};
+            this.kv.length = 0;
         }
     }
 }

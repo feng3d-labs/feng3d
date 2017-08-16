@@ -27,6 +27,11 @@ namespace feng3d
             this.direction = new Vector3D(xDir, yDir, zDir);
             //
             DirectionalLight._directionalLights.push(this);
+            //
+            this.gameObject.transform.on("scenetransformChanged", this.onScenetransformChanged, this);
+            var tmpLookAt = this.gameObject.transform.position;
+            tmpLookAt.incrementBy(this._direction);
+            this.gameObject.transform.lookAt(tmpLookAt);
         }
 
         get sceneDirection(): Vector3D
@@ -55,29 +60,19 @@ namespace feng3d
             }
         }
 
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: EventVO<any>): void
-        {
-            this.gameObject.transform.on("scenetransformChanged", this.onScenetransformChanged, this);
-            var tmpLookAt = this.gameObject.transform.position;
-            tmpLookAt.incrementBy(this._direction);
-            this.gameObject.transform.lookAt(tmpLookAt);
-        }
-
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: EventVO<any>): void
-        {
-            this.gameObject.transform.off("scenetransformChanged", this.onScenetransformChanged, this);
-        }
-
         protected onScenetransformChanged()
         {
             this.gameObject.transform.localToWorldMatrix.copyColumnTo(2, this._sceneDirection);
             this._sceneDirection.normalize();
+        }
+
+        /**
+         * 销毁
+         */
+        dispose()
+        {
+            this.gameObject.transform.off("scenetransformChanged", this.onScenetransformChanged, this);
+            super.dispose();
         }
     }
 }

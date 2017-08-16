@@ -3,7 +3,7 @@ namespace feng3d
     export class ObjectBase
     {
         @serialize
-        public id = 1;
+        id = 1;
     }
 
     export class C extends ObjectBase

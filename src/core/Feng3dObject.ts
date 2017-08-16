@@ -30,7 +30,7 @@ namespace feng3d
          * Returns the instance id of the Feng3dObject.
          */
         @serialize
-        public uuid: string;
+        uuid: string;
 
         //------------------------------------------
         // Functions

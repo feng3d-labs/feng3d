@@ -10,26 +10,28 @@ namespace feng3d
         if (!Object.getOwnPropertyDescriptor(target, "__serializableMembers"))
             target.__serializableMembers = [];
         target.__serializableMembers.push(propertyKey);
-        if (!Object.getOwnPropertyDescriptor(target, "serializableMembers"))
-        {
-            Object.defineProperty(target, "serializableMembers", {
-                get: function ()
-                {
-                    var serializableMembers = [];
-                    var superserializableMembers = target["__proto__"] && target["__proto__"]["serializableMembers"];
-                    if (superserializableMembers)
-                    {
-                        serializableMembers = serializableMembers.concat(superserializableMembers);
-                    }
-                    serializableMembers = serializableMembers.concat(target.__serializableMembers);
-                    return serializableMembers;
-                },
-                enumerable: false,
-                configurable: false
-            });
-        }
     }
 }
+
+Object.defineProperty(Object.prototype, "serializableMembers", {
+    get: function ()
+    {
+        var serializableMembers = [];
+        var property = this.__proto__;
+        while (property)
+        {
+            var superserializableMembers = property.__serializableMembers;
+            if (superserializableMembers)
+            {
+                serializableMembers = superserializableMembers.concat(serializableMembers);
+            }
+            property = property.__proto__;
+        }
+        return serializableMembers;
+    },
+    enumerable: false,
+    configurable: false
+});
 
 namespace feng3d
 {

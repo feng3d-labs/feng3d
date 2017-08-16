@@ -36,7 +36,7 @@ namespace feng3d.war3
 			// super(ParserDataFormat.PLAIN_TEXT);
 		}
 
-		public proceedParsing(_textData: string, onParseComplete: (war3Model: War3Model) => void = null)
+		proceedParsing(_textData: string, onParseComplete: (war3Model: War3Model) => void = null)
 		{
 			var token: string;
 

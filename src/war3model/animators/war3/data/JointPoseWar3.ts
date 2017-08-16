@@ -6,7 +6,7 @@ namespace feng3d.war3
 	 */
 	export class JointPoseWar3 extends JointPose
 	{
-		public transformation: Matrix3D;
+		transformation: Matrix3D;
 
 		constructor()
 		{

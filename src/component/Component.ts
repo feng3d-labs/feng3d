@@ -5,15 +5,6 @@ namespace feng3d
 	 */
     export interface ComponentEventMap extends RenderDataHolderEventMap
     {
-		/**
-		 * 添加子组件事件
-		 */
-        addedComponent: { container: GameObject, child: Component };
-
-		/**
-		 * 移除子组件事件
-		 */
-        removedComponent;
     }
 
     export interface Component

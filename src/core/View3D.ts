@@ -42,7 +42,7 @@ namespace feng3d
         /**
          * 鼠标在3D视图中的位置
          */
-        public get mousePos()
+        get mousePos()
         {
             return new Point(input.clientX - this.canvas.clientLeft, input.clientY - this.canvas.clientTop);
         }
@@ -119,7 +119,7 @@ namespace feng3d
             this.camera.lens.aspectRatio = this.viewRect.width / this.viewRect.height;
 
             //鼠标拾取渲染
-            this.mouse3DManager.draw(this.renderContext, this.viewRect);
+            this.mouse3DManager.draw(this.scene, this.camera, this.viewRect);
 
             //绘制阴影图
             // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);

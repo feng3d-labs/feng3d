@@ -1,4 +1,326 @@
 declare namespace feng3d {
+    interface ObjectView {
+        getObjectView: (object: Object) => any;
+        getAttributeView: (attributeViewInfo: AttributeViewInfo) => any;
+        getBlockView: (blockViewInfo: BlockViewInfo) => any;
+        mergeConfig: (config: ObjectViewConfig) => void;
+        config: ObjectViewConfig;
+    }
+    /**
+     * 定义属性
+     * @author feng 2016-3-23
+     */
+    interface AttributeDefinition {
+        /**
+         * 属性名称
+         */
+        name: string;
+        /**
+         * 所属块名称
+         */
+        block?: string;
+        /**
+         * 组件
+         */
+        component?: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+    }
+    /**
+     * 定义特定属性类型默认界面
+     * @author feng 2016-3-25
+     */
+    interface AttributeTypeDefinition {
+        /**
+         * 属性类型
+         */
+        type: string;
+        /**
+         * 界面类
+         */
+        component: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+    }
+    /**
+     * 块定义
+     * @author feng 2016-3-23
+     */
+    interface BlockDefinition {
+        /**
+         * 块名称
+         */
+        name: string;
+        /**
+         * 组件
+         */
+        component?: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+    }
+    /**
+     * ObjectView类配置
+     * @author feng 2016-3-23
+     */
+    interface ClassDefinition {
+        /**
+         * 类名
+         */
+        name: string;
+        /**
+         * 组件
+         */
+        component?: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+        /**
+         * 自定义对象属性定义字典（key:属性名,value:属性定义）
+         */
+        attributeDefinitionVec?: AttributeDefinition[];
+        /**
+         * 自定义对象属性块界面类定义字典（key:属性块名称,value:自定义对象属性块界面类定义）
+         */
+        blockDefinitionVec?: BlockDefinition[];
+    }
+    /**
+     * 对象属性界面接口
+     * @author feng 2016-3-10
+     */
+    interface IObjectAttributeView {
+        /**
+         * 界面所属对象（空间）
+         */
+        space: Object;
+        /**
+         * 更新界面
+         */
+        updateView(): void;
+        /**
+         * 属性名称
+         */
+        attributeName: string;
+        /**
+         * 属性值
+         */
+        attributeValue: Object;
+    }
+    /**
+     * 对象属性块界面接口
+     * @author feng 2016-3-22
+     */
+    interface IObjectBlockView {
+        /**
+         * 界面所属对象（空间）
+         */
+        space: Object;
+        /**
+         * 更新界面
+         */
+        updateView(): void;
+        /**
+         * 块名称
+         */
+        blockName: string;
+        /**
+         * 获取属性界面
+         * @param attributeName		属性名称
+         */
+        getAttributeView(attributeName: string): IObjectAttributeView;
+    }
+    /**
+     * 对象界面接口
+     * @author feng 2016-3-11
+     */
+    interface IObjectView {
+        /**
+         * 界面所属对象（空间）
+         */
+        space: Object;
+        /**
+         * 更新界面
+         */
+        updateView(): void;
+        /**
+         * 获取块界面
+         * @param blockName		块名称
+         */
+        getblockView(blockName: string): IObjectBlockView;
+        /**
+         * 获取属性界面
+         * @param attributeName		属性名称
+         */
+        getAttributeView(attributeName: string): IObjectAttributeView;
+    }
+    /**
+     * 对象属性信息
+     * @author feng 2016-3-10
+     */
+    interface AttributeViewInfo {
+        /**
+         * 属性名称
+         */
+        name: string;
+        /**
+         * 属性类型
+         */
+        type: string;
+        /**
+         * 是否可写
+         */
+        writable: boolean;
+        /**
+         * 所属块名称
+         */
+        block: string;
+        /**
+         * 组件
+         */
+        component: string;
+        /**
+         * 组件参数
+         */
+        componentParam: Object;
+        /**
+         * 属性所属对象
+         */
+        owner: Object;
+    }
+    /**
+     * 对象属性块
+     * @author feng 2016-3-22
+     */
+    interface BlockViewInfo {
+        /**
+         * 块名称
+         */
+        name: string;
+        /**
+         * 组件
+         */
+        component?: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+        /**
+         * 属性信息列表
+         */
+        itemList: AttributeViewInfo[];
+        /**
+         * 属性拥有者
+         */
+        owner: Object;
+    }
+    /**
+     * 对象信息
+     * @author feng 2016-3-29
+     */
+    interface ObjectViewInfo {
+        /**
+         * 类名
+         */
+        name: string;
+        /**
+         * 组件
+         */
+        component: string;
+        /**
+         * 组件参数
+         */
+        componentParam: Object;
+        /**
+         * 对象属性列表
+         */
+        objectAttributeInfos: AttributeViewInfo[];
+        /**
+         * 对象块信息列表
+         */
+        objectBlockInfos: BlockViewInfo[];
+        /**
+         * 保存类的一个实例，为了能够获取动态属性信息
+         */
+        owner: Object;
+    }
+    /**
+     * ObjectView总配置数据
+     * @author feng 2016-3-23
+     */
+    interface ObjectViewConfig {
+        /**
+         * 默认基础类型对象界面类定义
+         */
+        defaultBaseObjectViewClass?: string;
+        /**
+         * 默认对象界面类定义
+         */
+        defaultObjectViewClass?: string;
+        /**
+         * 默认对象属性界面类定义
+         */
+        defaultObjectAttributeViewClass?: string;
+        /**
+         * 属性块默认界面
+         */
+        defaultObjectAttributeBlockView?: string;
+        /**
+         * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
+         */
+        attributeDefaultViewClassByTypeVec?: AttributeTypeDefinition[];
+        /**
+         * ObjectView类配置字典 （key：类名称，value：ObjectView类配置）
+         */
+        classConfigVec?: ClassDefinition[];
+    }
+}
+declare module feng3d {
+    interface OVAComponent {
+        属性组件名称: "属性组件参数";
+    }
+    interface OVBComponent {
+        块组件名称: "块组件参数";
+    }
+    interface OVComponent {
+        类组件名称: "类组件参数";
+    }
+    /**
+     * objectview类装饰器
+     */
+    function ov<K extends keyof OVComponent>(param: {
+        component?: K;
+        componentParam?: OVComponent[K];
+    }): (constructor: Function) => void;
+    /**
+     * objectview类装饰器
+     */
+    function ovb<K extends keyof OVBComponent>(param: {
+        name: string;
+        component?: K;
+        componentParam?: OVBComponent[K];
+    }): (constructor: Function) => void;
+    /**
+     * objectview属性装饰器
+     * @param param 参数
+     */
+    function ova<K extends keyof OVAComponent>(param?: {
+        block?: string;
+        component?: K;
+        componentParam?: OVAComponent[K];
+    }): (target: any, propertyKey: string) => void;
+    /**
+     * 对象界面
+     * @author feng 2016-3-10
+     */
+    var objectview: ObjectView;
+}
+declare namespace feng3d {
     /**
      * 事件
      */
@@ -257,13 +579,8 @@ declare namespace feng3d {
      * 构建Map类代替Dictionary
      * @author feng 2017-01-03
      */
-    class Map<K extends {
-        uuid: string;
-    }, V extends {
-        uuid: string;
-    }> {
-        private keyMap;
-        private valueMap;
+    class Map<K, V> {
+        private kv;
         /**
          * 删除
          */
@@ -3670,13 +3987,13 @@ declare namespace feng3d {
         readonly KEEP: number;
         readonly LEQUAL: number;
         readonly LESS: number;
-        readonly LINE_LOOP: number;
-        readonly LINE_STRIP: number;
-        readonly LINE_WIDTH: number;
         readonly LINEAR: number;
         readonly LINEAR_MIPMAP_LINEAR: number;
         readonly LINEAR_MIPMAP_NEAREST: number;
         readonly LINES: number;
+        readonly LINE_LOOP: number;
+        readonly LINE_STRIP: number;
+        readonly LINE_WIDTH: number;
         readonly LINK_STATUS: number;
         readonly LOW_FLOAT: number;
         readonly LOW_INT: number;
@@ -3701,9 +4018,9 @@ declare namespace feng3d {
         readonly NEAREST_MIPMAP_NEAREST: number;
         readonly NEVER: number;
         readonly NICEST: number;
-        readonly NO_ERROR: number;
         readonly NONE: number;
         readonly NOTEQUAL: number;
+        readonly NO_ERROR: number;
         readonly ONE: number;
         readonly ONE_MINUS_CONSTANT_ALPHA: number;
         readonly ONE_MINUS_CONSTANT_COLOR: number;
@@ -3733,18 +4050,18 @@ declare namespace feng3d {
         readonly REPEAT: number;
         readonly REPLACE: number;
         readonly RGB: number;
-        readonly RGB5_A1: number;
         readonly RGB565: number;
+        readonly RGB5_A1: number;
         readonly RGBA: number;
         readonly RGBA4: number;
+        readonly SAMPLER_2D: number;
+        readonly SAMPLER_CUBE: number;
+        readonly SAMPLES: number;
         readonly SAMPLE_ALPHA_TO_COVERAGE: number;
         readonly SAMPLE_BUFFERS: number;
         readonly SAMPLE_COVERAGE: number;
         readonly SAMPLE_COVERAGE_INVERT: number;
         readonly SAMPLE_COVERAGE_VALUE: number;
-        readonly SAMPLER_2D: number;
-        readonly SAMPLER_CUBE: number;
-        readonly SAMPLES: number;
         readonly SCISSOR_BOX: number;
         readonly SCISSOR_TEST: number;
         readonly SHADER_TYPE: number;
@@ -3778,20 +4095,6 @@ declare namespace feng3d {
         readonly STREAM_DRAW: number;
         readonly SUBPIXEL_BITS: number;
         readonly TEXTURE: number;
-        readonly TEXTURE_2D: number;
-        readonly TEXTURE_BINDING_2D: number;
-        readonly TEXTURE_BINDING_CUBE_MAP: number;
-        readonly TEXTURE_CUBE_MAP: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
-        readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
-        readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
-        readonly TEXTURE_MAG_FILTER: number;
-        readonly TEXTURE_MIN_FILTER: number;
-        readonly TEXTURE_WRAP_S: number;
-        readonly TEXTURE_WRAP_T: number;
         readonly TEXTURE0: number;
         readonly TEXTURE1: number;
         readonly TEXTURE10: number;
@@ -3824,9 +4127,23 @@ declare namespace feng3d {
         readonly TEXTURE7: number;
         readonly TEXTURE8: number;
         readonly TEXTURE9: number;
+        readonly TEXTURE_2D: number;
+        readonly TEXTURE_BINDING_2D: number;
+        readonly TEXTURE_BINDING_CUBE_MAP: number;
+        readonly TEXTURE_CUBE_MAP: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
+        readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
+        readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
+        readonly TEXTURE_MAG_FILTER: number;
+        readonly TEXTURE_MIN_FILTER: number;
+        readonly TEXTURE_WRAP_S: number;
+        readonly TEXTURE_WRAP_T: number;
+        readonly TRIANGLES: number;
         readonly TRIANGLE_FAN: number;
         readonly TRIANGLE_STRIP: number;
-        readonly TRIANGLES: number;
         readonly UNPACK_ALIGNMENT: number;
         readonly UNPACK_COLORSPACE_CONVERSION_WEBGL: number;
         readonly UNPACK_FLIP_Y_WEBGL: number;
@@ -4820,7 +5137,8 @@ declare namespace feng3d {
          */
         readonly updateEverytime: boolean;
         protected _updateEverytime: boolean;
-        childrenRenderDataHolder: RenderDataHolder[];
+        readonly childrenRenderDataHolder: RenderDataHolder[];
+        private _childrenRenderDataHolder;
         /**
          * 创建GL数据缓冲
          */
@@ -5012,17 +5330,6 @@ declare namespace feng3d {
      * 组件事件
      */
     interface ComponentEventMap extends RenderDataHolderEventMap {
-        /**
-         * 添加子组件事件
-         */
-        addedComponent: {
-            container: GameObject;
-            child: Component;
-        };
-        /**
-         * 移除子组件事件
-         */
-        removedComponent: any;
     }
     interface Component {
         once<K extends keyof ComponentEventMap>(type: K, listener: (event: ComponentEventMap[K]) => void, thisObject?: any, priority?: number): void;
@@ -5101,10 +5408,6 @@ declare namespace feng3d {
         readonly enabled: boolean;
         enable: any;
         private _enabled;
-        /**
-         * Is this renderer visible in any camera? (Read Only)
-         */
-        readonly isVisible: boolean;
         constructor(gameObject: GameObject);
         drawRenderables(renderContext: RenderContext): void;
         /**
@@ -5232,14 +5535,6 @@ declare namespace feng3d {
         sx: number;
         sy: number;
         sz: number;
-        /**
-         * 是否显示
-         */
-        visible: boolean;
-        /**
-         * 自身以及子对象是否支持鼠标拾取
-         */
-        mouseEnabled: boolean;
         /**
          * @private
          */
@@ -5505,8 +5800,14 @@ declare namespace feng3d {
         dblclick: any;
     }
     interface GameObjectEventMap extends Mouse3DEventMap, RenderDataHolderEventMap {
-        addedComponent: any;
-        removedComponent: any;
+        /**
+         * 添加子组件事件
+         */
+        addedComponent: Component;
+        /**
+         * 移除子组件事件
+         */
+        removedComponent: Component;
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
@@ -5552,6 +5853,14 @@ declare namespace feng3d {
          */
         name: string;
         /**
+         * 是否显示
+         */
+        visible: boolean;
+        /**
+         * 自身以及子对象是否支持鼠标拾取
+         */
+        mouseEnabled: boolean;
+        /**
          * The Transform attached to this GameObject. (null if there is none attached).
          */
         readonly transform: Transform;
@@ -5559,7 +5868,7 @@ declare namespace feng3d {
         /**
          * @private
          */
-        readonly renderData: Object3DRenderAtomic;
+        readonly _renderData: Object3DRenderAtomic;
         readonly parent: GameObject;
         /**
          * 子对象
@@ -5574,7 +5883,7 @@ declare namespace feng3d {
         /**
          * 构建3D对象
          */
-        private constructor();
+        private constructor(name?);
         contains(child: GameObject): boolean;
         addChild(child: GameObject): GameObject;
         addChildren(...childarray: any[]): void;
@@ -5681,7 +5990,8 @@ declare namespace feng3d {
         /**
          * 组件列表
          */
-        protected components: Component[];
+        protected _components: Component[];
+        components: Component[];
         /**
          * 添加组件到指定位置
          * @param component		被添加的组件
@@ -7327,15 +7637,11 @@ declare namespace feng3d {
          * 光照方向
          */
         direction: Vector3D;
-        /**
-         * 处理被添加组件事件
-         */
-        protected onBeAddedComponent(event: EventVO<any>): void;
-        /**
-         * 处理被移除组件事件
-         */
-        protected onBeRemovedComponent(event: EventVO<any>): void;
         protected onScenetransformChanged(): void;
+        /**
+         * 销毁
+         */
+        dispose(): void;
     }
 }
 declare namespace feng3d {
@@ -8789,10 +9095,10 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(renderContext: RenderContext, viewRect: Rectangle): void;
-        private pick(renderContext);
+        draw(scene3d: Scene3D, camera: Camera, viewRect: Rectangle): void;
+        private pick(scene3d, camera);
         private glPick(renderContext, viewRect);
-        private getMouseCheckObjects(renderContext);
+        private getMouseCheckObjects(scene3d);
         /**
          * 设置选中对象
          */

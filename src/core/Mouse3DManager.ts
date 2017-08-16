@@ -77,31 +77,34 @@ namespace feng3d
         /**
 		 * 渲染
 		 */
-        draw(renderContext: RenderContext, viewRect: Rectangle)
+        draw(scene3d: Scene3D, camera: Camera, viewRect: Rectangle)
         {
             if (!viewRect.contains(this.mouseX, this.mouseY))
                 return;
             if (this.mouseEventTypes.length == 0)
                 return;
-            var mouseCollisionEntitys = this.getMouseCheckObjects(renderContext);
+            var mouseCollisionEntitys = this.getMouseCheckObjects(scene3d);
             if (mouseCollisionEntitys.length == 0)
                 return;
 
-            this.pick(renderContext);
+            this.pick(scene3d, camera);
 
             // this.glPick(renderContext);
         }
 
-        private pick(renderContext: RenderContext)
+        private pick(scene3d: Scene3D, camera: Camera)
         {
-            var mouseCollisionEntitys = this.getMouseCheckObjects(renderContext);
-            var mouseRay3D = renderContext.camera.getMouseRay3D();
+            var mouseCollisionEntitys = this.getMouseCheckObjects(scene3d);
+            var mouseRay3D = camera.getMouseRay3D();
             //计算得到鼠标射线相交的物体
             var _collidingObject = this._mousePicker.getViewCollision(mouseRay3D, mouseCollisionEntitys);
 
             var object3D = _collidingObject && _collidingObject.firstEntity;
 
-            this.setSelectedObject3D(object3D);
+            if (object3D)
+                this.setSelectedObject3D(object3D);
+            else
+                this.setSelectedObject3D(scene3d.gameObject);
         }
 
         private glPick(renderContext: RenderContext, viewRect: Rectangle)
@@ -121,16 +124,15 @@ namespace feng3d
             this.setSelectedObject3D(object3D);
         }
 
-        private getMouseCheckObjects(renderContext: RenderContext)
+        private getMouseCheckObjects(scene3d: Scene3D)
         {
-            var scene3d = renderContext.scene3d;
             var checkList = scene3d.gameObject.getChildren();
             var results: GameObject[] = [];
             var i = 0;
             while (i < checkList.length)
             {
                 var checkObject = checkList[i++];
-                if (checkObject.transform.mouseEnabled)
+                if (checkObject.mouseEnabled)
                 {
                     if (checkObject.getComponents(MeshFilter))
                     {

@@ -9,7 +9,7 @@ namespace feng3d
         constructor(gameObject: GameObject)
         {
             super(gameObject);
-            this.transform.mouseEnabled = false;
+            this.gameObject.mouseEnabled = false;
             gameObject.serializable = false;
 
             var length = 100;
