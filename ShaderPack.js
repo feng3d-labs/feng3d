@@ -1,21 +1,25 @@
 var fs = require("fs");
-const util = require("util");
 
-console.log(`监控shader变化，自动生成shaders.ts`);
-fs.watch("./shaders", changeHandler);
+exports.shaderPack = shaderPack;
 
-function changeHandler(event, filename) {
-    try {
-        var savePath = "src/autofiles/shaders.ts";
-        var filesContent = readFiles(getFilePaths("shaders"));
-        var contentStr = JSON.stringify(filesContent, null, '\t');
-        contentStr = contentStr.replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-        writeFile(savePath, `namespace feng3d\n{\nfeng3d.shaderFileMap = ${contentStr}\n}`);
-        console.log("自动生成" + savePath)
-    } catch (error) {
-        console.log("error!!!!!\n" + error);
-    }
-};
+function shaderPack(root) {
+
+    console.log(`监控shader变化，自动生成shaders.ts`);
+    fs.watch(root + "/shaders", { recursive: true }, changeHandler);
+
+    function changeHandler(event, filename) {
+        try {
+            var savePath = root + "/" + "src/autofiles/shaders.ts";
+            var filesContent = readFiles(getFilePaths(root + "/" + "shaders"));
+            var contentStr = JSON.stringify(filesContent, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1')
+            contentStr = contentStr.replace(new RegExp(root + "/", "g"), "");
+            writeFile(savePath, `namespace feng3d\n{\nfeng3d.shaderFileMap = ${contentStr}\n}`);
+            console.log("自动生成" + savePath)
+        } catch (error) {
+            console.log("error!!!!!\n" + error);
+        }
+    };
+}
 
 function writeFile(filePath, content) {
     fs.openSync(filePath, "w");

@@ -5,12 +5,10 @@
         "sourceMap": true,
         "declaration": true,
         "experimentalDecorators": true,
-        "outFile": "out/feng3d.js"
+        "outDir": "./out"
+        // "outFile": "out/feng3d.js"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
-        //
-        "src/objectview/ObjectViewInterface.ts",
-        "src/objectview/ObjectView.ts",
         //
         "src/core/Event.ts",
         "src/resources/load.ts",
@@ -220,32 +218,6 @@
         "src/autofiles/shaders.ts",
         //
         "src/Feng3d.ts",
-        //war3模型
-        "src/war3model/animators/war3/data/JointPoseWar3.ts",
-        "src/war3model/animators/war3/data/SkeletonPoseWar3.ts",
-        "src/war3model/animators/war3/nodes/SkeletonClipNodeWar3.ts",
-        "src/war3model/animators/war3/SkeletonAnimatorWar3.ts",
-        "src/war3model/parsers/mdl/AnimAlpha.ts",
-        "src/war3model/parsers/mdl/AnimInfo.ts",
-        "src/war3model/parsers/mdl/AnimInfo1.ts",
-        "src/war3model/parsers/mdl/BoneObject.ts",
-        "src/war3model/parsers/mdl/BoneRotation.ts",
-        "src/war3model/parsers/mdl/BoneTranslation.ts",
-        "src/war3model/parsers/mdl/FBitmap.ts",
-        "src/war3model/parsers/mdl/Geoset.ts",
-        "src/war3model/parsers/mdl/GeosetAnim.ts",
-        "src/war3model/parsers/mdl/Globalsequences.ts",
-        "src/war3model/parsers/mdl/Interval.ts",
-        "src/war3model/parsers/mdl/Layer.ts",
-        "src/war3model/parsers/mdl/Material.ts",
-        "src/war3model/parsers/mdl/Model.ts",
-        "src/war3model/parsers/mdl/Rotation.ts",
-        "src/war3model/parsers/mdl/Scaling.ts",
-        "src/war3model/parsers/mdl/Translation.ts",
-        "src/war3model/parsers/mdl/War3Model.ts",
-        "src/war3model/parsers/MdlParser.ts",
-        "src/war3model/utils/War3Utils.ts",
-        "src/war3model/parsers/mdl/BoneScaling.ts",
         //
         "tests/common/ClassUtilsTest.ts",
         "tests/common/EulerTest.ts",

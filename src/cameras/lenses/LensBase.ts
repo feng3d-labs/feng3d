@@ -26,23 +26,53 @@ namespace feng3d
 		/**
 		 * 最近距离
 		 */
-		@watch("invalidateMatrix")
+		private _near = 0.1;
 		@serialize
-		near = 0.1;
+		get near()
+		{
+			return this._near;
+		}
+		set near(value)
+		{
+			if(this._near == value)
+				return;
+			this._near = value;
+			this.invalidateMatrix();
+		}
 
 		/**
 		 * 最远距离
 		 */
-		@watch("invalidateMatrix")
+		private _far = 10000;
 		@serialize
-		far = 10000;
+		get far()
+		{
+			return this._far;
+		}
+		set far(value)
+		{
+			if(this._far == value)
+				return;
+			this._far = value;
+			this.invalidateMatrix();
+		}
 
 		/**
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
-		@watch("invalidateMatrix")
+		private _aspectRatio = 1;
 		@serialize
-		aspectRatio = 1;
+		get aspectRatio()
+		{
+			return this._aspectRatio;
+		}
+		set aspectRatio(value)
+		{
+			if(this._aspectRatio == value)
+				return;
+			this._aspectRatio = value;
+			this.invalidateMatrix();
+		}
 
 		//
 		protected _matrix: Matrix3D;
