@@ -1,8 +1,0 @@
-declare namespace feng3d {
-    /**
-     * 后处理渲染器
-     * @author feng 2017-02-20
-     */
-    class PostProcessRenderer {
-    }
-}
