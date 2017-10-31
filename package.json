@@ -5,6 +5,8 @@
   "main": "out/feng3d.js",
   "types": "out/feng3d.d.ts",
   "scripts": {
+    "build": "node build.js",
+    "build:w": "node build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
