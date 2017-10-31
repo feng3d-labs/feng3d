@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -7,117 +7,135 @@ namespace feng3d
      */
     export class CylinderGeometry extends Geometry
     {
+        @serialize()
+        @oav()
         get topRadius()
         {
             return this._topRadius;
         }
         set topRadius(value)
         {
-            if(this._topRadius == value)
+            if (this._topRadius == value)
                 return;
             this._topRadius = value;
             this.invalidateGeometry();
         }
         private _topRadius = 50;
-        
+
+        @serialize()
+        @oav()
         get bottomRadius()
         {
             return this._bottomRadius;
         }
         set bottomRadius(value)
         {
-            if(this._bottomRadius == value)
+            if (this._bottomRadius == value)
                 return;
             this._bottomRadius = value;
             this.invalidateGeometry();
         }
         private _bottomRadius = 50;
 
+        @serialize()
+        @oav()
         get height()
         {
             return this._height;
         }
         set height(value)
         {
-            if(this._height == value)
+            if (this._height == value)
                 return;
             this._height = value;
             this.invalidateGeometry();
         }
         private _height = 100;
 
+        @serialize()
+        @oav()
         get segmentsW()
         {
             return this._segmentsW;
         }
         set segmentsW(value)
         {
-            if(this._segmentsW == value)
+            if (this._segmentsW == value)
                 return;
             this._segmentsW = value;
             this.invalidateGeometry();
         }
         private _segmentsW = 16;
 
+        @serialize()
+        @oav()
         get segmentsH()
         {
             return this._segmentsH;
         }
         set segmentsH(value)
         {
-            if(this._segmentsH == value)
+            if (this._segmentsH == value)
                 return;
             this._segmentsH = value;
             this.invalidateGeometry();
         }
         private _segmentsH = 1;
 
+        @serialize()
+        @oav()
         get topClosed()
         {
             return this._topClosed;
         }
         set topClosed(value)
         {
-            if(this._topClosed == value)
+            if (this._topClosed == value)
                 return;
             this._topClosed = value;
             this.invalidateGeometry();
         }
         private _topClosed = true;
 
+        @serialize()
+        @oav()
         get bottomClosed()
         {
             return this._bottomClosed;
         }
         set bottomClosed(value)
         {
-            if(this._bottomClosed == value)
+            if (this._bottomClosed == value)
                 return;
             this._bottomClosed = value;
             this.invalidateGeometry();
         }
         private _bottomClosed = true;
 
+        @serialize()
+        @oav()
         get surfaceClosed()
         {
             return this._surfaceClosed;
         }
         set surfaceClosed(value)
         {
-            if(this._surfaceClosed == value)
+            if (this._surfaceClosed == value)
                 return;
             this._surfaceClosed = value;
             this.invalidateGeometry();
         }
         private _surfaceClosed = true;
 
+        @serialize()
+        @oav()
         get yUp()
         {
             return this._yUp;
         }
         set yUp(value)
         {
-            if(this._yUp == value)
+            if (this._yUp == value)
                 return;
             this._yUp = value;
             this.invalidateGeometry();
@@ -178,7 +196,7 @@ namespace feng3d
         protected buildGeometry()
         {
             var i: number, j: number, index = 0;
-            var x: number, y: number, z: number, radius: number, revolutionAngle: number;
+            var x: number, y: number, z: number, radius: number, revolutionAngle = 0;
             var dr: number, latNormElev: number, latNormBase: number;
 
             var comp1: number, comp2: number;
@@ -187,9 +205,9 @@ namespace feng3d
 
             var numVertices = this.getNumVertices();
 
-            var vertexPositionData = new Float32Array(numVertices * 3);
-            var vertexNormalData = new Float32Array(numVertices * 3);
-            var vertexTangentData = new Float32Array(numVertices * 3);
+            var vertexPositionData: number[] = [];
+            var vertexNormalData: number[] = [];
+            var vertexTangentData: number[] = [];
 
             var revolutionAngleDelta = 2 * Math.PI / this.segmentsW;
 
@@ -386,7 +404,7 @@ namespace feng3d
             this.setVAData("a_uv", uvData, 2);
 
             var indices = this.buildIndices();
-            this.setIndices(indices);
+            this.indices = indices;
         }
 
         /**
@@ -397,11 +415,10 @@ namespace feng3d
          */
         private buildIndices()
         {
-
             var i: number, j: number, index = 0;
             var numTriangles = this.getNumTriangles();
 
-            var indices = new Uint16Array(numTriangles * 3);
+            var indices: number[] = [];
             var numIndices = 0;
             // 顶部
             if (this.topClosed && this.topRadius > 0)
@@ -469,7 +486,7 @@ namespace feng3d
             var x: number, y: number, revolutionAngle: number;
             var numVertices = this.getNumVertices()
 
-            var data = new Float32Array(numVertices * 2);
+            var data: number[] = [];
             var revolutionAngleDelta = 2 * Math.PI / this.segmentsW;
             var index = 0;
 

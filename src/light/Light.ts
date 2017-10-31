@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -7,30 +7,31 @@ namespace feng3d
      */
     export class Light extends Component
     {
-        static get lights()
-        {
-            return this._lights;
-        }
-        private static _lights: Light[] = [];
-
         /**
          * 灯光类型
          */
+        @serialize()
         lightType: LightType;
 
         /**
          * 颜色
          */
+        @oav()
+        @serialize()
         color = new Color();
 
         /**
          * 光照强度
          */
+        @oav()
+        @serialize()
         intensity = 1;
 
         /**
          * 是否生成阴影（未实现）
          */
+        @oav()
+        @serialize()
         castsShadows = false;
 
         private _shadowMap: Texture2D = new Texture2D();
@@ -39,10 +40,9 @@ namespace feng3d
             return this._shadowMap;
         }
 
-        constructor(gameObject: GameObject)
+        init(gameObject: GameObject)
         {
-            super(gameObject);
-            Light._lights.push(this);
+            super.init(gameObject);
         }
     }
 }

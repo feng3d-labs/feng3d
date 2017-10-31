@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -151,12 +151,14 @@ namespace feng3d
             canvasImg.height = this._heightImage.height;
 
             var ctxt = canvasImg.getContext('2d');
-
-            ctxt.drawImage(this._heightImage, 0, 0);
-            var terrainHeightData = ctxt.getImageData(0, 0, this._heightImage.width, this._heightImage.height);//读取整张图片的像素。
-            ctxt.putImageData(terrainHeightData, terrainHeightData.width, terrainHeightData.height);
-            this._heightMap = terrainHeightData;
-            this.invalidateGeometry();
+            if (ctxt)
+            {
+                ctxt.drawImage(this._heightImage, 0, 0);
+                var terrainHeightData = ctxt.getImageData(0, 0, this._heightImage.width, this._heightImage.height);//读取整张图片的像素。
+                ctxt.putImageData(terrainHeightData, terrainHeightData.width, terrainHeightData.height);
+                this._heightMap = terrainHeightData;
+                this.invalidateGeometry();
+            }
         }
 
 		/**
@@ -180,8 +182,8 @@ namespace feng3d
             var u: number, v: number;
             var y: number;
 
-            var vertices = new Float32Array(numVerts * 3);
-            var indices = new Uint16Array(this.segmentsH * this.segmentsW * 6);
+            var vertices: number[] = [];
+            var indices: number[] = [];
 
             numVerts = 0;
             var col: number;
@@ -222,12 +224,7 @@ namespace feng3d
             var uvs = this.buildUVs();
             this.setVAData("a_position", vertices, 3)
             this.setVAData("a_uv", uvs, 2);
-            this.setIndices(indices);
-            var normals = GeometryUtils.createVertexNormals(indices, vertices);
-            this.normals = new Float32Array(normals);
-            //生成切线
-            var tangents = GeometryUtils.createVertexTangents(indices, vertices, uvs);
-            this.tangents = new Float32Array(tangents);
+            this.indices = indices;
         }
 
 		/**
@@ -236,7 +233,7 @@ namespace feng3d
         private buildUVs()
         {
             var numUvs = (this.segmentsH + 1) * (this.segmentsW + 1) * 2;
-            var uvs = new Float32Array(numUvs);
+            var uvs: number[] = [];
 
             numUvs = 0;
             //计算每个顶点的uv坐标

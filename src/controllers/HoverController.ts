@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     export class HoverController extends LookAtController
     {
@@ -148,7 +148,7 @@ namespace feng3d
         }
 
 
-        constructor(targetObject: GameObject = null, lookAtObject: GameObject = null, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
+        constructor(targetObject?: GameObject, lookAtObject?: GameObject, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
         {
             super(targetObject, lookAtObject);
             this.distance = distance;
@@ -202,7 +202,7 @@ namespace feng3d
                     this._currentPanAngle = this._panAngle;
                 }
             }
-            if (<any>!this._targetObject)
+            if (!this._targetObject)
                 return;
             if (this._lookAtPosition)
             {

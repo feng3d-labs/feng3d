@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
 	/**
@@ -11,14 +11,16 @@ namespace feng3d
 		 * 视野
 		 */
         @watch("fieldOfViewChange")
-        @serialize
+        @serialize()
+        @oav()
         fieldOfView: number;
 
 		/**
 		 * 坐标系类型
 		 */
         @watch("coordinateSystemChange")
-        @serialize
+        @serialize()
+        @oav()
         coordinateSystem: number;
 
         //
@@ -49,13 +51,13 @@ namespace feng3d
         {
             this.invalidateMatrix();
         }
-        
+
 		/**
 		 * 焦距
 		 */
         get focalLength(): number
         {
-            if(!this._focalLength)
+            if (!this._focalLength)
                 this._focalLength = 1 / Math.tan(this.fieldOfView * Math.PI / 360);
             return this._focalLength;
         }
@@ -67,10 +69,10 @@ namespace feng3d
 
             this._focalLength = value;
 
-            this.fieldOfView = Math.atan( 1 / this._focalLength) * 360 / Math.PI;
+            this.fieldOfView = Math.atan(1 / this._focalLength) * 360 / Math.PI;
         }
 
-        unproject(nX: number, nY: number, sZ: number, v: Vector3D = null): Vector3D
+        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D
         {
             if (!v)
                 v = new Vector3D();
@@ -92,8 +94,8 @@ namespace feng3d
 
         protected updateMatrix()
         {
-            this._matrix = new Matrix3D();
-            var raw = this._matrix.rawData;
+            var matrix = new Matrix3D();
+            var raw = matrix.rawData;
 
             this._focalLength = 1 / Math.tan(this.fieldOfView * Math.PI / 360);
             var _focalLengthInv = 1 / this._focalLength;
@@ -159,6 +161,8 @@ namespace feng3d
 
             this._frustumCorners[2] = this._frustumCorners[5] = this._frustumCorners[8] = this._frustumCorners[11] = this.near;
             this._frustumCorners[14] = this._frustumCorners[17] = this._frustumCorners[20] = this._frustumCorners[23] = this.far;
+
+            return matrix;
         }
     }
 }

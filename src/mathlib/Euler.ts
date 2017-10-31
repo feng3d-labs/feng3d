@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     // /**
     //  * 欧拉角，使用分别绕x，y，z轴旋转角度表示方位

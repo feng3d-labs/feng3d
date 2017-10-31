@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
 	/**
@@ -77,6 +77,8 @@ namespace feng3d
 		 */
 		private onMouseOnce(event: EventVO<any>): void
 		{
+			if (!shortcut.enable)
+				return;
 			var mouseKey: string = event.type;
 			this._keyState.pressKey(mouseKey, event.data);
 			this._keyState.releaseKey(mouseKey, event.data);
@@ -87,6 +89,8 @@ namespace feng3d
 		 */
 		private onMousewheel(event: EventVO<any>): void
 		{
+			if (!shortcut.enable)
+				return;
 			var mouseKey: string = event.type;
 			this._keyState.pressKey(mouseKey, event.data);
 			this._keyState.releaseKey(mouseKey, event.data);
@@ -97,6 +101,8 @@ namespace feng3d
 		 */
 		private onKeydown(event: EventVO<any>): void
 		{
+			if (!shortcut.enable)
+				return;
 			var boardKey: string = this.getBoardKey(event.data.keyCode);
 			if (boardKey != null)
 				this._keyState.pressKey(boardKey, event.data);
@@ -107,6 +113,8 @@ namespace feng3d
 		 */
 		private onKeyup(event: EventVO<any>): void
 		{
+			if (!shortcut.enable)
+				return;
 			var boardKey: string = this.getBoardKey(event.data.keyCode);
 			if (boardKey)
 				this._keyState.releaseKey(boardKey, event.data);

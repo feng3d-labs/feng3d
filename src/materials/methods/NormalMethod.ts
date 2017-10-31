@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 	/**
 	 * 法线函数
@@ -9,14 +9,22 @@ namespace feng3d
         /**
          * 漫反射纹理
          */
-        @serialize
+        @serialize()
+        @oav()
         get normalTexture()
         {
             return this._normalTexture;
         }
         set normalTexture(value)
         {
+            if (this._normalTexture == value)
+                return;
+            if (this._normalTexture)
+                this._normalTexture.off("loaded", this.onTextureChanged, this);
             this._normalTexture = value;
+            if (this._normalTexture)
+                this._normalTexture.on("loaded", this.onTextureChanged, this);
+            this.onTextureChanged();
         }
         private _normalTexture: Texture2D;
 
@@ -29,7 +37,11 @@ namespace feng3d
             this.normalTexture = new Texture2D(normalUrl);
             //
             this.createUniformData("s_normal", () => this.normalTexture);
-            this.createBoolMacro("HAS_NORMAL_SAMPLER", () => this.normalTexture.checkRenderData());
+        }
+
+        private onTextureChanged()
+        {
+            this.createBoolMacro("HAS_NORMAL_SAMPLER", this.normalTexture.checkRenderData());
         }
     }
 }

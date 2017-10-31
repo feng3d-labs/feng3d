@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 	/**
 	 * 环境映射函数
@@ -27,6 +27,8 @@ namespace feng3d
         /**
 		 * 环境映射贴图
 		 */
+        @serialize()
+        @oav()
         get envMap()
         {
             return this._cubeTexture;
@@ -42,6 +44,8 @@ namespace feng3d
         /**
 		 * 反射率
 		 */
+        @serialize()
+        @oav()
         get reflectivity(): number
         {
             return this._reflectivity;

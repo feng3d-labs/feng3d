@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
 	/**
@@ -20,17 +20,17 @@ namespace feng3d
 		/**
 		 * 要执行的命令名称
 		 */
-		private _command: string;
+		private _command: string | undefined;
 
 		/**
 		 * 可执行的状态命令
 		 */
-		private _stateCommand: string;
+		private _stateCommand: string | undefined;
 
 		/**
 		 * 快捷键处于活动状态的条件
 		 */
-		private _when: string;
+		private _when: string | undefined;
 
 		/**
 		 * 按键状态
@@ -65,7 +65,7 @@ namespace feng3d
 		 * @param stateCommand			要执行的状态命令id；使用“,”连接触发多个状态命令，没带“!”表示激活该状态，否则表示使其处于非激活状态；例如 “stateA,!stateB”表示满足触发条件后激活状态“stateA，使“stateB处于非激活状态。
 		 * @param when					快捷键激活的条件；使用“+”连接多个状态，没带“!”表示需要处于激活状态，否则需要处于非激活状态； 例如 “stateA+!stateB”表示stateA处于激活状态且stateB处于非激活状态时会判断按键是否满足条件。
 		 */
-		constructor(shortCut: ShortCut, key: string, command: string = null, stateCommand: string = null, when: string = null)
+		constructor(shortCut: ShortCut, key: string, command?: string, stateCommand?: string, when?: string)
 		{
 			this._shortCut = shortCut;
 			this._keyState = shortCut.keyState;
@@ -197,11 +197,10 @@ namespace feng3d
 		 * 获取状态列表
 		 * @param when		状态字符串
 		 */
-		private getStates(when: string): State[]
+		private getStates(when?: string): State[]
 		{
-
 			var states: State[] = [];
-			if (when == null)
+			if (!when)
 				return states;
 			var state: string = when.trim();
 			if (state.length == 0)
@@ -224,14 +223,12 @@ namespace feng3d
 		 */
 		private getKeys(key: string): Key[]
 		{
-
 			var keyStrs = key.split("+");
 			var keys: Key[] = [];
 			for (var i = 0; i < keyStrs.length; i++)
 			{
 				keys.push(new Key(keyStrs[i]));
 			}
-
 			return keys;
 		}
 
@@ -239,11 +236,10 @@ namespace feng3d
 		 * 获取命令列表
 		 * @param command	命令
 		 */
-		private getCommands(command: string): string[]
+		private getCommands(command?: string): string[]
 		{
-
 			var commands: string[] = [];
-			if (command == null)
+			if (!command)
 				return commands;
 
 			command = command.trim();
@@ -264,11 +260,10 @@ namespace feng3d
 		 * 获取状态命令列表
 		 * @param stateCommand	状态命令
 		 */
-		private getStateCommand(stateCommand: string): StateCommand[]
+		private getStateCommand(stateCommand?: string): StateCommand[]
 		{
-
 			var stateCommands: StateCommand[] = [];
-			if (stateCommand == null)
+			if (!stateCommand)
 				return stateCommands;
 
 			stateCommand = stateCommand.trim();
@@ -294,9 +289,9 @@ namespace feng3d
 			{
 				this._keyState.off(this._keys[i].key, this.onCapture, this);
 			}
-			this._shortCut = null;
-			this._keys = null;
-			this._states = null;
+			this._shortCut = <any>null;
+			this._keys = <any>null;
+			this._states = <any>null;
 		}
 	}
 }

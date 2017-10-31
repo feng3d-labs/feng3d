@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     export interface InputEventMap
     {
@@ -91,6 +91,11 @@ namespace feng3d
         clientX = 0;
         clientY = 0;
 
+        /**
+         * 是否右击
+         */
+        rightmouse = false;
+
         constructor()
         {
             super();
@@ -116,6 +121,11 @@ namespace feng3d
                 this.clientY = event.clientY;
             }
 
+            if (event instanceof MouseEvent)
+            {
+                input.rightmouse = event.button == 2;
+            }
+
             var inputEvent = new InputEvent(event);
             this.dispatch(inputEvent.type, inputEvent, true);
         }
@@ -130,10 +140,13 @@ namespace feng3d
 
         wheelDelta: number;
 
+        event: WheelEvent | MouseEvent | KeyboardEvent;
+
         type: keyof InputEventMap;
 
         constructor(event: WheelEvent | MouseEvent | KeyboardEvent)
         {
+            this.event = event;
             this.type = <any>event.type;
             if (event instanceof MouseEvent)
             {

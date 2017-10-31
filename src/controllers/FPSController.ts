@@ -1,10 +1,10 @@
-namespace feng3d
+module feng3d
 {
     /**
      * FPS模式控制器
      * @author feng 2016-12-19
      */
-    export class FPSController extends Script
+    export class FPSController extends Component
     {
         /**
          * 按键记录
@@ -29,7 +29,7 @@ namespace feng3d
         /**
          * 上次鼠标位置
          */
-        private preMousePoint: Point;
+        private preMousePoint: Point | null;
 
         private ischange = false;
 
@@ -56,9 +56,24 @@ namespace feng3d
             }
         }
 
-        constructor(gameobject: GameObject)
+        init(gameobject: GameObject)
         {
-            super(gameobject);
+            super.init(gameobject);
+
+            this.keyDirectionDic = {};
+            this.keyDirectionDic["a"] = new Vector3D(-1, 0, 0);//左
+            this.keyDirectionDic["d"] = new Vector3D(1, 0, 0);//右
+            this.keyDirectionDic["w"] = new Vector3D(0, 0, 1);//前
+            this.keyDirectionDic["s"] = new Vector3D(0, 0, -1);//后
+            this.keyDirectionDic["e"] = new Vector3D(0, 1, 0);//上
+            this.keyDirectionDic["q"] = new Vector3D(0, -1, 0);//下
+
+            this.keyDownDic = {};
+            this.acceleration = 0.05
+
+            this.auto = true;
+
+            ticker.on("enterFrame", this.update, this);
         }
 
         onMousedown()
@@ -84,31 +99,13 @@ namespace feng3d
         }
 
         /**
-         * 初始化
-         */
-        init()
-        {
-            this.keyDirectionDic = {};
-            this.keyDirectionDic["a"] = new Vector3D(-1, 0, 0);//左
-            this.keyDirectionDic["d"] = new Vector3D(1, 0, 0);//右
-            this.keyDirectionDic["w"] = new Vector3D(0, 0, 1);//前
-            this.keyDirectionDic["s"] = new Vector3D(0, 0, -1);//后
-            this.keyDirectionDic["e"] = new Vector3D(0, 1, 0);//上
-            this.keyDirectionDic["q"] = new Vector3D(0, -1, 0);//下
-
-            this.keyDownDic = {};
-            this.acceleration = 0.05
-
-            this.auto = true;
-            this.enabled = true;
-        }
-
-        /**
          * 销毁
          */
         dispose()
         {
             this.auto = false;
+
+            ticker.off("enterFrame", this.update, this);
         }
 
         /**

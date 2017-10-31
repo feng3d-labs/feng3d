@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     export var MD5AnimParser = {
         parse: parse
@@ -66,7 +66,7 @@ namespace feng3d
         do
         {
             var line = lines.pop();
-            parserLine(line, md5AnimData);
+            line && parserLine(line, md5AnimData);
         } while (line);
         return md5AnimData;
     }
@@ -100,7 +100,7 @@ namespace feng3d
 
     /** 当前处于状态 */
     var states: State[] = [];
-    var currentFrame: MD5_Frame;
+    var currentFrame: MD5_Frame | null;
 
     function parserLine(line: string, md5AnimData: MD5AnimData)
     {
@@ -110,7 +110,7 @@ namespace feng3d
         if (!line.length)
             return;
 
-        var result: RegExpExecArray;
+        var result: RegExpExecArray | null;
         if ((result = MD5VersionReg.exec(line)) && result[0] == line)
         {
             md5AnimData.MD5Version = parseInt(result[1]);
@@ -151,7 +151,7 @@ namespace feng3d
             var state = states.pop();
             if (state == State.frame)
             {
-                if (currentFrame.components.length != md5AnimData.numAnimatedComponents)
+                if (currentFrame && currentFrame.components.length != md5AnimData.numAnimatedComponents)
                 {
                     throw new Error("frame中数据不对");
                 }
@@ -192,10 +192,13 @@ namespace feng3d
             switch (states[states.length - 1])
             {
                 case State.frame:
-                    var numbers = line.split(" ");
-                    while (numbers.length > 0)
+                    if (currentFrame)
                     {
-                        currentFrame.components.push(parseFloat(numbers.shift()));
+                        var numbers = line.split(" ");
+                        for (var i = 0; i < numbers.length; i++)
+                        {
+                            currentFrame.components.push(parseFloat(numbers[i]));
+                        }
                     }
                     break;
                 default:

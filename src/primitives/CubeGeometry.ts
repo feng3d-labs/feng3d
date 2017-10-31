@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -7,6 +7,8 @@ namespace feng3d
      */
     export class CubeGeometry extends Geometry
     {
+        @serialize(100)
+        @oav()
         get width()
         {
             return this._width;
@@ -20,6 +22,8 @@ namespace feng3d
         }
         private _width = 100;
 
+        @serialize(100)
+        @oav()
         get height()
         {
             return this._height;
@@ -33,6 +37,8 @@ namespace feng3d
         }
         private _height = 100;
 
+        @serialize(100)
+        @oav()
         get depth()
         {
             return this._depth;
@@ -46,6 +52,8 @@ namespace feng3d
         }
         private _depth = 100;
 
+        @serialize(1)
+        @oav()
         get segmentsW()
         {
             return this._segmentsW;
@@ -59,6 +67,8 @@ namespace feng3d
         }
         private _segmentsW = 1;
 
+        @serialize(1)
+        @oav()
         get segmentsH()
         {
             return this._segmentsH;
@@ -72,6 +82,8 @@ namespace feng3d
         }
         private _segmentsH = 1;
 
+        @serialize(1)
+        @oav()
         get segmentsD()
         {
             return this._segmentsD;
@@ -85,6 +97,8 @@ namespace feng3d
         }
         private _segmentsD = 1;
 
+        @serialize(true)
+        @oav()
         get tile6()
         {
             return this._tile6;
@@ -132,7 +146,7 @@ namespace feng3d
             var uvData = this.buildUVs();
             this.setVAData("a_uv", uvData, 2);
             var indices = this.buildIndices();
-            this.setIndices(indices);
+            this.indices = indices;
         }
 
         /**
@@ -146,7 +160,7 @@ namespace feng3d
          */
         private buildPosition()
         {
-            var vertexPositionData = new Float32Array(((this.segmentsW + 1) * (this.segmentsH + 1) + (this.segmentsW + 1) * (this.segmentsD + 1) + (this.segmentsH + 1) * (this.segmentsD + 1)) * 2 * 3);
+            var vertexPositionData: number[] = [];
 
             var i: number, j: number;
 
@@ -233,7 +247,7 @@ namespace feng3d
          */
         private buildNormal()
         {
-            var vertexNormalData = new Float32Array(((this.segmentsW + 1) * (this.segmentsH + 1) + (this.segmentsW + 1) * (this.segmentsD + 1) + (this.segmentsH + 1) * (this.segmentsD + 1)) * 2 * 3);
+            var vertexNormalData: number[] = [];
 
             var i: number, j: number;
 
@@ -287,7 +301,7 @@ namespace feng3d
                     vertexNormalData[normalIndex++] = 0;
                 }
             }
-            return new Float32Array(vertexNormalData);
+            return vertexNormalData;
         }
 
         /**
@@ -299,7 +313,7 @@ namespace feng3d
         private buildTangent()
         {
 
-            var vertexTangentData = new Float32Array(((this.segmentsW + 1) * (this.segmentsH + 1) + (this.segmentsW + 1) * (this.segmentsD + 1) + (this.segmentsH + 1) * (this.segmentsD + 1)) * 2 * 3);
+            var vertexTangentData: number[] = [];
 
             var i: number, j: number;
 
@@ -367,8 +381,7 @@ namespace feng3d
          */
         private buildIndices()
         {
-
-            var indices = new Uint16Array((this.segmentsW * this.segmentsH + this.segmentsW * this.segmentsD + this.segmentsH * this.segmentsD) * 12);
+            var indices: number[] = [];
 
             var tl: number, tr: number, bl: number, br: number;
             var i: number, j: number, inc = 0;
@@ -482,7 +495,7 @@ namespace feng3d
         private buildUVs()
         {
             var i: number, j: number, uidx: number;
-            var data = new Float32Array(((this.segmentsW + 1) * (this.segmentsH + 1) + (this.segmentsW + 1) * (this.segmentsD + 1) + (this.segmentsH + 1) * (this.segmentsD + 1)) * 2 * 2);
+            var data: number[] = [];
 
             var u_tile_dim: number, v_tile_dim: number;
             var u_tile_step: number, v_tile_step: number;

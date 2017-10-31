@@ -1,11 +1,11 @@
-namespace feng3d
+module feng3d
 {
     export class ParticleAnimationSet extends RenderDataHolder
     {
         /**
          * 属性数据列表
          */
-        private _attributes: { [name: string]: AttributeRenderData } = {};
+        private _attributes: { [name: string]: number[] } = {};
 
         private _animations: ParticleComponent[] = [];
 
@@ -87,6 +87,8 @@ namespace feng3d
             //更新宏定义
             for (var attribute in this._attributes)
             {
+                var vector3DData = this._attributes[attribute];
+                this.createAttributeRenderData(<any>attribute, vector3DData, vector3DData.length / this.numParticles, 1);
                 this.createBoolMacro(<any>("D_" + attribute), true);
             }
         }
@@ -116,33 +118,20 @@ namespace feng3d
             var index = particle.index;
             var numParticles = particle.total;
             //
-            var attributeRenderData: AttributeRenderData = this._attributes[attributeID];
-            var vector3DData: Float32Array;
+            var vector3DData: number[];
             if (typeof data == "number")
             {
-                if (!attributeRenderData)
-                {
-                    this._attributes[attributeID] = attributeRenderData = this.createAttributeRenderData(<any>attributeID, new Float32Array(numParticles), 1, 1);
-                }
-                vector3DData = attributeRenderData.data;
+                vector3DData = this._attributes[attributeID] = this._attributes[attributeID] || [];
                 vector3DData[index] = data;
             } else if (data instanceof Vector3D)
             {
-                if (!attributeRenderData)
-                {
-                    this._attributes[attributeID] = attributeRenderData = this.createAttributeRenderData(<any>attributeID, new Float32Array(numParticles * 3), 3, 1);
-                }
-                vector3DData = attributeRenderData.data;
+                vector3DData = this._attributes[attributeID] = this._attributes[attributeID] || [];
                 vector3DData[index * 3] = data.x;
                 vector3DData[index * 3 + 1] = data.y;
                 vector3DData[index * 3 + 2] = data.z;
             } else if (data instanceof Color)
             {
-                if (!attributeRenderData)
-                {
-                    this._attributes[attributeID] = attributeRenderData = this.createAttributeRenderData(<any>attributeID, new Float32Array(numParticles * 4), 4, 1);
-                }
-                vector3DData = attributeRenderData.data;
+                vector3DData = this._attributes[attributeID] = this._attributes[attributeID] || [];
                 vector3DData[index * 4] = data.r;
                 vector3DData[index * 4 + 1] = data.g;
                 vector3DData[index * 4 + 2] = data.b;

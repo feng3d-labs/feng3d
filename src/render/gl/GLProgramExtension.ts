@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     export class GLProgramExtension
     {
@@ -9,7 +9,7 @@ namespace feng3d
             {
                 if (arguments.length == 2)
                 {
-                    return createProgram(gl, arguments[0], arguments[1]);
+                    return <any>createProgram(gl, arguments[0], arguments[1]);
                 }
                 var webGLProgram: WebGLProgram = oldCreateProgram.apply(gl, arguments);
                 webGLProgram.destroy = function ()
@@ -81,43 +81,53 @@ namespace feng3d
         var gl = shaderProgram.gl;
         //获取属性信息
         var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
-        shaderProgram.attributes = [];
+        shaderProgram.attributes = {};
         var i = 0;
         while (i < numAttributes)
         {
             var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
-            activeInfo.location = gl.getAttribLocation(shaderProgram, activeInfo.name);
-            shaderProgram.attributes.push(activeInfo);
+            if (activeInfo)
+            {
+                activeInfo.location = gl.getAttribLocation(shaderProgram, activeInfo.name);
+                shaderProgram.attributes[activeInfo.name] = activeInfo;
+            }
         }
         //获取uniform信息
         var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
-        shaderProgram.uniforms = [];
+        shaderProgram.uniforms = {};
         var i = 0;
         var textureID = 0;
         while (i < numUniforms)
         {
             var activeInfo = gl.getActiveUniform(shaderProgram, i++);
-            if (activeInfo.name.indexOf("[") != -1)
+            if (activeInfo)
             {
-                //处理数组
-                var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
-                activeInfo.uniformBaseName = baseName;
-                var uniformLocation: WebGLUniformLocation[] = activeInfo.uniformLocation = [];
-                for (var j = 0; j < activeInfo.size; j++)
+                if (activeInfo.name.indexOf("[") != -1)
                 {
-                    var location = gl.getUniformLocation(shaderProgram, baseName + `[${j}]`);
-                    uniformLocation.push(location);
+                    //处理数组
+                    var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
+                    activeInfo.uniformBaseName = baseName;
+                    var uniformLocationlist: WebGLUniformLocation[] = activeInfo.uniformLocation = [];
+                    for (var j = 0; j < activeInfo.size; j++)
+                    {
+                        var location = gl.getUniformLocation(shaderProgram, baseName + `[${j}]`);
+                        location && uniformLocationlist.push(location);
+                    }
+                } else
+                {
+                    var uniformLocation = gl.getUniformLocation(shaderProgram, activeInfo.name);
+                    if (uniformLocation)
+                    {
+                        activeInfo.uniformLocation = uniformLocation;
+                    }
                 }
-            } else
-            {
-                activeInfo.uniformLocation = gl.getUniformLocation(shaderProgram, activeInfo.name);
+                if (activeInfo.type == GL.SAMPLER_2D || activeInfo.type == GL.SAMPLER_CUBE)
+                {
+                    activeInfo.textureID = textureID;
+                    textureID++;
+                }
+                shaderProgram.uniforms[activeInfo.name] = activeInfo;
             }
-            if (activeInfo.type == GL.SAMPLER_2D || activeInfo.type == GL.SAMPLER_CUBE)
-            {
-                activeInfo.textureID = textureID;
-                textureID++;
-            }
-            shaderProgram.uniforms.push(activeInfo);
         }
     }
 

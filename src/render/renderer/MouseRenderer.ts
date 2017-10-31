@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -8,20 +8,26 @@ namespace feng3d
     export class MouseRenderer extends RenderDataHolder
     {
 
-        private _shaderName = "mouse";
-        selectedObject3D: GameObject;
-        private objects: GameObject[] = [null];
-
-        constructor()
-        {
-            super();
-        }
+        private objects: GameObject[] = [];
 
         /**
 		 * 渲染
 		 */
-        draw(renderContext: RenderContext)
+        draw(renderContext: RenderContext, viewRect: Rectangle)
         {
+            var gl = renderContext.gl;
+
+            var mouseX = input.clientX;
+            var mouseY = input.clientY;
+
+            var offsetX = -(mouseX - viewRect.x);
+            var offsetY = -(viewRect.height - (mouseY - viewRect.y));//y轴与window中坐标反向，所以需要 h = (maxHeight - h)
+
+            gl.clearColor(0, 0, 0, 0);
+            gl.clearDepth(1);
+            gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+            gl.viewport(offsetX, offsetY, viewRect.width, viewRect.height);
+
             this.objects.length = 1;
 
             var gl = renderContext.gl;
@@ -39,7 +45,7 @@ namespace feng3d
             var id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3];//最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
             // console.log(`选中索引3D对象${id}`, data.toString());
 
-            this.selectedObject3D = this.objects[id];
+            return this.objects[id];
         }
 
         protected drawRenderables(renderContext: RenderContext, meshRenderer: MeshRenderer)
@@ -47,8 +53,12 @@ namespace feng3d
             if (meshRenderer.gameObject.mouseEnabled)
             {
                 var object = meshRenderer.gameObject;
-                this.objects.push(object);
-                object._renderData.addUniform(this.createUniformData("u_objectID", this.objects.length - 1));
+                var u_objectID = this.objects.length;
+                this.objects[u_objectID] = object;
+
+                var renderAtomic = object.getComponent(RenderAtomicComponent);
+
+                renderAtomic.uniforms.u_objectID = u_objectID;
                 // super.drawRenderables(renderContext, meshRenderer);
             }
         }
@@ -56,13 +66,16 @@ namespace feng3d
         /**
          * 绘制3D对象
          */
-        protected drawObject3D(gl: GL, renderAtomic: RenderAtomic, shader: ShaderRenderData = null)
+        protected drawObject3D(gl: GL, renderAtomic: RenderAtomic)
         {
-            var vertexCode = ShaderLib.getShaderCode(this._shaderName + ".vertex");
-            var fragmentCode = ShaderLib.getShaderCode(this._shaderName + ".fragment");
-            var shader = new ShaderRenderData();
-            shader.setShaderCode(this.createShaderCode({ vertexCode: vertexCode, fragmentCode: fragmentCode }));
+            var vertexCode = ShaderLib.getShaderCode("mouse.vertex");
+            var fragmentCode = ShaderLib.getShaderCode("mouse.fragment");
+            var shader = new Shader();
+            shader.vertexCode = vertexCode;
+            shader.fragmentCode = fragmentCode;
             // super.drawObject3D(gl, renderAtomic, shader);
         }
     }
+
+    export var glMousePicker = new MouseRenderer();
 }

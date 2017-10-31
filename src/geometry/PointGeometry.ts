@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -37,27 +37,27 @@ namespace feng3d
         {
             this.geometryDirty = false;
 
-            var positionStep = 3;
-            var normalStep = 3;
-            var uvStep = 2;
             var numPoints = this._points.length;
-            var indices = new Uint16Array(numPoints);
-            var positionData = new Float32Array(numPoints * positionStep);
-            var normalData = new Float32Array(numPoints * normalStep);
-            var uvData = new Float32Array(numPoints * uvStep);
+            var indices: number[] = [];
+            var positionData: number[] = [];
+            var normalData: number[] = [];
+            var uvData: number[] = [];
+            var colors: number[] = [];
 
             for (var i = 0; i < numPoints; i++)
             {
                 var element = this._points[i];
                 indices[i] = i;
-                positionData.set(element.position.toArray(3), i * positionStep);
-                normalData.set(element.normal.toArray(3), i * normalStep);
-                uvData.set(element.uv.toArray(), i * uvStep);
+                positionData.push(element.position.x, element.position.y, element.position.z);
+                normalData.push(element.normal.x, element.normal.y, element.normal.z);
+                uvData.push(element.uv.x, element.uv.y);
+                colors.push(element.color.r, element.color.g, element.color.b, element.color.a);
             }
             this.positions = positionData;
             this.uvs = uvData;
             this.normals = normalData;
-            this.setIndices(indices);
+            this.indices = indices;
+            this.setVAData("a_color", colors, 4)
         }
 
         /**
@@ -65,7 +65,7 @@ namespace feng3d
 		 * @param index 		线段索引
 		 * @return				线段数据
 		 */
-        getPoint(index: number): PointInfo
+        getPoint(index: number)
         {
             if (index < this._points.length)
                 return this._points[index];
@@ -97,6 +97,7 @@ namespace feng3d
     export class PointInfo
     {
         position: Vector3D;
+        color: Color;
         normal: Vector3D;
         uv: Point;
 
@@ -104,9 +105,10 @@ namespace feng3d
 		 * 创建点
 		 * @param position 坐标
 		 */
-        constructor(position = new Vector3D(), uv = new Point(), normal = new Vector3D(0, 1, 0))
+        constructor(position = new Vector3D(), color = new Color(), uv = new Point(), normal = new Vector3D(0, 1, 0))
         {
             this.position = position;
+            this.color = color;
             this.normal = normal;
             this.uv = uv;
         }

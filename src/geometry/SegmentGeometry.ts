@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -43,21 +43,22 @@ namespace feng3d
             var segmentPositionStep = 6;
             var segmentColorStep = 8;
             var numSegments = this.segments_.length;
-            var indices = new Uint16Array(numSegments * 2);
-            var positionData = new Float32Array(numSegments * segmentPositionStep);
-            var colorData = new Float32Array(numSegments * segmentColorStep);
+            var indices: number[] = [];
+            var positionData: number[] = [];
+            var colorData: number[] = [];
 
             for (var i = 0; i < numSegments; i++)
             {
                 var element = this.segments_[i];
-                indices.set([i * 2, i * 2 + 1], i * 2);
-                positionData.set(element.positionData, i * segmentPositionStep);
-                colorData.set(element.colorData, i * segmentColorStep);
+                indices.push(i * 2, i * 2 + 1);
+                positionData.push(element.start.x, element.start.y, element.start.z, element.end.x, element.end.y, element.end.z);
+                colorData.push(element.startColor.r, element.startColor.g, element.startColor.b, element.startColor.a,
+                    element.endColor.r, element.endColor.g, element.endColor.b, element.endColor.a, );
             }
 
             this.setVAData("a_position", positionData, 3);
             this.setVAData("a_color", colorData, 4);
-            this.setIndices(indices);
+            this.indices = indices;
         }
 
         /**
@@ -65,7 +66,7 @@ namespace feng3d
 		 * @param index 		线段索引
 		 * @return				线段数据
 		 */
-        getSegment(index: number): Segment
+        getSegment(index: number)
         {
             if (index < this.segments_.length)
                 return this.segments_[index];
@@ -84,7 +85,7 @@ namespace feng3d
 		/**
 		 * 线段列表
 		 */
-        get segments(): Segment[]
+        get segments()
         {
             return this.segments_;
         }
@@ -109,33 +110,12 @@ namespace feng3d
 		 * @param colorEnd 终点颜色
 		 * @param thickness 线段厚度
 		 */
-        constructor(start: Vector3D, end: Vector3D, colorStart = 0xffffff, colorEnd = 0xffffff)
+        constructor(start: Vector3D, end: Vector3D, colorStart = new Color(), colorEnd = new Color())
         {
             this.start = start;
             this.end = end;
-            this.startColor = new Color();
-            this.startColor.fromUnit(colorStart, colorStart > 1 << 24);
-            this.endColor = new Color();
-            this.endColor.fromUnit(colorEnd, colorEnd > 1 << 24);
-        }
-
-        /**
-         * 坐标数据
-         */
-        get positionData()
-        {
-            return [this.start.x, this.start.y, this.start.z, this.end.x, this.end.y, this.end.z];
-        }
-
-        /**
-         * 颜色数据
-         */
-        get colorData()
-        {
-            return [
-                this.startColor.r, this.startColor.g, this.startColor.b, this.startColor.a,
-                this.endColor.r, this.endColor.g, this.endColor.b, this.endColor.a,
-            ];
+            this.startColor = colorStart;
+            this.endColor = colorEnd;
         }
     }
 }

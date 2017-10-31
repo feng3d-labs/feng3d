@@ -1,6 +1,6 @@
-namespace feng3d
+module feng3d
 {
-    export interface UniformRenderData
+    export interface Uniforms
     {
         u_segmentColor: Lazy<Color>;
     }
@@ -15,7 +15,19 @@ namespace feng3d
         /**
          * 线段颜色
          */
-        readonly color = new Color();
+        get color()
+        {
+            return this._color;
+        }
+        set color(value)
+        {
+            if (this._color == value)
+                return;
+            this._color = value;
+            if (this._color)
+                this.enableBlend = this._color.a != 1;
+        }
+        private _color = new Color();
 
         /**
          * 构建线段材质

@@ -1,11 +1,40 @@
-namespace feng3d
+module feng3d
 {
     export var GeometryUtils = {
+        createIndices: createIndices,
+        createUVs: createUVs,
         createVertexNormals: createVertexNormals,
         createVertexTangents: createVertexTangents,
     }
 
-    function createVertexNormals(indices: number[] | Uint16Array, positions: number[] | Float32Array, useFaceWeights = false)
+    function createIndices(positions: AttributeDataType): Array<number>
+    {
+        var vertexNum = positions.length / 3;
+        var indices: number[] = [];
+        for (var i = 0; i < vertexNum; i++)
+        {
+            indices[i] = i;
+        }
+        return indices;
+    }
+
+    function createUVs(positions: AttributeDataType): Array<number>
+    {
+        var idx = 0, uvIdx = 0;
+        var stride = 2;
+        var target = new Array<number>();
+        var len = positions.length / 3 * 2;
+        while (idx < len)
+        {
+            target[idx++] = uvIdx * .5;
+            target[idx++] = 1.0 - (uvIdx & 1);
+            if (++uvIdx == 3)
+                uvIdx = 0;
+        }
+        return target;
+    }
+
+    function createVertexNormals(indices: number[] | Uint16Array, positions: AttributeDataType, useFaceWeights = false)
     {
         var faceNormalsResult = createFaceNormals(indices, positions, useFaceWeights);
         var faceWeights = faceNormalsResult.faceWeights;
@@ -63,9 +92,9 @@ namespace feng3d
         return normals;
     }
 
-    function createVertexTangents(indices: number[] | Uint16Array, positions: number[] | Float32Array, uvs: number[] | Float32Array, useFaceWeights = false): Array<number>
+    function createVertexTangents(indices: number[] | Uint16Array, positions: AttributeDataType, uvs: AttributeDataType, useFaceWeights = false): Array<number>
     {
-        var faceTangentsResult = createFaceTangents(indices, positions, uvs);
+        var faceTangentsResult = createFaceTangents(indices, positions, uvs, useFaceWeights);
         var faceWeights = faceTangentsResult.faceWeights;
         var faceTangents = faceTangentsResult.faceTangents;
 
@@ -122,7 +151,7 @@ namespace feng3d
         return target;
     }
 
-    function createFaceTangents(indices: number[] | Uint16Array, positions: number[] | Float32Array, uvs: number[] | Float32Array, useFaceWeights = false)
+    function createFaceTangents(indices: number[] | Uint16Array, positions: AttributeDataType, uvs: AttributeDataType, useFaceWeights = false)
     {
         var i = 0, k = 0;
         var index1 = 0, index2 = 0, index3 = 0;
@@ -140,8 +169,7 @@ namespace feng3d
         var texStride = 2;
         var texOffset = 0;
         var faceTangents = new Array<number>(indices.length);
-        if (useFaceWeights)
-            var faceWeights = new Array<number>(len / 3);
+        var faceWeights: number[] = [];
         while (i < len)
         {
             index1 = indices[i];
@@ -184,7 +212,7 @@ namespace feng3d
         return { faceTangents: faceTangents, faceWeights: faceWeights };
     }
 
-    function createFaceNormals(indices: number[] | Uint16Array, positions: number[] | Float32Array, useFaceWeights = false)
+    function createFaceNormals(indices: number[] | Uint16Array, positions: AttributeDataType, useFaceWeights = false)
     {
         var i = 0, j = 0, k = 0;
         var index = 0;
@@ -198,8 +226,7 @@ namespace feng3d
         var d = 0;
         var posStride = 3;
         var faceNormals = new Array<number>(len);
-        if (useFaceWeights)
-            var faceWeights = new Array<number>(len / 3);
+        var faceWeights: number[] = [];
         while (i < len)
         {
             index = indices[i++] * posStride;

@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
      * GL扩展
@@ -23,7 +23,8 @@ namespace feng3d
                 gl.getExtension('EXT_texture_filter_anisotropic')
                 || gl.getExtension('MOZ_EXT_texture_filter_anisotropic')
                 || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
-            gl.maxAnisotropy = gl.getParameter(gl.anisotropicExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+            if (gl.anisotropicExt)
+                gl.maxAnisotropy = gl.getParameter(gl.anisotropicExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
 
             if (!gl.webgl2)
             {

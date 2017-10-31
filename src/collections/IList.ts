@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
      * 按顺序组织的项目的集合。提供基于索引的访问和处理方法。

@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -34,7 +34,7 @@ namespace feng3d
         {
             var cls = <any>source.constructor;
             var className = ClassUtils.getQualifiedClassName(source);
-            var target: T = null;
+            var target: T = new cls();
             switch (className)
             {
                 case "Uint16Array":
@@ -42,8 +42,6 @@ namespace feng3d
                 case "Float32Array":
                     target = new cls(source["length"]);
                     break;
-                default:
-                    target = new cls();
             }
             return target;
         }

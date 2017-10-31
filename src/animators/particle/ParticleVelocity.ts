@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
      * 粒子速度组件

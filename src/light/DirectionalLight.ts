@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
      * 方向光源
@@ -6,73 +6,13 @@ namespace feng3d
      */
     export class DirectionalLight extends Light
     {
-        static get directionalLights()
-        {
-            return this._directionalLights;
-        }
-        private static _directionalLights: DirectionalLight[] = [];
-
-        private _direction: Vector3D;
-        private _sceneDirection: Vector3D;
-
         /**
          * 构建
          */
-        constructor(gameObject: GameObject)
+        init(gameObject: GameObject)
         {
-            super(gameObject);
+            super.init(gameObject);
             this.lightType = LightType.Directional;
-            var xDir = 0, yDir = -1, zDir = 1
-            this._sceneDirection = new Vector3D();
-            this.direction = new Vector3D(xDir, yDir, zDir);
-            //
-            DirectionalLight._directionalLights.push(this);
-            //
-            this.gameObject.transform.on("scenetransformChanged", this.onScenetransformChanged, this);
-            var tmpLookAt = this.gameObject.transform.position;
-            tmpLookAt.incrementBy(this._direction);
-            this.gameObject.transform.lookAt(tmpLookAt);
-        }
-
-        get sceneDirection(): Vector3D
-        {
-            return this._sceneDirection;
-        }
-
-        /**
-         * 光照方向
-         */
-        get direction(): Vector3D
-        {
-            return this._direction;
-        }
-
-        set direction(value: Vector3D)
-        {
-            this._direction = value;
-            if (this.gameObject)
-            {
-                var tmpLookAt = this.gameObject.transform.position;
-                tmpLookAt.incrementBy(this._direction);
-                this.gameObject.transform.lookAt(tmpLookAt);
-                this.gameObject.transform.localToWorldMatrix.copyColumnTo(2, this._sceneDirection);
-                this._sceneDirection.normalize();
-            }
-        }
-
-        protected onScenetransformChanged()
-        {
-            this.gameObject.transform.localToWorldMatrix.copyColumnTo(2, this._sceneDirection);
-            this._sceneDirection.normalize();
-        }
-
-        /**
-         * 销毁
-         */
-        dispose()
-        {
-            this.gameObject.transform.off("scenetransformChanged", this.onScenetransformChanged, this);
-            super.dispose();
         }
     }
 }

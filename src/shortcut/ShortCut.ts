@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 	/**
 	 * 初始化快捷键模块
@@ -45,6 +45,11 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 		 * 捕获字典
 		 */
 		captureDic: {};
+
+		/**
+		 * 启动
+		 */
+		enable = true;
 
 		/**
 		 * 初始化快捷键模块
@@ -96,7 +101,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 		 */
 		removeAllShortCuts(): void
 		{
-			var keys = [];
+			var keys: string[] = [];
 			var key: string;
 			for (key in this.captureDic)
 			{

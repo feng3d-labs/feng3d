@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 	/**
 	 * 镜头事件
@@ -27,14 +27,15 @@ namespace feng3d
 		 * 最近距离
 		 */
 		private _near = 0.1;
-		@serialize
+		@serialize()
+		@oav()
 		get near()
 		{
 			return this._near;
 		}
 		set near(value)
 		{
-			if(this._near == value)
+			if (this._near == value)
 				return;
 			this._near = value;
 			this.invalidateMatrix();
@@ -44,14 +45,15 @@ namespace feng3d
 		 * 最远距离
 		 */
 		private _far = 10000;
-		@serialize
+		@serialize()
+		@oav()
 		get far()
 		{
 			return this._far;
 		}
 		set far(value)
 		{
-			if(this._far == value)
+			if (this._far == value)
 				return;
 			this._far = value;
 			this.invalidateMatrix();
@@ -61,27 +63,28 @@ namespace feng3d
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
 		private _aspectRatio = 1;
-		@serialize
+		@serialize()
+		@oav()
 		get aspectRatio()
 		{
 			return this._aspectRatio;
 		}
 		set aspectRatio(value)
 		{
-			if(this._aspectRatio == value)
+			if (this._aspectRatio == value)
 				return;
 			this._aspectRatio = value;
 			this.invalidateMatrix();
 		}
 
 		//
-		protected _matrix: Matrix3D;
+		protected _matrix: Matrix3D | null;
 		protected _scissorRect: Rectangle = new Rectangle();
 		protected _viewPort: Rectangle = new Rectangle();
 
 		protected _frustumCorners: number[] = [];
 
-		private _unprojection: Matrix3D;
+		private _unprojection: Matrix3D | null;
 
 		/**
 		 * 创建一个摄像机镜头
@@ -111,7 +114,7 @@ namespace feng3d
 		{
 			if (!this._matrix)
 			{
-				this.updateMatrix();
+				this._matrix = this.updateMatrix();
 			}
 			return this._matrix;
 		}
@@ -129,7 +132,7 @@ namespace feng3d
 		 * @param v 屏幕坐标（输出）
 		 * @return 屏幕坐标
 		 */
-		project(point3d: Vector3D, v: Vector3D = null): Vector3D
+		project(point3d: Vector3D, v?: Vector3D): Vector3D
 		{
 			if (!v)
 				v = new Vector3D();
@@ -166,7 +169,7 @@ namespace feng3d
 		 * @param v 场景坐标（输出）
 		 * @return 场景坐标
 		 */
-		abstract unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D;
+		abstract unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
 
 		/**
 		 * 投影矩阵失效
@@ -174,13 +177,13 @@ namespace feng3d
 		protected invalidateMatrix()
 		{
 			this._matrix = null;
-			this.dispatch("matrixChanged", this);
 			this._unprojection = null;
+			this.dispatch("matrixChanged", this);
 		}
 
 		/**
 		 * 更新投影矩阵
 		 */
-		protected abstract updateMatrix();
+		protected abstract updateMatrix(): Matrix3D;
 	}
 }

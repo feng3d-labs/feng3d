@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     var DEG_TO_RAD = Math.PI / 180;
@@ -23,12 +23,16 @@ namespace feng3d
          * 该点的水平坐标。
          * @default 0
          */
+        @oav()
+        @serialize()
         x: number;
 
         /**
          * 该点的垂直坐标。
          * @default 0
          */
+        @oav()
+        @serialize()
         y: number;
 
         /**

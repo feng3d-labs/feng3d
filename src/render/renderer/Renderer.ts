@@ -1,100 +1,166 @@
-namespace feng3d
+module feng3d
 {
 
+    export var renderer = {
+        activeAttributes: activeAttributes,
+        disableAttributes: disableAttributes,
+        activeUniforms: activeUniforms,
+        dodraw: dodraw,
+    };
+
     /**
-     * 渲染器
-     * @author feng 2016-05-01
+     * 激活属性
      */
-    export class Renderer extends Component
+    function activeAttributes(renderAtomic: RenderAtomic, gl: GL, attributeInfos: { [name: string]: WebGLActiveInfo })
     {
-        /**
-         * 材质
-         * Returns the first instantiated Material assigned to the renderer.
-         */
-        @serialize
-        get material() { return this._material }
-        set material(value)
+        for (var name in attributeInfos)
         {
-            if (this._material == value)
-                return;
-            if (this._material)
-                this.removeRenderDataHolder(this._material);
-            this._material = value;
-            if (this._material)
-                this.addRenderDataHolder(this.material);
-        }
-        private _material: Material;
-
-        /**
-         * Makes the rendered 3D object visible if enabled.
-         */
-        @serialize
-        get enabled()
-        {
-            return this._enabled;
-        }
-        set enable(value)
-        {
-            this._enabled = value;
-        }
-        private _enabled: boolean;
-
-        constructor(gameObject: GameObject)
-        {
-            super(gameObject);
-        }
-
-        drawRenderables(renderContext: RenderContext)
-        {
-            var object3D = this.gameObject;
-            //更新数据
-            object3D.updateRender(renderContext);
-            var gl = renderContext.gl;
-            // try
-            // {
-            //绘制
-            var material = this.material;
-            if (material.enableBlend)
+            if (attributeInfos.hasOwnProperty(name))
             {
-                //
-                gl.enable(GL.BLEND);
-                gl.blendEquation(material.blendEquation);
-                gl.depthMask(false);
-                gl.blendFunc(material.sfactor, material.dfactor);
-            } else
-            {
-                gl.disable(GL.BLEND);
-                gl.depthMask(true);
+                var activeInfo = attributeInfos[name];
+                var buffer: Attribute = renderAtomic.attributes[name];
+                buffer.active(gl, activeInfo.location);
             }
-            this.drawObject3D(gl, object3D._renderData);            //
-            // } catch (error)
-            // {
-            //     console.log(error);
-            // }
+        }
+    }
+
+    /**
+     * 激活属性
+     */
+    function disableAttributes(gl: GL, attributeInfos: { [name: string]: WebGLActiveInfo })
+    {
+        for (var name in attributeInfos)
+        {
+            if (attributeInfos.hasOwnProperty(name))
+            {
+                var activeInfo = attributeInfos[name];
+                gl.disableVertexAttribArray(activeInfo.location);
+            }
+        }
+    }
+
+    /**
+     * 激活常量
+     */
+    function activeUniforms(renderAtomic: RenderAtomic, gl: GL, uniformInfos: { [name: string]: WebGLActiveInfo })
+    {
+        for (var name in uniformInfos)
+        {
+            if (uniformInfos.hasOwnProperty(name))
+            {
+                var activeInfo = uniformInfos[name];
+                if (activeInfo.uniformBaseName)
+                {
+                    var baseName = activeInfo.uniformBaseName;
+                    var uniformData = lazy.getvalue(renderAtomic.uniforms[baseName]);
+                    //处理数组
+                    for (var j = 0; j < activeInfo.size; j++)
+                    {
+                        setContext3DUniform(gl, { name: baseName + `[${j}]`, type: activeInfo.type, uniformLocation: activeInfo.uniformLocation[j], textureID: activeInfo.textureID }, uniformData[j]);
+                    }
+                } else
+                {
+                    var uniformData = lazy.getvalue(renderAtomic.uniforms[activeInfo.name]);
+                    setContext3DUniform(gl, activeInfo, uniformData);
+                }
+            }
+        }
+    }
+
+    /**
+     * 设置环境Uniform数据
+     */
+    function setContext3DUniform(gl: GL, activeInfo: { name: string; uniformLocation: WebGLUniformLocation, type: number; textureID: number }, data)
+    {
+        var location = activeInfo.uniformLocation;
+        switch (activeInfo.type)
+        {
+            case GL.INT:
+                gl.uniform1i(location, data);
+                break;
+            case GL.FLOAT_MAT4:
+                gl.uniformMatrix4fv(location, false, data.rawData);
+                break;
+            case GL.FLOAT:
+                gl.uniform1f(location, data);
+                break;
+            case GL.FLOAT_VEC2:
+                gl.uniform2f(location, data.x, data.y);
+                break;
+            case GL.FLOAT_VEC3:
+                if (data instanceof Color)
+                {
+                    gl.uniform3f(location, data.r, data.g, data.b);
+                } else if (data instanceof Vector3D)
+                {
+                    gl.uniform3f(location, data.x, data.y, data.z);
+                } else
+                {
+                    throw `无法处理 uniform数据 ${activeInfo.name} ${data}`;
+                }
+                break;
+            case GL.FLOAT_VEC4:
+                if (data instanceof Color)
+                {
+                    gl.uniform4f(location, data.r, data.g, data.b, data.a);
+                } else if (data instanceof Vector3D)
+                {
+                    gl.uniform4f(location, data.x, data.y, data.z, data.w);
+                } else
+                {
+                    throw `无法处理 uniform数据 ${activeInfo.name} ${data}`;
+                }
+                break;
+            case GL.SAMPLER_2D:
+            case GL.SAMPLER_CUBE:
+                var textureInfo = <TextureInfo>data;
+                //激活纹理编号
+                gl.activeTexture(GL["TEXTURE" + activeInfo.textureID]);
+                textureInfo.active(gl);
+                //设置纹理所在采样编号
+                gl.uniform1i(location, activeInfo.textureID);
+                break;
+            default:
+                throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
+        }
+    }
+
+    /**
+     */
+    function dodraw(renderAtomic: RenderAtomic, gl: GL)
+    {
+        var instanceCount = ~~lazy.getvalue(renderAtomic.instanceCount);
+
+        var indexBuffer = renderAtomic.indexBuffer;
+        var vertexNum = 0;
+        if (indexBuffer)
+        {
+            indexBuffer.active(gl);
+        }
+        else
+        {
+            var a_position = renderAtomic.attributes.a_position;
+            var vertexNum = a_position.data.length / a_position.size;
         }
 
-        /**
-         * 绘制3D对象
-         */
-        protected drawObject3D(gl: GL, renderAtomic: RenderAtomic, shader: ShaderRenderData = null)
-        {
-            shader = shader || renderAtomic.shader;
-            var shaderProgram = shader.activeShaderProgram(gl);
-            if (!shaderProgram)
-                return;
-            //
-            renderAtomic.activeAttributes(gl, shaderProgram.attributes);
-            renderAtomic.activeUniforms(gl, shaderProgram.uniforms);
-            renderAtomic.dodraw(gl);
-        }
+        var shaderParams = renderAtomic.shader.shaderParams;
 
-        /**
-         * 销毁
-         */
-        dispose()
+        var renderMode = shaderParams.renderMode;
+        if (renderMode instanceof Function)
+            renderMode = renderMode();
+        if (instanceCount > 1)
         {
-            super.dispose();
-            this.material = null;
+            if (indexBuffer)
+                gl.drawElementsInstanced(renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset, instanceCount);
+            else
+                gl.drawArraysInstanced(renderMode, 0, vertexNum, instanceCount);
+        }
+        else
+        {
+            if (indexBuffer)
+                gl.drawElements(renderMode, indexBuffer.count, indexBuffer.type, indexBuffer.offset);
+            else
+                gl.drawArrays(renderMode, 0, vertexNum);
         }
     }
 }

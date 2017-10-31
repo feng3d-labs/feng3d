@@ -11,12 +11,12 @@ interface Element
     style: { display }
 }
 
-namespace feng3d
+module feng3d
 {
     export class Stats
     {
-        private static instance: Stats;
-        static init(parent: HTMLElement = null)
+        static instance: Stats;
+        static init(parent?: HTMLElement)
         {
             if (!this.instance)
             {
@@ -24,10 +24,7 @@ namespace feng3d
                 parent = parent || document.body;
                 parent.appendChild(this.instance.dom);
             }
-            ticker.on("enterFrame", () =>
-            {
-                this.instance.update();
-            });
+            ticker.on("enterFrame", this.instance.update, this.instance);
         }
 
         REVISION: number;
@@ -142,7 +139,13 @@ namespace feng3d
             canvas.height = HEIGHT;
             canvas.style.cssText = 'width:80px;height:48px';
 
-            var context = canvas.getContext('2d');
+            var context0 = canvas.getContext('2d');
+            if (context0 == null)
+            {
+                console.log(`无法创建 CanvasRenderingContext2D `);
+                return;
+            }
+            var context = context0;
             context.font = 'bold ' + (9 * PR) + 'px Helvetica,Arial,sans-serif';
             context.textBaseline = 'top';
 

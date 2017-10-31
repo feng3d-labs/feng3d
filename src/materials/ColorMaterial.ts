@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
      * 颜色材质
@@ -9,6 +9,8 @@ namespace feng3d
         /** 
          * 颜色 
          */
+        @serialize()
+        @oav()
         get color()
         {
             return this._color;
@@ -28,7 +30,7 @@ namespace feng3d
          * @param color 颜色
          * @param alpha 透明的
          */
-        constructor(color: Color = null)
+        constructor(color?: Color)
         {
             super();
             this.shaderName = "color";

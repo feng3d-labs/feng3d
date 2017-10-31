@@ -1,16 +1,16 @@
-namespace feng3d
+module feng3d
 {
     export class ControllerBase
     {
         /**
          * 控制对象
          */
-        protected _targetObject: GameObject;
+        protected _targetObject: GameObject | undefined;
 
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(targetObject: GameObject)
+        constructor(targetObject?: GameObject)
         {
             this.targetObject = targetObject;
         }
@@ -23,12 +23,12 @@ namespace feng3d
             throw new Error("Abstract method");
         }
 
-        get targetObject(): GameObject
+        get targetObject()
         {
             return this._targetObject;
         }
 
-        set targetObject(val: GameObject)
+        set targetObject(val)
         {
             this._targetObject = val;
         }

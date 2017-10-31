@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
      * feng3d的版本号
@@ -8,12 +8,21 @@ namespace feng3d
     /**
      * 是否开启调试(主要用于断言)
      */
-    export var debuger = true;
+    export var debuger = true; 
 
 	/**
      * 快捷键
      */
     export var shortcut = new ShortCut();
+
+    /**
+     * 资源路径
+     */
+    export var assetsRoot = "";
+
+    export var componentMap = {
+        Transform: Transform,
+    };
 
     console.log(`Feng3D version ${revision}`)
 }

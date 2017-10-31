@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -26,16 +26,17 @@ namespace feng3d
         /**
          * 用于运算临时变量
          */
-        static RAW_DATA_CONTAINER = new Float32Array([//
+        static RAW_DATA_CONTAINER = [//
             1, 0, 0, 0,// 
             0, 1, 0, 0,// 
             0, 0, 1, 0,//
             0, 0, 0, 1//
-        ]);
+        ];
         /**
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
-        rawData: Float32Array;
+        @serialize()
+        rawData: number[];
 
         /**
          * 一个保存显示对象在转换参照帧中的 3D 坐标 (x,y,z) 位置的 Vector3D 对象。
@@ -142,21 +143,14 @@ namespace feng3d
          * 创建 Matrix3D 对象。
          * @param   datas    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
-        constructor(datas: Float32Array | number[] = null)
+        constructor(datas?: number[])
         {
-            datas = datas || [//
+            this.rawData = datas || [//
                 1, 0, 0, 0,// 
                 0, 1, 0, 0,// 
                 0, 0, 1, 0,//
                 0, 0, 0, 1//
             ];
-
-            if (datas instanceof Float32Array)
-                this.rawData = datas
-            else
-            {
-                this.rawData = new Float32Array(datas);
-            }
         }
 
         /**
@@ -422,7 +416,10 @@ namespace feng3d
          */
         copyFrom(sourceMatrix3D: Matrix3D)
         {
-            this.rawData.set(sourceMatrix3D.rawData);
+            for (var i = 0; i < 16; i++)
+            {
+                this.rawData[i] = sourceMatrix3D.rawData[i];
+            }
             return this;
         }
 
@@ -432,7 +429,7 @@ namespace feng3d
          * @param   index       vector中的起始位置
          * @param   transpose   是否转置当前矩阵
          */
-        copyRawDataFrom(vector: Float32Array, index = 0, transpose = false)
+        copyRawDataFrom(vector: number[], index = 0, transpose = false)
         {
             if (vector.length - index < 16)
             {
@@ -510,7 +507,7 @@ namespace feng3d
          */
         copyToMatrix3D(dest: Matrix3D)
         {
-            dest.rawData.set(this.rawData);
+            dest.rawData = this.rawData.concat();
             return this;
         }
 
@@ -518,7 +515,7 @@ namespace feng3d
          * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3D 对象组成的矢量返回。
          * @return      一个由三个 Vector3D 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
          */
-        decompose(orientationStyle: string = "eulerAngles", result: Vector3D[] = null): Vector3D[]
+        decompose(orientationStyle: string = "eulerAngles", result?: Vector3D[]): Vector3D[]
         {
             var raw = this.rawData;
 
@@ -630,19 +627,15 @@ namespace feng3d
          */
         deltaTransformVector(v: Vector3D, vout?: Vector3D): Vector3D
         {
-            var tempx = this.rawData[12];
-            var tempy = this.rawData[13];
-            var tempz = this.rawData[14];
+            var x = v.x;
+            var y = v.y;
+            var z = v.z;
 
-            this.rawData[12] = 0;
-            this.rawData[13] = 0;
-            this.rawData[14] = 0;
-
-            vout = this.transformVector(v, vout)
-
-            this.rawData[12] = tempx;
-            this.rawData[13] = tempy;
-            this.rawData[14] = tempz;
+            vout = vout || new Vector3D();
+            vout.x = x * this.rawData[0] + y * this.rawData[4] + z * this.rawData[8];
+            vout.y = x * this.rawData[1] + y * this.rawData[5] + z * this.rawData[9];
+            vout.z = x * this.rawData[2] + y * this.rawData[6] + z * this.rawData[10];
+            vout.w = x * this.rawData[3] + y * this.rawData[7] + z * this.rawData[11];
 
             return vout;
         }
@@ -681,46 +674,46 @@ namespace feng3d
             var d = this.determinant;
             var invertable = Math.abs(d) > 0.00000000001;
 
-            if (invertable)
+            if (!invertable)
             {
-                d = 1 / d;
-                var m11 = this.rawData[0];
-                var m21 = this.rawData[4];
-                var m31 = this.rawData[8];
-                var m41 = this.rawData[12];
-                var m12 = this.rawData[1];
-                var m22 = this.rawData[5];
-                var m32 = this.rawData[9];
-                var m42 = this.rawData[13];
-                var m13 = this.rawData[2];
-                var m23 = this.rawData[6];
-                var m33 = this.rawData[10];
-                var m43 = this.rawData[14];
-                var m14 = this.rawData[3];
-                var m24 = this.rawData[7];
-                var m34 = this.rawData[11];
-                var m44 = this.rawData[15];
-
-                this.rawData[0] = d * (m22 * (m33 * m44 - m43 * m34) - m32 * (m23 * m44 - m43 * m24) + m42 * (m23 * m34 - m33 * m24));
-                this.rawData[1] = -d * (m12 * (m33 * m44 - m43 * m34) - m32 * (m13 * m44 - m43 * m14) + m42 * (m13 * m34 - m33 * m14));
-                this.rawData[2] = d * (m12 * (m23 * m44 - m43 * m24) - m22 * (m13 * m44 - m43 * m14) + m42 * (m13 * m24 - m23 * m14));
-                this.rawData[3] = -d * (m12 * (m23 * m34 - m33 * m24) - m22 * (m13 * m34 - m33 * m14) + m32 * (m13 * m24 - m23 * m14));
-                this.rawData[4] = -d * (m21 * (m33 * m44 - m43 * m34) - m31 * (m23 * m44 - m43 * m24) + m41 * (m23 * m34 - m33 * m24));
-                this.rawData[5] = d * (m11 * (m33 * m44 - m43 * m34) - m31 * (m13 * m44 - m43 * m14) + m41 * (m13 * m34 - m33 * m14));
-                this.rawData[6] = -d * (m11 * (m23 * m44 - m43 * m24) - m21 * (m13 * m44 - m43 * m14) + m41 * (m13 * m24 - m23 * m14));
-                this.rawData[7] = d * (m11 * (m23 * m34 - m33 * m24) - m21 * (m13 * m34 - m33 * m14) + m31 * (m13 * m24 - m23 * m14));
-                this.rawData[8] = d * (m21 * (m32 * m44 - m42 * m34) - m31 * (m22 * m44 - m42 * m24) + m41 * (m22 * m34 - m32 * m24));
-                this.rawData[9] = -d * (m11 * (m32 * m44 - m42 * m34) - m31 * (m12 * m44 - m42 * m14) + m41 * (m12 * m34 - m32 * m14));
-                this.rawData[10] = d * (m11 * (m22 * m44 - m42 * m24) - m21 * (m12 * m44 - m42 * m14) + m41 * (m12 * m24 - m22 * m14));
-                this.rawData[11] = -d * (m11 * (m22 * m34 - m32 * m24) - m21 * (m12 * m34 - m32 * m14) + m31 * (m12 * m24 - m22 * m14));
-                this.rawData[12] = -d * (m21 * (m32 * m43 - m42 * m33) - m31 * (m22 * m43 - m42 * m23) + m41 * (m22 * m33 - m32 * m23));
-                this.rawData[13] = d * (m11 * (m32 * m43 - m42 * m33) - m31 * (m12 * m43 - m42 * m13) + m41 * (m12 * m33 - m32 * m13));
-                this.rawData[14] = -d * (m11 * (m22 * m43 - m42 * m23) - m21 * (m12 * m43 - m42 * m13) + m41 * (m12 * m23 - m22 * m13));
-                this.rawData[15] = d * (m11 * (m22 * m33 - m32 * m23) - m21 * (m12 * m33 - m32 * m13) + m31 * (m12 * m23 - m22 * m13));
-            }
-            if (invertable)
+                console.error("无法获取逆矩阵");
                 return this;
-            return null;
+            }
+            d = 1 / d;
+            var m11 = this.rawData[0];
+            var m21 = this.rawData[4];
+            var m31 = this.rawData[8];
+            var m41 = this.rawData[12];
+            var m12 = this.rawData[1];
+            var m22 = this.rawData[5];
+            var m32 = this.rawData[9];
+            var m42 = this.rawData[13];
+            var m13 = this.rawData[2];
+            var m23 = this.rawData[6];
+            var m33 = this.rawData[10];
+            var m43 = this.rawData[14];
+            var m14 = this.rawData[3];
+            var m24 = this.rawData[7];
+            var m34 = this.rawData[11];
+            var m44 = this.rawData[15];
+
+            this.rawData[0] = d * (m22 * (m33 * m44 - m43 * m34) - m32 * (m23 * m44 - m43 * m24) + m42 * (m23 * m34 - m33 * m24));
+            this.rawData[1] = -d * (m12 * (m33 * m44 - m43 * m34) - m32 * (m13 * m44 - m43 * m14) + m42 * (m13 * m34 - m33 * m14));
+            this.rawData[2] = d * (m12 * (m23 * m44 - m43 * m24) - m22 * (m13 * m44 - m43 * m14) + m42 * (m13 * m24 - m23 * m14));
+            this.rawData[3] = -d * (m12 * (m23 * m34 - m33 * m24) - m22 * (m13 * m34 - m33 * m14) + m32 * (m13 * m24 - m23 * m14));
+            this.rawData[4] = -d * (m21 * (m33 * m44 - m43 * m34) - m31 * (m23 * m44 - m43 * m24) + m41 * (m23 * m34 - m33 * m24));
+            this.rawData[5] = d * (m11 * (m33 * m44 - m43 * m34) - m31 * (m13 * m44 - m43 * m14) + m41 * (m13 * m34 - m33 * m14));
+            this.rawData[6] = -d * (m11 * (m23 * m44 - m43 * m24) - m21 * (m13 * m44 - m43 * m14) + m41 * (m13 * m24 - m23 * m14));
+            this.rawData[7] = d * (m11 * (m23 * m34 - m33 * m24) - m21 * (m13 * m34 - m33 * m14) + m31 * (m13 * m24 - m23 * m14));
+            this.rawData[8] = d * (m21 * (m32 * m44 - m42 * m34) - m31 * (m22 * m44 - m42 * m24) + m41 * (m22 * m34 - m32 * m24));
+            this.rawData[9] = -d * (m11 * (m32 * m44 - m42 * m34) - m31 * (m12 * m44 - m42 * m14) + m41 * (m12 * m34 - m32 * m14));
+            this.rawData[10] = d * (m11 * (m22 * m44 - m42 * m24) - m21 * (m12 * m44 - m42 * m14) + m41 * (m12 * m24 - m22 * m14));
+            this.rawData[11] = -d * (m11 * (m22 * m34 - m32 * m24) - m21 * (m12 * m34 - m32 * m14) + m31 * (m12 * m24 - m22 * m14));
+            this.rawData[12] = -d * (m21 * (m32 * m43 - m42 * m33) - m31 * (m22 * m43 - m42 * m23) + m41 * (m22 * m33 - m32 * m23));
+            this.rawData[13] = d * (m11 * (m32 * m43 - m42 * m33) - m31 * (m12 * m43 - m42 * m13) + m41 * (m12 * m33 - m32 * m13));
+            this.rawData[14] = -d * (m11 * (m22 * m43 - m42 * m23) - m21 * (m12 * m43 - m42 * m13) + m41 * (m12 * m23 - m22 * m13));
+            this.rawData[15] = d * (m11 * (m22 * m33 - m32 * m23) - m21 * (m12 * m33 - m32 * m13) + m31 * (m12 * m23 - m22 * m13));
+            return this;
         }
 
         /**
@@ -911,6 +904,7 @@ namespace feng3d
                     }
                 }
             }
+            return this;
         }
 
         /**
@@ -933,7 +927,7 @@ namespace feng3d
          * @param target    目标位置
          * @param upAxis    向上朝向
          */
-        lookAt(target: Vector3D, upAxis: Vector3D = null): void
+        lookAt(target: Vector3D, upAxis?: Vector3D): void
         {
             //获取位移，缩放，在变换过程位移与缩放不变
             var vec = this.decompose();

@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     export class ParticleBillboard extends ParticleComponent
     {
@@ -13,48 +13,18 @@ namespace feng3d
 		 * 创建一个广告牌节点
 		 * @param billboardAxis
 		 */
-        constructor(camera: Camera, billboardAxis: Vector3D = null)
+        constructor(camera: Camera, billboardAxis?: Vector3D)
         {
             super();
-            this.billboardAxis = billboardAxis;
+            this.billboardAxis = <any>billboardAxis;
             this._camera = camera;
         }
 
         setRenderState(particleAnimator: ParticleAnimator)
         {
             var gameObject = particleAnimator.gameObject;
-            var comps: Vector3D[];
-            if (this._billboardAxis)
-            {
-                var pos: Vector3D = gameObject.transform.localToWorldMatrix.position;
-                var look: Vector3D = this._camera.transform.localToWorldMatrix.position.subtract(pos);
-                var right: Vector3D = look.crossProduct(this._billboardAxis);
-                right.normalize();
-                look = this._billboardAxis.crossProduct(right);
-                look.normalize();
-
-                //create a quick inverse projection matrix
-                this._matrix.copyFrom(gameObject.transform.localToWorldMatrix);
-                comps = this._matrix.decompose(Orientation3D.AXIS_ANGLE);
-                this._matrix.copyColumnFrom(0, right);
-                this._matrix.copyColumnFrom(1, this._billboardAxis);
-                this._matrix.copyColumnFrom(2, look);
-                this._matrix.copyColumnFrom(3, pos);
-                this._matrix.appendRotation(comps[1], -comps[1].w * Math.RAD2DEG);
-            }
-            else
-            {
-                //create a quick inverse projection matrix
-                this._matrix.copyFrom(gameObject.transform.localToWorldMatrix);
-                this._matrix.append(this._camera.transform.worldToLocalMatrix);
-
-                //decompose using axis angle rotations
-                comps = this._matrix.decompose(Orientation3D.AXIS_ANGLE);
-
-                //recreate the matrix with just the rotation data
-                this._matrix.identity();
-                this._matrix.appendRotation(comps[1], -comps[1].w * Math.RAD2DEG);
-            }
+            this._matrix.copyFrom(gameObject.transform.localToWorldMatrix);
+            this._matrix.lookAt(this._camera.transform.localToWorldMatrix.position, this._billboardAxis || Vector3D.Y_AXIS);
             particleAnimator.animatorSet.setGlobal("billboardMatrix", this._matrix);
         }
 
@@ -68,7 +38,7 @@ namespace feng3d
 
         set billboardAxis(value: Vector3D)
         {
-            this._billboardAxis = value ? value.clone() : null;
+            this._billboardAxis = value ? value.clone() : <any>null;
             if (this._billboardAxis)
                 this._billboardAxis.normalize();
         }

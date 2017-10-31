@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
      * 观察装饰器，观察被装饰属性的变化

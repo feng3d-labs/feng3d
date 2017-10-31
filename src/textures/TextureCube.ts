@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -9,6 +9,95 @@ namespace feng3d
     {
         protected _pixels: HTMLImageElement[];
 
+        @serialize()
+        @oav()
+        get positive_x_url()
+        {
+            return this._positive_x_url;
+        }
+        set positive_x_url(value)
+        {
+            if (this._positive_x_url == value)
+                return;
+            this._positive_x_url = value;
+            this._pixels[0].src = value;
+        }
+        private _positive_x_url: string;
+
+        @serialize()
+        @oav()
+        get positive_y_url()
+        {
+            return this._positive_y_url;
+        }
+        set positive_y_url(value)
+        {
+            if (this._positive_y_url == value)
+                return;
+            this._positive_y_url = value;
+            this._pixels[1].src = value;
+        }
+        private _positive_y_url: string;
+
+        @serialize()
+        @oav()
+        get positive_z_url()
+        {
+            return this._positive_z_url;
+        }
+        set positive_z_url(value)
+        {
+            if (this._positive_z_url == value)
+                return;
+            this._positive_z_url = value;
+            this._pixels[2].src = value;
+        }
+        private _positive_z_url: string;
+
+        @serialize()
+        @oav()
+        get negative_x_url()
+        {
+            return this._negative_x_url;
+        }
+        set negative_x_url(value)
+        {
+            if (this._negative_x_url == value)
+                return;
+            this._negative_x_url = value;
+            this._pixels[3].src = value;
+        }
+        private _negative_x_url: string;
+
+        @serialize()
+        @oav()
+        get negative_y_url()
+        {
+            return this._negative_y_url;
+        }
+        set negative_y_url(value)
+        {
+            if (this._negative_y_url == value)
+                return;
+            this._negative_y_url = value;
+            this._pixels[4].src = value;
+        }
+        private _negative_y_url: string;
+
+        @serialize()
+        @oav()
+        get negative_z_url()
+        {
+            return this._negative_z_url;
+        }
+        set negative_z_url(value)
+        {
+            if (this._negative_z_url == value)
+                return;
+            this._negative_z_url = value;
+            this._pixels[5].src = value;
+        }
+        private _negative_z_url: string;
         constructor(images: string[])
         {
             super();
@@ -20,7 +109,30 @@ namespace feng3d
                 this._pixels[i] = new Image();
                 this._pixels[i].crossOrigin = "Anonymous";
                 this._pixels[i].addEventListener("load", this.invalidate.bind(this));
-                this._pixels[i].src = images[i];
+            }
+            if (images)
+            {
+                this.positive_x_url = images[0];
+                this.positive_y_url = images[1];
+                this.positive_z_url = images[2];
+                this.negative_x_url = images[3];
+                this.negative_y_url = images[4];
+                this.negative_z_url = images[5];
+            }
+        }
+
+        /**
+         * 初始化纹理
+         */
+        protected initTexture(gl: GL)
+        {
+            var faces = [
+                GL.TEXTURE_CUBE_MAP_POSITIVE_X, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                GL.TEXTURE_CUBE_MAP_NEGATIVE_X, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
+            ];
+            for (var i = 0; i < faces.length; i++)
+            {
+                gl.texImage2D(faces[i], 0, this._format, this._format, this._type, this._pixels[i]);
             }
         }
 

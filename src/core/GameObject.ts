@@ -1,12 +1,7 @@
-namespace feng3d
+module feng3d
 {
 
-    export type ComponentConstructor<T> = (new (gameObject: GameObject) => T);
-
-    export interface ComponentMap
-    {
-        camera: new () => Camera;
-    }
+    export type ComponentConstructor<T> = (new () => T);
 
     export interface Mouse3DEventMap
     {
@@ -32,11 +27,11 @@ namespace feng3d
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
-        added
+        added: GameObject
         /**
          * 删除了子对象，当child被parent移除时派发冒泡事件
          */
-        removed
+        removed: GameObject;
         /**
          * 当Object3D的scene属性被设置是由Scene3D派发
          */
@@ -50,6 +45,16 @@ namespace feng3d
          * 场景变化
          */
         sceneChanged: GameObject
+
+        /**
+		 * 包围盒失效
+		 */
+        boundsInvalid: Geometry;
+
+        /**
+         * 场景矩阵变化
+         */
+        scenetransformChanged: Transform;
     }
 
     export interface GameObject
@@ -62,36 +67,57 @@ namespace feng3d
     }
 
     /**
+     * 鼠标拾取层级
+     */
+    export var mouselayer = {
+        editor: 100
+    };
+
+    /**
      * Base class for all entities in feng3d scenes.
      */
     export class GameObject extends Feng3dObject
     {
         protected _children: GameObject[] = [];
-        protected _scene: Scene3D;
-        protected _parent: GameObject;
+        protected _scene: Scene3D | null;
+        protected _parent: GameObject | null;
+
+        /**
+         * 鼠标拾取层级（优先级），拾取过程优先考虑层级再考虑深度
+         */
+        mouselayer: number;
 
         /**
          * 是否可序列化
          */
+        @serialize(true)
         serializable = true;
+
+        /**
+         * 是否显示在层级界面
+         */
+        showinHierarchy = true;
 
         /**
          * The name of the Feng3dObject.
          * Components share the same name with the game object and all attached components.
          */
-        @serialize
+        @serialize()
+        @oav()
         name: string;
 
         /**
          * 是否显示
          */
-        @serialize
+        @serialize(true)
+        @oav()
         visible = true;
 
         /**
          * 自身以及子对象是否支持鼠标拾取
          */
-        @serialize
+        @serialize(true)
+        @oav()
         mouseEnabled = true;
 
         //------------------------------------------
@@ -102,16 +128,13 @@ namespace feng3d
          */
         get transform()
         {
+            if (!this._transform)
+                this._transform = this.getComponent(Transform);
             return this._transform;
         }
         private _transform: Transform;
 
-        /**
-         * @private
-         */
-        readonly _renderData = new Object3DRenderAtomic();
-
-        get parent(): GameObject
+        get parent(): GameObject | null
         {
             return this._parent;
         }
@@ -119,7 +142,7 @@ namespace feng3d
         /**
          * 子对象
          */
-        @serialize
+        @serialize()
         get children()
         {
             return this._children.concat();
@@ -150,17 +173,6 @@ namespace feng3d
             return this._components.length;
         }
 
-        updateRender(renderContext: RenderContext)
-        {
-            if (this._renderData.renderHolderInvalid)
-            {
-                this._renderData.clear();
-                this.collectRenderDataHolder(this._renderData);
-                this._renderData.renderHolderInvalid = false;
-            }
-            this._renderData.update(renderContext);
-        }
-
         //------------------------------------------
         // Functions
         //------------------------------------------
@@ -171,25 +183,49 @@ namespace feng3d
         {
             super();
             this.name = name;
-            this._transform = this.addComponent(Transform);
+            this.addComponent(Transform);
+            this.addComponent(RenderAtomicComponent);
+            this.addComponent(BoundingComponent);
             //
             GameObject._gameObjects.push(this);
         }
 
+        find(name: string)
+        {
+            if (this.name == name)
+                return this;
+            for (var i = 0; i < this._children.length; i++)
+            {
+                var target = this._children[i].find(name);
+                if (target)
+                    return target;
+            }
+            return null;
+        }
+
         contains(child: GameObject)
         {
-            return this._children.indexOf(child) >= 0;
+            var checkitem: GameObject | null = child;
+            do
+            {
+                if (checkitem == this)
+                    return true;
+                checkitem = checkitem.parent;
+            } while (checkitem);
+            return false;
         }
 
         addChild(child: GameObject)
         {
             if (child == null)
-                throw new Error("Parameter child cannot be null.").message;
+                return;
+            if (child.contains(this))
+                throw "无法添加到自身中!";
             if (child._parent)
                 child._parent.removeChild(child);
-            child._setParent(<any>this);
-            child.transform.invalidateSceneTransform();
+            child._setParent(this);
             this._children.push(child);
+            this.dispatch("added", child, true);
             return child;
         }
 
@@ -202,29 +238,13 @@ namespace feng3d
             }
         }
 
-        setChildAt(child: GameObject, index: number)
+        /**
+         * 移除自身
+         */
+        remove()
         {
-            if (child == null)
-                throw new Error("Parameter child cannot be null.").message;
-            if (child._parent)
-            {
-                if (child._parent != this)
-                {
-                    child._parent.removeChild(child);
-                }
-                else
-                {
-                    var oldIndex = this._children.indexOf(child);
-                    this._children.splice(oldIndex, 1);
-                    this._children.splice(index, 0, child);
-                }
-            }
-            else
-            {
-                child._setParent(<any>this);
-                child.transform.invalidateSceneTransform();
-                this._children[index] = child;
-            }
+            if (this.parent)
+                this.parent.removeChild(this);
         }
 
         removeChild(child: GameObject)
@@ -243,11 +263,11 @@ namespace feng3d
             this.removeChildInternal(index, child);
         }
 
-        private _setParent(value: GameObject)
+        private _setParent(value: GameObject | null)
         {
             this._parent = value;
             this.updateScene();
-            this.transform.invalidateSceneTransform();
+            this.transform["invalidateSceneTransform"]();
         }
 
         getChildAt(index: number)
@@ -256,7 +276,7 @@ namespace feng3d
             return this._children[index];
         }
 
-        get scene(): Scene3D
+        get scene(): Scene3D | null
         {
             return this._scene;
         }
@@ -267,10 +287,16 @@ namespace feng3d
             if (this._scene == newScene)
                 return;
             if (this._scene)
+            {
                 this.dispatch("removedFromScene", this);
+                this._scene._removeGameObject(this);
+            }
             this._scene = newScene;
             if (this._scene)
+            {
                 this.dispatch("addedToScene", this);
+                this._scene._addGameObject(this);
+            }
             for (let i = 0, n = this._children.length; i < n; i++)
             {
                 this._children[i].updateScene();
@@ -291,6 +317,8 @@ namespace feng3d
             childIndex = childIndex;
             this._children.splice(childIndex, 1);
             child._setParent(null);
+
+            this.dispatch("removed", child, true);
         }
 
         /**
@@ -311,13 +339,13 @@ namespace feng3d
 		 */
         addComponent<T extends Component>(param: ComponentConstructor<T>): T
         {
-            var component: T;
-            if (this.getComponent(param))
+            var component: T = this.getComponent(param);
+            if (component && component.single)
             {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
-                return this.getComponent(param);
+                return component;
             }
-            component = new param(this);
+            component = new param();
             this.addComponentAt(component, this._components.length);
             return component;
         }
@@ -348,7 +376,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Component>(type: ComponentConstructor<T> = null): T[]
+        getComponents<T extends Component>(type?: ComponentConstructor<T>): T[]
         {
             var filterResult: Component[];
             if (!type)
@@ -369,22 +397,36 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends Component>(type: ComponentConstructor<T> = null, result: T[] = null): T[]
+        getComponentsInChildren<T extends Component>(type?: ComponentConstructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
         {
             result = result || [];
+            var findchildren = true;
             for (var i = 0, n = this._components.length; i < n; i++)
             {
+                var item = <T>this._components[i];
                 if (!type)
                 {
-                    result.push(<T>this._components[i]);
-                } else if (this._components[i] instanceof type)
+                    result.push(item);
+                } else if (item instanceof type)
                 {
-                    result.push(<T>this._components[i]);
+                    if (filter)
+                    {
+                        var filterresult = filter(item);
+                        filterresult && filterresult.value && result.push(item);
+                        findchildren = filterresult ? (filterresult && filterresult.findchildren) : false;
+                    }
+                    else
+                    {
+                        result.push(item);
+                    }
                 }
             }
-            for (var i = 0, n = this.numChildren; i < n; i++)
+            if (findchildren)
             {
-                this.getChildAt(i).getComponentsInChildren(type, result);
+                for (var i = 0, n = this.numChildren; i < n; i++)
+                {
+                    this.getChildAt(i).getComponentsInChildren(type, filter, result);
+                }
             }
             return <T[]>result;
         }
@@ -455,6 +497,7 @@ namespace feng3d
             var component: Component = this._components.splice(index, 1)[0];
             //派发移除组件事件
             this.dispatch("removedComponent", component);
+            this._scene && this._scene._removeComponent(component);
             this.removeRenderDataHolder(component);
             component.dispose();
             return component;
@@ -492,13 +535,13 @@ namespace feng3d
          * 移除指定类型组件
          * @param type 组件类型
          */
-        removeComponentsByType<T extends Component>(type: ComponentConstructor<T>): T[]
+        removeComponentsByType<T extends Component>(type: ComponentConstructor<T>)
         {
-            var removeComponents = [];
+            var removeComponents: T[] = [];
             for (var i = this._components.length - 1; i >= 0; i--)
             {
                 if (this._components[i].constructor == type)
-                    removeComponents.push(this.removeComponentAt(i));
+                    removeComponents.push(<T>this.removeComponentAt(i));
             }
             return removeComponents;
         }
@@ -531,8 +574,9 @@ namespace feng3d
         /**
 		 * 组件列表
 		 */
-        @serialize
         protected _components: Component[] = [];
+        @serialize()
+        @oav({ component: "OAVObject3DComponentList" })
         get components()
         {
             return this._components.concat();
@@ -547,6 +591,7 @@ namespace feng3d
             {
                 this.addComponentAt(value[i], this.numComponents);
             }
+            this._transform = <any>null;
         }
 
         //------------------------------------------
@@ -567,6 +612,8 @@ namespace feng3d
 		 */
         private addComponentAt(component: Component, index: number): void
         {
+            if (component == null)
+                return;
             debuger && console.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
 
             if (this.hasComponent(component))
@@ -580,8 +627,10 @@ namespace feng3d
                 this.removeComponentsByType(<new () => Component>component.constructor);
 
             this._components.splice(index, 0, component);
+            component.init(this);
             //派发添加组件事件
             this.dispatch("addedComponent", component);
+            this._scene && this._scene._addComponent(component);
             this.addRenderDataHolder(component);
         }
 
@@ -607,45 +656,6 @@ namespace feng3d
             this.dispose();
             while (this.numChildren > 0)
                 this.getChildAt(0).dispose();
-        }
-
-        deserialize(object: any)
-        {
-            for (var key in object)
-            {
-                var item = object[key];
-                switch (key)
-                {
-                    case "components":
-                        var components: any[] = item;
-                        for (var i = 0; i < components.length; i++)
-                        {
-                            var element = components[i];
-                            var cls = ClassUtils.getDefinitionByName(element["__class__"]);
-                            var component: Component;
-                            if (cls == Transform)
-                            {
-                                component = this.transform;
-                            } else
-                            {
-                                component = this.addComponent(cls);
-                            }
-                            serialization.deserialize(element, component);
-                        }
-                        break;
-                    case "children":
-                        var children: any[] = item;
-                        for (var i = 0; i < children.length; i++)
-                        {
-                            var gameObject: GameObject = serialization.deserialize(children[i]);
-                            this.addChild(gameObject);
-                        }
-                        break;
-                    default:
-                        this[key] = serialization.deserialize(item);
-                        break;
-                }
-            }
         }
     }
 }

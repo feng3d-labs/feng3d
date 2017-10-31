@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
 	/**
@@ -18,7 +18,7 @@ namespace feng3d
 		 * @param position 直线上某点
 		 * @param direction 直线的方向
 		 */
-        constructor(position: Vector3D = null, direction: Vector3D = null)
+        constructor(position?: Vector3D, direction?: Vector3D)
         {
             this.position = position ? position : new Vector3D();
             this.direction = direction ? direction : new Vector3D(0, 0, 1);

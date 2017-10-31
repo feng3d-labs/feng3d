@@ -1,13 +1,8 @@
-namespace feng3d
+module feng3d
 {
     export var GL = WebGLRenderingContext;
     export interface GL extends WebGLRenderingContext
     {
-        /**
-         * 唯一标识符
-         */
-        uuid: string;
-
         webgl2: boolean;
 
         drawElementsInstanced(mode: GLenum, count: GLsizei, type: GLenum, offset: GLintptr, instanceCount: GLsizei);
@@ -17,15 +12,13 @@ namespace feng3d
         drawArraysInstanced(mode: GLenum, first: GLint, count: GLsizei, instanceCount: GLsizei);
     }
 
-    export function getGL(canvas: HTMLCanvasElement, options = null)
+    export function getGL(canvas: HTMLCanvasElement, options?: { preferWebGl2?: boolean })
     {
         options = options || {};
         options.preferWebGl2 = false;
         var gl = getWebGLContext(canvas, options);
         //
-        gl.uuid = Math.generateUUID();
         gl.webgl2 = !!gl.drawArraysInstanced;
-        gl.programs = {};
         //
         new GLExtension(gl);
         gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
@@ -41,28 +34,20 @@ namespace feng3d
      * @param opt_debug flag to initialize the context for debugging
      * @return the rendering context for WebGL
      */
-    function getWebGLContext(canvas: HTMLCanvasElement, options = null)
+    function getWebGLContext(canvas: HTMLCanvasElement, options?: { preferWebGl2?: boolean })
     {
         var preferWebGl2 = (options && options.preferWebGl2 !== undefined) ? options.preferWebGl2 : true;
         // var names = preferWebGl2 ? ["webgl2", "experimental-webgl2", "webgl", "experimental-webgl"] : ["webgl", "experimental-webgl"];
         var names = ["webgl", "experimental-webgl"];
-        var gl: GL = null;
         for (var i = 0; i < names.length; ++i)
         {
             try
             {
-                gl = <any>canvas.getContext(names[i], options);
+                var gl: GL = <any>canvas.getContext(names[i], options);
+                return gl;
             } catch (e) { }
-            if (gl)
-            {
-                break;
-            }
         }
-        if (!gl)
-        {
-            throw "无法初始化WEBGL";
-        }
-        return gl;
+        throw "无法初始化WEBGL";
     }
 
     /**

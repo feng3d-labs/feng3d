@@ -1,28 +1,8 @@
-namespace feng3d
+module feng3d
 {
 
     export interface TransformEventMap extends ComponentEventMap
     {
-        /**
-         * 显示变化
-         */
-        visiblityUpdated
-        /**
-         * 场景矩阵变化
-         */
-        scenetransformChanged
-        /**
-         * 位置变化
-         */
-        positionChanged
-        /**
-         * 旋转变化
-         */
-        rotationChanged
-        /**
-         * 缩放变化
-         */
-        scaleChanged
         /**
          * 变换矩阵变化
          */
@@ -33,7 +13,7 @@ namespace feng3d
         updateLocalToWorldMatrix
     }
 
-    export interface Object3D
+    export interface Transform
     {
         once<K extends keyof TransformEventMap>(type: K, listener: (event: EventVO<TransformEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof TransformEventMap>(type: K, data?: TransformEventMap[K], bubbles?: boolean);
@@ -42,244 +22,774 @@ namespace feng3d
         off<K extends keyof TransformEventMap>(type?: K, listener?: (event: EventVO<TransformEventMap[K]>) => any, thisObject?: any);
     }
 
+    var fixedNum = 6;
+
 	/**
 	 * Position, rotation and scale of an object.
      * 
 	 * Every object in a scene has a Transform. It's used to store and manipulate the position, rotation and scale of the object. Every Transform can have a parent, which allows you to apply position, rotation and scale hierarchically. This is the hierarchy seen in the Hierarchy pane.
 	 */
-    export class Transform extends ObjectContainer3D
+    export class Transform extends Component
     {
-        protected _bounds: BoundingVolumeBase;
-        protected _boundsInvalid = true;
-
-        _pickingCollisionVO: PickingCollisionVO;
-
-        private _worldBounds: BoundingVolumeBase;
-        private _worldBoundsInvalid = true;
-
 		/**
 		 * 创建一个实体，该类为虚类
 		 */
-        constructor(gameObject: GameObject)
+        constructor()
         {
-            super(gameObject);
-
-            this._bounds = this.getDefaultBoundingVolume();
-            this._worldBounds = this.getDefaultBoundingVolume();
-            this._bounds.on("change", this.onBoundsChange, this);
-            //
-            this.createUniformData("u_modelMatrix", () => this.localToWorldMatrix);
+            super();
         }
 
-		/**
-		 * @inheritDoc
-		 */
-        get minX(): number
+        init(gameObject: GameObject)
         {
-            if (this._boundsInvalid)
-                this.updateBounds();
-
-            return this._bounds.min.x;
+            super.init(gameObject);
         }
 
-		/**
-		 * @inheritDoc
-		 */
-        get minY(): number
+        get scenePosition()
         {
-            if (this._boundsInvalid)
-                this.updateBounds();
-
-            return this._bounds.min.y;
+            return this.localToWorldMatrix.position;
         }
 
-		/**
-		 * @inheritDoc
-		 */
-        get minZ(): number
+        get parent()
         {
-            if (this._boundsInvalid)
-                this.updateBounds();
-
-            return this._bounds.min.z;
-        }
-
-		/**
-		 * @inheritDoc
-		 */
-        get maxX(): number
-        {
-            if (this._boundsInvalid)
-                this.updateBounds();
-
-            return this._bounds.max.x;
-        }
-
-		/**
-		 * @inheritDoc
-		 */
-        get maxY(): number
-        {
-            if (this._boundsInvalid)
-                this.updateBounds();
-
-            return this._bounds.max.y;
-        }
-
-		/**
-		 * @inheritDoc
-		 */
-        get maxZ(): number
-        {
-            if (this._boundsInvalid)
-                this.updateBounds();
-
-            return this._bounds.max.z;
-        }
-
-		/**
-		 * 边界
-		 */
-        get bounds(): BoundingVolumeBase
-        {
-            if (this._boundsInvalid)
-                this.updateBounds();
-
-            return this._bounds;
-        }
-
-		/**
-		 * @inheritDoc
-		 */
-        invalidateSceneTransform()
-        {
-            super.invalidateSceneTransform();
-            this._worldBoundsInvalid = true;
-        }
-
-		/**
-		 * 边界失效
-		 */
-        protected invalidateBounds()
-        {
-            this._boundsInvalid = true;
-        }
-
-		/**
-		 * 获取默认边界（默认盒子边界）
-		 * @return
-		 */
-        protected getDefaultBoundingVolume(): BoundingVolumeBase
-        {
-            return new AxisAlignedBoundingBox();
-        }
-
-		/**
-		 * 获取碰撞数据
-		 */
-        get pickingCollisionVO(): PickingCollisionVO
-        {
-            if (!this._pickingCollisionVO)
-                this._pickingCollisionVO = new PickingCollisionVO(this.gameObject);
-
-            return this._pickingCollisionVO;
+            return this.gameObject.parent && this.gameObject.parent.transform;
         }
 
         /**
-          * 判断射线是否穿过对象
-          * @param ray3D
-          * @return
-          */
-        isIntersectingRay(ray3D: Ray3D): boolean
-        {
-            var meshFilter = this.gameObject.getComponent(MeshFilter);
-            if (!meshFilter || !meshFilter.mesh)
-                return false;
-
-            if (!this.pickingCollisionVO.localNormal)
-                this.pickingCollisionVO.localNormal = new Vector3D();
-
-            //转换到当前实体坐标系空间
-            var localRay: Ray3D = this.pickingCollisionVO.localRay;
-
-            this.worldToLocalMatrix.transformVector(ray3D.position, localRay.position);
-            this.worldToLocalMatrix.deltaTransformVector(ray3D.direction, localRay.direction);
-
-            //检测射线与边界的碰撞
-            var rayEntryDistance = this.bounds.rayIntersection(localRay, this.pickingCollisionVO.localNormal);
-            if (rayEntryDistance < 0)
-                return false;
-
-            //保存碰撞数据
-            this.pickingCollisionVO.rayEntryDistance = rayEntryDistance;
-            this.pickingCollisionVO.ray3D = ray3D;
-            this.pickingCollisionVO.rayOriginIsInsideBounds = rayEntryDistance == 0;
-
-            return true;
-        }
-
-		/**
-		 * 世界边界
-		 */
-        get worldBounds(): BoundingVolumeBase
-        {
-            if (this._worldBoundsInvalid)
-                this.updateWorldBounds();
-
-            return this._worldBounds;
-        }
-
-		/**
-		 * 更新世界边界
-		 */
-        private updateWorldBounds()
-        {
-            this._worldBounds.transformFrom(this.bounds, this.localToWorldMatrix);
-            this._worldBoundsInvalid = false;
-        }
-
-        /**
-         * 处理包围盒变换事件
+         * Matrix that transforms a point from local space into world space.
          */
-        protected onBoundsChange()
+        get localToWorldMatrix(): Matrix3D
         {
-            this._worldBoundsInvalid = true;
+            if (!this._localToWorldMatrix)
+                this._localToWorldMatrix = this.updateLocalToWorldMatrix();
+            return this._localToWorldMatrix;
+        }
+
+        set localToWorldMatrix(value: Matrix3D)
+        {
+            value = value.clone();
+            this.parent && value.append(this.parent.worldToLocalMatrix);
+            this.matrix3d = value;
         }
 
         /**
-		 * @inheritDoc
-		 */
-        protected updateBounds()
+         * 本地转世界逆转置矩阵
+         */
+        get ITlocalToWorldMatrix()
         {
-            var meshFilter = this.gameObject.getComponent(MeshFilter);
-            this._bounds.geometry = meshFilter.mesh;
-            this._bounds.fromGeometry(meshFilter.mesh);
-            this._boundsInvalid = false;
+            if (!this._ITlocalToWorldMatrix)
+            {
+                this._ITlocalToWorldMatrix = this.localToWorldMatrix.clone();
+                this._ITlocalToWorldMatrix.invert().transpose();
+            }
+            return this._ITlocalToWorldMatrix;
         }
 
-		/**
-		 * 碰撞前设置碰撞状态
-		 * @param shortestCollisionDistance 最短碰撞距离
-		 * @param findClosest 是否寻找最优碰撞
-		 * @return
-		 */
-        collidesBefore(pickingCollider: AS3PickingCollider, shortestCollisionDistance: number, findClosest: boolean): boolean
+        /**
+         * Matrix that transforms a point from world space into local space (Read Only).
+         */
+        get worldToLocalMatrix(): Matrix3D
         {
-            pickingCollider.setLocalRay(this._pickingCollisionVO.localRay);
-            this._pickingCollisionVO.renderable = null;
+            if (!this._worldToLocalMatrix)
+                this._worldToLocalMatrix = this.localToWorldMatrix.clone().invert();
+            return this._worldToLocalMatrix;
+        }
 
-            var meshFilter = this.gameObject.getComponent(MeshFilter);
-            var model = meshFilter.mesh;
-
-            if (pickingCollider.testSubMeshCollision(model, this._pickingCollisionVO, shortestCollisionDistance))
+        get localToWorldRotationMatrix()
+        {
+            if (!this._localToWorldRotationMatrix)
             {
-                shortestCollisionDistance = this._pickingCollisionVO.rayEntryDistance;
-                this._pickingCollisionVO.renderable = model;
-                if (!findClosest)
-                    return true;
+                this._localToWorldRotationMatrix = this.rotationMatrix.clone();
+                if (this.parent)
+                    this._localToWorldRotationMatrix.append(this.parent.localToWorldRotationMatrix);
             }
+            return this._localToWorldRotationMatrix;
+        }
 
-            return this._pickingCollisionVO.renderable != null;
+        /**
+         * Transforms direction from local space to world space.
+         */
+        transformDirection(direction: Vector3D)
+        {
+            if (!this.parent)
+                return direction.clone();
+            var matrix3d = this.parent.localToWorldRotationMatrix;
+            direction = matrix3d.transformVector(direction);
+            return direction;
+        }
+
+        /**
+         * Transforms position from local space to world space.
+         */
+        transformPoint(position: Vector3D)
+        {
+            if (!this.parent)
+                return position.clone();
+            var matrix3d = this.parent.localToWorldMatrix;
+            position = matrix3d.transformVector(position);
+            return position;
+        }
+
+        /**
+         * Transforms vector from local space to world space.
+         */
+        transformVector(vector: Vector3D)
+        {
+            if (!this.parent)
+                return vector.clone();
+            var matrix3d = this.parent.localToWorldMatrix;
+            vector = matrix3d.deltaTransformVector(vector);
+            return vector;
+        }
+
+        /**
+         * Transforms a direction from world space to local space. The opposite of Transform.TransformDirection.
+         */
+        inverseTransformDirection(direction: Vector3D)
+        {
+            if (!this.parent)
+                return direction.clone();
+            var matrix3d = this.parent.localToWorldRotationMatrix.clone().invert();
+            direction = matrix3d.transformVector(direction);
+            return direction;
+        }
+
+        /**
+         * Transforms position from world space to local space.
+         */
+        inverseTransformPoint(position: Vector3D)
+        {
+            if (!this.parent)
+                return position.clone();
+            var matrix3d = this.parent.localToWorldMatrix.clone().invert();
+            position = matrix3d.transformVector(position);
+            return position;
+        }
+
+        /**
+         * Transforms a vector from world space to local space. The opposite of Transform.TransformVector.
+         */
+        inverseTransformVector(vector: Vector3D)
+        {
+            if (!this.parent)
+                return vector.clone();
+            var matrix3d = this.parent.localToWorldMatrix.clone().invert();
+            vector = matrix3d.deltaTransformVector(vector);
+            return vector;
+        }
+
+        dispose()
+        {
+            super.dispose();
+        }
+
+        //------------------------------------------
+        // Protected Properties
+        //------------------------------------------
+
+
+        //------------------------------------------
+        // Protected Functions
+        //------------------------------------------
+        protected updateLocalToWorldMatrix()
+        {
+            this._localToWorldMatrix = this.matrix3d.clone();
+            if (this.parent)
+                this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
+            this.dispatch("updateLocalToWorldMatrix");
+            return this._localToWorldMatrix;
+        }
+
+        //------------------------------------------
+        // Private Properties
+        //------------------------------------------
+
+
+        //------------------------------------------
+        // Private Methods
+        //------------------------------------------
+        protected invalidateSceneTransform()
+        {
+            if (!this._localToWorldMatrix)
+                return;
+            this._localToWorldMatrix = null;
+            this._ITlocalToWorldMatrix = null;
+            this._worldToLocalMatrix = null;
+            this.gameObject.dispatch("scenetransformChanged", this);
+            //
+            for (var i = 0, n = this.gameObject.numChildren; i < n; i++)
+            {
+                this.gameObject.getChildAt(i).transform.invalidateSceneTransform();
+            }
+        }
+
+        //------------------------------------------
+        // Variables
+        //------------------------------------------
+        @serialize(0)
+        @oav()
+        get x(): number
+        {
+            return this._x;
+        }
+
+        set x(val: number)
+        {
+            val = Number(val.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(val));
+            if (this._x == val)
+                return;
+            this._x = val;
+            this.invalidatePosition();
+        }
+
+        @serialize(0)
+        @oav()
+        get y(): number
+        {
+            return this._y;
+        }
+
+        set y(val: number)
+        {
+            val = Number(val.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(val));
+            if (this._y == val)
+                return;
+            this._y = val;
+            this.invalidatePosition();
+        }
+
+        @serialize(0)
+        @oav()
+        get z(): number
+        {
+            return this._z;
+        }
+
+        set z(val: number)
+        {
+            val = Number(val.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(val));
+            if (this._z == val)
+                return;
+            this._z = val;
+            this.invalidatePosition();
+        }
+
+        @serialize(0)
+        @oav()
+        get rx(): number
+        {
+            return this._rx;
+        }
+
+        set rx(val: number)
+        {
+            val = Number(val.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(val));
+            if (this.rx == val)
+                return;
+            this._rx = val;
+            this.invalidateRotation();
+        }
+
+        @serialize(0)
+        @oav()
+        get ry(): number
+        {
+            return this._ry;
+        }
+
+        set ry(val: number)
+        {
+            val = Number(val.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(val));
+            if (this.ry == val)
+                return;
+            this._ry = val;
+            this.invalidateRotation();
+        }
+
+        @serialize(0)
+        @oav()
+        get rz(): number
+        {
+            return this._rz;
+        }
+
+        set rz(val: number)
+        {
+            val = Number(val.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(val));
+            if (this.rz == val)
+                return;
+            this._rz = val;
+            this.invalidateRotation();
+        }
+
+        @serialize(1)
+        @oav()
+        get sx(): number
+        {
+            return this._sx;
+        }
+
+        set sx(val: number)
+        {
+            val = Number(val.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(val) && val != 0);
+            if (this._sx == val)
+                return;
+            this._sx = val;
+            this.invalidateScale();
+        }
+
+        @serialize(1)
+        @oav()
+        get sy(): number
+        {
+            return this._sy;
+        }
+
+        set sy(val: number)
+        {
+            val = Number(val.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(val) && val != 0);
+            if (this._sy == val)
+                return;
+            this._sy = val;
+            this.invalidateScale();
+        }
+
+        @serialize(1)
+        @oav()
+        get sz(): number
+        {
+            return this._sz;
+        }
+
+        set sz(val: number)
+        {
+            val = Number(val.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(val) && val != 0);
+            if (this._sz == val)
+                return;
+            this._sz = val;
+            this.invalidateScale();
+        }
+
+        /**
+         * @private
+         */
+        get matrix3d(): Matrix3D
+        {
+            if (!this._matrix3d)
+                this.updateMatrix3D();
+            return this._matrix3d;
+        }
+
+        set matrix3d(val: Matrix3D)
+        {
+            var raw = Matrix3D.RAW_DATA_CONTAINER;
+            val.copyRawDataTo(raw);
+            if (!raw[0])
+            {
+                raw[0] = this._smallestNumber;
+                val.copyRawDataFrom(raw);
+            }
+            val.decompose(Orientation3D.EULER_ANGLES, elements);
+            this.position = elements[0];
+            this.rotation = elements[1].scaleBy(Math.RAD2DEG);
+            this.scale = elements[2];
+        }
+
+        /**
+         * 旋转矩阵
+         */
+        get rotationMatrix()
+        {
+            if (!this._rotationMatrix3d)
+                this._rotationMatrix3d = Matrix3D.fromRotation(this._rx, this._ry, this._rz);
+            return this._rotationMatrix3d;
+        }
+
+        /**
+         * 返回保存位置数据的Vector3D对象
+         */
+        get position(): Vector3D
+        {
+            this._position.setTo(this._x, this._y, this._z);
+            return this._position;
+        }
+
+        set position({ x = 1, y = 1, z = 1 })
+        {
+            x = Number(x.toFixed(fixedNum));
+            y = Number(y.toFixed(fixedNum));
+            z = Number(z.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(x));
+            debuger && console.assert(!isNaN(y));
+            debuger && console.assert(!isNaN(z));
+
+            if (this._x != x || this._y != y || this._z != z)
+            {
+                this._x = x;
+                this._y = y;
+                this._z = z;
+                this.invalidatePosition();
+            }
+        }
+
+        get rotation()
+        {
+            this._rotation.setTo(this._rx, this._ry, this._rz);
+            return this._rotation;
+        }
+
+        set rotation({ x = 0, y = 0, z = 0 })
+        {
+            x = Number(x.toFixed(fixedNum));
+            y = Number(y.toFixed(fixedNum));
+            z = Number(z.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(x));
+            debuger && console.assert(!isNaN(y));
+            debuger && console.assert(!isNaN(z));
+            if (this._rx != x || this._ry != y || this._rz != z)
+            {
+                this._rx = x;
+                this._ry = y;
+                this._rz = z;
+                this.invalidateRotation();
+            }
+        }
+
+        /**
+         * 四元素旋转
+         */
+        get orientation()
+        {
+            this._orientation.fromMatrix(this.matrix3d);
+            return this._orientation;
+        }
+
+        set orientation(value)
+        {
+            var angles = value.toEulerAngles();
+            angles.scaleBy(Math.RAD2DEG);
+            this.rotation = angles;
+        }
+
+        get scale()
+        {
+            this._scale.setTo(this._sx, this._sy, this._sz);
+            return this._scale;
+        }
+
+        set scale({ x = 1, y = 1, z = 1 })
+        {
+            x = Number(x.toFixed(fixedNum));
+            y = Number(y.toFixed(fixedNum));
+            z = Number(z.toFixed(fixedNum));
+            debuger && console.assert(!isNaN(x) && x != 0);
+            debuger && console.assert(!isNaN(y) && y != 0);
+            debuger && console.assert(!isNaN(z) && z != 0);
+            if (this._sx != x || this._sy != y || this._sz != z)
+            {
+                this._sx = x;
+                this._sy = y;
+                this._sz = z;
+                this.invalidateScale();
+            }
+        }
+
+        get forwardVector(): Vector3D
+        {
+            return this.matrix3d.forward;
+        }
+
+        get rightVector(): Vector3D
+        {
+            return this.matrix3d.right;
+        }
+
+        get upVector(): Vector3D
+        {
+            return this.matrix3d.up;
+        }
+
+        get backVector(): Vector3D
+        {
+            var director: Vector3D = this.matrix3d.forward;
+            director.negate();
+            return director;
+        }
+
+        get leftVector(): Vector3D
+        {
+            var director: Vector3D = this.matrix3d.left;
+            director.negate();
+            return director;
+        }
+
+        get downVector(): Vector3D
+        {
+            var director: Vector3D = this.matrix3d.up;
+            director.negate();
+            return director;
+        }
+
+        moveForward(distance: number)
+        {
+            this.translateLocal(Vector3D.Z_AXIS, distance);
+        }
+
+        moveBackward(distance: number)
+        {
+            this.translateLocal(Vector3D.Z_AXIS, -distance);
+        }
+
+        moveLeft(distance: number)
+        {
+            this.translateLocal(Vector3D.X_AXIS, -distance);
+        }
+
+        moveRight(distance: number)
+        {
+            this.translateLocal(Vector3D.X_AXIS, distance);
+        }
+
+        moveUp(distance: number)
+        {
+            this.translateLocal(Vector3D.Y_AXIS, distance);
+        }
+
+        moveDown(distance: number)
+        {
+            this.translateLocal(Vector3D.Y_AXIS, -distance);
+        }
+
+        translate(axis: Vector3D, distance: number)
+        {
+            var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
+            var len = distance / Math.sqrt(x * x + y * y + z * z);
+            this._x += x * len;
+            this._y += y * len;
+            this._z += z * len;
+            this.invalidatePosition();
+        }
+
+        translateLocal(axis: Vector3D, distance: number)
+        {
+            var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
+            var len = distance / Math.sqrt(x * x + y * y + z * z);
+            var matrix3d = this.matrix3d.clone();
+            matrix3d.prependTranslation(x * len, y * len, z * len);
+            this._x = matrix3d.position.x;
+            this._y = matrix3d.position.y;
+            this._z = matrix3d.position.z;
+            this.invalidatePosition();
+            this.invalidateSceneTransform();
+        }
+
+        pitch(angle: number)
+        {
+            this.rotate(Vector3D.X_AXIS, angle);
+        }
+
+        yaw(angle: number)
+        {
+            this.rotate(Vector3D.Y_AXIS, angle);
+        }
+
+        roll(angle: number)
+        {
+            this.rotate(Vector3D.Z_AXIS, angle);
+        }
+
+        rotateTo(ax: number, ay: number, az: number)
+        {
+            this._rx = ax;
+            this._ry = ay;
+            this._rz = az;
+            this.invalidateRotation();
+        }
+
+        /**
+         * 绕指定轴旋转，不受位移与缩放影响
+         * @param    axis               旋转轴
+         * @param    angle              旋转角度
+         * @param    pivotPoint         旋转中心点
+         * 
+         */
+        rotate(axis: Vector3D, angle: number, pivotPoint?: Vector3D): void
+        {
+            //转换位移
+            var positionMatrix3d = Matrix3D.fromPosition(this.position);
+            positionMatrix3d.appendRotation(axis, angle, pivotPoint);
+            this.position = positionMatrix3d.position;
+            //转换旋转
+            var rotationMatrix3d = Matrix3D.fromRotation(this.rx, this.ry, this.rz);
+            rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
+            var newrotation = rotationMatrix3d.decompose()[1];
+            newrotation.scaleBy(180 / Math.PI);
+            var v = Math.round((newrotation.x - this.rx) / 180);
+            if (v % 2 != 0)
+            {
+                newrotation.x += 180;
+                newrotation.y = 180 - newrotation.y;
+                newrotation.z += 180;
+            }
+            //
+            var toRound = (a: number, b: number, c = 360) =>
+            {
+                return Math.round((b - a) / c) * c + a;
+            }
+            newrotation.x = toRound(newrotation.x, this.rx);
+            newrotation.y = toRound(newrotation.y, this.ry);
+            newrotation.z = toRound(newrotation.z, this.rz);
+            this.rotation = newrotation;
+            this.invalidateSceneTransform();
+        }
+
+        lookAt(target: Vector3D, upAxis?: Vector3D)
+        {
+            var xAxis = new Vector3D();
+            var yAxis = new Vector3D();
+            var zAxis = new Vector3D();
+            var raw: number[];
+            upAxis = upAxis || Vector3D.Y_AXIS;
+            if (!this._matrix3d)
+            {
+                this.updateMatrix3D();
+            }
+            zAxis.x = target.x - this._x;
+            zAxis.y = target.y - this._y;
+            zAxis.z = target.z - this._z;
+            zAxis.normalize();
+            xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
+            xAxis.y = upAxis.z * zAxis.x - upAxis.x * zAxis.z;
+            xAxis.z = upAxis.x * zAxis.y - upAxis.y * zAxis.x;
+            xAxis.normalize();
+            if (xAxis.length < .05)
+            {
+                xAxis.x = upAxis.y;
+                xAxis.y = upAxis.x;
+                xAxis.z = 0;
+                xAxis.normalize();
+            }
+            yAxis.x = zAxis.y * xAxis.z - zAxis.z * xAxis.y;
+            yAxis.y = zAxis.z * xAxis.x - zAxis.x * xAxis.z;
+            yAxis.z = zAxis.x * xAxis.y - zAxis.y * xAxis.x;
+            raw = Matrix3D.RAW_DATA_CONTAINER;
+            raw[0] = this._sx * xAxis.x;
+            raw[1] = this._sx * xAxis.y;
+            raw[2] = this._sx * xAxis.z;
+            raw[3] = 0;
+            raw[4] = this._sy * yAxis.x;
+            raw[5] = this._sy * yAxis.y;
+            raw[6] = this._sy * yAxis.z;
+            raw[7] = 0;
+            raw[8] = this._sz * zAxis.x;
+            raw[9] = this._sz * zAxis.y;
+            raw[10] = this._sz * zAxis.z;
+            raw[11] = 0;
+            raw[12] = this._x;
+            raw[13] = this._y;
+            raw[14] = this._z;
+            raw[15] = 1;
+            this._matrix3d.copyRawDataFrom(raw);
+            this.matrix3d = this.matrix3d;
+            if (zAxis.z < 0)
+            {
+                this.ry = (180 - this.ry);
+                this.rx -= 180;
+                this.rz -= 180;
+            }
+            this.invalidateSceneTransform();
+        }
+
+        disposeAsset()
+        {
+            this.dispose();
+        }
+
+        invalidateTransform()
+        {
+            if (!this._matrix3d)
+                return;
+            this._matrix3d = <any>null;
+            this.dispatch("transformChanged", this);
+            this.invalidateSceneTransform();
+        }
+
+        //------------------------------------------
+        // Protected Properties
+        //------------------------------------------
+
+        //------------------------------------------
+        // Protected Functions
+        //------------------------------------------
+        protected updateMatrix3D()
+        {
+            tempComponents[0].setTo(this._x, this._y, this._z);
+            tempComponents[1].setTo(this._rx * Math.DEG2RAD, this._ry * Math.DEG2RAD, this._rz * Math.DEG2RAD);
+            tempComponents[2].setTo(this._sx, this._sy, this._sz);
+
+            this._matrix3d = new Matrix3D().recompose(tempComponents);
+        }
+
+        //------------------------------------------
+        // Private Properties
+        //------------------------------------------
+        private _position = new Vector3D();
+        private _rotation = new Vector3D();
+        private _orientation = new Quaternion();
+        private _scale = new Vector3D(1, 1, 1);
+
+        protected _smallestNumber = 0.0000000000000000000001;
+        protected _x = 0;
+        protected _y = 0;
+        protected _z = 0;
+        protected _rx = 0;
+        protected _ry = 0;
+        protected _rz = 0;
+        protected _sx = 1;
+        protected _sy = 1;
+        protected _sz = 1;
+        protected _matrix3d: Matrix3D;
+        protected _rotationMatrix3d: Matrix3D | null;
+        protected _localToWorldMatrix: Matrix3D | null;
+        protected _ITlocalToWorldMatrix: Matrix3D | null;
+        protected _worldToLocalMatrix: Matrix3D | null;
+        protected _localToWorldRotationMatrix: Matrix3D | null;
+
+        //------------------------------------------
+        // Private Methods
+        //------------------------------------------
+        private invalidateRotation()
+        {
+            if (!this._rotation)
+                return;
+            this._rotationMatrix3d = null;
+            this._localToWorldRotationMatrix = null;
+            this.invalidateTransform();
+        }
+
+        private invalidateScale()
+        {
+            if (!this._scale)
+                return;
+            this.invalidateTransform();
+        }
+
+        private invalidatePosition()
+        {
+            if (!this._position)
+                return;
+            this.invalidateTransform();
         }
     }
+
+    var tempComponents = [new Vector3D(), new Vector3D(), new Vector3D()];
+    var elements = [new Vector3D(), new Vector3D(), new Vector3D()];
 }

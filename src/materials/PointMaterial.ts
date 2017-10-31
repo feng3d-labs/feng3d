@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
      * 颜色材质
@@ -6,6 +6,10 @@ namespace feng3d
      */
     export class PointMaterial extends Material
     {
+        @oav()
+        @serialize()
+        color = new Color();
+
         /**
          * 构建颜色材质
          */
@@ -14,6 +18,8 @@ namespace feng3d
             super();
             this.shaderName = "point";
             this.renderMode = RenderMode.POINTS;
+            //
+            this.createUniformData("u_color", () => this.color);
         }
     }
 }

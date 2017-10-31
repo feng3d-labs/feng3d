@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -66,12 +66,11 @@ namespace feng3d
     {
         //
         var md5MeshData = <MD5MeshData>{};
-        var lines = context.split("\n").reverse();
-        do
+        var lines = context.split("\n");
+        for (var i = 0; i < lines.length; i++)
         {
-            var line = lines.pop();
-            parserLine(line, md5MeshData);
-        } while (line);
+            parserLine(lines[i], md5MeshData);
+        }
         return md5MeshData;
     }
 
@@ -115,7 +114,7 @@ namespace feng3d
         if (!line.length)
             return;
 
-        var result: RegExpExecArray;
+        var result: RegExpExecArray | null;
         if ((result = MD5VersionReg.exec(line)) && result[0] == line)
         {
             md5MeshData.MD5Version = parseInt(result[1]);
@@ -144,7 +143,7 @@ namespace feng3d
             var exitState = states.pop();
             if (exitState == State.mesh)
             {
-                currentMesh = null;
+                currentMesh = <any>null;
             }
         } else if ((result = meshStartReg.exec(line)) && result[0] == line)
         {

@@ -1,207 +1,168 @@
-namespace feng3d
+module feng3d
 {
-	/**
-	 * 鼠标事件管理
-	 * @author feng 2014-4-29
-	 */
-    export class Mouse3DManager
+    /**
+     * 鼠标事件管理
+     * @author feng 2014-4-29
+     */
+    export var mouse3DManager = {
+        draw: draw,
+        catchMouseMove: catchMouseMove,
+        getSelectedObject3D: getSelectedObject3D,
+    };
+
+    //
+    input.on("click", onMouseEvent, null);
+    input.on("dblclick", onMouseEvent, null);
+    input.on("mousedown", onMouseEvent, null);
+    input.on("mouseup", onMouseEvent, null);
+
+    var mouseX = 0;
+    var mouseY = 0;
+
+    var selectedObject3D: GameObject;
+    var mouseEventTypes: string[] = [];
+
+    /**
+     * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
+     */
+    var preMouseDownObject3D: GameObject | null;
+    /**
+     * 统计处理click次数，判断是否达到dblclick
+     */
+    var Object3DClickNum: number;
+
+    var _catchMouseMove = false;
+    /**
+     * 是否捕捉鼠标移动，默认false。
+     */
+    function catchMouseMove(value)
     {
-        mouseX = 0;
-        mouseY = 0;
-
-        /**
-         * 鼠标拾取渲染器
-         */
-        private mouseRenderer: MouseRenderer;
-        private selectedObject3D: GameObject;
-        private mouseEventTypes: string[] = [];
-
-        /**
-         * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
-         */
-        private preMouseDownObject3D: GameObject;
-        /**
-         * 统计处理click次数，判断是否达到dblclick
-         */
-        private Object3DClickNum: number;
-
-        /** 射线采集器(采集射线穿过场景中物体的列表) */
-        private _mousePicker: RaycastPicker = new RaycastPicker(false);
-
-        private _catchMouseMove = false;
-        /**
-         * 是否捕捉鼠标移动，默认false。
-         */
-        get catchMouseMove()
+        if (_catchMouseMove == value)
+            return;
+        if (_catchMouseMove)
         {
-            return this._catchMouseMove;
+            input.off("mousemove", onMouseEvent, null);
         }
-        set catchMouseMove(value)
+        _catchMouseMove = value;
+        if (_catchMouseMove)
         {
-            if (this._catchMouseMove == value)
-                return;
-            if (this._catchMouseMove)
+            input.on("mousemove", onMouseEvent, null);
+        }
+    }
+
+    /**
+     * 监听鼠标事件收集事件类型
+     */
+    function onMouseEvent(event: EventVO<InputEvent>)
+    {
+        var inputEvent: InputEvent = event.data;
+        if (mouseEventTypes.indexOf(inputEvent.type) == -1)
+            mouseEventTypes.push(inputEvent.type);
+        mouseX = inputEvent.clientX;
+        mouseY = inputEvent.clientY;
+    }
+
+    /**
+     * 渲染
+     */
+    function draw(scene3d: Scene3D, camera: Camera, viewRect: Rectangle)
+    {
+        if (!viewRect.contains(mouseX, mouseY))
+            return;
+        if (mouseEventTypes.length == 0)
+            return;
+        var mouseCollisionEntitys = scene3d.mouseCheckObjects;
+        if (mouseCollisionEntitys.length == 0)
+            return;
+
+        pick(scene3d, camera);
+    }
+
+    function pick(scene3d: Scene3D, camera: Camera)
+    {
+        var mouseRay3D = camera.getMouseRay3D();
+        //计算得到鼠标射线相交的物体
+        var mouseCollisionEntitys = scene3d.mouseCheckObjects;
+
+        var pickingCollisionVO: PickingCollisionVO | null = null;
+        for (var i = 0; i < mouseCollisionEntitys.length; i++)
+        {
+            var entitys = mouseCollisionEntitys[i].objects;
+            pickingCollisionVO = raycastPicker.pick(mouseRay3D, entitys);
+            if (pickingCollisionVO)
+                break;
+        }
+
+        var object3D = pickingCollisionVO && pickingCollisionVO.gameObject;
+
+        if (object3D)
+            setSelectedObject3D(object3D);
+        else
+            setSelectedObject3D(scene3d.gameObject);
+    }
+
+    /**
+     * 设置选中对象
+     */
+    function setSelectedObject3D(value: GameObject)
+    {
+        if (selectedObject3D != value)
+        {
+            if (selectedObject3D)
+                selectedObject3D.dispatch("mouseout", null, true);
+            if (value)
+                value.dispatch("mouseover", null, true);
+        }
+        selectedObject3D = value;
+        if (selectedObject3D)
+        {
+            mouseEventTypes.forEach(element =>
             {
-                input.off("mousemove", this.onMouseEvent, this);
-            }
-            this._catchMouseMove = value;
-            if (this._catchMouseMove)
-            {
-                input.on("mousemove", this.onMouseEvent, this);
-            }
-        }
-
-        constructor()
-        {
-            this.mouseRenderer = new MouseRenderer();
-
-            //
-            input.on("click", this.onMouseEvent, this);
-            input.on("dblclick", this.onMouseEvent, this);
-            input.on("mousedown", this.onMouseEvent, this);
-            input.on("mouseup", this.onMouseEvent, this);
-        }
-
-        /**
-         * 监听鼠标事件收集事件类型
-         */
-        private onMouseEvent(event: InputEvent)
-        {
-            var inputEvent: InputEvent = event;
-            if (this.mouseEventTypes.indexOf(inputEvent.type) == -1)
-                this.mouseEventTypes.push(inputEvent.type);
-            this.mouseX = inputEvent.clientX;
-            this.mouseY = inputEvent.clientY;
-        }
-
-        /**
-		 * 渲染
-		 */
-        draw(scene3d: Scene3D, camera: Camera, viewRect: Rectangle)
-        {
-            if (!viewRect.contains(this.mouseX, this.mouseY))
-                return;
-            if (this.mouseEventTypes.length == 0)
-                return;
-            var mouseCollisionEntitys = this.getMouseCheckObjects(scene3d);
-            if (mouseCollisionEntitys.length == 0)
-                return;
-
-            this.pick(scene3d, camera);
-
-            // this.glPick(renderContext);
-        }
-
-        private pick(scene3d: Scene3D, camera: Camera)
-        {
-            var mouseCollisionEntitys = this.getMouseCheckObjects(scene3d);
-            var mouseRay3D = camera.getMouseRay3D();
-            //计算得到鼠标射线相交的物体
-            var _collidingObject = this._mousePicker.getViewCollision(mouseRay3D, mouseCollisionEntitys);
-
-            var object3D = _collidingObject && _collidingObject.firstEntity;
-
-            if (object3D)
-                this.setSelectedObject3D(object3D);
-            else
-                this.setSelectedObject3D(scene3d.gameObject);
-        }
-
-        private glPick(renderContext: RenderContext, viewRect: Rectangle)
-        {
-            var gl = renderContext.gl;
-
-            var offsetX = -(this.mouseX - viewRect.x);
-            var offsetY = -(viewRect.height - (this.mouseY - viewRect.y));//y轴与window中坐标反向，所以需要 h = (maxHeight - h)
-
-            gl.clearColor(0, 0, 0, 0);
-            gl.clearDepth(1);
-            gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-            gl.viewport(offsetX, offsetY, viewRect.width, viewRect.height);
-            this.mouseRenderer.draw(renderContext);
-
-            var object3D = this.mouseRenderer.selectedObject3D;
-            this.setSelectedObject3D(object3D);
-        }
-
-        private getMouseCheckObjects(scene3d: Scene3D)
-        {
-            var checkList = scene3d.gameObject.getChildren();
-            var results: GameObject[] = [];
-            var i = 0;
-            while (i < checkList.length)
-            {
-                var checkObject = checkList[i++];
-                if (checkObject.mouseEnabled)
+                switch (element)
                 {
-                    if (checkObject.getComponents(MeshFilter))
-                    {
-                        results.push(checkObject as GameObject);
-                    }
-                    checkList = checkList.concat(checkObject.getChildren());
+                    case "mousedown":
+                        if (preMouseDownObject3D != selectedObject3D)
+                        {
+                            Object3DClickNum = 0;
+                            preMouseDownObject3D = selectedObject3D;
+                        }
+                        selectedObject3D.dispatch(element, null, true);
+                        break;
+                    case "mouseup":
+                        if (selectedObject3D == preMouseDownObject3D)
+                        {
+                            Object3DClickNum++;
+                        } else
+                        {
+                            Object3DClickNum = 0;
+                            preMouseDownObject3D = null;
+                        }
+                        selectedObject3D.dispatch(element, null, true);
+                        break;
+                    case "mousemove":
+                        selectedObject3D.dispatch(element, null, true);
+                        break;
+                    case "click":
+                        if (Object3DClickNum > 0)
+                            selectedObject3D.dispatch(element, null, true);
+                        break;
+                    case "dblclick":
+                        if (Object3DClickNum > 1)
+                            selectedObject3D.dispatch(element, null, true);
+                        break;
                 }
-            }
-            return results;
-        }
 
-        /**
-         * 设置选中对象
-         */
-        private setSelectedObject3D(value: GameObject)
+            });
+        } else
         {
-            if (this.selectedObject3D != value)
-            {
-                if (this.selectedObject3D)
-                    this.selectedObject3D.dispatch("mouseout", null, true);
-                if (value)
-                    value.dispatch("mouseover", null, true);
-            }
-            this.selectedObject3D = value;
-            if (this.selectedObject3D)
-            {
-                this.mouseEventTypes.forEach(element =>
-                {
-                    switch (element)
-                    {
-                        case "mousedown":
-                            if (this.preMouseDownObject3D != this.selectedObject3D)
-                            {
-                                this.Object3DClickNum = 0;
-                                this.preMouseDownObject3D = this.selectedObject3D;
-                            }
-                            this.selectedObject3D.dispatch(element, null, true);
-                            break;
-                        case "mouseup":
-                            if (this.selectedObject3D == this.preMouseDownObject3D)
-                            {
-                                this.Object3DClickNum++;
-                            } else
-                            {
-                                this.Object3DClickNum = 0;
-                                this.preMouseDownObject3D = null;
-                            }
-                            this.selectedObject3D.dispatch(element, null, true);
-                            break;
-                        case "mousemove":
-                            this.selectedObject3D.dispatch(element, null, true);
-                            break;
-                        case "click":
-                            if (this.Object3DClickNum > 0)
-                                this.selectedObject3D.dispatch(element, null, true);
-                            break;
-                        case "dblclick":
-                            if (this.Object3DClickNum > 1)
-                                this.selectedObject3D.dispatch(element, null, true);
-                            break;
-                    }
-
-                });
-            } else
-            {
-                this.Object3DClickNum = 0;
-                this.preMouseDownObject3D = null;
-            }
-            this.mouseEventTypes.length = 0;
+            Object3DClickNum = 0;
+            preMouseDownObject3D = null;
         }
+        mouseEventTypes.length = 0;
+    }
+
+    function getSelectedObject3D()
+    {
+        return selectedObject3D;
     }
 }

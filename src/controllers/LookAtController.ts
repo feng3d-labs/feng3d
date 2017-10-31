@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     export class LookAtController extends ControllerBase
     {
@@ -8,7 +8,7 @@ namespace feng3d
         protected _upAxis: Vector3D = Vector3D.Y_AXIS;
         protected _pos: Vector3D = new Vector3D();
 
-        constructor(target: GameObject = null, lookAtObject: GameObject = null)
+        constructor(target?: GameObject, lookAtObject?: GameObject)
         {
             super(target);
 

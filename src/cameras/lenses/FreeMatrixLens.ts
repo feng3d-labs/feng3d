@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
 	/**
@@ -14,6 +14,7 @@ namespace feng3d
 
 		protected updateMatrix()
 		{
+			return new Matrix3D();
 		}
 
 		/**
@@ -26,7 +27,7 @@ namespace feng3d
 		 */
 		unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D
 		{
-			return null;
+			return new Vector3D();
 		}
 	}
 }

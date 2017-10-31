@@ -27,7 +27,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
-namespace feng3d
+module feng3d
 {
 	/**
      * The Timer class is the interface to timers, which let you run code on a specified time sequence. Use the start()

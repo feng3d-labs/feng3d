@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -37,13 +37,13 @@ namespace feng3d
          */
         get(k: K)
         {
-            var v: V;
-            this.kv.forEach(element =>
+            for (var i = 0; i < this.kv.length; i++)
             {
+                var element = this.kv[i];
                 if (element.k == k)
-                    v = element.v;
-            });
-            return v;
+                    return element.v;
+            }
+            return null;
         }
 
         /**

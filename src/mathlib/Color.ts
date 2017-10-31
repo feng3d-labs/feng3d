@@ -1,31 +1,35 @@
-namespace feng3d
+module feng3d
 {
     /**
      * 颜色
      * @author feng 2016-09-24
      */
-    export class Color extends Vector3D
+    export class Color
     {
         /**
          * 红[0,1]
          */
-        get r() { return this.x };
-        set r(value) { this.x = value; };
+        @oav()
+        @serialize(1)
+        r = 1;
         /**
          * 绿[0,1]
          */
-        get g() { return this.y };
-        set g(value) { this.y = value; };
+        @oav()
+        @serialize(1)
+        g = 1;
         /**
          * 蓝[0,1]
          */
-        get b() { return this.z };
-        set b(value) { this.z = value; };
+        @oav()
+        @serialize(1)
+        b = 1;
         /**
          * 透明度[0,1]
          */
-        get a() { return this.w };
-        set a(value) { this.w = value; };
+        @oav()
+        @serialize(1)
+        a = 1;
 
         /**
          * 构建颜色
@@ -36,7 +40,20 @@ namespace feng3d
          */
         constructor(r = 1, g = 1, b = 1, a = 1)
         {
-            super(r, g, b, a);
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+        }
+
+        setTo(r: number, g: number, b: number, a?: number)
+        {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            if (a !== undefined)
+                this.a = a;
+            return this;
         }
 
         /**
@@ -51,6 +68,7 @@ namespace feng3d
             this.r = ((color >> 16) & 0xff) / 0xff;
             this.g = ((color >> 8) & 0xff) / 0xff;
             this.b = (color & 0xff) / 0xff;
+            return this;
         }
 
         toInt()

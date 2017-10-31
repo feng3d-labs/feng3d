@@ -1,10 +1,12 @@
-namespace feng3d
+module feng3d
 {
     export class FogMethod extends RenderDataHolder
     {
         /**
 		 * 出现雾效果的最近距离
 		 */
+        @serialize()
+        @oav()
         get minDistance()
         {
             return this._minDistance;
@@ -17,6 +19,8 @@ namespace feng3d
 		/**
 		 * 最远距离
 		 */
+        @serialize()
+        @oav()
         get maxDistance()
         {
             return this._maxDistance;
@@ -29,6 +33,8 @@ namespace feng3d
         /**
 		 * 雾的颜色
 		 */
+        @serialize()
+        @oav()
         get fogColor()
         {
             return this._fogColor;
@@ -38,6 +44,9 @@ namespace feng3d
             this._fogColor = value;
         }
         private _fogColor: Color;
+
+        @serialize()
+        @oav()
         get density()
         {
             return this._density;
@@ -50,6 +59,8 @@ namespace feng3d
         /**
          * 雾模式
          */
+        @serialize()
+        @oav()
         get mode()
         {
             return this._mode;

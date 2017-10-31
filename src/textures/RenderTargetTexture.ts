@@ -1,10 +1,10 @@
-namespace feng3d
+module feng3d
 {
-    /**
-     * 渲染目标纹理
-     */
-    export class RenderTargetTexture extends TextureInfo
-    {
+    // /**
+    //  * 渲染目标纹理
+    //  */
+    // export class RenderTargetTexture extends TextureInfo
+    // {
 
-    }
+    // }
 }

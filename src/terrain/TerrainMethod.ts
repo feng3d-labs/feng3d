@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -13,7 +13,13 @@ namespace feng3d
         }
         set splatTexture1(value)
         {
+            if (this._splatTexture1 == value)
+                return;
+            if (this._splatTexture1)
+                this._splatTexture1.off("loaded", this.ontextureChanged, this)
             this._splatTexture1 = value;
+            if (this._splatTexture1)
+                this._splatTexture1.on("loaded", this.ontextureChanged, this)
         }
         private _splatTexture1: Texture2D;
 
@@ -23,7 +29,13 @@ namespace feng3d
         }
         set splatTexture2(value)
         {
+            if (this._splatTexture2 == value)
+                return;
+            if (this._splatTexture2)
+                this._splatTexture2.off("loaded", this.ontextureChanged, this)
             this._splatTexture2 = value;
+            if (this._splatTexture2)
+                this._splatTexture2.on("loaded", this.ontextureChanged, this)
         }
         private _splatTexture2: Texture2D;
 
@@ -33,7 +45,13 @@ namespace feng3d
         }
         set splatTexture3(value)
         {
+            if (this._splatTexture3 == value)
+                return;
+            if (this._splatTexture3)
+                this._splatTexture3.off("loaded", this.ontextureChanged, this)
             this._splatTexture3 = value;
+            if (this._splatTexture3)
+                this._splatTexture3.on("loaded", this.ontextureChanged, this)
         }
         private _splatTexture3: Texture2D;
 
@@ -43,7 +61,13 @@ namespace feng3d
         }
         set blendTexture(value)
         {
+            if (this._blendTexture == value)
+                return;
+            if (this._blendTexture)
+                this._blendTexture.off("loaded", this.ontextureChanged, this)
             this._blendTexture = value;
+            if (this._blendTexture)
+                this._blendTexture.on("loaded", this.ontextureChanged, this)
         }
         private _blendTexture: Texture2D;
 
@@ -92,13 +116,16 @@ namespace feng3d
             this.createUniformData("s_splatTexture2", () => this.splatTexture2);
             this.createUniformData("s_splatTexture3", () => this.splatTexture3);
             this.createUniformData("u_splatRepeats", () => this.splatRepeats);
-            this.createBoolMacro("HAS_TERRAIN_METHOD", () =>
-            {
-                return this.blendTexture.checkRenderData()
-                    && this.splatTexture1.checkRenderData()
-                    && this.splatTexture2.checkRenderData()
-                    && this.splatTexture3.checkRenderData();
-            });
+        }
+
+        private ontextureChanged()
+        {
+            this.createBoolMacro("HAS_TERRAIN_METHOD",
+                this.blendTexture.checkRenderData()
+                && this.splatTexture1.checkRenderData()
+                && this.splatTexture2.checkRenderData()
+                && this.splatTexture3.checkRenderData()
+            );
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -10,28 +10,55 @@ namespace feng3d
         /**
          * 是否正在播放
          */
-        isPlaying: boolean;
+        @oav()
+        get isPlaying()
+        {
+            return this._isPlaying;
+        }
+        set isPlaying(value)
+        {
+            if (this._isPlaying == value)
+                return;
+            if (this._isPlaying)
+            {
+                ticker.off("enterFrame", this.update, this);
+            }
+            this._isPlaying = value;
+            if (this._isPlaying)
+            {
+                this.startTime = Date.now();
+                ticker.on("enterFrame", this.update, this);
+            }
+            //
+            this.createBoolMacro("HAS_PARTICLE_ANIMATOR", this._isPlaying);
+        }
+        private _isPlaying = false;
 
         /**
          * 粒子时间
          */
+        @oav()
         time = 0;
 
         /**
          * 起始时间
          */
+        @oav()
         startTime = 0;
 
         /**
          * 播放速度
          */
+        @oav()
         playbackSpeed = 1;
 
         /**
          * 周期
          */
+        @oav()
         cycle = 10000;
 
+        @oav()
         get animatorSet()
         {
             return this._animatorSet;
@@ -50,45 +77,18 @@ namespace feng3d
 
         get single() { return true; }
 
-        constructor(gameObject: GameObject)
+        init(gameObject: GameObject)
         {
-            super(gameObject);
+            super.init(gameObject);
 
-            this._updateEverytime = true;
             //
             this.createUniformData("u_particleTime", () => this.time);
-            //
-            this.createBoolMacro("HAS_PARTICLE_ANIMATOR", () => this.isPlaying = true);
-        }
-
-        play()
-        {
-            if (this.isPlaying)
-                return;
-            if (!this.animatorSet)
-            {
-                return;
-            }
-
-            this.startTime = Date.now();
-            this.isPlaying = true;
-            ticker.on("enterFrame", this.update, this);
         }
 
         private update()
         {
             this.time = ((Date.now() - this.startTime) / 1000) % this.cycle;
             this.animatorSet.update(this);
-        }
-
-        /**
-         * 收集渲染数据拥有者
-         * @param renderAtomic 渲染原子
-         */
-        collectRenderDataHolder(renderAtomic: Object3DRenderAtomic = null)
-        {
-            this.animatorSet.collectRenderDataHolder(renderAtomic);
-            super.collectRenderDataHolder(renderAtomic);
         }
     }
 }

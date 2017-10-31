@@ -1,10 +1,11 @@
-namespace feng3d
+module feng3d
 {
     export class BillboardComponent extends Component
     {
         /**
          * 相对
          */
+        @oav()
         get camera()
         {
             return this._camera;
@@ -14,31 +15,31 @@ namespace feng3d
             if (this._camera == value)
                 return;
             if (this._camera)
-                this._camera.transform.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+                this._camera.gameObject.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
             this._camera = value;
             if (this._camera)
-                this._camera.transform.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+                this._camera.gameObject.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
             this.invalidHoldSizeMatrix();
         }
 
         private _holdSize = 1;
-        private _camera: Camera;
+        private _camera: Camera | null;
 
-        constructor(gameobject: GameObject)
+        init(gameobject: GameObject)
         {
-            super(gameobject);
+            super.init(gameobject);
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
         }
 
         private invalidHoldSizeMatrix()
         {
-            this.transform.invalidateSceneTransform();
+            this.transform["invalidateSceneTransform"]();
         }
 
         private updateLocalToWorldMatrix()
         {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
-            if (this._camera)
+            if (_localToWorldMatrix && this._camera)
             {
                 var camera = this._camera;
                 var cameraPos = camera.transform.scenePosition;

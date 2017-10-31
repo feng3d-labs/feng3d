@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     export var loadjs = {
         load: load,
@@ -66,8 +66,6 @@ namespace feng3d
             if (depsNotFound.length) (params.error || devnull)(depsNotFound);
             else (params.success || devnull)();
         });
-
-        return this;
     }
 
     /**
@@ -110,7 +108,7 @@ namespace feng3d
      */
     function subscribe(bundleIds: string | string[], callbackFn: (depsNotFound: string[]) => void)
     {
-        var depsNotFound = [];
+        var depsNotFound: string[] = [];
 
         // listify
         if (bundleIds instanceof String)
@@ -153,7 +151,7 @@ namespace feng3d
      * @param bundleId                  加载包编号
      * @param pathsNotFound             加载失败包
      */
-    function publish(bundleId: string, pathsNotFound: string[])
+    function publish(bundleId: string | undefined, pathsNotFound: string[])
     {
         // exit if id isn't defined
         if (!bundleId) return;
@@ -200,7 +198,7 @@ namespace feng3d
      * @param args.before                   加载前回调
      * @param numTries                      当前尝试次数
      */
-    function loadImage(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content) => void, args: { async?: boolean, numRetries?: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries?: number)
+    function loadImage(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content) => void, args: { async?: boolean, numRetries: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries = 0)
     {
         var image = new Image();
         image.crossOrigin = "Anonymous";
@@ -240,7 +238,7 @@ namespace feng3d
      * @param args.before                   加载前回调
      * @param numTries                      当前尝试次数
      */
-    function loadTxt(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content: string) => void, args: { async?: boolean, numRetries?: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries?: number)
+    function loadTxt(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content: string) => void, args: { async?: boolean, numRetries: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries = 0)
     {
         var request = new XMLHttpRequest();
         request.onreadystatechange = (ev: ProgressEvent) =>
@@ -249,7 +247,7 @@ namespace feng3d
             if (request.readyState == 4)
             {// 4 = "loaded"
 
-                request.onreadystatechange = null;
+                request.onreadystatechange = <any>null;
 
                 // handle retries in case of load failure
                 if (request.status < 200 || request.status > 300)
@@ -284,7 +282,7 @@ namespace feng3d
      * @param args.before                   加载前回调
      * @param numTries                      当前尝试次数
      */
-    function loadJsCss(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content) => void, args: { async?: boolean, numRetries?: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries?: number)
+    function loadJsCss(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content) => void, args: { async?: boolean, numRetries: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries = 0)
     {
         var doc = document,
             isCss,
@@ -357,19 +355,19 @@ namespace feng3d
         var notLoadFiles = paths.concat();
         var loadingFiles: { url: string, type: string }[] = [];
 
-        var pathsNotFound = [];
+        var pathsNotFound: string[] = [];
 
         // define callback function
         var fn = (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content: string) =>
         {
             // handle error
-            if (result == 'error') pathsNotFound.push(path);
+            if (result == 'error') pathsNotFound.push(path.url);
 
             // handle beforeload event. If defaultPrevented then that means the load
             // will be blocked (ex. Ghostery/ABP on Safari)
             if (result[0] == 'b')
             {
-                if (defaultPrevented) pathsNotFound.push(path);
+                if (defaultPrevented) pathsNotFound.push(path.url);
                 else return;
             }
             var index = loadingFiles.indexOf(path);
@@ -382,7 +380,8 @@ namespace feng3d
 
             if (notLoadFiles.length)
             {
-                var file = notLoadFiles.shift();
+                var file = notLoadFiles[0];
+                notLoadFiles.shift();
                 loadingFiles.push(file);
                 loadFile(file, fn, args);
             }
@@ -401,7 +400,8 @@ namespace feng3d
             notLoadFiles.length = 0;
         } else
         {
-            file = notLoadFiles.shift();
+            file = notLoadFiles[0];
+            notLoadFiles.shift();
             loadingFiles.push(file);
             loadFile(file, fn, args);
         }

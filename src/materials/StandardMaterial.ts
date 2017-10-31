@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -10,77 +10,121 @@ namespace feng3d
         /**
          * 漫反射函数
          */
+        @oav()
         get diffuseMethod()
         {
             return this._diffuseMethod;
         }
         set diffuseMethod(value)
         {
+            if (this._diffuseMethod == value)
+                return;
+            super.removeMethod(this._diffuseMethod);
             this._diffuseMethod = value;
-            if (this._diffuseMethod)
-                this.addMethod(this._diffuseMethod);
+            super.addMethod(this._diffuseMethod);
         }
         private _diffuseMethod: DiffuseMethod;
-
         /**
          * 法线函数
          */
+        @oav()
         get normalMethod()
         {
             return this._normalMethod;
         }
         set normalMethod(value)
         {
+            if (this._normalMethod == value)
+                return;
+            super.removeMethod(this._normalMethod);
             this._normalMethod = value;
-            if (this._normalMethod)
-                this.addMethod(this._normalMethod);
+            super.addMethod(this._normalMethod);
         }
         private _normalMethod: NormalMethod;
 
         /**
          * 镜面反射函数
          */
+        @oav()
         get specularMethod()
         {
             return this._specularMethod;
         }
         set specularMethod(value)
         {
+            if (this._specularMethod == value)
+                return;
+            super.removeMethod(this._specularMethod);
             this._specularMethod = value;
-            if (this._specularMethod)
-                this.addMethod(this._specularMethod);
+            super.addMethod(this._specularMethod);
         }
         private _specularMethod: SpecularMethod;
 
         /**
          * 环境反射函数
          */
+        @oav()
         get ambientMethod()
         {
             return this._ambientMethod;
         }
         set ambientMethod(value)
         {
+            if (this._ambientMethod == value)
+                return;
+            super.removeMethod(this._ambientMethod);
             this._ambientMethod = value;
-            if (this._ambientMethod)
-                this.addMethod(this._ambientMethod);
+            super.addMethod(this._ambientMethod);
         }
         private _ambientMethod: AmbientMethod;
 
-        // /**
-        //  * 反射率
-        //  */
-        // reflectance = 1.0;
+        /**
+         * 添加方法
+         */
+        addMethod(method: RenderDataHolder)
+        {
+            if (method instanceof DiffuseMethod)
+            {
+                this.diffuseMethod = method;
+            }
+            if (method instanceof NormalMethod)
+            {
+                this.normalMethod = method;
+            }
+            if (method instanceof SpecularMethod)
+            {
+                this.specularMethod = method;
+            }
+            if (method instanceof AmbientMethod)
+            {
+                this.ambientMethod = method;
+            }
+            super.addMethod(method);
+        }
 
-        // /**
-        //  * 粗糙度
-        //  */
-        // roughness = 1.0;
-
-        // /**
-        //  * 金属度
-        //  */
-        // metalic = 1.0;
+        /**
+         * 删除方法
+         */
+        removeMethod(method: RenderDataHolder)
+        {
+            if (method == this.diffuseMethod)
+            {
+                this.diffuseMethod = <any>null;
+            }
+            if (method == this.normalMethod)
+            {
+                this.normalMethod = <any>null;
+            }
+            if (method == this.specularMethod)
+            {
+                this.specularMethod = <any>null;
+            }
+            if (method == this.ambientMethod)
+            {
+                this.ambientMethod = <any>null;
+            }
+            super.removeMethod(method);
+        }
 
         /**
          * 是否开启混合
@@ -103,10 +147,17 @@ namespace feng3d
             super();
             this.shaderName = "standard";
 
+            //
             this.diffuseMethod = new DiffuseMethod(diffuseUrl);
             this.normalMethod = new NormalMethod(normalUrl);
             this.specularMethod = new SpecularMethod(specularUrl);
             this.ambientMethod = new AmbientMethod(ambientUrl);
+        }
+
+        private onmethodchange(host, property, oldvalue)
+        {
+            this.removeMethod(oldvalue);
+            this.addMethod(this[property]);
         }
     }
 }

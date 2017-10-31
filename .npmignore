@@ -1,0 +1,20 @@
+# Build and Release Folders
+node_modules/
+jspm_packages/
+
+# Dev files
+npm-debug.log
+tests/
+docs/
+shaders/
+ShaderPack.js
+.travis.yml
+
+# Project property files
+.actionScriptProperties
+.flexLibProperties
+.settings/
+.idea/
+.project
+.DS_Store
+*.iml

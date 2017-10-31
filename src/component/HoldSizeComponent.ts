@@ -1,10 +1,11 @@
-namespace feng3d
+module feng3d
 {
     export class HoldSizeComponent extends Component
     {
         /**
          * 保持缩放尺寸
          */
+        @oav()
         get holdSize()
         {
             return this._holdSize;
@@ -20,6 +21,7 @@ namespace feng3d
         /**
          * 相对
          */
+        @oav()
         get camera()
         {
             return this._camera;
@@ -29,31 +31,31 @@ namespace feng3d
             if (this._camera == value)
                 return;
             if (this._camera)
-                this._camera.transform.off("scenetransformChanged", this.invalidateSceneTransform, this);
+                this._camera.gameObject.off("scenetransformChanged", this.invalidateSceneTransform, this);
             this._camera = value;
             if (this._camera)
-                this._camera.transform.on("scenetransformChanged", this.invalidateSceneTransform, this);
+                this._camera.gameObject.on("scenetransformChanged", this.invalidateSceneTransform, this);
             this.invalidateSceneTransform();
         }
 
         private _holdSize = 1;
-        private _camera: Camera;
+        private _camera: Camera | null;
 
-        constructor(gameobject: GameObject)
+        init(gameobject: GameObject)
         {
-            super(gameobject);
+            super.init(gameobject);
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
         }
 
         private invalidateSceneTransform()
         {
-            this.transform.invalidateSceneTransform();
+            this.transform["invalidateSceneTransform"]();
         }
 
         private updateLocalToWorldMatrix()
         {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
-            if (this.holdSize && this._camera)
+            if (this.holdSize && this._camera && _localToWorldMatrix)
             {
                 var depthScale = this.getDepthScale(this._camera);
                 var vec = _localToWorldMatrix.decompose();
@@ -70,6 +72,8 @@ namespace feng3d
                 distance.x = 1;
             var depth = distance.dotProduct(cameraTranform.forward);
             var scale = camera.getScaleByDepth(depth);
+            //限制在放大缩小100倍之间，否则容易出现矩阵不可逆问题
+            scale = Math.max(Math.min(100, scale), 0.01);
             return scale;
         }
 

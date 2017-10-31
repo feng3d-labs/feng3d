@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -7,65 +7,75 @@ namespace feng3d
      */
     export class PlaneGeometry extends Geometry
     {
+        @oav()
+        @serialize()
         get width()
         {
             return this._width;
         }
         set width(value)
         {
-            if(this._width == value)
+            if (this._width == value)
                 return;
             this._width = value;
             this.invalidateGeometry();
         }
         private _width = 100;
 
+        @oav()
+        @serialize()
         get height()
         {
             return this._height;
         }
         set height(value)
         {
-            if(this._height == value)
+            if (this._height == value)
                 return;
             this._height = value;
             this.invalidateGeometry();
         }
         private _height = 100;
 
+        @oav()
+        @serialize()
         get segmentsW()
         {
             return this._segmentsW;
         }
         set segmentsW(value)
         {
-            if(this._segmentsW == value)
+            if (this._segmentsW == value)
                 return;
             this._segmentsW = value;
             this.invalidateGeometry();
         }
         private _segmentsW = 1;
 
+        @oav()
+        @serialize()
         get segmentsH()
         {
             return this._segmentsH;
         }
         set segmentsH(value)
         {
-            if(this._segmentsH == value)
+            if (this._segmentsH == value)
                 return;
             this._segmentsH = value;
             this.invalidateGeometry();
         }
         private _segmentsH = 1;
 
+        @oav()
+        @serialize()
         get yUp()
         {
             return this._yUp;
         }
         set yUp(value)
         {
-            if(this._yUp == value)
+            if (this._yUp == value)
                 return;
             this._yUp = value;
             this.invalidateGeometry();
@@ -109,7 +119,7 @@ namespace feng3d
             this.setVAData("a_uv", uvData, 2);
 
             var indices = this.buildIndices();
-            this.setIndices(indices);
+            this.indices = indices;
         }
 
         /**
@@ -122,7 +132,7 @@ namespace feng3d
          */
         private buildPosition()
         {
-            var vertexPositionData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
+            var vertexPositionData: number[] = [];
             var x: number, y: number;
             var positionIndex = 0;
             for (var yi = 0; yi <= this.segmentsH; ++yi)
@@ -157,7 +167,7 @@ namespace feng3d
          */
         private buildNormal()
         {
-            var vertexNormalData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
+            var vertexNormalData: number[] = [];
 
             var normalIndex = 0;
             for (var yi = 0; yi <= this.segmentsH; ++yi)
@@ -175,7 +185,7 @@ namespace feng3d
                     else
                     {
                         vertexNormalData[normalIndex++] = 0;
-                        vertexNormalData[normalIndex++] = -1;
+                        vertexNormalData[normalIndex++] = 1;
                     }
                 }
             }
@@ -190,16 +200,24 @@ namespace feng3d
          */
         private buildTangent()
         {
-            var vertexTangentData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
+            var vertexTangentData: number[] = [];
             var tangentIndex = 0;
             for (var yi = 0; yi <= this.segmentsH; ++yi)
             {
                 for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
-
-                    vertexTangentData[tangentIndex++] = 1;
-                    vertexTangentData[tangentIndex++] = 0;
-                    vertexTangentData[tangentIndex++] = 0;
+                    if (this.yUp)
+                    {
+                        vertexTangentData[tangentIndex++] = 1;
+                        vertexTangentData[tangentIndex++] = 0;
+                        vertexTangentData[tangentIndex++] = 0;
+                    }
+                    else
+                    {
+                        vertexTangentData[tangentIndex++] = -1;
+                        vertexTangentData[tangentIndex++] = 0;
+                        vertexTangentData[tangentIndex++] = 0;
+                    }
                 }
             }
             return vertexTangentData;
@@ -213,7 +231,7 @@ namespace feng3d
          */
         private buildIndices()
         {
-            var indices = new Uint16Array(this.segmentsH * this.segmentsW * 6);
+            var indices: number[] = [];
             var tw = this.segmentsW + 1;
 
             var numIndices = 0;
@@ -222,18 +240,27 @@ namespace feng3d
             {
                 for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
-
                     //生成索引数据
                     if (xi != this.segmentsW && yi != this.segmentsH)
                     {
                         base = xi + yi * tw;
-
-                        indices[numIndices++] = base;
-                        indices[numIndices++] = base + tw;
-                        indices[numIndices++] = base + tw + 1;
-                        indices[numIndices++] = base;
-                        indices[numIndices++] = base + tw + 1;
-                        indices[numIndices++] = base + 1;
+                        if (this.yUp)
+                        {
+                            indices[numIndices++] = base;
+                            indices[numIndices++] = base + tw;
+                            indices[numIndices++] = base + tw + 1;
+                            indices[numIndices++] = base;
+                            indices[numIndices++] = base + tw + 1;
+                            indices[numIndices++] = base + 1;
+                        } else
+                        {
+                            indices[numIndices++] = base;
+                            indices[numIndices++] = base + tw + 1;
+                            indices[numIndices++] = base + tw;
+                            indices[numIndices++] = base;
+                            indices[numIndices++] = base + 1;
+                            indices[numIndices++] = base + tw + 1;
+                        }
                     }
                 }
             }
@@ -248,15 +275,22 @@ namespace feng3d
          */
         private buildUVs()
         {
-            var data = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 2);
+            var data: number[] = [];
             var index = 0;
 
             for (var yi = 0; yi <= this.segmentsH; ++yi)
             {
                 for (var xi = 0; xi <= this.segmentsW; ++xi)
                 {
-                    data[index++] = xi / this.segmentsW;
-                    data[index++] = 1 - yi / this.segmentsH;
+                    if (this.yUp)
+                    {
+                        data[index++] = xi / this.segmentsW;
+                        data[index++] = 1 - yi / this.segmentsH;
+                    } else
+                    {
+                        data[index++] = 1 - xi / this.segmentsW;
+                        data[index++] = 1 - yi / this.segmentsH;
+                    }
                 }
             }
 

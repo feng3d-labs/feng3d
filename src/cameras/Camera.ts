@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
 	 * @author feng 2014-10-14
@@ -10,11 +10,11 @@ namespace feng3d
 
     export interface Camera
     {
-        once<K extends keyof CameraEventMap>(type: K, listener: (event: CameraEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof CameraEventMap>(type: K, listener: (event: EventVO<CameraEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof CameraEventMap>(type: K, data?: CameraEventMap[K], bubbles?: boolean);
         has<K extends keyof CameraEventMap>(type: K): boolean;
-        on<K extends keyof CameraEventMap>(type: K, listener: (event: CameraEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof CameraEventMap>(type?: K, listener?: (event: CameraEventMap[K]) => any, thisObject?: any);
+        on<K extends keyof CameraEventMap>(type: K, listener: (event: EventVO<CameraEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof CameraEventMap>(type?: K, listener?: (event: EventVO<CameraEventMap[K]>) => any, thisObject?: any);
     }
 
 	/**
@@ -47,13 +47,12 @@ namespace feng3d
 		/**
 		 * 创建一个摄像机
 		 */
-        constructor(gameObject: GameObject)
+        init(gameObject: GameObject)
         {
-            super(gameObject);
-            this._lens = new PerspectiveLens();
-            this._lens.on("matrixChanged", this.onLensMatrixChanged, this);
+            super.init(gameObject);
+            this.lens = this.lens || new PerspectiveLens();
 
-            this.gameObject.transform.on("scenetransformChanged", this.onScenetransformChanged, this);
+            this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;
 
@@ -63,11 +62,11 @@ namespace feng3d
                 this._frustumPlanes[i] = new Plane3D();
 
             //
+            this.createUniformData("u_projectionMatrix", () => this._lens.matrix);
+
             this.createUniformData("u_viewProjection", () => this.viewProjection);
-            this.createUniformData("u_cameraMatrix", () =>
-            {
-                return this.gameObject ? this.gameObject.transform.localToWorldMatrix : new Matrix3D();
-            });
+            this.createUniformData("u_viewMatrix", () => this.transform.worldToLocalMatrix);
+            this.createUniformData("u_cameraMatrix", () => this.transform.localToWorldMatrix);
             this.createUniformData("u_skyBoxSize", () => { return this._lens.far / Math.sqrt(3); });
         }
 
@@ -85,7 +84,8 @@ namespace feng3d
         /**
 		 * 镜头
 		 */
-        @serialize
+        @serialize()
+        @oav()
         get lens(): LensBase
         {
             return this._lens;
@@ -99,11 +99,13 @@ namespace feng3d
             if (!value)
                 throw new Error("Lens cannot be null!");
 
-            this._lens.off("matrixChanged", this.onLensMatrixChanged, this);
+            if (this._lens)
+                this._lens.off("matrixChanged", this.onLensMatrixChanged, this);
 
             this._lens = value;
 
-            this._lens.on("matrixChanged", this.onLensMatrixChanged, this);
+            if (this._lens)
+                this._lens.on("matrixChanged", this.onLensMatrixChanged, this);
 
             this.dispatch("lensChanged", this);
         }
@@ -148,7 +150,7 @@ namespace feng3d
 		 * @param y view3D上的X坐标
 		 * @return
 		 */
-        getRay3D(x: number, y: number, ray3D: Ray3D = null): Ray3D
+        getRay3D(x: number, y: number, ray3D?: Ray3D): Ray3D
         {
             //摄像机坐标
             var rayPosition: Vector3D = this.unproject(x, y, 0);
@@ -187,7 +189,7 @@ namespace feng3d
 		 * @param v 场景坐标（输出）
 		 * @return 场景坐标
 		 */
-        unproject(sX: number, sY: number, sZ: number, v: Vector3D = null): Vector3D
+        unproject(sX: number, sY: number, sZ: number, v?: Vector3D): Vector3D
         {
             var gpuPos: Point = this.screenToGpuPosition(new Point(sX, sY));
             return this.transform.localToWorldMatrix.transformVector(this.lens.unproject(gpuPos.x, gpuPos.y, sZ, v), v);

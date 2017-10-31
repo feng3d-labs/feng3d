@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -24,16 +24,16 @@ namespace feng3d
     {
         url: string;
         dataFormat: string;
-        onCompleted: (content: string) => void;
-        onProgress: (loaded: number, total: number) => void;
-        onError: () => void;
+        onCompleted?: (content: string) => void;
+        onProgress?: (loaded: number, total: number) => void;
+        onError?: () => void;
     }
 
     /**
      * 加载文本
      * @param url   路径
      */
-    function loadText(url: string, onCompleted: (content: string) => void = null, onRequestProgress: () => void = null, onError: () => void = null)
+    function loadText(url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: () => void)
     {
         xmlHttpRequestLoad({ url: url, dataFormat: LoaderDataFormat.TEXT, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
     }
@@ -42,7 +42,7 @@ namespace feng3d
      * 加载二进制
      * @param url   路径
      */
-    function loadBinary(url: string, onCompleted: (content: string) => void = null, onRequestProgress: () => void = null, onError: () => void = null)
+    function loadBinary(url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: () => void)
     {
         xmlHttpRequestLoad({ url: url, dataFormat: LoaderDataFormat.BINARY, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
     }
@@ -51,7 +51,7 @@ namespace feng3d
      * 加载图片
      * @param url   路径
      */
-    function loadImage(url: string, onCompleted: (content: HTMLImageElement) => void = null, onRequestProgress: () => void = null, onError: () => void = null)
+    function loadImage(url: string, onCompleted?: (content: HTMLImageElement) => void, onRequestProgress?: () => void, onError?: () => void)
     {
         var image = new Image();
         image.crossOrigin = "Anonymous";
@@ -106,7 +106,7 @@ namespace feng3d
             if (request.readyState == 4)
             {// 4 = "loaded"
 
-                request.onreadystatechange = null;
+                request.onreadystatechange = <any>null;
 
                 if (request.status >= 200 && request.status < 300)
                 {

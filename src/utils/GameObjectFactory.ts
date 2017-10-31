@@ -1,12 +1,18 @@
-namespace feng3d
+module feng3d
 {
     export var GameObjectFactory = {
         create: create,
+        createGameObject: createGameObject,
         createCube: createCube,
         createPlane: createPlane,
         createCylinder: createCylinder,
         createSphere: createSphere,
         createCapsule: createCapsule,
+        createCone: createCone,
+        createTorus: createTorus,
+        createParticle: createParticle,
+        createCamera: createCamera,
+        createPointLight: createPointLight,
     }
 
     function create(name = "GameObject")
@@ -15,35 +21,41 @@ namespace feng3d
         gameobject.mouseEnabled = true;
         if (name == "GameObject")
             return gameobject;
-        gameobject.addComponent(MeshRenderer).material = new StandardMaterial();
-        var meshFilter = gameobject.addComponent(MeshFilter);
+        var meshRenderer = gameobject.addComponent(MeshRenderer);
+        meshRenderer.material = new StandardMaterial();
         switch (name)
         {
             case "Plane":
-                meshFilter.mesh = new PlaneGeometry();
+                meshRenderer.geometry = new PlaneGeometry();
                 break;
             case "Cube":
-                meshFilter.mesh = new CubeGeometry();
+                meshRenderer.geometry = new CubeGeometry();
                 break;
             case "Sphere":
-                meshFilter.mesh = new SphereGeometry();
+                meshRenderer.geometry = new SphereGeometry();
                 break;
             case "Capsule":
-                meshFilter.mesh = new CapsuleGeometry();
+                meshRenderer.geometry = new CapsuleGeometry();
                 break;
             case "Cylinder":
-                meshFilter.mesh = new CylinderGeometry();
+                meshRenderer.geometry = new CylinderGeometry();
                 break;
             case "Cone":
-                meshFilter.mesh = new ConeGeometry();
+                meshRenderer.geometry = new ConeGeometry();
                 break;
             case "Torus":
-                meshFilter.mesh = new TorusGeometry();
+                meshRenderer.geometry = new TorusGeometry();
                 break;
             case "Particle":
-                meshFilter.mesh = new TorusGeometry();
+                meshRenderer.geometry = new TorusGeometry();
                 break;
         }
+        return gameobject;
+    }
+
+    function createGameObject(name = "GameObject")
+    {
+        var gameobject = GameObject.create(name);
         return gameobject;
     }
 
@@ -51,7 +63,7 @@ namespace feng3d
     {
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
-        gameobject.addComponent(MeshFilter).mesh = new CubeGeometry();
+        model.geometry = new CubeGeometry();
         model.material = new StandardMaterial();
         return gameobject;
     }
@@ -60,7 +72,7 @@ namespace feng3d
     {
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
-        gameobject.addComponent(MeshFilter).mesh = new PlaneGeometry();
+        model.geometry = new PlaneGeometry();
         model.material = new StandardMaterial();
         return gameobject;
     }
@@ -69,7 +81,25 @@ namespace feng3d
     {
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
-        gameobject.addComponent(MeshFilter).mesh = new CylinderGeometry();
+        model.geometry = new CylinderGeometry();
+        model.material = new StandardMaterial();
+        return gameobject;
+    }
+
+    function createCone(name: string = "Cone")
+    {
+        var gameobject = GameObject.create(name);
+        var model = gameobject.addComponent(MeshRenderer);
+        model.geometry = new ConeGeometry();
+        model.material = new StandardMaterial();
+        return gameobject;
+    }
+
+    function createTorus(name: string = "Torus")
+    {
+        var gameobject = GameObject.create(name);
+        var model = gameobject.addComponent(MeshRenderer);
+        model.geometry = new TorusGeometry();
         model.material = new StandardMaterial();
         return gameobject;
     }
@@ -78,7 +108,7 @@ namespace feng3d
     {
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
-        gameobject.addComponent(MeshFilter).mesh = new SphereGeometry();
+        model.geometry = new SphereGeometry();
         model.material = new StandardMaterial();
         return gameobject;
     }
@@ -87,30 +117,44 @@ namespace feng3d
     {
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
-        gameobject.addComponent(MeshFilter).mesh = new CapsuleGeometry();
+        model.geometry = new CapsuleGeometry();
         model.material = new StandardMaterial();
+        return gameobject;
+    }
+
+    function createCamera(name: string = "Camera")
+    {
+        var gameobject = GameObject.create(name);
+        gameobject.addComponent(Camera);
+        return gameobject;
+    }
+
+    function createPointLight(name: string = "PointLight")
+    {
+        var gameobject = GameObject.create(name);
+        gameobject.addComponent(PointLight);
         return gameobject;
     }
 
     function createParticle(name = "Particle")
     {
         var _particleMesh = GameObject.create("particle");
-        _particleMesh.addComponent(MeshFilter).mesh = new PlaneGeometry(10, 10, 1, 1, false);
-        var material = _particleMesh.addComponent(MeshRenderer).material = new PointMaterial();
-        material.enableBlend = true;
+        var meshRenderer = _particleMesh.addComponent(MeshRenderer);
+        meshRenderer.geometry = new PointGeometry();
+        var material = meshRenderer.material = new StandardMaterial();
+        material.renderMode = RenderMode.POINTS;
 
         var particleAnimationSet = new ParticleAnimationSet();
-        particleAnimationSet.numParticles = 20000;
+        particleAnimationSet.numParticles = 1000;
         //通过函数来创建粒子初始状态
         particleAnimationSet.generateFunctions.push({
             generate: (particle) =>
             {
                 particle.birthTime = Math.random() * 5 - 5;
                 particle.lifetime = 5;
-                var degree1 = Math.random() * Math.PI;
                 var degree2 = Math.random() * Math.PI * 2;
-                var r = Math.random() * 50 + 400;
-                particle.velocity = new Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
+                var r = Math.random() * 100;
+                particle.velocity = new Vector3D(r * Math.cos(degree2), r * 2, r * Math.sin(degree2));
             }, priority: 0
         });
         var particleAnimator = _particleMesh.addComponent(ParticleAnimator);

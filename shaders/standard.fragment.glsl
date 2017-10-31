@@ -1,4 +1,3 @@
-
 precision mediump float;
 
 //此处将填充宏定义
@@ -14,7 +13,6 @@ varying vec3 v_normal;
 #endif
 
 uniform mat4 u_cameraMatrix;
-
 
 uniform float u_alphaThreshold;
 //漫反射
@@ -47,7 +45,7 @@ uniform vec4 u_ambient;
     #include<modules/terrain.fragment>
 #endif
 
-#include<modules/pointLightShading.fragment>
+#include<modules/lightShading.fragment>
 
 #ifdef HAS_FOG_METHOD
     #include<modules/fog.fragment>
@@ -61,8 +59,8 @@ uniform vec4 u_ambient;
     #include<modules/particle.fragment>
 #endif
 
-void main(void) {
-
+void main(void)
+{
     vec4 finalColor = vec4(1.0,1.0,1.0,1.0);
 
     //获取法线
@@ -98,19 +96,21 @@ void main(void) {
     finalColor = diffuseColor;
 
     //渲染灯光
-    #if NUM_LIGHT > 0
+    #ifdef NUM_LIGHT
+        #if NUM_LIGHT > 0
 
-        //获取高光值
-        float glossiness = u_glossiness;
-        //获取镜面反射基本颜色
-        vec3 specularColor = u_specular;
-        #ifdef HAS_SPECULAR_SAMPLER
-            vec4 specularMapColor = texture2D(s_specular, v_uv);
-            specularColor.xyz = specularMapColor.xyz;
-            glossiness = glossiness * specularMapColor.w;
+            //获取高光值
+            float glossiness = u_glossiness;
+            //获取镜面反射基本颜色
+            vec3 specularColor = u_specular;
+            #ifdef HAS_SPECULAR_SAMPLER
+                vec4 specularMapColor = texture2D(s_specular, v_uv);
+                specularColor.xyz = specularMapColor.xyz;
+                glossiness = glossiness * specularMapColor.w;
+            #endif
+            
+            finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
         #endif
-        
-        finalColor.xyz = pointLightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
     #endif
 
     #ifdef HAS_ENV_METHOD

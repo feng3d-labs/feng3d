@@ -1,28 +1,37 @@
-namespace feng3d
+module feng3d
 {
 	/**
 	 * A Quaternion object which can be used to represent rotations.
 	 */
     export class Quaternion
     {
+        static fromArray(array: ArrayLike<number>, offset = 0)
+        {
+            return new Quaternion().fromArray(array, offset);
+        }
+
 		/**
 		 * The x value of the quaternion.
 		 */
+        @serialize(0)
         x = 0;
 
 		/**
 		 * The y value of the quaternion.
 		 */
+        @serialize(0)
         y = 0;
 
 		/**
 		 * The z value of the quaternion.
 		 */
+        @serialize(0)
         z = 0;
 
 		/**
 		 * The w value of the quaternion.
 		 */
+        @serialize(0)
         w = 1;
 
 		/**
@@ -48,6 +57,33 @@ namespace feng3d
             return Math.sqrt(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z);
         }
 
+        setTo(x = 0, y = 0, z = 0, w = 1)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
+
+        fromArray(array: ArrayLike<number>, offset = 0)
+        {
+            this.x = array[offset];
+            this.y = array[offset + 1];
+            this.z = array[offset + 2];
+            this.w = array[offset + 3];
+            return this;
+        }
+
+        toArray(array?: number[], offset = 0)
+        {
+            array = array || [];
+            array[offset] = this.x;
+            array[offset + 1] = this.y;
+            array[offset + 2] = this.z;
+            array[offset + 3] = this.w;
+            return array;
+        }
+
 		/**
 		 * Fills the quaternion object with the result from a multiplication of two quaternion objects.
 		 *
@@ -65,7 +101,7 @@ namespace feng3d
             this.z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2;
         }
 
-        multiplyVector(vector: Vector3D, target: Quaternion = null): Quaternion
+        multiplyVector(vector: Vector3D, target?: Quaternion): Quaternion
         {
             target = target || new Quaternion();
 
@@ -206,11 +242,14 @@ namespace feng3d
 		 * @param target An optional Vector3D object to contain the Euler angles. If not provided, a new object is created.
 		 * @return The Vector3D containing the Euler angles.
 		 */
-        toEulerAngles(target: Vector3D = null): Vector3D
+        toEulerAngles(target?: Vector3D): Vector3D
         {
             target = target || new Vector3D();
             target.x = Math.atan2(2 * (this.w * this.x + this.y * this.z), 1 - 2 * (this.x * this.x + this.y * this.y));
-            target.y = Math.asin(2 * (this.w * this.y - this.z * this.x));
+            var asinvalue = 2 * (this.w * this.y - this.z * this.x);
+            //防止超出范围，获取NaN值
+            asinvalue = Math.max(-1, Math.min(asinvalue, 1));
+            target.y = Math.asin(asinvalue);
             target.z = Math.atan2(2 * (this.w * this.z + this.x * this.y), 1 - 2 * (this.y * this.y + this.z * this.z));
             return target;
         }
@@ -243,7 +282,7 @@ namespace feng3d
 		 * @param target An optional Matrix3D container to store the transformation in. If not provided, a new object is created.
 		 * @return A Matrix3D object representing an equivalent rotation.
 		 */
-        toMatrix3D(target: Matrix3D = null): Matrix3D
+        toMatrix3D(target?: Matrix3D): Matrix3D
         {
             if (!target)
                 target = new Matrix3D();
@@ -283,6 +322,7 @@ namespace feng3d
         {
             var v: Vector3D = matrix.decompose()[1];
             this.fromEulerAngles(v.x, v.y, v.z);
+            return this;
         }
 
 		/**
@@ -329,7 +369,7 @@ namespace feng3d
 		 * @param target An optional Vector3D object that will contain the rotated coordinates. If not provided, a new object will be created.
 		 * @return A Vector3D object containing the rotated point.
 		 */
-        rotatePoint(vector: Vector3D, target: Vector3D = null): Vector3D
+        rotatePoint(vector: Vector3D, target?: Vector3D): Vector3D
         {
             var x1: number, y1: number, z1: number, w1: number;
             var x2 = vector.x, y2 = vector.y, z2 = vector.z;

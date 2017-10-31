@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "declaration": true,
+        "strict": true,
+        "experimentalDecorators": true,
+        // "outDir": "./debug"
+        "outFile": "../out/tests.js"
+    },
+    "files": [ //注：如果有继承关系的，父类必须排在子类前面
+        //
+        "../out/feng3d.d.ts",
+        //
+        "src/common/ClassUtilsTest.ts",
+        "src/common/EulerTest.ts",
+        "src/common/ArrayListTest.ts",
+        //
+        "src/SerializationTest.ts",
+        //
+        "src/UnitTest.ts"
+    ]
+}

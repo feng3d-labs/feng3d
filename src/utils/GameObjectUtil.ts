@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     export var GameObjectUtil = {
         addScript: addScript,
@@ -9,18 +9,19 @@ namespace feng3d
 
     var resultScriptCache: { [path: string]: { className: string, script: HTMLScriptElement } } = {};
 
-    function addScript(gameObject: GameObject, scriptPath: string)
+    function addScript(gameObject: GameObject, scriptPath: string, callback?: (scriptcomponent: Component) => void)
     {
-        this.loadJs(scriptPath, (resultScript) =>
+        loadJs(scriptPath, (resultScript) =>
         {
-            this.removeScript(gameObject, scriptPath);
+            removeScript(gameObject, scriptPath);
 
             var windowEval = eval.bind(window);
 
             var componentClass = windowEval(resultScript.className);
-            var scriptDemo = <Script>gameObject.addComponent(componentClass);
-            scriptDemo.url = scriptPath;
-            scriptDemo.enabled = true;
+            var scriptcomponent = <Script>gameObject.addComponent(componentClass);
+            scriptcomponent["_url"] = scriptPath;
+            scriptcomponent.enabled = true;
+            callback && callback(scriptcomponent);
         });
     }
 
@@ -35,10 +36,11 @@ namespace feng3d
             var scripts = gameObject.getComponents(Script);
             while (scripts.length > 0)
             {
-                var scriptComponent = scripts.pop();
+                var scriptComponent = scripts[scripts.length - 1];
+                scripts.pop();
                 if (scriptComponent.url == script)
                 {
-                    this.removeScript(gameObject, scriptComponent);
+                    removeScript(gameObject, scriptComponent);
                 }
             }
         }
@@ -47,14 +49,14 @@ namespace feng3d
     function reloadJS(scriptPath)
     {
         delete resultScriptCache[scriptPath];
-        this.loadJs(scriptPath);
+        loadJs(scriptPath);
     }
 
-    function loadJs(scriptPath, onload: (resultScript: { className: string, script: HTMLScriptElement }) => void = null)
+    function loadJs(scriptPath, onload?: (resultScript: { className: string, script: HTMLScriptElement }) => void)
     {
         if (resultScriptCache[scriptPath])
         {
-            onload(resultScriptCache[scriptPath]);
+            onload && onload(resultScriptCache[scriptPath]);
             return;
         }
 
@@ -64,7 +66,8 @@ namespace feng3d
         {
             var reg = /(feng3d.(\w+)) = (\w+);/;
             var result = content.match(reg);
-            resultScript.className = result[1];
+            if (result)
+                resultScript.className = result[1];
 
             //
             var scriptTag = document.getElementById(scriptPath);

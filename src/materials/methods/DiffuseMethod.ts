@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 	/**
 	 * 漫反射函数
@@ -9,27 +9,37 @@ namespace feng3d
         /**
          * 漫反射纹理
          */
-        @serialize
+        @serialize()
+        @oav()
         get difuseTexture()
         {
             return this._difuseTexture;
         }
         set difuseTexture(value)
         {
+            if (this._difuseTexture == value)
+                return;
+            if (this._difuseTexture)
+                this._difuseTexture.off("loaded", this.ontextureChanged, this)
             this._difuseTexture = value;
+            if (this._difuseTexture)
+                this._difuseTexture.on("loaded", this.ontextureChanged, this)
+            this.ontextureChanged();
         }
         private _difuseTexture: Texture2D;
 
         /**
          * 基本颜色
          */
-        @serialize
+        @serialize()
+        @oav()
         color = new Color(1, 1, 1, 1);
 
         /**
          * 透明阈值，透明度小于该值的像素被片段着色器丢弃
          */
-        @serialize
+        @serialize(0)
+        @oav()
         alphaThreshold = 0;
 
         /**
@@ -44,7 +54,11 @@ namespace feng3d
             this.createUniformData("u_diffuse", () => this.color);
             this.createUniformData("s_diffuse", () => this.difuseTexture);
             this.createUniformData("u_alphaThreshold", () => this.alphaThreshold);
-            this.createBoolMacro("HAS_DIFFUSE_SAMPLER", () => this.difuseTexture.checkRenderData());
+        }
+
+        private ontextureChanged()
+        {
+            this.createBoolMacro("HAS_DIFFUSE_SAMPLER", this.difuseTexture.checkRenderData());
         }
     }
 }

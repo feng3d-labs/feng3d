@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
      * 粒子发射器
@@ -63,9 +63,12 @@ namespace feng3d
                     while (bursts.length > 0 && bursts[bursts.length - 1].time <= time)
                     {
                         var burst = bursts.pop();
-                        for (i = 0; i < burst.particles; i++)
+                        if (burst)
                         {
-                            birthTimes[index++] = burst.time;
+                            for (i = 0; i < burst.particles; i++)
+                            {
+                                birthTimes[index++] = burst.time;
+                            }
                         }
                     }
 

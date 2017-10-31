@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 	/**
 	 * 漫反射函数
@@ -9,21 +9,30 @@ namespace feng3d
         /**
          * 环境纹理
          */
-        @serialize
+        @serialize()
+        @oav()
         get ambientTexture()
         {
             return this._ambientTexture;
         }
         set ambientTexture(value)
         {
+            if (this._ambientTexture == value)
+                return;
+            if (this._ambientTexture)
+                this._ambientTexture.off("loaded", this.onTextureChanged, this);
             this._ambientTexture = value;
+            if (this._ambientTexture)
+                this._ambientTexture.on("loaded", this.onTextureChanged, this);
+            this.onTextureChanged();
         }
         private _ambientTexture: Texture2D;
 
         /**
          * 颜色
          */
-        @serialize
+        @serialize()
+        @oav()
         get color()
         {
             return this._color;
@@ -37,7 +46,7 @@ namespace feng3d
         /**
          * 构建
          */
-        constructor(ambientUrl = "", color: Color = null)
+        constructor(ambientUrl = "", color?: Color)
         {
             super();
             this.ambientTexture = new Texture2D(ambientUrl);
@@ -45,7 +54,11 @@ namespace feng3d
             //
             this.createUniformData("u_ambient", () => this._color);
             this.createUniformData("s_ambient", () => this._ambientTexture);
-            this.createBoolMacro("HAS_AMBIENT_SAMPLER", () => this.ambientTexture.checkRenderData());
+        }
+
+        private onTextureChanged()
+        {
+            this.createBoolMacro("HAS_AMBIENT_SAMPLER", this._ambientTexture && this._ambientTexture.checkRenderData());
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
 	/**
@@ -24,12 +24,12 @@ namespace feng3d
     function parser(context: string)
     {
         var mtl: Mtl_Mtl = {};
-        var lines = context.split("\n").reverse();
-        do
+        var lines = context.split("\n");
+        for (var i = 0; i < lines.length; i++)
         {
-            var line = lines.pop();
-            parserLine(line, mtl);
-        } while (line);
+            var element = lines[i];
+            parserLine(lines[i], mtl);
+        }
         return mtl;
     }
 
@@ -54,7 +54,7 @@ namespace feng3d
         if (line.charAt(0) == "#")
             return;
 
-        var result: RegExpExecArray;
+        var result: RegExpExecArray | null;
         if ((result = newmtlReg.exec(line)) && result[0] == line)
         {
             currentMaterial = { name: result[1], ka: [], kd: [], ks: [], ns: 0, ni: 0, d: 0, illum: 0 };

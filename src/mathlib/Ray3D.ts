@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
 	/**
@@ -7,7 +7,7 @@ namespace feng3d
 	 */
     export class Ray3D extends Line3D
     {
-        constructor(position: Vector3D = null, direction: Vector3D = null)
+        constructor(position?: Vector3D, direction?: Vector3D)
         {
             super(position, direction);
         }

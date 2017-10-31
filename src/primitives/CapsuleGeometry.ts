@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -7,65 +7,75 @@ namespace feng3d
      */
     export class CapsuleGeometry extends Geometry
     {
+        @serialize()
+        @oav()
         get radius()
         {
             return this._radius;
         }
         set radius(value)
         {
-            if(this._radius == value)
+            if (this._radius == value)
                 return;
             this._radius = value;
             this.invalidateGeometry();
         }
         private _radius = 50;
 
+        @serialize()
+        @oav()
         get height()
         {
             return this._height;
         }
         set height(value)
         {
-            if(this._height == value)
+            if (this._height == value)
                 return;
             this._height = value;
             this.invalidateGeometry();
         }
         private _height = 100
 
+        @serialize()
+        @oav()
         get segmentsW()
         {
             return this._segmentsW;
         }
         set segmentsW(value)
         {
-            if(this._segmentsW == value)
+            if (this._segmentsW == value)
                 return;
             this._segmentsW = value;
             this.invalidateGeometry();
         }
         private _segmentsW = 16
 
+        @serialize()
+        @oav()
         get segmentsH()
         {
             return this._segmentsH;
         }
         set segmentsH(value)
         {
-            if(this._segmentsH == value)
+            if (this._segmentsH == value)
                 return;
             this._segmentsH = value;
             this.invalidateGeometry();
         }
         private _segmentsH = 15;
 
+        @serialize()
+        @oav()
         get yUp()
         {
             return this._yUp;
         }
         set yUp(value)
         {
-            if(this._yUp == value)
+            if (this._yUp == value)
                 return;
             this._yUp = value;
             this.invalidateGeometry();
@@ -100,9 +110,9 @@ namespace feng3d
          */
         protected buildGeometry()
         {
-            var vertexPositionData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
-            var vertexNormalData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
-            var vertexTangentData = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 3);
+            var vertexPositionData: number[] = [];
+            var vertexNormalData: number[] = [];
+            var vertexTangentData: number[] = [];
 
             var startIndex: number;
             var index = 0;
@@ -199,7 +209,7 @@ namespace feng3d
          */
         private buildIndices()
         {
-            var indices = new Uint16Array(this.segmentsH * this.segmentsW * 6);
+            var indices: number[] = [];
 
             var numIndices = 0;
             for (var yi = 0; yi <= this.segmentsH; ++yi)
@@ -237,7 +247,7 @@ namespace feng3d
                     }
                 }
             }
-            this.setIndices(indices);
+            this.indices = indices;
         }
 
         /**
@@ -247,7 +257,7 @@ namespace feng3d
          */
         private buildUVs()
         {
-            var data = new Float32Array((this.segmentsH + 1) * (this.segmentsW + 1) * 2);
+            var data: number[] = [];
             var index = 0;
 
             for (var yi = 0; yi <= this.segmentsH; ++yi)

@@ -1,37 +1,77 @@
-namespace feng3d
+module feng3d
 {
-    /**
-     * Renders meshes inserted by the MeshFilter or TextMesh.
-     */
-    export class MeshRenderer extends Renderer
+    export class MeshRenderer extends Component
     {
         get single() { return true; }
-        
+
         /**
-         * 构建
+         * Returns the instantiated Mesh assigned to the mesh filter.
          */
-        constructor(gameObject: GameObject)
+        @serialize()
+        @oav()
+        get geometry()
         {
-            super(gameObject);
+            return this._geometry;
+        }
+        set geometry(value)
+        {
+            if (this._geometry == value)
+                return;
+            if (this._geometry)
+            {
+                this.removeRenderDataHolder(this._geometry);
+                this._geometry.off("boundsInvalid", this.onBoundsInvalid, this);
+            }
+            this._geometry = value;
+            if (this._geometry)
+            {
+                this.addRenderDataHolder(this._geometry);
+                this._geometry.on("boundsInvalid", this.onBoundsInvalid, this);
+            }
+        }
+        private _geometry: Geometry;
+
+        /**
+         * 材质
+         * Returns the first instantiated Material assigned to the renderer.
+         */
+        @serialize()
+        @oav()
+        get material() { return this._material }
+        set material(value)
+        {
+            if (this._material == value)
+                return;
+            if (this._material)
+                this.removeRenderDataHolder(this._material);
+            this._material = value;
+            if (this._material)
+                this.addRenderDataHolder(this.material);
+        }
+        private _material: Material;
+
+        init(gameObject: GameObject)
+        {
+            super.init(gameObject);
+
+            //
+            this.createUniformData("u_modelMatrix", () => this.transform.localToWorldMatrix);
+            this.createUniformData("u_ITModelMatrix", () => this.transform.ITlocalToWorldMatrix);
         }
 
-        drawRenderables(renderContext: RenderContext)
+        /**
+         * 销毁
+         */
+        dispose()
         {
-            if (this.gameObject.visible)
-            {
-                var frustumPlanes = renderContext.camera.frustumPlanes;
-                var gameObject = this.gameObject;
-                var isIn = gameObject.transform.worldBounds.isInFrustum(frustumPlanes, 6);
-                var model = gameObject.getComponent(MeshRenderer);
-                if (gameObject.getComponent(MeshFilter).mesh instanceof SkyBoxGeometry)
-                {
-                    isIn = true;
-                }
-                if (isIn)
-                {
-                    super.drawRenderables(renderContext);
-                }
-            }
+            this.geometry = <any>null;
+            this.material = <any>null;
+            super.dispose();
+        }
+
+        private onBoundsInvalid(event: EventVO<Geometry>)
+        {
+            this.gameObject.dispatch(<any>event.type, event.data);
         }
     }
 }

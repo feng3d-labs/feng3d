@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 	// /**
 	//  * 快捷键命令事件

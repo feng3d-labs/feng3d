@@ -1,15 +1,7 @@
-namespace feng3d
+module feng3d
 {
     // export type Type = new () => Feng3dObject;
     export type Type<T extends Feng3dObject> = new () => T;
-
-    export interface Feng3dObjectVO
-    {
-        uuid: string
-        class: string
-    }
-
-    var uuidMap: { [uuid: string]: Feng3dObject } = {};
 
     /**
      * Base class for all objects feng3d can reference.
@@ -26,29 +18,12 @@ namespace feng3d
          */
         hideFlags: HideFlags;
 
-        /**
-         * Returns the instance id of the Feng3dObject.
-         */
-        @serialize
-        uuid: string;
-
         //------------------------------------------
         // Functions
         //------------------------------------------
         constructor()
         {
             super();
-            this.uuid = Math.generateUUID();
-            uuidMap[this.uuid] = this;
-        }
-
-
-        //------------------------------------------
-        // Static Functions
-        //------------------------------------------
-        static get(uuid)
-        {
-            return uuidMap[uuid];
         }
 
         /**
@@ -82,16 +57,15 @@ namespace feng3d
         /**
          * Returns the first active loaded Feng3dObject of Type type.
          */
-        static findObjectOfType<T extends Feng3dObject>(type: Type<T>): T
+        static findObjectOfType<T extends Feng3dObject>(type: Type<T>): T | null
         {
-
             return null;
         }
 
         /**
          * Returns a list of all active loaded objects of Type type.
          */
-        static findObjectsOfType<T extends Feng3dObject>(type: Type<T>): T[]
+        static findObjectsOfType<T extends Feng3dObject>(type: Type<T>): T[] | null
         {
             return null;
         }
@@ -104,7 +78,7 @@ namespace feng3d
          * @param parent	The transform the Feng3dObject will be parented to.
          * @param worldPositionStays	If when assigning the parent the original world position should be maintained.
          */
-        static instantiate<T extends Feng3dObject>(original: T, position: Vector3D = null, rotation: Quaternion = null, parent: Transform = null, worldPositionStays = false): T
+        static instantiate<T extends Feng3dObject>(original: T, position?: Vector3D, rotation?: Quaternion, parent?: Transform, worldPositionStays = false): T | null
         {
             return null;
         }

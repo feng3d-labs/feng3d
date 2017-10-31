@@ -1,122 +1,125 @@
-namespace feng3d
+module feng3d
 {
 	/**
 	 * 射线投射拾取器
 	 * @author feng 2014-4-29
 	 */
-    export class RaycastPicker
+    export var raycastPicker = {
+        pick: pick
+    };
+
+    /**
+     * 获取射线穿过的实体
+     * @param ray3D 射线
+     * @param entitys 实体列表
+     * @return
+     */
+    function pick(ray3D: Ray3D, entitys: GameObject[], findClosest = false)
     {
-        /** 是否需要寻找最接近的 */
-        private _findClosestCollision: boolean;
+        var entities: PickingCollisionVO[] = [];
 
-        protected _entities: GameObject[];
+        if (entitys.length == 0)
+            return null;
 
-        private static pickingCollider: AS3PickingCollider;
-
-		/**
-		 *
-		 * @param findClosestCollision 是否需要寻找最接近的
-		 */
-        constructor(findClosestCollision: boolean)
+        entitys.forEach(entity =>
         {
-            this._findClosestCollision = findClosestCollision;
-            RaycastPicker.pickingCollider = RaycastPicker.pickingCollider || new AS3PickingCollider();
-        }
+            var boundingComponent = entity.getComponent(BoundingComponent);
+            var pickingCollisionVO = boundingComponent && boundingComponent.isIntersectingRay(ray3D);
+            if (pickingCollisionVO)
+                entities.push(pickingCollisionVO);
+        });
 
-		/**
-		 * 获取射线穿过的实体
-		 * @param ray3D 射线
-		 * @param entitys 实体列表
-		 * @return
-		 */
-        getViewCollision(ray3D: Ray3D, entitys: GameObject[]): PickingCollisionVO
+        if (entities.length == 0)
+            return null;
+
+        return getPickingCollisionVO(entities, findClosest);
+    }
+
+    /**
+     *获取射线穿过的实体
+     */
+    function getPickingCollisionVO(entities: PickingCollisionVO[], findClosest: boolean)
+    {
+        // Sort entities from closest to furthest.
+        entities = entities.sort((entity1, entity2) =>
         {
-            this._entities = [];
+            return entity1.rayEntryDistance - entity2.rayEntryDistance;
+        });
 
-            if (entitys.length == 0)
-                return null;
+        // ---------------------------------------------------------------------
+        // Evaluate triangle collisions when needed.
+        // Replaces collision data provided by bounds collider with more precise data.
+        // ---------------------------------------------------------------------
 
-            entitys.forEach(entity =>
+        var shortestCollisionDistance = Number.MAX_VALUE;
+        var bestCollisionVO: PickingCollisionVO | null = null;
+        var pickingCollisionVO: PickingCollisionVO;
+        var i: number;
+
+        for (i = 0; i < entities.length; ++i)
+        {
+            pickingCollisionVO = entities[i];
+            if (as3PickingCollider)
             {
-                if (entity.transform.isIntersectingRay(ray3D))
-                    this._entities.push(entity);
-            });
-
-            if (this._entities.length == 0)
-                return null;
-
-            return this.getPickingCollisionVO();
-        }
-
-		/**
-		 *获取射线穿过的实体
-		 */
-        private getPickingCollisionVO(): PickingCollisionVO
-        {
-            // Sort entities from closest to furthest.
-            this._entities = this._entities.sort(this.sortOnNearT);
-
-            // ---------------------------------------------------------------------
-            // Evaluate triangle collisions when needed.
-            // Replaces collision data provided by bounds collider with more precise data.
-            // ---------------------------------------------------------------------
-
-            var shortestCollisionDistance = Number.MAX_VALUE;
-            var bestCollisionVO: PickingCollisionVO;
-            var pickingCollisionVO: PickingCollisionVO;
-            var entity: GameObject;
-            var i: number;
-
-            for (i = 0; i < this._entities.length; ++i)
-            {
-                entity = this._entities[i];
-                pickingCollisionVO = entity.transform._pickingCollisionVO;
-                if (RaycastPicker.pickingCollider)
+                // If a collision exists, update the collision data and stop all checks.
+                if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && collidesBefore(pickingCollisionVO, shortestCollisionDistance, findClosest))
                 {
-                    // If a collision exists, update the collision data and stop all checks.
-                    if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && entity.transform.collidesBefore(RaycastPicker.pickingCollider, shortestCollisionDistance, this._findClosestCollision))
+                    shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
+                    bestCollisionVO = pickingCollisionVO;
+                    if (!findClosest)
                     {
-                        shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
-                        bestCollisionVO = pickingCollisionVO;
-                        if (!this._findClosestCollision)
-                        {
-                            this.updateLocalPosition(pickingCollisionVO);
-                            return pickingCollisionVO;
-                        }
-                    }
-                }
-                else if (bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)
-                { // A bounds collision with no triangle collider stops all checks.
-                    // Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
-                    // to enable the detection of a corresponsding triangle collision.
-                    // Therefore, bounds collisions with a ray origin inside its bounds can be ignored
-                    // if it has been established that there is NO triangle collider to test
-                    if (!pickingCollisionVO.rayOriginIsInsideBounds)
-                    {
-                        this.updateLocalPosition(pickingCollisionVO);
+                        updateLocalPosition(pickingCollisionVO);
                         return pickingCollisionVO;
                     }
                 }
             }
-
-            return bestCollisionVO;
+            else if (bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)
+            { // A bounds collision with no triangle collider stops all checks.
+                // Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
+                // to enable the detection of a corresponsding triangle collision.
+                // Therefore, bounds collisions with a ray origin inside its bounds can be ignored
+                // if it has been established that there is NO triangle collider to test
+                if (!pickingCollisionVO.rayOriginIsInsideBounds)
+                {
+                    updateLocalPosition(pickingCollisionVO);
+                    return pickingCollisionVO;
+                }
+            }
         }
 
-		/**
-		 * 按与射线原点距离排序
-		 */
-        private sortOnNearT(entity1: GameObject, entity2: GameObject): number
+        return bestCollisionVO;
+    }
+
+    /**
+     * 更新碰撞本地坐标
+     * @param pickingCollisionVO
+     */
+    function updateLocalPosition(pickingCollisionVO: PickingCollisionVO)
+    {
+        pickingCollisionVO.localPosition = pickingCollisionVO.localRay.getPoint(pickingCollisionVO.rayEntryDistance);
+    }
+
+    /**
+     * 碰撞前设置碰撞状态
+     * @param shortestCollisionDistance 最短碰撞距离
+     * @param findClosest 是否寻找最优碰撞
+     * @return
+     */
+    function collidesBefore(pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number, findClosest: boolean): boolean
+    {
+        var result = as3PickingCollider.testSubMeshCollision(pickingCollisionVO.geometry, pickingCollisionVO.localRay, shortestCollisionDistance, true, findClosest);
+        if (result)
         {
-            return entity1.transform.pickingCollisionVO.rayEntryDistance > entity2.transform.pickingCollisionVO.rayEntryDistance ? 1 : -1;
+            pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
+            pickingCollisionVO.index = result.index;
+            pickingCollisionVO.localNormal = result.localNormal;
+            pickingCollisionVO.localPosition = result.localPosition;
+            pickingCollisionVO.uv = result.uv;
+            //
+            shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
+            return true;
         }
 
-		/**
-		 * 更新碰撞本地坐标
-		 * @param pickingCollisionVO
-		 */
-        private updateLocalPosition(pickingCollisionVO: PickingCollisionVO)
-        {
-            pickingCollisionVO.localPosition = pickingCollisionVO.localRay.getPoint(pickingCollisionVO.rayEntryDistance);
-        }
+        return false;
     }
 }

@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -16,12 +16,12 @@ namespace feng3d
         }
         set camera(value)
         {
-            if(this._camera == value)
-            return;
-            if(this._camera)
+            if (this._camera == value)
+                return;
+            if (this._camera)
                 this.removeRenderDataHolder(this._camera);
             this._camera = value;
-            if(this._camera)
+            if (this._camera)
                 this.addRenderDataHolder(this._camera);
         }
         private _camera: Camera;
@@ -30,11 +30,6 @@ namespace feng3d
          * 场景
          */
         scene3d: Scene3D;
-
-        /**
-         * 3D视窗
-         */
-        view3D: Engine;
 
         /**
          * WebGL实例
@@ -46,19 +41,19 @@ namespace feng3d
 		 */
         updateRenderData1()
         {
-            var pointLights = PointLight.pointLights;
-            var directionalLights = DirectionalLight.directionalLights;
+            var pointLights = this.scene3d.collectComponents.pointLights.list;
+            var directionalLights = this.scene3d.collectComponents.directionalLights.list;
 
-            this.createValueMacro("NUM_LIGHT", Light.lights.length);
+            this.createValueMacro("NUM_LIGHT", pointLights.length + directionalLights.length);
             //收集点光源数据
             var pointLightPositions: Vector3D[] = [];
-            var pointLightColors: Vector3D[] = [];
+            var pointLightColors: Color[] = [];
             var pointLightIntensitys: number[] = [];
             var pointLightRanges: number[] = [];
             for (var i = 0; i < pointLights.length; i++)
             {
                 var pointLight = pointLights[i];
-                pointLightPositions.push(pointLight.position);
+                pointLightPositions.push(pointLight.transform.scenePosition);
                 pointLightColors.push(pointLight.color);
                 pointLightIntensitys.push(pointLight.intensity);
                 pointLightRanges.push(pointLight.range);
@@ -78,12 +73,12 @@ namespace feng3d
                 this.createUniformData("u_pointLightRanges", pointLightRanges);
             }
             var directionalLightDirections: Vector3D[] = [];
-            var directionalLightColors: Vector3D[] = [];
+            var directionalLightColors: Color[] = [];
             var directionalLightIntensitys: number[] = [];
             for (var i = 0; i < directionalLights.length; i++)
             {
                 var directionalLight = directionalLights[i];
-                directionalLightDirections.push(directionalLight.sceneDirection);
+                directionalLightDirections.push(directionalLight.transform.localToWorldMatrix.forward);
                 directionalLightColors.push(directionalLight.color);
                 directionalLightIntensitys.push(directionalLight.intensity);
             }

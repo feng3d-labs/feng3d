@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
      * Vector3D 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
@@ -22,24 +22,37 @@ namespace feng3d
         */
         static Z_AXIS = new Vector3D(0, 0, 1);
 
+        static fromArray(array: ArrayLike<number>, offset = 0)
+        {
+            return new Vector3D().fromArray(array, offset);
+        }
+
         /**
         * Vector3D 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
         */
+        @serialize(0)
+        @oav()
         x = 0;
 
         /**
-        * Vector3D 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
-        */
+         * Vector3D 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
+         */
+        @serialize(0)
+        @oav()
         y = 0;
 
         /**
-        * Vector3D 对象中的第三个元素，例如，三维空间中某个点的 z 坐标。默认值为 0
-        */
+         * Vector3D 对象中的第三个元素，例如，三维空间中某个点的 z 坐标。默认值为 0
+         */
+        @serialize(0)
+        @oav()
         z = 0;
 
         /**
-        * Vector3D 对象的第四个元素（除了 x、y 和 z 属性之外）可以容纳数据，例如旋转角度。默认值为 0
-        */
+         * Vector3D 对象的第四个元素（除了 x、y 和 z 属性之外）可以容纳数据，例如旋转角度。默认值为 0
+         */
+        @serialize(0)
+        @oav()
         w = 0;
 
         /**
@@ -71,6 +84,14 @@ namespace feng3d
             this.y = y;
             this.z = z;
             this.w = w;
+        }
+
+        fromArray(array: ArrayLike<number>, offset = 0)
+        {
+            this.x = array[offset];
+            this.y = array[offset + 1];
+            this.z = array[offset + 2];
+            return this;
         }
 
         /**
@@ -211,12 +232,13 @@ namespace feng3d
         /**
          * 将 Vector3D 的成员设置为指定值
          */
-        setTo(x: number, y: number, z: number, w = 1)
+        setTo(x: number, y: number, z: number, w?: number)
         {
             this.x = x;
             this.y = y;
             this.z = z;
-            this.w = w;
+            if (w !== undefined)
+                this.w = w;
             return this;
         }
 

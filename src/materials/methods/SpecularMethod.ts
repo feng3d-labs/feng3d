@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 	/**
 	 * 法线函数
@@ -9,25 +9,31 @@ namespace feng3d
         /**
          * 镜面反射光泽图
          */
-        @serialize
+        @serialize()
         get specularTexture()
         {
             return this._specularTexture;
         }
         set specularTexture(value)
         {
+            if (this._specularTexture == value)
+                return;
+            if (this._specularTexture)
+                this._specularTexture.off("loaded", this.onTextureChanged, this);
             this._specularTexture = value;
+            if (this._specularTexture)
+                this._specularTexture.on("loaded", this.onTextureChanged, this);
+            this.onTextureChanged();
         }
         private _specularTexture: Texture2D;
         /**
          * 镜面反射颜色
          */
-        @serialize
+        @serialize()
         specularColor = new Color();
         /**
 		 * 镜面反射光反射强度
 		 */
-        @serialize
         get specular()
         {
             return this.specularColor.a;
@@ -39,7 +45,7 @@ namespace feng3d
         /**
          * 高光系数
          */
-        @serialize
+        @serialize(50)
         glossiness = 50;
 
         /**
@@ -53,7 +59,11 @@ namespace feng3d
             this.createUniformData("s_specular", () => this.specularTexture);
             this.createUniformData("u_specular", () => this.specularColor);
             this.createUniformData("u_glossiness", () => this.glossiness);
-            this.createBoolMacro("HAS_SPECULAR_SAMPLER", () => this.specularTexture.checkRenderData());
+        }
+
+        private onTextureChanged()
+        {
+            this.createBoolMacro("HAS_SPECULAR_SAMPLER", this.specularTexture.checkRenderData());
         }
     }
 }

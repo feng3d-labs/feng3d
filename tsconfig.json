@@ -4,21 +4,26 @@
         "noImplicitAny": false,
         "sourceMap": true,
         "declaration": true,
+        "strict": true,
         "experimentalDecorators": true,
-        "outDir": "./debug"
-        // "outFile": "out/feng3d.js"
+        // "outDir": "./debug"
+        "outFile": "out/feng3d.js"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //
-        "src/core/Event.ts",
+        "src/objectview.ts",
+        //
+        "src/core/event.ts",
         "src/resources/load.ts",
         //基础工具
+        "src/utils/watcher.ts",
         "src/utils/ClassUtils.ts",
         "src/utils/ObjectUtils.ts",
         "src/utils/StringUtils.ts",
+        "src/utils/numberutils.ts",
         "src/utils/Map.ts",
         "src/utils/Decorators.ts",
-        "src/serialization/Serialization.ts",
+        "src/serialization/serialization.ts",
         "src/utils/Stats.ts",
         //
         "src/collections/IList.ts",
@@ -61,21 +66,17 @@
         "src/render/gl/GLExtension.ts",
         "src/render/gl/GLProgramExtension.ts",
         //
-        "src/render/data/RenderElement.ts",
-        "src/render/data/UniformData.ts",
-        "src/render/data/UniformRenderData.ts",
-        "src/render/data/ShaderRenderData.ts",
+        "src/render/data/Uniform.ts",
+        "src/render/data/Shader.ts",
         "src/render/data/ShaderParams.ts",
         "src/render/data/RenderAtomic.ts",
-        "src/render/data/IndexRenderData.ts",
-        "src/render/data/AttributeRenderData.ts",
-        "src/render/shader/ShaderMacro.ts",
+        "src/render/data/Index.ts",
+        "src/render/data/Attribute.ts",
+        "src/render/shader/Macro.ts",
         "src/render/TextureInfo.ts",
+        "src/render/data/renderdatacollector.ts",
         //
-        "src/render/data/RenderData.ts",
-        "src/render/data/UniformRenderData.ts",
         "src/render/data/RenderDataHolder.ts",
-        "src/render/data/Object3DRenderAtomic.ts",
         "src/render/RenderContext.ts",
         "src/render/shader/ShaderLib.ts",
         //
@@ -90,25 +91,31 @@
         "src/render/renderer/MouseRenderer.ts",
         "src/render/renderer/PostProcessRenderer.ts",
         "src/render/renderer/ShadowRenderer.ts",
+        "src/render/renderer/outlineRenderer.ts",
+        "src/render/renderer/wireframeRenderer.ts",
+        "src/render/renderer/cartoonRenderer.ts",
+        "src/render/renderer/skyboxRenderer.ts",
         //后处理效果
         "src/render/postEffect/PostEffect.ts",
         "src/render/postEffect/FXAAEffect.ts",
         //
-        "src/core/MeshFilter.ts",
-        "src/core/Object3D.ts",
-        "src/core/ObjectContainer3D.ts",
         "src/core/Transform.ts",
         "src/core/GameObject.ts",
-        "src/core/View3D.ts",
+        "src/core/BoundingComponent.ts",
+        "src/core/RenderAtomicComponent.ts",
+        "src/core/Engine.ts",
         //3D对象组件
         "src/component/HoldSizeComponent.ts",
         "src/component/BillboardComponent.ts",
         "src/core/MeshRenderer.ts",
-        "src/core/Object3dScript.ts",
+        "src/core/SkeletonComponent.ts",
+        "src/core/SkinnedMeshRenderer.ts",
+        "src/core/Script.ts",
         //3D场景
         "src/scene/Scene3D.ts",
         //几何体
         "src/geometry/Geometry.ts",
+        "src/geometry/CustomGeometry.ts",
         "src/geometry/GeometryUtils.ts",
         //几何体组件
         "src/geometry/PointGeometry.ts",
@@ -120,8 +127,7 @@
         "src/cameras/lenses/PerspectiveLens.ts",
         "src/cameras/Camera.ts",
         //
-        "src/bounds/BoundingVolumeBase.ts",
-        "src/bounds/AxisAlignedBoundingBox.ts",
+        "src/bounds/bounding.ts",
         //几何体
         "src/primitives/PlaneGeometry.ts",
         "src/primitives/CubeGeometry.ts",
@@ -130,10 +136,10 @@
         "src/primitives/CylinderGeometry.ts",
         "src/primitives/ConeGeometry.ts",
         "src/primitives/TorusGeometry.ts",
-        "src/primitives/SkyBoxGeometry.ts",
         //
         "src/textures/Texture2D.ts",
         "src/textures/TextureCube.ts",
+        "src/textures/ImageDataTexture.ts",
         "src/textures/RenderTargetTexture.ts",
         //材质
         "src/materials/Material.ts",
@@ -141,7 +147,6 @@
         "src/materials/ColorMaterial.ts",
         "src/materials/SegmentMaterial.ts",
         "src/materials/TextureMaterial.ts",
-        "src/materials/SkyBoxMaterial.ts",
         "src/materials/StandardMaterial.ts",
         //
         "src/materials/methods/DiffuseMethod.ts",
@@ -168,9 +173,6 @@
         "src/terrain/TerrainGeometry.ts",
         "src/terrain/TerrainMethod.ts",
         "src/terrain/TerrainMergeMethod.ts",
-        //
-        "src/animators/base/states/AnimationStateBase.ts",
-        "src/animators/base/states/AnimationClipState.ts",
         //粒子动画
         "src/animators/particle/Particle.ts",
         "src/animators/particle/ParticleGlobal.ts",
@@ -182,33 +184,26 @@
         "src/animators/particle/ParticleBillboard.ts",
         "src/animators/particle/ParticleAnimationSet.ts",
         "src/animators/particle/ParticleAnimator.ts",
-        //
-        "src/animators/events/AnimationStateEvent.ts",
-        "src/animators/events/AnimatorEvent.ts",
-        "src/animators/AnimationNodeBase.ts",
-        "src/animators/AnimatorBase.ts",
-        "src/animators/AnimationPlayer.ts",
-        "src/animators/AnimationClipPlayer.ts",
         //骨骼动画
-        "src/animators/skeleton/SkeletonJoint.ts",
         "src/animators/skeleton/Skeleton.ts",
-        "src/animators/skeleton/JointPose.ts",
-        "src/animators/skeleton/SkeletonPose.ts",
-        "src/animators/skeleton/AnimationClipNodeBase.ts",
-        "src/animators/skeleton/SkeletonClipNode.ts",
-        "src/animators/skeleton/SkeletonClipState.ts",
-        "src/animators/skeleton/SkeletonAnimationSet.ts",
-        "src/animators/skeleton/SkeletonAnimator.ts",
+        //
+        "src/animation/Animation.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MtlParser.ts",
         "src/assets/parsers/MD5MeshParser.ts",
         "src/assets/parsers/MD5AnimParser.ts",
+        //war3模型
+        "src/assets/parsers/mdl/MdlModel.ts",
+        "src/assets/parsers/mdl/War3Model.ts",
+        "src/assets/parsers/MdlParser.ts",
         //
         "src/assets/loader/ObjLoader.ts",
         "src/assets/loader/MD5Loader.ts",
+        "src/assets/loader/mdlLoader.ts",
         //
         "src/debug/Trident.ts",
+        "src/debug/debug.ts",
         //
         "src/utils/GameObjectFactory.ts",
         "src/utils/GameObjectUtil.ts",
@@ -217,14 +212,6 @@
         //
         "src/autofiles/shaders.ts",
         //
-        "src/Feng3d.ts",
-        //
-        "tests/common/ClassUtilsTest.ts",
-        "tests/common/EulerTest.ts",
-        "tests/common/ArrayListTest.ts",
-        //
-        "tests/SerializationTest.ts",
-        //
-        "tests/UnitTest.ts"
+        "src/Feng3d.ts"
     ]
 }

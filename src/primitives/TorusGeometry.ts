@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
 	/**
@@ -6,65 +6,75 @@ namespace feng3d
 	 */
 	export class TorusGeometry extends Geometry
 	{
+		@serialize()
+		@oav()
 		get radius()
 		{
 			return this._radius;
 		}
 		set radius(value)
 		{
-			if(this._radius == value)
+			if (this._radius == value)
 				return;
 			this._radius = value;
 			this.invalidateGeometry();
 		}
 		private _radius = 50;
 
+		@serialize()
+		@oav()
 		get tubeRadius()
 		{
 			return this._tubeRadius;
 		}
 		set tubeRadius(value)
 		{
-			if(this._tubeRadius == value)
+			if (this._tubeRadius == value)
 				return;
 			this._tubeRadius = value;
 			this.invalidateGeometry();
 		}
 		private _tubeRadius = 10;
 
+		@serialize()
+		@oav()
 		get segmentsR()
 		{
 			return this._segmentsR;
 		}
 		set segmentR(value)
 		{
-			if(this._segmentsR == value)
+			if (this._segmentsR == value)
 				return;
 			this._segmentsR = value;
 			this.invalidateGeometry();
 		}
 		private _segmentsR = 16;
 
+		@serialize()
+		@oav()
 		get segmentsT()
 		{
 			return this._segmentsT;
 		}
 		set segmentsT(value)
 		{
-			if(this._segmentsT == value)
+			if (this._segmentsT == value)
 				return;
 			this._segmentsT = value;
 			this.invalidateGeometry();
 		}
 		private _segmentsT = 8;
 
+		@serialize()
+		@oav()
 		get yUp()
 		{
 			return this._yUp;
 		}
 		set yUp(value)
 		{
-			if(this._yUp == value)
+			if (this._yUp == value)
 				return;
 			this._yUp = value;
 			this.invalidateGeometry();
@@ -91,10 +101,10 @@ namespace feng3d
 		}
 
 		//
-		protected _vertexPositionData: Float32Array;
-		protected _vertexNormalData: Float32Array;
-		protected _vertexTangentData: Float32Array;
-		private _rawIndices: Uint16Array;
+		protected _vertexPositionData: number[];
+		protected _vertexNormalData: number[];
+		protected _vertexTangentData: number[];
+		private _rawIndices: number[];
 		private _vertexIndex: number;
 		private _currentTriangleIndex: number;
 		private _numVertices: number;
@@ -149,10 +159,10 @@ namespace feng3d
 			this._numVertices = (this.segmentsT + 1) * (this.segmentsR + 1); // this.segmentsT + 1 because of closure, this.segmentsR + 1 because of closure
 			numTriangles = this.segmentsT * this.segmentsR * 2; // each level has segmentR quads, each of 2 triangles
 
-			this._vertexPositionData = new Float32Array(this._numVertices * this._vertexPositionStride);
-			this._vertexNormalData = new Float32Array(this._numVertices * this._vertexNormalStride);
-			this._vertexTangentData = new Float32Array(this._numVertices * this._vertexTangentStride);
-			this._rawIndices = new Uint16Array(numTriangles * 3);
+			this._vertexPositionData = [];
+			this._vertexNormalData = [];
+			this._vertexTangentData = [];
+			this._rawIndices = [];
 			this.buildUVs();
 
 			// evaluate revolution steps
@@ -233,7 +243,7 @@ namespace feng3d
 			this.setVAData("a_position", this._vertexPositionData, 3);
 			this.setVAData("a_normal", this._vertexNormalData, 3);
 			this.setVAData("a_tangent", this._vertexTangentData, 3);
-			this.setIndices(this._rawIndices);
+			this.indices = this._rawIndices;
 		}
 
 		/**
@@ -243,7 +253,7 @@ namespace feng3d
 		{
 			var i: number, j: number;
 			var stride = 2;
-			var data = new Float32Array(this._numVertices * stride);
+			var data: number[] = [];
 
 			// evaluate num uvs
 			var numUvs = this._numVertices * stride;

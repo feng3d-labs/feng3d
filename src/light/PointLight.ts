@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
 
     /**
@@ -7,33 +7,20 @@ namespace feng3d
      */
     export class PointLight extends Light
     {
-        static get pointLights()
-        {
-            return this._pointLights;
-        }
-        private static _pointLights: PointLight[] = [];
-
         /**
          * 光照范围
          */
+        @oav()
+        @serialize()
         range = 600;
-
-        /**
-         * 灯光位置
-         */
-        get position()
-        {
-            return this.gameObject.transform.scenePosition;
-        }
 
         /**
          * 构建
          */
-        constructor(gameObject:GameObject)
+        init(gameObject: GameObject)
         {
-            super(gameObject);
+            super.init(gameObject);
             this.lightType = LightType.Point;
-            PointLight._pointLights.push(this);
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     export class ArrayList<T> implements IList<T>
     {
@@ -13,7 +13,7 @@ namespace feng3d
             return this._source.length;
         }
 
-        constructor(source: T[] = null)
+        constructor(source?: T[])
         {
             this._source = source || [];
             this._eventDispatcher = new Event();
@@ -43,7 +43,7 @@ namespace feng3d
                 this._source.splice(index, 0, item);
                 if (item instanceof Event)
                 {
-                    var _listenermap = Event["listenermap"][this._eventDispatcher["uuid"]];
+                    var _listenermap = this._eventDispatcher[EVENT_KEY];
                     for (var type in _listenermap)
                     {
                         var listenerVOs = _listenermap[type];
@@ -111,7 +111,7 @@ namespace feng3d
             var item = this._source.splice(index, 1)[0];
             if (item instanceof Event)
             {
-                var _listenermap = Event["listenermap"][this._eventDispatcher["uuid"]];
+                var _listenermap = this._eventDispatcher[EVENT_KEY];
                 for (var type in _listenermap)
                 {
                     var listenerVOs = _listenermap[type];

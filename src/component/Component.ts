@@ -1,4 +1,4 @@
-namespace feng3d
+module feng3d
 {
     /**
 	 * 组件事件
@@ -9,11 +9,11 @@ namespace feng3d
 
     export interface Component
     {
-        once<K extends keyof ComponentEventMap>(type: K, listener: (event: ComponentEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof ComponentEventMap>(type: K, listener: (event: EventVO<ComponentEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof ComponentEventMap>(type: K, data?: ComponentEventMap[K], bubbles?: boolean);
         has<K extends keyof ComponentEventMap>(type: K): boolean;
-        on<K extends keyof ComponentEventMap>(type: K, listener: (event: ComponentEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: ComponentEventMap[K]) => any, thisObject?: any);
+        on<K extends keyof ComponentEventMap>(type: K, listener: (event: EventVO<ComponentEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: EventVO<ComponentEventMap[K]>) => any, thisObject?: any);
     }
 
 	/**
@@ -37,7 +37,7 @@ namespace feng3d
         /**
          * The tag of this game object.
          */
-        @serialize
+        @serialize()
         get tag()
         {
             return this._tag;
@@ -69,9 +69,13 @@ namespace feng3d
 		/**
 		 * 创建一个组件容器
 		 */
-        constructor(gameObject: GameObject)
+        constructor()
         {
             super();
+        }
+
+        init(gameObject: GameObject)
+        {
             this._gameObject = gameObject;
         }
 
@@ -80,7 +84,7 @@ namespace feng3d
          * @param type				The type of Component to retrieve.
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Component>(type: ComponentConstructor<T>): T
+        getComponent<T extends Component>(type: ComponentConstructor<T>)
         {
             return this.gameObject.getComponent(type);
         }
@@ -90,7 +94,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Component>(type: ComponentConstructor<T> = null): T[]
+        getComponents<T extends Component>(type?: ComponentConstructor<T>)
         {
             return this.gameObject.getComponents(type);
         }
@@ -100,9 +104,9 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends Component>(type: ComponentConstructor<T> = null): T[]
+        getComponentsInChildren<T extends Component>(type?: ComponentConstructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[])
         {
-            return this.gameObject.getComponentsInChildren(type);
+            return this.gameObject.getComponentsInChildren(type, filter, result);
         }
 
         //------------------------------------------
@@ -128,7 +132,7 @@ namespace feng3d
          */
         dispose()
         {
-            this._gameObject = null;
+            this._gameObject = <any>null;
         }
     }
 }
