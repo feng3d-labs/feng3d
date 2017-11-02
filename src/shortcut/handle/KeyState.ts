@@ -5,7 +5,7 @@ module feng3d
 	 * 按键状态
 	 * @author feng 2016-4-26
 	 */
-	export class KeyState extends Event
+	export class KeyState extends EventDispatcher
 	{
 		/**
 		 * 按键状态{key:键名称,value:是否按下}

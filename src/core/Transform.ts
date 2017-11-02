@@ -15,11 +15,11 @@ module feng3d
 
     export interface Transform
     {
-        once<K extends keyof TransformEventMap>(type: K, listener: (event: EventVO<TransformEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof TransformEventMap>(type: K, listener: (event: Event<TransformEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof TransformEventMap>(type: K, data?: TransformEventMap[K], bubbles?: boolean);
         has<K extends keyof TransformEventMap>(type: K): boolean;
-        on<K extends keyof TransformEventMap>(type: K, listener: (event: EventVO<TransformEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof TransformEventMap>(type?: K, listener?: (event: EventVO<TransformEventMap[K]>) => any, thisObject?: any);
+        on<K extends keyof TransformEventMap>(type: K, listener: (event: Event<TransformEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof TransformEventMap>(type?: K, listener?: (event: Event<TransformEventMap[K]>) => any, thisObject?: any);
     }
 
     var fixedNum = 6;

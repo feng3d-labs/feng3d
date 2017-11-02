@@ -3,7 +3,7 @@ module feng3d
     export class ArrayList<T> implements IList<T>
     {
         private readonly _source: T[];
-        private readonly _eventDispatcher: Event;
+        private readonly _eventDispatcher: EventDispatcher;
 
         /**
          * 此集合中的项目数。
@@ -16,7 +16,7 @@ module feng3d
         constructor(source?: T[])
         {
             this._source = source || [];
-            this._eventDispatcher = new Event();
+            this._eventDispatcher = new EventDispatcher();
         }
 
         /**
@@ -41,7 +41,7 @@ module feng3d
             } else
             {
                 this._source.splice(index, 0, item);
-                if (item instanceof Event)
+                if (item instanceof EventDispatcher)
                 {
                     var _listenermap = this._eventDispatcher[EVENT_KEY];
                     for (var type in _listenermap)
@@ -109,7 +109,7 @@ module feng3d
         removeItemAt(index: number): T
         {
             var item = this._source.splice(index, 1)[0];
-            if (item instanceof Event)
+            if (item instanceof EventDispatcher)
             {
                 var _listenermap = this._eventDispatcher[EVENT_KEY];
                 for (var type in _listenermap)
@@ -150,13 +150,13 @@ module feng3d
 		 * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        addItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any, priority = 0): void
+        addItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any, priority = 0): void
         {
             this._eventDispatcher.on(type, listener, thisObject, priority);
             for (var i = 0; i < this._source.length; i++)
             {
                 var item = this._source[i];
-                if (item instanceof Event)
+                if (item instanceof EventDispatcher)
                 {
                     item.on(type, listener, thisObject, priority);
                 }
@@ -169,13 +169,13 @@ module feng3d
 		 * @param listener					要删除的侦听器对象。
          * @param thisObject                listener函数作用域
          */
-        removeItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any): void
+        removeItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any): void
         {
             this._eventDispatcher.off(type, listener, thisObject);
             for (var i = 0; i < this._source.length; i++)
             {
                 var item = this._source[i];
-                if (item instanceof Event)
+                if (item instanceof EventDispatcher)
                 {
                     item.off(type, listener, thisObject);
                 }

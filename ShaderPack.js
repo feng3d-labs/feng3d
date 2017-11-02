@@ -1,10 +1,9 @@
 var fs = require("fs");
 
-exports.shaderPack = shaderPack;
+shaderPack(__dirname);
 
 function shaderPack(root)
 {
-
     console.log(`监控shader变化，自动生成shaders.ts`);
     fs.watch(root + "/shaders", { recursive: true }, changeHandler);
 
@@ -28,8 +27,21 @@ function shaderPack(root)
             {
                 var savePath = root + "/" + "src/autofiles/shaders.ts";
                 var filesContent = readFiles(getFilePaths(root + "/" + "shaders"));
+                //替换路径
+                filesContent = ((files) =>
+                {
+                    var newobj = {};
+                    for (var path in files)
+                    {
+                        if (files.hasOwnProperty(path))
+                        {
+                            //替换路径
+                            newobj[path.replace(root + "/", "")] = files[path];
+                        }
+                    }
+                    return newobj;
+                })(filesContent);
                 var contentStr = JSON.stringify(filesContent, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1')
-                contentStr = contentStr.replace(new RegExp(root + "/", "g"), "");
                 writeFile(savePath, `namespace feng3d\n{\nfeng3d.shaderFileMap = ${contentStr}\n}`);
                 console.log("自动生成" + savePath)
             } catch (error)
@@ -39,8 +51,6 @@ function shaderPack(root)
         }
     };
 }
-
-
 
 function writeFile(filePath, content)
 {

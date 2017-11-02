@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 feng3d.shaderFileMap = {
 	"shaders/color.fragment.glsl": "\r\n\r\nprecision mediump float;\r\n\r\nuniform vec4 u_diffuseInput;\r\n\r\n\r\n\r\nvoid main(void) {\r\n   \r\n    gl_FragColor = u_diffuseInput;\r\n}\r\n",

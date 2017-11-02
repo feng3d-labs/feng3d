@@ -59,11 +59,11 @@ module feng3d
 
     export interface GameObject
     {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: EventVO<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean);
         has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: EventVO<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: EventVO<GameObjectEventMap[K]>) => any, thisObject?: any);
+        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any);
     }
 
     /**

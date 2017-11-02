@@ -96,7 +96,7 @@ module feng3d
 		/**
 		 * 处理捕获事件
 		 */
-		private onCapture(event: EventVO<any>): void
+		private onCapture(event: Event<any>): void
 		{
 			var inWhen = this.checkActivityStates(this._states);
 			var pressKeys = this.checkActivityKeys(this._keys);

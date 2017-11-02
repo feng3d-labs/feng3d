@@ -10,11 +10,11 @@ module feng3d
 
     export interface Camera
     {
-        once<K extends keyof CameraEventMap>(type: K, listener: (event: EventVO<CameraEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof CameraEventMap>(type: K, listener: (event: Event<CameraEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof CameraEventMap>(type: K, data?: CameraEventMap[K], bubbles?: boolean);
         has<K extends keyof CameraEventMap>(type: K): boolean;
-        on<K extends keyof CameraEventMap>(type: K, listener: (event: EventVO<CameraEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof CameraEventMap>(type?: K, listener?: (event: EventVO<CameraEventMap[K]>) => any, thisObject?: any);
+        on<K extends keyof CameraEventMap>(type: K, listener: (event: Event<CameraEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof CameraEventMap>(type?: K, listener?: (event: Event<CameraEventMap[K]>) => any, thisObject?: any);
     }
 
 	/**
@@ -73,7 +73,7 @@ module feng3d
 		/**
 		 * 处理镜头变化事件
 		 */
-        private onLensMatrixChanged(event: EventVO<any>)
+        private onLensMatrixChanged(event: Event<any>)
         {
             this._viewProjectionDirty = true;
             this._frustumPlanesDirty = true;

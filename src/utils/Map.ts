@@ -19,6 +19,7 @@ module feng3d
                 if (k == this.kv[i].k)
                 {
                     this.kv.splice(i, 1);
+                    var m = new Map();
                 }
             }
         }

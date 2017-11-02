@@ -53,7 +53,7 @@ module feng3d
     /**
      * 监听鼠标事件收集事件类型
      */
-    function onMouseEvent(event: EventVO<InputEvent>)
+    function onMouseEvent(event: Event<InputEvent>)
     {
         var inputEvent: InputEvent = event.data;
         if (mouseEventTypes.indexOf(inputEvent.type) == -1)

@@ -307,7 +307,7 @@ declare module feng3d {
     /**
      * 事件
      */
-    interface EventVO<T> {
+    interface Event<T> {
         /**
          * 事件的类型。类型区分大小写。
          */
@@ -337,25 +337,18 @@ declare module feng3d {
          */
         isStopBubbles?: boolean;
     }
-    interface IEvent<T> {
+    interface IEventDispatcher<T> {
         once<K extends keyof T>(type: K, listener: (event: T[K]) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): any;
         has<K extends keyof T>(type: K): boolean;
         on<K extends keyof T>(type: K, listener: (event: T[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof T>(type?: K, listener?: (event: T[K]) => any, thisObject?: any): any;
     }
-    var event: {
-        on: (target: any, type: string, listener: (event: EventVO<any>) => any, thisObject?: any, priority?: number, once?: boolean) => void;
-        once: (target: any, type: string, listener: (event: EventVO<any>) => void, thisObject: any, priority?: number) => void;
-        off: (target: any, type?: string | undefined, listener?: ((event: EventVO<any>) => any) | undefined, thisObject?: any) => void;
-        dispatch: (target: any, type: string, data?: null, bubbles?: boolean) => void;
-        has: (target: any, type: string) => boolean;
-    };
     const EVENT_KEY = "__event__";
     /**
      * 事件适配器
      */
-    class Event {
+    class EventDispatcher {
         /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
@@ -363,14 +356,14 @@ declare module feng3d {
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
+        once(type: string, listener: (event: any) => void, thisObject?: null, priority?: number): void;
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
          * @param type                      事件的类型。类型区分大小写。
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        dispatch(type: string, data?: any, bubbles?: boolean): void;
+        dispatch(type: string | Event<any>, data?: any, bubbles?: boolean): void;
         /**
          * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
          *
@@ -653,14 +646,14 @@ declare module feng3d {
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        addItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any, priority?: number): void;
+        addItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any, priority?: number): void;
         /**
          * 移除项事件
          * @param type						事件的类型。
          * @param listener					要删除的侦听器对象。
          * @param thisObject                listener函数作用域
          */
-        removeItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any): void;
+        removeItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any): void;
     }
 }
 declare module feng3d {
@@ -715,14 +708,14 @@ declare module feng3d {
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        addItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any, priority?: number): void;
+        addItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any, priority?: number): void;
         /**
          * 移除项事件
          * @param type						事件的类型。
          * @param listener					要删除的侦听器对象。
          * @param thisObject                listener函数作用域
          */
-        removeItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any): void;
+        removeItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any): void;
     }
 }
 declare module feng3d {
@@ -1893,16 +1886,16 @@ declare module feng3d {
         enterFrame: any;
     }
     interface SystemTicker {
-        once<K extends keyof TickerEventMap>(type: K, listener: (event: EventVO<TickerEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof TickerEventMap>(type: K, listener: (event: Event<TickerEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof TickerEventMap>(type: K, data?: TickerEventMap[K], bubbles?: boolean): any;
         has<K extends keyof TickerEventMap>(type: K): boolean;
-        on<K extends keyof TickerEventMap>(type: K, listener: (event: EventVO<TickerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof TickerEventMap>(type?: K, listener?: (event: EventVO<TickerEventMap[K]>) => any, thisObject?: any): any;
+        on<K extends keyof TickerEventMap>(type: K, listener: (event: Event<TickerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof TickerEventMap>(type?: K, listener?: (event: Event<TickerEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * 心跳计时器
      */
-    class SystemTicker extends Event {
+    class SystemTicker extends EventDispatcher {
         private _startTime;
         /**
          * 启动时间
@@ -1948,7 +1941,7 @@ declare module feng3d {
      * @includeExample egret/utils/Timer.ts
      * @language zh_CN
      */
-    class Timer extends Event {
+    class Timer extends EventDispatcher {
         /**
          * Constructs a new Timer object with the specified delay and repeatCount states.
          * @param delay The delay between timer events, in milliseconds. A delay lower than 20 milliseconds is not recommended.
@@ -2101,11 +2094,11 @@ declare module feng3d {
         timerComplete: any;
     }
     interface Timer {
-        once<K extends keyof TimerEventMap>(type: K, listener: (event: EventVO<TimerEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof TimerEventMap>(type: K, listener: (event: Event<TimerEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof TimerEventMap>(type: K, data?: TimerEventMap[K], bubbles?: boolean): any;
         has<K extends keyof TimerEventMap>(type: K): boolean;
-        on<K extends keyof TimerEventMap>(type: K, listener: (event: EventVO<TimerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof TimerEventMap>(type?: K, listener?: (event: EventVO<TimerEventMap[K]>) => any, thisObject?: any): any;
+        on<K extends keyof TimerEventMap>(type: K, listener: (event: Event<TimerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof TimerEventMap>(type?: K, listener?: (event: Event<TimerEventMap[K]>) => any, thisObject?: any): any;
     }
 }
 declare module feng3d {
@@ -2153,7 +2146,7 @@ declare module feng3d {
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        once<K extends keyof InputEventMap>(type: K, listener: (event: EventVO<InputEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof InputEventMap>(type: K, listener: (event: Event<InputEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
          * @param type                      事件的类型。类型区分大小写。
@@ -2174,20 +2167,20 @@ declare module feng3d {
          * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        on<K extends keyof InputEventMap>(type: K, listener: (event: EventVO<InputEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        on<K extends keyof InputEventMap>(type: K, listener: (event: Event<InputEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         /**
          * 移除监听
          * @param dispatcher 派发器
          * @param type						事件的类型。
          * @param listener					要删除的侦听器对象。
          */
-        off<K extends keyof InputEventMap>(type?: K, listener?: (event: EventVO<InputEventMap[K]>) => any, thisObject?: any): any;
+        off<K extends keyof InputEventMap>(type?: K, listener?: (event: Event<InputEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * 鼠标键盘输入，处理js事件中this关键字问题
      * @author feng 2016-12-19
      */
-    class Input extends Event {
+    class Input extends EventDispatcher {
         clientX: number;
         clientY: number;
         /**
@@ -2269,7 +2262,7 @@ declare module feng3d {
      * 按键状态
      * @author feng 2016-4-26
      */
-    class KeyState extends Event {
+    class KeyState extends EventDispatcher {
         /**
          * 按键状态{key:键名称,value:是否按下}
          */
@@ -2484,7 +2477,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 });
      * </pre>
      */
-    class ShortCut extends Event {
+    class ShortCut extends EventDispatcher {
         /**
          * 按键状态
          */
@@ -4831,7 +4824,7 @@ declare module feng3d {
      * 纹理信息
      * @author feng 2016-12-20
      */
-    abstract class TextureInfo extends Event {
+    abstract class TextureInfo extends EventDispatcher {
         /**
          * 纹理类型
          */
@@ -4930,17 +4923,17 @@ declare module feng3d {
         renderdataChange: updaterenderDataFunc | updaterenderDataFunc[];
     }
     interface RenderDataHolder {
-        once<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: EventVO<RenderDataHolderEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: Event<RenderDataHolderEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof RenderDataHolderEventMap>(type: K, data?: RenderDataHolderEventMap[K], bubbles?: boolean): any;
         has<K extends keyof RenderDataHolderEventMap>(type: K): boolean;
-        on<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: EventVO<RenderDataHolderEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof RenderDataHolderEventMap>(type?: K, listener?: (event: EventVO<RenderDataHolderEventMap[K]>) => any, thisObject?: any): any;
+        on<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: Event<RenderDataHolderEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof RenderDataHolderEventMap>(type?: K, listener?: (event: Event<RenderDataHolderEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * 渲染数据拥有者
      * @author feng 2016-6-7
      */
-    class RenderDataHolder extends Event {
+    class RenderDataHolder extends EventDispatcher {
         readonly childrenRenderDataHolder: RenderDataHolder[];
         private _childrenRenderDataHolder;
         /**
@@ -5117,11 +5110,11 @@ declare module feng3d {
     interface ComponentEventMap extends RenderDataHolderEventMap {
     }
     interface Component {
-        once<K extends keyof ComponentEventMap>(type: K, listener: (event: EventVO<ComponentEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof ComponentEventMap>(type: K, data?: ComponentEventMap[K], bubbles?: boolean): any;
         has<K extends keyof ComponentEventMap>(type: K): boolean;
-        on<K extends keyof ComponentEventMap>(type: K, listener: (event: EventVO<ComponentEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: EventVO<ComponentEventMap[K]>) => any, thisObject?: any): any;
+        on<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * Base class for everything attached to GameObjects.
@@ -5404,11 +5397,11 @@ declare module feng3d {
         updateLocalToWorldMatrix: any;
     }
     interface Transform {
-        once<K extends keyof TransformEventMap>(type: K, listener: (event: EventVO<TransformEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof TransformEventMap>(type: K, listener: (event: Event<TransformEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof TransformEventMap>(type: K, data?: TransformEventMap[K], bubbles?: boolean): any;
         has<K extends keyof TransformEventMap>(type: K): boolean;
-        on<K extends keyof TransformEventMap>(type: K, listener: (event: EventVO<TransformEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof TransformEventMap>(type?: K, listener?: (event: EventVO<TransformEventMap[K]>) => any, thisObject?: any): any;
+        on<K extends keyof TransformEventMap>(type: K, listener: (event: Event<TransformEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof TransformEventMap>(type?: K, listener?: (event: Event<TransformEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * Position, rotation and scale of an object.
@@ -5595,11 +5588,11 @@ declare module feng3d {
         scenetransformChanged: Transform;
     }
     interface GameObject {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: EventVO<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): any;
         has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: EventVO<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: EventVO<GameObjectEventMap[K]>) => any, thisObject?: any): any;
+        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * 鼠标拾取层级
@@ -6066,11 +6059,11 @@ declare module feng3d {
         removeComponentFromScene: Component;
     }
     interface Scene3D {
-        once<K extends keyof Scene3DEventMap>(type: K, listener: (event: EventVO<Scene3DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof Scene3DEventMap>(type: K, listener: (event: Event<Scene3DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof Scene3DEventMap>(type: K, data?: Scene3DEventMap[K], bubbles?: boolean): any;
         has<K extends keyof Scene3DEventMap>(type: K): boolean;
-        on<K extends keyof Scene3DEventMap>(type: K, listener: (event: EventVO<Scene3DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof Scene3DEventMap>(type?: K, listener?: (event: EventVO<Scene3DEventMap[K]>) => any, thisObject?: any): any;
+        on<K extends keyof Scene3DEventMap>(type: K, listener: (event: Event<Scene3DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof Scene3DEventMap>(type?: K, listener?: (event: Event<Scene3DEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * 3D场景
@@ -6142,11 +6135,11 @@ declare module feng3d {
         boundsInvalid: Geometry;
     }
     interface Geometry {
-        once<K extends keyof GeometryEventMap>(type: K, listener: (event: EventVO<GeometryEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): any;
         has<K extends keyof GeometryEventMap>(type: K): boolean;
-        on<K extends keyof GeometryEventMap>(type: K, listener: (event: EventVO<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: EventVO<GeometryEventMap[K]>) => any, thisObject?: any): any;
+        on<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any): any;
     }
     type AttributeDataType = number[] | Float32Array;
     /**
@@ -6445,7 +6438,7 @@ declare module feng3d {
      * 摄像机镜头
      * @author feng 2014-10-14
      */
-    abstract class LensBase extends Event {
+    abstract class LensBase extends EventDispatcher {
         /**
          * 最近距离
          */
@@ -6568,11 +6561,11 @@ declare module feng3d {
         lensChanged: any;
     }
     interface Camera {
-        once<K extends keyof CameraEventMap>(type: K, listener: (event: EventVO<CameraEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof CameraEventMap>(type: K, listener: (event: Event<CameraEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof CameraEventMap>(type: K, data?: CameraEventMap[K], bubbles?: boolean): any;
         has<K extends keyof CameraEventMap>(type: K): boolean;
-        on<K extends keyof CameraEventMap>(type: K, listener: (event: EventVO<CameraEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof CameraEventMap>(type?: K, listener?: (event: EventVO<CameraEventMap[K]>) => any, thisObject?: any): any;
+        on<K extends keyof CameraEventMap>(type: K, listener: (event: Event<CameraEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof CameraEventMap>(type?: K, listener?: (event: Event<CameraEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * 摄像机
@@ -7045,11 +7038,11 @@ declare module feng3d {
         loaded: any;
     }
     interface Texture2D {
-        once<K extends keyof Texture2DEventMap>(type: K, listener: (event: EventVO<Texture2DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof Texture2DEventMap>(type: K, data?: Texture2DEventMap[K], bubbles?: boolean): any;
         has<K extends keyof Texture2DEventMap>(type: K): boolean;
-        on<K extends keyof Texture2DEventMap>(type: K, listener: (event: EventVO<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: EventVO<Texture2DEventMap[K]>) => any, thisObject?: any): any;
+        on<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * 2D纹理
@@ -8681,7 +8674,8 @@ declare module feng3d {
      * @author feng 2017-01-18
      */
     var ObjLoader: {
-        load: (url: string, material: Material, completed?: ((object3D: GameObject) => void) | undefined) => void;
+        load: (url: string, completed?: ((object3D: GameObject) => void) | undefined) => void;
+        parse: (content: string, completed?: ((object3D: GameObject) => void) | undefined) => void;
     };
 }
 declare module feng3d {
@@ -8692,6 +8686,8 @@ declare module feng3d {
     var MD5Loader: {
         load: (url: string, completed?: ((object3D: GameObject) => void) | undefined) => void;
         loadAnim: (url: string, completed?: ((animationClip: AnimationClip) => void) | undefined) => void;
+        parseMD5Mesh: (content: string, completed?: ((object3D: GameObject) => void) | undefined) => void;
+        parseMD5Anim: (content: string, completed?: ((animationClip: AnimationClip) => void) | undefined) => void;
     };
 }
 declare module feng3d {
@@ -8752,7 +8748,7 @@ declare module feng3d {
         getSelectedObject3D: () => GameObject;
     };
 }
-declare module feng3d {
+declare namespace feng3d {
 }
 declare module feng3d {
     /**

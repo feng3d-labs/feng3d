@@ -370,177 +370,15 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.event = {
-        on: on,
-        once: once,
-        off: off,
-        dispatch: dispatch,
-        has: has,
-    };
     feng3d.EVENT_KEY = "__event__";
-    /**
-     * 监听一次事件后将会被移除
-     * @param type						事件的类型。
-     * @param listener					处理事件的侦听器函数。
-     * @param thisObject                listener函数作用域
-     * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-     */
-    function once(target, type, listener, thisObject, priority) {
-        if (priority === void 0) { priority = 0; }
-        on(target, type, listener, thisObject, priority, true);
-    }
-    /**
-     * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
-     * @param target                    事件主体
-     * @param type                      事件的类型。类型区分大小写。
-     * @param data                      事件携带的自定义数据。
-     * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
-     */
-    function dispatch(target, type, data, bubbles) {
-        if (data === void 0) { data = null; }
-        if (bubbles === void 0) { bubbles = false; }
-        var eventVO = __assign({}, data);
-        eventVO.type = type;
-        eventVO.data = data;
-        eventVO.bubbles = bubbles;
-        _dispatch(target, eventVO);
-    }
-    /**
-     * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
-     * @param target                    事件主体
-     * @param event						调度到事件流中的 Event 对象。
-     */
-    function _dispatch(target, event) {
-        //设置目标
-        event.target || (event.target = target);
-        event.currentTarget = target;
-        var type = event.type;
-        var listeners = target[feng3d.EVENT_KEY] && target[feng3d.EVENT_KEY][type];
-        if (listeners) {
-            //遍历调用事件回调函数
-            for (var i = 0; i < listeners.length && !event.isStop; i++) {
-                listeners[i].listener.call(listeners[i].thisObject, event);
-            }
-            for (var i = listeners.length - 1; i >= 0; i--) {
-                if (listeners[i].once)
-                    listeners.splice(i, 1);
-            }
-            if (listeners.length == 0)
-                delete target[feng3d.EVENT_KEY][type];
-        }
-        //事件冒泡(冒泡阶段)
-        if (event.bubbles && !event.isStopBubbles) {
-            var bubbleTargets = getBubbleTargets(target);
-            for (var i = 0, n = bubbleTargets.length; i < n; i++) {
-                if (!event.isStop)
-                    bubbleTargets[i] && _dispatch(bubbleTargets[i], event);
-            }
-        }
-    }
-    /**
-     * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
-     *
-     * @param type		事件的类型。
-     * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
-     */
-    function has(target, type) {
-        return !!(target[feng3d.EVENT_KEY] && target[feng3d.EVENT_KEY][type] && target[feng3d.EVENT_KEY][type].length);
-    }
-    /**
-     * 添加监听
-     * @param dispatcher 派发器
-     * @param target                    事件主体
-     * @param type						事件的类型。
-     * @param listener					处理事件的侦听器函数。
-     * @param thisObject                listener函数作用域
-     * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-     */
-    function on(target, type, listener, thisObject, priority, once) {
-        if (thisObject === void 0) { thisObject = null; }
-        if (priority === void 0) { priority = 0; }
-        if (once === void 0) { once = false; }
-        var objectListener = target[feng3d.EVENT_KEY] || (target[feng3d.EVENT_KEY] = {});
-        var listeners = objectListener[type] = objectListener[type] || [];
-        for (var i = 0; i < listeners.length; i++) {
-            var element = listeners[i];
-            if (element.listener == listener && element.thisObject == thisObject) {
-                listeners.splice(i, 1);
-                break;
-            }
-        }
-        for (var i = 0; i < listeners.length; i++) {
-            var element = listeners[i];
-            if (priority > element.priority) {
-                break;
-            }
-        }
-        listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
-    }
-    /**
-     * 移除监听
-     * @param dispatcher 派发器
-     * @param target                    事件主体
-     * @param type						事件的类型。
-     * @param listener					要删除的侦听器对象。
-     * @param thisObject                listener函数作用域
-     */
-    function off(target, type, listener, thisObject) {
-        if (thisObject === void 0) { thisObject = null; }
-        if (!type) {
-            delete target[feng3d.EVENT_KEY];
-            return;
-        }
-        if (!listener) {
-            if (target[feng3d.EVENT_KEY])
-                delete target[feng3d.EVENT_KEY][type];
-            return;
-        }
-        var listeners = target[feng3d.EVENT_KEY] && target[feng3d.EVENT_KEY][type];
-        if (listeners) {
-            for (var i = listeners.length - 1; i >= 0; i--) {
-                var element = listeners[i];
-                if (element.listener == listener && element.thisObject == thisObject) {
-                    listeners.splice(i, 1);
-                }
-            }
-            if (listeners.length == 0) {
-                delete target[feng3d.EVENT_KEY][type];
-            }
-        }
-    }
     function getBubbleTargets(target) {
         return [target["parent"]];
     }
-    // function attach<T>(target: T): T & Event
-    // {
-    //     var event = <T & Event>target;
-    //     event.once = (type, listener, thisObject, priority) =>
-    //     {
-    //         on(this, type, listener, thisObject, priority);
-    //     }
-    //     event.dispatch = (type, data, bubbles) =>
-    //     {
-    //         dispatch(this, type, data, bubbles);
-    //     }
-    //     event.has = (type) =>
-    //     {
-    //         return has(this, type);
-    //     }
-    //     event.on = (type, listener, thisObject, priority, once) =>
-    //     {
-    //         on(this, type, listener, thisObject, priority, once);
-    //     }
-    //     event.off = (type, listener, thisObject) =>
-    //     {
-    //         off(this, type, listener, thisObject);
-    //     }
-    //     return event;
-    // }
     /**
      * 事件适配器
      */
-    var Event = /** @class */ (function () {
-        function Event() {
+    var EventDispatcher = (function () {
+        function EventDispatcher() {
         }
         /**
          * 监听一次事件后将会被移除
@@ -549,8 +387,10 @@ var feng3d;
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        Event.prototype.once = function (type, listener, thisObject, priority) {
-            once(this, type, listener, thisObject, priority);
+        EventDispatcher.prototype.once = function (type, listener, thisObject, priority) {
+            if (thisObject === void 0) { thisObject = null; }
+            if (priority === void 0) { priority = 0; }
+            this.on(type, listener, thisObject, priority, true);
         };
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
@@ -558,8 +398,44 @@ var feng3d;
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        Event.prototype.dispatch = function (type, data, bubbles) {
-            dispatch(this, type, data, bubbles);
+        EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
+            if (bubbles === void 0) { bubbles = false; }
+            var event;
+            if (typeof type == "string") {
+                event = __assign({}, data);
+                event.type = type;
+                event.data = data;
+                event.bubbles = bubbles;
+            }
+            else {
+                event = type;
+                type = event.type;
+            }
+            //设置目标
+            event.target || (event.target = this);
+            event.currentTarget = this;
+            var listeners = this[feng3d.EVENT_KEY] && this[feng3d.EVENT_KEY][type];
+            if (listeners) {
+                //遍历调用事件回调函数
+                for (var i = 0; i < listeners.length && !event.isStop; i++) {
+                    listeners[i].listener.call(listeners[i].thisObject, event);
+                }
+                for (var i = listeners.length - 1; i >= 0; i--) {
+                    if (listeners[i].once)
+                        listeners.splice(i, 1);
+                }
+                if (listeners.length == 0)
+                    delete this[feng3d.EVENT_KEY][type];
+            }
+            //事件冒泡(冒泡阶段)
+            if (event.bubbles && !event.isStopBubbles) {
+                var bubbleTargets = getBubbleTargets(this);
+                for (var i = 0, n = bubbleTargets.length; i < n; i++) {
+                    var bubbleTarget = bubbleTargets[i];
+                    if (!event.isStop && bubbleTarget instanceof EventDispatcher)
+                        bubbleTarget.dispatch(event);
+                }
+            }
         };
         /**
          * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
@@ -567,8 +443,8 @@ var feng3d;
          * @param type		事件的类型。
          * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
          */
-        Event.prototype.has = function (type) {
-            return has(this, type);
+        EventDispatcher.prototype.has = function (type) {
+            return !!(this[feng3d.EVENT_KEY] && this[feng3d.EVENT_KEY][type] && this[feng3d.EVENT_KEY][type].length);
         };
         /**
          * 添加监听
@@ -576,8 +452,25 @@ var feng3d;
          * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        Event.prototype.on = function (type, listener, thisObject, priority, once) {
-            on(this, type, listener, thisObject, priority, once);
+        EventDispatcher.prototype.on = function (type, listener, thisObject, priority, once) {
+            if (priority === void 0) { priority = 0; }
+            if (once === void 0) { once = false; }
+            var objectListener = this[feng3d.EVENT_KEY] || (this[feng3d.EVENT_KEY] = {});
+            var listeners = objectListener[type] = objectListener[type] || [];
+            for (var i = 0; i < listeners.length; i++) {
+                var element = listeners[i];
+                if (element.listener == listener && element.thisObject == thisObject) {
+                    listeners.splice(i, 1);
+                    break;
+                }
+            }
+            for (var i = 0; i < listeners.length; i++) {
+                var element = listeners[i];
+                if (priority > element.priority) {
+                    break;
+                }
+            }
+            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
         };
         /**
          * 移除监听
@@ -585,12 +478,32 @@ var feng3d;
          * @param type						事件的类型。
          * @param listener					要删除的侦听器对象。
          */
-        Event.prototype.off = function (type, listener, thisObject) {
-            off(this, type, listener, thisObject);
+        EventDispatcher.prototype.off = function (type, listener, thisObject) {
+            if (!type) {
+                delete this[feng3d.EVENT_KEY];
+                return;
+            }
+            if (!listener) {
+                if (this[feng3d.EVENT_KEY])
+                    delete this[feng3d.EVENT_KEY][type];
+                return;
+            }
+            var listeners = this[feng3d.EVENT_KEY] && this[feng3d.EVENT_KEY][type];
+            if (listeners) {
+                for (var i = listeners.length - 1; i >= 0; i--) {
+                    var element = listeners[i];
+                    if (element.listener == listener && element.thisObject == thisObject) {
+                        listeners.splice(i, 1);
+                    }
+                }
+                if (listeners.length == 0) {
+                    delete this[feng3d.EVENT_KEY][type];
+                }
+            }
         };
-        return Event;
+        return EventDispatcher;
     }());
-    feng3d.Event = Event;
+    feng3d.EventDispatcher = EventDispatcher;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -1170,7 +1083,7 @@ var feng3d;
      * 对象工具
      * @author feng 2017-02-15
      */
-    var ObjectUtils = /** @class */ (function () {
+    var ObjectUtils = (function () {
         function ObjectUtils() {
         }
         /**
@@ -1268,7 +1181,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var StringUtils = /** @class */ (function () {
+    var StringUtils = (function () {
         function StringUtils() {
         }
         /**
@@ -1339,7 +1252,7 @@ var feng3d;
      * 构建Map类代替Dictionary
      * @author feng 2017-01-03
      */
-    var Map = /** @class */ (function () {
+    var Map = (function () {
         function Map() {
             this.kv = [];
         }
@@ -1350,6 +1263,7 @@ var feng3d;
             for (var i = this.kv.length - 1; i >= 0; i--) {
                 if (k == this.kv[i].k) {
                     this.kv.splice(i, 1);
+                    var m = new Map();
                 }
             }
         };
@@ -1618,7 +1532,7 @@ var SERIALIZE_KEY = "__serialize__";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var Stats = /** @class */ (function () {
+    var Stats = (function () {
         function Stats() {
             var _this = this;
             var mode = 0;
@@ -1688,7 +1602,7 @@ var feng3d;
         return Stats;
     }());
     feng3d.Stats = Stats;
-    var StatsPanel = /** @class */ (function () {
+    var StatsPanel = (function () {
         function StatsPanel(name, fg, bg) {
             var min = Infinity, max = 0, round = Math.round;
             var PR = round(window.devicePixelRatio || 1);
@@ -1735,10 +1649,10 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ArrayList = /** @class */ (function () {
+    var ArrayList = (function () {
         function ArrayList(source) {
             this._source = source || [];
-            this._eventDispatcher = new feng3d.Event();
+            this._eventDispatcher = new feng3d.EventDispatcher();
         }
         Object.defineProperty(ArrayList.prototype, "length", {
             /**
@@ -1767,7 +1681,7 @@ var feng3d;
             }
             else {
                 this._source.splice(index, 0, item);
-                if (item instanceof feng3d.Event) {
+                if (item instanceof feng3d.EventDispatcher) {
                     var _listenermap = this._eventDispatcher[feng3d.EVENT_KEY];
                     for (var type in _listenermap) {
                         var listenerVOs = _listenermap[type];
@@ -1819,7 +1733,7 @@ var feng3d;
          */
         ArrayList.prototype.removeItemAt = function (index) {
             var item = this._source.splice(index, 1)[0];
-            if (item instanceof feng3d.Event) {
+            if (item instanceof feng3d.EventDispatcher) {
                 var _listenermap = this._eventDispatcher[feng3d.EVENT_KEY];
                 for (var type in _listenermap) {
                     var listenerVOs = _listenermap[type];
@@ -1857,7 +1771,7 @@ var feng3d;
             this._eventDispatcher.on(type, listener, thisObject, priority);
             for (var i = 0; i < this._source.length; i++) {
                 var item = this._source[i];
-                if (item instanceof feng3d.Event) {
+                if (item instanceof feng3d.EventDispatcher) {
                     item.on(type, listener, thisObject, priority);
                 }
             }
@@ -1872,7 +1786,7 @@ var feng3d;
             this._eventDispatcher.off(type, listener, thisObject);
             for (var i = 0; i < this._source.length; i++) {
                 var item = this._source[i];
-                if (item instanceof feng3d.Event) {
+                if (item instanceof feng3d.EventDispatcher) {
                     item.off(type, listener, thisObject);
                 }
             }
@@ -1886,7 +1800,7 @@ var feng3d;
     /**
      * 数学常量类
      */
-    var MathConsts = /** @class */ (function () {
+    var MathConsts = (function () {
         function MathConsts() {
         }
         /**
@@ -1996,7 +1910,7 @@ var feng3d;
      * Orientation3D 类是用于表示 Matrix3D 对象的方向样式的常量值枚举。方向的三个类型分别为欧拉角、轴角和四元数。Matrix3D 对象的 decompose 和 recompose 方法采用其中的某一个枚举类型来标识矩阵的旋转组件。
      * @author feng 2016-3-21
      */
-    var Orientation3D = /** @class */ (function () {
+    var Orientation3D = (function () {
         function Orientation3D() {
         }
         /**
@@ -2021,7 +1935,7 @@ var feng3d;
     /**
      * Point 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
      */
-    var Point = /** @class */ (function () {
+    var Point = (function () {
         /**
          * 创建一个 egret.Point 对象.若不传入任何参数，将会创建一个位于（0，0）位置的点。
          * @param x 该对象的x属性值，默认为0
@@ -2177,7 +2091,7 @@ var feng3d;
      * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
      * @author feng 2016-04-27
      */
-    var Rectangle = /** @class */ (function () {
+    var Rectangle = (function () {
         /**
          * 创建一个新 Rectangle 对象，其左上角由 x 和 y 参数指定，并具有指定的 width 和 height 参数。
          * @param x 矩形左上角的 x 坐标。
@@ -2491,7 +2405,7 @@ var feng3d;
      * Vector3D 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
      * @author feng 2016-3-21
      */
-    var Vector3D = /** @class */ (function () {
+    var Vector3D = (function () {
         /**
          * 创建 Vector3D 对象的实例。如果未指定构造函数的参数，则将使用元素 (0,0,0,0) 创建 Vector3D 对象。
          * @param x 第一个元素，例如 x 坐标。
@@ -2756,7 +2670,7 @@ var feng3d;
      *  ---  x轴        y轴      z轴          ---
      * ```
      */
-    var Matrix3D = /** @class */ (function () {
+    var Matrix3D = (function () {
         /**
          * 创建 Matrix3D 对象。
          * @param   datas    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
@@ -3583,7 +3497,7 @@ var feng3d;
     /**
      * A Quaternion object which can be used to represent rotations.
      */
-    var Quaternion = /** @class */ (function () {
+    var Quaternion = (function () {
         /**
          * Creates a new Quaternion object.
          * @param x The x value of the quaternion.
@@ -3942,7 +3856,7 @@ var feng3d;
      * 3d直线
      * @author feng 2013-6-13
      */
-    var Line3D = /** @class */ (function () {
+    var Line3D = (function () {
         /**
          * 根据直线某点与方向创建直线
          * @param position 直线上某点
@@ -3991,7 +3905,7 @@ var feng3d;
      * 3D射线
      * @author feng 2013-6-13
      */
-    var Ray3D = /** @class */ (function (_super) {
+    var Ray3D = (function (_super) {
         __extends(Ray3D, _super);
         function Ray3D(position, direction) {
             return _super.call(this, position, direction) || this;
@@ -4005,7 +3919,7 @@ var feng3d;
     /**
      * 3d面
      */
-    var Plane3D = /** @class */ (function () {
+    var Plane3D = (function () {
         /**
          * 创建一个平面
          * @param a		A系数
@@ -4195,7 +4109,7 @@ var feng3d;
      * 点与面的相对位置
      * @author feng
      */
-    var PlaneClassification = /** @class */ (function () {
+    var PlaneClassification = (function () {
         function PlaneClassification() {
         }
         /**
@@ -4236,7 +4150,7 @@ var feng3d;
      * 颜色
      * @author feng 2016-09-24
      */
-    var Color = /** @class */ (function () {
+    var Color = (function () {
         /**
          * 构建颜色
          * @param r     红[0,1]
@@ -4361,7 +4275,7 @@ var feng3d;
     /**
      * 心跳计时器
      */
-    var SystemTicker = /** @class */ (function (_super) {
+    var SystemTicker = (function (_super) {
         __extends(SystemTicker, _super);
         /**
          * @private
@@ -4409,7 +4323,7 @@ var feng3d;
             this.dispatch("enterFrame");
         };
         return SystemTicker;
-    }(feng3d.Event));
+    }(feng3d.EventDispatcher));
     feng3d.SystemTicker = SystemTicker;
     /**
      * 心跳计时器单例
@@ -4469,7 +4383,7 @@ var feng3d;
      * @includeExample egret/utils/Timer.ts
      * @language zh_CN
      */
-    var Timer = /** @class */ (function (_super) {
+    var Timer = (function (_super) {
         __extends(Timer, _super);
         /**
          * Constructs a new Timer object with the specified delay and repeatCount states.
@@ -4674,7 +4588,7 @@ var feng3d;
             return false;
         };
         return Timer;
-    }(feng3d.Event));
+    }(feng3d.EventDispatcher));
     feng3d.Timer = Timer;
     ;
 })(feng3d || (feng3d = {}));
@@ -4684,7 +4598,7 @@ var feng3d;
      * 鼠标键盘输入，处理js事件中this关键字问题
      * @author feng 2016-12-19
      */
-    var Input = /** @class */ (function (_super) {
+    var Input = (function (_super) {
         __extends(Input, _super);
         function Input() {
             var _this = _super.call(this) || this;
@@ -4720,9 +4634,9 @@ var feng3d;
             this.dispatch(inputEvent.type, inputEvent, true);
         };
         return Input;
-    }(feng3d.Event));
+    }(feng3d.EventDispatcher));
     feng3d.Input = Input;
-    var InputEvent = /** @class */ (function () {
+    var InputEvent = (function () {
         function InputEvent(event) {
             this.event = event;
             this.type = event.type;
@@ -4755,7 +4669,7 @@ var feng3d;
      * 按键捕获
      * @author feng 2016-4-26
      */
-    var KeyCapture = /** @class */ (function () {
+    var KeyCapture = (function () {
         /**
          * 构建
          * @param stage		舞台
@@ -4862,7 +4776,7 @@ var feng3d;
      * 按键状态
      * @author feng 2016-4-26
      */
-    var KeyState = /** @class */ (function (_super) {
+    var KeyState = (function (_super) {
         __extends(KeyState, _super);
         /**
          * 构建
@@ -4898,7 +4812,7 @@ var feng3d;
             return !!this._keyStateDic[key];
         };
         return KeyState;
-    }(feng3d.Event));
+    }(feng3d.EventDispatcher));
     feng3d.KeyState = KeyState;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -4907,7 +4821,7 @@ var feng3d;
      * 快捷键捕获
      * @author feng 2016-4-26
      */
-    var ShortCutCapture = /** @class */ (function () {
+    var ShortCutCapture = (function () {
         /**
          * 构建快捷键捕获
          * @param shortCut				快捷键环境
@@ -5095,7 +5009,7 @@ var feng3d;
  * 按键
  * @author feng 2016-6-6
  */
-var Key = /** @class */ (function () {
+var Key = (function () {
     function Key(key) {
         key = key.trim();
         if (key.charAt(0) == "!") {
@@ -5110,7 +5024,7 @@ var Key = /** @class */ (function () {
  * 状态
  * @author feng 2016-6-6
  */
-var State = /** @class */ (function () {
+var State = (function () {
     function State(state) {
         state = state.trim();
         if (state.charAt(0) == "!") {
@@ -5125,7 +5039,7 @@ var State = /** @class */ (function () {
  * 状态命令
  * @author feng 2016-6-6
  */
-var StateCommand = /** @class */ (function () {
+var StateCommand = (function () {
     function StateCommand(state) {
         state = state.trim();
         if (state.charAt(0) == "!") {
@@ -5162,7 +5076,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 });
      * </pre>
      */
-    var ShortCut = /** @class */ (function (_super) {
+    var ShortCut = (function (_super) {
         __extends(ShortCut, _super);
         /**
          * 初始化快捷键模块
@@ -5248,7 +5162,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
             return shortcut.key + "," + shortcut.command + "," + shortcut.when;
         };
         return ShortCut;
-    }(feng3d.Event));
+    }(feng3d.EventDispatcher));
     feng3d.ShortCut = ShortCut;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -5349,7 +5263,7 @@ var feng3d;
      * 加载数据类型
      * @author feng 2016-12-14
      */
-    var LoaderDataFormat = /** @class */ (function () {
+    var LoaderDataFormat = (function () {
         function LoaderDataFormat() {
         }
         /**
@@ -5434,7 +5348,7 @@ var feng3d;
      * 渲染模式
      * @author feng 2016-09-28
      */
-    var RenderMode = /** @class */ (function () {
+    var RenderMode = (function () {
         function RenderMode() {
         }
         /**
@@ -5453,7 +5367,7 @@ var feng3d;
     /**
      * 纹理类型
      */
-    var TextureType = /** @class */ (function () {
+    var TextureType = (function () {
         function TextureType() {
         }
         TextureType.TEXTURE_2D = feng3d.GL.TEXTURE_2D;
@@ -5464,7 +5378,7 @@ var feng3d;
     /**
      * 混合方法
      */
-    var BlendEquation = /** @class */ (function () {
+    var BlendEquation = (function () {
         function BlendEquation() {
         }
         /**
@@ -5485,7 +5399,7 @@ var feng3d;
     /**
      * 混合因子（R分量系数，G分量系数，B分量系数）
      */
-    var BlendFactor = /** @class */ (function () {
+    var BlendFactor = (function () {
         function BlendFactor() {
         }
         /**
@@ -5541,7 +5455,7 @@ var feng3d;
     /**
      * GL扩展
      */
-    var GLExtension = /** @class */ (function () {
+    var GLExtension = (function () {
         function GLExtension(gl) {
             this.cacheGLQuery(gl);
             this.extensionWebGL(gl);
@@ -5597,7 +5511,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var GLProgramExtension = /** @class */ (function () {
+    var GLProgramExtension = (function () {
         function GLProgramExtension(gl) {
             var oldCreateProgram = gl.createProgram;
             gl.createProgram = function () {
@@ -5745,7 +5659,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var Shader = /** @class */ (function () {
+    var Shader = (function () {
         function Shader() {
             //
             this._invalid = true;
@@ -5838,7 +5752,7 @@ var feng3d;
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      * @author feng 2016-06-20
      */
-    var RenderAtomic = /** @class */ (function () {
+    var RenderAtomic = (function () {
         function RenderAtomic() {
             /**
              * 渲染程序
@@ -5868,7 +5782,7 @@ var feng3d;
      * 索引渲染数据
      * @author feng 2017-01-04
      */
-    var Index = /** @class */ (function () {
+    var Index = (function () {
         function Index() {
             /**
              * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
@@ -5953,7 +5867,7 @@ var feng3d;
      * @author feng 2014-8-14
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer}
      */
-    var Attribute = /** @class */ (function () {
+    var Attribute = (function () {
         function Attribute(name, data, size, divisor) {
             if (size === void 0) { size = 3; }
             if (divisor === void 0) { divisor = 0; }
@@ -6072,7 +5986,7 @@ var feng3d;
      * 纹理信息
      * @author feng 2016-12-20
      */
-    var TextureInfo = /** @class */ (function (_super) {
+    var TextureInfo = (function (_super) {
         __extends(TextureInfo, _super);
         function TextureInfo() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -6268,7 +6182,7 @@ var feng3d;
             feng3d.oav()
         ], TextureInfo.prototype, "anisotropy", void 0);
         return TextureInfo;
-    }(feng3d.Event));
+    }(feng3d.EventDispatcher));
     feng3d.TextureInfo = TextureInfo;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -6352,7 +6266,7 @@ var feng3d;
      * 渲染数据拥有者
      * @author feng 2016-6-7
      */
-    var RenderDataHolder = /** @class */ (function (_super) {
+    var RenderDataHolder = (function (_super) {
         __extends(RenderDataHolder, _super);
         /**
          * 创建GL数据缓冲
@@ -6488,7 +6402,7 @@ var feng3d;
             });
         };
         return RenderDataHolder;
-    }(feng3d.Event));
+    }(feng3d.EventDispatcher));
     feng3d.RenderDataHolder = RenderDataHolder;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -6497,7 +6411,7 @@ var feng3d;
      * 渲染环境
      * @author feng 2017-01-04
      */
-    var RenderContext = /** @class */ (function (_super) {
+    var RenderContext = (function (_super) {
         __extends(RenderContext, _super);
         function RenderContext() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -6585,7 +6499,7 @@ var feng3d;
      * 渲染代码库
      * @author feng 2016-12-16
      */
-    var ShaderLib = /** @class */ (function () {
+    var ShaderLib = (function () {
         function ShaderLib() {
         }
         ShaderLib.getShaderContentByName = function (shaderName) {
@@ -6615,7 +6529,7 @@ var feng3d;
      * 着色器加载器
      * @author feng 2016-12-15
      */
-    var ShaderLoader = /** @class */ (function () {
+    var ShaderLoader = (function () {
         function ShaderLoader() {
         }
         /**
@@ -6697,7 +6611,7 @@ var feng3d;
      *
      * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
      */
-    var Feng3dObject = /** @class */ (function (_super) {
+    var Feng3dObject = (function (_super) {
         __extends(Feng3dObject, _super);
         //------------------------------------------
         // Functions
@@ -6761,7 +6675,7 @@ var feng3d;
      *
      * Note that your code will never directly create a Component. Instead, you write script code, and attach the script to a GameObject. See Also: ScriptableObject as a way to create scripts that do not attach to any GameObject.
      */
-    var Component = /** @class */ (function (_super) {
+    var Component = (function (_super) {
         __extends(Component, _super);
         //------------------------------------------
         // Functions
@@ -7110,7 +7024,7 @@ var feng3d;
      * 深度渲染器
      * @author  feng    2017-03-25
      */
-    var DepthRenderer = /** @class */ (function () {
+    var DepthRenderer = (function () {
         function DepthRenderer() {
         }
         return DepthRenderer;
@@ -7123,7 +7037,7 @@ var feng3d;
      * 鼠标拾取渲染器
      * @author feng 2017-02-06
      */
-    var MouseRenderer = /** @class */ (function (_super) {
+    var MouseRenderer = (function (_super) {
         __extends(MouseRenderer, _super);
         function MouseRenderer() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -7190,7 +7104,7 @@ var feng3d;
      * 后处理渲染器
      * @author feng 2017-02-20
      */
-    var PostProcessRenderer = /** @class */ (function () {
+    var PostProcessRenderer = (function () {
         function PostProcessRenderer() {
         }
         return PostProcessRenderer;
@@ -7279,7 +7193,7 @@ var feng3d;
         //
         renderAtomic.shader = oldshader;
     }
-    var OutLineComponent = /** @class */ (function (_super) {
+    var OutLineComponent = (function (_super) {
         __extends(OutLineComponent, _super);
         function OutLineComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -7388,7 +7302,7 @@ var feng3d;
     /**
      * 线框组件，将会对拥有该组件的对象绘制线框
      */
-    var WireframeComponent = /** @class */ (function (_super) {
+    var WireframeComponent = (function (_super) {
         __extends(WireframeComponent, _super);
         function WireframeComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -7416,7 +7330,7 @@ var feng3d;
     /**
      * 参考
      */
-    var CartoonComponent = /** @class */ (function (_super) {
+    var CartoonComponent = (function (_super) {
         __extends(CartoonComponent, _super);
         function CartoonComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -7565,7 +7479,7 @@ var feng3d;
         feng3d.renderer.activeUniforms(renderAtomic, gl, shaderProgram.uniforms);
         feng3d.renderer.dodraw(renderAtomic, gl);
     }
-    var SkyBox = /** @class */ (function (_super) {
+    var SkyBox = (function (_super) {
         __extends(SkyBox, _super);
         function SkyBox() {
             var _this = _super.call(this) || this;
@@ -7602,7 +7516,7 @@ var feng3d;
      * 后处理效果
      * @author feng 2017-02-20
      */
-    var PostEffect = /** @class */ (function () {
+    var PostEffect = (function () {
         function PostEffect() {
         }
         return PostEffect;
@@ -7619,7 +7533,7 @@ var feng3d;
      * https://github.com/BabylonJS/Babylon.js/blob/master/src/Shaders/fxaa.fragment.fx
      * https://github.com/playcanvas/engine/blob/master/extras/posteffects/posteffect-fxaa.js
      */
-    var FXAAEffect = /** @class */ (function () {
+    var FXAAEffect = (function () {
         function FXAAEffect() {
         }
         return FXAAEffect;
@@ -7634,7 +7548,7 @@ var feng3d;
      *
      * Every object in a scene has a Transform. It's used to store and manipulate the position, rotation and scale of the object. Every Transform can have a parent, which allows you to apply position, rotation and scale hierarchically. This is the hierarchy seen in the Hierarchy pane.
      */
-    var Transform = /** @class */ (function (_super) {
+    var Transform = (function (_super) {
         __extends(Transform, _super);
         /**
          * 创建一个实体，该类为虚类
@@ -8369,7 +8283,7 @@ var feng3d;
     /**
      * Base class for all entities in feng3d scenes.
      */
-    var GameObject = /** @class */ (function (_super) {
+    var GameObject = (function (_super) {
         __extends(GameObject, _super);
         //------------------------------------------
         // Functions
@@ -8868,7 +8782,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var BoundingComponent = /** @class */ (function (_super) {
+    var BoundingComponent = (function (_super) {
         __extends(BoundingComponent, _super);
         function BoundingComponent() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -8966,7 +8880,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var RenderAtomicComponent = /** @class */ (function (_super) {
+    var RenderAtomicComponent = (function (_super) {
         __extends(RenderAtomicComponent, _super);
         function RenderAtomicComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -9013,7 +8927,7 @@ var feng3d;
      * 3D视图
      * @author feng 2016-05-01
      */
-    var Engine = /** @class */ (function () {
+    var Engine = (function () {
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -9107,7 +9021,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var HoldSizeComponent = /** @class */ (function (_super) {
+    var HoldSizeComponent = (function (_super) {
         __extends(HoldSizeComponent, _super);
         function HoldSizeComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -9194,7 +9108,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var BillboardComponent = /** @class */ (function (_super) {
+    var BillboardComponent = (function (_super) {
         __extends(BillboardComponent, _super);
         function BillboardComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -9251,7 +9165,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var MeshRenderer = /** @class */ (function (_super) {
+    var MeshRenderer = (function (_super) {
         __extends(MeshRenderer, _super);
         function MeshRenderer() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -9334,7 +9248,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var SkeletonComponent = /** @class */ (function (_super) {
+    var SkeletonComponent = (function (_super) {
         __extends(SkeletonComponent, _super);
         function SkeletonComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -9473,7 +9387,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var SkinnedMeshRenderer = /** @class */ (function (_super) {
+    var SkinnedMeshRenderer = (function (_super) {
         __extends(SkinnedMeshRenderer, _super);
         function SkinnedMeshRenderer() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -9572,7 +9486,7 @@ var feng3d;
         return _defaultglobalMatrices;
     }
     var _defaultglobalMatrices;
-    var SkinSkeleton = /** @class */ (function () {
+    var SkinSkeleton = (function () {
         function SkinSkeleton() {
             /**
              * [在整个骨架中的编号，骨骼名称]
@@ -9592,7 +9506,7 @@ var feng3d;
         return SkinSkeleton;
     }());
     feng3d.SkinSkeleton = SkinSkeleton;
-    var SkinSkeletonTemp = /** @class */ (function (_super) {
+    var SkinSkeletonTemp = (function (_super) {
         __extends(SkinSkeletonTemp, _super);
         function SkinSkeletonTemp() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -9626,7 +9540,7 @@ var feng3d;
      * 3d对象脚本
      * @author feng 2017-03-11
      */
-    var Script = /** @class */ (function (_super) {
+    var Script = (function (_super) {
         __extends(Script, _super);
         function Script() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -9702,7 +9616,7 @@ var feng3d;
      * 3D场景
      * @author feng 2016-05-01
      */
-    var Scene3D = /** @class */ (function (_super) {
+    var Scene3D = (function (_super) {
         __extends(Scene3D, _super);
         function Scene3D() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -9840,7 +9754,7 @@ var feng3d;
      * 几何体
      * @author feng 2016-04-28
      */
-    var Geometry = /** @class */ (function (_super) {
+    var Geometry = (function (_super) {
         __extends(Geometry, _super);
         /**
          * 创建一个几何体
@@ -10267,7 +10181,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var CustomGeometry = /** @class */ (function (_super) {
+    var CustomGeometry = (function (_super) {
         __extends(CustomGeometry, _super);
         function CustomGeometry() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -10563,7 +10477,7 @@ var feng3d;
      * 点几何体
      * @author feng 2017-01-11
      */
-    var PointGeometry = /** @class */ (function (_super) {
+    var PointGeometry = (function (_super) {
         __extends(PointGeometry, _super);
         function PointGeometry() {
             var _this = _super.call(this) || this;
@@ -10644,7 +10558,7 @@ var feng3d;
      * 点信息
      * @author feng 2016-10-16
      */
-    var PointInfo = /** @class */ (function () {
+    var PointInfo = (function () {
         /**
          * 创建点
          * @param position 坐标
@@ -10669,7 +10583,7 @@ var feng3d;
      * 线段组件
      * @author feng 2016-10-16
      */
-    var SegmentGeometry = /** @class */ (function (_super) {
+    var SegmentGeometry = (function (_super) {
         __extends(SegmentGeometry, _super);
         function SegmentGeometry() {
             var _this = _super.call(this) || this;
@@ -10747,7 +10661,7 @@ var feng3d;
      * 线段
      * @author feng 2016-10-16
      */
-    var Segment = /** @class */ (function () {
+    var Segment = (function () {
         /**
          * 创建线段
          * @param start 起点坐标
@@ -10774,7 +10688,7 @@ var feng3d;
      * 坐标系统类型
      * @author feng 2014-10-14
      */
-    var CoordinateSystem = /** @class */ (function () {
+    var CoordinateSystem = (function () {
         function CoordinateSystem() {
         }
         /**
@@ -10795,7 +10709,7 @@ var feng3d;
      * 摄像机镜头
      * @author feng 2014-10-14
      */
-    var LensBase = /** @class */ (function (_super) {
+    var LensBase = (function (_super) {
         __extends(LensBase, _super);
         /**
          * 创建一个摄像机镜头
@@ -10941,7 +10855,7 @@ var feng3d;
             feng3d.oav()
         ], LensBase.prototype, "aspectRatio", null);
         return LensBase;
-    }(feng3d.Event));
+    }(feng3d.EventDispatcher));
     feng3d.LensBase = LensBase;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -10950,7 +10864,7 @@ var feng3d;
      *
      * @author feng 2015-5-28
      */
-    var FreeMatrixLens = /** @class */ (function (_super) {
+    var FreeMatrixLens = (function (_super) {
         __extends(FreeMatrixLens, _super);
         function FreeMatrixLens() {
             return _super.call(this) || this;
@@ -10979,7 +10893,7 @@ var feng3d;
      * 透视摄像机镜头
      * @author feng 2014-10-14
      */
-    var PerspectiveLens = /** @class */ (function (_super) {
+    var PerspectiveLens = (function (_super) {
         __extends(PerspectiveLens, _super);
         /**
          * 创建一个透视摄像机镜头
@@ -11111,7 +11025,7 @@ var feng3d;
      * 摄像机
      * @author feng 2016-08-16
      */
-    var Camera = /** @class */ (function (_super) {
+    var Camera = (function (_super) {
         __extends(Camera, _super);
         function Camera() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -11586,7 +11500,7 @@ var feng3d;
      * 立方体几何体
      * @author feng 2016-09-12
      */
-    var PlaneGeometry = /** @class */ (function (_super) {
+    var PlaneGeometry = (function (_super) {
         __extends(PlaneGeometry, _super);
         /**
          * 创建平面几何体
@@ -11864,7 +11778,7 @@ var feng3d;
      * 立方体几何体
      * @author feng 2016-09-12
      */
-    var CubeGeometry = /** @class */ (function (_super) {
+    var CubeGeometry = (function (_super) {
         __extends(CubeGeometry, _super);
         /**
          * 创建立方几何体
@@ -12374,7 +12288,7 @@ var feng3d;
      * 球体几何体
      * @author DawnKing 2016-09-12
      */
-    var SphereGeometry = /** @class */ (function (_super) {
+    var SphereGeometry = (function (_super) {
         __extends(SphereGeometry, _super);
         /**
          * 创建球形几何体
@@ -12609,7 +12523,7 @@ var feng3d;
      * 胶囊体几何体
      * @author DawnKing 2016-09-12
      */
-    var CapsuleGeometry = /** @class */ (function (_super) {
+    var CapsuleGeometry = (function (_super) {
         __extends(CapsuleGeometry, _super);
         /**
          * 创建胶囊几何体
@@ -12866,7 +12780,7 @@ var feng3d;
      * 圆柱体几何体
      * @author DawnKing 2016-09-12
      */
-    var CylinderGeometry = /** @class */ (function (_super) {
+    var CylinderGeometry = (function (_super) {
         __extends(CylinderGeometry, _super);
         /**
          * 创建圆柱体
@@ -13349,7 +13263,7 @@ var feng3d;
      * 圆锥体
      * @author feng 2017-02-07
      */
-    var ConeGeometry = /** @class */ (function (_super) {
+    var ConeGeometry = (function (_super) {
         __extends(ConeGeometry, _super);
         /**
          * 创建圆锥体
@@ -13377,7 +13291,7 @@ var feng3d;
     /**
      * 圆环几何体
      */
-    var TorusGeometry = /** @class */ (function (_super) {
+    var TorusGeometry = (function (_super) {
         __extends(TorusGeometry, _super);
         /**
          * 创建<code>Torus</code>实例
@@ -13637,7 +13551,7 @@ var feng3d;
      * 2D纹理
      * @author feng 2016-12-20
      */
-    var Texture2D = /** @class */ (function (_super) {
+    var Texture2D = (function (_super) {
         __extends(Texture2D, _super);
         function Texture2D(url) {
             if (url === void 0) { url = ""; }
@@ -13711,7 +13625,7 @@ var feng3d;
      * 立方体纹理
      * @author feng 2016-12-28
      */
-    var TextureCube = /** @class */ (function (_super) {
+    var TextureCube = (function (_super) {
         __extends(TextureCube, _super);
         function TextureCube(images) {
             var _this = _super.call(this) || this;
@@ -13865,7 +13779,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ImageDataTexture = /** @class */ (function (_super) {
+    var ImageDataTexture = (function (_super) {
         __extends(ImageDataTexture, _super);
         function ImageDataTexture() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -13906,7 +13820,7 @@ var feng3d;
      * 材质
      * @author feng 2016-05-02
      */
-    var Material = /** @class */ (function (_super) {
+    var Material = (function (_super) {
         __extends(Material, _super);
         function Material() {
             var _this = _super.call(this) || this;
@@ -14113,7 +14027,7 @@ var feng3d;
      * 颜色材质
      * @author feng 2017-01-11
      */
-    var PointMaterial = /** @class */ (function (_super) {
+    var PointMaterial = (function (_super) {
         __extends(PointMaterial, _super);
         /**
          * 构建颜色材质
@@ -14141,7 +14055,7 @@ var feng3d;
      * 颜色材质
      * @author feng 2016-05-02
      */
-    var ColorMaterial = /** @class */ (function (_super) {
+    var ColorMaterial = (function (_super) {
         __extends(ColorMaterial, _super);
         /**
          * 构建颜色材质
@@ -14188,7 +14102,7 @@ var feng3d;
      * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
      * @author feng 2016-10-15
      */
-    var SegmentMaterial = /** @class */ (function (_super) {
+    var SegmentMaterial = (function (_super) {
         __extends(SegmentMaterial, _super);
         /**
          * 构建线段材质
@@ -14228,7 +14142,7 @@ var feng3d;
      * 纹理材质
      * @author feng 2016-12-23
      */
-    var TextureMaterial = /** @class */ (function (_super) {
+    var TextureMaterial = (function (_super) {
         __extends(TextureMaterial, _super);
         function TextureMaterial() {
             var _this = _super.call(this) || this;
@@ -14272,7 +14186,7 @@ var feng3d;
      * 标准材质
      * @author feng 2016-05-02
      */
-    var StandardMaterial = /** @class */ (function (_super) {
+    var StandardMaterial = (function (_super) {
         __extends(StandardMaterial, _super);
         /**
          * 构建
@@ -14434,7 +14348,7 @@ var feng3d;
      * 漫反射函数
      * @author feng 2017-03-22
      */
-    var DiffuseMethod = /** @class */ (function (_super) {
+    var DiffuseMethod = (function (_super) {
         __extends(DiffuseMethod, _super);
         /**
          * 构建
@@ -14503,7 +14417,7 @@ var feng3d;
      * 法线函数
      * @author feng 2017-03-22
      */
-    var NormalMethod = /** @class */ (function (_super) {
+    var NormalMethod = (function (_super) {
         __extends(NormalMethod, _super);
         /**
          * 构建
@@ -14553,7 +14467,7 @@ var feng3d;
      * 法线函数
      * @author feng 2017-03-22
      */
-    var SpecularMethod = /** @class */ (function (_super) {
+    var SpecularMethod = (function (_super) {
         __extends(SpecularMethod, _super);
         /**
          * 构建
@@ -14631,7 +14545,7 @@ var feng3d;
      * 漫反射函数
      * @author feng 2017-03-22
      */
-    var AmbientMethod = /** @class */ (function (_super) {
+    var AmbientMethod = (function (_super) {
         __extends(AmbientMethod, _super);
         /**
          * 构建
@@ -14696,7 +14610,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var FogMethod = /** @class */ (function (_super) {
+    var FogMethod = (function (_super) {
         __extends(FogMethod, _super);
         /**
          * @param fogColor      雾颜色
@@ -14829,7 +14743,7 @@ var feng3d;
     /**
      * 环境映射函数
      */
-    var EnvMapMethod = /** @class */ (function (_super) {
+    var EnvMapMethod = (function (_super) {
         __extends(EnvMapMethod, _super);
         /**
          * 创建EnvMapMethod实例
@@ -14917,7 +14831,7 @@ var feng3d;
      * 灯光
      * @author feng 2016-12-12
      */
-    var Light = /** @class */ (function (_super) {
+    var Light = (function (_super) {
         __extends(Light, _super);
         function Light() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -14971,7 +14885,7 @@ var feng3d;
      * 方向光源
      * @author feng 2016-12-13
      */
-    var DirectionalLight = /** @class */ (function (_super) {
+    var DirectionalLight = (function (_super) {
         __extends(DirectionalLight, _super);
         function DirectionalLight() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -14993,7 +14907,7 @@ var feng3d;
      * 点光源
      * @author feng 2016-12-13
      */
-    var PointLight = /** @class */ (function (_super) {
+    var PointLight = (function (_super) {
         __extends(PointLight, _super);
         function PointLight() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -15020,7 +14934,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ControllerBase = /** @class */ (function () {
+    var ControllerBase = (function () {
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
@@ -15050,7 +14964,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var LookAtController = /** @class */ (function (_super) {
+    var LookAtController = (function (_super) {
         __extends(LookAtController, _super);
         function LookAtController(target, lookAtObject) {
             var _this = _super.call(this, target) || this;
@@ -15113,7 +15027,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var HoverController = /** @class */ (function (_super) {
+    var HoverController = (function (_super) {
         __extends(HoverController, _super);
         function HoverController(targetObject, lookAtObject, panAngle, tiltAngle, distance, minTiltAngle, maxTiltAngle, minPanAngle, maxPanAngle, steps, yFactor, wrapPanAngle) {
             if (panAngle === void 0) { panAngle = 0; }
@@ -15364,7 +15278,7 @@ var feng3d;
      * FPS模式控制器
      * @author feng 2016-12-19
      */
-    var FPSController = /** @class */ (function (_super) {
+    var FPSController = (function (_super) {
         __extends(FPSController, _super);
         function FPSController() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -15814,7 +15728,7 @@ var feng3d;
      * 地形几何体
      * @author feng 2016-04-28
      */
-    var TerrainGeometry = /** @class */ (function (_super) {
+    var TerrainGeometry = (function (_super) {
         __extends(TerrainGeometry, _super);
         /**
          * 创建高度地形 拥有segmentsW*segmentsH个顶点
@@ -16095,7 +16009,7 @@ var feng3d;
      * 地形材质
      * @author feng 2016-04-28
      */
-    var TerrainMethod = /** @class */ (function (_super) {
+    var TerrainMethod = (function (_super) {
         __extends(TerrainMethod, _super);
         /**
          * 构建材质
@@ -16220,7 +16134,7 @@ var feng3d;
      * 地形材质
      * @author feng 2016-04-28
      */
-    var TerrainMergeMethod = /** @class */ (function (_super) {
+    var TerrainMergeMethod = (function (_super) {
         __extends(TerrainMergeMethod, _super);
         /**
          * 构建材质
@@ -16297,7 +16211,7 @@ var feng3d;
      * 粒子动画组件
      * @author feng 2017-01-09
      */
-    var ParticleComponent = /** @class */ (function (_super) {
+    var ParticleComponent = (function (_super) {
         __extends(ParticleComponent, _super);
         function ParticleComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -16325,7 +16239,7 @@ var feng3d;
      * 粒子发射器
      * @author feng 2017-01-09
      */
-    var ParticleEmission = /** @class */ (function (_super) {
+    var ParticleEmission = (function (_super) {
         __extends(ParticleEmission, _super);
         function ParticleEmission() {
             var _this = _super.call(this) || this;
@@ -16391,7 +16305,7 @@ var feng3d;
      * 粒子速度组件
      * @author feng 2017-01-09
      */
-    var ParticlePosition = /** @class */ (function (_super) {
+    var ParticlePosition = (function (_super) {
         __extends(ParticlePosition, _super);
         function ParticlePosition() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -16418,7 +16332,7 @@ var feng3d;
      * 粒子速度组件
      * @author feng 2017-01-09
      */
-    var ParticleVelocity = /** @class */ (function (_super) {
+    var ParticleVelocity = (function (_super) {
         __extends(ParticleVelocity, _super);
         function ParticleVelocity() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -16444,7 +16358,7 @@ var feng3d;
      * 粒子颜色组件
      * @author feng 2017-03-14
      */
-    var ParticleColor = /** @class */ (function (_super) {
+    var ParticleColor = (function (_super) {
         __extends(ParticleColor, _super);
         function ParticleColor() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -16462,7 +16376,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ParticleBillboard = /** @class */ (function (_super) {
+    var ParticleBillboard = (function (_super) {
         __extends(ParticleBillboard, _super);
         /**
          * 创建一个广告牌节点
@@ -16502,7 +16416,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ParticleAnimationSet = /** @class */ (function (_super) {
+    var ParticleAnimationSet = (function (_super) {
         __extends(ParticleAnimationSet, _super);
         function ParticleAnimationSet() {
             var _this = _super.call(this) || this;
@@ -16626,7 +16540,7 @@ var feng3d;
      * 粒子动画
      * @author feng 2017-01-09
      */
-    var ParticleAnimator = /** @class */ (function (_super) {
+    var ParticleAnimator = (function (_super) {
         __extends(ParticleAnimator, _super);
         function ParticleAnimator() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -16739,7 +16653,7 @@ var feng3d;
      * 骨骼关节数据
      * @author feng 2014-5-20
      */
-    var SkeletonJoint = /** @class */ (function () {
+    var SkeletonJoint = (function () {
         function SkeletonJoint() {
             /** 父关节索引 （-1说明本身是总父节点，这个序号其实就是行号了，譬如上面”origin“节点的序号就是0，无父节点； "body"节点序号是1，父节点序号是0，也就是说父节点是”origin“）*/
             this.parentIndex = -1;
@@ -16769,7 +16683,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var Animation = /** @class */ (function (_super) {
+    var Animation = (function (_super) {
         __extends(Animation, _super);
         function Animation() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -16933,7 +16847,7 @@ var feng3d;
         }
         return propertyValue;
     }
-    var AnimationClip = /** @class */ (function () {
+    var AnimationClip = (function () {
         function AnimationClip() {
             this.loop = true;
         }
@@ -16952,7 +16866,7 @@ var feng3d;
         return AnimationClip;
     }());
     feng3d.AnimationClip = AnimationClip;
-    var PropertyClip = /** @class */ (function () {
+    var PropertyClip = (function () {
         function PropertyClip() {
         }
         __decorate([
@@ -17437,7 +17351,7 @@ var feng3d;
          * 透明度动画
          * @author warden_feng 2014-6-26
          */
-        var AnimAlpha = /** @class */ (function () {
+        var AnimAlpha = (function () {
             function AnimAlpha() {
             }
             return AnimAlpha;
@@ -17447,7 +17361,7 @@ var feng3d;
          * 全局动作信息
          * @author warden_feng 2014-6-26
          */
-        var AnimInfo = /** @class */ (function () {
+        var AnimInfo = (function () {
             function AnimInfo() {
                 /** 是否循环 */
                 this.loop = true;
@@ -17459,7 +17373,7 @@ var feng3d;
          * 几何体动作信息
          * @author warden_feng 2014-6-26
          */
-        var AnimInfo1 = /** @class */ (function () {
+        var AnimInfo1 = (function () {
             function AnimInfo1() {
             }
             return AnimInfo1;
@@ -17468,7 +17382,7 @@ var feng3d;
         /**
          * 骨骼的角度信息
          */
-        var BoneRotation = /** @class */ (function () {
+        var BoneRotation = (function () {
             function BoneRotation() {
                 this.rotations = [];
             }
@@ -17536,7 +17450,7 @@ var feng3d;
          * 骨骼信息(包含骨骼，helper等其他对象)
          * @author warden_feng 2014-6-26
          */
-        var BoneObject = /** @class */ (function () {
+        var BoneObject = (function () {
             function BoneObject() {
                 /** 父对象 */
                 this.Parent = -1;
@@ -17632,7 +17546,7 @@ var feng3d;
         /**
          * 骨骼的位移信息
          */
-        var BoneScaling = /** @class */ (function () {
+        var BoneScaling = (function () {
             function BoneScaling() {
                 this.scalings = [];
             }
@@ -17723,7 +17637,7 @@ var feng3d;
          * 骨骼的位移信息
          * @author warden_feng 2014-6-26
          */
-        var BoneTranslation = /** @class */ (function () {
+        var BoneTranslation = (function () {
             function BoneTranslation() {
                 this.translations = [];
             }
@@ -17814,7 +17728,7 @@ var feng3d;
          * 纹理
          * @author warden_feng 2014-6-26
          */
-        var FBitmap = /** @class */ (function () {
+        var FBitmap = (function () {
             function FBitmap() {
             }
             return FBitmap;
@@ -17824,7 +17738,7 @@ var feng3d;
          * 几何设置
          * @author warden_feng 2014-6-26
          */
-        var Geoset = /** @class */ (function () {
+        var Geoset = (function () {
             function Geoset() {
                 /** 动作信息 */
                 this.Anims = [];
@@ -17836,7 +17750,7 @@ var feng3d;
          * 几何体动画
          * @author warden_feng 2014-6-26
          */
-        var GeosetAnim = /** @class */ (function () {
+        var GeosetAnim = (function () {
             function GeosetAnim() {
             }
             return GeosetAnim;
@@ -17846,7 +17760,7 @@ var feng3d;
          * 全局序列
          * @author warden_feng 2014-6-26
          */
-        var Globalsequences = /** @class */ (function () {
+        var Globalsequences = (function () {
             function Globalsequences() {
                 /** 持续时间 */
                 this.durations = [];
@@ -17858,7 +17772,7 @@ var feng3d;
          * 动作间隔
          * @author warden_feng 2014-6-26
          */
-        var Interval = /** @class */ (function () {
+        var Interval = (function () {
             function Interval() {
             }
             return Interval;
@@ -17868,7 +17782,7 @@ var feng3d;
          * 材质层
          * @author warden_feng 2014-6-26
          */
-        var Layer = /** @class */ (function () {
+        var Layer = (function () {
             function Layer() {
             }
             return Layer;
@@ -17878,7 +17792,7 @@ var feng3d;
          * 材质
          * @author warden_feng 2014-6-26
          */
-        var Material = /** @class */ (function () {
+        var Material = (function () {
             function Material() {
                 /** 材质层列表 */
                 this.layers = [];
@@ -17890,7 +17804,7 @@ var feng3d;
          * 模型信息
          * @author warden_feng 2014-6-26
          */
-        var Model = /** @class */ (function () {
+        var Model = (function () {
             function Model() {
             }
             return Model;
@@ -17900,7 +17814,7 @@ var feng3d;
          *
          * @author warden_feng 2014-6-26
          */
-        var Rotation = /** @class */ (function () {
+        var Rotation = (function () {
             function Rotation() {
             }
             return Rotation;
@@ -17910,7 +17824,7 @@ var feng3d;
      *
      * @author warden_feng 2014-6-26
      */
-        var Scaling = /** @class */ (function () {
+        var Scaling = (function () {
             function Scaling() {
             }
             return Scaling;
@@ -17920,7 +17834,7 @@ var feng3d;
          *
          * @author warden_feng 2014-6-26
          */
-        var Translation = /** @class */ (function () {
+        var Translation = (function () {
             function Translation() {
             }
             return Translation;
@@ -17936,7 +17850,7 @@ var feng3d;
          * war3模型数据
          * @author warden_feng 2014-6-28
          */
-        var War3Model = /** @class */ (function () {
+        var War3Model = (function () {
             function War3Model() {
                 /** 几何设置列表 */
                 this.geosets = [];
@@ -19323,14 +19237,16 @@ var feng3d;
         /**
          * 加载Obj模型
          */
-        load: load
+        load: load,
+        parse: parse,
     };
     /**
      * 加载资源
      * @param url   路径
      */
-    function load(url, material, completed) {
+    function load(url, completed) {
         feng3d.Loader.loadText(url, function (content) {
+            var material = new feng3d.StandardMaterial();
             var objData = feng3d.OBJParser.parser(content);
             var mtl = objData.mtl;
             if (mtl) {
@@ -19344,6 +19260,11 @@ var feng3d;
                 createObj(objData, material, null, completed);
             }
         });
+    }
+    function parse(content, completed) {
+        var material = new feng3d.StandardMaterial();
+        var objData = feng3d.OBJParser.parser(content);
+        createObj(objData, material, null, completed);
     }
     function createObj(objData, material, mtlData, completed) {
         var object = feng3d.GameObject.create();
@@ -19452,6 +19373,8 @@ var feng3d;
     feng3d.MD5Loader = {
         load: load,
         loadAnim: loadAnim,
+        parseMD5Mesh: parseMD5Mesh,
+        parseMD5Anim: parseMD5Anim,
     };
     /**
      * 加载资源
@@ -19463,11 +19386,19 @@ var feng3d;
             createMD5Mesh(objData, completed);
         });
     }
+    function parseMD5Mesh(content, completed) {
+        var objData = feng3d.MD5MeshParser.parse(content);
+        createMD5Mesh(objData, completed);
+    }
     function loadAnim(url, completed) {
         feng3d.Loader.loadText(url, function (content) {
             var objData = feng3d.MD5AnimParser.parse(content);
             createAnimator(objData, completed);
         });
+    }
+    function parseMD5Anim(content, completed) {
+        var objData = feng3d.MD5AnimParser.parse(content);
+        createAnimator(objData, completed);
     }
     function createMD5Mesh(md5MeshData, completed) {
         var object3D = feng3d.GameObject.create();
@@ -19752,7 +19683,7 @@ var feng3d;
      * 坐标系，三叉戟
      * @author feng 2017-02-06
      */
-    var Trident = /** @class */ (function (_super) {
+    var Trident = (function (_super) {
         __extends(Trident, _super);
         function Trident() {
             var _this = _super !== null && _super.apply(this, arguments) || this;

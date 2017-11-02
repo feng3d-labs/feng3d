@@ -10,17 +10,17 @@ module feng3d
 
     export interface SystemTicker
     {
-        once<K extends keyof TickerEventMap>(type: K, listener: (event: EventVO<TickerEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof TickerEventMap>(type: K, listener: (event: Event<TickerEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof TickerEventMap>(type: K, data?: TickerEventMap[K], bubbles?: boolean);
         has<K extends keyof TickerEventMap>(type: K): boolean;
-        on<K extends keyof TickerEventMap>(type: K, listener: (event: EventVO<TickerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof TickerEventMap>(type?: K, listener?: (event: EventVO<TickerEventMap[K]>) => any, thisObject?: any);
+        on<K extends keyof TickerEventMap>(type: K, listener: (event: Event<TickerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof TickerEventMap>(type?: K, listener?: (event: Event<TickerEventMap[K]>) => any, thisObject?: any);
     }
 
     /**
      * 心跳计时器
      */
-    export class SystemTicker extends Event
+    export class SystemTicker extends EventDispatcher
     {
         private _startTime = -1;
 

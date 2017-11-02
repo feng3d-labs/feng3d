@@ -62,7 +62,7 @@ module feng3d
 		 * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        addItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any, priority?: number): void;
+        addItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any, priority?: number): void;
 
         /**
 		 * 移除项事件
@@ -70,6 +70,6 @@ module feng3d
 		 * @param listener					要删除的侦听器对象。
          * @param thisObject                listener函数作用域
          */
-        removeItemEventListener(type: string, listener: (event: EventVO<any>) => void, thisObject: any): void;
+        removeItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any): void;
     }
 }

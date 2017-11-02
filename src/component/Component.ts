@@ -9,11 +9,11 @@ module feng3d
 
     export interface Component
     {
-        once<K extends keyof ComponentEventMap>(type: K, listener: (event: EventVO<ComponentEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof ComponentEventMap>(type: K, data?: ComponentEventMap[K], bubbles?: boolean);
         has<K extends keyof ComponentEventMap>(type: K): boolean;
-        on<K extends keyof ComponentEventMap>(type: K, listener: (event: EventVO<ComponentEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: EventVO<ComponentEventMap[K]>) => any, thisObject?: any);
+        on<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any);
     }
 
 	/**

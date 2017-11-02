@@ -4,14 +4,13 @@ var fs = require("fs");
 var process = require('child_process');
 
 //打包shaders
-const shaderPack = require("./ShaderPack.js");
-shaderPack.shaderPack("./");
+require("./shaderpack.js");
 
 /**
  * Watch for changes in TypeScript
  */
 watchProject([
-    "./",
+    __dirname,
 ]);
 
 function watchProject(project)
@@ -126,10 +125,7 @@ function readFile(filePath)
 
 function readTsConfig(tsconfigStr)
 {
-    //去除单行 // 注释
-    tsconfigStr = tsconfigStr.replace(/\/\/.*/g, "");
-    //去除 单行 /* */ 注释
-    tsconfigStr = tsconfigStr.replace(/\/\*.*\*\//g, "");
-    var tsconfig = JSON.parse(tsconfigStr);
+    var tsconfig;
+    eval("tsconfig=" + tsconfigStr);
     return tsconfig;
 }

@@ -178,7 +178,7 @@ module feng3d
             {
                 changeItem = event.target;
             }, null);
-            var eventDispatcher = new Event();
+            var eventDispatcher = new EventDispatcher();
             arrayList.addItem(eventDispatcher);
             eventDispatcher.dispatch("change");
             console.assert(eventDispatcher == changeItem);
@@ -199,7 +199,7 @@ module feng3d
                 changeItem = event.target;
             }
             arrayList.addItemEventListener("change", onChange, null);
-            var eventDispatcher = new Event();
+            var eventDispatcher = new EventDispatcher();
             arrayList.addItem(eventDispatcher);
             eventDispatcher.dispatch("change");
             console.assert(eventDispatcher == changeItem);

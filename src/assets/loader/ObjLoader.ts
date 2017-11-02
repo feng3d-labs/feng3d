@@ -8,17 +8,18 @@ module feng3d
         /**
          * 加载Obj模型
          */
-        load: load
+        load: load,
+        parse: parse,
     }
-
     /**
      * 加载资源
      * @param url   路径
      */
-    function load(url: string, material: Material, completed?: (object3D: GameObject) => void)
+    function load(url: string, completed?: (object3D: GameObject) => void)
     {
         Loader.loadText(url, (content: string) =>
         {
+            var material = new StandardMaterial()
             var objData = OBJParser.parser(content);
             var mtl = objData.mtl;
             if (mtl)
@@ -34,6 +35,13 @@ module feng3d
                 createObj(objData, material, null, completed);
             }
         });
+    }
+
+    function parse(content: string, completed?: (object3D: GameObject) => void)
+    {
+        var material = new StandardMaterial()
+        var objData = OBJParser.parser(content);
+        createObj(objData, material, null, completed);
     }
 
     function createObj(objData: OBJ_OBJData, material: Material, mtlData: Mtl_Mtl | null, completed?: (object3D: GameObject) => void)

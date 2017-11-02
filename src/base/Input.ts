@@ -47,7 +47,7 @@ module feng3d
 		 * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        once<K extends keyof InputEventMap>(type: K, listener: (event: EventVO<InputEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof InputEventMap>(type: K, listener: (event: Event<InputEventMap[K]>) => void, thisObject?: any, priority?: number): void;
 
         /**
 		 * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
@@ -71,7 +71,7 @@ module feng3d
 		 * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        on<K extends keyof InputEventMap>(type: K, listener: (event: EventVO<InputEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        on<K extends keyof InputEventMap>(type: K, listener: (event: Event<InputEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
 
         /**
          * 移除监听
@@ -79,14 +79,14 @@ module feng3d
 		 * @param type						事件的类型。
 		 * @param listener					要删除的侦听器对象。
          */
-        off<K extends keyof InputEventMap>(type?: K, listener?: (event: EventVO<InputEventMap[K]>) => any, thisObject?: any);
+        off<K extends keyof InputEventMap>(type?: K, listener?: (event: Event<InputEventMap[K]>) => any, thisObject?: any);
     }
 
     /**
      * 鼠标键盘输入，处理js事件中this关键字问题
      * @author feng 2016-12-19
      */
-    export class Input extends Event
+    export class Input extends EventDispatcher
     {
         clientX = 0;
         clientY = 0;

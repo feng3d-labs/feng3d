@@ -147,7 +147,7 @@ module feng3d
         /**
          * 处理鼠标移动事件
          */
-        private onMouseMove(event: EventVO<InputEvent>)
+        private onMouseMove(event: Event<InputEvent>)
         {
             var mousePoint = new Point(input.clientX, input.clientY);
 
@@ -180,7 +180,7 @@ module feng3d
         /**
 		 * 键盘按下事件
 		 */
-        private onKeydown(event: EventVO<InputEvent>): void
+        private onKeydown(event: Event<InputEvent>): void
         {
             var inputEvent: InputEvent = event.data;
             var boardKey = String.fromCharCode(inputEvent.keyCode).toLocaleLowerCase();
@@ -195,7 +195,7 @@ module feng3d
 		/**
 		 * 键盘弹起事件
 		 */
-        private onKeyup(event: EventVO<InputEvent>): void
+        private onKeyup(event: Event<InputEvent>): void
         {
             var inputEvent: InputEvent = event.data;
             var boardKey = String.fromCharCode(inputEvent.keyCode).toLocaleLowerCase();

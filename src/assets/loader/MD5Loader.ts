@@ -7,6 +7,8 @@ module feng3d
     export var MD5Loader = {
         load: load,
         loadAnim: loadAnim,
+        parseMD5Mesh: parseMD5Mesh,
+        parseMD5Anim: parseMD5Anim,
     }
 
     /**
@@ -22,6 +24,12 @@ module feng3d
         });
     }
 
+    function parseMD5Mesh(content: string, completed?: (object3D: GameObject) => void)
+    {
+        var objData = MD5MeshParser.parse(content);
+        createMD5Mesh(objData, completed);
+    }
+
     function loadAnim(url: string, completed?: (animationClip: AnimationClip) => void)
     {
         Loader.loadText(url, (content) =>
@@ -29,6 +37,12 @@ module feng3d
             var objData = MD5AnimParser.parse(content);
             createAnimator(objData, completed);
         });
+    }
+
+    function parseMD5Anim(content: string, completed?: (animationClip: AnimationClip) => void)
+    {
+        var objData = MD5AnimParser.parse(content);
+        createAnimator(objData, completed);
     }
 
     function createMD5Mesh(md5MeshData: MD5MeshData, completed?: (object3D: GameObject) => void)

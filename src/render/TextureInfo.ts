@@ -4,7 +4,7 @@ module feng3d
      * 纹理信息
      * @author feng 2016-12-20
      */
-    export abstract class TextureInfo extends Event
+    export abstract class TextureInfo extends EventDispatcher
     {
         /**
          * 纹理类型

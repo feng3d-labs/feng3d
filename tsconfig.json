@@ -13,7 +13,7 @@
         //
         "src/objectview.ts",
         //
-        "src/core/event.ts",
+        "src/core/EventDispatcher.ts",
         "src/resources/load.ts",
         //基础工具
         "src/utils/watcher.ts",

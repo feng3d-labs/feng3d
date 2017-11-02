@@ -12,18 +12,18 @@ module feng3d
 
     export interface RenderDataHolder
     {
-        once<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: EventVO<RenderDataHolderEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: Event<RenderDataHolderEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof RenderDataHolderEventMap>(type: K, data?: RenderDataHolderEventMap[K], bubbles?: boolean);
         has<K extends keyof RenderDataHolderEventMap>(type: K): boolean;
-        on<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: EventVO<RenderDataHolderEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof RenderDataHolderEventMap>(type?: K, listener?: (event: EventVO<RenderDataHolderEventMap[K]>) => any, thisObject?: any);
+        on<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: Event<RenderDataHolderEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof RenderDataHolderEventMap>(type?: K, listener?: (event: Event<RenderDataHolderEventMap[K]>) => any, thisObject?: any);
     }
 
     /**
 	 * 渲染数据拥有者
 	 * @author feng 2016-6-7
 	 */
-    export class RenderDataHolder extends Event
+    export class RenderDataHolder extends EventDispatcher
     {
         get childrenRenderDataHolder()
         {
@@ -59,7 +59,7 @@ module feng3d
             this.dispatch("renderdataChange", renderdatacollector.clearRenderDataHolderFuncs(renderDataHolder));
         }
 
-        private dispatchrenderdataChange(event: EventVO<any>)
+        private dispatchrenderdataChange(event: Event<any>)
         {
             this.dispatch(<any>event.type, event.data);
         }

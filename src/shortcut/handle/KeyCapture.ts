@@ -75,7 +75,7 @@ module feng3d
 		/**
 		 * 鼠标事件
 		 */
-		private onMouseOnce(event: EventVO<any>): void
+		private onMouseOnce(event: Event<any>): void
 		{
 			if (!shortcut.enable)
 				return;
@@ -87,7 +87,7 @@ module feng3d
 		/**
 		 * 鼠标事件
 		 */
-		private onMousewheel(event: EventVO<any>): void
+		private onMousewheel(event: Event<any>): void
 		{
 			if (!shortcut.enable)
 				return;
@@ -99,7 +99,7 @@ module feng3d
 		/**
 		 * 键盘按下事件
 		 */
-		private onKeydown(event: EventVO<any>): void
+		private onKeydown(event: Event<any>): void
 		{
 			if (!shortcut.enable)
 				return;
@@ -111,7 +111,7 @@ module feng3d
 		/**
 		 * 键盘弹起事件
 		 */
-		private onKeyup(event: EventVO<any>): void
+		private onKeyup(event: Event<any>): void
 		{
 			if (!shortcut.enable)
 				return;

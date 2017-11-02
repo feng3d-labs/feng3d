@@ -21,7 +21,7 @@ module feng3d
 	 * 摄像机镜头
 	 * @author feng 2014-10-14
 	 */
-	export abstract class LensBase extends Event
+	export abstract class LensBase extends EventDispatcher
 	{
 		/**
 		 * 最近距离

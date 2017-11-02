@@ -69,7 +69,7 @@ module feng3d
             super.dispose();
         }
 
-        private onBoundsInvalid(event: EventVO<Geometry>)
+        private onBoundsInvalid(event: Event<Geometry>)
         {
             this.gameObject.dispatch(<any>event.type, event.data);
         }

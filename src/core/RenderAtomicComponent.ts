@@ -50,7 +50,7 @@ module feng3d
             this.changefuncs.length = 0;
         }
 
-        private onrenderdataChange(event: EventVO<updaterenderDataFunc | updaterenderDataFunc[]>)
+        private onrenderdataChange(event: Event<updaterenderDataFunc | updaterenderDataFunc[]>)
         {
             this.changefuncs = this.changefuncs.concat(event.data);
         }
