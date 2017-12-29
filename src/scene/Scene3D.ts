@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
 	 * 组件事件
@@ -27,6 +27,10 @@ module feng3d
     export class Scene3D extends Component
     {
         /**
+         * 是否编辑器模式
+         */
+        iseditor = false;
+        /**
          * 背景颜色
          */
         @serialize()
@@ -37,19 +41,44 @@ module feng3d
          */
         @serialize()
         @oav()
-        ambientColor = new Color(0.4, 0.4, 0.4);
+        ambientColor = new Color(0.2, 0.2, 0.2);
+
+        /**
+         * 指定更新脚本标记，用于过滤需要调用update的脚本
+         */
+        updateScriptFlag = ScriptFlag.feng3d;
 
         /**
          * 收集组件
          */
-        collectComponents = {
-            cameras: { cls: Camera, list: new Array<Camera>() },
-            pointLights: { cls: PointLight, list: new Array<PointLight>() },
-            directionalLights: { cls: DirectionalLight, list: new Array<DirectionalLight>() },
-            skyboxs: { cls: SkyBox, list: new Array<SkyBox>() },
-            animations: { cls: Animation, list: new Array<Animation>() },
-            scripts: { cls: Script, list: new Array<Script>() },
+        collectComponents: {
+            cameras: {
+                cls: typeof Camera;
+                list: Camera[];
+            };
+            pointLights: {
+                cls: typeof PointLight;
+                list: PointLight[];
+            };
+            directionalLights: {
+                cls: typeof DirectionalLight;
+                list: DirectionalLight[];
+            };
+            skyboxs: {
+                cls: typeof SkyBox;
+                list: SkyBox[];
+            };
+            animations: {
+                cls: typeof Animation;
+                list: Animation[];
+            };
+            scripts: {
+                cls: typeof Script;
+                list: Script[];
+            };
         };
+
+        _mouseCheckObjects: { layer: number, objects: GameObject[] }[];
 
         /**
          * 构造3D场景
@@ -58,8 +87,42 @@ module feng3d
         {
             super.init(gameObject);
             gameObject["_scene"] = this;
+            this.transform.showInInspector = false;
 
-            ticker.on("enterFrame", this.onEnterFrame, this)
+            ticker.onframe(this.onEnterFrame, this)
+
+            this.initCollectComponents();
+        }
+
+        dispose()
+        {
+            ticker.offframe(this.onEnterFrame, this)
+            super.dispose();
+        }
+
+        initCollectComponents()
+        {
+            this.collectComponents = {
+                cameras: { cls: Camera, list: new Array<Camera>() },
+                pointLights: { cls: PointLight, list: new Array<PointLight>() },
+                directionalLights: { cls: DirectionalLight, list: new Array<DirectionalLight>() },
+                skyboxs: { cls: SkyBox, list: new Array<SkyBox>() },
+                animations: { cls: Animation, list: new Array<Animation>() },
+                scripts: { cls: Script, list: new Array<Script>() },
+            };
+            var _this = this;
+            collect(this.gameObject);
+
+            function collect(gameobject: GameObject)
+            {
+                gameobject["_scene"] = _this;
+                _this._addGameObject(gameobject);
+
+                gameobject.children.forEach(element =>
+                {
+                    collect(element);
+                });
+            }
         }
 
         private onEnterFrame()
@@ -71,12 +134,10 @@ module feng3d
             });
             this.collectComponents.scripts.list.forEach(element =>
             {
-                if (element.enabled)
+                if (element.enabled && (this.updateScriptFlag & element.flag))
                     element.update();
             });
         }
-
-        _mouseCheckObjects: { layer: number, objects: GameObject[] }[];
 
         update()
         {

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class Animation extends Component
     {
@@ -17,7 +17,7 @@ module feng3d
         }
         private _animation: AnimationClip
 
-        @oav({ componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } })
+        @oav({ componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: () => new AnimationClip() } })
         @serialize()
         animations: AnimationClip[] = [];
 
@@ -53,12 +53,19 @@ module feng3d
         }
         private _isplaying = false;
 
+        /**
+         * 播放速度
+         */
+        @oav()
+        @serialize()
+        playspeed = 1;
+
         private _preTime = 0;
 
         public update()
         {
             var nowTime = Date.now();
-            this.time += nowTime - this._preTime;
+            this.time += (nowTime - this._preTime) * this.playspeed;
             this._preTime = nowTime;
         }
         private num = 0;
@@ -160,7 +167,7 @@ module feng3d
         if (type == "Quaternion")
             return Quaternion.fromArray(value);
 
-        console.error(`未处理 动画数据类型 ${type}`);
+        error(`未处理 动画数据类型 ${type}`);
         throw ``;
     }
 

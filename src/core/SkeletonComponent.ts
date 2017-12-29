@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class SkeletonComponent extends Component
     {
@@ -152,7 +152,7 @@ module feng3d
                 if (!jointGameobject)
                 {
                     jointGameobject = GameObject.create(skeletonJoint.name);
-                    jointGameobject.serialize = false;
+                    jointGameobject.serializable = false;
                     parentGameobject.addChild(jointGameobject);
                 }
 

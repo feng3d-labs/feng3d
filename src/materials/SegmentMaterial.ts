@@ -1,8 +1,8 @@
-module feng3d
+namespace feng3d
 {
     export interface Uniforms
     {
-        u_segmentColor: Lazy<Color>;
+        u_segmentColor: Color;
     }
 
     /**

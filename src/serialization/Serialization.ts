@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 序列化装饰器，被装饰属性将被序列化
@@ -32,7 +32,7 @@ var SERIALIZE_KEY = "__serialize__";
     }
 });
 
-module feng3d
+namespace feng3d
 {
     export var serialization = {
         /**
@@ -115,7 +115,10 @@ module feng3d
 
     function deserialize(result: any)
     {
-        var object = _deserialize(result.value, result);
+        if (result.value)
+            var object = _deserialize(result.value, result);
+        else
+            var object = _deserialize(result);
         return object;
     }
 
@@ -136,6 +139,12 @@ module feng3d
         if (target.hasOwnProperty("serializable") && !target["serializable"])
             return undefined;
 
+        //处理方法
+        if (target.constructor === Function)
+        {
+            return { __t: "function", data: target.toString() }
+        }
+
         //处理数组
         if (target.constructor === Array)
         {
@@ -154,8 +163,10 @@ module feng3d
             {
                 if (target.hasOwnProperty(key))
                 {
-                    if (target[key] !== undefined && !(target[key] instanceof Function))
+                    if (target[key] !== undefined)
+                    {
                         object[key] = _serialize(target[key], serializeVO);
+                    }
                 }
             }
             return object;
@@ -218,6 +229,15 @@ module feng3d
             });
             return arr;
         }
+
+        //处理方法
+        if (object.__t == "function")
+        {
+            var f;
+            eval("f=" + object.data);
+            return f;
+        }
+
         //处理普通Object
         var className: string;
         if (serializeVO.compress)
@@ -247,9 +267,7 @@ module feng3d
             var property = serializableMembers[i][0];
             var objectproperty = serializeVO.compress ? i : property;
 
-            if (object[objectproperty] === undefined)
-                target[property] = _deserialize(serializableMembers[i][1], serializeVO);
-            else
+            if (object[objectproperty] !== undefined)
                 target[property] = _deserialize(object[objectproperty], serializeVO);
         }
         return target;

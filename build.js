@@ -62,7 +62,7 @@ function watchProject(project)
                     var moduledtsPath = ((path) =>
                     {
                         var paths = path.split(".");
-                        // paths.splice(-2, 0, "module");
+                        paths.splice(-2, 0, "module");
                         return paths.join(".");
                     })(outdtsFilePath);
                     writeFile(moduledtsPath, getdeclaremodule("feng3d") + "\n" + readFile(outdtsFilePath));

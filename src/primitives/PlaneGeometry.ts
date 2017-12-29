@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -20,7 +20,7 @@ module feng3d
             this._width = value;
             this.invalidateGeometry();
         }
-        private _width = 100;
+        private _width = 1;
 
         @oav()
         @serialize()
@@ -35,7 +35,7 @@ module feng3d
             this._height = value;
             this.invalidateGeometry();
         }
-        private _height = 100;
+        private _height = 1;
 
         @oav()
         @serialize()
@@ -90,10 +90,11 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(width = 100, height = 100, segmentsW = 1, segmentsH = 1, yUp = true)
+        constructor(width = 1, height = 1, segmentsW = 1, segmentsH = 1, yUp = true)
         {
             super();
 
+            this.name = "Plane";
             this.width = width;
             this.height = height;
             this.segmentsW = segmentsW;

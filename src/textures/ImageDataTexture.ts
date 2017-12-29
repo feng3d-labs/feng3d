@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class ImageDataTexture extends TextureInfo
     {
@@ -12,14 +12,12 @@ module feng3d
             this._pixels = value;
         }
 
-        private _pixels: ImageData;
+        protected _pixels: ImageData;
 
-        /**
-         * 初始化纹理
-         */
-        protected initTexture(gl: GL)
+        constructor()
         {
-            gl.texImage2D(this._textureType, 0, this._format, this._format, this._type, this._pixels);
+            super();
+            this._textureType = TextureType.TEXTURE_2D;
         }
 
         /**

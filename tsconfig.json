@@ -13,16 +13,22 @@
         //
         "src/objectview.ts",
         //
-        "src/core/EventDispatcher.ts",
+        "src/debug/debug.ts",
+        //
+        "src/event/EventDispatcher.ts",
+        "src/event/EventProxy.ts",
         "src/resources/load.ts",
         //基础工具
         "src/utils/watcher.ts",
+        "src/utils/dataTransform.ts",
         "src/utils/ClassUtils.ts",
         "src/utils/ObjectUtils.ts",
         "src/utils/StringUtils.ts",
         "src/utils/numberutils.ts",
         "src/utils/Map.ts",
+        "src/utils/GUID.ts",
         "src/utils/Decorators.ts",
+        "src/serialization/RawData.ts",
         "src/serialization/serialization.ts",
         "src/utils/Stats.ts",
         //
@@ -44,11 +50,10 @@
         "src/mathlib/PlaneClassification.ts",
         "src/mathlib/Color.ts",
         //
-        "src/sys/SystemTicker.ts",
+        "src/utils/ticker.ts",
         "src/utils/Timer.ts",
-        //
-        "src/base/Input.ts",
         //快捷键模块
+        "src/shortcut/Keyboard.ts",
         "src/shortcut/handle/KeyCapture.ts",
         "src/shortcut/handle/KeyState.ts",
         "src/shortcut/handle/ShortCutCapture.ts",
@@ -59,21 +64,37 @@
         "src/net/LoaderEvent.ts",
         "src/net/LoaderDataFormat.ts",
         //
+        "src/render/gl/enums/RenderMode.ts",
+        "src/render/gl/enums/TextureType.ts",
+        "src/render/gl/enums/BlendEquation.ts",
+        "src/render/gl/enums/BlendFactor.ts",
+        "src/render/gl/enums/CullFace.ts",
+        "src/render/gl/enums/FrontFace.ts",
+        "src/render/gl/enums/TextureFormat.ts",
+        "src/render/gl/enums/TextureDataType.ts",
+        "src/render/gl/enums/TextureMinFilter.ts",
+        "src/render/gl/enums/TextureMagFilter.ts",
+        "src/render/gl/enums/TextureWrap.ts",
+        "src/render/gl/enums/AttributeDataType.ts",
+        "src/render/gl/enums/DepthFunc.ts",
         "src/render/gl/webglExt.ts",
         "src/render/gl/webgl2.ts",
         "src/render/gl/GLInterface.ts",
         "src/render/gl/GL.ts",
+        "src/render/gl/GLAdvanced.ts",
         "src/render/gl/GLExtension.ts",
         "src/render/gl/GLProgramExtension.ts",
+        "src/render/gl/WebGLCapabilities.ts",
+        "src/render/gl/GLEnum.ts",
         //
         "src/render/data/Uniform.ts",
         "src/render/data/Shader.ts",
-        "src/render/data/ShaderParams.ts",
+        "src/render/data/RenderParams.ts",
         "src/render/data/RenderAtomic.ts",
         "src/render/data/Index.ts",
         "src/render/data/Attribute.ts",
         "src/render/shader/Macro.ts",
-        "src/render/TextureInfo.ts",
+        "src/render/data/TextureInfo.ts",
         "src/render/data/renderdatacollector.ts",
         //
         "src/render/data/RenderDataHolder.ts",
@@ -182,12 +203,15 @@
         "src/animators/particle/ParticleVelocity.ts",
         "src/animators/particle/ParticleColor.ts",
         "src/animators/particle/ParticleBillboard.ts",
-        "src/animators/particle/ParticleAnimationSet.ts",
         "src/animators/particle/ParticleAnimator.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
         //
         "src/animation/Animation.ts",
+        //
+        "src/assets/assets.ts",
+        "src/assets/storage.ts",
+        "src/assets/indexedDBfs.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MtlParser.ts",
@@ -203,7 +227,6 @@
         "src/assets/loader/mdlLoader.ts",
         //
         "src/debug/Trident.ts",
-        "src/debug/debug.ts",
         //
         "src/utils/GameObjectFactory.ts",
         "src/utils/GameObjectUtil.ts",

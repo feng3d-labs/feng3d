@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class EulerTest
     {
@@ -29,7 +29,7 @@ module feng3d
         //         euler.rotate(Vector3D.X_AXIS, rotation.x);
         //         euler.rotate(Vector3D.Y_AXIS, rotation.y);
         //         euler.rotate(Vector3D.Z_AXIS, rotation.z);
-        //         console.assert(euler.equals(rotation, 0.01));
+        //         assert(euler.equals(rotation, 0.01));
         //     }
         // }
 
@@ -43,7 +43,7 @@ module feng3d
         //         euler.rotate(axis, angle);
         //         rotateMatrix3d.appendRotation(axis, angle);
         //         var eulerMatrix3d = euler.toMatrix3D();
-        //         console.assert(eulerMatrix3d.equals(rotateMatrix3d));
+        //         assert(eulerMatrix3d.equals(rotateMatrix3d));
         //     }
         // }
 
@@ -59,7 +59,7 @@ module feng3d
         //         var resultRotation2 = new Vector3D();
         //         euler.transformRotation(randomRotation, resultRotation1);
         //         rotateMatrix3d.transformRotation(randomRotation, resultRotation2);
-        //         console.assert(resultRotation1.equals(resultRotation2));
+        //         assert(resultRotation1.equals(resultRotation2));
         //     }
         // }
 
@@ -76,7 +76,7 @@ module feng3d
         //         rotateMatrix3d.append(Matrix3D.fromRotation(changeRotation));
 
         //         var eulerMatrix3d = euler.toMatrix3D();
-        //         console.assert(eulerMatrix3d.equals(rotateMatrix3d));
+        //         assert(eulerMatrix3d.equals(rotateMatrix3d));
         //     }
         // }
 
@@ -90,18 +90,18 @@ module feng3d
         //         euler.rotate(Vector3D.X_AXIS, rotation.x);
         //         euler.rotate(Vector3D.Y_AXIS, rotation.y);
         //         euler.rotate(Vector3D.Z_AXIS, rotation.z);
-        //         console.assert(euler.equals(rotation, 0.001));
+        //         assert(euler.equals(rotation, 0.001));
 
         //         euler.rotate(Vector3D.Z_AXIS, -rotation.z);
         //         euler.rotate(Vector3D.Y_AXIS, -rotation.y);
         //         euler.rotate(Vector3D.X_AXIS, -rotation.x);
-        //         console.assert(euler.equals(new Vector3D()));
+        //         assert(euler.equals(new Vector3D()));
 
         //         var euler1 = new Euler();
         //         euler1.rotate(Vector3D.X_AXIS, rotation.x);
         //         euler1.rotate(Vector3D.Y_AXIS, rotation.y);
         //         euler1.rotate(Vector3D.Z_AXIS, rotation.z);
-        //         console.assert(euler1.equals(rotation, 0.001));
+        //         assert(euler1.equals(rotation, 0.001));
 
         //         var euler2 = new Euler();
         //         euler2.rotate(Vector3D.Z_AXIS, -rotation.z);
@@ -110,7 +110,7 @@ module feng3d
 
         //         var mergeEuler = euler1.clone();
         //         mergeEuler.append(euler2);
-        //         console.assert(mergeEuler.equals(new Vector3D()));
+        //         assert(mergeEuler.equals(new Vector3D()));
 
         //         // euler.copyFrom(rotation);
         //         // var inverteuler = euler.clone();
@@ -118,7 +118,7 @@ module feng3d
 
         //         // var result = euler.clone();
         //         // result.append(inverteuler);
-        //         // console.assert(result.equals(new Vector3D(), 0.0001));
+        //         // assert(result.equals(new Vector3D(), 0.0001));
 
         //         var euler = new Euler(0, 0, 0);
         //         euler.append(new Euler().rotate(Vector3D.X_AXIS, rotation.x));
@@ -128,7 +128,7 @@ module feng3d
         //         euler1.append(new Euler().rotate(Vector3D.Z_AXIS, rotation.z));
 
         //         euler.append(euler1);
-        //         console.assert(euler.equals(rotation, 0.0001));
+        //         assert(euler.equals(rotation, 0.0001));
 
         //     }
         // }
@@ -158,10 +158,10 @@ module feng3d
         //         var euler = new Euler(rotation);
         //         euler.append(changeEuler);
         //         euler.appendInvert(changeEuler);
-        //         console.assert(euler.equals(rotation, 0.001));
+        //         assert(euler.equals(rotation, 0.001));
 
         //         euler.appendInvert(euler);
-        //         console.assert(euler.equals(new Vector3D()));
+        //         assert(euler.equals(new Vector3D()));
         //     }
         // }
 
@@ -180,10 +180,10 @@ module feng3d
         //         var matrix3d1 = scalematrix3d.clone().append(rotationmatrix3d);
         //         var matrix3d2 = rotationmatrix3d.clone().append(scalematrix3d);
 
-        //         console.log(matrix3d1.decompose()[2])
-        //         console.log(matrix3d2.decompose()[2])
+        //         log(matrix3d1.decompose()[2])
+        //         log(matrix3d2.decompose()[2])
 
-        //         console.assert(matrix3d1.equals(matrix3d2));
+        //         assert(matrix3d1.equals(matrix3d2));
         //     }
         // }
 
@@ -202,9 +202,9 @@ module feng3d
         //         // matrix3d2.appendRotation(matrix3d2.right, rotation.x);
         //         // matrix3d2.appendRotation(matrix3d2.forward, rotation.z);
 
-        //         // console.assert(matrix3d1.equals(matrix3d2));
+        //         // assert(matrix3d1.equals(matrix3d2));
 
-        //         // console.log(rotation, matrix3d1.decompose()[1].scaleBy(180 / Math.PI));
+        //         // log(rotation, matrix3d1.decompose()[1].scaleBy(180 / Math.PI));
         //     }
         // }
     }

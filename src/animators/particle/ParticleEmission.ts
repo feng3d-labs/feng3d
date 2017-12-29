@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 粒子发射器
@@ -9,11 +9,15 @@ module feng3d
         /**
          * 发射率，每秒发射粒子数量
          */
+        @oav()
+        @serialize()
         rate = 10;
 
         /**
          * 爆发，在time时刻额外喷射particles粒子
          */
+        @oav({ componentParam: { defaultItem: () => { return { time: 0, particles: 30 } } } })
+        @serialize()
         bursts: { time: number, particles: number }[] = [];
 
         isDirty = true;

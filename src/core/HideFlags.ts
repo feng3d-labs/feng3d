@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * Bit mask that controls object destruction, saving and visibility in inspectors.

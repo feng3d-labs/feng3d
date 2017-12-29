@@ -1,4 +1,9 @@
-module feng3d
+interface HTMLCanvasElement
+{
+    gl: feng3d.GL;
+}
+
+namespace feng3d
 {
 
     /**
@@ -8,7 +13,7 @@ module feng3d
     export class Engine
     {
         //
-        gl: GL;
+        canvas: HTMLCanvasElement;
         /**
          * 摄像机
          */
@@ -20,12 +25,22 @@ module feng3d
         /**
          * 根节点
          */
-        root: GameObject;
-
-        get canvas()
+        get root()
         {
-            return this.gl.canvas;
+            return this.scene.gameObject;
         }
+
+        get gl()
+        {
+            if (!this.canvas.gl)
+                this.canvas.gl = GL.getGL(this.canvas);
+            return this.canvas.gl;
+        }
+
+        /**
+         * 渲染对象标记，用于过滤渲染对象
+         */
+        renderObjectflag = GameObjectFlag.feng3d;
 
         /**
          * 渲染环境
@@ -33,19 +48,29 @@ module feng3d
         private renderContext: RenderContext;
 
         /**
+         * 鼠标事件管理
+         */
+        mouse3DManager: Mouse3DManager;
+
+        /**
          * 鼠标在3D视图中的位置
          */
         get mousePos()
         {
-            return new Point(input.clientX - this.gl.canvas.clientLeft, input.clientY - this.gl.canvas.clientTop);
+            return new Point(windowEventProxy.clientX - this.canvas.clientLeft, windowEventProxy.clientY - this.canvas.clientTop);
         }
 
         get mouseinview()
         {
-            return this.viewRect.contains(input.clientX, input.clientY);
+            return this.viewRect.contains(windowEventProxy.clientX, windowEventProxy.clientY);
         }
 
-        viewRect: Rectangle;
+        get viewRect()
+        {
+            var clientRect = this.canvas.getBoundingClientRect();
+            var viewRect = new Rectangle(clientRect.left, clientRect.top, clientRect.width, clientRect.height);
+            return viewRect;
+        }
 
         /**
          * 构建3D视图
@@ -59,32 +84,34 @@ module feng3d
             {
                 canvas = document.createElement("canvas");
                 canvas.id = "glcanvas";
+                canvas.style.position = "fixed";
+                canvas.style.left = "0px";
+                canvas.style.top = "0px";
                 canvas.style.width = "100%";
                 canvas.style.height = "100%";
                 document.body.appendChild(canvas);
             }
+            debuger && assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
 
-            debuger && console.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
-
-            this.gl = getGL(canvas);
+            this.canvas = canvas;
 
             this.scene = scene || GameObject.create("scene").addComponent(Scene3D);
             this.camera = camera || GameObject.create("camera").addComponent(Camera);
-            this.root = this.scene.gameObject;
 
             this.start();
 
             this.renderContext = new RenderContext();
+            this.mouse3DManager = new Mouse3DManager(canvas);
         }
 
         start()
         {
-            ticker.on("enterFrame", this.update, this);
+            ticker.onframe(this.update, this);
         }
 
         stop()
         {
-            ticker.off("enterFrame", this.update, this);
+            ticker.offframe(this.update, this);
         }
 
         update()
@@ -97,46 +124,49 @@ module feng3d
          */
         render()
         {
+            if (!this.scene)
+                return;
             this.scene.update();
 
-            this.gl.canvas.width = this.gl.canvas.clientWidth;
-            this.gl.canvas.height = this.gl.canvas.clientHeight;
+            this.canvas.width = this.canvas.clientWidth;
+            this.canvas.height = this.canvas.clientHeight;
 
             this.renderContext.camera = this.camera;
             this.renderContext.scene3d = this.scene;
             this.renderContext.gl = this.gl;
 
-            var clientRect = this.gl.canvas.getBoundingClientRect();
-            this.viewRect = new Rectangle(clientRect.left, clientRect.top, clientRect.width, clientRect.height);
-            this.camera.viewRect = this.viewRect;
-            this.camera.lens.aspectRatio = this.viewRect.width / this.viewRect.height;
+            var viewRect = this.viewRect;
+
+            this.camera.viewRect = viewRect;
+            this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
-            mouse3DManager.draw(this.scene, this.camera, this.viewRect);
+            this.mouse3DManager.draw(this.scene, this.camera, viewRect);
 
             //绘制阴影图
             // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
 
-            init(this.renderContext.gl, this.renderContext.scene3d, this.viewRect);
+            init(this.gl, this.scene);
 
-            skyboxRenderer.draw(this.renderContext, this.viewRect);
+            skyboxRenderer.draw(this.gl, this.scene, this.camera, this.renderObjectflag);
 
             // 默认渲染
-            var forwardresult = forwardRenderer.draw(this.renderContext, this.viewRect);
+            var forwardresult = forwardRenderer.draw(this.renderContext, this.renderObjectflag);
 
-            outlineRenderer.draw(this.renderContext, this.viewRect, forwardresult.unblenditems);
+            outlineRenderer.draw(this.renderContext, forwardresult.unblenditems);
 
-            wireframeRenderer.draw(this.renderContext, this.viewRect, forwardresult.unblenditems);
+            wireframeRenderer.draw(this.renderContext, forwardresult.unblenditems);
         }
 
     }
 
-    function init(gl: GL, scene3D: Scene3D, viewRect: Rectangle)
+    function init(gl: GL, scene3D: Scene3D)
     {
         // 默认渲染
         gl.clearColor(scene3D.background.r, scene3D.background.g, scene3D.background.b, scene3D.background.a);
-        gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-        gl.viewport(0, 0, viewRect.width, viewRect.height);
-        gl.enable(GL.DEPTH_TEST);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST);
     }
 }
+
+// var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };

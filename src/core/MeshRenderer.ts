@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class MeshRenderer extends Component
     {
@@ -7,8 +7,8 @@ module feng3d
         /**
          * Returns the instantiated Mesh assigned to the mesh filter.
          */
+        @oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } })
         @serialize()
-        @oav()
         get geometry()
         {
             return this._geometry;
@@ -29,14 +29,14 @@ module feng3d
                 this._geometry.on("boundsInvalid", this.onBoundsInvalid, this);
             }
         }
-        private _geometry: Geometry;
+        private _geometry: Geometry = new CubeGeometry();
 
         /**
          * 材质
          * Returns the first instantiated Material assigned to the renderer.
          */
+        @oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } })
         @serialize()
-        @oav()
         get material() { return this._material }
         set material(value)
         {
@@ -48,7 +48,7 @@ module feng3d
             if (this._material)
                 this.addRenderDataHolder(this.material);
         }
-        private _material: Material;
+        private _material: Material = new StandardMaterial();
 
         init(gameObject: GameObject)
         {

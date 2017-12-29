@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 坐标系，三叉戟
@@ -7,18 +7,24 @@ module feng3d
     export class Trident extends Component
     {
         @oav()
-        lineLength = 100;
+        lineLength = 1;
 
         @oav()
-        arrowradius = 5;
+        arrowradius = 0.05;
 
         @oav()
-        arrowHeight = 18;
+        arrowHeight = 0.18;
+
+        tridentObject: GameObject;
 
         init(gameObject: GameObject)
         {
             super.init(gameObject);
-            this.gameObject.mouseEnabled = false;
+            var tridentObject = this.tridentObject = GameObject.create("trident");
+
+            tridentObject.mouseEnabled = false;
+            tridentObject.transform.showInInspector = false;
+            gameObject.addChild(tridentObject);
 
             this.buildTrident();
         }
@@ -33,7 +39,7 @@ module feng3d
             var meshRenderer = xLine.addComponent(MeshRenderer);
             meshRenderer.geometry = segmentGeometry;
             meshRenderer.material = new SegmentMaterial();
-            this.gameObject.addChild(xLine);
+            this.tridentObject.addChild(xLine);
             //
             var yLine = GameObject.create("yLine");
             yLine.serializable = false;
@@ -43,7 +49,7 @@ module feng3d
             meshRenderer = yLine.addComponent(MeshRenderer);
             meshRenderer.material = new SegmentMaterial();
             meshRenderer.geometry = segmentGeometry;
-            this.gameObject.addChild(yLine);
+            this.tridentObject.addChild(yLine);
             //
             var zLine = GameObject.create("zLine");
             zLine.serializable = false;
@@ -53,7 +59,7 @@ module feng3d
             meshRenderer = zLine.addComponent(MeshRenderer);
             meshRenderer.material = new SegmentMaterial();
             meshRenderer.geometry = segmentGeometry;
-            this.gameObject.addChild(zLine);
+            this.tridentObject.addChild(zLine);
             //
             var xArrow = GameObject.create("xArrow");
             xArrow.serializable = false;
@@ -64,7 +70,7 @@ module feng3d
             var material = meshRenderer.material = new ColorMaterial();
             meshRenderer.geometry = new ConeGeometry(this.arrowradius, this.arrowHeight);;
             material.color = new Color(1, 0, 0);
-            this.gameObject.addChild(xArrow);
+            this.tridentObject.addChild(xArrow);
             //
             var yArrow = GameObject.create("yArrow");
             yArrow.serializable = false;
@@ -74,7 +80,7 @@ module feng3d
             var material = meshRenderer.material = new ColorMaterial();
             meshRenderer.geometry = new ConeGeometry(this.arrowradius, this.arrowHeight);
             material.color = new Color(0, 1, 0);
-            this.gameObject.addChild(yArrow);
+            this.tridentObject.addChild(yArrow);
             //
             var zArrow = GameObject.create("zArrow");
             zArrow.serializable = false;
@@ -85,7 +91,7 @@ module feng3d
             meshRenderer.geometry = new ConeGeometry(this.arrowradius, this.arrowHeight);
             var material = meshRenderer.material = new ColorMaterial();
             material.color = new Color(0, 0, 1);
-            this.gameObject.addChild(zArrow);
+            this.tridentObject.addChild(zArrow);
         }
     }
 }

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * MD5模型加载类
@@ -15,7 +15,7 @@ module feng3d
      * 加载资源
      * @param url   路径
      */
-    function load(url: string, completed?: (object3D: GameObject) => void)
+    function load(url: string, completed?: (gameObject: GameObject) => void)
     {
         Loader.loadText(url, (content) =>
         {
@@ -24,7 +24,7 @@ module feng3d
         });
     }
 
-    function parseMD5Mesh(content: string, completed?: (object3D: GameObject) => void)
+    function parseMD5Mesh(content: string, completed?: (gameObject: GameObject) => void)
     {
         var objData = MD5MeshParser.parse(content);
         createMD5Mesh(objData, completed);
@@ -45,18 +45,18 @@ module feng3d
         createAnimator(objData, completed);
     }
 
-    function createMD5Mesh(md5MeshData: MD5MeshData, completed?: (object3D: GameObject) => void)
+    function createMD5Mesh(md5MeshData: MD5MeshData, completed?: (gameObject: GameObject) => void)
     {
-        var object3D = GameObject.create();
-        object3D.transform.rx = -90;
+        var gameObject = GameObject.create();
+        gameObject.transform.rx = -90;
 
         //顶点最大关节关联数
         var _maxJointCount = calculateMaxJointCount(md5MeshData);
-        debuger && console.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
+        debuger && assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
 
         var skeletonjoints = createSkeleton(md5MeshData.joints);
 
-        var skeletonComponent = object3D.addComponent(SkeletonComponent);
+        var skeletonComponent = gameObject.addComponent(SkeletonComponent);
         skeletonComponent.joints = skeletonjoints;
 
         for (var i = 0; i < md5MeshData.meshs.length; i++)
@@ -64,17 +64,17 @@ module feng3d
             var skinSkeleton = new SkinSkeletonTemp();
             var geometry = createGeometry(md5MeshData.meshs[i], skeletonComponent, skinSkeleton);
 
-            var skeletonObject3D = GameObject.create();
+            var skeletonGameObject = GameObject.create();
 
-            var skinnedMeshRenderer = skeletonObject3D.addComponent(SkinnedMeshRenderer);
+            var skinnedMeshRenderer = skeletonGameObject.addComponent(SkinnedMeshRenderer);
             skinnedMeshRenderer.geometry = geometry;
             skinnedMeshRenderer.material = new StandardMaterial();
             skinnedMeshRenderer.skinSkeleton = skinSkeleton;
 
-            object3D.addChild(skeletonObject3D);
+            gameObject.addChild(skeletonGameObject);
         }
 
-        completed && completed(object3D);
+        completed && completed(gameObject);
     }
 
     /**

@@ -1,6 +1,6 @@
 {
   "name": "feng3d",
-  "version": "201710.30.3",
+  "version": "201711.10.0",
   "description": "webgl 3d engine",
   "main": "out/feng3d.js",
   "types": "out/feng3d.d.ts",
@@ -9,6 +9,9 @@
     "build:w": "node build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "files": [
+    "out"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://gitee.com/feng3d/feng3d.git"
@@ -23,5 +26,5 @@
   "bugs": {
     "url": "https://gitee.com/feng3d/feng3d/issues"
   },
-  "homepage": "https://gitee.com/feng3d/feng3d#readme"
+  "homepage": "https://gitee.com/feng3d/feng3d#readme",
 }

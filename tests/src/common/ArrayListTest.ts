@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class ArrayListTest
     {
@@ -25,7 +25,7 @@ module feng3d
         {
             var arr = [1, 2];
             var arrayList = new ArrayList(arr);
-            console.assert(arr.length == arrayList.length);
+            assert(arr.length == arrayList.length);
         }
 
         /**
@@ -37,7 +37,7 @@ module feng3d
             var arrayList = new ArrayList();
             arrayList.addItem(1);
             arrayList.addItem(arr);
-            console.assert(arrayList.length == arr.length + 1);
+            assert(arrayList.length == arr.length + 1);
         }
 
         /**
@@ -53,7 +53,7 @@ module feng3d
             }
             for (var i = 0; i < 10; i++)
             {
-                console.assert(arrayList.getItemAt(i) == i);
+                assert(arrayList.getItemAt(i) == i);
             }
         }
 
@@ -70,7 +70,7 @@ module feng3d
             }
             for (var i = 0; i < 10; i++)
             {
-                console.assert(arrayList.getItemAt(i) == i);
+                assert(arrayList.getItemAt(i) == i);
             }
         }
 
@@ -87,7 +87,7 @@ module feng3d
             }
             for (var i = 0; i < 10; i++)
             {
-                console.assert(arrayList.getItemIndex(i) == i);
+                assert(arrayList.getItemIndex(i) == i);
             }
         }
 
@@ -98,9 +98,9 @@ module feng3d
         {
             var arr = [1, 2, 1, 4];
             var arrayList = new ArrayList(arr);
-            console.assert(arr.length == arrayList.length);
+            assert(arr.length == arrayList.length);
             arrayList.removeAll();
-            console.assert(0 == arrayList.length);
+            assert(0 == arrayList.length);
         }
 
         /**
@@ -115,7 +115,7 @@ module feng3d
                 var element = arr[i];
                 arrayList.removeItem(element);
             }
-            console.assert(0 == arrayList.length);
+            assert(0 == arrayList.length);
         }
 
         /**
@@ -129,7 +129,7 @@ module feng3d
             {
                 arrayList.removeItemAt(i);
             }
-            console.assert(0 == arrayList.length);
+            assert(0 == arrayList.length);
         }
 
         /**
@@ -145,7 +145,7 @@ module feng3d
             }
             for (var i = arr.length - 1; i >= 0; i--)
             {
-                console.assert(0 == arrayList.getItemAt(i));
+                assert(0 == arrayList.getItemAt(i));
             }
         }
 
@@ -159,7 +159,7 @@ module feng3d
             var arr1 = arrayList.toArray();
             for (var i = arr.length - 1; i >= 0; i--)
             {
-                console.assert(arr1[i] == arr[i]);
+                assert(arr1[i] == arr[i]);
             }
         }
 
@@ -181,7 +181,7 @@ module feng3d
             var eventDispatcher = new EventDispatcher();
             arrayList.addItem(eventDispatcher);
             eventDispatcher.dispatch("change");
-            console.assert(eventDispatcher == changeItem);
+            assert(eventDispatcher == changeItem);
         }
 
         /**
@@ -202,11 +202,11 @@ module feng3d
             var eventDispatcher = new EventDispatcher();
             arrayList.addItem(eventDispatcher);
             eventDispatcher.dispatch("change");
-            console.assert(eventDispatcher == changeItem);
+            assert(eventDispatcher == changeItem);
             changeItem = null;
             arrayList.removeItemEventListener("change", onChange, null);
             eventDispatcher.dispatch("change");
-            console.assert(null === changeItem);
+            assert(null === changeItem);
         }
     }
 }

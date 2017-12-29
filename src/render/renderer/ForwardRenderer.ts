@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -12,13 +12,13 @@ module feng3d
     /**
      * 渲染
      */
-    function draw(renderContext: RenderContext, viewRect: Rectangle)
+    function draw(renderContext: RenderContext, renderObjectflag: GameObjectFlag)
     {
         renderContext.updateRenderData1();
 
         var frustumPlanes = renderContext.camera.frustumPlanes;
 
-        var meshRenderers = collectForwardRender(renderContext.scene3d.gameObject, frustumPlanes);
+        var meshRenderers = collectForwardRender(renderContext.scene3d.gameObject, frustumPlanes, renderObjectflag);
 
         var camerapos = renderContext.camera.transform.scenePosition;
 
@@ -43,19 +43,16 @@ module feng3d
             return a.depth - b.depth;
         });
 
-        renderContext.gl.enable(GL.DEPTH_TEST);
-        renderContext.gl.depthMask(true);
+        var gl = renderContext.gl;
         for (var i = 0; i < unblenditems.length; i++)
         {
             drawRenderables(unblenditems[i].item, renderContext)
         }
 
-        renderContext.gl.depthMask(false);
         for (var i = 0; i < blenditems.length; i++)
         {
             drawRenderables(blenditems[i].item, renderContext)
         }
-        renderContext.gl.depthMask(true);
 
         return { blenditems: blenditems, unblenditems: unblenditems };
     }
@@ -67,57 +64,24 @@ module feng3d
         // try
         // {
         //绘制
-        var material = meshRenderer.material;
-        if (material.cullFace)
-        {
-            gl.enable(GL.CULL_FACE);
-            gl.cullFace(material.cullFace);
-            gl.frontFace(GL.CW);
-        } else
-        {
-            gl.disable(GL.CULL_FACE);
-        }
-
-        if (material.enableBlend)
-        {
-            //
-            gl.enable(GL.BLEND);
-            gl.blendEquation(material.blendEquation);
-            gl.blendFunc(material.sfactor, material.dfactor);
-        } else
-        {
-            gl.disable(GL.BLEND);
-        }
         var renderAtomic = meshRenderer.getComponent(RenderAtomicComponent);
-        renderdatacollector.collectRenderDataHolder(renderContext, renderAtomic);
+        renderdatacollector.collectRenderDataHolder(renderContext, renderAtomic.renderAtomic);
         renderAtomic.update();
-        drawObject3D(gl, renderAtomic);            //
+
+        gl.renderer.draw(renderAtomic.renderAtomic);
         // renderdatacollector.clearRenderDataHolder(renderContext, renderAtomic);
 
         // } catch (error)
         // {
-        //     console.log(error);
+        //     log(error);
         // }
     }
 
-    /**
-     * 绘制3D对象
-     */
-    function drawObject3D(gl: GL, renderAtomic: RenderAtomic, shader?: Shader)
-    {
-        shader = shader || renderAtomic.shader;
-        var shaderProgram = shader.activeShaderProgram(gl);
-        if (!shaderProgram)
-            return;
-        //
-        renderer.activeAttributes(renderAtomic, gl, shaderProgram.attributes);
-        renderer.activeUniforms(renderAtomic, gl, shaderProgram.uniforms);
-        renderer.dodraw(renderAtomic, gl);
-    }
-
-    function collectForwardRender(gameObject: GameObject, frustumPlanes: Plane3D[])
+    function collectForwardRender(gameObject: GameObject, frustumPlanes: Plane3D[], renderObjectflag: GameObjectFlag)
     {
         if (!gameObject.visible)
+            return [];
+        if (!(renderObjectflag & gameObject.flag))
             return [];
         var meshRenderers: MeshRenderer[] = [];
         var meshRenderer = gameObject.getComponent(MeshRenderer);
@@ -133,7 +97,7 @@ module feng3d
 
         gameObject.children.forEach(element =>
         {
-            meshRenderers = meshRenderers.concat(collectForwardRender(element, frustumPlanes));
+            meshRenderers = meshRenderers.concat(collectForwardRender(element, frustumPlanes, renderObjectflag));
         });
         return meshRenderers;
     }

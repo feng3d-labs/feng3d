@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export interface Attributes
     {
@@ -83,7 +83,7 @@ module feng3d
             When using a WebGL 2 context, the following values are available additionally:
                - gl.HALF_FLOAT: 16-bit floating point number
          */
-        type = GL.FLOAT;
+        type = GLArrayType.FLOAT;
 
         /**
          * A GLboolean specifying whether integer data values should be normalized when being casted to a float.
@@ -140,13 +140,16 @@ module feng3d
                 this.invalid = false;
                 this._value = new Float32Array(lazy.getvalue(this._data));
             }
+
+            var type = gl.enums.getGLArrayTypeValue(this.type);
+
             gl.enableVertexAttribArray(location);
             var buffer = this.getBuffer(gl);
-            gl.bindBuffer(GL.ARRAY_BUFFER, buffer);
-            gl.vertexAttribPointer(location, this.size, this.type, this.normalized, this.stride, this.offset);
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.vertexAttribPointer(location, this.size, type, this.normalized, this.stride, this.offset);
 
             //渲染时必须重置
-            gl.vertexAttribDivisor(location, this.divisor);
+            gl.advanced.vertexAttribDivisor(location, this.divisor);
         }
 
         /**
@@ -158,13 +161,15 @@ module feng3d
             if (!buffer)
             {
                 var newbuffer = gl.createBuffer();
-                if (newbuffer)
+                if (!newbuffer)
                 {
-                    buffer = newbuffer;
-                    gl.bindBuffer(GL.ARRAY_BUFFER, buffer);
-                    gl.bufferData(GL.ARRAY_BUFFER, this._value, GL.STATIC_DRAW);
-                    this._indexBufferMap.push(gl, buffer);
+                    error("createBuffer 失败！");
+                    throw "";
                 }
+                buffer = newbuffer;
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, this._value, gl.STATIC_DRAW);
+                this._indexBufferMap.set(gl, buffer);
             }
             return buffer;
         }
@@ -174,11 +179,10 @@ module feng3d
          */
         private clear()
         {
-            var gls = this._indexBufferMap.getKeys();
-            for (var i = 0; i < gls.length; i++)
+            this._indexBufferMap.forEach((value, key, map) =>
             {
-                gls[i].deleteBuffer(this._indexBufferMap.get(gls[i]))
-            }
+                key.deleteBuffer(value)
+            });
             this._indexBufferMap.clear();
         }
     }

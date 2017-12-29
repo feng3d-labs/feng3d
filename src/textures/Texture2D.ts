@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     export interface Texture2DVO
@@ -72,14 +72,6 @@ module feng3d
         {
             this.invalidate();
             this.dispatch("loaded");
-        }
-
-        /**
-         * 初始化纹理
-         */
-        protected initTexture(gl: GL)
-        {
-            gl.texImage2D(this._textureType, 0, this._format, this._format, this._type, this._pixels);
         }
 
         /**

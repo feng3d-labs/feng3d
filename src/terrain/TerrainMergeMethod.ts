@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -47,10 +47,10 @@ module feng3d
 
             this.splatMergeTexture = new Texture2D(splatMergeUrl || "");
 
-            this.splatMergeTexture.minFilter = GL.NEAREST;
-            this.splatMergeTexture.magFilter = GL.NEAREST;
-            this.splatMergeTexture.wrapS = GL.REPEAT;
-            this.splatMergeTexture.wrapT = GL.REPEAT;
+            this.splatMergeTexture.minFilter = TextureMinFilter.NEAREST;
+            this.splatMergeTexture.magFilter = TextureMagFilter.NEAREST;
+            this.splatMergeTexture.wrapS = TextureWrap.REPEAT;
+            this.splatMergeTexture.wrapT = TextureWrap.REPEAT;
 
             this.splatRepeats = splatRepeats;
             //

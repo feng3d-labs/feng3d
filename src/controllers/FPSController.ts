@@ -1,11 +1,17 @@
-module feng3d
+namespace feng3d
 {
     /**
      * FPS模式控制器
      * @author feng 2016-12-19
      */
-    export class FPSController extends Component
+    export class FPSController extends Script
     {
+        /**
+         * 加速度
+         */
+        @oav()
+        public acceleration: number;
+
         /**
          * 按键记录
          */
@@ -15,11 +21,6 @@ module feng3d
          * 按键方向字典
          */
         private keyDirectionDic;
-
-        /**
-         * 加速度
-         */
-        private acceleration: number;
 
         /**
          * 速度
@@ -44,15 +45,15 @@ module feng3d
                 return;
             if (this._auto)
             {
-                input.off("mousedown", this.onMousedown, this);
-                input.off("mouseup", this.onMouseup, this);
+                windowEventProxy.off("mousedown", this.onMousedown, this);
+                windowEventProxy.off("mouseup", this.onMouseup, this);
                 this.onMouseup();
             }
             this._auto = value;
             if (this._auto)
             {
-                input.on("mousedown", this.onMousedown, this);
-                input.on("mouseup", this.onMouseup, this);
+                windowEventProxy.on("mousedown", this.onMousedown, this);
+                windowEventProxy.on("mouseup", this.onMouseup, this);
             }
         }
 
@@ -69,11 +70,9 @@ module feng3d
             this.keyDirectionDic["q"] = new Vector3D(0, -1, 0);//下
 
             this.keyDownDic = {};
-            this.acceleration = 0.05
+            this.acceleration = 0.0005
 
             this.auto = true;
-
-            ticker.on("enterFrame", this.update, this);
         }
 
         onMousedown()
@@ -81,21 +80,24 @@ module feng3d
             this.ischange = true;
 
             this.preMousePoint = null;
+            this.mousePoint = null;
             this.velocity = new Vector3D();
             this.keyDownDic = {};
 
-            input.on("keydown", this.onKeydown, this);
-            input.on("keyup", this.onKeyup, this);
-            input.on("mousemove", this.onMouseMove, this);
+            windowEventProxy.on("keydown", this.onKeydown, this);
+            windowEventProxy.on("keyup", this.onKeyup, this);
+            windowEventProxy.on("mousemove", this.onMouseMove, this);
         }
 
         onMouseup()
         {
             this.ischange = false;
+            this.preMousePoint = null;
+            this.mousePoint = null;
 
-            input.off("keydown", this.onKeydown, this);
-            input.off("keyup", this.onKeyup, this);
-            input.off("mousemove", this.onMouseMove, this);
+            windowEventProxy.off("keydown", this.onKeydown, this);
+            windowEventProxy.off("keyup", this.onKeyup, this);
+            windowEventProxy.off("mousemove", this.onMouseMove, this);
         }
 
         /**
@@ -104,8 +106,6 @@ module feng3d
         dispose()
         {
             this.auto = false;
-
-            ticker.off("enterFrame", this.update, this);
         }
 
         /**
@@ -115,6 +115,30 @@ module feng3d
         {
             if (!this.ischange)
                 return;
+
+            if (this.mousePoint && this.preMousePoint)
+            {
+                //计算旋转
+                var offsetPoint = this.mousePoint.subtract(this.preMousePoint)
+                offsetPoint.x *= 0.15;
+                offsetPoint.y *= 0.15;
+                // this.targetObject.transform.rotate(Vector3D.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
+                // this.targetObject.transform.rotate(Vector3D.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
+
+                var matrix3d = this.transform.localToWorldMatrix;
+                matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.position);
+                var up = Vector3D.Y_AXIS;
+                if (matrix3d.up.dotProduct(up) < 0)
+                {
+                    up = up.clone();
+                    up.scaleBy(-1);
+                }
+                matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);
+                this.transform.localToWorldMatrix = matrix3d;
+                //
+                this.preMousePoint = this.mousePoint;
+                this.mousePoint = null;
+            }
 
             //计算加速度
             var accelerationVec = new Vector3D();
@@ -143,47 +167,27 @@ module feng3d
             this.transform.y += displacement.y;
             this.transform.z += displacement.z;
         }
-
+        private mousePoint: Point | null;
         /**
          * 处理鼠标移动事件
          */
-        private onMouseMove(event: Event<InputEvent>)
+        private onMouseMove(event: MouseEvent)
         {
-            var mousePoint = new Point(input.clientX, input.clientY);
+            this.mousePoint = new Point(event.clientX, event.clientY);
 
             if (this.preMousePoint == null)
             {
-                this.preMousePoint = mousePoint;
-                return;
+                this.preMousePoint = this.mousePoint;
+                this.mousePoint = null;
             }
-            //计算旋转
-            var offsetPoint = mousePoint.subtract(this.preMousePoint)
-            offsetPoint.x *= 0.15;
-            offsetPoint.y *= 0.15;
-            // this.targetObject.transform.rotate(Vector3D.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
-            // this.targetObject.transform.rotate(Vector3D.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
-
-            var matrix3d = this.transform.localToWorldMatrix;
-            matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.position);
-            var up = Vector3D.Y_AXIS;
-            if (matrix3d.up.dotProduct(up) < 0)
-            {
-                up = up.clone();
-                up.scaleBy(-1);
-            }
-            matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);
-            this.transform.localToWorldMatrix = matrix3d;
-            //
-            this.preMousePoint = mousePoint;
         }
 
         /**
 		 * 键盘按下事件
 		 */
-        private onKeydown(event: Event<InputEvent>): void
+        private onKeydown(event: KeyboardEvent): void
         {
-            var inputEvent: InputEvent = event.data;
-            var boardKey = String.fromCharCode(inputEvent.keyCode).toLocaleLowerCase();
+            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
 
@@ -195,10 +199,9 @@ module feng3d
 		/**
 		 * 键盘弹起事件
 		 */
-        private onKeyup(event: Event<InputEvent>): void
+        private onKeyup(event: KeyboardEvent): void
         {
-            var inputEvent: InputEvent = event.data;
-            var boardKey = String.fromCharCode(inputEvent.keyCode).toLocaleLowerCase();
+            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
 

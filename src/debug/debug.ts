@@ -1,43 +1,59 @@
-module feng3d
+namespace feng3d
 {
-    var oldFunction: [any, string][] = [];
-
-    debugfunc(console, "error");
-    debugfunc(console, "assert", (test?: boolean, message?: string, ...optionalParams: any[]) =>
+    /**
+     * 测试代码运行时间
+     * @param fn 被测试的方法
+     * @param labal 标签
+     */
+    export function time(fn: Function, labal?: string)
     {
-        return !test;
-    });
+        labal = labal || fn["name"] || "Anonymous function " + Math.random();
+        console.time(labal);
+        fn();
+        console.timeEnd(labal);
+    }
 
-    function debugfunc(host: any, funcname: string, debugcondition?: Function)
+    /**
+     * 断言，测试不通过时报错
+     * @param test 测试项
+     * @param message 测试失败时提示信息
+     * @param optionalParams 
+     */
+    export function assert(test?: boolean, message?: string, ...optionalParams: any[])
     {
-        oldFunction.push([host, funcname]);
+        if (!test)
+            debugger;
+        console.assert.apply(null, arguments);
+    }
 
-        var olderror = host[funcname];
-        function debug(message?: any, ...optionalParams: any[]): void
-        {
-            var argArray = [message];
-            if (optionalParams)
-            {
-                argArray = argArray.concat(optionalParams);
-            }
+    /**
+     * 输出错误
+     * @param message 错误信息
+     * @param optionalParams 
+     */
+    export function error(message?: any, ...optionalParams: any[])
+    {
+        debugger;
+        console.error.apply(null, arguments);
+    }
 
-            if (debugcondition)
-            {
-                if (debugcondition.apply(null, argArray))
-                    debugger;
-            } else
-            {
-                debugger
-            }
-            try
-            {
-                olderror.apply(null, argArray);
-            } catch (error)
-            {
-                host[funcname] = olderror;
-                console.log(`无法使用debug， 还原 ${host} ${funcname}`);
-            }
-        }
-        host[funcname] = debug;
+    /**
+     * 记录日志信息
+     * @param message 日志信息
+     * @param optionalParams 
+     */
+    export function log(message?: any, ...optionalParams: any[])
+    {
+        console.log.apply(null, arguments);
+    }
+
+    /**
+     * 警告
+     * @param message 警告信息
+     * @param optionalParams 
+     */
+    export function warn(message?: any, ...optionalParams: any[])
+    {
+        console.warn.apply(null, arguments);
     }
 }

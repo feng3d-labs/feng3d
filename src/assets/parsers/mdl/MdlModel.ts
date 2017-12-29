@@ -1,4 +1,4 @@
-module feng3d.war3
+namespace feng3d.war3
 {
 	/**
 	 * 透明度动画

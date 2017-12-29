@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
 	/**
@@ -19,7 +19,7 @@ module feng3d
 			this._radius = value;
 			this.invalidateGeometry();
 		}
-		private _radius = 50;
+		private _radius = 0.5;
 
 		@serialize()
 		@oav()
@@ -34,7 +34,7 @@ module feng3d
 			this._tubeRadius = value;
 			this.invalidateGeometry();
 		}
-		private _tubeRadius = 10;
+		private _tubeRadius = 0.1;
 
 		@serialize()
 		@oav()
@@ -89,10 +89,11 @@ module feng3d
 		 * @param segmentsT						纵向段数
 		 * @param yUp							Y轴是否朝上
 		 */
-		constructor(radius = 50, tubeRadius = 10, segmentsR = 16, segmentsT = 8, yUp = true)
+		constructor(radius = 0.5, tubeRadius = 0.1, segmentsR = 16, segmentsT = 8, yUp = true)
 		{
 			super();
 
+			this.name = "Torus";
 			this.radius = radius;
 			this.tubeRadius = tubeRadius;
 			this.segmentR = segmentsR;

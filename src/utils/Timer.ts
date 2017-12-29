@@ -27,7 +27,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
-module feng3d
+namespace feng3d
 {
 	/**
      * The Timer class is the interface to timers, which let you run code on a specified time sequence. Use the start()
@@ -214,7 +214,7 @@ module feng3d
                 return;
             this.lastCount = this.updateInterval;
             this.lastTimeStamp = Date.now();
-            ticker.on("enterFrame", this.$update, this);
+            ticker.onframe( this.$update, this);
             this._running = true;
         }
 
@@ -235,7 +235,7 @@ module feng3d
         {
             if (!this._running)
                 return;
-            ticker.on("enterFrame", this.$update, this);
+            ticker.onframe( this.$update, this);
             this._running = false;
         }
 

@@ -64,14 +64,4 @@ interface WebGLRenderingContext
      * @return created program object, or null if the creation has failed
      */
     createProgram(vshader: string, fshader: string): WebGLProgram;
-
-    /**
-     * 获取纹理各向异性过滤扩展
-     */
-    anisotropicExt: EXTTextureFilterAnisotropic;
-
-    /**
-     * 纹理各向异性过滤最大值
-     */
-    maxAnisotropy: number;
 }

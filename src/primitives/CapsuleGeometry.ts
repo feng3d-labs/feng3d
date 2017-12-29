@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -20,7 +20,7 @@ module feng3d
             this._radius = value;
             this.invalidateGeometry();
         }
-        private _radius = 50;
+        private _radius = 0.5;
 
         @serialize()
         @oav()
@@ -35,7 +35,7 @@ module feng3d
             this._height = value;
             this.invalidateGeometry();
         }
-        private _height = 100
+        private _height = 1
 
         @serialize()
         @oav()
@@ -90,9 +90,10 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(radius = 50, height = 100, segmentsW = 16, segmentsH = 15, yUp = true)
+        constructor(radius = 0.5, height = 1, segmentsW = 16, segmentsH = 15, yUp = true)
         {
             super();
+            this.name = "Capsule";
             this.radius = radius;
             this.height = height;
             this.segmentsW = segmentsW;

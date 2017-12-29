@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 粒子
@@ -6,16 +6,20 @@ module feng3d
 	 * 例如：position 对应 a_particle_position 与 #define D_a_particle_position
 	 * @author feng 2017-01-12
 	 */
-    export interface ParticleGlobal
+    export class ParticleGlobal
     {
         /**
          * 加速度
          */
-        acceleration: Vector3D | (() => Vector3D);
+        @oav()
+        @serialize()
+        acceleration = new Vector3D();
 
         /**
          * 公告牌矩阵
          */
-        billboardMatrix: Matrix3D | (() => Matrix3D);
+        @oav()
+        @serialize()
+        billboardMatrix = new Matrix3D();
     }
 }

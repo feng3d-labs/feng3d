@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     // /**
     //  * 帧缓冲对象
@@ -68,12 +68,12 @@ module feng3d
 
     //     active(gl: GL)
     //     {
-    //         gl.bindFramebuffer(GL.FRAMEBUFFER, this.framebuffer);
+    //         gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
     //     }
 
     //     deactive(gl: GL)
     //     {
-    //         gl.bindFramebuffer(GL.FRAMEBUFFER, null);
+    //         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     //     }
 
     //     clear(gl: GL)

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class ObjectBase
     {
@@ -19,7 +19,7 @@ module feng3d
 
         change()
         {
-            console.log("change", this.a, arguments);
+            log("change", this.a, arguments);
         }
     }
 
@@ -31,7 +31,7 @@ module feng3d
             base.id = Math.random();
             var resultb = serialization.serialize(base);
             var base1: ObjectBase = serialization.deserialize(resultb);
-            console.assert(base.id == base1.id);
+            assert(base.id == base1.id);
 
 
             var c = new C();
@@ -40,9 +40,9 @@ module feng3d
             c.c = Math.random();
             var result = serialization.serialize(c);
             var c1: C = serialization.deserialize(result);
-            console.assert(c.id == c1.id);
-            console.assert(c.a == c1.a);
-            console.assert(c.c == c1.c);
+            assert(c.id == c1.id);
+            assert(c.a == c1.a);
+            assert(c.c == c1.c);
         }
     }
 

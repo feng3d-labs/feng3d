@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 标记objectview对象界面类
@@ -36,20 +36,20 @@ module feng3d
 		}
 	}
 
-	// /**
-	//  * objectview类装饰器
-	//  */
-	// export function ov<K extends keyof OVComponentParam>(param: { component?: K; componentParam?: OVComponentParam[K]; })
-	// {
-	// 	return (constructor: Function) =>
-	// 	{
-	// 		if (!Object.getOwnPropertyDescriptor(constructor["property"], OBJECTVIEW_KEY))
-	// 			constructor["property"][OBJECTVIEW_KEY] = {};
-	// 		var objectview: ClassDefinition = constructor["property"][OBJECTVIEW_KEY];
-	// 		objectview.component = param.component;
-	// 		objectview.componentParam = param.componentParam;
-	// 	}
-	// }
+	/**
+	 * objectview类装饰器
+	 */
+	export function ov<K extends keyof OVComponentParam>(param: { component?: K; componentParam?: OVComponentParam[K]; })
+	{
+		return (constructor: Function) =>
+		{
+			if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
+				constructor["prototype"][OBJECTVIEW_KEY] = {};
+			var objectview: ClassDefinition = constructor["prototype"][OBJECTVIEW_KEY];
+			objectview.component = param.component;
+			objectview.componentParam = param.componentParam;
+		}
+	}
 
 	// /**
 	//  * objectview类装饰器
@@ -58,9 +58,9 @@ module feng3d
 	// {
 	// 	return (constructor: Function) =>
 	// 	{
-	// 		if (!Object.getOwnPropertyDescriptor(constructor["property"], OBJECTVIEW_KEY))
-	// 			constructor["property"][OBJECTVIEW_KEY] = {};
-	// 		var objectview: ClassDefinition = constructor["property"][OBJECTVIEW_KEY];
+	// 		if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
+	// 			constructor["prototype"][OBJECTVIEW_KEY] = {};
+	// 		var objectview: ClassDefinition = constructor["prototype"][OBJECTVIEW_KEY];
 	// 		var blockDefinitionVec: BlockDefinition[] = objectview.blockDefinitionVec = objectview.blockDefinitionVec || [];
 	// 		blockDefinitionVec.push({
 	// 			name: param.name,
@@ -78,13 +78,7 @@ module feng3d
 	{
 		return (target: any, propertyKey: string) =>
 		{
-			if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
-				target[OBJECTVIEW_KEY] = {};
-			var objectview: ClassDefinition = target[OBJECTVIEW_KEY] || {};
-			var attributeDefinitionVec: AttributeDefinition[] = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
-			attributeDefinitionVec.push({
-				name: propertyKey, block: param && param.block, component: param && param.component, componentParam: param && param.componentParam
-			});
+			addOAV(target, propertyKey, param);
 		}
 	}
 
@@ -104,9 +98,22 @@ module feng3d
 		OAVComponent: {},
 		OBVComponent: {},
 		OVComponent: {},
+		addOAV: addOAV,
+		getObjectInfo: getObjectInfo,
 	}
 
 	var OBJECTVIEW_KEY = "__objectview__";
+
+	function addOAV<K extends keyof OAVComponentParam>(target: any, propertyKey: string, param?: { block?: string; component?: K; componentParam?: OAVComponentParam[K]; })
+	{
+		if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
+			target[OBJECTVIEW_KEY] = {};
+		var objectview: ClassDefinition = target[OBJECTVIEW_KEY] || {};
+		var attributeDefinitionVec: AttributeDefinition[] = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
+		attributeDefinitionVec.push({
+			name: propertyKey, block: param && param.block, component: param && param.component, componentParam: param && param.componentParam
+		});
+	}
 
 	function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefinition: ClassDefinition)
 	{
@@ -189,7 +196,7 @@ module feng3d
 		}
 
 		var cls = objectview.OVComponent[classConfig.component];
-		console.assert(cls != null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
+		assert(cls != null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
 		var view = new cls(classConfig)
 		return view;
 	}
@@ -223,7 +230,7 @@ module feng3d
 		}
 
 		var cls = objectview.OAVComponent[attributeViewInfo.component];
-		console.assert(cls != null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
+		assert(cls != null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
 		var view = new cls(attributeViewInfo);
 		return view;
 	}
@@ -246,7 +253,7 @@ module feng3d
 		}
 
 		var cls = objectview.OBVComponent[blockViewInfo.component];
-		console.assert(cls != null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
+		assert(cls != null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
 		var view = new cls(blockViewInfo);
 		return view;
 	}
@@ -258,6 +265,17 @@ module feng3d
 	 */
 	function getObjectInfo(object: Object): ObjectViewInfo
 	{
+		if (typeof object == "string" || typeof object == "number" || typeof object == "boolean")
+		{
+			return {
+				objectAttributeInfos: [],
+				objectBlockInfos: [],
+				owner: object,
+				component: "",
+				componentParam: undefined
+			};
+		}
+
 		var classConfig = getInheritClassDefinition(object);
 
 		var objectAttributeInfos: AttributeViewInfo[] = [];
@@ -449,6 +467,8 @@ module feng3d
 		OAVComponent: {};
 		OBVComponent: {};
 		OVComponent: {};
+		addOAV<K extends keyof OAVComponentParam>(target: any, propertyKey: string, param?: { block?: string; component?: K; componentParam?: OAVComponentParam[K]; })
+		getObjectInfo(object: Object): ObjectViewInfo
 	}
 
 	export interface OAVComponentParam

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export var GameObjectFactory = {
         create: create,
@@ -144,10 +144,10 @@ module feng3d
         var material = meshRenderer.material = new StandardMaterial();
         material.renderMode = RenderMode.POINTS;
 
-        var particleAnimationSet = new ParticleAnimationSet();
-        particleAnimationSet.numParticles = 1000;
+        var particleAnimator = _particleMesh.addComponent(ParticleAnimator);
+        particleAnimator.numParticles = 1000;
         //通过函数来创建粒子初始状态
-        particleAnimationSet.generateFunctions.push({
+        particleAnimator.generateFunctions.push({
             generate: (particle) =>
             {
                 particle.birthTime = Math.random() * 5 - 5;
@@ -157,8 +157,6 @@ module feng3d
                 particle.velocity = new Vector3D(r * Math.cos(degree2), r * 2, r * Math.sin(degree2));
             }, priority: 0
         });
-        var particleAnimator = _particleMesh.addComponent(ParticleAnimator);
-        particleAnimator.animatorSet = particleAnimationSet;
         particleAnimator.cycle = 10;
         return _particleMesh;
     }

@@ -1,7 +1,10 @@
-module feng3d
+namespace feng3d
 {
     export class BoundingComponent extends Component
     {
+        showInInspector = false;
+        serializable = false;
+
         private _bounds: IBounding | null;
         private _worldBounds: IBounding | null;
 

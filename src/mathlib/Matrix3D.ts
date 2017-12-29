@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -186,7 +186,7 @@ module feng3d
         static fromRotation(rx: number, ry: number, rz: number): Matrix3D
         /**
          * 创建旋转矩阵
-         * @param   degrees         角度
+         * @param   euler         角度（角度值）
          */
         static fromRotation(euler: { x: number, y: number, z: number }): Matrix3D
         static fromRotation()
@@ -316,7 +316,7 @@ module feng3d
             this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
             this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
 
-            debuger && console.assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
+            debuger && assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
 
             return this;
         }
@@ -676,7 +676,7 @@ module feng3d
 
             if (!invertable)
             {
-                console.error("无法获取逆矩阵");
+                error("无法获取逆矩阵");
                 return this;
             }
             d = 1 / d;

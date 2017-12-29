@@ -11,7 +11,7 @@ interface Element
     style: { display }
 }
 
-module feng3d
+namespace feng3d
 {
     export class Stats
     {
@@ -24,7 +24,7 @@ module feng3d
                 parent = parent || document.body;
                 parent.appendChild(this.instance.dom);
             }
-            ticker.on("enterFrame", this.instance.update, this.instance);
+            ticker.onframe( this.instance.update, this.instance);
         }
 
         REVISION: number;
@@ -142,7 +142,7 @@ module feng3d
             var context0 = canvas.getContext('2d');
             if (context0 == null)
             {
-                console.log(`无法创建 CanvasRenderingContext2D `);
+                log(`无法创建 CanvasRenderingContext2D `);
                 return;
             }
             var context = context0;

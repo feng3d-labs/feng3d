@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -43,6 +43,6 @@ module feng3d
         /**
          * 
          */
-        u_color: Color | (() => Color);
+        u_color: Color;
     }
 }

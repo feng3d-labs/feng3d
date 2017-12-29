@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export interface GeometryEventMap extends RenderDataHolderEventMap
     {
@@ -25,6 +25,11 @@ module feng3d
      */
     export abstract class Geometry extends Feng3dObject
     {
+        /**
+         * 网格名称
+         */
+        name: string;
+
         /**
          * 顶点索引缓冲
          */
@@ -75,6 +80,8 @@ module feng3d
                 this._invalids.a_normal = true;
             if (!this._attributes.a_tangent)
                 this._invalids.a_tangent = true;
+
+            this.createIndexBuffer(() => this.indices);
         }
 
         /**

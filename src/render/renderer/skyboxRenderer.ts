@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export var skyboxRenderer = {
         draw: draw
@@ -38,49 +38,42 @@ module feng3d
             renderAtomic.shader.vertexCode = ShaderLib.getShaderCode("skybox.vertex");
             renderAtomic.shader.fragmentCode = ShaderLib.getShaderCode("skybox.fragment")
             //
-            renderAtomic.shader.shaderParams.renderMode = RenderMode.TRIANGLES;
+            renderAtomic.renderParams.renderMode = RenderMode.TRIANGLES;
+            renderAtomic.renderParams.enableBlend = false;
+            renderAtomic.renderParams.depthMask = true;
+            renderAtomic.renderParams.depthtest = true;
+            renderAtomic.renderParams.cullFace = CullFace.NONE;
         }
     }
 
     /**
      * 渲染
      */
-    function draw(renderContext: RenderContext, viewRect: Rectangle)
+    function draw(gl: GL, scene3d: Scene3D, camera: Camera, renderObjectflag: GameObjectFlag)
     {
         init();
 
-        var skyboxs = renderContext.scene3d.collectComponents.skyboxs.list.filter((skybox) =>
+        var skyboxs = scene3d.collectComponents.skyboxs.list.filter((skybox) =>
         {
-            return skybox.gameObject.visible;
+            return skybox.gameObject.visible && (renderObjectflag & skybox.gameObject.flag);
         });
         if (skyboxs.length == 0)
             return;
         var skybox = skyboxs[0];
-        var gl = renderContext.gl;
-        gl.disable(GL.BLEND);
-        gl.depthMask(true);
-        gl.enable(GL.DEPTH_TEST);
-        gl.disable(gl.CULL_FACE);
+
         //
-        var camera = renderContext.camera;
         renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
         renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix
         renderAtomic.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
-        renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);;
+        renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
 
         //
         var skyboxRenderAtomic = skybox.getComponent(RenderAtomicComponent);
         skyboxRenderAtomic.update();
 
-        renderAtomic.uniforms.s_skyboxTexture = skyboxRenderAtomic.uniforms.s_skyboxTexture;
-        //
-        var shaderProgram = renderAtomic.shader.activeShaderProgram(gl);
-        if (!shaderProgram)
-            return;
-        //
-        renderer.activeAttributes(renderAtomic, gl, shaderProgram.attributes);
-        renderer.activeUniforms(renderAtomic, gl, shaderProgram.uniforms);
-        renderer.dodraw(renderAtomic, gl);
+        renderAtomic.uniforms.s_skyboxTexture = skyboxRenderAtomic.renderAtomic.uniforms.s_skyboxTexture;
+
+        gl.renderer.draw(renderAtomic);
     }
 
     export class SkyBox extends Component

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 轮廓渲染器
@@ -8,6 +8,7 @@ module feng3d
     };
 
     var shader: Shader;
+    var renderParams: RenderParams;
     function init()
     {
         if (!shader)
@@ -17,23 +18,26 @@ module feng3d
             shader = new Shader();
             shader.vertexCode = vertexCode;
             shader.fragmentCode = fragmentCode;
-            shader.shaderParams.renderMode = RenderMode.TRIANGLES;
+        }
+        if (!renderParams)
+        {
+            renderParams = new RenderParams();
+            renderParams.renderMode = RenderMode.TRIANGLES;
+            renderParams.enableBlend = false;
+            renderParams.depthMask = true;
+            renderParams.depthtest = true;
+            renderParams.cullFace = CullFace.FRONT;
+            renderParams.frontFace = FrontFace.CW;
         }
     }
 
-    function draw(renderContext: RenderContext, viewRect: Rectangle, unblenditems: {
+    function draw(renderContext: RenderContext, unblenditems: {
         depth: number;
         item: MeshRenderer;
         enableBlend: boolean;
     }[])
     {
         var gl = renderContext.gl;
-        gl.disable(GL.BLEND);
-        gl.depthMask(true);
-        gl.enable(GL.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(GL.FRONT);
-        gl.frontFace(GL.CW);
 
         for (var i = 0; i < unblenditems.length; i++)
         {
@@ -41,7 +45,7 @@ module feng3d
             if (item.getComponent(OutLineComponent) || item.getComponent(CartoonComponent))
             {
                 var renderAtomic = item.getComponent(RenderAtomicComponent);
-                drawObject3D(gl, renderAtomic);            //
+                drawGameObject(gl, renderAtomic.renderAtomic);            //
             }
         }
     }
@@ -49,23 +53,22 @@ module feng3d
     /**
      * 绘制3D对象
      */
-    function drawObject3D(gl: GL, renderAtomic: RenderAtomic)
+    function drawGameObject(gl: GL, renderAtomic: RenderAtomic)
     {
         init();
 
-        shader.macro = renderAtomic.shader.macro;
-        var shaderProgram = shader.activeShaderProgram(gl);
-        if (!shaderProgram)
-            return;
         var oldshader = renderAtomic.shader;
+        shader.macro = renderAtomic.shader.macro;
         renderAtomic.shader = shader;
 
-        //
-        renderer.activeAttributes(renderAtomic, gl, shaderProgram.attributes);
-        renderer.activeUniforms(renderAtomic, gl, shaderProgram.uniforms);
-        renderer.dodraw(renderAtomic, gl);
+        var oldRenderParams = renderAtomic.renderParams;
+        renderAtomic.renderParams = renderParams;
+
+        gl.renderer.draw(renderAtomic);
+
         //
         renderAtomic.shader = oldshader;
+        renderAtomic.renderParams = oldRenderParams;
     }
 
     export class OutLineComponent extends Component
@@ -98,16 +101,16 @@ module feng3d
         /**
          * 描边宽度
          */
-        u_outlineSize: Lazy<number>;
+        u_outlineSize: number;
         /**
          * 描边颜色
          */
-        u_outlineColor: Lazy<Color>;
+        u_outlineColor: Color;
         /**
          * 描边形态因子
          * (0.0，1.0):0.0表示延法线方向，1.0表示延顶点方向
          */
-        u_outlineMorphFactor: Lazy<number>;
+        u_outlineMorphFactor: number;
 
     }
 }

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export type updaterenderDataFunc = (renderData: RenderAtomic) => void;
 
@@ -41,6 +41,8 @@ module feng3d
 
         addRenderDataHolder(renderDataHolder: RenderDataHolder)
         {
+            if (!renderDataHolder) return;
+
             if (this._childrenRenderDataHolder.indexOf(renderDataHolder) != -1)
                 return;
 
@@ -98,7 +100,7 @@ module feng3d
                 });
         }
 
-        createUniformData<K extends keyof Uniforms>(name: K, data: Uniforms[K])
+        createUniformData<K extends keyof LazyUniforms>(name: K, data: LazyUniforms[K])
         {
             this.renderdataChange(
                 name,
@@ -222,16 +224,16 @@ module feng3d
             );
         }
 
-        createShaderParam<K extends keyof ShaderParams>(name: K, value: ShaderParams[K])
+        createShaderParam<K extends keyof RenderParams>(name: K, value: RenderParams[K])
         {
             this.renderdataChange(name,
                 (renderData: RenderAtomic) =>
                 {
-                    renderData.shader.shaderParams[name] = value;
+                    renderData.renderParams[name] = value;
                 },
                 (renderData: RenderAtomic) =>
                 {
-                    delete renderData.shader.shaderParams[name];
+                    delete renderData.renderParams[name];
                 }
             );
         }

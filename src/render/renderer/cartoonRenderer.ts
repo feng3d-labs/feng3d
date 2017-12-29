@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 卡通渲染
@@ -69,10 +69,10 @@ module feng3d
 
     export interface Uniforms
     {
-        u_diffuseSegment: Lazy<Vector3D>;
-        u_diffuseSegmentValue: Lazy<Vector3D>;
+        u_diffuseSegment: Vector3D;
+        u_diffuseSegmentValue: Vector3D;
 
-        u_specularSegment: Lazy<number>;
+        u_specularSegment: number;
     }
 
     /**

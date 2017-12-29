@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
 	/**
@@ -103,7 +103,7 @@ module feng3d
 
 			if (pressKeys && inWhen)
 			{
-				this.dispatchCommands(this._commands, event.data);
+				this.dispatchCommands(this._commands, event);
 				this.executeStateCommands(this._stateCommands);
 			}
 		}
@@ -111,7 +111,7 @@ module feng3d
 		/**
 		 * 派发命令
 		 */
-		private dispatchCommands(commands: string[], data: InputEvent): void
+		private dispatchCommands(commands: string[], data: Event<any>): void
 		{
 			for (var i = 0; i < commands.length; i++)
 			{

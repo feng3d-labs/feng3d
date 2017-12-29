@@ -1,6 +1,5 @@
-module feng3d
+namespace feng3d
 {
-
     /**
      * 标准材质
      * @author feng 2016-05-02
@@ -10,121 +9,50 @@ module feng3d
         /**
          * 漫反射函数
          */
+        @watch("onmethodchange")
+        @serialize()
         @oav()
-        get diffuseMethod()
-        {
-            return this._diffuseMethod;
-        }
-        set diffuseMethod(value)
-        {
-            if (this._diffuseMethod == value)
-                return;
-            super.removeMethod(this._diffuseMethod);
-            this._diffuseMethod = value;
-            super.addMethod(this._diffuseMethod);
-        }
-        private _diffuseMethod: DiffuseMethod;
+        diffuseMethod = new DiffuseMethod();
+
         /**
          * 法线函数
          */
+        @watch("onmethodchange")
+        @serialize()
         @oav()
-        get normalMethod()
-        {
-            return this._normalMethod;
-        }
-        set normalMethod(value)
-        {
-            if (this._normalMethod == value)
-                return;
-            super.removeMethod(this._normalMethod);
-            this._normalMethod = value;
-            super.addMethod(this._normalMethod);
-        }
-        private _normalMethod: NormalMethod;
+        normalMethod = new NormalMethod();
 
         /**
          * 镜面反射函数
          */
+        @watch("onmethodchange")
+        @serialize()
         @oav()
-        get specularMethod()
-        {
-            return this._specularMethod;
-        }
-        set specularMethod(value)
-        {
-            if (this._specularMethod == value)
-                return;
-            super.removeMethod(this._specularMethod);
-            this._specularMethod = value;
-            super.addMethod(this._specularMethod);
-        }
-        private _specularMethod: SpecularMethod;
+        specularMethod = new SpecularMethod();
 
         /**
          * 环境反射函数
          */
+        @watch("onmethodchange")
+        @serialize()
         @oav()
-        get ambientMethod()
-        {
-            return this._ambientMethod;
-        }
-        set ambientMethod(value)
-        {
-            if (this._ambientMethod == value)
-                return;
-            super.removeMethod(this._ambientMethod);
-            this._ambientMethod = value;
-            super.addMethod(this._ambientMethod);
-        }
-        private _ambientMethod: AmbientMethod;
+        ambientMethod = new AmbientMethod();
 
-        /**
-         * 添加方法
-         */
-        addMethod(method: RenderDataHolder)
-        {
-            if (method instanceof DiffuseMethod)
-            {
-                this.diffuseMethod = method;
-            }
-            if (method instanceof NormalMethod)
-            {
-                this.normalMethod = method;
-            }
-            if (method instanceof SpecularMethod)
-            {
-                this.specularMethod = method;
-            }
-            if (method instanceof AmbientMethod)
-            {
-                this.ambientMethod = method;
-            }
-            super.addMethod(method);
-        }
+        @watch("onmethodchange")
+        @serialize()
+        @oav()
+        envMapMethod = new EnvMapMethod();
 
-        /**
-         * 删除方法
-         */
-        removeMethod(method: RenderDataHolder)
-        {
-            if (method == this.diffuseMethod)
-            {
-                this.diffuseMethod = <any>null;
-            }
-            if (method == this.normalMethod)
-            {
-                this.normalMethod = <any>null;
-            }
-            if (method == this.specularMethod)
-            {
-                this.specularMethod = <any>null;
-            }
-            if (method == this.ambientMethod)
-            {
-                this.ambientMethod = <any>null;
-            }
-            super.removeMethod(method);
-        }
+        @watch("onmethodchange")
+        @serialize()
+        @oav()
+        fogMethod = new FogMethod();
+
+        @watch("onmethodchange")
+        @serialize()
+        @oav()
+        terrainMethod = new TerrainMethod();
+        // terrainMethod: TerrainMethod | TerrainMergeMethod;
 
         /**
          * 是否开启混合
@@ -148,16 +76,16 @@ module feng3d
             this.shaderName = "standard";
 
             //
-            this.diffuseMethod = new DiffuseMethod(diffuseUrl);
-            this.normalMethod = new NormalMethod(normalUrl);
-            this.specularMethod = new SpecularMethod(specularUrl);
-            this.ambientMethod = new AmbientMethod(ambientUrl);
+            this.diffuseMethod.difuseTexture.url = diffuseUrl;
+            this.normalMethod.normalTexture.url = normalUrl;
+            this.specularMethod.specularTexture.url = specularUrl;
+            this.ambientMethod.ambientTexture.url = ambientUrl;
         }
 
-        private onmethodchange(host, property, oldvalue)
+        private onmethodchange(property, oldvalue, newvalue)
         {
-            this.removeMethod(oldvalue);
-            this.addMethod(this[property]);
+            this.removeRenderDataHolder(oldvalue);
+            this.addRenderDataHolder(newvalue);
         }
     }
 }

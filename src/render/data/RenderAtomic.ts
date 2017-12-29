@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
@@ -10,6 +10,11 @@ module feng3d
          * 顶点索引缓冲
          */
         indexBuffer: Index;
+
+        /**
+         * 渲染参数
+         */
+        renderParams = new RenderParams();
 
         /**
          * 渲染程序
@@ -24,12 +29,12 @@ module feng3d
         /**
          * Uniform渲染数据
          */
-        uniforms: Uniforms = <any>{};
+        uniforms: LazyUniforms = <any>{};
 
         /**
          * 渲染实例数量
          */
-        instanceCount: number | (() => number);
+        instanceCount: Lazy<number>;
 
         /**
          * 可渲染条件，当所有条件值均为true是可以渲染
@@ -38,7 +43,7 @@ module feng3d
 
         constructor()
         {
-            this.uniforms
+            this.uniforms.s_ambient
         }
     }
 

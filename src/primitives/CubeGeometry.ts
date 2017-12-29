@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -7,7 +7,7 @@ module feng3d
      */
     export class CubeGeometry extends Geometry
     {
-        @serialize(100)
+        @serialize(1)
         @oav()
         get width()
         {
@@ -20,9 +20,9 @@ module feng3d
             this._width = value;
             this.invalidateGeometry();
         }
-        private _width = 100;
+        private _width = 1;
 
-        @serialize(100)
+        @serialize(1)
         @oav()
         get height()
         {
@@ -35,9 +35,9 @@ module feng3d
             this._height = value;
             this.invalidateGeometry();
         }
-        private _height = 100;
+        private _height = 1;
 
-        @serialize(100)
+        @serialize(1)
         @oav()
         get depth()
         {
@@ -50,7 +50,7 @@ module feng3d
             this._depth = value;
             this.invalidateGeometry();
         }
-        private _depth = 100;
+        private _depth = 1;
 
         @serialize(1)
         @oav()
@@ -114,18 +114,18 @@ module feng3d
 
         /**
          * 创建立方几何体
-         * @param   width           宽度，默认为100。
-         * @param   height          高度，默认为100。
-         * @param   depth           深度，默认为100。
+         * @param   width           宽度，默认为1。
+         * @param   height          高度，默认为1。
+         * @param   depth           深度，默认为1。
          * @param   segmentsW       宽度方向分割，默认为1。
          * @param   segmentsH       高度方向分割，默认为1。
          * @param   segmentsD       深度方向分割，默认为1。
          * @param   tile6           是否为6块贴图，默认true。
          */
-        constructor(width = 100, height = 100, depth = 100, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true)
+        constructor(width = 1, height = 1, depth = 1, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true)
         {
             super();
-
+            this.name = "Cube";
             this.width = width;
             this.height = height;
             this.depth = depth;

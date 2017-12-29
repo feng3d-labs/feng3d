@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -12,7 +12,7 @@ module feng3d
          */
         @oav()
         @serialize()
-        range = 600;
+        range = 10;
 
         /**
          * 构建

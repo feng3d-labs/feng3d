@@ -1,13 +1,13 @@
-module feng3d
+namespace feng3d
 {
     export class UnitTest
     {
         constructor()
         {
-            console.log(`执行单元测试`);
+            log(`执行单元测试`);
             var start = Date.now();
             this.test();
-            console.log(`通过单元测试，耗时${(Date.now() - start) / 1000}s`);
+            log(`通过单元测试，耗时${(Date.now() - start) / 1000}s`);
         }
 
         test()
@@ -31,10 +31,10 @@ module feng3d
                 return;
             }
             var classname = cls["name"];
-            console.log(`执行 ${classname} 测试`);
+            log(`执行 ${classname} 测试`);
             var start = Date.now();
             new cls();
-            console.log(`${classname} 测试通过，耗时${(Date.now() - start) / 1000}s`);
+            log(`${classname} 测试通过，耗时${(Date.now() - start) / 1000}s`);
         }
     }
 }

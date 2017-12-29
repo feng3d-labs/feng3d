@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -7,14 +7,12 @@ module feng3d
      */
     export class ObjectUtils
     {
-
-
         /**
          * 深克隆
          * @param source        源数据
          * @returns             克隆数据
          */
-        static deepClone<T>(source: T): T
+        static deepClone<T extends Object>(source: T): T
         {
             if (!(source instanceof Object))
                 return source;
@@ -30,7 +28,7 @@ module feng3d
          * 获取实例
          * @param source 实例对象
          */
-        static getInstance<T>(source: T): T
+        static getInstance<T extends Object>(source: T): T
         {
             var cls = <any>source.constructor;
             var className = ClassUtils.getQualifiedClassName(source);
@@ -51,7 +49,7 @@ module feng3d
          * @param source        源数据
          * @returns             克隆数据
          */
-        static clone<T>(source: T): T
+        static clone<T extends Object>(source: T): T
         {
             if (!(source instanceof Object))
                 return source;

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
 	/**
@@ -15,9 +15,10 @@ module feng3d
 		 * @param segmentsH
 		 * @param yUp
 		 */
-		constructor(radius = 50, height = 100, segmentsW = 16, segmentsH = 1, closed = true, yUp = true)
+		constructor(radius = 0.5, height = 1, segmentsW = 16, segmentsH = 1, closed = true, yUp = true)
 		{
 			super(0, radius, height, segmentsW, segmentsH, false, closed, true, yUp);
+			this.name = "Cone";
 		}
 	}
 }

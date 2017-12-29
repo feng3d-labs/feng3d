@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -24,7 +24,6 @@ module feng3d
         }
         private _renderMode: number;
 
-        @serialize()
         get shaderName()
         {
             return this._shaderName;
@@ -75,14 +74,15 @@ module feng3d
          * 剔除面
          * 参考：http://www.jianshu.com/p/ee04165f2a02
          * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
-         * 使用gl.frontFace(GL.CW);调整顺时针为正面
+         * 使用gl.frontFace(gl.CW);调整顺时针为正面
          */
-        @serialize(GL.BACK)
+        @serialize(CullFace.BACK)
         @oav()
-        cullFace = GL.BACK;
-        // GL.FRONT
-        // GL.BACK
-        // GL.FRONT_AND_BACK
+        cullFace = CullFace.BACK;
+
+        @serialize(FrontFace.CW)
+        @oav()
+        frontFace = FrontFace.CW;
 
         /**
          * 是否开启混合
@@ -98,6 +98,7 @@ module feng3d
         set enableBlend(value: boolean)
         {
             this._enableBlend = value;
+            this.depthMask = !value;
         }
         protected _enableBlend = false;
 
@@ -140,61 +141,47 @@ module feng3d
         dfactor = BlendFactor.ONE_MINUS_SRC_ALPHA;
 
         /**
-         * 开启深度检查
+         * 是否开启深度检查
          */
+        @serialize(true)
+        @oav()
         depthtest = true;
 
-        protected _methods: RenderDataHolder[] = [];
-
-        @serialize()
+        /**
+         * 是否开启深度标记
+         */
+        @serialize(true)
         @oav()
-        get methods()
-        {
-            return this._methods;
-        }
+        depthMask = true;
 
-        set methods(value)
-        {
-            for (var i = this._methods.length - 1; i >= 0; i--)
-            {
-                this.removeMethod(this._methods[i]);
-            }
-            for (var i = 0, n = value.length; i < n; i++)
-            {
-                this.addMethod(value[i]);
-            }
-        }
+        /**
+         * 绘制在画布上的区域
+         */
+        @oav()
+        viewRect = new Rectangle(0, 0, 100, 100);
+
+        /**
+         * 是否使用 viewRect
+         */
+        @oav()
+        useViewRect = false;
 
         constructor()
         {
             super();
-            this.renderMode = RenderMode.TRIANGLES
-        }
+            this.renderMode = RenderMode.TRIANGLES;
 
-        /**
-         * 添加方法
-         */
-        addMethod(method: RenderDataHolder)
-        {
-            if (!method)
-                return;
-            var index = this._methods.indexOf(method);
-            if (index != -1)
-                return;
-            this._methods.push(method);
-            this.addRenderDataHolder(method);
-        }
-
-        /**
-         * 删除方法
-         */
-        removeMethod(method: RenderDataHolder)
-        {
-            var index = this._methods.indexOf(method);
-            if (index == -1)
-                return;
-            this._methods.splice(index, 1);
-            this.removeRenderDataHolder(method);
+            this.createShaderParam("cullFace", () => this.cullFace);
+            this.createShaderParam("frontFace", () => this.frontFace);
+            this.createShaderParam("enableBlend", () => this.enableBlend);
+            this.createShaderParam("blendEquation", () => this.blendEquation);
+            this.createShaderParam("sfactor", () => this.sfactor);
+            this.createShaderParam("dfactor", () => this.dfactor);
+            this.createShaderParam("depthtest", () => this.depthtest);
+            this.createShaderParam("depthMask", () => this.depthMask);
+            
+            this.createShaderParam("viewRect", () => this.viewRect);
+            this.createShaderParam("useViewRect", () => this.useViewRect);
         }
     }
 }

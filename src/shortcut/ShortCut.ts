@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 初始化快捷键模块
@@ -68,7 +68,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 		 * 添加快捷键
 		 * @param shortcuts		快捷键列表
 		 */
-		addShortCuts(shortcuts: any[]): void
+		addShortCuts(shortcuts: ShortCutItem[]): void
 		{
 			for (var i = 0; i < shortcuts.length; i++)
 			{
@@ -82,7 +82,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 		 * 删除快捷键
 		 * @param shortcuts		快捷键列表
 		 */
-		removeShortCuts(shortcuts: any[]): void
+		removeShortCuts(shortcuts: ShortCutItem[]): void
 		{
 			for (var i = 0; i < shortcuts.length; i++)
 			{
@@ -146,9 +146,11 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 		/**
 		 * 获取快捷键唯一字符串
 		 */
-		private getShortcutUniqueKey(shortcut: any): string
+		private getShortcutUniqueKey(shortcut: ShortCutItem): string
 		{
-			return shortcut.key + "," + shortcut.command + "," + shortcut.when;
+			return shortcut.key + "," + shortcut.command + "," + shortcut.stateCommand + "," + shortcut.when;
 		}
 	}
+
+	export type ShortCutItem = { key: string, command?: string, stateCommand?: string, when?: string };
 }

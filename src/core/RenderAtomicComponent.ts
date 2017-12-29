@@ -1,42 +1,23 @@
-module feng3d
+namespace feng3d
 {
-    export interface RenderAtomicComponent extends RenderAtomic { }
+    // export interface RenderAtomicComponent extends RenderAtomic { }
 
     export class RenderAtomicComponent extends Component
     {
-        /**
-         * 顶点索引缓冲
-         */
-        indexBuffer: Index;
-
-        /**
-         * 渲染程序
-         */
-        shader = new Shader();
-
-        /**
-         * 属性数据列表
-         */
-        attributes: Attributes = <any>{};
-
-        /**
-         * Uniform渲染数据
-         */
-        uniforms: Uniforms = <any>{};
-
-        /**
-         * 渲染实例数量
-         */
-        instanceCount: number | (() => number);
+        showInInspector = false;
+        serializable = false;
+        
+        readonly renderAtomic = new RenderAtomic();
 
         init(gameObject: GameObject)
         {
             super.init(gameObject)
 
-            renderdatacollector.collectRenderDataHolder(this.gameObject, this);
+            renderdatacollector.collectRenderDataHolder(this.gameObject, this.renderAtomic);
 
-            this.uniforms.u_mvMatrix = () => lazy.getvalue(this.uniforms.u_modelMatrix).clone().append(lazy.getvalue(this.uniforms.u_viewMatrix));
-            this.uniforms.u_ITMVMatrix = () => lazy.getvalue(this.uniforms.u_mvMatrix).clone().invert().transpose();
+            var uniforms = this.renderAtomic.uniforms;
+            uniforms.u_mvMatrix = () => lazy.getvalue(uniforms.u_modelMatrix).clone().append(lazy.getvalue(uniforms.u_viewMatrix));
+            uniforms.u_ITMVMatrix = () => lazy.getvalue(uniforms.u_mvMatrix).clone().invert().transpose();
 
             this.gameObject.on("renderdataChange", this.onrenderdataChange, this);
         }
@@ -45,7 +26,7 @@ module feng3d
         {
             this.changefuncs.forEach(element =>
             {
-                element(this);
+                element(this.renderAtomic);
             });
             this.changefuncs.length = 0;
         }

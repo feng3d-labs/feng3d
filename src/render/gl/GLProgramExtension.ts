@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class GLProgramExtension
     {
@@ -121,7 +121,7 @@ module feng3d
                         activeInfo.uniformLocation = uniformLocation;
                     }
                 }
-                if (activeInfo.type == GL.SAMPLER_2D || activeInfo.type == GL.SAMPLER_CUBE)
+                if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE)
                 {
                     activeInfo.textureID = textureID;
                     textureID++;

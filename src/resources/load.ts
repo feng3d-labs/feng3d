@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export var loadjs = {
         load: load,
@@ -198,11 +198,11 @@ module feng3d
      * @param args.before                   加载前回调
      * @param numTries                      当前尝试次数
      */
-    function loadImage(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content) => void, args: { async?: boolean, numRetries: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries = 0)
+    function loadImage(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content) => void, args: { async?: boolean, numRetries?: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries = 0)
     {
         var image = new Image();
         image.crossOrigin = "Anonymous";
-        image.onload = image.onerror = (ev) =>
+        image.onerror = image.onload = (ev) =>
         {
             var result: string = ev.type;
 
@@ -213,6 +213,7 @@ module feng3d
                 numTries = ~~numTries + 1;
 
                 // exit function and try again
+                args.numRetries = args.numRetries || 0;
                 if (numTries < ~~args.numRetries + 1)
                 {
                     return loadImage(path, callbackFn, args, numTries);
@@ -238,10 +239,10 @@ module feng3d
      * @param args.before                   加载前回调
      * @param numTries                      当前尝试次数
      */
-    function loadTxt(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content: string) => void, args: { async?: boolean, numRetries: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries = 0)
+    function loadTxt(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content: string) => void, args: { async?: boolean, numRetries?: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries = 0)
     {
         var request = new XMLHttpRequest();
-        request.onreadystatechange = (ev: ProgressEvent) =>
+        request.onreadystatechange = (ev) =>
         {
             var result: string = ev.type;
             if (request.readyState == 4)
@@ -256,6 +257,7 @@ module feng3d
                     numTries = ~~numTries + 1;
 
                     // exit function and try again
+                    args.numRetries = args.numRetries || 0;
                     if (numTries < ~~args.numRetries + 1)
                     {
                         return loadTxt(path, callbackFn, args, numTries);
@@ -282,7 +284,7 @@ module feng3d
      * @param args.before                   加载前回调
      * @param numTries                      当前尝试次数
      */
-    function loadJsCss(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content) => void, args: { async?: boolean, numRetries: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries = 0)
+    function loadJsCss(path: { url: string, type: string }, callbackFn: (path: { url: string, type: string }, result: string, defaultPrevented: boolean, content) => void, args: { async?: boolean, numRetries?: number, before?: (path: { url: string, type: string }, e) => boolean }, numTries = 0)
     {
         var doc = document,
             isCss,
@@ -330,6 +332,7 @@ module feng3d
                 numTries = ~~numTries + 1;
 
                 // exit function and try again
+                args.numRetries = args.numRetries || 0;
                 if (numTries < ~~args.numRetries + 1)
                 {
                     return loadJsCss(path, callbackFn, args, numTries);

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export var watcher = {
         watch: watch,
@@ -10,7 +10,7 @@ module feng3d
         [property: string]: { value: any, oldPropertyDescriptor: any, handlers: { handler: (host: any, property: string, oldvalue: any) => void, thisObject: any }[] };
     }
 
-    var bindables = "__watchs__";
+    const bindables = "__watchs__";
 
     function unwatch<T extends Object>(host: T, property: keyof T, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
     {
@@ -63,12 +63,11 @@ module feng3d
                 var orgSet = data.set;
                 data.set = function (value: any)
                 {
-                    var thisobj: any = this;
-                    var oldvalue = thisobj[property];
+                    var oldvalue = this[<any>property];
                     if (oldvalue != value)
                     {
-                        orgSet && orgSet.call(thisobj, value);
-                        notifyListener(thisobj, property, oldvalue);
+                        orgSet && orgSet.call(this, value);
+                        notifyListener(this, property, oldvalue);
                     }
                 };
             }

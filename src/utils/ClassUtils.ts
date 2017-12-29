@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     var CLASS_KEY = "__class__";
 
@@ -46,7 +46,7 @@ module feng3d
                 return className;
             }
         }
-        console.error(`未在给出的命名空间 ${_classNameSpaces} 内找到 ${value} 的定义`);
+        error(`未在给出的命名空间 ${_classNameSpaces} 内找到 ${value} 的定义`);
         return "undefined";
     }
 

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * Obj模型加载类
@@ -15,7 +15,7 @@ module feng3d
      * 加载资源
      * @param url   路径
      */
-    function load(url: string, completed?: (object3D: GameObject) => void)
+    function load(url: string, completed?: (gameObject: GameObject) => void)
     {
         Loader.loadText(url, (content: string) =>
         {
@@ -37,37 +37,37 @@ module feng3d
         });
     }
 
-    function parse(content: string, completed?: (object3D: GameObject) => void)
+    function parse(content: string, completed?: (gameObject: GameObject) => void)
     {
         var material = new StandardMaterial()
         var objData = OBJParser.parser(content);
         createObj(objData, material, null, completed);
     }
 
-    function createObj(objData: OBJ_OBJData, material: Material, mtlData: Mtl_Mtl | null, completed?: (object3D: GameObject) => void)
+    function createObj(objData: OBJ_OBJData, material: Material, mtlData: Mtl_Mtl | null, completed?: (gameObject: GameObject) => void)
     {
         var object = GameObject.create();
         var objs = objData.objs;
         for (var i = 0; i < objs.length; i++)
         {
             var obj = objs[i];
-            var object3D = createSubObj(objData, obj, material, mtlData);
-            object.addChild(object3D);
+            var gameObject = createSubObj(objData, obj, material, mtlData);
+            object.addChild(gameObject);
         }
         completed && completed(object);
     }
 
     function createSubObj(objData: OBJ_OBJData, obj: OBJ_OBJ, material: Material, mtlData: Mtl_Mtl | null)
     {
-        var object3D = GameObject.create(obj.name);
+        var gameObject = GameObject.create(obj.name);
 
         var subObjs = obj.subObjs;
         for (var i = 0; i < subObjs.length; i++)
         {
             var materialObj = createMaterialObj(objData, subObjs[i], material, mtlData);
-            object3D.addChild(materialObj);
+            gameObject.addChild(materialObj);
         }
-        return object3D;
+        return gameObject;
     }
 
     var _realIndices: string[];
@@ -78,7 +78,7 @@ module feng3d
         var gameObject = GameObject.create();
         var model = gameObject.addComponent(MeshRenderer);
         model.material = material || new StandardMaterial();
-        model.material.cullFace = GL.FRONT;
+        model.material.cullFace = CullFace.FRONT;
 
         var geometry = model.geometry = new CustomGeometry();
         var vertices: number[] = [];

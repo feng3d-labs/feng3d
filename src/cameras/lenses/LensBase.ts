@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 镜头事件
@@ -26,7 +26,7 @@ module feng3d
 		/**
 		 * 最近距离
 		 */
-		private _near = 0.1;
+		private _near = 0.3;
 		@serialize()
 		@oav()
 		get near()
@@ -44,7 +44,7 @@ module feng3d
 		/**
 		 * 最远距离
 		 */
-		private _far = 10000;
+		private _far = 1000;
 		@serialize()
 		@oav()
 		get far()

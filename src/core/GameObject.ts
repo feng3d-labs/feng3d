@@ -1,16 +1,61 @@
-module feng3d
+namespace feng3d
 {
 
     export type ComponentConstructor<T> = (new () => T);
 
     export interface Mouse3DEventMap
     {
+        /**
+         * 鼠标移出对象
+         */
         mouseout
+        /**
+         * 鼠标移入对象
+         */
         mouseover
-        mousedown
-        mouseup
+        /**
+         * 鼠标在对象上移动
+         */
         mousemove
+        /**
+         * 鼠标左键按下
+         */
+        mousedown
+        /**
+         * 鼠标左键弹起
+         */
+        mouseup
+        /**
+         * 单击
+         */
         click
+        /**
+         * 鼠标中键按下
+         */
+        middlemousedown
+        /**
+         * 鼠标中键弹起
+         */
+        middlemouseup
+        /**
+         * 鼠标中键单击
+         */
+        middleclick
+        /**
+         * 鼠标右键按下
+         */
+        rightmousedown
+        /**
+         * 鼠标右键弹起
+         */
+        rightmouseup
+        /**
+         * 鼠标右键单击
+         */
+        rightclick
+        /**
+         * 鼠标双击
+         */
         dblclick
     }
 
@@ -33,12 +78,12 @@ module feng3d
          */
         removed: GameObject;
         /**
-         * 当Object3D的scene属性被设置是由Scene3D派发
+         * 当GameObject的scene属性被设置是由Scene3D派发
          */
         addedToScene: GameObject;
 
         /**
-         * 当Object3D的scene属性被清空时由Scene3D派发
+         * 当GameObject的scene属性被清空时由Scene3D派发
          */
         removedFromScene: GameObject;
         /**
@@ -73,11 +118,23 @@ module feng3d
         editor: 100
     };
 
+    export enum GameObjectFlag
+    {
+        feng3d = 1,
+        editor = 2,
+    }
+
     /**
      * Base class for all entities in feng3d scenes.
      */
     export class GameObject extends Feng3dObject
     {
+        /**
+         * 游戏对象池
+         */
+        public static pool = new Map<string, GameObject>();
+
+        private guid: string;
         protected _children: GameObject[] = [];
         protected _scene: Scene3D | null;
         protected _parent: GameObject | null;
@@ -120,6 +177,11 @@ module feng3d
         @oav()
         mouseEnabled = true;
 
+        /**
+         * 标记
+         */
+        flag = GameObjectFlag.feng3d;
+
         //------------------------------------------
         // Variables
         //------------------------------------------
@@ -150,6 +212,7 @@ module feng3d
 
         set children(value)
         {
+            if (!value) return;
             for (var i = 0, n = this._children.length; i < n; i++)
             {
                 this.removeChildAt(i)
@@ -186,11 +249,12 @@ module feng3d
             this.addComponent(Transform);
             this.addComponent(RenderAtomicComponent);
             this.addComponent(BoundingComponent);
+            this.guid = guid.create();
             //
-            GameObject._gameObjects.push(this);
+            GameObject.pool.set(this.guid, this);
         }
 
-        find(name: string)
+        find(name: string): GameObject | null
         {
             if (this.name == name)
                 return this;
@@ -328,7 +392,7 @@ module feng3d
          */
         getComponentAt(index: number): Component
         {
-            debuger && console.assert(index < this.numComponents, "给出索引超出范围");
+            debuger && assert(index < this.numComponents, "给出索引超出范围");
             return this._components[index];
         }
 
@@ -438,10 +502,10 @@ module feng3d
          */
         setComponentIndex(component: Component, index: number): void
         {
-            debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            debuger && assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
             var oldIndex = this._components.indexOf(component);
-            debuger && console.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
+            debuger && assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
 
             this._components.splice(oldIndex, 1);
             this._components.splice(index, 0, component);
@@ -467,7 +531,7 @@ module feng3d
 		 */
         removeComponent(component: Component): void
         {
-            debuger && console.assert(this.hasComponent(component), "只能移除在容器中的组件");
+            debuger && assert(this.hasComponent(component), "只能移除在容器中的组件");
 
             var index = this.getComponentIndex(component);
             this.removeComponentAt(index);
@@ -480,7 +544,7 @@ module feng3d
          */
         getComponentIndex(component: Component): number
         {
-            debuger && console.assert(this._components.indexOf(component) != -1, "组件不在容器中");
+            debuger && assert(this._components.indexOf(component) != -1, "组件不在容器中");
 
             var index = this._components.indexOf(component);
             return index;
@@ -492,7 +556,7 @@ module feng3d
          */
         removeComponentAt(index: number): Component
         {
-            debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            debuger && assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
             var component: Component = this._components.splice(index, 1)[0];
             //派发移除组件事件
@@ -510,8 +574,8 @@ module feng3d
          */
         swapComponentsAt(index1: number, index2: number): void
         {
-            debuger && console.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
-            debuger && console.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
+            debuger && assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
+            debuger && assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
 
             var temp: Component = this._components[index1];
             this._components[index1] = this._components[index2];
@@ -525,8 +589,8 @@ module feng3d
          */
         swapComponents(a: Component, b: Component): void
         {
-            debuger && console.assert(this.hasComponent(a), "第一个子组件不在容器中");
-            debuger && console.assert(this.hasComponent(b), "第二个子组件不在容器中");
+            debuger && assert(this.hasComponent(a), "第一个子组件不在容器中");
+            debuger && assert(this.hasComponent(b), "第二个子组件不在容器中");
 
             this.swapComponentsAt(this.getComponentIndex(a), this.getComponentIndex(b));
         }
@@ -548,19 +612,19 @@ module feng3d
         //------------------------------------------
         // Static Functions
         //------------------------------------------
-        private static _gameObjects: GameObject[] = [];
         /**
          * Finds a game object by name and returns it.
          * @param name 
          */
         static find(name: string)
         {
-            for (var i = 0; i < this._gameObjects.length; i++)
+            var target: GameObject | null = null;
+            this.pool.forEach(element =>
             {
-                var element = this._gameObjects[i];
-                if (element.name == name)
-                    return element;
-            }
+                if (target == null && element.name == name)
+                    target = element;
+            });
+            return target;
         }
 
         static create(name = "GameObject")
@@ -576,19 +640,19 @@ module feng3d
 		 */
         protected _components: Component[] = [];
         @serialize()
-        @oav({ component: "OAVObject3DComponentList" })
+        @oav({ component: "OAVComponentList" })
         get components()
         {
             return this._components.concat();
         }
         set components(value)
         {
-            for (var i = this._components.length - 1; i >= 0; i--)
-            {
-                this.removeComponentAt(i);
-            }
+            if (!value) return;
             for (var i = 0, n = value.length; i < n; i++)
             {
+                var compnent = value[i];
+                if (!compnent) continue;
+                this.removeComponentsByType(<any>compnent.constructor);
                 this.addComponentAt(value[i], this.numComponents);
             }
             this._transform = <any>null;
@@ -614,7 +678,7 @@ module feng3d
         {
             if (component == null)
                 return;
-            debuger && console.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
+            debuger && assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
 
             if (this.hasComponent(component))
             {
@@ -649,6 +713,7 @@ module feng3d
             {
                 this.removeComponentAt(i);
             }
+            GameObject.pool.delete(this.guid);
         }
 
         disposeWithChildren()

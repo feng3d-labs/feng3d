@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
 	/**
@@ -26,8 +26,16 @@ module feng3d
 		 * @param key 	键名称
 		 * @param data	携带数据
 		 */
-		pressKey(key: string, data: InputEvent): void
+		pressKey(key: string, data: KeyboardEvent | WheelEvent | MouseEvent): void
 		{
+			// 处理鼠标中键与右键
+			if (data instanceof MouseEvent)
+			{
+				if (["click", "mousedown", "mouseup"].indexOf(data.type) != -1)
+				{
+					key = ["", "middle", "right"][data.button] + data.type;
+				}
+			}
 			this._keyStateDic[key] = true;
 			this.dispatch(key, data);
 		}
@@ -37,8 +45,16 @@ module feng3d
 		 * @param key	键名称
 		 * @param data	携带数据
 		 */
-		releaseKey(key: string, data: InputEvent): void
+		releaseKey(key: string, data: KeyboardEvent | WheelEvent | MouseEvent): void
 		{
+			// 处理鼠标中键与右键
+			if (data instanceof MouseEvent)
+			{
+				if (["click", "mousedown", "mouseup"].indexOf(data.type) != -1)
+				{
+					key = ["", "middle", "right"][data.button] + data.type;
+				}
+			}
 			this._keyStateDic[key] = false;
 			this.dispatch(key, data);
 		}

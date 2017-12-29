@@ -1,75 +1,46 @@
-module feng3d
+namespace feng3d
 {
     export class FogMethod extends RenderDataHolder
     {
+        /**
+         * 是否生效
+         */
+        @watch("enableChanged")
+        @serialize()
+        @oav()
+        enable = false;
+
         /**
 		 * 出现雾效果的最近距离
 		 */
         @serialize()
         @oav()
-        get minDistance()
-        {
-            return this._minDistance;
-        }
-        set minDistance(value)
-        {
-            this._minDistance = value;
-        }
-        private _minDistance = 0;
+        minDistance = 0;
+
 		/**
 		 * 最远距离
 		 */
         @serialize()
         @oav()
-        get maxDistance()
-        {
-            return this._maxDistance;
-        }
-        set maxDistance(value)
-        {
-            this._maxDistance = value;
-        }
-        private _maxDistance = 100;
+        maxDistance = 100;
+
         /**
 		 * 雾的颜色
 		 */
         @serialize()
         @oav()
-        get fogColor()
-        {
-            return this._fogColor;
-        }
-        set fogColor(value)
-        {
-            this._fogColor = value;
-        }
-        private _fogColor: Color;
+        fogColor: Color;
 
         @serialize()
         @oav()
-        get density()
-        {
-            return this._density;
-        }
-        set density(value)
-        {
-            this.density = value;
-        }
-        private _density: number;
+        density: number;
+
         /**
          * 雾模式
          */
         @serialize()
         @oav()
-        get mode()
-        {
-            return this._mode;
-        }
-        set mode(value)
-        {
-            this._mode = value;
-        }
-        private _mode: FogMode;
+        mode: FogMode;
 
         /**
          * @param fogColor      雾颜色
@@ -77,22 +48,27 @@ module feng3d
          * @param maxDistance   雾远距离
          * @param density       雾浓度
          */
-        constructor(fogColor: Color = new Color(), minDistance = 0, maxDistance = 100, density = 0.1, mode = FogMode.LINEAR)
+        constructor(fogColor = new Color(), minDistance = 0, maxDistance = 100, density = 0.1, mode = FogMode.LINEAR)
         {
             super();
-            this._fogColor = fogColor;
-            this._minDistance = minDistance;
-            this._maxDistance = maxDistance;
-            this._density = density;
-            this._mode = mode;
+            this.fogColor = fogColor;
+            this.minDistance = minDistance;
+            this.maxDistance = maxDistance;
+            this.density = density;
+            this.mode = mode;
             //
-            this.createUniformData("u_fogColor", this._fogColor);
-            this.createUniformData("u_fogMinDistance", this._minDistance);
-            this.createUniformData("u_fogMaxDistance", this._maxDistance);
-            this.createUniformData("u_fogDensity", this._density);
-            this.createUniformData("u_fogMode", this._mode);
-            this.createBoolMacro("HAS_FOG_METHOD", true);
+            this.createUniformData("u_fogColor", () => this.fogColor);
+            this.createUniformData("u_fogMinDistance", () => this.minDistance);
+            this.createUniformData("u_fogMaxDistance", () => this.maxDistance);
+            this.createUniformData("u_fogDensity", () => this.density);
+            this.createUniformData("u_fogMode", () => this.mode);
+            this.createBoolMacro("HAS_FOG_METHOD", this.enable);
             this.createAddMacro("V_GLOBAL_POSITION_NEED", 1);
+        }
+
+        private enableChanged()
+        {
+            this.createBoolMacro("HAS_FOG_METHOD", this.enable);
         }
     }
 

@@ -1,8 +1,25 @@
-module feng3d
+namespace feng3d
 {
     export type Lazy<T> = T | (() => T);
 
     export var lazy = { getvalue: getvalue };
+
+    // export class Lazyy<T>
+    // {
+    //     lazy: T | (() => T);
+
+    //     get value()
+    //     {
+    //         if (typeof this.lazy == "function")
+    //             return this.lazy();
+    //         return this.lazy;
+    //     }
+
+    //     constructor(lazy: T | (() => T))
+    //     {
+    //         this.lazy = lazy;
+    //     }
+    // }
 
     function getvalue<T>(lazyItem: Lazy<T>)
     {
@@ -11,257 +28,263 @@ module feng3d
         return lazyItem;
     }
 
+    export type LazyObject<T> = {
+        [P in keyof T]: Lazy<T[P]>;
+    };
+
+    export type LazyUniforms = LazyObject<Uniforms>;
+
     export interface Uniforms
     {
         /**
          * 模型矩阵
          */
-        u_modelMatrix: Lazy<Matrix3D>;
+        u_modelMatrix: Matrix3D;
         /**
          * （view矩阵）摄像机逆矩阵
          */
-        u_viewMatrix: Lazy<Matrix3D>;
+        u_viewMatrix: Matrix3D;
         /**
          * 投影矩阵
          */
-        u_projectionMatrix: Lazy<Matrix3D>;
+        u_projectionMatrix: Matrix3D;
         /**
          * 摄像机矩阵
          */
-        u_cameraMatrix: Lazy<Matrix3D>;
+        u_cameraMatrix: Matrix3D;
         /**
          * 模型-摄像机 矩阵
          */
-        u_mvMatrix: Lazy<Matrix3D>;
+        u_mvMatrix: Matrix3D;
         /**
          * 模型逆转置矩阵,用于计算全局法线
          * 参考：http://blog.csdn.net/christina123y/article/details/5963679
          */
-        u_ITModelMatrix: Lazy<Matrix3D>;
+        u_ITModelMatrix: Matrix3D;
         /**
          * 模型-摄像机 逆转置矩阵，用于计算摄像机空间法线
          */
-        u_ITMVMatrix: Lazy<Matrix3D>;
+        u_ITMVMatrix: Matrix3D;
         /**
          * 世界投影矩阵
          */
-        u_viewProjection: Lazy<Matrix3D>;
+        u_viewProjection: Matrix3D;
 
-        u_diffuseInput: Lazy<Color>;
+        u_diffuseInput: Color;
         /**
          * 透明阈值，用于透明检测
          */
-        u_alphaThreshold: Lazy<number>;
+        u_alphaThreshold: number;
         /**
          * 漫反射贴图
          */
-        s_texture: Lazy<TextureInfo>;
+        s_texture: TextureInfo;
         /**
          * 漫反射贴图
          */
-        s_diffuse: Lazy<Texture2D>;
+        s_diffuse: Texture2D;
         /**
          * 环境贴图
          */
-        s_ambient: Lazy<Texture2D>;
+        s_ambient: Texture2D;
         /**
          * 法线贴图
          */
-        s_normal: Lazy<Texture2D>;
+        s_normal: Texture2D;
         /**
          * 镜面反射光泽图
          */
-        s_specular: Lazy<Texture2D>;
+        s_specular: Texture2D;
         /**
          * 天空盒纹理
          */
-        s_skyboxTexture: Lazy<TextureCube>;
+        s_skyboxTexture: TextureCube;
         /**
          * 天空盒尺寸
          */
-        u_skyBoxSize: Lazy<number>;
+        u_skyBoxSize: number;
 
         /**
          * 地形混合贴图
          */
-        s_blendTexture: Lazy<Texture2D>;
+        s_blendTexture: Texture2D;
 
         /**
          * 地形块贴图1
          */
-        s_splatTexture1: Lazy<Texture2D>;
+        s_splatTexture1: Texture2D;
         /**
          * 地形块贴图2
          */
-        s_splatTexture2: Lazy<Texture2D>;
+        s_splatTexture2: Texture2D;
         /**
          * 地形块贴图3
          */
-        s_splatTexture3: Lazy<Texture2D>;
+        s_splatTexture3: Texture2D;
         /**
          * 地形块混合贴图
          */
-        s_splatMergeTexture: Lazy<Texture2D>;
+        s_splatMergeTexture: Texture2D;
         /**
          * 地形块重复次数
          */
-        u_splatRepeats: Lazy<Vector3D>;
+        u_splatRepeats: Vector3D;
         /**
          * 地形混合贴图尺寸
          */
-        u_splatMergeTextureSize: Lazy<Point>;
+        u_splatMergeTextureSize: Point;
         /**
          * 图片尺寸
          */
-        u_imageSize: Lazy<Point>;
+        u_imageSize: Point;
         /**
          * 地形块尺寸
          */
-        u_tileSize: Lazy<Point>;
+        u_tileSize: Point;
         /**
          * 地形块偏移
          */
-        u_tileOffset: Lazy<Vector3D[]>;
+        u_tileOffset: Vector3D[];
         /**
          * 最大lod
          */
-        u_maxLod: Lazy<number>;
+        u_maxLod: number;
         /**
          * uv与坐标比
          */
-        u_uvPositionScale: Lazy<number>;
+        u_uvPositionScale: number;
         /**
          * lod0时在贴图中的uv缩放偏移向量
          */
-        u_lod0vec: Lazy<Vector3D>;
+        u_lod0vec: Vector3D;
         /******************************************************/
         //                  点光源
         /******************************************************/
         /**
          * 点光源位置数组
          */
-        u_pointLightPositions: Lazy<Vector3D[]>;
+        u_pointLightPositions: Vector3D[];
         /**
          * 点光源颜色数组
          */
-        u_pointLightColors: Lazy<Color[]>;
+        u_pointLightColors: Color[];
         /**
          * 点光源光照强度数组
          */
-        u_pointLightIntensitys: Lazy<number[]>;
+        u_pointLightIntensitys: number[];
         /**
          * 点光源光照范围数组
          */
-        u_pointLightRanges: Lazy<number[]>;
+        u_pointLightRanges: number[];
         /******************************************************/
         //                  方向光源
         /******************************************************/
         /**
          * 方向光源方向数组
          */
-        u_directionalLightDirections: Lazy<Vector3D[]>;
+        u_directionalLightDirections: Vector3D[];
         /**
          * 方向光源颜色数组
          */
-        u_directionalLightColors: Lazy<Color[]>;
+        u_directionalLightColors: Color[];
         /**
          * 方向光源光照强度数组
          */
-        u_directionalLightIntensitys: Lazy<number[]>;
+        u_directionalLightIntensitys: number[];
 
         /**
          * 场景环境光
          */
-        u_sceneAmbientColor: Lazy<Color>;
+        u_sceneAmbientColor: Color;
         /**
          * 基本颜色
          */
-        u_diffuse: Lazy<Color>;
+        u_diffuse: Color;
         /**
          * 镜面反射颜色
          */
-        u_specular: Lazy<Color>;
+        u_specular: Color;
         /**
          * 环境颜色
          */
-        u_ambient: Lazy<Color>;
+        u_ambient: Color;
         /**
          * 高光系数
          */
-        u_glossiness: Lazy<number>;
+        u_glossiness: number;
 
         /**
          * 反射率
          */
-        u_reflectance: Lazy<number>;
+        u_reflectance: number;
 
         /**
          * 粗糙度
          */
-        u_roughness: Lazy<number>;
+        u_roughness: number;
 
         /**
          * 金属度
          */
-        u_metalic: Lazy<number>;
+        u_metalic: number;
 
         /**
          * 粒子时间
          */
-        u_particleTime: Lazy<number>;
+        u_particleTime: number;
 
         /**
          * 点大小
          */
-        u_PointSize: Lazy<number>;
+        u_PointSize: number;
 
         /**
          * 骨骼全局矩阵
          */
-        u_skeletonGlobalMatriices: Lazy<Matrix3D[]>;
+        u_skeletonGlobalMatriices: Matrix3D[];
 
         /**
          * 3D对象编号
          */
-        u_objectID: Lazy<number>;
+        u_objectID: number;
 
         /**
          * 雾颜色
          */
-        u_fogColor: Lazy<Color>;
+        u_fogColor: Color;
         /**
          * 雾最近距离
          */
-        u_fogMinDistance: Lazy<number>;
+        u_fogMinDistance: number;
         /**
          * 雾最远距离
          */
-        u_fogMaxDistance: Lazy<number>;
+        u_fogMaxDistance: number;
         /**
          * 雾浓度
          */
-        u_fogDensity: Lazy<number>;
+        u_fogDensity: number;
         /**
          * 雾模式
          */
-        u_fogMode: Lazy<number>;
+        u_fogMode: number;
 
         /**
          * 环境反射纹理
          */
-        s_envMap: Lazy<TextureCube>;
+        s_envMap: TextureCube;
 		/**
 		 * 反射率
 		 */
-        u_reflectivity: Lazy<number>;
+        u_reflectivity: number;
         /**
          * 单位深度映射到屏幕像素值
          */
-        u_scaleByDepth: Lazy<number>;
+        u_scaleByDepth: number;
 
         /**
          * 线框颜色
          */
-        u_wireframeColor: Lazy<Color>;
+        u_wireframeColor: Color;
     }
 }

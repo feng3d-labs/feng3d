@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     export class Shader
@@ -10,11 +10,6 @@ module feng3d
 
         vertexCode: string | null;
         fragmentCode: string | null;
-
-        /**
-         * 渲染参数
-         */
-        shaderParams: ShaderParams = <any>{};
 
         get macro()
         {
@@ -38,16 +33,11 @@ module feng3d
             if (this._invalid)
             {
                 this._invalid = false;
-                var gls = this._webGLProgramMap.getKeys();
-                gls.forEach(element =>
+                this._webGLProgramMap.forEach((value, key) =>
                 {
-                    var shaderProgramTemp = this._webGLProgramMap.get(element);
-                    if (shaderProgramTemp)
-                    {
-                        shaderProgramTemp.destroy();
-                        this._webGLProgramMap.delete(element);
-                    }
+                    value.destroy();
                 });
+                this._webGLProgramMap.clear();
 
                 //应用宏
                 var shaderMacroStr = this.getMacroCode(this.macro);
@@ -61,7 +51,9 @@ module feng3d
             if (!shaderProgram)
             {
                 shaderProgram = gl.createProgram(this._resultVertexCode, this._resultFragmentCode);
-                this._webGLProgramMap.push(gl, shaderProgram);
+                if (!shaderProgram)
+                    return null;
+                this._webGLProgramMap.set(gl, shaderProgram);
                 shaderProgram.vertexCode = this._resultVertexCode;
                 shaderProgram.fragmentCode = this._resultFragmentCode;
             }

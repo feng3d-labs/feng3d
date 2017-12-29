@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -7,10 +7,6 @@ module feng3d
      */
     export class PointGeometry extends Geometry
     {
-        /**
-         * 几何体是否变脏
-         */
-        private geometryDirty = false;
         private _points: PointInfo[] = [];
 
         constructor()
@@ -26,17 +22,14 @@ module feng3d
         addPoint(point: PointInfo, needUpdateGeometry = true)
         {
             this._points.push(point);
-            this.geometryDirty = true;
-            this.updateGeometry();
+            this.invalidateGeometry();
         }
 
         /**
-         * 更新几何体
+         * 构建几何体
          */
-        updateGeometry()
+        buildGeometry()
         {
-            this.geometryDirty = false;
-
             var numPoints = this._points.length;
             var indices: number[] = [];
             var positionData: number[] = [];
@@ -78,7 +71,7 @@ module feng3d
         removeAllPoints()
         {
             this.points.length = 0;
-            this.geometryDirty = true;
+            this.invalidateGeometry();
         }
 
 		/**

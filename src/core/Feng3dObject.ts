@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     // export type Type = new () => Feng3dObject;
     export type Type<T extends Feng3dObject> = new () => T;

@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     export interface TransformEventMap extends ComponentEventMap
@@ -29,6 +29,7 @@ module feng3d
      * 
 	 * Every object in a scene has a Transform. It's used to store and manipulate the position, rotation and scale of the object. Every Transform can have a parent, which allows you to apply position, rotation and scale hierarchically. This is the hierarchy seen in the Hierarchy pane.
 	 */
+    @ov({ component: "OVTransform" })
     export class Transform extends Component
     {
 		/**
@@ -235,7 +236,7 @@ module feng3d
         set x(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val));
+            debuger && assert(!isNaN(val));
             if (this._x == val)
                 return;
             this._x = val;
@@ -252,7 +253,7 @@ module feng3d
         set y(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val));
+            debuger && assert(!isNaN(val));
             if (this._y == val)
                 return;
             this._y = val;
@@ -269,7 +270,7 @@ module feng3d
         set z(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val));
+            debuger && assert(!isNaN(val));
             if (this._z == val)
                 return;
             this._z = val;
@@ -286,7 +287,7 @@ module feng3d
         set rx(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val));
+            debuger && assert(!isNaN(val));
             if (this.rx == val)
                 return;
             this._rx = val;
@@ -303,7 +304,7 @@ module feng3d
         set ry(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val));
+            debuger && assert(!isNaN(val));
             if (this.ry == val)
                 return;
             this._ry = val;
@@ -320,7 +321,7 @@ module feng3d
         set rz(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val));
+            debuger && assert(!isNaN(val));
             if (this.rz == val)
                 return;
             this._rz = val;
@@ -337,7 +338,7 @@ module feng3d
         set sx(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val) && val != 0);
+            debuger && assert(!isNaN(val) && val != 0);
             if (this._sx == val)
                 return;
             this._sx = val;
@@ -354,7 +355,7 @@ module feng3d
         set sy(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val) && val != 0);
+            debuger && assert(!isNaN(val) && val != 0);
             if (this._sy == val)
                 return;
             this._sy = val;
@@ -371,7 +372,7 @@ module feng3d
         set sz(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val) && val != 0);
+            debuger && assert(!isNaN(val) && val != 0);
             if (this._sz == val)
                 return;
             this._sz = val;
@@ -427,9 +428,9 @@ module feng3d
             x = Number(x.toFixed(fixedNum));
             y = Number(y.toFixed(fixedNum));
             z = Number(z.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(x));
-            debuger && console.assert(!isNaN(y));
-            debuger && console.assert(!isNaN(z));
+            debuger && assert(!isNaN(x));
+            debuger && assert(!isNaN(y));
+            debuger && assert(!isNaN(z));
 
             if (this._x != x || this._y != y || this._z != z)
             {
@@ -451,9 +452,9 @@ module feng3d
             x = Number(x.toFixed(fixedNum));
             y = Number(y.toFixed(fixedNum));
             z = Number(z.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(x));
-            debuger && console.assert(!isNaN(y));
-            debuger && console.assert(!isNaN(z));
+            debuger && assert(!isNaN(x));
+            debuger && assert(!isNaN(y));
+            debuger && assert(!isNaN(z));
             if (this._rx != x || this._ry != y || this._rz != z)
             {
                 this._rx = x;
@@ -490,9 +491,9 @@ module feng3d
             x = Number(x.toFixed(fixedNum));
             y = Number(y.toFixed(fixedNum));
             z = Number(z.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(x) && x != 0);
-            debuger && console.assert(!isNaN(y) && y != 0);
-            debuger && console.assert(!isNaN(z) && z != 0);
+            debuger && assert(!isNaN(x) && x != 0);
+            debuger && assert(!isNaN(y) && y != 0);
+            debuger && assert(!isNaN(z) && z != 0);
             if (this._sx != x || this._sy != y || this._sz != z)
             {
                 this._sx = x;

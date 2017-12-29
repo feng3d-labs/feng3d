@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -79,36 +79,34 @@ module feng3d
         {
             this._splatRepeats = value;
         }
-        private _splatRepeats: Vector3D;
+        private _splatRepeats = new Vector3D(1, 1, 1, 1);
 
         /**
          * 构建材质
          */
-        constructor(blendUrl: string = "", splatUrls = ["", "", ""], splatRepeats = new Vector3D(1, 1, 1, 1))
+        constructor()
         {
             super();
 
-            this.blendTexture = new Texture2D(blendUrl);
-            this.splatTexture1 = new Texture2D(splatUrls[0] || "");
-            this.splatTexture2 = new Texture2D(splatUrls[1] || "");
-            this.splatTexture3 = new Texture2D(splatUrls[2] || "");
+            this.blendTexture = new Texture2D();
+            this.splatTexture1 = new Texture2D();
+            this.splatTexture2 = new Texture2D();
+            this.splatTexture3 = new Texture2D();
 
             this.splatTexture1.generateMipmap = true;
-            this.splatTexture1.minFilter = GL.LINEAR_MIPMAP_LINEAR;
-            this.splatTexture1.wrapS = GL.REPEAT;
-            this.splatTexture1.wrapT = GL.REPEAT;
+            this.splatTexture1.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+            this.splatTexture1.wrapS = TextureWrap.REPEAT;
+            this.splatTexture1.wrapT = TextureWrap.REPEAT;
 
             this.splatTexture2.generateMipmap = true;
-            this.splatTexture2.minFilter = GL.LINEAR_MIPMAP_LINEAR;
-            this.splatTexture2.wrapS = GL.REPEAT;
-            this.splatTexture2.wrapT = GL.REPEAT;
+            this.splatTexture2.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+            this.splatTexture2.wrapS = TextureWrap.REPEAT;
+            this.splatTexture2.wrapT = TextureWrap.REPEAT;
 
             this.splatTexture3.generateMipmap = true;
-            this.splatTexture3.minFilter = GL.LINEAR_MIPMAP_LINEAR;
-            this.splatTexture3.wrapS = GL.REPEAT;
-            this.splatTexture3.wrapT = GL.REPEAT;
-
-            this.splatRepeats = splatRepeats;
+            this.splatTexture3.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+            this.splatTexture3.wrapS = TextureWrap.REPEAT;
+            this.splatTexture3.wrapT = TextureWrap.REPEAT;
 
             //
             this.createUniformData("s_blendTexture", () => this.blendTexture);

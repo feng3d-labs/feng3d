@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
 	/**
@@ -32,7 +32,7 @@ module feng3d
         /**
          * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
          */
-        type = GL.UNSIGNED_SHORT;
+        type = GLArrayType.UNSIGNED_SHORT;
 
         /**
          * 索引偏移
@@ -61,7 +61,7 @@ module feng3d
                 this.count = this._value.length;
             }
             var buffer = this.getBuffer(gl);
-            gl.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, buffer);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
         }
 
         /**
@@ -72,13 +72,15 @@ module feng3d
             var buffer = this._indexBufferMap.get(gl);
             if (!buffer)
             {
-                buffer = gl.createBuffer();
-                if (buffer)
+                buffer = <any>gl.createBuffer();
+                if (!buffer)
                 {
-                    gl.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, buffer);
-                    gl.bufferData(GL.ELEMENT_ARRAY_BUFFER, this._value, GL.STATIC_DRAW);
-                    this._indexBufferMap.push(gl, buffer);
+                    error("createBuffer 失败！");
+                    throw "";
                 }
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this._value, gl.STATIC_DRAW);
+                this._indexBufferMap.set(gl, buffer);
             }
             return buffer;
         }
@@ -88,11 +90,10 @@ module feng3d
          */
         private clear()
         {
-            var gls = this._indexBufferMap.getKeys();
-            for (var i = 0; i < gls.length; i++)
+            this._indexBufferMap.forEach((value, key) =>
             {
-                gls[i].deleteBuffer(this._indexBufferMap.get(gls[i]))
-            }
+                key.deleteBuffer(value);
+            });
             this._indexBufferMap.clear();
         }
     }

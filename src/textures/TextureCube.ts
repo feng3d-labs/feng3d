@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -118,21 +118,6 @@ module feng3d
                 this.negative_x_url = images[3];
                 this.negative_y_url = images[4];
                 this.negative_z_url = images[5];
-            }
-        }
-
-        /**
-         * 初始化纹理
-         */
-        protected initTexture(gl: GL)
-        {
-            var faces = [
-                GL.TEXTURE_CUBE_MAP_POSITIVE_X, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                GL.TEXTURE_CUBE_MAP_NEGATIVE_X, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z
-            ];
-            for (var i = 0; i < faces.length; i++)
-            {
-                gl.texImage2D(faces[i], 0, this._format, this._format, this._type, this._pixels[i]);
             }
         }
 

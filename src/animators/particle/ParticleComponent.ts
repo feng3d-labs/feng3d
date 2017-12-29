@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
 
     /**
@@ -7,11 +7,30 @@ module feng3d
      */
     export class ParticleComponent extends RenderDataHolder
     {
+        /**
+         * 是否开启
+         */
+        @oav()
+        @serialize()
+        @watch("invalidate")
+        enable = false;
 
         /**
          * 优先级
          */
+        @oav()
+        @serialize()
         priority = 0;
+
+        /**
+         * 数据是否变脏
+         */
+        isDirty = true;
+
+        invalidate()
+        {
+            this.isDirty = true;
+        }
 
         /**
 		 * 创建粒子属性
@@ -24,7 +43,11 @@ module feng3d
 
         setRenderState(particleAnimator: ParticleAnimator)
         {
-
+            if (this.isDirty)
+            {
+                particleAnimator.invalidate();
+                this.isDirty = false;
+            }
         }
     }
 }

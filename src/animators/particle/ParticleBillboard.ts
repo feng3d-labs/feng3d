@@ -1,46 +1,31 @@
-module feng3d
+namespace feng3d
 {
     export class ParticleBillboard extends ParticleComponent
     {
-        private _camera: Camera;
-
-        private _matrix: Matrix3D = new Matrix3D;
+        /**
+         * 看向的摄像机
+         */
+        camera: Camera;
 
         /** 广告牌轴线 */
-        private _billboardAxis: Vector3D;
-
-		/**
-		 * 创建一个广告牌节点
-		 * @param billboardAxis
-		 */
-        constructor(camera: Camera, billboardAxis?: Vector3D)
-        {
-            super();
-            this.billboardAxis = <any>billboardAxis;
-            this._camera = camera;
-        }
+        billboardAxis: Vector3D;
 
         setRenderState(particleAnimator: ParticleAnimator)
         {
-            var gameObject = particleAnimator.gameObject;
-            this._matrix.copyFrom(gameObject.transform.localToWorldMatrix);
-            this._matrix.lookAt(this._camera.transform.localToWorldMatrix.position, this._billboardAxis || Vector3D.Y_AXIS);
-            particleAnimator.animatorSet.setGlobal("billboardMatrix", this._matrix);
-        }
+            if (this.camera && this.enable)
+            {
+                if (this.billboardAxis)
+                    this.billboardAxis.normalize();
 
-		/**
-		 * 广告牌轴线
-		 */
-        get billboardAxis(): Vector3D
-        {
-            return this._billboardAxis;
-        }
-
-        set billboardAxis(value: Vector3D)
-        {
-            this._billboardAxis = value ? value.clone() : <any>null;
-            if (this._billboardAxis)
-                this._billboardAxis.normalize();
+                var _matrix = new Matrix3D;
+                var gameObject = particleAnimator.gameObject;
+                _matrix.copyFrom(gameObject.transform.localToWorldMatrix);
+                _matrix.lookAt(this.camera.transform.localToWorldMatrix.position, this.billboardAxis || Vector3D.Y_AXIS);
+                particleAnimator.particleGlobal.billboardMatrix = _matrix;
+            } else
+            {
+                particleAnimator.particleGlobal.billboardMatrix = new Matrix3D();
+            }
         }
     }
 }

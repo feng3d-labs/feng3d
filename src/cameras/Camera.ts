@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
 	 * @author feng 2014-10-14
@@ -141,7 +141,7 @@ module feng3d
 		 */
         getMouseRay3D(): Ray3D
         {
-            return this.getRay3D(input.clientX - this._viewRect.x, input.clientY - this._viewRect.y);
+            return this.getRay3D(windowEventProxy.clientX - this._viewRect.x, windowEventProxy.clientY - this._viewRect.y);
         }
 
         /**

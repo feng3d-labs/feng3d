@@ -1,61 +1,41 @@
-module feng3d
+namespace feng3d
 {
 	/**
 	 * 环境映射函数
 	 */
     export class EnvMapMethod extends RenderDataHolder
     {
-        private _cubeTexture: TextureCube;
-        private _reflectivity: number;
-
-        /**
-		 * 创建EnvMapMethod实例
-		 * @param envMap		        环境映射贴图
-		 * @param reflectivity			反射率
-		 */
-        constructor(envMap: TextureCube, reflectivity = 1)
-        {
-            super();
-            this._cubeTexture = envMap;
-            this.reflectivity = reflectivity;
-            //
-            this.createUniformData("s_envMap", () => this._cubeTexture);
-            this.createUniformData("u_reflectivity", () => this._reflectivity);
-            this.createBoolMacro("HAS_ENV_METHOD", true);
-        }
-
         /**
 		 * 环境映射贴图
 		 */
+        @watch("enableChanged")
         @serialize()
         @oav()
-        get envMap()
-        {
-            return this._cubeTexture;
-        }
-
-        set envMap(value)
-        {
-            if (this._cubeTexture == value)
-                return;
-            this._cubeTexture = value;
-        }
+        cubeTexture: TextureCube;
 
         /**
 		 * 反射率
 		 */
         @serialize()
         @oav()
-        get reflectivity(): number
+        reflectivity = 1;
+
+        /**
+		 * 创建EnvMapMethod实例
+		 * @param envMap		        环境映射贴图
+		 * @param reflectivity			反射率
+		 */
+        constructor()
         {
-            return this._reflectivity;
+            super();
+            //
+            this.createUniformData("s_envMap", () => this.cubeTexture);
+            this.createUniformData("u_reflectivity", () => this.reflectivity);
         }
 
-        set reflectivity(value: number)
+        private enableChanged()
         {
-            if (this._reflectivity == value)
-                return;
-            this._reflectivity = value;
+            this.createBoolMacro("HAS_ENV_METHOD", !!this.cubeTexture);
         }
     }
 }

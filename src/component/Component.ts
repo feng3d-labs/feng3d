@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
 	 * 组件事件
@@ -62,6 +62,16 @@ module feng3d
         {
             return false;
         }
+
+        /**
+         * 是否序列化
+         */
+        serializable = true;
+
+        /**
+         * 是否显示在检查器中
+         */
+        showInInspector = true;
 
         //------------------------------------------
         // Functions

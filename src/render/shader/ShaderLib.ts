@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 着色器库，由shader.ts初始化

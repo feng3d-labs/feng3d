@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     export class ClassUtilsTest
     {
@@ -17,25 +17,25 @@ module feng3d
         {
 
             var className = ClassUtils.getQualifiedClassName(Event);
-            console.assert(className == "feng3d.Event");
+            assert(className == "feng3d.Event");
 
             var className = ClassUtils.getQualifiedClassName(true);
-            console.assert(className == "Boolean");
+            assert(className == "Boolean");
 
             var className = ClassUtils.getQualifiedClassName(Boolean);
-            console.assert(className == "Boolean");
+            assert(className == "Boolean");
 
             var className = ClassUtils.getQualifiedClassName("1");
-            console.assert(className == "String");
+            assert(className == "String");
 
             var className = ClassUtils.getQualifiedClassName(String);
-            console.assert(className == "String");
+            assert(className == "String");
 
             var className = ClassUtils.getQualifiedClassName(123);
-            console.assert(className == "Number");
+            assert(className == "Number");
 
             var className = ClassUtils.getQualifiedClassName(Number);
-            console.assert(className == "Number");
+            assert(className == "Number");
         }
     }
 

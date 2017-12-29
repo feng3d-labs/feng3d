@@ -1,4 +1,4 @@
-module feng3d
+namespace feng3d
 {
     /**
      * 球体几何体
@@ -73,10 +73,11 @@ module feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(radius = 50, segmentsW = 16, segmentsH = 12, yUp = true)
+        constructor(radius = 0.5, segmentsW = 16, segmentsH = 12, yUp = true)
         {
             super();
 
+            this.name = "Sphere";
             this.radius = radius;
             this.segmentsW = this.segmentsW;
             this.segmentsH = this.segmentsH;
