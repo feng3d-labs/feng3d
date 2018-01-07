@@ -191,6 +191,7 @@ namespace feng3d
             this.x += a.x;
             this.y += a.y;
             this.z += a.z;
+            return this;
         }
 
         /**
@@ -201,6 +202,7 @@ namespace feng3d
             this.x = -this.x;
             this.y = -this.y;
             this.z = -this.z;
+            return this;
         }
 
         /**
@@ -214,8 +216,8 @@ namespace feng3d
                 this.x *= invLength;
                 this.y *= invLength;
                 this.z *= invLength;
-                return;
             }
+            return this;
         }
 
         /**

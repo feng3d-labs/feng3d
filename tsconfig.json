@@ -235,6 +235,8 @@
         //
         "src/autofiles/shaders.ts",
         //
+        "src/scripts/FPSControllerScript.ts",
+        //
         "src/Feng3d.ts"
     ]
 }

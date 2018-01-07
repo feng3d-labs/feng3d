@@ -25,9 +25,9 @@ namespace feng3d
     function getQualifiedClassName(value: any): string
     {
         if (value == null)
-        {
             return "null";
-        }
+        if (typeof value == "function")
+            return "Function";
         var prototype: any = value.prototype ? value.prototype : Object.getPrototypeOf(value);
         if (prototype.hasOwnProperty(CLASS_KEY))
             return prototype[CLASS_KEY];

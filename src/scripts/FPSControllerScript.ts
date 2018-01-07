@@ -4,7 +4,7 @@ namespace feng3d
      * FPS模式控制器
      * @author feng 2016-12-19
      */
-    export class FPSController extends Component
+    export class FPSControllerScript extends Script
     {
         /**
          * 加速度
@@ -47,13 +47,11 @@ namespace feng3d
             {
                 windowEventProxy.off("mousedown", this.onMousedown, this);
                 windowEventProxy.off("mouseup", this.onMouseup, this);
-                ticker.offframe(this.update, this);
                 this.onMouseup();
             }
             this._auto = value;
             if (this._auto)
             {
-                ticker.onframe(this.update, this);
                 windowEventProxy.on("mousedown", this.onMousedown, this);
                 windowEventProxy.on("mouseup", this.onMouseup, this);
             }
@@ -75,6 +73,7 @@ namespace feng3d
             this.acceleration = 0.0005
 
             this.auto = true;
+            this.enabled = true;
         }
 
         onMousedown()

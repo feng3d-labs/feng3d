@@ -12,7 +12,7 @@ namespace feng3d
 		 */
         generateParticle(particle: Particle)
         {
-            var baseRange = 100;
+            var baseRange = 1;
             var x = (Math.random() - 0.5) * baseRange;
             var y = (Math.random() - 0.5) * baseRange;
             var z = (Math.random() - 0.5) * baseRange;

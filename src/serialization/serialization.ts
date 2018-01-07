@@ -255,6 +255,11 @@ namespace feng3d
             return target;
         }
         var cls = ClassUtils.getDefinitionByName(className);
+        if (!cls)
+        {
+            warn(`无法序列号对象 ${className}`);
+            return undefined;
+        }
         target = new cls();
         //处理自定义反序列化对象
         if (target["deserialize"])

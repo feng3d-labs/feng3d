@@ -696,6 +696,10 @@ interface WeakSetConstructor {
     readonly prototype: WeakSet<object>;
 }
 declare var WeakSet: WeakSetConstructor;
+interface Map<K, V> {
+    getKeys(): K[];
+    getValues(): V[];
+}
 declare namespace feng3d {
     /**
      * @description Basically a very large random number (128-bit) which means the probability of creating two that clash is vanishingly small.
@@ -1643,15 +1647,15 @@ declare namespace feng3d {
         /**
          * 按照指定的 Vector3D 对象的 x、y 和 z 元素的值递增当前 Vector3D 对象的 x、y 和 z 元素的值。
          */
-        incrementBy(a: Vector3D): void;
+        incrementBy(a: Vector3D): this;
         /**
          * 将当前 Vector3D 对象设置为其逆对象。
          */
-        negate(): void;
+        negate(): this;
         /**
          * 通过将最前面的三个元素（x、y、z）除以矢量的长度可将 Vector3D 对象转换为单位矢量。
          */
-        normalize(thickness?: number): void;
+        normalize(thickness?: number): this;
         /**
          * 按标量（大小）缩放当前的 Vector3D 对象。
          */
@@ -5856,6 +5860,7 @@ declare namespace feng3d {
          * 创建一个组件容器
          */
         constructor();
+        set(setfun: (space: this) => void): this;
         init(gameObject: GameObject): void;
         /**
          * Returns the component of Type type if the game object has one attached, null if it doesn't.
@@ -6402,6 +6407,10 @@ declare namespace feng3d {
          * 自身以及子对象是否支持鼠标拾取
          */
         mouseEnabled: boolean;
+        /**
+         * 模型生成的导航网格类型
+         */
+        navigationArea: number;
         /**
          * 标记
          */
@@ -8354,7 +8363,7 @@ declare namespace feng3d {
      * FPS模式控制器
      * @author feng 2016-12-19
      */
-    class FPSController extends Script {
+    class FPSController extends Component {
         /**
          * 加速度
          */
@@ -9560,6 +9569,66 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+}
+declare namespace feng3d {
+    /**
+     * FPS模式控制器
+     * @author feng 2016-12-19
+     */
+    class FPSControllerScript extends Script {
+        /**
+         * 加速度
+         */
+        acceleration: number;
+        /**
+         * 按键记录
+         */
+        private keyDownDic;
+        /**
+         * 按键方向字典
+         */
+        private keyDirectionDic;
+        /**
+         * 速度
+         */
+        private velocity;
+        /**
+         * 上次鼠标位置
+         */
+        private preMousePoint;
+        private ischange;
+        private _auto;
+        auto: boolean;
+        init(gameobject: GameObject): void;
+        onMousedown(): void;
+        onMouseup(): void;
+        /**
+         * 销毁
+         */
+        dispose(): void;
+        /**
+         * 手动应用更新到目标3D对象
+         */
+        update(): void;
+        private mousePoint;
+        /**
+         * 处理鼠标移动事件
+         */
+        private onMouseMove(event);
+        /**
+         * 键盘按下事件
+         */
+        private onKeydown(event);
+        /**
+         * 键盘弹起事件
+         */
+        private onKeyup(event);
+        /**
+         * 停止xyz方向运动
+         * @param direction     停止运动的方向
+         */
+        private stopDirectionVelocity(direction);
+    }
 }
 declare namespace feng3d {
     /**

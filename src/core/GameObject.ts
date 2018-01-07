@@ -178,6 +178,13 @@ namespace feng3d
         mouseEnabled = true;
 
         /**
+         * 模型生成的导航网格类型
+         */
+        @serialize()
+        @oav()
+        navigationArea = -1;
+
+        /**
          * 标记
          */
         flag = GameObjectFlag.feng3d;

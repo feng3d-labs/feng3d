@@ -29,7 +29,7 @@ namespace feng3d
             this._width = value;
             this.invalidateGeometry();
         }
-        private _width = 1000;
+        private _width = 10;
 
         get height()
         {
@@ -42,7 +42,7 @@ namespace feng3d
             this._height = value;
             this.invalidateGeometry();
         }
-        private _height = 100;
+        private _height = 1;
 
         get depth()
         {
@@ -55,7 +55,7 @@ namespace feng3d
             this._depth = value;
             this.invalidateGeometry();
         }
-        private _depth = 1000;
+        private _depth = 10;
 
         get segmentsW()
         {
@@ -123,7 +123,7 @@ namespace feng3d
 		 * @param    maxElevation	最大地形高度
 		 * @param    minElevation	最小地形高度
 		 */
-        constructor(heightMapUrl: string, width = 1000, height = 100, depth = 1000, segmentsW = 30, segmentsH = 30, maxElevation = 255, minElevation = 0)
+        constructor(heightMapUrl: string, width = 10, height = 1, depth = 10, segmentsW = 30, segmentsH = 30, maxElevation = 255, minElevation = 0)
         {
             super();
 

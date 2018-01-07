@@ -19,7 +19,8 @@ interface MapConstructor
 }
 declare var Map: MapConstructor;
 
-interface ReadonlyMap<K, V> {
+interface ReadonlyMap<K, V>
+{
     forEach(callbackfn: (value: V, key: K, map: ReadonlyMap<K, V>) => void, thisArg?: any): void;
     get(key: K): V | undefined;
     has(key: K): boolean;
@@ -85,3 +86,31 @@ interface WeakSetConstructor
     readonly prototype: WeakSet<object>;
 }
 declare var WeakSet: WeakSetConstructor;
+
+// 补充 Map
+
+interface Map<K, V>
+{
+    getKeys(): K[];
+    getValues(): V[];
+}
+
+Map.prototype.getKeys = function ()
+{
+    var keys: any[] = [];
+    this.forEach((v, k) =>
+    {
+        keys.push(k);
+    });
+    return keys;
+}
+
+Map.prototype.getValues = function ()
+{
+    var values: any[] = [];
+    this.forEach((v, k) =>
+    {
+        values.push(v);
+    });
+    return values;
+}
