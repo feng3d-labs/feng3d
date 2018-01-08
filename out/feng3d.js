@@ -4265,6 +4265,7 @@ var feng3d;
         Line3D.prototype.fromPoints = function (p0, p1) {
             this.position = p0;
             this.direction = p1.subtract(p0);
+            return this;
         };
         /**
          * 根据直线某点与方向初始化直线
@@ -4274,6 +4275,7 @@ var feng3d;
         Line3D.prototype.fromPosAndDir = function (position, direction) {
             this.position = position;
             this.direction = direction;
+            return this;
         };
         /**
          * 获取直线上的一个点
@@ -4286,9 +4288,87 @@ var feng3d;
             var newPoint = this.position.add(lengthDir);
             return newPoint;
         };
+        /**
+         * 指定点到该直线距离
+         * @param point 指定点
+         */
+        Line3D.prototype.getPointDistance = function (point) {
+            var cos = point.subtract(this.position).normalize().dotProduct(this.direction.normalize());
+            var sin = Math.sqrt(1 - cos * cos);
+            var distance = sin * point.subtract(this.position).length;
+            distance = Number(distance.toPrecision(6));
+            return distance;
+        };
         return Line3D;
     }());
     feng3d.Line3D = Line3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 3D选段
+     */
+    var Segment3D = /** @class */ (function () {
+        function Segment3D(p0, p1) {
+            this.p0 = p0;
+            this.p1 = p1;
+        }
+        Segment3D.prototype.on = function (point) {
+            if (point.equals(this.p0) || point.equals(this.p1))
+                return true;
+            if (!this.projectOn(point))
+                return false;
+            var cos = point.subtract(this.p0).normalize().dotProduct(this.p1.subtract(this.p0).normalize());
+            if (Number(Math.abs(cos).toPrecision(6)) == 1) {
+                return true;
+            }
+            return false;
+        };
+        Segment3D.prototype.projectOn = function (point) {
+            var position = this.getPositionByPoint(point);
+            return 0 <= position && position <= 1;
+        };
+        /**
+         * 获取指定位置上的点，当position=0时返回p0，当position=1时返回p1
+         * @param position 线段上的位置
+         */
+        Segment3D.prototype.getPointByPosition = function (position) {
+            if (position === void 0) { position = 0; }
+            var newPoint = this.p0.add(this.p1.subtract(this.p0).scaleBy(position));
+            return newPoint;
+        };
+        /**
+         * 获取点在线段上的位置，当点投影在线段上p0位置时返回0，当点投影在线段p1上时返回1
+         * @param point 点
+         */
+        Segment3D.prototype.getPositionByPoint = function (point) {
+            var vec = this.p1.subtract(this.p0);
+            var position = point.subtract(this.p0).dotProduct(vec) / vec.lengthSquared;
+            return position;
+        };
+        /**
+         * 指定点到该线段距离，如果投影点不在线段上时，该距离为指定点到最近的线段端点的距离
+         * @param point 指定点
+         */
+        Segment3D.prototype.getPointDistance = function (point) {
+            var position = this.getPositionByPoint(point);
+            if (position <= 0) {
+                distance = point.subtract(this.p0).length;
+            }
+            else if (position >= 1) {
+                distance = point.subtract(this.p1).length;
+            }
+            else {
+                var s0 = point.subtract(this.p0).length;
+                var s1 = position * this.p1.subtract(this.p0).length;
+                var distance = Math.sqrt(s0 * s0 - s1 * s1);
+                distance = Number(distance.toPrecision(6));
+            }
+            return distance;
+        };
+        return Segment3D;
+    }());
+    feng3d.Segment3D = Segment3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9086,7 +9166,11 @@ var feng3d;
      * 绘制3D对象
      */
     function drawGameObject(gl, renderAtomic) {
-        if (feng3d.lazy.getvalue(renderAtomic.renderParams.renderMode) == feng3d.RenderMode.POINTS)
+        var renderMode = feng3d.lazy.getvalue(renderAtomic.renderParams.renderMode);
+        if (renderMode == feng3d.RenderMode.POINTS
+            || renderMode == feng3d.RenderMode.LINES
+            || renderMode == feng3d.RenderMode.LINE_LOOP
+            || renderMode == feng3d.RenderMode.LINE_STRIP)
             return;
         init();
         var oldshader = renderAtomic.shader;
@@ -22066,10 +22150,6 @@ var feng3d;
     var Mouse3DManager = /** @class */ (function () {
         function Mouse3DManager(canvas) {
             //
-            feng3d.windowEventProxy.on("click", onMouseEvent, null);
-            feng3d.windowEventProxy.on("dblclick", onMouseEvent, null);
-            feng3d.windowEventProxy.on("mousedown", onMouseEvent, null);
-            feng3d.windowEventProxy.on("mouseup", onMouseEvent, null);
             var mouseX = 0;
             var mouseY = 0;
             var selectedGameObject;
@@ -22083,9 +22163,32 @@ var feng3d;
              */
             var gameObjectClickNum;
             var _catchMouseMove = false;
+            var enable = false;
             this.draw = draw;
             this.catchMouseMove = catchMouseMove;
             this.getSelectedGameObject = getSelectedGameObject;
+            this.setEnable = setEnable;
+            this.getEnable = getEnable;
+            //
+            setEnable(true);
+            function setEnable(value) {
+                if (enable) {
+                    feng3d.windowEventProxy.off("click", onMouseEvent, null);
+                    feng3d.windowEventProxy.off("dblclick", onMouseEvent, null);
+                    feng3d.windowEventProxy.off("mousedown", onMouseEvent, null);
+                    feng3d.windowEventProxy.off("mouseup", onMouseEvent, null);
+                }
+                enable = value;
+                if (enable) {
+                    feng3d.windowEventProxy.on("click", onMouseEvent, null);
+                    feng3d.windowEventProxy.on("dblclick", onMouseEvent, null);
+                    feng3d.windowEventProxy.on("mousedown", onMouseEvent, null);
+                    feng3d.windowEventProxy.on("mouseup", onMouseEvent, null);
+                }
+            }
+            function getEnable() {
+                return enable;
+            }
             /**
              * 是否捕捉鼠标移动，默认false。
              */

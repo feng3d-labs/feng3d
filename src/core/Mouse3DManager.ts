@@ -9,15 +9,12 @@ namespace feng3d
         draw: (scene3d: Scene3D, camera: Camera, viewRect: Rectangle) => void;
         catchMouseMove: (value: any) => void;
         getSelectedGameObject: () => GameObject;
+        setEnable: (value: boolean) => void;
+        getEnable: () => boolean;
 
         constructor(canvas: HTMLCanvasElement)
         {
             //
-            windowEventProxy.on("click", onMouseEvent, null);
-            windowEventProxy.on("dblclick", onMouseEvent, null);
-            windowEventProxy.on("mousedown", onMouseEvent, null);
-            windowEventProxy.on("mouseup", onMouseEvent, null);
-
             var mouseX = 0;
             var mouseY = 0;
 
@@ -34,10 +31,39 @@ namespace feng3d
             var gameObjectClickNum: number;
 
             var _catchMouseMove = false;
+            var enable = false;
 
             this.draw = draw;
             this.catchMouseMove = catchMouseMove;
             this.getSelectedGameObject = getSelectedGameObject;
+            this.setEnable = setEnable;
+            this.getEnable = getEnable;
+            //
+            setEnable(true);
+
+            function setEnable(value: boolean)
+            {
+                if (enable)
+                {
+                    windowEventProxy.off("click", onMouseEvent, null);
+                    windowEventProxy.off("dblclick", onMouseEvent, null);
+                    windowEventProxy.off("mousedown", onMouseEvent, null);
+                    windowEventProxy.off("mouseup", onMouseEvent, null);
+                }
+                enable = value;
+                if (enable)
+                {
+                    windowEventProxy.on("click", onMouseEvent, null);
+                    windowEventProxy.on("dblclick", onMouseEvent, null);
+                    windowEventProxy.on("mousedown", onMouseEvent, null);
+                    windowEventProxy.on("mouseup", onMouseEvent, null);
+                }
+            }
+
+            function getEnable()
+            {
+                return enable;
+            }
 
             /**
              * 是否捕捉鼠标移动，默认false。

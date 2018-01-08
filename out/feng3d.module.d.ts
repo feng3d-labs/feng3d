@@ -2116,18 +2116,50 @@ declare namespace feng3d {
          * @param p0 Vector3D
          * @param p1 Vector3D
          */
-        fromPoints(p0: Vector3D, p1: Vector3D): void;
+        fromPoints(p0: Vector3D, p1: Vector3D): this;
         /**
          * 根据直线某点与方向初始化直线
          * @param position 直线上某点
          * @param direction 直线的方向
          */
-        fromPosAndDir(position: Vector3D, direction: Vector3D): void;
+        fromPosAndDir(position: Vector3D, direction: Vector3D): this;
         /**
          * 获取直线上的一个点
          * @param length 与原点距离
          */
         getPoint(length?: number): Vector3D;
+        /**
+         * 指定点到该直线距离
+         * @param point 指定点
+         */
+        getPointDistance(point: Vector3D): number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 3D选段
+     */
+    class Segment3D {
+        p0: Vector3D;
+        p1: Vector3D;
+        constructor(p0: Vector3D, p1: Vector3D);
+        on(point: Vector3D): boolean;
+        projectOn(point: Vector3D): boolean;
+        /**
+         * 获取指定位置上的点，当position=0时返回p0，当position=1时返回p1
+         * @param position 线段上的位置
+         */
+        getPointByPosition(position?: number): Vector3D;
+        /**
+         * 获取点在线段上的位置，当点投影在线段上p0位置时返回0，当点投影在线段p1上时返回1
+         * @param point 点
+         */
+        getPositionByPoint(point: Vector3D): number;
+        /**
+         * 指定点到该线段距离，如果投影点不在线段上时，该距离为指定点到最近的线段端点的距离
+         * @param point 指定点
+         */
+        getPointDistance(point: Vector3D): number;
     }
 }
 declare namespace feng3d {
@@ -9565,6 +9597,8 @@ declare namespace feng3d {
         draw: (scene3d: Scene3D, camera: Camera, viewRect: Rectangle) => void;
         catchMouseMove: (value: any) => void;
         getSelectedGameObject: () => GameObject;
+        setEnable: (value: boolean) => void;
+        getEnable: () => boolean;
         constructor(canvas: HTMLCanvasElement);
     }
 }

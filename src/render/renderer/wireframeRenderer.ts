@@ -61,7 +61,12 @@ namespace feng3d
      */
     function drawGameObject(gl: GL, renderAtomic: RenderAtomic)
     {
-        if (lazy.getvalue(renderAtomic.renderParams.renderMode) == RenderMode.POINTS)
+        var renderMode = lazy.getvalue(renderAtomic.renderParams.renderMode);
+        if (renderMode == RenderMode.POINTS
+            || renderMode == RenderMode.LINES
+            || renderMode == RenderMode.LINE_LOOP
+            || renderMode == RenderMode.LINE_STRIP
+        )
             return;
 
         init();

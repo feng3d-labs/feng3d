@@ -1,6 +1,5 @@
 namespace feng3d
 {
-
 	/**
 	 * 3d直线
 	 * @author feng 2013-6-13
@@ -33,6 +32,7 @@ namespace feng3d
         {
             this.position = p0;
             this.direction = p1.subtract(p0);
+            return this;
         }
 
 		/**
@@ -44,6 +44,7 @@ namespace feng3d
         {
             this.position = position;
             this.direction = direction;
+            return this;
         }
 
 		/**
@@ -56,6 +57,19 @@ namespace feng3d
             lengthDir.scaleBy(length);
             var newPoint: Vector3D = this.position.add(lengthDir);
             return newPoint;
+        }
+
+        /**
+         * 指定点到该直线距离
+         * @param point 指定点
+         */
+        getPointDistance(point: Vector3D)
+        {
+            var cos = point.subtract(this.position).normalize().dotProduct(this.direction.normalize());
+            var sin = Math.sqrt(1 - cos * cos);
+            var distance = sin * point.subtract(this.position).length;
+            distance = Number(distance.toPrecision(6));
+            return distance;
         }
     }
 }

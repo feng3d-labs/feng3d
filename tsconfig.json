@@ -45,6 +45,7 @@
         "src/mathlib/Quaternion.ts",
         "src/mathlib/Euler.ts",
         "src/mathlib/Line3D.ts",
+        "src/mathlib/Segment3D.ts",
         "src/mathlib/Ray3D.ts",
         "src/mathlib/Plane3D.ts",
         "src/mathlib/PlaneClassification.ts",
