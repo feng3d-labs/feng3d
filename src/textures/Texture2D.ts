@@ -51,7 +51,7 @@ namespace feng3d
          */
         get size()
         {
-            return new Point(this._pixels.width, this._pixels.height);
+            return new Vector2(this._pixels.width, this._pixels.height);
         }
 
         constructor(url = "")

@@ -16,16 +16,16 @@ namespace feng3d
     {
         renderContext.updateRenderData1();
 
-        var frustumPlanes = renderContext.camera.frustumPlanes;
+        var frustum = renderContext.camera.frustum;
 
-        var meshRenderers = collectForwardRender(renderContext.scene3d.gameObject, frustumPlanes, renderObjectflag);
+        var meshRenderers = collectForwardRender(renderContext.scene3d.gameObject, frustum, renderObjectflag);
 
         var camerapos = renderContext.camera.transform.scenePosition;
 
         var maps = meshRenderers.map((item) =>
         {
             return {
-                depth: item.transform.scenePosition.subtract(camerapos).length,
+                depth: item.transform.scenePosition.subTo(camerapos).length,
                 item: item,
                 enableBlend: item.material.enableBlend,
             }
@@ -77,7 +77,7 @@ namespace feng3d
         // }
     }
 
-    function collectForwardRender(gameObject: GameObject, frustumPlanes: Plane3D[], renderObjectflag: GameObjectFlag)
+    function collectForwardRender(gameObject: GameObject, frustum: Frustum, renderObjectflag: GameObjectFlag)
     {
         if (!gameObject.visible)
             return [];
@@ -90,14 +90,14 @@ namespace feng3d
             var boundingComponent = gameObject.getComponent(BoundingComponent);
             if (boundingComponent.worldBounds)
             {
-                if (bounding.isInFrustum(boundingComponent.worldBounds, frustumPlanes, 6))
+                if (frustum.intersectsBox(boundingComponent.worldBounds))
                     meshRenderers.push(meshRenderer);
             }
         }
 
         gameObject.children.forEach(element =>
         {
-            meshRenderers = meshRenderers.concat(collectForwardRender(element, frustumPlanes, renderObjectflag));
+            meshRenderers = meshRenderers.concat(collectForwardRender(element, frustum, renderObjectflag));
         });
         return meshRenderers;
     }

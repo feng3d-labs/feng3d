@@ -97,8 +97,8 @@ namespace feng3d
      */
     export class Segment
     {
-        start: Vector3D;
-        end: Vector3D;
+        start: Vector3;
+        end: Vector3;
         startColor: Color;
         endColor: Color;
 
@@ -110,7 +110,7 @@ namespace feng3d
 		 * @param colorEnd 终点颜色
 		 * @param thickness 线段厚度
 		 */
-        constructor(start: Vector3D, end: Vector3D, colorStart = new Color(), colorEnd = new Color())
+        constructor(start: Vector3, end: Vector3, colorStart = new Color(), colorEnd = new Color())
         {
             this.start = start;
             this.end = end;

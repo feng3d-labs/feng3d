@@ -26,7 +26,7 @@ namespace feng3d.war3
 		/** 骨骼动画列表 */
 		bones: BoneObject[] = [];
 		/** 骨骼轴心坐标 */
-		pivotPoints: Vector3D[];
+		pivotPoints: Vector3[];
 
 		//-------------------------------------
 		//
@@ -148,15 +148,15 @@ namespace feng3d.war3
 
 			var position = war3Model.pivotPoints[joint.ObjectId];;
 
-			var matrix3D = new Matrix3D().recompose([
+			var matrix3D = new Matrix4x4().recompose([
 				position,
-				new Vector3D(),
-				new Vector3D(1, 1, 1)
+				new Vector3(),
+				new Vector3(1, 1, 1)
 			]);
 			if (skeletonJoint.parentIndex != -1)
 			{
 				var parentskeletonJoint = createSkeletonJoint(skeletonJoint.parentIndex);
-				joint.pivotPoint = matrix3D.position.subtract(parentskeletonJoint.matrix3D.position);
+				joint.pivotPoint = matrix3D.position.subTo(parentskeletonJoint.matrix3D.position);
 			} else
 			{
 				joint.pivotPoint = position;

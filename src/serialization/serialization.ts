@@ -22,7 +22,7 @@ var SERIALIZE_KEY = "__serialize__";
 {
     element.prototype["serialize"] = function (object: { value: number[] })
     {
-        object.value = feng3d.numberutils.toArray(this);
+        object.value = Array.from(this);
         return object;
     }
 

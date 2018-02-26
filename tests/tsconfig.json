@@ -3,22 +3,17 @@
         "target": "es5",
         "noImplicitAny": false,
         "sourceMap": true,
-        "declaration": true,
+        // "declaration": true,
         "strict": true,
         "experimentalDecorators": true,
         // "outDir": "./debug"
-        "outFile": "../out/tests.js"
+        "outFile": "./out/tests.js",
     },
-    "files": [ //注：如果有继承关系的，父类必须排在子类前面
+    "include": [
         //
         "../out/feng3d.d.ts",
+        "libs/qunit/qunit.d.ts",
         //
-        "src/common/ClassUtilsTest.ts",
-        "src/common/EulerTest.ts",
-        "src/common/ArrayListTest.ts",
-        //
-        "src/SerializationTest.ts",
-        //
-        "src/UnitTest.ts"
-    ]
+        "src/**/*.ts",
+    ],
 }

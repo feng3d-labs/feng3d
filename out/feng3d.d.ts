@@ -1,3 +1,124 @@
+interface ObjectConstructor {
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param source The source object from which to copy properties.
+     */
+    assign<T, U>(target: T, source: U): T & U;
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param source1 The first source object from which to copy properties.
+     * @param source2 The second source object from which to copy properties.
+     */
+    assign<T, U, V>(target: T, source1: U, source2: V): T & U & V;
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param source1 The first source object from which to copy properties.
+     * @param source2 The second source object from which to copy properties.
+     * @param source3 The third source object from which to copy properties.
+     */
+    assign<T, U, V, W>(target: T, source1: U, source2: V, source3: W): T & U & V & W;
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param sources One or more source objects from which to copy properties
+     */
+    assign(target: object, ...sources: any[]): any;
+}
+interface Map<K, V> {
+    clear(): void;
+    delete(key: K): boolean;
+    forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void;
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    set(key: K, value: V): this;
+    readonly size: number;
+}
+interface MapConstructor {
+    new (): Map<any, any>;
+    new <K, V>(entries?: [K, V][]): Map<K, V>;
+    readonly prototype: Map<any, any>;
+}
+declare var Map: MapConstructor;
+interface ReadonlyMap<K, V> {
+    forEach(callbackfn: (value: V, key: K, map: ReadonlyMap<K, V>) => void, thisArg?: any): void;
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    readonly size: number;
+}
+interface WeakMap<K extends object, V> {
+    delete(key: K): boolean;
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    set(key: K, value: V): this;
+}
+interface WeakMapConstructor {
+    new (): WeakMap<object, any>;
+    new <K extends object, V>(entries?: [K, V][]): WeakMap<K, V>;
+    readonly prototype: WeakMap<object, any>;
+}
+declare var WeakMap: WeakMapConstructor;
+interface Set<T> {
+    add(value: T): this;
+    clear(): void;
+    delete(value: T): boolean;
+    forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any): void;
+    has(value: T): boolean;
+    readonly size: number;
+}
+interface SetConstructor {
+    new (): Set<any>;
+    new <T>(values?: T[]): Set<T>;
+    readonly prototype: Set<any>;
+}
+declare var Set: SetConstructor;
+interface ReadonlySet<T> {
+    forEach(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any): void;
+    has(value: T): boolean;
+    readonly size: number;
+}
+interface WeakSet<T> {
+    add(value: T): this;
+    delete(value: T): boolean;
+    has(value: T): boolean;
+}
+interface WeakSetConstructor {
+    new (): WeakSet<object>;
+    new <T extends object>(values?: T[]): WeakSet<T>;
+    readonly prototype: WeakSet<object>;
+}
+declare var WeakSet: WeakSetConstructor;
+interface Map<K, V> {
+    getKeys(): K[];
+    getValues(): V[];
+}
+interface ArrayConstructor {
+    /**
+     * Creates an array from an array-like object.
+     * @param arrayLike An array-like object to convert to an array.
+     * @param mapfn A mapping function to call on every element of the array.
+     * @param thisArg Value of 'this' used to invoke the mapfn.
+     */
+    from<T, U = T>(arrayLike: ArrayLike<T>, mapfn?: (v: T, k: number) => U, thisArg?: any): U[];
+}
+interface Array<T> {
+    /**
+     * 使数组元素变得唯一,除去相同值
+     * @param compareFn 比较函数
+     */
+    unique(compareFn?: (a: T, b: T) => boolean): this;
+    /**
+     * 数组元素是否唯一
+     * @param compareFn 比较函数
+     */
+    isUnique(compareFn?: (a: T, b: T) => boolean): boolean;
+}
 declare namespace feng3d {
     /**
      * 标记objectview对象界面类
@@ -568,146 +689,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 对象工具
-     * @author feng 2017-02-15
-     */
-    class ObjectUtils {
-        /**
-         * 深克隆
-         * @param source        源数据
-         * @returns             克隆数据
-         */
-        static deepClone<T extends Object>(source: T): T;
-        /**
-         * 获取实例
-         * @param source 实例对象
-         */
-        static getInstance<T extends Object>(source: T): T;
-        /**
-         * （浅）克隆
-         * @param source        源数据
-         * @returns             克隆数据
-         */
-        static clone<T extends Object>(source: T): T;
-        /**
-         * （浅）拷贝数据
-         */
-        static copy(target: Object, source: Object): void;
-        /**
-         * 深拷贝数据
-         */
-        static deepCopy(target: Object, source: Object): void;
-        /**
-         * 合并数据
-         * @param source        源数据
-         * @param mergeData     合并数据
-         * @param createNew     是否合并为新对象，默认为false
-         * @returns             如果createNew为true时返回新对象，否则返回源数据
-         */
-        static merge<T>(source: T, mergeData: Object, createNew?: boolean): T;
-    }
-}
-declare namespace feng3d {
-    class StringUtils {
-        /**
-         * 获取字符串
-         * @param obj 转换为字符串的对象
-         * @param showLen       显示长度
-         * @param fill          长度不够是填充的字符串
-         * @param tail          true（默认）:在尾部添加；false：在首部添加
-         */
-        static getString(obj: any, showLen?: number, fill?: string, tail?: boolean): string;
-    }
-}
-declare namespace feng3d {
-    var numberutils: {
-        fixed: {
-            (a: number, fractionDigits?: any): number;
-            <T extends ArrayLike<number>>(source: T, fractionDigits?: any): T;
-            <T extends ArrayLike<number>>(source: ArrayLike<number>, fractionDigits?: any, target?: T | undefined): T;
-        };
-        toArray: <T extends ArrayLike<number>>(source: T, target?: number[] | undefined) => number[];
-    };
-}
-interface Map<K, V> {
-    clear(): void;
-    delete(key: K): boolean;
-    forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    set(key: K, value: V): this;
-    readonly size: number;
-}
-interface MapConstructor {
-    new (): Map<any, any>;
-    new <K, V>(entries?: [K, V][]): Map<K, V>;
-    readonly prototype: Map<any, any>;
-}
-declare var Map: MapConstructor;
-interface ReadonlyMap<K, V> {
-    forEach(callbackfn: (value: V, key: K, map: ReadonlyMap<K, V>) => void, thisArg?: any): void;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    readonly size: number;
-}
-interface WeakMap<K extends object, V> {
-    delete(key: K): boolean;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    set(key: K, value: V): this;
-}
-interface WeakMapConstructor {
-    new (): WeakMap<object, any>;
-    new <K extends object, V>(entries?: [K, V][]): WeakMap<K, V>;
-    readonly prototype: WeakMap<object, any>;
-}
-declare var WeakMap: WeakMapConstructor;
-interface Set<T> {
-    add(value: T): this;
-    clear(): void;
-    delete(value: T): boolean;
-    forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any): void;
-    has(value: T): boolean;
-    readonly size: number;
-}
-interface SetConstructor {
-    new (): Set<any>;
-    new <T>(values?: T[]): Set<T>;
-    readonly prototype: Set<any>;
-}
-declare var Set: SetConstructor;
-interface ReadonlySet<T> {
-    forEach(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any): void;
-    has(value: T): boolean;
-    readonly size: number;
-}
-interface WeakSet<T> {
-    add(value: T): this;
-    delete(value: T): boolean;
-    has(value: T): boolean;
-}
-interface WeakSetConstructor {
-    new (): WeakSet<object>;
-    new <T extends object>(values?: T[]): WeakSet<T>;
-    readonly prototype: WeakSet<object>;
-}
-declare var WeakSet: WeakSetConstructor;
-interface Map<K, V> {
-    getKeys(): K[];
-    getValues(): V[];
-}
-declare namespace feng3d {
-    /**
-     * @description Basically a very large random number (128-bit) which means the probability of creating two that clash is vanishingly small.
-     * GUIDs are used as the unique identifiers for Entities.
-     * @see https://github.com/playcanvas/engine/blob/master/src/core/guid.js
-     */
-    var guid: {
-        create: () => string;
-    };
-}
-declare namespace feng3d {
-    /**
      * 观察装饰器，观察被装饰属性的变化
      *
      * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a"
@@ -893,7 +874,7 @@ declare namespace feng3d {
         r?: number;
     }
     interface Vector3DRaw {
-        __class__: "feng3d.Vector3D";
+        __class__: "feng3d.Vector3";
         x?: number;
         y?: number;
         z?: number;
@@ -946,7 +927,7 @@ declare namespace feng3d {
     }
     interface TerrainMethodRaw {
         __class__: "feng3d.TerrainMethod";
-        splatRepeats?: Vector3D;
+        splatRepeats?: Vector3;
         splatTexture1: Texture2DRaw;
         splatTexture2: Texture2DRaw;
         splatTexture3: Texture2DRaw;
@@ -1050,233 +1031,40 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 按顺序组织的项目的集合。提供基于索引的访问和处理方法。
-     */
-    interface IList<T> {
-        /**
-         * 此集合中的项目数。
-         */
-        readonly length: number;
-        /**
-         * 向列表末尾添加指定项目。
-         */
-        addItem(item: T): void;
-        /**
-         * 在指定的索引处添加项目。
-         */
-        addItemAt(item: T, index: number): void;
-        /**
-         * 获取指定索引处的项目。
-         */
-        getItemAt(index: number): T;
-        /**
-         * 如果项目位于列表中（这样的话 getItemAt(index) == item），则返回该项目的索引。
-         */
-        getItemIndex(item: T): number;
-        /**
-         * 删除列表中的所有项目。
-         */
-        removeAll(): void;
-        /**
-         * 删除指定项目。
-         */
-        removeItem(item: T): void;
-        /**
-         * 删除指定索引处的项目并返回该项目。
-         */
-        removeItemAt(index: number): T;
-        /**
-         * 在指定的索引处放置项目。
-         */
-        setItemAt(item: T, index: number): T;
-        /**
-         * 返回与 IList 实现的填充顺序相同的 Array。
-         */
-        toArray(): T[];
-        /**
-         * 添加项事件
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        addItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any, priority?: number): void;
-        /**
-         * 移除项事件
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         * @param thisObject                listener函数作用域
-         */
-        removeItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any): void;
-    }
-}
-declare namespace feng3d {
-    class ArrayList<T> implements IList<T> {
-        private readonly _source;
-        private readonly _eventDispatcher;
-        /**
-         * 此集合中的项目数。
-         */
-        readonly length: number;
-        constructor(source?: T[]);
-        /**
-         * 向列表末尾添加指定项目。
-         */
-        addItem(item: T | T[]): void;
-        /**
-         * 在指定的索引处添加项目。
-         */
-        addItemAt(item: T | T[], index: number): void;
-        /**
-         * 获取指定索引处的项目。
-         */
-        getItemAt(index: number): T;
-        /**
-         * 如果项目位于列表中（这样的话 getItemAt(index) == item），则返回该项目的索引。
-         */
-        getItemIndex(item: T): number;
-        /**
-         * 删除列表中的所有项目。
-         */
-        removeAll(): void;
-        /**
-         * 删除指定项目。
-         */
-        removeItem(item: T | T[]): void;
-        /**
-         * 删除指定索引处的项目并返回该项目。
-         */
-        removeItemAt(index: number): T;
-        /**
-         * 在指定的索引处放置项目。
-         */
-        setItemAt(item: T, index: number): T;
-        /**
-         * 返回与 IList 实现的填充顺序相同的 Array。
-         */
-        toArray(): T[];
-        /**
-         * 添加项事件
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        addItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any, priority?: number): void;
-        /**
-         * 移除项事件
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         * @param thisObject                listener函数作用域
-         */
-        removeItemEventListener(type: string, listener: (event: Event<any>) => void, thisObject: any): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 数学常量类
-     */
-    class MathConsts {
-        /**
-         * 弧度转角度因子
-         */
-        static RADIANS_TO_DEGREES: number;
-        /**
-         * 角度转弧度因子
-         */
-        static DEGREES_TO_RADIANS: number;
-    }
-}
-interface Math {
-    /**
-     * 角度转弧度因子
-     */
-    DEG2RAD: number;
-    /**
-     * 弧度转角度因子
-     */
-    RAD2DEG: number;
-    /**
-     * http://www.broofa.com/Tools/Math.uuid.htm
-     */
-    generateUUID(): any;
-    clamp(value: any, min: any, max: any): any;
-    /**
-     * compute euclidian modulo of m % n
-     * https://en.wikipedia.org/wiki/Modulo_operation
-     */
-    euclideanModulo(n: any, m: any): any;
-    /**
-     * Linear mapping from range <a1, a2> to range <b1, b2>
-     */
-    mapLinear(x: any, a1: any, a2: any, b1: any, b2: any): any;
-    /**
-     * https://en.wikipedia.org/wiki/Linear_interpolation
-     */
-    lerp(x: any, y: any, t: any): any;
-    /**
-     * http://en.wikipedia.org/wiki/Smoothstep
-     */
-    smoothstep(x: any, min: any, max: any): any;
-    smootherstep(x: any, min: any, max: any): any;
-    /**
-     * Random integer from <low, high> interval
-     */
-    randInt(low: any, high: any): any;
-    /**
-     * Random float from <low, high> interval
-     */
-    randFloat(low: any, high: any): any;
-    /**
-     * Random float from <-range/2, range/2> interval
-     */
-    randFloatSpread(range: any): any;
-    degToRad(degrees: any): any;
-    radToDeg(radians: any): any;
-    isPowerOfTwo(value: any): any;
-    nearestPowerOfTwo(value: any): any;
-    nextPowerOfTwo(value: any): any;
-    /**
-     * 获取目标最近的值
-     *
-     * source增加或者减少整数倍precision后得到离target最近的值
-     *
-     * ```
-     * Math.toRound(71,0,5);//运算结果为1
-     * ```
-     *
-     * @param source 初始值
-     * @param target 目标值
-     * @param precision 精度
-     */
-    toRound(source: number, target: number, precision: number): any;
-}
-declare namespace feng3d {
-    /**
-     * Orientation3D 类是用于表示 Matrix3D 对象的方向样式的常量值枚举。方向的三个类型分别为欧拉角、轴角和四元数。Matrix3D 对象的 decompose 和 recompose 方法采用其中的某一个枚举类型来标识矩阵的旋转组件。
-     * @author feng 2016-3-21
-     */
-    class Orientation3D {
-        /**
-        * 轴角方向结合使用轴和角度来确定方向。
-        */
-        static AXIS_ANGLE: string;
-        /**
-        * 欧拉角（decompose() 和 recompose() 方法的默认方向）通过三个不同的对应于每个轴的旋转角来定义方向。
-        */
-        static EULER_ANGLES: string;
-        /**
-        * 四元数方向使用复数。
-        */
-        static QUATERNION: string;
-    }
+    var FMath: {
+        DEG2RAD: number;
+        RAD2DEG: number;
+        PRECISION: number;
+        generateUUID: () => string;
+        clamp: (value: any, min: any, max: any) => number;
+        euclideanModulo: (n: any, m: any) => number;
+        mapLinear: (x: any, a1: any, a2: any, b1: any, b2: any) => any;
+        lerp: (x: any, y: any, t: any) => number;
+        smoothstep: (x: any, min: any, max: any) => number;
+        smootherstep: (x: any, min: any, max: any) => number;
+        randInt: (low: any, high: any) => any;
+        randFloat: (low: any, high: any) => any;
+        randFloatSpread: (range: any) => number;
+        degToRad: (degrees: any) => number;
+        radToDeg: (radians: any) => number;
+        isPowerOfTwo: (value: any) => boolean;
+        nearestPowerOfTwo: (value: any) => number;
+        nextPowerOfTwo: (value: any) => any;
+        toRound: (source: number, target: number, precision?: number) => number;
+        equals(a: number, b: number, precision?: number | undefined): boolean;
+    };
 }
 declare namespace feng3d {
     /**
      * Point 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
      */
-    class Point {
+    class Vector2 {
+        /**
+         * 将一对极坐标转换为笛卡尔点坐标。
+         * @param len 极坐标对的长度。
+         * @param angle 极坐标对的角度（以弧度表示）。
+         */
+        static polar(len: number, angle: number): Vector2;
         /**
          * 创建一个 egret.Point 对象.若不传入任何参数，将会创建一个位于（0，0）位置的点。
          * @param x 该对象的x属性值，默认为0
@@ -1302,67 +1090,94 @@ declare namespace feng3d {
          * @param x 该对象的x属性值
          * @param y 该对象的y属性值
          */
-        setTo(x: number, y: number): Point;
+        init(x: number, y: number): Vector2;
         /**
          * 克隆点对象
          */
-        clone(): Point;
+        clone(): Vector2;
         /**
          * 确定两个点是否相同。如果两个点具有相同的 x 和 y 值，则它们是相同的点。
          * @param toCompare 要比较的点。
          * @returns 如果该对象与此 Point 对象相同，则为 true 值，如果不相同，则为 false。
          */
-        equals(toCompare: Point): boolean;
+        equals(toCompare: Vector2): boolean;
         /**
          * 返回 pt1 和 pt2 之间的距离。
          * @param p1 第一个点
          * @param p2 第二个点
          * @returns 第一个点和第二个点之间的距离。
          */
-        static distance(p1: Point, p2: Point): number;
+        static distance(p1: Vector2, p2: Vector2): number;
         /**
          * 将源 Point 对象中的所有点数据复制到调用方 Point 对象中。
          * @param sourcePoint 要从中复制数据的 Point 对象。
          */
-        copyFrom(sourcePoint: Point): void;
+        copy(sourcePoint: Vector2): this;
         /**
          * 将另一个点的坐标添加到此点的坐标以创建一个新点。
          * @param v 要添加的点。
          * @returns 新点。
          */
-        add(v: Point): Point;
-        /**
-         * 确定两个指定点之间的点。
-         * 参数 f 确定新的内插点相对于参数 pt1 和 pt2 指定的两个端点所处的位置。参数 f 的值越接近 1.0，则内插点就越接近第一个点（参数 pt1）。参数 f 的值越接近 0，则内插点就越接近第二个点（参数 pt2）。
-         * @param pt1 第一个点。
-         * @param pt2 第二个点。
-         * @param f 两个点之间的内插级别。表示新点将位于 pt1 和 pt2 连成的直线上的什么位置。如果 f=1，则返回 pt1；如果 f=0，则返回 pt2。
-         * @returns 新的内插点。
-         */
-        static interpolate(pt1: Point, pt2: Point, f: number): Point;
+        addTo(v: Vector2, vout?: Vector2): Vector2;
         /**
          * 将 (0,0) 和当前点之间的线段缩放为设定的长度。
          * @param thickness 缩放值。例如，如果当前点为 (0,5) 并且您将它规范化为 1，则返回的点位于 (0,1) 处。
          */
-        normalize(thickness: number): void;
+        normalize(thickness?: number): this;
+        /**
+         * 负向量
+         */
+        negate(): this;
+        /**
+         * 按标量（大小）缩放当前的 Vector3 对象。
+         */
+        scale(s: number): Vector2;
         /**
          * 按指定量偏移 Point 对象。dx 的值将添加到 x 的原始值中以创建新的 x 值。dy 的值将添加到 y 的原始值中以创建新的 y 值。
          * @param dx 水平坐标 x 的偏移量。
          * @param dy 水平坐标 y 的偏移量。
          */
-        offset(dx: number, dy: number): void;
-        /**
-         * 将一对极坐标转换为笛卡尔点坐标。
-         * @param len 极坐标对的长度。
-         * @param angle 极坐标对的角度（以弧度表示）。
-         */
-        static polar(len: number, angle: number): Point;
+        offset(dx: number, dy: number): Vector2;
         /**
          * 从此点的坐标中减去另一个点的坐标以创建一个新点。
          * @param v 要减去的点。
          * @returns 新点。
          */
-        subtract(v: Point): Point;
+        sub(v: Vector2): this;
+        /**
+         * 从此点的坐标中减去另一个点的坐标以创建一个新点。
+         * @param v 要减去的点。
+         * @returns 新点。
+         */
+        subTo(v: Vector2, vout?: Vector2): Vector2;
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        lerp(p: Vector2, alpha: Vector2): Vector2;
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回新向量
+         */
+        lerpTo(v: Vector2, alpha: Vector2, vout?: Vector2): Vector2;
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        lerpNumber(v: Vector2, alpha: number): this;
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        lerpNumberTo(v: Vector2, alpha: number, vout?: Vector2): Vector2;
         /**
          * 返回包含 x 和 y 坐标的值的字符串。该字符串的格式为 "(x=x, y=y)"，因此为点 23,17 调用 toString() 方法将返回 "(x=23, y=17)"。
          * @returns 坐标的字符串表示形式。
@@ -1372,6 +1187,531 @@ declare namespace feng3d {
          * 返回包含 x 和 y 坐标值的数组
          */
         toArray(): number[];
+    }
+}
+declare namespace feng3d {
+    /**
+     * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
+     * @author feng 2016-3-21
+     */
+    class Vector3 {
+        /**
+        * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
+        */
+        static X_AXIS: Vector3;
+        /**
+        * 定义为 Vector3 对象的 y 轴，坐标为 (0,1,0)
+        */
+        static Y_AXIS: Vector3;
+        /**
+        * 定义为 Vector3 对象的 z 轴，坐标为 (0,0,1)
+        */
+        static Z_AXIS: Vector3;
+        /**
+         * 原点
+         */
+        static ZERO: Vector3;
+        /**
+         * 从数组中初始化向量
+         * @param array 数组
+         * @param offset 偏移
+         * @return 返回新向量
+         */
+        static fromArray(array: ArrayLike<number>, offset?: number): Vector3;
+        /**
+         * 随机三维向量
+         */
+        static random(): Vector3;
+        /**
+         * 从Vector2初始化
+         */
+        static fromVector2(vector: Vector2, z?: number): Vector3;
+        /**
+        * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
+        */
+        x: number;
+        /**
+         * Vector3 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
+         */
+        y: number;
+        /**
+         * Vector3 对象中的第三个元素，例如，三维空间中某个点的 z 坐标。默认值为 0
+         */
+        z: number;
+        /**
+        * 当前 Vector3 对象的长度（大小），即从原点 (0,0,0) 到该对象的 x、y 和 z 坐标的距离。w 属性将被忽略。单位矢量具有的长度或大小为一。
+        */
+        readonly length: number;
+        /**
+        * 当前 Vector3 对象长度的平方，它是使用 x、y 和 z 属性计算出来的。w 属性将被忽略。尽可能使用 lengthSquared() 方法，而不要使用 Vector3.length() 方法的 Math.sqrt() 方法调用，后者速度较慢。
+        */
+        readonly lengthSquared: number;
+        /**
+         * 创建 Vector3 对象的实例。如果未指定构造函数的参数，则将使用元素 (0,0,0,0) 创建 Vector3 对象。
+         * @param x 第一个元素，例如 x 坐标。
+         * @param y 第二个元素，例如 y 坐标。
+         * @param z 第三个元素，例如 z 坐标。
+         */
+        constructor(x?: number, y?: number, z?: number);
+        /**
+         * 将 Vector3 的成员设置为指定值
+         */
+        init(x: number, y: number, z: number): this;
+        /**
+         * 从Vector2初始化
+         */
+        fromVector2(vector: Vector2, z?: number): this;
+        fromArray(array: ArrayLike<number>, offset?: number): this;
+        toVector2(vector?: Vector2): Vector2;
+        /**
+         * 加上指定向量得到新向量
+         * @param v 加向量
+         * @return 返回新向量
+         */
+        add(a: Vector3): this;
+        /**
+         * 加上指定向量得到新向量
+         * @param v 加向量
+         * @return 返回新向量
+         */
+        addTo(a: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 乘以向量
+         * @param a 向量
+         */
+        multiply(a: Vector3): this;
+        /**
+         * 乘以向量
+         * @param a 向量
+         * @param vout 输出向量
+         */
+        multiplyTo(a: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 除以向量
+         * @param a 向量
+         */
+        divide(a: Vector3): this;
+        /**
+         * 除以向量
+         * @param a 向量
+         * @param vout 输出向量
+         */
+        divideTo(a: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 叉乘向量
+         * @param a 向量
+         */
+        cross(a: Vector3): Vector3;
+        /**
+         * 叉乘向量
+         * @param a 向量
+         * @param vout 输出向量
+         */
+        crossTo(a: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 如果当前 Vector3 对象和作为参数指定的 Vector3 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
+         */
+        dot(a: Vector3): number;
+        /**
+         * 加上标量
+         * @param n 标量
+         */
+        addNumber(n: number): this;
+        /**
+         * 增加标量
+         * @param n 标量
+         */
+        addNumberTo(n: number, vout?: Vector3): Vector3;
+        /**
+         * 减去标量
+         * @param n 标量
+         */
+        subNumber(n: number): this;
+        /**
+         * 减去标量
+         * @param n 标量
+         */
+        subNumberTo(n: number, vout?: Vector3): Vector3;
+        /**
+         * 乘以标量
+         * @param n 标量
+         */
+        multiplyNumber(n: number): this;
+        /**
+         * 乘以标量
+         * @param n 标量
+         * @param vout 输出向量
+         */
+        multiplyNumberTo(n: number, vout?: Vector3): Vector3;
+        /**
+         * 除以标量
+         * @param n 标量
+         */
+        divideNumber(n: number): this;
+        /**
+         * 除以标量
+         * @param n 标量
+         * @param vout 输出向量
+         */
+        divideNumberTo(n: number, vout?: Vector3): Vector3;
+        /**
+         * 返回一个新 Vector3 对象，它是与当前 Vector3 对象完全相同的副本。
+         * @return 一个新 Vector3 对象，它是当前 Vector3 对象的副本。
+         */
+        clone(): Vector3;
+        /**
+         * 将源 Vector3 对象中的所有矢量数据复制到调用方 Vector3 对象中。
+         * @return 要从中复制数据的 Vector3 对象。
+         */
+        copy(v: Vector3): this;
+        /**
+         * 通过将当前 Vector3 对象的 x、y 和 z 元素与指定的 Vector3 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
+         */
+        equals(object: Vector3, precision?: number): boolean;
+        /**
+         * 将当前 Vector3 对象设置为其逆对象。
+         */
+        negate(): this;
+        /**
+         * 通过将最前面的三个元素（x、y、z）除以矢量的长度可将 Vector3 对象转换为单位矢量。
+         */
+        normalize(thickness?: number): this;
+        /**
+         * 按标量（大小）缩放当前的 Vector3 对象。
+         */
+        scale(s: number): this;
+        /**
+         * 按标量（大小）缩放当前的 Vector3 对象。
+         */
+        scaleTo(s: number, vout?: Vector3): Vector3;
+        /**
+         * 减去向量
+         * @param a 减去的向量
+         * @return 返回新向量
+         */
+        sub(a: Vector3): this;
+        /**
+         * 减去向量
+         * @param a 减去的向量
+         * @return 返回新向量
+         */
+        subTo(a: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        lerp(v: Vector3, alpha: Vector3): this;
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        lerpTo(v: Vector3, alpha: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        lerpNumber(v: Vector3, alpha: number): this;
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        lerpNumberTo(v: Vector3, alpha: number, vout?: Vector3): Vector3;
+        /**
+         * 小于指定点
+         * @param p 点
+         */
+        less(p: Vector3): boolean;
+        /**
+         * 小于等于指定点
+         * @param p 点
+         */
+        lessequal(p: Vector3): boolean;
+        /**
+         * 大于指定点
+         * @param p 点
+         */
+        greater(p: Vector3): boolean;
+        /**
+         * 大于等于指定点
+         * @param p 点
+         */
+        greaterequal(p: Vector3): boolean;
+        /**
+         * 加紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        clamp(min: Vector3, max: Vector3): this;
+        /**
+         * 加紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        clampTo(min: Vector3, max: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 取最小元素
+         * @param v 向量
+         */
+        min(v: Vector3): this;
+        /**
+         * 取最大元素
+         * @param v 向量
+         */
+        max(v: Vector3): this;
+        /**
+         * 应用矩阵
+         * @param mat 矩阵
+         */
+        applyMatrix4x4(mat: Matrix4x4): this;
+        /**
+         * 与点之间的距离平方
+         * @param v 点
+         */
+        distanceSquared(v: Vector3): number;
+        /**
+         * 与点之间的距离平方
+         * @param v 点
+         */
+        distance(v: Vector3): number;
+        /**
+         * 向下取整
+         */
+        floor(): this;
+        /**
+         * 向上取整
+         */
+        ceil(): this;
+        /**
+         * 四舍五入
+         */
+        round(): this;
+        /**
+         * 向0取整
+         */
+        roundToZero(): this;
+        /**
+         * 与指定向量是否平行
+         * @param v 向量
+         */
+        isParallel(v: Vector3, precision?: number): boolean;
+        /**
+         * 返回当前 Vector3 对象的字符串表示形式。
+         */
+        toString(): string;
+        /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         * @return 返回数组
+         */
+        toArray(array?: number[], offset?: number): number[];
+    }
+}
+declare namespace feng3d {
+    /**
+     * 四维向量
+     */
+    class Vector4 {
+        static fromArray(array: ArrayLike<number>, offset?: number): Vector4;
+        static fromVector3(vector3: Vector3, w?: number): Vector4;
+        static random(): Vector4;
+        /**
+        * Vector4 对象中的第一个元素。默认值为 0
+        */
+        x: number;
+        /**
+         * Vector4 对象中的第二个元素。默认值为 0
+         */
+        y: number;
+        /**
+         * Vector4 对象中的第三个元素。默认值为 0
+         */
+        z: number;
+        /**
+         * Vector4 对象的第四个元素。默认值为 0
+         */
+        w: number;
+        /**
+         * 创建 Vector4 对象的实例。如果未指定构造函数的参数，则将使用元素 (0,0,0,0) 创建 Vector4 对象。
+         * @param x 第一个元素
+         * @param y 第二个元素
+         * @param z 第三个元素
+         * @param w 第四个元素
+         */
+        constructor(x?: number, y?: number, z?: number, w?: number);
+        /**
+         * 初始化向量
+         * @param x 第一个元素
+         * @param y 第二个元素
+         * @param z 第三个元素
+         * @param w 第四个元素
+         * @return 返回自身
+         */
+        init(x: number, y: number, z: number, w: number): this;
+        /**
+         * 从数组初始化
+         * @param array 提供数据的数组
+         * @param offset 数组中起始位置
+         * @return 返回自身
+         */
+        fromArray(array: ArrayLike<number>, offset?: number): this;
+        /**
+         * 从三维向量初始化
+         * @param vector3 三维向量
+         * @param w 向量第四个值
+         * @return 返回自身
+         */
+        fromVector3(vector3: Vector3, w?: number): this;
+        /**
+         * 转换为三维向量
+         * @param v3 三维向量
+         */
+        toVector3(v3?: Vector3): Vector3;
+        /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        toArray(array?: number[], offset?: number): number[];
+        /**
+         * 加上指定向量得到新向量
+         * @param v 加向量
+         * @return 返回新向量
+         */
+        add(v: Vector4): this;
+        /**
+         * 加上指定向量得到新向量
+         * @param v 加向量
+         * @return 返回新向量
+         */
+        addTo(v: Vector4, vout?: Vector4): Vector4;
+        /**
+         * 克隆一个向量
+         * @return 返回一个拷贝向量
+         */
+        clone(): Vector4;
+        /**
+         * 从指定向量拷贝数据
+         * @param v 被拷贝向量
+         * @return 返回自身
+         */
+        copy(v: Vector4): this;
+        /**
+         * 减去指定向量
+         * @param v 减去的向量
+         * @return 返回自身
+         */
+        sub(v: Vector4): this;
+        /**
+         * 减去指定向量
+         * @param v 减去的向量
+         * @return 返回新向量
+         */
+        subTo(v: Vector4, vout?: Vector4): Vector4;
+        /**
+         * 乘以指定向量
+         * @param v 乘以的向量
+         * @return 返回自身
+         */
+        mul(v: Vector4): this;
+        /**
+         * 乘以指定向量
+         * @param v 乘以的向量
+         * @return 返回新向量
+         */
+        mulTo(v: Vector4, vout?: Vector4): Vector4;
+        /**
+         * 除以指定向量
+         * @param v 除以的向量
+         * @return 返回自身
+         */
+        div(v: Vector4): this;
+        /**
+         * 除以指定向量
+         * @param v 除以的向量
+         * @return 返回新向量
+         */
+        divTo(v: Vector4, vout?: Vector4): Vector4;
+        /**
+         * 与指定向量比较是否相等
+         * @param v 比较的向量
+         * @param precision 允许误差
+         * @return 相等返回true，否则false
+         */
+        equals(v: Vector4, precision?: number): boolean;
+        /**
+         * 负向量
+         * @return 返回自身
+         */
+        negate(): this;
+        /**
+         * 负向量
+         * @return 返回新向量
+         */
+        negateTo(vout?: Vector4): Vector4;
+        /**
+         * 缩放指定系数
+         * @param s 缩放系数
+         * @return 返回自身
+         */
+        scale(s: number): this;
+        /**
+         * 缩放指定系数
+         * @param s 缩放系数
+         * @return 返回新向量
+         */
+        scaleTo(s: number): Vector4;
+        /**
+         * 获取到指定向量的插值
+         * @param v 终点插值向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        lerp(v: Vector4, alpha: number): this;
+        /**
+         * 获取到指定向量的插值
+         * @param v 终点插值向量
+         * @param alpha 插值系数
+         * @return 返回新向量
+         */
+        lerpTo(v: Vector4, alpha: number, vout?: Vector4): Vector4;
+        /**
+         * 应用矩阵
+         * @param mat 矩阵
+         */
+        applyMatrix4x4(mat: Matrix4x4): this;
+        /**
+         * 返回当前 Vector4 对象的字符串表示形式。
+         */
+        toString(): string;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Orientation3D 类是用于表示 Matrix4x4 对象的方向样式的常量值枚举。方向的三个类型分别为欧拉角、轴角和四元数。Matrix4x4 对象的 decompose 和 recompose 方法采用其中的某一个枚举类型来标识矩阵的旋转组件。
+     * @author feng 2016-3-21
+     */
+    enum Orientation3D {
+        /**
+        * 轴角方向结合使用轴和角度来确定方向。
+        */
+        AXIS_ANGLE = "axisAngle",
+        /**
+        * 欧拉角（decompose() 和 recompose() 方法的默认方向）通过三个不同的对应于每个轴的旋转角来定义方向。
+        */
+        EULER_ANGLES = "eulerAngles",
+        /**
+        * 四元数方向使用复数。
+        */
+        QUATERNION = "quaternion",
     }
 }
 declare namespace feng3d {
@@ -1434,11 +1774,11 @@ declare namespace feng3d {
         /**
          * 由该点的 x 和 y 坐标确定的 Rectangle 对象左上角的位置。
          */
-        topLeft: Point;
+        topLeft: Vector2;
         /**
          * 由 right 和 bottom 属性的值确定的 Rectangle 对象的右下角的位置。
          */
-        bottomRight: Point;
+        bottomRight: Vector2;
         /**
          * 将源 Rectangle 对象中的所有矩形数据复制到调用方 Rectangle 对象中。
          * @param sourceRect 要从中复制数据的 Rectangle 对象。
@@ -1475,10 +1815,6 @@ declare namespace feng3d {
          */
         inflate(dx: number, dy: number): void;
         /**
-         * @private
-         */
-        $intersectInPlace(clipRect: Rectangle): Rectangle;
-        /**
          * 确定在 toIntersect 参数中指定的对象是否与此 Rectangle 对象相交。此方法检查指定的 Rectangle
          * 对象的 x、y、width 和 height 属性，以查看它是否与此 Rectangle 对象相交。
          * @param toIntersect 要与此 Rectangle 对象比较的 Rectangle 对象。
@@ -1505,7 +1841,7 @@ declare namespace feng3d {
          * @param point 包含点对象
          * @returns 如果包含，返回true，否则返回false
          */
-        containsPoint(point: Point): boolean;
+        containsPoint(point: Vector2): boolean;
         /**
          * 确定此 Rectangle 对象内是否包含由 rect 参数指定的 Rectangle 对象。
          * 如果一个 Rectangle 对象完全在另一个 Rectangle 的边界内，我们说第二个 Rectangle 包含第一个 Rectangle。
@@ -1523,7 +1859,7 @@ declare namespace feng3d {
         /**
          * 增加 Rectangle 对象的大小。此方法与 Rectangle.inflate() 方法类似，只不过它采用 Point 对象作为参数。
          */
-        inflatePoint(point: Point): void;
+        inflatePoint(point: Vector2): void;
         /**
          * 按指定量调整 Rectangle 对象的位置（由其左上角确定）。
          * @param dx 将 Rectangle 对象的 x 值移动此数量。
@@ -1534,7 +1870,7 @@ declare namespace feng3d {
          * 将 Point 对象用作参数来调整 Rectangle 对象的位置。此方法与 Rectangle.offset() 方法类似，只不过它采用 Point 对象作为参数。
          * @param point 要用于偏移此 Rectangle 对象的 Point 对象。
          */
-        offsetPoint(point: Point): void;
+        offsetPoint(point: Vector2): void;
         /**
          * 生成并返回一个字符串，该字符串列出 Rectangle 对象的水平位置和垂直位置以及高度和宽度。
          * @returns 一个字符串，它列出了 Rectangle 对象的下列各个属性的值：x、y、width 和 height。
@@ -1546,139 +1882,359 @@ declare namespace feng3d {
          * @returns 充当两个矩形的联合的新 Rectangle 对象。
          */
         union(toUnion: Rectangle): Rectangle;
+        /**
+         * The size of the Rectangle object, expressed as a Point object with the
+         * values of the <code>width</code> and <code>height</code> properties.
+         */
+        readonly size: Vector2;
     }
 }
 declare namespace feng3d {
     /**
-     * Vector3D 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
-     * @author feng 2016-3-21
+     * The Matrix export class represents a transformation matrix that determines how to
+     * map points from one coordinate space to another. You can perform various
+     * graphical transformations on a display object by setting the properties of
+     * a Matrix object, applying that Matrix object to the <code>matrix</code>
+     * property of a Transform object, and then applying that Transform object as
+     * the <code>transform</code> property of the display object. These
+     * transformation functions include translation(<i>x</i> and <i>y</i>
+     * repositioning), rotation, scaling, and skewing.
+     *
+     * <p>Together these types of transformations are known as <i>affine
+     * transformations</i>. Affine transformations preserve the straightness of
+     * lines while transforming, so that parallel lines stay parallel.</p>
+     *
+     * <p>To apply a transformation matrix to a display object, you create a
+     * Transform object, set its <code>matrix</code> property to the
+     * transformation matrix, and then set the <code>transform</code> property of
+     * the display object to the Transform object. Matrix objects are also used as
+     * parameters of some methods, such as the following:</p>
+     *
+     * <ul>
+     *   <li>The <code>draw()</code> method of a BitmapData object</li>
+     *   <li>The <code>beginBitmapFill()</code> method,
+     * <code>beginGradientFill()</code> method, or
+     * <code>lineGradientStyle()</code> method of a Graphics object</li>
+     * </ul>
+     *
+     * <p>A transformation matrix object is a 3 x 3 matrix with the following
+     * contents:</p>
+     *
+     * <p>In traditional transformation matrixes, the <code>u</code>,
+     * <code>v</code>, and <code>w</code> properties provide extra capabilities.
+     * The Matrix export class can only operate in two-dimensional space, so it always
+     * assumes that the property values <code>u</code> and <code>v</code> are 0.0,
+     * and that the property value <code>w</code> is 1.0. The effective values of
+     * the matrix are as follows:</p>
+     *
+     * <p>You can get and set the values of all six of the other properties in a
+     * Matrix object: <code>a</code>, <code>b</code>, <code>c</code>,
+     * <code>d</code>, <code>tx</code>, and <code>ty</code>.</p>
+     *
+     * <p>The Matrix export class supports the four major types of transformations:
+     * translation, scaling, rotation, and skewing. You can set three of these
+     * transformations by using specialized methods, as described in the following
+     * table: </p>
+     *
+     * <p>Each transformation function alters the current matrix properties so
+     * that you can effectively combine multiple transformations. To do this, you
+     * call more than one transformation function before applying the matrix to
+     * its display object target(by using the <code>transform</code> property of
+     * that display object).</p>
+     *
+     * <p>Use the <code>new Matrix()</code> constructor to create a Matrix object
+     * before you can call the methods of the Matrix object.</p>
      */
-    class Vector3D {
+    class Matrix {
+        rawData: Float32Array;
         /**
-        * 定义为 Vector3D 对象的 x 轴，坐标为 (1,0,0)。
-        */
-        static X_AXIS: Vector3D;
-        /**
-        * 定义为 Vector3D 对象的 y 轴，坐标为 (0,1,0)
-        */
-        static Y_AXIS: Vector3D;
-        /**
-        * 定义为 Vector3D 对象的 z 轴，坐标为 (0,0,1)
-        */
-        static Z_AXIS: Vector3D;
-        static fromArray(array: ArrayLike<number>, offset?: number): Vector3D;
-        /**
-        * Vector3D 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
-        */
-        x: number;
-        /**
-         * Vector3D 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
+         * The value that affects the positioning of pixels along the <i>x</i> axis
+         * when scaling or rotating an image.
          */
-        y: number;
+        a: number;
         /**
-         * Vector3D 对象中的第三个元素，例如，三维空间中某个点的 z 坐标。默认值为 0
+         * The value that affects the positioning of pixels along the <i>y</i> axis
+         * when rotating or skewing an image.
          */
-        z: number;
+        b: number;
         /**
-         * Vector3D 对象的第四个元素（除了 x、y 和 z 属性之外）可以容纳数据，例如旋转角度。默认值为 0
+         * The value that affects the positioning of pixels along the <i>x</i> axis
+         * when rotating or skewing an image.
          */
-        w: number;
+        c: number;
         /**
-        * 当前 Vector3D 对象的长度（大小），即从原点 (0,0,0) 到该对象的 x、y 和 z 坐标的距离。w 属性将被忽略。单位矢量具有的长度或大小为一。
-        */
-        readonly length: number;
-        /**
-        * 当前 Vector3D 对象长度的平方，它是使用 x、y 和 z 属性计算出来的。w 属性将被忽略。尽可能使用 lengthSquared() 方法，而不要使用 Vector3D.length() 方法的 Math.sqrt() 方法调用，后者速度较慢。
-        */
-        readonly lengthSquared: number;
-        /**
-         * 创建 Vector3D 对象的实例。如果未指定构造函数的参数，则将使用元素 (0,0,0,0) 创建 Vector3D 对象。
-         * @param x 第一个元素，例如 x 坐标。
-         * @param y 第二个元素，例如 y 坐标。
-         * @param z 第三个元素，例如 z 坐标。
-         * @param w 表示额外数据的可选元素，例如旋转角度
+         * The value that affects the positioning of pixels along the <i>y</i> axis
+         * when scaling or rotating an image.
          */
-        constructor(x?: number, y?: number, z?: number, w?: number);
-        fromArray(array: ArrayLike<number>, offset?: number): this;
+        d: number;
         /**
-         * 将当前 Vector3D 对象的 x、y 和 z 元素的值与另一个 Vector3D 对象的 x、y 和 z 元素的值相加。
-         * @param a 要与当前 Vector3D 对象相加的 Vector3D 对象。
-         * @return 一个 Vector3D 对象，它是将当前 Vector3D 对象与另一个 Vector3D 对象相加所产生的结果。
+         * The distance by which to translate each point along the <i>x</i> axis.
          */
-        add(a: Vector3D): Vector3D;
+        tx: number;
         /**
-         * 返回一个新 Vector3D 对象，它是与当前 Vector3D 对象完全相同的副本。
-         * @return 一个新 Vector3D 对象，它是当前 Vector3D 对象的副本。
+         * The distance by which to translate each point along the <i>y</i> axis.
          */
-        clone(): Vector3D;
+        ty: number;
         /**
-         * 将源 Vector3D 对象中的所有矢量数据复制到调用方 Vector3D 对象中。
-         * @return 要从中复制数据的 Vector3D 对象。
+         * Creates a new Matrix object with the specified parameters. In matrix
+         * notation, the properties are organized like this:
+         *
+         * <p>If you do not provide any parameters to the <code>new Matrix()</code>
+         * constructor, it creates an <i>identity matrix</i> with the following
+         * values:</p>
+         *
+         * <p>In matrix notation, the identity matrix looks like this:</p>
+         *
+         * @param a  The value that affects the positioning of pixels along the
+         *           <i>x</i> axis when scaling or rotating an image.
+         * @param b  The value that affects the positioning of pixels along the
+         *           <i>y</i> axis when rotating or skewing an image.
+         * @param c  The value that affects the positioning of pixels along the
+         *           <i>x</i> axis when rotating or skewing an image.
+         * @param d  The value that affects the positioning of pixels along the
+         *           <i>y</i> axis when scaling or rotating an image..
+         * @param tx The distance by which to translate each point along the <i>x</i>
+         *           axis.
+         * @param ty The distance by which to translate each point along the <i>y</i>
+         *           axis.
          */
-        copyFrom(sourceVector3D: Vector3D): void;
+        constructor(rawData?: Float32Array);
+        constructor(a?: number, b?: number, c?: number, d?: number, tx?: number, ty?: number);
+        copyRawDataFrom(vector: Float32Array, index?: number): void;
         /**
-         * 返回一个新的 Vector3D 对象，它与当前 Vector3D 对象和另一个 Vector3D 对象垂直（成直角）。
+         * Returns a new Matrix object that is a clone of this matrix, with an exact
+         * copy of the contained object.
+         *
+         * @return A Matrix object.
          */
-        crossProduct(a: Vector3D): Vector3D;
+        clone(): Matrix;
         /**
-         * 按照指定的 Vector3D 对象的 x、y 和 z 元素的值递减当前 Vector3D 对象的 x、y 和 z 元素的值。
+         * Concatenates a matrix with the current matrix, effectively combining the
+         * geometric effects of the two. In mathematical terms, concatenating two
+         * matrixes is the same as combining them using matrix multiplication.
+         *
+         * <p>For example, if matrix <code>m1</code> scales an object by a factor of
+         * four, and matrix <code>m2</code> rotates an object by 1.5707963267949
+         * radians(<code>Math.PI/2</code>), then <code>m1.concat(m2)</code>
+         * transforms <code>m1</code> into a matrix that scales an object by a factor
+         * of four and rotates the object by <code>Math.PI/2</code> radians. </p>
+         *
+         * <p>This method replaces the source matrix with the concatenated matrix. If
+         * you want to concatenate two matrixes without altering either of the two
+         * source matrixes, first copy the source matrix by using the
+         * <code>clone()</code> method, as shown in the Class Examples section.</p>
+         *
+         * @param matrix The matrix to be concatenated to the source matrix.
          */
-        decrementBy(a: Vector3D): void;
+        concat(matrix: Matrix): void;
         /**
-         * 通过将当前 Vector3D 对象的 x、y 和 z 元素乘以指定的 Vector3D 对象的 x、y 和 z 元素得到新对象。
+         * Copies a Vector3 object into specific column of the calling Matrix4x4
+         * object.
+         *
+         * @param column   The column from which to copy the data from.
+         * @param vector3D The Vector3 object from which to copy the data.
          */
-        multiply(a: Vector3D): Vector3D;
+        copyColumnFrom(column: number, vector3D: Vector3): void;
         /**
-         * 通过将当前 Vector3D 对象的 x、y 和 z 元素除以指定的 Vector3D 对象的 x、y 和 z 元素得到新对象。
+         * Copies specific column of the calling Matrix object into the Vector3
+         * object. The w element of the Vector3 object will not be changed.
+         *
+         * @param column   The column from which to copy the data from.
+         * @param vector3D The Vector3 object from which to copy the data.
          */
-        divide(a: Vector3D): Vector3D;
+        copyColumnTo(column: number, vector3D: Vector3): void;
         /**
-         * 如果当前 Vector3D 对象和作为参数指定的 Vector3D 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
+         * Copies all of the matrix data from the source Point object into the
+         * calling Matrix object.
+         *
+         * @param sourceMatrix The Matrix object from which to copy the data.
          */
-        dotProduct(a: Vector3D): number;
+        copyFrom(sourceMatrix: Matrix): void;
         /**
-         * 通过将当前 Vector3D 对象的 x、y 和 z 元素与指定的 Vector3D 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
+         * Copies a Vector3 object into specific row of the calling Matrix object.
+         *
+         * @param row      The row from which to copy the data from.
+         * @param vector3D The Vector3 object from which to copy the data.
          */
-        equals(object: Vector3D, allFour?: boolean, precision?: number): boolean;
+        copyRowFrom(row: number, vector3D: Vector3): void;
         /**
-         * 按照指定的 Vector3D 对象的 x、y 和 z 元素的值递增当前 Vector3D 对象的 x、y 和 z 元素的值。
+         * Copies specific row of the calling Matrix object into the Vector3 object.
+         * The w element of the Vector3 object will not be changed.
+         *
+         * @param row      The row from which to copy the data from.
+         * @param vector3D The Vector3 object from which to copy the data.
          */
-        incrementBy(a: Vector3D): this;
+        copyRowTo(row: number, vector3D: Vector3): void;
         /**
-         * 将当前 Vector3D 对象设置为其逆对象。
+         * Includes parameters for scaling, rotation, and translation. When applied
+         * to a matrix it sets the matrix's values based on those parameters.
+         *
+         * <p>Using the <code>createBox()</code> method lets you obtain the same
+         * matrix as you would if you applied the <code>identity()</code>,
+         * <code>rotate()</code>, <code>scale()</code>, and <code>translate()</code>
+         * methods in succession. For example, <code>mat1.createBox(2,2,Math.PI/4,
+         * 100, 100)</code> has the same effect as the following:</p>
+         *
+         * @param scaleX   The factor by which to scale horizontally.
+         * @param scaleY   The factor by which scale vertically.
+         * @param rotation The amount to rotate, in radians.
+         * @param tx       The number of pixels to translate(move) to the right
+         *                 along the <i>x</i> axis.
+         * @param ty       The number of pixels to translate(move) down along the
+         *                 <i>y</i> axis.
          */
-        negate(): this;
+        createBox(scaleX: number, scaleY: number, rotation?: number, tx?: number, ty?: number): void;
         /**
-         * 通过将最前面的三个元素（x、y、z）除以矢量的长度可将 Vector3D 对象转换为单位矢量。
+         * Creates the specific style of matrix expected by the
+         * <code>beginGradientFill()</code> and <code>lineGradientStyle()</code>
+         * methods of the Graphics class. Width and height are scaled to a
+         * <code>scaleX</code>/<code>scaleY</code> pair and the
+         * <code>tx</code>/<code>ty</code> values are offset by half the width and
+         * height.
+         *
+         * <p>For example, consider a gradient with the following
+         * characteristics:</p>
+         *
+         * <ul>
+         *   <li><code>GradientType.LINEAR</code></li>
+         *   <li>Two colors, green and blue, with the ratios array set to <code>[0,
+         * 255]</code></li>
+         *   <li><code>SpreadMethod.PAD</code></li>
+         *   <li><code>InterpolationMethod.LINEAR_RGB</code></li>
+         * </ul>
+         *
+         * <p>The following illustrations show gradients in which the matrix was
+         * defined using the <code>createGradientBox()</code> method with different
+         * parameter settings:</p>
+         *
+         * @param width    The width of the gradient box.
+         * @param height   The height of the gradient box.
+         * @param rotation The amount to rotate, in radians.
+         * @param tx       The distance, in pixels, to translate to the right along
+         *                 the <i>x</i> axis. This value is offset by half of the
+         *                 <code>width</code> parameter.
+         * @param ty       The distance, in pixels, to translate down along the
+         *                 <i>y</i> axis. This value is offset by half of the
+         *                 <code>height</code> parameter.
          */
-        normalize(thickness?: number): this;
+        createGradientBox(width: number, height: number, rotation?: number, tx?: number, ty?: number): void;
         /**
-         * 按标量（大小）缩放当前的 Vector3D 对象。
+         * Given a point in the pretransform coordinate space, returns the
+         * coordinates of that point after the transformation occurs. Unlike the
+         * standard transformation applied using the <code>transformPoint()</code>
+         * method, the <code>deltaTransformPoint()</code> method's transformation
+         * does not consider the translation parameters <code>tx</code> and
+         * <code>ty</code>.
+         *
+         * @param point The point for which you want to get the result of the matrix
+         *              transformation.
+         * @return The point resulting from applying the matrix transformation.
          */
-        scaleBy(s: number): this;
+        deltaTransformPoint(point: Vector2): Vector2;
         /**
-         * 将 Vector3D 的成员设置为指定值
+         * Sets each matrix property to a value that causes a null transformation. An
+         * object transformed by applying an identity matrix will be identical to the
+         * original.
+         *
+         * <p>After calling the <code>identity()</code> method, the resulting matrix
+         * has the following properties: <code>a</code>=1, <code>b</code>=0,
+         * <code>c</code>=0, <code>d</code>=1, <code>tx</code>=0,
+         * <code>ty</code>=0.</p>
+         *
+         * <p>In matrix notation, the identity matrix looks like this:</p>
+         *
          */
-        setTo(x: number, y: number, z: number, w?: number): this;
+        identity(): void;
         /**
-         * 从另一个 Vector3D 对象的 x、y 和 z 元素的值中减去当前 Vector3D 对象的 x、y 和 z 元素的值。
+         * Performs the opposite transformation of the original matrix. You can apply
+         * an inverted matrix to an object to undo the transformation performed when
+         * applying the original matrix.
          */
-        subtract(a: Vector3D): Vector3D;
+        invert(): void;
         /**
-         * 返回当前 Vector3D 对象的字符串表示形式。
+         * Returns a new Matrix object that is a clone of this matrix, with an exact
+         * copy of the contained object.
+         *
+         * @param matrix The matrix for which you want to get the result of the matrix
+         *               transformation.
+         * @return A Matrix object.
+         */
+        multiply(matrix: Matrix): Matrix;
+        /**
+         * Applies a rotation transformation to the Matrix object.
+         *
+         * <p>The <code>rotate()</code> method alters the <code>a</code>,
+         * <code>b</code>, <code>c</code>, and <code>d</code> properties of the
+         * Matrix object. In matrix notation, this is the same as concatenating the
+         * current matrix with the following:</p>
+         *
+         * @param angle The rotation angle in radians.
+         */
+        rotate(angle: number): void;
+        /**
+         * Applies a scaling transformation to the matrix. The <i>x</i> axis is
+         * multiplied by <code>sx</code>, and the <i>y</i> axis it is multiplied by
+         * <code>sy</code>.
+         *
+         * <p>The <code>scale()</code> method alters the <code>a</code> and
+         * <code>d</code> properties of the Matrix object. In matrix notation, this
+         * is the same as concatenating the current matrix with the following
+         * matrix:</p>
+         *
+         * @param sx A multiplier used to scale the object along the <i>x</i> axis.
+         * @param sy A multiplier used to scale the object along the <i>y</i> axis.
+         */
+        scale(sx: number, sy: number): void;
+        /**
+         * Sets the members of Matrix to the specified values.
+         *
+         * @param a  The value that affects the positioning of pixels along the
+         *           <i>x</i> axis when scaling or rotating an image.
+         * @param b  The value that affects the positioning of pixels along the
+         *           <i>y</i> axis when rotating or skewing an image.
+         * @param c  The value that affects the positioning of pixels along the
+         *           <i>x</i> axis when rotating or skewing an image.
+         * @param d  The value that affects the positioning of pixels along the
+         *           <i>y</i> axis when scaling or rotating an image..
+         * @param tx The distance by which to translate each point along the <i>x</i>
+         *           axis.
+         * @param ty The distance by which to translate each point along the <i>y</i>
+         *           axis.
+         */
+        setTo(a: number, b: number, c: number, d: number, tx: number, ty: number): void;
+        /**
+         * Returns a text value listing the properties of the Matrix object.
+         *
+         * @return A string containing the values of the properties of the Matrix
+         *         object: <code>a</code>, <code>b</code>, <code>c</code>,
+         *         <code>d</code>, <code>tx</code>, and <code>ty</code>.
          */
         toString(): string;
         /**
-         * 返回当前 Vector3D 对象4个元素的数组
+         * Returns the result of applying the geometric transformation represented by
+         * the Matrix object to the specified point.
+         *
+         * @param point The point for which you want to get the result of the Matrix
+         *              transformation.
+         * @return The point resulting from applying the Matrix transformation.
          */
-        toArray(num?: 3 | 4): number[];
+        transformPoint(point: Vector2): Vector2;
+        /**
+         * Translates the matrix along the <i>x</i> and <i>y</i> axes, as specified
+         * by the <code>dx</code> and <code>dy</code> parameters.
+         *
+         * @param dx The amount of movement along the <i>x</i> axis to the right, in
+         *           pixels.
+         * @param dy The amount of movement down along the <i>y</i> axis, in pixels.
+         */
+        translate(dx: number, dy: number): void;
     }
 }
 declare namespace feng3d {
     /**
-     * Matrix3D 类表示一个转换矩阵，该矩阵确定三维 (3D) 显示对象的位置和方向。
+     * Matrix4x4 类表示一个转换矩阵，该矩阵确定三维 (3D) 显示对象的位置和方向。
      * 该矩阵可以执行转换功能，包括平移（沿 x、y 和 z 轴重新定位）、旋转和缩放（调整大小）。
-     * Matrix3D 类还可以执行透视投影，这会将 3D 坐标空间中的点映射到二维 (2D) 视图。
+     * Matrix4x4 类还可以执行透视投影，这会将 3D 坐标空间中的点映射到二维 (2D) 视图。
      * ```
      *  ---            方向              平移 ---
      *  |   scaleX      0         0       tx    |
@@ -1695,7 +2251,7 @@ declare namespace feng3d {
      *  ---  x轴        y轴      z轴          ---
      * ```
      */
-    class Matrix3D {
+    class Matrix4x4 {
         /**
          * 用于运算临时变量
          */
@@ -1705,9 +2261,9 @@ declare namespace feng3d {
          */
         rawData: number[];
         /**
-         * 一个保存显示对象在转换参照帧中的 3D 坐标 (x,y,z) 位置的 Vector3D 对象。
+         * 一个保存显示对象在转换参照帧中的 3D 坐标 (x,y,z) 位置的 Vector3 对象。
          */
-        position: Vector3D;
+        position: Vector3;
         /**
          * 一个用于确定矩阵是否可逆的数字。
          */
@@ -1715,29 +2271,29 @@ declare namespace feng3d {
         /**
          * 前方（+Z轴方向）
          */
-        readonly forward: Vector3D;
+        readonly forward: Vector3;
         /**
          * 上方（+y轴方向）
          */
-        readonly up: Vector3D;
+        readonly up: Vector3;
         /**
          * 右方（+x轴方向）
          */
-        readonly right: Vector3D;
+        readonly right: Vector3;
         /**
          * 后方（-z轴方向）
          */
-        readonly back: Vector3D;
+        readonly back: Vector3;
         /**
          * 下方（-y轴方向）
          */
-        readonly down: Vector3D;
+        readonly down: Vector3;
         /**
          * 左方（-x轴方向）
          */
-        readonly left: Vector3D;
+        readonly left: Vector3;
         /**
-         * 创建 Matrix3D 对象。
+         * 创建 Matrix4x4 对象。
          * @param   datas    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
         constructor(datas?: number[]);
@@ -1746,14 +2302,14 @@ declare namespace feng3d {
          * @param   axis            旋转轴
          * @param   degrees         角度
          */
-        static fromAxisRotate(axis: Vector3D, degrees: number): Matrix3D;
+        static fromAxisRotate(axis: Vector3, degrees: number): Matrix4x4;
         /**
          * 创建旋转矩阵
          * @param   rx      用于沿 x 轴旋转对象的角度。
          * @param   ry      用于沿 y 轴旋转对象的角度。
          * @param   rz      用于沿 z 轴旋转对象的角度。
          */
-        static fromRotation(rx: number, ry: number, rz: number): Matrix3D;
+        static fromRotation(rx: number, ry: number, rz: number): Matrix4x4;
         /**
          * 创建旋转矩阵
          * @param   euler         角度（角度值）
@@ -1762,119 +2318,125 @@ declare namespace feng3d {
             x: number;
             y: number;
             z: number;
-        }): Matrix3D;
+        }): Matrix4x4;
         /**
          * 创建缩放矩阵
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
          * @param   yScale      用于沿 y 轴缩放对象的乘数。
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
-        static fromScale(xScale: number, yScale: number, zScale: number): Matrix3D;
+        static fromScale(xScale: number, yScale: number, zScale: number): any;
         /**
          * 创建缩放矩阵
          * @param   scale       缩放值
          */
-        static fromScale(scale: Vector3D): Matrix3D;
+        static fromScale(scale: Vector3): any;
         /**
          * 创建位移矩阵
          * @param   x   沿 x 轴的增量平移。
          * @param   y   沿 y 轴的增量平移。
          * @param   z   沿 z 轴的增量平移。
          */
-        static fromPosition(x: number, y: number, z: number): Matrix3D;
+        static fromPosition(x: number, y: number, z: number): any;
         /**
          * 创建位移矩阵
          * @param   position        位置
          */
-        static fromPosition(position: Vector3D): Matrix3D;
+        static fromPosition(position: Vector3): any;
         /**
-         * 通过将另一个 Matrix3D 对象与当前 Matrix3D 对象相乘来后置一个矩阵。
+         * 通过将另一个 Matrix4x4 对象与当前 Matrix4x4 对象相乘来后置一个矩阵。
          */
-        append(lhs: Matrix3D): this;
+        append(lhs: Matrix4x4): this;
         /**
-         * 在 Matrix3D 对象上后置一个增量旋转。
+         * 在 Matrix4x4 对象上后置一个增量旋转。
          * @param   axis            旋转轴
          * @param   degrees         角度
          * @param   pivotPoint      旋转中心点
          */
-        appendRotation(axis: Vector3D, degrees: number, pivotPoint?: Vector3D): this;
+        appendRotation(axis: Vector3, degrees: number, pivotPoint?: Vector3): this;
         /**
-         * 在 Matrix3D 对象上后置一个增量缩放，沿 x、y 和 z 轴改变位置。
+         * 在 Matrix4x4 对象上后置一个增量缩放，沿 x、y 和 z 轴改变位置。
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
          * @param   yScale      用于沿 y 轴缩放对象的乘数。
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
         appendScale(xScale: number, yScale: number, zScale: number): this;
         /**
-         * 在 Matrix3D 对象上后置一个增量平移，沿 x、y 和 z 轴重新定位。
+         * 在 Matrix4x4 对象上后置一个增量平移，沿 x、y 和 z 轴重新定位。
          * @param   x   沿 x 轴的增量平移。
          * @param   y   沿 y 轴的增量平移。
          * @param   z   沿 z 轴的增量平移。
          */
         appendTranslation(x: number, y: number, z: number): this;
         /**
-         * 返回一个新 Matrix3D 对象，它是与当前 Matrix3D 对象完全相同的副本。
+         * 返回一个新 Matrix4x4 对象，它是与当前 Matrix4x4 对象完全相同的副本。
          */
-        clone(): Matrix3D;
+        clone(): Matrix4x4;
         /**
-         * 将 Vector3D 对象复制到调用方 Matrix3D 对象的特定列中。
+         * 将 Vector3 对象复制到调用方 Matrix4x4 对象的特定列中。
          * @param   column      副本的目标列。
-         * @param   vector3D    要从中复制数据的 Vector3D 对象。
+         * @param   vector3D    要从中复制数据的 Vector3 对象。
          */
-        copyColumnFrom(column: number, vector3D: Vector3D): this;
+        copyColumnFrom(column: number, vector3D: Vector4): this;
         /**
-         * 将调用方 Matrix3D 对象的特定列复制到 Vector3D 对象中。
+         * 将调用方 Matrix4x4 对象的特定列复制到 Vector3 对象中。
          * @param   column       要从中复制数据的列。
-         * @param   vector3D     副本的目标 Vector3D 对象。
+         * @param   vector3D     副本的目标 Vector3 对象。
          */
-        copyColumnTo(column: number, vector3D: Vector3D): this;
+        copyColumnToVector3(column: number, vector3D?: Vector3): Vector3;
         /**
-         * 将源 Matrix3D 对象中的所有矩阵数据复制到调用方 Matrix3D 对象中。
-         * @param   sourceMatrix3D      要从中复制数据的 Matrix3D 对象。
+         * 将调用方 Matrix4x4 对象的特定列复制到 Vector3 对象中。
+         * @param   column       要从中复制数据的列。
+         * @param   vector3D     副本的目标 Vector3 对象。
          */
-        copyFrom(sourceMatrix3D: Matrix3D): this;
+        copyColumnToVector4(column: number, vector3D?: Vector4): Vector4;
         /**
-         * 将源 Vector 对象中的所有矢量数据复制到调用方 Matrix3D 对象中。利用可选索引参数，您可以选择矢量中的任何起始文字插槽。
+         * 将源 Matrix4x4 对象中的所有矩阵数据复制到调用方 Matrix4x4 对象中。
+         * @param   sourceMatrix3D      要从中复制数据的 Matrix4x4 对象。
+         */
+        copyFrom(sourceMatrix3D: Matrix4x4): this;
+        /**
+         * 将源 Vector 对象中的所有矢量数据复制到调用方 Matrix4x4 对象中。利用可选索引参数，您可以选择矢量中的任何起始文字插槽。
          * @param   vector      要从中复制数据的 Vector 对象。
          * @param   index       vector中的起始位置
          * @param   transpose   是否转置当前矩阵
          */
         copyRawDataFrom(vector: number[], index?: number, transpose?: boolean): this;
         /**
-         * 将调用方 Matrix3D 对象中的所有矩阵数据复制到提供的矢量中。
+         * 将调用方 Matrix4x4 对象中的所有矩阵数据复制到提供的矢量中。
          * @param   vector      要将数据复制到的 Vector 对象。
          * @param   index       vector中的起始位置
          * @param   transpose   是否转置当前矩阵
          */
         copyRawDataTo(vector: number[] | Float32Array, index?: number, transpose?: boolean): this;
         /**
-         * 将 Vector3D 对象复制到调用方 Matrix3D 对象的特定行中。
+         * 将 Vector3 对象复制到调用方 Matrix4x4 对象的特定行中。
          * @param   row         要将数据复制到的行。
-         * @param   vector3D    要从中复制数据的 Vector3D 对象。
+         * @param   vector3D    要从中复制数据的 Vector3 对象。
          */
-        copyRowFrom(row: number, vector3D: Vector3D): this;
+        copyRowFrom(row: number, vector3D: Vector4): this;
         /**
-         * 将调用方 Matrix3D 对象的特定行复制到 Vector3D 对象中。
+         * 将调用方 Matrix4x4 对象的特定行复制到 Vector3 对象中。
          * @param   row         要从中复制数据的行。
-         * @param   vector3D    将作为数据复制目的地的 Vector3D 对象。
+         * @param   vector3D    将作为数据复制目的地的 Vector3 对象。
          */
-        copyRowTo(row: number, vector3D: Vector3D): this;
+        copyRowTo(row: number, vector3D: Vector4): this;
         /**
          * 拷贝当前矩阵
          * @param   dest    目标矩阵
          */
-        copyToMatrix3D(dest: Matrix3D): this;
+        copyToMatrix3D(dest: Matrix4x4): this;
         /**
-         * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3D 对象组成的矢量返回。
-         * @return      一个由三个 Vector3D 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
+         * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3 对象组成的矢量返回。
+         * @return      一个由三个 Vector3 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
          */
-        decompose(orientationStyle?: string, result?: Vector3D[]): Vector3D[];
+        decompose(orientationStyle?: Orientation3D, result?: Vector3[]): Vector3[];
         /**
-         * 使用不含平移元素的转换矩阵将 Vector3D 对象从一个空间坐标转换到另一个空间坐标。
-         * @param   v   一个容纳要转换的坐标的 Vector3D 对象。
-         * @return  一个包含转换后的坐标的 Vector3D 对象。
+         * 使用不含平移元素的转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
+         * @param   v   一个容纳要转换的坐标的 Vector3 对象。
+         * @return  一个包含转换后的坐标的 Vector3 对象。
          */
-        deltaTransformVector(v: Vector3D, vout?: Vector3D): Vector3D;
+        deltaTransformVector(v: Vector3, vout?: Vector3): Vector3;
         /**
          * 将当前矩阵转换为恒等或单位矩阵。
          */
@@ -1885,26 +2447,26 @@ declare namespace feng3d {
          */
         invert(): this;
         /**
-         * 通过将当前 Matrix3D 对象与另一个 Matrix3D 对象相乘来前置一个矩阵。得到的结果将合并两个矩阵转换。
-         * @param   rhs     个右侧矩阵，它与当前 Matrix3D 对象相乘。
+         * 通过将当前 Matrix4x4 对象与另一个 Matrix4x4 对象相乘来前置一个矩阵。得到的结果将合并两个矩阵转换。
+         * @param   rhs     个右侧矩阵，它与当前 Matrix4x4 对象相乘。
          */
-        prepend(rhs: Matrix3D): this;
+        prepend(rhs: Matrix4x4): this;
         /**
-         * 在 Matrix3D 对象上前置一个增量旋转。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行旋转，然后再执行其他转换。
-         * @param   axis        旋转的轴或方向。常见的轴为 X_AXIS (Vector3D(1,0,0))、Y_AXIS (Vector3D(0,1,0)) 和 Z_AXIS (Vector3D(0,0,1))。此矢量的长度应为 1。
+         * 在 Matrix4x4 对象上前置一个增量旋转。在将 Matrix4x4 对象应用于显示对象时，矩阵会在 Matrix4x4 对象中先执行旋转，然后再执行其他转换。
+         * @param   axis        旋转的轴或方向。常见的轴为 X_AXIS (Vector3(1,0,0))、Y_AXIS (Vector3(0,1,0)) 和 Z_AXIS (Vector3(0,0,1))。此矢量的长度应为 1。
          * @param   degrees     旋转的角度。
          * @param   pivotPoint  一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
          */
-        prependRotation(axis: Vector3D, degrees: number, pivotPoint?: Vector3D): this;
+        prependRotation(axis: Vector3, degrees: number, pivotPoint?: Vector3): this;
         /**
-         * 在 Matrix3D 对象上前置一个增量缩放，沿 x、y 和 z 轴改变位置。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行缩放更改，然后再执行其他转换。
+         * 在 Matrix4x4 对象上前置一个增量缩放，沿 x、y 和 z 轴改变位置。在将 Matrix4x4 对象应用于显示对象时，矩阵会在 Matrix4x4 对象中先执行缩放更改，然后再执行其他转换。
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
          * @param   yScale      用于沿 y 轴缩放对象的乘数。
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
         prependScale(xScale: number, yScale: number, zScale: number): this;
         /**
-         * 在 Matrix3D 对象上前置一个增量平移，沿 x、y 和 z 轴重新定位。在将 Matrix3D 对象应用于显示对象时，矩阵会在 Matrix3D 对象中先执行平移更改，然后再执行其他转换。
+         * 在 Matrix4x4 对象上前置一个增量平移，沿 x、y 和 z 轴重新定位。在将 Matrix4x4 对象应用于显示对象时，矩阵会在 Matrix4x4 对象中先执行平移更改，然后再执行其他转换。
          * @param   x   沿 x 轴的增量平移。
          * @param   y   沿 y 轴的增量平移。
          * @param   z   沿 z 轴的增量平移。
@@ -1927,36 +2489,46 @@ declare namespace feng3d {
         moveForward(distance: number): this;
         /**
          * 设置转换矩阵的平移、旋转和缩放设置。
-         * @param   components      一个由三个 Vector3D 对象组成的矢量，这些对象将替代 Matrix3D 对象的平移、旋转和缩放元素。
+         * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
          */
-        recompose(components: Vector3D[]): this;
+        recompose(components: Vector3[]): this;
         /**
-         * 使用转换矩阵将 Vector3D 对象从一个空间坐标转换到另一个空间坐标。
-         * @param   vin   一个容纳要转换的坐标的 Vector3D 对象。
-         * @return  一个包含转换后的坐标的 Vector3D 对象。
+         * 使用转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
+         * @param   vin   一个容纳要转换的坐标的 Vector3 对象。
+         * @return  一个包含转换后的坐标的 Vector3 对象。
          */
-        transformVector(vin: Vector3D, vout?: Vector3D): Vector3D;
+        transformVector(vin: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 使用转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
+         * @param   vin   一个容纳要转换的坐标的 Vector3 对象。
+         * @return  一个包含转换后的坐标的 Vector3 对象。
+         */
+        transformVector4(vin: Vector4, vout?: Vector4): Vector4;
         /**
          * 使用转换矩阵将由数字构成的矢量从一个空间坐标转换到另一个空间坐标。
          * @param   vin     一个由多个数字组成的矢量，其中每三个数字构成一个要转换的 3D 坐标 (x,y,z)。
          * @param   vout    一个由多个数字组成的矢量，其中每三个数字构成一个已转换的 3D 坐标 (x,y,z)。
          */
         transformVectors(vin: number[], vout: number[]): void;
-        transformRotation(vin: Vector3D, vout?: Vector3D): Vector3D;
+        transformRotation(vin: Vector3, vout?: Vector3): Vector3;
         /**
-         * 将当前 Matrix3D 对象转换为一个矩阵，并将互换其中的行和列。
+         * 将当前 Matrix4x4 对象转换为一个矩阵，并将互换其中的行和列。
          */
         transpose(): this;
         /**
          * 比较矩阵是否相等
          */
-        equals(matrix3D: Matrix3D, precision?: number): boolean;
+        equals(matrix3D: Matrix4x4, precision?: number): boolean;
         /**
          * 看向目标位置
          * @param target    目标位置
          * @param upAxis    向上朝向
          */
-        lookAt(target: Vector3D, upAxis?: Vector3D): void;
+        lookAt(target: Vector3, upAxis?: Vector3): void;
+        /**
+         * 获取XYZ轴中最大缩放值
+         */
+        getMaxScaleOnAxis(): number;
         /**
          * 以字符串返回矩阵的值
          */
@@ -2007,14 +2579,14 @@ declare namespace feng3d {
          * @param    qb    The second quaternion in the multiplication.
          */
         multiply(qa: Quaternion, qb: Quaternion): void;
-        multiplyVector(vector: Vector3D, target?: Quaternion): Quaternion;
+        multiplyVector(vector: Vector3, target?: Quaternion): Quaternion;
         /**
          * Fills the quaternion object with values representing the given rotation around a vector.
          *
          * @param    axis    The axis around which to rotate
          * @param    angle    The angle in radians of the rotation.
          */
-        fromAxisAngle(axis: Vector3D, angle: number): void;
+        fromAxisAngle(axis: Vector3, angle: number): void;
         /**
          * Spherically interpolates between two quaternions, providing an interpolation between rotations with constant angle change rate.
          * @param qa The first quaternion to interpolate.
@@ -2038,11 +2610,11 @@ declare namespace feng3d {
          */
         fromEulerAngles(ax: number, ay: number, az: number): void;
         /**
-         * Fills a target Vector3D object with the Euler angles that form the rotation represented by this quaternion.
-         * @param target An optional Vector3D object to contain the Euler angles. If not provided, a new object is created.
-         * @return The Vector3D containing the Euler angles.
+         * Fills a target Vector3 object with the Euler angles that form the rotation represented by this quaternion.
+         * @param target An optional Vector3 object to contain the Euler angles. If not provided, a new object is created.
+         * @return The Vector3 containing the Euler angles.
          */
-        toEulerAngles(target?: Vector3D): Vector3D;
+        toEulerAngles(target?: Vector3): Vector3;
         /**
          * Normalises the quaternion object.
          */
@@ -2054,16 +2626,16 @@ declare namespace feng3d {
          */
         toString(): string;
         /**
-         * Converts the quaternion to a Matrix3D object representing an equivalent rotation.
-         * @param target An optional Matrix3D container to store the transformation in. If not provided, a new object is created.
-         * @return A Matrix3D object representing an equivalent rotation.
+         * Converts the quaternion to a Matrix4x4 object representing an equivalent rotation.
+         * @param target An optional Matrix4x4 container to store the transformation in. If not provided, a new object is created.
+         * @return A Matrix4x4 object representing an equivalent rotation.
          */
-        toMatrix3D(target?: Matrix3D): Matrix3D;
+        toMatrix3D(target?: Matrix4x4): Matrix4x4;
         /**
-         * Extracts a quaternion rotation matrix out of a given Matrix3D object.
-         * @param matrix The Matrix3D out of which the rotation will be extracted.
+         * Extracts a quaternion rotation matrix out of a given Matrix4x4 object.
+         * @param matrix The Matrix4x4 out of which the rotation will be extracted.
          */
-        fromMatrix(matrix: Matrix3D): this;
+        fromMatrix(matrix: Matrix4x4): this;
         /**
          * Converts the quaternion to a Vector.&lt;number&gt; matrix representation of a rotation equivalent to this quaternion.
          * @param target The Vector.&lt;number&gt; to contain the raw matrix data.
@@ -2077,11 +2649,11 @@ declare namespace feng3d {
         clone(): Quaternion;
         /**
          * Rotates a point.
-         * @param vector The Vector3D object to be rotated.
-         * @param target An optional Vector3D object that will contain the rotated coordinates. If not provided, a new object will be created.
-         * @return A Vector3D object containing the rotated point.
+         * @param vector The Vector3 object to be rotated.
+         * @param target An optional Vector3 object that will contain the rotated coordinates. If not provided, a new object will be created.
+         * @return A Vector3 object containing the rotated point.
          */
-        rotatePoint(vector: Vector3D, target?: Vector3D): Vector3D;
+        rotatePoint(vector: Vector3, target?: Vector3): Vector3;
         /**
          * Copies the data from a quaternion into this instance.
          * @param q The quaternion to copy from.
@@ -2097,65 +2669,197 @@ declare namespace feng3d {
      * @author feng 2013-6-13
      */
     class Line3D {
-        /** 直线上某一点 */
-        position: Vector3D;
-        /** 直线方向 */
-        direction: Vector3D;
-        /**
-         * 根据直线某点与方向创建直线
-         * @param position 直线上某点
-         * @param direction 直线的方向
-         */
-        constructor(position?: Vector3D, direction?: Vector3D);
         /**
          * 根据直线上两点初始化直线
-         * @param p0 Vector3D
-         * @param p1 Vector3D
+         * @param p0 Vector3
+         * @param p1 Vector3
          */
-        fromPoints(p0: Vector3D, p1: Vector3D): this;
+        static fromPoints(p0: Vector3, p1: Vector3): Line3D;
         /**
          * 根据直线某点与方向初始化直线
          * @param position 直线上某点
          * @param direction 直线的方向
          */
-        fromPosAndDir(position: Vector3D, direction: Vector3D): this;
+        static fromPosAndDir(position: Vector3, direction: Vector3): Line3D;
+        /**
+         * 随机直线，比如用于单元测试
+         */
+        static random(): Line3D;
+        /**
+         * 直线上某一点
+         */
+        position: Vector3;
+        /**
+         * 直线方向(已标准化)
+         */
+        direction: Vector3;
+        /**
+         * 根据直线某点与方向创建直线
+         * @param position 直线上某点
+         * @param direction 直线的方向
+         */
+        constructor(position?: Vector3, direction?: Vector3);
+        /**
+         * 根据直线上两点初始化直线
+         * @param p0 Vector3
+         * @param p1 Vector3
+         */
+        fromPoints(p0: Vector3, p1: Vector3): this;
+        /**
+         * 根据直线某点与方向初始化直线
+         * @param position 直线上某点
+         * @param direction 直线的方向
+         */
+        fromPosAndDir(position: Vector3, direction: Vector3): this;
+        /**
+         * 获取经过该直线的平面
+         */
+        getPlane(plane?: Plane3D): Plane3D;
         /**
          * 获取直线上的一个点
          * @param length 与原点距离
          */
-        getPoint(length?: number): Vector3D;
+        getPoint(length?: number, vout?: Vector3): Vector3;
         /**
          * 指定点到该直线距离
          * @param point 指定点
          */
-        getPointDistance(point: Vector3D): number;
+        distanceWithPoint(point: Vector3): number;
+        /**
+         * 与指定点最近点的系数
+         * @param point 点
+         */
+        closestPointParameterWithPoint(point: Vector3): number;
+        /**
+         * 与指定点最近的点
+         * @param point 点
+         * @param vout 输出点
+         */
+        closestPointWithPoint(point: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 判定点是否在直线上
+         * @param point 点
+         * @param precision 精度
+         */
+        onWithPoint(point: Vector3, precision?: number): boolean;
+        /**
+         * 与直线相交
+         * @param line3D 直线
+         */
+        intersectWithLine3D(line3D: Line3D): Vector3 | Line3D | null;
+        /**
+         * 应用矩阵
+         * @param mat 矩阵
+         */
+        applyMatri4x4(mat: Matrix4x4): this;
+        /**
+         * 与指定向量比较是否相等
+         * @param v 比较的向量
+         * @param precision 允许误差
+         * @return 相等返回true，否则false
+         */
+        equals(line: Line3D, precision?: number): boolean;
+        /**
+         * 拷贝
+         * @param line 直线
+         */
+        copy(line: Line3D): this;
+        /**
+         * 克隆
+         */
+        clone(): Line3D;
     }
 }
 declare namespace feng3d {
     /**
-     * 3D选段
+     * 3D线段
      */
     class Segment3D {
-        p0: Vector3D;
-        p1: Vector3D;
-        constructor(p0: Vector3D, p1: Vector3D);
-        on(point: Vector3D): boolean;
-        projectOn(point: Vector3D): boolean;
+        /**
+         * 初始化线段
+         * @param p0
+         * @param p1
+         */
+        static fromPoints(p0: Vector3, p1: Vector3): Segment3D;
+        /**
+         * 随机线段
+         */
+        static random(): Segment3D;
+        /**
+         * 线段起点
+         */
+        p0: Vector3;
+        /**
+         * 线段终点
+         */
+        p1: Vector3;
+        constructor(p0?: Vector3, p1?: Vector3);
+        /**
+         * 获取线段所在直线
+         */
+        getLine(line?: Line3D): Line3D;
         /**
          * 获取指定位置上的点，当position=0时返回p0，当position=1时返回p1
          * @param position 线段上的位置
          */
-        getPointByPosition(position?: number): Vector3D;
+        getPoint(position: number, pout?: Vector3): Vector3;
+        /**
+         * 判定点是否在线段上
+         * @param point
+         */
+        onWithPoint(point: Vector3): boolean;
+        /**
+         * 判定点是否投影在线段上
+         * @param point
+         */
+        projectOnWithPoint(point: Vector3): boolean;
         /**
          * 获取点在线段上的位置，当点投影在线段上p0位置时返回0，当点投影在线段p1上时返回1
          * @param point 点
          */
-        getPositionByPoint(point: Vector3D): number;
+        getPositionByPoint(point: Vector3): number;
+        /**
+         * 获取直线到点的法线（线段到点垂直方向）
+         * @param point 点
+         */
+        getNormalWithPoint(point: Vector3): Vector3;
         /**
          * 指定点到该线段距离，如果投影点不在线段上时，该距离为指定点到最近的线段端点的距离
          * @param point 指定点
          */
-        getPointDistance(point: Vector3D): number;
+        getPointDistance(point: Vector3): number;
+        /**
+         * 与直线相交
+         * @param line 直线
+         */
+        intersectionWithLine(line: Line3D): Vector3 | Segment3D | null;
+        /**
+         * 与线段相交
+         * @param segment 直线
+         */
+        intersectionWithSegment(segment: Segment3D): Vector3 | Segment3D | null;
+        /**
+         * 与指定点最近的点
+         * @param point 点
+         * @param vout 输出点
+         */
+        closestPointWithPoint(point: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 把点压缩到线段内
+         */
+        clampPoint(point: Vector3, pout?: Vector3): Vector3;
+        /**
+         * 判定线段是否相等
+         */
+        equals(segment: Segment3D): boolean;
+        /**
+         * 复制
+         */
+        copy(segment: Segment3D): this;
+        /**
+         * 克隆
+         */
+        clone(): Segment3D;
     }
 }
 declare namespace feng3d {
@@ -2164,14 +2868,485 @@ declare namespace feng3d {
      * @author feng 2013-6-13
      */
     class Ray3D extends Line3D {
-        constructor(position?: Vector3D, direction?: Vector3D);
+        constructor(position?: Vector3, direction?: Vector3);
+    }
+}
+declare namespace feng3d {
+    /**
+     * 三角形
+     */
+    class Triangle3D {
+        /**
+         * 通过3顶点定义一个三角形
+         * @param p0		点0
+         * @param p1		点1
+         * @param p2		点2
+         */
+        static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): Triangle3D;
+        /**
+         * 随机三角形
+         */
+        static random(): Triangle3D;
+        /**
+         * 三角形0号点
+         */
+        p0: Vector3;
+        /**
+         * 三角形1号点
+         */
+        p1: Vector3;
+        /**
+         * 三角形2号点
+         */
+        p2: Vector3;
+        constructor(p0?: Vector3, p1?: Vector3, p2?: Vector3);
+        /**
+         * 三角形三个点
+         */
+        getPoints(): Vector3[];
+        /**
+         * 三边
+         */
+        getSegments(): Segment3D[];
+        /**
+         * 三角形所在平面
+         */
+        getPlane3d(pout?: Plane3D): Plane3D;
+        /**
+         * 获取法线
+         */
+        getNormal(vout?: Vector3): Vector3;
+        /**
+         * 重心,三条中线相交的点叫做重心。
+         */
+        getBarycenter(pout?: Vector3): Vector3;
+        /**
+         * 外心，外切圆心,三角形三边的垂直平分线的交点，称为三角形外心。
+         * @see https://baike.baidu.com/item/%E4%B8%89%E8%A7%92%E5%BD%A2%E4%BA%94%E5%BF%83/218867
+         */
+        getCircumcenter(pout?: Vector3): Vector3;
+        /**
+         * 外心，内切圆心,三角形内心为三角形三条内角平分线的交点。
+         * @see https://baike.baidu.com/item/%E4%B8%89%E8%A7%92%E5%BD%A2%E4%BA%94%E5%BF%83/218867
+         */
+        getInnercenter(pout?: Vector3): Vector3;
+        /**
+         * 垂心，三角形三边上的三条高或其延长线交于一点，称为三角形垂心。
+         * @see https://baike.baidu.com/item/%E4%B8%89%E8%A7%92%E5%BD%A2%E4%BA%94%E5%BF%83/218867
+         */
+        getOrthocenter(pout?: Vector3): Vector3;
+        /**
+         * 通过3顶点定义一个三角形
+         * @param p0		点0
+         * @param p1		点1
+         * @param p2		点2
+         */
+        fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): this;
+        /**
+         * 获取三角形内的点
+         * @param p 三点的权重
+         * @param pout 输出点
+         */
+        getPoint(p: Vector3, pout?: Vector3): Vector3;
+        /**
+         * 获取三角形内随机点
+         * @param pout 输出点
+         */
+        randomPoint(pout?: Vector3): Vector3;
+        /**
+         * 获取与直线相交，当直线与三角形不相交时返回null
+         */
+        intersectionWithLine(line: Line3D): Vector3 | Segment3D | null;
+        /**
+         * 获取与线段相交
+         */
+        intersectionWithSegment(segment: Segment3D): Vector3 | Segment3D | null;
+        /**
+         * 判定点是否在三角形上
+         * @param p
+         */
+        onWithPoint(p: Vector3): boolean;
+        /**
+         * 获取指定点分别占三个点的混合值
+         */
+        blendWithPoint(p: Vector3): Vector3;
+        /**
+         * 是否与盒子相交
+         */
+        intersectsBox(box: Box): boolean;
+        /**
+         * 与指定点最近的点
+         * @param point 点
+         * @param vout 输出点
+         */
+        closestPointWithPoint(point: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 用点分解（切割）三角形
+         */
+        decomposeWithPoint(p: Vector3): Triangle3D[];
+        /**
+         * 用点分解（切割）三角形
+         */
+        decomposeWithPoints(ps: Vector3[]): Triangle3D[];
+        /**
+         * 用线段分解（切割）三角形
+         * @param segment 线段
+         */
+        decomposeWithSegment(segment: Segment3D): Triangle3D[];
+        /**
+         * 用直线分解（切割）三角形
+         * @param line 直线
+         */
+        decomposeWithLine(line: Line3D): Triangle3D[];
+        /**
+         * 面积
+         */
+        area(): number;
+        /**
+         * 复制
+         * @param triangle 三角形
+         */
+        copy(triangle: Triangle3D): this;
+        /**
+         * 克隆
+         */
+        clone(): Triangle3D;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 长方体，盒子
+     */
+    class Box {
+        /**
+         * 从一组顶点初始化盒子
+         * @param positions 坐标数据列表
+         */
+        static formPositions(positions: number[]): Box;
+        /**
+         * 从一组点初始化盒子
+         * @param ps 点列表
+         */
+        static fromPoints(ps: Vector3[]): Box;
+        /**
+         * 随机盒子
+         */
+        static random(): Box;
+        /**
+         * 最小点
+         */
+        min: Vector3;
+        /**
+         * 最大点
+         */
+        max: Vector3;
+        /**
+         * 获取中心点
+         * @param vout 输出向量
+         */
+        getCenter(vout?: Vector3): Vector3;
+        /**
+         * 尺寸
+         */
+        getSize(vout?: Vector3): Vector3;
+        /**
+         * 创建盒子
+         * @param min 最小点
+         * @param max 最大点
+         */
+        constructor(min?: Vector3, max?: Vector3);
+        /**
+         * 初始化盒子
+         * @param min 最小值
+         * @param max 最大值
+         */
+        init(min: Vector3, max: Vector3): this;
+        /**
+         * 转换为盒子八个角所在点列表
+         */
+        toPoints(): Vector3[];
+        /**
+         * 从一组顶点初始化盒子
+         * @param positions 坐标数据列表
+         */
+        formPositions(positions: number[]): this;
+        /**
+         * 从一组点初始化盒子
+         * @param ps 点列表
+         */
+        fromPoints(ps: Vector3[]): this;
+        /**
+         * 盒子内随机点
+         */
+        randomPoint(pout?: Vector3): Vector3;
+        /**
+         * 使用点扩张盒子
+         * @param point 点
+         */
+        expandByPoint(point: Vector3): this;
+        /**
+         * 应用矩阵
+         * @param mat 矩阵
+         */
+        applyMatrix3D(mat: Matrix4x4): this;
+        /**
+         * 应用矩阵
+         * @param mat 矩阵
+         */
+        applyMatrix3DTo(mat: Matrix4x4, out?: Box): Box;
+        /**
+         *
+         */
+        clone(): Box;
+        /**
+         * 是否包含指定点
+         * @param p 点
+         */
+        containsPoint(p: Vector3): boolean;
+        /**
+         * 是否包含盒子
+         * @param box 盒子
+         */
+        containsBox(box: Box): boolean;
+        /**
+         * 拷贝
+         * @param box 盒子
+         */
+        copy(box: Box): this;
+        /**
+         * 比较盒子是否相等
+         * @param box 盒子
+         */
+        equals(box: Box): boolean;
+        /**
+         * 膨胀盒子
+         * @param dx x方向膨胀量
+         * @param dy y方向膨胀量
+         * @param dz z方向膨胀量
+         */
+        inflate(dx: any, dy: any, dz: any): void;
+        /**
+         * 膨胀盒子
+         * @param delta 膨胀量
+         */
+        inflatePoint(delta: Vector3): void;
+        /**
+         * 与盒子相交
+         * @param box 盒子
+         */
+        intersection(box: Box): Box;
+        /**
+         * 与盒子相交
+         * @param box 盒子
+         */
+        intersectionTo(box: Box, vbox?: Box): Box;
+        /**
+         * 盒子是否相交
+         * @param box 盒子
+         */
+        intersects(box: Box): boolean;
+        /**
+         * 与射线相交
+         * @param position 射线起点
+         * @param direction 射线方向
+         * @param targetNormal 相交处法线
+         * @return 起点到box距离
+         */
+        rayIntersection(position: Vector3, direction: Vector3, targetNormal: Vector3): number;
+        /**
+         * Finds the closest point on the Box to another given point. This can be used for maximum error calculations for content within a given Box.
+         *
+         * @param point The point for which to find the closest point on the Box
+         * @param target An optional Vector3 to store the result to prevent creating a new object.
+         * @return
+         */
+        closestPointToPoint(point: Vector3, target?: Vector3): Vector3;
+        /**
+         * 清空盒子
+         */
+        empty(): this;
+        /**
+         * 是否为空
+         * 当体积为0时为空
+         */
+        isEmpty(): boolean;
+        /**
+         * 偏移
+         * @param dx x轴偏移
+         * @param dy y轴偏移
+         * @param dz z轴偏移
+         */
+        offset(dx: number, dy: number, dz: number): this;
+        /**
+         * 偏移
+         * @param position 偏移量
+         */
+        offsetPosition(position: Vector3): this;
+        toString(): string;
+        /**
+         * 联合盒子
+         * @param box 盒子
+         */
+        union(box: Box): Box;
+        /**
+         * 是否与球相交
+         * @param sphere 球
+         */
+        intersectsSphere(sphere: Sphere): boolean;
+        /**
+         *
+         * @param point 点
+         * @param pout 输出点
+         */
+        clampPoint(point: Vector3, pout?: Vector3): Vector3;
+        /**
+         * 是否与平面相交
+         * @param plane 平面
+         */
+        intersectsPlane(plane: Plane3D): boolean;
+        /**
+         * 是否与三角形相交
+         * @param triangle 三角形
+         */
+        intersectsTriangle(triangle: Triangle3D): boolean;
+        /**
+         * 转换为三角形列表
+         */
+        toTriangles(triangles?: Triangle3D[]): Triangle3D[];
+    }
+}
+declare namespace feng3d {
+    /**
+     * 球
+     */
+    class Sphere {
+        /**
+         * 从一组点初始化球
+         * @param points 点列表
+         */
+        static fromPoints(points: Vector3[]): Sphere;
+        /**
+         * 从一组顶点初始化球
+         * @param positions 坐标数据列表
+         */
+        static fromPositions(positions: number[]): Sphere;
+        /**
+         * 球心
+         */
+        center: Vector3;
+        /**
+         * 半径
+         */
+        radius: number;
+        /**
+         * Create a Sphere with ABCD coefficients
+         */
+        constructor(center?: Vector3, radius?: number);
+        /**
+         * 与射线相交
+         * @param position 射线起点
+         * @param direction 射线方向
+         * @param targetNormal 目标法线
+         * @return 射线起点到交点的距离
+         */
+        rayIntersection(position: Vector3, direction: Vector3, targetNormal: Vector3): number;
+        /**
+         * 是否包含指定点
+         * @param position 点
+         */
+        containsPoint(position: Vector3): boolean;
+        /**
+         * 从一组点初始化球
+         * @param points 点列表
+         */
+        fromPoints(points: Vector3[]): this;
+        /**
+         * 从一组顶点初始化球
+         * @param positions 坐标数据列表
+         */
+        fromPositions(positions: number[]): this;
+        /**
+         * 拷贝
+         */
+        copy(sphere: Sphere): this;
+        /**
+         * 克隆
+         */
+        clone(): Sphere;
+        /**
+         * 是否为空
+         */
+        isEmpty(): boolean;
+        /**
+         * 点到球的距离
+         * @param point 点
+         */
+        distanceToPoint(point: Vector3): number;
+        /**
+         * 与指定球是否相交
+         */
+        intersectsSphere(sphere: Sphere): boolean;
+        /**
+         * 是否与盒子相交
+         * @param box 盒子
+         */
+        intersectsBox(box: Box): boolean;
+        /**
+         * 是否与平面相交
+         * @param plane 平面
+         */
+        intersectsPlane(plane: Plane3D): boolean;
+        /**
+         *
+         * @param point 点
+         * @param pout 输出点
+         */
+        clampPoint(point: Vector3, pout?: Vector3): Vector3;
+        /**
+         * 获取包围盒
+         */
+        getBoundingBox(box?: Box): Box;
+        /**
+         * 应用矩阵
+         * @param matrix 矩阵
+         */
+        applyMatrix4(matrix: Matrix4x4): this;
+        /**
+         * 平移
+         * @param offset 偏移量
+         */
+        translate(offset: Vector3): this;
+        /**
+         * 是否相等
+         * @param sphere 球
+         */
+        equals(sphere: Sphere): boolean;
+        toString(): string;
     }
 }
 declare namespace feng3d {
     /**
      * 3d面
+     * ax+by+cz+d=0
      */
     class Plane3D {
+        /**
+         * 通过3顶点定义一个平面
+         * @param p0		点0
+         * @param p1		点1
+         * @param p2		点2
+         */
+        static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): Plane3D;
+        /**
+         * 根据法线与点定义平面
+         * @param normal		平面法线
+         * @param point			平面上任意一点
+         */
+        static fromNormalAndPoint(normal: Vector3, point: Vector3): Plane3D;
+        /**
+         * 随机平面
+         */
+        static random(): Plane3D;
         /**
          * 平面A系数
          * <p>同样也是面法线x尺寸</p>
@@ -2189,33 +3364,9 @@ declare namespace feng3d {
         c: number;
         /**
          * 平面D系数
-         * <p>同样也是（0，0）点到平面的距离的负值</p>
+         * <p>同样也是原点到平面的距离</p>
          */
         d: number;
-        /**
-         * 对齐类型
-         */
-        _alignment: number;
-        /**
-         * 普通平面
-         * <p>不与对称轴平行或垂直</p>
-         */
-        static ALIGN_ANY: number;
-        /**
-         * XY方向平面
-         * <p>法线与Z轴平行</p>
-         */
-        static ALIGN_XY_AXIS: number;
-        /**
-         * YZ方向平面
-         * <p>法线与X轴平行</p>
-         */
-        static ALIGN_YZ_AXIS: number;
-        /**
-         * XZ方向平面
-         * <p>法线与Y轴平行</p>
-         */
-        static ALIGN_XZ_AXIS: number;
         /**
          * 创建一个平面
          * @param a		A系数
@@ -2225,45 +3376,92 @@ declare namespace feng3d {
          */
         constructor(a?: number, b?: number, c?: number, d?: number);
         /**
+         * 原点在平面上的投影
+         * @param vout 输出点
+         */
+        getOrigin(vout?: Vector3): Vector3;
+        /**
+         * 平面上随机点
+         * @param vout 输出点
+         */
+        randomPoint(vout?: Vector3): Vector3;
+        /**
          * 法线
          */
-        readonly normal: Vector3D;
+        getNormal(vout?: Vector3): Vector3;
         /**
          * 通过3顶点定义一个平面
          * @param p0		点0
          * @param p1		点1
          * @param p2		点2
          */
-        fromPoints(p0: Vector3D, p1: Vector3D, p2: Vector3D): void;
+        fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): this;
         /**
          * 根据法线与点定义平面
          * @param normal		平面法线
          * @param point			平面上任意一点
          */
-        fromNormalAndPoint(normal: Vector3D, point: Vector3D): void;
-        /**
-         * 标准化平面
-         * @return		标准化后的平面
-         */
-        normalize(): Plane3D;
+        fromNormalAndPoint(normal: Vector3, point: Vector3): this;
         /**
          * 计算点与平面的距离
          * @param p		点
          * @returns		距离
          */
-        distance(p: Vector3D): number;
+        distanceWithPoint(p: Vector3): number;
+        /**
+         * 点是否在平面上
+         * @param p 点
+         */
+        onWithPoint(p: Vector3): boolean;
         /**
          * 顶点分类
          * <p>把顶点分为后面、前面、相交三类</p>
          * @param p			顶点
          * @return			顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
-         * @see				feng3d.core.math.PlaneClassification
          */
-        classifyPoint(p: Vector3D, epsilon?: number): number;
+        classifyPoint(p: Vector3, precision?: number): PlaneClassification;
+        /**
+         * 判定与直线是否平行
+         * @param line3D
+         */
+        parallelWithLine3D(line3D: Line3D, precision?: number): boolean;
+        /**
+         * 判定与平面是否平行
+         * @param plane3D
+         */
+        parallelWithPlane3D(plane3D: Plane3D, precision?: number): boolean;
         /**
          * 获取与直线交点
          */
-        lineCross(line3D: Line3D): Vector3D;
+        intersectWithLine3D(line3D: Line3D): Vector3 | Line3D | null;
+        /**
+         * 获取与平面相交直线
+         * @param plane3D
+         */
+        intersectWithPlane3D(plane3D: Plane3D): Line3D | null;
+        /**
+         * 翻转平面
+         */
+        negate(): this;
+        /**
+         * 点到平面的投影
+         * @param point
+         */
+        projectPoint(point: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 与指定点最近的点
+         * @param point 点
+         * @param vout 输出点
+         */
+        closestPointWithPoint(point: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 复制
+         */
+        copy(plane: Plane3D): this;
+        /**
+         * 克隆
+         */
+        clone(): Plane3D;
         /**
          * 输出字符串
          */
@@ -2275,35 +3473,19 @@ declare namespace feng3d {
      * 点与面的相对位置
      * @author feng
      */
-    class PlaneClassification {
+    enum PlaneClassification {
         /**
          * 在平面后面
-         * <p>等价于平面内</p>
-         * @see #IN
          */
-        static BACK: number;
+        BACK = 0,
         /**
          * 在平面前面
-         * <p>等价于平面外</p>
-         * @see #OUT
          */
-        static FRONT: number;
-        /**
-         * 在平面内
-         * <p>等价于在平面后</p>
-         * @see #BACK
-         */
-        static IN: number;
-        /**
-         * 在平面外
-         * <p>等价于平面前面</p>
-         * @see #FRONT
-         */
-        static OUT: number;
+        FRONT = 1,
         /**
          * 与平面相交
          */
-        static INTERSECT: number;
+        INTERSECT = 2,
     }
 }
 declare namespace feng3d {
@@ -2367,6 +3549,136 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 截头锥体,平截头体,视锥体
+     */
+    class Frustum {
+        planes: Plane3D[];
+        constructor(p0?: Plane3D, p1?: Plane3D, p2?: Plane3D, p3?: Plane3D, p4?: Plane3D, p5?: Plane3D);
+        /**
+         * 更新视锥体6个面，平面均朝向视锥体内部
+         * @see http://www.linuxgraphics.cn/graphics/opengl_view_frustum_culling.html
+         */
+        fromMatrix3D(matrix3D: Matrix4x4): void;
+        /**
+         * 是否与盒子相交
+         * @param box 盒子
+         */
+        intersectsBox(box: Box): boolean;
+        /**
+         * 是否与球相交
+         */
+        intersectsSphere(sphere: Sphere): boolean;
+        /**
+         * 是否包含指定点
+         */
+        containsPoint(point: any): boolean;
+        /**
+         * 复制
+         */
+        copy(frustum: Frustum): this;
+        /**
+         * 克隆
+         */
+        clone(): Frustum;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 由三角形构成的几何体
+     * ### 限定：
+     *  * 只包含三角形，不存在四边形等其他多边形
+     *  *
+     */
+    class TriangleGeometry {
+        /**
+         * 从盒子初始化
+         * @param box 盒子
+         */
+        static fromBox(box: Box): TriangleGeometry;
+        triangles: Triangle3D[];
+        constructor(triangles?: Triangle3D[]);
+        /**
+         * 从盒子初始化
+         * @param box 盒子
+         */
+        fromBox(box: Box): this;
+        /**
+         * 获取所有顶点，去除重复顶点
+         */
+        getPoints(): Vector3[];
+        /**
+         * 是否闭合
+         * 方案：获取所有三角形的线段，当每条线段（a,b）都存在且仅有一条与之相对于的线段（b，a）时几何体闭合
+         */
+        isClosed(): boolean;
+        /**
+         * 包围盒
+         */
+        getBox(box?: Box): Box;
+        /**
+         * 与指定点最近的点
+         * @param point 点
+         * @param vout 输出点
+         */
+        closestPointWithPoint(point: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 给指定点分类
+         * @param p 点
+         * @return 点相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内
+         * 方案：当指定点不在几何体上时，在几何体上找到距离指定点最近点，最近点到给定点形成的向量与最近点所在面（当最近点在多个面上时取点乘摸最大的面）法线点乘大于0时给定点在几何体内，否则在几何体外。
+         */
+        classifyPoint(p: Vector3): 1 | 0 | -1;
+        /**
+         * 是否包含指定点
+         * @param p 点
+         */
+        containsPoint(p: Vector3): boolean;
+        /**
+         * 给指定线段分类
+         * @param segment 线段
+         * @return 线段相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内，2：横跨几何体
+         */
+        classifySegment(segment: Segment3D): 1 | 2 | 0 | -1 | undefined;
+        /**
+         * 给指定三角形分类
+         * @param triangle 三角形
+         * @return 三角形相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内
+         */
+        classifyTriangle(triangle: Triangle3D): void;
+        /**
+         * 与直线碰撞
+         * @param line3d 直线
+         */
+        intersectionWithLine(line3d: Line3D): {
+            segments: Segment3D[];
+            points: Vector3[];
+        } | null;
+        /**
+         * 与线段相交
+         * @param segment 线段
+         * @return 不相交时返回null，相交时返回 碰撞线段列表与碰撞点列表
+         */
+        intersectionWithSegment(segment: Segment3D): {
+            segments: Segment3D[];
+            points: Vector3[];
+        } | null;
+        /**
+         * 分解三角形
+         * @param triangle 三角形
+         */
+        decomposeTriangle(triangle: Triangle3D): void;
+        /**
+         * 拷贝
+         */
+        copy(triangleGeometry: TriangleGeometry): this;
+        /**
+         * 克隆
+         */
+        clone(): TriangleGeometry;
+    }
+}
+declare namespace feng3d {
+    /**
      * 心跳计时器
      */
     var ticker: {
@@ -2377,198 +3689,15 @@ declare namespace feng3d {
         on: (interval: Lazy<number>, func: () => void, thisObject?: Object | undefined, priority?: number) => any;
         once: (interval: Lazy<number>, func: () => void, thisObject?: Object | undefined, priority?: number) => any;
         off: (interval: Lazy<number>, func: () => void, thisObject?: Object | undefined) => any;
-        repeat: (interval: Lazy<number>, repeatCount: number, func: () => void, thisObject?: Object | undefined, priority?: number) => {
-            currentCount: number;
-            delay: Lazy<number>;
-            repeatCount: number;
-            start: () => any;
-            stop: () => any;
-            reset: () => any;
-        } | undefined;
+        repeat: (interval: Lazy<number>, repeatCount: number, func: () => void, thisObject?: Object | undefined, priority?: number) => Timer | undefined;
     };
-}
-declare namespace feng3d {
-    /**
-     * The Timer class is the interface to timers, which let you run code on a specified time sequence. Use the start()
-     * method to start a timer. Add an event listener for the timer event to set up code to be run on the timer interval.<br/>
-     * You can create Timer objects to run once or repeat at specified intervals to execute code on a schedule. Depending
-     * on the framerate or the runtime environment (available memory and other factors), the runtime may dispatchEvent events at
-     * slightly offset intervals.
-     * @see egret.TimerEvent
-     * @version Egret 2.4
-     * @platform Web,Native
-     * @includeExample egret/utils/Timer.ts
-     * @language en_US
-     */
-    /**
-     * Timer 类是计时器的接口，它使您能按指定的时间序列运行代码。
-     * 使用 start() 方法来启动计时器。为 timer 事件添加事件侦听器，以便将代码设置为按计时器间隔运行。
-     * 可以创建 Timer 对象以运行一次或按指定间隔重复运行，从而按计划执行代码。
-     * 根据 Egret 的帧速率或运行时环境（可用内存和其他因素），运行时调度事件的间隔可能稍有不同。
-     * @see egret.TimerEvent
-     * @version Egret 2.4
-     * @platform Web,Native
-     * @includeExample egret/utils/Timer.ts
-     * @language zh_CN
-     */
-    class Timer extends EventDispatcher {
-        /**
-         * Constructs a new Timer object with the specified delay and repeatCount states.
-         * @param delay The delay between timer events, in milliseconds. A delay lower than 20 milliseconds is not recommended.
-         * Timer frequency is limited to 60 frames per second, meaning a delay lower than 16.6 milliseconds causes runtime problems.
-         * @param repeatCount Specifies the number of repetitions. If zero, the timer repeats indefinitely.If nonzero,
-         * the timer runs the specified number of times and then stops.
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 使用指定的 delay 和 repeatCount 状态构造新的 Timer 对象。
-         * @param delay 计时器事件间的延迟（以毫秒为单位）。建议 delay 不要低于 20 毫秒。计时器频率不得超过 60 帧/秒，这意味着低于 16.6 毫秒的延迟可导致出现运行时问题。
-         * @param repeatCount 指定重复次数。如果为零，则计时器将持续不断重复运行。如果不为 0，则将运行计时器，运行次数为指定的次数，然后停止。
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        constructor(delay: number, repeatCount?: number);
-        /**
-         * @private
-         */
-        private _delay;
-        /**
-         * The delay between timer events, in milliseconds. A delay lower than 20 milliseconds is not recommended.<br/>
-         * Note: Timer frequency is limited to 60 frames per second, meaning a delay lower than 16.6 milliseconds causes runtime problems.
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 计时器事件间的延迟（以毫秒为单位）。如果在计时器正在运行时设置延迟间隔，则计时器将按相同的 repeatCount 迭代重新启动。<br/>
-         * 注意：建议 delay 不要低于 20 毫秒。计时器频率不得超过 60 帧/秒，这意味着低于 16.6 毫秒的延迟可导致出现运行时问题。
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        delay: number;
-        /**
-         * The total number of times the timer is set to run. If the repeat count is set to 0, the timer continues indefinitely,
-         * until the stop() method is invoked or the program stops. If the repeat count is nonzero, the timer runs the specified
-         * number of times. If repeatCount is set to a total that is the same or less then currentCount the timer stops and will not fire again.
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 设置的计时器运行总次数。如果重复计数设置为 0，则计时器将持续不断运行，或直至调用了 stop() 方法或节目停止。
-         * 如果重复计数不为 0，则将运行计时器，运行次数为指定的次数。如果设置的 repeatCount 总数等于或小于 currentCount，则计时器将停止并且不会再次触发。
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        repeatCount: number;
-        /**
-         * @private
-         */
-        private _currentCount;
-        /**
-         * The total number of times the timer has fired since it started at zero. If the timer has been reset, only the fires since the reset are counted.
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 计时器从 0 开始后触发的总次数。如果已重置了计时器，则只会计入重置后的触发次数。
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        readonly currentCount: number;
-        /**
-         * @private
-         */
-        private _running;
-        /**
-         * The timer's current state; true if the timer is running, otherwise false.
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 计时器的当前状态；如果计时器正在运行，则为 true，否则为 false。
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        readonly running: boolean;
-        /**
-         * Stops the timer, if it is running, and sets the currentCount property back to 0, like the reset button of a stopwatch.
-         * Then, when start() is called, the timer instance runs for the specified number of repetitions, as set by the repeatCount value.
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。然后，在调用 start() 后，将运行计时器实例，运行次数为指定的重复次数（由 repeatCount 值设置）。
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        reset(): void;
-        /**
-         * Starts the timer, if it is not already running.
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 如果计时器尚未运行，则启动计时器。
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        start(): void;
-        /**
-         * Stops the timer. When start() is called after stop(), the timer instance runs for the remaining number of
-         * repetitions, as set by the repeatCount property.
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language en_US
-         */
-        /**
-         * 停止计时器。如果在调用 stop() 后调用 start()，则将继续运行计时器实例，运行次数为剩余的 重复次数（由 repeatCount 属性设置）。
-         * @version Egret 2.4
-         * @platform Web,Native
-         * @language zh_CN
-         */
-        stop(): void;
-        /**
-         * @private
-         */
-        private updateInterval;
-        /**
-         * @private
-         */
-        private lastCount;
-        /**
-         * @private
-         */
-        private lastTimeStamp;
-        /**
-         * @private
-         * Ticker以60FPS频率刷新此方法
-         */
-        $update(): boolean;
-    }
-    interface TimerEventMap {
-        timer: any;
-        timerComplete: any;
-    }
     interface Timer {
-        once<K extends keyof TimerEventMap>(type: K, listener: (event: Event<TimerEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof TimerEventMap>(type: K, data?: TimerEventMap[K], bubbles?: boolean): any;
-        has<K extends keyof TimerEventMap>(type: K): boolean;
-        on<K extends keyof TimerEventMap>(type: K, listener: (event: Event<TimerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof TimerEventMap>(type?: K, listener?: (event: Event<TimerEventMap[K]>) => any, thisObject?: any): any;
+        currentCount: number;
+        delay: Lazy<number>;
+        repeatCount: number;
+        start: () => Timer;
+        stop: () => Timer;
+        reset: () => Timer;
     }
 }
 declare namespace feng3d {
@@ -2871,12 +4000,22 @@ Event.on(shortCut,<any>"run", function(e:Event):void
          * 添加快捷键
          * @param shortcuts		快捷键列表
          */
-        addShortCuts(shortcuts: ShortCutItem[]): void;
+        addShortCuts(shortcuts: {
+            key: string;
+            command?: string;
+            stateCommand?: string;
+            when?: string;
+        }[]): void;
         /**
          * 删除快捷键
          * @param shortcuts		快捷键列表
          */
-        removeShortCuts(shortcuts: ShortCutItem[]): void;
+        removeShortCuts(shortcuts: {
+            key: string;
+            command?: string;
+            stateCommand?: string;
+            when?: string;
+        }[]): void;
         /**
          * 移除所有快捷键
          */
@@ -2901,12 +4040,6 @@ Event.on(shortCut,<any>"run", function(e:Event):void
          */
         private getShortcutUniqueKey(shortcut);
     }
-    type ShortCutItem = {
-        key: string;
-        command?: string;
-        stateCommand?: string;
-        when?: string;
-    };
 }
 declare namespace feng3d {
     /**
@@ -4962,36 +6095,36 @@ declare namespace feng3d {
         /**
          * 模型矩阵
          */
-        u_modelMatrix: Matrix3D;
+        u_modelMatrix: Matrix4x4;
         /**
          * （view矩阵）摄像机逆矩阵
          */
-        u_viewMatrix: Matrix3D;
+        u_viewMatrix: Matrix4x4;
         /**
          * 投影矩阵
          */
-        u_projectionMatrix: Matrix3D;
+        u_projectionMatrix: Matrix4x4;
         /**
          * 摄像机矩阵
          */
-        u_cameraMatrix: Matrix3D;
+        u_cameraMatrix: Matrix4x4;
         /**
          * 模型-摄像机 矩阵
          */
-        u_mvMatrix: Matrix3D;
+        u_mvMatrix: Matrix4x4;
         /**
          * 模型逆转置矩阵,用于计算全局法线
          * 参考：http://blog.csdn.net/christina123y/article/details/5963679
          */
-        u_ITModelMatrix: Matrix3D;
+        u_ITModelMatrix: Matrix4x4;
         /**
          * 模型-摄像机 逆转置矩阵，用于计算摄像机空间法线
          */
-        u_ITMVMatrix: Matrix3D;
+        u_ITMVMatrix: Matrix4x4;
         /**
          * 世界投影矩阵
          */
-        u_viewProjection: Matrix3D;
+        u_viewProjection: Matrix4x4;
         u_diffuseInput: Color;
         /**
          * 透明阈值，用于透明检测
@@ -5048,23 +6181,23 @@ declare namespace feng3d {
         /**
          * 地形块重复次数
          */
-        u_splatRepeats: Vector3D;
+        u_splatRepeats: Vector4;
         /**
          * 地形混合贴图尺寸
          */
-        u_splatMergeTextureSize: Point;
+        u_splatMergeTextureSize: Vector2;
         /**
          * 图片尺寸
          */
-        u_imageSize: Point;
+        u_imageSize: Vector2;
         /**
          * 地形块尺寸
          */
-        u_tileSize: Point;
+        u_tileSize: Vector2;
         /**
          * 地形块偏移
          */
-        u_tileOffset: Vector3D[];
+        u_tileOffset: Vector4[];
         /**
          * 最大lod
          */
@@ -5076,13 +6209,13 @@ declare namespace feng3d {
         /**
          * lod0时在贴图中的uv缩放偏移向量
          */
-        u_lod0vec: Vector3D;
+        u_lod0vec: Vector4;
         /******************************************************/
         /******************************************************/
         /**
          * 点光源位置数组
          */
-        u_pointLightPositions: Vector3D[];
+        u_pointLightPositions: Vector3[];
         /**
          * 点光源颜色数组
          */
@@ -5100,7 +6233,7 @@ declare namespace feng3d {
         /**
          * 方向光源方向数组
          */
-        u_directionalLightDirections: Vector3D[];
+        u_directionalLightDirections: Vector3[];
         /**
          * 方向光源颜色数组
          */
@@ -5152,7 +6285,7 @@ declare namespace feng3d {
         /**
          * 骨骼全局矩阵
          */
-        u_skeletonGlobalMatriices: Matrix3D[];
+        u_skeletonGlobalMatriices: Matrix4x4[];
         /**
          * 3D对象编号
          */
@@ -5378,7 +6511,7 @@ declare namespace feng3d {
         /**
          * 属性数据
          */
-        data: Lazy<number[] | Float32Array>;
+        data: Lazy<number[]>;
         private _data;
         private _value;
         /**
@@ -5428,7 +6561,7 @@ declare namespace feng3d {
          * 顶点数据缓冲
          */
         private _indexBufferMap;
-        constructor(name: string, data: Lazy<AttributeDataType>, size?: number, divisor?: number);
+        constructor(name: string, data: Lazy<number[]>, size?: number, divisor?: number);
         /**
          *
          * @param gl
@@ -5696,7 +6829,7 @@ declare namespace feng3d {
         private renderdataChange(name, setfunc, clearfunc);
         createIndexBuffer(indices: Lazy<number[]>): void;
         createUniformData<K extends keyof LazyUniforms>(name: K, data: LazyUniforms[K]): void;
-        createAttributeRenderData<K extends keyof Attributes>(name: K, data: Lazy<AttributeDataType>, size?: number, divisor?: number): void;
+        createAttributeRenderData<K extends keyof Attributes>(name: K, data: Lazy<number[]>, size?: number, divisor?: number): void;
         createvertexCode(vertexCode: string): void;
         createfragmentCode(fragmentCode: string): void;
         createValueMacro<K extends keyof ValueMacros>(name: K, value: number): void;
@@ -5838,7 +6971,7 @@ declare namespace feng3d {
          * @param parent	The transform the Feng3dObject will be parented to.
          * @param worldPositionStays	If when assigning the parent the original world position should be maintained.
          */
-        static instantiate<T extends Feng3dObject>(original: T, position?: Vector3D, rotation?: Quaternion, parent?: Transform, worldPositionStays?: boolean): T | null;
+        static instantiate<T extends Feng3dObject>(original: T, position?: Vector3, rotation?: Quaternion, parent?: Transform, worldPositionStays?: boolean): T | null;
     }
 }
 declare namespace feng3d {
@@ -6073,19 +7206,19 @@ declare namespace feng3d {
         /**
          * 半兰伯特值diff，分段值 4个(0.0,1.0)
          */
-        diffuseSegment: Vector3D;
+        diffuseSegment: Vector4;
         /**
          * 半兰伯特值diff，替换分段值 4个(0.0,1.0)
          */
-        diffuseSegmentValue: Vector3D;
+        diffuseSegmentValue: Vector4;
         specularSegment: number;
         cartoon_Anti_aliasing: boolean;
         _cartoon_Anti_aliasing: boolean;
         init(gameObject: GameObject): void;
     }
     interface Uniforms {
-        u_diffuseSegment: Vector3D;
-        u_diffuseSegmentValue: Vector3D;
+        u_diffuseSegment: Vector4;
+        u_diffuseSegmentValue: Vector4;
         u_specularSegment: number;
     }
     /**
@@ -6163,47 +7296,47 @@ declare namespace feng3d {
          */
         constructor();
         init(gameObject: GameObject): void;
-        readonly scenePosition: Vector3D;
+        readonly scenePosition: Vector3;
         readonly parent: Transform | null;
         /**
          * Matrix that transforms a point from local space into world space.
          */
-        localToWorldMatrix: Matrix3D;
+        localToWorldMatrix: Matrix4x4;
         /**
          * 本地转世界逆转置矩阵
          */
-        readonly ITlocalToWorldMatrix: Matrix3D;
+        readonly ITlocalToWorldMatrix: Matrix4x4;
         /**
          * Matrix that transforms a point from world space into local space (Read Only).
          */
-        readonly worldToLocalMatrix: Matrix3D;
-        readonly localToWorldRotationMatrix: Matrix3D;
+        readonly worldToLocalMatrix: Matrix4x4;
+        readonly localToWorldRotationMatrix: Matrix4x4;
         /**
          * Transforms direction from local space to world space.
          */
-        transformDirection(direction: Vector3D): Vector3D;
+        transformDirection(direction: Vector3): Vector3;
         /**
          * Transforms position from local space to world space.
          */
-        transformPoint(position: Vector3D): Vector3D;
+        transformPoint(position: Vector3): Vector3;
         /**
          * Transforms vector from local space to world space.
          */
-        transformVector(vector: Vector3D): Vector3D;
+        transformVector(vector: Vector3): Vector3;
         /**
          * Transforms a direction from world space to local space. The opposite of Transform.TransformDirection.
          */
-        inverseTransformDirection(direction: Vector3D): Vector3D;
+        inverseTransformDirection(direction: Vector3): Vector3;
         /**
          * Transforms position from world space to local space.
          */
-        inverseTransformPoint(position: Vector3D): Vector3D;
+        inverseTransformPoint(position: Vector3): Vector3;
         /**
          * Transforms a vector from world space to local space. The opposite of Transform.TransformVector.
          */
-        inverseTransformVector(vector: Vector3D): Vector3D;
+        inverseTransformVector(vector: Vector3): Vector3;
         dispose(): void;
-        protected updateLocalToWorldMatrix(): Matrix3D;
+        protected updateLocalToWorldMatrix(): Matrix4x4;
         protected invalidateSceneTransform(): void;
         x: number;
         y: number;
@@ -6217,35 +7350,35 @@ declare namespace feng3d {
         /**
          * @private
          */
-        matrix3d: Matrix3D;
+        matrix3d: Matrix4x4;
         /**
          * 旋转矩阵
          */
-        readonly rotationMatrix: Matrix3D;
+        readonly rotationMatrix: Matrix4x4;
         /**
          * 返回保存位置数据的Vector3D对象
          */
-        position: Vector3D;
-        rotation: Vector3D;
+        position: Vector3;
+        rotation: Vector3;
         /**
          * 四元素旋转
          */
         orientation: Quaternion;
-        scale: Vector3D;
-        readonly forwardVector: Vector3D;
-        readonly rightVector: Vector3D;
-        readonly upVector: Vector3D;
-        readonly backVector: Vector3D;
-        readonly leftVector: Vector3D;
-        readonly downVector: Vector3D;
+        scale: Vector3;
+        readonly forwardVector: Vector3;
+        readonly rightVector: Vector3;
+        readonly upVector: Vector3;
+        readonly backVector: Vector3;
+        readonly leftVector: Vector3;
+        readonly downVector: Vector3;
         moveForward(distance: number): void;
         moveBackward(distance: number): void;
         moveLeft(distance: number): void;
         moveRight(distance: number): void;
         moveUp(distance: number): void;
         moveDown(distance: number): void;
-        translate(axis: Vector3D, distance: number): void;
-        translateLocal(axis: Vector3D, distance: number): void;
+        translate(axis: Vector3, distance: number): void;
+        translateLocal(axis: Vector3, distance: number): void;
         pitch(angle: number): void;
         yaw(angle: number): void;
         roll(angle: number): void;
@@ -6257,8 +7390,8 @@ declare namespace feng3d {
          * @param    pivotPoint         旋转中心点
          *
          */
-        rotate(axis: Vector3D, angle: number, pivotPoint?: Vector3D): void;
-        lookAt(target: Vector3D, upAxis?: Vector3D): void;
+        rotate(axis: Vector3, angle: number, pivotPoint?: Vector3): void;
+        lookAt(target: Vector3, upAxis?: Vector3): void;
         disposeAsset(): void;
         invalidateTransform(): void;
         protected updateMatrix3D(): void;
@@ -6276,12 +7409,12 @@ declare namespace feng3d {
         protected _sx: number;
         protected _sy: number;
         protected _sz: number;
-        protected _matrix3d: Matrix3D;
-        protected _rotationMatrix3d: Matrix3D | null;
-        protected _localToWorldMatrix: Matrix3D | null;
-        protected _ITlocalToWorldMatrix: Matrix3D | null;
-        protected _worldToLocalMatrix: Matrix3D | null;
-        protected _localToWorldRotationMatrix: Matrix3D | null;
+        protected _matrix3d: Matrix4x4;
+        protected _rotationMatrix3d: Matrix4x4 | null;
+        protected _localToWorldMatrix: Matrix4x4 | null;
+        protected _ITlocalToWorldMatrix: Matrix4x4 | null;
+        protected _worldToLocalMatrix: Matrix4x4 | null;
+        protected _localToWorldRotationMatrix: Matrix4x4 | null;
         private invalidateRotation();
         private invalidateScale();
         private invalidatePosition();
@@ -6599,7 +7732,7 @@ declare namespace feng3d {
         /**
          * 边界
          */
-        readonly bounds: IBounding | null;
+        readonly bounds: Box | null;
         /**
          * @inheritDoc
          */
@@ -6613,7 +7746,7 @@ declare namespace feng3d {
         /**
          * 世界边界
          */
-        readonly worldBounds: IBounding | null;
+        readonly worldBounds: Box | null;
         /**
          * 更新世界边界
          */
@@ -6677,7 +7810,7 @@ declare namespace feng3d {
         /**
          * 鼠标在3D视图中的位置
          */
-        readonly mousePos: Point;
+        readonly mousePos: Vector2;
         readonly mouseinview: boolean;
         readonly viewRect: Rectangle;
         /**
@@ -6760,7 +7893,7 @@ declare namespace feng3d {
          * 当前骨骼姿势的全局矩阵
          * @see #globalPose
          */
-        readonly globalMatrices: Matrix3D[];
+        readonly globalMatrices: Matrix4x4[];
         private jointGameobjects;
         private jointGameObjectMap;
         private _globalPropertiesInvalid;
@@ -6787,7 +7920,7 @@ declare namespace feng3d {
          * 缓存，通过寻找父节点获得
          */
         private cacheSkeletonComponent;
-        initMatrix3d: Matrix3D;
+        initMatrix3d: Matrix4x4;
         /**
          * 创建一个骨骼动画类
          */
@@ -6960,7 +8093,6 @@ declare namespace feng3d {
         on<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any): any;
     }
-    type AttributeDataType = number[] | Float32Array;
     /**
      * 几何体
      * @author feng 2016-04-28
@@ -6983,7 +8115,7 @@ declare namespace feng3d {
          */
         protected _attributes: {
             [name: string]: {
-                data: AttributeDataType;
+                data: number[];
                 size: number;
             };
         };
@@ -7004,19 +8136,19 @@ declare namespace feng3d {
         /**
          * 坐标数据
          */
-        positions: number[] | Float32Array;
+        positions: number[];
         /**
          * uv数据
          */
-        uvs: number[] | Float32Array;
+        uvs: number[];
         /**
          * 法线数据
          */
-        normals: number[] | Float32Array;
+        normals: number[];
         /**
          * 切线数据
          */
-        tangents: number[] | Float32Array;
+        tangents: number[];
         /**
          * 创建一个几何体
          */
@@ -7041,13 +8173,13 @@ declare namespace feng3d {
          * @param size                  顶点数据尺寸
          * @param autogenerate          是否自动生成数据
          */
-        setVAData<K extends keyof Attributes>(vaId: K, data: number[] | Float32Array, size: number): void;
+        setVAData<K extends keyof Attributes>(vaId: K, data: number[], size: number): void;
         /**
          * 获取顶点属性数据
          * @param vaId 数据类型编号
          * @return 顶点属性数据
          */
-        getVAData1(vaId: string): number[] | Float32Array;
+        getVAData1(vaId: string): number[];
         /**
          * 顶点数量
          */
@@ -7057,12 +8189,12 @@ declare namespace feng3d {
          * @param geometry          被添加的几何体
          * @param transform         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
          */
-        addGeometry(geometry: Geometry, transform?: Matrix3D): void;
+        addGeometry(geometry: Geometry, transform?: Matrix4x4): void;
         /**
          * 应用变换矩阵
          * @param transform 变换矩阵
          */
-        applyTransformation(transform: Matrix3D): void;
+        applyTransformation(transform: Matrix4x4): void;
         /**
          * 纹理U缩放，默认为1。
          */
@@ -7081,7 +8213,7 @@ declare namespace feng3d {
          * 包围盒失效
          */
         invalidateBounds(): void;
-        readonly bounding: IBounding | null;
+        readonly bounding: Box | null;
         /**
          * 克隆一个几何体
          */
@@ -7103,7 +8235,7 @@ declare namespace feng3d {
          */
         attributes: {
             [name: string]: {
-                data: number[] | Float32Array;
+                data: number[];
                 size: number;
             };
         };
@@ -7111,10 +8243,10 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     var GeometryUtils: {
-        createIndices: (positions: number[] | Float32Array) => number[];
-        createUVs: (positions: number[] | Float32Array) => number[];
-        createVertexNormals: (indices: number[] | Uint16Array, positions: number[] | Float32Array, useFaceWeights?: boolean) => number[];
-        createVertexTangents: (indices: number[] | Uint16Array, positions: number[] | Float32Array, uvs: number[] | Float32Array, useFaceWeights?: boolean) => number[];
+        createIndices: (positions: number[]) => number[];
+        createUVs: (positions: number[]) => number[];
+        createVertexNormals: (indices: number[] | Uint16Array, positions: number[], useFaceWeights?: boolean) => number[];
+        createVertexTangents: (indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights?: boolean) => number[];
     };
 }
 declare namespace feng3d {
@@ -7154,15 +8286,15 @@ declare namespace feng3d {
      * @author feng 2016-10-16
      */
     class PointInfo {
-        position: Vector3D;
+        position: Vector3;
         color: Color;
-        normal: Vector3D;
-        uv: Point;
+        normal: Vector3;
+        uv: Vector2;
         /**
          * 创建点
          * @param position 坐标
          */
-        constructor(position?: Vector3D, color?: Color, uv?: Point, normal?: Vector3D);
+        constructor(position?: Vector3, color?: Color, uv?: Vector2, normal?: Vector3);
     }
 }
 declare namespace feng3d {
@@ -7208,8 +8340,8 @@ declare namespace feng3d {
      * @author feng 2016-10-16
      */
     class Segment {
-        start: Vector3D;
-        end: Vector3D;
+        start: Vector3;
+        end: Vector3;
         startColor: Color;
         endColor: Color;
         /**
@@ -7220,7 +8352,7 @@ declare namespace feng3d {
          * @param colorEnd 终点颜色
          * @param thickness 线段厚度
          */
-        constructor(start: Vector3D, end: Vector3D, colorStart?: Color, colorEnd?: Color);
+        constructor(start: Vector3, end: Vector3, colorStart?: Color, colorEnd?: Color);
     }
 }
 declare namespace feng3d {
@@ -7273,7 +8405,7 @@ declare namespace feng3d {
          */
         private _aspectRatio;
         aspectRatio: number;
-        protected _matrix: Matrix3D | null;
+        protected _matrix: Matrix4x4 | null;
         protected _scissorRect: Rectangle;
         protected _viewPort: Rectangle;
         protected _frustumCorners: number[];
@@ -7289,18 +8421,18 @@ declare namespace feng3d {
         /**
          * 投影矩阵
          */
-        matrix: Matrix3D;
+        matrix: Matrix4x4;
         /**
          * 场景坐标投影到屏幕坐标
          * @param point3d 场景坐标
          * @param v 屏幕坐标（输出）
          * @return 屏幕坐标
          */
-        project(point3d: Vector3D, v?: Vector3D): Vector3D;
+        project(point3d: Vector3, v?: Vector3): Vector3;
         /**
          * 投影逆矩阵
          */
-        readonly unprojectionMatrix: Matrix3D;
+        readonly unprojectionMatrix: Matrix4x4;
         /**
          * 屏幕坐标投影到摄像机空间坐标
          * @param nX 屏幕坐标X -1（左） -> 1（右）
@@ -7309,7 +8441,7 @@ declare namespace feng3d {
          * @param v 场景坐标（输出）
          * @return 场景坐标
          */
-        abstract unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
+        abstract unproject(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
         /**
          * 投影矩阵失效
          */
@@ -7317,7 +8449,7 @@ declare namespace feng3d {
         /**
          * 更新投影矩阵
          */
-        protected abstract updateMatrix(): Matrix3D;
+        protected abstract updateMatrix(): Matrix4x4;
     }
 }
 declare namespace feng3d {
@@ -7327,7 +8459,7 @@ declare namespace feng3d {
      */
     class FreeMatrixLens extends LensBase {
         constructor();
-        protected updateMatrix(): Matrix3D;
+        protected updateMatrix(): Matrix4x4;
         /**
          * 屏幕坐标投影到摄像机空间坐标
          * @param nX 屏幕坐标X -1（左） -> 1（右）
@@ -7336,7 +8468,7 @@ declare namespace feng3d {
          * @param v 场景坐标（输出）
          * @return 场景坐标
          */
-        unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D;
+        unproject(nX: number, nY: number, sZ: number, v: Vector3): Vector3;
     }
 }
 declare namespace feng3d {
@@ -7368,8 +8500,8 @@ declare namespace feng3d {
          * 焦距
          */
         focalLength: number;
-        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
-        protected updateMatrix(): Matrix3D;
+        unproject(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
+        protected updateMatrix(): Matrix4x4;
     }
 }
 declare namespace feng3d {
@@ -7394,8 +8526,8 @@ declare namespace feng3d {
         private _lens;
         private _viewProjection;
         private _viewProjectionDirty;
-        private _frustumPlanes;
-        private _frustumPlanesDirty;
+        private _frustum;
+        private _frustumDirty;
         private _viewRect;
         /**
          * 视窗矩形
@@ -7417,7 +8549,7 @@ declare namespace feng3d {
         /**
          * 场景投影矩阵，世界空间转投影空间
          */
-        readonly viewProjection: Matrix3D;
+        readonly viewProjection: Matrix4x4;
         /**
          * 处理场景变换改变事件
          */
@@ -7438,7 +8570,7 @@ declare namespace feng3d {
          * @param point3d 世界坐标
          * @return 屏幕的绝对坐标
          */
-        project(point3d: Vector3D): Vector3D;
+        project(point3d: Vector3): Vector3;
         /**
          * 屏幕坐标投影到场景坐标
          * @param nX 屏幕坐标X ([0-width])
@@ -7447,40 +8579,22 @@ declare namespace feng3d {
          * @param v 场景坐标（输出）
          * @return 场景坐标
          */
-        unproject(sX: number, sY: number, sZ: number, v?: Vector3D): Vector3D;
+        unproject(sX: number, sY: number, sZ: number, v?: Vector3): Vector3;
         /**
          * 屏幕坐标转GPU坐标
          * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
          * @return GPU坐标 (x:[-1,1],y:[-1-1])
          */
-        screenToGpuPosition(screenPos: Point): Point;
+        screenToGpuPosition(screenPos: Vector2): Vector2;
         /**
          * 获取单位像素在指定深度映射的大小
          * @param   depth   深度
          */
         getScaleByDepth(depth: number): number;
         /**
-         * 视锥体面
+         * 视锥体
          */
-        readonly frustumPlanes: Plane3D[];
-        /**
-         * 更新视锥体6个面，平面均朝向视锥体内部
-         * @see http://www.linuxgraphics.cn/graphics/opengl_view_frustum_culling.html
-         */
-        private updateFrustum();
-    }
-}
-declare namespace feng3d {
-    var bounding: {
-        getboundingpoints: (bounding: IBounding) => Vector3D[];
-        transform: (bounding: IBounding, matrix: Matrix3D, outbounding?: IBounding | undefined) => IBounding;
-        containsPoint: (bounding: IBounding, position: Vector3D) => boolean;
-        isInFrustum: (bounding: IBounding, planes: Plane3D[], numPlanes: number) => boolean;
-        rayIntersection: (bounding: IBounding, ray3D: Ray3D, targetNormal: Vector3D) => number;
-    };
-    interface IBounding {
-        min: Vector3D;
-        max: Vector3D;
+        readonly frustum: Frustum;
     }
 }
 declare namespace feng3d {
@@ -7857,7 +8971,7 @@ declare namespace feng3d {
         /**
          * 纹理尺寸
          */
-        readonly size: Point;
+        readonly size: Vector2;
         constructor(url?: string);
         /**
          * 处理加载完成
@@ -8346,14 +9460,14 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class LookAtController extends ControllerBase {
-        protected _lookAtPosition: Vector3D;
+        protected _lookAtPosition: Vector3;
         protected _lookAtObject: GameObject;
-        protected _origin: Vector3D;
-        protected _upAxis: Vector3D;
-        protected _pos: Vector3D;
+        protected _origin: Vector3;
+        protected _upAxis: Vector3;
+        protected _pos: Vector3;
         constructor(target?: GameObject, lookAtObject?: GameObject);
-        upAxis: Vector3D;
-        lookAtPosition: Vector3D;
+        upAxis: Vector3;
+        lookAtPosition: Vector3;
         lookAtObject: GameObject;
         update(interpolate?: boolean): void;
     }
@@ -8458,11 +9572,11 @@ declare namespace feng3d {
         /**
          * 碰撞的uv坐标
          */
-        uv?: Point;
+        uv?: Vector2;
         /**
          * 实体上碰撞本地坐标
          */
-        localPosition?: Vector3D;
+        localPosition?: Vector3;
         /**
          * 射线顶点到实体的距离
          */
@@ -8474,7 +9588,7 @@ declare namespace feng3d {
         /**
          * 本地坐标碰撞法线
          */
-        localNormal: Vector3D;
+        localNormal: Vector3;
         /**
          * 场景中碰撞射线
          */
@@ -8500,9 +9614,9 @@ declare namespace feng3d {
     var as3PickingCollider: {
         testSubMeshCollision: (geometry: Geometry, localRay: Ray3D, shortestCollisionDistance?: number, bothSides?: boolean, findClosest?: boolean) => {
             rayEntryDistance: number;
-            localPosition: Vector3D;
-            localNormal: Vector3D;
-            uv: Point;
+            localPosition: Vector3;
+            localNormal: Vector3;
+            uv: Vector2;
             index: number;
         } | null;
     };
@@ -8590,7 +9704,7 @@ declare namespace feng3d {
         private _splatTexture3;
         blendTexture: Texture2D;
         private _blendTexture;
-        splatRepeats: Vector3D;
+        splatRepeats: Vector4;
         private _splatRepeats;
         /**
          * 构建材质
@@ -8609,12 +9723,12 @@ declare namespace feng3d {
         private _splatMergeTexture;
         blendTexture: Texture2D;
         private _blendTexture;
-        splatRepeats: Vector3D;
+        splatRepeats: Vector4;
         private _splatRepeats;
         /**
          * 构建材质
          */
-        constructor(blendUrl?: string, splatMergeUrl?: string, splatRepeats?: Vector3D);
+        constructor(blendUrl?: string, splatMergeUrl?: string, splatRepeats?: Vector4);
     }
 }
 declare namespace feng3d {
@@ -8644,23 +9758,23 @@ declare namespace feng3d {
         /**
          * 位移
          */
-        position: Vector3D;
+        position: Vector3;
         /**
          * 旋转
          */
-        rotation: Vector3D;
+        rotation: Vector3;
         /**
          * 缩放
          */
-        scale: Vector3D;
+        scale: Vector3;
         /**
          * 速度
          */
-        velocity: Vector3D;
+        velocity: Vector3;
         /**
          * 加速度
          */
-        acceleration: Vector3D;
+        acceleration: Vector3;
         /**
          * 颜色
          */
@@ -8678,11 +9792,11 @@ declare namespace feng3d {
         /**
          * 加速度
          */
-        acceleration: Vector3D;
+        acceleration: Vector3;
         /**
          * 公告牌矩阵
          */
-        billboardMatrix: Matrix3D;
+        billboardMatrix: Matrix4x4;
     }
 }
 declare namespace feng3d {
@@ -8790,7 +9904,7 @@ declare namespace feng3d {
          */
         camera: Camera;
         /** 广告牌轴线 */
-        billboardAxis: Vector3D;
+        billboardAxis: Vector3;
         setRenderState(particleAnimator: ParticleAnimator): void;
     }
 }
@@ -8881,9 +9995,9 @@ declare namespace feng3d {
         /** 关节名字 */
         name: string;
         /** 骨骼全局矩阵 */
-        matrix3D: Matrix3D;
+        matrix3D: Matrix4x4;
         children: number[];
-        readonly invertMatrix3D: Matrix3D;
+        readonly invertMatrix3D: Matrix4x4;
         private _invertMatrix3D;
     }
 }
@@ -8926,14 +10040,14 @@ declare namespace feng3d {
          */
         path: PropertyClipPath;
         propertyName: string;
-        type: "Number" | "Vector3D" | "Quaternion";
+        type: "Number" | "Vector3" | "Quaternion";
         propertyValues: [number, number[]][];
         cacheIndex: number;
     }
     /**
-     * [time:number,value:number | Vector3D | Quaternion]
+     * [time:number,value:number | Vector3 | Quaternion]
      */
-    type ClipPropertyType = number | Vector3D | Quaternion;
+    type ClipPropertyType = number | Vector3 | Quaternion;
     type PropertyClipPath = [PropertyClipPathItemType, string][];
     enum PropertyClipPathItemType {
         GameObject = 0,
@@ -9220,9 +10334,9 @@ declare namespace feng3d.war3 {
         /** 动作间隔 */
         interval: Interval;
         /** 最小范围 */
-        MinimumExtent: Vector3D;
+        MinimumExtent: Vector3;
         /** 最大范围 */
-        MaximumExtent: Vector3D;
+        MaximumExtent: Vector3;
         /** 半径范围 */
         BoundsRadius: number;
         /** 发生频率 */
@@ -9238,9 +10352,9 @@ declare namespace feng3d.war3 {
      */
     class AnimInfo1 {
         /** 最小范围 */
-        MinimumExtent: Vector3D;
+        MinimumExtent: Vector3;
         /** 最大范围 */
-        MaximumExtent: Vector3D;
+        MaximumExtent: Vector3;
         /** 半径范围 */
         BoundsRadius: number;
     }
@@ -9282,11 +10396,11 @@ declare namespace feng3d.war3 {
         /** 骨骼角度动画 */
         Rotation: BoneRotation;
         /** 中心位置 */
-        pivotPoint: Vector3D;
+        pivotPoint: Vector3;
         /** 当前对象变换矩阵 */
-        c_transformation: Matrix3D;
+        c_transformation: Matrix4x4;
         /** 当前全局变换矩阵 */
-        c_globalTransformation: Matrix3D;
+        c_globalTransformation: Matrix4x4;
         calculateTransformation(keyFrameTime: number): void;
         buildAnimationclip(animationclip: AnimationClip, __chache__: {
             [key: string]: PropertyClip;
@@ -9302,7 +10416,7 @@ declare namespace feng3d.war3 {
         /**  */
         GlobalSeqId: number;
         scalings: Scaling[];
-        getScaling(keyFrameTime: number): Vector3D;
+        getScaling(keyFrameTime: number): Vector3;
     }
     /**
      * 骨骼的位移信息
@@ -9314,7 +10428,7 @@ declare namespace feng3d.war3 {
         /**  */
         GlobalSeqId: number;
         translations: Translation[];
-        getTranslation(keyFrameTime: number): Vector3D;
+        getTranslation(keyFrameTime: number): Vector3;
     }
     /**
      * 纹理
@@ -9344,9 +10458,9 @@ declare namespace feng3d.war3 {
         /** 顶点分组 */
         Groups: number[][];
         /** 最小范围 */
-        MinimumExtent: Vector3D;
+        MinimumExtent: Vector3;
         /** 最大范围 */
-        MaximumExtent: Vector3D;
+        MaximumExtent: Vector3;
         /** 半径范围 */
         BoundsRadius: number;
         /** 动作信息 */
@@ -9431,9 +10545,9 @@ declare namespace feng3d.war3 {
         /** 混合时间 */
         BlendTime: number;
         /** 最小范围 */
-        MinimumExtent: Vector3D;
+        MinimumExtent: Vector3;
         /** 最大范围 */
-        MaximumExtent: Vector3D;
+        MaximumExtent: Vector3;
     }
     /**
      *
@@ -9455,9 +10569,9 @@ declare namespace feng3d.war3 {
         /** 时间 */
         time: number;
         /**  */
-        value: Vector3D;
-        InTan: Vector3D;
-        OutTan: Vector3D;
+        value: Vector3;
+        InTan: Vector3;
+        OutTan: Vector3;
     }
     /**
      *
@@ -9467,9 +10581,9 @@ declare namespace feng3d.war3 {
         /** 时间 */
         time: number;
         /**  */
-        value: Vector3D;
-        InTan: Vector3D;
-        OutTan: Vector3D;
+        value: Vector3;
+        InTan: Vector3;
+        OutTan: Vector3;
     }
 }
 declare namespace feng3d.war3 {
@@ -9497,7 +10611,7 @@ declare namespace feng3d.war3 {
         /** 骨骼动画列表 */
         bones: BoneObject[];
         /** 骨骼轴心坐标 */
-        pivotPoints: Vector3D[];
+        pivotPoints: Vector3[];
         /** 顶点最大关节关联数 */
         _maxJointCount: number;
         root: string;

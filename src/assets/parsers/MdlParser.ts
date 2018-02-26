@@ -790,7 +790,7 @@ namespace feng3d.war3
 			if (token != "{")
 				sendParseError(token);
 
-			var vertex: Vector3D;
+			var vertex: Vector3;
 			for (var i: number = 0; i < len; i++)
 			{
 				vertex = parseVector3D();
@@ -818,7 +818,7 @@ namespace feng3d.war3
 			if (token != "{")
 				sendParseError(token);
 
-			var vertex: Vector3D;
+			var vertex: Vector3;
 			for (var i: number = 0; i < len; i++)
 			{
 				vertex = parseVector3D();
@@ -846,7 +846,7 @@ namespace feng3d.war3
 			if (token != "{")
 				sendParseError(token);
 
-			var uv: Point;
+			var uv: Vector2;
 			for (var i: number = 0; i < len; i++)
 			{
 				uv = parsePoint();
@@ -1204,9 +1204,9 @@ namespace feng3d.war3
 		/**
 		 * 解析骨骼轴心坐标
 		 */
-		function parsePivotPoints(): Vector3D[]
+		function parsePivotPoints(): Vector3[]
 		{
-			var points: Vector3D[] = [];
+			var points: Vector3[] = [];
 
 			var len: number = getNextInt();
 
@@ -1214,7 +1214,7 @@ namespace feng3d.war3
 
 			for (var i: number = 0; i < len; i++)
 			{
-				var point: Vector3D = parseVector3D();
+				var point: Vector3 = parseVector3D();
 				points.push(point);
 			}
 
@@ -1226,9 +1226,9 @@ namespace feng3d.war3
 		/**
 		 * 解析3d向量
 		 */
-		function parseVector3D(): Vector3D
+		function parseVector3D(): Vector3
 		{
-			var vec: Vector3D = new Vector3D();
+			var vec: Vector3 = new Vector3();
 			var ch: string = getNextToken();
 
 			if (ch != "{")
@@ -1269,9 +1269,9 @@ namespace feng3d.war3
 		/**
 		 * 解析2d坐标
 		 */
-		function parsePoint(): Point
+		function parsePoint(): Vector2
 		{
-			var point: Point = new Point();
+			var point: Vector2 = new Vector2();
 			var ch: string = getNextToken();
 
 			if (ch != "{")

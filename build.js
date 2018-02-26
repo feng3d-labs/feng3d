@@ -11,6 +11,7 @@ require("./shaderpack.js");
  */
 watchProject([
     __dirname,
+    __dirname + "/tests",
 ]);
 
 function watchProject(project)

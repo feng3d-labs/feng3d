@@ -109,7 +109,7 @@ namespace feng3d
             );
         }
 
-        createAttributeRenderData<K extends keyof Attributes>(name: K, data: Lazy<AttributeDataType>, size = 3, divisor = 0)
+        createAttributeRenderData<K extends keyof Attributes>(name: K, data: Lazy<number[]>, size = 3, divisor = 0)
         {
             //
             this.renderdataChange(name,

@@ -2,11 +2,11 @@ namespace feng3d
 {
     export class LookAtController extends ControllerBase
     {
-        protected _lookAtPosition: Vector3D;
+        protected _lookAtPosition: Vector3;
         protected _lookAtObject: GameObject;
-        protected _origin: Vector3D = new Vector3D(0.0, 0.0, 0.0);
-        protected _upAxis: Vector3D = Vector3D.Y_AXIS;
-        protected _pos: Vector3D = new Vector3D();
+        protected _origin: Vector3 = new Vector3(0.0, 0.0, 0.0);
+        protected _upAxis: Vector3 = Vector3.Y_AXIS;
+        protected _pos: Vector3 = new Vector3();
 
         constructor(target?: GameObject, lookAtObject?: GameObject)
         {
@@ -15,25 +15,25 @@ namespace feng3d
             if (lookAtObject)
                 this.lookAtObject = lookAtObject;
             else
-                this.lookAtPosition = new Vector3D();
+                this.lookAtPosition = new Vector3();
         }
 
-        get upAxis(): Vector3D
+        get upAxis(): Vector3
         {
             return this._upAxis;
         }
 
-        set upAxis(upAxis: Vector3D)
+        set upAxis(upAxis: Vector3)
         {
             this._upAxis = upAxis;
         }
 
-        get lookAtPosition(): Vector3D
+        get lookAtPosition(): Vector3
         {
             return this._lookAtPosition;
         }
 
-        set lookAtPosition(val: Vector3D)
+        set lookAtPosition(val: Vector3)
         {
             this._lookAtPosition = val;
         }

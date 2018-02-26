@@ -25,12 +25,12 @@ namespace feng3d
         /**
          * 速度
          */
-        private velocity: Vector3D;
+        private velocity: Vector3;
 
         /**
          * 上次鼠标位置
          */
-        private preMousePoint: Point | null;
+        private preMousePoint: Vector2 | null;
 
         private ischange = false;
 
@@ -62,12 +62,12 @@ namespace feng3d
             super.init(gameobject);
 
             this.keyDirectionDic = {};
-            this.keyDirectionDic["a"] = new Vector3D(-1, 0, 0);//左
-            this.keyDirectionDic["d"] = new Vector3D(1, 0, 0);//右
-            this.keyDirectionDic["w"] = new Vector3D(0, 0, 1);//前
-            this.keyDirectionDic["s"] = new Vector3D(0, 0, -1);//后
-            this.keyDirectionDic["e"] = new Vector3D(0, 1, 0);//上
-            this.keyDirectionDic["q"] = new Vector3D(0, -1, 0);//下
+            this.keyDirectionDic["a"] = new Vector3(-1, 0, 0);//左
+            this.keyDirectionDic["d"] = new Vector3(1, 0, 0);//右
+            this.keyDirectionDic["w"] = new Vector3(0, 0, 1);//前
+            this.keyDirectionDic["s"] = new Vector3(0, 0, -1);//后
+            this.keyDirectionDic["e"] = new Vector3(0, 1, 0);//上
+            this.keyDirectionDic["q"] = new Vector3(0, -1, 0);//下
 
             this.keyDownDic = {};
             this.acceleration = 0.0005
@@ -82,7 +82,7 @@ namespace feng3d
 
             this.preMousePoint = null;
             this.mousePoint = null;
-            this.velocity = new Vector3D();
+            this.velocity = new Vector3();
             this.keyDownDic = {};
 
             windowEventProxy.on("keydown", this.onKeydown, this);
@@ -120,19 +120,19 @@ namespace feng3d
             if (this.mousePoint && this.preMousePoint)
             {
                 //计算旋转
-                var offsetPoint = this.mousePoint.subtract(this.preMousePoint)
+                var offsetPoint = this.mousePoint.subTo(this.preMousePoint)
                 offsetPoint.x *= 0.15;
                 offsetPoint.y *= 0.15;
-                // this.targetObject.transform.rotate(Vector3D.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
-                // this.targetObject.transform.rotate(Vector3D.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
+                // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
+                // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
 
                 var matrix3d = this.transform.localToWorldMatrix;
                 matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.position);
-                var up = Vector3D.Y_AXIS;
-                if (matrix3d.up.dotProduct(up) < 0)
+                var up = Vector3.Y_AXIS;
+                if (matrix3d.up.dot(up) < 0)
                 {
                     up = up.clone();
-                    up.scaleBy(-1);
+                    up.scale(-1);
                 }
                 matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);
                 this.transform.localToWorldMatrix = matrix3d;
@@ -142,39 +142,39 @@ namespace feng3d
             }
 
             //计算加速度
-            var accelerationVec = new Vector3D();
+            var accelerationVec = new Vector3();
             for (var key in this.keyDirectionDic)
             {
                 if (this.keyDownDic[key] == true)
                 {
                     var element = this.keyDirectionDic[key];
-                    accelerationVec.incrementBy(element);
+                    accelerationVec.add(element);
                 }
             }
-            accelerationVec.scaleBy(this.acceleration);
+            accelerationVec.scale(this.acceleration);
             //计算速度
-            this.velocity.incrementBy(accelerationVec);
+            this.velocity.add(accelerationVec);
             var right = this.transform.rightVector;
             var up = this.transform.upVector;
             var forward = this.transform.forwardVector;
-            right.scaleBy(this.velocity.x);
-            up.scaleBy(this.velocity.y);
-            forward.scaleBy(this.velocity.z);
+            right.scale(this.velocity.x);
+            up.scale(this.velocity.y);
+            forward.scale(this.velocity.z);
             //计算位移
             var displacement = right.clone();
-            displacement.incrementBy(up);
-            displacement.incrementBy(forward);
+            displacement.add(up);
+            displacement.add(forward);
             this.transform.x += displacement.x;
             this.transform.y += displacement.y;
             this.transform.z += displacement.z;
         }
-        private mousePoint: Point | null;
+        private mousePoint: Vector2 | null;
         /**
          * 处理鼠标移动事件
          */
         private onMouseMove(event: MouseEvent)
         {
-            this.mousePoint = new Point(event.clientX, event.clientY);
+            this.mousePoint = new Vector2(event.clientX, event.clientY);
 
             if (this.preMousePoint == null)
             {
@@ -214,7 +214,7 @@ namespace feng3d
          * 停止xyz方向运动
          * @param direction     停止运动的方向
          */
-        private stopDirectionVelocity(direction: Vector3D)
+        private stopDirectionVelocity(direction: Vector3)
         {
             if (direction == null)
                 return;

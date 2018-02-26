@@ -8,7 +8,7 @@ namespace feng3d
         camera: Camera;
 
         /** 广告牌轴线 */
-        billboardAxis: Vector3D;
+        billboardAxis: Vector3;
 
         setRenderState(particleAnimator: ParticleAnimator)
         {
@@ -17,14 +17,14 @@ namespace feng3d
                 if (this.billboardAxis)
                     this.billboardAxis.normalize();
 
-                var _matrix = new Matrix3D;
+                var _matrix = new Matrix4x4;
                 var gameObject = particleAnimator.gameObject;
                 _matrix.copyFrom(gameObject.transform.localToWorldMatrix);
-                _matrix.lookAt(this.camera.transform.localToWorldMatrix.position, this.billboardAxis || Vector3D.Y_AXIS);
+                _matrix.lookAt(this.camera.transform.localToWorldMatrix.position, this.billboardAxis || Vector3.Y_AXIS);
                 particleAnimator.particleGlobal.billboardMatrix = _matrix;
             } else
             {
-                particleAnimator.particleGlobal.billboardMatrix = new Matrix3D();
+                particleAnimator.particleGlobal.billboardMatrix = new Matrix4x4();
             }
         }
     }

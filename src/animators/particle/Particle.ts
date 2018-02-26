@@ -33,27 +33,27 @@ namespace feng3d
 		/**
 		 * 位移
 		 */
-		position: Vector3D;
+		position: Vector3;
 
 		/**
 		 * 旋转
 		 */
-		rotation: Vector3D;
+		rotation: Vector3;
 
 		/**
 		 * 缩放
 		 */
-		scale: Vector3D;
+		scale: Vector3;
 
 		/**
 		 * 速度
 		 */
-		velocity: Vector3D;
+		velocity: Vector3;
 
 		/**
 		 * 加速度
 		 */
-		acceleration: Vector3D;
+		acceleration: Vector3;
 
 		/**
 		 * 颜色

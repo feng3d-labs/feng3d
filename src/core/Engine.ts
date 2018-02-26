@@ -57,7 +57,7 @@ namespace feng3d
          */
         get mousePos()
         {
-            return new Point(windowEventProxy.clientX - this.canvas.clientLeft, windowEventProxy.clientY - this.canvas.clientTop);
+            return new Vector2(windowEventProxy.clientX - this.canvas.clientLeft, windowEventProxy.clientY - this.canvas.clientTop);
         }
 
         get mouseinview()

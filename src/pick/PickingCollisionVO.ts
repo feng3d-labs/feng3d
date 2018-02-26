@@ -14,12 +14,12 @@ namespace feng3d
 		/**
 		 * 碰撞的uv坐标
 		 */
-		uv?: Point;
+		uv?: Vector2;
 
 		/**
 		 * 实体上碰撞本地坐标
 		 */
-		localPosition?: Vector3D;
+		localPosition?: Vector3;
 
 		/**
 		 * 射线顶点到实体的距离
@@ -34,7 +34,7 @@ namespace feng3d
 		/**
 		 * 本地坐标碰撞法线
 		 */
-		localNormal: Vector3D;
+		localNormal: Vector3;
 
 		/**
 		 * 场景中碰撞射线

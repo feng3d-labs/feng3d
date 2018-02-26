@@ -154,7 +154,7 @@ namespace feng3d
                 particle.lifetime = 5;
                 var degree2 = Math.random() * Math.PI * 2;
                 var r = Math.random() * 1;
-                particle.velocity = new Vector3D(r * Math.cos(degree2), r * 2, r * Math.sin(degree2));
+                particle.velocity = new Vector3(r * Math.cos(degree2), r * 2, r * Math.sin(degree2));
             }, priority: 0
         });
         particleAnimator.cycle = 10;

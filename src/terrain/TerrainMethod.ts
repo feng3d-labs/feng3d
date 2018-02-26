@@ -79,7 +79,7 @@ namespace feng3d
         {
             this._splatRepeats = value;
         }
-        private _splatRepeats = new Vector3D(1, 1, 1, 1);
+        private _splatRepeats = new Vector4(1, 1, 1, 1);
 
         /**
          * 构建材质

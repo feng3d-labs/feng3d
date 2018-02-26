@@ -7,7 +7,7 @@ namespace feng3d
         createVertexTangents: createVertexTangents,
     }
 
-    function createIndices(positions: AttributeDataType): Array<number>
+    function createIndices(positions: number[]): Array<number>
     {
         var vertexNum = positions.length / 3;
         var indices: number[] = [];
@@ -18,7 +18,7 @@ namespace feng3d
         return indices;
     }
 
-    function createUVs(positions: AttributeDataType): Array<number>
+    function createUVs(positions: number[]): Array<number>
     {
         var idx = 0, uvIdx = 0;
         var stride = 2;
@@ -34,7 +34,7 @@ namespace feng3d
         return target;
     }
 
-    function createVertexNormals(indices: number[] | Uint16Array, positions: AttributeDataType, useFaceWeights = false)
+    function createVertexNormals(indices: number[] | Uint16Array, positions: number[], useFaceWeights = false)
     {
         var faceNormalsResult = createFaceNormals(indices, positions, useFaceWeights);
         var faceWeights = faceNormalsResult.faceWeights;
@@ -92,7 +92,7 @@ namespace feng3d
         return normals;
     }
 
-    function createVertexTangents(indices: number[] | Uint16Array, positions: AttributeDataType, uvs: AttributeDataType, useFaceWeights = false): Array<number>
+    function createVertexTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights = false): Array<number>
     {
         var faceTangentsResult = createFaceTangents(indices, positions, uvs, useFaceWeights);
         var faceWeights = faceTangentsResult.faceWeights;
@@ -151,7 +151,7 @@ namespace feng3d
         return target;
     }
 
-    function createFaceTangents(indices: number[] | Uint16Array, positions: AttributeDataType, uvs: AttributeDataType, useFaceWeights = false)
+    function createFaceTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights = false)
     {
         var i = 0, k = 0;
         var index1 = 0, index2 = 0, index3 = 0;
@@ -212,7 +212,7 @@ namespace feng3d
         return { faceTangents: faceTangents, faceWeights: faceWeights };
     }
 
-    function createFaceNormals(indices: number[] | Uint16Array, positions: AttributeDataType, useFaceWeights = false)
+    function createFaceNormals(indices: number[] | Uint16Array, positions: number[], useFaceWeights = false)
     {
         var i = 0, j = 0, k = 0;
         var index = 0;

@@ -167,7 +167,7 @@ namespace feng3d
                         if (data instanceof Color)
                         {
                             gl.uniform3f(location, data.r, data.g, data.b);
-                        } else if (data instanceof Vector3D)
+                        } else if (data instanceof Vector3)
                         {
                             gl.uniform3f(location, data.x, data.y, data.z);
                         } else
@@ -179,7 +179,7 @@ namespace feng3d
                         if (data instanceof Color)
                         {
                             gl.uniform4f(location, data.r, data.g, data.b, data.a);
-                        } else if (data instanceof Vector3D)
+                        } else if (data instanceof Vector4)
                         {
                             gl.uniform4f(location, data.x, data.y, data.z, data.w);
                         } else

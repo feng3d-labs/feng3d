@@ -62,7 +62,7 @@ namespace feng3d
          */
         get data() { return this._data; }
         set data(value) { this.invalid = true; this._data = value; }
-        private _data: Lazy<AttributeDataType>;
+        private _data: Lazy<number[]>;
 
         private _value: Float32Array;
 
@@ -119,7 +119,7 @@ namespace feng3d
          */
         private _indexBufferMap = new Map<GL, WebGLBuffer>();
 
-        constructor(name: string, data: Lazy<AttributeDataType>, size = 3, divisor = 0)
+        constructor(name: string, data: Lazy<number[]>, size = 3, divisor = 0)
         {
             this.name = name;
             this._data = data;

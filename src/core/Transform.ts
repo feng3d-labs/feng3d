@@ -58,14 +58,14 @@ namespace feng3d
         /**
          * Matrix that transforms a point from local space into world space.
          */
-        get localToWorldMatrix(): Matrix3D
+        get localToWorldMatrix(): Matrix4x4
         {
             if (!this._localToWorldMatrix)
                 this._localToWorldMatrix = this.updateLocalToWorldMatrix();
             return this._localToWorldMatrix;
         }
 
-        set localToWorldMatrix(value: Matrix3D)
+        set localToWorldMatrix(value: Matrix4x4)
         {
             value = value.clone();
             this.parent && value.append(this.parent.worldToLocalMatrix);
@@ -88,7 +88,7 @@ namespace feng3d
         /**
          * Matrix that transforms a point from world space into local space (Read Only).
          */
-        get worldToLocalMatrix(): Matrix3D
+        get worldToLocalMatrix(): Matrix4x4
         {
             if (!this._worldToLocalMatrix)
                 this._worldToLocalMatrix = this.localToWorldMatrix.clone().invert();
@@ -109,7 +109,7 @@ namespace feng3d
         /**
          * Transforms direction from local space to world space.
          */
-        transformDirection(direction: Vector3D)
+        transformDirection(direction: Vector3)
         {
             if (!this.parent)
                 return direction.clone();
@@ -121,7 +121,7 @@ namespace feng3d
         /**
          * Transforms position from local space to world space.
          */
-        transformPoint(position: Vector3D)
+        transformPoint(position: Vector3)
         {
             if (!this.parent)
                 return position.clone();
@@ -133,7 +133,7 @@ namespace feng3d
         /**
          * Transforms vector from local space to world space.
          */
-        transformVector(vector: Vector3D)
+        transformVector(vector: Vector3)
         {
             if (!this.parent)
                 return vector.clone();
@@ -145,7 +145,7 @@ namespace feng3d
         /**
          * Transforms a direction from world space to local space. The opposite of Transform.TransformDirection.
          */
-        inverseTransformDirection(direction: Vector3D)
+        inverseTransformDirection(direction: Vector3)
         {
             if (!this.parent)
                 return direction.clone();
@@ -157,7 +157,7 @@ namespace feng3d
         /**
          * Transforms position from world space to local space.
          */
-        inverseTransformPoint(position: Vector3D)
+        inverseTransformPoint(position: Vector3)
         {
             if (!this.parent)
                 return position.clone();
@@ -169,7 +169,7 @@ namespace feng3d
         /**
          * Transforms a vector from world space to local space. The opposite of Transform.TransformVector.
          */
-        inverseTransformVector(vector: Vector3D)
+        inverseTransformVector(vector: Vector3)
         {
             if (!this.parent)
                 return vector.clone();
@@ -382,16 +382,16 @@ namespace feng3d
         /**
          * @private
          */
-        get matrix3d(): Matrix3D
+        get matrix3d(): Matrix4x4
         {
             if (!this._matrix3d)
                 this.updateMatrix3D();
             return this._matrix3d;
         }
 
-        set matrix3d(val: Matrix3D)
+        set matrix3d(val: Matrix4x4)
         {
-            var raw = Matrix3D.RAW_DATA_CONTAINER;
+            var raw = Matrix4x4.RAW_DATA_CONTAINER;
             val.copyRawDataTo(raw);
             if (!raw[0])
             {
@@ -400,7 +400,7 @@ namespace feng3d
             }
             val.decompose(Orientation3D.EULER_ANGLES, elements);
             this.position = elements[0];
-            this.rotation = elements[1].scaleBy(Math.RAD2DEG);
+            this.rotation = elements[1].scale(FMath.RAD2DEG);
             this.scale = elements[2];
         }
 
@@ -410,16 +410,16 @@ namespace feng3d
         get rotationMatrix()
         {
             if (!this._rotationMatrix3d)
-                this._rotationMatrix3d = Matrix3D.fromRotation(this._rx, this._ry, this._rz);
+                this._rotationMatrix3d = Matrix4x4.fromRotation(this._rx, this._ry, this._rz);
             return this._rotationMatrix3d;
         }
 
         /**
          * 返回保存位置数据的Vector3D对象
          */
-        get position(): Vector3D
+        get position(): Vector3
         {
-            this._position.setTo(this._x, this._y, this._z);
+            this._position.init(this._x, this._y, this._z);
             return this._position;
         }
 
@@ -443,7 +443,7 @@ namespace feng3d
 
         get rotation()
         {
-            this._rotation.setTo(this._rx, this._ry, this._rz);
+            this._rotation.init(this._rx, this._ry, this._rz);
             return this._rotation;
         }
 
@@ -476,13 +476,13 @@ namespace feng3d
         set orientation(value)
         {
             var angles = value.toEulerAngles();
-            angles.scaleBy(Math.RAD2DEG);
+            angles.scale(FMath.RAD2DEG);
             this.rotation = angles;
         }
 
         get scale()
         {
-            this._scale.setTo(this._sx, this._sy, this._sz);
+            this._scale.init(this._sx, this._sy, this._sz);
             return this._scale;
         }
 
@@ -503,73 +503,73 @@ namespace feng3d
             }
         }
 
-        get forwardVector(): Vector3D
+        get forwardVector(): Vector3
         {
             return this.matrix3d.forward;
         }
 
-        get rightVector(): Vector3D
+        get rightVector(): Vector3
         {
             return this.matrix3d.right;
         }
 
-        get upVector(): Vector3D
+        get upVector(): Vector3
         {
             return this.matrix3d.up;
         }
 
-        get backVector(): Vector3D
+        get backVector(): Vector3
         {
-            var director: Vector3D = this.matrix3d.forward;
+            var director: Vector3 = this.matrix3d.forward;
             director.negate();
             return director;
         }
 
-        get leftVector(): Vector3D
+        get leftVector(): Vector3
         {
-            var director: Vector3D = this.matrix3d.left;
+            var director: Vector3 = this.matrix3d.left;
             director.negate();
             return director;
         }
 
-        get downVector(): Vector3D
+        get downVector(): Vector3
         {
-            var director: Vector3D = this.matrix3d.up;
+            var director: Vector3 = this.matrix3d.up;
             director.negate();
             return director;
         }
 
         moveForward(distance: number)
         {
-            this.translateLocal(Vector3D.Z_AXIS, distance);
+            this.translateLocal(Vector3.Z_AXIS, distance);
         }
 
         moveBackward(distance: number)
         {
-            this.translateLocal(Vector3D.Z_AXIS, -distance);
+            this.translateLocal(Vector3.Z_AXIS, -distance);
         }
 
         moveLeft(distance: number)
         {
-            this.translateLocal(Vector3D.X_AXIS, -distance);
+            this.translateLocal(Vector3.X_AXIS, -distance);
         }
 
         moveRight(distance: number)
         {
-            this.translateLocal(Vector3D.X_AXIS, distance);
+            this.translateLocal(Vector3.X_AXIS, distance);
         }
 
         moveUp(distance: number)
         {
-            this.translateLocal(Vector3D.Y_AXIS, distance);
+            this.translateLocal(Vector3.Y_AXIS, distance);
         }
 
         moveDown(distance: number)
         {
-            this.translateLocal(Vector3D.Y_AXIS, -distance);
+            this.translateLocal(Vector3.Y_AXIS, -distance);
         }
 
-        translate(axis: Vector3D, distance: number)
+        translate(axis: Vector3, distance: number)
         {
             var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
             var len = distance / Math.sqrt(x * x + y * y + z * z);
@@ -579,7 +579,7 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        translateLocal(axis: Vector3D, distance: number)
+        translateLocal(axis: Vector3, distance: number)
         {
             var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
             var len = distance / Math.sqrt(x * x + y * y + z * z);
@@ -594,17 +594,17 @@ namespace feng3d
 
         pitch(angle: number)
         {
-            this.rotate(Vector3D.X_AXIS, angle);
+            this.rotate(Vector3.X_AXIS, angle);
         }
 
         yaw(angle: number)
         {
-            this.rotate(Vector3D.Y_AXIS, angle);
+            this.rotate(Vector3.Y_AXIS, angle);
         }
 
         roll(angle: number)
         {
-            this.rotate(Vector3D.Z_AXIS, angle);
+            this.rotate(Vector3.Z_AXIS, angle);
         }
 
         rotateTo(ax: number, ay: number, az: number)
@@ -622,17 +622,17 @@ namespace feng3d
          * @param    pivotPoint         旋转中心点
          * 
          */
-        rotate(axis: Vector3D, angle: number, pivotPoint?: Vector3D): void
+        rotate(axis: Vector3, angle: number, pivotPoint?: Vector3): void
         {
             //转换位移
-            var positionMatrix3d = Matrix3D.fromPosition(this.position);
+            var positionMatrix3d = Matrix4x4.fromPosition(this.position);
             positionMatrix3d.appendRotation(axis, angle, pivotPoint);
             this.position = positionMatrix3d.position;
             //转换旋转
-            var rotationMatrix3d = Matrix3D.fromRotation(this.rx, this.ry, this.rz);
+            var rotationMatrix3d = Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
             rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
             var newrotation = rotationMatrix3d.decompose()[1];
-            newrotation.scaleBy(180 / Math.PI);
+            newrotation.scale(180 / Math.PI);
             var v = Math.round((newrotation.x - this.rx) / 180);
             if (v % 2 != 0)
             {
@@ -652,13 +652,13 @@ namespace feng3d
             this.invalidateSceneTransform();
         }
 
-        lookAt(target: Vector3D, upAxis?: Vector3D)
+        lookAt(target: Vector3, upAxis?: Vector3)
         {
-            var xAxis = new Vector3D();
-            var yAxis = new Vector3D();
-            var zAxis = new Vector3D();
+            var xAxis = new Vector3();
+            var yAxis = new Vector3();
+            var zAxis = new Vector3();
             var raw: number[];
-            upAxis = upAxis || Vector3D.Y_AXIS;
+            upAxis = upAxis || Vector3.Y_AXIS;
             if (!this._matrix3d)
             {
                 this.updateMatrix3D();
@@ -681,7 +681,7 @@ namespace feng3d
             yAxis.x = zAxis.y * xAxis.z - zAxis.z * xAxis.y;
             yAxis.y = zAxis.z * xAxis.x - zAxis.x * xAxis.z;
             yAxis.z = zAxis.x * xAxis.y - zAxis.y * xAxis.x;
-            raw = Matrix3D.RAW_DATA_CONTAINER;
+            raw = Matrix4x4.RAW_DATA_CONTAINER;
             raw[0] = this._sx * xAxis.x;
             raw[1] = this._sx * xAxis.y;
             raw[2] = this._sx * xAxis.z;
@@ -732,20 +732,20 @@ namespace feng3d
         //------------------------------------------
         protected updateMatrix3D()
         {
-            tempComponents[0].setTo(this._x, this._y, this._z);
-            tempComponents[1].setTo(this._rx * Math.DEG2RAD, this._ry * Math.DEG2RAD, this._rz * Math.DEG2RAD);
-            tempComponents[2].setTo(this._sx, this._sy, this._sz);
+            tempComponents[0].init(this._x, this._y, this._z);
+            tempComponents[1].init(this._rx * FMath.DEG2RAD, this._ry * FMath.DEG2RAD, this._rz * FMath.DEG2RAD);
+            tempComponents[2].init(this._sx, this._sy, this._sz);
 
-            this._matrix3d = new Matrix3D().recompose(tempComponents);
+            this._matrix3d = new Matrix4x4().recompose(tempComponents);
         }
 
         //------------------------------------------
         // Private Properties
         //------------------------------------------
-        private _position = new Vector3D();
-        private _rotation = new Vector3D();
+        private _position = new Vector3();
+        private _rotation = new Vector3();
         private _orientation = new Quaternion();
-        private _scale = new Vector3D(1, 1, 1);
+        private _scale = new Vector3(1, 1, 1);
 
         protected _smallestNumber = 0.0000000000000000000001;
         protected _x = 0;
@@ -757,12 +757,12 @@ namespace feng3d
         protected _sx = 1;
         protected _sy = 1;
         protected _sz = 1;
-        protected _matrix3d: Matrix3D;
-        protected _rotationMatrix3d: Matrix3D | null;
-        protected _localToWorldMatrix: Matrix3D | null;
-        protected _ITlocalToWorldMatrix: Matrix3D | null;
-        protected _worldToLocalMatrix: Matrix3D | null;
-        protected _localToWorldRotationMatrix: Matrix3D | null;
+        protected _matrix3d: Matrix4x4;
+        protected _rotationMatrix3d: Matrix4x4 | null;
+        protected _localToWorldMatrix: Matrix4x4 | null;
+        protected _ITlocalToWorldMatrix: Matrix4x4 | null;
+        protected _worldToLocalMatrix: Matrix4x4 | null;
+        protected _localToWorldRotationMatrix: Matrix4x4 | null;
 
         //------------------------------------------
         // Private Methods
@@ -791,6 +791,6 @@ namespace feng3d
         }
     }
 
-    var tempComponents = [new Vector3D(), new Vector3D(), new Vector3D()];
-    var elements = [new Vector3D(), new Vector3D(), new Vector3D()];
+    var tempComponents = [new Vector3(), new Vector3(), new Vector3()];
+    var elements = [new Vector3(), new Vector3(), new Vector3()];
 }

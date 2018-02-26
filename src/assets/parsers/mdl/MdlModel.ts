@@ -22,9 +22,9 @@ namespace feng3d.war3
 		/** 动作间隔 */
 		interval: Interval;
 		/** 最小范围 */
-		MinimumExtent: Vector3D;
+		MinimumExtent: Vector3;
 		/** 最大范围 */
-		MaximumExtent: Vector3D;
+		MaximumExtent: Vector3;
 		/** 半径范围 */
 		BoundsRadius: number;
 		/** 发生频率 */
@@ -42,9 +42,9 @@ namespace feng3d.war3
 	export class AnimInfo1
 	{
 		/** 最小范围 */
-		MinimumExtent: Vector3D;
+		MinimumExtent: Vector3;
 		/** 最大范围 */
-		MaximumExtent: Vector3D;
+		MaximumExtent: Vector3;
 		/** 半径范围 */
 		BoundsRadius: number;
 	}
@@ -165,13 +165,13 @@ namespace feng3d.war3
 		/** 骨骼角度动画 */
 		Rotation = new BoneRotation();
 		/** 中心位置 */
-		pivotPoint: Vector3D;
+		pivotPoint: Vector3;
 
 		/** 当前对象变换矩阵 */
-		c_transformation = new Matrix3D();
+		c_transformation = new Matrix4x4();
 
 		/** 当前全局变换矩阵 */
-		c_globalTransformation = new Matrix3D();
+		c_globalTransformation = new Matrix4x4();
 
 		calculateTransformation(keyFrameTime: number): void
 		{
@@ -205,7 +205,7 @@ namespace feng3d.war3
 					var scaling = scalings[i];
 					if (start <= scaling.time && scaling.time <= end)
 					{
-						setPropertyClipFrame(path, "scale", scaling.time - start, scaling.value.toArray(), "Vector3D");
+						setPropertyClipFrame(path, "scale", scaling.time - start, scaling.value.toArray(), "Vector3");
 					}
 				}
 			}
@@ -218,7 +218,7 @@ namespace feng3d.war3
 					var translation = translations[i];
 					if (start <= translation.time && translation.time <= end)
 					{
-						setPropertyClipFrame(path, "position", translation.time - start, translation.value.add(this.pivotPoint).toArray(), "Vector3D");
+						setPropertyClipFrame(path, "position", translation.time - start, translation.value.addTo(this.pivotPoint).toArray(), "Vector3");
 					}
 				}
 			}
@@ -267,7 +267,7 @@ namespace feng3d.war3
 			var pRotation = this.Rotation.getRotation(time);
 			var pTranslation = this.Translation.getTranslation(time);
 
-			var matrix3D = new Matrix3D().appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix3D());
+			var matrix3D = new Matrix4x4().appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix3D());
 			//平移
 			matrix3D.appendTranslation(pTranslation.x + this.pivotPoint.x, pTranslation.y + this.pivotPoint.y, pTranslation.z + this.pivotPoint.z)
 			//
@@ -287,11 +287,11 @@ namespace feng3d.war3
 		GlobalSeqId: number;
 		scalings: Scaling[] = [];
 
-		getScaling(keyFrameTime: number): Vector3D
+		getScaling(keyFrameTime: number): Vector3
 		{
-			var scalingVector = new Vector3D();
+			var scalingVector = new Vector3();
 			if (this.scalings.length == 0 || keyFrameTime < this.scalings[0].time || keyFrameTime > this.scalings[this.scalings.length - 1].time)
-				return new Vector3D(1, 1, 1);
+				return new Vector3(1, 1, 1);
 
 			var key1: Scaling = this.scalings[0];
 			var key2: Scaling = this.scalings[0];
@@ -308,14 +308,14 @@ namespace feng3d.war3
 
 			if (key1.time == key2.time)
 			{
-				scalingVector.copyFrom(key1.value);
+				scalingVector.copy(key1.value);
 				return scalingVector;
 			}
 
 			var Factor: number = (keyFrameTime - key1.time) / (key2.time - key1.time);
 			var InverseFactor: number = 1.0 - Factor;
 
-			var tempVec: Vector3D;
+			var tempVec: Vector3;
 			var Factor1: number;
 			var Factor2: number;
 			var Factor3: number;
@@ -326,16 +326,16 @@ namespace feng3d.war3
 			switch (this.type)
 			{
 				case "DontInterp":
-					scalingVector.copyFrom(key1.value);
+					scalingVector.copy(key1.value);
 					break;
 				case "Linear":
 					tempVec = key1.value.clone();
-					tempVec.scaleBy(InverseFactor);
-					scalingVector.incrementBy(tempVec);
+					tempVec.scale(InverseFactor);
+					scalingVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scaleBy(Factor);
-					scalingVector.incrementBy(tempVec);
+					tempVec.scale(Factor);
+					scalingVector.add(tempVec);
 					break;
 				case "Hermite":
 					FactorTimesTwo = Factor * Factor;
@@ -346,20 +346,20 @@ namespace feng3d.war3
 					Factor4 = FactorTimesTwo * (3.0 - 2.0 * Factor);
 
 					tempVec = key1.value.clone();
-					tempVec.scaleBy(Factor1);
-					scalingVector.incrementBy(tempVec);
+					tempVec.scale(Factor1);
+					scalingVector.add(tempVec);
 
 					tempVec = key1.OutTan.clone();
-					tempVec.scaleBy(Factor2);
-					scalingVector.incrementBy(tempVec);
+					tempVec.scale(Factor2);
+					scalingVector.add(tempVec);
 
 					tempVec = key2.InTan.clone();
-					tempVec.scaleBy(Factor3);
-					scalingVector.incrementBy(tempVec);
+					tempVec.scale(Factor3);
+					scalingVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scaleBy(Factor4);
-					scalingVector.incrementBy(tempVec);
+					tempVec.scale(Factor4);
+					scalingVector.add(tempVec);
 					break;
 
 				case "Bezier":
@@ -372,20 +372,20 @@ namespace feng3d.war3
 					Factor4 = FactorTimesTwo * Factor;
 
 					tempVec = key1.value.clone();
-					tempVec.scaleBy(Factor1);
-					scalingVector.incrementBy(tempVec);
+					tempVec.scale(Factor1);
+					scalingVector.add(tempVec);
 
 					tempVec = key1.OutTan.clone();
-					tempVec.scaleBy(Factor2);
-					scalingVector.incrementBy(tempVec);
+					tempVec.scale(Factor2);
+					scalingVector.add(tempVec);
 
 					tempVec = key2.InTan.clone();
-					tempVec.scaleBy(Factor3);
-					scalingVector.incrementBy(tempVec);
+					tempVec.scale(Factor3);
+					scalingVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scaleBy(Factor4);
-					scalingVector.incrementBy(tempVec);
+					tempVec.scale(Factor4);
+					scalingVector.add(tempVec);
 					break;
 			}
 
@@ -406,11 +406,11 @@ namespace feng3d.war3
 		GlobalSeqId: number;
 		translations: Translation[] = [];
 
-		getTranslation(keyFrameTime: number): Vector3D
+		getTranslation(keyFrameTime: number): Vector3
 		{
-			var TranslationVector = new Vector3D();
+			var TranslationVector = new Vector3();
 			if (this.translations.length == 0)
-				return new Vector3D();
+				return new Vector3();
 
 			var key1 = this.translations[0];
 			var key2 = this.translations[0];
@@ -427,14 +427,14 @@ namespace feng3d.war3
 
 			if (key1 == key2)
 			{
-				TranslationVector.copyFrom(key1.value);
+				TranslationVector.copy(key1.value);
 				return TranslationVector;
 			}
 
 			var Factor: number = (keyFrameTime - key1.time) / (key2.time - key1.time);
 			var InverseFactor: number = 1.0 - Factor;
 
-			var tempVec: Vector3D;
+			var tempVec: Vector3;
 			var Factor1: number;
 			var Factor2: number;
 			var Factor3: number;
@@ -445,16 +445,16 @@ namespace feng3d.war3
 			switch (this.type)
 			{
 				case "DontInterp":
-					TranslationVector.copyFrom(key1.value);
+					TranslationVector.copy(key1.value);
 					break;
 				case "Linear":
 					tempVec = key1.value.clone();
-					tempVec.scaleBy(InverseFactor);
-					TranslationVector.incrementBy(tempVec);
+					tempVec.scale(InverseFactor);
+					TranslationVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scaleBy(Factor);
-					TranslationVector.incrementBy(tempVec);
+					tempVec.scale(Factor);
+					TranslationVector.add(tempVec);
 					break;
 				case "Hermite":
 					FactorTimesTwo = Factor * Factor;
@@ -465,20 +465,20 @@ namespace feng3d.war3
 					Factor4 = FactorTimesTwo * (3.0 - 2.0 * Factor);
 
 					tempVec = key1.value.clone();
-					tempVec.scaleBy(Factor1);
-					TranslationVector.incrementBy(tempVec);
+					tempVec.scale(Factor1);
+					TranslationVector.add(tempVec);
 
 					tempVec = key1.OutTan.clone();
-					tempVec.scaleBy(Factor2);
-					TranslationVector.incrementBy(tempVec);
+					tempVec.scale(Factor2);
+					TranslationVector.add(tempVec);
 
 					tempVec = key2.InTan.clone();
-					tempVec.scaleBy(Factor3);
-					TranslationVector.incrementBy(tempVec);
+					tempVec.scale(Factor3);
+					TranslationVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scaleBy(Factor4);
-					TranslationVector.incrementBy(tempVec);
+					tempVec.scale(Factor4);
+					TranslationVector.add(tempVec);
 					break;
 
 				case "Bezier":
@@ -491,20 +491,20 @@ namespace feng3d.war3
 					Factor4 = FactorTimesTwo * Factor;
 
 					tempVec = key1.value.clone();
-					tempVec.scaleBy(Factor1);
-					TranslationVector.incrementBy(tempVec);
+					tempVec.scale(Factor1);
+					TranslationVector.add(tempVec);
 
 					tempVec = key1.OutTan.clone();
-					tempVec.scaleBy(Factor2);
-					TranslationVector.incrementBy(tempVec);
+					tempVec.scale(Factor2);
+					TranslationVector.add(tempVec);
 
 					tempVec = key2.InTan.clone();
-					tempVec.scaleBy(Factor3);
-					TranslationVector.incrementBy(tempVec);
+					tempVec.scale(Factor3);
+					TranslationVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scaleBy(Factor4);
-					TranslationVector.incrementBy(tempVec);
+					tempVec.scale(Factor4);
+					TranslationVector.add(tempVec);
 					break;
 			}
 
@@ -545,9 +545,9 @@ namespace feng3d.war3
 		/** 顶点分组 */
 		Groups: number[][];
 		/** 最小范围 */
-		MinimumExtent: Vector3D;
+		MinimumExtent: Vector3;
 		/** 最大范围 */
-		MaximumExtent: Vector3D;
+		MaximumExtent: Vector3;
 		/** 半径范围 */
 		BoundsRadius: number;
 		/** 动作信息 */
@@ -647,9 +647,9 @@ namespace feng3d.war3
 		/** 混合时间 */
 		BlendTime: number;
 		/** 最小范围 */
-		MinimumExtent: Vector3D;
+		MinimumExtent: Vector3;
 		/** 最大范围 */
-		MaximumExtent: Vector3D;
+		MaximumExtent: Vector3;
 	}
 
 	/**
@@ -677,11 +677,11 @@ namespace feng3d.war3
 		/** 时间 */
 		time: number;
 		/**  */
-		value: Vector3D;
+		value: Vector3;
 
-		InTan: Vector3D;
+		InTan: Vector3;
 
-		OutTan: Vector3D;
+		OutTan: Vector3;
 	}
 
 	/**
@@ -693,10 +693,10 @@ namespace feng3d.war3
 		/** 时间 */
 		time: number;
 		/**  */
-		value: Vector3D;
+		value: Vector3;
 
-		InTan: Vector3D;
+		InTan: Vector3;
 
-		OutTan: Vector3D;
+		OutTan: Vector3;
 	}
 }

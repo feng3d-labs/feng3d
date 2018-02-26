@@ -183,7 +183,7 @@ namespace feng3d
 
     export interface Vector3DRaw
     {
-        __class__: "feng3d.Vector3D",
+        __class__: "feng3d.Vector3",
         x?: number,
         y?: number,
         z?: number,
@@ -252,7 +252,7 @@ namespace feng3d
     export interface TerrainMethodRaw
     {
         __class__: "feng3d.TerrainMethod";
-        splatRepeats?: Vector3D;
+        splatRepeats?: Vector3;
         splatTexture1: Texture2DRaw
         splatTexture2: Texture2DRaw
         splatTexture3: Texture2DRaw

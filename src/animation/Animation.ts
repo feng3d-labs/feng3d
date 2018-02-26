@@ -158,12 +158,12 @@ namespace feng3d
     }
     var autoobjectCacheID = 1;
 
-    function getValue(type: "Number" | "Vector3D" | "Quaternion", value: number[])
+    function getValue(type: "Number" | "Vector3" | "Quaternion", value: number[])
     {
         if (type == "Number")
             return value[0]
-        if (type == "Vector3D")
-            return Vector3D.fromArray(value);
+        if (type == "Vector3")
+            return Vector3.fromArray(value);
         if (type == "Quaternion")
             return Quaternion.fromArray(value);
 
@@ -178,12 +178,12 @@ namespace feng3d
         {
             propertyValue = prevalue.clone();
             propertyValue.lerp(prevalue, <Quaternion>nextValue, factor);
-        } else if (prevalue instanceof Vector3D)
+        } else if (prevalue instanceof Vector3)
         {
-            propertyValue = new Vector3D(
-                prevalue.x * (1 - factor) + (<Vector3D>nextValue).x * factor,
-                prevalue.y * (1 - factor) + (<Vector3D>nextValue).y * factor,
-                prevalue.z * (1 - factor) + (<Vector3D>nextValue).z * factor,
+            propertyValue = new Vector3(
+                prevalue.x * (1 - factor) + (<Vector3>nextValue).x * factor,
+                prevalue.y * (1 - factor) + (<Vector3>nextValue).y * factor,
+                prevalue.z * (1 - factor) + (<Vector3>nextValue).z * factor,
             );
         } else
         {
@@ -219,7 +219,7 @@ namespace feng3d
         propertyName: string;
 
         @serialize()
-        type: "Number" | "Vector3D" | "Quaternion";
+        type: "Number" | "Vector3" | "Quaternion";
 
         @serialize()
         propertyValues: [number, number[]][];
@@ -228,9 +228,9 @@ namespace feng3d
     }
 
     /**
-     * [time:number,value:number | Vector3D | Quaternion]
+     * [time:number,value:number | Vector3 | Quaternion]
      */
-    export type ClipPropertyType = number | Vector3D | Quaternion;
+    export type ClipPropertyType = number | Vector3 | Quaternion;
     export type PropertyClipPath = [PropertyClipPathItemType, string][];
 
     export enum PropertyClipPathItemType

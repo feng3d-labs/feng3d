@@ -68,7 +68,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 		 * 添加快捷键
 		 * @param shortcuts		快捷键列表
 		 */
-		addShortCuts(shortcuts: ShortCutItem[]): void
+		addShortCuts(shortcuts: { key: string, command?: string, stateCommand?: string, when?: string }[]): void
 		{
 			for (var i = 0; i < shortcuts.length; i++)
 			{
@@ -82,7 +82,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 		 * 删除快捷键
 		 * @param shortcuts		快捷键列表
 		 */
-		removeShortCuts(shortcuts: ShortCutItem[]): void
+		removeShortCuts(shortcuts: { key: string, command?: string, stateCommand?: string, when?: string }[]): void
 		{
 			for (var i = 0; i < shortcuts.length; i++)
 			{
@@ -146,11 +146,9 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 		/**
 		 * 获取快捷键唯一字符串
 		 */
-		private getShortcutUniqueKey(shortcut: ShortCutItem): string
+		private getShortcutUniqueKey(shortcut: { key: string, command?: string, stateCommand?: string, when?: string }): string
 		{
 			return shortcut.key + "," + shortcut.command + "," + shortcut.stateCommand + "," + shortcut.when;
 		}
 	}
-
-	export type ShortCutItem = { key: string, command?: string, stateCommand?: string, when?: string };
 }

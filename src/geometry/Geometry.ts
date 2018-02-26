@@ -17,8 +17,6 @@ namespace feng3d
         off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any);
     }
 
-    export type AttributeDataType = number[] | Float32Array;
-
     /**
      * 几何体
      * @author feng 2016-04-28
@@ -41,7 +39,7 @@ namespace feng3d
         /**
          * 属性数据列表
          */
-        protected _attributes: { [name: string]: { data: AttributeDataType, size: number } } = {};
+        protected _attributes: { [name: string]: { data: number[], size: number } } = {};
 
         private _geometryInvalid = true;
         private _useFaceWeights = false;
@@ -49,9 +47,9 @@ namespace feng3d
         private _scaleU = 1;
         private _scaleV = 1;
 
-        private _bounding: IBounding;
+        private _bounding: Box;
 
-        private _autoAttributeDatas: { [name: string]: { data: AttributeDataType, size: number } } = {};
+        private _autoAttributeDatas: { [name: string]: { data: number[], size: number } } = {};
 
         private _invalids = { index: true, a_uv: true, a_normal: true, a_tangent: true };
 
@@ -205,7 +203,7 @@ namespace feng3d
          * @param size                  顶点数据尺寸
          * @param autogenerate          是否自动生成数据
 		 */
-        setVAData<K extends keyof Attributes>(vaId: K, data: number[] | Float32Array, size: number)
+        setVAData<K extends keyof Attributes>(vaId: K, data: number[], size: number)
         {
             if (data)
             {
@@ -281,7 +279,7 @@ namespace feng3d
          * @param geometry          被添加的几何体
          * @param transform         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
          */
-        addGeometry(geometry: Geometry, transform?: Matrix3D)
+        addGeometry(geometry: Geometry, transform?: Matrix4x4)
         {
             //更新几何体
             this.updateGrometry();
@@ -322,17 +320,7 @@ namespace feng3d
                 var stride = attributes[attributeName].size;
                 var attributeData = attributes[attributeName].data;
                 var addAttributeData = addAttributes[attributeName].data;
-                var data: AttributeDataType;
-                // if (attributeData instanceof Array)
-                // {
-                //     data = attributeData.concat(<Array<any>>addAttributeData);
-                // }
-                // else
-                // {
-                data = new Float32Array(attributeData.length + addAttributeData.length);
-                data.set(attributeData, 0);
-                data.set(addAttributeData, attributeData.length);
-                // }
+                var data = attributeData.concat(addAttributeData);
                 this.setVAData(<any>attributeName, data, stride);
             }
         }
@@ -341,7 +329,7 @@ namespace feng3d
 		 * 应用变换矩阵
 		 * @param transform 变换矩阵
 		 */
-        applyTransformation(transform: Matrix3D)
+        applyTransformation(transform: Matrix4x4)
         {
             this.updateGrometry();
 
@@ -355,11 +343,11 @@ namespace feng3d
 
             var len = vertices.length / posStride;
             var i: number, i1: number, i2: number;
-            var vector: Vector3D = new Vector3D();
+            var vector: Vector3 = new Vector3();
 
             var bakeNormals = normals != null;
             var bakeTangents = tangents != null;
-            var invTranspose = new Matrix3D();
+            var invTranspose = new Matrix4x4();
 
             if (bakeNormals || bakeTangents)
             {
@@ -484,19 +472,7 @@ namespace feng3d
                 var positions = this.positions;
                 if (!positions || positions.length == 0)
                     return null;
-                var min = new Vector3D(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-                var max = new Vector3D(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE)
-                for (var i = 0; i < positions.length; i += 3)
-                {
-                    min.x = Math.min(min.x, positions[i]);
-                    min.y = Math.min(min.y, positions[i + 1]);
-                    min.z = Math.min(min.z, positions[i + 2]);
-                    //
-                    max.x = Math.max(max.x, positions[i]);
-                    max.y = Math.max(max.y, positions[i + 1]);
-                    max.z = Math.max(max.z, positions[i + 2]);
-                }
-                this._bounding = { min: min, max: max };
+                this._bounding = Box.formPositions(this.positions);
             }
             return this._bounding;
         }
@@ -517,7 +493,7 @@ namespace feng3d
         cloneFrom(geometry: Geometry)
         {
             geometry.updateGrometry();
-            this.indices = geometry.indices;
+            this.indices = geometry.indices.concat();
             this._attributes = {};
             for (var key in geometry._attributes)
             {

@@ -39,36 +39,36 @@ namespace feng3d
         /**
          * 模型矩阵
          */
-        u_modelMatrix: Matrix3D;
+        u_modelMatrix: Matrix4x4;
         /**
          * （view矩阵）摄像机逆矩阵
          */
-        u_viewMatrix: Matrix3D;
+        u_viewMatrix: Matrix4x4;
         /**
          * 投影矩阵
          */
-        u_projectionMatrix: Matrix3D;
+        u_projectionMatrix: Matrix4x4;
         /**
          * 摄像机矩阵
          */
-        u_cameraMatrix: Matrix3D;
+        u_cameraMatrix: Matrix4x4;
         /**
          * 模型-摄像机 矩阵
          */
-        u_mvMatrix: Matrix3D;
+        u_mvMatrix: Matrix4x4;
         /**
          * 模型逆转置矩阵,用于计算全局法线
          * 参考：http://blog.csdn.net/christina123y/article/details/5963679
          */
-        u_ITModelMatrix: Matrix3D;
+        u_ITModelMatrix: Matrix4x4;
         /**
          * 模型-摄像机 逆转置矩阵，用于计算摄像机空间法线
          */
-        u_ITMVMatrix: Matrix3D;
+        u_ITMVMatrix: Matrix4x4;
         /**
          * 世界投影矩阵
          */
-        u_viewProjection: Matrix3D;
+        u_viewProjection: Matrix4x4;
 
         u_diffuseInput: Color;
         /**
@@ -128,23 +128,23 @@ namespace feng3d
         /**
          * 地形块重复次数
          */
-        u_splatRepeats: Vector3D;
+        u_splatRepeats: Vector4;
         /**
          * 地形混合贴图尺寸
          */
-        u_splatMergeTextureSize: Point;
+        u_splatMergeTextureSize: Vector2;
         /**
          * 图片尺寸
          */
-        u_imageSize: Point;
+        u_imageSize: Vector2;
         /**
          * 地形块尺寸
          */
-        u_tileSize: Point;
+        u_tileSize: Vector2;
         /**
          * 地形块偏移
          */
-        u_tileOffset: Vector3D[];
+        u_tileOffset: Vector4[];
         /**
          * 最大lod
          */
@@ -156,14 +156,14 @@ namespace feng3d
         /**
          * lod0时在贴图中的uv缩放偏移向量
          */
-        u_lod0vec: Vector3D;
+        u_lod0vec: Vector4;
         /******************************************************/
         //                  点光源
         /******************************************************/
         /**
          * 点光源位置数组
          */
-        u_pointLightPositions: Vector3D[];
+        u_pointLightPositions: Vector3[];
         /**
          * 点光源颜色数组
          */
@@ -182,7 +182,7 @@ namespace feng3d
         /**
          * 方向光源方向数组
          */
-        u_directionalLightDirections: Vector3D[];
+        u_directionalLightDirections: Vector3[];
         /**
          * 方向光源颜色数组
          */
@@ -241,7 +241,7 @@ namespace feng3d
         /**
          * 骨骼全局矩阵
          */
-        u_skeletonGlobalMatriices: Matrix3D[];
+        u_skeletonGlobalMatriices: Matrix4x4[];
 
         /**
          * 3D对象编号

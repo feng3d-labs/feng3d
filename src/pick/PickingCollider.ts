@@ -11,9 +11,9 @@ namespace feng3d
     /** 是否查找最短距离碰撞 */
     function testSubMeshCollision(geometry: Geometry, localRay: Ray3D, shortestCollisionDistance = 0, bothSides = true, findClosest = false)
     {
-        var indexData = geometry.indices;
-        var vertexData = geometry.positions;
-        var uvData = geometry.uvs;
+        var indices = geometry.indices;
+        var positions = geometry.positions;
+        var uvs = geometry.uvs;
 
         var t = 0;
         var i0 = 0, i1 = 0, i2 = 0;
@@ -31,31 +31,28 @@ namespace feng3d
 
         var collisionTriangleIndex = -1;
 
-        var vertexStride = 3;
-        var vertexOffset = 0;
-        var uvStride = 2;
-        var numIndices = indexData.length;
+        var numIndices = indices.length;
 
-        var result: { rayEntryDistance: number, localPosition: Vector3D, localNormal: Vector3D, uv: Point, index: number } = <any>{};
+        var result: { rayEntryDistance: number, localPosition: Vector3, localNormal: Vector3, uv: Vector2, index: number } = <any>{};
 
         //遍历每个三角形 检测碰撞
         for (var index = 0; index < numIndices; index += 3)
         { // sweep all triangles
             //三角形三个顶点索引
-            i0 = vertexOffset + indexData[index] * vertexStride;
-            i1 = vertexOffset + indexData[index + 1] * vertexStride;
-            i2 = vertexOffset + indexData[index + 2] * vertexStride;
+            i0 = indices[index] * 3;
+            i1 = indices[index + 1] * 3;
+            i2 = indices[index + 2] * 3;
 
             //三角形三个顶点数据
-            p0x = vertexData[i0];
-            p0y = vertexData[i0 + 1];
-            p0z = vertexData[i0 + 2];
-            p1x = vertexData[i1];
-            p1y = vertexData[i1 + 1];
-            p1z = vertexData[i1 + 2];
-            p2x = vertexData[i2];
-            p2y = vertexData[i2 + 1];
-            p2z = vertexData[i2 + 2];
+            p0x = positions[i0];
+            p0y = positions[i0 + 1];
+            p0z = positions[i0 + 2];
+            p1x = positions[i1];
+            p1y = positions[i1 + 1];
+            p1z = positions[i1 + 2];
+            p2x = positions[i2];
+            p2y = positions[i2 + 1];
+            p2z = positions[i2 + 2];
 
             //计算出三角面的法线
             s0x = p1x - p0x; // s0 = p1 - p0
@@ -73,8 +70,8 @@ namespace feng3d
             nz *= nl;
 
             //初始化射线数据
-            var rayPosition: Vector3D = localRay.position;
-            var rayDirection: Vector3D = localRay.direction;
+            var rayPosition: Vector3 = localRay.position;
+            var rayDirection: Vector3 = localRay.direction;
 
             //计算射线与法线的点积，不等于零表示射线所在直线与三角面相交
             nDotV = nx * rayDirection.x + ny * +rayDirection.y + nz * rayDirection.z; // rayDirection . normal
@@ -113,12 +110,13 @@ namespace feng3d
                     shortestCollisionDistance = t;
                     collisionTriangleIndex = index / 3;
                     result.rayEntryDistance = t;
-                    result.localPosition = new Vector3D(cx, cy, cz);
-                    result.localNormal = new Vector3D(nx, ny, nz);
-                    if (uvData)
+                    result.localPosition = new Vector3(cx, cy, cz);
+                    result.localNormal = new Vector3(nx, ny, nz);
+                    if (uvs)
                     {
-                        result.uv = getCollisionUV(indexData, uvData, index, v, w, u, 0, uvStride);
+                        result.uv = getCollisionUV(indices, uvs, index, v, w, u);
                     }
+                    result.localNormal = getCollisionNormal(indices, positions, index);
                     result.index = index;
 
                     //是否继续寻找最优解
@@ -134,65 +132,58 @@ namespace feng3d
         return null;
     }
 
-
     /**
      * 获取碰撞法线
-     * @param indexData 顶点索引数据
-     * @param vertexData 顶点数据
+     * @param indices 顶点索引数据
+     * @param positions 顶点数据
      * @param triangleIndex 三角形索引
-     * @param normal 碰撞法线
      * @return 碰撞法线
-     *
      */
-    function getCollisionNormal(indexData: number[], vertexData: number[], triangleIndex = 0, normal?: Vector3D): Vector3D
+    function getCollisionNormal(indices: number[], positions: number[], triangleIndex = 0): Vector3
     {
-        var i0 = indexData[triangleIndex] * 3;
-        var i1 = indexData[triangleIndex + 1] * 3;
-        var i2 = indexData[triangleIndex + 2] * 3;
+        var i0 = indices[triangleIndex] * 3;
+        var i1 = indices[triangleIndex + 1] * 3;
+        var i2 = indices[triangleIndex + 2] * 3;
 
-        var side0x = vertexData[i1] - vertexData[i0];
-        var side0y = vertexData[i1 + 1] - vertexData[i0 + 1];
-        var side0z = vertexData[i1 + 2] - vertexData[i0 + 2];
-        var side1x = vertexData[i2] - vertexData[i0];
-        var side1y = vertexData[i2 + 1] - vertexData[i0 + 1];
-        var side1z = vertexData[i2 + 2] - vertexData[i0 + 2];
+        var side0x = positions[i1] - positions[i0];
+        var side0y = positions[i1 + 1] - positions[i0 + 1];
+        var side0z = positions[i1 + 2] - positions[i0 + 2];
+        var side1x = positions[i2] - positions[i0];
+        var side1y = positions[i2 + 1] - positions[i0 + 1];
+        var side1z = positions[i2 + 2] - positions[i0 + 2];
 
-        if (!normal)
-            normal = new Vector3D();
+        var normal = new Vector3();
         normal.x = side0y * side1z - side0z * side1y;
         normal.y = side0z * side1x - side0x * side1z;
         normal.z = side0x * side1y - side0y * side1x;
-        normal.w = 1;
         normal.normalize();
         return normal;
     }
 
     /**
      * 获取碰撞uv
-     * @param indexData 顶点数据
-     * @param uvData uv数据
+     * @param indices 顶点数据
+     * @param uvs uv数据
      * @param triangleIndex 三角形所有
      * @param v
      * @param w
      * @param u
      * @param uvOffset
      * @param uvStride
-     * @param uv uv坐标
      * @return 碰撞uv
      */
-    function getCollisionUV(indexData: number[], uvData: AttributeDataType, triangleIndex: number, v: number, w: number, u: number, uvOffset: number, uvStride: number, uv?: Point): Point
+    function getCollisionUV(indices: number[], uvs: number[], triangleIndex: number, v: number, w: number, u: number): Vector2
     {
-        var uIndex = indexData[triangleIndex] * uvStride + uvOffset;
-        var uv0x = uvData[uIndex];
-        var uv0y = uvData[uIndex + 1];
-        uIndex = indexData[triangleIndex + 1] * uvStride + uvOffset;
-        var uv1x = uvData[uIndex];
-        var uv1y = uvData[uIndex + 1];
-        uIndex = indexData[triangleIndex + 2] * uvStride + uvOffset;
-        var uv2x = uvData[uIndex];
-        var uv2y = uvData[uIndex + 1];
-        if (!uv)
-            uv = new Point();
+        var uIndex = indices[triangleIndex] * 2;
+        var uv0x = uvs[uIndex];
+        var uv0y = uvs[uIndex + 1];
+        uIndex = indices[triangleIndex + 1] * 2;
+        var uv1x = uvs[uIndex];
+        var uv1y = uvs[uIndex + 1];
+        uIndex = indices[triangleIndex + 2] * 2;
+        var uv2x = uvs[uIndex];
+        var uv2y = uvs[uIndex + 1];
+        var uv = new Vector2();
         uv.x = u * uv0x + v * uv1x + w * uv2x;
         uv.y = u * uv0y + v * uv1y + w * uv2y;
         return uv;

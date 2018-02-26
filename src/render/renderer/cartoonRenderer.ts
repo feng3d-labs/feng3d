@@ -27,13 +27,13 @@ namespace feng3d
          */
         @oav({ componentParam: { showw: true } })
         @serialize()
-        diffuseSegment = new Vector3D(0.1, 0.3, 0.6, 1.0);
+        diffuseSegment = new Vector4(0.1, 0.3, 0.6, 1.0);
         /**
          * 半兰伯特值diff，替换分段值 4个(0.0,1.0)
          */
         @oav({ componentParam: { showw: true } })
         @serialize()
-        diffuseSegmentValue = new Vector3D(0.1, 0.3, 0.6, 1.0);
+        diffuseSegmentValue = new Vector4(0.1, 0.3, 0.6, 1.0);
 
         @oav()
         @serialize()
@@ -69,8 +69,8 @@ namespace feng3d
 
     export interface Uniforms
     {
-        u_diffuseSegment: Vector3D;
-        u_diffuseSegmentValue: Vector3D;
+        u_diffuseSegment: Vector4;
+        u_diffuseSegmentValue: Vector4;
 
         u_specularSegment: number;
     }

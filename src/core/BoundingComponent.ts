@@ -5,8 +5,8 @@ namespace feng3d
         showInInspector = false;
         serializable = false;
 
-        private _bounds: IBounding | null;
-        private _worldBounds: IBounding | null;
+        private _bounds: Box | null;
+        private _worldBounds: Box | null;
 
         init(gameObject: GameObject)
         {
@@ -45,7 +45,7 @@ namespace feng3d
             if (!this.bounds)
                 return null;
 
-            var localNormal = new Vector3D();
+            var localNormal = new Vector3();
 
             //转换到当前实体坐标系空间
             var localRay = new Ray3D();
@@ -54,7 +54,7 @@ namespace feng3d
             this.transform.worldToLocalMatrix.deltaTransformVector(ray3D.direction, localRay.direction);
 
             //检测射线与边界的碰撞
-            var rayEntryDistance = bounding.rayIntersection(this.bounds, localRay, localNormal);
+            var rayEntryDistance = this.bounds.rayIntersection(localRay.position, localRay.direction, localNormal);
             if (rayEntryDistance < 0)
                 return null;
 
@@ -90,7 +90,7 @@ namespace feng3d
         {
             if (this.bounds && this.transform.localToWorldMatrix)
             {
-                this._worldBounds = bounding.transform(this.bounds, this.transform.localToWorldMatrix);
+                this._worldBounds = this.bounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
             }
         }
 

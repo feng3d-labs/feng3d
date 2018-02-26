@@ -46,7 +46,7 @@ namespace feng3d
 
             this.createValueMacro("NUM_LIGHT", pointLights.length + directionalLights.length);
             //收集点光源数据
-            var pointLightPositions: Vector3D[] = [];
+            var pointLightPositions: Vector3[] = [];
             var pointLightColors: Color[] = [];
             var pointLightIntensitys: number[] = [];
             var pointLightRanges: number[] = [];
@@ -72,7 +72,7 @@ namespace feng3d
                 this.createUniformData("u_pointLightIntensitys", pointLightIntensitys);
                 this.createUniformData("u_pointLightRanges", pointLightRanges);
             }
-            var directionalLightDirections: Vector3D[] = [];
+            var directionalLightDirections: Vector3[] = [];
             var directionalLightColors: Color[] = [];
             var directionalLightIntensitys: number[] = [];
             for (var i = 0; i < directionalLights.length; i++)

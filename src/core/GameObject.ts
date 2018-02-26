@@ -256,7 +256,7 @@ namespace feng3d
             this.addComponent(Transform);
             this.addComponent(RenderAtomicComponent);
             this.addComponent(BoundingComponent);
-            this.guid = guid.create();
+            this.guid = FMath.generateUUID();
             //
             GameObject.pool.set(this.guid, this);
         }

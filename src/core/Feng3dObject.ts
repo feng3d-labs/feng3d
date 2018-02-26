@@ -78,7 +78,7 @@ namespace feng3d
          * @param parent	The transform the Feng3dObject will be parented to.
          * @param worldPositionStays	If when assigning the parent the original world position should be maintained.
          */
-        static instantiate<T extends Feng3dObject>(original: T, position?: Vector3D, rotation?: Quaternion, parent?: Transform, worldPositionStays = false): T | null
+        static instantiate<T extends Feng3dObject>(original: T, position?: Vector3, rotation?: Quaternion, parent?: Transform, worldPositionStays = false): T | null
         {
             return null;
         }

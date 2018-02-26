@@ -72,14 +72,11 @@ namespace feng3d
             this.fieldOfView = Math.atan(1 / this._focalLength) * 360 / Math.PI;
         }
 
-        unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D
+        unproject(nX: number, nY: number, sZ: number, v = new Vector3()): Vector3
         {
-            if (!v)
-                v = new Vector3D();
             v.x = nX;
             v.y = -nY;
             v.z = sZ;
-            v.w = 1;
 
             v.x *= sZ;
             v.y *= sZ;
@@ -94,7 +91,7 @@ namespace feng3d
 
         protected updateMatrix()
         {
-            var matrix = new Matrix3D();
+            var matrix = new Matrix4x4();
             var raw = matrix.rawData;
 
             this._focalLength = 1 / Math.tan(this.fieldOfView * Math.PI / 360);

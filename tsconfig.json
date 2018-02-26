@@ -6,10 +6,13 @@
         "declaration": true,
         "strict": true,
         "experimentalDecorators": true,
-        // "outDir": "./debug"
         "outFile": "out/feng3d.js"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
+        //
+        "src/polyfill/Object.ts",
+        "src/polyfill/Map.ts",
+        "src/polyfill/Array.ts",
         //
         "src/objectview.ts",
         //
@@ -22,37 +25,34 @@
         "src/utils/watcher.ts",
         "src/utils/dataTransform.ts",
         "src/utils/ClassUtils.ts",
-        "src/utils/ObjectUtils.ts",
-        "src/utils/StringUtils.ts",
-        "src/utils/numberutils.ts",
-        "src/utils/Map.ts",
-        "src/utils/GUID.ts",
         "src/utils/Decorators.ts",
         "src/serialization/RawData.ts",
         "src/serialization/serialization.ts",
         "src/utils/Stats.ts",
-        //
-        "src/collections/IList.ts",
-        "src/collections/ArrayList.ts",
-        //基础工具
-        "src/mathlib/MathConsts.ts",
-        "src/mathlib/Math.ts",
-        "src/mathlib/Orientation3D.ts",
-        "src/mathlib/Point.ts",
-        "src/mathlib/Rectangle.ts",
-        "src/mathlib/Vector3D.ts",
-        "src/mathlib/Matrix3D.ts",
-        "src/mathlib/Quaternion.ts",
-        "src/mathlib/Euler.ts",
-        "src/mathlib/Line3D.ts",
-        "src/mathlib/Segment3D.ts",
-        "src/mathlib/Ray3D.ts",
-        "src/mathlib/Plane3D.ts",
-        "src/mathlib/PlaneClassification.ts",
-        "src/mathlib/Color.ts",
+        //几何运算
+        "src/geom/Math.ts",
+        "src/geom/Vector2.ts",
+        "src/geom/Vector3.ts",
+        "src/geom/Vector4.ts",
+        "src/geom/Orientation3D.ts",
+        "src/geom/Rectangle.ts",
+        "src/geom/Matrix.ts",
+        "src/geom/Matrix4x4.ts",
+        "src/geom/Quaternion.ts",
+        "src/geom/Euler.ts",
+        "src/geom/Line3D.ts",
+        "src/geom/Segment3D.ts",
+        "src/geom/Ray3D.ts",
+        "src/geom/Triangle3D.ts",
+        "src/geom/Box.ts",
+        "src/geom/Sphere.ts",
+        "src/geom/Plane3D.ts",
+        "src/geom/PlaneClassification.ts",
+        "src/geom/Color.ts",
+        "src/geom/Frustum.ts",
+        "src/geom/TriangleGeometry.ts",
         //
         "src/utils/ticker.ts",
-        "src/utils/Timer.ts",
         //快捷键模块
         "src/shortcut/Keyboard.ts",
         "src/shortcut/handle/KeyCapture.ts",
@@ -148,8 +148,6 @@
         "src/cameras/lenses/FreeMatrixLens.ts",
         "src/cameras/lenses/PerspectiveLens.ts",
         "src/cameras/Camera.ts",
-        //
-        "src/bounds/bounding.ts",
         //几何体
         "src/primitives/PlaneGeometry.ts",
         "src/primitives/CubeGeometry.ts",

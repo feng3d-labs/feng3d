@@ -18,7 +18,7 @@ namespace feng3d
             var y = baseVelocity;
             var z = (Math.random() - 0.5) * baseVelocity;
 
-            particle.velocity = new Vector3D(x, y, z);
+            particle.velocity = new Vector3(x, y, z);
         }
     }
 }

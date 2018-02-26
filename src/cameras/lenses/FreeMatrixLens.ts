@@ -14,7 +14,7 @@ namespace feng3d
 
 		protected updateMatrix()
 		{
-			return new Matrix3D();
+			return new Matrix4x4();
 		}
 
 		/**
@@ -25,9 +25,9 @@ namespace feng3d
 		 * @param v 场景坐标（输出）
 		 * @return 场景坐标
 		 */
-		unproject(nX: number, nY: number, sZ: number, v: Vector3D): Vector3D
+		unproject(nX: number, nY: number, sZ: number, v: Vector3): Vector3
 		{
-			return new Vector3D();
+			return new Vector3();
 		}
 	}
 }

@@ -19,7 +19,7 @@ namespace feng3d
         }
         private _skinSkeleton: SkinSkeleton;
 
-        private skeletonGlobalMatriices: Matrix3D[] = [];
+        private skeletonGlobalMatriices: Matrix4x4[] = [];
 
         /**
          * 缓存，通过寻找父节点获得
@@ -27,7 +27,7 @@ namespace feng3d
         private cacheSkeletonComponent: SkeletonComponent | null;
 
         @serialize()
-        initMatrix3d: Matrix3D;
+        initMatrix3d: Matrix4x4;
 
         /**
 		 * 创建一个骨骼动画类
@@ -103,7 +103,7 @@ namespace feng3d
         {
             _defaultglobalMatrices = [];
             _defaultglobalMatrices.length = 150;
-            var matrix3d = new Matrix3D();
+            var matrix3d = new Matrix4x4();
             for (var i = 0; i < 150; i++)
             {
                 _defaultglobalMatrices[i] = matrix3d;
@@ -111,7 +111,7 @@ namespace feng3d
         }
         return _defaultglobalMatrices;
     }
-    var _defaultglobalMatrices: Matrix3D[];
+    var _defaultglobalMatrices: Matrix4x4[];
 
     export class SkinSkeleton
     {

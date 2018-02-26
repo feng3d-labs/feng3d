@@ -13,7 +13,7 @@ namespace feng3d
          * 当前骨骼姿势的全局矩阵
          * @see #globalPose
          */
-        get globalMatrices(): Matrix3D[]
+        get globalMatrices(): Matrix4x4[]
         {
             if (!this.isInitJoints)
             {
@@ -35,8 +35,8 @@ namespace feng3d
         private _globalPropertiesInvalid: boolean;
         private _jointsInvalid: boolean[];
         private _globalMatrix3DsInvalid: boolean[];
-        private globalMatrix3Ds: Matrix3D[];
-        private _globalMatrices: Matrix3D[];
+        private globalMatrix3Ds: Matrix4x4[];
+        private _globalMatrices: Matrix4x4[];
 
         initSkeleton()
         {
@@ -57,8 +57,8 @@ namespace feng3d
             {
                 this._jointsInvalid[i] = true;
                 this._globalMatrix3DsInvalid[i] = true;
-                this.globalMatrix3Ds[i] = new Matrix3D();
-                this._globalMatrices[i] = new Matrix3D();
+                this.globalMatrix3Ds[i] = new Matrix4x4();
+                this._globalMatrices[i] = new Matrix4x4();
             }
 
         }

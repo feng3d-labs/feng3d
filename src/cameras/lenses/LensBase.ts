@@ -78,13 +78,13 @@ namespace feng3d
 		}
 
 		//
-		protected _matrix: Matrix3D | null;
+		protected _matrix: Matrix4x4 | null;
 		protected _scissorRect: Rectangle = new Rectangle();
 		protected _viewPort: Rectangle = new Rectangle();
 
 		protected _frustumCorners: number[] = [];
 
-		private _unprojection: Matrix3D | null;
+		private _unprojection: Matrix4x4 | null;
 
 		/**
 		 * 创建一个摄像机镜头
@@ -110,7 +110,7 @@ namespace feng3d
 		/**
 		 * 投影矩阵
 		 */
-		get matrix(): Matrix3D
+		get matrix(): Matrix4x4
 		{
 			if (!this._matrix)
 			{
@@ -119,7 +119,7 @@ namespace feng3d
 			return this._matrix;
 		}
 
-		set matrix(value: Matrix3D)
+		set matrix(value: Matrix4x4)
 		{
 			this._matrix = value;
 			this.dispatch("matrixChanged", this);
@@ -132,13 +132,12 @@ namespace feng3d
 		 * @param v 屏幕坐标（输出）
 		 * @return 屏幕坐标
 		 */
-		project(point3d: Vector3D, v?: Vector3D): Vector3D
+		project(point3d: Vector3, v = new Vector3()): Vector3
 		{
-			if (!v)
-				v = new Vector3D();
-			this.matrix.transformVector(point3d, v);
-			v.x = v.x / v.w;
-			v.y = -v.y / v.w;
+			var v4 = this.matrix.transformVector4(Vector4.fromVector3(point3d));
+			v4.toVector3(v);
+			v.x = v.x / v4.w;
+			v.y = -v.y / v4.w;
 
 			//z is unaffected by transform
 			v.z = point3d.z;
@@ -149,11 +148,11 @@ namespace feng3d
 		/**
 		 * 投影逆矩阵
 		 */
-		get unprojectionMatrix(): Matrix3D
+		get unprojectionMatrix(): Matrix4x4
 		{
 			if (!this._unprojection)
 			{
-				this._unprojection = new Matrix3D();
+				this._unprojection = new Matrix4x4();
 				this._unprojection.copyFrom(this.matrix);
 				this._unprojection.invert();
 			}
@@ -169,7 +168,7 @@ namespace feng3d
 		 * @param v 场景坐标（输出）
 		 * @return 场景坐标
 		 */
-		abstract unproject(nX: number, nY: number, sZ: number, v?: Vector3D): Vector3D;
+		abstract unproject(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
 
 		/**
 		 * 投影矩阵失效
@@ -184,6 +183,6 @@ namespace feng3d
 		/**
 		 * 更新投影矩阵
 		 */
-		protected abstract updateMatrix(): Matrix3D;
+		protected abstract updateMatrix(): Matrix4x4;
 	}
 }

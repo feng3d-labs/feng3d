@@ -230,7 +230,7 @@ namespace feng3d
             {
                 vector3DData = this._attributes[attributeID] = this._attributes[attributeID] || [];
                 vector3DData[index] = data;
-            } else if (data instanceof Vector3D)
+            } else if (data instanceof Vector3)
             {
                 vector3DData = this._attributes[attributeID] = this._attributes[attributeID] || [];
                 vector3DData[index * 3] = data.x;

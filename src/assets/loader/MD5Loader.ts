@@ -168,8 +168,8 @@ namespace feng3d
         var len = vertexData.length;
         var vertex: MD5_Vertex;
         var weight: MD5_Weight;
-        var bindPose: Matrix3D;
-        var pos: Vector3D;
+        var bindPose: Matrix4x4;
+        var pos: Vector3;
         //uv数据
         var uvs: number[] = [];
         uvs.length = len * 2;
@@ -211,7 +211,7 @@ namespace feng3d
                     if (weight.bias > 0)
                     {
                         bindPose = skeleton.joints[weight.joint].matrix3D;
-                        pos = bindPose.transformVector(new Vector3D(-weight.pos[0], weight.pos[1], weight.pos[2]));
+                        pos = bindPose.transformVector(new Vector3(-weight.pos[0], weight.pos[1], weight.pos[2]));
                         vertices[i * 3] += pos.x * weight.bias;
                         vertices[i * 3 + 1] += pos.y * weight.bias;
                         vertices[i * 3 + 2] += pos.z * weight.bias;
@@ -287,7 +287,7 @@ namespace feng3d
             var flags: number;
             var j: number;
             //偏移量
-            var translation: Vector3D = new Vector3D();
+            var translation: Vector3 = new Vector3();
             //旋转四元素
             var components: number[] = frameData.components;
 
@@ -332,7 +332,7 @@ namespace feng3d
                 translation.x = -translation.x;
 
                 var eulers = orientation.toEulerAngles();
-                eulers.scaleBy(180 / Math.PI);
+                eulers.scale(180 / Math.PI);
 
                 var path: PropertyClipPath = [
                     [PropertyClipPathItemType.GameObject, hierarchy.name],
@@ -340,7 +340,7 @@ namespace feng3d
                 ];
 
                 var time = (frameData.index / md5AnimData.frameRate) * 1000;
-                setPropertyClipFrame(path, "position", time, translation.toArray(), "Vector3D");
+                setPropertyClipFrame(path, "position", time, translation.toArray(), "Vector3");
                 setPropertyClipFrame(path, "orientation", time, orientation.toArray(), "Quaternion");
 
             }

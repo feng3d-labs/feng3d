@@ -24,10 +24,10 @@ namespace feng3d
     export class Camera extends Component
     {
         private _lens: LensBase;
-        private _viewProjection: Matrix3D = new Matrix3D();
+        private _viewProjection: Matrix4x4 = new Matrix4x4();
         private _viewProjectionDirty = true;
-        private _frustumPlanes: Plane3D[];
-        private _frustumPlanesDirty = true;
+        private _frustum: Frustum;
+        private _frustumDirty = true;
         private _viewRect: Rectangle = new Rectangle(0, 0, 1, 1);
 
         /**
@@ -54,12 +54,9 @@ namespace feng3d
 
             this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
             this._viewProjectionDirty = true;
-            this._frustumPlanesDirty = true;
+            this._frustumDirty = true;
 
-            this._frustumPlanes = [];
-
-            for (var i = 0; i < 6; ++i)
-                this._frustumPlanes[i] = new Plane3D();
+            this._frustum = new Frustum();
 
             //
             this.createUniformData("u_projectionMatrix", () => this._lens.matrix);
@@ -76,7 +73,7 @@ namespace feng3d
         private onLensMatrixChanged(event: Event<any>)
         {
             this._viewProjectionDirty = true;
-            this._frustumPlanesDirty = true;
+            this._frustumDirty = true;
 
             this.dispatch(<any>event.type, event.data);
         }
@@ -113,7 +110,7 @@ namespace feng3d
 		/**
 		 * 场景投影矩阵，世界空间转投影空间
 		 */
-        get viewProjection(): Matrix3D
+        get viewProjection(): Matrix4x4
         {
             if (this._viewProjectionDirty)
             {
@@ -133,7 +130,7 @@ namespace feng3d
         protected onScenetransformChanged()
         {
             this._viewProjectionDirty = true;
-            this._frustumPlanesDirty = true;
+            this._frustumDirty = true;
         }
 
         /**
@@ -153,9 +150,9 @@ namespace feng3d
         getRay3D(x: number, y: number, ray3D?: Ray3D): Ray3D
         {
             //摄像机坐标
-            var rayPosition: Vector3D = this.unproject(x, y, 0);
+            var rayPosition: Vector3 = this.unproject(x, y, 0);
             //摄像机前方1处坐标
-            var rayDirection: Vector3D = this.unproject(x, y, 1);
+            var rayDirection: Vector3 = this.unproject(x, y, 1);
             //射线方向
             rayDirection.x = rayDirection.x - rayPosition.x;
             rayDirection.y = rayDirection.y - rayPosition.y;
@@ -171,9 +168,9 @@ namespace feng3d
 		 * @param point3d 世界坐标
 		 * @return 屏幕的绝对坐标
 		 */
-        project(point3d: Vector3D): Vector3D
+        project(point3d: Vector3): Vector3
         {
-            var v: Vector3D = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
+            var v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
 
             v.x = (v.x + 1.0) * this._viewRect.width / 2.0;
             v.y = (v.y + 1.0) * this._viewRect.height / 2.0;
@@ -189,9 +186,9 @@ namespace feng3d
 		 * @param v 场景坐标（输出）
 		 * @return 场景坐标
 		 */
-        unproject(sX: number, sY: number, sZ: number, v?: Vector3D): Vector3D
+        unproject(sX: number, sY: number, sZ: number, v?: Vector3): Vector3
         {
-            var gpuPos: Point = this.screenToGpuPosition(new Point(sX, sY));
+            var gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(sX, sY));
             return this.transform.localToWorldMatrix.transformVector(this.lens.unproject(gpuPos.x, gpuPos.y, sZ, v), v);
         }
 
@@ -200,9 +197,9 @@ namespace feng3d
 		 * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
 		 * @return GPU坐标 (x:[-1,1],y:[-1-1])
 		 */
-        screenToGpuPosition(screenPos: Point): Point
+        screenToGpuPosition(screenPos: Vector2): Vector2
         {
-            var gpuPos: Point = new Point();
+            var gpuPos: Vector2 = new Vector2();
             gpuPos.x = (screenPos.x * 2 - this._viewRect.width) / this._viewRect.width;
             gpuPos.y = (screenPos.y * 2 - this._viewRect.height) / this._viewRect.height;
             return gpuPos;
@@ -218,123 +215,18 @@ namespace feng3d
             var centerY = this._viewRect.height / 2;
             var lt = this.unproject(centerX - 0.5, centerY - 0.5, depth);
             var rb = this.unproject(centerX + 0.5, centerY + 0.5, depth);
-            var scale = lt.subtract(rb).length;
+            var scale = lt.subTo(rb).length;
             return scale;
         }
 
 		/**
-		 * 视锥体面
+		 * 视锥体
 		 */
-        get frustumPlanes(): Plane3D[]
+        get frustum()
         {
-            if (this._frustumPlanesDirty)
-                this.updateFrustum();
-
-            return this._frustumPlanes;
-        }
-
-		/**
-		 * 更新视锥体6个面，平面均朝向视锥体内部
-		 * @see http://www.linuxgraphics.cn/graphics/opengl_view_frustum_culling.html
-		 */
-        private updateFrustum()
-        {
-            var a: number, b: number, c: number;
-            //var d :number;
-            var c11: number, c12: number, c13: number, c14: number;
-            var c21: number, c22: number, c23: number, c24: number;
-            var c31: number, c32: number, c33: number, c34: number;
-            var c41: number, c42: number, c43: number, c44: number;
-            var p: Plane3D;
-            var raw = Matrix3D.RAW_DATA_CONTAINER;
-            //长度倒数
-            var invLen: number;
-            this.viewProjection.copyRawDataTo(raw);
-
-            c11 = raw[0];
-            c12 = raw[4];
-            c13 = raw[8];
-            c14 = raw[12];
-            c21 = raw[1];
-            c22 = raw[5];
-            c23 = raw[9];
-            c24 = raw[13];
-            c31 = raw[2];
-            c32 = raw[6];
-            c33 = raw[10];
-            c34 = raw[14];
-            c41 = raw[3];
-            c42 = raw[7];
-            c43 = raw[11];
-            c44 = raw[15];
-
-            // left plane
-            p = this._frustumPlanes[0];
-            a = c41 + c11;
-            b = c42 + c12;
-            c = c43 + c13;
-            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-            p.a = a * invLen;
-            p.b = b * invLen;
-            p.c = c * invLen;
-            p.d = -(c44 + c14) * invLen;
-
-            // right plane
-            p = this._frustumPlanes[1];
-            a = c41 - c11;
-            b = c42 - c12;
-            c = c43 - c13;
-            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-            p.a = a * invLen;
-            p.b = b * invLen;
-            p.c = c * invLen;
-            p.d = (c14 - c44) * invLen;
-
-            // bottom
-            p = this._frustumPlanes[2];
-            a = c41 + c21;
-            b = c42 + c22;
-            c = c43 + c23;
-            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-            p.a = a * invLen;
-            p.b = b * invLen;
-            p.c = c * invLen;
-            p.d = -(c44 + c24) * invLen;
-
-            // top
-            p = this._frustumPlanes[3];
-            a = c41 - c21;
-            b = c42 - c22;
-            c = c43 - c23;
-            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-            p.a = a * invLen;
-            p.b = b * invLen;
-            p.c = c * invLen;
-            p.d = (c24 - c44) * invLen;
-
-            // near
-            p = this._frustumPlanes[4];
-            a = c31;
-            b = c32;
-            c = c33;
-            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-            p.a = a * invLen;
-            p.b = b * invLen;
-            p.c = c * invLen;
-            p.d = -c34 * invLen;
-
-            // far
-            p = this._frustumPlanes[5];
-            a = c41 - c31;
-            b = c42 - c32;
-            c = c43 - c33;
-            invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-            p.a = a * invLen;
-            p.b = b * invLen;
-            p.c = c * invLen;
-            p.d = (c34 - c44) * invLen;
-
-            this._frustumPlanesDirty = false;
+            if (this._frustumDirty)
+                this._frustum.fromMatrix3D(this.viewProjection);
+            return this._frustum;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace feng3d
         constructor()
         {
             super();
-            this.addPoint(new PointInfo(new Vector3D(0, 0, 0)))
+            this.addPoint(new PointInfo(new Vector3(0, 0, 0)))
         }
 
         /**
@@ -89,16 +89,16 @@ namespace feng3d
      */
     export class PointInfo
     {
-        position: Vector3D;
+        position: Vector3;
         color: Color;
-        normal: Vector3D;
-        uv: Point;
+        normal: Vector3;
+        uv: Vector2;
 
         /**
 		 * 创建点
 		 * @param position 坐标
 		 */
-        constructor(position = new Vector3D(), color = new Color(), uv = new Point(), normal = new Vector3D(0, 1, 0))
+        constructor(position = new Vector3(), color = new Color(), uv = new Vector2(), normal = new Vector3(0, 1, 0))
         {
             this.position = position;
             this.color = color;
