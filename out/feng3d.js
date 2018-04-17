@@ -20497,12 +20497,14 @@ var feng3d;
             this.createUniformData("u_particleTime", function () { return _this.time; });
             //
             this.createBoolMacro("HAS_PARTICLE_ANIMATOR", true);
-            //
-            this.isPlaying = true;
+            this.updateRenderState();
         };
         ParticleAnimator.prototype.update = function () {
             this.time = (this.time + ((Date.now() - this.preTime) * this.playspeed / 1000) + this.cycle) % this.cycle;
             this.preTime = Date.now();
+            this.updateRenderState();
+        };
+        ParticleAnimator.prototype.updateRenderState = function () {
             for (var key in this.animations) {
                 if (this.animations.hasOwnProperty(key)) {
                     var element = this.animations[key];
@@ -20614,7 +20616,8 @@ var feng3d;
             feng3d.serialize()
         ], ParticleAnimator.prototype, "isPlaying", null);
         __decorate([
-            feng3d.oav()
+            feng3d.oav(),
+            feng3d.serialize()
         ], ParticleAnimator.prototype, "time", void 0);
         __decorate([
             feng3d.oav(),

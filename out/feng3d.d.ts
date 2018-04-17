@@ -9970,6 +9970,7 @@ declare namespace feng3d {
         readonly single: boolean;
         init(gameObject: GameObject): void;
         private update();
+        private updateRenderState();
         invalidate(): void;
         /**
          * 生成粒子

@@ -37,6 +37,7 @@ namespace feng3d
          * 粒子时间
          */
         @oav()
+        @serialize()
         time = 0;
 
         /**
@@ -107,8 +108,8 @@ namespace feng3d
             this.createUniformData("u_particleTime", () => this.time);
             //
             this.createBoolMacro("HAS_PARTICLE_ANIMATOR", true);
-            //
-            this.isPlaying = true;
+
+            this.updateRenderState();
         }
 
         private update()
@@ -116,6 +117,11 @@ namespace feng3d
             this.time = (this.time + ((Date.now() - this.preTime) * this.playspeed / 1000) + this.cycle) % this.cycle;
             this.preTime = Date.now();
 
+            this.updateRenderState();
+        }
+
+        private updateRenderState()
+        {
             for (const key in this.animations)
             {
                 if (this.animations.hasOwnProperty(key))
