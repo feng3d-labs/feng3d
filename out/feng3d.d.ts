@@ -567,6 +567,7 @@ declare namespace feng3d {
          * 是否右击
          */
         rightmouse: boolean;
+        key: string;
         keyCode: number;
         wheelDelta: number;
         private listentypes;
@@ -598,6 +599,10 @@ declare namespace feng3d {
          * 键盘按下事件
          */
         private onMouseKey;
+        /**
+         * 清理数据
+         */
+        private clear();
     }
     /**
      * 键盘鼠标输入

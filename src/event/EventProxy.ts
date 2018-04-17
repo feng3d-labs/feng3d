@@ -14,9 +14,11 @@ namespace feng3d
          */
         rightmouse = false;
 
-        keyCode: number;
+        key: string = "";
 
-        wheelDelta: number;
+        keyCode: number = 0;
+
+        wheelDelta: number = 0;
 
         private listentypes: string[] = [];
 
@@ -84,6 +86,8 @@ namespace feng3d
 		 */
         private onMouseKey = (event) =>
         {
+            this.clear();
+
             if (event["clientX"] != undefined)
             {
                 event = <MouseEvent>event;
@@ -99,6 +103,7 @@ namespace feng3d
             if (event instanceof KeyboardEvent)
             {
                 this.keyCode = event.keyCode;
+                this.key = event.key;
             }
 
             if (event instanceof WheelEvent)
@@ -107,6 +112,19 @@ namespace feng3d
             }
 
             this.dispatchEvent(<any>event);
+        }
+
+        /**
+         * 清理数据
+         */
+        private clear()
+        {
+            this.clientX = 0;
+            this.clientY = 0;
+            this.rightmouse = false;
+            this.key = "";
+            this.keyCode = 0;
+            this.wheelDelta = 0;
         }
     }
 
