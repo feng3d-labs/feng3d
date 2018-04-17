@@ -13512,7 +13512,7 @@ var feng3d;
         gl.enable(gl.DEPTH_TEST);
     }
 })(feng3d || (feng3d = {}));
-// var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };
+// var viewRect0 = { x: 0, y: 0, w: 400, h: 300 }; 
 var feng3d;
 (function (feng3d) {
     var HoldSizeComponent = /** @class */ (function (_super) {
@@ -20464,8 +20464,6 @@ var feng3d;
                     this.preTime = Date.now();
                     feng3d.ticker.onframe(this.update, this);
                 }
-                //
-                this.createBoolMacro("HAS_PARTICLE_ANIMATOR", this._isPlaying);
             },
             enumerable: true,
             configurable: true
@@ -20481,6 +20479,9 @@ var feng3d;
             this.createInstanceCount(function () { return _this.numParticles; });
             //
             this.createUniformData("u_particleTime", function () { return _this.time; });
+            //
+            this.createBoolMacro("HAS_PARTICLE_ANIMATOR", true);
+            //
             this.isPlaying = true;
         };
         ParticleAnimator.prototype.update = function () {

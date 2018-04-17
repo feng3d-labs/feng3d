@@ -22,16 +22,14 @@ namespace feng3d
                 return;
             if (this._isPlaying)
             {
-                ticker.offframe( this.update, this);
+                ticker.offframe(this.update, this);
             }
             this._isPlaying = value;
             if (this._isPlaying)
             {
                 this.preTime = Date.now();
-                ticker.onframe( this.update, this);
+                ticker.onframe(this.update, this);
             }
-            //
-            this.createBoolMacro("HAS_PARTICLE_ANIMATOR", this._isPlaying);
         }
         private _isPlaying = false;
 
@@ -107,6 +105,9 @@ namespace feng3d
             this.createInstanceCount(() => this.numParticles);
             //
             this.createUniformData("u_particleTime", () => this.time);
+            //
+            this.createBoolMacro("HAS_PARTICLE_ANIMATOR", true);
+            //
             this.isPlaying = true;
         }
 
