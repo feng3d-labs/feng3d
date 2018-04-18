@@ -41,7 +41,7 @@ namespace feng3d
         ALWAYS,
     }
 
-    (enums = enums || {}).getdDepthFuncValue = (gl: GL) =>
+    enums.getdDepthFuncValue = (gl: GL) =>
     {
         return (depthFunc: DepthFunc) =>
         {

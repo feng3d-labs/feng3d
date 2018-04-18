@@ -34,7 +34,7 @@ namespace feng3d
         HALF_FLOAT
     }
 
-    (enums = enums || {}).getGLArrayTypeValue = (gl: GL) =>
+    enums.getGLArrayTypeValue = (gl: GL) =>
     {
         var gl2: WebGL2RenderingContext = <any>gl;
         return (glArrayType: GLArrayType) =>

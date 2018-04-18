@@ -1,4 +1,3 @@
-"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -8451,6 +8450,37 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * @private
+     */
+    feng3d.enums = {};
+    /**
+     * GL枚举
+     */
+    var GLEnum = /** @class */ (function () {
+        function GLEnum(gl) {
+            feng3d.assert(!gl.enums, gl + " " + gl.enums + " \u5B58\u5728\uFF01");
+            gl.enums = this;
+            this.getRenderModeValue = feng3d.enums.getRenderModeValue(gl);
+            this.getTextureTypeValue = feng3d.enums.getTextureTypeValue(gl);
+            this.getBlendEquationValue = feng3d.enums.getBlendEquationValue(gl);
+            this.getBlendFactorValue = feng3d.enums.getBlendFactorValue(gl);
+            this.getCullFaceValue = feng3d.enums.getCullFaceValue(gl);
+            this.getFrontFaceValue = feng3d.enums.getFrontFaceValue(gl);
+            this.getTextureFormatValue = feng3d.enums.getTextureFormatValue(gl);
+            this.getTextureDataTypeValue = feng3d.enums.getTextureDataTypeValue(gl);
+            this.getTextureMinFilterValue = feng3d.enums.getTextureMinFilterValue(gl);
+            this.getTextureMagFilterValue = feng3d.enums.getTextureMagFilterValue(gl);
+            this.getTextureWrapValue = feng3d.enums.getTextureWrapValue(gl);
+            this.getGLArrayTypeValue = feng3d.enums.getGLArrayTypeValue(gl);
+            this.getdDepthFuncValue = feng3d.enums.getdDepthFuncValue(gl);
+        }
+        return GLEnum;
+    }());
+    feng3d.GLEnum = GLEnum;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 渲染模式
      * A GLenum specifying the type primitive to render. Possible values are:
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
@@ -8490,7 +8520,7 @@ var feng3d;
          */
         RenderMode[RenderMode["TRIANGLE_FAN"] = 6] = "TRIANGLE_FAN";
     })(RenderMode = feng3d.RenderMode || (feng3d.RenderMode = {}));
-    (feng3d.enums = feng3d.enums || {}).getRenderModeValue = function (gl) {
+    feng3d.enums.getRenderModeValue = function (gl) {
         return function (renderMode) {
             var value = gl.TRIANGLES;
             switch (renderMode) {
@@ -8550,7 +8580,7 @@ var feng3d;
          */
         TextureType[TextureType["TEXTURE_2D_ARRAY"] = 3] = "TEXTURE_2D_ARRAY";
     })(TextureType = feng3d.TextureType || (feng3d.TextureType = {}));
-    (feng3d.enums = feng3d.enums || {}).getTextureTypeValue = function (gl) {
+    feng3d.enums.getTextureTypeValue = function (gl) {
         return function (textureType) {
             var gl2 = gl;
             var value = gl.TEXTURE_2D;
@@ -8615,7 +8645,7 @@ var feng3d;
          */
         BlendEquation[BlendEquation["MAX"] = 6] = "MAX";
     })(BlendEquation = feng3d.BlendEquation || (feng3d.BlendEquation = {}));
-    (feng3d.enums = feng3d.enums || {}).getBlendEquationValue = function (gl) {
+    feng3d.enums.getBlendEquationValue = function (gl) {
         return function (blendEquation) {
             var value = gl.FUNC_ADD;
             switch (blendEquation) {
@@ -8687,7 +8717,7 @@ var feng3d;
          */
         BlendFactor[BlendFactor["SRC_ALPHA_SATURATE"] = 10] = "SRC_ALPHA_SATURATE";
     })(BlendFactor = feng3d.BlendFactor || (feng3d.BlendFactor = {}));
-    (feng3d.enums = feng3d.enums || {}).getBlendFactorValue = function (gl) {
+    feng3d.enums.getBlendFactorValue = function (gl) {
         return function (blendFactor) {
             var value = gl.ZERO;
             switch (blendFactor) {
@@ -8757,7 +8787,7 @@ var feng3d;
          */
         CullFace[CullFace["FRONT_AND_BACK"] = 3] = "FRONT_AND_BACK";
     })(CullFace = feng3d.CullFace || (feng3d.CullFace = {}));
-    (feng3d.enums = feng3d.enums || {}).getCullFaceValue = function (gl) {
+    feng3d.enums.getCullFaceValue = function (gl) {
         return function (cullFace) {
             var value = gl.BACK;
             switch (cullFace) {
@@ -8798,7 +8828,7 @@ var feng3d;
          */
         FrontFace[FrontFace["CCW"] = 1] = "CCW";
     })(FrontFace = feng3d.FrontFace || (feng3d.FrontFace = {}));
-    (feng3d.enums = feng3d.enums || {}).getFrontFaceValue = function (gl) {
+    feng3d.enums.getFrontFaceValue = function (gl) {
         return function (frontFace) {
             var value = gl.CCW;
             switch (frontFace) {
@@ -8966,7 +8996,7 @@ var feng3d;
          */
         TextureFormat[TextureFormat["RGBA8UI"] = 33] = "RGBA8UI";
     })(TextureFormat = feng3d.TextureFormat || (feng3d.TextureFormat = {}));
-    (feng3d.enums = feng3d.enums || {}).getTextureFormatValue = function (gl) {
+    feng3d.enums.getTextureFormatValue = function (gl) {
         return function (textureFormat) {
             var gl2 = gl;
             var value = gl.RGB;
@@ -9204,7 +9234,7 @@ var feng3d;
          */
         TextureDataType[TextureDataType["FLOAT_32_UNSIGNED_INT_24_8_REV"] = 17] = "FLOAT_32_UNSIGNED_INT_24_8_REV";
     })(TextureDataType = feng3d.TextureDataType || (feng3d.TextureDataType = {}));
-    (feng3d.enums = feng3d.enums || {}).getTextureDataTypeValue = function (gl) {
+    feng3d.enums.getTextureDataTypeValue = function (gl) {
         var gl2 = gl;
         return function (textureDataType) {
             var value = gl.UNSIGNED_BYTE;
@@ -9304,7 +9334,7 @@ var feng3d;
         TextureMinFilter[TextureMinFilter["NEAREST_MIPMAP_LINEAR"] = 4] = "NEAREST_MIPMAP_LINEAR";
         TextureMinFilter[TextureMinFilter["LINEAR_MIPMAP_LINEAR"] = 5] = "LINEAR_MIPMAP_LINEAR";
     })(TextureMinFilter = feng3d.TextureMinFilter || (feng3d.TextureMinFilter = {}));
-    (feng3d.enums = feng3d.enums || {}).getTextureMinFilterValue = function (gl) {
+    feng3d.enums.getTextureMinFilterValue = function (gl) {
         return function (textureMinFilter) {
             var value = gl.NEAREST_MIPMAP_LINEAR;
             switch (textureMinFilter) {
@@ -9349,7 +9379,7 @@ var feng3d;
         TextureMagFilter[TextureMagFilter["LINEAR"] = 0] = "LINEAR";
         TextureMagFilter[TextureMagFilter["NEAREST"] = 1] = "NEAREST";
     })(TextureMagFilter = feng3d.TextureMagFilter || (feng3d.TextureMagFilter = {}));
-    (feng3d.enums = feng3d.enums || {}).getTextureMagFilterValue = function (gl) {
+    feng3d.enums.getTextureMagFilterValue = function (gl) {
         return function (textureMagFilter) {
             var value = gl.LINEAR;
             switch (textureMagFilter) {
@@ -9383,7 +9413,7 @@ var feng3d;
         TextureWrap[TextureWrap["CLAMP_TO_EDGE"] = 1] = "CLAMP_TO_EDGE";
         TextureWrap[TextureWrap["MIRRORED_REPEAT"] = 2] = "MIRRORED_REPEAT";
     })(TextureWrap = feng3d.TextureWrap || (feng3d.TextureWrap = {}));
-    (feng3d.enums = feng3d.enums || {}).getTextureWrapValue = function (gl) {
+    feng3d.enums.getTextureWrapValue = function (gl) {
         return function (textureWrap) {
             var value = gl.REPEAT;
             switch (textureWrap) {
@@ -9439,7 +9469,7 @@ var feng3d;
          */
         GLArrayType[GLArrayType["HALF_FLOAT"] = 5] = "HALF_FLOAT";
     })(GLArrayType = feng3d.GLArrayType || (feng3d.GLArrayType = {}));
-    (feng3d.enums = feng3d.enums || {}).getGLArrayTypeValue = function (gl) {
+    feng3d.enums.getGLArrayTypeValue = function (gl) {
         var gl2 = gl;
         return function (glArrayType) {
             var value = gl.FUNC_ADD;
@@ -9512,7 +9542,7 @@ var feng3d;
          */
         DepthFunc[DepthFunc["ALWAYS"] = 7] = "ALWAYS";
     })(DepthFunc = feng3d.DepthFunc || (feng3d.DepthFunc = {}));
-    (feng3d.enums = feng3d.enums || {}).getdDepthFuncValue = function (gl) {
+    feng3d.enums.getdDepthFuncValue = function (gl) {
         return function (depthFunc) {
             var value = gl.LESS;
             switch (depthFunc) {
@@ -9947,33 +9977,6 @@ var feng3d;
         return WebGLCapabilities;
     }());
     feng3d.WebGLCapabilities = WebGLCapabilities;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * GL枚举
-     */
-    var GLEnum = /** @class */ (function () {
-        function GLEnum(gl) {
-            feng3d.assert(!gl.enums, gl + " " + gl.enums + " \u5B58\u5728\uFF01");
-            gl.enums = this;
-            this.getRenderModeValue = feng3d.enums.getRenderModeValue(gl);
-            this.getTextureTypeValue = feng3d.enums.getTextureTypeValue(gl);
-            this.getBlendEquationValue = feng3d.enums.getBlendEquationValue(gl);
-            this.getBlendFactorValue = feng3d.enums.getBlendFactorValue(gl);
-            this.getCullFaceValue = feng3d.enums.getCullFaceValue(gl);
-            this.getFrontFaceValue = feng3d.enums.getFrontFaceValue(gl);
-            this.getTextureFormatValue = feng3d.enums.getTextureFormatValue(gl);
-            this.getTextureDataTypeValue = feng3d.enums.getTextureDataTypeValue(gl);
-            this.getTextureMinFilterValue = feng3d.enums.getTextureMinFilterValue(gl);
-            this.getTextureMagFilterValue = feng3d.enums.getTextureMagFilterValue(gl);
-            this.getTextureWrapValue = feng3d.enums.getTextureWrapValue(gl);
-            this.getGLArrayTypeValue = feng3d.enums.getGLArrayTypeValue(gl);
-            this.getdDepthFuncValue = feng3d.enums.getdDepthFuncValue(gl);
-        }
-        return GLEnum;
-    }());
-    feng3d.GLEnum = GLEnum;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -24,7 +24,7 @@ namespace feng3d
         FRONT_AND_BACK,
     }
 
-    (enums = enums || {}).getCullFaceValue = (gl: GL) =>
+    enums.getCullFaceValue = (gl: GL) =>
     {
         return (cullFace: CullFace) =>
         {

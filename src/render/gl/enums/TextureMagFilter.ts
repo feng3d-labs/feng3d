@@ -14,7 +14,7 @@ namespace feng3d
         NEAREST,
     }
 
-    (enums = enums || {}).getTextureMagFilterValue = (gl: GL) =>
+    enums.getTextureMagFilterValue = (gl: GL) =>
     {
         return (textureMagFilter: TextureMagFilter) =>
         {

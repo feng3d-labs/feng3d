@@ -4,7 +4,7 @@
         "noImplicitAny": false,
         "sourceMap": true,
         "declaration": true,
-        "strict": true,
+        // "strict": true,
         "experimentalDecorators": true,
         "outFile": "out/feng3d.js"
     },
@@ -65,6 +65,7 @@
         "src/net/LoaderEvent.ts",
         "src/net/LoaderDataFormat.ts",
         //
+        "src/render/gl/GLEnum.ts",
         "src/render/gl/enums/RenderMode.ts",
         "src/render/gl/enums/TextureType.ts",
         "src/render/gl/enums/BlendEquation.ts",
@@ -86,7 +87,6 @@
         "src/render/gl/GLExtension.ts",
         "src/render/gl/GLProgramExtension.ts",
         "src/render/gl/WebGLCapabilities.ts",
-        "src/render/gl/GLEnum.ts",
         //
         "src/render/data/Uniform.ts",
         "src/render/data/Shader.ts",

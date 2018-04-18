@@ -41,7 +41,7 @@ namespace feng3d
         TRIANGLE_FAN,
     }
 
-    (enums = enums || {}).getRenderModeValue = (gl: GL) =>
+    enums.getRenderModeValue = (gl: GL) =>
     {
         return (renderMode: RenderMode) =>
         {

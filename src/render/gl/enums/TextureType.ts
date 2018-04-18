@@ -28,7 +28,7 @@ namespace feng3d
         TEXTURE_2D_ARRAY,
     }
 
-    (enums = enums || {}).getTextureTypeValue = (gl: GL) =>
+    enums.getTextureTypeValue = (gl: GL) =>
     {
         return (textureType: TextureType) =>
         {

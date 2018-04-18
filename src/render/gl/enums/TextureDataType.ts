@@ -89,7 +89,7 @@ namespace feng3d
         FLOAT_32_UNSIGNED_INT_24_8_REV,
     }
 
-    (enums = enums || {}).getTextureDataTypeValue = (gl: GL) =>
+    enums.getTextureDataTypeValue = (gl: GL) =>
     {
         var gl2: WebGL2RenderingContext = <any>gl;
         return (textureDataType: TextureDataType) =>

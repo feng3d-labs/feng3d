@@ -519,7 +519,7 @@ declare namespace feng3d {
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        once(type: string, listener: (event: any) => void, thisObject?: null, priority?: number): void;
+        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
         /**
          * 派发事件
          * @param event   事件对象
@@ -619,28 +619,28 @@ declare namespace feng3d {
                 url: string;
                 type: string;
             }[];
-            bundleId?: string | undefined;
-            success?: (() => void) | undefined;
-            error?: ((pathsNotFound?: string[] | undefined) => void) | undefined;
-            async?: boolean | undefined;
-            numRetries?: number | undefined;
-            before?: ((path: {
+            bundleId?: string;
+            success?: () => void;
+            error?: (pathsNotFound?: string[]) => void;
+            async?: boolean;
+            numRetries?: number;
+            before?: (path: {
                 url: string;
                 type: string;
-            }, e: any) => boolean) | undefined;
-            onitemload?: ((url: string, content: string) => void) | undefined;
+            }, e: any) => boolean;
+            onitemload?: (url: string, content: string) => void;
         }) => void;
         ready: (params: {
             depends: string | string[];
-            success?: (() => void) | undefined;
-            error?: ((pathsNotFound?: string[] | undefined) => void) | undefined;
+            success?: () => void;
+            error?: (pathsNotFound?: string[]) => void;
         }) => void;
     };
 }
 declare namespace feng3d {
     var watcher: {
         watch: <T extends Object>(host: T, property: keyof T, handler: (host: any, property: string, oldvalue: any) => void, thisObject?: any) => void;
-        unwatch: <T extends Object>(host: T, property: keyof T, handler?: ((host: any, property: string, oldvalue: any) => void) | undefined, thisObject?: any) => void;
+        unwatch: <T extends Object>(host: T, property: keyof T, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any) => void;
     };
 }
 /**
@@ -991,7 +991,7 @@ declare namespace feng3d {
         deserialize: (result: any) => any;
         getSerializableMembers: (object: Object, serializableMembers?: {
             [propertyname: string]: any;
-        } | undefined) => {
+        }) => {
             [propertyname: string]: any;
         };
         clone: (target: any) => any;
@@ -1056,7 +1056,7 @@ declare namespace feng3d {
         nearestPowerOfTwo: (value: any) => number;
         nextPowerOfTwo: (value: any) => any;
         toRound: (source: number, target: number, precision?: number) => number;
-        equals(a: number, b: number, precision?: number | undefined): boolean;
+        equals(a: number, b: number, precision?: number): boolean;
     };
 }
 declare namespace feng3d {
@@ -2751,7 +2751,7 @@ declare namespace feng3d {
          * 与直线相交
          * @param line3D 直线
          */
-        intersectWithLine3D(line3D: Line3D): Vector3 | Line3D | null;
+        intersectWithLine3D(line3D: Line3D): Vector3 | Line3D;
         /**
          * 应用矩阵
          * @param mat 矩阵
@@ -2837,12 +2837,12 @@ declare namespace feng3d {
          * 与直线相交
          * @param line 直线
          */
-        intersectionWithLine(line: Line3D): Vector3 | Segment3D | null;
+        intersectionWithLine(line: Line3D): Vector3 | Segment3D;
         /**
          * 与线段相交
          * @param segment 直线
          */
-        intersectionWithSegment(segment: Segment3D): Vector3 | Segment3D | null;
+        intersectionWithSegment(segment: Segment3D): Vector3 | Segment3D;
         /**
          * 与指定点最近的点
          * @param point 点
@@ -2961,11 +2961,11 @@ declare namespace feng3d {
         /**
          * 获取与直线相交，当直线与三角形不相交时返回null
          */
-        intersectionWithLine(line: Line3D): Vector3 | Segment3D | null;
+        intersectionWithLine(line: Line3D): Vector3 | Segment3D;
         /**
          * 获取与线段相交
          */
-        intersectionWithSegment(segment: Segment3D): Vector3 | Segment3D | null;
+        intersectionWithSegment(segment: Segment3D): Vector3 | Segment3D;
         /**
          * 判定点是否在三角形上
          * @param p
@@ -3438,12 +3438,12 @@ declare namespace feng3d {
         /**
          * 获取与直线交点
          */
-        intersectWithLine3D(line3D: Line3D): Vector3 | Line3D | null;
+        intersectWithLine3D(line3D: Line3D): Vector3 | Line3D;
         /**
          * 获取与平面相交直线
          * @param plane3D
          */
-        intersectWithPlane3D(plane3D: Plane3D): Line3D | null;
+        intersectWithPlane3D(plane3D: Plane3D): Line3D;
         /**
          * 翻转平面
          */
@@ -3643,7 +3643,7 @@ declare namespace feng3d {
          * @param segment 线段
          * @return 线段相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内，2：横跨几何体
          */
-        classifySegment(segment: Segment3D): 1 | 2 | 0 | -1 | undefined;
+        classifySegment(segment: Segment3D): 1 | 2 | 0 | -1;
         /**
          * 给指定三角形分类
          * @param triangle 三角形
@@ -3657,7 +3657,7 @@ declare namespace feng3d {
         intersectionWithLine(line3d: Line3D): {
             segments: Segment3D[];
             points: Vector3[];
-        } | null;
+        };
         /**
          * 与线段相交
          * @param segment 线段
@@ -3666,7 +3666,7 @@ declare namespace feng3d {
         intersectionWithSegment(segment: Segment3D): {
             segments: Segment3D[];
             points: Vector3[];
-        } | null;
+        };
         /**
          * 分解三角形
          * @param triangle 三角形
@@ -3688,13 +3688,13 @@ declare namespace feng3d {
      */
     var ticker: {
         frameRate: number;
-        onframe: (func: () => void, thisObject?: Object | undefined, priority?: number) => any;
-        onceframe: (func: () => void, thisObject?: Object | undefined, priority?: number) => any;
-        offframe: (func: () => void, thisObject?: Object | undefined) => any;
-        on: (interval: Lazy<number>, func: () => void, thisObject?: Object | undefined, priority?: number) => any;
-        once: (interval: Lazy<number>, func: () => void, thisObject?: Object | undefined, priority?: number) => any;
-        off: (interval: Lazy<number>, func: () => void, thisObject?: Object | undefined) => any;
-        repeat: (interval: Lazy<number>, repeatCount: number, func: () => void, thisObject?: Object | undefined, priority?: number) => Timer | undefined;
+        onframe: (func: () => void, thisObject?: Object, priority?: number) => any;
+        onceframe: (func: () => void, thisObject?: Object, priority?: number) => any;
+        offframe: (func: () => void, thisObject?: Object) => any;
+        on: (interval: Lazy<number>, func: () => void, thisObject?: Object, priority?: number) => any;
+        once: (interval: Lazy<number>, func: () => void, thisObject?: Object, priority?: number) => any;
+        off: (interval: Lazy<number>, func: () => void, thisObject?: Object) => any;
+        repeat: (interval: Lazy<number>, repeatCount: number, func: () => void, thisObject?: Object, priority?: number) => Timer;
     };
     interface Timer {
         currentCount: number;
@@ -4052,9 +4052,9 @@ declare namespace feng3d {
      * @author feng 2016-12-14
      */
     var Loader: {
-        loadText: (url: string, onCompleted?: ((content: string) => void) | undefined, onRequestProgress?: (() => void) | undefined, onError?: ((e: any) => void) | undefined) => void;
-        loadBinary: (url: string, onCompleted?: ((content: ArrayBuffer) => void) | undefined, onRequestProgress?: (() => void) | undefined, onError?: ((e: any) => void) | undefined) => void;
-        loadImage: (url: string, onCompleted?: ((content: HTMLImageElement) => void) | undefined, onRequestProgress?: (() => void) | undefined, onError?: ((e: any) => void) | undefined) => void;
+        loadText: (url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: (e: any) => void) => void;
+        loadBinary: (url: string, onCompleted?: (content: ArrayBuffer) => void, onRequestProgress?: () => void, onError?: (e: any) => void) => void;
+        loadImage: (url: string, onCompleted?: (content: HTMLImageElement) => void, onRequestProgress?: () => void, onError?: (e: any) => void) => void;
     };
 }
 declare namespace feng3d {
@@ -4077,6 +4077,97 @@ declare namespace feng3d {
          * 图片数据
          */
         static IMAGE: string;
+    }
+}
+declare namespace feng3d {
+    /**
+     * @private
+     */
+    var enums: {
+        getBlendEquationValue: (gl: GL) => (blendEquation: BlendEquation) => number;
+        getBlendFactorValue: (gl: GL) => (blendFactor: BlendFactor) => number;
+        getRenderModeValue: (gl: GL) => (renderMode: RenderMode) => number;
+        getTextureTypeValue: (gl: GL) => (textureType: TextureType) => number;
+        getCullFaceValue: (gl: GL) => (cullFace: CullFace) => number;
+        getFrontFaceValue: (gl: GL) => (frontFace: FrontFace) => number;
+        getTextureFormatValue: (gl: GL) => (textureFormat: TextureFormat) => number;
+        getTextureDataTypeValue: (gl: GL) => (textureDataType: TextureDataType) => number;
+        getTextureMinFilterValue: (gl: GL) => (textureMinFilter: TextureMinFilter) => number;
+        getTextureMagFilterValue: (gl: GL) => (textureMagFilter: TextureMagFilter) => number;
+        getTextureWrapValue: (gl: GL) => (textureWrapS: TextureWrap) => number;
+        getGLArrayTypeValue: (gl: GL) => (glArrayType: GLArrayType) => number;
+        getdDepthFuncValue: (gl: GL) => (depthFunc: DepthFunc) => number;
+    };
+    /**
+     * GL枚举
+     */
+    class GLEnum {
+        /**
+         * 根据渲染模式枚举获取真实值
+         * @param renderMode 渲染模式枚举
+         */
+        readonly getRenderModeValue: (renderMode: RenderMode) => number;
+        /**
+         * 根据纹理类型枚举获取真实值
+         * @param textureType   纹理类型枚举
+         */
+        readonly getTextureTypeValue: (textureType: TextureType) => number;
+        /**
+         * 根据混合方法枚举获取真实值
+         * @param blendEquation    混合方法枚举
+         */
+        readonly getBlendEquationValue: (blendEquation: BlendEquation) => number;
+        /**
+         * 根据混合因子枚举获取真实值
+         * @param blendFactor    混合因子枚举
+         */
+        readonly getBlendFactorValue: (blendFactor: BlendFactor) => number;
+        /**
+         * 根据裁剪面枚举获取真实值
+         * @param cullFace  裁剪面枚举
+         */
+        readonly getCullFaceValue: (cullFace: CullFace) => number;
+        /**
+         * 根据正面方向枚举获取真实值
+         * @param frontFace  正面方向枚举
+         */
+        readonly getFrontFaceValue: (frontFace: FrontFace) => number;
+        /**
+         * 根据纹理颜色格式枚举获取真实值
+         * @param textureFormat  纹理颜色格式枚举
+         */
+        readonly getTextureFormatValue: (textureFormat: TextureFormat) => number;
+        /**
+         * 根据纹理数据类型枚举获取真实值
+         * @param textureDataType  纹理数据类型枚举
+         */
+        readonly getTextureDataTypeValue: (textureDataType: TextureDataType) => number;
+        /**
+         * 根据纹理缩小过滤器枚举获取真实值
+         * @param textureMinFilter  纹理缩小过滤器枚举
+         */
+        readonly getTextureMinFilterValue: (textureMinFilter: TextureMinFilter) => number;
+        /**
+         * 根据纹理放大滤波器枚举获取真实值
+         * @param textureMagFilter  纹理放大滤波器枚举
+         */
+        readonly getTextureMagFilterValue: (textureMagFilter: TextureMagFilter) => number;
+        /**
+         * 根据纹理坐标包装函数枚举获取真实值
+         * @param textureWrapS  纹理坐标s包装函数枚举
+         */
+        readonly getTextureWrapValue: (textureWrapS: TextureWrap) => number;
+        /**
+         * 根据纹理坐标包装函数枚举获取真实值
+         * @param glArrayType  纹理坐标s包装函数枚举
+         */
+        readonly getGLArrayTypeValue: (glArrayType: GLArrayType) => number;
+        /**
+         * 根据深度检测方法枚举获取真实值
+         * @param depthFunc  深度检测方法枚举
+         */
+        readonly getdDepthFuncValue: (depthFunc: DepthFunc) => number;
+        constructor(gl: GL);
     }
 }
 declare namespace feng3d {
@@ -5997,97 +6088,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * @private
-     */
-    var enums: {
-        getBlendEquationValue: (gl: GL) => (blendEquation: BlendEquation) => number;
-        getBlendFactorValue: (gl: GL) => (blendFactor: BlendFactor) => number;
-        getRenderModeValue: (gl: GL) => (renderMode: RenderMode) => number;
-        getTextureTypeValue: (gl: GL) => (textureType: TextureType) => number;
-        getCullFaceValue: (gl: GL) => (cullFace: CullFace) => number;
-        getFrontFaceValue: (gl: GL) => (frontFace: FrontFace) => number;
-        getTextureFormatValue: (gl: GL) => (textureFormat: TextureFormat) => number;
-        getTextureDataTypeValue: (gl: GL) => (textureDataType: TextureDataType) => number;
-        getTextureMinFilterValue: (gl: GL) => (textureMinFilter: TextureMinFilter) => number;
-        getTextureMagFilterValue: (gl: GL) => (textureMagFilter: TextureMagFilter) => number;
-        getTextureWrapValue: (gl: GL) => (textureWrapS: TextureWrap) => number;
-        getGLArrayTypeValue: (gl: GL) => (glArrayType: GLArrayType) => number;
-        getdDepthFuncValue: (gl: GL) => (depthFunc: DepthFunc) => number;
-    };
-    /**
-     * GL枚举
-     */
-    class GLEnum {
-        /**
-         * 根据渲染模式枚举获取真实值
-         * @param renderMode 渲染模式枚举
-         */
-        readonly getRenderModeValue: (renderMode: RenderMode) => number;
-        /**
-         * 根据纹理类型枚举获取真实值
-         * @param textureType   纹理类型枚举
-         */
-        readonly getTextureTypeValue: (textureType: TextureType) => number;
-        /**
-         * 根据混合方法枚举获取真实值
-         * @param blendEquation    混合方法枚举
-         */
-        readonly getBlendEquationValue: (blendEquation: BlendEquation) => number;
-        /**
-         * 根据混合因子枚举获取真实值
-         * @param blendFactor    混合因子枚举
-         */
-        readonly getBlendFactorValue: (blendFactor: BlendFactor) => number;
-        /**
-         * 根据裁剪面枚举获取真实值
-         * @param cullFace  裁剪面枚举
-         */
-        readonly getCullFaceValue: (cullFace: CullFace) => number;
-        /**
-         * 根据正面方向枚举获取真实值
-         * @param frontFace  正面方向枚举
-         */
-        readonly getFrontFaceValue: (frontFace: FrontFace) => number;
-        /**
-         * 根据纹理颜色格式枚举获取真实值
-         * @param textureFormat  纹理颜色格式枚举
-         */
-        readonly getTextureFormatValue: (textureFormat: TextureFormat) => number;
-        /**
-         * 根据纹理数据类型枚举获取真实值
-         * @param textureDataType  纹理数据类型枚举
-         */
-        readonly getTextureDataTypeValue: (textureDataType: TextureDataType) => number;
-        /**
-         * 根据纹理缩小过滤器枚举获取真实值
-         * @param textureMinFilter  纹理缩小过滤器枚举
-         */
-        readonly getTextureMinFilterValue: (textureMinFilter: TextureMinFilter) => number;
-        /**
-         * 根据纹理放大滤波器枚举获取真实值
-         * @param textureMagFilter  纹理放大滤波器枚举
-         */
-        readonly getTextureMagFilterValue: (textureMagFilter: TextureMagFilter) => number;
-        /**
-         * 根据纹理坐标包装函数枚举获取真实值
-         * @param textureWrapS  纹理坐标s包装函数枚举
-         */
-        readonly getTextureWrapValue: (textureWrapS: TextureWrap) => number;
-        /**
-         * 根据纹理坐标包装函数枚举获取真实值
-         * @param glArrayType  纹理坐标s包装函数枚举
-         */
-        readonly getGLArrayTypeValue: (glArrayType: GLArrayType) => number;
-        /**
-         * 根据深度检测方法枚举获取真实值
-         * @param depthFunc  深度检测方法枚举
-         */
-        readonly getdDepthFuncValue: (depthFunc: DepthFunc) => number;
-        constructor(gl: GL);
-    }
-}
-declare namespace feng3d {
     type Lazy<T> = T | (() => T);
     var lazy: {
         getvalue: <T>(lazyItem: Lazy<T>) => T;
@@ -6349,7 +6349,7 @@ declare namespace feng3d {
         /**
          * 激活渲染程序
          */
-        activeShaderProgram(gl: GL): WebGLProgram | null;
+        activeShaderProgram(gl: GL): WebGLProgram;
         /**
          * 纹理缓冲
          */
@@ -7302,7 +7302,7 @@ declare namespace feng3d {
         constructor();
         init(gameObject: GameObject): void;
         readonly scenePosition: Vector3;
-        readonly parent: Transform | null;
+        readonly parent: Transform;
         /**
          * Matrix that transforms a point from local space into world space.
          */
@@ -7602,7 +7602,7 @@ declare namespace feng3d {
         private constructor();
         find(name: string): GameObject | null;
         contains(child: GameObject): boolean;
-        addChild(child: GameObject): GameObject | undefined;
+        addChild(child: GameObject): GameObject;
         addChildren(...childarray: any[]): void;
         /**
          * 移除自身
@@ -7707,7 +7707,7 @@ declare namespace feng3d {
          * Finds a game object by name and returns it.
          * @param name
          */
-        static find(name: string): null;
+        static find(name: string): GameObject;
         static create(name?: string): GameObject;
         /**
          * 组件列表
@@ -7737,7 +7737,7 @@ declare namespace feng3d {
         /**
          * 边界
          */
-        readonly bounds: Box | null;
+        readonly bounds: Box;
         /**
          * @inheritDoc
          */
@@ -7747,11 +7747,11 @@ declare namespace feng3d {
           * @param ray3D
           * @return
           */
-        isIntersectingRay(ray3D: Ray3D): PickingCollisionVO | null;
+        isIntersectingRay(ray3D: Ray3D): PickingCollisionVO;
         /**
          * 世界边界
          */
-        readonly worldBounds: Box | null;
+        readonly worldBounds: Box;
         /**
          * 更新世界边界
          */
@@ -7843,7 +7843,7 @@ declare namespace feng3d {
         /**
          * 相对
          */
-        camera: Camera | null;
+        camera: Camera;
         private _holdSize;
         private _camera;
         init(gameobject: GameObject): void;
@@ -7858,7 +7858,7 @@ declare namespace feng3d {
         /**
          * 相对
          */
-        camera: Camera | null;
+        camera: Camera;
         private _holdSize;
         private _camera;
         init(gameobject: GameObject): void;
@@ -8218,7 +8218,7 @@ declare namespace feng3d {
          * 包围盒失效
          */
         invalidateBounds(): void;
-        readonly bounding: Box | null;
+        readonly bounding: Box;
         /**
          * 克隆一个几何体
          */
@@ -8276,7 +8276,7 @@ declare namespace feng3d {
          * @param index 		线段索引
          * @return				线段数据
          */
-        getPoint(index: number): PointInfo | null;
+        getPoint(index: number): PointInfo;
         /**
          * 移除所有线段
          */
@@ -8330,7 +8330,7 @@ declare namespace feng3d {
          * @param index 		线段索引
          * @return				线段数据
          */
-        getSegment(index: number): Segment | null;
+        getSegment(index: number): Segment;
         /**
          * 移除所有线段
          */
@@ -9460,7 +9460,7 @@ declare namespace feng3d {
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        targetObject: GameObject | undefined;
+        targetObject: GameObject;
     }
 }
 declare namespace feng3d {
@@ -9623,7 +9623,7 @@ declare namespace feng3d {
             localNormal: Vector3;
             uv: Vector2;
             index: number;
-        } | null;
+        };
     };
 }
 declare namespace feng3d {
@@ -9632,7 +9632,7 @@ declare namespace feng3d {
      * @author feng 2014-4-29
      */
     var raycastPicker: {
-        pick: (ray3D: Ray3D, entitys: GameObject[], findClosest?: boolean) => PickingCollisionVO | null;
+        pick: (ray3D: Ray3D, entitys: GameObject[], findClosest?: boolean) => PickingCollisionVO;
     };
 }
 declare namespace feng3d {
@@ -10105,16 +10105,16 @@ declare namespace feng3d {
     var storage: {
         support(): boolean;
         getDatabase(dbname: string, callback: (err: any, database: IDBDatabase) => void): void;
-        deleteDatabase(dbname: string, callback?: ((err: any) => void) | undefined): void;
+        deleteDatabase(dbname: string, callback?: (err: any) => void): void;
         hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void): void;
-        getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void): void;
-        createObjectStore(dbname: string, objectStroreName: string, callback?: ((err: any) => void) | undefined): void;
-        deleteObjectStore(dbname: string, objectStroreName: string, callback?: ((err: any) => void) | undefined): void;
-        getAllKeys(dbname: string, objectStroreName: string, callback?: ((err: Error | null, keys: string[] | null) => void) | undefined): void;
-        get(dbname: string, objectStroreName: string, key: string | number, callback?: ((err: Error | null, data: any) => void) | undefined): void;
-        set(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: ((err: Error | null) => void) | undefined): void;
-        delete(dbname: string, objectStroreName: string, key: string | number, callback?: ((err?: Error | undefined) => void) | undefined): void;
-        clear(dbname: string, objectStroreName: string, callback?: ((err?: Error | undefined) => void) | undefined): void;
+        getObjectStoreNames(dbname: string, callback: (err: Error, objectStoreNames: string[]) => void): void;
+        createObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
+        deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
+        getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void): void;
+        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: any) => void): void;
+        set(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: (err: Error) => void): void;
+        delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
+        clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
     };
 }
 declare namespace feng3d {
@@ -10633,7 +10633,7 @@ declare namespace feng3d.war3 {
      * @author warden_feng 2014-6-14
      */
     var MdlParser: {
-        parse: (data: string, onParseComplete?: ((war3Model: War3Model) => void) | undefined) => void;
+        parse: (data: string, onParseComplete?: (war3Model: War3Model) => void) => void;
     };
 }
 declare namespace feng3d {
@@ -10642,8 +10642,8 @@ declare namespace feng3d {
      * @author feng 2017-01-18
      */
     var ObjLoader: {
-        load: (url: string, completed?: ((gameObject: GameObject) => void) | undefined) => void;
-        parse: (content: string, completed?: ((gameObject: GameObject) => void) | undefined) => void;
+        load: (url: string, completed?: (gameObject: GameObject) => void) => void;
+        parse: (content: string, completed?: (gameObject: GameObject) => void) => void;
     };
 }
 declare namespace feng3d {
@@ -10652,10 +10652,10 @@ declare namespace feng3d {
      * @author feng 2017-01-18
      */
     var MD5Loader: {
-        load: (url: string, completed?: ((gameObject: GameObject) => void) | undefined) => void;
-        loadAnim: (url: string, completed?: ((animationClip: AnimationClip) => void) | undefined) => void;
-        parseMD5Mesh: (content: string, completed?: ((gameObject: GameObject) => void) | undefined) => void;
-        parseMD5Anim: (content: string, completed?: ((animationClip: AnimationClip) => void) | undefined) => void;
+        load: (url: string, completed?: (gameObject: GameObject) => void) => void;
+        loadAnim: (url: string, completed?: (animationClip: AnimationClip) => void) => void;
+        parseMD5Mesh: (content: string, completed?: (gameObject: GameObject) => void) => void;
+        parseMD5Anim: (content: string, completed?: (animationClip: AnimationClip) => void) => void;
     };
 }
 declare namespace feng3d {
@@ -10695,13 +10695,13 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     var GameObjectUtil: {
-        addScript: (gameObject: GameObject, scriptPath: string, callback?: ((scriptcomponent: Component) => void) | undefined) => void;
+        addScript: (gameObject: GameObject, scriptPath: string, callback?: (scriptcomponent: Component) => void) => void;
         removeScript: (gameObject: GameObject, script: string | Script) => void;
         reloadJS: (scriptPath: any) => void;
-        loadJs: (scriptPath: any, onload?: ((resultScript: {
+        loadJs: (scriptPath: any, onload?: (resultScript: {
             className: string;
             script: HTMLScriptElement;
-        }) => void) | undefined) => void;
+        }) => void) => void;
     };
 }
 declare namespace feng3d {

@@ -150,7 +150,7 @@ namespace feng3d
         RGBA8UI,
     }
 
-    (enums = enums || {}).getTextureFormatValue = (gl: GL) =>
+    enums.getTextureFormatValue = (gl: GL) =>
     {
         return (textureFormat: TextureFormat) =>
         {

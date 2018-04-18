@@ -40,7 +40,7 @@ namespace feng3d
         MAX,
     }
 
-    (enums = enums || {}).getBlendEquationValue = (gl: GL) =>
+    enums.getBlendEquationValue = (gl: GL) =>
     {
         return (blendEquation: BlendEquation) =>
         {

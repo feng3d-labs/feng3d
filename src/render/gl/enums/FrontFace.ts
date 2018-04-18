@@ -16,7 +16,7 @@ namespace feng3d
         CCW,
     }
 
-    (enums = enums || {}).getFrontFaceValue = (gl: GL) =>
+    enums.getFrontFaceValue = (gl: GL) =>
     {
         return (frontFace: FrontFace) =>
         {

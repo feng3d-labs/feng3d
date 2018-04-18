@@ -17,7 +17,7 @@ namespace feng3d
         getTextureWrapValue: (gl: GL) => (textureWrapS: TextureWrap) => number;
         getGLArrayTypeValue: (gl: GL) => (glArrayType: GLArrayType) => number;
         getdDepthFuncValue: (gl: GL) => (depthFunc: DepthFunc) => number;
-    };
+    } = <any>{};
 
     /**
      * GL枚举

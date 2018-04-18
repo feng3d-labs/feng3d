@@ -15,7 +15,7 @@ namespace feng3d
         MIRRORED_REPEAT,
     }
 
-    (enums = enums || {}).getTextureWrapValue = (gl: GL) =>
+    enums.getTextureWrapValue = (gl: GL) =>
     {
         return (textureWrap: TextureWrap) =>
         {

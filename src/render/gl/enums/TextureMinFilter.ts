@@ -18,7 +18,7 @@ namespace feng3d
         LINEAR_MIPMAP_LINEAR,
     }
 
-    (enums = enums || {}).getTextureMinFilterValue = (gl: GL) =>
+    enums.getTextureMinFilterValue = (gl: GL) =>
     {
         return (textureMinFilter: TextureMinFilter) =>
         {

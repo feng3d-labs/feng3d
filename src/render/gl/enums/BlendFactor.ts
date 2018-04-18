@@ -51,7 +51,7 @@ namespace feng3d
         SRC_ALPHA_SATURATE,
     }
 
-    (enums = enums || {}).getBlendFactorValue = (gl: GL) =>
+    enums.getBlendFactorValue = (gl: GL) =>
     {
         return (blendFactor: BlendFactor) =>
         {
