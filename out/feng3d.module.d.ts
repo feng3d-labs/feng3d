@@ -10122,6 +10122,7 @@ declare namespace feng3d {
     };
 }
 declare namespace feng3d {
+    var DBname: string;
     var indexedDBfs: FS;
 }
 declare namespace feng3d {

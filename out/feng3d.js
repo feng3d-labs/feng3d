@@ -21089,13 +21089,13 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var DBname = "feng3d-editor";
+    feng3d.DBname = "feng3d-editor";
     var _projectname;
     function set(key, data, callback) {
-        feng3d.storage.set(DBname, _projectname, key, data, callback);
+        feng3d.storage.set(feng3d.DBname, _projectname, key, data, callback);
     }
     function get(key, callback) {
-        feng3d.storage.get(DBname, _projectname, key, callback);
+        feng3d.storage.get(feng3d.DBname, _projectname, key, callback);
     }
     function copy(sourcekey, targetkey, callback) {
         get(sourcekey, function (err, data) {
@@ -21116,10 +21116,10 @@ var feng3d;
         });
     }
     function deletedata(key, callback) {
-        feng3d.storage.delete(DBname, _projectname, key, callback);
+        feng3d.storage.delete(feng3d.DBname, _projectname, key, callback);
     }
     function getAllKeys(callback) {
-        feng3d.storage.getAllKeys(DBname, _projectname, callback);
+        feng3d.storage.getAllKeys(feng3d.DBname, _projectname, callback);
     }
     function movefiles(movelists, callback) {
         copyfiles(movelists.concat(), function (err) {
@@ -21160,13 +21160,13 @@ var feng3d;
     }
     feng3d.indexedDBfs = {
         hasProject: function (projectname, callback) {
-            feng3d.storage.hasObjectStore(DBname, projectname, callback);
+            feng3d.storage.hasObjectStore(feng3d.DBname, projectname, callback);
         },
         getProjectList: function (callback) {
-            feng3d.storage.getObjectStoreNames(DBname, callback);
+            feng3d.storage.getObjectStoreNames(feng3d.DBname, callback);
         },
         initproject: function (projectname, callback) {
-            feng3d.storage.createObjectStore(DBname, projectname, function (err) {
+            feng3d.storage.createObjectStore(feng3d.DBname, projectname, function (err) {
                 if (err) {
                     feng3d.warn(err);
                     return;

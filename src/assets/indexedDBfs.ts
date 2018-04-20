@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    var DBname = "feng3d-editor";
+    export var DBname = "feng3d-editor";
     var _projectname: string;
 
     function set(key: string | number, data: {
