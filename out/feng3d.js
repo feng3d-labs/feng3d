@@ -14086,9 +14086,10 @@ var feng3d;
                 if (this._url == value)
                     return;
                 this._url = value;
-                if (value) {
-                    feng3d.GameObjectUtil.addScript(this.gameObject, value.replace(/\.ts\b/, ".js"), function () {
-                        _this.gameObject.removeComponent(_this);
+                if (value && this.gameObject && feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
+                    feng3d.GameObjectUtil.addScript(this.gameObject, value, function (scriptcomponent) {
+                        _this.scriptcomponent && _this.gameObject.removeComponent(_this.scriptcomponent);
+                        _this.scriptcomponent = scriptcomponent;
                     });
                 }
             },
@@ -14096,7 +14097,13 @@ var feng3d;
             configurable: true
         });
         Script.prototype.init = function (gameObject) {
+            var _this = this;
             _super.prototype.init.call(this, gameObject);
+            if (this._url && this.gameObject && feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
+                feng3d.GameObjectUtil.addScript(this.gameObject, this._url, function (scriptcomponent) {
+                    _this.scriptcomponent = scriptcomponent;
+                });
+            }
             this.start();
         };
         /**
@@ -14123,7 +14130,8 @@ var feng3d;
             _super.prototype.dispose.call(this);
         };
         __decorate([
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "file_script" } } })
+            feng3d.oav({ componentParam: { dragparam: { accepttype: "file_script" }, textEnabled: false } }),
+            feng3d.serialize()
         ], Script.prototype, "url", null);
         __decorate([
             feng3d.oav(),
@@ -21089,13 +21097,23 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 文件系统类型
+     */
+    var FSType;
+    (function (FSType) {
+        FSType["http"] = "http";
+        FSType["native"] = "native";
+        FSType["indexedDB"] = "indexedDB";
+    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
+    feng3d.fstype = FSType.http;
     feng3d.DBname = "feng3d-editor";
-    var _projectname;
+    feng3d.projectname = "testproject";
     function set(key, data, callback) {
-        feng3d.storage.set(feng3d.DBname, _projectname, key, data, callback);
+        feng3d.storage.set(feng3d.DBname, feng3d.projectname, key, data, callback);
     }
     function get(key, callback) {
-        feng3d.storage.get(feng3d.DBname, _projectname, key, callback);
+        feng3d.storage.get(feng3d.DBname, feng3d.projectname, key, callback);
     }
     function copy(sourcekey, targetkey, callback) {
         get(sourcekey, function (err, data) {
@@ -21116,10 +21134,10 @@ var feng3d;
         });
     }
     function deletedata(key, callback) {
-        feng3d.storage.delete(feng3d.DBname, _projectname, key, callback);
+        feng3d.storage.delete(feng3d.DBname, feng3d.projectname, key, callback);
     }
     function getAllKeys(callback) {
-        feng3d.storage.getAllKeys(feng3d.DBname, _projectname, callback);
+        feng3d.storage.getAllKeys(feng3d.DBname, feng3d.projectname, callback);
     }
     function movefiles(movelists, callback) {
         copyfiles(movelists.concat(), function (err) {
@@ -21165,13 +21183,13 @@ var feng3d;
         getProjectList: function (callback) {
             feng3d.storage.getObjectStoreNames(feng3d.DBname, callback);
         },
-        initproject: function (projectname, callback) {
-            feng3d.storage.createObjectStore(feng3d.DBname, projectname, function (err) {
+        initproject: function (projectname1, callback) {
+            feng3d.storage.createObjectStore(feng3d.DBname, projectname1, function (err) {
                 if (err) {
                     feng3d.warn(err);
                     return;
                 }
-                _projectname = projectname;
+                feng3d.projectname = projectname1;
                 // todo 启动监听 ts代码变化自动编译
                 callback();
             });
@@ -24346,12 +24364,12 @@ var feng3d;
     };
     var resultScriptCache = {};
     function addScript(gameObject, scriptPath, callback) {
-        loadJs(scriptPath, function (resultScript) {
-            removeScript(gameObject, scriptPath);
+        var jspath = scriptPath.replace(/\.ts\b/, ".js");
+        loadJs(jspath, function (resultScript) {
             var windowEval = eval.bind(window);
             var componentClass = windowEval(resultScript.className);
             var scriptcomponent = gameObject.addComponent(componentClass);
-            scriptcomponent["_url"] = scriptPath;
+            scriptcomponent.serializable = false;
             scriptcomponent.enabled = true;
             callback && callback(scriptcomponent);
         });
@@ -24382,28 +24400,44 @@ var feng3d;
             return;
         }
         var resultScript = {};
-        var loadPath = scriptPath + ("?version=" + Math.random());
-        feng3d.Loader.loadText(loadPath, function (content) {
-            var reg = /(feng3d.(\w+)) = (\w+);/;
-            var result = content.match(reg);
-            if (result)
-                resultScript.className = result[1];
-            //
-            var scriptTag = document.getElementById(scriptPath);
-            var head = document.getElementsByTagName('head').item(0);
-            if (scriptTag)
-                head.removeChild(scriptTag);
-            var script = document.createElement('script');
-            script.onload = function (e) {
-                resultScript.script = script;
+        if (feng3d.fstype == feng3d.FSType.http) {
+            var loadPath = scriptPath + ("?version=" + Math.random());
+            feng3d.Loader.loadText(loadPath, function (content) {
+                var reg = /(feng3d.(\w+)) = (\w+);/;
+                var result = content.match(reg);
+                if (result)
+                    resultScript.className = result[1];
+                var scriptTag = document.getElementById(scriptPath);
+                var head = document.getElementsByTagName('head').item(0);
+                if (scriptTag)
+                    head.removeChild(scriptTag);
+                var script = document.createElement('script');
+                script.onload = function (e) {
+                    resultScript.script = script;
+                    resultScriptCache[scriptPath] = resultScript;
+                    onload && onload(resultScript);
+                };
+                script.src = loadPath;
+                script.type = 'text/javascript';
+                script.id = scriptPath;
+                head.appendChild(script);
+            });
+        }
+        else if (feng3d.fstype == feng3d.FSType.indexedDB) {
+            feng3d.storage.get(feng3d.DBname, feng3d.projectname, scriptPath, function (err, data) {
+                var content = data.data;
+                var reg = /(feng3d.(\w+)) = (\w+);/;
+                var result = content.match(reg);
+                if (result)
+                    resultScript.className = result[1];
+                //
+                var windowEval = eval.bind(window);
+                windowEval(content);
+                //
                 resultScriptCache[scriptPath] = resultScript;
                 onload && onload(resultScript);
-            };
-            script.src = loadPath;
-            script.type = 'text/javascript';
-            script.id = scriptPath;
-            head.appendChild(script);
-        });
+            });
+        }
     }
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24798,6 +24832,17 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 运行环境枚举
+     */
+    var RunEnvironment;
+    (function (RunEnvironment) {
+        RunEnvironment[RunEnvironment["feng3d"] = 0] = "feng3d";
+        /**
+         * 运行在编辑器中
+         */
+        RunEnvironment[RunEnvironment["editor"] = 1] = "editor";
+    })(RunEnvironment = feng3d.RunEnvironment || (feng3d.RunEnvironment = {}));
+    /**
      * feng3d的版本号
      * @author feng 2015-03-20
      */
@@ -24810,6 +24855,10 @@ var feng3d;
      * 快捷键
      */
     feng3d.shortcut = new feng3d.ShortCut();
+    /**
+     * 运行环境
+     */
+    feng3d.runEnvironment = RunEnvironment.feng3d;
     /**
      * 资源路径
      */

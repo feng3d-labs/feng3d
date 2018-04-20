@@ -11,15 +11,14 @@ namespace feng3d
 
     function addScript(gameObject: GameObject, scriptPath: string, callback?: (scriptcomponent: Component) => void)
     {
-        loadJs(scriptPath, (resultScript) =>
+        var jspath = scriptPath.replace(/\.ts\b/, ".js");
+        loadJs(jspath, (resultScript) =>
         {
-            removeScript(gameObject, scriptPath);
-
             var windowEval = eval.bind(window);
 
             var componentClass = windowEval(resultScript.className);
             var scriptcomponent = <Script>gameObject.addComponent(componentClass);
-            scriptcomponent["_url"] = scriptPath;
+            scriptcomponent.serializable = false;
             scriptcomponent.enabled = true;
             callback && callback(scriptcomponent);
         });
@@ -61,29 +60,49 @@ namespace feng3d
         }
 
         var resultScript: { className: string, script: HTMLScriptElement } = <any>{};
-        var loadPath = scriptPath + `?version=${Math.random()}`;
-        Loader.loadText(loadPath, (content) =>
+        if (fstype == FSType.http)
         {
-            var reg = /(feng3d.(\w+)) = (\w+);/;
-            var result = content.match(reg);
-            if (result)
-                resultScript.className = result[1];
-
-            //
-            var scriptTag = document.getElementById(scriptPath);
-            var head = document.getElementsByTagName('head').item(0)
-            if (scriptTag) head.removeChild(scriptTag);
-            var script = document.createElement('script');
-            script.onload = (e) =>
+            var loadPath = scriptPath + `?version=${Math.random()}`;
+            Loader.loadText(loadPath, (content) =>
             {
-                resultScript.script = script;
+                var reg = /(feng3d.(\w+)) = (\w+);/;
+                var result = content.match(reg);
+                if (result)
+                    resultScript.className = result[1];
+
+                var scriptTag = document.getElementById(scriptPath);
+                var head = document.getElementsByTagName('head').item(0)
+                if (scriptTag) head.removeChild(scriptTag);
+                var script = document.createElement('script');
+                script.onload = (e) =>
+                {
+                    resultScript.script = script;
+                    resultScriptCache[scriptPath] = resultScript;
+                    onload && onload(resultScript);
+                }
+                script.src = loadPath;
+                script.type = 'text/javascript';
+                script.id = scriptPath;
+                head.appendChild(script)
+            });
+        } else if (fstype == FSType.indexedDB)
+        {
+            storage.get(DBname, projectname, scriptPath, (err, data) =>
+            {
+                var content = data.data;
+                var reg = /(feng3d.(\w+)) = (\w+);/;
+                var result = content.match(reg);
+                if (result)
+                    resultScript.className = result[1];
+                //
+                var windowEval = eval.bind(window);
+                windowEval(content);
+
+                //
                 resultScriptCache[scriptPath] = resultScript;
                 onload && onload(resultScript);
-            }
-            script.src = loadPath;
-            script.type = 'text/javascript';
-            script.id = scriptPath;
-            head.appendChild(script)
-        });
+            });
+        }
+
     }
 }

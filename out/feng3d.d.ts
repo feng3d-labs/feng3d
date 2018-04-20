@@ -7966,6 +7966,7 @@ declare namespace feng3d {
      */
     class Script extends Component {
         flag: ScriptFlag;
+        scriptcomponent: Component;
         /**
          * 脚本路径
          */
@@ -10118,7 +10119,17 @@ declare namespace feng3d {
     };
 }
 declare namespace feng3d {
+    /**
+     * 文件系统类型
+     */
+    enum FSType {
+        http = "http",
+        native = "native",
+        indexedDB = "indexedDB",
+    }
+    var fstype: FSType;
     var DBname: string;
+    var projectname: string;
     var indexedDBfs: FS;
 }
 declare namespace feng3d {
@@ -10783,6 +10794,16 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 运行环境枚举
+     */
+    enum RunEnvironment {
+        feng3d = 0,
+        /**
+         * 运行在编辑器中
+         */
+        editor = 1,
+    }
+    /**
      * feng3d的版本号
      * @author feng 2015-03-20
      */
@@ -10795,6 +10816,10 @@ declare namespace feng3d {
      * 快捷键
      */
     var shortcut: ShortCut;
+    /**
+     * 运行环境
+     */
+    var runEnvironment: RunEnvironment;
     /**
      * 资源路径
      */

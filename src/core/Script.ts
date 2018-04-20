@@ -13,11 +13,13 @@ namespace feng3d
     export class Script extends Component
     {
         flag = ScriptFlag.feng3d;
+        scriptcomponent: Component;
 
         /**
          * 脚本路径
          */
-        @oav({ componentParam: { dragparam: { accepttype: "file_script" } } })
+        @oav({ componentParam: { dragparam: { accepttype: "file_script" }, textEnabled: false } })
+        @serialize()
         get url()
         {
             return this._url;
@@ -27,11 +29,12 @@ namespace feng3d
             if (this._url == value)
                 return;
             this._url = value;
-            if (value)
+            if (value && this.gameObject && runEnvironment == RunEnvironment.feng3d)
             {
-                GameObjectUtil.addScript(this.gameObject, value.replace(/\.ts\b/, ".js"), () =>
+                GameObjectUtil.addScript(this.gameObject, value, (scriptcomponent) =>
                 {
-                    this.gameObject.removeComponent(this);
+                    this.scriptcomponent && this.gameObject.removeComponent(this.scriptcomponent);
+                    this.scriptcomponent = scriptcomponent;
                 });
             }
         }
@@ -42,6 +45,13 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
+            if (this._url && this.gameObject && runEnvironment == RunEnvironment.feng3d)
+            {
+                GameObjectUtil.addScript(this.gameObject, this._url, (scriptcomponent) =>
+                {
+                    this.scriptcomponent = scriptcomponent;
+                });
+            }
             this.start();
         }
 

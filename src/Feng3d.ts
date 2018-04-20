@@ -1,6 +1,18 @@
 namespace feng3d
 {
     /**
+     * 运行环境枚举
+     */
+    export enum RunEnvironment
+    {
+        feng3d,
+        /**
+         * 运行在编辑器中
+         */
+        editor,
+    }
+
+    /**
      * feng3d的版本号
      * @author feng 2015-03-20
      */
@@ -14,6 +26,11 @@ namespace feng3d
      * 快捷键
      */
     export var shortcut = new ShortCut();
+
+    /**
+     * 运行环境
+     */
+    export var runEnvironment = RunEnvironment.feng3d;
 
     /**
      * 资源路径

@@ -1,7 +1,18 @@
 namespace feng3d
 {
+    /**
+     * 文件系统类型
+     */
+    export enum FSType
+    {
+        http = "http",
+        native = "native",
+        indexedDB = "indexedDB"
+    }
+    export var fstype = FSType.http;
+
     export var DBname = "feng3d-editor";
-    var _projectname: string;
+    export var projectname = "testproject";
 
     function set(key: string | number, data: {
         isDirectory: boolean,
@@ -9,7 +20,7 @@ namespace feng3d
         data?: ArrayBuffer,
     }, callback?: (err: Error | null) => void)
     {
-        storage.set(DBname, _projectname, key, data, callback);
+        storage.set(DBname, projectname, key, data, callback);
     }
 
     function get(key: string | number, callback?: (err: Error | null, data: {
@@ -18,7 +29,7 @@ namespace feng3d
         data?: ArrayBuffer,
     }) => void)
     {
-        storage.get(DBname, _projectname, key, callback);
+        storage.get(DBname, projectname, key, callback);
     }
 
     function copy(sourcekey: string | number, targetkey: string | number, callback?: (err?: Error | null) => void)
@@ -49,12 +60,12 @@ namespace feng3d
 
     function deletedata(key: string | number, callback?: (err?: Error) => void)
     {
-        storage.delete(DBname, _projectname, key, callback);
+        storage.delete(DBname, projectname, key, callback);
     }
 
     function getAllKeys(callback?: (err: Error | null, keys: string[] | null) => void)
     {
-        storage.getAllKeys(DBname, _projectname, callback);
+        storage.getAllKeys(DBname, projectname, callback);
     }
 
     function movefiles(movelists: [string, string][], callback: (err: Error | null) => void)
@@ -118,16 +129,16 @@ namespace feng3d
         {
             storage.getObjectStoreNames(DBname, callback)
         },
-        initproject(projectname: string, callback: () => void)
+        initproject(projectname1: string, callback: () => void)
         {
-            storage.createObjectStore(DBname, projectname, (err) =>
+            storage.createObjectStore(DBname, projectname1, (err) =>
             {
                 if (err)
                 {
                     warn(err);
                     return;
                 }
-                _projectname = projectname;
+                projectname = projectname1;
                 // todo 启动监听 ts代码变化自动编译
                 callback();
             });
