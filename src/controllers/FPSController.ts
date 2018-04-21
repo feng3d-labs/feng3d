@@ -10,7 +10,7 @@ namespace feng3d
          * 加速度
          */
         @oav()
-        public acceleration: number;
+        public acceleration = 0.001;
 
         /**
          * 按键记录
@@ -72,7 +72,6 @@ namespace feng3d
             this.keyDirectionDic["q"] = new Vector3(0, -1, 0);//下
 
             this.keyDownDic = {};
-            this.acceleration = 0.0005
 
             this.auto = true;
         }

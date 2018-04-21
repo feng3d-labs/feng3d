@@ -760,9 +760,10 @@ getset平均耗时比 17.3
 }
 declare namespace feng3d {
     var ImageUtil: {
-        loadImage: (url: string, callback: (image: HTMLImageElement) => void) => void;
-        getImageData: (image: HTMLImageElement) => ImageData;
-        getImageDataFromUrl: (url: string, callback: (imageData: ImageData) => void) => void;
+        loadImage(url: string, callback: (image: HTMLImageElement) => void): void;
+        getImageData(image: HTMLImageElement): ImageData;
+        getImageDataFromUrl(url: string, callback: (imageData: ImageData) => void): void;
+        createImageData(width?: number, height?: number, fillcolor?: number): ImageData;
     };
 }
 declare namespace feng3d {

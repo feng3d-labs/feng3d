@@ -1681,6 +1681,27 @@ var feng3d;
                 callback(imageData);
             });
         },
+        /**
+         * 创建ImageData
+         * @param width 数据宽度
+         * @param height 数据高度
+         * @param fillcolor 填充颜色
+         */
+        createImageData: function (width, height, fillcolor) {
+            if (width === void 0) { width = 1024; }
+            if (height === void 0) { height = 1024; }
+            if (fillcolor === void 0) { fillcolor = 0; }
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = new feng3d.Color().fromUnit(fillcolor).toHexString();
+            ctx.fillRect(0, 0, width, height);
+            var imageData = ctx.getImageData(0, 0, width, height);
+            console.log(imageData);
+            // ImageData { width: 100, height: 100, data: Uint8ClampedArray[40000] }
+            return imageData;
+        },
     };
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -19289,6 +19310,10 @@ var feng3d;
         __extends(FPSController, _super);
         function FPSController() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 加速度
+             */
+            _this.acceleration = 0.001;
             _this.ischange = false;
             return _this;
         }
@@ -19325,7 +19350,6 @@ var feng3d;
             this.keyDirectionDic["e"] = new feng3d.Vector3(0, 1, 0); //上
             this.keyDirectionDic["q"] = new feng3d.Vector3(0, -1, 0); //下
             this.keyDownDic = {};
-            this.acceleration = 0.0005;
             this.auto = true;
         };
         FPSController.prototype.onMousedown = function () {
@@ -19749,9 +19773,9 @@ var feng3d;
          */
         function TerrainGeometry(heightMapUrl, width, height, depth, segmentsW, segmentsH, maxElevation, minElevation) {
             if (heightMapUrl === void 0) { heightMapUrl = null; }
-            if (width === void 0) { width = 10; }
-            if (height === void 0) { height = 1; }
-            if (depth === void 0) { depth = 10; }
+            if (width === void 0) { width = 500; }
+            if (height === void 0) { height = 600; }
+            if (depth === void 0) { depth = 500; }
             if (segmentsW === void 0) { segmentsW = 30; }
             if (segmentsH === void 0) { segmentsH = 30; }
             if (maxElevation === void 0) { maxElevation = 255; }
@@ -19779,6 +19803,8 @@ var feng3d;
                 });
             }
             else {
+                _this._heightMap = feng3d.ImageUtil.createImageData();
+                _this.invalidateGeometry();
             }
             return _this;
         }
@@ -19893,6 +19919,7 @@ var feng3d;
             var u, v;
             var y;
             var vertices = [];
+            var normals = [];
             var indices = [];
             numVerts = 0;
             var col;
@@ -19912,6 +19939,9 @@ var feng3d;
                     vertices[numVerts++] = x;
                     vertices[numVerts++] = y;
                     vertices[numVerts++] = z;
+                    normals[numVerts - 3] = 0;
+                    normals[numVerts - 2] = 1;
+                    normals[numVerts - 1] = 0;
                     if (xi != this.segmentsW && zi != this.segmentsH) {
                         //增加 一个顶点同时 生成一个格子或两个三角形
                         base = xi + zi * tw;
@@ -19926,6 +19956,7 @@ var feng3d;
             }
             var uvs = this.buildUVs();
             this.setVAData("a_position", vertices, 3);
+            this.setVAData("a_normal", normals, 3);
             this.setVAData("a_uv", uvs, 2);
             this.indices = indices;
         };
