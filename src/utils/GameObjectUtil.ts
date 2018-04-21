@@ -90,10 +90,17 @@ namespace feng3d
             storage.get(DBname, projectname, scriptPath, (err, data) =>
             {
                 var content = data.data;
-                var reg = /(feng3d.(\w+)) = (\w+);/;
+                // var reg = /var ([a-zA-Z0-9_$]+) = \/\*\* @class \*\//;
+                var reg = new RegExp("var ([a-zA-Z0-9_$]+) = \\/\\*\\* @class \\*\\/");
                 var result = content.match(reg);
+                assert(result && result[1], "脚本中找不到类定义！");
+                var classname = result[1];
+                //处理类定义放在 namespace 中 /([a-zA-Z0-9_$.]+Test)\s*=\s*Test/
+                reg = new RegExp(`([a-zA-Z0-9_$.]+${classname})\\s*=\\s*${classname}`);
+                result = content.match(reg);
                 if (result)
-                    resultScript.className = result[1];
+                    classname = result[1];
+                resultScript.className = classname;
                 //
                 var windowEval = eval.bind(window);
                 windowEval(content);
