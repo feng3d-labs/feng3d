@@ -20430,7 +20430,7 @@ var feng3d;
         __extends(ParticleAnimator, _super);
         function ParticleAnimator() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._isPlaying = false;
+            _this._isPlaying = true;
             /**
              * 粒子时间
              */
@@ -20508,6 +20508,10 @@ var feng3d;
             this.createUniformData("u_particleTime", function () { return _this.time; });
             //
             this.createBoolMacro("HAS_PARTICLE_ANIMATOR", true);
+            if (this._isPlaying) {
+                this.preTime = Date.now();
+                feng3d.ticker.onframe(this.update, this);
+            }
             this.updateRenderState();
         };
         ParticleAnimator.prototype.update = function () {

@@ -31,7 +31,7 @@ namespace feng3d
                 ticker.onframe(this.update, this);
             }
         }
-        private _isPlaying = false;
+        private _isPlaying = true;
 
         /**
          * 粒子时间
@@ -108,6 +108,12 @@ namespace feng3d
             this.createUniformData("u_particleTime", () => this.time);
             //
             this.createBoolMacro("HAS_PARTICLE_ANIMATOR", true);
+
+            if (this._isPlaying)
+            {
+                this.preTime = Date.now();
+                ticker.onframe(this.update, this);
+            }
 
             this.updateRenderState();
         }
