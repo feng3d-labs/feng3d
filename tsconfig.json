@@ -26,6 +26,7 @@
         "src/utils/dataTransform.ts",
         "src/utils/ClassUtils.ts",
         "src/utils/Decorators.ts",
+        "src/utils/ImageUtil.ts",
         "src/serialization/RawData.ts",
         "src/serialization/serialization.ts",
         "src/utils/Stats.ts",

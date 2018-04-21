@@ -7,16 +7,7 @@ namespace feng3d
      */
     export class TerrainGeometry extends Geometry
     {
-        get heightMapUrl()
-        {
-            return this._heightImage.src;
-        }
-        set heightMapUrl(value)
-        {
-            if (this._heightImage.src == value)
-                return;
-            this._heightImage.src = value;
-        }
+        heightMapUrl: string;
 
         get width()
         {
@@ -110,7 +101,6 @@ namespace feng3d
         private _minElevation = 0;
 
         private _heightMap: ImageData;
-        private _heightImage: HTMLImageElement;
 
 		/**
 		 * 创建高度地形 拥有segmentsW*segmentsH个顶点
@@ -123,7 +113,7 @@ namespace feng3d
 		 * @param    maxElevation	最大地形高度
 		 * @param    minElevation	最小地形高度
 		 */
-        constructor(heightMapUrl: string, width = 10, height = 1, depth = 10, segmentsW = 30, segmentsH = 30, maxElevation = 255, minElevation = 0)
+        constructor(heightMapUrl: string = null, width = 10, height = 1, depth = 10, segmentsW = 30, segmentsH = 30, maxElevation = 255, minElevation = 0)
         {
             super();
 
@@ -134,30 +124,18 @@ namespace feng3d
             this.segmentsH = segmentsH;
             this.maxElevation = maxElevation;
             this.minElevation = minElevation;
-
-            this._heightImage = new Image();
-            this._heightImage.crossOrigin = "Anonymous";
-            this._heightImage.addEventListener("load", this.onHeightMapLoad.bind(this));
             this.heightMapUrl = heightMapUrl;
-        }
 
-        /**
-         * 高度图加载完成
-         */
-        private onHeightMapLoad()
-        {
-            var canvasImg = document.createElement("canvas");
-            canvasImg.width = this._heightImage.width;
-            canvasImg.height = this._heightImage.height;
-
-            var ctxt = canvasImg.getContext('2d');
-            if (ctxt)
+            if (heightMapUrl)
             {
-                ctxt.drawImage(this._heightImage, 0, 0);
-                var terrainHeightData = ctxt.getImageData(0, 0, this._heightImage.width, this._heightImage.height);//读取整张图片的像素。
-                ctxt.putImageData(terrainHeightData, terrainHeightData.width, terrainHeightData.height);
-                this._heightMap = terrainHeightData;
-                this.invalidateGeometry();
+                ImageUtil.getImageDataFromUrl(heightMapUrl, (imageData) =>
+                {
+                    this._heightMap = imageData;
+                    this.invalidateGeometry();
+                });
+            } else
+            {
+
             }
         }
 

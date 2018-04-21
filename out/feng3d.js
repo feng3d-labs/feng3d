@@ -1640,6 +1640,51 @@ getset平均耗时比 17.3
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    feng3d.ImageUtil = {
+        /**
+         * 加载图片
+         * @param url 图片路径
+         * @param callback 加载完成回调
+         */
+        loadImage: function (url, callback) {
+            var image = new Image();
+            image.crossOrigin = "Anonymous";
+            image.addEventListener("load", onHeightMapLoad);
+            image.src = url;
+            function onHeightMapLoad() {
+                image.removeEventListener("load", onHeightMapLoad);
+                callback && callback(image);
+            }
+        },
+        /**
+         * 获取图片数据
+         * @param image 加载完成的图片元素
+         */
+        getImageData: function (image) {
+            var canvasImg = document.createElement("canvas");
+            canvasImg.width = image.width;
+            canvasImg.height = image.height;
+            var ctxt = canvasImg.getContext('2d');
+            feng3d.assert(!!ctxt);
+            ctxt.drawImage(image, 0, 0);
+            var imageData = ctxt.getImageData(0, 0, image.width, image.height); //读取整张图片的像素。
+            return imageData;
+        },
+        /**
+         * 从url获取图片数据
+         * @param url 图片路径
+         * @param callback 获取图片数据完成回调
+         */
+        getImageDataFromUrl: function (url, callback) {
+            feng3d.ImageUtil.loadImage(url, function (image) {
+                var imageData = feng3d.ImageUtil.getImageData(image);
+                callback(imageData);
+            });
+        },
+    };
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var RawData = /** @class */ (function () {
         function RawData() {
         }
@@ -19703,6 +19748,7 @@ var feng3d;
          * @param    minElevation	最小地形高度
          */
         function TerrainGeometry(heightMapUrl, width, height, depth, segmentsW, segmentsH, maxElevation, minElevation) {
+            if (heightMapUrl === void 0) { heightMapUrl = null; }
             if (width === void 0) { width = 10; }
             if (height === void 0) { height = 1; }
             if (depth === void 0) { depth = 10; }
@@ -19725,24 +19771,17 @@ var feng3d;
             _this.segmentsH = segmentsH;
             _this.maxElevation = maxElevation;
             _this.minElevation = minElevation;
-            _this._heightImage = new Image();
-            _this._heightImage.crossOrigin = "Anonymous";
-            _this._heightImage.addEventListener("load", _this.onHeightMapLoad.bind(_this));
             _this.heightMapUrl = heightMapUrl;
+            if (heightMapUrl) {
+                feng3d.ImageUtil.getImageDataFromUrl(heightMapUrl, function (imageData) {
+                    _this._heightMap = imageData;
+                    _this.invalidateGeometry();
+                });
+            }
+            else {
+            }
             return _this;
         }
-        Object.defineProperty(TerrainGeometry.prototype, "heightMapUrl", {
-            get: function () {
-                return this._heightImage.src;
-            },
-            set: function (value) {
-                if (this._heightImage.src == value)
-                    return;
-                this._heightImage.src = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(TerrainGeometry.prototype, "width", {
             get: function () {
                 return this._width;
@@ -19834,22 +19873,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        /**
-         * 高度图加载完成
-         */
-        TerrainGeometry.prototype.onHeightMapLoad = function () {
-            var canvasImg = document.createElement("canvas");
-            canvasImg.width = this._heightImage.width;
-            canvasImg.height = this._heightImage.height;
-            var ctxt = canvasImg.getContext('2d');
-            if (ctxt) {
-                ctxt.drawImage(this._heightImage, 0, 0);
-                var terrainHeightData = ctxt.getImageData(0, 0, this._heightImage.width, this._heightImage.height); //读取整张图片的像素。
-                ctxt.putImageData(terrainHeightData, terrainHeightData.width, terrainHeightData.height);
-                this._heightMap = terrainHeightData;
-                this.invalidateGeometry();
-            }
-        };
         /**
          * 创建顶点坐标
          */
@@ -24222,6 +24245,7 @@ var feng3d;
         createCapsule: createCapsule,
         createCone: createCone,
         createTorus: createTorus,
+        createTerrain: createTerrain,
         createParticle: createParticle,
         createCamera: createCamera,
         createPointLight: createPointLight,
@@ -24304,6 +24328,14 @@ var feng3d;
         var gameobject = feng3d.GameObject.create(name);
         var model = gameobject.addComponent(feng3d.MeshRenderer);
         model.geometry = new feng3d.TorusGeometry();
+        model.material = new feng3d.StandardMaterial();
+        return gameobject;
+    }
+    function createTerrain(name) {
+        if (name === void 0) { name = "Terrain"; }
+        var gameobject = feng3d.GameObject.create(name);
+        var model = gameobject.addComponent(feng3d.MeshRenderer);
+        model.geometry = new feng3d.TerrainGeometry();
         model.material = new feng3d.StandardMaterial();
         return gameobject;
     }

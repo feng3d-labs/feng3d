@@ -10,6 +10,7 @@ namespace feng3d
         createCapsule: createCapsule,
         createCone: createCone,
         createTorus: createTorus,
+        createTerrain: createTerrain,
         createParticle: createParticle,
         createCamera: createCamera,
         createPointLight: createPointLight,
@@ -101,6 +102,16 @@ namespace feng3d
         var model = gameobject.addComponent(MeshRenderer);
         model.geometry = new TorusGeometry();
         model.material = new StandardMaterial();
+        return gameobject;
+    }
+
+    function createTerrain(name: string = "Terrain")
+    {
+        var gameobject = GameObject.create(name);
+        var model = gameobject.addComponent(MeshRenderer);
+        model.geometry = new TerrainGeometry();
+        model.material = new StandardMaterial();
+
         return gameobject;
     }
 
