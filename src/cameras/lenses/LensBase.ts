@@ -44,7 +44,7 @@ namespace feng3d
 		/**
 		 * 最远距离
 		 */
-		private _far = 1000;
+		private _far = 2000;
 		@serialize()
 		@oav()
 		get far()

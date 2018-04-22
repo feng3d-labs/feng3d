@@ -107,6 +107,7 @@
         "src/core/Feng3dObject.ts",
         //组件模块
         "src/component/Component.ts",
+        "src/component/Behaviour.ts",
         //
         "src/render/renderer/Renderer.ts",
         "src/render/renderer/ForwardRenderer.ts",
@@ -194,6 +195,7 @@
         "src/terrain/TerrainGeometry.ts",
         "src/terrain/TerrainMethod.ts",
         "src/terrain/TerrainMergeMethod.ts",
+        "src/terrain/Terrain.ts",
         //粒子动画
         "src/animators/particle/Particle.ts",
         "src/animators/particle/ParticleGlobal.ts",

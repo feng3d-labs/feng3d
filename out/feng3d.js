@@ -11262,6 +11262,22 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * Behaviours are Components that can be enabled or disabled.
+     */
+    var Behaviour = /** @class */ (function (_super) {
+        __extends(Behaviour, _super);
+        function Behaviour() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.enabled = true;
+            return _this;
+        }
+        return Behaviour;
+    }(feng3d.Component));
+    feng3d.Behaviour = Behaviour;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 渲染器
      * 所有渲染都由该渲染器执行
      */
@@ -15318,7 +15334,7 @@ var feng3d;
             /**
              * 最远距离
              */
-            _this._far = 1000;
+            _this._far = 2000;
             /**
              * 视窗缩放比例(width/height)，在渲染器中设置
              */
@@ -18904,7 +18920,7 @@ var feng3d;
             feng3d.serialize()
         ], Light.prototype, "castsShadows", void 0);
         return Light;
-    }(feng3d.Component));
+    }(feng3d.Behaviour));
     feng3d.Light = Light;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -20216,6 +20232,20 @@ var feng3d;
         return TerrainMergeMethod;
     }(feng3d.RenderDataHolder));
     feng3d.TerrainMergeMethod = TerrainMergeMethod;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * The Terrain component renders the terrain.
+     */
+    var Terrain = /** @class */ (function (_super) {
+        __extends(Terrain, _super);
+        function Terrain() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return Terrain;
+    }(feng3d.Behaviour));
+    feng3d.Terrain = Terrain;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -24365,6 +24395,7 @@ var feng3d;
     function createTerrain(name) {
         if (name === void 0) { name = "Terrain"; }
         var gameobject = feng3d.GameObject.create(name);
+        var terrain = gameobject.addComponent(feng3d.Terrain);
         var model = gameobject.addComponent(feng3d.MeshRenderer);
         model.geometry = new feng3d.TerrainGeometry();
         model.material = new feng3d.StandardMaterial();

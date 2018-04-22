@@ -7067,6 +7067,14 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * Behaviours are Components that can be enabled or disabled.
+     */
+    class Behaviour extends Component {
+        enabled: boolean;
+    }
+}
+declare namespace feng3d {
+    /**
      * 渲染器
      * 所有渲染都由该渲染器执行
      */
@@ -9405,7 +9413,7 @@ declare namespace feng3d {
      * 灯光
      * @author feng 2016-12-12
      */
-    class Light extends Component {
+    class Light extends Behaviour {
         /**
          * 灯光类型
          */
@@ -9738,6 +9746,13 @@ declare namespace feng3d {
          * 构建材质
          */
         constructor(blendUrl?: string, splatMergeUrl?: string, splatRepeats?: Vector4);
+    }
+}
+declare namespace feng3d {
+    /**
+     * The Terrain component renders the terrain.
+     */
+    class Terrain extends Behaviour {
     }
 }
 declare namespace feng3d {
