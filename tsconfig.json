@@ -196,6 +196,7 @@
         "src/terrain/TerrainGeometry.ts",
         "src/terrain/TerrainMethod.ts",
         "src/terrain/TerrainMergeMethod.ts",
+        "src/terrain/TerrainData.ts",
         "src/terrain/Terrain.ts",
         //粒子动画
         "src/animators/particle/Particle.ts",

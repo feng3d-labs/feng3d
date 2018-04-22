@@ -9787,9 +9787,42 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * The TerrainData class stores heightmaps, detail mesh positions, tree instances, and terrain texture alpha maps.
+     *
+     * The Terrain component links to the terrain data and renders it.
+     */
+    class TerrainData {
+        /**
+         * Width of the terrain in samples(Read Only).
+         */
+        readonly heightmapWidth: number;
+        /**
+         * Height of the terrain in samples(Read Only).
+         */
+        readonly heightmapHeight: number;
+        /**
+         * Resolution of the heightmap.
+         */
+        heightmapResolution: number;
+        /**
+         * The size of each heightmap sample.
+         */
+        readonly heightmapScale: Vector3;
+        /**
+         * The total size in world units of the terrain.
+         */
+        size: Vector3;
+    }
+}
+declare namespace feng3d {
+    /**
      * The Terrain component renders the terrain.
      */
     class Terrain extends Behaviour {
+        /**
+         * 地形资源
+         */
+        assign: TerrainData;
     }
 }
 declare namespace feng3d {

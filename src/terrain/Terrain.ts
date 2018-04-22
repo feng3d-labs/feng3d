@@ -5,6 +5,11 @@ namespace feng3d
      */
     export class Terrain extends Behaviour
     {
+        /**
+         * 地形资源
+         */
+        assign: TerrainData;
 
+        
     }
 }

@@ -113,7 +113,7 @@ namespace feng3d
 		 * @param    maxElevation	最大地形高度
 		 * @param    minElevation	最小地形高度
 		 */
-        constructor(heightMapUrl: string = null, width = 500, height = 600, depth = 500, segmentsW = 30, segmentsH = 30, maxElevation = 255, minElevation = 0)
+        constructor(heightMapUrl: string = null, width = 500, height = 200, depth = 500, segmentsW = 30, segmentsH = 30, maxElevation = 255, minElevation = 0)
         {
             super();
 
