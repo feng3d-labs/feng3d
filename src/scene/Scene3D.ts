@@ -73,8 +73,8 @@ namespace feng3d
                 list: Animation[];
             };
             scripts: {
-                cls: typeof Script;
-                list: Script[];
+                cls: typeof ScriptComponent;
+                list: ScriptComponent[];
             };
         };
 
@@ -108,7 +108,7 @@ namespace feng3d
                 directionalLights: { cls: DirectionalLight, list: new Array<DirectionalLight>() },
                 skyboxs: { cls: SkyBox, list: new Array<SkyBox>() },
                 animations: { cls: Animation, list: new Array<Animation>() },
-                scripts: { cls: Script, list: new Array<Script>() },
+                scripts: { cls: ScriptComponent, list: new Array<ScriptComponent>() },
             };
             var _this = this;
             collect(this.gameObject);
@@ -134,7 +134,7 @@ namespace feng3d
             });
             this.collectComponents.scripts.list.forEach(element =>
             {
-                if (element.enabled && (this.updateScriptFlag & element.flag))
+                if (element.isVisibleAndEnabled && (this.updateScriptFlag & element.flag))
                     element.update();
             });
         }

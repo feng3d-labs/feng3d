@@ -134,6 +134,7 @@
         "src/core/MeshRenderer.ts",
         "src/core/SkeletonComponent.ts",
         "src/core/SkinnedMeshRenderer.ts",
+        "src/core/ScriptComponent.ts",
         "src/core/Script.ts",
         //3D场景
         "src/scene/Scene3D.ts",

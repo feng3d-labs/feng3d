@@ -1,87 +1,55 @@
 namespace feng3d
 {
-    export enum ScriptFlag
-    {
-        feng3d = 1,
-        editor = 2,
-    }
-
     /**
      * 3d对象脚本
-     * @author feng 2017-03-11
      */
-    export class Script extends Component
+    export class Script
     {
-        flag = ScriptFlag.feng3d;
-        scriptcomponent: Component;
-
         /**
-         * 脚本路径
+         * The game object this component is attached to. A component is always attached to a game object.
          */
-        @oav({ componentParam: { dragparam: { accepttype: "file_script" }, textEnabled: false } })
-        @serialize()
-        get url()
+        get gameObject()
         {
-            return this._url;
-        }
-        set url(value)
-        {
-            if (this._url == value)
-                return;
-            this._url = value;
-            if (value && this.gameObject && runEnvironment == RunEnvironment.feng3d)
-            {
-                GameObjectUtil.addScript(this.gameObject, value, (scriptcomponent) =>
-                {
-                    this.scriptcomponent && this.gameObject.removeComponent(this.scriptcomponent);
-                    this.scriptcomponent = scriptcomponent;
-                });
-            }
-        }
-        private _url = "";
-
-        private _enabled = false;
-
-        init(gameObject: GameObject)
-        {
-            super.init(gameObject);
-            if (this._url && this.gameObject && runEnvironment == RunEnvironment.feng3d)
-            {
-                GameObjectUtil.addScript(this.gameObject, this._url, (scriptcomponent) =>
-                {
-                    this.scriptcomponent = scriptcomponent;
-                });
-            }
-            this.start();
+            return this._component.gameObject;
         }
 
         /**
-         * 初始化时调用
+         * The Transform attached to this GameObject (null if there is none attached).
          */
-        start()
+        get transform()
+        {
+            return this.gameObject.transform;
+        }
+
+        /**
+         * 宿主组件
+         */
+        get component()
+        {
+            return this._component;
+        }
+        private _component: ScriptComponent;
+
+        constructor(component: ScriptComponent)
+        {
+            assert(!!component);
+            this._component = component;
+            this.init();
+        }
+
+        /**
+         * Use this for initialization
+         */
+        init()
         {
 
         }
 
         /**
-         * Enabled Behaviours are Updated, disabled Behaviours are not.
-         */
-        @oav()
-        @serialize()
-        enabled = false;
-
-        /**
-         * 更新
+         * Update is called once per frame
+         * 每帧执行一次
          */
         update()
-        {
-
-        }
-
-        /**
-         * 销毁时调用
-         */
-        end()
         {
 
         }
@@ -91,9 +59,7 @@ namespace feng3d
          */
         dispose()
         {
-            this.end();
-            this.enabled = false;
-            super.dispose();
+
         }
     }
 }

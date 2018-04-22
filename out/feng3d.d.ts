@@ -7068,9 +7068,21 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * Behaviours are Components that can be enabled or disabled.
+     *
+     * 行为
+     *
+     * 可以控制开关的组件
      */
     class Behaviour extends Component {
+        /**
+         * Enabled Behaviours are Updated, disabled Behaviours are not.
+         */
         enabled: boolean;
+        /**
+         * Has the Behaviour had enabled called.
+         * 是否所在GameObject显示且该行为已启动。
+         */
+        readonly isVisibleAndEnabled: boolean;
     }
 }
 declare namespace feng3d {
@@ -7980,32 +7992,57 @@ declare namespace feng3d {
      * 3d对象脚本
      * @author feng 2017-03-11
      */
-    class Script extends Component {
+    class ScriptComponent extends Behaviour {
         flag: ScriptFlag;
-        scriptcomponent: Component;
+        /**
+         * 脚本对象
+         */
+        private _script;
         /**
          * 脚本路径
          */
         url: string;
         private _url;
-        private _enabled;
         init(gameObject: GameObject): void;
+        private initScript();
         /**
-         * 初始化时调用
-         */
-        start(): void;
-        /**
-         * Enabled Behaviours are Updated, disabled Behaviours are not.
-         */
-        enabled: boolean;
-        /**
-         * 更新
+         * 每帧执行
          */
         update(): void;
         /**
-         * 销毁时调用
+         * 销毁
          */
-        end(): void;
+        dispose(): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 3d对象脚本
+     */
+    class Script {
+        /**
+         * The game object this component is attached to. A component is always attached to a game object.
+         */
+        readonly gameObject: GameObject;
+        /**
+         * The Transform attached to this GameObject (null if there is none attached).
+         */
+        readonly transform: Transform;
+        /**
+         * 宿主组件
+         */
+        readonly component: ScriptComponent;
+        private _component;
+        constructor(component: ScriptComponent);
+        /**
+         * Use this for initialization
+         */
+        init(): void;
+        /**
+         * Update is called once per frame
+         * 每帧执行一次
+         */
+        update(): void;
         /**
          * 销毁
          */
@@ -8075,8 +8112,8 @@ declare namespace feng3d {
                 list: Animation[];
             };
             scripts: {
-                cls: typeof Script;
-                list: Script[];
+                cls: typeof ScriptComponent;
+                list: ScriptComponent[];
             };
         };
         _mouseCheckObjects: {
@@ -10726,8 +10763,8 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     var GameObjectUtil: {
-        addScript: (gameObject: GameObject, scriptPath: string, callback?: (scriptcomponent: Component) => void) => void;
-        removeScript: (gameObject: GameObject, script: string | Script) => void;
+        addScript: (gameObject: GameObject, scriptPath: string, callback?: (scriptClass: new (scriptComponent: ScriptComponent) => Script) => void) => void;
+        removeScript: (gameObject: GameObject, script: string | ScriptComponent) => void;
         reloadJS: (scriptPath: any) => void;
         loadJs: (scriptPath: any, onload?: (resultScript: {
             className: string;
@@ -10756,7 +10793,7 @@ declare namespace feng3d {
      * FPS模式控制器
      * @author feng 2016-12-19
      */
-    class FPSControllerScript extends Script {
+    class FPSControllerScript extends ScriptComponent {
         /**
          * 加速度
          */

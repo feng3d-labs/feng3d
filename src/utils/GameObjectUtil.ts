@@ -9,30 +9,27 @@ namespace feng3d
 
     var resultScriptCache: { [path: string]: { className: string, script: HTMLScriptElement } } = {};
 
-    function addScript(gameObject: GameObject, scriptPath: string, callback?: (scriptcomponent: Component) => void)
+    function addScript(gameObject: GameObject, scriptPath: string, callback?: (scriptClass: new (scriptComponent: ScriptComponent) => Script) => void)
     {
         var jspath = scriptPath.replace(/\.ts\b/, ".js");
         loadJs(jspath, (resultScript) =>
         {
             var windowEval = eval.bind(window);
 
-            var componentClass = windowEval(resultScript.className);
-            var scriptcomponent = <Script>gameObject.addComponent(componentClass);
-            scriptcomponent.serializable = false;
-            scriptcomponent.enabled = true;
-            callback && callback(scriptcomponent);
+            var cls = windowEval(resultScript.className);
+            callback && callback(cls);
         });
     }
 
-    function removeScript(gameObject: GameObject, script: string | Script)
+    function removeScript(gameObject: GameObject, script: string | ScriptComponent)
     {
-        if (script instanceof Script)
+        if (script instanceof ScriptComponent)
         {
             script.enabled = false;
             gameObject.removeComponent(script);
         } else
         {
-            var scripts = gameObject.getComponents(Script);
+            var scripts = gameObject.getComponents(ScriptComponent);
             while (scripts.length > 0)
             {
                 var scriptComponent = scripts[scripts.length - 1];
