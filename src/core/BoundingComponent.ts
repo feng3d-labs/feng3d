@@ -82,7 +82,7 @@ namespace feng3d
         {
             if (!this._selfWorldBounds)
                 this.updateWorldBounds();
-
+ 
             return this._selfWorldBounds;
         }
 
