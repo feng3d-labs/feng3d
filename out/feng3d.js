@@ -11275,7 +11275,7 @@ var feng3d;
             /**
              * Enabled Behaviours are Updated, disabled Behaviours are not.
              */
-            _this.enabled = false;
+            _this.enabled = true;
             return _this;
         }
         Object.defineProperty(Behaviour.prototype, "isVisibleAndEnabled", {

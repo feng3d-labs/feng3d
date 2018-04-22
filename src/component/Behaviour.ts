@@ -14,7 +14,7 @@ namespace feng3d
          */
         @oav()
         @serialize()
-        enabled = false;
+        enabled = true;
 
         /**
          * Has the Behaviour had enabled called.
