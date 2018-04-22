@@ -6180,8 +6180,8 @@ var feng3d;
         function Box(min, max) {
             if (min === void 0) { min = new feng3d.Vector3(+Infinity, +Infinity, +Infinity); }
             if (max === void 0) { max = new feng3d.Vector3(-Infinity, -Infinity, -Infinity); }
-            this.min = min;
-            this.max = max;
+            this.min = min.clone();
+            this.max = max.clone();
         }
         /**
          * 从一组顶点初始化盒子
@@ -6226,8 +6226,8 @@ var feng3d;
          * @param max 最大值
          */
         Box.prototype.init = function (min, max) {
-            this.min = min;
-            this.max = max;
+            this.min = min.clone();
+            this.max = max.clone();
             return this;
         };
         /**
@@ -11575,8 +11575,8 @@ var feng3d;
         var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
         if (meshRenderer) {
             var boundingComponent = gameObject.getComponent(feng3d.BoundingComponent);
-            if (boundingComponent.worldBounds) {
-                if (frustum.intersectsBox(boundingComponent.worldBounds))
+            if (boundingComponent.selfWorldBounds) {
+                if (frustum.intersectsBox(boundingComponent.selfWorldBounds))
                     meshRenderers.push(meshRenderer);
             }
         }
@@ -13376,6 +13376,9 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 包围盒组件
+     */
     var BoundingComponent = /** @class */ (function (_super) {
         __extends(BoundingComponent, _super);
         function BoundingComponent() {
@@ -13389,14 +13392,14 @@ var feng3d;
             gameObject.on("boundsInvalid", this.onBoundsChange, this);
             gameObject.on("scenetransformChanged", this.invalidateSceneTransform, this);
         };
-        Object.defineProperty(BoundingComponent.prototype, "bounds", {
+        Object.defineProperty(BoundingComponent.prototype, "selfLocalBounds", {
             /**
-             * 边界
+             * 自身局部包围盒
              */
             get: function () {
-                if (!this._bounds)
+                if (!this._selfLocalBounds)
                     this.updateBounds();
-                return this._bounds;
+                return this._selfLocalBounds;
             },
             enumerable: true,
             configurable: true
@@ -13405,7 +13408,7 @@ var feng3d;
          * @inheritDoc
          */
         BoundingComponent.prototype.invalidateSceneTransform = function () {
-            this._worldBounds = null;
+            this._selfWorldBounds = null;
         };
         /**
           * 判断射线是否穿过对象
@@ -13413,7 +13416,7 @@ var feng3d;
           * @return
           */
         BoundingComponent.prototype.isIntersectingRay = function (ray3D) {
-            if (!this.bounds)
+            if (!this.selfLocalBounds)
                 return null;
             var localNormal = new feng3d.Vector3();
             //转换到当前实体坐标系空间
@@ -13421,7 +13424,7 @@ var feng3d;
             this.transform.worldToLocalMatrix.transformVector(ray3D.position, localRay.position);
             this.transform.worldToLocalMatrix.deltaTransformVector(ray3D.direction, localRay.direction);
             //检测射线与边界的碰撞
-            var rayEntryDistance = this.bounds.rayIntersection(localRay.position, localRay.direction, localNormal);
+            var rayEntryDistance = this.selfLocalBounds.rayIntersection(localRay.position, localRay.direction, localNormal);
             if (rayEntryDistance < 0)
                 return null;
             //保存碰撞数据
@@ -13436,14 +13439,31 @@ var feng3d;
             };
             return pickingCollisionVO;
         };
-        Object.defineProperty(BoundingComponent.prototype, "worldBounds", {
+        Object.defineProperty(BoundingComponent.prototype, "selfWorldBounds", {
             /**
-             * 世界边界
+             * 自身世界包围盒
              */
             get: function () {
-                if (!this._worldBounds)
+                if (!this._selfWorldBounds)
                     this.updateWorldBounds();
-                return this._worldBounds;
+                return this._selfWorldBounds;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BoundingComponent.prototype, "worldBounds", {
+            /**
+             * 世界包围盒
+             */
+            get: function () {
+                var box = this.selfWorldBounds;
+                if (!box)
+                    box = new feng3d.Box(this.transform.position, this.transform.position);
+                this.gameObject.children.forEach(function (element) {
+                    var ebox = element.getComponent(BoundingComponent).worldBounds;
+                    box.union(ebox);
+                });
+                return box;
             },
             enumerable: true,
             configurable: true
@@ -13452,16 +13472,16 @@ var feng3d;
          * 更新世界边界
          */
         BoundingComponent.prototype.updateWorldBounds = function () {
-            if (this.bounds && this.transform.localToWorldMatrix) {
-                this._worldBounds = this.bounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
+            if (this.selfLocalBounds && this.transform.localToWorldMatrix) {
+                this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
             }
         };
         /**
          * 处理包围盒变换事件
          */
         BoundingComponent.prototype.onBoundsChange = function () {
-            this._bounds = null;
-            this._worldBounds = null;
+            this._selfLocalBounds = null;
+            this._selfWorldBounds = null;
         };
         /**
          * @inheritDoc
@@ -13469,7 +13489,7 @@ var feng3d;
         BoundingComponent.prototype.updateBounds = function () {
             var meshRenderer = this.gameObject.getComponent(feng3d.MeshRenderer);
             if (meshRenderer && meshRenderer.geometry)
-                this._bounds = meshRenderer.geometry.bounding;
+                this._selfLocalBounds = meshRenderer.geometry.bounding;
         };
         return BoundingComponent;
     }(feng3d.Component));

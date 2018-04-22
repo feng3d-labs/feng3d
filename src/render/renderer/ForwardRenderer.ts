@@ -88,9 +88,9 @@ namespace feng3d
         if (meshRenderer)
         {
             var boundingComponent = gameObject.getComponent(BoundingComponent);
-            if (boundingComponent.worldBounds)
+            if (boundingComponent.selfWorldBounds)
             {
-                if (frustum.intersectsBox(boundingComponent.worldBounds))
+                if (frustum.intersectsBox(boundingComponent.selfWorldBounds))
                     meshRenderers.push(meshRenderer);
             }
         }

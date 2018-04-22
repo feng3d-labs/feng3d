@@ -7760,16 +7760,19 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 包围盒组件
+     */
     class BoundingComponent extends Component {
         showInInspector: boolean;
         serializable: boolean;
-        private _bounds;
-        private _worldBounds;
+        private _selfLocalBounds;
+        private _selfWorldBounds;
         init(gameObject: GameObject): void;
         /**
-         * 边界
+         * 自身局部包围盒
          */
-        readonly bounds: Box;
+        readonly selfLocalBounds: Box;
         /**
          * @inheritDoc
          */
@@ -7781,7 +7784,11 @@ declare namespace feng3d {
           */
         isIntersectingRay(ray3D: Ray3D): PickingCollisionVO;
         /**
-         * 世界边界
+         * 自身世界包围盒
+         */
+        readonly selfWorldBounds: Box;
+        /**
+         * 世界包围盒
          */
         readonly worldBounds: Box;
         /**

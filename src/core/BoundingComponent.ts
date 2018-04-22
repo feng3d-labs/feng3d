@@ -1,12 +1,15 @@
 namespace feng3d
 {
+    /**
+     * 包围盒组件
+     */
     export class BoundingComponent extends Component
     {
         showInInspector = false;
         serializable = false;
 
-        private _bounds: Box | null;
-        private _worldBounds: Box | null;
+        private _selfLocalBounds: Box | null;
+        private _selfWorldBounds: Box | null;
 
         init(gameObject: GameObject)
         {
@@ -17,14 +20,14 @@ namespace feng3d
         }
 
 		/**
-		 * 边界
+		 * 自身局部包围盒
 		 */
-        get bounds()
+        get selfLocalBounds()
         {
-            if (!this._bounds)
+            if (!this._selfLocalBounds)
                 this.updateBounds();
 
-            return this._bounds;
+            return this._selfLocalBounds;
         }
 
 		/**
@@ -32,7 +35,7 @@ namespace feng3d
 		 */
         private invalidateSceneTransform()
         {
-            this._worldBounds = null;
+            this._selfWorldBounds = null;
         }
 
         /**
@@ -42,7 +45,7 @@ namespace feng3d
           */
         isIntersectingRay(ray3D: Ray3D)
         {
-            if (!this.bounds)
+            if (!this.selfLocalBounds)
                 return null;
 
             var localNormal = new Vector3();
@@ -54,7 +57,7 @@ namespace feng3d
             this.transform.worldToLocalMatrix.deltaTransformVector(ray3D.direction, localRay.direction);
 
             //检测射线与边界的碰撞
-            var rayEntryDistance = this.bounds.rayIntersection(localRay.position, localRay.direction, localNormal);
+            var rayEntryDistance = this.selfLocalBounds.rayIntersection(localRay.position, localRay.direction, localNormal);
             if (rayEntryDistance < 0)
                 return null;
 
@@ -73,14 +76,29 @@ namespace feng3d
         }
 
 		/**
-		 * 世界边界
+		 * 自身世界包围盒
 		 */
-        get worldBounds()
+        get selfWorldBounds()
         {
-            if (!this._worldBounds)
+            if (!this._selfWorldBounds)
                 this.updateWorldBounds();
 
-            return this._worldBounds;
+            return this._selfWorldBounds;
+        }
+
+        /**
+         * 世界包围盒
+         */
+        get worldBounds()
+        {
+            var box = this.selfWorldBounds;
+            if (!box) box = new Box(this.transform.position, this.transform.position);
+            this.gameObject.children.forEach(element =>
+            {
+                var ebox = element.getComponent(BoundingComponent).worldBounds;
+                box.union(ebox);
+            });
+            return box;
         }
 
 		/**
@@ -88,9 +106,9 @@ namespace feng3d
 		 */
         private updateWorldBounds()
         {
-            if (this.bounds && this.transform.localToWorldMatrix)
+            if (this.selfLocalBounds && this.transform.localToWorldMatrix)
             {
-                this._worldBounds = this.bounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
+                this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
             }
         }
 
@@ -99,8 +117,8 @@ namespace feng3d
          */
         private onBoundsChange()
         {
-            this._bounds = null;
-            this._worldBounds = null;
+            this._selfLocalBounds = null;
+            this._selfWorldBounds = null;
         }
 
         /**
@@ -110,7 +128,7 @@ namespace feng3d
         {
             var meshRenderer = this.gameObject.getComponent(MeshRenderer);
             if (meshRenderer && meshRenderer.geometry)
-                this._bounds = meshRenderer.geometry.bounding;
+                this._selfLocalBounds = meshRenderer.geometry.bounding;
         }
     }
 }

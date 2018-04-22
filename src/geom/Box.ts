@@ -66,8 +66,8 @@ namespace feng3d
          */
         constructor(min = new Vector3(+Infinity, + Infinity, + Infinity), max = new Vector3(- Infinity, - Infinity, - Infinity))
         {
-            this.min = min;
-            this.max = max;
+            this.min = min.clone();
+            this.max = max.clone();
         }
 
         /**
@@ -77,8 +77,8 @@ namespace feng3d
          */
         init(min: Vector3, max: Vector3)
         {
-            this.min = min;
-            this.max = max;
+            this.min = min.clone();
+            this.max = max.clone();
             return this;
         }
 
