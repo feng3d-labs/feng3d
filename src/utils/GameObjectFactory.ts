@@ -65,7 +65,6 @@ namespace feng3d
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
         model.geometry = new CubeGeometry();
-        model.material = new StandardMaterial();
         return gameobject;
     }
 
@@ -108,11 +107,7 @@ namespace feng3d
     function createTerrain(name: string = "Terrain")
     {
         var gameobject = GameObject.create(name);
-        var terrain = gameobject.addComponent(Terrain);
-        var model = gameobject.addComponent(MeshRenderer);
-        model.geometry = new TerrainGeometry();
-        model.material = new StandardMaterial();
-
+        gameobject.addComponent(Terrain);
         return gameobject;
     }
 

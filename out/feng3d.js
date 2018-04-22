@@ -13786,10 +13786,7 @@ var feng3d;
     var MeshRenderer = /** @class */ (function (_super) {
         __extends(MeshRenderer, _super);
         function MeshRenderer() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._geometry = new feng3d.CubeGeometry();
-            _this._material = new feng3d.StandardMaterial();
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(MeshRenderer.prototype, "single", {
             get: function () { return true; },
@@ -13840,6 +13837,10 @@ var feng3d;
         MeshRenderer.prototype.init = function (gameObject) {
             var _this = this;
             _super.prototype.init.call(this, gameObject);
+            if (!this.geometry)
+                this.geometry = new feng3d.CubeGeometry();
+            if (!this.material)
+                this.material = new feng3d.StandardMaterial();
             //
             this.createUniformData("u_modelMatrix", function () { return _this.transform.localToWorldMatrix; });
             this.createUniformData("u_ITModelMatrix", function () { return _this.transform.ITlocalToWorldMatrix; });
@@ -13864,7 +13865,7 @@ var feng3d;
             feng3d.serialize()
         ], MeshRenderer.prototype, "material", null);
         return MeshRenderer;
-    }(feng3d.Component));
+    }(feng3d.Behaviour));
     feng3d.MeshRenderer = MeshRenderer;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -20435,10 +20436,15 @@ var feng3d;
     var Terrain = /** @class */ (function (_super) {
         __extends(Terrain, _super);
         function Terrain() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 地形几何体数据
+             */
+            _this.geometry = new feng3d.TerrainGeometry();
+            return _this;
         }
         return Terrain;
-    }(feng3d.Behaviour));
+    }(feng3d.MeshRenderer));
     feng3d.Terrain = Terrain;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24551,7 +24557,6 @@ var feng3d;
         var gameobject = feng3d.GameObject.create(name);
         var model = gameobject.addComponent(feng3d.MeshRenderer);
         model.geometry = new feng3d.CubeGeometry();
-        model.material = new feng3d.StandardMaterial();
         return gameobject;
     }
     function createPlane(name) {
@@ -24589,10 +24594,7 @@ var feng3d;
     function createTerrain(name) {
         if (name === void 0) { name = "Terrain"; }
         var gameobject = feng3d.GameObject.create(name);
-        var terrain = gameobject.addComponent(feng3d.Terrain);
-        var model = gameobject.addComponent(feng3d.MeshRenderer);
-        model.geometry = new feng3d.TerrainGeometry();
-        model.material = new feng3d.StandardMaterial();
+        gameobject.addComponent(feng3d.Terrain);
         return gameobject;
     }
     function createSphere(name) {

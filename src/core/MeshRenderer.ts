@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export class MeshRenderer extends Component
+    export class MeshRenderer extends Behaviour
     {
         get single() { return true; }
 
@@ -29,7 +29,7 @@ namespace feng3d
                 this._geometry.on("boundsInvalid", this.onBoundsInvalid, this);
             }
         }
-        private _geometry: Geometry = new CubeGeometry();
+        private _geometry: Geometry;
 
         /**
          * 材质
@@ -48,12 +48,17 @@ namespace feng3d
             if (this._material)
                 this.addRenderDataHolder(this.material);
         }
-        private _material: Material = new StandardMaterial();
+        private _material: Material;
 
         init(gameObject: GameObject)
         {
             super.init(gameObject);
 
+            if (!this.geometry)
+                this.geometry = new CubeGeometry();
+
+            if (!this.material)
+                this.material = new StandardMaterial();
             //
             this.createUniformData("u_modelMatrix", () => this.transform.localToWorldMatrix);
             this.createUniformData("u_ITModelMatrix", () => this.transform.ITlocalToWorldMatrix);

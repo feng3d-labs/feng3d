@@ -7900,7 +7900,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class MeshRenderer extends Component {
+    class MeshRenderer extends Behaviour {
         readonly single: boolean;
         /**
          * Returns the instantiated Mesh assigned to the mesh filter.
@@ -9822,11 +9822,15 @@ declare namespace feng3d {
     /**
      * The Terrain component renders the terrain.
      */
-    class Terrain extends Behaviour {
+    class Terrain extends MeshRenderer {
         /**
          * 地形资源
          */
         assign: TerrainData;
+        /**
+         * 地形几何体数据
+         */
+        geometry: TerrainGeometry;
     }
 }
 declare namespace feng3d {
