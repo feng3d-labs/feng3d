@@ -8,7 +8,10 @@ interface Performance
 
 interface Element
 {
-    style: { display }
+    style: {
+        display,
+        cssText
+    }
 }
 
 namespace feng3d
@@ -24,7 +27,7 @@ namespace feng3d
                 parent = parent || document.body;
                 parent.appendChild(this.instance.dom);
             }
-            ticker.onframe( this.instance.update, this.instance);
+            ticker.onframe(this.instance.update, this.instance);
         }
 
         REVISION: number;

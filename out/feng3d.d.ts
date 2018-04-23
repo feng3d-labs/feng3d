@@ -1020,6 +1020,7 @@ interface Performance {
 interface Element {
     style: {
         display;
+        cssText;
     };
 }
 declare namespace feng3d {
