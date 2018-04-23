@@ -16,6 +16,8 @@ namespace feng3d
         @serialize()
         enabled = true;
 
+        flag = ScriptFlag.all;
+
         /**
          * Has the Behaviour had enabled called.
          * 是否所在GameObject显示且该行为已启动。
@@ -24,6 +26,13 @@ namespace feng3d
         {
             var v = this.enabled && this.gameObject && this.gameObject.visible;
             return v;
+        }
+
+        /**
+         * 每帧执行
+         */
+        update()
+        {
         }
     }
 }

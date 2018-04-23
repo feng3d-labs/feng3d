@@ -11276,6 +11276,7 @@ var feng3d;
              * Enabled Behaviours are Updated, disabled Behaviours are not.
              */
             _this.enabled = true;
+            _this.flag = feng3d.ScriptFlag.all;
             return _this;
         }
         Object.defineProperty(Behaviour.prototype, "isVisibleAndEnabled", {
@@ -11290,6 +11291,11 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 每帧执行
+         */
+        Behaviour.prototype.update = function () {
+        };
         __decorate([
             feng3d.oav(),
             feng3d.serialize()
@@ -14182,6 +14188,7 @@ var feng3d;
     (function (ScriptFlag) {
         ScriptFlag[ScriptFlag["feng3d"] = 1] = "feng3d";
         ScriptFlag[ScriptFlag["editor"] = 2] = "editor";
+        ScriptFlag[ScriptFlag["all"] = 255] = "all";
     })(ScriptFlag = feng3d.ScriptFlag || (feng3d.ScriptFlag = {}));
     /**
      * 3d对象脚本
@@ -14191,7 +14198,6 @@ var feng3d;
         __extends(ScriptComponent, _super);
         function ScriptComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.flag = ScriptFlag.feng3d;
             _this._url = "";
             return _this;
         }
@@ -14357,6 +14363,7 @@ var feng3d;
                 directionalLights: { cls: feng3d.DirectionalLight, list: new Array() },
                 skyboxs: { cls: feng3d.SkyBox, list: new Array() },
                 animations: { cls: feng3d.Animation, list: new Array() },
+                behaviours: { cls: feng3d.Behaviour, list: new Array() },
                 scripts: { cls: feng3d.ScriptComponent, list: new Array() },
             };
             var _this = this;
@@ -14375,7 +14382,7 @@ var feng3d;
                 if (element.isplaying)
                     element.update();
             });
-            this.collectComponents.scripts.list.forEach(function (element) {
+            this.collectComponents.behaviours.list.forEach(function (element) {
                 if (element.isVisibleAndEnabled && (_this.updateScriptFlag & element.flag))
                     element.update();
             });
@@ -19415,6 +19422,7 @@ var feng3d;
              * 加速度
              */
             _this.acceleration = 0.001;
+            _this.flag = feng3d.ScriptFlag.feng3d;
             _this.ischange = false;
             return _this;
         }
@@ -19428,12 +19436,10 @@ var feng3d;
                 if (this._auto) {
                     feng3d.windowEventProxy.off("mousedown", this.onMousedown, this);
                     feng3d.windowEventProxy.off("mouseup", this.onMouseup, this);
-                    feng3d.ticker.offframe(this.update, this);
                     this.onMouseup();
                 }
                 this._auto = value;
                 if (this._auto) {
-                    feng3d.ticker.onframe(this.update, this);
                     feng3d.windowEventProxy.on("mousedown", this.onMousedown, this);
                     feng3d.windowEventProxy.on("mouseup", this.onMouseup, this);
                 }
@@ -19580,7 +19586,7 @@ var feng3d;
             feng3d.oav()
         ], FPSController.prototype, "acceleration", void 0);
         return FPSController;
-    }(feng3d.Component));
+    }(feng3d.Behaviour));
     feng3d.FPSController = FPSController;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -25187,6 +25193,27 @@ var feng3d;
     feng3d.log("Feng3D version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+
+(function universalModuleDefinition(root, factory)
+{
+    if (root && root["feng3d"])
+    {
+        return;
+    }
+    if (typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory();
+    else if (typeof define === 'function' && define.amd)
+        define([], factory);
+    else if (typeof exports === 'object')
+        exports["feng3d"] = factory();
+    else
+    {
+        root["feng3d"] = factory();
+    }
+})(this, function ()
+{
+    return feng3d;
+});
 
 (function universalModuleDefinition(root, factory)
 {

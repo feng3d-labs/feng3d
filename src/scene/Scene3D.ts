@@ -76,6 +76,10 @@ namespace feng3d
                 cls: typeof ScriptComponent;
                 list: ScriptComponent[];
             };
+            behaviours: {
+                cls: typeof Behaviour;
+                list: Behaviour[];
+            };
         };
 
         _mouseCheckObjects: { layer: number, objects: GameObject[] }[];
@@ -108,6 +112,7 @@ namespace feng3d
                 directionalLights: { cls: DirectionalLight, list: new Array<DirectionalLight>() },
                 skyboxs: { cls: SkyBox, list: new Array<SkyBox>() },
                 animations: { cls: Animation, list: new Array<Animation>() },
+                behaviours: { cls: Behaviour, list: new Array<Behaviour>() },
                 scripts: { cls: ScriptComponent, list: new Array<ScriptComponent>() },
             };
             var _this = this;
@@ -132,7 +137,7 @@ namespace feng3d
                 if (element.isplaying)
                     element.update();
             });
-            this.collectComponents.scripts.list.forEach(element =>
+            this.collectComponents.behaviours.list.forEach(element =>
             {
                 if (element.isVisibleAndEnabled && (this.updateScriptFlag & element.flag))
                     element.update();

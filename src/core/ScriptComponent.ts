@@ -2,8 +2,9 @@ namespace feng3d
 {
     export enum ScriptFlag
     {
-        feng3d = 1,
-        editor = 2,
+        feng3d = 1 << 0,
+        editor = 1 << 1,
+        all = (1 << 8) - 1,
     }
 
     /**
@@ -12,7 +13,6 @@ namespace feng3d
      */
     export class ScriptComponent extends Behaviour
     {
-        flag = ScriptFlag.feng3d;
         /**
          * 脚本对象
          */

@@ -7083,11 +7083,16 @@ declare namespace feng3d {
          * Enabled Behaviours are Updated, disabled Behaviours are not.
          */
         enabled: boolean;
+        flag: ScriptFlag;
         /**
          * Has the Behaviour had enabled called.
          * 是否所在GameObject显示且该行为已启动。
          */
         readonly isVisibleAndEnabled: boolean;
+        /**
+         * 每帧执行
+         */
+        update(): void;
     }
 }
 declare namespace feng3d {
@@ -7999,13 +8004,13 @@ declare namespace feng3d {
     enum ScriptFlag {
         feng3d = 1,
         editor = 2,
+        all = 255,
     }
     /**
      * 3d对象脚本
      * @author feng 2017-03-11
      */
     class ScriptComponent extends Behaviour {
-        flag: ScriptFlag;
         /**
          * 脚本对象
          */
@@ -8126,6 +8131,10 @@ declare namespace feng3d {
             scripts: {
                 cls: typeof ScriptComponent;
                 list: ScriptComponent[];
+            };
+            behaviours: {
+                cls: typeof Behaviour;
+                list: Behaviour[];
             };
         };
         _mouseCheckObjects: {
@@ -9576,11 +9585,12 @@ declare namespace feng3d {
      * FPS模式控制器
      * @author feng 2016-12-19
      */
-    class FPSController extends Component {
+    class FPSController extends Behaviour {
         /**
          * 加速度
          */
         acceleration: number;
+        flag: ScriptFlag;
         /**
          * 按键记录
          */
