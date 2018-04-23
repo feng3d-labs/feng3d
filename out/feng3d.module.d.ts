@@ -1025,6 +1025,14 @@ interface Element {
     style: {
         display;
         cssText;
+        cursor;
+        position;
+        top;
+        width;
+        textAlign;
+        opacity;
+        left;
+        textDecoration;
     };
 }
 declare namespace feng3d {

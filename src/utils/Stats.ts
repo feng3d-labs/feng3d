@@ -10,7 +10,15 @@ interface Element
 {
     style: {
         display,
-        cssText
+        cssText,
+        cursor,
+        position,
+        top,
+        width,
+        textAlign,
+        opacity,
+        left,
+        textDecoration,
     }
 }
 
