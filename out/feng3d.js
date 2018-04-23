@@ -19,13 +19,13 @@ if (typeof Object.assign != 'function') {
     Object.defineProperty(Object, "assign", {
         value: function assign(target, varArgs) {
             'use strict';
-            if (target == null) { // TypeError if undefined or null
+            if (target == null) {
                 throw new TypeError('Cannot convert undefined or null to object');
             }
             var to = Object(target);
             for (var index = 1; index < arguments.length; index++) {
                 var nextSource = arguments[index];
-                if (nextSource != null) { // Skip over if undefined or null
+                if (nextSource != null) {
                     for (var nextKey in nextSource) {
                         // Avoid bugs when hasOwnProperty is shadowed
                         if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
@@ -1030,7 +1030,7 @@ var feng3d;
         var request = new XMLHttpRequest();
         request.onreadystatechange = function (ev) {
             var result = ev.type;
-            if (request.readyState == 4) { // 4 = "loaded"
+            if (request.readyState == 4) {
                 request.onreadystatechange = null;
                 // handle retries in case of load failure
                 if (request.status < 200 || request.status > 300) {
@@ -4319,8 +4319,7 @@ var feng3d;
              * 一个用于确定矩阵是否可逆的数字。
              */
             get: function () {
-                return ( //
-                (this.rawData[0] * this.rawData[5] - this.rawData[4] * this.rawData[1]) * (this.rawData[10] * this.rawData[15] - this.rawData[14] * this.rawData[11]) //
+                return ((this.rawData[0] * this.rawData[5] - this.rawData[4] * this.rawData[1]) * (this.rawData[10] * this.rawData[15] - this.rawData[14] * this.rawData[11]) //
                     - (this.rawData[0] * this.rawData[9] - this.rawData[8] * this.rawData[1]) * (this.rawData[6] * this.rawData[15] - this.rawData[14] * this.rawData[7]) //
                     + (this.rawData[0] * this.rawData[13] - this.rawData[12] * this.rawData[1]) * (this.rawData[6] * this.rawData[11] - this.rawData[10] * this.rawData[7]) //
                     + (this.rawData[4] * this.rawData[9] - this.rawData[8] * this.rawData[5]) * (this.rawData[2] * this.rawData[15] - this.rawData[14] * this.rawData[3]) //
@@ -4721,7 +4720,7 @@ var feng3d;
                 ty = (c - i) / len;
                 tz = (e - b) / len;
             }
-            else { //Orientation3D.QUATERNION
+            else {
                 var tr = a + f + k;
                 if (tr > 0) {
                     tw = Math.sqrt(1 + tr) / 2;
@@ -6761,7 +6760,7 @@ var feng3d;
             var b = 2 * (px * vx + py * vy + pz * vz);
             var c = px * px + py * py + pz * pz - this.radius * this.radius;
             var det = b * b - 4 * a * c;
-            if (det >= 0) { // ray goes through sphere
+            if (det >= 0) {
                 var sqrtDet = Math.sqrt(det);
                 rayEntryDistance = (-b - sqrtDet) / (2 * a);
                 if (rayEntryDistance >= 0) {
@@ -8475,7 +8474,7 @@ var feng3d;
      */
     function onRequestReadystatechange(request, loadItem) {
         return function (ev) {
-            if (request.readyState == 4) { // 4 = "loaded"
+            if (request.readyState == 4) {
                 request.onreadystatechange = null;
                 if (request.status >= 200 && request.status < 300) {
                     var content = loadItem.dataFormat == feng3d.LoaderDataFormat.TEXT ? request.responseText : request.response;
@@ -13657,7 +13656,7 @@ var feng3d;
         gl.enable(gl.DEPTH_TEST);
     }
 })(feng3d || (feng3d = {}));
-// var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };
+// var viewRect0 = { x: 0, y: 0, w: 400, h: 300 }; 
 var feng3d;
 (function (feng3d) {
     var HoldSizeComponent = /** @class */ (function (_super) {
@@ -19617,7 +19616,7 @@ var feng3d;
         var numIndices = indices.length;
         var result = {};
         //遍历每个三角形 检测碰撞
-        for (var index = 0; index < numIndices; index += 3) { // sweep all triangles
+        for (var index = 0; index < numIndices; index += 3) {
             //三角形三个顶点索引
             i0 = indices[index] * 3;
             i1 = indices[index + 1] * 3;
@@ -19652,7 +19651,7 @@ var feng3d;
             //计算射线与法线的点积，不等于零表示射线所在直线与三角面相交
             nDotV = nx * rayDirection.x + ny * +rayDirection.y + nz * rayDirection.z; // rayDirection . normal
             //判断射线是否与三角面相交
-            if ((!bothSides && nDotV < 0.0) || (bothSides && nDotV != 0.0)) { // an intersection must exist
+            if ((!bothSides && nDotV < 0.0) || (bothSides && nDotV != 0.0)) {
                 //计算平面方程D值，参考Plane3D
                 D = -(nx * p0x + ny * p0y + nz * p0z);
                 //射线点到平面的距离
@@ -19813,7 +19812,7 @@ var feng3d;
                     }
                 }
             }
-            else if (bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) { // A bounds collision with no triangle collider stops all checks.
+            else if (bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) {
                 // Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
                 // to enable the detection of a corresponsding triangle collision.
                 // Therefore, bounds collisions with a ray origin inside its bounds can be ignored
