@@ -13091,7 +13091,8 @@ var feng3d;
          * Adds a component class named className to the game object.
          * @param param 被添加组件
          */
-        GameObject.prototype.addComponent = function (param) {
+        GameObject.prototype.addComponent = function (param, callback) {
+            if (callback === void 0) { callback = null; }
             var component = this.getComponent(param);
             if (component && component.single) {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
@@ -13099,6 +13100,7 @@ var feng3d;
             }
             component = new param();
             this.addComponentAt(component, this._components.length);
+            callback && callback(component);
             return component;
         };
         /**
@@ -13271,9 +13273,12 @@ var feng3d;
             });
             return target;
         };
-        GameObject.create = function (name) {
+        GameObject.create = function (name, callback) {
             if (name === void 0) { name = "GameObject"; }
-            return new GameObject(name);
+            if (callback === void 0) { callback = null; }
+            var gameobject = new GameObject(name);
+            callback && callback(gameobject);
+            return gameobject;
         };
         Object.defineProperty(GameObject.prototype, "components", {
             get: function () {
@@ -24544,7 +24549,6 @@ var feng3d;
         if (name == "GameObject")
             return gameobject;
         var meshRenderer = gameobject.addComponent(feng3d.MeshRenderer);
-        meshRenderer.material = new feng3d.StandardMaterial();
         switch (name) {
             case "Plane":
                 meshRenderer.geometry = new feng3d.PlaneGeometry();

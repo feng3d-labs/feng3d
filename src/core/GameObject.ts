@@ -189,6 +189,11 @@ namespace feng3d
          */
         flag = GameObjectFlag.feng3d;
 
+        /**
+         * 用户自定义数据
+         */
+        userData: any;
+
         //------------------------------------------
         // Variables
         //------------------------------------------
@@ -408,7 +413,7 @@ namespace feng3d
          * Adds a component class named className to the game object.
 		 * @param param 被添加组件
 		 */
-        addComponent<T extends Component>(param: ComponentConstructor<T>): T
+        addComponent<T extends Component>(param: ComponentConstructor<T>, callback: (component: T) => void = null): T
         {
             var component: T = this.getComponent(param);
             if (component && component.single)
@@ -418,6 +423,7 @@ namespace feng3d
             }
             component = new param();
             this.addComponentAt(component, this._components.length);
+            callback && callback(component);
             return component;
         }
 
@@ -634,9 +640,11 @@ namespace feng3d
             return target;
         }
 
-        static create(name = "GameObject")
+        static create(name = "GameObject", callback: (gameobject: GameObject) => void = null)
         {
-            return new GameObject(name);
+            var gameobject = new GameObject(name);
+            callback && callback(gameobject)
+            return gameobject;
         }
 
         //------------------------------------------

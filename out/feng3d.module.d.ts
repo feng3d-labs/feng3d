@@ -7628,6 +7628,10 @@ declare namespace feng3d {
          */
         flag: GameObjectFlag;
         /**
+         * 用户自定义数据
+         */
+        userData: any;
+        /**
          * The Transform attached to this GameObject. (null if there is none attached).
          */
         readonly transform: Transform;
@@ -7676,7 +7680,7 @@ declare namespace feng3d {
          * Adds a component class named className to the game object.
          * @param param 被添加组件
          */
-        addComponent<T extends Component>(param: ComponentConstructor<T>): T;
+        addComponent<T extends Component>(param: ComponentConstructor<T>, callback?: (component: T) => void): T;
         /**
          * 判断是否拥有组件
          * @param com	被检测的组件
@@ -7754,7 +7758,7 @@ declare namespace feng3d {
          * @param name
          */
         static find(name: string): GameObject;
-        static create(name?: string): GameObject;
+        static create(name?: string, callback?: (gameobject: GameObject) => void): GameObject;
         /**
          * 组件列表
          */

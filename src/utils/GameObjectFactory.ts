@@ -23,7 +23,6 @@ namespace feng3d
         if (name == "GameObject")
             return gameobject;
         var meshRenderer = gameobject.addComponent(MeshRenderer);
-        meshRenderer.material = new StandardMaterial();
         switch (name)
         {
             case "Plane":
