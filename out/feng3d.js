@@ -13600,7 +13600,6 @@ var feng3d;
             this.canvas = canvas;
             this.scene = scene || feng3d.GameObject.create("scene").addComponent(feng3d.Scene3D);
             this.camera = camera;
-            this.scene.gameObject.addChild(this.camera.gameObject);
             this.start();
             this.renderContext = new feng3d.RenderContext();
             this.mouse3DManager = new feng3d.Mouse3DManager(canvas);
@@ -13610,23 +13609,20 @@ var feng3d;
              * 摄像机
              */
             get: function () {
-                var cameras = this.scene.getComponentsInChildren(feng3d.Camera);
-                if (cameras.length == 0) {
-                    var cam = feng3d.GameObject.create("defaultCamera").addComponent(feng3d.Camera);
-                    this.scene.gameObject.addChild(cam.gameObject);
-                    return cam;
+                if (!this._camera) {
+                    var cameras = this.scene.getComponentsInChildren(feng3d.Camera);
+                    if (cameras.length == 0) {
+                        this._camera = feng3d.GameObject.create("defaultCamera").addComponent(feng3d.Camera);
+                        this.scene.gameObject.addChild(this._camera.gameObject);
+                    }
+                    else {
+                        this._camera = cameras[0];
+                    }
                 }
-                else if (cameras.length == 1) {
-                    return cameras[0];
-                }
-                if (cameras[1].gameObject.name == "defaultCamera") {
-                    return cameras[0];
-                }
-                return cameras[1];
+                return this._camera;
             },
             set: function (v) {
-                if (v)
-                    this.scene.gameObject.addChild(v.gameObject);
+                this._camera = v;
             },
             enumerable: true,
             configurable: true

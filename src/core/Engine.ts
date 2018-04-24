@@ -19,26 +19,25 @@ namespace feng3d
          */
         get camera()
         {
-            var cameras = this.scene.getComponentsInChildren(Camera);
-            if (cameras.length == 0)
+            if (!this._camera)
             {
-                var cam = GameObject.create("defaultCamera").addComponent(Camera);
-                this.scene.gameObject.addChild(cam.gameObject);
-                return cam;
-            } else if (cameras.length == 1)
-            {
-                return cameras[0];
+                var cameras = this.scene.getComponentsInChildren(Camera);
+                if (cameras.length == 0)
+                {
+                    this._camera = GameObject.create("defaultCamera").addComponent(Camera);
+                    this.scene.gameObject.addChild(this._camera.gameObject);
+                } else
+                {
+                    this._camera = cameras[0];
+                }
             }
-            if (cameras[1].gameObject.name == "defaultCamera")
-            {
-                return cameras[0];
-            }
-            return cameras[1];
+            return this._camera;
         }
         set camera(v)
         {
-            if (v) this.scene.gameObject.addChild(v.gameObject);
+            this._camera = v;
         }
+        private _camera: Camera;
         /**
          * 3d场景
          */
@@ -118,7 +117,6 @@ namespace feng3d
 
             this.scene = scene || GameObject.create("scene").addComponent(Scene3D);
             this.camera = camera;
-            this.scene.gameObject.addChild(this.camera.gameObject);
 
             this.start();
 

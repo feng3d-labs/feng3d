@@ -7855,6 +7855,7 @@ declare namespace feng3d {
          * 摄像机
          */
         camera: Camera;
+        private _camera;
         /**
          * 3d场景
          */
