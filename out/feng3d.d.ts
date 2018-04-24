@@ -7082,6 +7082,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    enum ScriptFlag {
+        feng3d = 1,
+        editor = 2,
+        all = 255,
+    }
     /**
      * Behaviours are Components that can be enabled or disabled.
      *
@@ -7685,6 +7690,11 @@ declare namespace feng3d {
          */
         addComponent<T extends Component>(param: ComponentConstructor<T>, callback?: (component: T) => void): T;
         /**
+         * 添加脚本
+         * @param url   脚本路径
+         */
+        addScript(url: string): ScriptComponent;
+        /**
          * 判断是否拥有组件
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。
@@ -8023,11 +8033,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    enum ScriptFlag {
-        feng3d = 1,
-        editor = 2,
-        all = 255,
-    }
     /**
      * 3d对象脚本
      * @author feng 2017-03-11
@@ -10841,17 +10846,6 @@ declare namespace feng3d {
         createParticle: (name?: string) => GameObject;
         createCamera: (name?: string) => GameObject;
         createPointLight: (name?: string) => GameObject;
-    };
-}
-declare namespace feng3d {
-    var GameObjectUtil: {
-        addScript: (gameObject: GameObject, scriptPath: string, callback?: (scriptClass: new (scriptComponent: ScriptComponent) => Script) => void) => void;
-        removeScript: (gameObject: GameObject, script: string | ScriptComponent) => void;
-        reloadJS: (scriptPath: any) => void;
-        loadJs: (scriptPath: any, onload?: (resultScript: {
-            className: string;
-            script: HTMLScriptElement;
-        }) => void) => void;
     };
 }
 declare namespace feng3d {

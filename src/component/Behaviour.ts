@@ -1,5 +1,12 @@
 namespace feng3d
 {
+    export enum ScriptFlag
+    {
+        feng3d = 1 << 0,
+        editor = 1 << 1,
+        all = (1 << 8) - 1,
+    }
+    
     /**
      * Behaviours are Components that can be enabled or disabled.
      * 

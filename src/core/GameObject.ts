@@ -428,6 +428,17 @@ namespace feng3d
         }
 
         /**
+         * 添加脚本
+         * @param url   脚本路径
+         */
+        addScript(url: string)
+        {
+            var script = this.addComponent(ScriptComponent);
+            script.url = url;
+            return script;
+        }
+
+        /**
          * 判断是否拥有组件
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。

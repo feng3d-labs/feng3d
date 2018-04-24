@@ -231,7 +231,6 @@
         "src/debug/Trident.ts",
         //
         "src/utils/GameObjectFactory.ts",
-        "src/utils/GameObjectUtil.ts",
         //
         "src/core/Mouse3DManager.ts",
         //
