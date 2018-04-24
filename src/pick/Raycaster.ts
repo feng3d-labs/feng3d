@@ -48,7 +48,7 @@ namespace feng3d
     };
 
     /**
-     *获取射线穿过的实体
+     * 获取射线穿过的实体
      */
     function getPickingCollisionVO(entities: PickingCollisionVO[])
     {
@@ -70,39 +70,15 @@ namespace feng3d
         for (var i = 0; i < entities.length; ++i)
         {
             pickingCollisionVO = entities[i];
-            if (as3PickingCollider)
+            // If a collision exists, update the collision data and stop all checks.
+            if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && collidesBefore(pickingCollisionVO, shortestCollisionDistance))
             {
-                // If a collision exists, update the collision data and stop all checks.
-                if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && collidesBefore(pickingCollisionVO, shortestCollisionDistance))
-                {
-                    shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
-                    bestCollisionVO = pickingCollisionVO;
-                }
-            }
-            else if (bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)
-            { // A bounds collision with no triangle collider stops all checks.
-                // Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
-                // to enable the detection of a corresponsding triangle collision.
-                // Therefore, bounds collisions with a ray origin inside its bounds can be ignored
-                // if it has been established that there is NO triangle collider to test
-                if (!pickingCollisionVO.rayOriginIsInsideBounds)
-                {
-                    updateLocalPosition(pickingCollisionVO);
-                    return pickingCollisionVO;
-                }
+                shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
+                bestCollisionVO = pickingCollisionVO;
             }
         }
 
         return bestCollisionVO;
-    }
-
-    /**
-     * 更新碰撞本地坐标
-     * @param pickingCollisionVO
-     */
-    function updateLocalPosition(pickingCollisionVO: PickingCollisionVO)
-    {
-        pickingCollisionVO.localPosition = pickingCollisionVO.localRay.getPoint(pickingCollisionVO.rayEntryDistance);
     }
 
     /**
@@ -113,7 +89,7 @@ namespace feng3d
      */
     function collidesBefore(pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean
     {
-        var result = as3PickingCollider.raycastGeometry(pickingCollisionVO.geometry, pickingCollisionVO.localRay, shortestCollisionDistance, true);
+        var result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, true);
         if (result)
         {
             pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
@@ -125,5 +101,61 @@ namespace feng3d
         }
 
         return false;
+    }
+
+    /**
+	 * 拾取的碰撞数据
+	 */
+    export interface PickingCollisionVO
+    {
+		/**
+		 * 第一个穿过的物体
+		 */
+        gameObject: GameObject;
+
+		/**
+		 * 碰撞的uv坐标
+		 */
+        uv?: Vector2;
+
+		/**
+		 * 实体上碰撞本地坐标
+		 */
+        localPosition?: Vector3;
+
+		/**
+		 * 射线顶点到实体的距离
+		 */
+        rayEntryDistance: number;
+
+		/**
+		 * 本地坐标系射线
+		 */
+        localRay: Ray3D;
+
+		/**
+		 * 本地坐标碰撞法线
+		 */
+        localNormal: Vector3;
+
+		/**
+		 * 场景中碰撞射线
+		 */
+        ray3D: Ray3D;
+
+		/**
+		 * 射线坐标是否在边界内
+		 */
+        rayOriginIsInsideBounds: boolean;
+
+		/**
+		 * 碰撞三角形索引
+		 */
+        index?: number;
+
+		/**
+		 * 碰撞关联的渲染对象
+		 */
+        geometry: Geometry;
     }
 }

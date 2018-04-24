@@ -189,8 +189,6 @@
         "src/controllers/HoverController.ts",
         "src/controllers/FPSController.ts",
         //拾取
-        "src/pick/PickingCollisionVO.ts",
-        "src/pick/PickingCollider.ts",
         "src/pick/Raycaster.ts",
         //地形
         "src/terrain/TerrainGeometry.ts",
