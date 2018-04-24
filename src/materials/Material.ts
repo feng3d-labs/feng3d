@@ -115,7 +115,6 @@ namespace feng3d
         set pointSize(value)
         {
             this._pointSize = value;
-            this.createUniformData("u_PointSize", this.pointSize);
         }
         protected _pointSize = 1;
 
@@ -179,9 +178,10 @@ namespace feng3d
             this.createShaderParam("dfactor", () => this.dfactor);
             this.createShaderParam("depthtest", () => this.depthtest);
             this.createShaderParam("depthMask", () => this.depthMask);
-            
+
             this.createShaderParam("viewRect", () => this.viewRect);
             this.createShaderParam("useViewRect", () => this.useViewRect);
+            this.createUniformData("u_PointSize", () => this.pointSize);
         }
     }
 }

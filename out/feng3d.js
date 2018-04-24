@@ -18471,6 +18471,7 @@ var feng3d;
             _this.createShaderParam("depthMask", function () { return _this.depthMask; });
             _this.createShaderParam("viewRect", function () { return _this.viewRect; });
             _this.createShaderParam("useViewRect", function () { return _this.useViewRect; });
+            _this.createUniformData("u_PointSize", function () { return _this.pointSize; });
             return _this;
         }
         Object.defineProperty(Material.prototype, "renderMode", {
@@ -18558,7 +18559,6 @@ var feng3d;
             },
             set: function (value) {
                 this._pointSize = value;
-                this.createUniformData("u_PointSize", this.pointSize);
             },
             enumerable: true,
             configurable: true
@@ -20655,7 +20655,7 @@ var feng3d;
             /**
              * 是否开启
              */
-            _this.enable = false;
+            _this.enable = true;
             /**
              * 优先级
              */

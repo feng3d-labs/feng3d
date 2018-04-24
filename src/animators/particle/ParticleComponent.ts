@@ -13,7 +13,7 @@ namespace feng3d
         @oav()
         @serialize()
         @watch("invalidate")
-        enable = false;
+        enable = true;
 
         /**
          * 优先级
