@@ -5,11 +5,17 @@ namespace feng3d
 	 * 使用纯计算与实体相交
 	 */
     export var as3PickingCollider = {
-        testSubMeshCollision: testSubMeshCollision,
+        raycastGeometry: raycastGeometry,
     };
 
-    /** 是否查找最短距离碰撞 */
-    function testSubMeshCollision(geometry: Geometry, localRay: Ray3D, shortestCollisionDistance = 0, bothSides = true, findClosest = false)
+    /**
+     * 射线投影几何体
+     * @param geometry  几何体
+     * @param ray       射线
+     * @param shortestCollisionDistance     当前最短碰撞距离
+     * @param bothSides     是否检测双面
+     */
+    function raycastGeometry(geometry: Geometry, ray: Ray3D, shortestCollisionDistance = 0, bothSides = true)
     {
         var indices = geometry.indices;
         var positions = geometry.positions;
@@ -70,8 +76,8 @@ namespace feng3d
             nz *= nl;
 
             //初始化射线数据
-            var rayPosition: Vector3 = localRay.position;
-            var rayDirection: Vector3 = localRay.direction;
+            var rayPosition: Vector3 = ray.position;
+            var rayDirection: Vector3 = ray.direction;
 
             //计算射线与法线的点积，不等于零表示射线所在直线与三角面相交
             nDotV = nx * rayDirection.x + ny * +rayDirection.y + nz * rayDirection.z; // rayDirection . normal
@@ -118,10 +124,6 @@ namespace feng3d
                     }
                     result.localNormal = getCollisionNormal(indices, positions, index);
                     result.index = index;
-
-                    //是否继续寻找最优解
-                    if (!findClosest)
-                        return result;
                 }
             }
         }

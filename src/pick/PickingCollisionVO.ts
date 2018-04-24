@@ -1,6 +1,5 @@
 namespace feng3d
 {
-
 	/**
 	 * 拾取的碰撞数据
 	 */

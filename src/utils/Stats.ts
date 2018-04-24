@@ -15,6 +15,7 @@ interface Element
         position,
         top,
         width,
+        height,
         textAlign,
         opacity,
         left,

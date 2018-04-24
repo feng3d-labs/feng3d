@@ -104,6 +104,19 @@ namespace feng3d
             this.mouse3DManager = new Mouse3DManager(canvas);
         }
 
+        /**
+         * 修改canvas尺寸
+         * @param width 宽度
+         * @param height 高度
+         */
+        setSize(width: number, height: number)
+        {
+            this.canvas.width = width;
+            this.canvas.height = height;
+            this.canvas.style.width = width + 'px';
+            this.canvas.style.height = height + 'px';
+        }
+
         start()
         {
             ticker.onframe(this.update, this);

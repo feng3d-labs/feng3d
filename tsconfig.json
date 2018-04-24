@@ -191,7 +191,7 @@
         //拾取
         "src/pick/PickingCollisionVO.ts",
         "src/pick/PickingCollider.ts",
-        "src/pick/RaycastPicker.ts",
+        "src/pick/Raycaster.ts",
         //地形
         "src/terrain/TerrainGeometry.ts",
         "src/terrain/TerrainMethod.ts",

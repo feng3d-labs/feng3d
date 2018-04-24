@@ -564,6 +564,45 @@ namespace feng3d
             return this;
         }
 
+        applyMatrix41(m: Matrix4x4)
+        {
+            var x = this.x, y = this.y, z = this.z;
+            var e = m.rawData;
+
+            var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
+
+            this.x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
+            this.y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
+            this.z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
+
+            return this;
+        }
+
+        /**
+         * 应用四元素
+         * @param q 四元素
+         */
+        applyQuaternion(q: Quaternion)
+        {
+            var x = this.x, y = this.y, z = this.z;
+            var qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+
+            // calculate quat * vector
+
+            var ix = qw * x + qy * z - qz * y;
+            var iy = qw * y + qz * x - qx * z;
+            var iz = qw * z + qx * y - qy * x;
+            var iw = - qx * x - qy * y - qz * z;
+
+            // calculate result * inverse quat
+
+            this.x = ix * qw + iw * - qx + iy * - qz - iz * - qy;
+            this.y = iy * qw + iw * - qy + iz * - qx - ix * - qz;
+            this.z = iz * qw + iw * - qz + ix * - qy - iy * - qx;
+
+            return this;
+        }
+
         /**
          * 与点之间的距离平方
          * @param v 点

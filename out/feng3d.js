@@ -2884,6 +2884,33 @@ var feng3d;
             mat.transformVector(this, this);
             return this;
         };
+        Vector3.prototype.applyMatrix41 = function (m) {
+            var x = this.x, y = this.y, z = this.z;
+            var e = m.rawData;
+            var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
+            this.x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
+            this.y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
+            this.z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
+            return this;
+        };
+        /**
+         * 应用四元素
+         * @param q 四元素
+         */
+        Vector3.prototype.applyQuaternion = function (q) {
+            var x = this.x, y = this.y, z = this.z;
+            var qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+            // calculate quat * vector
+            var ix = qw * x + qy * z - qz * y;
+            var iy = qw * y + qz * x - qx * z;
+            var iz = qw * z + qx * y - qy * x;
+            var iw = -qx * x - qy * y - qz * z;
+            // calculate result * inverse quat
+            this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+            this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+            this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+            return this;
+        };
         /**
          * 与点之间的距离平方
          * @param v 点
@@ -13622,6 +13649,17 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 修改canvas尺寸
+         * @param width 宽度
+         * @param height 高度
+         */
+        Engine.prototype.setSize = function (width, height) {
+            this.canvas.width = width;
+            this.canvas.height = height;
+            this.canvas.style.width = width + 'px';
+            this.canvas.style.height = height + 'px';
+        };
         Engine.prototype.start = function () {
             feng3d.ticker.onframe(this.update, this);
         };
@@ -19600,13 +19638,18 @@ var feng3d;
      * 使用纯计算与实体相交
      */
     feng3d.as3PickingCollider = {
-        testSubMeshCollision: testSubMeshCollision,
+        raycastGeometry: raycastGeometry,
     };
-    /** 是否查找最短距离碰撞 */
-    function testSubMeshCollision(geometry, localRay, shortestCollisionDistance, bothSides, findClosest) {
+    /**
+     * 射线投影几何体
+     * @param geometry  几何体
+     * @param ray       射线
+     * @param shortestCollisionDistance     当前最短碰撞距离
+     * @param bothSides     是否检测双面
+     */
+    function raycastGeometry(geometry, ray, shortestCollisionDistance, bothSides) {
         if (shortestCollisionDistance === void 0) { shortestCollisionDistance = 0; }
         if (bothSides === void 0) { bothSides = true; }
-        if (findClosest === void 0) { findClosest = false; }
         var indices = geometry.indices;
         var positions = geometry.positions;
         var uvs = geometry.uvs;
@@ -19657,8 +19700,8 @@ var feng3d;
             ny *= nl;
             nz *= nl;
             //初始化射线数据
-            var rayPosition = localRay.position;
-            var rayDirection = localRay.direction;
+            var rayPosition = ray.position;
+            var rayDirection = ray.direction;
             //计算射线与法线的点积，不等于零表示射线所在直线与三角面相交
             nDotV = nx * rayDirection.x + ny * +rayDirection.y + nz * rayDirection.z; // rayDirection . normal
             //判断射线是否与三角面相交
@@ -19701,9 +19744,6 @@ var feng3d;
                     }
                     result.localNormal = getCollisionNormal(indices, positions, index);
                     result.index = index;
-                    //是否继续寻找最优解
-                    if (!findClosest)
-                        return result;
                 }
             }
         }
@@ -19770,35 +19810,44 @@ var feng3d;
      * 射线投射拾取器
      * @author feng 2014-4-29
      */
-    feng3d.raycastPicker = {
-        pick: pick
+    feng3d.raycaster = {
+        /**
+         * 获取射线穿过的实体
+         * @param ray3D 射线
+         * @param entitys 实体列表
+         * @return
+         */
+        pick: function (ray3D, entitys) {
+            var entities = [];
+            if (entitys.length == 0)
+                return null;
+            //与包围盒碰撞
+            entitys.forEach(function (entity) {
+                var boundingComponent = entity.getComponent(feng3d.BoundingComponent);
+                var pickingCollisionVO = boundingComponent && boundingComponent.isIntersectingRay(ray3D);
+                if (pickingCollisionVO)
+                    entities.push(pickingCollisionVO);
+            });
+            if (entities.length == 0)
+                return null;
+            return getPickingCollisionVO(entities);
+        },
+        /**
+         * 从摄像机发出射线
+         * @param coords 坐标
+         * @param camera 摄像机
+         * @param entitys 被检测对象
+         */
+        pickFromCamera: function (coords, camera, entitys) {
+            var ray = camera.getRay3D(coords.x, coords.y);
+            return feng3d.raycaster.pick(ray, entitys);
+        }
     };
-    /**
-     * 获取射线穿过的实体
-     * @param ray3D 射线
-     * @param entitys 实体列表
-     * @return
-     */
-    function pick(ray3D, entitys, findClosest) {
-        if (findClosest === void 0) { findClosest = false; }
-        var entities = [];
-        if (entitys.length == 0)
-            return null;
-        entitys.forEach(function (entity) {
-            var boundingComponent = entity.getComponent(feng3d.BoundingComponent);
-            var pickingCollisionVO = boundingComponent && boundingComponent.isIntersectingRay(ray3D);
-            if (pickingCollisionVO)
-                entities.push(pickingCollisionVO);
-        });
-        if (entities.length == 0)
-            return null;
-        return getPickingCollisionVO(entities, findClosest);
-    }
     /**
      *获取射线穿过的实体
      */
-    function getPickingCollisionVO(entities, findClosest) {
-        // Sort entities from closest to furthest.
+    function getPickingCollisionVO(entities) {
+        // 根据与包围盒距离进行排序
         entities = entities.sort(function (entity1, entity2) {
             return entity1.rayEntryDistance - entity2.rayEntryDistance;
         });
@@ -19809,18 +19858,13 @@ var feng3d;
         var shortestCollisionDistance = Number.MAX_VALUE;
         var bestCollisionVO = null;
         var pickingCollisionVO;
-        var i;
-        for (i = 0; i < entities.length; ++i) {
+        for (var i = 0; i < entities.length; ++i) {
             pickingCollisionVO = entities[i];
             if (feng3d.as3PickingCollider) {
                 // If a collision exists, update the collision data and stop all checks.
-                if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && collidesBefore(pickingCollisionVO, shortestCollisionDistance, findClosest)) {
+                if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && collidesBefore(pickingCollisionVO, shortestCollisionDistance)) {
                     shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
                     bestCollisionVO = pickingCollisionVO;
-                    if (!findClosest) {
-                        updateLocalPosition(pickingCollisionVO);
-                        return pickingCollisionVO;
-                    }
                 }
             }
             else if (bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) {
@@ -19849,16 +19893,14 @@ var feng3d;
      * @param findClosest 是否寻找最优碰撞
      * @return
      */
-    function collidesBefore(pickingCollisionVO, shortestCollisionDistance, findClosest) {
-        var result = feng3d.as3PickingCollider.testSubMeshCollision(pickingCollisionVO.geometry, pickingCollisionVO.localRay, shortestCollisionDistance, true, findClosest);
+    function collidesBefore(pickingCollisionVO, shortestCollisionDistance) {
+        var result = feng3d.as3PickingCollider.raycastGeometry(pickingCollisionVO.geometry, pickingCollisionVO.localRay, shortestCollisionDistance, true);
         if (result) {
             pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
             pickingCollisionVO.index = result.index;
             pickingCollisionVO.localNormal = result.localNormal;
             pickingCollisionVO.localPosition = result.localPosition;
             pickingCollisionVO.uv = result.uv;
-            //
-            shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
             return true;
         }
         return false;
@@ -24870,7 +24912,7 @@ var feng3d;
                 var pickingCollisionVO = null;
                 for (var i = 0; i < mouseCollisionEntitys.length; i++) {
                     var entitys = mouseCollisionEntitys[i].objects;
-                    pickingCollisionVO = feng3d.raycastPicker.pick(mouseRay3D, entitys);
+                    pickingCollisionVO = feng3d.raycaster.pick(mouseRay3D, entitys);
                     if (pickingCollisionVO)
                         break;
                 }

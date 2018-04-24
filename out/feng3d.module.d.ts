@@ -1029,6 +1029,7 @@ interface Element {
         position;
         top;
         width;
+        height;
         textAlign;
         opacity;
         left;
@@ -1497,6 +1498,12 @@ declare namespace feng3d {
          * @param mat 矩阵
          */
         applyMatrix4x4(mat: Matrix4x4): this;
+        applyMatrix41(m: Matrix4x4): this;
+        /**
+         * 应用四元素
+         * @param q 四元素
+         */
+        applyQuaternion(q: Quaternion): this;
         /**
          * 与点之间的距离平方
          * @param v 点
@@ -7882,6 +7889,12 @@ declare namespace feng3d {
          * @param camera    摄像机
          */
         constructor(canvas?: HTMLCanvasElement, scene?: Scene3D, camera?: Camera);
+        /**
+         * 修改canvas尺寸
+         * @param width 宽度
+         * @param height 高度
+         */
+        setSize(width: number, height: number): void;
         start(): void;
         stop(): void;
         update(): void;
@@ -9705,7 +9718,7 @@ declare namespace feng3d {
      * 使用纯计算与实体相交
      */
     var as3PickingCollider: {
-        testSubMeshCollision: (geometry: Geometry, localRay: Ray3D, shortestCollisionDistance?: number, bothSides?: boolean, findClosest?: boolean) => {
+        raycastGeometry: (geometry: Geometry, ray: Ray3D, shortestCollisionDistance?: number, bothSides?: boolean) => {
             rayEntryDistance: number;
             localPosition: Vector3;
             localNormal: Vector3;
@@ -9719,8 +9732,12 @@ declare namespace feng3d {
      * 射线投射拾取器
      * @author feng 2014-4-29
      */
-    var raycastPicker: {
-        pick: (ray3D: Ray3D, entitys: GameObject[], findClosest?: boolean) => PickingCollisionVO;
+    var raycaster: {
+        pick(ray3D: Ray3D, entitys: GameObject[]): PickingCollisionVO;
+        pickFromCamera(coords: {
+            x: number;
+            y: number;
+        }, camera: Camera, entitys: GameObject[]): PickingCollisionVO;
     };
 }
 declare namespace feng3d {

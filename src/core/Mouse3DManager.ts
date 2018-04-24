@@ -135,7 +135,7 @@ namespace feng3d
                 for (var i = 0; i < mouseCollisionEntitys.length; i++)
                 {
                     var entitys = mouseCollisionEntitys[i].objects;
-                    pickingCollisionVO = raycastPicker.pick(mouseRay3D, entitys);
+                    pickingCollisionVO = raycaster.pick(mouseRay3D, entitys);
                     if (pickingCollisionVO)
                         break;
                 }
