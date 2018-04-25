@@ -34,11 +34,7 @@ namespace feng3d
 
         constructor(component?: ScriptComponent)
         {
-            if (component)
-            {
-                this._component = component;
-                this.init();
-            }
+            this._component = component;
         }
 
         /**

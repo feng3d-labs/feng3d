@@ -46,6 +46,15 @@ namespace feng3d
                 addScript(this._url, (scriptClass) =>
                 {
                     this._script = new scriptClass(this);
+                    var scriptData = this.scriptData = this.scriptData || {};
+                    for (const key in scriptData)
+                    {
+                        if (scriptData.hasOwnProperty(key))
+                        {
+                            this._script[key] = scriptData[key];
+                        }
+                    }
+                    this._script.init();
                 });
             }
         }

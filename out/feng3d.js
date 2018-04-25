@@ -14333,6 +14333,13 @@ var feng3d;
             if (this._url && this.gameObject && feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
                 addScript(this._url, function (scriptClass) {
                     _this._script = new scriptClass(_this);
+                    var scriptData = _this.scriptData = _this.scriptData || {};
+                    for (var key in scriptData) {
+                        if (scriptData.hasOwnProperty(key)) {
+                            _this._script[key] = scriptData[key];
+                        }
+                    }
+                    _this._script.init();
                 });
             }
         };
@@ -14458,10 +14465,7 @@ var feng3d;
      */
     var Script = /** @class */ (function () {
         function Script(component) {
-            if (component) {
-                this._component = component;
-                this.init();
-            }
+            this._component = component;
         }
         Object.defineProperty(Script.prototype, "gameObject", {
             /**
