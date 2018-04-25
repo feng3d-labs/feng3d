@@ -178,9 +178,9 @@ namespace feng3d
 	 * 
 	 * @memberOf ObjectView
 	 */
-	function getObjectView(object: Object)
+	function getObjectView(object: Object, autocreate = true)
 	{
-		var classConfig = getObjectInfo(object);
+		var classConfig = getObjectInfo(object, autocreate);
 
 		if (classConfig.component == null || classConfig.component == "")
 		{
@@ -263,7 +263,7 @@ namespace feng3d
 	 * @param object
 	 * @return
 	 */
-	function getObjectInfo(object: Object): ObjectViewInfo
+	function getObjectInfo(object: Object, autocreate = true): ObjectViewInfo
 	{
 		if (typeof object == "string" || typeof object == "number" || typeof object == "boolean")
 		{
@@ -276,7 +276,14 @@ namespace feng3d
 			};
 		}
 
-		var classConfig = getInheritClassDefinition(object);
+		var classConfig = getInheritClassDefinition(object, autocreate);
+
+		classConfig = classConfig || {
+			component: "",
+			componentParam: null,
+			attributeDefinitionVec: [],
+			blockDefinitionVec: [],
+		};
 
 		var objectAttributeInfos: AttributeViewInfo[] = [];
 		classConfig.attributeDefinitionVec.forEach(attributeDefinition =>
@@ -313,7 +320,7 @@ namespace feng3d
 		return objectInfo;
 	}
 
-	function getInheritClassDefinition(object: Object)
+	function getInheritClassDefinition(object: Object, autocreate = true)
 	{
 		var classConfigVec: ClassDefinition[] = [];
 		var prototype = object;
@@ -332,7 +339,7 @@ namespace feng3d
 			{
 				mergeClassDefinition(resultclassConfig, classConfigVec[i]);
 			}
-		} else
+		} else if (autocreate)
 		{
 			resultclassConfig = getDefaultClassConfig(object);
 		}
@@ -438,7 +445,7 @@ namespace feng3d
 
 	export interface ObjectView
 	{
-		getObjectView: (object: Object) => any;
+		getObjectView: (object: Object, autocreate?: boolean) => any;
 		getAttributeView: (attributeViewInfo: AttributeViewInfo) => any;
 		getBlockView: (blockViewInfo: BlockViewInfo) => any;
 		/**
@@ -468,7 +475,7 @@ namespace feng3d
 		OBVComponent: {};
 		OVComponent: {};
 		addOAV<K extends keyof OAVComponentParam>(target: any, propertyKey: string, param?: { block?: string; component?: K; componentParam?: OAVComponentParam[K]; })
-		getObjectInfo(object: Object): ObjectViewInfo
+		getObjectInfo(object: Object, autocreate?: boolean): ObjectViewInfo
 	}
 
 	export interface OAVComponentParam

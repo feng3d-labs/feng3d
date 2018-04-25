@@ -32,6 +32,9 @@ namespace feng3d
     @ov({ component: "OVTransform" })
     export class Transform extends Component
     {
+
+        get single() { return true; }
+        
 		/**
 		 * 创建一个实体，该类为虚类
 		 */

@@ -154,7 +154,7 @@ declare namespace feng3d {
      */
     var objectview: ObjectView;
     interface ObjectView {
-        getObjectView: (object: Object) => any;
+        getObjectView: (object: Object, autocreate?: boolean) => any;
         getAttributeView: (attributeViewInfo: AttributeViewInfo) => any;
         getBlockView: (blockViewInfo: BlockViewInfo) => any;
         /**
@@ -187,7 +187,7 @@ declare namespace feng3d {
             component?: K;
             componentParam?: OAVComponentParam[K];
         }): any;
-        getObjectInfo(object: Object): ObjectViewInfo;
+        getObjectInfo(object: Object, autocreate?: boolean): ObjectViewInfo;
     }
     interface OAVComponentParam {
         属性组件名称: "属性组件参数";
@@ -7350,6 +7350,7 @@ declare namespace feng3d {
      * Every object in a scene has a Transform. It's used to store and manipulate the position, rotation and scale of the object. Every Transform can have a parent, which allows you to apply position, rotation and scale hierarchically. This is the hierarchy seen in the Hierarchy pane.
      */
     class Transform extends Component {
+        readonly single: boolean;
         /**
          * 创建一个实体，该类为虚类
          */
@@ -7795,6 +7796,7 @@ declare namespace feng3d {
      * 包围盒组件
      */
     class BoundingComponent extends Component {
+        readonly single: boolean;
         showInInspector: boolean;
         serializable: boolean;
         private _selfLocalBounds;
@@ -7838,6 +7840,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class RenderAtomicComponent extends Component {
+        readonly single: boolean;
         showInInspector: boolean;
         serializable: boolean;
         readonly renderAtomic: RenderAtomic;
@@ -8058,7 +8061,7 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
-        static addScript: (scriptPath: string, callback?: (scriptClass: new (component: ScriptComponent, runinit?: boolean) => Script) => void) => void;
+        static addScript: (scriptPath: string, callback?: (scriptClass: new (component?: ScriptComponent) => Script) => void) => void;
     }
 }
 declare namespace feng3d {
@@ -8079,7 +8082,7 @@ declare namespace feng3d {
          */
         readonly component: ScriptComponent;
         private _component;
-        constructor(component: ScriptComponent, runinit?: boolean);
+        constructor(component?: ScriptComponent);
         /**
          * Use this for initialization
          */

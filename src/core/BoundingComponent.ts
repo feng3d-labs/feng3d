@@ -5,6 +5,8 @@ namespace feng3d
      */
     export class BoundingComponent extends Component
     {
+        get single() { return true; }
+
         showInInspector = false;
         serializable = false;
 

@@ -678,7 +678,7 @@ namespace feng3d
             {
                 var compnent = value[i];
                 if (!compnent) continue;
-                this.removeComponentsByType(<any>compnent.constructor);
+                if (compnent.single) this.removeComponentsByType(<any>compnent.constructor);
                 this.addComponentAt(value[i], this.numComponents);
             }
             this._transform = <any>null;

@@ -308,8 +308,9 @@ var feng3d;
      *
      * @memberOf ObjectView
      */
-    function getObjectView(object) {
-        var classConfig = getObjectInfo(object);
+    function getObjectView(object, autocreate) {
+        if (autocreate === void 0) { autocreate = true; }
+        var classConfig = getObjectInfo(object, autocreate);
         if (classConfig.component == null || classConfig.component == "") {
             //返回基础类型界面类定义
             if (!(classConfig.owner instanceof Object)) {
@@ -376,7 +377,8 @@ var feng3d;
      * @param object
      * @return
      */
-    function getObjectInfo(object) {
+    function getObjectInfo(object, autocreate) {
+        if (autocreate === void 0) { autocreate = true; }
         if (typeof object == "string" || typeof object == "number" || typeof object == "boolean") {
             return {
                 objectAttributeInfos: [],
@@ -386,7 +388,13 @@ var feng3d;
                 componentParam: undefined
             };
         }
-        var classConfig = getInheritClassDefinition(object);
+        var classConfig = getInheritClassDefinition(object, autocreate);
+        classConfig = classConfig || {
+            component: "",
+            componentParam: null,
+            attributeDefinitionVec: [],
+            blockDefinitionVec: [],
+        };
         var objectAttributeInfos = [];
         classConfig.attributeDefinitionVec.forEach(function (attributeDefinition) {
             objectAttributeInfos.push({
@@ -415,7 +423,8 @@ var feng3d;
         };
         return objectInfo;
     }
-    function getInheritClassDefinition(object) {
+    function getInheritClassDefinition(object, autocreate) {
+        if (autocreate === void 0) { autocreate = true; }
         var classConfigVec = [];
         var prototype = object;
         while (prototype) {
@@ -431,7 +440,7 @@ var feng3d;
                 mergeClassDefinition(resultclassConfig, classConfigVec[i]);
             }
         }
-        else {
+        else if (autocreate) {
             resultclassConfig = getDefaultClassConfig(object);
         }
         return resultclassConfig;
@@ -12176,6 +12185,11 @@ var feng3d;
             _this._sz = 1;
             return _this;
         }
+        Object.defineProperty(Transform.prototype, "single", {
+            get: function () { return true; },
+            enumerable: true,
+            configurable: true
+        });
         Transform.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
         };
@@ -13333,7 +13347,8 @@ var feng3d;
                     var compnent = value[i];
                     if (!compnent)
                         continue;
-                    this.removeComponentsByType(compnent.constructor);
+                    if (compnent.single)
+                        this.removeComponentsByType(compnent.constructor);
                     this.addComponentAt(value[i], this.numComponents);
                 }
                 this._transform = null;
@@ -13440,6 +13455,11 @@ var feng3d;
             _this.serializable = false;
             return _this;
         }
+        Object.defineProperty(BoundingComponent.prototype, "single", {
+            get: function () { return true; },
+            enumerable: true,
+            configurable: true
+        });
         BoundingComponent.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
             gameObject.on("boundsInvalid", this.onBoundsChange, this);
@@ -13561,6 +13581,11 @@ var feng3d;
             _this.changefuncs = [];
             return _this;
         }
+        Object.defineProperty(RenderAtomicComponent.prototype, "single", {
+            get: function () { return true; },
+            enumerable: true,
+            configurable: true
+        });
         RenderAtomicComponent.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
             feng3d.renderdatacollector.collectRenderDataHolder(this.gameObject, this.renderAtomic);
@@ -14426,18 +14451,19 @@ var feng3d;
      * 3d对象脚本
      */
     var Script = /** @class */ (function () {
-        function Script(component, runinit) {
-            if (runinit === void 0) { runinit = true; }
-            feng3d.assert(!!component);
-            this._component = component;
-            if (runinit)
+        function Script(component) {
+            if (component) {
+                this._component = component;
                 this.init();
+            }
         }
         Object.defineProperty(Script.prototype, "gameObject", {
             /**
              * The game object this component is attached to. A component is always attached to a game object.
              */
             get: function () {
+                if (!this._component)
+                    return null;
                 return this._component.gameObject;
             },
             enumerable: true,
@@ -14448,6 +14474,8 @@ var feng3d;
              * The Transform attached to this GameObject (null if there is none attached).
              */
             get: function () {
+                if (!this._component)
+                    return null;
                 return this.gameObject.transform;
             },
             enumerable: true,

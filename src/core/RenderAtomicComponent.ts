@@ -4,6 +4,9 @@ namespace feng3d
 
     export class RenderAtomicComponent extends Component
     {
+
+        get single() { return true; }
+        
         showInInspector = false;
         serializable = false;
         

@@ -10,6 +10,7 @@ namespace feng3d
          */
         get gameObject()
         {
+            if (!this._component) return null;
             return this._component.gameObject;
         }
 
@@ -18,6 +19,7 @@ namespace feng3d
          */
         get transform()
         {
+            if (!this._component) return null;
             return this.gameObject.transform;
         }
 
@@ -30,12 +32,13 @@ namespace feng3d
         }
         private _component: ScriptComponent;
 
-        constructor(component: ScriptComponent, runinit = true)
+        constructor(component?: ScriptComponent)
         {
-            assert(!!component);
-            this._component = component;
-            if (runinit)
+            if (component)
+            {
+                this._component = component;
                 this.init();
+            }
         }
 
         /**
