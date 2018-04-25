@@ -8042,6 +8042,7 @@ declare namespace feng3d {
          * 脚本对象
          */
         private _script;
+        scriptData: Object;
         /**
          * 脚本路径
          */
@@ -8057,6 +8058,7 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
+        static addScript: (scriptPath: string, callback?: (scriptClass: new (scriptComponent: ScriptComponent) => Script) => void) => void;
     }
 }
 declare namespace feng3d {

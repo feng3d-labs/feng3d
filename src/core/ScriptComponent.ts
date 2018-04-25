@@ -11,6 +11,9 @@ namespace feng3d
          */
         private _script: Script;
 
+        @serialize()
+        scriptData: Object;
+
         /**
          * 脚本路径
          */
@@ -40,7 +43,7 @@ namespace feng3d
         {
             if (this._url && this.gameObject && runEnvironment == RunEnvironment.feng3d)
             {
-                addScript(this.gameObject, this._url, (scriptClass) =>
+                addScript(this._url, (scriptClass) =>
                 {
                     this._script = new scriptClass(this);
                 });
@@ -65,11 +68,13 @@ namespace feng3d
             this._script = null;
             super.dispose();
         }
+
+        static addScript: (scriptPath: string, callback?: (scriptClass: new (scriptComponent: ScriptComponent) => Script) => void) => void = addScript;
     }
 
     var resultScriptCache: { [path: string]: { className: string, script: HTMLScriptElement } } = {};
 
-    function addScript(gameObject: GameObject, scriptPath: string, callback?: (scriptClass: new (scriptComponent: ScriptComponent) => Script) => void)
+    function addScript(scriptPath: string, callback?: (scriptClass: new (scriptComponent: ScriptComponent) => Script) => void)
     {
         var jspath = scriptPath.replace(/\.ts\b/, ".js");
         loadJs(jspath, (resultScript) =>

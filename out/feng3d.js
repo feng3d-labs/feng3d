@@ -14300,7 +14300,7 @@ var feng3d;
         ScriptComponent.prototype.initScript = function () {
             var _this = this;
             if (this._url && this.gameObject && feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
-                addScript(this.gameObject, this._url, function (scriptClass) {
+                addScript(this._url, function (scriptClass) {
                     _this._script = new scriptClass(_this);
                 });
             }
@@ -14320,6 +14320,10 @@ var feng3d;
             this._script = null;
             _super.prototype.dispose.call(this);
         };
+        ScriptComponent.addScript = addScript;
+        __decorate([
+            feng3d.serialize()
+        ], ScriptComponent.prototype, "scriptData", void 0);
         __decorate([
             feng3d.oav({ componentParam: { dragparam: { accepttype: "file_script" }, textEnabled: false } }),
             feng3d.serialize()
@@ -14328,7 +14332,7 @@ var feng3d;
     }(feng3d.Behaviour));
     feng3d.ScriptComponent = ScriptComponent;
     var resultScriptCache = {};
-    function addScript(gameObject, scriptPath, callback) {
+    function addScript(scriptPath, callback) {
         var jspath = scriptPath.replace(/\.ts\b/, ".js");
         loadJs(jspath, function (resultScript) {
             var windowEval = eval.bind(window);
