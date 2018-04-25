@@ -124,7 +124,7 @@ namespace feng3d
 
     function loadJs(scriptPath, onload?: (resultScript: { className: string, script: HTMLScriptElement }) => void)
     {
-        if (resultScriptCache[scriptPath])
+        if (resultScriptCache[scriptPath] && runEnvironment != RunEnvironment.editor)
         {
             onload && onload(resultScriptCache[scriptPath]);
             return;

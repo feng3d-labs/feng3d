@@ -14399,7 +14399,7 @@ var feng3d;
         loadJs(scriptPath);
     }
     function loadJs(scriptPath, onload) {
-        if (resultScriptCache[scriptPath]) {
+        if (resultScriptCache[scriptPath] && feng3d.runEnvironment != feng3d.RunEnvironment.editor) {
             onload && onload(resultScriptCache[scriptPath]);
             return;
         }
@@ -21441,9 +21441,11 @@ var feng3d;
             request.onsuccess = function (event) {
                 databases[dbname] = event.target["result"];
                 callback(null, databases[dbname]);
+                request.onsuccess = null;
             };
             request.onerror = function (event) {
                 callback(event, null);
+                request.onerror = null;
             };
         },
         deleteDatabase: function (dbname, callback) {
@@ -21451,9 +21453,11 @@ var feng3d;
             request.onsuccess = function (event) {
                 delete databases[dbname];
                 callback && callback(null);
+                request.onsuccess = null;
             };
             request.onerror = function (event) {
                 callback && callback(event);
+                request.onerror = null;
             };
         },
         hasObjectStore: function (dbname, objectStroreName, callback) {
@@ -21482,13 +21486,16 @@ var feng3d;
                     var newdatabase = event.target["result"];
                     newdatabase.createObjectStore(objectStroreName);
                     callback && callback(null);
+                    request.onupgradeneeded = null;
                 };
                 request.onsuccess = function (event) {
                     var newdatabase = event.target["result"];
                     databases[newdatabase.name] = newdatabase;
+                    request.onsuccess = null;
                 };
                 request.onerror = function (event) {
                     callback && callback(event);
+                    request.onerror = null;
                 };
             });
         },
@@ -21504,13 +21511,16 @@ var feng3d;
                     var newdatabase = event.target["result"];
                     newdatabase.deleteObjectStore(objectStroreName);
                     callback && callback(null);
+                    request.onupgradeneeded = null;
                 };
                 request.onsuccess = function (event) {
                     var newdatabase = event.target["result"];
                     databases[newdatabase.name] = newdatabase;
+                    request.onsuccess = null;
                 };
                 request.onerror = function (event) {
                     callback && callback(event);
+                    request.onerror = null;
                 };
             });
         },
@@ -21522,6 +21532,7 @@ var feng3d;
                     var request = objectStore.getAllKeys();
                     request.onsuccess = function (event) {
                         callback && callback(null, event.target["result"]);
+                        request.onsuccess = null;
                     };
                 }
                 catch (error) {
@@ -21537,6 +21548,7 @@ var feng3d;
                     var request = objectStore.get(key);
                     request.onsuccess = function (event) {
                         callback && callback(null, event.target["result"]);
+                        request.onsuccess = null;
                     };
                 }
                 catch (error) {
@@ -21552,6 +21564,7 @@ var feng3d;
                     var request = objectStore.put(data, key);
                     request.onsuccess = function (event) {
                         callback && callback(null);
+                        request.onsuccess = null;
                     };
                 }
                 catch (error) {
@@ -21567,6 +21580,7 @@ var feng3d;
                     var request = objectStore.delete(key);
                     request.onsuccess = function (event) {
                         callback && callback();
+                        request.onsuccess = null;
                     };
                 }
                 catch (error) {
@@ -21582,6 +21596,7 @@ var feng3d;
                     var request = objectStore.clear();
                     request.onsuccess = function (event) {
                         callback && callback();
+                        request.onsuccess = null;
                     };
                 }
                 catch (error) {

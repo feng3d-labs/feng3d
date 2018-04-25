@@ -35,10 +35,12 @@ namespace feng3d
             {
                 databases[dbname] = event.target["result"];
                 callback(null, databases[dbname]);
+                request.onsuccess = null;
             };
             request.onerror = function (event)
             {
                 callback(event, <any>null);
+                request.onerror = null;
             };
         },
         deleteDatabase(dbname: string, callback?: (err) => void)
@@ -48,10 +50,12 @@ namespace feng3d
             {
                 delete databases[dbname];
                 callback && callback(null);
+                request.onsuccess = null;
             };
             request.onerror = function (event)
             {
                 callback && callback(event);
+                request.onerror = null;
             };
         },
         hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void)
@@ -89,15 +93,18 @@ namespace feng3d
                     var newdatabase: IDBDatabase = event.target["result"];
                     newdatabase.createObjectStore(objectStroreName);
                     callback && callback(null);
+                    request.onupgradeneeded = null;
                 }
                 request.onsuccess = function (event)
                 {
                     var newdatabase: IDBDatabase = event.target["result"];
                     databases[newdatabase.name] = newdatabase;
+                    request.onsuccess = null;
                 }
                 request.onerror = function (event)
                 {
                     callback && callback(event);
+                    request.onerror = null;
                 };
             });
         },
@@ -117,15 +124,18 @@ namespace feng3d
                     var newdatabase: IDBDatabase = event.target["result"];
                     newdatabase.deleteObjectStore(objectStroreName);
                     callback && callback(null);
+                    request.onupgradeneeded = null;
                 }
                 request.onsuccess = function (event)
                 {
                     var newdatabase: IDBDatabase = event.target["result"];
                     databases[newdatabase.name] = newdatabase;
+                    request.onsuccess = null;
                 }
                 request.onerror = function (event)
                 {
                     callback && callback(event);
+                    request.onerror = null;
                 };
             });
         },
@@ -141,6 +151,7 @@ namespace feng3d
                     request.onsuccess = function (event)
                     {
                         callback && callback(null, event.target["result"]);
+                        request.onsuccess = null;
                     };
                 } catch (error)
                 {
@@ -160,6 +171,7 @@ namespace feng3d
                     request.onsuccess = function (event)
                     {
                         callback && callback(null, event.target["result"]);
+                        request.onsuccess = null;
                     };
                 } catch (error)
                 {
@@ -179,6 +191,7 @@ namespace feng3d
                     request.onsuccess = function (event)
                     {
                         callback && callback(null);
+                        request.onsuccess = null;
                     };
                 } catch (error)
                 {
@@ -198,6 +211,7 @@ namespace feng3d
                     request.onsuccess = function (event)
                     {
                         callback && callback();
+                        request.onsuccess = null;
                     };
                 } catch (error)
                 {
@@ -217,6 +231,7 @@ namespace feng3d
                     request.onsuccess = function (event)
                     {
                         callback && callback();
+                        request.onsuccess = null;
                     };
                 } catch (error)
                 {
