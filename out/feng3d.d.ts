@@ -8058,7 +8058,7 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
-        static addScript: (scriptPath: string, callback?: (scriptClass: new (scriptComponent: ScriptComponent) => Script) => void) => void;
+        static addScript: (scriptPath: string, callback?: (scriptClass: new (component: ScriptComponent, runinit?: boolean) => Script) => void) => void;
     }
 }
 declare namespace feng3d {
@@ -8079,7 +8079,7 @@ declare namespace feng3d {
          */
         readonly component: ScriptComponent;
         private _component;
-        constructor(component: ScriptComponent);
+        constructor(component: ScriptComponent, runinit?: boolean);
         /**
          * Use this for initialization
          */

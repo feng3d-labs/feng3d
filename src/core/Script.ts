@@ -30,11 +30,12 @@ namespace feng3d
         }
         private _component: ScriptComponent;
 
-        constructor(component: ScriptComponent)
+        constructor(component: ScriptComponent, runinit = true)
         {
             assert(!!component);
             this._component = component;
-            this.init();
+            if (runinit)
+                this.init();
         }
 
         /**

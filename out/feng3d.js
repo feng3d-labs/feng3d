@@ -14426,10 +14426,12 @@ var feng3d;
      * 3d对象脚本
      */
     var Script = /** @class */ (function () {
-        function Script(component) {
+        function Script(component, runinit) {
+            if (runinit === void 0) { runinit = true; }
             feng3d.assert(!!component);
             this._component = component;
-            this.init();
+            if (runinit)
+                this.init();
         }
         Object.defineProperty(Script.prototype, "gameObject", {
             /**

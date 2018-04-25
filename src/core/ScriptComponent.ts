@@ -69,12 +69,12 @@ namespace feng3d
             super.dispose();
         }
 
-        static addScript: (scriptPath: string, callback?: (scriptClass: new (scriptComponent: ScriptComponent) => Script) => void) => void = addScript;
+        static addScript: (scriptPath: string, callback?: (scriptClass: new (component: ScriptComponent, runinit?: boolean) => Script) => void) => void = addScript;
     }
 
     var resultScriptCache: { [path: string]: { className: string, script: HTMLScriptElement } } = {};
 
-    function addScript(scriptPath: string, callback?: (scriptClass: new (scriptComponent: ScriptComponent) => Script) => void)
+    function addScript(scriptPath: string, callback?: (scriptClass: new (component: ScriptComponent, runinit?: boolean) => Script) => void)
     {
         var jspath = scriptPath.replace(/\.ts\b/, ".js");
         loadJs(jspath, (resultScript) =>
