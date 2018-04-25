@@ -7286,19 +7286,25 @@ var feng3d;
             this.b = (color & 0xff) / 0xff;
             return this;
         };
-        Color.prototype.toInt = function () {
-            var value = (this.a * 0xff) << 24 + (this.r * 0xff) << 16 + (this.g * 0xff) << 8 + (this.b * 0xff);
+        Color.prototype.toInt = function (hasAlpha) {
+            if (hasAlpha === void 0) { hasAlpha = false; }
+            var value = ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
+            if (hasAlpha)
+                value += ((this.a * 0xff) << 24);
             return value;
         };
         /**
          * 输出16进制字符串
          */
-        Color.prototype.toHexString = function () {
+        Color.prototype.toHexString = function (hasAlpha) {
+            if (hasAlpha === void 0) { hasAlpha = false; }
             var intR = (this.r * 0xff) | 0;
             var intG = (this.g * 0xff) | 0;
             var intB = (this.b * 0xff) | 0;
             var intA = (this.a * 0xff) | 0;
-            return "#" + Color.ToHex(intA) + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
+            if (hasAlpha)
+                return "#" + Color.ToHex(intA) + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
+            return "#" + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
         };
         /**
          * 混合颜色

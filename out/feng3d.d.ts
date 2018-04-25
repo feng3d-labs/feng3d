@@ -3554,11 +3554,11 @@ declare namespace feng3d {
          * @param hasAlpha
          */
         fromUnit(color: number, hasAlpha?: boolean): this;
-        toInt(): number;
+        toInt(hasAlpha?: boolean): number;
         /**
          * 输出16进制字符串
          */
-        toHexString(): string;
+        toHexString(hasAlpha?: boolean): string;
         /**
          * 混合颜色
          * @param color 混入的颜色

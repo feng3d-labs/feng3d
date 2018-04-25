@@ -71,23 +71,27 @@ namespace feng3d
             return this;
         }
 
-        toInt()
+        toInt(hasAlpha = false)
         {
-            var value = (this.a * 0xff) << 24 + (this.r * 0xff) << 16 + (this.g * 0xff) << 8 + (this.b * 0xff);
+            var value = ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
+            if (hasAlpha)
+                value += ((this.a * 0xff) << 24);
             return value;
         }
 
         /**
          * 输出16进制字符串
          */
-        toHexString(): string
+        toHexString(hasAlpha = false): string
         {
             var intR = (this.r * 0xff) | 0;
             var intG = (this.g * 0xff) | 0;
             var intB = (this.b * 0xff) | 0;
             var intA = (this.a * 0xff) | 0;
 
-            return "#" + Color.ToHex(intA) + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
+            if (hasAlpha)
+                return "#" + Color.ToHex(intA) + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
+            return "#" + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
         }
 
         /**
