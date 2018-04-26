@@ -10,9 +10,12 @@ namespace feng3d
         {
             indexedDBfs.readFile(url, (err, data) =>
             {
-                if (!err)
+                if (data)
                 {
                     dataTransform.arrayBufferToImage(data, callback);
+                }else
+                {
+                    callback(null);
                 }
             });
         }

@@ -10231,7 +10231,7 @@ declare namespace feng3d {
     }
     class Assets implements IAssets {
         fstype: FSType;
-        private getAssets();
+        private getAssets(url);
         /**
          * 加载图片
          * @param url 图片路径

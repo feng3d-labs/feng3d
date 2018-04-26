@@ -27,11 +27,13 @@ namespace feng3d
     {
         fstype = FSType.http;
 
-        private getAssets()
+        private getAssets(url: string)
         {
+            if (url.indexOf("http://") != -1)
+                return assetsmap[FSType.http];
             return assetsmap[this.fstype];
         }
-        
+
         /**
          * 加载图片
          * @param url 图片路径
@@ -39,7 +41,14 @@ namespace feng3d
          */
         loadImage(url: string, callback: (img: HTMLImageElement) => void)
         {
-            this.getAssets().loadImage(url, callback);
+            this.getAssets(url).loadImage(url, (img) =>
+            {
+                if (!img)
+                {
+                    console.warn(`无法加载资源：${url}`);
+                }
+                callback(img);
+            });
         }
     }
 

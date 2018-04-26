@@ -21434,7 +21434,9 @@ var feng3d;
         function Assets() {
             this.fstype = FSType.http;
         }
-        Assets.prototype.getAssets = function () {
+        Assets.prototype.getAssets = function (url) {
+            if (url.indexOf("http://") != -1)
+                return feng3d.assetsmap[FSType.http];
             return feng3d.assetsmap[this.fstype];
         };
         /**
@@ -21443,7 +21445,12 @@ var feng3d;
          * @param callback 加载完成回调
          */
         Assets.prototype.loadImage = function (url, callback) {
-            this.getAssets().loadImage(url, callback);
+            this.getAssets(url).loadImage(url, function (img) {
+                if (!img) {
+                    console.warn("\u65E0\u6CD5\u52A0\u8F7D\u8D44\u6E90\uFF1A" + url);
+                }
+                callback(img);
+            });
         };
         return Assets;
     }());
@@ -21673,8 +21680,11 @@ var feng3d;
         }
         IndexedDBAssets.prototype.loadImage = function (url, callback) {
             feng3d.indexedDBfs.readFile(url, function (err, data) {
-                if (!err) {
+                if (data) {
                     feng3d.dataTransform.arrayBufferToImage(data, callback);
+                }
+                else {
+                    callback(null);
                 }
             });
         };
