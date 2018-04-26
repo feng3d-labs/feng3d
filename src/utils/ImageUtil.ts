@@ -9,16 +9,7 @@ namespace feng3d
          */
         loadImage(url: string, callback: (image: HTMLImageElement) => void) 
         {
-            var image = new Image();
-            image.crossOrigin = "Anonymous";
-            image.addEventListener("load", onHeightMapLoad);
-            image.src = url;
-
-            function onHeightMapLoad()
-            {
-                image.removeEventListener("load", onHeightMapLoad);
-                callback && callback(image);
-            }
+            assets.loadImage(url, callback);
         },
         /**
          * 获取图片数据

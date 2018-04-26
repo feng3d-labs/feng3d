@@ -1,18 +1,24 @@
 namespace feng3d
 {
-    /**
-     * 文件系统类型
-     */
-    export enum FSType
-    {
-        http = "http",
-        native = "native",
-        indexedDB = "indexedDB"
-    }
-    export var fstype = FSType.http;
-
     export var DBname = "feng3d-editor";
     export var projectname = "testproject";
+    export var indexedDBAssets: IndexedDBAssets;
+
+    export class IndexedDBAssets implements IAssets
+    {
+        loadImage(url: string, callback: (img: HTMLImageElement) => void): void
+        {
+            indexedDBfs.readFile(url, (err, data) =>
+            {
+                if (!err)
+                {
+                    dataTransform.arrayBufferToImage(data, callback);
+                }
+            });
+        }
+    }
+
+    assetsmap[FSType.indexedDB] = indexedDBAssets = new IndexedDBAssets();
 
     function set(key: string | number, data: {
         isDirectory: boolean,
@@ -216,7 +222,7 @@ namespace feng3d
         {
             get(path, (err, data) =>
             {
-                callback(err, data.data);
+                callback(null, data ? data.data : null);
             });
         },
         mkdir(path: string, callback: (err: Error | null) => void): void

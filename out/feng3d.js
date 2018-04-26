@@ -1424,18 +1424,26 @@ var feng3d;
          * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
          */
         dataURLDrawCanvas: function (dataurl, canvas, callback) {
+            feng3d.dataTransform.dataURLToImage(dataurl, function (img) {
+                // canvas.drawImage(img);
+                callback(img);
+            });
+        },
+        arrayBufferToDataURL: function (arrayBuffer, callback) {
+            feng3d.dataTransform.arrayBufferToBlob(arrayBuffer, function (blob) {
+                feng3d.dataTransform.blobToDataURL(blob, callback);
+            });
+        },
+        dataURLToImage: function (dataurl, callback) {
             var img = new Image();
             img.onload = function () {
-                // canvas.drawImage(img);
                 callback(img);
             };
             img.src = dataurl;
         },
-        arrayBufferToDataURL: function (arrayBuffer, callback) {
-            feng3d.dataTransform.arrayBufferToBlob(arrayBuffer, function (blob) {
-                feng3d.dataTransform.blobToDataURL(blob, function (dataurl) {
-                    callback(dataurl);
-                });
+        arrayBufferToImage: function (arrayBuffer, callback) {
+            feng3d.dataTransform.arrayBufferToDataURL(arrayBuffer, function (dataurl) {
+                feng3d.dataTransform.dataURLToImage(dataurl, callback);
             });
         },
         blobToText: function (blob, callback) {
@@ -1463,7 +1471,7 @@ var feng3d;
             }).join('');
             var str = decodeURIComponent(escape(utf8));
             callback(str);
-        }
+        },
     };
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -1656,14 +1664,7 @@ var feng3d;
          * @param callback 加载完成回调
          */
         loadImage: function (url, callback) {
-            var image = new Image();
-            image.crossOrigin = "Anonymous";
-            image.addEventListener("load", onHeightMapLoad);
-            image.src = url;
-            function onHeightMapLoad() {
-                image.removeEventListener("load", onHeightMapLoad);
-                callback && callback(image);
-            }
+            feng3d.assets.loadImage(url, callback);
         },
         /**
          * 获取图片数据
@@ -14404,7 +14405,7 @@ var feng3d;
             return;
         }
         var resultScript = {};
-        if (feng3d.fstype == feng3d.FSType.http) {
+        if (feng3d.assets.fstype == feng3d.FSType.http) {
             var loadPath = scriptPath + ("?version=" + Math.random());
             feng3d.Loader.loadText(loadPath, function (content) {
                 // var reg = /var ([a-zA-Z0-9_$]+) = \/\*\* @class \*\//;
@@ -14434,7 +14435,7 @@ var feng3d;
                 head.appendChild(script);
             });
         }
-        else if (feng3d.fstype == feng3d.FSType.indexedDB) {
+        else if (feng3d.assets.fstype == feng3d.FSType.indexedDB) {
             feng3d.storage.get(feng3d.DBname, feng3d.projectname, scriptPath, function (err, data) {
                 var content = data.data;
                 // var reg = /var ([a-zA-Z0-9_$]+) = \/\*\* @class \*\//;
@@ -18222,10 +18223,6 @@ var feng3d;
             var _this = _super.call(this) || this;
             _this._url = "";
             _this._textureType = feng3d.TextureType.TEXTURE_2D;
-            _this._pixels = new Image();
-            _this._pixels.crossOrigin = "Anonymous";
-            _this._pixels.addEventListener("load", _this.onLoad.bind(_this));
-            _this._pixels.addEventListener("error", _this.onLoad.bind(_this));
             _this.url = url;
             return _this;
         }
@@ -18234,10 +18231,17 @@ var feng3d;
                 return this._url;
             },
             set: function (value) {
+                var _this = this;
                 if (this._url == value)
                     return;
                 this._url = value;
-                this._pixels.src = value;
+                var url = this._url;
+                feng3d.assets.loadImage(url, function (img) {
+                    if (url == _this._url) {
+                        _this._pixels = img;
+                        _this.onLoad();
+                    }
+                });
             },
             enumerable: true,
             configurable: true
@@ -18247,6 +18251,8 @@ var feng3d;
              * 纹理尺寸
              */
             get: function () {
+                if (!this._pixels)
+                    new feng3d.Vector2(1, 1);
                 return new feng3d.Vector2(this._pixels.width, this._pixels.height);
             },
             enumerable: true,
@@ -21414,7 +21420,59 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.assets = {};
+    /**
+     * 文件系统类型
+     */
+    var FSType;
+    (function (FSType) {
+        FSType["http"] = "http";
+        FSType["native"] = "native";
+        FSType["indexedDB"] = "indexedDB";
+    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
+    feng3d.assetsmap = feng3d.assetsmap || {};
+    var Assets = /** @class */ (function () {
+        function Assets() {
+            this.fstype = FSType.http;
+        }
+        Assets.prototype.getAssets = function () {
+            return feng3d.assetsmap[this.fstype];
+        };
+        /**
+         * 加载图片
+         * @param url 图片路径
+         * @param callback 加载完成回调
+         */
+        Assets.prototype.loadImage = function (url, callback) {
+            this.getAssets().loadImage(url, callback);
+        };
+        return Assets;
+    }());
+    feng3d.Assets = Assets;
+    feng3d.assets = new Assets();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var HttpAssets = /** @class */ (function () {
+        function HttpAssets() {
+        }
+        /**
+         * 加载图片
+         * @param url 图片路径
+         * @param callback 加载完成回调
+         */
+        HttpAssets.prototype.loadImage = function (url, callback) {
+            var image = new Image();
+            image.crossOrigin = "Anonymous";
+            image.onload = function () {
+                callback && callback(image);
+                image.onload = null;
+            };
+            image.src = url;
+        };
+        return HttpAssets;
+    }());
+    feng3d.HttpAssets = HttpAssets;
+    feng3d.assetsmap[feng3d.FSType.http] = feng3d.httpAssets = new HttpAssets();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -21608,18 +21666,22 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 文件系统类型
-     */
-    var FSType;
-    (function (FSType) {
-        FSType["http"] = "http";
-        FSType["native"] = "native";
-        FSType["indexedDB"] = "indexedDB";
-    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
-    feng3d.fstype = FSType.http;
     feng3d.DBname = "feng3d-editor";
     feng3d.projectname = "testproject";
+    var IndexedDBAssets = /** @class */ (function () {
+        function IndexedDBAssets() {
+        }
+        IndexedDBAssets.prototype.loadImage = function (url, callback) {
+            feng3d.indexedDBfs.readFile(url, function (err, data) {
+                if (!err) {
+                    feng3d.dataTransform.arrayBufferToImage(data, callback);
+                }
+            });
+        };
+        return IndexedDBAssets;
+    }());
+    feng3d.IndexedDBAssets = IndexedDBAssets;
+    feng3d.assetsmap[feng3d.FSType.indexedDB] = feng3d.indexedDBAssets = new IndexedDBAssets();
     function set(key, data, callback) {
         feng3d.storage.set(feng3d.DBname, feng3d.projectname, key, data, callback);
     }
@@ -21762,7 +21824,7 @@ var feng3d;
          */
         readFile: function (path, callback) {
             get(path, function (err, data) {
-                callback(err, data.data);
+                callback(null, data ? data.data : null);
             });
         },
         mkdir: function (path, callback) {

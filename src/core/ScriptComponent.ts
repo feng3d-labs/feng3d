@@ -131,7 +131,7 @@ namespace feng3d
         }
 
         var resultScript: { className: string, script: HTMLScriptElement } = <any>{};
-        if (fstype == FSType.http)
+        if (assets.fstype == FSType.http)
         {
             var loadPath = scriptPath + `?version=${Math.random()}`;
             Loader.loadText(loadPath, (content) =>
@@ -163,7 +163,7 @@ namespace feng3d
                 script.id = scriptPath;
                 head.appendChild(script)
             });
-        } else if (fstype == FSType.indexedDB)
+        } else if (assets.fstype == FSType.indexedDB)
         {
             storage.get(DBname, projectname, scriptPath, (err, data) =>
             {

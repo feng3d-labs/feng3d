@@ -130,22 +130,33 @@ namespace feng3d
          */
         dataURLDrawCanvas(dataurl: string, canvas: HTMLCanvasElement, callback: (img: HTMLImageElement) => void)
         {
-            var img = new Image();
-            img.onload = function ()
+            dataTransform.dataURLToImage(dataurl, (img) =>
             {
                 // canvas.drawImage(img);
                 callback(img);
-            };
-            img.src = dataurl;
+            });
         },
         arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void)
         {
             dataTransform.arrayBufferToBlob(arrayBuffer, (blob) =>
             {
-                dataTransform.blobToDataURL(blob, (dataurl) =>
-                {
-                    callback(dataurl);
-                });
+                dataTransform.blobToDataURL(blob, callback);
+            });
+        },
+        dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void)
+        {
+            var img = new Image();
+            img.onload = function ()
+            {
+                callback(img);
+            };
+            img.src = dataurl;
+        },
+        arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void)
+        {
+            dataTransform.arrayBufferToDataURL(arrayBuffer, (dataurl) =>
+            {
+                dataTransform.dataURLToImage(dataurl, callback);
             });
         },
         blobToText(blob: Blob, callback: (content: string) => void)
@@ -181,6 +192,6 @@ namespace feng3d
 
             var str = decodeURIComponent(escape(utf8));
             callback(str);
-        }
+        },
     }
 }

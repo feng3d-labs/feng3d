@@ -675,6 +675,8 @@ declare namespace feng3d {
         dataURLtoBlob(dataurl: string, callback: (blob: Blob) => void): void;
         dataURLDrawCanvas(dataurl: string, canvas: HTMLCanvasElement, callback: (img: HTMLImageElement) => void): void;
         arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void): void;
+        dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
+        arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
         blobToText(blob: Blob, callback: (content: string) => void): void;
         arrayBufferToText(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
         stringToUint8Array(str: string, callback: (uint8Array: Uint8Array) => void): void;
@@ -10209,7 +10211,34 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    var assets: {};
+    /**
+     * 文件系统类型
+     */
+    enum FSType {
+        http = "http",
+        native = "native",
+        indexedDB = "indexedDB",
+    }
+    var assets: Assets;
+    var assetsmap: any;
+    interface IAssets {
+        /**
+         * 加载图片
+         * @param url 图片路径
+         * @param callback 加载完成回调
+         */
+        loadImage(url: string, callback: (img: HTMLImageElement) => void): void;
+    }
+    class Assets implements IAssets {
+        fstype: FSType;
+        private getAssets();
+        /**
+         * 加载图片
+         * @param url 图片路径
+         * @param callback 加载完成回调
+         */
+        loadImage(url: string, callback: (img: HTMLImageElement) => void): void;
+    }
     type FileInfo = {
         path: string;
         birthtime: number;
@@ -10246,6 +10275,17 @@ declare namespace feng3d {
         getAllfilepathInFolder(dirpath: string, callback: (err: Error | null, filepaths: string[] | null) => void): void;
     }
 }
+declare namespace feng3d {
+    var httpAssets: HttpAssets;
+    class HttpAssets implements IAssets {
+        /**
+         * 加载图片
+         * @param url 图片路径
+         * @param callback 加载完成回调
+         */
+        loadImage(url: string, callback: (img: HTMLImageElement) => void): void;
+    }
+}
 interface IDBObjectStore {
     getAllKeys(): IDBRequest;
 }
@@ -10266,17 +10306,12 @@ declare namespace feng3d {
     };
 }
 declare namespace feng3d {
-    /**
-     * 文件系统类型
-     */
-    enum FSType {
-        http = "http",
-        native = "native",
-        indexedDB = "indexedDB",
-    }
-    var fstype: FSType;
     var DBname: string;
     var projectname: string;
+    var indexedDBAssets: IndexedDBAssets;
+    class IndexedDBAssets implements IAssets {
+        loadImage(url: string, callback: (img: HTMLImageElement) => void): void;
+    }
     var indexedDBfs: FS;
 }
 declare namespace feng3d {

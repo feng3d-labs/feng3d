@@ -212,6 +212,7 @@
         "src/animation/Animation.ts",
         //
         "src/assets/assets.ts",
+        "src/assets/HttpAssets.ts",
         "src/assets/storage.ts",
         "src/assets/indexedDBfs.ts",
         //解析

@@ -42,7 +42,16 @@ namespace feng3d
             if (this._url == value)
                 return;
             this._url = value;
-            this._pixels.src = value;
+
+            var url = this._url;
+            assets.loadImage(url, (img) =>
+            {
+                if (url == this._url)
+                {
+                    this._pixels = img;
+                    this.onLoad();
+                }
+            });
         }
         private _url = "";
 
@@ -51,6 +60,7 @@ namespace feng3d
          */
         get size()
         {
+            if (!this._pixels) new Vector2(1, 1);
             return new Vector2(this._pixels.width, this._pixels.height);
         }
 
@@ -58,10 +68,6 @@ namespace feng3d
         {
             super();
             this._textureType = TextureType.TEXTURE_2D;
-            this._pixels = new Image();
-            this._pixels.crossOrigin = "Anonymous";
-            this._pixels.addEventListener("load", this.onLoad.bind(this));
-            this._pixels.addEventListener("error", this.onLoad.bind(this));
             this.url = url;
         }
 
