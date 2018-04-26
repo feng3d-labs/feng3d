@@ -106,7 +106,10 @@ namespace feng3d
         blobToDataURL(blob: Blob, callback: (dataurl: string) => void)
         {
             var a = new FileReader();
-            a.onload = function (e) { callback(e.target["result"]); };
+            a.onload = function (e)
+            {
+                callback(e.target["result"]);
+            };
             a.readAsDataURL(blob);
         },
         /**
