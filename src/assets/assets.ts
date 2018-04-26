@@ -29,7 +29,9 @@ namespace feng3d
 
         private getAssets(url: string)
         {
-            if (url.indexOf("http://") != -1)
+            if (url.indexOf("http://") != -1
+                || url.indexOf("https://") != -1
+            )
                 return assetsmap[FSType.http];
             return assetsmap[this.fstype];
         }

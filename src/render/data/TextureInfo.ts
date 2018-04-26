@@ -125,12 +125,23 @@ namespace feng3d
                 this._invalid = false;
             }
 
+
             var texture = this.getTexture(gl);
             var textureType = gl.enums.getTextureTypeValue(this._textureType);
             var minFilter = gl.enums.getTextureMinFilterValue(this.minFilter);
             var magFilter = gl.enums.getTextureMagFilterValue(this.magFilter);
             var wrapS = gl.enums.getTextureWrapValue(this.wrapS);
             var wrapT = gl.enums.getTextureWrapValue(this.wrapT);
+
+            var isPowerOfTwo = true;
+            var pixels = this._pixels;
+            if (pixels instanceof HTMLImageElement)
+                isPowerOfTwo = FMath.isPowerOfTwo(pixels.width) && FMath.isPowerOfTwo(pixels.height);
+            if (!isPowerOfTwo)
+            {
+                wrapS = gl.CLAMP_TO_EDGE;
+                wrapT = gl.CLAMP_TO_EDGE;
+            }
 
             //绑定纹理
             gl.bindTexture(textureType, texture);
@@ -139,6 +150,7 @@ namespace feng3d
             gl.texParameteri(textureType, gl.TEXTURE_MAG_FILTER, magFilter);
             gl.texParameteri(textureType, gl.TEXTURE_WRAP_S, wrapS);
             gl.texParameteri(textureType, gl.TEXTURE_WRAP_T, wrapT);
+
             //
             if (this.anisotropy)
             {

@@ -1404,7 +1404,9 @@ var feng3d;
          */
         blobToDataURL: function (blob, callback) {
             var a = new FileReader();
-            a.onload = function (e) { callback(e.target["result"]); };
+            a.onload = function (e) {
+                callback(e.target["result"]);
+            };
             a.readAsDataURL(blob);
         },
         /**
@@ -10575,6 +10577,14 @@ var feng3d;
             var magFilter = gl.enums.getTextureMagFilterValue(this.magFilter);
             var wrapS = gl.enums.getTextureWrapValue(this.wrapS);
             var wrapT = gl.enums.getTextureWrapValue(this.wrapT);
+            var isPowerOfTwo = true;
+            var pixels = this._pixels;
+            if (pixels instanceof HTMLImageElement)
+                isPowerOfTwo = feng3d.FMath.isPowerOfTwo(pixels.width) && feng3d.FMath.isPowerOfTwo(pixels.height);
+            if (!isPowerOfTwo) {
+                wrapS = gl.CLAMP_TO_EDGE;
+                wrapT = gl.CLAMP_TO_EDGE;
+            }
             //绑定纹理
             gl.bindTexture(textureType, texture);
             //设置纹理参数
@@ -21435,7 +21445,8 @@ var feng3d;
             this.fstype = FSType.http;
         }
         Assets.prototype.getAssets = function (url) {
-            if (url.indexOf("http://") != -1)
+            if (url.indexOf("http://") != -1
+                || url.indexOf("https://") != -1)
                 return feng3d.assetsmap[FSType.http];
             return feng3d.assetsmap[this.fstype];
         };
