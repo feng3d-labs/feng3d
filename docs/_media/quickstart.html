@@ -21,14 +21,15 @@
         {
             var engine = new feng3d.Engine();
             var cube = feng3d.GameObjectFactory.createCube();
-            cube.transform.z = 2;
+            cube.transform.z = 4;
+            cube.transform.y = -1;
+            engine.scene.gameObject.addChild(cube);
 
             feng3d.ticker.onframe(() =>
             {
                 cube.transform.ry++;
             });
 
-            engine.scene.gameObject.addChild(cube);
         }
     </script>
 </body>

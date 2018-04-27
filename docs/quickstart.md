@@ -1,37 +1,60 @@
 # 快速开始
 
-推荐安装 `docsify-cli` 工具，可以方便创建及本地预览文档网站。
+## 添加html
 
-```bash
-npm i docsify-cli -g
+在html中添加了feng3d.js
+    
+```
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>My first feng3d app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="http://feng3d.gitee.io/out/feng3d.js"></script>
+		<script>
+			// Our Javascript will go here.
+		</script>
+	</body>
+</html>
 ```
 
-## 初始化项目
+## 初始化feng3d
 
-如果想在项目的 `./docs` 目录里写文档，直接通过 `init` 初始化项目。
-
-```bash
-docsify init ./docs
+在feng3d.Engine构造时会默认创建场景与摄像机
+```
+var engine = new feng3d.Engine();
 ```
 
-feng3d
-=======
+## 添加对象到场景
 
-开始尝试
----------
+创建一个立方体并添加到场景
+```
+var cube = feng3d.GameObjectFactory.createCube();
+cube.transform.z = 2;
+cube.transform.y = -2;
+engine.scene.gameObject.addChild(cube);
+```
 
+## 添加动画
 
-基于WebGL的3D渲染引擎
+让立方体每帧进行旋转
+```
+feng3d.ticker.onframe(() =>
+{
+    cube.transform.ry++;
+});
+```
 
-* [feng3d](https://gitee.com/feng3d/feng3d) 引擎
-* [examples](https://gitee.com/feng3d/examples) 示例
+## 完整代码
 
-配置项目环境
----------
+[filename](_media/quickstart.html ':include :type=code')
 
-* 安装 [vscode](https://code.visualstudio.com/)
-* 安装 [Nodejs](https://nodejs.org)
-* 打开vscode，从菜单 文件->打开文件夹 来打开feng-ts/feng3d文件夹。在vscode中按 Ctrl+` 打开DOS控制台（终端）
-* 使用命令 `npm install -g typescript` 安装 TypeScript
-* 使用命令 `npm install -g typings` 安装 Tpyings
-* 直接运行[compile.cmd](https://github.com/feng3dTS/feng3d-ts/blob/master/compile.cmd) 或者使用 Ctrl+Shift+B 进行执行编译
+## 运行结果
+
+[quickstart website](_media/quickstart.html ':include :type=iframe width=100% height=400px')
