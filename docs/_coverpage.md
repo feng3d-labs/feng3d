@@ -1,4 +1,4 @@
-![logo](favicon.ico)
+![logo](_media/favicon.ico)
 
 # feng3d <small>0.0.0</small>
 
