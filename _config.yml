@@ -1,1 +1,1 @@
-include: [docs/_coverpage.md,docs/_sidebar.md]
+include: [_coverpage.md,_sidebar.md]
