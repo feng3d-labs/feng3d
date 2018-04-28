@@ -505,6 +505,46 @@ QUnit.module("watcher", function () {
         var t2 = Date.now() - s;
         assert.ok(true, t1 + "->" + t2 + " watch\u4E0Eunwatch\u64CD\u4F5C\u540E\u6027\u80FD 1->" + t1 / t2);
     });
+    QUnit.test("watchchain Object", function (assert) {
+        var o = { a: { b: { c: 1 } } };
+        var out = "";
+        var f = function (h, p, o) { out += "f"; };
+        var f1 = function (h, p, o) { out += "f1"; };
+        feng3d.watcher.watchchain(o, "a.b.c", f);
+        feng3d.watcher.watchchain(o, "a.b.c", f1);
+        o.a.b.c = 2;
+        feng3d.watcher.unwatchchain(o, "a.b.c", f);
+        o.a.b.c = 3;
+        assert.ok(out == "ff1f1", out);
+        //
+        out = "";
+        feng3d.watcher.unwatchchain(o, "a.b.c", f1);
+        o.a.b.c = 4;
+        assert.ok(out == "", out);
+        //
+        out = "";
+        feng3d.watcher.watchchain(o, "a.b.c", f);
+        o.a.b.c = 4;
+        o.a.b.c = 5;
+        assert.ok(out == "f", out);
+        //
+        out = "";
+        o.a = { b: { c: 1 } };
+        o.a.b.c = 3;
+        assert.ok(out == "ff", "out:" + out);
+        //
+        out = "";
+        feng3d.watcher.unwatchchain(o, "a.b.c", f);
+        o.a.b.c = 4;
+        assert.ok(out == "", "out:" + out);
+        //
+        out = "";
+        feng3d.watcher.watchchain(o, "a.b.c", f);
+        o.a = null;
+        o.a = { b: { c: 1 } };
+        o.a.b.c = 5;
+        assert.ok(out == "fff", out);
+    });
 });
 //# sourceMappingURL=tests.js.map
 

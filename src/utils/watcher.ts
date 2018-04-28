@@ -111,7 +111,7 @@ namespace feng3d
             {
                 // 添加下级监听链
                 var currentp = property.substr(0, notIndex);
-                var nextp = property.substr(notIndex);
+                var nextp = property.substr(notIndex + 1);
                 if (host[currentp])
                 {
                     feng3d.watcher.watchchain(host[currentp], nextp, handler, thisObject);
@@ -123,6 +123,25 @@ namespace feng3d
                     var newvalue = h[p];
                     if (oldvalue) feng3d.watcher.unwatchchain(oldvalue, nextp, handler, thisObject);
                     if (newvalue) feng3d.watcher.watchchain(newvalue, nextp, handler, thisObject);
+                    // 当更换对象且监听值发生改变时触发处理函数
+                    try
+                    {
+                        var ov = eval("oldvalue." + nextp + "");
+                    } catch (e)
+                    {
+                        ov = undefined;
+                    }
+                    try
+                    {
+                        var nv = eval("newvalue." + nextp + "");
+                    } catch (e)
+                    {
+                        nv = undefined;
+                    }
+                    if (ov != nv)
+                    {
+                        handler(newvalue, nextp, ov);
+                    }
                 };
                 feng3d.watcher.watch(host, currentp, watchchainFun);
 
@@ -141,7 +160,7 @@ namespace feng3d
             }
 
             var currentp = property.substr(0, notIndex);
-            var nextp = property.substr(notIndex);
+            var nextp = property.substr(notIndex + 1);
 
             //
             var watchchains: WatchChains = host[bindablechains];
@@ -161,9 +180,9 @@ namespace feng3d
                     }
                     // 删除链监听
                     feng3d.watcher.unwatch(host, currentp, element.watchchainFun);
+                    // 清理记录链监听函数
+                    propertywatchs.splice(i, 1);
                 }
-                // 清理记录链监听函数
-                propertywatchs.splice(i, 1);
             }
             // 清理空列表
             if (propertywatchs.length == 0) delete watchchains[property];

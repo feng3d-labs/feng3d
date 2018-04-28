@@ -99,4 +99,46 @@ QUnit.module("watcher", () =>
 
         assert.ok(true, `${t1}->${t2} watch与unwatch操作后性能 1->${t1 / t2}`);
     });
+
+    QUnit.test("watchchain Object", (assert) =>
+    {
+        var o = { a: { b: { c: 1 } } };
+        var out = "";
+        var f = (h, p, o) => { out += "f"; };
+        var f1 = (h, p, o) => { out += "f1"; };
+        feng3d.watcher.watchchain(o, "a.b.c", f);
+        feng3d.watcher.watchchain(o, "a.b.c", f1);
+        o.a.b.c = 2;
+        feng3d.watcher.unwatchchain(o, "a.b.c", f);
+        o.a.b.c = 3;
+        assert.ok(out == "ff1f1", out);
+        //
+        out = "";
+        feng3d.watcher.unwatchchain(o, "a.b.c", f1);
+        o.a.b.c = 4;
+        assert.ok(out == "", out);
+        //
+        out = "";
+        feng3d.watcher.watchchain(o, "a.b.c", f);
+        o.a.b.c = 4;
+        o.a.b.c = 5;
+        assert.ok(out == "f", out);
+        //
+        out = "";
+        o.a = { b: { c: 1 } };
+        o.a.b.c = 3;
+        assert.ok(out == "ff", "out:" + out);
+        //
+        out = "";
+        feng3d.watcher.unwatchchain(o, "a.b.c", f);
+        o.a.b.c = 4;
+        assert.ok(out == "", "out:" + out);
+        //
+        out = "";
+        feng3d.watcher.watchchain(o, "a.b.c", f);
+        o.a = <any>null;
+        o.a = { b: { c: 1 } }
+        o.a.b.c = 5;
+        assert.ok(out == "fff", out);
+    });
 });
