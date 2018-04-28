@@ -1343,7 +1343,7 @@ var feng3d;
                         nv = undefined;
                     }
                     if (ov != nv) {
-                        handler(newvalue, nextp, ov);
+                        handler.call(thisObject, newvalue, nextp, ov);
                     }
                 };
                 feng3d.watcher.watch(host, currentp, watchchainFun);
