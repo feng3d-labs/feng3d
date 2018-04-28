@@ -416,6 +416,96 @@ QUnit.module("Array", function () {
         assert.ok(arr0.unique(function (a, b) { return a.n == b.n; }));
     });
 });
+QUnit.module("watcher", function () {
+    QUnit.test("watch Object", function (assert) {
+        var o = { a: 1 };
+        var out = "";
+        var f = function (h, p, o) { out += "f"; };
+        var f1 = function (h, p, o) { out += "f1"; };
+        feng3d.watcher.watch(o, "a", f);
+        feng3d.watcher.watch(o, "a", f1);
+        o.a = 2;
+        feng3d.watcher.unwatch(o, "a", f);
+        o.a = 3;
+        assert.ok(out == "ff1f1", out);
+    });
+    QUnit.test("watch custom A", function (assert) {
+        var A = /** @class */ (function () {
+            function A() {
+                this._a = 1;
+            }
+            Object.defineProperty(A.prototype, "a", {
+                get: function () {
+                    return this._a;
+                },
+                set: function (v) {
+                    this._a = v;
+                    num = v;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return A;
+        }());
+        var o = new A();
+        var num = 0;
+        var out = "";
+        var f = function (h, p, o) { out += "f"; };
+        var f1 = function (h, p, o) { out += "f1"; };
+        feng3d.watcher.watch(o, "a", f);
+        feng3d.watcher.watch(o, "a", f1);
+        o.a = 2;
+        assert.ok(num == 2);
+        feng3d.watcher.unwatch(o, "a", f);
+        o.a = 3;
+        assert.ok(out == "ff1f1", out);
+        assert.ok(num == 3);
+    });
+    QUnit.test("watch Object 性能", function (assert) {
+        var o = { a: 1 };
+        var num = 10000000;
+        var out = "";
+        var f = function () { out += "f"; };
+        var s = Date.now();
+        for (var i = 0; i < num; i++) {
+            o.a = i;
+        }
+        var t1 = Date.now() - s;
+        out = "";
+        feng3d.watcher.watch(o, "a", f);
+        o.a = 2;
+        feng3d.watcher.unwatch(o, "a", f);
+        o.a = 3;
+        var s = Date.now();
+        for (var i = 0; i < num; i++) {
+            o.a = i;
+        }
+        var t2 = Date.now() - s;
+        assert.ok(true, t1 + "->" + t2 + " watch\u4E0Eunwatch\u64CD\u4F5C\u540E\u6027\u80FD 1->" + t1 / t2);
+    });
+    QUnit.test("watch Vector3 性能", function (assert) {
+        var o = new feng3d.Vector3();
+        var num = 10000000;
+        var out = "";
+        var f = function () { out += "f"; };
+        var s = Date.now();
+        for (var i = 0; i < num; i++) {
+            o.x = i;
+        }
+        var t1 = Date.now() - s;
+        out = "";
+        feng3d.watcher.watch(o, "x", f);
+        o.x = 2;
+        feng3d.watcher.unwatch(o, "x", f);
+        o.x = 3;
+        var s = Date.now();
+        for (var i = 0; i < num; i++) {
+            o.x = i;
+        }
+        var t2 = Date.now() - s;
+        assert.ok(true, t1 + "->" + t2 + " watch\u4E0Eunwatch\u64CD\u4F5C\u540E\u6027\u80FD 1->" + t1 / t2);
+    });
+});
 //# sourceMappingURL=tests.js.map
 
 (function universalModuleDefinition(root, factory)
