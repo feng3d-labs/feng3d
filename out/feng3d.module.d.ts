@@ -645,6 +645,8 @@ declare namespace feng3d {
     var watcher: {
         watch<T extends Object>(host: T, property: keyof T, handler: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
         unwatch<T extends Object>(host: T, property: keyof T, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
     };
 }
 /**

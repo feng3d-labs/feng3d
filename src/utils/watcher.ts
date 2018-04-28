@@ -63,7 +63,8 @@ namespace feng3d
         },
         unwatch<T extends Object>(host: T, property: keyof T, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
         {
-            var watchs: Watchs = host[bindables] = host[bindables] || {};
+            var watchs: Watchs = host[bindables];
+            if (!watchs) return;
             if (watchs[property])
             {
                 var handlers = watchs[property].handlers;
@@ -89,6 +90,88 @@ namespace feng3d
                 }
             }
         },
+        watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
+        {
+            var notIndex = property.indexOf(".");
+            if (notIndex == -1)
+            {
+                watcher.watch(host, property, handler, thisObject);
+                return;
+            }
+
+            var watchchains: WatchChains = host[bindablechains] = host[bindablechains] || {};
+            if (!watchchains[property])
+            {
+                watchchains[property] = [];
+            }
+
+            var propertywatchs = watchchains[property];
+            var has = propertywatchs.reduce((v, item) => { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
+            if (!has)
+            {
+                // 添加下级监听链
+                var currentp = property.substr(0, notIndex);
+                var nextp = property.substr(notIndex);
+                if (host[currentp])
+                {
+                    feng3d.watcher.watchchain(host[currentp], nextp, handler, thisObject);
+                }
+
+                // 添加链监听
+                var watchchainFun = (h, p, oldvalue) =>
+                {
+                    var newvalue = h[p];
+                    if (oldvalue) feng3d.watcher.unwatchchain(oldvalue, nextp, handler, thisObject);
+                    if (newvalue) feng3d.watcher.watchchain(newvalue, nextp, handler, thisObject);
+                };
+                feng3d.watcher.watch(host, currentp, watchchainFun);
+
+                // 记录链监听函数
+                propertywatchs.push({ handler: handler, thisObject: thisObject, watchchainFun: watchchainFun });
+            }
+
+        },
+        unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
+        {
+            var notIndex = property.indexOf(".");
+            if (notIndex == -1)
+            {
+                watcher.unwatch(host, property, handler, thisObject);
+                return;
+            }
+
+            var currentp = property.substr(0, notIndex);
+            var nextp = property.substr(notIndex);
+
+            //
+            var watchchains: WatchChains = host[bindablechains];
+            if (!watchchains || !watchchains[property]) return;
+
+            // 
+            var propertywatchs = watchchains[property];
+            for (let i = propertywatchs.length - 1; i >= 0; i--)
+            {
+                const element = propertywatchs[i];
+                if (handler == null || (handler == element.handler && thisObject == element.thisObject))
+                {
+                    // 删除下级监听链
+                    if (host[currentp])
+                    {
+                        feng3d.watcher.unwatchchain(host[currentp], nextp, element.handler, element.thisObject);
+                    }
+                    // 删除链监听
+                    feng3d.watcher.unwatch(host, currentp, element.watchchainFun);
+                }
+                // 清理记录链监听函数
+                propertywatchs.splice(i, 1);
+            }
+            // 清理空列表
+            if (propertywatchs.length == 0) delete watchchains[property];
+            if (Object.keys(watchchains).length == 0)
+            {
+                delete host[bindablechains];
+            }
+        },
     };
 
     interface Watchs
@@ -96,7 +179,13 @@ namespace feng3d
         [property: string]: { value: any, oldPropertyDescriptor: any, handlers: { handler: (host: any, property: string, oldvalue: any) => void, thisObject: any }[] };
     }
 
+    interface WatchChains
+    {
+        [property: string]: { handler: (host: any, property: string, oldvalue: any) => void, thisObject: any, watchchainFun: (h: any, p: any, oldvalue: any) => void }[];
+    }
+
     const bindables = "__watchs__";
+    const bindablechains = "__watchchains__";
 
     function getPropertyDescriptor(host: any, property: string): any
     {
