@@ -1230,81 +1230,79 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     feng3d.watcher = {
-        watch: watch,
-        unwatch: unwatch,
+        /**
+         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
+         * @param host
+         * @param property
+         * @param handler
+         * @param thisObject
+         */
+        watch: function (host, property, handler, thisObject) {
+            var watchs = host[bindables] = host[bindables] || {};
+            if (!watchs[property]) {
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property);
+                watchs[property] = { value: host[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
+                //
+                var data = getPropertyDescriptor(host, property);
+                if (data && data.set && data.get) {
+                    data = { enumerable: true, configurable: true, get: data.get, set: data.set };
+                    var orgSet = data.set;
+                    data.set = function (value) {
+                        var oldvalue = this[property];
+                        if (oldvalue != value) {
+                            orgSet && orgSet.call(this, value);
+                            notifyListener(this, property, oldvalue);
+                        }
+                    };
+                }
+                else if (!data || (!data.get && !data.set)) {
+                    data = { enumerable: true, configurable: true };
+                    data.get = function () {
+                        return this[bindables][property].value;
+                    };
+                    data.set = function (value) {
+                        var oldvalue = this[bindables][property].value;
+                        if (oldvalue != value) {
+                            this[bindables][property].value = value;
+                            notifyListener(this, property, oldvalue);
+                        }
+                    };
+                }
+                else {
+                    throw "watch 失败！";
+                }
+                Object.defineProperty(host, property, data);
+            }
+            var propertywatchs = watchs[property];
+            var has = propertywatchs.handlers.reduce(function (v, item) { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
+            if (!has)
+                propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
+        },
+        unwatch: function (host, property, handler, thisObject) {
+            var watchs = host[bindables] = host[bindables] || {};
+            if (watchs[property]) {
+                var handlers = watchs[property].handlers;
+                if (handler === undefined)
+                    handlers.length = 0;
+                for (var i = handlers.length - 1; i >= 0; i--) {
+                    if (handlers[i].handler == handler && (handlers[i].thisObject == thisObject || thisObject === undefined))
+                        handlers.splice(i, 1);
+                }
+                if (handlers.length == 0) {
+                    var value = host[property];
+                    delete host[property];
+                    if (watchs[property].oldPropertyDescriptor)
+                        Object.defineProperty(host, property, watchs[property].oldPropertyDescriptor);
+                    host[property] = value;
+                    delete watchs[property];
+                }
+                if (Object.keys(watchs).length == 0) {
+                    delete host[bindables];
+                }
+            }
+        },
     };
     var bindables = "__watchs__";
-    function unwatch(host, property, handler, thisObject) {
-        var watchs = host[bindables] = host[bindables] || {};
-        if (watchs[property]) {
-            var handlers = watchs[property].handlers;
-            if (handler === undefined)
-                handlers.length = 0;
-            for (var i = handlers.length - 1; i >= 0; i--) {
-                if (handlers[i].handler == handler && (handlers[i].thisObject == thisObject || thisObject === undefined))
-                    handlers.splice(i, 1);
-            }
-            if (handlers.length == 0) {
-                var value = host[property];
-                delete host[property];
-                if (watchs[property].oldPropertyDescriptor)
-                    Object.defineProperty(host, property, watchs[property].oldPropertyDescriptor);
-                host[property] = value;
-                delete watchs[property];
-            }
-            if (Object.keys(watchs).length == 0) {
-                delete host[bindables];
-            }
-        }
-    }
-    /**
-     * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
-     * @param host
-     * @param property
-     * @param handler
-     * @param thisObject
-     */
-    function watch(host, property, handler, thisObject) {
-        var watchs = host[bindables] = host[bindables] || {};
-        if (!watchs[property]) {
-            var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property);
-            watchs[property] = { value: host[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
-            //
-            var data = getPropertyDescriptor(host, property);
-            if (data && data.set && data.get) {
-                data = { enumerable: true, configurable: true, get: data.get, set: data.set };
-                var orgSet = data.set;
-                data.set = function (value) {
-                    var oldvalue = this[property];
-                    if (oldvalue != value) {
-                        orgSet && orgSet.call(this, value);
-                        notifyListener(this, property, oldvalue);
-                    }
-                };
-            }
-            else if (!data || (!data.get && !data.set)) {
-                data = { enumerable: true, configurable: true };
-                data.get = function () {
-                    return this[bindables][property].value;
-                };
-                data.set = function (value) {
-                    var oldvalue = this[bindables][property].value;
-                    if (oldvalue != value) {
-                        this[bindables][property].value = value;
-                        notifyListener(this, property, oldvalue);
-                    }
-                };
-            }
-            else {
-                throw "watch 失败！";
-            }
-            Object.defineProperty(host, property, data);
-        }
-        var propertywatchs = watchs[property];
-        var has = propertywatchs.handlers.reduce(function (v, item) { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
-        if (!has)
-            propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
-    }
     function getPropertyDescriptor(host, property) {
         var data = Object.getOwnPropertyDescriptor(host, property);
         if (data) {
