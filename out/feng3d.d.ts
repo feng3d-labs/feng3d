@@ -153,9 +153,6 @@ declare namespace feng3d {
      * @author feng 2016-3-10
      */
     var objectview: {
-        getObjectView(object: Object, autocreate?: boolean, excludeAttrs?: string[]): any;
-        getAttributeView: (attributeViewInfo: AttributeViewInfo) => any;
-        getBlockView: (blockViewInfo: BlockViewInfo) => any;
         defaultBaseObjectViewClass: string;
         defaultObjectViewClass: string;
         defaultObjectAttributeViewClass: string;
@@ -164,12 +161,16 @@ declare namespace feng3d {
         OAVComponent: {};
         OBVComponent: {};
         OVComponent: {};
-        addOAV: <K extends string>(target: any, propertyKey: string, param?: {
+        setDefaultTypeAttributeView(type: string, component: AttributeTypeDefinition): void;
+        getObjectView(object: Object, autocreate?: boolean, excludeAttrs?: string[]): any;
+        getAttributeView(attributeViewInfo: AttributeViewInfo): any;
+        getBlockView(blockViewInfo: BlockViewInfo): any;
+        addOAV<K extends string>(target: any, propertyKey: string, param?: {
             block?: string;
             component?: K;
             componentParam?: OAVComponentParam[K];
-        }) => void;
-        getObjectInfo: (object: Object, autocreate?: boolean, excludeAttrs?: string[]) => ObjectViewInfo;
+        }): void;
+        getObjectInfo(object: Object, autocreate?: boolean, excludeAttrs?: string[]): ObjectViewInfo;
     };
     interface OAVComponentParam {
         属性组件名称: "属性组件参数";

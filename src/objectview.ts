@@ -78,7 +78,7 @@ namespace feng3d
 	{
 		return (target: any, propertyKey: string) =>
 		{
-			addOAV(target, propertyKey, param);
+			objectview.addOAV(target, propertyKey, param);
 		}
 	}
 
@@ -87,42 +87,6 @@ namespace feng3d
 	 * @author feng 2016-3-10
 	 */
 	export var objectview = {
-
-		/**
-		 * 获取对象界面
-		 * 
-		 * @static
-		 * @param {Object} object				用于生成界面的对象
-		 * @param autocreate					当对象没有注册属性时是否自动创建属性信息
-		 * @param excludeAttrs					排除属性列表
-		 * @returns 							对象界面
-		 * 
-		 * @memberOf ObjectView
-		 */
-		getObjectView(object: Object, autocreate = true, excludeAttrs: string[] = [])
-		{
-			var classConfig = getObjectInfo(object, autocreate, excludeAttrs);
-
-			if (classConfig.component == null || classConfig.component == "")
-			{
-				//返回基础类型界面类定义
-				if (!(classConfig.owner instanceof Object))
-				{
-					classConfig.component = objectview.defaultBaseObjectViewClass;
-				} else
-				{
-					//使用默认类型界面类定义
-					classConfig.component = objectview.defaultObjectViewClass;
-				}
-			}
-
-			var cls = objectview.OVComponent[classConfig.component];
-			assert(cls != null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
-			var view = new cls(classConfig)
-			return view;
-		},
-		getAttributeView: getAttributeView,
-		getBlockView: getBlockView,
 		/**
 		 * 默认基础类型对象界面类定义
 		 */
@@ -146,22 +110,178 @@ namespace feng3d
 		OAVComponent: {},
 		OBVComponent: {},
 		OVComponent: {},
-		addOAV: addOAV,
-		getObjectInfo: getObjectInfo,
+		setDefaultTypeAttributeView(type: string, component: AttributeTypeDefinition)
+		{
+			objectview.defaultTypeAttributeView[type] = component;
+		},
+		/**
+		 * 获取对象界面
+		 * 
+		 * @static
+		 * @param {Object} object				用于生成界面的对象
+		 * @param autocreate					当对象没有注册属性时是否自动创建属性信息
+		 * @param excludeAttrs					排除属性列表
+		 * @returns 							对象界面
+		 * 
+		 * @memberOf ObjectView
+		 */
+		getObjectView(object: Object, autocreate = true, excludeAttrs: string[] = [])
+		{
+			var classConfig = objectview.getObjectInfo(object, autocreate, excludeAttrs);
+
+			if (classConfig.component == null || classConfig.component == "")
+			{
+				//返回基础类型界面类定义
+				if (!(classConfig.owner instanceof Object))
+				{
+					classConfig.component = objectview.defaultBaseObjectViewClass;
+				} else
+				{
+					//使用默认类型界面类定义
+					classConfig.component = objectview.defaultObjectViewClass;
+				}
+			}
+
+			var cls = objectview.OVComponent[classConfig.component];
+			assert(cls != null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
+			var view = new cls(classConfig)
+			return view;
+		},
+		/**
+		 * 获取属性界面
+		 * 
+		 * @static
+		 * @param {AttributeViewInfo} attributeViewInfo			属性界面信息
+		 * @returns {egret.DisplayObject}						属性界面
+		 * 
+		 * @memberOf ObjectView
+		 */
+		getAttributeView(attributeViewInfo: AttributeViewInfo)
+		{
+			if (attributeViewInfo.component == null || attributeViewInfo.component == "")
+			{
+				var defaultViewClass = objectview.defaultTypeAttributeView[attributeViewInfo.type];
+				var tempComponent = defaultViewClass ? defaultViewClass.component : "";
+				if (tempComponent != null && tempComponent != "")
+				{
+					attributeViewInfo.component = defaultViewClass.component;
+					attributeViewInfo.componentParam = defaultViewClass.componentParam || attributeViewInfo.componentParam;
+				}
+			}
+
+			if (attributeViewInfo.component == null || attributeViewInfo.component == "")
+			{
+				//使用默认对象属性界面类定义
+				attributeViewInfo.component = objectview.defaultObjectAttributeViewClass;
+			}
+
+			var cls = objectview.OAVComponent[attributeViewInfo.component];
+			assert(cls != null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
+			var view = new cls(attributeViewInfo);
+			return view;
+		},
+		/**
+		 * 获取块界面
+		 * 
+		 * @static
+		 * @param {BlockViewInfo} blockViewInfo			块界面信息
+		 * @returns {egret.DisplayObject}				块界面
+		 * 
+		 * @memberOf ObjectView
+		 */
+		getBlockView(blockViewInfo: BlockViewInfo)
+		{
+			if (blockViewInfo.component == null || blockViewInfo.component == "")
+			{
+				//返回默认对象属性界面类定义
+				blockViewInfo.component = objectview.defaultObjectAttributeBlockView;
+			}
+
+			var cls = objectview.OBVComponent[blockViewInfo.component];
+			assert(cls != null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
+			var view = new cls(blockViewInfo);
+			return view;
+		},
+		addOAV<K extends keyof OAVComponentParam>(target: any, propertyKey: string, param?: { block?: string; component?: K; componentParam?: OAVComponentParam[K]; })
+		{
+			if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
+				target[OBJECTVIEW_KEY] = {};
+			var objectview: ClassDefinition = target[OBJECTVIEW_KEY] || {};
+			var attributeDefinitionVec: AttributeDefinition[] = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
+			attributeDefinitionVec.push({
+				name: propertyKey, block: param && param.block, component: param && param.component, componentParam: param && param.componentParam
+			});
+		},
+		/**
+		 * 获取对象信息
+		 * @param object				对象
+		 * @param autocreate			当对象没有注册属性时是否自动创建属性信息
+		 * @param excludeAttrs			排除属性列表
+		 * @return
+		 */
+		getObjectInfo(object: Object, autocreate = true, excludeAttrs: string[] = []): ObjectViewInfo
+		{
+			if (typeof object == "string" || typeof object == "number" || typeof object == "boolean")
+			{
+				return {
+					objectAttributeInfos: [],
+					objectBlockInfos: [],
+					owner: object,
+					component: "",
+					componentParam: undefined
+				};
+			}
+
+			var classConfig = getInheritClassDefinition(object, autocreate);
+
+			classConfig = classConfig || {
+				component: "",
+				componentParam: null,
+				attributeDefinitionVec: [],
+				blockDefinitionVec: [],
+			};
+
+			var objectAttributeInfos: AttributeViewInfo[] = [];
+			classConfig.attributeDefinitionVec.forEach(attributeDefinition =>
+			{
+				if (excludeAttrs.indexOf(attributeDefinition.name) == -1)
+				{
+					objectAttributeInfos.push(
+						{
+							name: attributeDefinition.name,
+							block: attributeDefinition.block,
+							component: attributeDefinition.component,
+							componentParam: attributeDefinition.componentParam,
+							owner: object,
+							writable: true,
+							type: getAttributeType(object[attributeDefinition.name])
+						}
+					);
+				}
+
+			});
+
+			function getAttributeType(attribute): string
+			{
+				if (attribute == null)
+					return "null";
+				if (typeof attribute == "number")
+					return "number";
+				return attribute.constructor.name;
+			}
+
+			var objectInfo: ObjectViewInfo = {
+				objectAttributeInfos: objectAttributeInfos,
+				objectBlockInfos: getObjectBlockInfos(object, objectAttributeInfos, classConfig.blockDefinitionVec),
+				owner: object,
+				component: classConfig.component,
+				componentParam: classConfig.componentParam
+			};
+			return objectInfo;
+		},
 	}
 
 	var OBJECTVIEW_KEY = "__objectview__";
-
-	function addOAV<K extends keyof OAVComponentParam>(target: any, propertyKey: string, param?: { block?: string; component?: K; componentParam?: OAVComponentParam[K]; })
-	{
-		if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
-			target[OBJECTVIEW_KEY] = {};
-		var objectview: ClassDefinition = target[OBJECTVIEW_KEY] || {};
-		var attributeDefinitionVec: AttributeDefinition[] = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
-		attributeDefinitionVec.push({
-			name: propertyKey, block: param && param.block, component: param && param.component, componentParam: param && param.componentParam
-		});
-	}
 
 	function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefinition: ClassDefinition)
 	{
@@ -215,131 +335,6 @@ namespace feng3d
 				}
 			});
 		}
-	}
-
-	/**
-	 * 获取属性界面
-	 * 
-	 * @static
-	 * @param {AttributeViewInfo} attributeViewInfo			属性界面信息
-	 * @returns {egret.DisplayObject}						属性界面
-	 * 
-	 * @memberOf ObjectView
-	 */
-	function getAttributeView(attributeViewInfo: AttributeViewInfo)
-	{
-		if (attributeViewInfo.component == null || attributeViewInfo.component == "")
-		{
-			var defaultViewClass = objectview.defaultTypeAttributeView[attributeViewInfo.type];
-			var tempComponent = defaultViewClass ? defaultViewClass.component : "";
-			if (tempComponent != null && tempComponent != "")
-			{
-				attributeViewInfo.component = defaultViewClass.component;
-				attributeViewInfo.componentParam = defaultViewClass.componentParam || attributeViewInfo.componentParam;
-			}
-		}
-
-		if (attributeViewInfo.component == null || attributeViewInfo.component == "")
-		{
-			//使用默认对象属性界面类定义
-			attributeViewInfo.component = objectview.defaultObjectAttributeViewClass;
-		}
-
-		var cls = objectview.OAVComponent[attributeViewInfo.component];
-		assert(cls != null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
-		var view = new cls(attributeViewInfo);
-		return view;
-	}
-
-	/**
-	 * 获取块界面
-	 * 
-	 * @static
-	 * @param {BlockViewInfo} blockViewInfo			块界面信息
-	 * @returns {egret.DisplayObject}				块界面
-	 * 
-	 * @memberOf ObjectView
-	 */
-	function getBlockView(blockViewInfo: BlockViewInfo)
-	{
-		if (blockViewInfo.component == null || blockViewInfo.component == "")
-		{
-			//返回默认对象属性界面类定义
-			blockViewInfo.component = objectview.defaultObjectAttributeBlockView;
-		}
-
-		var cls = objectview.OBVComponent[blockViewInfo.component];
-		assert(cls != null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
-		var view = new cls(blockViewInfo);
-		return view;
-	}
-
-	/**
-	 * 获取对象信息
-	 * @param object				对象
-	 * @param autocreate			当对象没有注册属性时是否自动创建属性信息
-	 * @param excludeAttrs			排除属性列表
-	 * @return
-	 */
-	function getObjectInfo(object: Object, autocreate = true, excludeAttrs: string[] = []): ObjectViewInfo
-	{
-		if (typeof object == "string" || typeof object == "number" || typeof object == "boolean")
-		{
-			return {
-				objectAttributeInfos: [],
-				objectBlockInfos: [],
-				owner: object,
-				component: "",
-				componentParam: undefined
-			};
-		}
-
-		var classConfig = getInheritClassDefinition(object, autocreate);
-
-		classConfig = classConfig || {
-			component: "",
-			componentParam: null,
-			attributeDefinitionVec: [],
-			blockDefinitionVec: [],
-		};
-
-		var objectAttributeInfos: AttributeViewInfo[] = [];
-		classConfig.attributeDefinitionVec.forEach(attributeDefinition =>
-		{
-			if (excludeAttrs.indexOf(attributeDefinition.name) == -1)
-			{
-				objectAttributeInfos.push(
-					{
-						name: attributeDefinition.name,
-						block: attributeDefinition.block,
-						component: attributeDefinition.component,
-						componentParam: attributeDefinition.componentParam,
-						owner: object,
-						writable: true,
-						type: getAttributeType(object[attributeDefinition.name])
-					}
-				);
-			}
-
-		});
-
-		function getAttributeType(attribute): string
-		{
-			if (attribute == null)
-				return "null";
-			if (typeof attribute == "number")
-				return "number";
-			return attribute.constructor.name;
-		}
-
-		var objectInfo: ObjectViewInfo = {
-			objectAttributeInfos: objectAttributeInfos,
-			objectBlockInfos: getObjectBlockInfos(object, objectAttributeInfos, classConfig.blockDefinitionVec),
-			owner: object,
-			component: classConfig.component,
-			componentParam: classConfig.componentParam
-		};
-		return objectInfo;
 	}
 
 	function getInheritClassDefinition(object: Object, autocreate = true)
