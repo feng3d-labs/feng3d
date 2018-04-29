@@ -434,7 +434,7 @@ namespace feng3d
         addScript(url: string)
         {
             var script = this.addComponent(ScriptComponent);
-            script.url = url;
+            script.script = url;
             return script;
         }
 

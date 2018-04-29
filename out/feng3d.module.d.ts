@@ -8035,13 +8035,13 @@ declare namespace feng3d {
         /**
          * 脚本对象
          */
-        private _script;
+        private scriptInstance;
         scriptData: Object;
         /**
          * 脚本路径
          */
-        url: string;
-        private _url;
+        script: string;
+        private _script;
         init(gameObject: GameObject): void;
         private initScript();
         /**

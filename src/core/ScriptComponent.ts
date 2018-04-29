@@ -9,7 +9,7 @@ namespace feng3d
         /**
          * 脚本对象
          */
-        private _script: Script;
+        private scriptInstance: Script;
 
         @serialize()
         scriptData: Object;
@@ -19,18 +19,18 @@ namespace feng3d
          */
         @oav({ componentParam: { dragparam: { accepttype: "file_script" }, textEnabled: false } })
         @serialize()
-        get url()
+        get script()
         {
-            return this._url;
+            return this._script;
         }
-        set url(value)
+        set script(value)
         {
-            if (this._url == value)
+            if (this._script == value)
                 return;
-            this._url = value;
+            this._script = value;
             this.initScript();
         }
-        private _url = "";
+        private _script = "";
 
         init(gameObject: GameObject)
         {
@@ -41,20 +41,20 @@ namespace feng3d
 
         private initScript()
         {
-            if (this._url && this.gameObject && runEnvironment == RunEnvironment.feng3d)
+            if (this._script && this.gameObject && runEnvironment == RunEnvironment.feng3d)
             {
-                addScript(this._url, (scriptClass) =>
+                addScript(this._script, (scriptClass) =>
                 {
-                    this._script = new scriptClass(this);
+                    this.scriptInstance = new scriptClass(this);
                     var scriptData = this.scriptData = this.scriptData || {};
                     for (const key in scriptData)
                     {
                         if (scriptData.hasOwnProperty(key))
                         {
-                            this._script[key] = scriptData[key];
+                            this.scriptInstance[key] = scriptData[key];
                         }
                     }
-                    this._script.init();
+                    this.scriptInstance.init();
                 });
             }
         }
@@ -64,7 +64,7 @@ namespace feng3d
          */
         update()
         {
-            this._script && this._script.update();
+            this.scriptInstance && this.scriptInstance.update();
         }
 
         /**
@@ -73,8 +73,8 @@ namespace feng3d
         dispose()
         {
             this.enabled = false;
-            this._script && this._script.dispose();
-            this._script = null;
+            this.scriptInstance && this.scriptInstance.dispose();
+            this.scriptInstance = null;
             super.dispose();
         }
 
@@ -108,7 +108,7 @@ namespace feng3d
             {
                 var scriptComponent = scripts[scripts.length - 1];
                 scripts.pop();
-                if (scriptComponent.url == script)
+                if (scriptComponent.script == script)
                 {
                     removeScript(gameObject, scriptComponent);
                 }
