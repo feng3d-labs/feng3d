@@ -181,6 +181,8 @@ namespace feng3d
                 resultScript.className = classname;
                 //
                 var windowEval = eval.bind(window);
+                //
+                content += `\n//# sourceURL=${scriptPath}`;
                 windowEval(content);
 
                 //

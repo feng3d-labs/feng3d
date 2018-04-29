@@ -4,11 +4,11 @@
   * [快速开始](quickstart.md)
 
 * 编辑器
-  * [简介](editor.md)
+  * [介绍编辑器](editor.md)
   * [菜单和工具栏](menus-and-toolbar.md)
 
 * 脚本
-  * [简介](script.md)
+  * [介绍脚本](script.md)
   * [创建脚本](createscript.md)
 
 * 导航
