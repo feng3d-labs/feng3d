@@ -86,14 +86,62 @@ namespace feng3d
 	 * 对象界面
 	 * @author feng 2016-3-10
 	 */
-	export var objectview: ObjectView = {
-		getObjectView: getObjectView,
+	export var objectview = {
+
+		/**
+		 * 获取对象界面
+		 * 
+		 * @static
+		 * @param {Object} object				用于生成界面的对象
+		 * @param autocreate					当对象没有注册属性时是否自动创建属性信息
+		 * @param excludeAttrs					排除属性列表
+		 * @returns 							对象界面
+		 * 
+		 * @memberOf ObjectView
+		 */
+		getObjectView(object: Object, autocreate = true, excludeAttrs: string[] = [])
+		{
+			var classConfig = getObjectInfo(object, autocreate, excludeAttrs);
+
+			if (classConfig.component == null || classConfig.component == "")
+			{
+				//返回基础类型界面类定义
+				if (!(classConfig.owner instanceof Object))
+				{
+					classConfig.component = objectview.defaultBaseObjectViewClass;
+				} else
+				{
+					//使用默认类型界面类定义
+					classConfig.component = objectview.defaultObjectViewClass;
+				}
+			}
+
+			var cls = objectview.OVComponent[classConfig.component];
+			assert(cls != null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
+			var view = new cls(classConfig)
+			return view;
+		},
 		getAttributeView: getAttributeView,
 		getBlockView: getBlockView,
+		/**
+		 * 默认基础类型对象界面类定义
+		 */
 		defaultBaseObjectViewClass: "",
+		/**
+		 * 默认对象界面类定义
+		 */
 		defaultObjectViewClass: "",
+		/**
+		 * 默认对象属性界面类定义
+		 */
 		defaultObjectAttributeViewClass: "",
+		/**
+		 * 属性块默认界面
+		 */
 		defaultObjectAttributeBlockView: "",
+		/**
+		 * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
+		 */
 		defaultTypeAttributeView: {},
 		OAVComponent: {},
 		OBVComponent: {},
@@ -170,38 +218,6 @@ namespace feng3d
 	}
 
 	/**
-	 * 获取对象界面
-	 * 
-	 * @static
-	 * @param {Object} object				用于生成界面的对象
-	 * @returns 							对象界面
-	 * 
-	 * @memberOf ObjectView
-	 */
-	function getObjectView(object: Object, autocreate = true)
-	{
-		var classConfig = getObjectInfo(object, autocreate);
-
-		if (classConfig.component == null || classConfig.component == "")
-		{
-			//返回基础类型界面类定义
-			if (!(classConfig.owner instanceof Object))
-			{
-				classConfig.component = objectview.defaultBaseObjectViewClass;
-			} else
-			{
-				//使用默认类型界面类定义
-				classConfig.component = objectview.defaultObjectViewClass;
-			}
-		}
-
-		var cls = objectview.OVComponent[classConfig.component];
-		assert(cls != null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
-		var view = new cls(classConfig)
-		return view;
-	}
-
-	/**
 	 * 获取属性界面
 	 * 
 	 * @static
@@ -260,10 +276,12 @@ namespace feng3d
 
 	/**
 	 * 获取对象信息
-	 * @param object
+	 * @param object				对象
+	 * @param autocreate			当对象没有注册属性时是否自动创建属性信息
+	 * @param excludeAttrs			排除属性列表
 	 * @return
 	 */
-	function getObjectInfo(object: Object, autocreate = true): ObjectViewInfo
+	function getObjectInfo(object: Object, autocreate = true, excludeAttrs: string[] = []): ObjectViewInfo
 	{
 		if (typeof object == "string" || typeof object == "number" || typeof object == "boolean")
 		{
@@ -288,17 +306,21 @@ namespace feng3d
 		var objectAttributeInfos: AttributeViewInfo[] = [];
 		classConfig.attributeDefinitionVec.forEach(attributeDefinition =>
 		{
-			objectAttributeInfos.push(
-				{
-					name: attributeDefinition.name,
-					block: attributeDefinition.block,
-					component: attributeDefinition.component,
-					componentParam: attributeDefinition.componentParam,
-					owner: object,
-					writable: true,
-					type: getAttributeType(object[attributeDefinition.name])
-				}
-			);
+			if (excludeAttrs.indexOf(attributeDefinition.name) == -1)
+			{
+				objectAttributeInfos.push(
+					{
+						name: attributeDefinition.name,
+						block: attributeDefinition.block,
+						component: attributeDefinition.component,
+						componentParam: attributeDefinition.componentParam,
+						owner: object,
+						writable: true,
+						type: getAttributeType(object[attributeDefinition.name])
+					}
+				);
+			}
+
 		});
 
 		function getAttributeType(attribute): string
@@ -441,41 +463,6 @@ namespace feng3d
 		}
 
 		return objectBlockInfos;
-	}
-
-	export interface ObjectView
-	{
-		getObjectView: (object: Object, autocreate?: boolean) => any;
-		getAttributeView: (attributeViewInfo: AttributeViewInfo) => any;
-		getBlockView: (blockViewInfo: BlockViewInfo) => any;
-		/**
-		 * 默认基础类型对象界面类定义
-		 */
-		defaultBaseObjectViewClass: string;
-		/**
-		 * 默认对象界面类定义
-		 */
-		defaultObjectViewClass: string;
-
-		/**
-		 * 默认对象属性界面类定义
-		 */
-		defaultObjectAttributeViewClass: string;
-
-		/**
-		 * 属性块默认界面
-		 */
-		defaultObjectAttributeBlockView: string;
-
-		/**
-		 * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
-		 */
-		defaultTypeAttributeView: { [attributeType: string]: AttributeTypeDefinition };
-		OAVComponent: {};
-		OBVComponent: {};
-		OVComponent: {};
-		addOAV<K extends keyof OAVComponentParam>(target: any, propertyKey: string, param?: { block?: string; component?: K; componentParam?: OAVComponentParam[K]; })
-		getObjectInfo(object: Object, autocreate?: boolean): ObjectViewInfo
 	}
 
 	export interface OAVComponentParam

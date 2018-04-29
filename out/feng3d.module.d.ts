@@ -156,43 +156,25 @@ declare namespace feng3d {
      * 对象界面
      * @author feng 2016-3-10
      */
-    var objectview: ObjectView;
-    interface ObjectView {
-        getObjectView: (object: Object, autocreate?: boolean) => any;
+    var objectview: {
+        getObjectView(object: Object, autocreate?: boolean, excludeAttrs?: string[]): any;
         getAttributeView: (attributeViewInfo: AttributeViewInfo) => any;
         getBlockView: (blockViewInfo: BlockViewInfo) => any;
-        /**
-         * 默认基础类型对象界面类定义
-         */
         defaultBaseObjectViewClass: string;
-        /**
-         * 默认对象界面类定义
-         */
         defaultObjectViewClass: string;
-        /**
-         * 默认对象属性界面类定义
-         */
         defaultObjectAttributeViewClass: string;
-        /**
-         * 属性块默认界面
-         */
         defaultObjectAttributeBlockView: string;
-        /**
-         * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
-         */
-        defaultTypeAttributeView: {
-            [attributeType: string]: AttributeTypeDefinition;
-        };
+        defaultTypeAttributeView: {};
         OAVComponent: {};
         OBVComponent: {};
         OVComponent: {};
-        addOAV<K extends keyof OAVComponentParam>(target: any, propertyKey: string, param?: {
+        addOAV: <K extends string>(target: any, propertyKey: string, param?: {
             block?: string;
             component?: K;
             componentParam?: OAVComponentParam[K];
-        }): any;
-        getObjectInfo(object: Object, autocreate?: boolean): ObjectViewInfo;
-    }
+        }) => void;
+        getObjectInfo: (object: Object, autocreate?: boolean, excludeAttrs?: string[]) => ObjectViewInfo;
+    };
     interface OAVComponentParam {
         属性组件名称: "属性组件参数";
         [component: string]: any;

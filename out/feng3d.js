@@ -234,13 +234,57 @@ var feng3d;
      * @author feng 2016-3-10
      */
     feng3d.objectview = {
-        getObjectView: getObjectView,
+        /**
+         * 获取对象界面
+         *
+         * @static
+         * @param {Object} object				用于生成界面的对象
+         * @param autocreate					当对象没有注册属性时是否自动创建属性信息
+         * @param excludeAttrs					排除属性列表
+         * @returns 							对象界面
+         *
+         * @memberOf ObjectView
+         */
+        getObjectView: function (object, autocreate, excludeAttrs) {
+            if (autocreate === void 0) { autocreate = true; }
+            if (excludeAttrs === void 0) { excludeAttrs = []; }
+            var classConfig = getObjectInfo(object, autocreate, excludeAttrs);
+            if (classConfig.component == null || classConfig.component == "") {
+                //返回基础类型界面类定义
+                if (!(classConfig.owner instanceof Object)) {
+                    classConfig.component = feng3d.objectview.defaultBaseObjectViewClass;
+                }
+                else {
+                    //使用默认类型界面类定义
+                    classConfig.component = feng3d.objectview.defaultObjectViewClass;
+                }
+            }
+            var cls = feng3d.objectview.OVComponent[classConfig.component];
+            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
+            var view = new cls(classConfig);
+            return view;
+        },
         getAttributeView: getAttributeView,
         getBlockView: getBlockView,
+        /**
+         * 默认基础类型对象界面类定义
+         */
         defaultBaseObjectViewClass: "",
+        /**
+         * 默认对象界面类定义
+         */
         defaultObjectViewClass: "",
+        /**
+         * 默认对象属性界面类定义
+         */
         defaultObjectAttributeViewClass: "",
+        /**
+         * 属性块默认界面
+         */
         defaultObjectAttributeBlockView: "",
+        /**
+         * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
+         */
         defaultTypeAttributeView: {},
         OAVComponent: {},
         OBVComponent: {},
@@ -300,33 +344,6 @@ var feng3d;
         }
     }
     /**
-     * 获取对象界面
-     *
-     * @static
-     * @param {Object} object				用于生成界面的对象
-     * @returns 							对象界面
-     *
-     * @memberOf ObjectView
-     */
-    function getObjectView(object, autocreate) {
-        if (autocreate === void 0) { autocreate = true; }
-        var classConfig = getObjectInfo(object, autocreate);
-        if (classConfig.component == null || classConfig.component == "") {
-            //返回基础类型界面类定义
-            if (!(classConfig.owner instanceof Object)) {
-                classConfig.component = feng3d.objectview.defaultBaseObjectViewClass;
-            }
-            else {
-                //使用默认类型界面类定义
-                classConfig.component = feng3d.objectview.defaultObjectViewClass;
-            }
-        }
-        var cls = feng3d.objectview.OVComponent[classConfig.component];
-        feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
-        var view = new cls(classConfig);
-        return view;
-    }
-    /**
      * 获取属性界面
      *
      * @static
@@ -374,11 +391,14 @@ var feng3d;
     }
     /**
      * 获取对象信息
-     * @param object
+     * @param object				对象
+     * @param autocreate			当对象没有注册属性时是否自动创建属性信息
+     * @param excludeAttrs			排除属性列表
      * @return
      */
-    function getObjectInfo(object, autocreate) {
+    function getObjectInfo(object, autocreate, excludeAttrs) {
         if (autocreate === void 0) { autocreate = true; }
+        if (excludeAttrs === void 0) { excludeAttrs = []; }
         if (typeof object == "string" || typeof object == "number" || typeof object == "boolean") {
             return {
                 objectAttributeInfos: [],
@@ -397,15 +417,17 @@ var feng3d;
         };
         var objectAttributeInfos = [];
         classConfig.attributeDefinitionVec.forEach(function (attributeDefinition) {
-            objectAttributeInfos.push({
-                name: attributeDefinition.name,
-                block: attributeDefinition.block,
-                component: attributeDefinition.component,
-                componentParam: attributeDefinition.componentParam,
-                owner: object,
-                writable: true,
-                type: getAttributeType(object[attributeDefinition.name])
-            });
+            if (excludeAttrs.indexOf(attributeDefinition.name) == -1) {
+                objectAttributeInfos.push({
+                    name: attributeDefinition.name,
+                    block: attributeDefinition.block,
+                    component: attributeDefinition.component,
+                    componentParam: attributeDefinition.componentParam,
+                    owner: object,
+                    writable: true,
+                    type: getAttributeType(object[attributeDefinition.name])
+                });
+            }
         });
         function getAttributeType(attribute) {
             if (attribute == null)
