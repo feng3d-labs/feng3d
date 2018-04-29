@@ -9,7 +9,7 @@
 
 * 脚本
   * [介绍脚本](script.md)
-  * [创建脚本](createscript.md)
+  * [创建新脚本](createscript.md)
 
 * 导航
   * [![](_images/editor.png)](http://feng3d.gitee.io/editor)
