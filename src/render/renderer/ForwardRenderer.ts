@@ -85,7 +85,7 @@ namespace feng3d
             return [];
         var meshRenderers: MeshRenderer[] = [];
         var meshRenderer = gameObject.getComponent(MeshRenderer);
-        if (meshRenderer)
+        if (meshRenderer && meshRenderer.enabled)
         {
             var boundingComponent = gameObject.getComponent(BoundingComponent);
             if (boundingComponent.selfWorldBounds)

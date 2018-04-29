@@ -11742,7 +11742,7 @@ var feng3d;
             return [];
         var meshRenderers = [];
         var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
-        if (meshRenderer) {
+        if (meshRenderer && meshRenderer.enabled) {
             var boundingComponent = gameObject.getComponent(feng3d.BoundingComponent);
             if (boundingComponent.selfWorldBounds) {
                 if (frustum.intersectsBox(boundingComponent.selfWorldBounds))
