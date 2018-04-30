@@ -26,6 +26,14 @@ namespace feng3d
                 _shaderMap[shaderName] = ShaderLoader.loadText(shaderName);
             return _shaderMap[shaderName];
         }
+
+        /**
+         * 获取shader列表
+         */
+        static getShaderNames()
+        {
+            return Object.keys(_shaderMap);
+        }
     }
 
     /**

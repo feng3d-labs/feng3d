@@ -6897,6 +6897,10 @@ declare namespace feng3d {
          * 获取shaderCode
          */
         static getShaderCode(shaderName: string): string;
+        /**
+         * 获取shader列表
+         */
+        static getShaderNames(): string[];
     }
 }
 declare namespace feng3d {

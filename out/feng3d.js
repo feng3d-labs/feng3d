@@ -11145,6 +11145,12 @@ var feng3d;
                 _shaderMap[shaderName] = ShaderLoader.loadText(shaderName);
             return _shaderMap[shaderName];
         };
+        /**
+         * 获取shader列表
+         */
+        ShaderLib.getShaderNames = function () {
+            return Object.keys(_shaderMap);
+        };
         return ShaderLib;
     }());
     feng3d.ShaderLib = ShaderLib;
@@ -18775,6 +18781,9 @@ var feng3d;
         __decorate([
             feng3d.oav()
         ], Material.prototype, "useViewRect", void 0);
+        Material = __decorate([
+            feng3d.ov({ component: "OVMaterial" })
+        ], Material);
         return Material;
     }(feng3d.RenderDataHolder));
     feng3d.Material = Material;
