@@ -10,11 +10,11 @@ uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 
 #ifdef HAS_SKELETON_ANIMATION
-    #include<modules/skeleton.vertex>
+    #include<skeleton.vertex>
 #endif
 
 #ifdef HAS_PARTICLE_ANIMATOR
-    #include<modules/particle.vertex>
+    #include<particle.vertex>
 #endif
 
 void main(void) {

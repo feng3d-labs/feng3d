@@ -14,11 +14,9 @@ namespace feng3d
     {
         if (!shader)
         {
-            var vertexCode = ShaderLib.getShaderCode("wireframe.vertex");
-            var fragmentCode = ShaderLib.getShaderCode("wireframe.fragment");
             shader = new Shader();
-            shader.vertexCode = vertexCode;
-            shader.fragmentCode = fragmentCode;
+            shader.vertexCode = shaderlib.getShaderCode("wireframe").vertex;
+            shader.fragmentCode = shaderlib.getShaderCode("wireframe").fragment;
         }
         if (!renderParams)
         {

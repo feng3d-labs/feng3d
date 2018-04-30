@@ -68,11 +68,9 @@ namespace feng3d
          */
         protected drawGameObject(gl: GL, renderAtomic: RenderAtomic)
         {
-            var vertexCode = ShaderLib.getShaderCode("mouse.vertex");
-            var fragmentCode = ShaderLib.getShaderCode("mouse.fragment");
             var shader = new Shader();
-            shader.vertexCode = vertexCode;
-            shader.fragmentCode = fragmentCode;
+            shader.vertexCode = shaderlib.getShaderCode("mouse").vertex;
+            shader.fragmentCode = shaderlib.getShaderCode("mouse").fragment;
             // super.drawGameObject(gl, renderAtomic, shader);
         }
     }

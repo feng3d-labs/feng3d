@@ -34,8 +34,10 @@ namespace feng3d
             if (this._shaderName == value)
                 return;
             this._shaderName = value;
-            this.vertexCode = ShaderLib.getShaderCode(this._shaderName + ".vertex");
-            this.fragmentCode = ShaderLib.getShaderCode(this._shaderName + ".fragment")
+            var shader = shaderlib.getShaderCode(this._shaderName);
+
+            this.vertexCode = shader.vertex;
+            this.fragmentCode = shader.fragment;
         }
         private _shaderName: string;
 

@@ -6881,26 +6881,63 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    var shaderConfig: ShaderConfig;
+    /**
+     * shader 库
+     */
+    var shaderlib: ShaderLib;
     /**
      * 着色器库，由shader.ts初始化
      */
-    var shaderFileMap: {
-        [filePath: string]: string;
-    };
+    interface ShaderConfig {
+        shaders: {
+            [shaderName: string]: {
+                /**
+                 * 从glsl读取的vertex shader
+                 */
+                vertex: string;
+                /**
+                 * 从glsl读取的fragment shader
+                 */
+                fragment: string;
+                /**
+                 * 处理了 include 的 shader
+                 */
+                uninclude?: {
+                    vertex: string;
+                    fragment: string;
+                };
+            };
+        };
+        /**
+         * shader 模块
+         */
+        modules: {
+            [moduleName: string]: string;
+        };
+    }
     /**
      * 渲染代码库
      * @author feng 2016-12-16
      */
     class ShaderLib {
-        static getShaderContentByName(shaderName: string): string;
+        shaderConfig: ShaderConfig;
+        private _shaderConfig;
         /**
          * 获取shaderCode
          */
-        static getShaderCode(shaderName: string): string;
+        getShaderCode(shaderName: string): {
+            vertex: string;
+            fragment: string;
+        };
+        /**
+         * 展开 include
+         */
+        private uninclude(shaderCode);
         /**
          * 获取shader列表
          */
-        static getShaderNames(): string[];
+        getShaderNames(): string[];
     }
 }
 declare namespace feng3d {

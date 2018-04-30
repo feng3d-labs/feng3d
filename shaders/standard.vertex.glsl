@@ -29,7 +29,7 @@ varying vec3 v_normal;
 #endif
 
 #ifdef HAS_SKELETON_ANIMATION
-    #include<modules/skeleton.vertex>
+    #include<skeleton.vertex>
 #endif
 
 #ifdef IS_POINTS_MODE
@@ -37,7 +37,7 @@ varying vec3 v_normal;
 #endif
 
 #ifdef HAS_PARTICLE_ANIMATOR
-    #include<modules/particle.vertex>
+    #include<particle.vertex>
 #endif
 
 void main(void) {

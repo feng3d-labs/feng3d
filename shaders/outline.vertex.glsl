@@ -15,7 +15,7 @@ uniform float u_scaleByDepth;
 uniform float u_outlineMorphFactor;
 
 #ifdef HAS_SKELETON_ANIMATION
-    #include<modules/skeleton.vertex>
+    #include<skeleton.vertex>
 #endif
 
 uniform float u_outlineSize;

@@ -24,7 +24,7 @@
 
 //卡通
 #ifdef IS_CARTOON
-    #include<modules/cartoon.fragment>
+    #include<cartoon.fragment>
 #endif
 
 //计算光照漫反射系数

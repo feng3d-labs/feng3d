@@ -9,6 +9,12 @@
             "request": "launch",
             "name": "tssort",
             "program": "${workspaceFolder}/tssort.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "shaderpack",
+            "program": "${workspaceFolder}/shaderpack.js"
         }
     ]
 }

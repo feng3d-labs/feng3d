@@ -13,11 +13,9 @@ namespace feng3d
     {
         if (!shader)
         {
-            var vertexCode = ShaderLib.getShaderCode("outline.vertex");
-            var fragmentCode = ShaderLib.getShaderCode("outline.fragment");
             shader = new Shader();
-            shader.vertexCode = vertexCode;
-            shader.fragmentCode = fragmentCode;
+            shader.vertexCode = shaderlib.getShaderCode("outline").vertex;
+            shader.fragmentCode = shaderlib.getShaderCode("outline").fragment;
         }
         if (!renderParams)
         {

@@ -1,9 +1,42 @@
 namespace feng3d
 {
+    export var shaderConfig: ShaderConfig;
+    /**
+     * shader 库
+     */
+    export var shaderlib: ShaderLib;
+
     /**
      * 着色器库，由shader.ts初始化
      */
-    export var shaderFileMap: { [filePath: string]: string };
+    export interface ShaderConfig
+    {
+        shaders: {
+            [shaderName: string]: {
+                /**
+                 * 从glsl读取的vertex shader
+                 */
+                vertex: string,
+                /**
+                 * 从glsl读取的fragment shader
+                 */
+                fragment: string,
+                /**
+                 * 处理了 include 的 shader
+                 */
+                uninclude?: {
+                    vertex: string,
+                    fragment: string,
+                },
+            }
+        },
+        /**
+         * shader 模块
+         */
+        modules: {
+            [moduleName: string]: string
+        }
+    }
 
     /**
      * 渲染代码库
@@ -11,74 +44,64 @@ namespace feng3d
      */
     export class ShaderLib
     {
-        static getShaderContentByName(shaderName: string)
+        get shaderConfig()
         {
-            var shaderPath = "shaders/" + shaderName + ".glsl";
-            return shaderFileMap[shaderPath];
+            this._shaderConfig = this._shaderConfig || shaderConfig;
+            return this._shaderConfig;
         }
+        set shaderConfig(v)
+        {
+            this._shaderConfig = v;
+        }
+        private _shaderConfig: ShaderConfig;
 
         /**
          * 获取shaderCode
          */
-        static getShaderCode(shaderName: string)
+        getShaderCode(shaderName: string)
         {
-            if (!_shaderMap[shaderName])
-                _shaderMap[shaderName] = ShaderLoader.loadText(shaderName);
-            return _shaderMap[shaderName];
+            var shader = this.shaderConfig.shaders[shaderName];
+            if (!shader) return;
+
+            if (!shader.uninclude)
+            {
+                shader.uninclude = <any>{};
+                var uninclude = shader.uninclude;
+                uninclude.vertex = this.uninclude(shader.vertex);
+                uninclude.fragment = this.uninclude(shader.fragment);
+            }
+            return this.shaderConfig.shaders[shaderName].uninclude;
         }
 
         /**
-         * 获取shader列表
+         * 展开 include
          */
-        static getShaderNames()
+        private uninclude(shaderCode: string)
         {
-            return Object.keys(_shaderMap);
-        }
-    }
-
-    /**
-     * 渲染代码字典
-     */
-    var _shaderMap: { [shaderName: string]: string } = {};
-
-    /**
-     * 渲染代码加载器字典
-     */
-    var _shaderLoaderMap: { [shaderName: string]: ShaderLoader } = {};
-
-    /**
-     * 着色器加载器
-     * @author feng 2016-12-15
-     */
-    class ShaderLoader
-    {
-        /**
-         * 加载shader
-         * @param url   路径
-         */
-        static loadText(shaderName: string)
-        {
-            var shaderCode = ShaderLib.getShaderContentByName(shaderName);
-
             //#include 正则表达式
             var includeRegExp = /#include<(.+)>/g;
             //
             var match = includeRegExp.exec(shaderCode);
             while (match != null)
             {
-                var subShaderName = match[1];
-                var subShaderCode = ShaderLib.getShaderCode(subShaderName);
-                if (subShaderCode)
-                {
-                    shaderCode = shaderCode.replace(match[0], subShaderCode);
-                } else
-                {
-                    var subShaderCode = ShaderLoader.loadText(subShaderName);
-                    shaderCode = shaderCode.replace(match[0], subShaderCode);
-                }
+                var moduleshader = this.shaderConfig.modules[match[1]];
+                moduleshader = this.uninclude(moduleshader);
+                shaderCode = shaderCode.replace(match[0], moduleshader);
                 match = includeRegExp.exec(shaderCode);
             }
             return shaderCode;
         }
+
+        /**
+         * 获取shader列表
+         */
+        getShaderNames()
+        {
+            return Object.keys(this.shaderConfig.shaders);
+        }
+
+
     }
+
+    shaderlib = new ShaderLib();
 }

@@ -235,7 +235,7 @@
         //
         "src/core/Mouse3DManager.ts",
         //
-        "src/autofiles/shaders.ts",
+        "src/autofiles/ShaderConfig.ts",
         //
         "src/Feng3d.ts"
     ]

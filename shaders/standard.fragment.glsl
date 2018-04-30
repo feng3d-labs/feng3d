@@ -42,21 +42,21 @@ uniform vec4 u_ambient;
 #endif
 
 #ifdef HAS_TERRAIN_METHOD
-    #include<modules/terrain.fragment>
+    #include<terrain.fragment>
 #endif
 
-#include<modules/lightShading.fragment>
+#include<lightShading.fragment>
 
 #ifdef HAS_FOG_METHOD
-    #include<modules/fog.fragment>
+    #include<fog.fragment>
 #endif
 
 #ifdef HAS_ENV_METHOD
-    #include<modules/envmap.fragment>
+    #include<envmap.fragment>
 #endif
 
 #ifdef HAS_PARTICLE_ANIMATOR
-    #include<modules/particle.fragment>
+    #include<particle.fragment>
 #endif
 
 void main(void)

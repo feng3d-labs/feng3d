@@ -1,5 +1,5 @@
 #ifdef USE_TERRAIN_MERGE
-    #include<modules/terrainMerge.fragment>
+    #include<terrainMerge.fragment>
 #else
-    #include<modules/terrainDefault.fragment>
+    #include<terrainDefault.fragment>
 #endif
