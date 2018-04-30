@@ -7,16 +7,10 @@ namespace feng3d
         draw: draw,
     };
 
-    var shader: Shader;
+    var shadername = "outline";
     var renderParams: RenderParams;
     function init()
     {
-        if (!shader)
-        {
-            shader = new Shader();
-            shader.vertexCode = shaderlib.getShaderCode("outline").vertex;
-            shader.fragmentCode = shaderlib.getShaderCode("outline").fragment;
-        }
         if (!renderParams)
         {
             renderParams = new RenderParams();
@@ -55,9 +49,7 @@ namespace feng3d
     {
         init();
 
-        var oldshader = renderAtomic.shader;
-        shader.macro = renderAtomic.shader.macro;
-        renderAtomic.shader = shader;
+        var oldshadername = renderAtomic.shadername;
 
         var oldRenderParams = renderAtomic.renderParams;
         renderAtomic.renderParams = renderParams;
@@ -65,7 +57,7 @@ namespace feng3d
         gl.renderer.draw(renderAtomic);
 
         //
-        renderAtomic.shader = oldshader;
+        renderAtomic.shadername = oldshadername;
         renderAtomic.renderParams = oldRenderParams;
     }
 

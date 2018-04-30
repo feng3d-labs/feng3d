@@ -10218,43 +10218,29 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * shader
+     */
     var Shader = /** @class */ (function () {
-        function Shader() {
-            //
-            this._invalid = true;
-            this._macro = { boolMacros: {}, valueMacros: {}, addMacros: {} };
+        function Shader(renderAtomic) {
             /**
              * 纹理缓冲
              */
             this._webGLProgramMap = new Map();
+            this.renderAtomic = renderAtomic;
         }
-        Object.defineProperty(Shader.prototype, "macro", {
-            get: function () {
-                return this._macro;
-            },
-            set: function (value) {
-                this._macro = value;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 激活渲染程序
          */
         Shader.prototype.activeShaderProgram = function (gl) {
-            if (!this.vertexCode || !this.fragmentCode)
-                return null;
-            if (this._invalid) {
-                this._invalid = false;
-                this._webGLProgramMap.forEach(function (value, key) {
-                    value.destroy();
-                });
-                this._webGLProgramMap.clear();
+            if (this.renderAtomic.macroInvalid) {
+                this.renderAtomic.macroInvalid = false;
+                this.clear();
+                var shader = feng3d.shaderlib.getShader(this.renderAtomic.shadername);
                 //应用宏
-                var shaderMacroStr = this.getMacroCode(this.macro);
-                this._resultVertexCode = this.vertexCode.replace(/#define\s+macros/, shaderMacroStr);
-                this._resultFragmentCode = this.fragmentCode.replace(/#define\s+macros/, shaderMacroStr);
+                var shaderMacroStr = this.getMacroCode(this.renderAtomic.shaderMacro);
+                this._resultVertexCode = shader.vertex.replace(/#define\s+macros/, shaderMacroStr);
+                this._resultFragmentCode = shader.fragment.replace(/#define\s+macros/, shaderMacroStr);
             }
             //渲染程序
             var shaderProgram = this._webGLProgramMap.get(gl);
@@ -10268,9 +10254,6 @@ var feng3d;
             }
             gl.useProgram(shaderProgram);
             return shaderProgram;
-        };
-        Shader.prototype.invalidate = function () {
-            this._invalid = true;
         };
         Shader.prototype.getMacroCode = function (macro) {
             var macroHeader = "";
@@ -10293,6 +10276,12 @@ var feng3d;
                 macroHeader += "#define " + macroName + " " + value + "\n";
             });
             return macroHeader;
+        };
+        Shader.prototype.clear = function () {
+            this._webGLProgramMap.forEach(function (value, key) {
+                value.destroy();
+            });
+            this._webGLProgramMap.clear();
         };
         return Shader;
     }());
@@ -10339,10 +10328,6 @@ var feng3d;
              */
             this.renderParams = new feng3d.RenderParams();
             /**
-             * 渲染程序
-             */
-            this.shader = new feng3d.Shader();
-            /**
              * 属性数据列表
              */
             this.attributes = {};
@@ -10354,7 +10339,15 @@ var feng3d;
              * 可渲染条件，当所有条件值均为true是可以渲染
              */
             this.renderableCondition = {};
-            this.uniforms.s_ambient;
+            /**
+             * shader 中的 宏
+             */
+            this.shaderMacro = { boolMacros: {}, valueMacros: {}, addMacros: {} };
+            /**
+             * macro是否失效
+             */
+            this.macroInvalid = true;
+            this.shader = new feng3d.Shader(this);
         }
         return RenderAtomic;
     }());
@@ -10967,59 +10960,43 @@ var feng3d;
                 delete renderData.attributes[name];
             });
         };
-        RenderDataHolder.prototype.createvertexCode = function (vertexCode) {
-            this.renderdataChange("vertexCode", function (renderData) {
-                if (renderData.shader.vertexCode == vertexCode)
-                    return;
-                renderData.shader.vertexCode = vertexCode;
-                renderData.shader.invalidate();
+        RenderDataHolder.prototype.createvertexCode = function (shadername) {
+            this.renderdataChange("shadername", function (renderData) {
+                renderData.shadername = shadername;
             }, function (renderData) {
-                renderData.shader.vertexCode = null;
-                renderData.shader.invalidate();
-            });
-        };
-        RenderDataHolder.prototype.createfragmentCode = function (fragmentCode) {
-            this.renderdataChange("fragmentCode", function (renderData) {
-                if (renderData.shader.fragmentCode == fragmentCode)
-                    return;
-                renderData.shader.fragmentCode = fragmentCode;
-                renderData.shader.invalidate();
-            }, function (renderData) {
-                renderData.shader.fragmentCode = null;
-                renderData.shader.invalidate();
             });
         };
         RenderDataHolder.prototype.createValueMacro = function (name, value) {
             this.renderdataChange(name, function (renderData) {
-                if (renderData.shader.macro.valueMacros[name] == value)
+                if (renderData.shaderMacro.valueMacros[name] == value)
                     return;
-                renderData.shader.macro.valueMacros[name] = value;
-                renderData.shader.invalidate();
+                renderData.shaderMacro.valueMacros[name] = value;
+                renderData.macroInvalid = true;
             }, function (renderData) {
-                delete renderData.shader.macro.valueMacros[name];
-                renderData.shader.invalidate();
+                delete renderData.shaderMacro.valueMacros[name];
+                renderData.macroInvalid = true;
             });
         };
         RenderDataHolder.prototype.createBoolMacro = function (name, value) {
             this.renderdataChange(name, function (renderData) {
-                if (renderData.shader.macro.boolMacros[name] == value)
+                if (renderData.shaderMacro.boolMacros[name] == value)
                     return;
-                renderData.shader.macro.boolMacros[name] = value;
-                renderData.shader.invalidate();
+                renderData.shaderMacro.boolMacros[name] = value;
+                renderData.macroInvalid = true;
             }, function (renderData) {
-                delete renderData.shader.macro.boolMacros[name];
-                renderData.shader.invalidate();
+                delete renderData.shaderMacro.boolMacros[name];
+                renderData.macroInvalid = true;
             });
         };
         RenderDataHolder.prototype.createAddMacro = function (name, value) {
             this.renderdataChange(name, function (renderData) {
-                if (renderData.shader.macro.addMacros[name] == value)
+                if (renderData.shaderMacro.addMacros[name] == value)
                     return;
-                renderData.shader.macro.addMacros[name] = value;
-                renderData.shader.invalidate();
+                renderData.shaderMacro.addMacros[name] = value;
+                renderData.macroInvalid = true;
             }, function (renderData) {
-                delete renderData.shader.macro.addMacros[name];
-                renderData.shader.invalidate();
+                delete renderData.shaderMacro.addMacros[name];
+                renderData.macroInvalid = true;
             });
         };
         RenderDataHolder.prototype.createInstanceCount = function (value) {
@@ -11147,17 +11124,16 @@ var feng3d;
         /**
          * 获取shaderCode
          */
-        ShaderLib.prototype.getShaderCode = function (shaderName) {
+        ShaderLib.prototype.getShader = function (shaderName) {
             var shader = this.shaderConfig.shaders[shaderName];
             if (!shader)
                 return;
             if (!shader.uninclude) {
-                shader.uninclude = {};
-                var uninclude = shader.uninclude;
-                uninclude.vertex = this.uninclude(shader.vertex);
-                uninclude.fragment = this.uninclude(shader.fragment);
+                var vertex = this.uninclude(shader.vertex);
+                var fragment = this.uninclude(shader.fragment);
+                shader.uninclude = { vertex: vertex, fragment: fragment };
             }
-            return this.shaderConfig.shaders[shaderName].uninclude;
+            return shader.uninclude;
         };
         /**
          * 展开 include
@@ -11819,9 +11795,9 @@ var feng3d;
          * 绘制3D对象
          */
         MouseRenderer.prototype.drawGameObject = function (gl, renderAtomic) {
-            var shader = new feng3d.Shader();
-            shader.vertexCode = feng3d.shaderlib.getShaderCode("mouse").vertex;
-            shader.fragmentCode = feng3d.shaderlib.getShaderCode("mouse").fragment;
+            // var shader = new Shader();
+            // shader.vertexCode = shaderlib.getShader("mouse").vertex;
+            // shader.fragmentCode = shaderlib.getShader("mouse").fragment;
             // super.drawGameObject(gl, renderAtomic, shader);
         };
         return MouseRenderer;
@@ -11879,14 +11855,9 @@ var feng3d;
     feng3d.outlineRenderer = {
         draw: draw,
     };
-    var shader;
+    var shadername = "outline";
     var renderParams;
     function init() {
-        if (!shader) {
-            shader = new feng3d.Shader();
-            shader.vertexCode = feng3d.shaderlib.getShaderCode("outline").vertex;
-            shader.fragmentCode = feng3d.shaderlib.getShaderCode("outline").fragment;
-        }
         if (!renderParams) {
             renderParams = new feng3d.RenderParams();
             renderParams.renderMode = feng3d.RenderMode.TRIANGLES;
@@ -11912,14 +11883,12 @@ var feng3d;
      */
     function drawGameObject(gl, renderAtomic) {
         init();
-        var oldshader = renderAtomic.shader;
-        shader.macro = renderAtomic.shader.macro;
-        renderAtomic.shader = shader;
+        var oldshadername = renderAtomic.shadername;
         var oldRenderParams = renderAtomic.renderParams;
         renderAtomic.renderParams = renderParams;
         gl.renderer.draw(renderAtomic);
         //
-        renderAtomic.shader = oldshader;
+        renderAtomic.shadername = oldshadername;
         renderAtomic.renderParams = oldRenderParams;
     }
     var OutLineComponent = /** @class */ (function (_super) {
@@ -11963,14 +11932,9 @@ var feng3d;
     feng3d.wireframeRenderer = {
         draw: draw,
     };
-    var shader;
+    var shadername = "wireframe";
     var renderParams;
     function init() {
-        if (!shader) {
-            shader = new feng3d.Shader();
-            shader.vertexCode = feng3d.shaderlib.getShaderCode("wireframe").vertex;
-            shader.fragmentCode = feng3d.shaderlib.getShaderCode("wireframe").fragment;
-        }
         if (!renderParams) {
             renderParams = new feng3d.RenderParams();
             renderParams.renderMode = feng3d.RenderMode.LINES;
@@ -12006,9 +11970,7 @@ var feng3d;
             || renderMode == feng3d.RenderMode.LINE_STRIP)
             return;
         init();
-        var oldshader = renderAtomic.shader;
-        shader.macro = renderAtomic.shader.macro;
-        renderAtomic.shader = shader;
+        var oldshadername = renderAtomic.shadername;
         var oldrenderParams = renderAtomic.renderParams;
         renderAtomic.renderParams = renderParams;
         //
@@ -12026,7 +11988,7 @@ var feng3d;
         gl.renderer.draw(renderAtomic);
         renderAtomic.indexBuffer = oldIndexBuffer;
         //
-        renderAtomic.shader = oldshader;
+        renderAtomic.shadername = oldshadername;
         renderAtomic.renderParams = oldrenderParams;
     }
     /**
@@ -12169,9 +12131,7 @@ var feng3d;
             renderAtomic.indexBuffer = new feng3d.Index();
             renderAtomic.indexBuffer.indices = indices;
             //
-            var shader = feng3d.shaderlib.getShaderCode("skybox");
-            renderAtomic.shader.vertexCode = shader.vertex;
-            renderAtomic.shader.fragmentCode = shader.fragment;
+            renderAtomic.shadername = "skybox";
             //
             renderAtomic.renderParams.renderMode = feng3d.RenderMode.TRIANGLES;
             renderAtomic.renderParams.enableBlend = false;
@@ -18654,41 +18614,7 @@ var feng3d;
                 if (this._shaderName == value)
                     return;
                 this._shaderName = value;
-                var shader = feng3d.shaderlib.getShaderCode(this._shaderName);
-                this.vertexCode = shader.vertex;
-                this.fragmentCode = shader.fragment;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Material.prototype, "vertexCode", {
-            /**
-             * 顶点渲染程序代码
-             */
-            get: function () {
-                return this._vertexCode;
-            },
-            set: function (value) {
-                if (this._vertexCode == value)
-                    return;
-                this._vertexCode = value;
-                this.createvertexCode(this._vertexCode);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Material.prototype, "fragmentCode", {
-            /**
-             * 片段渲染程序代码
-             */
-            get: function () {
-                return this._fragmentCode;
-            },
-            set: function (value) {
-                if (this._fragmentCode == value)
-                    return;
-                this._fragmentCode = value;
-                this.createfragmentCode(this._fragmentCode);
+                this.createvertexCode(this._shaderName);
             },
             enumerable: true,
             configurable: true

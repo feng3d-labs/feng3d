@@ -7,17 +7,11 @@ namespace feng3d
         draw: draw,
     };
 
-    var shader: Shader;
+    var shadername = "wireframe";
     var renderParams: RenderParams;
 
     function init()
     {
-        if (!shader)
-        {
-            shader = new Shader();
-            shader.vertexCode = shaderlib.getShaderCode("wireframe").vertex;
-            shader.fragmentCode = shaderlib.getShaderCode("wireframe").fragment;
-        }
         if (!renderParams)
         {
             renderParams = new RenderParams();
@@ -69,9 +63,7 @@ namespace feng3d
 
         init();
 
-        var oldshader = renderAtomic.shader;
-        shader.macro = renderAtomic.shader.macro;
-        renderAtomic.shader = shader;
+        var oldshadername = renderAtomic.shadername;
 
         var oldrenderParams = renderAtomic.renderParams;
         renderAtomic.renderParams = renderParams;
@@ -99,7 +91,7 @@ namespace feng3d
 
         renderAtomic.indexBuffer = oldIndexBuffer;
         //
-        renderAtomic.shader = oldshader;
+        renderAtomic.shadername = oldshadername;
         renderAtomic.renderParams = oldrenderParams;
     }
 

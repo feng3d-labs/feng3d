@@ -35,9 +35,7 @@ namespace feng3d
             renderAtomic.indexBuffer = new Index();
             renderAtomic.indexBuffer.indices = indices;
             //
-            var shader = shaderlib.getShaderCode("skybox");
-            renderAtomic.shader.vertexCode = shader.vertex;
-            renderAtomic.shader.fragmentCode = shader.fragment;
+            renderAtomic.shadername = "skybox";
             //
             renderAtomic.renderParams.renderMode = RenderMode.TRIANGLES;
             renderAtomic.renderParams.enableBlend = false;

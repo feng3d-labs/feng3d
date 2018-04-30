@@ -126,38 +126,15 @@ namespace feng3d
                 });
         }
 
-        createvertexCode(vertexCode: string)
+        createvertexCode(shadername: string)
         {
-            this.renderdataChange("vertexCode",
+            this.renderdataChange("shadername",
                 (renderData: RenderAtomic) =>
                 {
-                    if (renderData.shader.vertexCode == vertexCode)
-                        return;
-                    renderData.shader.vertexCode = vertexCode;
-                    renderData.shader.invalidate();
+                    renderData.shadername = shadername;
                 },
                 (renderData: RenderAtomic) =>
                 {
-                    renderData.shader.vertexCode = null;
-                    renderData.shader.invalidate();
-                }
-            );
-        }
-
-        createfragmentCode(fragmentCode: string)
-        {
-            this.renderdataChange("fragmentCode",
-                (renderData: RenderAtomic) =>
-                {
-                    if (renderData.shader.fragmentCode == fragmentCode)
-                        return;
-                    renderData.shader.fragmentCode = fragmentCode;
-                    renderData.shader.invalidate();
-                },
-                (renderData: RenderAtomic) =>
-                {
-                    renderData.shader.fragmentCode = null;
-                    renderData.shader.invalidate();
                 }
             );
         }
@@ -167,15 +144,15 @@ namespace feng3d
             this.renderdataChange(name,
                 (renderData: RenderAtomic) =>
                 {
-                    if (renderData.shader.macro.valueMacros[name] == value)
+                    if (renderData.shaderMacro.valueMacros[name] == value)
                         return;
-                    renderData.shader.macro.valueMacros[name] = value;
-                    renderData.shader.invalidate();
+                    renderData.shaderMacro.valueMacros[name] = value;
+                    renderData.macroInvalid = true;
                 },
                 (renderData: RenderAtomic) =>
                 {
-                    delete renderData.shader.macro.valueMacros[name];
-                    renderData.shader.invalidate();
+                    delete renderData.shaderMacro.valueMacros[name];
+                    renderData.macroInvalid = true;
                 }
             );
         }
@@ -185,15 +162,15 @@ namespace feng3d
             this.renderdataChange(name,
                 (renderData: RenderAtomic) =>
                 {
-                    if (renderData.shader.macro.boolMacros[name] == value)
+                    if (renderData.shaderMacro.boolMacros[name] == value)
                         return;
-                    renderData.shader.macro.boolMacros[name] = value;
-                    renderData.shader.invalidate();
+                    renderData.shaderMacro.boolMacros[name] = value;
+                    renderData.macroInvalid = true;
                 },
                 (renderData: RenderAtomic) =>
                 {
-                    delete renderData.shader.macro.boolMacros[name];
-                    renderData.shader.invalidate();
+                    delete renderData.shaderMacro.boolMacros[name];
+                    renderData.macroInvalid = true;
                 }
             );
         }
@@ -203,15 +180,15 @@ namespace feng3d
             this.renderdataChange(name,
                 (renderData: RenderAtomic) =>
                 {
-                    if (renderData.shader.macro.addMacros[name] == value)
+                    if (renderData.shaderMacro.addMacros[name] == value)
                         return;
-                    renderData.shader.macro.addMacros[name] = value;
-                    renderData.shader.invalidate();
+                    renderData.shaderMacro.addMacros[name] = value;
+                    renderData.macroInvalid = true;
                 },
                 (renderData: RenderAtomic) =>
                 {
-                    delete renderData.shader.macro.addMacros[name];
-                    renderData.shader.invalidate();
+                    delete renderData.shaderMacro.addMacros[name];
+                    renderData.macroInvalid = true;
                 }
             );
         }

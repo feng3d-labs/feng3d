@@ -1,49 +1,36 @@
 namespace feng3d
 {
-
+    /**
+     * shader
+     */
     export class Shader
     {
         //
-        private _invalid = true;
         private _resultVertexCode: string;
         private _resultFragmentCode: string;
 
-        vertexCode: string | null;
-        fragmentCode: string | null;
+        renderAtomic: RenderAtomic
 
-        get macro()
+        constructor(renderAtomic: RenderAtomic)
         {
-            return this._macro;
+            this.renderAtomic = renderAtomic;
         }
-        set macro(value)
-        {
-            this._macro = value;
-            this.invalidate();
-        }
-        private _macro = { boolMacros: <BoolMacros>{}, valueMacros: <ValueMacros>{}, addMacros: <IAddMacros>{} };
 
         /**
          * 激活渲染程序
          */
         activeShaderProgram(gl: GL)
         {
-            if (!this.vertexCode || !this.fragmentCode)
-                return null;
-
-            if (this._invalid)
+            if (this.renderAtomic.macroInvalid)
             {
-                this._invalid = false;
-                this._webGLProgramMap.forEach((value, key) =>
-                {
-                    value.destroy();
-                });
-                this._webGLProgramMap.clear();
+                this.renderAtomic.macroInvalid = false;
+                this.clear();
 
+                var shader = shaderlib.getShader(this.renderAtomic.shadername);
                 //应用宏
-                var shaderMacroStr = this.getMacroCode(this.macro);
-
-                this._resultVertexCode = this.vertexCode.replace(/#define\s+macros/, shaderMacroStr);
-                this._resultFragmentCode = this.fragmentCode.replace(/#define\s+macros/, shaderMacroStr);
+                var shaderMacroStr = this.getMacroCode(this.renderAtomic.shaderMacro);
+                this._resultVertexCode = shader.vertex.replace(/#define\s+macros/, shaderMacroStr);
+                this._resultFragmentCode = shader.fragment.replace(/#define\s+macros/, shaderMacroStr);
             }
 
             //渲染程序
@@ -60,14 +47,11 @@ namespace feng3d
             gl.useProgram(shaderProgram);
             return shaderProgram;
         }
+
         /**
          * 纹理缓冲
          */
         protected _webGLProgramMap = new Map<GL, WebGLProgram>();
-        invalidate()
-        {
-            this._invalid = true;
-        }
 
         private getMacroCode(macro: { boolMacros: BoolMacros, valueMacros: ValueMacros, addMacros: IAddMacros })
         {
@@ -95,6 +79,15 @@ namespace feng3d
                 macroHeader += `#define ${macroName} ${value}\n`;
             });
             return macroHeader;
+        }
+
+        private clear()
+        {
+            this._webGLProgramMap.forEach((value, key) =>
+            {
+                value.destroy();
+            });
+            this._webGLProgramMap.clear();
         }
     }
 }

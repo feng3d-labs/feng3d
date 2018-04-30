@@ -6349,18 +6349,14 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * shader
+     */
     class Shader {
-        private _invalid;
         private _resultVertexCode;
         private _resultFragmentCode;
-        vertexCode: string | null;
-        fragmentCode: string | null;
-        macro: {
-            boolMacros: BoolMacros;
-            valueMacros: ValueMacros;
-            addMacros: IAddMacros;
-        };
-        private _macro;
+        renderAtomic: RenderAtomic;
+        constructor(renderAtomic: RenderAtomic);
         /**
          * 激活渲染程序
          */
@@ -6369,8 +6365,8 @@ declare namespace feng3d {
          * 纹理缓冲
          */
         protected _webGLProgramMap: Map<GL, WebGLProgram>;
-        invalidate(): void;
         private getMacroCode(macro);
+        private clear();
     }
 }
 declare namespace feng3d {
@@ -6411,9 +6407,9 @@ declare namespace feng3d {
          */
         renderParams: RenderParams;
         /**
-         * 渲染程序
+         * shader名称
          */
-        shader: Shader;
+        shadername: string;
         /**
          * 属性数据列表
          */
@@ -6430,6 +6426,22 @@ declare namespace feng3d {
          * 可渲染条件，当所有条件值均为true是可以渲染
          */
         renderableCondition: RenderableCondition;
+        /**
+         * shader 中的 宏
+         */
+        shaderMacro: {
+            boolMacros: BoolMacros;
+            valueMacros: ValueMacros;
+            addMacros: IAddMacros;
+        };
+        /**
+         * macro是否失效
+         */
+        macroInvalid: boolean;
+        /**
+         * 渲染程序
+         */
+        shader: Shader;
         constructor();
     }
     interface RenderableCondition {
@@ -6850,8 +6862,7 @@ declare namespace feng3d {
         createIndexBuffer(indices: Lazy<number[]>): void;
         createUniformData<K extends keyof LazyUniforms>(name: K, data: LazyUniforms[K]): void;
         createAttributeRenderData<K extends keyof Attributes>(name: K, data: Lazy<number[]>, size?: number, divisor?: number): void;
-        createvertexCode(vertexCode: string): void;
-        createfragmentCode(fragmentCode: string): void;
+        createvertexCode(shadername: string): void;
         createValueMacro<K extends keyof ValueMacros>(name: K, value: number): void;
         createBoolMacro<K extends keyof BoolMacros>(name: K, value: boolean): void;
         createAddMacro<K extends keyof IAddMacros>(name: K, value: number): void;
@@ -6930,7 +6941,7 @@ declare namespace feng3d {
         /**
          * 获取shaderCode
          */
-        getShaderCode(shaderName: string): {
+        getShader(shaderName: string): {
             vertex: string;
             fragment: string;
         };
@@ -9192,16 +9203,6 @@ declare namespace feng3d {
         private _renderMode;
         shaderName: string;
         private _shaderName;
-        /**
-         * 顶点渲染程序代码
-         */
-        vertexCode: string;
-        private _vertexCode;
-        /**
-         * 片段渲染程序代码
-         */
-        fragmentCode: string;
-        private _fragmentCode;
         /**
          * 剔除面
          * 参考：http://www.jianshu.com/p/ee04165f2a02

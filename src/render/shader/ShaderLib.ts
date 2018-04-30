@@ -58,19 +58,18 @@ namespace feng3d
         /**
          * 获取shaderCode
          */
-        getShaderCode(shaderName: string)
+        getShader(shaderName: string)
         {
             var shader = this.shaderConfig.shaders[shaderName];
             if (!shader) return;
 
             if (!shader.uninclude)
             {
-                shader.uninclude = <any>{};
-                var uninclude = shader.uninclude;
-                uninclude.vertex = this.uninclude(shader.vertex);
-                uninclude.fragment = this.uninclude(shader.fragment);
+                var vertex = this.uninclude(shader.vertex);
+                var fragment = this.uninclude(shader.fragment);
+                shader.uninclude = { vertex: vertex, fragment: fragment };
             }
-            return this.shaderConfig.shaders[shaderName].uninclude;
+            return shader.uninclude;
         }
 
         /**

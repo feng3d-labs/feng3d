@@ -34,44 +34,10 @@ namespace feng3d
             if (this._shaderName == value)
                 return;
             this._shaderName = value;
-            var shader = shaderlib.getShaderCode(this._shaderName);
 
-            this.vertexCode = shader.vertex;
-            this.fragmentCode = shader.fragment;
+            this.createvertexCode(this._shaderName);
         }
         private _shaderName: string;
-
-        /**
-         * 顶点渲染程序代码
-         */
-        get vertexCode()
-        {
-            return this._vertexCode;
-        }
-        set vertexCode(value)
-        {
-            if (this._vertexCode == value)
-                return;
-            this._vertexCode = value;
-            this.createvertexCode(this._vertexCode);
-        }
-        private _vertexCode: string;
-
-        /**
-         * 片段渲染程序代码
-         */
-        get fragmentCode()
-        {
-            return this._fragmentCode;
-        }
-        set fragmentCode(value)
-        {
-            if (this._fragmentCode == value)
-                return;
-            this._fragmentCode = value;
-            this.createfragmentCode(this._fragmentCode);
-        }
-        private _fragmentCode: string;
 
         /**
          * 剔除面

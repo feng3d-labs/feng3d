@@ -17,9 +17,9 @@ namespace feng3d
         renderParams = new RenderParams();
 
         /**
-         * 渲染程序
+         * shader名称
          */
-        shader = new Shader();
+        shadername: string;
 
         /**
          * 属性数据列表
@@ -41,9 +41,24 @@ namespace feng3d
          */
         renderableCondition: RenderableCondition = {}
 
+        /**
+         * shader 中的 宏
+         */
+        shaderMacro = { boolMacros: <BoolMacros>{}, valueMacros: <ValueMacros>{}, addMacros: <IAddMacros>{} };
+
+        /**
+         * macro是否失效
+         */
+        macroInvalid = true;
+
+        /**
+         * 渲染程序
+         */
+        shader: Shader;
+
         constructor()
         {
-            this.uniforms.s_ambient
+            this.shader = new Shader(this);
         }
     }
 
