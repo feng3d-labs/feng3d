@@ -11,7 +11,7 @@ namespace feng3d
         * 渲染模式，默认RenderMode.TRIANGLES
         */
         @serialize(RenderMode.TRIANGLES)
-        @oav()
+        @oav({ component: "OAVEnum", componentParam: { enumClass: RenderMode } })
         get renderMode()
         {
             return this._renderMode;
@@ -77,11 +77,11 @@ namespace feng3d
          * 使用gl.frontFace(gl.CW);调整顺时针为正面
          */
         @serialize(CullFace.BACK)
-        @oav()
+        @oav({ component: "OAVEnum", componentParam: { enumClass: CullFace } })
         cullFace = CullFace.BACK;
 
         @serialize(FrontFace.CW)
-        @oav()
+        @oav({ component: "OAVEnum", componentParam: { enumClass: FrontFace } })
         frontFace = FrontFace.CW;
 
         /**
@@ -122,21 +122,21 @@ namespace feng3d
          * 混合方程，默认BlendEquation.FUNC_ADD
          */
         @serialize(BlendEquation.FUNC_ADD)
-        @oav()
+        @oav({ component: "OAVEnum", componentParam: { enumClass: BlendEquation } })
         blendEquation = BlendEquation.FUNC_ADD;
 
         /**
          * 源混合因子，默认BlendFactor.SRC_ALPHA
          */
         @serialize(BlendFactor.SRC_ALPHA)
-        @oav()
+        @oav({ component: "OAVEnum", componentParam: { enumClass: BlendFactor } })
         sfactor = BlendFactor.SRC_ALPHA;
 
         /**
          * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
          */
         @serialize(BlendFactor.ONE_MINUS_SRC_ALPHA)
-        @oav()
+        @oav({ component: "OAVEnum", componentParam: { enumClass: BlendFactor } })
         dfactor = BlendFactor.ONE_MINUS_SRC_ALPHA;
 
         /**

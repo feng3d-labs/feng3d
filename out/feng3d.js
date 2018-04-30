@@ -18731,15 +18731,15 @@ var feng3d;
         });
         __decorate([
             feng3d.serialize(feng3d.RenderMode.TRIANGLES),
-            feng3d.oav()
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.RenderMode } })
         ], Material.prototype, "renderMode", null);
         __decorate([
             feng3d.serialize(feng3d.CullFace.BACK),
-            feng3d.oav()
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.CullFace } })
         ], Material.prototype, "cullFace", void 0);
         __decorate([
             feng3d.serialize(feng3d.FrontFace.CW),
-            feng3d.oav()
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.FrontFace } })
         ], Material.prototype, "frontFace", void 0);
         __decorate([
             feng3d.serialize(false),
@@ -18751,15 +18751,15 @@ var feng3d;
         ], Material.prototype, "pointSize", null);
         __decorate([
             feng3d.serialize(feng3d.BlendEquation.FUNC_ADD),
-            feng3d.oav()
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendEquation } })
         ], Material.prototype, "blendEquation", void 0);
         __decorate([
             feng3d.serialize(feng3d.BlendFactor.SRC_ALPHA),
-            feng3d.oav()
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendFactor } })
         ], Material.prototype, "sfactor", void 0);
         __decorate([
             feng3d.serialize(feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA),
-            feng3d.oav()
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendFactor } })
         ], Material.prototype, "dfactor", void 0);
         __decorate([
             feng3d.serialize(true),
