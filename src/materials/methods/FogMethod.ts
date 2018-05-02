@@ -70,9 +70,6 @@ namespace feng3d
             renderAtomic.uniforms.u_fogMaxDistance = () => this.maxDistance;
             renderAtomic.uniforms.u_fogDensity = () => this.density;
             renderAtomic.uniforms.u_fogMode = () => this.mode;
-
-            renderAtomic.shaderMacro.HAS_FOG_METHOD = this.enable;
-            renderAtomic.shaderMacro.GLOBAL_POSITION_NEED = 1;
         }
     }
 

@@ -10301,10 +10301,6 @@ var feng3d;
              */
             this.uniforms = {};
             /**
-             * shader 中的 宏
-             */
-            this.shaderMacro = {};
-            /**
              * 渲染参数
              */
             this.renderParams = new feng3d.RenderParams();
@@ -10797,7 +10793,6 @@ var feng3d;
             this.camera.preRender(renderAtomic);
             var pointLights = this.scene3d.collectComponents.pointLights.list;
             var directionalLights = this.scene3d.collectComponents.directionalLights.list;
-            renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
             //收集点光源数据
             var pointLightPositions = [];
             var pointLightColors = [];
@@ -10811,12 +10806,7 @@ var feng3d;
                 pointLightRanges.push(pointLight.range);
             }
             //设置点光源数据
-            renderAtomic.shaderMacro.NUM_POINTLIGHT = pointLights.length;
             if (pointLights.length > 0) {
-                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.GLOBAL_POSITION_NEED = 1;
-                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
                 //
                 renderAtomic.uniforms.u_pointLightPositions = pointLightPositions;
                 renderAtomic.uniforms.u_pointLightColors = pointLightColors;
@@ -10832,11 +10822,7 @@ var feng3d;
                 directionalLightColors.push(directionalLight.color);
                 directionalLightIntensitys.push(directionalLight.intensity);
             }
-            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = directionalLights.length;
             if (directionalLights.length > 0) {
-                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
                 //
                 renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
                 renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;
@@ -11447,7 +11433,6 @@ var feng3d;
         var material = meshRenderer.material;
         var renderAtomic = meshRenderer.gameObject.renderAtomic;
         renderAtomic.renderParams = material.renderParams;
-        renderAtomic.shaderMacro = material.shaderMacro;
         renderAtomic.shader = material.shader;
         meshRenderer.gameObject.preRender(renderAtomic);
         renderContext.preRender(renderAtomic);
@@ -11823,8 +11808,6 @@ var feng3d;
         };
         CartoonComponent.prototype.preRender = function (renderAtomic) {
             var _this = this;
-            renderAtomic.shaderMacro.cartoon_Anti_aliasing = this._cartoon_Anti_aliasing;
-            renderAtomic.shaderMacro.IS_CARTOON = true;
             renderAtomic.uniforms.u_diffuseSegment = function () { return _this.diffuseSegment; };
             renderAtomic.uniforms.u_diffuseSegmentValue = function () { return _this.diffuseSegmentValue; };
             renderAtomic.uniforms.u_specularSegment = function () { return _this.specularSegment; };
@@ -14034,8 +14017,6 @@ var feng3d;
             renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.u_ITModelMatrix; };
             //
             renderAtomic.uniforms.u_skeletonGlobalMatriices = function () { return _this.u_skeletonGlobalMatriices; };
-            renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
-            renderAtomic.shaderMacro.NUM_SKELETONJOINT = this._skinSkeleton.joints.length;
         };
         /**
          * 销毁
@@ -15074,8 +15055,6 @@ var feng3d;
                     attributeRenderData.data = element.data;
                     attributeRenderData.size = element.size;
                     attributeRenderData.divisor = 0;
-                    //
-                    renderAtomic.shaderMacro["HSA_" + vaId] = true;
                 }
             }
         };
@@ -18346,10 +18325,6 @@ var feng3d;
              * 渲染参数
              */
             _this.renderParams = new feng3d.RenderParams();
-            /**
-             * shader 中的 宏
-             */
-            _this.shaderMacro = {};
             _this.shader = new feng3d.Shader();
             _this.renderMode = feng3d.RenderMode.TRIANGLES;
             _this.renderParams.cullFace = _this.cullFace;
@@ -18422,8 +18397,6 @@ var feng3d;
             var _this = this;
             renderAtomic.uniforms.u_PointSize = function () { return _this.pointSize; };
             this.shader.shaderName = this.shaderName;
-            // this.shader.shaderMacro = this.shaderMacro;
-            renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderMode == feng3d.RenderMode.POINTS;
         };
         __decorate([
             feng3d.serialize(feng3d.RenderMode.TRIANGLES),
@@ -18794,7 +18767,6 @@ var feng3d;
         });
         DiffuseMethod.prototype.preRender = function (renderAtomic) {
             var _this = this;
-            renderAtomic.shaderMacro.HAS_DIFFUSE_SAMPLER = this.difuseTexture && this.difuseTexture.checkRenderData();
             //
             renderAtomic.uniforms.u_diffuse = function () { return _this.color; };
             renderAtomic.uniforms.s_diffuse = function () { return _this.difuseTexture; };
@@ -18852,7 +18824,6 @@ var feng3d;
             var _this = this;
             //
             renderAtomic.uniforms.s_normal = function () { return _this.normalTexture; };
-            renderAtomic.shaderMacro.HAS_NORMAL_SAMPLER = this.normalTexture.checkRenderData();
         };
         __decorate([
             feng3d.serialize(),
@@ -18928,7 +18899,6 @@ var feng3d;
             renderAtomic.uniforms.s_specular = function () { return _this.specularTexture; };
             renderAtomic.uniforms.u_specular = function () { return _this.specularColor; };
             renderAtomic.uniforms.u_glossiness = function () { return _this.glossiness; };
-            renderAtomic.shaderMacro.HAS_SPECULAR_SAMPLER = this.specularTexture.checkRenderData();
         };
         __decorate([
             feng3d.serialize()
@@ -18993,7 +18963,6 @@ var feng3d;
             var _this = this;
             renderAtomic.uniforms.u_ambient = function () { return _this._color; };
             renderAtomic.uniforms.s_ambient = function () { return _this._ambientTexture; };
-            renderAtomic.shaderMacro.HAS_AMBIENT_SAMPLER = this._ambientTexture && this._ambientTexture.checkRenderData();
         };
         __decorate([
             feng3d.serialize(),
@@ -19053,8 +19022,6 @@ var feng3d;
             renderAtomic.uniforms.u_fogMaxDistance = function () { return _this.maxDistance; };
             renderAtomic.uniforms.u_fogDensity = function () { return _this.density; };
             renderAtomic.uniforms.u_fogMode = function () { return _this.mode; };
-            renderAtomic.shaderMacro.HAS_FOG_METHOD = this.enable;
-            renderAtomic.shaderMacro.GLOBAL_POSITION_NEED = 1;
         };
         __decorate([
             feng3d.watch("enableChanged"),
@@ -19120,7 +19087,6 @@ var feng3d;
             var _this = this;
             renderAtomic.uniforms.s_envMap = function () { return _this.cubeTexture; };
             renderAtomic.uniforms.u_reflectivity = function () { return _this.reflectivity; };
-            renderAtomic.shaderMacro.HAS_ENV_METHOD = !!this.cubeTexture;
         };
         __decorate([
             feng3d.watch("enableChanged"),
@@ -20231,11 +20197,6 @@ var feng3d;
             renderAtomic.uniforms.s_splatTexture2 = function () { return _this.splatTexture2; };
             renderAtomic.uniforms.s_splatTexture3 = function () { return _this.splatTexture3; };
             renderAtomic.uniforms.u_splatRepeats = function () { return _this.splatRepeats; };
-            renderAtomic.shaderMacro.HAS_TERRAIN_METHOD =
-                this.blendTexture.checkRenderData()
-                    && this.splatTexture1.checkRenderData()
-                    && this.splatTexture2.checkRenderData()
-                    && this.splatTexture3.checkRenderData();
         };
         return TerrainMethod;
     }(feng3d.EventDispatcher));
@@ -20312,8 +20273,6 @@ var feng3d;
                 new feng3d.Vector4(0.5, 0.5, 0.0, 0.5),
             ];
             renderAtomic.uniforms.u_lod0vec = new feng3d.Vector4(0.5, 1, 0, 0);
-            renderAtomic.shaderMacro.HAS_TERRAIN_METHOD = true;
-            renderAtomic.shaderMacro.USE_TERRAIN_MERGE = true;
         };
         return TerrainMergeMethod;
     }(feng3d.EventDispatcher));
@@ -20905,17 +20864,11 @@ var feng3d;
             //
             renderAtomic.uniforms.u_particleTime = function () { return _this.time; };
             //
-            renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
-            //
             for (var key in this.particleGlobal) {
                 if (this.particleGlobal.hasOwnProperty(key)) {
                     var element = this.particleGlobal[key];
                     if (element) {
                         renderAtomic.uniforms["u_particle_" + key] = element;
-                        renderAtomic.shaderMacro["D_u_particle_" + key] = true;
-                    }
-                    else {
-                        renderAtomic.shaderMacro["D_u_particle_" + key] = false;
                     }
                 }
             }
@@ -20926,7 +20879,6 @@ var feng3d;
                 attributeRenderData.data = vector3DData;
                 attributeRenderData.size = vector3DData.length / this.numParticles;
                 attributeRenderData.divisor = 1;
-                renderAtomic.shaderMacro["D_" + attribute] = true;
             }
         };
         __decorate([

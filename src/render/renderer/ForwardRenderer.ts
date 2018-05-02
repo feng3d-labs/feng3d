@@ -66,7 +66,6 @@ namespace feng3d
         var renderAtomic = meshRenderer.gameObject.renderAtomic;
 
         renderAtomic.renderParams = material.renderParams;
-        renderAtomic.shaderMacro = material.shaderMacro;
         renderAtomic.shader = material.shader;
 
         meshRenderer.gameObject.preRender(renderAtomic);

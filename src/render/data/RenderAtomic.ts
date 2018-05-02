@@ -27,11 +27,6 @@ namespace feng3d
         instanceCount: Lazy<number>;
 
         /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro = <any>{};
-
-        /**
          * 渲染程序
          */
         shader: Shader;

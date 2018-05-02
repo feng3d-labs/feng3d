@@ -72,9 +72,6 @@ namespace feng3d
                 new Vector4(0.5, 0.5, 0.0, 0.5),
             ];
             renderAtomic.uniforms.u_lod0vec = new Vector4(0.5, 1, 0, 0);
-
-            renderAtomic.shaderMacro.HAS_TERRAIN_METHOD = true;
-            renderAtomic.shaderMacro.USE_TERRAIN_MERGE = true;
         }
     }
 }

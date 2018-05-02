@@ -143,11 +143,6 @@ namespace feng3d
         renderParams = new RenderParams();
 
         /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro = <any>{};
-
-        /**
          * 渲染程序
          */
         shader: Shader;
@@ -177,9 +172,6 @@ namespace feng3d
             renderAtomic.uniforms.u_PointSize = () => this.pointSize;
 
             this.shader.shaderName = this.shaderName;
-            // this.shader.shaderMacro = this.shaderMacro;
-            
-            renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderMode == RenderMode.POINTS;
         }
     }
 }

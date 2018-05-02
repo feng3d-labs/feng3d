@@ -89,9 +89,6 @@ namespace feng3d
             renderAtomic.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
             //
             renderAtomic.uniforms.u_skeletonGlobalMatriices = () => this.u_skeletonGlobalMatriices;
-
-            renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
-            renderAtomic.shaderMacro.NUM_SKELETONJOINT = this._skinSkeleton.joints.length;
         }
 
         /**

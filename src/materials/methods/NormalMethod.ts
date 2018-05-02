@@ -36,7 +36,6 @@ namespace feng3d
         {
             //
             renderAtomic.uniforms.s_normal = () => this.normalTexture;
-            renderAtomic.shaderMacro.HAS_NORMAL_SAMPLER = this.normalTexture.checkRenderData();
         }
     }
 }

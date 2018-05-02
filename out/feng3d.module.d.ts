@@ -6409,10 +6409,6 @@ declare namespace feng3d {
          */
         instanceCount: Lazy<number>;
         /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro;
-        /**
          * 渲染程序
          */
         shader: Shader;
@@ -9130,10 +9126,6 @@ declare namespace feng3d {
          * 渲染参数
          */
         renderParams: RenderParams;
-        /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro;
         /**
          * 渲染程序
          */

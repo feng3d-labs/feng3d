@@ -58,9 +58,6 @@ namespace feng3d
 
         preRender(renderAtomic: RenderAtomic)
         {
-            renderAtomic.shaderMacro.cartoon_Anti_aliasing = this._cartoon_Anti_aliasing;
-
-            renderAtomic.shaderMacro.IS_CARTOON = true;
             renderAtomic.uniforms.u_diffuseSegment = () => this.diffuseSegment;
             renderAtomic.uniforms.u_diffuseSegmentValue = () => this.diffuseSegmentValue;
             renderAtomic.uniforms.u_specularSegment = () => this.specularSegment;
