@@ -23,6 +23,14 @@ namespace feng3d
         off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any);
     }
 
+    export var imageDatas = {
+        black: ImageUtil.createImageData(1, 1, ColorKeywords.black),
+        white: ImageUtil.createImageData(1, 1, ColorKeywords.white),
+        red: ImageUtil.createImageData(1, 1, ColorKeywords.red),
+        green: ImageUtil.createImageData(1, 1, ColorKeywords.green),
+        blue: ImageUtil.createImageData(1, 1, ColorKeywords.blue),
+    }
+
     /**
      * 2D纹理
      * @author feng 2016-12-20
@@ -30,6 +38,7 @@ namespace feng3d
     export class Texture2D extends TextureInfo
     {
         protected _pixels: HTMLImageElement;
+
         @serialize("")
         @oav()
         get url()
@@ -54,6 +63,8 @@ namespace feng3d
             });
         }
         private _url = "";
+
+        noPixels = imageDatas.white;
 
         /**
          * 纹理尺寸

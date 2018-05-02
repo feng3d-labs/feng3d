@@ -1,45 +1,32 @@
 precision mediump float;
 
-//此处将填充宏定义
-#define macros
-
 varying vec2 v_uv;
 varying vec3 v_globalPosition;
 varying vec3 v_normal;
 
-#ifdef HAS_NORMAL_SAMPLER
-    varying vec3 v_tangent;
-    varying vec3 v_bitangent;
-#endif
+varying vec3 v_tangent;
+varying vec3 v_bitangent;
 
 uniform mat4 u_cameraMatrix;
 
 uniform float u_alphaThreshold;
 //漫反射
 uniform vec4 u_diffuse;
-#ifdef HAS_DIFFUSE_SAMPLER
-    uniform sampler2D s_diffuse;
-#endif
+uniform sampler2D s_diffuse;
 
 //法线贴图
-#ifdef HAS_NORMAL_SAMPLER
-    uniform sampler2D s_normal;
-#endif
+uniform sampler2D s_normal;
 
 //镜面反射
 uniform vec3 u_specular;
 uniform float u_glossiness;
-#ifdef HAS_SPECULAR_SAMPLER
-    uniform sampler2D s_specular;
-#endif
+uniform sampler2D s_specular;
 
 uniform vec4 u_sceneAmbientColor;
 
 //环境
 uniform vec4 u_ambient;
-#ifdef HAS_AMBIENT_SAMPLER
-    uniform sampler2D s_ambient;
-#endif
+uniform sampler2D s_ambient;
 
 #ifdef HAS_TERRAIN_METHOD
     #include<terrain.fragment>
@@ -64,19 +51,12 @@ void main(void)
     vec4 finalColor = vec4(1.0,1.0,1.0,1.0);
 
     //获取法线
-    vec3 normal;
-    #ifdef HAS_NORMAL_SAMPLER
-        normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;
-        normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);
-    #else
-        normal = normalize(v_normal);
-    #endif
+    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;
+    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);
 
     //获取漫反射基本颜色
     vec4 diffuseColor = u_diffuse;
-    #ifdef HAS_DIFFUSE_SAMPLER
-        diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);
-    #endif
+    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);
 
     if(diffuseColor.w < u_alphaThreshold)
     {
@@ -89,9 +69,7 @@ void main(void)
 
     //环境光
     vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;
-    #ifdef HAS_AMBIENT_SAMPLER
-        ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;
-    #endif
+    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;
 
     finalColor = diffuseColor;
 

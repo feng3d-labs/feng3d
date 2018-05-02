@@ -44,6 +44,7 @@ namespace feng3d
         {
             super();
             this.difuseTexture = new Texture2D(diffuseUrl);
+            this.difuseTexture.noPixels = imageDatas.white;
             this.color = new Color(1, 1, 1, 1);
         }
 

@@ -681,7 +681,8 @@ namespace feng3d
                     const element = this._attributes[vaId];
                     //
                     var attributeRenderData = attributes[vaId] = attributes[vaId] || new Attribute(vaId, element.data);
-                    attributeRenderData.data = element.data;
+                    if (attributeRenderData.data != element.data)
+                        attributeRenderData.data = element.data;
                     attributeRenderData.size = element.size;
                     attributeRenderData.divisor = 0;
                 }

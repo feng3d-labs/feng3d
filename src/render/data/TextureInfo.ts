@@ -82,7 +82,20 @@ namespace feng3d
         @oav()
         anisotropy = 0;
 
+        /**
+         * 需要使用的贴图数据
+         */
         protected _pixels: ImageData | HTMLImageElement | HTMLImageElement[];
+
+        /**
+         * 当贴图数据未加载好等情况时代替使用
+         */
+        noPixels: ImageData | HTMLImageElement | HTMLImageElement[];
+
+        /**
+         * 当前使用的贴图数据
+         */
+        protected _activePixels: ImageData | HTMLImageElement | HTMLImageElement[];
 
         /**
          * 纹理缓冲
@@ -117,14 +130,14 @@ namespace feng3d
          */
         active(gl: GL)
         {
-            if (!this.checkRenderData())
-                return;
-            if (this._invalid)
+            var currentPixels = this.checkRenderData() ? this._pixels : this.noPixels;
+            if (this._invalid || this._activePixels != currentPixels)
             {
                 this.clear();
                 this._invalid = false;
             }
 
+            this._activePixels = currentPixels;
 
             var texture = this.getTexture(gl);
             var textureType = gl.enums.getTextureTypeValue(this._textureType);
@@ -134,7 +147,7 @@ namespace feng3d
             var wrapT = gl.enums.getTextureWrapValue(this.wrapT);
 
             var isPowerOfTwo = true;
-            var pixels = this._pixels;
+            var pixels = this._activePixels;
             if (pixels instanceof HTMLImageElement)
                 isPowerOfTwo = FMath.isPowerOfTwo(pixels.width) && FMath.isPowerOfTwo(pixels.height);
             if (!isPowerOfTwo)
@@ -209,18 +222,18 @@ namespace feng3d
             switch (this._textureType)
             {
                 case TextureType.TEXTURE_CUBE_MAP:
-                    var pixels: HTMLImageElement[] = <any>this._pixels;
+                    var pixels: HTMLImageElement[] = <any>this._activePixels;
                     var faces = [
                         gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
                         gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                     ];
                     for (var i = 0; i < faces.length; i++)
                     {
-                        gl.texImage2D(faces[i], 0, format, format, type, this._pixels[i]);
+                        gl.texImage2D(faces[i], 0, format, format, type, this._activePixels[i]);
                     }
                     break;
                 case TextureType.TEXTURE_2D:
-                    var _pixel: HTMLImageElement | ImageData = <any>this._pixels;
+                    var _pixel: HTMLImageElement | ImageData = <any>this._activePixels;
                     var textureType = gl.enums.getTextureTypeValue(this._textureType);
                     gl.texImage2D(textureType, 0, format, format, type, _pixel);
                     break;

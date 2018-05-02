@@ -3562,6 +3562,156 @@ declare namespace feng3d {
          */
         static ToHex(i: number): string;
     }
+    var ColorKeywords: {
+        'aliceblue': number;
+        'antiquewhite': number;
+        'aqua': number;
+        'aquamarine': number;
+        'azure': number;
+        'beige': number;
+        'bisque': number;
+        'black': number;
+        'blanchedalmond': number;
+        'blue': number;
+        'blueviolet': number;
+        'brown': number;
+        'burlywood': number;
+        'cadetblue': number;
+        'chartreuse': number;
+        'chocolate': number;
+        'coral': number;
+        'cornflowerblue': number;
+        'cornsilk': number;
+        'crimson': number;
+        'cyan': number;
+        'darkblue': number;
+        'darkcyan': number;
+        'darkgoldenrod': number;
+        'darkgray': number;
+        'darkgreen': number;
+        'darkgrey': number;
+        'darkkhaki': number;
+        'darkmagenta': number;
+        'darkolivegreen': number;
+        'darkorange': number;
+        'darkorchid': number;
+        'darkred': number;
+        'darksalmon': number;
+        'darkseagreen': number;
+        'darkslateblue': number;
+        'darkslategray': number;
+        'darkslategrey': number;
+        'darkturquoise': number;
+        'darkviolet': number;
+        'deeppink': number;
+        'deepskyblue': number;
+        'dimgray': number;
+        'dimgrey': number;
+        'dodgerblue': number;
+        'firebrick': number;
+        'floralwhite': number;
+        'forestgreen': number;
+        'fuchsia': number;
+        'gainsboro': number;
+        'ghostwhite': number;
+        'gold': number;
+        'goldenrod': number;
+        'gray': number;
+        'green': number;
+        'greenyellow': number;
+        'grey': number;
+        'honeydew': number;
+        'hotpink': number;
+        'indianred': number;
+        'indigo': number;
+        'ivory': number;
+        'khaki': number;
+        'lavender': number;
+        'lavenderblush': number;
+        'lawngreen': number;
+        'lemonchiffon': number;
+        'lightblue': number;
+        'lightcoral': number;
+        'lightcyan': number;
+        'lightgoldenrodyellow': number;
+        'lightgray': number;
+        'lightgreen': number;
+        'lightgrey': number;
+        'lightpink': number;
+        'lightsalmon': number;
+        'lightseagreen': number;
+        'lightskyblue': number;
+        'lightslategray': number;
+        'lightslategrey': number;
+        'lightsteelblue': number;
+        'lightyellow': number;
+        'lime': number;
+        'limegreen': number;
+        'linen': number;
+        'magenta': number;
+        'maroon': number;
+        'mediumaquamarine': number;
+        'mediumblue': number;
+        'mediumorchid': number;
+        'mediumpurple': number;
+        'mediumseagreen': number;
+        'mediumslateblue': number;
+        'mediumspringgreen': number;
+        'mediumturquoise': number;
+        'mediumvioletred': number;
+        'midnightblue': number;
+        'mintcream': number;
+        'mistyrose': number;
+        'moccasin': number;
+        'navajowhite': number;
+        'navy': number;
+        'oldlace': number;
+        'olive': number;
+        'olivedrab': number;
+        'orange': number;
+        'orangered': number;
+        'orchid': number;
+        'palegoldenrod': number;
+        'palegreen': number;
+        'paleturquoise': number;
+        'palevioletred': number;
+        'papayawhip': number;
+        'peachpuff': number;
+        'peru': number;
+        'pink': number;
+        'plum': number;
+        'powderblue': number;
+        'purple': number;
+        'rebeccapurple': number;
+        'red': number;
+        'rosybrown': number;
+        'royalblue': number;
+        'saddlebrown': number;
+        'salmon': number;
+        'sandybrown': number;
+        'seagreen': number;
+        'seashell': number;
+        'sienna': number;
+        'silver': number;
+        'skyblue': number;
+        'slateblue': number;
+        'slategray': number;
+        'slategrey': number;
+        'snow': number;
+        'springgreen': number;
+        'steelblue': number;
+        'tan': number;
+        'teal': number;
+        'thistle': number;
+        'tomato': number;
+        'turquoise': number;
+        'violet': number;
+        'wheat': number;
+        'white': number;
+        'whitesmoke': number;
+        'yellow': number;
+        'yellowgreen': number;
+    };
 }
 declare namespace feng3d {
     /**
@@ -6579,96 +6729,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 着色器宏定义
-     * @author feng 2016-12-17
-     */
-    interface ShaderMacro {
-        /**
-         * 光源数量
-         */
-        NUM_LIGHT: number;
-        /**
-         * 点光源数量
-         */
-        NUM_POINTLIGHT: number;
-        /**
-         * 方向光源数量
-         */
-        NUM_DIRECTIONALLIGHT: number;
-        /**
-         * 骨骼关节数量
-         */
-        NUM_SKELETONJOINT: number;
-        /**
-         * 是否有漫反射贴图
-         */
-        HAS_DIFFUSE_SAMPLER: boolean;
-        /**
-         * 是否有法线贴图
-         */
-        HAS_NORMAL_SAMPLER: boolean;
-        /**
-         * 是否有镜面反射光泽图
-         */
-        HAS_SPECULAR_SAMPLER: boolean;
-        /**
-         * 是否有环境贴图
-         */
-        HAS_AMBIENT_SAMPLER: boolean;
-        /**
-         * 是否有骨骼动画
-         */
-        HAS_SKELETON_ANIMATION: boolean;
-        /**
-         * 是否有粒子动画
-         */
-        HAS_PARTICLE_ANIMATOR: boolean;
-        /**
-         * 是否为点渲染模式
-         */
-        IS_POINTS_MODE: boolean;
-        /**
-         * 是否有地形方法
-         */
-        HAS_TERRAIN_METHOD: boolean;
-        /**
-         * 使用合并地形贴图
-         */
-        USE_TERRAIN_MERGE: boolean;
-        /**
-         * 雾函数
-         */
-        HAS_FOG_METHOD: boolean;
-        /**
-         * 环境映射函数
-         */
-        HAS_ENV_METHOD: boolean;
-        /**
-         * 是否需要变量全局坐标
-         */
-        GLOBAL_POSITION_NEED: number;
-        /**
-         * 是否需要属性法线
-         */
-        A_NORMAL_NEED: number;
-        /**
-         * 是否需要变量法线
-         */
-        V_NORMAL_NEED: number;
-        /**
-         * 是否需要摄像机矩阵
-         */
-        U_CAMERAMATRIX_NEED: number;
-        /**
-         * 是否卡通渲染
-         */
-        IS_CARTOON: Boolean;
-        /**
-         * 是否抗锯齿
-         */
-        cartoon_Anti_aliasing: Boolean;
-    }
 }
 declare namespace feng3d {
     /**
@@ -6719,7 +6779,18 @@ declare namespace feng3d {
          * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
          */
         anisotropy: number;
+        /**
+         * 需要使用的贴图数据
+         */
         protected _pixels: ImageData | HTMLImageElement | HTMLImageElement[];
+        /**
+         * 当贴图数据未加载好等情况时代替使用
+         */
+        noPixels: ImageData | HTMLImageElement | HTMLImageElement[];
+        /**
+         * 当前使用的贴图数据
+         */
+        protected _activePixels: ImageData | HTMLImageElement | HTMLImageElement[];
         /**
          * 纹理缓冲
          */
@@ -8992,6 +9063,13 @@ declare namespace feng3d {
         on<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any): any;
     }
+    var imageDatas: {
+        black: ImageData;
+        white: ImageData;
+        red: ImageData;
+        green: ImageData;
+        blue: ImageData;
+    };
     /**
      * 2D纹理
      * @author feng 2016-12-20
@@ -9000,6 +9078,7 @@ declare namespace feng3d {
         protected _pixels: HTMLImageElement;
         url: string;
         private _url;
+        noPixels: ImageData;
         /**
          * 纹理尺寸
          */
