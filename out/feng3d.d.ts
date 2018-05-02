@@ -6415,10 +6415,6 @@ declare namespace feng3d {
          */
         instanceCount: Lazy<number>;
         /**
-         * 可渲染条件，当所有条件值均为true是可以渲染
-         */
-        renderableCondition: RenderableCondition;
-        /**
          * shader 中的 宏
          */
         shaderMacro: {
@@ -6435,8 +6431,6 @@ declare namespace feng3d {
          */
         shader: Shader;
         constructor();
-    }
-    interface RenderableCondition {
     }
 }
 declare namespace feng3d {

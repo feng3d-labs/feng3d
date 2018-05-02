@@ -10332,10 +10332,6 @@ var feng3d;
              */
             this.uniforms = {};
             /**
-             * 可渲染条件，当所有条件值均为true是可以渲染
-             */
-            this.renderableCondition = {};
-            /**
              * shader 中的 宏
              */
             this.shaderMacro = { boolMacros: {}, valueMacros: {}, addMacros: {} };
