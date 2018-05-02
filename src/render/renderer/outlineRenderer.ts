@@ -7,7 +7,7 @@ namespace feng3d
         draw: draw,
     };
 
-    var shadername = "outline";
+    var shader: Shader;
     var renderParams: RenderParams;
     function init()
     {
@@ -20,6 +20,9 @@ namespace feng3d
             renderParams.depthtest = true;
             renderParams.cullFace = CullFace.FRONT;
             renderParams.frontFace = FrontFace.CW;
+
+            shader = new Shader();
+            shader.shaderName = "outline";
         }
     }
 
@@ -51,7 +54,8 @@ namespace feng3d
     {
         init();
 
-        var oldshadername = renderAtomic.shadername;
+        var oldshader = renderAtomic.shader;
+        renderAtomic.shader = shader;
 
         var oldRenderParams = renderAtomic.renderParams;
         renderAtomic.renderParams = renderParams;
@@ -59,7 +63,7 @@ namespace feng3d
         gl.renderer.draw(renderAtomic);
 
         //
-        renderAtomic.shadername = oldshadername;
+        renderAtomic.shader = oldshader;
         renderAtomic.renderParams = oldRenderParams;
     }
 

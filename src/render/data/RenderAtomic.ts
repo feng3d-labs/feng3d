@@ -12,11 +12,6 @@ namespace feng3d
         indexBuffer: Index;
 
         /**
-         * shader名称
-         */
-        shadername: string;
-
-        /**
          * 属性数据列表
          */
         attributes: Attributes = <any>{};
@@ -37,11 +32,6 @@ namespace feng3d
         shaderMacro: ShaderMacro = <any>{};
 
         /**
-         * macro是否失效
-         */
-        macroInvalid = true;
-
-        /**
          * 渲染程序
          */
         shader: Shader;
@@ -53,7 +43,7 @@ namespace feng3d
 
         constructor()
         {
-            this.shader = new Shader(this);
+
         }
     }
 }

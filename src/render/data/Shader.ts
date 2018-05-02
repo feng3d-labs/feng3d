@@ -9,11 +9,15 @@ namespace feng3d
         private _resultVertexCode: string;
         private _resultFragmentCode: string;
 
-        renderAtomic: RenderAtomic
+        shaderName: string;
 
-        constructor(renderAtomic: RenderAtomic)
+        /**
+         * shader 中的 宏
+         */
+        shaderMacro: ShaderMacro = <any>{};
+
+        constructor()
         {
-            this.renderAtomic = renderAtomic;
         }
 
         /**
@@ -21,17 +25,13 @@ namespace feng3d
          */
         activeShaderProgram(gl: GL)
         {
-            if (this.renderAtomic.macroInvalid)
-            {
-                this.renderAtomic.macroInvalid = false;
-                this.clear();
+            this.clear();
 
-                var shader = shaderlib.getShader(this.renderAtomic.shadername);
-                //应用宏
-                var shaderMacroStr = this.getMacroCode(this.renderAtomic.shaderMacro);
-                this._resultVertexCode = shader.vertex.replace(/#define\s+macros/, shaderMacroStr);
-                this._resultFragmentCode = shader.fragment.replace(/#define\s+macros/, shaderMacroStr);
-            }
+            var shader = shaderlib.getShader(this.shaderName);
+            //应用宏
+            var shaderMacroStr = this.getMacroCode(this.shaderMacro);
+            this._resultVertexCode = shader.vertex.replace(/#define\s+macros/, shaderMacroStr);
+            this._resultFragmentCode = shader.fragment.replace(/#define\s+macros/, shaderMacroStr);
 
             //渲染程序
             var shaderProgram = this._webGLProgramMap.get(gl);

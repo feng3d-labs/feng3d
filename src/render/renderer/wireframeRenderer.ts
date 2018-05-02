@@ -7,8 +7,8 @@ namespace feng3d
         draw: draw,
     };
 
-    var shadername = "wireframe";
     var renderParams: RenderParams;
+    var shader: Shader;
 
     function init()
     {
@@ -20,6 +20,9 @@ namespace feng3d
             renderParams.depthMask = false;
             renderParams.depthtest = true;
             renderParams.depthFunc = DepthFunc.LEQUAL;
+
+            shader = new Shader();
+            shader.shaderName = "wireframe";
         }
     }
 
@@ -65,7 +68,8 @@ namespace feng3d
 
         init();
 
-        var oldshadername = renderAtomic.shadername;
+        var oldshader = renderAtomic.shader;
+        renderAtomic.shader = shader;
 
         var oldrenderParams = renderAtomic.renderParams;
         renderAtomic.renderParams = renderParams;
@@ -93,7 +97,7 @@ namespace feng3d
 
         renderAtomic.indexBuffer = oldIndexBuffer;
         //
-        renderAtomic.shadername = oldshadername;
+        renderAtomic.shader = oldshader;
         renderAtomic.renderParams = oldrenderParams;
     }
 

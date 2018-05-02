@@ -6351,8 +6351,12 @@ declare namespace feng3d {
     class Shader {
         private _resultVertexCode;
         private _resultFragmentCode;
-        renderAtomic: RenderAtomic;
-        constructor(renderAtomic: RenderAtomic);
+        shaderName: string;
+        /**
+         * shader 中的 宏
+         */
+        shaderMacro: ShaderMacro;
+        constructor();
         /**
          * 激活渲染程序
          */
@@ -6399,10 +6403,6 @@ declare namespace feng3d {
          */
         indexBuffer: Index;
         /**
-         * shader名称
-         */
-        shadername: string;
-        /**
          * 属性数据列表
          */
         attributes: Attributes;
@@ -6418,10 +6418,6 @@ declare namespace feng3d {
          * shader 中的 宏
          */
         shaderMacro: ShaderMacro;
-        /**
-         * macro是否失效
-         */
-        macroInvalid: boolean;
         /**
          * 渲染程序
          */
@@ -9140,6 +9136,10 @@ declare namespace feng3d {
          * 渲染参数
          */
         renderParams: RenderParams;
+        /**
+         * shader 中的 宏
+         */
+        shaderMacro: ShaderMacro;
         /**
          * 渲染程序
          */

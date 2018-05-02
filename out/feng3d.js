@@ -10222,26 +10222,26 @@ var feng3d;
      * shader
      */
     var Shader = /** @class */ (function () {
-        function Shader(renderAtomic) {
+        function Shader() {
+            /**
+             * shader 中的 宏
+             */
+            this.shaderMacro = {};
             /**
              * 纹理缓冲
              */
             this._webGLProgramMap = new Map();
-            this.renderAtomic = renderAtomic;
         }
         /**
          * 激活渲染程序
          */
         Shader.prototype.activeShaderProgram = function (gl) {
-            if (this.renderAtomic.macroInvalid) {
-                this.renderAtomic.macroInvalid = false;
-                this.clear();
-                var shader = feng3d.shaderlib.getShader(this.renderAtomic.shadername);
-                //应用宏
-                var shaderMacroStr = this.getMacroCode(this.renderAtomic.shaderMacro);
-                this._resultVertexCode = shader.vertex.replace(/#define\s+macros/, shaderMacroStr);
-                this._resultFragmentCode = shader.fragment.replace(/#define\s+macros/, shaderMacroStr);
-            }
+            this.clear();
+            var shader = feng3d.shaderlib.getShader(this.shaderName);
+            //应用宏
+            var shaderMacroStr = this.getMacroCode(this.shaderMacro);
+            this._resultVertexCode = shader.vertex.replace(/#define\s+macros/, shaderMacroStr);
+            this._resultFragmentCode = shader.fragment.replace(/#define\s+macros/, shaderMacroStr);
             //渲染程序
             var shaderProgram = this._webGLProgramMap.get(gl);
             if (!shaderProgram) {
@@ -10329,14 +10329,9 @@ var feng3d;
              */
             this.shaderMacro = {};
             /**
-             * macro是否失效
-             */
-            this.macroInvalid = true;
-            /**
              * 渲染参数
              */
             this.renderParams = new feng3d.RenderParams();
-            this.shader = new feng3d.Shader(this);
         }
         return RenderAtomic;
     }());
@@ -11473,7 +11468,11 @@ var feng3d;
         // try
         // {
         //绘制
+        var material = meshRenderer.material;
         var renderAtomic = meshRenderer.gameObject.renderAtomic;
+        renderAtomic.renderParams = material.renderParams;
+        renderAtomic.shaderMacro = material.shaderMacro;
+        renderAtomic.shader = material.shader;
         meshRenderer.gameObject.preRender(renderAtomic);
         renderContext.preRender(renderAtomic);
         gl.renderer.draw(renderAtomic);
@@ -11631,7 +11630,7 @@ var feng3d;
     feng3d.outlineRenderer = {
         draw: draw,
     };
-    var shadername = "outline";
+    var shader;
     var renderParams;
     function init() {
         if (!renderParams) {
@@ -11642,6 +11641,8 @@ var feng3d;
             renderParams.depthtest = true;
             renderParams.cullFace = feng3d.CullFace.FRONT;
             renderParams.frontFace = feng3d.FrontFace.CW;
+            shader = new feng3d.Shader();
+            shader.shaderName = "outline";
         }
     }
     function draw(renderContext, unblenditems) {
@@ -11661,12 +11662,13 @@ var feng3d;
      */
     function drawGameObject(gl, renderAtomic) {
         init();
-        var oldshadername = renderAtomic.shadername;
+        var oldshader = renderAtomic.shader;
+        renderAtomic.shader = shader;
         var oldRenderParams = renderAtomic.renderParams;
         renderAtomic.renderParams = renderParams;
         gl.renderer.draw(renderAtomic);
         //
-        renderAtomic.shadername = oldshadername;
+        renderAtomic.shader = oldshader;
         renderAtomic.renderParams = oldRenderParams;
     }
     var OutLineComponent = /** @class */ (function (_super) {
@@ -11711,8 +11713,8 @@ var feng3d;
     feng3d.wireframeRenderer = {
         draw: draw,
     };
-    var shadername = "wireframe";
     var renderParams;
+    var shader;
     function init() {
         if (!renderParams) {
             renderParams = new feng3d.RenderParams();
@@ -11721,6 +11723,8 @@ var feng3d;
             renderParams.depthMask = false;
             renderParams.depthtest = true;
             renderParams.depthFunc = feng3d.DepthFunc.LEQUAL;
+            shader = new feng3d.Shader();
+            shader.shaderName = "wireframe";
         }
     }
     /**
@@ -11751,7 +11755,8 @@ var feng3d;
             || renderMode == feng3d.RenderMode.LINE_STRIP)
             return;
         init();
-        var oldshadername = renderAtomic.shadername;
+        var oldshader = renderAtomic.shader;
+        renderAtomic.shader = shader;
         var oldrenderParams = renderAtomic.renderParams;
         renderAtomic.renderParams = renderParams;
         //
@@ -11769,7 +11774,7 @@ var feng3d;
         gl.renderer.draw(renderAtomic);
         renderAtomic.indexBuffer = oldIndexBuffer;
         //
-        renderAtomic.shadername = oldshadername;
+        renderAtomic.shader = oldshader;
         renderAtomic.renderParams = oldrenderParams;
     }
     /**
@@ -11891,6 +11896,7 @@ var feng3d;
     };
     var renderAtomic;
     var renderParams;
+    var shader;
     function init() {
         if (!renderAtomic) {
             renderAtomic = new feng3d.RenderAtomic();
@@ -11918,14 +11924,15 @@ var feng3d;
             renderAtomic.indexBuffer = new feng3d.Index();
             renderAtomic.indexBuffer.indices = indices;
             //
-            renderAtomic.shadername = "skybox";
-            //
             renderParams = new feng3d.RenderParams();
             renderParams.renderMode = feng3d.RenderMode.TRIANGLES;
             renderParams.enableBlend = false;
             renderParams.depthMask = true;
             renderParams.depthtest = true;
             renderParams.cullFace = feng3d.CullFace.NONE;
+            //
+            shader = new feng3d.Shader();
+            shader.shaderName = "skybox";
         }
     }
     /**
@@ -11947,6 +11954,7 @@ var feng3d;
         //
         var renderAtomic = skybox.gameObject.renderAtomic;
         renderAtomic.renderParams = renderParams;
+        renderAtomic.shader = shader;
         skybox.gameObject.preRender(renderAtomic);
         renderAtomic.uniforms.s_skyboxTexture = renderAtomic.uniforms.s_skyboxTexture;
         gl.renderer.draw(renderAtomic);
@@ -18362,6 +18370,11 @@ var feng3d;
              * 渲染参数
              */
             _this.renderParams = new feng3d.RenderParams();
+            /**
+             * shader 中的 宏
+             */
+            _this.shaderMacro = {};
+            _this.shader = new feng3d.Shader();
             _this.renderMode = feng3d.RenderMode.TRIANGLES;
             _this.renderParams.cullFace = _this.cullFace;
             _this.renderParams.frontFace = _this.frontFace;
@@ -18432,8 +18445,8 @@ var feng3d;
         Material.prototype.preRender = function (renderAtomic) {
             var _this = this;
             renderAtomic.uniforms.u_PointSize = function () { return _this.pointSize; };
-            renderAtomic.shadername = this.shaderName;
-            renderAtomic.renderParams = this.renderParams;
+            this.shader.shaderName = this.shaderName;
+            this.shader.shaderMacro = this.shaderMacro;
             renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderMode == feng3d.RenderMode.POINTS;
         };
         __decorate([
