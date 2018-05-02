@@ -6,7 +6,6 @@ namespace feng3d
 
     var renderAtomic: RenderAtomic;
     var renderParams: RenderParams;
-    var material: Material;
 
     function init()
     {
@@ -45,9 +44,6 @@ namespace feng3d
             renderParams.depthMask = true;
             renderParams.depthtest = true;
             renderParams.cullFace = CullFace.NONE;
-
-            material = new Material();
-            material.renderParams = renderParams;
         }
     }
 
@@ -74,11 +70,12 @@ namespace feng3d
 
         //
         var renderAtomic = skybox.gameObject.renderAtomic;
+        renderAtomic.renderParams = renderParams;
         skybox.gameObject.preRender(renderAtomic);
 
         renderAtomic.uniforms.s_skyboxTexture = renderAtomic.uniforms.s_skyboxTexture;
 
-        gl.renderer.draw(renderAtomic, material);
+        gl.renderer.draw(renderAtomic);
     }
 
     export class SkyBox extends Component

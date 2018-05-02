@@ -45,7 +45,7 @@ namespace feng3d
                 var renderAtomic = item.gameObject.renderAtomic;
                 item.gameObject.preRender(renderAtomic);
                 var meshRenderer = item.getComponent(MeshRenderer);
-                drawGameObject(gl, renderAtomic, meshRenderer.material);            //
+                drawGameObject(gl, renderAtomic);            //
             }
         }
     }
@@ -53,9 +53,9 @@ namespace feng3d
     /**
      * 绘制3D对象
      */
-    function drawGameObject(gl: GL, renderAtomic: RenderAtomic, material: Material)
+    function drawGameObject(gl: GL, renderAtomic: RenderAtomic)
     {
-        var renderMode = lazy.getvalue(material.renderParams.renderMode);
+        var renderMode = lazy.getvalue(renderAtomic.renderParams.renderMode);
         if (renderMode == RenderMode.POINTS
             || renderMode == RenderMode.LINES
             || renderMode == RenderMode.LINE_LOOP
@@ -67,8 +67,8 @@ namespace feng3d
 
         var oldshadername = renderAtomic.shadername;
 
-        var oldrenderParams = material.renderParams;
-        material.renderParams = renderParams;
+        var oldrenderParams = renderAtomic.renderParams;
+        renderAtomic.renderParams = renderParams;
 
         //
         var oldIndexBuffer = renderAtomic.indexBuffer;
@@ -89,12 +89,12 @@ namespace feng3d
         }
         renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
 
-        gl.renderer.draw(renderAtomic, material);
+        gl.renderer.draw(renderAtomic);
 
         renderAtomic.indexBuffer = oldIndexBuffer;
         //
         renderAtomic.shadername = oldshadername;
-        material.renderParams = oldrenderParams;
+        renderAtomic.renderParams = oldrenderParams;
     }
 
     export interface RenderAtomic

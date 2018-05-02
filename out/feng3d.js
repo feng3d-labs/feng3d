@@ -10332,6 +10332,10 @@ var feng3d;
              * macro是否失效
              */
             this.macroInvalid = true;
+            /**
+             * 渲染参数
+             */
+            this.renderParams = new feng3d.RenderParams();
             this.shader = new feng3d.Shader(this);
         }
         return RenderAtomic;
@@ -11223,15 +11227,15 @@ var feng3d;
         function Renderer(gl) {
             feng3d.assert(!gl.renderer, gl + " " + gl.renderer + " \u5B58\u5728\uFF01");
             gl.renderer = this;
-            this.draw = function (renderAtomic, material) {
+            this.draw = function (renderAtomic) {
                 var shaderProgram = renderAtomic.shader.activeShaderProgram(gl);
                 if (!shaderProgram)
                     return;
                 //
-                activeShaderParams(material.renderParams);
+                activeShaderParams(renderAtomic.renderParams);
                 activeAttributes(renderAtomic, shaderProgram.attributes);
                 activeUniforms(renderAtomic, shaderProgram.uniforms);
-                dodraw(renderAtomic, material.renderParams);
+                dodraw(renderAtomic, renderAtomic.renderParams);
                 disableAttributes(shaderProgram.attributes);
             };
             function activeShaderParams(shaderParams) {
@@ -11472,7 +11476,7 @@ var feng3d;
         var renderAtomic = meshRenderer.gameObject.renderAtomic;
         meshRenderer.gameObject.preRender(renderAtomic);
         renderContext.preRender(renderAtomic);
-        gl.renderer.draw(renderAtomic, meshRenderer.material);
+        gl.renderer.draw(renderAtomic);
         // renderdatacollector.clearRenderDataHolder(renderContext, renderAtomic);
         // } catch (error)
         // {
@@ -11648,22 +11652,22 @@ var feng3d;
                 var renderAtomic = item.gameObject.renderAtomic;
                 item.gameObject.preRender(renderAtomic);
                 var meshRenderer = item.getComponent(feng3d.MeshRenderer);
-                drawGameObject(gl, renderAtomic, meshRenderer.material); //
+                drawGameObject(gl, renderAtomic); //
             }
         }
     }
     /**
      * 绘制3D对象
      */
-    function drawGameObject(gl, renderAtomic, material) {
+    function drawGameObject(gl, renderAtomic) {
         init();
         var oldshadername = renderAtomic.shadername;
-        var oldRenderParams = material.renderParams;
-        material.renderParams = renderParams;
-        gl.renderer.draw(renderAtomic, material);
+        var oldRenderParams = renderAtomic.renderParams;
+        renderAtomic.renderParams = renderParams;
+        gl.renderer.draw(renderAtomic);
         //
         renderAtomic.shadername = oldshadername;
-        material.renderParams = oldRenderParams;
+        renderAtomic.renderParams = oldRenderParams;
     }
     var OutLineComponent = /** @class */ (function (_super) {
         __extends(OutLineComponent, _super);
@@ -11732,15 +11736,15 @@ var feng3d;
                 var renderAtomic = item.gameObject.renderAtomic;
                 item.gameObject.preRender(renderAtomic);
                 var meshRenderer = item.getComponent(feng3d.MeshRenderer);
-                drawGameObject(gl, renderAtomic, meshRenderer.material); //
+                drawGameObject(gl, renderAtomic); //
             }
         }
     }
     /**
      * 绘制3D对象
      */
-    function drawGameObject(gl, renderAtomic, material) {
-        var renderMode = feng3d.lazy.getvalue(material.renderParams.renderMode);
+    function drawGameObject(gl, renderAtomic) {
+        var renderMode = feng3d.lazy.getvalue(renderAtomic.renderParams.renderMode);
         if (renderMode == feng3d.RenderMode.POINTS
             || renderMode == feng3d.RenderMode.LINES
             || renderMode == feng3d.RenderMode.LINE_LOOP
@@ -11748,8 +11752,8 @@ var feng3d;
             return;
         init();
         var oldshadername = renderAtomic.shadername;
-        var oldrenderParams = material.renderParams;
-        material.renderParams = renderParams;
+        var oldrenderParams = renderAtomic.renderParams;
+        renderAtomic.renderParams = renderParams;
         //
         var oldIndexBuffer = renderAtomic.indexBuffer;
         if (!renderAtomic.wireframeindexBuffer || renderAtomic.wireframeindexBuffer.count != 2 * oldIndexBuffer.count) {
@@ -11762,11 +11766,11 @@ var feng3d;
             renderAtomic.wireframeindexBuffer.indices = wireframeindices;
         }
         renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
-        gl.renderer.draw(renderAtomic, material);
+        gl.renderer.draw(renderAtomic);
         renderAtomic.indexBuffer = oldIndexBuffer;
         //
         renderAtomic.shadername = oldshadername;
-        material.renderParams = oldrenderParams;
+        renderAtomic.renderParams = oldrenderParams;
     }
     /**
      * 线框组件，将会对拥有该组件的对象绘制线框
@@ -11887,7 +11891,6 @@ var feng3d;
     };
     var renderAtomic;
     var renderParams;
-    var material;
     function init() {
         if (!renderAtomic) {
             renderAtomic = new feng3d.RenderAtomic();
@@ -11923,8 +11926,6 @@ var feng3d;
             renderParams.depthMask = true;
             renderParams.depthtest = true;
             renderParams.cullFace = feng3d.CullFace.NONE;
-            material = new feng3d.Material();
-            material.renderParams = renderParams;
         }
     }
     /**
@@ -11945,9 +11946,10 @@ var feng3d;
         renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
         //
         var renderAtomic = skybox.gameObject.renderAtomic;
+        renderAtomic.renderParams = renderParams;
         skybox.gameObject.preRender(renderAtomic);
         renderAtomic.uniforms.s_skyboxTexture = renderAtomic.uniforms.s_skyboxTexture;
-        gl.renderer.draw(renderAtomic, material);
+        gl.renderer.draw(renderAtomic);
     }
     var SkyBox = /** @class */ (function (_super) {
         __extends(SkyBox, _super);
@@ -18353,10 +18355,6 @@ var feng3d;
              */
             _this.useViewRect = false;
             /**
-             * shader 中的 宏
-             */
-            _this.shaderMacro = {};
-            /**
              * macro是否失效
              */
             _this.macroInvalid = true;
@@ -18386,7 +18384,6 @@ var feng3d;
             },
             set: function (value) {
                 this._renderMode = value;
-                this.shaderMacro.IS_POINTS_MODE = this.renderMode == feng3d.RenderMode.POINTS;
                 this.renderParams.renderMode = this.renderMode;
             },
             enumerable: true,
@@ -18436,6 +18433,8 @@ var feng3d;
             var _this = this;
             renderAtomic.uniforms.u_PointSize = function () { return _this.pointSize; };
             renderAtomic.shadername = this.shaderName;
+            renderAtomic.renderParams = this.renderParams;
+            renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderMode == feng3d.RenderMode.POINTS;
         };
         __decorate([
             feng3d.serialize(feng3d.RenderMode.TRIANGLES),

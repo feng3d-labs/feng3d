@@ -46,6 +46,11 @@ namespace feng3d
          */
         shader: Shader;
 
+        /**
+         * 渲染参数
+         */
+        renderParams = new RenderParams();
+
         constructor()
         {
             this.shader = new Shader(this);

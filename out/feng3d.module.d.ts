@@ -6430,6 +6430,10 @@ declare namespace feng3d {
          * 渲染程序
          */
         shader: Shader;
+        /**
+         * 渲染参数
+         */
+        renderParams: RenderParams;
         constructor();
     }
 }
@@ -7058,7 +7062,7 @@ declare namespace feng3d {
          * 绘制
          * @param renderAtomic  渲染原子
          */
-        readonly draw: (renderAtomic: RenderAtomic, material: Material) => void;
+        readonly draw: (renderAtomic: RenderAtomic) => void;
         constructor(gl: GL);
     }
 }
@@ -9132,10 +9136,6 @@ declare namespace feng3d {
          * 是否使用 viewRect
          */
         useViewRect: boolean;
-        /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro;
         /**
          * macro是否失效
          */

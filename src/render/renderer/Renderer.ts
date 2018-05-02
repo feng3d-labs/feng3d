@@ -10,7 +10,7 @@ namespace feng3d
          * 绘制
          * @param renderAtomic  渲染原子
          */
-        readonly draw: (renderAtomic: RenderAtomic, material: Material) => void;
+        readonly draw: (renderAtomic: RenderAtomic) => void;
 
         constructor(gl: GL)
         {
@@ -18,16 +18,16 @@ namespace feng3d
 
             gl.renderer = this;
 
-            this.draw = (renderAtomic: RenderAtomic, material: Material) =>
+            this.draw = (renderAtomic: RenderAtomic) =>
             {
                 var shaderProgram = renderAtomic.shader.activeShaderProgram(gl);
                 if (!shaderProgram)
                     return;
                 //
-                activeShaderParams(material.renderParams);
+                activeShaderParams(renderAtomic.renderParams);
                 activeAttributes(renderAtomic, shaderProgram.attributes);
                 activeUniforms(renderAtomic, shaderProgram.uniforms);
-                dodraw(renderAtomic, material.renderParams);
+                dodraw(renderAtomic, renderAtomic.renderParams);
                 disableAttributes(shaderProgram.attributes);
             }
 

@@ -21,8 +21,6 @@ namespace feng3d
         {
             this._renderMode = value;
 
-            this.shaderMacro.IS_POINTS_MODE = this.renderMode == RenderMode.POINTS;
-
             this.renderParams.renderMode = this.renderMode;
         }
         private _renderMode: number;
@@ -135,11 +133,6 @@ namespace feng3d
         useViewRect = false;
 
         /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro = <any>{};
-
-        /**
          * macro是否失效
          */
         macroInvalid = true;
@@ -177,6 +170,9 @@ namespace feng3d
 
             renderAtomic.shadername = this.shaderName;
 
+            renderAtomic.renderParams = this.renderParams;
+
+            renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderMode == RenderMode.POINTS;
         }
     }
 }
