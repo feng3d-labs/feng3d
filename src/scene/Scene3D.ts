@@ -3,7 +3,7 @@ namespace feng3d
     /**
 	 * 组件事件
 	 */
-    export interface Scene3DEventMap extends ComponentEventMap
+    export interface Scene3DEventMap
     {
         addToScene: GameObject;
         removeFromScene: GameObject;

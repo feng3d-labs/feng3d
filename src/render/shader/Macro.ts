@@ -99,5 +99,16 @@ namespace feng3d
          * 是否需要摄像机矩阵
          */
         A_U_CAMERAMATRIX_NEED: number;
+
+
+        
+        /**
+         * 是否卡通渲染
+         */
+        B_IS_CARTOON: Boolean;
+        /**
+         * 是否抗锯齿
+         */
+        B_cartoon_Anti_aliasing: Boolean;
     }
 }

@@ -35,8 +35,11 @@ namespace feng3d
             super();
             this.shaderName = "color";
             this.color = color || new Color();
-            //
-            this.createUniformData("u_diffuseInput", () => this.color);
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.uniforms.u_diffuseInput = () => this.color;
         }
     }
 }

@@ -37,7 +37,12 @@ namespace feng3d
             super();
             this.shaderName = "segment";
             this.renderMode = RenderMode.LINES;
-            this.createUniformData("u_segmentColor", () => this.color);
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.uniforms.u_segmentColor = () => this.color;
+
         }
     }
 }

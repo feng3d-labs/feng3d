@@ -73,10 +73,10 @@ namespace feng3d
         renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
 
         //
-        var skyboxRenderAtomic = skybox.getComponent(RenderAtomicComponent);
-        skyboxRenderAtomic.update();
+        var renderAtomic = skybox.gameObject.renderAtomic;
+        skybox.gameObject.preRender(renderAtomic);
 
-        renderAtomic.uniforms.s_skyboxTexture = skyboxRenderAtomic.renderAtomic.uniforms.s_skyboxTexture;
+        renderAtomic.uniforms.s_skyboxTexture = renderAtomic.uniforms.s_skyboxTexture;
 
         gl.renderer.draw(renderAtomic, material);
     }
@@ -101,12 +101,16 @@ namespace feng3d
         {
             super();
             //
-            this.createUniformData("s_skyboxTexture", () => this.texture);
         }
 
         init(gameObject: GameObject)
         {
             super.init(gameObject)
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.uniforms.s_skyboxTexture = () => this.texture;
         }
     }
 }

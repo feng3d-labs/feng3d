@@ -118,7 +118,13 @@ namespace feng3d
         init(gameobject: GameObject)
         {
             super.init(gameobject);
-            this.createUniformData("u_wireframeColor", () => this.color);
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            super.preRender(renderAtomic);
+
+            renderAtomic.uniforms.u_wireframeColor = () => this.color;
         }
     }
 }

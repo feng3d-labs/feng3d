@@ -15,11 +15,7 @@ namespace feng3d
         {
             if (this._splatTexture1 == value)
                 return;
-            if (this._splatTexture1)
-                this._splatTexture1.off("loaded", this.ontextureChanged, this)
             this._splatTexture1 = value;
-            if (this._splatTexture1)
-                this._splatTexture1.on("loaded", this.ontextureChanged, this)
         }
         private _splatTexture1: Texture2D;
 
@@ -31,11 +27,7 @@ namespace feng3d
         {
             if (this._splatTexture2 == value)
                 return;
-            if (this._splatTexture2)
-                this._splatTexture2.off("loaded", this.ontextureChanged, this)
             this._splatTexture2 = value;
-            if (this._splatTexture2)
-                this._splatTexture2.on("loaded", this.ontextureChanged, this)
         }
         private _splatTexture2: Texture2D;
 
@@ -47,11 +39,7 @@ namespace feng3d
         {
             if (this._splatTexture3 == value)
                 return;
-            if (this._splatTexture3)
-                this._splatTexture3.off("loaded", this.ontextureChanged, this)
             this._splatTexture3 = value;
-            if (this._splatTexture3)
-                this._splatTexture3.on("loaded", this.ontextureChanged, this)
         }
         private _splatTexture3: Texture2D;
 
@@ -63,11 +51,7 @@ namespace feng3d
         {
             if (this._blendTexture == value)
                 return;
-            if (this._blendTexture)
-                this._blendTexture.off("loaded", this.ontextureChanged, this)
             this._blendTexture = value;
-            if (this._blendTexture)
-                this._blendTexture.on("loaded", this.ontextureChanged, this)
         }
         private _blendTexture: Texture2D;
 
@@ -107,23 +91,22 @@ namespace feng3d
             this.splatTexture3.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
             this.splatTexture3.wrapS = TextureWrap.REPEAT;
             this.splatTexture3.wrapT = TextureWrap.REPEAT;
-
-            //
-            this.createUniformData("s_blendTexture", () => this.blendTexture);
-            this.createUniformData("s_splatTexture1", () => this.splatTexture1);
-            this.createUniformData("s_splatTexture2", () => this.splatTexture2);
-            this.createUniformData("s_splatTexture3", () => this.splatTexture3);
-            this.createUniformData("u_splatRepeats", () => this.splatRepeats);
         }
 
-        private ontextureChanged()
+        preRender(renderAtomic: RenderAtomic)
         {
-            this.createBoolMacro("B_HAS_TERRAIN_METHOD",
+            renderAtomic.uniforms.s_blendTexture = () => this.blendTexture;
+            renderAtomic.uniforms.s_splatTexture1 = () => this.splatTexture1;
+            renderAtomic.uniforms.s_splatTexture2 = () => this.splatTexture2;
+            renderAtomic.uniforms.s_splatTexture3 = () => this.splatTexture3;
+            renderAtomic.uniforms.u_splatRepeats = () => this.splatRepeats;
+
+            renderAtomic.shaderMacro.B_HAS_TERRAIN_METHOD =
                 this.blendTexture.checkRenderData()
                 && this.splatTexture1.checkRenderData()
                 && this.splatTexture2.checkRenderData()
                 && this.splatTexture3.checkRenderData()
-            );
+                ;
         }
     }
 }

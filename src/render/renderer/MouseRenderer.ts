@@ -56,9 +56,9 @@ namespace feng3d
                 var u_objectID = this.objects.length;
                 this.objects[u_objectID] = object;
 
-                var renderAtomic = object.getComponent(RenderAtomicComponent);
+                var renderAtomic = object.renderAtomic;
 
-                renderAtomic.renderAtomic.uniforms.u_objectID = u_objectID;
+                renderAtomic.uniforms.u_objectID = u_objectID;
                 // super.drawRenderables(renderContext, meshRenderer);
             }
         }

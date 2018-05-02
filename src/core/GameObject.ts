@@ -129,6 +129,8 @@ namespace feng3d
      */
     export class GameObject extends Feng3dObject
     {
+        readonly renderAtomic = new RenderAtomic();
+        
         /**
          * 游戏对象池
          */
@@ -259,7 +261,6 @@ namespace feng3d
             super();
             this.name = name;
             this.addComponent(Transform);
-            this.addComponent(RenderAtomicComponent);
             this.addComponent(BoundingComponent);
             this.guid = FMath.generateUUID();
             //

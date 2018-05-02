@@ -79,11 +79,13 @@ namespace feng3d
         init(gameobject: GameObject)
         {
             super.init(gameobject);
+        }
 
-            //
-            this.createUniformData("u_outlineSize", () => this.size);
-            this.createUniformData("u_outlineColor", () => this.color);
-            this.createUniformData("u_outlineMorphFactor", () => this.outlineMorphFactor);
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.uniforms.u_outlineSize = () => this.size;
+            renderAtomic.uniforms.u_outlineColor = () => this.color;
+            renderAtomic.uniforms.u_outlineMorphFactor = () => this.outlineMorphFactor;
         }
     }
 

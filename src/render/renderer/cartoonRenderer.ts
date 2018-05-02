@@ -48,23 +48,28 @@ namespace feng3d
         set cartoon_Anti_aliasing(value)
         {
             this._cartoon_Anti_aliasing = value;
-            this.createBoolMacro("cartoon_Anti_aliasing", value);
         }
         _cartoon_Anti_aliasing = false;
 
         init(gameObject: GameObject)
         {
             super.init(gameObject);
-
-            this.createBoolMacro("IS_CARTOON", true);
-            this.createUniformData("u_diffuseSegment", () => this.diffuseSegment);
-            this.createUniformData("u_diffuseSegmentValue", () => this.diffuseSegmentValue);
-            this.createUniformData("u_specularSegment", () => this.specularSegment);
-            //
-            this.createUniformData("u_outlineSize", () => this.outlineSize);
-            this.createUniformData("u_outlineColor", () => this.outlineColor);
-            this.createUniformData("u_outlineMorphFactor", () => this.outlineMorphFactor);
         }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.shaderMacro.B_cartoon_Anti_aliasing = this._cartoon_Anti_aliasing;
+
+            renderAtomic.shaderMacro.B_IS_CARTOON = true;
+            renderAtomic.uniforms.u_diffuseSegment = () => this.diffuseSegment;
+            renderAtomic.uniforms.u_diffuseSegmentValue = () => this.diffuseSegmentValue;
+            renderAtomic.uniforms.u_specularSegment = () => this.specularSegment;
+            //
+            renderAtomic.uniforms.u_outlineSize = () => this.outlineSize;
+            renderAtomic.uniforms.u_outlineColor = () => this.outlineColor;
+            renderAtomic.uniforms.u_outlineMorphFactor = () => this.outlineMorphFactor;
+        }
+
     }
 
     export interface Uniforms
@@ -73,21 +78,5 @@ namespace feng3d
         u_diffuseSegmentValue: Vector4;
 
         u_specularSegment: number;
-    }
-
-    /**
-     * Boolean类型宏
-     * 没有默认值
-     */
-    export interface BoolMacros
-    {
-        /**
-         * 是否卡通渲染
-         */
-        IS_CARTOON: Boolean;
-        /**
-         * 是否抗锯齿
-         */
-        cartoon_Anti_aliasing: Boolean;
     }
 }

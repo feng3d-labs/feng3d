@@ -19,7 +19,11 @@ namespace feng3d
             this.shaderName = "point";
             this.renderMode = RenderMode.POINTS;
             //
-            this.createUniformData("u_color", () => this.color);
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.uniforms.u_color = () => this.color;
         }
     }
 }

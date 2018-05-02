@@ -32,9 +32,12 @@ namespace feng3d
         {
             super();
             this.shaderName = "texture";
-            //
-            this.createUniformData("u_color", () => this.color);
-            this.createUniformData("s_texture", () => this.texture);
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.uniforms.u_color = () => this.color;
+            renderAtomic.uniforms.s_texture = () => this.texture;
         }
     }
 

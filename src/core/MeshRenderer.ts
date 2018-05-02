@@ -59,7 +59,10 @@ namespace feng3d
         {
             renderAtomic.uniforms.u_modelMatrix = () => this.transform.localToWorldMatrix;
             renderAtomic.uniforms.u_ITModelMatrix = () => this.transform.ITlocalToWorldMatrix;
+            renderAtomic.uniforms.u_mvMatrix = () => lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(lazy.getvalue(renderAtomic.uniforms.u_viewMatrix));
+            renderAtomic.uniforms.u_ITMVMatrix = () => lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose();
 
+            //
             this._geometry.preRender(renderAtomic);
             this._material.preRender(renderAtomic);
         }

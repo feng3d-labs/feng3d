@@ -103,12 +103,6 @@ namespace feng3d
         {
             super.init(gameObject);
 
-            this.createInstanceCount(() => this.numParticles);
-            //
-            this.createUniformData("u_particleTime", () => this.time);
-            //
-            this.createBoolMacro("B_HAS_PARTICLE_ANIMATOR", true);
-
             if (this._isPlaying)
             {
                 this.preTime = Date.now();
@@ -142,22 +136,6 @@ namespace feng3d
                 this.generateParticles();
                 this._isDirty = false;
             }
-
-            for (const key in this.particleGlobal)
-            {
-                if (this.particleGlobal.hasOwnProperty(key))
-                {
-                    const element = this.particleGlobal[key];
-                    if (element)
-                    {
-                        this.createUniformData(<any>("u_particle_" + key), element);
-                        this.createBoolMacro(<any>("D_u_particle_" + key), true);
-                    } else
-                    {
-                        this.createBoolMacro(<any>("D_u_particle_" + key), false);
-                    }
-                }
-            }
         }
 
         public invalidate()
@@ -172,12 +150,6 @@ namespace feng3d
         {
             var generateFunctions = this.generateFunctions.concat();
 
-            //清理宏定义
-            for (var attribute in this._attributes)
-            {
-                var vector3DData = this._attributes[attribute];
-                this.createBoolMacro(<any>("D_" + attribute), false);
-            }
             this._attributes = {};
 
             for (const key in this.animations)
@@ -203,13 +175,6 @@ namespace feng3d
                     element.generate(particle);
                 });
                 this.collectionParticle(particle);
-            }
-            //更新宏定义
-            for (var attribute in this._attributes)
-            {
-                var vector3DData = this._attributes[attribute];
-                this.createAttributeRenderData(<any>attribute, vector3DData, vector3DData.length / this.numParticles, 1);
-                this.createBoolMacro(<any>("D_" + attribute), true);
             }
         }
 
@@ -259,6 +224,45 @@ namespace feng3d
             } else
             {
                 throw new Error(`无法处理${ClassUtils.getQualifiedClassName(data)}粒子属性`);
+            }
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.instanceCount = () => this.numParticles;
+            //
+            renderAtomic.uniforms.u_particleTime = () => this.time;
+            //
+            renderAtomic.shaderMacro.B_HAS_PARTICLE_ANIMATOR = true;
+
+            //
+            for (const key in this.particleGlobal)
+            {
+                if (this.particleGlobal.hasOwnProperty(key))
+                {
+                    const element = this.particleGlobal[key];
+                    if (element)
+                    {
+                        renderAtomic.uniforms["u_particle_" + key] = element;
+                        renderAtomic.shaderMacro["B_D_u_particle_" + key] = true;
+                    } else
+                    {
+                        renderAtomic.shaderMacro["B_D_u_particle_" + key] = false;
+                    }
+                }
+            }
+
+            //更新宏定义
+            for (var attribute in this._attributes)
+            {
+                var vector3DData = this._attributes[attribute];
+
+                var attributeRenderData = renderAtomic.attributes[name] = renderAtomic.attributes[name] || new Attribute(name, vector3DData);
+                attributeRenderData.data = vector3DData;
+                attributeRenderData.size = vector3DData.length / this.numParticles;
+                attributeRenderData.divisor = 1;
+
+                renderAtomic.shaderMacro["B_D_" + attribute] = true;
             }
         }
     }
