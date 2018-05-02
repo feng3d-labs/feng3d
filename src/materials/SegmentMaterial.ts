@@ -41,6 +41,8 @@ namespace feng3d
 
         preRender(renderAtomic: RenderAtomic)
         {
+            super.preRender(renderAtomic);
+
             renderAtomic.uniforms.u_segmentColor = () => this.color;
 
         }

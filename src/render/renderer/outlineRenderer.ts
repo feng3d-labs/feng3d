@@ -36,9 +36,10 @@ namespace feng3d
             var item = unblenditems[i].item;
             if (item.getComponent(OutLineComponent) || item.getComponent(CartoonComponent))
             {
-                var renderAtomic = item.getComponent(RenderAtomicComponent);
+                var renderAtomic = item.gameObject.renderAtomic;
+                item.gameObject.preRender(renderAtomic);
                 var meshRenderer = item.getComponent(MeshRenderer);
-                drawGameObject(gl, renderAtomic.renderAtomic, meshRenderer.material);            //
+                drawGameObject(gl, renderAtomic, meshRenderer.material);            //
             }
         }
     }

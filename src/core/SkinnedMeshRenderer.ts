@@ -90,8 +90,8 @@ namespace feng3d
             //
             renderAtomic.uniforms.u_skeletonGlobalMatriices = () => this.u_skeletonGlobalMatriices;
 
-            renderAtomic.shaderMacro.B_HAS_SKELETON_ANIMATION = true;
-            renderAtomic.shaderMacro.V_NUM_SKELETONJOINT = this._skinSkeleton.joints.length;
+            renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
+            renderAtomic.shaderMacro.NUM_SKELETONJOINT = this._skinSkeleton.joints.length;
         }
 
         /**

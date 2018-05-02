@@ -60,19 +60,12 @@ namespace feng3d
             macroNames = macroNames.sort();
             macroNames.forEach(macroName =>
             {
-                if (macroName.substr(0, 2) == "A_")
+                var value = macro[macroName];
+                if (typeof value == "boolean")
                 {
-                    var value = macro[macroName];
-                    macroHeader += `#define ${macroName} ${value}\n`;
-                }
-                if (macroName.substr(0, 2) == "B_")
-                {
-                    var value = macro[macroName];
                     value && (macroHeader += `#define ${macroName}\n`);
-                }
-                if (macroName.substr(0, 2) == "A_")
+                } else
                 {
-                    var value = macro[macroName];
                     macroHeader += `#define ${macroName} ${value}\n`;
                 }
             });

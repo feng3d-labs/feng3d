@@ -21,7 +21,7 @@ namespace feng3d
         {
             this._renderMode = value;
 
-            this.shaderMacro.B_IS_POINTS_MODE = this.renderMode == RenderMode.POINTS;
+            this.shaderMacro.IS_POINTS_MODE = this.renderMode == RenderMode.POINTS;
 
             this.renderParams.renderMode = this.renderMode;
         }
@@ -175,7 +175,8 @@ namespace feng3d
         {
             renderAtomic.uniforms.u_PointSize = () => this.pointSize;
 
-            
+            renderAtomic.shadername = this.shaderName;
+
         }
     }
 }

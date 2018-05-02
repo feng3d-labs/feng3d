@@ -53,7 +53,7 @@ namespace feng3d
             renderAtomic.uniforms.u_ambient = () => this._color;
             renderAtomic.uniforms.s_ambient = () => this._ambientTexture;
 
-            renderAtomic.shaderMacro.B_HAS_AMBIENT_SAMPLER = this._ambientTexture && this._ambientTexture.checkRenderData();
+            renderAtomic.shaderMacro.HAS_AMBIENT_SAMPLER = this._ambientTexture && this._ambientTexture.checkRenderData();
         }
     }
 }

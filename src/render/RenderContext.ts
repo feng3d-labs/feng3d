@@ -39,7 +39,7 @@ namespace feng3d
             var pointLights = this.scene3d.collectComponents.pointLights.list;
             var directionalLights = this.scene3d.collectComponents.directionalLights.list;
 
-            renderAtomic.shaderMacro.V_NUM_LIGHT = pointLights.length + directionalLights.length;
+            renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
             //收集点光源数据
             var pointLightPositions: Vector3[] = [];
             var pointLightColors: Color[] = [];
@@ -55,13 +55,13 @@ namespace feng3d
             }
             //设置点光源数据
 
-            renderAtomic.shaderMacro.V_NUM_POINTLIGHT = pointLights.length;
+            renderAtomic.shaderMacro.NUM_POINTLIGHT = pointLights.length;
             if (pointLights.length > 0)
             {
-                renderAtomic.shaderMacro.A_A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.A_V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.A_V_GLOBAL_POSITION_NEED = 1;
-                renderAtomic.shaderMacro.A_U_CAMERAMATRIX_NEED = 1;
+                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.GLOBAL_POSITION_NEED = 1;
+                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
                 //
                 renderAtomic.uniforms.u_pointLightPositions = pointLightPositions;
                 renderAtomic.uniforms.u_pointLightColors = pointLightColors;
@@ -78,12 +78,12 @@ namespace feng3d
                 directionalLightColors.push(directionalLight.color);
                 directionalLightIntensitys.push(directionalLight.intensity);
             }
-            renderAtomic.shaderMacro.V_NUM_DIRECTIONALLIGHT = directionalLights.length;
+            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = directionalLights.length;
             if (directionalLights.length > 0)
             {
-                renderAtomic.shaderMacro.A_A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.A_V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.A_U_CAMERAMATRIX_NEED = 1;
+                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
                 //
                 renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
                 renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;

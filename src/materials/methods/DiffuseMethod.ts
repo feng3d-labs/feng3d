@@ -49,7 +49,7 @@ namespace feng3d
 
         preRender(renderAtomic: RenderAtomic)
         {
-            renderAtomic.shaderMacro.B_HAS_DIFFUSE_SAMPLER = this.difuseTexture && this.difuseTexture.checkRenderData();
+            renderAtomic.shaderMacro.HAS_DIFFUSE_SAMPLER = this.difuseTexture && this.difuseTexture.checkRenderData();
 
             //
             renderAtomic.uniforms.u_diffuse = () => this.color;

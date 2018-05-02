@@ -9,7 +9,6 @@ namespace feng3d
         /**
          * 漫反射函数
          */
-        @watch("onmethodchange")
         @serialize()
         @oav()
         diffuseMethod = new DiffuseMethod();
@@ -17,7 +16,6 @@ namespace feng3d
         /**
          * 法线函数
          */
-        @watch("onmethodchange")
         @serialize()
         @oav()
         normalMethod = new NormalMethod();
@@ -25,7 +23,6 @@ namespace feng3d
         /**
          * 镜面反射函数
          */
-        @watch("onmethodchange")
         @serialize()
         @oav()
         specularMethod = new SpecularMethod();
@@ -33,22 +30,18 @@ namespace feng3d
         /**
          * 环境反射函数
          */
-        @watch("onmethodchange")
         @serialize()
         @oav()
         ambientMethod = new AmbientMethod();
 
-        @watch("onmethodchange")
         @serialize()
         @oav()
         envMapMethod = new EnvMapMethod();
 
-        @watch("onmethodchange")
         @serialize()
         @oav()
         fogMethod = new FogMethod();
 
-        @watch("onmethodchange")
         @serialize()
         @oav()
         terrainMethod = new TerrainMethod();

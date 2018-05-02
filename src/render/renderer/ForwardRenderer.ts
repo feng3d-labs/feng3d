@@ -62,14 +62,12 @@ namespace feng3d
         // try
         // {
         //绘制
-        var renderAtomic = meshRenderer.getComponent(RenderAtomicComponent);
+        var renderAtomic = meshRenderer.gameObject.renderAtomic;
 
-        meshRenderer.gameObject.preRender(renderAtomic.renderAtomic);
-        renderContext.preRender(renderAtomic.renderAtomic);
-        
-        renderAtomic.update();
+        meshRenderer.gameObject.preRender(renderAtomic);
+        renderContext.preRender(renderAtomic);
 
-        gl.renderer.draw(renderAtomic.renderAtomic, meshRenderer.material);
+        gl.renderer.draw(renderAtomic, meshRenderer.material);
         // renderdatacollector.clearRenderDataHolder(renderContext, renderAtomic);
 
         // } catch (error)

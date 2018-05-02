@@ -6605,88 +6605,87 @@ declare namespace feng3d {
         /**
          * 光源数量
          */
-        V_NUM_LIGHT: number;
+        NUM_LIGHT: number;
         /**
          * 点光源数量
          */
-        V_NUM_POINTLIGHT: number;
+        NUM_POINTLIGHT: number;
         /**
          * 方向光源数量
          */
-        V_NUM_DIRECTIONALLIGHT: number;
+        NUM_DIRECTIONALLIGHT: number;
         /**
          * 骨骼关节数量
          */
-        V_NUM_SKELETONJOINT: number;
+        NUM_SKELETONJOINT: number;
         /**
          * 是否有漫反射贴图
          */
-        B_HAS_DIFFUSE_SAMPLER: boolean;
+        HAS_DIFFUSE_SAMPLER: boolean;
         /**
          * 是否有法线贴图
          */
-        B_HAS_NORMAL_SAMPLER: boolean;
+        HAS_NORMAL_SAMPLER: boolean;
         /**
          * 是否有镜面反射光泽图
          */
-        B_HAS_SPECULAR_SAMPLER: boolean;
+        HAS_SPECULAR_SAMPLER: boolean;
         /**
          * 是否有环境贴图
          */
-        B_HAS_AMBIENT_SAMPLER: boolean;
+        HAS_AMBIENT_SAMPLER: boolean;
         /**
          * 是否有骨骼动画
          */
-        B_HAS_SKELETON_ANIMATION: boolean;
+        HAS_SKELETON_ANIMATION: boolean;
         /**
          * 是否有粒子动画
          */
-        B_HAS_PARTICLE_ANIMATOR: boolean;
+        HAS_PARTICLE_ANIMATOR: boolean;
         /**
          * 是否为点渲染模式
          */
-        B_IS_POINTS_MODE: boolean;
+        IS_POINTS_MODE: boolean;
         /**
          * 是否有地形方法
          */
-        B_HAS_TERRAIN_METHOD: boolean;
+        HAS_TERRAIN_METHOD: boolean;
         /**
          * 使用合并地形贴图
          */
-        B_USE_TERRAIN_MERGE: boolean;
+        USE_TERRAIN_MERGE: boolean;
         /**
          * 雾函数
          */
-        B_HAS_FOG_METHOD: boolean;
+        HAS_FOG_METHOD: boolean;
         /**
          * 环境映射函数
          */
-        B_HAS_ENV_METHOD: boolean;
-        B_OUTLINE: boolean;
-        /**
-         * 是否需要属性uv
-         */
-        A_A_UV_NEED: number;
-        /**
-         * 是否需要变量uv
-         */
-        A_V_UV_NEED: number;
+        HAS_ENV_METHOD: boolean;
         /**
          * 是否需要变量全局坐标
          */
-        A_V_GLOBAL_POSITION_NEED: number;
+        GLOBAL_POSITION_NEED: number;
         /**
          * 是否需要属性法线
          */
-        A_A_NORMAL_NEED: number;
+        A_NORMAL_NEED: number;
         /**
          * 是否需要变量法线
          */
-        A_V_NORMAL_NEED: number;
+        V_NORMAL_NEED: number;
         /**
          * 是否需要摄像机矩阵
          */
-        A_U_CAMERAMATRIX_NEED: number;
+        U_CAMERAMATRIX_NEED: number;
+        /**
+         * 是否卡通渲染
+         */
+        IS_CARTOON: Boolean;
+        /**
+         * 是否抗锯齿
+         */
+        cartoon_Anti_aliasing: Boolean;
     }
 }
 declare namespace feng3d {
@@ -6776,70 +6775,15 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    var renderdatacollector: {
-        collectRenderDataHolder: (renderDataHolder: RenderDataHolder, renderAtomic: RenderAtomic) => void;
-        clearRenderDataHolder: (renderDataHolder: RenderDataHolder, renderAtomic: RenderAtomic) => void;
-        getsetRenderDataFuncs: (renderDataHolder: RenderDataHolder) => updaterenderDataFunc[];
-        getclearRenderDataFuncs: (renderDataHolder: RenderDataHolder) => updaterenderDataFunc[];
-        collectRenderDataHolderFuncs: (renderDataHolder: RenderDataHolder) => updaterenderDataFunc[];
-        clearRenderDataHolderFuncs: (renderDataHolder: RenderDataHolder) => updaterenderDataFunc[];
-    };
 }
 declare namespace feng3d {
-    type updaterenderDataFunc = (renderData: RenderAtomic) => void;
-    interface RenderDataHolderEventMap {
-        /**
-         * 渲染数据发生变化
-         */
-        renderdataChange: updaterenderDataFunc | updaterenderDataFunc[];
-    }
-    interface RenderDataHolder {
-        once<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: Event<RenderDataHolderEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof RenderDataHolderEventMap>(type: K, data?: RenderDataHolderEventMap[K], bubbles?: boolean): any;
-        has<K extends keyof RenderDataHolderEventMap>(type: K): boolean;
-        on<K extends keyof RenderDataHolderEventMap>(type: K, listener: (event: Event<RenderDataHolderEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof RenderDataHolderEventMap>(type?: K, listener?: (event: Event<RenderDataHolderEventMap[K]>) => any, thisObject?: any): any;
-    }
-    /**
-     * 渲染数据拥有者
-     * @author feng 2016-6-7
-     */
-    class RenderDataHolder extends EventDispatcher {
-        readonly childrenRenderDataHolder: RenderDataHolder[];
-        private _childrenRenderDataHolder;
-        /**
-         * 创建GL数据缓冲
-         */
-        constructor();
-        addRenderDataHolder(renderDataHolder: RenderDataHolder): void;
-        removeRenderDataHolder(renderDataHolder: RenderDataHolder): void;
-        private dispatchrenderdataChange(event);
-        renderDatamap: {
-            [key: string]: {
-                setfunc: (renderData: RenderAtomic) => void;
-                clearfunc: (renderData: RenderAtomic) => void;
-            };
-        };
-        /**
-         *
-         * @param name          数据名称
-         * @param setfunc       设置数据回调
-         * @param clearfunc     清理数据回调
-         */
-        private renderdataChange(name, setfunc, clearfunc);
-        createIndexBuffer(indices: Lazy<number[]>): void;
-        createUniformData<K extends keyof LazyUniforms>(name: K, data: LazyUniforms[K]): void;
-        createAttributeRenderData<K extends keyof Attributes>(name: K, data: Lazy<number[]>, size?: number, divisor?: number): void;
-        createvertexCode(shadername: string): void;
-        createInstanceCount(value: number | (() => number)): void;
-    }
 }
 declare namespace feng3d {
     /**
      * 渲染环境
      * @author feng 2017-01-04
      */
-    class RenderContext extends RenderDataHolder {
+    class RenderContext extends EventDispatcher {
         /**
          * 摄像机
          */
@@ -6853,10 +6797,7 @@ declare namespace feng3d {
          * WebGL实例
          */
         gl: GL;
-        /**
-         * 更新渲染数据
-         */
-        updateRenderData1(): void;
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -6969,7 +6910,7 @@ declare namespace feng3d {
      *
      * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
      */
-    class Feng3dObject extends RenderDataHolder {
+    class Feng3dObject extends EventDispatcher {
         /**
          * Should the Feng3dObject be hidden, saved with the scene or modifiable by the user?
          */
@@ -7011,18 +6952,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 组件事件
-     */
-    interface ComponentEventMap extends RenderDataHolderEventMap {
-    }
-    interface Component {
-        once<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof ComponentEventMap>(type: K, data?: ComponentEventMap[K], bubbles?: boolean): any;
-        has<K extends keyof ComponentEventMap>(type: K): boolean;
-        on<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any): any;
-    }
     /**
      * Base class for everything attached to GameObjects.
      *
@@ -7086,6 +7015,7 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -7166,7 +7096,7 @@ declare namespace feng3d {
      * 鼠标拾取渲染器
      * @author feng 2017-02-06
      */
-    class MouseRenderer extends RenderDataHolder {
+    class MouseRenderer extends EventDispatcher {
         private objects;
         /**
          * 渲染
@@ -7213,6 +7143,7 @@ declare namespace feng3d {
         color: Color;
         outlineMorphFactor: number;
         init(gameobject: GameObject): void;
+        preRender(renderAtomic: RenderAtomic): void;
     }
     interface Uniforms {
         /**
@@ -7255,6 +7186,7 @@ declare namespace feng3d {
         showInInspector: boolean;
         color: Color;
         init(gameobject: GameObject): void;
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -7281,25 +7213,12 @@ declare namespace feng3d {
         cartoon_Anti_aliasing: boolean;
         _cartoon_Anti_aliasing: boolean;
         init(gameObject: GameObject): void;
+        preRender(renderAtomic: RenderAtomic): void;
     }
     interface Uniforms {
         u_diffuseSegment: Vector4;
         u_diffuseSegmentValue: Vector4;
         u_specularSegment: number;
-    }
-    /**
-     * Boolean类型宏
-     * 没有默认值
-     */
-    interface BoolMacros {
-        /**
-         * 是否卡通渲染
-         */
-        IS_CARTOON: Boolean;
-        /**
-         * 是否抗锯齿
-         */
-        cartoon_Anti_aliasing: Boolean;
     }
 }
 declare namespace feng3d {
@@ -7311,6 +7230,7 @@ declare namespace feng3d {
         private _texture;
         constructor();
         init(gameObject: GameObject): void;
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -7334,7 +7254,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface TransformEventMap extends ComponentEventMap {
+    interface TransformEventMap {
         /**
          * 变换矩阵变化
          */
@@ -7543,7 +7463,7 @@ declare namespace feng3d {
          */
         dblclick: any;
     }
-    interface GameObjectEventMap extends Mouse3DEventMap, RenderDataHolderEventMap {
+    interface GameObjectEventMap extends Mouse3DEventMap {
         /**
          * 添加子组件事件
          */
@@ -7602,6 +7522,7 @@ declare namespace feng3d {
      * Base class for all entities in feng3d scenes.
      */
     class GameObject extends Feng3dObject {
+        readonly renderAtomic: RenderAtomic;
         /**
          * 游戏对象池
          */
@@ -7796,6 +7717,7 @@ declare namespace feng3d {
          */
         dispose(): void;
         disposeWithChildren(): void;
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -7846,16 +7768,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class RenderAtomicComponent extends Component {
-        readonly single: boolean;
-        showInInspector: boolean;
-        serializable: boolean;
-        readonly renderAtomic: RenderAtomic;
-        init(gameObject: GameObject): void;
-        update(): void;
-        private onrenderdataChange(event);
-        private changefuncs;
-    }
 }
 interface HTMLCanvasElement {
     gl: feng3d.GL;
@@ -7969,6 +7881,7 @@ declare namespace feng3d {
         material: Material;
         private _material;
         init(gameObject: GameObject): void;
+        preRender(renderAtomic: RenderAtomic): void;
         /**
          * 销毁
          */
@@ -8017,6 +7930,10 @@ declare namespace feng3d {
          * 创建一个骨骼动画类
          */
         init(gameObject: GameObject): void;
+        private readonly u_modelMatrix;
+        private readonly u_ITModelMatrix;
+        private readonly u_skeletonGlobalMatriices;
+        preRender(renderAtomic: RenderAtomic): void;
         /**
          * 销毁
          */
@@ -8109,7 +8026,7 @@ declare namespace feng3d {
     /**
      * 组件事件
      */
-    interface Scene3DEventMap extends ComponentEventMap {
+    interface Scene3DEventMap {
         addToScene: GameObject;
         removeFromScene: GameObject;
         addComponentToScene: Component;
@@ -8199,7 +8116,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryEventMap extends RenderDataHolderEventMap {
+    interface GeometryEventMap {
         /**
          * 包围盒失效
          */
@@ -8272,7 +8189,6 @@ declare namespace feng3d {
          * 创建一个几何体
          */
         constructor();
-        private createAttribute<K>(vaId, size);
         /**
          * 几何体变脏
          */
@@ -8354,6 +8270,7 @@ declare namespace feng3d {
          * 从一个几何体中克隆数据
          */
         cloneFrom(geometry: Geometry): void;
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -8640,7 +8557,7 @@ declare namespace feng3d {
     /**
      * @author feng 2014-10-14
      */
-    interface CameraEventMap extends ComponentEventMap {
+    interface CameraEventMap {
         lensChanged: any;
     }
     interface Camera {
@@ -8727,6 +8644,7 @@ declare namespace feng3d {
          * 视锥体
          */
         readonly frustum: Frustum;
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9159,7 +9077,7 @@ declare namespace feng3d {
      * 材质
      * @author feng 2016-05-02
      */
-    class Material extends RenderDataHolder {
+    class Material extends EventDispatcher {
         /**
         * 渲染模式，默认RenderMode.TRIANGLES
         */
@@ -9231,6 +9149,7 @@ declare namespace feng3d {
          */
         shader: Shader;
         constructor();
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9244,6 +9163,7 @@ declare namespace feng3d {
          * 构建颜色材质
          */
         constructor();
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9263,6 +9183,7 @@ declare namespace feng3d {
          * @param alpha 透明的
          */
         constructor(color?: Color);
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9284,6 +9205,7 @@ declare namespace feng3d {
          * 构建线段材质
          */
         constructor();
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9299,6 +9221,7 @@ declare namespace feng3d {
         private _texture;
         color: Color;
         constructor();
+        preRender(renderAtomic: RenderAtomic): void;
     }
     interface Uniforms {
         /**
@@ -9340,7 +9263,7 @@ declare namespace feng3d {
          * 构建
          */
         constructor(diffuseUrl?: string, normalUrl?: string, specularUrl?: string, ambientUrl?: string);
-        private onmethodchange(property, oldvalue, newvalue);
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9348,7 +9271,7 @@ declare namespace feng3d {
      * 漫反射函数
      * @author feng 2017-03-22
      */
-    class DiffuseMethod extends RenderDataHolder {
+    class DiffuseMethod extends EventDispatcher {
         /**
          * 漫反射纹理
          */
@@ -9366,7 +9289,7 @@ declare namespace feng3d {
          * 构建
          */
         constructor(diffuseUrl?: string);
-        private ontextureChanged();
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9374,7 +9297,7 @@ declare namespace feng3d {
      * 法线函数
      * @author feng 2017-03-22
      */
-    class NormalMethod extends RenderDataHolder {
+    class NormalMethod extends EventDispatcher {
         /**
          * 漫反射纹理
          */
@@ -9384,7 +9307,7 @@ declare namespace feng3d {
          * 构建
          */
         constructor(normalUrl?: string);
-        private onTextureChanged();
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9392,7 +9315,7 @@ declare namespace feng3d {
      * 法线函数
      * @author feng 2017-03-22
      */
-    class SpecularMethod extends RenderDataHolder {
+    class SpecularMethod extends EventDispatcher {
         /**
          * 镜面反射光泽图
          */
@@ -9415,6 +9338,7 @@ declare namespace feng3d {
          */
         constructor(specularUrl?: string);
         private onTextureChanged();
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9422,7 +9346,7 @@ declare namespace feng3d {
      * 漫反射函数
      * @author feng 2017-03-22
      */
-    class AmbientMethod extends RenderDataHolder {
+    class AmbientMethod extends EventDispatcher {
         /**
          * 环境纹理
          */
@@ -9437,11 +9361,11 @@ declare namespace feng3d {
          * 构建
          */
         constructor(ambientUrl?: string, color?: Color);
-        private onTextureChanged();
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
-    class FogMethod extends RenderDataHolder {
+    class FogMethod extends EventDispatcher {
         /**
          * 是否生效
          */
@@ -9471,6 +9395,7 @@ declare namespace feng3d {
          */
         constructor(fogColor?: Color, minDistance?: number, maxDistance?: number, density?: number, mode?: FogMode);
         private enableChanged();
+        preRender(renderAtomic: RenderAtomic): void;
     }
     /**
      * 雾模式
@@ -9486,7 +9411,7 @@ declare namespace feng3d {
     /**
      * 环境映射函数
      */
-    class EnvMapMethod extends RenderDataHolder {
+    class EnvMapMethod extends EventDispatcher {
         /**
          * 环境映射贴图
          */
@@ -9501,7 +9426,7 @@ declare namespace feng3d {
          * @param reflectivity			反射率
          */
         constructor();
-        private enableChanged();
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9817,7 +9742,7 @@ declare namespace feng3d {
      * 地形材质
      * @author feng 2016-04-28
      */
-    class TerrainMethod extends RenderDataHolder {
+    class TerrainMethod extends EventDispatcher {
         splatTexture1: Texture2D;
         private _splatTexture1;
         splatTexture2: Texture2D;
@@ -9832,7 +9757,7 @@ declare namespace feng3d {
          * 构建材质
          */
         constructor();
-        private ontextureChanged();
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9840,7 +9765,7 @@ declare namespace feng3d {
      * 地形材质
      * @author feng 2016-04-28
      */
-    class TerrainMergeMethod extends RenderDataHolder {
+    class TerrainMergeMethod extends EventDispatcher {
         splatMergeTexture: Texture2D;
         private _splatMergeTexture;
         blendTexture: Texture2D;
@@ -9851,6 +9776,7 @@ declare namespace feng3d {
          * 构建材质
          */
         constructor(blendUrl?: string, splatMergeUrl?: string, splatRepeats?: Vector4);
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -10149,6 +10075,7 @@ declare namespace feng3d {
          * @param data              属性数据
          */
         private collectionParticleAttribute(attribute, particle);
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {

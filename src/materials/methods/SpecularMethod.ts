@@ -68,7 +68,7 @@ namespace feng3d
             renderAtomic.uniforms.u_specular = () => this.specularColor;
             renderAtomic.uniforms.u_glossiness = () => this.glossiness;
 
-            renderAtomic.shaderMacro.B_HAS_SPECULAR_SAMPLER = this.specularTexture.checkRenderData();
+            renderAtomic.shaderMacro.HAS_SPECULAR_SAMPLER = this.specularTexture.checkRenderData();
         }
     }
 }

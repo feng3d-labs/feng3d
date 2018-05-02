@@ -36,7 +36,7 @@ namespace feng3d
             renderAtomic.uniforms.s_envMap = () => this.cubeTexture;
             renderAtomic.uniforms.u_reflectivity = () => this.reflectivity;
 
-            renderAtomic.shaderMacro.B_HAS_ENV_METHOD = !!this.cubeTexture;
+            renderAtomic.shaderMacro.HAS_ENV_METHOD = !!this.cubeTexture;
         }
     }
 }

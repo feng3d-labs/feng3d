@@ -101,7 +101,7 @@ namespace feng3d
             renderAtomic.uniforms.s_splatTexture3 = () => this.splatTexture3;
             renderAtomic.uniforms.u_splatRepeats = () => this.splatRepeats;
 
-            renderAtomic.shaderMacro.B_HAS_TERRAIN_METHOD =
+            renderAtomic.shaderMacro.HAS_TERRAIN_METHOD =
                 this.blendTexture.checkRenderData()
                 && this.splatTexture1.checkRenderData()
                 && this.splatTexture2.checkRenderData()

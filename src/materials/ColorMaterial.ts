@@ -39,6 +39,8 @@ namespace feng3d
 
         preRender(renderAtomic: RenderAtomic)
         {
+            super.preRender(renderAtomic);
+
             renderAtomic.uniforms.u_diffuseInput = () => this.color;
         }
     }

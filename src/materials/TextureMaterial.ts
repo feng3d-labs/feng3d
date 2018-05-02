@@ -36,6 +36,8 @@ namespace feng3d
 
         preRender(renderAtomic: RenderAtomic)
         {
+            super.preRender(renderAtomic);
+            
             renderAtomic.uniforms.u_color = () => this.color;
             renderAtomic.uniforms.s_texture = () => this.texture;
         }

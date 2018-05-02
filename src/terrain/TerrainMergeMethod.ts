@@ -73,8 +73,8 @@ namespace feng3d
             ];
             renderAtomic.uniforms.u_lod0vec = new Vector4(0.5, 1, 0, 0);
 
-            renderAtomic.shaderMacro.B_HAS_TERRAIN_METHOD = true;
-            renderAtomic.shaderMacro.B_USE_TERRAIN_MERGE = true;
+            renderAtomic.shaderMacro.HAS_TERRAIN_METHOD = true;
+            renderAtomic.shaderMacro.USE_TERRAIN_MERGE = true;
         }
     }
 }

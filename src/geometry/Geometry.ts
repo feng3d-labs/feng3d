@@ -680,12 +680,12 @@ namespace feng3d
                 {
                     const element = this._attributes[vaId];
                     //
-                    var attributeRenderData = attributes[name] = attributes[name] || new Attribute(name, element.data);
+                    var attributeRenderData = attributes[vaId] = attributes[vaId] || new Attribute(vaId, element.data);
                     attributeRenderData.data = element.data;
                     attributeRenderData.size = element.size;
                     attributeRenderData.divisor = 0;
                     //
-                    renderAtomic.shaderMacro["B_HSA_" + vaId] = true;
+                    renderAtomic.shaderMacro["HSA_" + vaId] = true;
                 }
             }
         }
