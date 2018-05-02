@@ -59,7 +59,7 @@ namespace feng3d
          */
         get enableBlend()
         {
-            return this._enableBlend || this.diffuseMethod.color.a != 1.0;
+            return this._enableBlend || (this.diffuseMethod && this.diffuseMethod.color.a != 1.0);
         }
 
         set enableBlend(value: boolean)

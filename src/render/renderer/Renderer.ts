@@ -10,7 +10,7 @@ namespace feng3d
          * 绘制
          * @param renderAtomic  渲染原子
          */
-        readonly draw: (renderAtomic: RenderAtomic) => void;
+        readonly draw: (renderAtomic: RenderAtomic, material: Material) => void;
 
         constructor(gl: GL)
         {
@@ -18,16 +18,16 @@ namespace feng3d
 
             gl.renderer = this;
 
-            this.draw = (renderAtomic: RenderAtomic) =>
+            this.draw = (renderAtomic: RenderAtomic, material: Material) =>
             {
                 var shaderProgram = renderAtomic.shader.activeShaderProgram(gl);
                 if (!shaderProgram)
                     return;
                 //
-                activeShaderParams(renderAtomic.renderParams);
+                activeShaderParams(material.renderParams);
                 activeAttributes(renderAtomic, shaderProgram.attributes);
                 activeUniforms(renderAtomic, shaderProgram.uniforms);
-                dodraw(renderAtomic);
+                dodraw(renderAtomic, material.renderParams);
                 disableAttributes(shaderProgram.attributes);
             }
 
@@ -203,11 +203,10 @@ namespace feng3d
 
             /**
              */
-            function dodraw(renderAtomic: RenderAtomic)
+            function dodraw(renderAtomic: RenderAtomic, renderParams: RenderParams)
             {
                 var instanceCount = ~~lazy.getvalue(renderAtomic.instanceCount);
 
-                var renderParams = renderAtomic.renderParams;
                 var renderMode = gl.enums.getRenderModeValue(lazy.getvalue(renderParams.renderMode));
 
                 var indexBuffer = renderAtomic.indexBuffer;

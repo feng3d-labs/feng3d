@@ -68,7 +68,7 @@ namespace feng3d
         renderdatacollector.collectRenderDataHolder(renderContext, renderAtomic.renderAtomic);
         renderAtomic.update();
 
-        gl.renderer.draw(renderAtomic.renderAtomic);
+        gl.renderer.draw(renderAtomic.renderAtomic, meshRenderer.material);
         // renderdatacollector.clearRenderDataHolder(renderContext, renderAtomic);
 
         // } catch (error)

@@ -21,7 +21,8 @@ namespace feng3d
         {
             this._renderMode = value;
             this.createBoolMacro("IS_POINTS_MODE", this.renderMode == RenderMode.POINTS);
-            this.createShaderParam("renderMode", this.renderMode);
+
+            this.renderParams.renderMode = this.renderMode;
         }
         private _renderMode: number;
 
@@ -134,22 +135,32 @@ namespace feng3d
         @oav()
         useViewRect = false;
 
+        /**
+         * 渲染参数
+         */
+        renderParams = new RenderParams();
+
+        /**
+         * 渲染程序
+         */
+        shader: Shader;
+
         constructor()
         {
             super();
             this.renderMode = RenderMode.TRIANGLES;
 
-            this.createShaderParam("cullFace", () => this.cullFace);
-            this.createShaderParam("frontFace", () => this.frontFace);
-            this.createShaderParam("enableBlend", () => this.enableBlend);
-            this.createShaderParam("blendEquation", () => this.blendEquation);
-            this.createShaderParam("sfactor", () => this.sfactor);
-            this.createShaderParam("dfactor", () => this.dfactor);
-            this.createShaderParam("depthtest", () => this.depthtest);
-            this.createShaderParam("depthMask", () => this.depthMask);
+            this.renderParams.cullFace = this.cullFace;
+            this.renderParams.frontFace = this.frontFace;
+            this.renderParams.enableBlend = () => this.enableBlend;
+            this.renderParams.blendEquation = this.blendEquation;
+            this.renderParams.sfactor = this.sfactor;
+            this.renderParams.dfactor = this.dfactor;
+            this.renderParams.depthtest = this.depthtest;
+            this.renderParams.depthMask = this.depthMask;
+            this.renderParams.viewRect = this.viewRect;
+            this.renderParams.useViewRect = this.useViewRect;
 
-            this.createShaderParam("viewRect", () => this.viewRect);
-            this.createShaderParam("useViewRect", () => this.useViewRect);
             this.createUniformData("u_PointSize", () => this.pointSize);
         }
     }

@@ -5,6 +5,8 @@ namespace feng3d
     };
 
     var renderAtomic: RenderAtomic;
+    var renderParams: RenderParams;
+    var material: Material;
 
     function init()
     {
@@ -37,11 +39,15 @@ namespace feng3d
             //
             renderAtomic.shadername = "skybox";
             //
-            renderAtomic.renderParams.renderMode = RenderMode.TRIANGLES;
-            renderAtomic.renderParams.enableBlend = false;
-            renderAtomic.renderParams.depthMask = true;
-            renderAtomic.renderParams.depthtest = true;
-            renderAtomic.renderParams.cullFace = CullFace.NONE;
+            renderParams = new RenderParams();
+            renderParams.renderMode = RenderMode.TRIANGLES;
+            renderParams.enableBlend = false;
+            renderParams.depthMask = true;
+            renderParams.depthtest = true;
+            renderParams.cullFace = CullFace.NONE;
+
+            material = new Material();
+            material.renderParams = renderParams;
         }
     }
 
@@ -72,7 +78,7 @@ namespace feng3d
 
         renderAtomic.uniforms.s_skyboxTexture = skyboxRenderAtomic.renderAtomic.uniforms.s_skyboxTexture;
 
-        gl.renderer.draw(renderAtomic);
+        gl.renderer.draw(renderAtomic, material);
     }
 
     export class SkyBox extends Component

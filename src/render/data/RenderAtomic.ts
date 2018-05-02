@@ -12,11 +12,6 @@ namespace feng3d
         indexBuffer: Index;
 
         /**
-         * 渲染参数
-         */
-        renderParams = new RenderParams();
-
-        /**
          * shader名称
          */
         shadername: string;

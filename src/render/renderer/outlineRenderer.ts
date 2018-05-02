@@ -37,7 +37,8 @@ namespace feng3d
             if (item.getComponent(OutLineComponent) || item.getComponent(CartoonComponent))
             {
                 var renderAtomic = item.getComponent(RenderAtomicComponent);
-                drawGameObject(gl, renderAtomic.renderAtomic);            //
+                var meshRenderer = item.getComponent(MeshRenderer);
+                drawGameObject(gl, renderAtomic.renderAtomic, meshRenderer.material);            //
             }
         }
     }
@@ -45,20 +46,20 @@ namespace feng3d
     /**
      * 绘制3D对象
      */
-    function drawGameObject(gl: GL, renderAtomic: RenderAtomic)
+    function drawGameObject(gl: GL, renderAtomic: RenderAtomic, material: Material)
     {
         init();
 
         var oldshadername = renderAtomic.shadername;
 
-        var oldRenderParams = renderAtomic.renderParams;
-        renderAtomic.renderParams = renderParams;
+        var oldRenderParams = material.renderParams;
+        material.renderParams = renderParams;
 
-        gl.renderer.draw(renderAtomic);
+        gl.renderer.draw(renderAtomic, material);
 
         //
         renderAtomic.shadername = oldshadername;
-        renderAtomic.renderParams = oldRenderParams;
+        material.renderParams = oldRenderParams;
     }
 
     export class OutLineComponent extends Component

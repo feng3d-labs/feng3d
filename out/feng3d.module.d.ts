@@ -6403,10 +6403,6 @@ declare namespace feng3d {
          */
         indexBuffer: Index;
         /**
-         * 渲染参数
-         */
-        renderParams: RenderParams;
-        /**
          * shader名称
          */
         shadername: string;
@@ -6867,7 +6863,6 @@ declare namespace feng3d {
         createBoolMacro<K extends keyof BoolMacros>(name: K, value: boolean): void;
         createAddMacro<K extends keyof IAddMacros>(name: K, value: number): void;
         createInstanceCount(value: number | (() => number)): void;
-        createShaderParam<K extends keyof RenderParams>(name: K, value: RenderParams[K]): void;
     }
 }
 declare namespace feng3d {
@@ -7164,7 +7159,7 @@ declare namespace feng3d {
          * 绘制
          * @param renderAtomic  渲染原子
          */
-        readonly draw: (renderAtomic: RenderAtomic) => void;
+        readonly draw: (renderAtomic: RenderAtomic, material: Material) => void;
         constructor(gl: GL);
     }
 }
@@ -9250,6 +9245,14 @@ declare namespace feng3d {
          * 是否使用 viewRect
          */
         useViewRect: boolean;
+        /**
+         * 渲染参数
+         */
+        renderParams: RenderParams;
+        /**
+         * 渲染程序
+         */
+        shader: Shader;
         constructor();
     }
 }

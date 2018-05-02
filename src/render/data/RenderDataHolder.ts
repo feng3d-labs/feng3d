@@ -200,19 +200,5 @@ namespace feng3d
                 (renderData: RenderAtomic) => { delete renderData.instanceCount; }
             );
         }
-
-        createShaderParam<K extends keyof RenderParams>(name: K, value: RenderParams[K])
-        {
-            this.renderdataChange(name,
-                (renderData: RenderAtomic) =>
-                {
-                    renderData.renderParams[name] = value;
-                },
-                (renderData: RenderAtomic) =>
-                {
-                    delete renderData.renderParams[name];
-                }
-            );
-        }
     }
 }
