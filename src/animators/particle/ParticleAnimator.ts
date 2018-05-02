@@ -107,7 +107,7 @@ namespace feng3d
             //
             this.createUniformData("u_particleTime", () => this.time);
             //
-            this.createBoolMacro("HAS_PARTICLE_ANIMATOR", true);
+            this.createBoolMacro("B_HAS_PARTICLE_ANIMATOR", true);
 
             if (this._isPlaying)
             {

@@ -15,7 +15,7 @@ namespace feng3d
             if (this._skinSkeleton == value)
                 return;
             this._skinSkeleton = value;
-            this.createValueMacro("NUM_SKELETONJOINT", this._skinSkeleton.joints.length);
+            this.createValueMacro("V_NUM_SKELETONJOINT", this._skinSkeleton.joints.length);
         }
         private _skinSkeleton: SkinSkeleton;
 
@@ -82,7 +82,7 @@ namespace feng3d
                 }
                 return defaultglobalMatrices();
             });
-            this.createBoolMacro("HAS_SKELETON_ANIMATION", true);
+            this.createBoolMacro("B_HAS_SKELETON_ANIMATION", true);
         }
 
         /**

@@ -118,7 +118,7 @@ namespace feng3d
 
         private ontextureChanged()
         {
-            this.createBoolMacro("HAS_TERRAIN_METHOD",
+            this.createBoolMacro("B_HAS_TERRAIN_METHOD",
                 this.blendTexture.checkRenderData()
                 && this.splatTexture1.checkRenderData()
                 && this.splatTexture2.checkRenderData()

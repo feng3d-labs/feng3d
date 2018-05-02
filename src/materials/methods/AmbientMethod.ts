@@ -58,7 +58,7 @@ namespace feng3d
 
         private onTextureChanged()
         {
-            this.createBoolMacro("HAS_AMBIENT_SAMPLER", this._ambientTexture && this._ambientTexture.checkRenderData());
+            this.createBoolMacro("B_HAS_AMBIENT_SAMPLER", this._ambientTexture && this._ambientTexture.checkRenderData());
         }
     }
 }

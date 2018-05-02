@@ -58,7 +58,7 @@ namespace feng3d
 
         private ontextureChanged()
         {
-            this.createBoolMacro("HAS_DIFFUSE_SAMPLER", this.difuseTexture.checkRenderData());
+            this.createBoolMacro("B_HAS_DIFFUSE_SAMPLER", this.difuseTexture.checkRenderData());
         }
     }
 }

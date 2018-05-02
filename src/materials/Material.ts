@@ -20,7 +20,7 @@ namespace feng3d
         set renderMode(value)
         {
             this._renderMode = value;
-            this.createBoolMacro("IS_POINTS_MODE", this.renderMode == RenderMode.POINTS);
+            this.createBoolMacro("B_IS_POINTS_MODE", this.renderMode == RenderMode.POINTS);
 
             this.renderParams.renderMode = this.renderMode;
         }

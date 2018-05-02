@@ -69,8 +69,8 @@ namespace feng3d
                 new Vector4(0.5, 0.5, 0.0, 0.5),
             ]);
             this.createUniformData("u_lod0vec", new Vector4(0.5, 1, 0, 0));
-            this.createBoolMacro("HAS_TERRAIN_METHOD", true);
-            this.createBoolMacro("USE_TERRAIN_MERGE", true);
+            this.createBoolMacro("B_HAS_TERRAIN_METHOD", true);
+            this.createBoolMacro("B_USE_TERRAIN_MERGE", true);
         }
     }
 }

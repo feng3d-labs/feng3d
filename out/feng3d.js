@@ -11034,7 +11034,7 @@ var feng3d;
         RenderContext.prototype.updateRenderData1 = function () {
             var pointLights = this.scene3d.collectComponents.pointLights.list;
             var directionalLights = this.scene3d.collectComponents.directionalLights.list;
-            this.createValueMacro("NUM_LIGHT", pointLights.length + directionalLights.length);
+            this.createValueMacro("V_NUM_LIGHT", pointLights.length + directionalLights.length);
             //收集点光源数据
             var pointLightPositions = [];
             var pointLightColors = [];
@@ -11048,12 +11048,12 @@ var feng3d;
                 pointLightRanges.push(pointLight.range);
             }
             //设置点光源数据
-            this.createValueMacro("NUM_POINTLIGHT", pointLights.length);
+            this.createValueMacro("V_NUM_POINTLIGHT", pointLights.length);
             if (pointLights.length > 0) {
-                this.createAddMacro("A_NORMAL_NEED", 1);
-                this.createAddMacro("V_NORMAL_NEED", 1);
-                this.createAddMacro("V_GLOBAL_POSITION_NEED", 1);
-                this.createAddMacro("U_CAMERAMATRIX_NEED", 1);
+                this.createAddMacro("A_A_NORMAL_NEED", 1);
+                this.createAddMacro("A_V_NORMAL_NEED", 1);
+                this.createAddMacro("A_V_GLOBAL_POSITION_NEED", 1);
+                this.createAddMacro("A_U_CAMERAMATRIX_NEED", 1);
                 //
                 this.createUniformData("u_pointLightPositions", pointLightPositions);
                 this.createUniformData("u_pointLightColors", pointLightColors);
@@ -11069,11 +11069,11 @@ var feng3d;
                 directionalLightColors.push(directionalLight.color);
                 directionalLightIntensitys.push(directionalLight.intensity);
             }
-            this.createValueMacro("NUM_DIRECTIONALLIGHT", directionalLights.length);
+            this.createValueMacro("V_NUM_DIRECTIONALLIGHT", directionalLights.length);
             if (directionalLights.length > 0) {
-                this.createAddMacro("A_NORMAL_NEED", 1);
-                this.createAddMacro("V_NORMAL_NEED", 1);
-                this.createAddMacro("U_CAMERAMATRIX_NEED", 1);
+                this.createAddMacro("A_A_NORMAL_NEED", 1);
+                this.createAddMacro("A_V_NORMAL_NEED", 1);
+                this.createAddMacro("A_U_CAMERAMATRIX_NEED", 1);
                 //
                 this.createUniformData("u_directionalLightDirections", directionalLightDirections);
                 this.createUniformData("u_directionalLightColors", directionalLightColors);
@@ -14224,7 +14224,7 @@ var feng3d;
                 if (this._skinSkeleton == value)
                     return;
                 this._skinSkeleton = value;
-                this.createValueMacro("NUM_SKELETONJOINT", this._skinSkeleton.joints.length);
+                this.createValueMacro("V_NUM_SKELETONJOINT", this._skinSkeleton.joints.length);
             },
             enumerable: true,
             configurable: true
@@ -14270,7 +14270,7 @@ var feng3d;
                 }
                 return defaultglobalMatrices();
             });
-            this.createBoolMacro("HAS_SKELETON_ANIMATION", true);
+            this.createBoolMacro("B_HAS_SKELETON_ANIMATION", true);
         };
         /**
          * 销毁
@@ -18595,7 +18595,7 @@ var feng3d;
             },
             set: function (value) {
                 this._renderMode = value;
-                this.createBoolMacro("IS_POINTS_MODE", this.renderMode == feng3d.RenderMode.POINTS);
+                this.createBoolMacro("B_IS_POINTS_MODE", this.renderMode == feng3d.RenderMode.POINTS);
                 this.renderParams.renderMode = this.renderMode;
             },
             enumerable: true,
@@ -19006,7 +19006,7 @@ var feng3d;
             configurable: true
         });
         DiffuseMethod.prototype.ontextureChanged = function () {
-            this.createBoolMacro("HAS_DIFFUSE_SAMPLER", this.difuseTexture.checkRenderData());
+            this.createBoolMacro("B_HAS_DIFFUSE_SAMPLER", this.difuseTexture.checkRenderData());
         };
         __decorate([
             feng3d.serialize(),
@@ -19064,7 +19064,7 @@ var feng3d;
             configurable: true
         });
         NormalMethod.prototype.onTextureChanged = function () {
-            this.createBoolMacro("HAS_NORMAL_SAMPLER", this.normalTexture.checkRenderData());
+            this.createBoolMacro("B_HAS_NORMAL_SAMPLER", this.normalTexture.checkRenderData());
         };
         __decorate([
             feng3d.serialize(),
@@ -19137,7 +19137,7 @@ var feng3d;
             configurable: true
         });
         SpecularMethod.prototype.onTextureChanged = function () {
-            this.createBoolMacro("HAS_SPECULAR_SAMPLER", this.specularTexture.checkRenderData());
+            this.createBoolMacro("B_HAS_SPECULAR_SAMPLER", this.specularTexture.checkRenderData());
         };
         __decorate([
             feng3d.serialize()
@@ -19207,7 +19207,7 @@ var feng3d;
             configurable: true
         });
         AmbientMethod.prototype.onTextureChanged = function () {
-            this.createBoolMacro("HAS_AMBIENT_SAMPLER", this._ambientTexture && this._ambientTexture.checkRenderData());
+            this.createBoolMacro("B_HAS_AMBIENT_SAMPLER", this._ambientTexture && this._ambientTexture.checkRenderData());
         };
         __decorate([
             feng3d.serialize(),
@@ -19261,12 +19261,12 @@ var feng3d;
             _this.createUniformData("u_fogMaxDistance", function () { return _this.maxDistance; });
             _this.createUniformData("u_fogDensity", function () { return _this.density; });
             _this.createUniformData("u_fogMode", function () { return _this.mode; });
-            _this.createBoolMacro("HAS_FOG_METHOD", _this.enable);
-            _this.createAddMacro("V_GLOBAL_POSITION_NEED", 1);
+            _this.createBoolMacro("B_HAS_FOG_METHOD", _this.enable);
+            _this.createAddMacro("A_V_GLOBAL_POSITION_NEED", 1);
             return _this;
         }
         FogMethod.prototype.enableChanged = function () {
-            this.createBoolMacro("HAS_FOG_METHOD", this.enable);
+            this.createBoolMacro("B_HAS_FOG_METHOD", this.enable);
         };
         __decorate([
             feng3d.watch("enableChanged"),
@@ -19331,7 +19331,7 @@ var feng3d;
             return _this;
         }
         EnvMapMethod.prototype.enableChanged = function () {
-            this.createBoolMacro("HAS_ENV_METHOD", !!this.cubeTexture);
+            this.createBoolMacro("B_HAS_ENV_METHOD", !!this.cubeTexture);
         };
         __decorate([
             feng3d.watch("enableChanged"),
@@ -20458,7 +20458,7 @@ var feng3d;
             configurable: true
         });
         TerrainMethod.prototype.ontextureChanged = function () {
-            this.createBoolMacro("HAS_TERRAIN_METHOD", this.blendTexture.checkRenderData()
+            this.createBoolMacro("B_HAS_TERRAIN_METHOD", this.blendTexture.checkRenderData()
                 && this.splatTexture1.checkRenderData()
                 && this.splatTexture2.checkRenderData()
                 && this.splatTexture3.checkRenderData());
@@ -20506,8 +20506,8 @@ var feng3d;
                 new feng3d.Vector4(0.5, 0.5, 0.0, 0.5),
             ]);
             _this.createUniformData("u_lod0vec", new feng3d.Vector4(0.5, 1, 0, 0));
-            _this.createBoolMacro("HAS_TERRAIN_METHOD", true);
-            _this.createBoolMacro("USE_TERRAIN_MERGE", true);
+            _this.createBoolMacro("B_HAS_TERRAIN_METHOD", true);
+            _this.createBoolMacro("B_USE_TERRAIN_MERGE", true);
             return _this;
         }
         Object.defineProperty(TerrainMergeMethod.prototype, "splatMergeTexture", {
@@ -21037,7 +21037,7 @@ var feng3d;
             //
             this.createUniformData("u_particleTime", function () { return _this.time; });
             //
-            this.createBoolMacro("HAS_PARTICLE_ANIMATOR", true);
+            this.createBoolMacro("B_HAS_PARTICLE_ANIMATOR", true);
             if (this._isPlaying) {
                 this.preTime = Date.now();
                 feng3d.ticker.onframe(this.update, this);

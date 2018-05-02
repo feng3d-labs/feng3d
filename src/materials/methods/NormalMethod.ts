@@ -41,7 +41,7 @@ namespace feng3d
 
         private onTextureChanged()
         {
-            this.createBoolMacro("HAS_NORMAL_SAMPLER", this.normalTexture.checkRenderData());
+            this.createBoolMacro("B_HAS_NORMAL_SAMPLER", this.normalTexture.checkRenderData());
         }
     }
 }

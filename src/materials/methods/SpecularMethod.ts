@@ -63,7 +63,7 @@ namespace feng3d
 
         private onTextureChanged()
         {
-            this.createBoolMacro("HAS_SPECULAR_SAMPLER", this.specularTexture.checkRenderData());
+            this.createBoolMacro("B_HAS_SPECULAR_SAMPLER", this.specularTexture.checkRenderData());
         }
     }
 }

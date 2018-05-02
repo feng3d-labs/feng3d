@@ -62,13 +62,13 @@ namespace feng3d
             this.createUniformData("u_fogMaxDistance", () => this.maxDistance);
             this.createUniformData("u_fogDensity", () => this.density);
             this.createUniformData("u_fogMode", () => this.mode);
-            this.createBoolMacro("HAS_FOG_METHOD", this.enable);
-            this.createAddMacro("V_GLOBAL_POSITION_NEED", 1);
+            this.createBoolMacro("B_HAS_FOG_METHOD", this.enable);
+            this.createAddMacro("A_V_GLOBAL_POSITION_NEED", 1);
         }
 
         private enableChanged()
         {
-            this.createBoolMacro("HAS_FOG_METHOD", this.enable);
+            this.createBoolMacro("B_HAS_FOG_METHOD", this.enable);
         }
     }
 

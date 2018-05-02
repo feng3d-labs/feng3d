@@ -35,7 +35,7 @@ namespace feng3d
 
         private enableChanged()
         {
-            this.createBoolMacro("HAS_ENV_METHOD", !!this.cubeTexture);
+            this.createBoolMacro("B_HAS_ENV_METHOD", !!this.cubeTexture);
         }
     }
 }
