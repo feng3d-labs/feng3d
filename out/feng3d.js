@@ -10224,10 +10224,6 @@ var feng3d;
     var Shader = /** @class */ (function () {
         function Shader() {
             /**
-             * shader 中的 宏
-             */
-            this.shaderMacro = {};
-            /**
              * 纹理缓冲
              */
             this._webGLProgramMap = new Map();
@@ -10236,39 +10232,19 @@ var feng3d;
          * 激活渲染程序
          */
         Shader.prototype.activeShaderProgram = function (gl) {
-            this.clear();
             var shader = feng3d.shaderlib.getShader(this.shaderName);
-            //应用宏
-            var shaderMacroStr = this.getMacroCode(this.shaderMacro);
-            this._resultVertexCode = shader.vertex.replace(/#define\s+macros/, shaderMacroStr);
-            this._resultFragmentCode = shader.fragment.replace(/#define\s+macros/, shaderMacroStr);
+            if (!shader)
+                return null;
             //渲染程序
             var shaderProgram = this._webGLProgramMap.get(gl);
             if (!shaderProgram) {
-                shaderProgram = gl.createProgram(this._resultVertexCode, this._resultFragmentCode);
+                shaderProgram = gl.createProgram(shader.vertex, shader.fragment);
                 if (!shaderProgram)
                     return null;
                 this._webGLProgramMap.set(gl, shaderProgram);
-                shaderProgram.vertexCode = this._resultVertexCode;
-                shaderProgram.fragmentCode = this._resultFragmentCode;
             }
             gl.useProgram(shaderProgram);
             return shaderProgram;
-        };
-        Shader.prototype.getMacroCode = function (macro) {
-            var macroHeader = "";
-            var macroNames = Object.keys(macro);
-            macroNames = macroNames.sort();
-            macroNames.forEach(function (macroName) {
-                var value = macro[macroName];
-                if (typeof value == "boolean") {
-                    value && (macroHeader += "#define " + macroName + "\n");
-                }
-                else {
-                    macroHeader += "#define " + macroName + " " + value + "\n";
-                }
-            });
-            return macroHeader;
         };
         Shader.prototype.clear = function () {
             this._webGLProgramMap.forEach(function (value, key) {
@@ -18446,7 +18422,7 @@ var feng3d;
             var _this = this;
             renderAtomic.uniforms.u_PointSize = function () { return _this.pointSize; };
             this.shader.shaderName = this.shaderName;
-            this.shader.shaderMacro = this.shaderMacro;
+            // this.shader.shaderMacro = this.shaderMacro;
             renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderMode == feng3d.RenderMode.POINTS;
         };
         __decorate([

@@ -3,8 +3,6 @@
  */
 interface WebGLProgram
 {
-    vertexCode: string;
-    fragmentCode: string;
     /**
      * WebGL渲染上下文
      */

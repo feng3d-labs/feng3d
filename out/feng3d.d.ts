@@ -5897,8 +5897,6 @@ declare var WebGL2RenderingContext: {
  * WebGL渲染程序
  */
 interface WebGLProgram {
-    vertexCode: string;
-    fragmentCode: string;
     /**
      * WebGL渲染上下文
      */
@@ -6349,14 +6347,7 @@ declare namespace feng3d {
      * shader
      */
     class Shader {
-        private _resultVertexCode;
-        private _resultFragmentCode;
         shaderName: string;
-        /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro;
-        constructor();
         /**
          * 激活渲染程序
          */
@@ -6365,7 +6356,6 @@ declare namespace feng3d {
          * 纹理缓冲
          */
         protected _webGLProgramMap: Map<GL, WebGLProgram>;
-        private getMacroCode(macro);
         private clear();
     }
 }
