@@ -8,7 +8,7 @@ namespace feng3d
      * 
      * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
      */
-    export class Feng3dObject extends RenderDataHolder
+    export class Feng3dObject extends EventDispatcher
     {
         //------------------------------------------
         // Variables

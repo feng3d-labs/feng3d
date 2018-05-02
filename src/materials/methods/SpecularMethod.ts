@@ -4,7 +4,7 @@ namespace feng3d
 	 * 法线函数
 	 * @author feng 2017-03-22
 	 */
-    export class SpecularMethod extends RenderDataHolder
+    export class SpecularMethod extends EventDispatcher
     {
         /**
          * 镜面反射光泽图
@@ -55,15 +55,20 @@ namespace feng3d
         {
             super();
             this.specularTexture = new Texture2D(specularUrl);
-            //
-            this.createUniformData("s_specular", () => this.specularTexture);
-            this.createUniformData("u_specular", () => this.specularColor);
-            this.createUniformData("u_glossiness", () => this.glossiness);
         }
 
         private onTextureChanged()
         {
-            this.createBoolMacro("B_HAS_SPECULAR_SAMPLER", this.specularTexture.checkRenderData());
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            //
+            renderAtomic.uniforms.s_specular = () => this.specularTexture;
+            renderAtomic.uniforms.u_specular = () => this.specularColor;
+            renderAtomic.uniforms.u_glossiness = () => this.glossiness;
+
+            renderAtomic.shaderMacro.B_HAS_SPECULAR_SAMPLER = this.specularTexture.checkRenderData();
         }
     }
 }

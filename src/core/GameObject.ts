@@ -59,7 +59,7 @@ namespace feng3d
         dblclick
     }
 
-    export interface GameObjectEventMap extends Mouse3DEventMap, RenderDataHolderEventMap
+    export interface GameObjectEventMap extends Mouse3DEventMap
     {
         /**
 		 * 添加子组件事件
@@ -586,7 +586,6 @@ namespace feng3d
             //派发移除组件事件
             this.dispatch("removedComponent", component);
             this._scene && this._scene._removeComponent(component);
-            this.removeRenderDataHolder(component);
             component.dispose();
             return component;
         }
@@ -721,7 +720,6 @@ namespace feng3d
             //派发添加组件事件
             this.dispatch("addedComponent", component);
             this._scene && this._scene._addComponent(component);
-            this.addRenderDataHolder(component);
         }
 
         /**
@@ -747,6 +745,14 @@ namespace feng3d
             this.dispose();
             while (this.numChildren > 0)
                 this.getChildAt(0).dispose();
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            this._components.forEach(element =>
+            {
+                element.preRender(renderAtomic);
+            });
         }
     }
 }

@@ -14,8 +14,6 @@ namespace feng3d
      */
     function draw(renderContext: RenderContext, renderObjectflag: GameObjectFlag)
     {
-        renderContext.updateRenderData1();
-
         var frustum = renderContext.camera.frustum;
 
         var meshRenderers = collectForwardRender(renderContext.scene3d.gameObject, frustum, renderObjectflag);
@@ -65,7 +63,10 @@ namespace feng3d
         // {
         //绘制
         var renderAtomic = meshRenderer.getComponent(RenderAtomicComponent);
-        renderdatacollector.collectRenderDataHolder(renderContext, renderAtomic.renderAtomic);
+
+        meshRenderer.gameObject.preRender(renderAtomic.renderAtomic);
+        renderContext.preRender(renderAtomic.renderAtomic);
+        
         renderAtomic.update();
 
         gl.renderer.draw(renderAtomic.renderAtomic, meshRenderer.material);

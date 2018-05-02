@@ -5,7 +5,7 @@ namespace feng3d
      * 地形材质
      * @author feng 2016-04-28
      */
-    export class TerrainMergeMethod extends RenderDataHolder
+    export class TerrainMergeMethod extends EventDispatcher
     {
         get splatMergeTexture()
         {
@@ -53,24 +53,28 @@ namespace feng3d
             this.splatMergeTexture.wrapT = TextureWrap.REPEAT;
 
             this.splatRepeats = splatRepeats;
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.uniforms.s_blendTexture = this.blendTexture;
+            renderAtomic.uniforms.s_splatMergeTexture = this.splatMergeTexture;
+            renderAtomic.uniforms.u_splatMergeTextureSize = this.splatMergeTexture.size;
+            renderAtomic.uniforms.u_splatRepeats = this.splatRepeats;
             //
-            this.createUniformData("s_blendTexture", this.blendTexture);
-            this.createUniformData("s_splatMergeTexture", this.splatMergeTexture);
-            this.createUniformData("u_splatMergeTextureSize", this.splatMergeTexture.size);
-            this.createUniformData("u_splatRepeats", this.splatRepeats);
-            //
-            this.createUniformData("u_imageSize", new Vector2(2048.0, 1024.0));
-            this.createUniformData("u_tileSize", new Vector2(512.0, 512.0));
-            this.createUniformData("u_maxLod", 7);
-            this.createUniformData("u_uvPositionScale", 0.001);
-            this.createUniformData("u_tileOffset", [
+            renderAtomic.uniforms.u_imageSize = new Vector2(2048.0, 1024.0);
+            renderAtomic.uniforms.u_tileSize = new Vector2(512.0, 512.0);
+            renderAtomic.uniforms.u_maxLod = 7;
+            renderAtomic.uniforms.u_uvPositionScale = 0.001;
+            renderAtomic.uniforms.u_tileOffset = [
                 new Vector4(0.5, 0.5, 0.0, 0.0),
                 new Vector4(0.5, 0.5, 0.5, 0.0),
                 new Vector4(0.5, 0.5, 0.0, 0.5),
-            ]);
-            this.createUniformData("u_lod0vec", new Vector4(0.5, 1, 0, 0));
-            this.createBoolMacro("B_HAS_TERRAIN_METHOD", true);
-            this.createBoolMacro("B_USE_TERRAIN_MERGE", true);
+            ];
+            renderAtomic.uniforms.u_lod0vec = new Vector4(0.5, 1, 0, 0);
+
+            renderAtomic.shaderMacro.B_HAS_TERRAIN_METHOD = true;
+            renderAtomic.shaderMacro.B_USE_TERRAIN_MERGE = true;
         }
     }
 }

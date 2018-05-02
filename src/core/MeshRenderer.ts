@@ -19,13 +19,11 @@ namespace feng3d
                 return;
             if (this._geometry)
             {
-                this.removeRenderDataHolder(this._geometry);
                 this._geometry.off("boundsInvalid", this.onBoundsInvalid, this);
             }
             this._geometry = value;
             if (this._geometry)
             {
-                this.addRenderDataHolder(this._geometry);
                 this._geometry.on("boundsInvalid", this.onBoundsInvalid, this);
             }
         }
@@ -42,11 +40,7 @@ namespace feng3d
         {
             if (this._material == value)
                 return;
-            if (this._material)
-                this.removeRenderDataHolder(this._material);
             this._material = value;
-            if (this._material)
-                this.addRenderDataHolder(this.material);
         }
         private _material: Material;
 
@@ -59,9 +53,15 @@ namespace feng3d
 
             if (!this.material)
                 this.material = new StandardMaterial();
-            //
-            this.createUniformData("u_modelMatrix", () => this.transform.localToWorldMatrix);
-            this.createUniformData("u_ITModelMatrix", () => this.transform.ITlocalToWorldMatrix);
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.uniforms.u_modelMatrix = () => this.transform.localToWorldMatrix;
+            renderAtomic.uniforms.u_ITModelMatrix = () => this.transform.ITlocalToWorldMatrix;
+
+            this._geometry.preRender(renderAtomic);
+            this._material.preRender(renderAtomic);
         }
 
         /**

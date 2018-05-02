@@ -10257,23 +10257,21 @@ var feng3d;
         };
         Shader.prototype.getMacroCode = function (macro) {
             var macroHeader = "";
-            var macroNames = Object.keys(macro.valueMacros);
+            var macroNames = Object.keys(macro);
             macroNames = macroNames.sort();
             macroNames.forEach(function (macroName) {
-                var value = macro.valueMacros[macroName];
-                macroHeader += "#define " + macroName + " " + value + "\n";
-            });
-            macroNames = Object.keys(macro.boolMacros);
-            macroNames = macroNames.sort();
-            macroNames.forEach(function (macroName) {
-                var value = macro.boolMacros[macroName];
-                value && (macroHeader += "#define " + macroName + "\n");
-            });
-            macroNames = Object.keys(macro.addMacros);
-            macroNames = macroNames.sort();
-            macroNames.forEach(function (macroName) {
-                var value = macro.addMacros[macroName];
-                macroHeader += "#define " + macroName + " " + value + "\n";
+                if (macroName.substr(0, 2) == "A_") {
+                    var value = macro[macroName];
+                    macroHeader += "#define " + macroName + " " + value + "\n";
+                }
+                if (macroName.substr(0, 2) == "B_") {
+                    var value = macro[macroName];
+                    value && (macroHeader += "#define " + macroName + "\n");
+                }
+                if (macroName.substr(0, 2) == "A_") {
+                    var value = macro[macroName];
+                    macroHeader += "#define " + macroName + " " + value + "\n";
+                }
             });
             return macroHeader;
         };
@@ -10334,7 +10332,7 @@ var feng3d;
             /**
              * shader 中的 宏
              */
-            this.shaderMacro = { boolMacros: {}, valueMacros: {}, addMacros: {} };
+            this.shaderMacro = {};
             /**
              * macro是否失效
              */
@@ -10956,39 +10954,6 @@ var feng3d;
             this.renderdataChange("shadername", function (renderData) {
                 renderData.shadername = shadername;
             }, function (renderData) {
-            });
-        };
-        RenderDataHolder.prototype.createValueMacro = function (name, value) {
-            this.renderdataChange(name, function (renderData) {
-                if (renderData.shaderMacro.valueMacros[name] == value)
-                    return;
-                renderData.shaderMacro.valueMacros[name] = value;
-                renderData.macroInvalid = true;
-            }, function (renderData) {
-                delete renderData.shaderMacro.valueMacros[name];
-                renderData.macroInvalid = true;
-            });
-        };
-        RenderDataHolder.prototype.createBoolMacro = function (name, value) {
-            this.renderdataChange(name, function (renderData) {
-                if (renderData.shaderMacro.boolMacros[name] == value)
-                    return;
-                renderData.shaderMacro.boolMacros[name] = value;
-                renderData.macroInvalid = true;
-            }, function (renderData) {
-                delete renderData.shaderMacro.boolMacros[name];
-                renderData.macroInvalid = true;
-            });
-        };
-        RenderDataHolder.prototype.createAddMacro = function (name, value) {
-            this.renderdataChange(name, function (renderData) {
-                if (renderData.shaderMacro.addMacros[name] == value)
-                    return;
-                renderData.shaderMacro.addMacros[name] = value;
-                renderData.macroInvalid = true;
-            }, function (renderData) {
-                delete renderData.shaderMacro.addMacros[name];
-                renderData.macroInvalid = true;
             });
         };
         RenderDataHolder.prototype.createInstanceCount = function (value) {
@@ -18569,6 +18534,14 @@ var feng3d;
              */
             _this.useViewRect = false;
             /**
+             * shader 中的 宏
+             */
+            _this.shaderMacro = {};
+            /**
+             * macro是否失效
+             */
+            _this.macroInvalid = true;
+            /**
              * 渲染参数
              */
             _this.renderParams = new feng3d.RenderParams();
@@ -18595,7 +18568,7 @@ var feng3d;
             },
             set: function (value) {
                 this._renderMode = value;
-                this.createBoolMacro("B_IS_POINTS_MODE", this.renderMode == feng3d.RenderMode.POINTS);
+                this.shaderMacro.B_IS_POINTS_MODE = this.renderMode == feng3d.RenderMode.POINTS;
                 this.renderParams.renderMode = this.renderMode;
             },
             enumerable: true,
@@ -20730,23 +20703,20 @@ var feng3d;
      * 粒子动画组件
      * @author feng 2017-01-09
      */
-    var ParticleComponent = /** @class */ (function (_super) {
-        __extends(ParticleComponent, _super);
+    var ParticleComponent = /** @class */ (function () {
         function ParticleComponent() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
              * 是否开启
              */
-            _this.enable = true;
+            this.enable = true;
             /**
              * 优先级
              */
-            _this.priority = 0;
+            this.priority = 0;
             /**
              * 数据是否变脏
              */
-            _this.isDirty = true;
-            return _this;
+            this.isDirty = true;
         }
         ParticleComponent.prototype.invalidate = function () {
             this.isDirty = true;
@@ -20773,7 +20743,7 @@ var feng3d;
             feng3d.serialize()
         ], ParticleComponent.prototype, "priority", void 0);
         return ParticleComponent;
-    }(feng3d.RenderDataHolder));
+    }());
     feng3d.ParticleComponent = ParticleComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -25249,24 +25219,3 @@ var feng3d;
     feng3d.log("Feng3D version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-
-(function universalModuleDefinition(root, factory)
-{
-    if (root && root["feng3d"])
-    {
-        return;
-    }
-    if (typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
-    else if (typeof define === 'function' && define.amd)
-        define([], factory);
-    else if (typeof exports === 'object')
-        exports["feng3d"] = factory();
-    else
-    {
-        root["feng3d"] = factory();
-    }
-})(this, function ()
-{
-    return feng3d;
-});

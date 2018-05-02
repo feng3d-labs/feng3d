@@ -1,7 +1,7 @@
 namespace feng3d
 {
 
-    export interface TransformEventMap extends ComponentEventMap
+    export interface TransformEventMap
     {
         /**
          * 变换矩阵变化
@@ -34,7 +34,7 @@ namespace feng3d
     {
 
         get single() { return true; }
-        
+
 		/**
 		 * 创建一个实体，该类为虚类
 		 */

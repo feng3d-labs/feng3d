@@ -4,7 +4,7 @@ namespace feng3d
 	 * 法线函数
 	 * @author feng 2017-03-22
 	 */
-    export class NormalMethod extends RenderDataHolder
+    export class NormalMethod extends EventDispatcher
     {
         /**
          * 漫反射纹理
@@ -19,12 +19,7 @@ namespace feng3d
         {
             if (this._normalTexture == value)
                 return;
-            if (this._normalTexture)
-                this._normalTexture.off("loaded", this.onTextureChanged, this);
             this._normalTexture = value;
-            if (this._normalTexture)
-                this._normalTexture.on("loaded", this.onTextureChanged, this);
-            this.onTextureChanged();
         }
         private _normalTexture: Texture2D;
 
@@ -35,13 +30,13 @@ namespace feng3d
         {
             super();
             this.normalTexture = new Texture2D(normalUrl);
-            //
-            this.createUniformData("s_normal", () => this.normalTexture);
         }
 
-        private onTextureChanged()
+        preRender(renderAtomic: RenderAtomic)
         {
-            this.createBoolMacro("B_HAS_NORMAL_SAMPLER", this.normalTexture.checkRenderData());
+            //
+            renderAtomic.uniforms.s_normal = () => this.normalTexture;
+            renderAtomic.shaderMacro.B_HAS_NORMAL_SAMPLER = this.normalTexture.checkRenderData();
         }
     }
 }

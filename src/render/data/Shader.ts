@@ -53,30 +53,28 @@ namespace feng3d
          */
         protected _webGLProgramMap = new Map<GL, WebGLProgram>();
 
-        private getMacroCode(macro: { boolMacros: BoolMacros, valueMacros: ValueMacros, addMacros: IAddMacros })
+        private getMacroCode(macro: ShaderMacro)
         {
             var macroHeader = "";
-            var macroNames = Object.keys(macro.valueMacros);
+            var macroNames = Object.keys(macro);
             macroNames = macroNames.sort();
             macroNames.forEach(macroName =>
             {
-                var value = macro.valueMacros[macroName];
-                macroHeader += `#define ${macroName} ${value}\n`;
-            });
-            macroNames = Object.keys(macro.boolMacros);
-            macroNames = macroNames.sort();
-            macroNames.forEach(macroName =>
-            {
-                var value = macro.boolMacros[macroName];
-                value && (macroHeader += `#define ${macroName}\n`);
-            });
-
-            macroNames = Object.keys(macro.addMacros);
-            macroNames = macroNames.sort();
-            macroNames.forEach(macroName =>
-            {
-                var value = macro.addMacros[macroName];
-                macroHeader += `#define ${macroName} ${value}\n`;
+                if (macroName.substr(0, 2) == "A_")
+                {
+                    var value = macro[macroName];
+                    macroHeader += `#define ${macroName} ${value}\n`;
+                }
+                if (macroName.substr(0, 2) == "B_")
+                {
+                    var value = macro[macroName];
+                    value && (macroHeader += `#define ${macroName}\n`);
+                }
+                if (macroName.substr(0, 2) == "A_")
+                {
+                    var value = macro[macroName];
+                    macroHeader += `#define ${macroName} ${value}\n`;
+                }
             });
             return macroHeader;
         }

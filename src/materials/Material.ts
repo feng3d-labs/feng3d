@@ -6,7 +6,7 @@ namespace feng3d
      * @author feng 2016-05-02
      */
     @ov({ component: "OVMaterial" })
-    export class Material extends RenderDataHolder
+    export class Material extends EventDispatcher
     {
         /**
         * 渲染模式，默认RenderMode.TRIANGLES
@@ -20,7 +20,8 @@ namespace feng3d
         set renderMode(value)
         {
             this._renderMode = value;
-            this.createBoolMacro("B_IS_POINTS_MODE", this.renderMode == RenderMode.POINTS);
+
+            this.shaderMacro.B_IS_POINTS_MODE = this.renderMode == RenderMode.POINTS;
 
             this.renderParams.renderMode = this.renderMode;
         }
@@ -35,8 +36,6 @@ namespace feng3d
             if (this._shaderName == value)
                 return;
             this._shaderName = value;
-
-            this.createvertexCode(this._shaderName);
         }
         private _shaderName: string;
 
@@ -136,6 +135,16 @@ namespace feng3d
         useViewRect = false;
 
         /**
+         * shader 中的 宏
+         */
+        shaderMacro: ShaderMacro = <any>{};
+
+        /**
+         * macro是否失效
+         */
+        macroInvalid = true;
+
+        /**
          * 渲染参数
          */
         renderParams = new RenderParams();
@@ -160,8 +169,13 @@ namespace feng3d
             this.renderParams.depthMask = this.depthMask;
             this.renderParams.viewRect = this.viewRect;
             this.renderParams.useViewRect = this.useViewRect;
+        }
 
-            this.createUniformData("u_PointSize", () => this.pointSize);
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.uniforms.u_PointSize = () => this.pointSize;
+
+            
         }
     }
 }

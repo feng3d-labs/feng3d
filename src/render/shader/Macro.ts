@@ -5,17 +5,9 @@ namespace feng3d
      * 着色器宏定义
      * @author feng 2016-12-17
      */
-    export interface ShaderMacro extends ValueMacros, BoolMacros, IAddMacros
+    export interface ShaderMacro
     {
 
-    }
-
-    /**
-     * 值类型宏
-     * 没有默认值
-     */
-    export interface ValueMacros
-    {
         /**
          * 光源数量
          */
@@ -35,14 +27,7 @@ namespace feng3d
          * 骨骼关节数量
          */
         V_NUM_SKELETONJOINT: number;
-    }
 
-    /**
-     * Boolean类型宏
-     * 没有默认值
-     */
-    export interface BoolMacros
-    {
         /**
          * 是否有漫反射贴图
          */
@@ -89,14 +74,7 @@ namespace feng3d
         B_HAS_ENV_METHOD: boolean;
 
         B_OUTLINE: boolean;
-    }
 
-    /**
-     * 递增类型宏
-     * 所有默认值为0
-     */
-    export interface IAddMacros
-    {
         /** 
          * 是否需要属性uv
          */
@@ -122,5 +100,4 @@ namespace feng3d
          */
         A_U_CAMERAMATRIX_NEED: number;
     }
-
 }

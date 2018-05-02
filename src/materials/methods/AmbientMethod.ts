@@ -4,7 +4,7 @@ namespace feng3d
 	 * 漫反射函数
 	 * @author feng 2017-03-22
 	 */
-    export class AmbientMethod extends RenderDataHolder
+    export class AmbientMethod extends EventDispatcher
     {
         /**
          * 环境纹理
@@ -19,12 +19,7 @@ namespace feng3d
         {
             if (this._ambientTexture == value)
                 return;
-            if (this._ambientTexture)
-                this._ambientTexture.off("loaded", this.onTextureChanged, this);
             this._ambientTexture = value;
-            if (this._ambientTexture)
-                this._ambientTexture.on("loaded", this.onTextureChanged, this);
-            this.onTextureChanged();
         }
         private _ambientTexture: Texture2D;
 
@@ -51,14 +46,14 @@ namespace feng3d
             super();
             this.ambientTexture = new Texture2D(ambientUrl);
             this.color = color || new Color();
-            //
-            this.createUniformData("u_ambient", () => this._color);
-            this.createUniformData("s_ambient", () => this._ambientTexture);
         }
 
-        private onTextureChanged()
+        preRender(renderAtomic: RenderAtomic)
         {
-            this.createBoolMacro("B_HAS_AMBIENT_SAMPLER", this._ambientTexture && this._ambientTexture.checkRenderData());
+            renderAtomic.uniforms.u_ambient = () => this._color;
+            renderAtomic.uniforms.s_ambient = () => this._ambientTexture;
+
+            renderAtomic.shaderMacro.B_HAS_AMBIENT_SAMPLER = this._ambientTexture && this._ambientTexture.checkRenderData();
         }
     }
 }

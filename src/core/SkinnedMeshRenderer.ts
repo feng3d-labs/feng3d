@@ -15,7 +15,6 @@ namespace feng3d
             if (this._skinSkeleton == value)
                 return;
             this._skinSkeleton = value;
-            this.createValueMacro("V_NUM_SKELETONJOINT", this._skinSkeleton.joints.length);
         }
         private _skinSkeleton: SkinSkeleton;
 
@@ -35,54 +34,64 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
+        }
 
+        private get u_modelMatrix()
+        {
+            if (this.cacheSkeletonComponent)
+                return this.cacheSkeletonComponent.transform.localToWorldMatrix;
+            return this.transform.localToWorldMatrix
+        }
 
-            this.createUniformData("u_modelMatrix", () => 
+        private get u_ITModelMatrix()
+        {
+            if (this.cacheSkeletonComponent)
+                return this.cacheSkeletonComponent.transform.ITlocalToWorldMatrix;
+            return this.transform.ITlocalToWorldMatrix
+        }
+
+        private get u_skeletonGlobalMatriices() 
+        {
+            if (!this.cacheSkeletonComponent)
             {
-                if (this.cacheSkeletonComponent)
-                    return this.cacheSkeletonComponent.transform.localToWorldMatrix;
-                return this.transform.localToWorldMatrix
-            });
-
-            this.createUniformData("u_ITModelMatrix", () =>
+                var gameObject: GameObject | null = this.gameObject;
+                var skeletonComponent: SkeletonComponent | null = null;
+                while (gameObject && !skeletonComponent)
+                {
+                    skeletonComponent = gameObject.getComponent(SkeletonComponent)
+                    gameObject = gameObject.parent;
+                }
+                this.cacheSkeletonComponent = skeletonComponent;
+            }
+            if (this._skinSkeleton && this.cacheSkeletonComponent)
             {
-                if (this.cacheSkeletonComponent)
-                    return this.cacheSkeletonComponent.transform.ITlocalToWorldMatrix;
-                return this.transform.ITlocalToWorldMatrix
-            });
+                var joints = this._skinSkeleton.joints;
+                var globalMatrices = this.cacheSkeletonComponent.globalMatrices;
+                for (var i = joints.length - 1; i >= 0; i--)
+                {
+                    this.skeletonGlobalMatriices[i] = globalMatrices[joints[i][0]];
+                    if (this.initMatrix3d)
+                    {
+                        this.skeletonGlobalMatriices[i] = this.skeletonGlobalMatriices[i].clone()
+                            .prepend(this.initMatrix3d);
+                    }
+                }
+                return this.skeletonGlobalMatriices;
+            }
+            return defaultglobalMatrices();
+        }
 
+        preRender(renderAtomic: RenderAtomic)
+        {
+            super.preRender(renderAtomic);
+
+            renderAtomic.uniforms.u_modelMatrix = () => this.u_modelMatrix;
+            renderAtomic.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
             //
-            this.createUniformData("u_skeletonGlobalMatriices", () =>
-            {
-                if (!this.cacheSkeletonComponent)
-                {
-                    var gameObject: GameObject | null = this.gameObject;
-                    var skeletonComponent: SkeletonComponent | null = null;
-                    while (gameObject && !skeletonComponent)
-                    {
-                        skeletonComponent = gameObject.getComponent(SkeletonComponent)
-                        gameObject = gameObject.parent;
-                    }
-                    this.cacheSkeletonComponent = skeletonComponent;
-                }
-                if (this._skinSkeleton && this.cacheSkeletonComponent)
-                {
-                    var joints = this._skinSkeleton.joints;
-                    var globalMatrices = this.cacheSkeletonComponent.globalMatrices;
-                    for (var i = joints.length - 1; i >= 0; i--)
-                    {
-                        this.skeletonGlobalMatriices[i] = globalMatrices[joints[i][0]];
-                        if (this.initMatrix3d)
-                        {
-                            this.skeletonGlobalMatriices[i] = this.skeletonGlobalMatriices[i].clone()
-                                .prepend(this.initMatrix3d);
-                        }
-                    }
-                    return this.skeletonGlobalMatriices;
-                }
-                return defaultglobalMatrices();
-            });
-            this.createBoolMacro("B_HAS_SKELETON_ANIMATION", true);
+            renderAtomic.uniforms.u_skeletonGlobalMatriices = () => this.u_skeletonGlobalMatriices;
+
+            renderAtomic.shaderMacro.B_HAS_SKELETON_ANIMATION = true;
+            renderAtomic.shaderMacro.V_NUM_SKELETONJOINT = this._skinSkeleton.joints.length;
         }
 
         /**

@@ -34,7 +34,7 @@ namespace feng3d
         /**
          * shader 中的 宏
          */
-        shaderMacro = { boolMacros: <BoolMacros>{}, valueMacros: <ValueMacros>{}, addMacros: <IAddMacros>{} };
+        shaderMacro: ShaderMacro = <any>{};
 
         /**
          * macro是否失效

@@ -3,7 +3,7 @@ namespace feng3d
 	/**
 	 * 环境映射函数
 	 */
-    export class EnvMapMethod extends RenderDataHolder
+    export class EnvMapMethod extends EventDispatcher
     {
         /**
 		 * 环境映射贴图
@@ -29,13 +29,14 @@ namespace feng3d
         {
             super();
             //
-            this.createUniformData("s_envMap", () => this.cubeTexture);
-            this.createUniformData("u_reflectivity", () => this.reflectivity);
         }
 
-        private enableChanged()
+        preRender(renderAtomic: RenderAtomic)
         {
-            this.createBoolMacro("B_HAS_ENV_METHOD", !!this.cubeTexture);
+            renderAtomic.uniforms.s_envMap = () => this.cubeTexture;
+            renderAtomic.uniforms.u_reflectivity = () => this.reflectivity;
+
+            renderAtomic.shaderMacro.B_HAS_ENV_METHOD = !!this.cubeTexture;
         }
     }
 }

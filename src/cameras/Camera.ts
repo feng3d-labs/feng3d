@@ -3,7 +3,7 @@ namespace feng3d
     /**
 	 * @author feng 2014-10-14
 	 */
-    export interface CameraEventMap extends ComponentEventMap
+    export interface CameraEventMap
     {
         lensChanged;
     }
@@ -57,14 +57,6 @@ namespace feng3d
             this._frustumDirty = true;
 
             this._frustum = new Frustum();
-
-            //
-            this.createUniformData("u_projectionMatrix", () => this._lens.matrix);
-
-            this.createUniformData("u_viewProjection", () => this.viewProjection);
-            this.createUniformData("u_viewMatrix", () => this.transform.worldToLocalMatrix);
-            this.createUniformData("u_cameraMatrix", () => this.transform.localToWorldMatrix);
-            this.createUniformData("u_skyBoxSize", () => { return this._lens.far / Math.sqrt(3); });
         }
 
 		/**
@@ -227,6 +219,18 @@ namespace feng3d
             if (this._frustumDirty)
                 this._frustum.fromMatrix3D(this.viewProjection);
             return this._frustum;
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            //
+            renderAtomic.uniforms.u_projectionMatrix = () => this._lens.matrix;
+
+            renderAtomic.uniforms.u_viewProjection = () => this.viewProjection;
+            renderAtomic.uniforms.u_viewMatrix = () => this.transform.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = () => this.transform.localToWorldMatrix;
+            renderAtomic.uniforms.u_skyBoxSize = () => { return this._lens.far / Math.sqrt(3); };
+            renderAtomic.uniforms.u_scaleByDepth = this.getScaleByDepth(1);
         }
     }
 }

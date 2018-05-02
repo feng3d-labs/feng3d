@@ -4,7 +4,7 @@ namespace feng3d
 	 * 漫反射函数
 	 * @author feng 2017-03-22
 	 */
-    export class DiffuseMethod extends RenderDataHolder
+    export class DiffuseMethod extends EventDispatcher
     {
         /**
          * 漫反射纹理
@@ -19,12 +19,7 @@ namespace feng3d
         {
             if (this._difuseTexture == value)
                 return;
-            if (this._difuseTexture)
-                this._difuseTexture.off("loaded", this.ontextureChanged, this)
             this._difuseTexture = value;
-            if (this._difuseTexture)
-                this._difuseTexture.on("loaded", this.ontextureChanged, this)
-            this.ontextureChanged();
         }
         private _difuseTexture: Texture2D;
 
@@ -50,15 +45,16 @@ namespace feng3d
             super();
             this.difuseTexture = new Texture2D(diffuseUrl);
             this.color = new Color(1, 1, 1, 1);
-            //
-            this.createUniformData("u_diffuse", () => this.color);
-            this.createUniformData("s_diffuse", () => this.difuseTexture);
-            this.createUniformData("u_alphaThreshold", () => this.alphaThreshold);
         }
 
-        private ontextureChanged()
+        preRender(renderAtomic: RenderAtomic)
         {
-            this.createBoolMacro("B_HAS_DIFFUSE_SAMPLER", this.difuseTexture.checkRenderData());
+            renderAtomic.shaderMacro.B_HAS_DIFFUSE_SAMPLER = this.difuseTexture && this.difuseTexture.checkRenderData();
+
+            //
+            renderAtomic.uniforms.u_diffuse = () => this.color;
+            renderAtomic.uniforms.s_diffuse = () => this.difuseTexture;
+            renderAtomic.uniforms.u_alphaThreshold = () => this.alphaThreshold;
         }
     }
 }

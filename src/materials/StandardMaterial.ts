@@ -82,10 +82,17 @@ namespace feng3d
             this.ambientMethod.ambientTexture.url = ambientUrl;
         }
 
-        private onmethodchange(property, oldvalue, newvalue)
+        preRender(renderAtomic: RenderAtomic)
         {
-            this.removeRenderDataHolder(oldvalue);
-            this.addRenderDataHolder(newvalue);
+            super.preRender(renderAtomic);
+
+            this.diffuseMethod.preRender(renderAtomic);
+            this.normalMethod.preRender(renderAtomic);
+            this.specularMethod.preRender(renderAtomic);
+            this.ambientMethod.preRender(renderAtomic);
+            this.envMapMethod.preRender(renderAtomic);
+            this.fogMethod.preRender(renderAtomic);
+            this.terrainMethod.preRender(renderAtomic);
         }
     }
 }

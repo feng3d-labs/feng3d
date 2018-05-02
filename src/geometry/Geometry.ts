@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GeometryEventMap extends RenderDataHolderEventMap
+    export interface GeometryEventMap
     {
 		/**
 		 * 包围盒失效
@@ -78,8 +78,6 @@ namespace feng3d
                 this._invalids.a_normal = true;
             if (!this._attributes.a_tangent)
                 this._invalids.a_tangent = true;
-
-            this.createIndexBuffer(() => this.indices);
         }
 
         /**
@@ -151,21 +149,6 @@ namespace feng3d
         constructor()
         {
             super();
-            this.createIndexBuffer(() => this.indices);
-            this.createAttribute("a_position", 3);
-            this.createAttribute("a_position", 3);
-            this.createAttribute("a_uv", 2);
-            this.createAttribute("a_normal", 2);
-            this.createAttribute("a_tangent", 2);
-        }
-
-        private createAttribute<K extends keyof Attributes>(vaId: K, size: number)
-        {
-            this.createAttributeRenderData(vaId, () =>
-            {
-                return this.getVAData1(vaId);
-            }, size);
-            this.createBoolMacro(<any>("HSA_" + vaId), true);
         }
 
         /**
@@ -209,7 +192,6 @@ namespace feng3d
             {
                 this._attributes[vaId] = this._attributes[vaId] || { data: data, size: size };
                 this._attributes[vaId].data = data;
-                this.createAttribute(vaId, size);
             } else
             {
                 delete this._attributes[vaId];
@@ -682,6 +664,29 @@ namespace feng3d
             {
                 var attributeRenderData = geometry._attributes[key];
                 this.setVAData(<any>key, attributeRenderData.data, attributeRenderData.size);
+            }
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            renderAtomic.indexBuffer = renderAtomic.indexBuffer || new Index();
+            renderAtomic.indexBuffer.indices = () => this.indices;
+
+            var attributes = renderAtomic.attributes;
+
+            for (const vaId in this._attributes)
+            {
+                if (this._attributes.hasOwnProperty(vaId))
+                {
+                    const element = this._attributes[vaId];
+                    //
+                    var attributeRenderData = attributes[name] = attributes[name] || new Attribute(name, element.data);
+                    attributeRenderData.data = element.data;
+                    attributeRenderData.size = element.size;
+                    attributeRenderData.divisor = 0;
+                    //
+                    renderAtomic.shaderMacro["B_HSA_" + vaId] = true;
+                }
             }
         }
     }

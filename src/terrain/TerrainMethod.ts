@@ -5,7 +5,7 @@ namespace feng3d
      * 地形材质
      * @author feng 2016-04-28
      */
-    export class TerrainMethod extends RenderDataHolder
+    export class TerrainMethod extends EventDispatcher
     {
         get splatTexture1()
         {

@@ -6421,11 +6421,7 @@ declare namespace feng3d {
         /**
          * shader 中的 宏
          */
-        shaderMacro: {
-            boolMacros: BoolMacros;
-            valueMacros: ValueMacros;
-            addMacros: IAddMacros;
-        };
+        shaderMacro: ShaderMacro;
         /**
          * macro是否失效
          */
@@ -6605,13 +6601,7 @@ declare namespace feng3d {
      * 着色器宏定义
      * @author feng 2016-12-17
      */
-    interface ShaderMacro extends ValueMacros, BoolMacros, IAddMacros {
-    }
-    /**
-     * 值类型宏
-     * 没有默认值
-     */
-    interface ValueMacros {
+    interface ShaderMacro {
         /**
          * 光源数量
          */
@@ -6628,12 +6618,6 @@ declare namespace feng3d {
          * 骨骼关节数量
          */
         V_NUM_SKELETONJOINT: number;
-    }
-    /**
-     * Boolean类型宏
-     * 没有默认值
-     */
-    interface BoolMacros {
         /**
          * 是否有漫反射贴图
          */
@@ -6679,12 +6663,6 @@ declare namespace feng3d {
          */
         B_HAS_ENV_METHOD: boolean;
         B_OUTLINE: boolean;
-    }
-    /**
-     * 递增类型宏
-     * 所有默认值为0
-     */
-    interface IAddMacros {
         /**
          * 是否需要属性uv
          */
@@ -6853,9 +6831,6 @@ declare namespace feng3d {
         createUniformData<K extends keyof LazyUniforms>(name: K, data: LazyUniforms[K]): void;
         createAttributeRenderData<K extends keyof Attributes>(name: K, data: Lazy<number[]>, size?: number, divisor?: number): void;
         createvertexCode(shadername: string): void;
-        createValueMacro<K extends keyof ValueMacros>(name: K, value: number): void;
-        createBoolMacro<K extends keyof BoolMacros>(name: K, value: boolean): void;
-        createAddMacro<K extends keyof IAddMacros>(name: K, value: number): void;
         createInstanceCount(value: number | (() => number)): void;
     }
 }
@@ -9240,6 +9215,14 @@ declare namespace feng3d {
          */
         useViewRect: boolean;
         /**
+         * shader 中的 宏
+         */
+        shaderMacro: ShaderMacro;
+        /**
+         * macro是否失效
+         */
+        macroInvalid: boolean;
+        /**
          * 渲染参数
          */
         renderParams: RenderParams;
@@ -9987,7 +9970,7 @@ declare namespace feng3d {
      * 粒子动画组件
      * @author feng 2017-01-09
      */
-    class ParticleComponent extends RenderDataHolder {
+    class ParticleComponent {
         /**
          * 是否开启
          */

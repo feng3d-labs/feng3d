@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export class FogMethod extends RenderDataHolder
+    export class FogMethod extends EventDispatcher
     {
         /**
          * 是否生效
@@ -56,19 +56,23 @@ namespace feng3d
             this.maxDistance = maxDistance;
             this.density = density;
             this.mode = mode;
-            //
-            this.createUniformData("u_fogColor", () => this.fogColor);
-            this.createUniformData("u_fogMinDistance", () => this.minDistance);
-            this.createUniformData("u_fogMaxDistance", () => this.maxDistance);
-            this.createUniformData("u_fogDensity", () => this.density);
-            this.createUniformData("u_fogMode", () => this.mode);
-            this.createBoolMacro("B_HAS_FOG_METHOD", this.enable);
-            this.createAddMacro("A_V_GLOBAL_POSITION_NEED", 1);
         }
 
         private enableChanged()
         {
-            this.createBoolMacro("B_HAS_FOG_METHOD", this.enable);
+        }
+
+        preRender(renderAtomic: RenderAtomic)
+        {
+            //
+            renderAtomic.uniforms.u_fogColor = () => this.fogColor;
+            renderAtomic.uniforms.u_fogMinDistance = () => this.minDistance;
+            renderAtomic.uniforms.u_fogMaxDistance = () => this.maxDistance;
+            renderAtomic.uniforms.u_fogDensity = () => this.density;
+            renderAtomic.uniforms.u_fogMode = () => this.mode;
+
+            renderAtomic.shaderMacro.B_HAS_FOG_METHOD = this.enable;
+            renderAtomic.shaderMacro.A_V_GLOBAL_POSITION_NEED = 1;
         }
     }
 
