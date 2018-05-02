@@ -273,7 +273,9 @@ namespace feng3d
             var objectproperty = serializeVO.compress ? i : property;
 
             if (object[objectproperty] !== undefined)
+            {
                 target[property] = _deserialize(object[objectproperty], serializeVO);
+            }
         }
         return target;
     }

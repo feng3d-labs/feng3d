@@ -6841,6 +6841,8 @@ declare namespace feng3d {
      * @author feng 2017-01-04
      */
     class RenderContext extends EventDispatcher {
+        NUM_POINTLIGHT: number;
+        NUM_DIRECTIONALLIGHT: number;
         /**
          * 摄像机
          */
@@ -9073,6 +9075,7 @@ declare namespace feng3d {
         red: ImageData;
         green: ImageData;
         blue: ImageData;
+        defaultNormal: ImageData;
     };
     /**
      * 2D纹理
@@ -9082,7 +9085,6 @@ declare namespace feng3d {
         protected _pixels: HTMLImageElement;
         url: string;
         private _url;
-        noPixels: ImageData;
         /**
          * 纹理尺寸
          */
@@ -9363,7 +9365,7 @@ declare namespace feng3d {
          * 漫反射纹理
          */
         normalTexture: Texture2D;
-        private _normalTexture;
+        _normalTexture: Texture2D;
         /**
          * 构建
          */

@@ -7,6 +7,9 @@ namespace feng3d
      */
     export class RenderContext extends EventDispatcher
     {
+        NUM_POINTLIGHT = 4;
+        NUM_DIRECTIONALLIGHT = 2;
+
         /**
          * 摄像机
          */
@@ -44,41 +47,53 @@ namespace feng3d
             var pointLightColors: Color[] = [];
             var pointLightIntensitys: number[] = [];
             var pointLightRanges: number[] = [];
-            for (var i = 0; i < pointLights.length; i++)
+            for (var i = 0; i < this.NUM_POINTLIGHT; i++)
             {
                 var pointLight = pointLights[i];
-                pointLightPositions.push(pointLight.transform.scenePosition);
-                pointLightColors.push(pointLight.color);
-                pointLightIntensitys.push(pointLight.intensity);
-                pointLightRanges.push(pointLight.range);
+                if (pointLight)
+                {
+                    pointLightPositions.push(pointLight.transform.scenePosition);
+                    pointLightColors.push(pointLight.color);
+                    pointLightIntensitys.push(pointLight.intensity);
+                    pointLightRanges.push(pointLight.range);
+                } else
+                {
+                    pointLightPositions.push(new Vector3());
+                    pointLightColors.push(new Color());
+                    pointLightIntensitys.push(0);
+                    pointLightRanges.push(0);
+                }
             }
             //设置点光源数据
 
-            if (pointLights.length > 0)
-            {
-                //
-                renderAtomic.uniforms.u_pointLightPositions = pointLightPositions;
-                renderAtomic.uniforms.u_pointLightColors = pointLightColors;
-                renderAtomic.uniforms.u_pointLightIntensitys = pointLightIntensitys;
-                renderAtomic.uniforms.u_pointLightRanges = pointLightRanges;
-            }
+            //
+            renderAtomic.uniforms.u_pointLightPositions = pointLightPositions;
+            renderAtomic.uniforms.u_pointLightColors = pointLightColors;
+            renderAtomic.uniforms.u_pointLightIntensitys = pointLightIntensitys;
+            renderAtomic.uniforms.u_pointLightRanges = pointLightRanges;
+            //
             var directionalLightDirections: Vector3[] = [];
             var directionalLightColors: Color[] = [];
             var directionalLightIntensitys: number[] = [];
-            for (var i = 0; i < directionalLights.length; i++)
+            for (var i = 0; i < this.NUM_DIRECTIONALLIGHT; i++)
             {
                 var directionalLight = directionalLights[i];
-                directionalLightDirections.push(directionalLight.transform.localToWorldMatrix.forward);
-                directionalLightColors.push(directionalLight.color);
-                directionalLightIntensitys.push(directionalLight.intensity);
+                if (directionalLight)
+                {
+                    directionalLightDirections.push(directionalLight.transform.localToWorldMatrix.forward);
+                    directionalLightColors.push(directionalLight.color);
+                    directionalLightIntensitys.push(directionalLight.intensity);
+                } else
+                {
+                    directionalLightDirections.push(new Vector3());
+                    directionalLightColors.push(new Color());
+                    directionalLightIntensitys.push(0);
+                }
             }
-            if (directionalLights.length > 0)
-            {
-                //
-                renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
-                renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;
-                renderAtomic.uniforms.u_directionalLightIntensitys = directionalLightIntensitys;
-            }
+            //
+            renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
+            renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;
+            renderAtomic.uniforms.u_directionalLightIntensitys = directionalLightIntensitys;
 
             renderAtomic.uniforms.u_sceneAmbientColor = this.scene3d.ambientColor;
         }

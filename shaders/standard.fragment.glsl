@@ -54,6 +54,8 @@ void main(void)
     vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;
     normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);
 
+    // vec3 normal = v_normal;
+
     //获取漫反射基本颜色
     vec4 diffuseColor = u_diffuse;
     diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);
@@ -74,22 +76,17 @@ void main(void)
     finalColor = diffuseColor;
 
     //渲染灯光
-    #ifdef NUM_LIGHT
-        #if NUM_LIGHT > 0
-
-            //获取高光值
-            float glossiness = u_glossiness;
-            //获取镜面反射基本颜色
-            vec3 specularColor = u_specular;
-            #ifdef HAS_SPECULAR_SAMPLER
-                vec4 specularMapColor = texture2D(s_specular, v_uv);
-                specularColor.xyz = specularMapColor.xyz;
-                glossiness = glossiness * specularMapColor.w;
-            #endif
-            
-            finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
-        #endif
+    //获取高光值
+    float glossiness = u_glossiness;
+    //获取镜面反射基本颜色
+    vec3 specularColor = u_specular;
+    #ifdef HAS_SPECULAR_SAMPLER
+        vec4 specularMapColor = texture2D(s_specular, v_uv);
+        specularColor.xyz = specularMapColor.xyz;
+        glossiness = glossiness * specularMapColor.w;
     #endif
+    
+    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
 
     #ifdef HAS_ENV_METHOD
         finalColor = envmapMethod(finalColor);

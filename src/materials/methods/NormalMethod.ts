@@ -15,13 +15,11 @@ namespace feng3d
         {
             return this._normalTexture;
         }
-        set normalTexture(value)
+        set normalTexture(v)
         {
-            if (this._normalTexture == value)
-                return;
-            this._normalTexture = value;
+            this._normalTexture.url = v.url;
         }
-        private _normalTexture: Texture2D;
+        _normalTexture = new Texture2D();
 
         /**
          * 构建
@@ -29,7 +27,8 @@ namespace feng3d
         constructor(normalUrl: string = "")
         {
             super();
-            this.normalTexture = new Texture2D(normalUrl);
+            // this.normalTexture.url = normalUrl;
+            this.normalTexture.noPixels = imageDatas.defaultNormal;
         }
 
         preRender(renderAtomic: RenderAtomic)

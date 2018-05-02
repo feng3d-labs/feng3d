@@ -29,6 +29,7 @@ namespace feng3d
         red: ImageUtil.createImageData(1, 1, ColorKeywords.red),
         green: ImageUtil.createImageData(1, 1, ColorKeywords.green),
         blue: ImageUtil.createImageData(1, 1, ColorKeywords.blue),
+        defaultNormal: ImageUtil.createImageData(1, 1, 0x8080ff),
     }
 
     /**
@@ -64,7 +65,9 @@ namespace feng3d
         }
         private _url = "";
 
-        noPixels = imageDatas.white;
+        // noPixels = imageDatas.white;
+        // noPixels = imageDatas.black;
+        // noPixels = imageDatas.defaultNormal;
 
         /**
          * 纹理尺寸
@@ -80,6 +83,7 @@ namespace feng3d
             super();
             this._textureType = TextureType.TEXTURE_2D;
             this.url = url;
+            this.noPixels = imageDatas.white;
         }
 
         /**
