@@ -12,22 +12,7 @@ namespace feng3d
 	 */
     export class SegmentMaterial extends Material
     {
-        /**
-         * 线段颜色
-         */
-        get color()
-        {
-            return this._color;
-        }
-        set color(value)
-        {
-            if (this._color == value)
-                return;
-            this._color = value;
-            if (this._color)
-                this.renderParams.enableBlend = this._color.a != 1;
-        }
-        private _color = new Color();
+        uniforms = new SegmentUniforms();
 
         /**
          * 构建线段材质
@@ -38,13 +23,17 @@ namespace feng3d
             this.shaderName = "segment";
             this.renderParams.renderMode = RenderMode.LINES;
         }
-
-        preRender(renderAtomic: RenderAtomic)
-        {
-            super.preRender(renderAtomic);
-
-            renderAtomic.uniforms.u_segmentColor = () => this.color;
-
-        }
     }
+
+    export class SegmentUniforms
+    {
+        /** 
+         * 颜色
+         */
+        @serialize()
+        @oav()
+        u_segmentColor = new Color();
+    }
+
+    shaderConfig.shaders["segment"].cls = SegmentUniforms;
 }

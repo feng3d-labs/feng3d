@@ -109,6 +109,18 @@ namespace feng3d
         }
 
         /**
+         * 拷贝
+         */
+        copyFrom(color: Color)
+        {
+            this.r = color.r;
+            this.g = color.g;
+            this.b = color.b;
+            this.a = color.a;
+            return this;
+        }
+
+        /**
          * 输出字符串
          */
         toString(): string

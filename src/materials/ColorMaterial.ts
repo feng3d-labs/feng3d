@@ -6,24 +6,7 @@ namespace feng3d
      */
     export class ColorMaterial extends Material
     {
-        /** 
-         * 颜色 
-         */
-        @serialize()
-        @oav()
-        get color()
-        {
-            return this._color;
-        }
-        set color(value)
-        {
-            if (this._color == value)
-                return;
-            this._color = value;
-            if (this._color)
-                this.renderParams.enableBlend = this._color.a != 1;
-        }
-        private _color: Color;
+        uniforms = new ColorUniforms();
 
         /**
          * 构建颜色材质
@@ -34,14 +17,27 @@ namespace feng3d
         {
             super();
             this.shaderName = "color";
-            this.color = color || new Color();
+            if (color)
+                this.uniforms.u_diffuseInput.copyFrom(color);
         }
 
         preRender(renderAtomic: RenderAtomic)
         {
             super.preRender(renderAtomic);
 
-            renderAtomic.uniforms.u_diffuseInput = () => this.color;
+            renderAtomic.uniforms.u_diffuseInput = this.uniforms.u_diffuseInput;
         }
     }
+
+    export class ColorUniforms
+    {
+        /** 
+         * 颜色
+         */
+        @serialize()
+        @oav()
+        u_diffuseInput = new Color();
+    }
+
+    shaderConfig.shaders["color"].cls = ColorUniforms;
 }

@@ -101,7 +101,9 @@
         //
         "src/render/data/RenderDataHolder.ts",
         "src/render/RenderContext.ts",
+        //
         "src/render/shader/ShaderLib.ts",
+        "src/autofiles/ShaderConfig.ts",
         //
         "src/core/HideFlags.ts",
         "src/core/Feng3dObject.ts",
@@ -234,8 +236,6 @@
         "src/utils/GameObjectFactory.ts",
         //
         "src/core/Mouse3DManager.ts",
-        //
-        "src/autofiles/ShaderConfig.ts",
         //
         "src/shaders/Color.shader.ts",
         //

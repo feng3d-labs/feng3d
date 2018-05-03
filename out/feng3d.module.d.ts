@@ -3557,6 +3557,10 @@ declare namespace feng3d {
          */
         mix(color: Color, rate?: number): this;
         /**
+         * 拷贝
+         */
+        copyFrom(color: Color): this;
+        /**
          * 输出字符串
          */
         toString(): string;
@@ -6957,6 +6961,8 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+}
+declare namespace feng3d {
     /**
      * Bit mask that controls object destruction, saving and visibility in inspectors.
      */
@@ -9182,7 +9188,7 @@ declare namespace feng3d {
          * 点绘制时点的尺寸
          */
         pointSize: number;
-        uniforms: Uniforms;
+        uniforms: {};
         /**
          * 渲染参数
          */
@@ -9202,12 +9208,17 @@ declare namespace feng3d {
      * @author feng 2017-01-11
      */
     class PointMaterial extends Material {
-        color: Color;
+        uniforms: PointUniforms;
         /**
          * 构建颜色材质
          */
         constructor();
-        preRender(renderAtomic: RenderAtomic): void;
+    }
+    class PointUniforms {
+        /**
+         * 颜色
+         */
+        u_color: Color;
     }
 }
 declare namespace feng3d {
@@ -9216,11 +9227,7 @@ declare namespace feng3d {
      * @author feng 2016-05-02
      */
     class ColorMaterial extends Material {
-        /**
-         * 颜色
-         */
-        color: Color;
-        private _color;
+        uniforms: ColorUniforms;
         /**
          * 构建颜色材质
          * @param color 颜色
@@ -9228,6 +9235,12 @@ declare namespace feng3d {
          */
         constructor(color?: Color);
         preRender(renderAtomic: RenderAtomic): void;
+    }
+    class ColorUniforms {
+        /**
+         * 颜色
+         */
+        u_diffuseInput: Color;
     }
 }
 declare namespace feng3d {
@@ -9240,16 +9253,17 @@ declare namespace feng3d {
      * @author feng 2016-10-15
      */
     class SegmentMaterial extends Material {
-        /**
-         * 线段颜色
-         */
-        color: Color;
-        private _color;
+        uniforms: SegmentUniforms;
         /**
          * 构建线段材质
          */
         constructor();
-        preRender(renderAtomic: RenderAtomic): void;
+    }
+    class SegmentUniforms {
+        /**
+         * 颜色
+         */
+        u_segmentColor: Color;
     }
 }
 declare namespace feng3d {
@@ -9258,20 +9272,18 @@ declare namespace feng3d {
      * @author feng 2016-12-23
      */
     class TextureMaterial extends Material {
+        uniforms: TextureUniforms;
+        constructor();
+    }
+    class TextureUniforms {
+        /**
+         * 颜色
+         */
+        u_color: Color;
         /**
          * 纹理数据
          */
-        texture: Texture2D | ImageDataTexture;
-        private _texture;
-        color: Color;
-        constructor();
-        preRender(renderAtomic: RenderAtomic): void;
-    }
-    interface Uniforms {
-        /**
-         *
-         */
-        u_color: Color;
+        s_texture: Texture2D;
     }
 }
 declare namespace feng3d {
@@ -10881,14 +10893,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-}
-declare namespace feng3d {
-    class ColorUniforms {
-        /**
-         * 颜色
-         */
-        u_diffuseInput: Color;
-    }
 }
 declare namespace feng3d {
     /**

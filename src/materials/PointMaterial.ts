@@ -6,9 +6,7 @@ namespace feng3d
      */
     export class PointMaterial extends Material
     {
-        @oav()
-        @serialize()
-        color = new Color();
+        uniforms = new PointUniforms();
 
         /**
          * 构建颜色材质
@@ -20,12 +18,17 @@ namespace feng3d
             this.renderParams.renderMode = RenderMode.POINTS;
             //
         }
-
-        preRender(renderAtomic: RenderAtomic)
-        {
-            super.preRender(renderAtomic);
-            
-            renderAtomic.uniforms.u_color = () => this.color;
-        }
     }
+
+    export class PointUniforms
+    {
+        /** 
+         * 颜色
+         */
+        @serialize()
+        @oav()
+        u_color = new Color();
+    }
+
+    shaderConfig.shaders["point"].cls = PointUniforms;
 }

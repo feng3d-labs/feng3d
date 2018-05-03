@@ -19,9 +19,10 @@ namespace feng3d
         @oav()
         pointSize = 1;
 
+        @serialize()
         // @oav({ component: "OAVMaterialData" })
         @oav()
-        uniforms: Uniforms = <any>{};
+        uniforms = {};
 
         /**
          * 渲染参数
@@ -47,11 +48,28 @@ namespace feng3d
             renderAtomic.uniforms.u_PointSize = () => this.pointSize;
 
             this.shader.shaderName = this.shaderName;
+
+            for (const key in this.uniforms)
+            {
+                if (this.uniforms.hasOwnProperty(key))
+                {
+                    renderAtomic.uniforms[key] = this.uniforms[key];
+                }
+            }
         }
 
         private onShaderChanged()
         {
             var shader = shaderlib.getShader(this.shaderName);
+
+            var cls = shaderConfig.shaders[this.shaderName].cls
+            if (cls)
+            {
+                if (this.uniforms instanceof cls)
+                    return;
+                this.uniforms = new cls();
+                return;
+            }
 
             if (!shader)
             {
@@ -66,7 +84,7 @@ namespace feng3d
             var uniforms = initUniforms(this.uniforms);
             shaderProgram.destroy();
 
-            function initUniforms(uniforms: Uniforms)
+            function initUniforms(uniforms)
             {
                 for (var name in uniformInfos)
                 {
