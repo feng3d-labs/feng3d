@@ -18458,78 +18458,10 @@ var feng3d;
             }
         };
         Material.prototype.onShaderChanged = function () {
-            var shader = feng3d.shaderlib.getShader(this.shaderName);
             var cls = feng3d.shaderConfig.shaders[this.shaderName].cls;
             if (cls) {
-                if (this.uniforms instanceof cls)
-                    return;
-                this.uniforms = new cls();
-                return;
-            }
-            if (!shader) {
-                this.uniforms = {};
-                return;
-            }
-            //渲染程序
-            var gl = feng3d.GL.getToolGL();
-            var shaderProgram = gl.createProgram(shader.vertex, shader.fragment);
-            var uniformInfos = shaderProgram.uniforms;
-            var uniforms = initUniforms(this.uniforms);
-            shaderProgram.destroy();
-            function initUniforms(uniforms) {
-                for (var name in uniformInfos) {
-                    if (uniformInfos.hasOwnProperty(name)) {
-                        var activeInfo = uniformInfos[name];
-                        if (activeInfo.uniformBaseName) {
-                            var baseName = activeInfo.uniformBaseName;
-                            uniforms[baseName] = [];
-                            //处理数组
-                            for (var j = 0; j < activeInfo.size; j++) {
-                                uniforms[baseName][j] = setContext3DUniform({ name: baseName + ("[" + j + "]"), type: activeInfo.type, uniformLocation: activeInfo.uniformLocation[j], textureID: activeInfo.textureID });
-                            }
-                        }
-                        else {
-                            uniforms[activeInfo.name] = setContext3DUniform(activeInfo);
-                        }
-                    }
-                }
-                return uniforms;
-            }
-            /**
-             * 设置环境Uniform数据
-             */
-            function setContext3DUniform(activeInfo) {
-                var location = activeInfo.uniformLocation;
-                var value = null;
-                switch (activeInfo.type) {
-                    case gl.INT:
-                        value = 0;
-                        break;
-                    case gl.FLOAT_MAT4:
-                        value = new feng3d.Matrix4x4();
-                        break;
-                    case gl.FLOAT:
-                        value = 0;
-                        break;
-                    case gl.FLOAT_VEC2:
-                        value = new feng3d.Vector2();
-                        break;
-                    case gl.FLOAT_VEC3:
-                        value = new feng3d.Vector3();
-                        break;
-                    case gl.FLOAT_VEC4:
-                        value = new feng3d.Vector4();
-                        break;
-                    case gl.SAMPLER_2D:
-                        value = new feng3d.Texture2D();
-                        break;
-                    case gl.SAMPLER_CUBE:
-                        value = new feng3d.TextureCube();
-                        break;
-                    default:
-                        throw "\u65E0\u6CD5\u8BC6\u522B\u7684uniform\u7C7B\u578B " + activeInfo.name;
-                }
-                return value;
+                if (!(this.uniforms instanceof cls))
+                    this.uniforms = new cls();
             }
         };
         __decorate([
@@ -18733,63 +18665,21 @@ var feng3d;
             if (specularUrl === void 0) { specularUrl = ""; }
             if (ambientUrl === void 0) { ambientUrl = ""; }
             var _this = _super.call(this) || this;
-            /**
-             * 漫反射函数
-             */
-            _this.diffuseMethod = new feng3d.DiffuseMethod();
-            /**
-             * 法线函数
-             */
-            _this.normalMethod = new feng3d.NormalMethod();
-            /**
-             * 镜面反射函数
-             */
-            _this.specularMethod = new feng3d.SpecularMethod();
-            /**
-             * 环境反射函数
-             */
-            _this.ambientMethod = new feng3d.AmbientMethod();
-            _this.envMapMethod = new feng3d.EnvMapMethod();
+            _this.uniforms = new StandardUniforms();
             _this.fogMethod = new feng3d.FogMethod();
             _this.terrainMethod = new feng3d.TerrainMethod();
             _this.shaderName = "standard";
-            //
-            _this.diffuseMethod.difuseTexture.url = diffuseUrl;
-            _this.normalMethod.normalTexture.url = normalUrl;
-            _this.specularMethod.specularTexture.url = specularUrl;
-            _this.ambientMethod.ambientTexture.url = ambientUrl;
+            _this.uniforms.s_diffuse.url = diffuseUrl;
+            _this.uniforms.s_normal.url = normalUrl;
+            _this.uniforms.s_specular.url = specularUrl;
+            _this.uniforms.s_ambient.url = ambientUrl;
             return _this;
         }
         StandardMaterial.prototype.preRender = function (renderAtomic) {
             _super.prototype.preRender.call(this, renderAtomic);
-            this.diffuseMethod.preRender(renderAtomic);
-            this.normalMethod.preRender(renderAtomic);
-            this.specularMethod.preRender(renderAtomic);
-            this.ambientMethod.preRender(renderAtomic);
-            this.envMapMethod.preRender(renderAtomic);
             this.fogMethod.preRender(renderAtomic);
             this.terrainMethod.preRender(renderAtomic);
         };
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], StandardMaterial.prototype, "diffuseMethod", void 0);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], StandardMaterial.prototype, "normalMethod", void 0);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], StandardMaterial.prototype, "specularMethod", void 0);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], StandardMaterial.prototype, "ambientMethod", void 0);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], StandardMaterial.prototype, "envMapMethod", void 0);
         __decorate([
             feng3d.serialize(),
             feng3d.oav()
@@ -18801,6 +18691,102 @@ var feng3d;
         return StandardMaterial;
     }(feng3d.Material));
     feng3d.StandardMaterial = StandardMaterial;
+    var StandardUniforms = /** @class */ (function () {
+        function StandardUniforms() {
+            /**
+             * 漫反射纹理
+             */
+            this.s_diffuse = new feng3d.Texture2D();
+            /**
+             * 基本颜色
+             */
+            this.u_diffuse = new feng3d.Color(1, 1, 1, 1);
+            /**
+             * 透明阈值，透明度小于该值的像素被片段着色器丢弃
+             */
+            this.u_alphaThreshold = 0;
+            /**
+             * 漫反射纹理
+             */
+            this.s_normal = new feng3d.Texture2D();
+            /**
+             * 镜面反射光泽图
+             */
+            this.s_specular = new feng3d.Texture2D();
+            /**
+             * 镜面反射颜色
+             */
+            this.u_specular = new feng3d.Color();
+            /**
+             * 高光系数
+             */
+            this.u_glossiness = 50;
+            /**
+             * 环境纹理
+             */
+            this.s_ambient = new feng3d.Texture2D();
+            /**
+             * 颜色
+             */
+            this.u_ambient = new feng3d.Color();
+            /**
+             * 环境映射贴图
+             */
+            this.s_envMap = new feng3d.TextureCube();
+            /**
+             * 反射率
+             */
+            this.u_reflectivity = 1;
+            this.s_normal.noPixels = feng3d.imageDatas.defaultNormal;
+        }
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "diffuse" })
+        ], StandardUniforms.prototype, "s_diffuse", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "diffuse" })
+        ], StandardUniforms.prototype, "u_diffuse", void 0);
+        __decorate([
+            feng3d.serialize(0),
+            feng3d.oav({ block: "diffuse" })
+        ], StandardUniforms.prototype, "u_alphaThreshold", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "normalMethod" })
+        ], StandardUniforms.prototype, "s_normal", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "specular" })
+        ], StandardUniforms.prototype, "s_specular", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "specular" })
+        ], StandardUniforms.prototype, "u_specular", void 0);
+        __decorate([
+            feng3d.serialize(50),
+            feng3d.oav({ block: "specular" })
+        ], StandardUniforms.prototype, "u_glossiness", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "ambient" })
+        ], StandardUniforms.prototype, "s_ambient", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "ambient" })
+        ], StandardUniforms.prototype, "u_ambient", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "envMap" })
+        ], StandardUniforms.prototype, "s_envMap", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "envMap" })
+        ], StandardUniforms.prototype, "u_reflectivity", void 0);
+        return StandardUniforms;
+    }());
+    feng3d.StandardUniforms = StandardUniforms;
+    feng3d.shaderConfig.shaders["standard"].cls = StandardUniforms;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -22736,7 +22722,7 @@ var feng3d;
                         image = image.substring(0, image.indexOf("."));
                         image += ".JPG";
                         image = this.root + image;
-                        material1.diffuseMethod.difuseTexture.url = image;
+                        material1.uniforms.s_diffuse.url = image;
                         material1.renderParams.cullFace = feng3d.CullFace.FRONT;
                     }
                     var mesh = this.meshs[i] = feng3d.GameObject.create();
@@ -24170,7 +24156,7 @@ var feng3d;
             var standardMaterial = new feng3d.StandardMaterial();
             var materialInfo = mtlData[subObj.material];
             var kd = materialInfo.kd;
-            standardMaterial.diffuseMethod.color = new feng3d.Color(kd[0], kd[1], kd[2]);
+            standardMaterial.uniforms.u_diffuse = new feng3d.Color(kd[0], kd[1], kd[2]);
             model.material = standardMaterial;
         }
         return gameObject;

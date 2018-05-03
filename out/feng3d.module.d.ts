@@ -9292,23 +9292,7 @@ declare namespace feng3d {
      * @author feng 2016-05-02
      */
     class StandardMaterial extends Material {
-        /**
-         * 漫反射函数
-         */
-        diffuseMethod: DiffuseMethod;
-        /**
-         * 法线函数
-         */
-        normalMethod: NormalMethod;
-        /**
-         * 镜面反射函数
-         */
-        specularMethod: SpecularMethod;
-        /**
-         * 环境反射函数
-         */
-        ambientMethod: AmbientMethod;
-        envMapMethod: EnvMapMethod;
+        uniforms: StandardUniforms;
         fogMethod: FogMethod;
         terrainMethod: TerrainMethod;
         /**
@@ -9316,6 +9300,53 @@ declare namespace feng3d {
          */
         constructor(diffuseUrl?: string, normalUrl?: string, specularUrl?: string, ambientUrl?: string);
         preRender(renderAtomic: RenderAtomic): void;
+    }
+    class StandardUniforms {
+        /**
+         * 漫反射纹理
+         */
+        s_diffuse: Texture2D;
+        /**
+         * 基本颜色
+         */
+        u_diffuse: Color;
+        /**
+         * 透明阈值，透明度小于该值的像素被片段着色器丢弃
+         */
+        u_alphaThreshold: number;
+        /**
+         * 漫反射纹理
+         */
+        s_normal: Texture2D;
+        /**
+         * 镜面反射光泽图
+         */
+        s_specular: Texture2D;
+        /**
+         * 镜面反射颜色
+         */
+        u_specular: Color;
+        /**
+         * 高光系数
+         */
+        u_glossiness: number;
+        /**
+         * 环境纹理
+         */
+        s_ambient: Texture2D;
+        /**
+         * 颜色
+         */
+        u_ambient: Color;
+        /**
+         * 环境映射贴图
+         */
+        s_envMap: TextureCube;
+        /**
+         * 反射率
+         */
+        u_reflectivity: number;
+        constructor();
     }
 }
 declare namespace feng3d {

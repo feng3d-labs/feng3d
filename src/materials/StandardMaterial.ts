@@ -6,37 +6,7 @@ namespace feng3d
      */
     export class StandardMaterial extends Material
     {
-        /**
-         * 漫反射函数
-         */
-        @serialize()
-        @oav()
-        diffuseMethod = new DiffuseMethod();
-
-        /**
-         * 法线函数
-         */
-        @serialize()
-        @oav()
-        normalMethod = new NormalMethod();
-
-        /**
-         * 镜面反射函数
-         */
-        @serialize()
-        @oav()
-        specularMethod = new SpecularMethod();
-
-        /**
-         * 环境反射函数
-         */
-        @serialize()
-        @oav()
-        ambientMethod = new AmbientMethod();
-
-        @serialize()
-        @oav()
-        envMapMethod = new EnvMapMethod();
+        uniforms = new StandardUniforms();
 
         @serialize()
         @oav()
@@ -54,25 +24,105 @@ namespace feng3d
         {
             super();
             this.shaderName = "standard";
-
-            //
-            this.diffuseMethod.difuseTexture.url = diffuseUrl;
-            this.normalMethod.normalTexture.url = normalUrl;
-            this.specularMethod.specularTexture.url = specularUrl;
-            this.ambientMethod.ambientTexture.url = ambientUrl;
+            this.uniforms.s_diffuse.url = diffuseUrl;
+            this.uniforms.s_normal.url = normalUrl;
+            this.uniforms.s_specular.url = specularUrl;
+            this.uniforms.s_ambient.url = ambientUrl;
         }
 
         preRender(renderAtomic: RenderAtomic)
         {
             super.preRender(renderAtomic);
 
-            this.diffuseMethod.preRender(renderAtomic);
-            this.normalMethod.preRender(renderAtomic);
-            this.specularMethod.preRender(renderAtomic);
-            this.ambientMethod.preRender(renderAtomic);
-            this.envMapMethod.preRender(renderAtomic);
             this.fogMethod.preRender(renderAtomic);
             this.terrainMethod.preRender(renderAtomic);
         }
     }
+
+    export class StandardUniforms
+    {
+        /**
+         * 漫反射纹理
+         */
+        @serialize()
+        @oav({ block: "diffuse" })
+        s_diffuse = new Texture2D();
+
+        /**
+         * 基本颜色
+         */
+        @serialize()
+        @oav({ block: "diffuse" })
+        u_diffuse = new Color(1, 1, 1, 1);
+
+        /**
+         * 透明阈值，透明度小于该值的像素被片段着色器丢弃
+         */
+        @serialize(0)
+        @oav({ block: "diffuse" })
+        u_alphaThreshold = 0;
+
+        /**
+         * 漫反射纹理
+         */
+        @serialize()
+        @oav({ block: "normalMethod" })
+        s_normal = new Texture2D();
+
+        /**
+         * 镜面反射光泽图
+         */
+        @serialize()
+        @oav({ block: "specular" })
+        s_specular = new Texture2D();
+
+        /**
+         * 镜面反射颜色
+         */
+        @serialize()
+        @oav({ block: "specular" })
+        u_specular = new Color();
+
+        /**
+         * 高光系数
+         */
+        @serialize(50)
+        @oav({ block: "specular" })
+        u_glossiness = 50;
+
+        /**
+         * 环境纹理
+         */
+        @serialize()
+        @oav({ block: "ambient" })
+        s_ambient = new Texture2D();
+
+        /**
+         * 颜色
+         */
+        @serialize()
+        @oav({ block: "ambient" })
+        u_ambient = new Color();
+
+        /**
+         * 环境映射贴图
+		 */
+        @serialize()
+        @oav({ block: "envMap" })
+        s_envMap = new TextureCube();
+
+        /**
+         * 反射率
+		 */
+        @serialize()
+        @oav({ block: "envMap" })
+        u_reflectivity = 1;
+
+        constructor()
+        {
+            this.s_normal.noPixels = imageDatas.defaultNormal;
+        }
+    }
+
+    shaderConfig.shaders["standard"].cls = StandardUniforms;
 }

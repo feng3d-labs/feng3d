@@ -84,7 +84,7 @@ namespace feng3d.war3
 					image += ".JPG";
 					image = this.root + image;
 
-					material1.diffuseMethod.difuseTexture.url = image;
+					material1.uniforms.s_diffuse.url = image;
 					material1.renderParams.cullFace = CullFace.FRONT;
 				}
 
