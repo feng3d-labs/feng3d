@@ -18679,6 +18679,8 @@ var feng3d;
             _super.prototype.preRender.call(this, renderAtomic);
             this.fogMethod.preRender(renderAtomic);
             this.terrainMethod.preRender(renderAtomic);
+            // 序列化时引发bug
+            this.uniforms.s_normal.noPixels = feng3d.imageDatas.defaultNormal;
         };
         __decorate([
             feng3d.serialize(),

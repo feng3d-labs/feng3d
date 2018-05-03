@@ -277,6 +277,20 @@ namespace feng3d
         reflectivity?: number;
     }
 
+    export interface StandardUniformsRaw
+    {
+        __class__: "feng3d.StandardUniforms",
+        s_ambient?: Texture2DRaw;
+        s_diffuse?: Texture2DRaw,
+        s_envMap?: TextureCubeRaw,
+        s_normal?: Texture2DRaw,
+        s_specular?: Texture2DRaw,
+        u_ambient?: ColorRaw,
+        u_diffuse?: ColorRaw,
+        u_reflectivity?: number,
+        u_specular?: ColorRaw
+    }
+
     export interface StandardMaterialRaw extends MaterialBaseRaw
     {
         __class__: "feng3d.StandardMaterial";
@@ -287,6 +301,8 @@ namespace feng3d
         envMapMethod?: EnvMapMethodRaw;
         fogMethod?: FogMethodRaw;
         terrainMethod?: TerrainMethodRaw;
+
+        uniforms?: StandardUniformsRaw;
     }
 
     export type ValueOf<T> = T[keyof T];

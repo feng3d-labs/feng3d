@@ -36,6 +36,9 @@ namespace feng3d
 
             this.fogMethod.preRender(renderAtomic);
             this.terrainMethod.preRender(renderAtomic);
+
+            // 序列化时引发bug
+            this.uniforms.s_normal.noPixels = imageDatas.defaultNormal;
         }
     }
 

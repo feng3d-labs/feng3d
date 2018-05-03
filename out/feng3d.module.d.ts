@@ -951,6 +951,18 @@ declare namespace feng3d {
         cubeTexture?: TextureCubeRaw;
         reflectivity?: number;
     }
+    interface StandardUniformsRaw {
+        __class__: "feng3d.StandardUniforms";
+        s_ambient?: Texture2DRaw;
+        s_diffuse?: Texture2DRaw;
+        s_envMap?: TextureCubeRaw;
+        s_normal?: Texture2DRaw;
+        s_specular?: Texture2DRaw;
+        u_ambient?: ColorRaw;
+        u_diffuse?: ColorRaw;
+        u_reflectivity?: number;
+        u_specular?: ColorRaw;
+    }
     interface StandardMaterialRaw extends MaterialBaseRaw {
         __class__: "feng3d.StandardMaterial";
         diffuseMethod?: DiffuseMethodRaw;
@@ -960,6 +972,7 @@ declare namespace feng3d {
         envMapMethod?: EnvMapMethodRaw;
         fogMethod?: FogMethodRaw;
         terrainMethod?: TerrainMethodRaw;
+        uniforms?: StandardUniformsRaw;
     }
     type ValueOf<T> = T[keyof T];
     type MaterialRaw = ValueOf<MaterialRawMap>;
