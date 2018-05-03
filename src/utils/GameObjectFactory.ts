@@ -148,7 +148,7 @@ namespace feng3d
         var meshRenderer = _particleMesh.addComponent(MeshRenderer);
         meshRenderer.geometry = new PointGeometry();
         var material = meshRenderer.material = new StandardMaterial();
-        material.renderMode = RenderMode.POINTS;
+        material.renderParams.renderMode = RenderMode.POINTS;
 
         var particleAnimator = _particleMesh.addComponent(ParticleAnimator);
         particleAnimator.numParticles = 1000;

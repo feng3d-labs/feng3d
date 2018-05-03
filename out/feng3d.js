@@ -1814,8 +1814,6 @@ var feng3d;
             ctx.fillStyle = new feng3d.Color().fromUnit(fillcolor).toHexString();
             ctx.fillRect(0, 0, width, height);
             var imageData = ctx.getImageData(0, 0, width, height);
-            console.log(imageData);
-            // ImageData { width: 100, height: 100, data: Uint8ClampedArray[40000] }
             return imageData;
         },
     };
@@ -9841,12 +9839,12 @@ var feng3d;
          */
         GL.getGL = function (canvas, contextAttributes) {
             // var names = ["webgl2", "webgl"];
-            var names = ["webgl"];
+            var contextIds = ["webgl"];
             var gl = null;
-            for (var i = 0; i < names.length; ++i) {
+            for (var i = 0; i < contextIds.length; ++i) {
                 try {
-                    gl = canvas.getContext(names[i], contextAttributes);
-                    gl.contextId = names[i];
+                    gl = canvas.getContext(contextIds[i], contextAttributes);
+                    gl.contextId = contextIds[i];
                     gl.contextAttributes = contextAttributes;
                     break;
                 }
@@ -9866,8 +9864,17 @@ var feng3d;
             gl.clearDepth(1.0); // Clear everything
             gl.enable(gl.DEPTH_TEST); // Enable depth testing
             gl.depthFunc(gl.LEQUAL); // Near things obscure far things
+            this.glList.push(gl);
             return gl;
         };
+        GL.getToolGL = function () {
+            if (!this._toolGL) {
+                var canvas = document.createElement("canvas");
+                this._toolGL = this.getGL(canvas);
+            }
+            return this._toolGL;
+        };
+        GL.glList = [];
         return GL;
     }());
     feng3d.GL = GL;
@@ -10292,21 +10299,94 @@ var feng3d;
     var RenderParams = /** @class */ (function () {
         function RenderParams() {
             /**
-             * 渲染模式
-             */
+            * 渲染模式，默认RenderMode.TRIANGLES
+            */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
+            /**
+             * 剔除面
+             * 参考：http://www.jianshu.com/p/ee04165f2a02
+             * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
+             * 使用gl.frontFace(gl.CW);调整顺时针为正面
+             */
             this.cullFace = feng3d.CullFace.BACK;
-            this.frontFace = feng3d.FrontFace.CCW;
+            this.frontFace = feng3d.FrontFace.CW;
+            /**
+             * 是否开启混合
+             * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
+             */
             this.enableBlend = false;
+            /**
+             * 混合方程，默认BlendEquation.FUNC_ADD
+             */
             this.blendEquation = feng3d.BlendEquation.FUNC_ADD;
+            /**
+             * 源混合因子，默认BlendFactor.SRC_ALPHA
+             */
             this.sfactor = feng3d.BlendFactor.SRC_ALPHA;
+            /**
+             * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
+             */
             this.dfactor = feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA;
+            /**
+             * 是否开启深度检查
+             */
             this.depthtest = true;
+            /**
+             * 是否开启深度标记
+             */
             this.depthMask = true;
             this.depthFunc = feng3d.DepthFunc.LESS;
+            /**
+             * 绘制在画布上的区域
+             */
             this.viewRect = new feng3d.Rectangle(0, 0, 100, 100);
+            /**
+             * 是否使用 viewRect
+             */
             this.useViewRect = false;
         }
+        __decorate([
+            feng3d.serialize(feng3d.RenderMode.TRIANGLES),
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.RenderMode } })
+        ], RenderParams.prototype, "renderMode", void 0);
+        __decorate([
+            feng3d.serialize(feng3d.CullFace.BACK),
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.CullFace } })
+        ], RenderParams.prototype, "cullFace", void 0);
+        __decorate([
+            feng3d.serialize(feng3d.FrontFace.CW),
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.FrontFace } })
+        ], RenderParams.prototype, "frontFace", void 0);
+        __decorate([
+            feng3d.serialize(false),
+            feng3d.oav()
+        ], RenderParams.prototype, "enableBlend", void 0);
+        __decorate([
+            feng3d.serialize(feng3d.BlendEquation.FUNC_ADD),
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendEquation } })
+        ], RenderParams.prototype, "blendEquation", void 0);
+        __decorate([
+            feng3d.serialize(feng3d.BlendFactor.SRC_ALPHA),
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendFactor } })
+        ], RenderParams.prototype, "sfactor", void 0);
+        __decorate([
+            feng3d.serialize(feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA),
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendFactor } })
+        ], RenderParams.prototype, "dfactor", void 0);
+        __decorate([
+            feng3d.serialize(true),
+            feng3d.oav()
+        ], RenderParams.prototype, "depthtest", void 0);
+        __decorate([
+            feng3d.serialize(true),
+            feng3d.oav()
+        ], RenderParams.prototype, "depthMask", void 0);
+        __decorate([
+            feng3d.oav()
+        ], RenderParams.prototype, "viewRect", void 0);
+        __decorate([
+            feng3d.oav()
+        ], RenderParams.prototype, "useViewRect", void 0);
         return RenderParams;
     }());
     feng3d.RenderParams = RenderParams;
@@ -10936,6 +11016,13 @@ var feng3d;
     }());
     feng3d.ShaderLib = ShaderLib;
     feng3d.shaderlib = new ShaderLib();
+    //ShaderLib1
+    var ShaderLib1 = /** @class */ (function () {
+        function ShaderLib1() {
+        }
+        return ShaderLib1;
+    }());
+    feng3d.ShaderLib1 = ShaderLib1;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -11446,7 +11533,7 @@ var feng3d;
             return {
                 depth: item.transform.scenePosition.subTo(camerapos).length,
                 item: item,
-                enableBlend: item.material.enableBlend,
+                enableBlend: item.material.renderParams.enableBlend,
             };
         });
         var blenditems = maps.filter(function (item) { return item.enableBlend; });
@@ -18156,12 +18243,8 @@ var feng3d;
         function TextureCube(images) {
             var _this = _super.call(this) || this;
             _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
+            _this.noPixels = [feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white];
             _this._pixels = [];
-            for (var i = 0; i < 6; i++) {
-                _this._pixels[i] = new Image();
-                _this._pixels[i].crossOrigin = "Anonymous";
-                _this._pixels[i].addEventListener("load", _this.invalidate.bind(_this));
-            }
             if (images) {
                 _this.positive_x_url = images[0];
                 _this.positive_y_url = images[1];
@@ -18169,87 +18252,10 @@ var feng3d;
                 _this.negative_x_url = images[3];
                 _this.negative_y_url = images[4];
                 _this.negative_z_url = images[5];
+                _this.urlChanged();
             }
             return _this;
         }
-        Object.defineProperty(TextureCube.prototype, "positive_x_url", {
-            get: function () {
-                return this._positive_x_url;
-            },
-            set: function (value) {
-                if (this._positive_x_url == value)
-                    return;
-                this._positive_x_url = value;
-                this._pixels[0].src = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureCube.prototype, "positive_y_url", {
-            get: function () {
-                return this._positive_y_url;
-            },
-            set: function (value) {
-                if (this._positive_y_url == value)
-                    return;
-                this._positive_y_url = value;
-                this._pixels[1].src = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureCube.prototype, "positive_z_url", {
-            get: function () {
-                return this._positive_z_url;
-            },
-            set: function (value) {
-                if (this._positive_z_url == value)
-                    return;
-                this._positive_z_url = value;
-                this._pixels[2].src = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureCube.prototype, "negative_x_url", {
-            get: function () {
-                return this._negative_x_url;
-            },
-            set: function (value) {
-                if (this._negative_x_url == value)
-                    return;
-                this._negative_x_url = value;
-                this._pixels[3].src = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureCube.prototype, "negative_y_url", {
-            get: function () {
-                return this._negative_y_url;
-            },
-            set: function (value) {
-                if (this._negative_y_url == value)
-                    return;
-                this._negative_y_url = value;
-                this._pixels[4].src = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureCube.prototype, "negative_z_url", {
-            get: function () {
-                return this._negative_z_url;
-            },
-            set: function (value) {
-                if (this._negative_z_url == value)
-                    return;
-                this._negative_z_url = value;
-                this._pixels[5].src = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 判断数据是否满足渲染需求
          */
@@ -18263,30 +18269,51 @@ var feng3d;
             }
             return true;
         };
+        TextureCube.prototype.urlChanged = function () {
+            var __this = this;
+            loadImage(this.positive_x_url, 0);
+            loadImage(this.positive_y_url, 1);
+            loadImage(this.positive_z_url, 2);
+            loadImage(this.negative_x_url, 3);
+            loadImage(this.negative_y_url, 4);
+            loadImage(this.negative_z_url, 5);
+            function loadImage(url, index) {
+                feng3d.assets.loadImage(url, function (img) {
+                    __this._pixels[index] = img;
+                    __this.invalidate();
+                });
+            }
+        };
         __decorate([
             feng3d.serialize(),
-            feng3d.oav()
-        ], TextureCube.prototype, "positive_x_url", null);
+            feng3d.oav(),
+            feng3d.watch("urlChanged")
+        ], TextureCube.prototype, "positive_x_url", void 0);
         __decorate([
             feng3d.serialize(),
-            feng3d.oav()
-        ], TextureCube.prototype, "positive_y_url", null);
+            feng3d.oav(),
+            feng3d.watch("urlChanged")
+        ], TextureCube.prototype, "positive_y_url", void 0);
         __decorate([
             feng3d.serialize(),
-            feng3d.oav()
-        ], TextureCube.prototype, "positive_z_url", null);
+            feng3d.oav(),
+            feng3d.watch("urlChanged")
+        ], TextureCube.prototype, "positive_z_url", void 0);
         __decorate([
             feng3d.serialize(),
-            feng3d.oav()
-        ], TextureCube.prototype, "negative_x_url", null);
+            feng3d.oav(),
+            feng3d.watch("urlChanged")
+        ], TextureCube.prototype, "negative_x_url", void 0);
         __decorate([
             feng3d.serialize(),
-            feng3d.oav()
-        ], TextureCube.prototype, "negative_y_url", null);
+            feng3d.oav(),
+            feng3d.watch("urlChanged")
+        ], TextureCube.prototype, "negative_y_url", void 0);
         __decorate([
             feng3d.serialize(),
-            feng3d.oav()
-        ], TextureCube.prototype, "negative_z_url", null);
+            feng3d.oav(),
+            feng3d.watch("urlChanged")
+        ], TextureCube.prototype, "negative_z_url", void 0);
         return TextureCube;
     }(feng3d.TextureInfo));
     feng3d.TextureCube = TextureCube;
@@ -18330,178 +18357,112 @@ var feng3d;
      * 材质
      * @author feng 2016-05-02
      */
+    // @ov({ component: "OVMaterial" })
     var Material = /** @class */ (function (_super) {
         __extends(Material, _super);
         function Material() {
             var _this = _super.call(this) || this;
             /**
-             * 剔除面
-             * 参考：http://www.jianshu.com/p/ee04165f2a02
-             * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
-             * 使用gl.frontFace(gl.CW);调整顺时针为正面
+             * 点绘制时点的尺寸
              */
-            _this.cullFace = feng3d.CullFace.BACK;
-            _this.frontFace = feng3d.FrontFace.CW;
-            _this._enableBlend = false;
-            _this._pointSize = 1;
-            /**
-             * 混合方程，默认BlendEquation.FUNC_ADD
-             */
-            _this.blendEquation = feng3d.BlendEquation.FUNC_ADD;
-            /**
-             * 源混合因子，默认BlendFactor.SRC_ALPHA
-             */
-            _this.sfactor = feng3d.BlendFactor.SRC_ALPHA;
-            /**
-             * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
-             */
-            _this.dfactor = feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA;
-            /**
-             * 是否开启深度检查
-             */
-            _this.depthtest = true;
-            /**
-             * 是否开启深度标记
-             */
-            _this.depthMask = true;
-            /**
-             * 绘制在画布上的区域
-             */
-            _this.viewRect = new feng3d.Rectangle(0, 0, 100, 100);
-            /**
-             * 是否使用 viewRect
-             */
-            _this.useViewRect = false;
-            /**
-             * macro是否失效
-             */
-            _this.macroInvalid = true;
+            _this.pointSize = 1;
+            // @oav({ component: "OAVMaterialData" })
+            _this.uniforms = {};
             /**
              * 渲染参数
              */
             _this.renderParams = new feng3d.RenderParams();
             _this.shader = new feng3d.Shader();
-            _this.renderMode = feng3d.RenderMode.TRIANGLES;
-            _this.renderParams.cullFace = _this.cullFace;
-            _this.renderParams.frontFace = _this.frontFace;
-            _this.renderParams.enableBlend = function () { return _this.enableBlend; };
-            _this.renderParams.blendEquation = _this.blendEquation;
-            _this.renderParams.sfactor = _this.sfactor;
-            _this.renderParams.dfactor = _this.dfactor;
-            _this.renderParams.depthtest = _this.depthtest;
-            _this.renderParams.depthMask = _this.depthMask;
-            _this.renderParams.viewRect = _this.viewRect;
-            _this.renderParams.useViewRect = _this.useViewRect;
             return _this;
         }
-        Object.defineProperty(Material.prototype, "renderMode", {
-            /**
-            * 渲染模式，默认RenderMode.TRIANGLES
-            */
-            get: function () {
-                return this._renderMode;
-            },
-            set: function (value) {
-                this._renderMode = value;
-                this.renderParams.renderMode = this.renderMode;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Material.prototype, "shaderName", {
-            get: function () {
-                return this._shaderName;
-            },
-            set: function (value) {
-                if (this._shaderName == value)
-                    return;
-                this._shaderName = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Material.prototype, "enableBlend", {
-            /**
-             * 是否开启混合
-             * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
-             */
-            get: function () {
-                return this._enableBlend;
-            },
-            set: function (value) {
-                this._enableBlend = value;
-                this.depthMask = !value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Material.prototype, "pointSize", {
-            /**
-             * 点绘制时点的尺寸
-             */
-            get: function () {
-                return this._pointSize;
-            },
-            set: function (value) {
-                this._pointSize = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Material.prototype.preRender = function (renderAtomic) {
             var _this = this;
             renderAtomic.uniforms.u_PointSize = function () { return _this.pointSize; };
             this.shader.shaderName = this.shaderName;
         };
+        Material.prototype.onShaderChanged = function () {
+            var shader = feng3d.shaderlib.getShader(this.shaderName);
+            if (!shader) {
+                this.uniforms = {};
+                return;
+            }
+            //渲染程序
+            var gl = feng3d.GL.getToolGL();
+            var shaderProgram = gl.createProgram(shader.vertex, shader.fragment);
+            var uniformInfos = shaderProgram.uniforms;
+            var uniforms = initUniforms(this.uniforms);
+            shaderProgram.destroy();
+            function initUniforms(uniforms) {
+                for (var name in uniformInfos) {
+                    if (uniformInfos.hasOwnProperty(name)) {
+                        var activeInfo = uniformInfos[name];
+                        if (activeInfo.uniformBaseName) {
+                            var baseName = activeInfo.uniformBaseName;
+                            uniforms[baseName] = [];
+                            //处理数组
+                            for (var j = 0; j < activeInfo.size; j++) {
+                                uniforms[baseName][j] = setContext3DUniform({ name: baseName + ("[" + j + "]"), type: activeInfo.type, uniformLocation: activeInfo.uniformLocation[j], textureID: activeInfo.textureID });
+                            }
+                        }
+                        else {
+                            uniforms[activeInfo.name] = setContext3DUniform(activeInfo);
+                        }
+                    }
+                }
+                return uniforms;
+            }
+            /**
+             * 设置环境Uniform数据
+             */
+            function setContext3DUniform(activeInfo) {
+                var location = activeInfo.uniformLocation;
+                var value = null;
+                switch (activeInfo.type) {
+                    case gl.INT:
+                        value = 0;
+                        break;
+                    case gl.FLOAT_MAT4:
+                        value = new feng3d.Matrix4x4();
+                        break;
+                    case gl.FLOAT:
+                        value = 0;
+                        break;
+                    case gl.FLOAT_VEC2:
+                        value = new feng3d.Vector2();
+                        break;
+                    case gl.FLOAT_VEC3:
+                        value = new feng3d.Vector3();
+                        break;
+                    case gl.FLOAT_VEC4:
+                        value = new feng3d.Vector4();
+                        break;
+                    case gl.SAMPLER_2D:
+                        value = new feng3d.Texture2D();
+                        break;
+                    case gl.SAMPLER_CUBE:
+                        value = new feng3d.TextureCube();
+                        break;
+                    default:
+                        throw "\u65E0\u6CD5\u8BC6\u522B\u7684uniform\u7C7B\u578B " + activeInfo.name;
+                }
+                return value;
+            }
+        };
         __decorate([
-            feng3d.serialize(feng3d.RenderMode.TRIANGLES),
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.RenderMode } })
-        ], Material.prototype, "renderMode", null);
-        __decorate([
-            feng3d.serialize(feng3d.CullFace.BACK),
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.CullFace } })
-        ], Material.prototype, "cullFace", void 0);
-        __decorate([
-            feng3d.serialize(feng3d.FrontFace.CW),
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.FrontFace } })
-        ], Material.prototype, "frontFace", void 0);
-        __decorate([
-            feng3d.serialize(false),
-            feng3d.oav()
-        ], Material.prototype, "enableBlend", null);
+            feng3d.oav({ component: "OAVMaterialName" }),
+            feng3d.watch("onShaderChanged")
+        ], Material.prototype, "shaderName", void 0);
         __decorate([
             feng3d.serialize(1),
             feng3d.oav()
-        ], Material.prototype, "pointSize", null);
-        __decorate([
-            feng3d.serialize(feng3d.BlendEquation.FUNC_ADD),
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendEquation } })
-        ], Material.prototype, "blendEquation", void 0);
-        __decorate([
-            feng3d.serialize(feng3d.BlendFactor.SRC_ALPHA),
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendFactor } })
-        ], Material.prototype, "sfactor", void 0);
-        __decorate([
-            feng3d.serialize(feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA),
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendFactor } })
-        ], Material.prototype, "dfactor", void 0);
-        __decorate([
-            feng3d.serialize(true),
-            feng3d.oav()
-        ], Material.prototype, "depthtest", void 0);
-        __decorate([
-            feng3d.serialize(true),
-            feng3d.oav()
-        ], Material.prototype, "depthMask", void 0);
+        ], Material.prototype, "pointSize", void 0);
         __decorate([
             feng3d.oav()
-        ], Material.prototype, "viewRect", void 0);
+        ], Material.prototype, "uniforms", void 0);
         __decorate([
-            feng3d.oav()
-        ], Material.prototype, "useViewRect", void 0);
-        Material = __decorate([
-            feng3d.ov({ component: "OVMaterial" })
-        ], Material);
+            feng3d.serialize(),
+            feng3d.oav({ block: "渲染参数" })
+        ], Material.prototype, "renderParams", void 0);
         return Material;
     }(feng3d.EventDispatcher));
     feng3d.Material = Material;
@@ -18521,7 +18482,7 @@ var feng3d;
             var _this = _super.call(this) || this;
             _this.color = new feng3d.Color();
             _this.shaderName = "point";
-            _this.renderMode = feng3d.RenderMode.POINTS;
+            _this.renderParams.renderMode = feng3d.RenderMode.POINTS;
             return _this;
             //
         }
@@ -18569,7 +18530,7 @@ var feng3d;
                     return;
                 this._color = value;
                 if (this._color)
-                    this.enableBlend = this._color.a != 1;
+                    this.renderParams.enableBlend = this._color.a != 1;
             },
             enumerable: true,
             configurable: true
@@ -18603,7 +18564,7 @@ var feng3d;
             var _this = _super.call(this) || this;
             _this._color = new feng3d.Color();
             _this.shaderName = "segment";
-            _this.renderMode = feng3d.RenderMode.LINES;
+            _this.renderParams.renderMode = feng3d.RenderMode.LINES;
             return _this;
         }
         Object.defineProperty(SegmentMaterial.prototype, "color", {
@@ -18618,7 +18579,7 @@ var feng3d;
                     return;
                 this._color = value;
                 if (this._color)
-                    this.enableBlend = this._color.a != 1;
+                    this.renderParams.enableBlend = this._color.a != 1;
             },
             enumerable: true,
             configurable: true
@@ -18687,6 +18648,7 @@ var feng3d;
      */
     var StandardMaterial = /** @class */ (function (_super) {
         __extends(StandardMaterial, _super);
+        // terrainMethod: TerrainMethod | TerrainMergeMethod;
         /**
          * 构建
          */
@@ -18723,20 +18685,6 @@ var feng3d;
             _this.ambientMethod.ambientTexture.url = ambientUrl;
             return _this;
         }
-        Object.defineProperty(StandardMaterial.prototype, "enableBlend", {
-            // terrainMethod: TerrainMethod | TerrainMergeMethod;
-            /**
-             * 是否开启混合
-             */
-            get: function () {
-                return this._enableBlend || (this.diffuseMethod && this.diffuseMethod.color.a != 1.0);
-            },
-            set: function (value) {
-                this._enableBlend = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         StandardMaterial.prototype.preRender = function (renderAtomic) {
             _super.prototype.preRender.call(this, renderAtomic);
             this.diffuseMethod.preRender(renderAtomic);
@@ -22714,7 +22662,7 @@ var feng3d;
                         image += ".JPG";
                         image = this.root + image;
                         material1.diffuseMethod.difuseTexture.url = image;
-                        material1.cullFace = feng3d.CullFace.FRONT;
+                        material1.renderParams.cullFace = feng3d.CullFace.FRONT;
                     }
                     var mesh = this.meshs[i] = feng3d.GameObject.create();
                     // var meshRenderer = mesh.addComponent(MeshRenderer);
@@ -24117,7 +24065,7 @@ var feng3d;
         var gameObject = feng3d.GameObject.create();
         var model = gameObject.addComponent(feng3d.MeshRenderer);
         model.material = material || new feng3d.StandardMaterial();
-        model.material.cullFace = feng3d.CullFace.FRONT;
+        model.material.renderParams.cullFace = feng3d.CullFace.FRONT;
         var geometry = model.geometry = new feng3d.CustomGeometry();
         var vertices = [];
         var normals = [];
@@ -24739,7 +24687,7 @@ var feng3d;
         var meshRenderer = _particleMesh.addComponent(feng3d.MeshRenderer);
         meshRenderer.geometry = new feng3d.PointGeometry();
         var material = meshRenderer.material = new feng3d.StandardMaterial();
-        material.renderMode = feng3d.RenderMode.POINTS;
+        material.renderParams.renderMode = feng3d.RenderMode.POINTS;
         var particleAnimator = _particleMesh.addComponent(feng3d.ParticleAnimator);
         particleAnimator.numParticles = 1000;
         //通过函数来创建粒子初始状态
@@ -24989,6 +24937,24 @@ var feng3d;
             "terrainMerge.fragment1": "#extension GL_EXT_shader_texture_lod : enable\r\n#extension GL_OES_standard_derivatives : enable\r\n\r\n#define LOD_LINEAR\r\n\r\nuniform sampler2D s_splatMergeTexture;\r\nuniform sampler2D s_blendTexture;\r\nuniform vec4 u_splatRepeats;\r\n\r\nvec2 imageSize =    vec2(2048.0,1024.0);\r\nvec4 offset[3];\r\nvec2 tileSize = vec2(512.0,512.0);\r\nfloat maxLod = 7.0;\r\n\r\nvec4 terrainTexture2DLod(sampler2D s_splatMergeTexture,vec2 t_uv,float lod)\r\n{\r\n    vec4 lodvec = vec4(0.5,1.0,0.0,0.0);\r\n    lodvec.x = lodvec.x * pow(0.5,lod);\r\n    lodvec.y = lodvec.x * 2.0;\r\n    lodvec.z = 1.0 - lodvec.y;\r\n    \r\n    t_uv = t_uv * lodvec.xy + lodvec.zw;\r\n    t_uv = floor(t_uv * imageSize) / imageSize;\r\n    \r\n    vec4 tColor = texture2D(s_splatMergeTexture,t_uv);\r\n    return tColor;\r\n}\r\n\r\n//参考 http://blog.csdn.net/cgwbr/article/details/6620318\r\n//计算MipMap层函数：\r\nfloat mipmapLevel(vec2 uv, vec2 textureSize)\r\n{\r\n    vec2 dx = dFdx(uv * textureSize.x);\r\n    vec2 dy = dFdy(uv * textureSize.y);\r\n    float d = max(dot(dx, dx), dot(dy, dy));  \r\n    return 0.5 * log2(d);\r\n}\r\n\r\nvec4 terrainTexture2DLodMix(sampler2D s_splatMergeTexture,vec2 t_uv,vec4 offset)\r\n{\r\n    float lod = mipmapLevel(t_uv,tileSize);\r\n    lod = clamp(lod,0.0,maxLod);\r\n    t_uv = fract(t_uv);\r\n    t_uv = t_uv * offset.xy + offset.zw;\r\n \r\n    #ifdef LOD_LINEAR\r\n        vec4 tColor = mix(terrainTexture2DLod(s_splatMergeTexture,t_uv,floor(lod)),terrainTexture2DLod(s_splatMergeTexture,t_uv,ceil(lod)),fract(lod));\r\n    #else\r\n        vec4 tColor = terrainTexture2DLod(s_splatMergeTexture,t_uv,ceil(lod));\r\n    #endif\r\n    return tColor;\r\n}\r\n\r\nvec4 terrainTexture2D(sampler2D s_splatMergeTexture,vec2 t_uv,float splatRepeat,vec4 offset)\r\n{\r\n    t_uv = t_uv.xy * splatRepeat;\r\n    \r\n    vec2 dx = dFdx(t_uv);\r\n    vec2 dy = dFdy(t_uv);\r\n    \r\n    vec4 tColor0 = terrainTexture2DLodMix(s_splatMergeTexture, t_uv, offset);\r\n    vec4 tColor1 = terrainTexture2DLodMix(s_splatMergeTexture, t_uv + dx, offset);\r\n\r\n    vec4 tColor = mix(tColor0,tColor1,0.5);\r\n\r\n    return tColor;\r\n}\r\n\r\nvec4 terrainMethod(vec4 diffuseColor,vec2 v_uv) \r\n{\r\n    \r\n    offset[0] = vec4(0.5,0.5,0.0,0.0);\r\n    offset[1] = vec4(0.5,0.5,0.5,0.0);\r\n    offset[2] = vec4(0.5,0.5,0.0,0.5);\r\n    \r\n    vec4 blend = texture2D(s_blendTexture,v_uv);\r\n    for(int i = 0; i < 3; i++)\r\n    {\r\n        vec4 tColor = terrainTexture2D(s_splatMergeTexture,v_uv,u_splatRepeats[i],offset[i]);\r\n        diffuseColor = (tColor - diffuseColor) * blend[i] + diffuseColor;\r\n    }\r\n\r\n    // diffuseColor.xyz = vec3(1.0,0.0,0.0);\r\n    // diffuseColor.xyz = vec3(floor(lod)/7.0,0.0,0.0);\r\n    return diffuseColor;\r\n}"
         }
     };
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var ColorUniforms = /** @class */ (function () {
+        function ColorUniforms() {
+            /**
+             * 颜色
+             */
+            this.u_diffuseInput = new feng3d.Color();
+        }
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav()
+        ], ColorUniforms.prototype, "u_diffuseInput", void 0);
+        return ColorUniforms;
+    }());
+    feng3d.ColorUniforms = ColorUniforms;
+    feng3d.shaderConfig.shaders["color"].cls = ColorUniforms;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -6143,12 +6143,15 @@ declare namespace feng3d {
         advanced: GLAdvanced;
     }
     class GL {
+        static glList: GL[];
         /**
          * 获取 GL 实例
          * @param canvas 画布
          * @param contextAttributes
          */
         static getGL(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes): GL;
+        private static _toolGL;
+        static getToolGL(): GL;
     }
 }
 declare namespace feng3d {
@@ -6520,20 +6523,51 @@ declare namespace feng3d {
      */
     class RenderParams {
         /**
-         * 渲染模式
+        * 渲染模式，默认RenderMode.TRIANGLES
+        */
+        renderMode: RenderMode;
+        /**
+         * 剔除面
+         * 参考：http://www.jianshu.com/p/ee04165f2a02
+         * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
+         * 使用gl.frontFace(gl.CW);调整顺时针为正面
          */
-        renderMode: Lazy<RenderMode>;
-        cullFace: Lazy<CullFace>;
-        frontFace: Lazy<FrontFace>;
-        enableBlend: Lazy<boolean>;
-        blendEquation: Lazy<BlendEquation>;
-        sfactor: Lazy<BlendFactor>;
-        dfactor: Lazy<BlendFactor>;
-        depthtest: Lazy<boolean>;
-        depthMask: Lazy<boolean>;
+        cullFace: CullFace;
+        frontFace: FrontFace;
+        /**
+         * 是否开启混合
+         * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
+         */
+        enableBlend: boolean;
+        /**
+         * 混合方程，默认BlendEquation.FUNC_ADD
+         */
+        blendEquation: BlendEquation;
+        /**
+         * 源混合因子，默认BlendFactor.SRC_ALPHA
+         */
+        sfactor: BlendFactor;
+        /**
+         * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
+         */
+        dfactor: BlendFactor;
+        /**
+         * 是否开启深度检查
+         */
+        depthtest: boolean;
+        /**
+         * 是否开启深度标记
+         */
+        depthMask: boolean;
         depthFunc: Lazy<DepthFunc>;
-        viewRect: Lazy<Rectangle>;
-        useViewRect: Lazy<boolean>;
+        /**
+         * 绘制在画布上的区域
+         */
+        viewRect: Rectangle;
+        /**
+         * 是否使用 viewRect
+         */
+        useViewRect: boolean;
     }
 }
 declare namespace feng3d {
@@ -6786,15 +6820,15 @@ declare namespace feng3d {
         /**
          * 需要使用的贴图数据
          */
-        protected _pixels: ImageData | HTMLImageElement | HTMLImageElement[];
+        protected _pixels: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[];
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
-        noPixels: ImageData | HTMLImageElement | HTMLImageElement[];
+        noPixels: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[];
         /**
          * 当前使用的贴图数据
          */
-        protected _activePixels: ImageData | HTMLImageElement | HTMLImageElement[];
+        protected _activePixels: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[];
         /**
          * 纹理缓冲
          */
@@ -6879,6 +6913,7 @@ declare namespace feng3d {
                  * 从glsl读取的fragment shader
                  */
                 fragment: string;
+                cls?: new (...arg) => any;
                 /**
                  * 处理了 include 的 shader
                  */
@@ -6917,6 +6952,8 @@ declare namespace feng3d {
          * 获取shader列表
          */
         getShaderNames(): string[];
+    }
+    class ShaderLib1 {
     }
 }
 declare namespace feng3d {
@@ -9108,22 +9145,17 @@ declare namespace feng3d {
     class TextureCube extends TextureInfo {
         protected _pixels: HTMLImageElement[];
         positive_x_url: string;
-        private _positive_x_url;
         positive_y_url: string;
-        private _positive_y_url;
         positive_z_url: string;
-        private _positive_z_url;
         negative_x_url: string;
-        private _negative_x_url;
         negative_y_url: string;
-        private _negative_y_url;
         negative_z_url: string;
-        private _negative_z_url;
-        constructor(images: string[]);
+        constructor(images?: string[]);
         /**
          * 判断数据是否满足渲染需求
          */
         checkRenderData(): boolean;
+        private urlChanged();
     }
 }
 declare namespace feng3d {
@@ -9145,64 +9177,12 @@ declare namespace feng3d {
      * @author feng 2016-05-02
      */
     class Material extends EventDispatcher {
-        /**
-        * 渲染模式，默认RenderMode.TRIANGLES
-        */
-        renderMode: number;
-        private _renderMode;
         shaderName: string;
-        private _shaderName;
-        /**
-         * 剔除面
-         * 参考：http://www.jianshu.com/p/ee04165f2a02
-         * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
-         * 使用gl.frontFace(gl.CW);调整顺时针为正面
-         */
-        cullFace: CullFace;
-        frontFace: FrontFace;
-        /**
-         * 是否开启混合
-         * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
-         */
-        enableBlend: boolean;
-        protected _enableBlend: boolean;
         /**
          * 点绘制时点的尺寸
          */
         pointSize: number;
-        protected _pointSize: number;
-        /**
-         * 混合方程，默认BlendEquation.FUNC_ADD
-         */
-        blendEquation: BlendEquation;
-        /**
-         * 源混合因子，默认BlendFactor.SRC_ALPHA
-         */
-        sfactor: BlendFactor;
-        /**
-         * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
-         */
-        dfactor: BlendFactor;
-        /**
-         * 是否开启深度检查
-         */
-        depthtest: boolean;
-        /**
-         * 是否开启深度标记
-         */
-        depthMask: boolean;
-        /**
-         * 绘制在画布上的区域
-         */
-        viewRect: Rectangle;
-        /**
-         * 是否使用 viewRect
-         */
-        useViewRect: boolean;
-        /**
-         * macro是否失效
-         */
-        macroInvalid: boolean;
+        uniforms: Uniforms;
         /**
          * 渲染参数
          */
@@ -9213,6 +9193,7 @@ declare namespace feng3d {
         shader: Shader;
         constructor();
         preRender(renderAtomic: RenderAtomic): void;
+        private onShaderChanged();
     }
 }
 declare namespace feng3d {
@@ -9318,10 +9299,6 @@ declare namespace feng3d {
         envMapMethod: EnvMapMethod;
         fogMethod: FogMethod;
         terrainMethod: TerrainMethod;
-        /**
-         * 是否开启混合
-         */
-        enableBlend: boolean;
         /**
          * 构建
          */
@@ -10904,6 +10881,14 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+}
+declare namespace feng3d {
+    class ColorUniforms {
+        /**
+         * 颜色
+         */
+        u_diffuseInput: Color;
+    }
 }
 declare namespace feng3d {
     /**

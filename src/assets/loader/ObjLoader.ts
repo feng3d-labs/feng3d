@@ -78,7 +78,7 @@ namespace feng3d
         var gameObject = GameObject.create();
         var model = gameObject.addComponent(MeshRenderer);
         model.material = material || new StandardMaterial();
-        model.material.cullFace = CullFace.FRONT;
+        model.material.renderParams.cullFace = CullFace.FRONT;
 
         var geometry = model.geometry = new CustomGeometry();
         var vertices: number[] = [];

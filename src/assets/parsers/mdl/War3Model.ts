@@ -85,7 +85,7 @@ namespace feng3d.war3
 					image = this.root + image;
 
 					material1.diffuseMethod.difuseTexture.url = image;
-					material1.cullFace = CullFace.FRONT;
+					material1.renderParams.cullFace = CullFace.FRONT;
 				}
 
 				var mesh: GameObject = this.meshs[i] = GameObject.create();

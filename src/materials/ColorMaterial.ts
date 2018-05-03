@@ -21,7 +21,7 @@ namespace feng3d
                 return;
             this._color = value;
             if (this._color)
-                this.enableBlend = this._color.a != 1;
+                this.renderParams.enableBlend = this._color.a != 1;
         }
         private _color: Color;
 

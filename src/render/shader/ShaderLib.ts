@@ -21,6 +21,7 @@ namespace feng3d
                  * 从glsl读取的fragment shader
                  */
                 fragment: string,
+                cls?: new (...arg) => any,
                 /**
                  * 处理了 include 的 shader
                  */
@@ -98,9 +99,13 @@ namespace feng3d
         {
             return Object.keys(this.shaderConfig.shaders);
         }
-
-
     }
 
     shaderlib = new ShaderLib();
+
+    //ShaderLib1
+    export class ShaderLib1
+    {
+
+    }
 }

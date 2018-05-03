@@ -48,19 +48,6 @@ namespace feng3d
         // terrainMethod: TerrainMethod | TerrainMergeMethod;
 
         /**
-         * 是否开启混合
-         */
-        get enableBlend()
-        {
-            return this._enableBlend || (this.diffuseMethod && this.diffuseMethod.color.a != 1.0);
-        }
-
-        set enableBlend(value: boolean)
-        {
-            this._enableBlend = value;
-        }
-
-        /**
          * 构建
          */
         constructor(diffuseUrl = "", normalUrl = "", specularUrl = "", ambientUrl = "")

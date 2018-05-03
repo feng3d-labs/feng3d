@@ -58,9 +58,6 @@ namespace feng3d
 
             var imageData = ctx.getImageData(0, 0, width, height);
 
-            console.log(imageData);
-            // ImageData { width: 100, height: 100, data: Uint8ClampedArray[40000] }
-
             return imageData;
         },
     };

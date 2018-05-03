@@ -5,141 +5,29 @@ namespace feng3d
      * 材质
      * @author feng 2016-05-02
      */
-    @ov({ component: "OVMaterial" })
+    // @ov({ component: "OVMaterial" })
     export class Material extends EventDispatcher
     {
-        /**
-        * 渲染模式，默认RenderMode.TRIANGLES
-        */
-        @serialize(RenderMode.TRIANGLES)
-        @oav({ component: "OAVEnum", componentParam: { enumClass: RenderMode } })
-        get renderMode()
-        {
-            return this._renderMode;
-        }
-        set renderMode(value)
-        {
-            this._renderMode = value;
-
-            this.renderParams.renderMode = this.renderMode;
-        }
-        private _renderMode: number;
-
-        get shaderName()
-        {
-            return this._shaderName;
-        }
-        set shaderName(value)
-        {
-            if (this._shaderName == value)
-                return;
-            this._shaderName = value;
-        }
-        private _shaderName: string;
-
-        /**
-         * 剔除面
-         * 参考：http://www.jianshu.com/p/ee04165f2a02
-         * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
-         * 使用gl.frontFace(gl.CW);调整顺时针为正面
-         */
-        @serialize(CullFace.BACK)
-        @oav({ component: "OAVEnum", componentParam: { enumClass: CullFace } })
-        cullFace = CullFace.BACK;
-
-        @serialize(FrontFace.CW)
-        @oav({ component: "OAVEnum", componentParam: { enumClass: FrontFace } })
-        frontFace = FrontFace.CW;
-
-        /**
-         * 是否开启混合
-         * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
-         */
-        @serialize(false)
-        @oav()
-        get enableBlend()
-        {
-            return this._enableBlend;
-        }
-
-        set enableBlend(value: boolean)
-        {
-            this._enableBlend = value;
-            this.depthMask = !value;
-        }
-        protected _enableBlend = false;
+        @oav({ component: "OAVMaterialName" })
+        @watch("onShaderChanged")
+        shaderName: string;
 
         /**
          * 点绘制时点的尺寸
          */
         @serialize(1)
         @oav()
-        get pointSize()
-        {
-            return this._pointSize;
-        }
+        pointSize = 1;
 
-        set pointSize(value)
-        {
-            this._pointSize = value;
-        }
-        protected _pointSize = 1;
-
-        /**
-         * 混合方程，默认BlendEquation.FUNC_ADD
-         */
-        @serialize(BlendEquation.FUNC_ADD)
-        @oav({ component: "OAVEnum", componentParam: { enumClass: BlendEquation } })
-        blendEquation = BlendEquation.FUNC_ADD;
-
-        /**
-         * 源混合因子，默认BlendFactor.SRC_ALPHA
-         */
-        @serialize(BlendFactor.SRC_ALPHA)
-        @oav({ component: "OAVEnum", componentParam: { enumClass: BlendFactor } })
-        sfactor = BlendFactor.SRC_ALPHA;
-
-        /**
-         * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
-         */
-        @serialize(BlendFactor.ONE_MINUS_SRC_ALPHA)
-        @oav({ component: "OAVEnum", componentParam: { enumClass: BlendFactor } })
-        dfactor = BlendFactor.ONE_MINUS_SRC_ALPHA;
-
-        /**
-         * 是否开启深度检查
-         */
-        @serialize(true)
+        // @oav({ component: "OAVMaterialData" })
         @oav()
-        depthtest = true;
-
-        /**
-         * 是否开启深度标记
-         */
-        @serialize(true)
-        @oav()
-        depthMask = true;
-
-        /**
-         * 绘制在画布上的区域
-         */
-        @oav()
-        viewRect = new Rectangle(0, 0, 100, 100);
-
-        /**
-         * 是否使用 viewRect
-         */
-        @oav()
-        useViewRect = false;
-
-        /**
-         * macro是否失效
-         */
-        macroInvalid = true;
+        uniforms: Uniforms = <any>{};
 
         /**
          * 渲染参数
          */
+        @serialize()
+        @oav({ block: "渲染参数" })
         renderParams = new RenderParams();
 
         /**
@@ -152,19 +40,6 @@ namespace feng3d
             super();
 
             this.shader = new Shader();
-
-            this.renderMode = RenderMode.TRIANGLES;
-
-            this.renderParams.cullFace = this.cullFace;
-            this.renderParams.frontFace = this.frontFace;
-            this.renderParams.enableBlend = () => this.enableBlend;
-            this.renderParams.blendEquation = this.blendEquation;
-            this.renderParams.sfactor = this.sfactor;
-            this.renderParams.dfactor = this.dfactor;
-            this.renderParams.depthtest = this.depthtest;
-            this.renderParams.depthMask = this.depthMask;
-            this.renderParams.viewRect = this.viewRect;
-            this.renderParams.useViewRect = this.useViewRect;
         }
 
         preRender(renderAtomic: RenderAtomic)
@@ -172,6 +47,88 @@ namespace feng3d
             renderAtomic.uniforms.u_PointSize = () => this.pointSize;
 
             this.shader.shaderName = this.shaderName;
+        }
+
+        private onShaderChanged()
+        {
+            var shader = shaderlib.getShader(this.shaderName);
+
+            if (!shader)
+            {
+                this.uniforms = <any>{};
+                return;
+            }
+
+            //渲染程序
+            var gl = GL.getToolGL();
+            var shaderProgram = gl.createProgram(shader.vertex, shader.fragment);
+            var uniformInfos = shaderProgram.uniforms;
+            var uniforms = initUniforms(this.uniforms);
+            shaderProgram.destroy();
+
+            function initUniforms(uniforms: Uniforms)
+            {
+                for (var name in uniformInfos)
+                {
+                    if (uniformInfos.hasOwnProperty(name))
+                    {
+                        var activeInfo = uniformInfos[name];
+                        if (activeInfo.uniformBaseName)
+                        {
+                            var baseName = activeInfo.uniformBaseName;
+                            uniforms[baseName] = [];
+                            //处理数组
+                            for (var j = 0; j < activeInfo.size; j++)
+                            {
+                                uniforms[baseName][j] = setContext3DUniform({ name: baseName + `[${j}]`, type: activeInfo.type, uniformLocation: activeInfo.uniformLocation[j], textureID: activeInfo.textureID });
+                            }
+                        } else
+                        {
+                            uniforms[activeInfo.name] = setContext3DUniform(activeInfo);
+                        }
+                    }
+                }
+                return uniforms;
+            }
+
+            /**
+             * 设置环境Uniform数据
+             */
+            function setContext3DUniform(activeInfo: { name: string; uniformLocation: WebGLUniformLocation, type: number; textureID: number })
+            {
+                var location = activeInfo.uniformLocation;
+                var value = null;
+                switch (activeInfo.type)
+                {
+                    case gl.INT:
+                        value = 0;
+                        break;
+                    case gl.FLOAT_MAT4:
+                        value = new Matrix4x4();
+                        break;
+                    case gl.FLOAT:
+                        value = 0;
+                        break;
+                    case gl.FLOAT_VEC2:
+                        value = new Vector2();
+                        break;
+                    case gl.FLOAT_VEC3:
+                        value = new Vector3();
+                        break;
+                    case gl.FLOAT_VEC4:
+                        value = new Vector4();
+                        break;
+                    case gl.SAMPLER_2D:
+                        value = new Texture2D();
+                        break;
+                    case gl.SAMPLER_CUBE:
+                        value = new TextureCube();
+                        break;
+                    default:
+                        throw `无法识别的uniform类型 ${activeInfo.name}`;
+                }
+                return value;
+            }
         }
     }
 }

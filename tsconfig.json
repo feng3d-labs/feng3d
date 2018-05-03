@@ -237,6 +237,8 @@
         //
         "src/autofiles/ShaderConfig.ts",
         //
+        "src/shaders/Color.shader.ts",
+        //
         "src/Feng3d.ts"
     ]
 }

@@ -25,7 +25,7 @@ namespace feng3d
                 return;
             this._color = value;
             if (this._color)
-                this.enableBlend = this._color.a != 1;
+                this.renderParams.enableBlend = this._color.a != 1;
         }
         private _color = new Color();
 
@@ -36,7 +36,7 @@ namespace feng3d
         {
             super();
             this.shaderName = "segment";
-            this.renderMode = RenderMode.LINES;
+            this.renderParams.renderMode = RenderMode.LINES;
         }
 
         preRender(renderAtomic: RenderAtomic)

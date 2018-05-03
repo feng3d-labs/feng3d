@@ -40,6 +40,8 @@ namespace feng3d
 
     export class GL
     {
+        static glList: GL[] = [];
+
         /**
          * 获取 GL 实例
          * @param canvas 画布
@@ -48,14 +50,14 @@ namespace feng3d
         static getGL(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes)
         {
             // var names = ["webgl2", "webgl"];
-            var names = ["webgl"];
+            var contextIds = ["webgl"];
             var gl: GL = <any>null;
-            for (var i = 0; i < names.length; ++i)
+            for (var i = 0; i < contextIds.length; ++i)
             {
                 try
                 {
-                    gl = <any>canvas.getContext(names[i], contextAttributes);
-                    gl.contextId = names[i];
+                    gl = <any>canvas.getContext(contextIds[i], contextAttributes);
+                    gl.contextId = contextIds[i];
                     gl.contextAttributes = contextAttributes;
                     break;
                 } catch (e) { }
@@ -74,7 +76,19 @@ namespace feng3d
             gl.clearDepth(1.0);                 // Clear everything
             gl.enable(gl.DEPTH_TEST);           // Enable depth testing
             gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
+            this.glList.push(gl);
             return gl;
+        }
+
+        private static _toolGL: GL;
+        static getToolGL()
+        {
+            if (!this._toolGL)
+            {
+                var canvas = document.createElement("canvas");
+                this._toolGL = this.getGL(canvas);
+            }
+            return this._toolGL;
         }
     }
 }

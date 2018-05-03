@@ -25,7 +25,7 @@ namespace feng3d
             return {
                 depth: item.transform.scenePosition.subTo(camerapos).length,
                 item: item,
-                enableBlend: item.material.enableBlend,
+                enableBlend: item.material.renderParams.enableBlend,
             }
         });
 

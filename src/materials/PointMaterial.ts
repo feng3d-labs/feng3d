@@ -17,7 +17,7 @@ namespace feng3d
         {
             super();
             this.shaderName = "point";
-            this.renderMode = RenderMode.POINTS;
+            this.renderParams.renderMode = RenderMode.POINTS;
             //
         }
 
