@@ -96,7 +96,6 @@
         "src/render/data/RenderAtomic.ts",
         "src/render/data/Index.ts",
         "src/render/data/Attribute.ts",
-        "src/render/shader/Macro.ts",
         "src/render/data/TextureInfo.ts",
         "src/render/data/renderdatacollector.ts",
         //
