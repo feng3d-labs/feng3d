@@ -13,7 +13,7 @@ namespace feng3d
                 if (data)
                 {
                     dataTransform.arrayBufferToImage(data, callback);
-                }else
+                } else
                 {
                     callback(null);
                 }
@@ -207,6 +207,7 @@ namespace feng3d
         {
             get(path, (err, data) =>
             {
+                path
                 if (err)
                 {
                     callback(err, null);

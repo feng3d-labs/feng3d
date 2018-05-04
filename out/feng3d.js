@@ -12087,7 +12087,7 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.serializable = false;
             _this.showInInspector = false;
-            _this.color = new feng3d.Color3(125 / 255, 176 / 255, 250 / 255);
+            _this.color = new feng3d.Color4(125 / 255, 176 / 255, 250 / 255);
             return _this;
         }
         WireframeComponent.prototype.init = function (gameobject) {
@@ -21556,18 +21556,14 @@ var feng3d;
         },
         get: function (dbname, objectStroreName, key, callback) {
             feng3d.storage.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.get(key);
-                    request.onsuccess = function (event) {
-                        callback && callback(null, event.target["result"]);
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error, null);
-                }
+                var transaction = database.transaction([objectStroreName], 'readwrite');
+                var objectStore = transaction.objectStore(objectStroreName);
+                var request = objectStore.get(key);
+                request.onsuccess = function (event) {
+                    var result = event.target["result"];
+                    callback && callback(result ? null : new Error("\u6CA1\u6709\u627E\u5230\u8D44\u6E90 " + key), result);
+                    request.onsuccess = null;
+                };
             });
         },
         set: function (dbname, objectStroreName, key, data, callback) {
@@ -21769,6 +21765,7 @@ var feng3d;
          */
         readFileAsString: function (path, callback) {
             get(path, function (err, data) {
+                path;
                 if (err) {
                     callback(err, null);
                     return;

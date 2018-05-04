@@ -163,20 +163,15 @@ namespace feng3d
         {
             storage.getDatabase(dbname, (err, database) =>
             {
-                try
+                var transaction = database.transaction([objectStroreName], 'readwrite');
+                var objectStore = transaction.objectStore(objectStroreName);
+                var request = objectStore.get(key);
+                request.onsuccess = function (event)
                 {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.get(key);
-                    request.onsuccess = function (event)
-                    {
-                        callback && callback(null, event.target["result"]);
-                        request.onsuccess = null;
-                    };
-                } catch (error)
-                {
-                    callback && callback(error, null);
-                }
+                    var result = event.target["result"];
+                    callback && callback(result ? null : new Error(`没有找到资源 ${key}`), result);
+                    request.onsuccess = null;
+                };
             });
         },
         set(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: (err: Error | null) => void)

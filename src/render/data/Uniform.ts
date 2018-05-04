@@ -285,6 +285,6 @@ namespace feng3d
         /**
          * 线框颜色
          */
-        u_wireframeColor: Color3;
+        u_wireframeColor: Color4;
     }
 }

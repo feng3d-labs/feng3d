@@ -6566,7 +6566,7 @@ declare namespace feng3d {
         /**
          * 线框颜色
          */
-        u_wireframeColor: Color3;
+        u_wireframeColor: Color4;
     }
 }
 declare namespace feng3d {
@@ -7352,7 +7352,7 @@ declare namespace feng3d {
     class WireframeComponent extends Component {
         serializable: boolean;
         showInInspector: boolean;
-        color: Color3;
+        color: Color4;
         init(gameobject: GameObject): void;
         preRender(renderAtomic: RenderAtomic): void;
     }
