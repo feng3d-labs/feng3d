@@ -58,6 +58,6 @@ namespace feng3d
 		/**
 		 * 颜色
 		 */
-		color: Color3;
+		color: Color4;
 	}
 }

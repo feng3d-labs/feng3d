@@ -56,7 +56,7 @@ namespace feng3d
          */
         @serialize()
         @oav({ block: "diffuse" })
-        u_diffuse = new Color3(1, 1, 1, 1);
+        u_diffuse = new Color4(1, 1, 1, 1);
 
         /**
          * 透明阈值，透明度小于该值的像素被片段着色器丢弃
@@ -105,7 +105,7 @@ namespace feng3d
          */
         @serialize()
         @oav({ block: "ambient" })
-        u_ambient = new Color3();
+        u_ambient = new Color4();
 
         /**
          * 环境映射贴图

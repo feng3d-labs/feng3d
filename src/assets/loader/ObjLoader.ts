@@ -115,7 +115,7 @@ namespace feng3d
             var standardMaterial = new StandardMaterial();
             var materialInfo = mtlData[subObj.material];
             var kd = materialInfo.kd;
-            standardMaterial.uniforms.u_diffuse = new Color3(kd[0], kd[1], kd[2]);
+            standardMaterial.uniforms.u_diffuse = new Color4(kd[0], kd[1], kd[2]);
             model.material = standardMaterial;
         }
         return gameObject;

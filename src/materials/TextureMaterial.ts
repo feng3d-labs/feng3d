@@ -23,7 +23,7 @@ namespace feng3d
          */
         @serialize()
         @oav()
-        u_color = new Color3();
+        u_color = new Color4();
 
         /**
          * 纹理数据

@@ -35,13 +35,13 @@ namespace feng3d
          */
         @serialize()
         @oav()
-        background = new Color3(0, 0, 0, 1);
+        background = new Color4(0, 0, 0, 1);
         /**
          * 环境光强度
          */
         @serialize()
         @oav()
-        ambientColor = new Color3(0.2, 0.2, 0.2);
+        ambientColor = new Color4(0.2, 0.2, 0.2);
 
         /**
          * 指定更新脚本标记，用于过滤需要调用update的脚本

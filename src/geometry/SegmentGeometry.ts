@@ -52,8 +52,8 @@ namespace feng3d
                 var element = this.segments_[i];
                 indices.push(i * 2, i * 2 + 1);
                 positionData.push(element.start.x, element.start.y, element.start.z, element.end.x, element.end.y, element.end.z);
-                colorData.push(element.startColor.x, element.startColor.y, element.startColor.z, element.startColor.w,
-                    element.endColor.x, element.endColor.y, element.endColor.z, element.endColor.w);
+                colorData.push(element.startColor.r, element.startColor.g, element.startColor.b, element.startColor.a,
+                    element.endColor.r, element.endColor.g, element.endColor.b, element.endColor.a);
             }
 
             this.setVAData("a_position", positionData, 3);
@@ -99,8 +99,8 @@ namespace feng3d
     {
         start: Vector3;
         end: Vector3;
-        startColor: Vector4;
-        endColor: Vector4;
+        startColor: Color4;
+        endColor: Color4;
 
         /**
 		 * 创建线段
@@ -110,7 +110,7 @@ namespace feng3d
 		 * @param colorEnd 终点颜色
 		 * @param thickness 线段厚度
 		 */
-        constructor(start: Vector3, end: Vector3, colorStart = new Vector4(), colorEnd = new Vector4())
+        constructor(start: Vector3, end: Vector3, colorStart = new Color4(), colorEnd = new Color4())
         {
             this.start = start;
             this.end = end;

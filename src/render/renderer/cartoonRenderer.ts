@@ -16,7 +16,7 @@ namespace feng3d
 
         @oav()
         @serialize()
-        outlineColor = new Color3(0.2, 0.2, 0.2, 1.0);
+        outlineColor = new Color4(0.2, 0.2, 0.2, 1.0);
 
         @oav()
         @serialize()

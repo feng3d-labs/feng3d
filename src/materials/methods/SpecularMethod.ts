@@ -32,17 +32,6 @@ namespace feng3d
         @serialize()
         specularColor = new Color3();
         /**
-		 * 镜面反射光反射强度
-		 */
-        get specular()
-        {
-            return this.specularColor.a;
-        }
-        set specular(value)
-        {
-            this.specularColor.a = value;
-        }
-        /**
          * 高光系数
          */
         @serialize(50)

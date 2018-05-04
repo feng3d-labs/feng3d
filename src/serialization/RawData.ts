@@ -163,9 +163,17 @@ namespace feng3d
         __class__: "feng3d.SegmentMaterial";
     }
 
-    export interface ColorRaw
+    export interface Color3Raw
     {
-        __class__: "feng3d.Color",
+        __class__: "feng3d.Color3",
+        b?: number,
+        g?: number,
+        r?: number
+    }
+
+    export interface Color4Raw
+    {
+        __class__: "feng3d.Color4",
         a?: number,
         b?: number,
         g?: number,
@@ -205,7 +213,7 @@ namespace feng3d
     {
         __class__: "feng3d.DiffuseMethod",
         alphaThreshold?: number,
-        color?: ColorRaw,
+        color?: Color3Raw,
         difuseTexture?: Texture2DRaw
     }
 
@@ -219,14 +227,14 @@ namespace feng3d
     {
         __class__: "feng3d.SpecularMethod",
         glossiness?: number,
-        specularColor?: ColorRaw,
+        specularColor?: Color3Raw,
         specularTexture?: Texture2DRaw,
     }
 
     export interface AmbientMethodRaw
     {
         __class__: "feng3d.AmbientMethod",
-        color?: ColorRaw,
+        color?: Color3Raw,
         ambientTexture?: Texture2DRaw,
     }
 
@@ -235,7 +243,7 @@ namespace feng3d
         __class__: "feng3d.FogMethod";
         minDistance?: number;
         maxDistance?: number;
-        fogColor?: ColorRaw;
+        fogColor?: Color3Raw;
         density?: number;
         mode?: FogMode;
     }
@@ -276,10 +284,10 @@ namespace feng3d
         s_envMap?: TextureCubeRaw,
         s_normal?: Texture2DRaw,
         s_specular?: Texture2DRaw,
-        u_ambient?: ColorRaw,
-        u_diffuse?: ColorRaw,
+        u_ambient?: Color3Raw,
+        u_diffuse?: Color3Raw,
         u_reflectivity?: number,
-        u_specular?: ColorRaw
+        u_specular?: Color3Raw
     }
 
     export interface StandardMaterialRaw extends MaterialBaseRaw

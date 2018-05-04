@@ -176,7 +176,10 @@ namespace feng3d
                         }
                         break;
                     case gl.FLOAT_VEC4:
-                        if (data instanceof Vector4)
+                        if (data instanceof Color4)
+                        {
+                            gl.uniform4f(location, data.r, data.g, data.b, data.a);
+                        } else if (data instanceof Vector4)
                         {
                             gl.uniform4f(location, data.x, data.y, data.z, data.w);
                         } else

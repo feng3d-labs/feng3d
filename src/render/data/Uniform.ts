@@ -70,7 +70,7 @@ namespace feng3d
          */
         u_viewProjection: Matrix4x4;
 
-        u_diffuseInput: Color3;
+        u_diffuseInput: Color4;
         /**
          * 透明阈值，用于透明检测
          */
@@ -195,11 +195,11 @@ namespace feng3d
         /**
          * 场景环境光
          */
-        u_sceneAmbientColor: Color3;
+        u_sceneAmbientColor: Color4;
         /**
          * 基本颜色
          */
-        u_diffuse: Color3;
+        u_diffuse: Color4;
         /**
          * 镜面反射颜色
          */
@@ -207,7 +207,7 @@ namespace feng3d
         /**
          * 环境颜色
          */
-        u_ambient: Color3;
+        u_ambient: Color4;
         /**
          * 高光系数
          */

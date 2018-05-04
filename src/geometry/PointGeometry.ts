@@ -90,7 +90,7 @@ namespace feng3d
     export class PointInfo
     {
         position: Vector3;
-        color: Color3;
+        color: Color4;
         normal: Vector3;
         uv: Vector2;
 
@@ -98,7 +98,7 @@ namespace feng3d
 		 * 创建点
 		 * @param position 坐标
 		 */
-        constructor(position = new Vector3(), color = new Color3(), uv = new Vector2(), normal = new Vector3(0, 1, 0))
+        constructor(position = new Vector3(), color = new Color4(), uv = new Vector2(), normal = new Vector3(0, 1, 0))
         {
             this.position = position;
             this.color = color;

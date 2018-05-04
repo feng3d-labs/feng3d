@@ -13,7 +13,7 @@ namespace feng3d
          * @param color 颜色
          * @param alpha 透明的
          */
-        constructor(color?: Color3)
+        constructor(color?: Color4)
         {
             super();
             this.shaderName = "color";
@@ -36,7 +36,7 @@ namespace feng3d
          */
         @serialize()
         @oav()
-        u_diffuseInput = new Color3();
+        u_diffuseInput = new Color4();
     }
 
     shaderConfig.shaders["color"].cls = ColorUniforms;

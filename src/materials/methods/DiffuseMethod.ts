@@ -28,7 +28,7 @@ namespace feng3d
          */
         @serialize()
         @oav()
-        color = new Color3(1, 1, 1, 1);
+        color = new Color4(1, 1, 1, 1);
 
         /**
          * 透明阈值，透明度小于该值的像素被片段着色器丢弃
@@ -45,7 +45,7 @@ namespace feng3d
             super();
             this.difuseTexture = new Texture2D(diffuseUrl);
             this.difuseTexture.noPixels = imageDatas.white;
-            this.color = new Color3(1, 1, 1, 1);
+            this.color = new Color4(1, 1, 1, 1);
         }
 
         preRender(renderAtomic: RenderAtomic)

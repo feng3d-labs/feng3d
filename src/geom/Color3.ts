@@ -108,6 +108,14 @@ namespace feng3d
             return vector3;
         }
 
+        toColor4(color4 = new Color4())
+        {
+            color4.r = this.r;
+            color4.g = this.g;
+            color4.b = this.b;
+            return color4;
+        }
+
         /**
          * 输出字符串
          */
