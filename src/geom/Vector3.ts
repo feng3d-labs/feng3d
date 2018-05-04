@@ -133,9 +133,23 @@ namespace feng3d
             return this;
         }
 
+        /**
+         * 转换为Vector2
+         */
         toVector2(vector = new Vector2())
         {
             return vector.init(this.x, this.y);
+        }
+
+        /**
+         * 转换为Vector4
+         */
+        toVector4(vector4 = new Vector4())
+        {
+            vector4.x = this.x;
+            vector4.y = this.y;
+            vector4.z = this.z;
+            return vector4;
         }
 
         /**

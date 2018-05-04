@@ -4,7 +4,7 @@ namespace feng3d
      * 颜色
      * @author feng 2016-09-24
      */
-    export class Color
+    export class Color3
     {
         /**
          * 红[0,1]
@@ -24,74 +24,56 @@ namespace feng3d
         @oav()
         @serialize(1)
         b = 1;
-        /**
-         * 透明度[0,1]
-         */
-        @oav()
-        @serialize(1)
-        a = 1;
 
         /**
          * 构建颜色
          * @param r     红[0,1]
          * @param g     绿[0,1]
          * @param b     蓝[0,1]
-         * @param a     透明度[0,1]
          */
-        constructor(r = 1, g = 1, b = 1, a = 1)
+        constructor(r = 1, g = 1, b = 1)
         {
             this.r = r;
             this.g = g;
             this.b = b;
-            this.a = a;
         }
 
-        setTo(r: number, g: number, b: number, a?: number)
+        setTo(r: number, g: number, b: number)
         {
             this.r = r;
             this.g = g;
             this.b = b;
-            if (a !== undefined)
-                this.a = a;
             return this;
         }
 
         /**
          * 通过
          * @param color 
-         * @param hasAlpha 
          */
-        fromUnit(color: number, hasAlpha = false)
+        fromUnit(color: number)
         {
-            if (hasAlpha)
-                this.a = ((color >> 24) & 0xff) / 0xff;
             this.r = ((color >> 16) & 0xff) / 0xff;
             this.g = ((color >> 8) & 0xff) / 0xff;
             this.b = (color & 0xff) / 0xff;
             return this;
         }
 
-        toInt(hasAlpha = false)
+        toInt()
         {
             var value = ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
-            if (hasAlpha)
-                value += ((this.a * 0xff) << 24);
             return value;
         }
 
         /**
          * 输出16进制字符串
          */
-        toHexString(hasAlpha = false): string
+        toHexString(): string
         {
             var intR = (this.r * 0xff) | 0;
             var intG = (this.g * 0xff) | 0;
             var intB = (this.b * 0xff) | 0;
-            var intA = (this.a * 0xff) | 0;
 
-            if (hasAlpha)
-                return "#" + Color.ToHex(intA) + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
-            return "#" + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
+            return "#" + Color3.ToHex(intR) + Color3.ToHex(intG) + Color3.ToHex(intB);
         }
 
         /**
@@ -99,25 +81,31 @@ namespace feng3d
          * @param color 混入的颜色
          * @param rate  混入比例
          */
-        mix(color: Color, rate = 0.5)
+        mix(color: Color3, rate = 0.5)
         {
             this.r = this.r * (1 - rate) + color.r * rate;
             this.g = this.g * (1 - rate) + color.g * rate;
             this.b = this.b * (1 - rate) + color.b * rate;
-            this.a = this.a * (1 - rate) + color.a * rate;
             return this;
         }
 
         /**
          * 拷贝
          */
-        copyFrom(color: Color)
+        copyFrom(color: Color3)
         {
             this.r = color.r;
             this.g = color.g;
             this.b = color.b;
-            this.a = color.a;
             return this;
+        }
+
+        toVector3(vector3 = new Vector3())
+        {
+            vector3.x = this.r;
+            vector3.y = this.g;
+            vector3.z = this.b;
+            return vector3;
         }
 
         /**
@@ -125,7 +113,7 @@ namespace feng3d
          */
         toString(): string
         {
-            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
+            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
         }
 
         /**

@@ -75,7 +75,7 @@ namespace feng3d
 
         @oav()
         @serialize()
-        color = new Color(0.2, 0.2, 0.2, 1.0);
+        color = new Color3(0.2, 0.2, 0.2, 1.0);
 
         @oav()
         @serialize()
@@ -103,7 +103,7 @@ namespace feng3d
         /**
          * 描边颜色
          */
-        u_outlineColor: Color;
+        u_outlineColor: Color3;
         /**
          * 描边形态因子
          * (0.0，1.0):0.0表示延法线方向，1.0表示延顶点方向

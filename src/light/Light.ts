@@ -18,7 +18,7 @@ namespace feng3d
          */
         @oav()
         @serialize()
-        color = new Color();
+        color = new Color3();
 
         /**
          * 光照强度

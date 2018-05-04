@@ -30,18 +30,18 @@ namespace feng3d
          * 是否编辑器模式
          */
         iseditor = false;
-        /**
+        /**W
          * 背景颜色
          */
         @serialize()
         @oav()
-        background = new Color(0, 0, 0, 1);
+        background = new Color3(0, 0, 0, 1);
         /**
          * 环境光强度
          */
         @serialize()
         @oav()
-        ambientColor = new Color(0.2, 0.2, 0.2);
+        ambientColor = new Color3(0.2, 0.2, 0.2);
 
         /**
          * 指定更新脚本标记，用于过滤需要调用update的脚本

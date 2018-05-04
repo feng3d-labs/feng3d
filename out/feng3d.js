@@ -1811,7 +1811,7 @@ var feng3d;
             canvas.width = width;
             canvas.height = height;
             var ctx = canvas.getContext('2d');
-            ctx.fillStyle = new feng3d.Color().fromUnit(fillcolor).toHexString();
+            ctx.fillStyle = new feng3d.Color3().fromUnit(fillcolor).toHexString();
             ctx.fillRect(0, 0, width, height);
             var imageData = ctx.getImageData(0, 0, width, height);
             return imageData;
@@ -2633,9 +2633,22 @@ var feng3d;
             this.z = array[offset + 2];
             return this;
         };
+        /**
+         * 转换为Vector2
+         */
         Vector3.prototype.toVector2 = function (vector) {
             if (vector === void 0) { vector = new feng3d.Vector2(); }
             return vector.init(this.x, this.y);
+        };
+        /**
+         * 转换为Vector4
+         */
+        Vector3.prototype.toVector4 = function (vector4) {
+            if (vector4 === void 0) { vector4 = new feng3d.Vector4(); }
+            vector4.x = this.x;
+            vector4.y = this.y;
+            vector4.z = this.z;
+            return vector4;
         };
         /**
          * 加上指定向量得到新向量
@@ -7336,19 +7349,17 @@ var feng3d;
      * 颜色
      * @author feng 2016-09-24
      */
-    var Color = /** @class */ (function () {
+    var Color3 = /** @class */ (function () {
         /**
          * 构建颜色
          * @param r     红[0,1]
          * @param g     绿[0,1]
          * @param b     蓝[0,1]
-         * @param a     透明度[0,1]
          */
-        function Color(r, g, b, a) {
+        function Color3(r, g, b) {
             if (r === void 0) { r = 1; }
             if (g === void 0) { g = 1; }
             if (b === void 0) { b = 1; }
-            if (a === void 0) { a = 1; }
             /**
              * 红[0,1]
              */
@@ -7361,91 +7372,78 @@ var feng3d;
              * 蓝[0,1]
              */
             this.b = 1;
-            /**
-             * 透明度[0,1]
-             */
-            this.a = 1;
             this.r = r;
             this.g = g;
             this.b = b;
-            this.a = a;
         }
-        Color.prototype.setTo = function (r, g, b, a) {
+        Color3.prototype.setTo = function (r, g, b) {
             this.r = r;
             this.g = g;
             this.b = b;
-            if (a !== undefined)
-                this.a = a;
             return this;
         };
         /**
          * 通过
          * @param color
-         * @param hasAlpha
          */
-        Color.prototype.fromUnit = function (color, hasAlpha) {
-            if (hasAlpha === void 0) { hasAlpha = false; }
-            if (hasAlpha)
-                this.a = ((color >> 24) & 0xff) / 0xff;
+        Color3.prototype.fromUnit = function (color) {
             this.r = ((color >> 16) & 0xff) / 0xff;
             this.g = ((color >> 8) & 0xff) / 0xff;
             this.b = (color & 0xff) / 0xff;
             return this;
         };
-        Color.prototype.toInt = function (hasAlpha) {
-            if (hasAlpha === void 0) { hasAlpha = false; }
+        Color3.prototype.toInt = function () {
             var value = ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
-            if (hasAlpha)
-                value += ((this.a * 0xff) << 24);
             return value;
         };
         /**
          * 输出16进制字符串
          */
-        Color.prototype.toHexString = function (hasAlpha) {
-            if (hasAlpha === void 0) { hasAlpha = false; }
+        Color3.prototype.toHexString = function () {
             var intR = (this.r * 0xff) | 0;
             var intG = (this.g * 0xff) | 0;
             var intB = (this.b * 0xff) | 0;
-            var intA = (this.a * 0xff) | 0;
-            if (hasAlpha)
-                return "#" + Color.ToHex(intA) + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
-            return "#" + Color.ToHex(intR) + Color.ToHex(intG) + Color.ToHex(intB);
+            return "#" + Color3.ToHex(intR) + Color3.ToHex(intG) + Color3.ToHex(intB);
         };
         /**
          * 混合颜色
          * @param color 混入的颜色
          * @param rate  混入比例
          */
-        Color.prototype.mix = function (color, rate) {
+        Color3.prototype.mix = function (color, rate) {
             if (rate === void 0) { rate = 0.5; }
             this.r = this.r * (1 - rate) + color.r * rate;
             this.g = this.g * (1 - rate) + color.g * rate;
             this.b = this.b * (1 - rate) + color.b * rate;
-            this.a = this.a * (1 - rate) + color.a * rate;
             return this;
         };
         /**
          * 拷贝
          */
-        Color.prototype.copyFrom = function (color) {
+        Color3.prototype.copyFrom = function (color) {
             this.r = color.r;
             this.g = color.g;
             this.b = color.b;
-            this.a = color.a;
             return this;
+        };
+        Color3.prototype.toVector3 = function (vector3) {
+            if (vector3 === void 0) { vector3 = new feng3d.Vector3(); }
+            vector3.x = this.r;
+            vector3.y = this.g;
+            vector3.z = this.b;
+            return vector3;
         };
         /**
          * 输出字符串
          */
-        Color.prototype.toString = function () {
-            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
+        Color3.prototype.toString = function () {
+            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
         };
         /**
          * [0,15]数值转为16进制字符串
          * param i  [0,15]数值
          */
-        Color.ToHex = function (i) {
+        Color3.ToHex = function (i) {
             var str = i.toString(16);
             if (i <= 0xf) {
                 return ("0" + str).toUpperCase();
@@ -7455,22 +7453,18 @@ var feng3d;
         __decorate([
             feng3d.oav(),
             feng3d.serialize(1)
-        ], Color.prototype, "r", void 0);
+        ], Color3.prototype, "r", void 0);
         __decorate([
             feng3d.oav(),
             feng3d.serialize(1)
-        ], Color.prototype, "g", void 0);
+        ], Color3.prototype, "g", void 0);
         __decorate([
             feng3d.oav(),
             feng3d.serialize(1)
-        ], Color.prototype, "b", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize(1)
-        ], Color.prototype, "a", void 0);
-        return Color;
+        ], Color3.prototype, "b", void 0);
+        return Color3;
     }());
-    feng3d.Color = Color;
+    feng3d.Color3 = Color3;
     feng3d.ColorKeywords = {
         'aliceblue': 0xF0F8FF, 'antiquewhite': 0xFAEBD7, 'aqua': 0x00FFFF, 'aquamarine': 0x7FFFD4, 'azure': 0xF0FFFF,
         'beige': 0xF5F5DC, 'bisque': 0xFFE4C4, 'black': 0x000000, 'blanchedalmond': 0xFFEBCD, 'blue': 0x0000FF, 'blueviolet': 0x8A2BE2,
@@ -10928,7 +10922,7 @@ var feng3d;
                 }
                 else {
                     pointLightPositions.push(new feng3d.Vector3());
-                    pointLightColors.push(new feng3d.Color());
+                    pointLightColors.push(new feng3d.Color3());
                     pointLightIntensitys.push(0);
                     pointLightRanges.push(0);
                 }
@@ -10952,7 +10946,7 @@ var feng3d;
                 }
                 else {
                     directionalLightDirections.push(new feng3d.Vector3());
-                    directionalLightColors.push(new feng3d.Color());
+                    directionalLightColors.push(new feng3d.Color3());
                     directionalLightIntensitys.push(0);
                 }
             }
@@ -11055,7 +11049,7 @@ var feng3d;
                 "vertex": "attribute vec3 a_position;\r\nattribute vec4 a_color;\r\n\r\nuniform float u_PointSize;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main(void) {\r\n\r\n    vec4 globalPosition = u_modelMatrix * vec4(a_position, 1.0);\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    gl_PointSize = u_PointSize;\r\n\r\n    v_color = a_color;\r\n}"
             },
             "segment": {
-                "fragment": "\r\nprecision mediump float;\r\n\r\nvarying vec4 v_color;\r\n\r\nuniform vec4 u_segmentColor;\r\n\r\nvoid main(void) {\r\n    gl_FragColor = v_color * u_segmentColor;\r\n}",
+                "fragment": "\r\nprecision mediump float;\r\n\r\nvarying vec4 v_color;\r\n\r\nuniform vec3 u_segmentColor;\r\nuniform float u_segmentAlpha;\r\n\r\nvoid main(void) {\r\n    gl_FragColor = v_color * vec4(u_segmentColor,u_segmentAlpha);\r\n}",
                 "vertex": "\r\n\r\nattribute vec3 a_position;\r\nattribute vec4 a_color;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main(void) {\r\n    gl_Position = u_viewProjection * u_modelMatrix * vec4(a_position, 1.0);\r\n    v_color = a_color;\r\n}"
             },
             "shadow": {
@@ -11504,7 +11498,7 @@ var feng3d;
                         gl.uniform2f(location, data.x, data.y);
                         break;
                     case gl.FLOAT_VEC3:
-                        if (data instanceof feng3d.Color) {
+                        if (data instanceof feng3d.Color3) {
                             gl.uniform3f(location, data.r, data.g, data.b);
                         }
                         else if (data instanceof feng3d.Vector3) {
@@ -11515,10 +11509,7 @@ var feng3d;
                         }
                         break;
                     case gl.FLOAT_VEC4:
-                        if (data instanceof feng3d.Color) {
-                            gl.uniform4f(location, data.r, data.g, data.b, data.a);
-                        }
-                        else if (data instanceof feng3d.Vector4) {
+                        if (data instanceof feng3d.Vector4) {
                             gl.uniform4f(location, data.x, data.y, data.z, data.w);
                         }
                         else {
@@ -11839,7 +11830,7 @@ var feng3d;
         function OutLineComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.size = 1;
-            _this.color = new feng3d.Color(0.2, 0.2, 0.2, 1.0);
+            _this.color = new feng3d.Color3(0.2, 0.2, 0.2, 1.0);
             _this.outlineMorphFactor = 0.0;
             return _this;
         }
@@ -11949,7 +11940,7 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.serializable = false;
             _this.showInInspector = false;
-            _this.color = new feng3d.Color(125 / 255, 176 / 255, 250 / 255);
+            _this.color = new feng3d.Color3(125 / 255, 176 / 255, 250 / 255);
             return _this;
         }
         WireframeComponent.prototype.init = function (gameobject) {
@@ -11981,7 +11972,7 @@ var feng3d;
         function CartoonComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.outlineSize = 1;
-            _this.outlineColor = new feng3d.Color(0.2, 0.2, 0.2, 1.0);
+            _this.outlineColor = new feng3d.Color3(0.2, 0.2, 0.2, 1.0);
             _this.outlineMorphFactor = 0.0;
             /**
              * 半兰伯特值diff，分段值 4个(0.0,1.0)
@@ -14541,14 +14532,14 @@ var feng3d;
              * 是否编辑器模式
              */
             _this.iseditor = false;
-            /**
+            /**W
              * 背景颜色
              */
-            _this.background = new feng3d.Color(0, 0, 0, 1);
+            _this.background = new feng3d.Color3(0, 0, 0, 1);
             /**
              * 环境光强度
              */
-            _this.ambientColor = new feng3d.Color(0.2, 0.2, 0.2);
+            _this.ambientColor = new feng3d.Color3(0.2, 0.2, 0.2);
             /**
              * 指定更新脚本标记，用于过滤需要调用update的脚本
              */
@@ -15644,7 +15635,7 @@ var feng3d;
          */
         function PointInfo(position, color, uv, normal) {
             if (position === void 0) { position = new feng3d.Vector3(); }
-            if (color === void 0) { color = new feng3d.Color(); }
+            if (color === void 0) { color = new feng3d.Color3(); }
             if (uv === void 0) { uv = new feng3d.Vector2(); }
             if (normal === void 0) { normal = new feng3d.Vector3(0, 1, 0); }
             this.position = position;
@@ -15700,7 +15691,7 @@ var feng3d;
                 var element = this.segments_[i];
                 indices.push(i * 2, i * 2 + 1);
                 positionData.push(element.start.x, element.start.y, element.start.z, element.end.x, element.end.y, element.end.z);
-                colorData.push(element.startColor.r, element.startColor.g, element.startColor.b, element.startColor.a, element.endColor.r, element.endColor.g, element.endColor.b, element.endColor.a);
+                colorData.push(element.startColor.x, element.startColor.y, element.startColor.z, element.startColor.w, element.endColor.x, element.endColor.y, element.endColor.z, element.endColor.w);
             }
             this.setVAData("a_position", positionData, 3);
             this.setVAData("a_color", colorData, 4);
@@ -15750,8 +15741,8 @@ var feng3d;
          * @param thickness 线段厚度
          */
         function Segment(start, end, colorStart, colorEnd) {
-            if (colorStart === void 0) { colorStart = new feng3d.Color(); }
-            if (colorEnd === void 0) { colorEnd = new feng3d.Color(); }
+            if (colorStart === void 0) { colorStart = new feng3d.Vector4(); }
+            if (colorEnd === void 0) { colorEnd = new feng3d.Vector4(); }
             this.start = start;
             this.end = end;
             this.startColor = colorStart;
@@ -18512,7 +18503,7 @@ var feng3d;
             /**
              * 颜色
              */
-            this.u_color = new feng3d.Color();
+            this.u_color = new feng3d.Color3();
         }
         __decorate([
             feng3d.serialize(),
@@ -18556,7 +18547,7 @@ var feng3d;
             /**
              * 颜色
              */
-            this.u_diffuseInput = new feng3d.Color();
+            this.u_diffuseInput = new feng3d.Color3();
         }
         __decorate([
             feng3d.serialize(),
@@ -18594,12 +18585,17 @@ var feng3d;
             /**
              * 颜色
              */
-            this.u_segmentColor = new feng3d.Color();
+            this.u_segmentColor = new feng3d.Color3();
+            this.u_segmentAlpha = 1;
         }
         __decorate([
             feng3d.serialize(),
             feng3d.oav()
         ], SegmentUniforms.prototype, "u_segmentColor", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav()
+        ], SegmentUniforms.prototype, "u_segmentAlpha", void 0);
         return SegmentUniforms;
     }());
     feng3d.SegmentUniforms = SegmentUniforms;
@@ -18627,7 +18623,7 @@ var feng3d;
             /**
              * 颜色
              */
-            this.u_color = new feng3d.Color();
+            this.u_color = new feng3d.Color3();
             /**
              * 纹理数据
              */
@@ -18701,7 +18697,7 @@ var feng3d;
             /**
              * 基本颜色
              */
-            this.u_diffuse = new feng3d.Color(1, 1, 1, 1);
+            this.u_diffuse = new feng3d.Color3(1, 1, 1, 1);
             /**
              * 透明阈值，透明度小于该值的像素被片段着色器丢弃
              */
@@ -18717,7 +18713,7 @@ var feng3d;
             /**
              * 镜面反射颜色
              */
-            this.u_specular = new feng3d.Color();
+            this.u_specular = new feng3d.Color3();
             /**
              * 高光系数
              */
@@ -18729,7 +18725,7 @@ var feng3d;
             /**
              * 颜色
              */
-            this.u_ambient = new feng3d.Color();
+            this.u_ambient = new feng3d.Color3();
             /**
              * 环境映射贴图
              */
@@ -18806,14 +18802,14 @@ var feng3d;
             /**
              * 基本颜色
              */
-            _this.color = new feng3d.Color(1, 1, 1, 1);
+            _this.color = new feng3d.Color3(1, 1, 1, 1);
             /**
              * 透明阈值，透明度小于该值的像素被片段着色器丢弃
              */
             _this.alphaThreshold = 0;
             _this.difuseTexture = new feng3d.Texture2D(diffuseUrl);
             _this.difuseTexture.noPixels = feng3d.imageDatas.white;
-            _this.color = new feng3d.Color(1, 1, 1, 1);
+            _this.color = new feng3d.Color3(1, 1, 1, 1);
             return _this;
         }
         Object.defineProperty(DiffuseMethod.prototype, "difuseTexture", {
@@ -18916,7 +18912,7 @@ var feng3d;
             /**
              * 镜面反射颜色
              */
-            _this.specularColor = new feng3d.Color();
+            _this.specularColor = new feng3d.Color3();
             /**
              * 高光系数
              */
@@ -18994,7 +18990,7 @@ var feng3d;
             if (ambientUrl === void 0) { ambientUrl = ""; }
             var _this = _super.call(this) || this;
             _this.ambientTexture = new feng3d.Texture2D(ambientUrl);
-            _this.color = color || new feng3d.Color();
+            _this.color = color || new feng3d.Color3();
             return _this;
         }
         Object.defineProperty(AmbientMethod.prototype, "ambientTexture", {
@@ -19053,7 +19049,7 @@ var feng3d;
          * @param density       雾浓度
          */
         function FogMethod(fogColor, minDistance, maxDistance, density, mode) {
-            if (fogColor === void 0) { fogColor = new feng3d.Color(); }
+            if (fogColor === void 0) { fogColor = new feng3d.Color3(); }
             if (minDistance === void 0) { minDistance = 0; }
             if (maxDistance === void 0) { maxDistance = 100; }
             if (density === void 0) { density = 0.1; }
@@ -19202,7 +19198,7 @@ var feng3d;
             /**
              * 颜色
              */
-            _this.color = new feng3d.Color();
+            _this.color = new feng3d.Color3();
             /**
              * 光照强度
              */
@@ -20716,7 +20712,7 @@ var feng3d;
          * @param particle                  粒子
          */
         ParticleColor.prototype.generateParticle = function (particle) {
-            particle.color = new feng3d.Color(1, 0, 0, 1).mix(new feng3d.Color(0, 1, 0, 1), particle.index / particle.total);
+            particle.color = new feng3d.Color3(1, 0, 0, 1).mix(new feng3d.Color3(0, 1, 0, 1), particle.index / particle.total);
         };
         return ParticleColor;
     }(feng3d.ParticleComponent));
@@ -20913,7 +20909,7 @@ var feng3d;
                 vector3DData[index * 3 + 1] = data.y;
                 vector3DData[index * 3 + 2] = data.z;
             }
-            else if (data instanceof feng3d.Color) {
+            else if (data instanceof feng3d.Color3) {
                 vector3DData = this._attributes[attributeID] = this._attributes[attributeID] || [];
                 vector3DData[index * 4] = data.r;
                 vector3DData[index * 4 + 1] = data.g;
@@ -24157,7 +24153,7 @@ var feng3d;
             var standardMaterial = new feng3d.StandardMaterial();
             var materialInfo = mtlData[subObj.material];
             var kd = materialInfo.kd;
-            standardMaterial.uniforms.u_diffuse = new feng3d.Color(kd[0], kd[1], kd[2]);
+            standardMaterial.uniforms.u_diffuse = new feng3d.Color3(kd[0], kd[1], kd[2]);
             model.material = standardMaterial;
         }
         return gameObject;
@@ -24541,7 +24537,7 @@ var feng3d;
             xLine.serializable = false;
             xLine.showinHierarchy = false;
             var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(this.lineLength, 0, 0), new feng3d.Color(1, 0, 0), new feng3d.Color(1, 0, 0)));
+            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(this.lineLength, 0, 0), new feng3d.Color3(1, 0, 0), new feng3d.Color3(1, 0, 0)));
             var meshRenderer = xLine.addComponent(feng3d.MeshRenderer);
             meshRenderer.geometry = segmentGeometry;
             meshRenderer.material = new feng3d.SegmentMaterial();
@@ -24551,7 +24547,7 @@ var feng3d;
             yLine.serializable = false;
             yLine.showinHierarchy = false;
             var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(0, this.lineLength, 0), new feng3d.Color(0, 1, 0), new feng3d.Color(0, 1, 0)));
+            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(0, this.lineLength, 0), new feng3d.Color3(0, 1, 0), new feng3d.Color3(0, 1, 0)));
             meshRenderer = yLine.addComponent(feng3d.MeshRenderer);
             meshRenderer.material = new feng3d.SegmentMaterial();
             meshRenderer.geometry = segmentGeometry;
@@ -24561,7 +24557,7 @@ var feng3d;
             zLine.serializable = false;
             zLine.showinHierarchy = false;
             var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(0, 0, this.lineLength), new feng3d.Color(0, 0, 1), new feng3d.Color(0, 0, 1)));
+            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(0, 0, this.lineLength), new feng3d.Color3(0, 0, 1), new feng3d.Color3(0, 0, 1)));
             meshRenderer = zLine.addComponent(feng3d.MeshRenderer);
             meshRenderer.material = new feng3d.SegmentMaterial();
             meshRenderer.geometry = segmentGeometry;
@@ -24576,7 +24572,7 @@ var feng3d;
             var material = meshRenderer.material = new feng3d.ColorMaterial();
             meshRenderer.geometry = new feng3d.ConeGeometry(this.arrowradius, this.arrowHeight);
             ;
-            material.uniforms.u_diffuseInput = new feng3d.Color(1, 0, 0);
+            material.uniforms.u_diffuseInput = new feng3d.Color3(1, 0, 0);
             this.tridentObject.addChild(xArrow);
             //
             var yArrow = feng3d.GameObject.create("yArrow");
@@ -24586,7 +24582,7 @@ var feng3d;
             meshRenderer = yArrow.addComponent(feng3d.MeshRenderer);
             var material = meshRenderer.material = new feng3d.ColorMaterial();
             meshRenderer.geometry = new feng3d.ConeGeometry(this.arrowradius, this.arrowHeight);
-            material.uniforms.u_diffuseInput = new feng3d.Color(0, 1, 0);
+            material.uniforms.u_diffuseInput = new feng3d.Color3(0, 1, 0);
             this.tridentObject.addChild(yArrow);
             //
             var zArrow = feng3d.GameObject.create("zArrow");
@@ -24597,7 +24593,7 @@ var feng3d;
             meshRenderer = zArrow.addComponent(feng3d.MeshRenderer);
             meshRenderer.geometry = new feng3d.ConeGeometry(this.arrowradius, this.arrowHeight);
             var material = meshRenderer.material = new feng3d.ColorMaterial();
-            material.uniforms.u_diffuseInput = new feng3d.Color(0, 0, 1);
+            material.uniforms.u_diffuseInput = new feng3d.Color3(0, 0, 1);
             this.tridentObject.addChild(zArrow);
         };
         __decorate([

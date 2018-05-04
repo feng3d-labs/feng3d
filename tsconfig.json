@@ -49,7 +49,8 @@
         "src/geom/Sphere.ts",
         "src/geom/Plane3D.ts",
         "src/geom/PlaneClassification.ts",
-        "src/geom/Color.ts",
+        "src/geom/Color3.ts",
+        "src/geom/Color4.ts",
         "src/geom/Frustum.ts",
         "src/geom/TriangleGeometry.ts",
         //

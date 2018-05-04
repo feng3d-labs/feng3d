@@ -30,7 +30,7 @@ namespace feng3d
          * 镜面反射颜色
          */
         @serialize()
-        specularColor = new Color();
+        specularColor = new Color3();
         /**
 		 * 镜面反射光反射强度
 		 */

@@ -29,7 +29,7 @@ namespace feng3d
 		 */
         @serialize()
         @oav()
-        fogColor: Color;
+        fogColor: Color3;
 
         @serialize()
         @oav()
@@ -48,7 +48,7 @@ namespace feng3d
          * @param maxDistance   雾远距离
          * @param density       雾浓度
          */
-        constructor(fogColor = new Color(), minDistance = 0, maxDistance = 100, density = 0.1, mode = FogMode.LINEAR)
+        constructor(fogColor = new Color3(), minDistance = 0, maxDistance = 100, density = 0.1, mode = FogMode.LINEAR)
         {
             super();
             this.fogColor = fogColor;

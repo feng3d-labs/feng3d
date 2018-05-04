@@ -44,7 +44,7 @@ namespace feng3d
 
             //收集点光源数据
             var pointLightPositions: Vector3[] = [];
-            var pointLightColors: Color[] = [];
+            var pointLightColors: Color3[] = [];
             var pointLightIntensitys: number[] = [];
             var pointLightRanges: number[] = [];
             for (var i = 0; i < this.NUM_POINTLIGHT; i++)
@@ -59,7 +59,7 @@ namespace feng3d
                 } else
                 {
                     pointLightPositions.push(new Vector3());
-                    pointLightColors.push(new Color());
+                    pointLightColors.push(new Color3());
                     pointLightIntensitys.push(0);
                     pointLightRanges.push(0);
                 }
@@ -73,7 +73,7 @@ namespace feng3d
             renderAtomic.uniforms.u_pointLightRanges = pointLightRanges;
             //
             var directionalLightDirections: Vector3[] = [];
-            var directionalLightColors: Color[] = [];
+            var directionalLightColors: Color3[] = [];
             var directionalLightIntensitys: number[] = [];
             for (var i = 0; i < this.NUM_DIRECTIONALLIGHT; i++)
             {
@@ -86,7 +86,7 @@ namespace feng3d
                 } else
                 {
                     directionalLightDirections.push(new Vector3());
-                    directionalLightColors.push(new Color());
+                    directionalLightColors.push(new Color3());
                     directionalLightIntensitys.push(0);
                 }
             }

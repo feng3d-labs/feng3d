@@ -36,16 +36,16 @@ namespace feng3d
         {
             this._color = value;
         }
-        private _color: Color;
+        private _color: Color3;
 
         /**
          * 构建
          */
-        constructor(ambientUrl = "", color?: Color)
+        constructor(ambientUrl = "", color?: Color3)
         {
             super();
             this.ambientTexture = new Texture2D(ambientUrl);
-            this.color = color || new Color();
+            this.color = color || new Color3();
         }
 
         preRender(renderAtomic: RenderAtomic)

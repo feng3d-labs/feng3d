@@ -164,7 +164,7 @@ namespace feng3d
                         gl.uniform2f(location, data.x, data.y);
                         break;
                     case gl.FLOAT_VEC3:
-                        if (data instanceof Color)
+                        if (data instanceof Color3)
                         {
                             gl.uniform3f(location, data.r, data.g, data.b);
                         } else if (data instanceof Vector3)
@@ -176,10 +176,7 @@ namespace feng3d
                         }
                         break;
                     case gl.FLOAT_VEC4:
-                        if (data instanceof Color)
-                        {
-                            gl.uniform4f(location, data.r, data.g, data.b, data.a);
-                        } else if (data instanceof Vector4)
+                        if (data instanceof Vector4)
                         {
                             gl.uniform4f(location, data.x, data.y, data.z, data.w);
                         } else

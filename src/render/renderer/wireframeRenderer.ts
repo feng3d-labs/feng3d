@@ -118,7 +118,7 @@ namespace feng3d
         showInInspector = false;
 
         @oav()
-        color = new Color(125 / 255, 176 / 255, 250 / 255);
+        color = new Color3(125 / 255, 176 / 255, 250 / 255);
 
         init(gameobject: GameObject)
         {

@@ -27,7 +27,7 @@ namespace feng3d
          */
         @serialize()
         @oav()
-        u_color = new Color();
+        u_color = new Color3();
     }
 
     shaderConfig.shaders["point"].cls = PointUniforms;

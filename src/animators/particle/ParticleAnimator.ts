@@ -214,7 +214,7 @@ namespace feng3d
                 vector3DData[index * 3] = data.x;
                 vector3DData[index * 3 + 1] = data.y;
                 vector3DData[index * 3 + 2] = data.z;
-            } else if (data instanceof Color)
+            } else if (data instanceof Color3)
             {
                 vector3DData = this._attributes[attributeID] = this._attributes[attributeID] || [];
                 vector3DData[index * 4] = data.r;

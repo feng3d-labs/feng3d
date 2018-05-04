@@ -35,7 +35,7 @@ namespace feng3d
             xLine.serializable = false;
             xLine.showinHierarchy = false;
             var segmentGeometry = new SegmentGeometry();
-            segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(this.lineLength, 0, 0), new Color(1, 0, 0), new Color(1, 0, 0)));
+            segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(this.lineLength, 0, 0), new Color3(1, 0, 0), new Color3(1, 0, 0)));
             var meshRenderer = xLine.addComponent(MeshRenderer);
             meshRenderer.geometry = segmentGeometry;
             meshRenderer.material = new SegmentMaterial();
@@ -45,7 +45,7 @@ namespace feng3d
             yLine.serializable = false;
             yLine.showinHierarchy = false;
             var segmentGeometry = new SegmentGeometry();
-            segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(0, this.lineLength, 0), new Color(0, 1, 0), new Color(0, 1, 0)));
+            segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(0, this.lineLength, 0), new Color3(0, 1, 0), new Color3(0, 1, 0)));
             meshRenderer = yLine.addComponent(MeshRenderer);
             meshRenderer.material = new SegmentMaterial();
             meshRenderer.geometry = segmentGeometry;
@@ -55,7 +55,7 @@ namespace feng3d
             zLine.serializable = false;
             zLine.showinHierarchy = false;
             var segmentGeometry = new SegmentGeometry();
-            segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(0, 0, this.lineLength), new Color(0, 0, 1), new Color(0, 0, 1)));
+            segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(0, 0, this.lineLength), new Color3(0, 0, 1), new Color3(0, 0, 1)));
             meshRenderer = zLine.addComponent(MeshRenderer);
             meshRenderer.material = new SegmentMaterial();
             meshRenderer.geometry = segmentGeometry;
@@ -69,7 +69,7 @@ namespace feng3d
             var meshRenderer = xArrow.addComponent(MeshRenderer);
             var material = meshRenderer.material = new ColorMaterial();
             meshRenderer.geometry = new ConeGeometry(this.arrowradius, this.arrowHeight);;
-            material.uniforms.u_diffuseInput = new Color(1, 0, 0);
+            material.uniforms.u_diffuseInput = new Color3(1, 0, 0);
             this.tridentObject.addChild(xArrow);
             //
             var yArrow = GameObject.create("yArrow");
@@ -79,7 +79,7 @@ namespace feng3d
             meshRenderer = yArrow.addComponent(MeshRenderer);
             var material = meshRenderer.material = new ColorMaterial();
             meshRenderer.geometry = new ConeGeometry(this.arrowradius, this.arrowHeight);
-            material.uniforms.u_diffuseInput = new Color(0, 1, 0);
+            material.uniforms.u_diffuseInput = new Color3(0, 1, 0);
             this.tridentObject.addChild(yArrow);
             //
             var zArrow = GameObject.create("zArrow");
@@ -90,7 +90,7 @@ namespace feng3d
             meshRenderer = zArrow.addComponent(MeshRenderer);
             meshRenderer.geometry = new ConeGeometry(this.arrowradius, this.arrowHeight);
             var material = meshRenderer.material = new ColorMaterial();
-            material.uniforms.u_diffuseInput = new Color(0, 0, 1);
+            material.uniforms.u_diffuseInput = new Color3(0, 0, 1);
             this.tridentObject.addChild(zArrow);
         }
     }

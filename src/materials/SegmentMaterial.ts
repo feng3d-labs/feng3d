@@ -2,7 +2,7 @@ namespace feng3d
 {
     export interface Uniforms
     {
-        u_segmentColor: Color;
+        u_segmentColor: Color3;
     }
 
     /**
@@ -32,7 +32,11 @@ namespace feng3d
          */
         @serialize()
         @oav()
-        u_segmentColor = new Color();
+        u_segmentColor = new Color3();
+        
+        @serialize()
+        @oav()
+        u_segmentAlpha = 1;
     }
 
     shaderConfig.shaders["segment"].cls = SegmentUniforms;

@@ -70,7 +70,7 @@ namespace feng3d
          */
         u_viewProjection: Matrix4x4;
 
-        u_diffuseInput: Color;
+        u_diffuseInput: Color3;
         /**
          * 透明阈值，用于透明检测
          */
@@ -167,7 +167,7 @@ namespace feng3d
         /**
          * 点光源颜色数组
          */
-        u_pointLightColors: Color[];
+        u_pointLightColors: Color3[];
         /**
          * 点光源光照强度数组
          */
@@ -186,7 +186,7 @@ namespace feng3d
         /**
          * 方向光源颜色数组
          */
-        u_directionalLightColors: Color[];
+        u_directionalLightColors: Color3[];
         /**
          * 方向光源光照强度数组
          */
@@ -195,19 +195,19 @@ namespace feng3d
         /**
          * 场景环境光
          */
-        u_sceneAmbientColor: Color;
+        u_sceneAmbientColor: Color3;
         /**
          * 基本颜色
          */
-        u_diffuse: Color;
+        u_diffuse: Color3;
         /**
          * 镜面反射颜色
          */
-        u_specular: Color;
+        u_specular: Color3;
         /**
          * 环境颜色
          */
-        u_ambient: Color;
+        u_ambient: Color3;
         /**
          * 高光系数
          */
@@ -251,7 +251,7 @@ namespace feng3d
         /**
          * 雾颜色
          */
-        u_fogColor: Color;
+        u_fogColor: Color3;
         /**
          * 雾最近距离
          */
@@ -285,6 +285,6 @@ namespace feng3d
         /**
          * 线框颜色
          */
-        u_wireframeColor: Color;
+        u_wireframeColor: Color3;
     }
 }

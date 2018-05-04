@@ -53,7 +53,7 @@ namespace feng3d
             canvas.height = height;
 
             var ctx = canvas.getContext('2d');
-            ctx.fillStyle = new Color().fromUnit(fillcolor).toHexString();
+            ctx.fillStyle = new Color3().fromUnit(fillcolor).toHexString();
             ctx.fillRect(0, 0, width, height);
 
             var imageData = ctx.getImageData(0, 0, width, height);
