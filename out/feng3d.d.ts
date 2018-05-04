@@ -6796,8 +6796,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-}
-declare namespace feng3d {
     /**
      * 纹理信息
      * @author feng 2016-12-20
@@ -9251,6 +9249,10 @@ declare namespace feng3d {
          * 颜色
          */
         u_color: Color4;
+        /**
+         * 点绘制时点的尺寸
+         */
+        u_PointSize: number;
     }
 }
 declare namespace feng3d {

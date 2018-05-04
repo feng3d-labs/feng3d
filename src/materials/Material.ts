@@ -14,14 +14,14 @@ namespace feng3d
 
         @serialize()
         // @oav({ component: "OAVMaterialData" })
-        @oav()
+        @oav({ component: "OAVObjectView" })
         uniforms = {};
 
         /**
          * 渲染参数
          */
         @serialize()
-        @oav({ block: "渲染参数" })
+        @oav({ block: "渲染参数", component: "OAVObjectView" })
         renderParams = new RenderParams();
 
         /**

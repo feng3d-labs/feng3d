@@ -18603,11 +18603,11 @@ var feng3d;
             feng3d.serialize()
             // @oav({ component: "OAVMaterialData" })
             ,
-            feng3d.oav()
+            feng3d.oav({ component: "OAVObjectView" })
         ], Material.prototype, "uniforms", void 0);
         __decorate([
             feng3d.serialize(),
-            feng3d.oav({ block: "渲染参数" })
+            feng3d.oav({ block: "渲染参数", component: "OAVObjectView" })
         ], Material.prototype, "renderParams", void 0);
         return Material;
     }(feng3d.EventDispatcher));
@@ -18641,11 +18641,19 @@ var feng3d;
              * 颜色
              */
             this.u_color = new feng3d.Color4();
+            /**
+             * 点绘制时点的尺寸
+             */
+            this.u_PointSize = 1;
         }
         __decorate([
             feng3d.serialize(),
             feng3d.oav()
         ], PointUniforms.prototype, "u_color", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav()
+        ], PointUniforms.prototype, "u_PointSize", void 0);
         return PointUniforms;
     }());
     feng3d.PointUniforms = PointUniforms;
@@ -24769,48 +24777,6 @@ var feng3d;
     feng3d.log("Feng3D version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-
-(function universalModuleDefinition(root, factory)
-{
-    if (root && root["feng3d"])
-    {
-        return;
-    }
-    if (typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
-    else if (typeof define === 'function' && define.amd)
-        define([], factory);
-    else if (typeof exports === 'object')
-        exports["feng3d"] = factory();
-    else
-    {
-        root["feng3d"] = factory();
-    }
-})(this, function ()
-{
-    return feng3d;
-});
-
-(function universalModuleDefinition(root, factory)
-{
-    if (root && root["feng3d"])
-    {
-        return;
-    }
-    if (typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
-    else if (typeof define === 'function' && define.amd)
-        define([], factory);
-    else if (typeof exports === 'object')
-        exports["feng3d"] = factory();
-    else
-    {
-        root["feng3d"] = factory();
-    }
-})(this, function ()
-{
-    return feng3d;
-});
 
 (function universalModuleDefinition(root, factory)
 {
