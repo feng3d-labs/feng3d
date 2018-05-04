@@ -8,8 +8,6 @@ namespace feng3d
     {
         uniforms = new StandardUniforms();
 
-        @serialize()
-        @oav()
         terrainMethod = new TerrainMethod();
         // terrainMethod: TerrainMethod | TerrainMergeMethod;
 
@@ -50,6 +48,13 @@ namespace feng3d
 
     export class StandardUniforms
     {
+        /**
+         * 点绘制时点的尺寸
+         */
+        @serialize()
+        @oav()
+        u_PointSize = 1;
+
         /**
          * 漫反射纹理
          */

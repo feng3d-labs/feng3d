@@ -23,9 +23,7 @@ varying vec3 v_bitangent;
     #include<skeleton.vertex>
 #endif
 
-#ifdef IS_POINTS_MODE
-    uniform float u_PointSize;
-#endif
+uniform float u_PointSize;
 
 #ifdef HAS_PARTICLE_ANIMATOR
     #include<particle.vertex>
@@ -59,7 +57,5 @@ void main(void) {
     v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);
     v_bitangent = cross(v_normal,v_tangent);
     
-    #ifdef IS_POINTS_MODE
-        gl_PointSize = u_PointSize;
-    #endif
+    gl_PointSize = u_PointSize;
 }

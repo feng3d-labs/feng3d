@@ -11206,7 +11206,7 @@ var feng3d;
             },
             "standard": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#ifdef HAS_TERRAIN_METHOD\r\n    #include<terrain.fragment>\r\n#endif\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#ifdef HAS_ENV_METHOD\r\n    #include<envmap.fragment>\r\n#endif\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.fragment>\r\n#endif\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    #ifdef HAS_TERRAIN_METHOD\r\n        diffuseColor = terrainMethod(diffuseColor, v_uv);\r\n    #endif\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n    #ifdef HAS_SPECULAR_SAMPLER\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n    #endif\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    #ifdef HAS_ENV_METHOD\r\n        finalColor = envmapMethod(finalColor);\r\n    #endif\r\n\r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        finalColor = particleAnimation(finalColor);\r\n    #endif\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nattribute vec3 a_tangent;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\n#ifdef HAS_SKELETON_ANIMATION\r\n    #include<skeleton.vertex>\r\n#endif\r\n\r\n#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.vertex>\r\n#endif\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n\r\n    #ifdef HAS_SKELETON_ANIMATION\r\n        position = skeletonAnimation(position);\r\n    #endif\r\n    \r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        position = particleAnimation(position);\r\n    #endif\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出全局坐标\r\n    v_globalPosition = globalPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n    \r\n    #ifdef IS_POINTS_MODE\r\n        gl_PointSize = u_PointSize;\r\n    #endif\r\n}"
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nattribute vec3 a_tangent;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\n#ifdef HAS_SKELETON_ANIMATION\r\n    #include<skeleton.vertex>\r\n#endif\r\n\r\nuniform float u_PointSize;\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.vertex>\r\n#endif\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n\r\n    #ifdef HAS_SKELETON_ANIMATION\r\n        position = skeletonAnimation(position);\r\n    #endif\r\n    \r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        position = particleAnimation(position);\r\n    #endif\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出全局坐标\r\n    v_globalPosition = globalPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n    \r\n    gl_PointSize = u_PointSize;\r\n}"
             },
             "texture": {
                 "fragment": "precision mediump float;\r\n\r\nuniform sampler2D s_texture;\r\nvarying vec2 v_uv;\r\n\r\nuniform vec4 u_color;\r\n\r\nvoid main(void) {\r\n\r\n    vec4 color = texture2D(s_texture, v_uv);\r\n    gl_FragColor = color * u_color;\r\n}\r\n",
@@ -18572,10 +18572,6 @@ var feng3d;
         __extends(Material, _super);
         function Material() {
             var _this = _super.call(this) || this;
-            /**
-             * 点绘制时点的尺寸
-             */
-            _this.pointSize = 1;
             _this.uniforms = {};
             /**
              * 渲染参数
@@ -18585,8 +18581,6 @@ var feng3d;
             return _this;
         }
         Material.prototype.preRender = function (renderAtomic) {
-            var _this = this;
-            renderAtomic.uniforms.u_PointSize = function () { return _this.pointSize; };
             this.shader.shaderName = this.shaderName;
             for (var key in this.uniforms) {
                 if (this.uniforms.hasOwnProperty(key)) {
@@ -18605,10 +18599,6 @@ var feng3d;
             feng3d.oav({ component: "OAVMaterialName" }),
             feng3d.watch("onShaderChanged")
         ], Material.prototype, "shaderName", void 0);
-        __decorate([
-            feng3d.serialize(1),
-            feng3d.oav()
-        ], Material.prototype, "pointSize", void 0);
         __decorate([
             feng3d.serialize()
             // @oav({ component: "OAVMaterialData" })
@@ -18817,10 +18807,6 @@ var feng3d;
             // 序列化时引发bug
             this.uniforms.s_normal.noPixels = feng3d.imageDatas.defaultNormal;
         };
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], StandardMaterial.prototype, "terrainMethod", void 0);
         return StandardMaterial;
     }(feng3d.Material));
     feng3d.StandardMaterial = StandardMaterial;
@@ -18836,6 +18822,10 @@ var feng3d;
     })(FogMode = feng3d.FogMode || (feng3d.FogMode = {}));
     var StandardUniforms = /** @class */ (function () {
         function StandardUniforms() {
+            /**
+             * 点绘制时点的尺寸
+             */
+            this.u_PointSize = 1;
             /**
              * 漫反射纹理
              */
@@ -18899,6 +18889,10 @@ var feng3d;
             this.u_fogMode = FogMode.NONE;
             this.s_normal.noPixels = feng3d.imageDatas.defaultNormal;
         }
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav()
+        ], StandardUniforms.prototype, "u_PointSize", void 0);
         __decorate([
             feng3d.serialize(),
             feng3d.oav({ block: "diffuse" })

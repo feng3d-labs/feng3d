@@ -12,13 +12,6 @@ namespace feng3d
         @watch("onShaderChanged")
         shaderName: string;
 
-        /**
-         * 点绘制时点的尺寸
-         */
-        @serialize(1)
-        @oav()
-        pointSize = 1;
-
         @serialize()
         // @oav({ component: "OAVMaterialData" })
         @oav()
@@ -45,8 +38,6 @@ namespace feng3d
 
         preRender(renderAtomic: RenderAtomic)
         {
-            renderAtomic.uniforms.u_PointSize = () => this.pointSize;
-
             this.shader.shaderName = this.shaderName;
 
             for (const key in this.uniforms)

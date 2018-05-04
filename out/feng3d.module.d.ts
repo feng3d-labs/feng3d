@@ -9224,10 +9224,6 @@ declare namespace feng3d {
      */
     class Material extends EventDispatcher {
         shaderName: string;
-        /**
-         * 点绘制时点的尺寸
-         */
-        pointSize: number;
         uniforms: {};
         /**
          * 渲染参数
@@ -9347,6 +9343,10 @@ declare namespace feng3d {
         LINEAR = 3,
     }
     class StandardUniforms {
+        /**
+         * 点绘制时点的尺寸
+         */
+        u_PointSize: number;
         /**
          * 漫反射纹理
          */
