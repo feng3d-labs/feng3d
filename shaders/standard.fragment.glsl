@@ -34,9 +34,7 @@ uniform sampler2D s_ambient;
 
 #include<lightShading.fragment>
 
-#ifdef HAS_FOG_METHOD
-    #include<fog.fragment>
-#endif
+#include<fog.fragment>
 
 #ifdef HAS_ENV_METHOD
     #include<envmap.fragment>
@@ -96,9 +94,7 @@ void main(void)
         finalColor = particleAnimation(finalColor);
     #endif
 
-    #ifdef HAS_FOG_METHOD
-        finalColor = fogMethod(finalColor);
-    #endif
+    finalColor = fogMethod(finalColor);
 
     gl_FragColor = finalColor;
 }

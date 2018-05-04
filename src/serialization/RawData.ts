@@ -209,45 +209,6 @@ namespace feng3d
         url?: "",
     }
 
-    export interface DiffuseMethodRaw
-    {
-        __class__: "feng3d.DiffuseMethod",
-        alphaThreshold?: number,
-        color?: Color3Raw,
-        difuseTexture?: Texture2DRaw
-    }
-
-    export interface NormalMethodRaw
-    {
-        __class__: "feng3d.NormalMethod",
-        normalTexture?: Texture2DRaw,
-    }
-
-    export interface SpecularMethodRaw
-    {
-        __class__: "feng3d.SpecularMethod",
-        glossiness?: number,
-        specularColor?: Color3Raw,
-        specularTexture?: Texture2DRaw,
-    }
-
-    export interface AmbientMethodRaw
-    {
-        __class__: "feng3d.AmbientMethod",
-        color?: Color3Raw,
-        ambientTexture?: Texture2DRaw,
-    }
-
-    export interface FogMethodRaw
-    {
-        __class__: "feng3d.FogMethod";
-        minDistance?: number;
-        maxDistance?: number;
-        fogColor?: Color3Raw;
-        density?: number;
-        mode?: FogMode;
-    }
-
     export interface TerrainMethodRaw
     {
         __class__: "feng3d.TerrainMethod";
@@ -268,14 +229,6 @@ namespace feng3d
         positive_z_url?: string,
     }
 
-    export interface EnvMapMethodRaw
-    {
-        __class__: "feng3d.EnvMapMethod",
-        enable?: boolean;
-        cubeTexture?: TextureCubeRaw;
-        reflectivity?: number;
-    }
-
     export interface StandardUniformsRaw
     {
         __class__: "feng3d.StandardUniforms",
@@ -293,12 +246,6 @@ namespace feng3d
     export interface StandardMaterialRaw extends MaterialBaseRaw
     {
         __class__: "feng3d.StandardMaterial";
-        diffuseMethod?: DiffuseMethodRaw;
-        normalMethod?: NormalMethodRaw;
-        specularMethod?: SpecularMethodRaw;
-        ambientMethod?: AmbientMethodRaw;
-        envMapMethod?: EnvMapMethodRaw;
-        fogMethod?: FogMethodRaw;
         terrainMethod?: TerrainMethodRaw;
 
         uniforms?: StandardUniformsRaw;

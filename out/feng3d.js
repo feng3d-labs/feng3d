@@ -11205,7 +11205,7 @@ var feng3d;
                 "vertex": "\r\n\r\nattribute vec3 a_position;\r\n\r\nuniform mat4 u_cameraMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nuniform float u_skyBoxSize;\r\n\r\nvarying vec3 v_worldPos;\r\n\r\nvoid main(){\r\n    vec3 worldPos = a_position.xyz * u_skyBoxSize + u_cameraMatrix[3].xyz;\r\n    gl_Position = u_viewProjection * vec4(worldPos.xyz,1.0);\r\n    v_worldPos = worldPos;\r\n}"
             },
             "standard": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#ifdef HAS_TERRAIN_METHOD\r\n    #include<terrain.fragment>\r\n#endif\r\n\r\n#include<lightShading.fragment>\r\n\r\n#ifdef HAS_FOG_METHOD\r\n    #include<fog.fragment>\r\n#endif\r\n\r\n#ifdef HAS_ENV_METHOD\r\n    #include<envmap.fragment>\r\n#endif\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.fragment>\r\n#endif\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    #ifdef HAS_TERRAIN_METHOD\r\n        diffuseColor = terrainMethod(diffuseColor, v_uv);\r\n    #endif\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n    #ifdef HAS_SPECULAR_SAMPLER\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n    #endif\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    #ifdef HAS_ENV_METHOD\r\n        finalColor = envmapMethod(finalColor);\r\n    #endif\r\n\r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        finalColor = particleAnimation(finalColor);\r\n    #endif\r\n\r\n    #ifdef HAS_FOG_METHOD\r\n        finalColor = fogMethod(finalColor);\r\n    #endif\r\n\r\n    gl_FragColor = finalColor;\r\n}",
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#ifdef HAS_TERRAIN_METHOD\r\n    #include<terrain.fragment>\r\n#endif\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#ifdef HAS_ENV_METHOD\r\n    #include<envmap.fragment>\r\n#endif\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.fragment>\r\n#endif\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    #ifdef HAS_TERRAIN_METHOD\r\n        diffuseColor = terrainMethod(diffuseColor, v_uv);\r\n    #endif\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n    #ifdef HAS_SPECULAR_SAMPLER\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n    #endif\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    #ifdef HAS_ENV_METHOD\r\n        finalColor = envmapMethod(finalColor);\r\n    #endif\r\n\r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        finalColor = particleAnimation(finalColor);\r\n    #endif\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
                 "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nattribute vec3 a_tangent;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\n#ifdef HAS_SKELETON_ANIMATION\r\n    #include<skeleton.vertex>\r\n#endif\r\n\r\n#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.vertex>\r\n#endif\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n\r\n    #ifdef HAS_SKELETON_ANIMATION\r\n        position = skeletonAnimation(position);\r\n    #endif\r\n    \r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        position = particleAnimation(position);\r\n    #endif\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出全局坐标\r\n    v_globalPosition = globalPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n    \r\n    #ifdef IS_POINTS_MODE\r\n        gl_PointSize = u_PointSize;\r\n    #endif\r\n}"
             },
             "texture": {
@@ -18803,7 +18803,6 @@ var feng3d;
             if (ambientUrl === void 0) { ambientUrl = ""; }
             var _this = _super.call(this) || this;
             _this.uniforms = new StandardUniforms();
-            _this.fogMethod = new feng3d.FogMethod();
             _this.terrainMethod = new feng3d.TerrainMethod();
             _this.shaderName = "standard";
             _this.uniforms.s_diffuse.url = diffuseUrl;
@@ -18814,7 +18813,6 @@ var feng3d;
         }
         StandardMaterial.prototype.preRender = function (renderAtomic) {
             _super.prototype.preRender.call(this, renderAtomic);
-            this.fogMethod.preRender(renderAtomic);
             this.terrainMethod.preRender(renderAtomic);
             // 序列化时引发bug
             this.uniforms.s_normal.noPixels = feng3d.imageDatas.defaultNormal;
@@ -18822,14 +18820,20 @@ var feng3d;
         __decorate([
             feng3d.serialize(),
             feng3d.oav()
-        ], StandardMaterial.prototype, "fogMethod", void 0);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
         ], StandardMaterial.prototype, "terrainMethod", void 0);
         return StandardMaterial;
     }(feng3d.Material));
     feng3d.StandardMaterial = StandardMaterial;
+    /**
+     * 雾模式
+     */
+    var FogMode;
+    (function (FogMode) {
+        FogMode[FogMode["NONE"] = 0] = "NONE";
+        FogMode[FogMode["EXP"] = 1] = "EXP";
+        FogMode[FogMode["EXP2"] = 2] = "EXP2";
+        FogMode[FogMode["LINEAR"] = 3] = "LINEAR";
+    })(FogMode = feng3d.FogMode || (feng3d.FogMode = {}));
     var StandardUniforms = /** @class */ (function () {
         function StandardUniforms() {
             /**
@@ -18876,6 +18880,23 @@ var feng3d;
              * 反射率
              */
             this.u_reflectivity = 1;
+            /**
+             * 出现雾效果的最近距离
+             */
+            this.u_fogMinDistance = 0;
+            /**
+             * 最远距离
+             */
+            this.u_fogMaxDistance = 100;
+            /**
+             * 雾的颜色
+             */
+            this.u_fogColor = new feng3d.Color3();
+            this.u_fogDensity = 0.1;
+            /**
+             * 雾模式
+             */
+            this.u_fogMode = FogMode.NONE;
             this.s_normal.noPixels = feng3d.imageDatas.defaultNormal;
         }
         __decorate([
@@ -18922,375 +18943,30 @@ var feng3d;
             feng3d.serialize(),
             feng3d.oav({ block: "envMap" })
         ], StandardUniforms.prototype, "u_reflectivity", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "fog" })
+        ], StandardUniforms.prototype, "u_fogMinDistance", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "fog" })
+        ], StandardUniforms.prototype, "u_fogMaxDistance", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "fog" })
+        ], StandardUniforms.prototype, "u_fogColor", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "fog" })
+        ], StandardUniforms.prototype, "u_fogDensity", void 0);
+        __decorate([
+            feng3d.serialize(),
+            feng3d.oav({ block: "fog" })
+        ], StandardUniforms.prototype, "u_fogMode", void 0);
         return StandardUniforms;
     }());
     feng3d.StandardUniforms = StandardUniforms;
     feng3d.shaderConfig.shaders["standard"].cls = StandardUniforms;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 漫反射函数
-     * @author feng 2017-03-22
-     */
-    var DiffuseMethod = /** @class */ (function (_super) {
-        __extends(DiffuseMethod, _super);
-        /**
-         * 构建
-         */
-        function DiffuseMethod(diffuseUrl) {
-            if (diffuseUrl === void 0) { diffuseUrl = ""; }
-            var _this = _super.call(this) || this;
-            /**
-             * 基本颜色
-             */
-            _this.color = new feng3d.Color4(1, 1, 1, 1);
-            /**
-             * 透明阈值，透明度小于该值的像素被片段着色器丢弃
-             */
-            _this.alphaThreshold = 0;
-            _this.difuseTexture = new feng3d.Texture2D(diffuseUrl);
-            _this.difuseTexture.noPixels = feng3d.imageDatas.white;
-            _this.color = new feng3d.Color4(1, 1, 1, 1);
-            return _this;
-        }
-        Object.defineProperty(DiffuseMethod.prototype, "difuseTexture", {
-            /**
-             * 漫反射纹理
-             */
-            get: function () {
-                return this._difuseTexture;
-            },
-            set: function (value) {
-                if (this._difuseTexture == value)
-                    return;
-                this._difuseTexture = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        DiffuseMethod.prototype.preRender = function (renderAtomic) {
-            var _this = this;
-            //
-            renderAtomic.uniforms.u_diffuse = function () { return _this.color; };
-            renderAtomic.uniforms.s_diffuse = function () { return _this.difuseTexture; };
-            renderAtomic.uniforms.u_alphaThreshold = function () { return _this.alphaThreshold; };
-        };
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], DiffuseMethod.prototype, "difuseTexture", null);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], DiffuseMethod.prototype, "color", void 0);
-        __decorate([
-            feng3d.serialize(0),
-            feng3d.oav()
-        ], DiffuseMethod.prototype, "alphaThreshold", void 0);
-        return DiffuseMethod;
-    }(feng3d.EventDispatcher));
-    feng3d.DiffuseMethod = DiffuseMethod;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 法线函数
-     * @author feng 2017-03-22
-     */
-    var NormalMethod = /** @class */ (function (_super) {
-        __extends(NormalMethod, _super);
-        /**
-         * 构建
-         */
-        function NormalMethod(normalUrl) {
-            if (normalUrl === void 0) { normalUrl = ""; }
-            var _this = _super.call(this) || this;
-            _this._normalTexture = new feng3d.Texture2D();
-            // this.normalTexture.url = normalUrl;
-            _this.normalTexture.noPixels = feng3d.imageDatas.defaultNormal;
-            return _this;
-        }
-        Object.defineProperty(NormalMethod.prototype, "normalTexture", {
-            /**
-             * 漫反射纹理
-             */
-            get: function () {
-                return this._normalTexture;
-            },
-            set: function (v) {
-                this._normalTexture.url = v.url;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        NormalMethod.prototype.preRender = function (renderAtomic) {
-            var _this = this;
-            //
-            renderAtomic.uniforms.s_normal = function () { return _this.normalTexture; };
-        };
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], NormalMethod.prototype, "normalTexture", null);
-        return NormalMethod;
-    }(feng3d.EventDispatcher));
-    feng3d.NormalMethod = NormalMethod;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 法线函数
-     * @author feng 2017-03-22
-     */
-    var SpecularMethod = /** @class */ (function (_super) {
-        __extends(SpecularMethod, _super);
-        /**
-         * 构建
-         */
-        function SpecularMethod(specularUrl) {
-            if (specularUrl === void 0) { specularUrl = ""; }
-            var _this = _super.call(this) || this;
-            /**
-             * 镜面反射颜色
-             */
-            _this.specularColor = new feng3d.Color3();
-            /**
-             * 高光系数
-             */
-            _this.glossiness = 50;
-            _this.specularTexture = new feng3d.Texture2D(specularUrl);
-            return _this;
-        }
-        Object.defineProperty(SpecularMethod.prototype, "specularTexture", {
-            /**
-             * 镜面反射光泽图
-             */
-            get: function () {
-                return this._specularTexture;
-            },
-            set: function (value) {
-                if (this._specularTexture == value)
-                    return;
-                if (this._specularTexture)
-                    this._specularTexture.off("loaded", this.onTextureChanged, this);
-                this._specularTexture = value;
-                if (this._specularTexture)
-                    this._specularTexture.on("loaded", this.onTextureChanged, this);
-                this.onTextureChanged();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        SpecularMethod.prototype.onTextureChanged = function () {
-        };
-        SpecularMethod.prototype.preRender = function (renderAtomic) {
-            var _this = this;
-            //
-            renderAtomic.uniforms.s_specular = function () { return _this.specularTexture; };
-            renderAtomic.uniforms.u_specular = function () { return _this.specularColor; };
-            renderAtomic.uniforms.u_glossiness = function () { return _this.glossiness; };
-        };
-        __decorate([
-            feng3d.serialize()
-        ], SpecularMethod.prototype, "specularTexture", null);
-        __decorate([
-            feng3d.serialize()
-        ], SpecularMethod.prototype, "specularColor", void 0);
-        __decorate([
-            feng3d.serialize(50)
-        ], SpecularMethod.prototype, "glossiness", void 0);
-        return SpecularMethod;
-    }(feng3d.EventDispatcher));
-    feng3d.SpecularMethod = SpecularMethod;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 漫反射函数
-     * @author feng 2017-03-22
-     */
-    var AmbientMethod = /** @class */ (function (_super) {
-        __extends(AmbientMethod, _super);
-        /**
-         * 构建
-         */
-        function AmbientMethod(ambientUrl, color) {
-            if (ambientUrl === void 0) { ambientUrl = ""; }
-            var _this = _super.call(this) || this;
-            _this.ambientTexture = new feng3d.Texture2D(ambientUrl);
-            _this.color = color || new feng3d.Color4();
-            return _this;
-        }
-        Object.defineProperty(AmbientMethod.prototype, "ambientTexture", {
-            /**
-             * 环境纹理
-             */
-            get: function () {
-                return this._ambientTexture;
-            },
-            set: function (value) {
-                if (this._ambientTexture == value)
-                    return;
-                this._ambientTexture = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AmbientMethod.prototype, "color", {
-            /**
-             * 颜色
-             */
-            get: function () {
-                return this._color;
-            },
-            set: function (value) {
-                this._color = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        AmbientMethod.prototype.preRender = function (renderAtomic) {
-            var _this = this;
-            renderAtomic.uniforms.u_ambient = function () { return _this._color; };
-            renderAtomic.uniforms.s_ambient = function () { return _this._ambientTexture; };
-        };
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], AmbientMethod.prototype, "ambientTexture", null);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], AmbientMethod.prototype, "color", null);
-        return AmbientMethod;
-    }(feng3d.EventDispatcher));
-    feng3d.AmbientMethod = AmbientMethod;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var FogMethod = /** @class */ (function (_super) {
-        __extends(FogMethod, _super);
-        /**
-         * @param fogColor      雾颜色
-         * @param minDistance   雾近距离
-         * @param maxDistance   雾远距离
-         * @param density       雾浓度
-         */
-        function FogMethod(fogColor, minDistance, maxDistance, density, mode) {
-            if (fogColor === void 0) { fogColor = new feng3d.Color3(); }
-            if (minDistance === void 0) { minDistance = 0; }
-            if (maxDistance === void 0) { maxDistance = 100; }
-            if (density === void 0) { density = 0.1; }
-            if (mode === void 0) { mode = FogMode.LINEAR; }
-            var _this = _super.call(this) || this;
-            /**
-             * 是否生效
-             */
-            _this.enable = false;
-            /**
-             * 出现雾效果的最近距离
-             */
-            _this.minDistance = 0;
-            /**
-             * 最远距离
-             */
-            _this.maxDistance = 100;
-            _this.fogColor = fogColor;
-            _this.minDistance = minDistance;
-            _this.maxDistance = maxDistance;
-            _this.density = density;
-            _this.mode = mode;
-            return _this;
-        }
-        FogMethod.prototype.enableChanged = function () {
-        };
-        FogMethod.prototype.preRender = function (renderAtomic) {
-            var _this = this;
-            //
-            renderAtomic.uniforms.u_fogColor = function () { return _this.fogColor; };
-            renderAtomic.uniforms.u_fogMinDistance = function () { return _this.minDistance; };
-            renderAtomic.uniforms.u_fogMaxDistance = function () { return _this.maxDistance; };
-            renderAtomic.uniforms.u_fogDensity = function () { return _this.density; };
-            renderAtomic.uniforms.u_fogMode = function () { return _this.mode; };
-        };
-        __decorate([
-            feng3d.watch("enableChanged"),
-            feng3d.serialize(),
-            feng3d.oav()
-        ], FogMethod.prototype, "enable", void 0);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], FogMethod.prototype, "minDistance", void 0);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], FogMethod.prototype, "maxDistance", void 0);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], FogMethod.prototype, "fogColor", void 0);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], FogMethod.prototype, "density", void 0);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], FogMethod.prototype, "mode", void 0);
-        return FogMethod;
-    }(feng3d.EventDispatcher));
-    feng3d.FogMethod = FogMethod;
-    /**
-     * 雾模式
-     */
-    var FogMode;
-    (function (FogMode) {
-        FogMode[FogMode["NONE"] = 0] = "NONE";
-        FogMode[FogMode["EXP"] = 1] = "EXP";
-        FogMode[FogMode["EXP2"] = 2] = "EXP2";
-        FogMode[FogMode["LINEAR"] = 3] = "LINEAR";
-    })(FogMode = feng3d.FogMode || (feng3d.FogMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 环境映射函数
-     */
-    var EnvMapMethod = /** @class */ (function (_super) {
-        __extends(EnvMapMethod, _super);
-        /**
-         * 创建EnvMapMethod实例
-         * @param envMap		        环境映射贴图
-         * @param reflectivity			反射率
-         */
-        function EnvMapMethod() {
-            var _this = _super.call(this) || this;
-            /**
-             * 反射率
-             */
-            _this.reflectivity = 1;
-            return _this;
-            //
-        }
-        EnvMapMethod.prototype.preRender = function (renderAtomic) {
-            var _this = this;
-            renderAtomic.uniforms.s_envMap = function () { return _this.cubeTexture; };
-            renderAtomic.uniforms.u_reflectivity = function () { return _this.reflectivity; };
-        };
-        __decorate([
-            feng3d.watch("enableChanged"),
-            feng3d.serialize(),
-            feng3d.oav()
-        ], EnvMapMethod.prototype, "cubeTexture", void 0);
-        __decorate([
-            feng3d.serialize(),
-            feng3d.oav()
-        ], EnvMapMethod.prototype, "reflectivity", void 0);
-        return EnvMapMethod;
-    }(feng3d.EventDispatcher));
-    feng3d.EnvMapMethod = EnvMapMethod;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

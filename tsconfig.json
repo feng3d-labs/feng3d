@@ -174,13 +174,6 @@
         "src/materials/SegmentMaterial.ts",
         "src/materials/TextureMaterial.ts",
         "src/materials/StandardMaterial.ts",
-        //
-        "src/materials/methods/DiffuseMethod.ts",
-        "src/materials/methods/NormalMethod.ts",
-        "src/materials/methods/SpecularMethod.ts",
-        "src/materials/methods/AmbientMethod.ts",
-        "src/materials/methods/FogMethod.ts",
-        "src/materials/methods/EnvMapMethod.ts",
         //灯光
         "src/light/LightType.ts",
         "src/light/Light.ts",

@@ -900,35 +900,6 @@ declare namespace feng3d {
         "__class__": "feng3d.Texture2D";
         url?: "";
     }
-    interface DiffuseMethodRaw {
-        __class__: "feng3d.DiffuseMethod";
-        alphaThreshold?: number;
-        color?: Color3Raw;
-        difuseTexture?: Texture2DRaw;
-    }
-    interface NormalMethodRaw {
-        __class__: "feng3d.NormalMethod";
-        normalTexture?: Texture2DRaw;
-    }
-    interface SpecularMethodRaw {
-        __class__: "feng3d.SpecularMethod";
-        glossiness?: number;
-        specularColor?: Color3Raw;
-        specularTexture?: Texture2DRaw;
-    }
-    interface AmbientMethodRaw {
-        __class__: "feng3d.AmbientMethod";
-        color?: Color3Raw;
-        ambientTexture?: Texture2DRaw;
-    }
-    interface FogMethodRaw {
-        __class__: "feng3d.FogMethod";
-        minDistance?: number;
-        maxDistance?: number;
-        fogColor?: Color3Raw;
-        density?: number;
-        mode?: FogMode;
-    }
     interface TerrainMethodRaw {
         __class__: "feng3d.TerrainMethod";
         splatRepeats?: Vector3;
@@ -945,12 +916,6 @@ declare namespace feng3d {
         positive_y_url?: string;
         positive_z_url?: string;
     }
-    interface EnvMapMethodRaw {
-        __class__: "feng3d.EnvMapMethod";
-        enable?: boolean;
-        cubeTexture?: TextureCubeRaw;
-        reflectivity?: number;
-    }
     interface StandardUniformsRaw {
         __class__: "feng3d.StandardUniforms";
         s_ambient?: Texture2DRaw;
@@ -965,12 +930,6 @@ declare namespace feng3d {
     }
     interface StandardMaterialRaw extends MaterialBaseRaw {
         __class__: "feng3d.StandardMaterial";
-        diffuseMethod?: DiffuseMethodRaw;
-        normalMethod?: NormalMethodRaw;
-        specularMethod?: SpecularMethodRaw;
-        ambientMethod?: AmbientMethodRaw;
-        envMapMethod?: EnvMapMethodRaw;
-        fogMethod?: FogMethodRaw;
         terrainMethod?: TerrainMethodRaw;
         uniforms?: StandardUniformsRaw;
     }
@@ -9371,13 +9330,21 @@ declare namespace feng3d {
      */
     class StandardMaterial extends Material {
         uniforms: StandardUniforms;
-        fogMethod: FogMethod;
         terrainMethod: TerrainMethod;
         /**
          * 构建
          */
         constructor(diffuseUrl?: string, normalUrl?: string, specularUrl?: string, ambientUrl?: string);
         preRender(renderAtomic: RenderAtomic): void;
+    }
+    /**
+     * 雾模式
+     */
+    enum FogMode {
+        NONE = 0,
+        EXP = 1,
+        EXP2 = 2,
+        LINEAR = 3,
     }
     class StandardUniforms {
         /**
@@ -9424,166 +9391,24 @@ declare namespace feng3d {
          * 反射率
          */
         u_reflectivity: number;
-        constructor();
-    }
-}
-declare namespace feng3d {
-    /**
-     * 漫反射函数
-     * @author feng 2017-03-22
-     */
-    class DiffuseMethod extends EventDispatcher {
-        /**
-         * 漫反射纹理
-         */
-        difuseTexture: Texture2D;
-        private _difuseTexture;
-        /**
-         * 基本颜色
-         */
-        color: Color4;
-        /**
-         * 透明阈值，透明度小于该值的像素被片段着色器丢弃
-         */
-        alphaThreshold: number;
-        /**
-         * 构建
-         */
-        constructor(diffuseUrl?: string);
-        preRender(renderAtomic: RenderAtomic): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 法线函数
-     * @author feng 2017-03-22
-     */
-    class NormalMethod extends EventDispatcher {
-        /**
-         * 漫反射纹理
-         */
-        normalTexture: Texture2D;
-        _normalTexture: Texture2D;
-        /**
-         * 构建
-         */
-        constructor(normalUrl?: string);
-        preRender(renderAtomic: RenderAtomic): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 法线函数
-     * @author feng 2017-03-22
-     */
-    class SpecularMethod extends EventDispatcher {
-        /**
-         * 镜面反射光泽图
-         */
-        specularTexture: Texture2D;
-        private _specularTexture;
-        /**
-         * 镜面反射颜色
-         */
-        specularColor: Color3;
-        /**
-         * 高光系数
-         */
-        glossiness: number;
-        /**
-         * 构建
-         */
-        constructor(specularUrl?: string);
-        private onTextureChanged();
-        preRender(renderAtomic: RenderAtomic): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 漫反射函数
-     * @author feng 2017-03-22
-     */
-    class AmbientMethod extends EventDispatcher {
-        /**
-         * 环境纹理
-         */
-        ambientTexture: Texture2D;
-        private _ambientTexture;
-        /**
-         * 颜色
-         */
-        color: Color4;
-        private _color;
-        /**
-         * 构建
-         */
-        constructor(ambientUrl?: string, color?: Color4);
-        preRender(renderAtomic: RenderAtomic): void;
-    }
-}
-declare namespace feng3d {
-    class FogMethod extends EventDispatcher {
-        /**
-         * 是否生效
-         */
-        enable: boolean;
         /**
          * 出现雾效果的最近距离
          */
-        minDistance: number;
+        u_fogMinDistance: number;
         /**
          * 最远距离
          */
-        maxDistance: number;
+        u_fogMaxDistance: number;
         /**
          * 雾的颜色
          */
-        fogColor: Color3;
-        density: number;
+        u_fogColor: Color3;
+        u_fogDensity: number;
         /**
          * 雾模式
          */
-        mode: FogMode;
-        /**
-         * @param fogColor      雾颜色
-         * @param minDistance   雾近距离
-         * @param maxDistance   雾远距离
-         * @param density       雾浓度
-         */
-        constructor(fogColor?: Color3, minDistance?: number, maxDistance?: number, density?: number, mode?: FogMode);
-        private enableChanged();
-        preRender(renderAtomic: RenderAtomic): void;
-    }
-    /**
-     * 雾模式
-     */
-    enum FogMode {
-        NONE = 0,
-        EXP = 1,
-        EXP2 = 2,
-        LINEAR = 3,
-    }
-}
-declare namespace feng3d {
-    /**
-     * 环境映射函数
-     */
-    class EnvMapMethod extends EventDispatcher {
-        /**
-         * 环境映射贴图
-         */
-        cubeTexture: TextureCube;
-        /**
-         * 反射率
-         */
-        reflectivity: number;
-        /**
-         * 创建EnvMapMethod实例
-         * @param envMap		        环境映射贴图
-         * @param reflectivity			反射率
-         */
+        u_fogMode: FogMode;
         constructor();
-        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {

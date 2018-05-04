@@ -10,10 +10,6 @@ namespace feng3d
 
         @serialize()
         @oav()
-        fogMethod = new FogMethod();
-
-        @serialize()
-        @oav()
         terrainMethod = new TerrainMethod();
         // terrainMethod: TerrainMethod | TerrainMergeMethod;
 
@@ -34,12 +30,22 @@ namespace feng3d
         {
             super.preRender(renderAtomic);
 
-            this.fogMethod.preRender(renderAtomic);
             this.terrainMethod.preRender(renderAtomic);
 
             // 序列化时引发bug
             this.uniforms.s_normal.noPixels = imageDatas.defaultNormal;
         }
+    }
+
+    /**
+     * 雾模式
+     */
+    export enum FogMode
+    {
+        NONE = 0,
+        EXP = 1,
+        EXP2 = 2,
+        LINEAR = 3
     }
 
     export class StandardUniforms
@@ -120,6 +126,38 @@ namespace feng3d
         @serialize()
         @oav({ block: "envMap" })
         u_reflectivity = 1;
+
+        /**
+         * 出现雾效果的最近距离
+		 */
+        @serialize()
+        @oav({ block: "fog" })
+        u_fogMinDistance = 0;
+
+		/**
+         * 最远距离
+		 */
+        @serialize()
+        @oav({ block: "fog" })
+        u_fogMaxDistance = 100;
+
+        /**
+         * 雾的颜色
+		 */
+        @serialize()
+        @oav({ block: "fog" })
+        u_fogColor = new Color3();
+
+        @serialize()
+        @oav({ block: "fog" })
+        u_fogDensity = 0.1;
+
+        /**
+         * 雾模式
+         */
+        @serialize()
+        @oav({ block: "fog" })
+        u_fogMode = FogMode.NONE;
 
         constructor()
         {
