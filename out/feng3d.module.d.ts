@@ -763,12 +763,6 @@ declare namespace feng3d {
         create(raw: GameObjectRaw): GameObject;
     }
     var rawData: RawData;
-    interface GameObjectRaw {
-        __class__: "feng3d.GameObject";
-        name?: string;
-        children?: GameObjectRaw[];
-        components?: ComponentRaw[];
-    }
     type GeometryRaw = SegmentGeometryRaw | PlaneGeometryRaw | CubeGeometryRaw | SphereGeometryRaw | CapsuleGeometryRaw | CylinderGeometryRaw | ConeGeometryRaw | TorusGeometryRaw;
     interface TransformRaw {
         __class__: "feng3d.Transform";
@@ -980,11 +974,6 @@ declare namespace feng3d {
         SegmentMaterialRaw: SegmentMaterialRaw;
         StandardMaterialRaw: StandardMaterialRaw;
     }
-    interface ComponentRawMap {
-        TransformRaw: TransformRaw;
-        MeshRendererRaw: MeshRendererRaw;
-    }
-    type ComponentRaw = ValueOf<ComponentRawMap>;
 }
 declare namespace feng3d {
     /**
@@ -7632,6 +7621,17 @@ declare namespace feng3d {
     enum GameObjectFlag {
         feng3d = 1,
         editor = 2,
+    }
+    interface ComponentRawMap {
+        TransformRaw: TransformRaw;
+        MeshRendererRaw: MeshRendererRaw;
+    }
+    type ComponentRaw = ValueOf<ComponentRawMap>;
+    interface GameObjectRaw {
+        __class__?: "feng3d.GameObject";
+        name?: string;
+        children?: GameObjectRaw[];
+        components?: ComponentRaw[];
     }
     /**
      * Base class for all entities in feng3d scenes.

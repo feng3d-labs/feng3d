@@ -12947,8 +12947,7 @@ var feng3d;
         /**
          * 构建3D对象
          */
-        function GameObject(name) {
-            if (name === void 0) { name = "GameObject"; }
+        function GameObject(data) {
             var _this = _super.call(this) || this;
             _this.renderAtomic = new feng3d.RenderAtomic();
             _this._children = [];
@@ -12983,7 +12982,7 @@ var feng3d;
              * 组件列表
              */
             _this._components = [];
-            _this.name = name;
+            _this.name = data ? data.name : "GameObject";
             _this.addComponent(feng3d.Transform);
             _this.addComponent(feng3d.BoundingComponent);
             _this.guid = feng3d.FMath.generateUUID();
@@ -13363,7 +13362,7 @@ var feng3d;
         GameObject.create = function (name, callback) {
             if (name === void 0) { name = "GameObject"; }
             if (callback === void 0) { callback = null; }
-            var gameobject = new GameObject(name);
+            var gameobject = new GameObject({ name: name });
             callback && callback(gameobject);
             return gameobject;
         };

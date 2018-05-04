@@ -20,15 +20,6 @@ namespace feng3d
 
     export var rawData = new RawData();
 
-
-    export interface GameObjectRaw
-    {
-        __class__: "feng3d.GameObject";
-        name?: string;
-        children?: GameObjectRaw[];
-        components?: ComponentRaw[];
-    }
-
     export type GeometryRaw =
         SegmentGeometryRaw
         | PlaneGeometryRaw
@@ -314,12 +305,4 @@ namespace feng3d
         SegmentMaterialRaw: SegmentMaterialRaw;
         StandardMaterialRaw: StandardMaterialRaw;
     }
-
-    export interface ComponentRawMap
-    {
-        TransformRaw: TransformRaw
-        MeshRendererRaw: MeshRendererRaw
-    }
-
-    export type ComponentRaw = ValueOf<ComponentRawMap>;
 }

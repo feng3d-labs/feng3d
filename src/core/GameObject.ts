@@ -124,13 +124,29 @@ namespace feng3d
         editor = 2,
     }
 
+    export interface ComponentRawMap
+    {
+        TransformRaw: TransformRaw
+        MeshRendererRaw: MeshRendererRaw
+    }
+
+    export type ComponentRaw = ValueOf<ComponentRawMap>;
+
+    export interface GameObjectRaw
+    {
+        __class__?: "feng3d.GameObject";
+        name?: string;
+        children?: GameObjectRaw[];
+        components?: ComponentRaw[];
+    }
+
     /**
      * Base class for all entities in feng3d scenes.
      */
     export class GameObject extends Feng3dObject
     {
         readonly renderAtomic = new RenderAtomic();
-        
+
         /**
          * 游戏对象池
          */
@@ -256,10 +272,10 @@ namespace feng3d
         /**
          * 构建3D对象
          */
-        private constructor(name = "GameObject")
+        private constructor(data: GameObjectRaw)
         {
             super();
-            this.name = name;
+            this.name = data ? data.name : "GameObject";
             this.addComponent(Transform);
             this.addComponent(BoundingComponent);
             this.guid = FMath.generateUUID();
@@ -653,7 +669,7 @@ namespace feng3d
 
         static create(name = "GameObject", callback: (gameobject: GameObject) => void = null)
         {
-            var gameobject = new GameObject(name);
+            var gameobject = new GameObject({ name: name });
             callback && callback(gameobject)
             return gameobject;
         }
