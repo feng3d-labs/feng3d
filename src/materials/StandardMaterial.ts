@@ -1,5 +1,13 @@
 namespace feng3d
 {
+
+    export interface IStandardMaterial
+    {
+        uniforms: StandardUniforms;
+    }
+
+    var a: IStandardMaterial & Material;
+
     /**
      * 标准材质
      * @author feng 2016-05-02
@@ -14,14 +22,10 @@ namespace feng3d
         /**
          * 构建
          */
-        constructor(diffuseUrl = "", normalUrl = "", specularUrl = "", ambientUrl = "")
+        constructor()
         {
             super();
             this.shaderName = "standard";
-            this.uniforms.s_diffuse.url = diffuseUrl;
-            this.uniforms.s_normal.url = normalUrl;
-            this.uniforms.s_specular.url = specularUrl;
-            this.uniforms.s_ambient.url = ambientUrl;
         }
 
         preRender(renderAtomic: RenderAtomic)

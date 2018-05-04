@@ -18784,6 +18784,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var a;
     /**
      * 标准材质
      * @author feng 2016-05-02
@@ -18794,19 +18795,11 @@ var feng3d;
         /**
          * 构建
          */
-        function StandardMaterial(diffuseUrl, normalUrl, specularUrl, ambientUrl) {
-            if (diffuseUrl === void 0) { diffuseUrl = ""; }
-            if (normalUrl === void 0) { normalUrl = ""; }
-            if (specularUrl === void 0) { specularUrl = ""; }
-            if (ambientUrl === void 0) { ambientUrl = ""; }
+        function StandardMaterial() {
             var _this = _super.call(this) || this;
             _this.uniforms = new StandardUniforms();
             _this.terrainMethod = new feng3d.TerrainMethod();
             _this.shaderName = "standard";
-            _this.uniforms.s_diffuse.url = diffuseUrl;
-            _this.uniforms.s_normal.url = normalUrl;
-            _this.uniforms.s_specular.url = specularUrl;
-            _this.uniforms.s_ambient.url = ambientUrl;
             return _this;
         }
         StandardMaterial.prototype.preRender = function (renderAtomic) {

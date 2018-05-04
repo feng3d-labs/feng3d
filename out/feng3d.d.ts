@@ -9318,6 +9318,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface IStandardMaterial {
+        uniforms: StandardUniforms;
+    }
     /**
      * 标准材质
      * @author feng 2016-05-02
@@ -9328,7 +9331,7 @@ declare namespace feng3d {
         /**
          * 构建
          */
-        constructor(diffuseUrl?: string, normalUrl?: string, specularUrl?: string, ambientUrl?: string);
+        constructor();
         preRender(renderAtomic: RenderAtomic): void;
     }
     /**
