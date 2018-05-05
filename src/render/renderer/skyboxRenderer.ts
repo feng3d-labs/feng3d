@@ -65,19 +65,17 @@ namespace feng3d
             return;
         var skybox = skyboxs[0];
 
+        
+        //
+        renderAtomic.renderParams = renderParams;
+        renderAtomic.shader = shader;
+        skybox.gameObject.preRender(renderAtomic);
+        
         //
         renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
         renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix
         renderAtomic.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
         renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-
-        //
-        var renderAtomic = skybox.gameObject.renderAtomic;
-        renderAtomic.renderParams = renderParams;
-        renderAtomic.shader = shader;
-        skybox.gameObject.preRender(renderAtomic);
-
-        renderAtomic.uniforms.s_skyboxTexture = renderAtomic.uniforms.s_skyboxTexture;
 
         gl.renderer.draw(renderAtomic);
     }

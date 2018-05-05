@@ -43,7 +43,7 @@ namespace feng3d
         {
             super();
             this._textureType = TextureType.TEXTURE_CUBE_MAP;
-            
+
             this.noPixels = [imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white];
             this._pixels = [];
             if (images)
@@ -66,10 +66,10 @@ namespace feng3d
             if (!this._pixels)
                 return false;
 
-            for (var i = 0; i < this._pixels.length; i++)
+            for (var i = 0; i < 6; i++)
             {
                 var element = this._pixels[i];
-                if (!element.width || !element.height)
+                if (!element || !element.width || !element.height)
                     return false;
             }
 
@@ -89,6 +89,7 @@ namespace feng3d
 
             function loadImage(url: string, index: number)
             {
+                if (!url) return;
                 assets.loadImage(url, (img) =>
                 {
                     __this._pixels[index] = img;

@@ -41,7 +41,7 @@ namespace feng3d
          */
         @serialize()
         @oav()
-        ambientColor = new Color4(0.2, 0.2, 0.2);
+        ambientColor = new Color4();
 
         /**
          * 指定更新脚本标记，用于过滤需要调用update的脚本

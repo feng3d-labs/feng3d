@@ -11205,7 +11205,7 @@ var feng3d;
                 "vertex": "\r\n\r\nattribute vec3 a_position;\r\n\r\nuniform mat4 u_cameraMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nuniform float u_skyBoxSize;\r\n\r\nvarying vec3 v_worldPos;\r\n\r\nvoid main(){\r\n    vec3 worldPos = a_position.xyz * u_skyBoxSize + u_cameraMatrix[3].xyz;\r\n    gl_Position = u_viewProjection * vec4(worldPos.xyz,1.0);\r\n    v_worldPos = worldPos;\r\n}"
             },
             "standard": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#ifdef HAS_TERRAIN_METHOD\r\n    #include<terrain.fragment>\r\n#endif\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#ifdef HAS_ENV_METHOD\r\n    #include<envmap.fragment>\r\n#endif\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.fragment>\r\n#endif\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    #ifdef HAS_TERRAIN_METHOD\r\n        diffuseColor = terrainMethod(diffuseColor, v_uv);\r\n    #endif\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n    #ifdef HAS_SPECULAR_SAMPLER\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n    #endif\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    #ifdef HAS_ENV_METHOD\r\n        finalColor = envmapMethod(finalColor);\r\n    #endif\r\n\r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        finalColor = particleAnimation(finalColor);\r\n    #endif\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#ifdef HAS_TERRAIN_METHOD\r\n    #include<terrain.fragment>\r\n#endif\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#include<envmap.fragment>\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.fragment>\r\n#endif\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    #ifdef HAS_TERRAIN_METHOD\r\n        diffuseColor = terrainMethod(diffuseColor, v_uv);\r\n    #endif\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n    #ifdef HAS_SPECULAR_SAMPLER\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n    #endif\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    finalColor = envmapMethod(finalColor);\r\n\r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        finalColor = particleAnimation(finalColor);\r\n    #endif\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
                 "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nattribute vec3 a_tangent;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\n#ifdef HAS_SKELETON_ANIMATION\r\n    #include<skeleton.vertex>\r\n#endif\r\n\r\nuniform float u_PointSize;\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.vertex>\r\n#endif\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n\r\n    #ifdef HAS_SKELETON_ANIMATION\r\n        position = skeletonAnimation(position);\r\n    #endif\r\n    \r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        position = particleAnimation(position);\r\n    #endif\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出全局坐标\r\n    v_globalPosition = globalPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n    \r\n    gl_PointSize = u_PointSize;\r\n}"
             },
             "texture": {
@@ -12246,16 +12246,14 @@ var feng3d;
             return;
         var skybox = skyboxs[0];
         //
+        renderAtomic.renderParams = renderParams;
+        renderAtomic.shader = shader;
+        skybox.gameObject.preRender(renderAtomic);
+        //
         renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
         renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
         renderAtomic.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
         renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-        //
-        var renderAtomic = skybox.gameObject.renderAtomic;
-        renderAtomic.renderParams = renderParams;
-        renderAtomic.shader = shader;
-        skybox.gameObject.preRender(renderAtomic);
-        renderAtomic.uniforms.s_skyboxTexture = renderAtomic.uniforms.s_skyboxTexture;
         gl.renderer.draw(renderAtomic);
     }
     var SkyBox = /** @class */ (function (_super) {
@@ -14686,7 +14684,7 @@ var feng3d;
             /**
              * 环境光强度
              */
-            _this.ambientColor = new feng3d.Color4(0.2, 0.2, 0.2);
+            _this.ambientColor = new feng3d.Color4();
             /**
              * 指定更新脚本标记，用于过滤需要调用update的脚本
              */
@@ -18472,9 +18470,9 @@ var feng3d;
         TextureCube.prototype.checkRenderData = function () {
             if (!this._pixels)
                 return false;
-            for (var i = 0; i < this._pixels.length; i++) {
+            for (var i = 0; i < 6; i++) {
                 var element = this._pixels[i];
-                if (!element.width || !element.height)
+                if (!element || !element.width || !element.height)
                     return false;
             }
             return true;
@@ -18488,6 +18486,8 @@ var feng3d;
             loadImage(this.negative_y_url, 4);
             loadImage(this.negative_z_url, 5);
             function loadImage(url, index) {
+                if (!url)
+                    return;
                 feng3d.assets.loadImage(url, function (img) {
                     __this._pixels[index] = img;
                     __this.invalidate();
@@ -19975,90 +19975,32 @@ var feng3d;
          */
         function TerrainMethod() {
             var _this = _super.call(this) || this;
-            _this._splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
-            _this.blendTexture = new feng3d.Texture2D();
-            _this.splatTexture1 = new feng3d.Texture2D();
-            _this.splatTexture2 = new feng3d.Texture2D();
-            _this.splatTexture3 = new feng3d.Texture2D();
-            _this.splatTexture1.generateMipmap = true;
-            _this.splatTexture1.minFilter = feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR;
-            _this.splatTexture1.wrapS = feng3d.TextureWrap.REPEAT;
-            _this.splatTexture1.wrapT = feng3d.TextureWrap.REPEAT;
-            _this.splatTexture2.generateMipmap = true;
-            _this.splatTexture2.minFilter = feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR;
-            _this.splatTexture2.wrapS = feng3d.TextureWrap.REPEAT;
-            _this.splatTexture2.wrapT = feng3d.TextureWrap.REPEAT;
-            _this.splatTexture3.generateMipmap = true;
-            _this.splatTexture3.minFilter = feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR;
-            _this.splatTexture3.wrapS = feng3d.TextureWrap.REPEAT;
-            _this.splatTexture3.wrapT = feng3d.TextureWrap.REPEAT;
+            _this.s_splatTexture1 = new feng3d.Texture2D();
+            _this.s_splatTexture2 = new feng3d.Texture2D();
+            _this.s_splatTexture3 = new feng3d.Texture2D();
+            _this.s_blendTexture = new feng3d.Texture2D();
+            _this.u_splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
+            _this.s_splatTexture1.generateMipmap = true;
+            _this.s_splatTexture1.minFilter = feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+            _this.s_splatTexture1.wrapS = feng3d.TextureWrap.REPEAT;
+            _this.s_splatTexture1.wrapT = feng3d.TextureWrap.REPEAT;
+            _this.s_splatTexture2.generateMipmap = true;
+            _this.s_splatTexture2.minFilter = feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+            _this.s_splatTexture2.wrapS = feng3d.TextureWrap.REPEAT;
+            _this.s_splatTexture2.wrapT = feng3d.TextureWrap.REPEAT;
+            _this.s_splatTexture3.generateMipmap = true;
+            _this.s_splatTexture3.minFilter = feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+            _this.s_splatTexture3.wrapS = feng3d.TextureWrap.REPEAT;
+            _this.s_splatTexture3.wrapT = feng3d.TextureWrap.REPEAT;
             return _this;
         }
-        Object.defineProperty(TerrainMethod.prototype, "splatTexture1", {
-            get: function () {
-                return this._splatTexture1;
-            },
-            set: function (value) {
-                if (this._splatTexture1 == value)
-                    return;
-                this._splatTexture1 = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainMethod.prototype, "splatTexture2", {
-            get: function () {
-                return this._splatTexture2;
-            },
-            set: function (value) {
-                if (this._splatTexture2 == value)
-                    return;
-                this._splatTexture2 = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainMethod.prototype, "splatTexture3", {
-            get: function () {
-                return this._splatTexture3;
-            },
-            set: function (value) {
-                if (this._splatTexture3 == value)
-                    return;
-                this._splatTexture3 = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainMethod.prototype, "blendTexture", {
-            get: function () {
-                return this._blendTexture;
-            },
-            set: function (value) {
-                if (this._blendTexture == value)
-                    return;
-                this._blendTexture = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainMethod.prototype, "splatRepeats", {
-            get: function () {
-                return this._splatRepeats;
-            },
-            set: function (value) {
-                this._splatRepeats = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         TerrainMethod.prototype.preRender = function (renderAtomic) {
             var _this = this;
-            renderAtomic.uniforms.s_blendTexture = function () { return _this.blendTexture; };
-            renderAtomic.uniforms.s_splatTexture1 = function () { return _this.splatTexture1; };
-            renderAtomic.uniforms.s_splatTexture2 = function () { return _this.splatTexture2; };
-            renderAtomic.uniforms.s_splatTexture3 = function () { return _this.splatTexture3; };
-            renderAtomic.uniforms.u_splatRepeats = function () { return _this.splatRepeats; };
+            renderAtomic.uniforms.s_blendTexture = function () { return _this.s_blendTexture; };
+            renderAtomic.uniforms.s_splatTexture1 = function () { return _this.s_splatTexture1; };
+            renderAtomic.uniforms.s_splatTexture2 = function () { return _this.s_splatTexture2; };
+            renderAtomic.uniforms.s_splatTexture3 = function () { return _this.s_splatTexture3; };
+            renderAtomic.uniforms.u_splatRepeats = function () { return _this.u_splatRepeats; };
         };
         return TerrainMethod;
     }(feng3d.EventDispatcher));

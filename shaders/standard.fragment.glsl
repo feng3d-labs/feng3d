@@ -36,9 +36,7 @@ uniform sampler2D s_ambient;
 
 #include<fog.fragment>
 
-#ifdef HAS_ENV_METHOD
-    #include<envmap.fragment>
-#endif
+#include<envmap.fragment>
 
 #ifdef HAS_PARTICLE_ANIMATOR
     #include<particle.fragment>
@@ -86,9 +84,7 @@ void main(void)
     
     finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
 
-    #ifdef HAS_ENV_METHOD
-        finalColor = envmapMethod(finalColor);
-    #endif
+    finalColor = envmapMethod(finalColor);
 
     #ifdef HAS_PARTICLE_ANIMATOR
         finalColor = particleAnimation(finalColor);

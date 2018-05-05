@@ -9726,16 +9726,11 @@ declare namespace feng3d {
      * @author feng 2016-04-28
      */
     class TerrainMethod extends EventDispatcher {
-        splatTexture1: Texture2D;
-        private _splatTexture1;
-        splatTexture2: Texture2D;
-        private _splatTexture2;
-        splatTexture3: Texture2D;
-        private _splatTexture3;
-        blendTexture: Texture2D;
-        private _blendTexture;
-        splatRepeats: Vector4;
-        private _splatRepeats;
+        s_splatTexture1: Texture2D;
+        s_splatTexture2: Texture2D;
+        s_splatTexture3: Texture2D;
+        s_blendTexture: Texture2D;
+        u_splatRepeats: Vector4;
         /**
          * 构建材质
          */
