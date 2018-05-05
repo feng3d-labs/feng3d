@@ -6,23 +6,6 @@ namespace feng3d
         url: string;
     }
 
-    export interface Texture2DEventMap
-    {
-        /**
-         * 纹理加载完成
-         */
-        loaded;
-    }
-
-    export interface Texture2D
-    {
-        once<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof Texture2DEventMap>(type: K, data?: Texture2DEventMap[K], bubbles?: boolean);
-        has<K extends keyof Texture2DEventMap>(type: K): boolean;
-        on<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any);
-    }
-
     export var imageDatas = {
         black: ImageUtil.createImageData(1, 1, ColorKeywords.black),
         white: ImageUtil.createImageData(1, 1, ColorKeywords.white),
@@ -41,33 +24,9 @@ namespace feng3d
         protected _pixels: HTMLImageElement;
 
         @serialize("")
+        @watch("urlChanged")
         @oav()
-        get url()
-        {
-            return this._url;
-        }
-
-        set url(value: string)
-        {
-            if (this._url == value)
-                return;
-            this._url = value;
-
-            var url = this._url;
-            assets.loadImage(url, (img) =>
-            {
-                if (url == this._url)
-                {
-                    this._pixels = img;
-                    this.onLoad();
-                }
-            });
-        }
-        private _url = "";
-
-        // noPixels = imageDatas.white;
-        // noPixels = imageDatas.black;
-        // noPixels = imageDatas.defaultNormal;
+        url = "";
 
         /**
          * 纹理尺寸
@@ -78,21 +37,11 @@ namespace feng3d
             return new Vector2(this._pixels.width, this._pixels.height);
         }
 
-        constructor(url = "")
+        constructor()
         {
             super();
             this._textureType = TextureType.TEXTURE_2D;
-            this.url = url;
             this.noPixels = imageDatas.white;
-        }
-
-        /**
-         * 处理加载完成
-         */
-        protected onLoad()
-        {
-            this.invalidate();
-            this.dispatch("loaded");
         }
 
         /**
@@ -107,6 +56,19 @@ namespace feng3d
                 return false;
 
             return true;
+        }
+
+        private urlChanged()
+        {
+            var url = this.url;
+            assets.loadImage(url, (img) =>
+            {
+                if (url == this.url)
+                {
+                    this._pixels = img;
+                    this.invalidate();
+                }
+            });
         }
     }
 }

@@ -67,7 +67,6 @@
         "src/net/LoaderEvent.ts",
         "src/net/LoaderDataFormat.ts",
         //
-        "src/render/gl/GLEnum.ts",
         "src/render/gl/enums/RenderMode.ts",
         "src/render/gl/enums/TextureType.ts",
         "src/render/gl/enums/BlendEquation.ts",

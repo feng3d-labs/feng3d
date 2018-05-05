@@ -140,11 +140,11 @@ namespace feng3d
             this._activePixels = currentPixels;
 
             var texture = this.getTexture(gl);
-            var textureType = gl.enums.getTextureTypeValue(this._textureType);
-            var minFilter = gl.enums.getTextureMinFilterValue(this.minFilter);
-            var magFilter = gl.enums.getTextureMagFilterValue(this.magFilter);
-            var wrapS = gl.enums.getTextureWrapValue(this.wrapS);
-            var wrapT = gl.enums.getTextureWrapValue(this.wrapT);
+            var textureType = gl[this._textureType];
+            var minFilter = gl[this.minFilter];
+            var magFilter = gl[this.magFilter];
+            var wrapS = gl[this.wrapS];
+            var wrapT = gl[this.wrapT];
 
             var isPowerOfTwo = true;
             var pixels = this._activePixels;
@@ -194,7 +194,7 @@ namespace feng3d
                     throw "";
                 }
                 texture = newtexture;
-                var textureType = gl.enums.getTextureTypeValue(this._textureType);
+                var textureType = gl[this._textureType];
                 //设置图片y轴方向
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, this.flipY ? 1 : 0);
                 gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premulAlpha ? 1 : 0);
@@ -216,8 +216,8 @@ namespace feng3d
          */
         private initTexture(gl: GL)
         {
-            var format = gl.enums.getTextureFormatValue(this._format);
-            var type = gl.enums.getTextureDataTypeValue(this._type);
+            var format = gl[this._format];
+            var type = gl[this._type];
 
             switch (this._textureType)
             {
@@ -234,7 +234,7 @@ namespace feng3d
                     break;
                 case TextureType.TEXTURE_2D:
                     var _pixel: HTMLImageElement | ImageData = <any>this._activePixels;
-                    var textureType = gl.enums.getTextureTypeValue(this._textureType);
+                    var textureType = gl[this._textureType];
                     gl.texImage2D(textureType, 0, format, format, type, _pixel);
                     break;
                 default:

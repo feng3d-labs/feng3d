@@ -9,31 +9,10 @@ namespace feng3d
         /**
          * Clock-wise winding.
          */
-        CW,
+        CW = "CW",
         /**
          *  Counter-clock-wise winding.
          */
-        CCW,
-    }
-
-    enums.getFrontFaceValue = (gl: GL) =>
-    {
-        return (frontFace: FrontFace) =>
-        {
-            var value = gl.CCW;
-            switch (frontFace)
-            {
-                case FrontFace.CW:
-                    value = gl.CW;
-                    break;
-                case FrontFace.CCW:
-                    value = gl.CCW;
-                    break;
-                default:
-                    error(`无法处理枚举 ${FrontFace} ${frontFace}`);
-                    break;
-            }
-            return value;
-        }
+        CCW = "CCW",
     }
 }

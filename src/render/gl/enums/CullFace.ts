@@ -9,45 +9,18 @@ namespace feng3d
         /**
          * 关闭裁剪面
          */
-        NONE,
+        NONE = "NONE",
         /**
          * 正面
          */
-        FRONT,
+        FRONT = "FRONT",
         /**
          * 背面
          */
-        BACK,
+        BACK = "BACK",
         /**
          * 正面与背面
          */
-        FRONT_AND_BACK,
-    }
-
-    enums.getCullFaceValue = (gl: GL) =>
-    {
-        return (cullFace: CullFace) =>
-        {
-            var value = gl.BACK;
-            switch (cullFace)
-            {
-                case CullFace.NONE:
-                    value = gl.NONE;
-                    break;
-                case CullFace.FRONT:
-                    value = gl.FRONT;
-                    break;
-                case CullFace.BACK:
-                    value = gl.BACK;
-                    break;
-                case CullFace.FRONT_AND_BACK:
-                    value = gl.FRONT_AND_BACK;
-                    break;
-                default:
-                    error(`无法处理枚举 ${CullFace} ${cullFace}`);
-                    break;
-            }
-            return value;
-        }
+        FRONT_AND_BACK = "FRONT_AND_BACK",
     }
 }

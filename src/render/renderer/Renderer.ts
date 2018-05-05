@@ -34,7 +34,7 @@ namespace feng3d
             function activeShaderParams(shaderParams: RenderParams)
             {
                 var cullfaceEnum = lazy.getvalue(shaderParams.cullFace);
-                var blendEquation = gl.enums.getBlendEquationValue(lazy.getvalue(shaderParams.blendEquation));
+                var blendEquation = gl[shaderParams.blendEquation];
                 var sfactor = gl.enums.getBlendFactorValue(lazy.getvalue(shaderParams.sfactor));
                 var dfactor = gl.enums.getBlendFactorValue(lazy.getvalue(shaderParams.dfactor));
                 var cullFace = gl.enums.getCullFaceValue(lazy.getvalue(shaderParams.cullFace));
@@ -214,7 +214,7 @@ namespace feng3d
                 if (indexBuffer)
                 {
                     indexBuffer.active(gl);
-                    var arrayType = gl.enums.getGLArrayTypeValue(indexBuffer.type);
+                    var arrayType = gl[indexBuffer.type];
                     if (indexBuffer.count == 0)
                     {
                         warn(`顶点索引为0，不进行渲染！`);

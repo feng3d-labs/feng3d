@@ -11,47 +11,20 @@ namespace feng3d
         /**
          * gl.TEXTURE_2D: A two-dimensional texture.
          */
-        TEXTURE_2D,
+        TEXTURE_2D = "TEXTURE_2D",
         /**
          * gl.TEXTURE_CUBE_MAP: A cube-mapped texture.
          */
-        TEXTURE_CUBE_MAP,
+        TEXTURE_CUBE_MAP = "TEXTURE_CUBE_MAP",
         /**
          * using a WebGL 2 context
          * gl.TEXTURE_3D: A three-dimensional texture.
          */
-        TEXTURE_3D,
+        TEXTURE_3D = "TEXTURE_3D",
         /**
          * using a WebGL 2 context
          * gl.TEXTURE_2D_ARRAY: A two-dimensional array texture.
          */
-        TEXTURE_2D_ARRAY,
-    }
-
-    enums.getTextureTypeValue = (gl: GL) =>
-    {
-        return (textureType: TextureType) =>
-        {
-            var gl2: WebGL2RenderingContext = <any>gl;
-            var value = gl.TEXTURE_2D;
-            switch (textureType)
-            {
-                case TextureType.TEXTURE_2D:
-                    value = gl.TEXTURE_2D;
-                    break;
-                case TextureType.TEXTURE_CUBE_MAP:
-                    value = gl.TEXTURE_CUBE_MAP;
-                    break;
-                case TextureType.TEXTURE_3D:
-                    value = gl2.TEXTURE_3D;
-                    break;
-                case TextureType.TEXTURE_2D_ARRAY:
-                    value = gl2.TEXTURE_2D_ARRAY;
-                    break;
-                default:
-                    error(`无法处理枚举 ${TextureType} ${textureType}`);
-            }
-            return value;
-        }
+        TEXTURE_2D_ARRAY = "TEXTURE_2D_ARRAY",
     }
 }

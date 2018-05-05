@@ -10,73 +10,34 @@ namespace feng3d
         /**
          * (never pass)
          */
-        NEVER,
+        NEVER = "NEVER",
         /**
          *  (pass if the incoming value is less than the depth buffer value)
          */
-        LESS,
+        LESS = "LESS",
         /**
          *  (pass if the incoming value equals the the depth buffer value)
          */
-        EQUAL,
+        EQUAL = "EQUAL",
         /**
          *  (pass if the incoming value is less than or equal to the depth buffer value)
          */
-        LEQUAL,
+        LEQUAL = "LEQUAL",
         /**
          * (pass if the incoming value is greater than the depth buffer value)
          */
-        GREATER,
+        GREATER = "GREATER",
         /**
          * (pass if the incoming value is not equal to the depth buffer value)
          */
-        NOTEQUAL,
+        NOTEQUAL = "NOTEQUAL",
         /**
          * (pass if the incoming value is greater than or equal to the depth buffer value)
          */
-        GEQUAL,
+        GEQUAL = "GEQUAL",
         /**
          *  (always pass)
          */
-        ALWAYS,
-    }
-
-    enums.getdDepthFuncValue = (gl: GL) =>
-    {
-        return (depthFunc: DepthFunc) =>
-        {
-            var value = gl.LESS;
-            switch (depthFunc)
-            {
-                case DepthFunc.NEVER:
-                    value = gl.NEVER;
-                    break;
-                case DepthFunc.LESS:
-                    value = gl.LESS;
-                    break;
-                case DepthFunc.EQUAL:
-                    value = gl.EQUAL;
-                    break;
-                case DepthFunc.LEQUAL:
-                    value = gl.LEQUAL;
-                    break;
-                case DepthFunc.GREATER:
-                    value = gl.GREATER;
-                    break;
-                case DepthFunc.NOTEQUAL:
-                    value = gl.NOTEQUAL;
-                    break;
-                case DepthFunc.GEQUAL:
-                    value = gl.GEQUAL;
-                    break;
-                case DepthFunc.ALWAYS:
-                    value = gl.ALWAYS;
-                    break;
-                default:
-                    error(`无法处理枚举 ${DepthFunc} ${depthFunc}`);
-                    break;
-            }
-            return value;
-        }
+        ALWAYS = "ALWAYS",
     }
 }

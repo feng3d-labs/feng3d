@@ -8838,37 +8838,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * @private
-     */
-    feng3d.enums = {};
-    /**
-     * GL枚举
-     */
-    var GLEnum = /** @class */ (function () {
-        function GLEnum(gl) {
-            feng3d.assert(!gl.enums, gl + " " + gl.enums + " \u5B58\u5728\uFF01");
-            gl.enums = this;
-            this.getRenderModeValue = feng3d.enums.getRenderModeValue(gl);
-            this.getTextureTypeValue = feng3d.enums.getTextureTypeValue(gl);
-            this.getBlendEquationValue = feng3d.enums.getBlendEquationValue(gl);
-            this.getBlendFactorValue = feng3d.enums.getBlendFactorValue(gl);
-            this.getCullFaceValue = feng3d.enums.getCullFaceValue(gl);
-            this.getFrontFaceValue = feng3d.enums.getFrontFaceValue(gl);
-            this.getTextureFormatValue = feng3d.enums.getTextureFormatValue(gl);
-            this.getTextureDataTypeValue = feng3d.enums.getTextureDataTypeValue(gl);
-            this.getTextureMinFilterValue = feng3d.enums.getTextureMinFilterValue(gl);
-            this.getTextureMagFilterValue = feng3d.enums.getTextureMagFilterValue(gl);
-            this.getTextureWrapValue = feng3d.enums.getTextureWrapValue(gl);
-            this.getGLArrayTypeValue = feng3d.enums.getGLArrayTypeValue(gl);
-            this.getdDepthFuncValue = feng3d.enums.getdDepthFuncValue(gl);
-        }
-        return GLEnum;
-    }());
-    feng3d.GLEnum = GLEnum;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 渲染模式
      * A GLenum specifying the type primitive to render. Possible values are:
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
@@ -8880,65 +8849,34 @@ var feng3d;
          * 点渲染
          * gl.POINTS: Draws a single dot.
          */
-        RenderMode[RenderMode["POINTS"] = 0] = "POINTS";
+        RenderMode["POINTS"] = "POINTS";
         /**
          * gl.LINE_LOOP: Draws a straight line to the next vertex, and connects the last vertex back to the first.
          */
-        RenderMode[RenderMode["LINE_LOOP"] = 1] = "LINE_LOOP";
+        RenderMode["LINE_LOOP"] = "LINE_LOOP";
         /**
          * gl.LINE_STRIP: Draws a straight line to the next vertex.
          */
-        RenderMode[RenderMode["LINE_STRIP"] = 2] = "LINE_STRIP";
+        RenderMode["LINE_STRIP"] = "LINE_STRIP";
         /**
          * gl.LINES: Draws a line between a pair of vertices.
          */
-        RenderMode[RenderMode["LINES"] = 3] = "LINES";
+        RenderMode["LINES"] = "LINES";
         /**
          * gl.TRIANGLES: Draws a triangle for a group of three vertices.
          */
-        RenderMode[RenderMode["TRIANGLES"] = 4] = "TRIANGLES";
+        RenderMode["TRIANGLES"] = "TRIANGLES";
         /**
          * gl.TRIANGLE_STRIP
          * @see https://en.wikipedia.org/wiki/Triangle_strip
          */
-        RenderMode[RenderMode["TRIANGLE_STRIP"] = 5] = "TRIANGLE_STRIP";
+        RenderMode["TRIANGLE_STRIP"] = "TRIANGLE_STRIP";
         /**
          * gl.TRIANGLE_FAN
          * @see https://en.wikipedia.org/wiki/Triangle_fan
          */
-        RenderMode[RenderMode["TRIANGLE_FAN"] = 6] = "TRIANGLE_FAN";
+        RenderMode["TRIANGLE_FAN"] = "TRIANGLE_FAN";
     })(RenderMode = feng3d.RenderMode || (feng3d.RenderMode = {}));
-    feng3d.enums.getRenderModeValue = function (gl) {
-        return function (renderMode) {
-            var value = gl.TRIANGLES;
-            switch (renderMode) {
-                case RenderMode.POINTS:
-                    value = gl.POINTS;
-                    break;
-                case RenderMode.LINE_LOOP:
-                    value = gl.LINE_LOOP;
-                    break;
-                case RenderMode.LINE_STRIP:
-                    value = gl.LINE_STRIP;
-                    break;
-                case RenderMode.LINES:
-                    value = gl.LINES;
-                    break;
-                case RenderMode.TRIANGLES:
-                    value = gl.TRIANGLES;
-                    break;
-                case RenderMode.TRIANGLE_STRIP:
-                    value = gl.TRIANGLE_STRIP;
-                    break;
-                case RenderMode.TRIANGLE_FAN:
-                    value = gl.TRIANGLE_FAN;
-                    break;
-                default:
-                    throw "\u6CA1\u6CD5\u5904\u7406\u679A\u4E3E\u503C " + RenderMode + " " + renderMode;
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -8952,45 +8890,22 @@ var feng3d;
         /**
          * gl.TEXTURE_2D: A two-dimensional texture.
          */
-        TextureType[TextureType["TEXTURE_2D"] = 0] = "TEXTURE_2D";
+        TextureType["TEXTURE_2D"] = "TEXTURE_2D";
         /**
          * gl.TEXTURE_CUBE_MAP: A cube-mapped texture.
          */
-        TextureType[TextureType["TEXTURE_CUBE_MAP"] = 1] = "TEXTURE_CUBE_MAP";
+        TextureType["TEXTURE_CUBE_MAP"] = "TEXTURE_CUBE_MAP";
         /**
          * using a WebGL 2 context
          * gl.TEXTURE_3D: A three-dimensional texture.
          */
-        TextureType[TextureType["TEXTURE_3D"] = 2] = "TEXTURE_3D";
+        TextureType["TEXTURE_3D"] = "TEXTURE_3D";
         /**
          * using a WebGL 2 context
          * gl.TEXTURE_2D_ARRAY: A two-dimensional array texture.
          */
-        TextureType[TextureType["TEXTURE_2D_ARRAY"] = 3] = "TEXTURE_2D_ARRAY";
+        TextureType["TEXTURE_2D_ARRAY"] = "TEXTURE_2D_ARRAY";
     })(TextureType = feng3d.TextureType || (feng3d.TextureType = {}));
-    feng3d.enums.getTextureTypeValue = function (gl) {
-        return function (textureType) {
-            var gl2 = gl;
-            var value = gl.TEXTURE_2D;
-            switch (textureType) {
-                case TextureType.TEXTURE_2D:
-                    value = gl.TEXTURE_2D;
-                    break;
-                case TextureType.TEXTURE_CUBE_MAP:
-                    value = gl.TEXTURE_CUBE_MAP;
-                    break;
-                case TextureType.TEXTURE_3D:
-                    value = gl2.TEXTURE_3D;
-                    break;
-                case TextureType.TEXTURE_2D_ARRAY:
-                    value = gl2.TEXTURE_2D_ARRAY;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureType + " " + textureType);
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9003,55 +8918,36 @@ var feng3d;
         /**
          *  source + destination
          */
-        BlendEquation[BlendEquation["FUNC_ADD"] = 0] = "FUNC_ADD";
+        BlendEquation["FUNC_ADD"] = "FUNC_ADD";
         /**
          * source - destination
          */
-        BlendEquation[BlendEquation["FUNC_SUBTRACT"] = 1] = "FUNC_SUBTRACT";
+        BlendEquation["FUNC_SUBTRACT"] = "FUNC_SUBTRACT";
         /**
          * destination - source
          */
-        BlendEquation[BlendEquation["FUNC_REVERSE_SUBTRACT"] = 2] = "FUNC_REVERSE_SUBTRACT";
-        /**
-         * When using the EXT_blend_minmax extension:
-         * Minimum of source and destination
-         */
-        BlendEquation[BlendEquation["MIN_EXT"] = 3] = "MIN_EXT";
-        /**
-         * When using the EXT_blend_minmax extension:
-         * Maximum of source and destination.
-         */
-        BlendEquation[BlendEquation["MAX_EXT"] = 4] = "MAX_EXT";
-        /**
-         * using a WebGL 2 context
-         * Minimum of source and destination
-         */
-        BlendEquation[BlendEquation["MIN"] = 5] = "MIN";
-        /**
-         * using a WebGL 2 context
-         * Maximum of source and destination.
-         */
-        BlendEquation[BlendEquation["MAX"] = 6] = "MAX";
+        BlendEquation["FUNC_REVERSE_SUBTRACT"] = "FUNC_REVERSE_SUBTRACT";
+        // /**
+        //  * When using the EXT_blend_minmax extension:
+        //  * Minimum of source and destination
+        //  */
+        // MIN_EXT = "MIN_EXT",
+        // /**
+        //  * When using the EXT_blend_minmax extension:
+        //  * Maximum of source and destination.
+        //  */
+        // MAX_EXT = "MAX_EXT",
+        // /**
+        //  * using a WebGL 2 context
+        //  * Minimum of source and destination
+        //  */
+        // MIN = "MIN",
+        // /**
+        //  * using a WebGL 2 context
+        //  * Maximum of source and destination.
+        //  */
+        // MAX = "MAX",
     })(BlendEquation = feng3d.BlendEquation || (feng3d.BlendEquation = {}));
-    feng3d.enums.getBlendEquationValue = function (gl) {
-        return function (blendEquation) {
-            var value = gl.FUNC_ADD;
-            switch (blendEquation) {
-                case BlendEquation.FUNC_ADD:
-                    value = gl.FUNC_ADD;
-                    break;
-                case BlendEquation.FUNC_SUBTRACT:
-                    value = gl.FUNC_SUBTRACT;
-                    break;
-                case BlendEquation.FUNC_REVERSE_SUBTRACT:
-                    value = gl.FUNC_REVERSE_SUBTRACT;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + BlendEquation + " " + blendEquation);
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9063,92 +8959,48 @@ var feng3d;
         /**
          * 0.0  0.0 0.0
          */
-        BlendFactor[BlendFactor["ZERO"] = 0] = "ZERO";
+        BlendFactor["ZERO"] = "ZERO";
         /**
          * 1.0  1.0 1.0
          */
-        BlendFactor[BlendFactor["ONE"] = 1] = "ONE";
+        BlendFactor["ONE"] = "ONE";
         /**
          * Rs   Gs  Bs
          */
-        BlendFactor[BlendFactor["SRC_COLOR"] = 2] = "SRC_COLOR";
+        BlendFactor["SRC_COLOR"] = "SRC_COLOR";
         /**
          * 1-Rs   1-Gs  1-Bs
          */
-        BlendFactor[BlendFactor["ONE_MINUS_SRC_COLOR"] = 3] = "ONE_MINUS_SRC_COLOR";
+        BlendFactor["ONE_MINUS_SRC_COLOR"] = "ONE_MINUS_SRC_COLOR";
         /**
          * Rd   Gd  Bd
          */
-        BlendFactor[BlendFactor["DST_COLOR"] = 4] = "DST_COLOR";
+        BlendFactor["DST_COLOR"] = "DST_COLOR";
         /**
          * 1-Rd   1-Gd  1-Bd
          */
-        BlendFactor[BlendFactor["ONE_MINUS_DST_COLOR"] = 5] = "ONE_MINUS_DST_COLOR";
+        BlendFactor["ONE_MINUS_DST_COLOR"] = "ONE_MINUS_DST_COLOR";
         /**
          * As   As  As
          */
-        BlendFactor[BlendFactor["SRC_ALPHA"] = 6] = "SRC_ALPHA";
+        BlendFactor["SRC_ALPHA"] = "SRC_ALPHA";
         /**
          * 1-As   1-As  1-As
          */
-        BlendFactor[BlendFactor["ONE_MINUS_SRC_ALPHA"] = 7] = "ONE_MINUS_SRC_ALPHA";
+        BlendFactor["ONE_MINUS_SRC_ALPHA"] = "ONE_MINUS_SRC_ALPHA";
         /**
          * Ad   Ad  Ad
          */
-        BlendFactor[BlendFactor["DST_ALPHA"] = 8] = "DST_ALPHA";
+        BlendFactor["DST_ALPHA"] = "DST_ALPHA";
         /**
          * 1-Ad   1-Ad  1-Ad
          */
-        BlendFactor[BlendFactor["ONE_MINUS_DST_ALPHA"] = 9] = "ONE_MINUS_DST_ALPHA";
+        BlendFactor["ONE_MINUS_DST_ALPHA"] = "ONE_MINUS_DST_ALPHA";
         /**
          * min(As-Ad)   min(As-Ad)  min(As-Ad)
          */
-        BlendFactor[BlendFactor["SRC_ALPHA_SATURATE"] = 10] = "SRC_ALPHA_SATURATE";
+        BlendFactor["SRC_ALPHA_SATURATE"] = "SRC_ALPHA_SATURATE";
     })(BlendFactor = feng3d.BlendFactor || (feng3d.BlendFactor = {}));
-    feng3d.enums.getBlendFactorValue = function (gl) {
-        return function (blendFactor) {
-            var value = gl.ZERO;
-            switch (blendFactor) {
-                case BlendFactor.ZERO:
-                    value = gl.ZERO;
-                    break;
-                case BlendFactor.ONE:
-                    value = gl.ONE;
-                    break;
-                case BlendFactor.SRC_COLOR:
-                    value = gl.SRC_COLOR;
-                    break;
-                case BlendFactor.ONE_MINUS_SRC_COLOR:
-                    value = gl.ONE_MINUS_SRC_COLOR;
-                    break;
-                case BlendFactor.DST_COLOR:
-                    value = gl.DST_COLOR;
-                    break;
-                case BlendFactor.ONE_MINUS_DST_COLOR:
-                    value = gl.ONE_MINUS_DST_COLOR;
-                    break;
-                case BlendFactor.SRC_ALPHA:
-                    value = gl.SRC_ALPHA;
-                    break;
-                case BlendFactor.ONE_MINUS_SRC_ALPHA:
-                    value = gl.ONE_MINUS_SRC_ALPHA;
-                    break;
-                case BlendFactor.DST_ALPHA:
-                    value = gl.DST_ALPHA;
-                    break;
-                case BlendFactor.ONE_MINUS_DST_ALPHA:
-                    value = gl.ONE_MINUS_DST_ALPHA;
-                    break;
-                case BlendFactor.SRC_ALPHA_SATURATE:
-                    value = gl.SRC_ALPHA_SATURATE;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + BlendFactor + " " + blendFactor);
-                    break;
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9161,43 +9013,20 @@ var feng3d;
         /**
          * 关闭裁剪面
          */
-        CullFace[CullFace["NONE"] = 0] = "NONE";
+        CullFace["NONE"] = "NONE";
         /**
          * 正面
          */
-        CullFace[CullFace["FRONT"] = 1] = "FRONT";
+        CullFace["FRONT"] = "FRONT";
         /**
          * 背面
          */
-        CullFace[CullFace["BACK"] = 2] = "BACK";
+        CullFace["BACK"] = "BACK";
         /**
          * 正面与背面
          */
-        CullFace[CullFace["FRONT_AND_BACK"] = 3] = "FRONT_AND_BACK";
+        CullFace["FRONT_AND_BACK"] = "FRONT_AND_BACK";
     })(CullFace = feng3d.CullFace || (feng3d.CullFace = {}));
-    feng3d.enums.getCullFaceValue = function (gl) {
-        return function (cullFace) {
-            var value = gl.BACK;
-            switch (cullFace) {
-                case CullFace.NONE:
-                    value = gl.NONE;
-                    break;
-                case CullFace.FRONT:
-                    value = gl.FRONT;
-                    break;
-                case CullFace.BACK:
-                    value = gl.BACK;
-                    break;
-                case CullFace.FRONT_AND_BACK:
-                    value = gl.FRONT_AND_BACK;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + CullFace + " " + cullFace);
-                    break;
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9210,29 +9039,12 @@ var feng3d;
         /**
          * Clock-wise winding.
          */
-        FrontFace[FrontFace["CW"] = 0] = "CW";
+        FrontFace["CW"] = "CW";
         /**
          *  Counter-clock-wise winding.
          */
-        FrontFace[FrontFace["CCW"] = 1] = "CCW";
+        FrontFace["CCW"] = "CCW";
     })(FrontFace = feng3d.FrontFace || (feng3d.FrontFace = {}));
-    feng3d.enums.getFrontFaceValue = function (gl) {
-        return function (frontFace) {
-            var value = gl.CCW;
-            switch (frontFace) {
-                case FrontFace.CW:
-                    value = gl.CW;
-                    break;
-                case FrontFace.CCW:
-                    value = gl.CCW;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + FrontFace + " " + frontFace);
-                    break;
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9246,291 +9058,144 @@ var feng3d;
         /**
          * Discards the red, green and blue components and reads the alpha component.
          */
-        TextureFormat[TextureFormat["ALPHA"] = 0] = "ALPHA";
+        TextureFormat["ALPHA"] = "ALPHA";
         /**
          *  Discards the alpha components and reads the red, green and blue components.
          */
-        TextureFormat[TextureFormat["RGB"] = 1] = "RGB";
+        TextureFormat["RGB"] = "RGB";
         /**
          * Red, green, blue and alpha components are read from the color buffer.
          */
-        TextureFormat[TextureFormat["RGBA"] = 2] = "RGBA";
+        TextureFormat["RGBA"] = "RGBA";
         /**
          * Each color component is a luminance component, alpha is 1.0.
          */
-        TextureFormat[TextureFormat["LUMINANCE"] = 3] = "LUMINANCE";
+        TextureFormat["LUMINANCE"] = "LUMINANCE";
         /**
          * Each component is a luminance/alpha component.
          */
-        TextureFormat[TextureFormat["LUMINANCE_ALPHA"] = 4] = "LUMINANCE_ALPHA";
-        /**
-         * When using the WEBGL_depth_texture extension:
-         */
-        TextureFormat[TextureFormat["DEPTH_COMPONENT"] = 5] = "DEPTH_COMPONENT";
-        /**
-         * When using the WEBGL_depth_texture extension:
-         */
-        TextureFormat[TextureFormat["DEPTH_STENCIL"] = 6] = "DEPTH_STENCIL";
-        /**
-         * When using the EXT_sRGB extension:
-         */
-        TextureFormat[TextureFormat["SRGB_EXT"] = 7] = "SRGB_EXT";
-        /**
-         * When using the EXT_sRGB extension:
-         */
-        TextureFormat[TextureFormat["SRGB_ALPHA_EXT"] = 8] = "SRGB_ALPHA_EXT";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["R8"] = 9] = "R8";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["R16F"] = 10] = "R16F";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["R32F"] = 11] = "R32F";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["R8UI"] = 12] = "R8UI";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RG8"] = 13] = "RG8";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RG16F"] = 14] = "RG16F";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RG32F"] = 15] = "RG32F";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RG8UI"] = 16] = "RG8UI";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RG16UI"] = 17] = "RG16UI";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RG32UI"] = 18] = "RG32UI";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGB8"] = 19] = "RGB8";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["SRGB8"] = 20] = "SRGB8";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGB565"] = 21] = "RGB565";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["R11F_G11F_B10F"] = 22] = "R11F_G11F_B10F";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGB9_E5"] = 23] = "RGB9_E5";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGB16F"] = 24] = "RGB16F";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGB32F"] = 25] = "RGB32F";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGB8UI"] = 26] = "RGB8UI";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGBA8"] = 27] = "RGBA8";
-        /**
-         * using a WebGL 2 context
-         */
-        // SRGB8_APLHA8,
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGB5_A1"] = 28] = "RGB5_A1";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGB10_A2"] = 29] = "RGB10_A2";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGBA4"] = 30] = "RGBA4";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGBA16F"] = 31] = "RGBA16F";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGBA32F"] = 32] = "RGBA32F";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureFormat[TextureFormat["RGBA8UI"] = 33] = "RGBA8UI";
+        TextureFormat["LUMINANCE_ALPHA"] = "LUMINANCE_ALPHA";
+        // /**
+        //  * When using the WEBGL_depth_texture extension:
+        //  */
+        // DEPTH_COMPONENT = "DEPTH_COMPONENT",
+        // /**
+        //  * When using the WEBGL_depth_texture extension:
+        //  */
+        // DEPTH_STENCIL = "DEPTH_STENCIL",
+        // /**
+        //  * When using the EXT_sRGB extension:
+        //  */
+        // SRGB_EXT = "SRGB_EXT",
+        // /**
+        //  * When using the EXT_sRGB extension:
+        //  */
+        // SRGB_ALPHA_EXT = "SRGB_ALPHA_EXT",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // R8 = "R8",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // R16F = "R16F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // R32F = "R32F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // R8UI = "R8UI",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG8 = "RG8",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG16F = "RG16F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG32F = "RG32F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG8UI = "RG8UI",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG16UI = "RG16UI",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG32UI = "RG32UI",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB8 = "RGB8",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // SRGB8 = "SRGB8",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB565 = "RGB565",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // R11F_G11F_B10F = "R11F_G11F_B10F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB9_E5 = "RGB9_E5",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB16F = "RGB16F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB32F = "RGB32F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB8UI = "RGB8UI",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGBA8 = "RGBA8",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // // SRGB8_APLHA8,
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB5_A1 = "RGB5_A1",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB10_A2 = "RGB10_A2",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGBA4 = "RGBA4",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGBA16F = "RGBA16F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGBA32F = "RGBA32F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGBA8UI = "RGBA8UI",
     })(TextureFormat = feng3d.TextureFormat || (feng3d.TextureFormat = {}));
-    feng3d.enums.getTextureFormatValue = function (gl) {
-        return function (textureFormat) {
-            var gl2 = gl;
-            var value = gl.RGB;
-            switch (textureFormat) {
-                case TextureFormat.ALPHA:
-                    value = gl.ALPHA;
-                    break;
-                case TextureFormat.RGB:
-                    value = gl.RGB;
-                    break;
-                case TextureFormat.RGBA:
-                    value = gl.RGBA;
-                    break;
-                case TextureFormat.LUMINANCE:
-                    value = gl.LUMINANCE;
-                    break;
-                case TextureFormat.LUMINANCE_ALPHA:
-                    value = gl.LUMINANCE_ALPHA;
-                    break;
-                case TextureFormat.DEPTH_COMPONENT:
-                    feng3d.assert(!!gl.extensions.webGLDepthTexture, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl.DEPTH_COMPONENT;
-                    break;
-                case TextureFormat.DEPTH_STENCIL:
-                    feng3d.assert(!!gl.extensions.webGLDepthTexture, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl.DEPTH_STENCIL;
-                    break;
-                case TextureFormat.SRGB_EXT:
-                    feng3d.assert(!!gl.extensions.eXTsRGB, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl.extensions.eXTsRGB.SRGB_EXT;
-                    break;
-                case TextureFormat.SRGB_ALPHA_EXT:
-                    feng3d.assert(!!gl.extensions.eXTsRGB, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl.extensions.eXTsRGB.SRGB_ALPHA_EXT;
-                    break;
-                case TextureFormat.R8:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.R8;
-                    break;
-                case TextureFormat.R16F:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.R16F;
-                    break;
-                case TextureFormat.R32F:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.R32F;
-                    break;
-                case TextureFormat.R8UI:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.R8UI;
-                    break;
-                case TextureFormat.RG8:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RG8;
-                    break;
-                case TextureFormat.RG16F:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RG16F;
-                    break;
-                case TextureFormat.RG32F:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RG32F;
-                    break;
-                case TextureFormat.RG8UI:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RG8UI;
-                    break;
-                case TextureFormat.RG16UI:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RG16UI;
-                    break;
-                case TextureFormat.RG32UI:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RG32UI;
-                    break;
-                case TextureFormat.RGB8:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGB8;
-                    break;
-                case TextureFormat.SRGB8:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.SRGB8;
-                    break;
-                case TextureFormat.RGB565:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGB565;
-                    break;
-                case TextureFormat.R11F_G11F_B10F:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.R11F_G11F_B10F;
-                    break;
-                case TextureFormat.RGB9_E5:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGB9_E5;
-                    break;
-                case TextureFormat.RGB16F:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGB16F;
-                    break;
-                case TextureFormat.RGB32F:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGB32F;
-                    break;
-                case TextureFormat.RGB8UI:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGB8UI;
-                    break;
-                case TextureFormat.RGBA8:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGBA8;
-                    break;
-                // case TextureFormat.SRGB8_APLHA8:
-                //     assert(gl.webgl2, `不支持 ${TextureFormat} ${textureFormat} `);
-                //     value = gl2.SRGB8_APLHA8;
-                //     break;
-                case TextureFormat.RGB5_A1:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGB5_A1;
-                    break;
-                case TextureFormat.RGB10_A2:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGB10_A2;
-                    break;
-                case TextureFormat.RGBA4:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGBA4;
-                    break;
-                case TextureFormat.RGBA16F:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGBA16F;
-                    break;
-                case TextureFormat.RGBA32F:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGBA32F;
-                    break;
-                case TextureFormat.RGBA8UI:
-                    feng3d.assert(gl.webgl2, "\u4E0D\u652F\u6301 " + TextureFormat + " " + textureFormat + " ");
-                    value = gl2.RGBA8UI;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureFormat + " " + textureFormat);
-                    break;
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9544,164 +9209,84 @@ var feng3d;
         /**
          * 8 bits per channel for gl.RGBA
          */
-        TextureDataType[TextureDataType["UNSIGNED_BYTE"] = 0] = "UNSIGNED_BYTE";
+        TextureDataType["UNSIGNED_BYTE"] = "UNSIGNED_BYTE";
         /**
          * 5 red bits, 6 green bits, 5 blue bits.
          */
-        TextureDataType[TextureDataType["UNSIGNED_SHORT_5_6_5"] = 1] = "UNSIGNED_SHORT_5_6_5";
+        TextureDataType["UNSIGNED_SHORT_5_6_5"] = "UNSIGNED_SHORT_5_6_5";
         /**
          * 4 red bits, 4 green bits, 4 blue bits, 4 alpha bits.
          */
-        TextureDataType[TextureDataType["UNSIGNED_SHORT_4_4_4_4"] = 2] = "UNSIGNED_SHORT_4_4_4_4";
+        TextureDataType["UNSIGNED_SHORT_4_4_4_4"] = "UNSIGNED_SHORT_4_4_4_4";
         /**
          * 5 red bits, 5 green bits, 5 blue bits, 1 alpha bit.
          */
-        TextureDataType[TextureDataType["UNSIGNED_SHORT_5_5_5_1"] = 3] = "UNSIGNED_SHORT_5_5_5_1";
-        /**
-         * When using the WEBGL_depth_texture extension:
-         */
-        TextureDataType[TextureDataType["UNSIGNED_SHORT"] = 4] = "UNSIGNED_SHORT";
-        /**
-         * When using the WEBGL_depth_texture extension:
-         */
-        TextureDataType[TextureDataType["UNSIGNED_INT"] = 5] = "UNSIGNED_INT";
-        /**
-         * When using the WEBGL_depth_texture extension:
-         *  (constant provided by the extension)
-         */
-        TextureDataType[TextureDataType["UNSIGNED_INT_24_8_WEBGL"] = 6] = "UNSIGNED_INT_24_8_WEBGL";
-        //When using the OES_texture_half_float extension:
-        /**
-         * When using the OES_texture_float extension:
-         */
-        TextureDataType[TextureDataType["FLOAT"] = 7] = "FLOAT";
-        /**
-         * When using the OES_texture_half_float extension:
-         *  (constant provided by the extension)
-         */
-        TextureDataType[TextureDataType["HALF_FLOAT_OES"] = 8] = "HALF_FLOAT_OES";
-        // When using a WebGL 2 context, the following values are available additionally:
-        /**
-         * using a WebGL 2 context
-         */
-        TextureDataType[TextureDataType["BYTE"] = 9] = "BYTE";
-        // UNSIGNED_SHORT   // 与上面合并处理
-        /**
-         * using a WebGL 2 context
-         */
-        TextureDataType[TextureDataType["SHORT"] = 10] = "SHORT";
-        // UNSIGNED_INT     // 与上面合并处理
-        /**
-         * using a WebGL 2 context
-         */
-        TextureDataType[TextureDataType["INT"] = 11] = "INT";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureDataType[TextureDataType["HALF_FLOAT"] = 12] = "HALF_FLOAT";
-        // FLOAT               // 与上面合并处理
-        /**
-         * using a WebGL 2 context
-         */
-        TextureDataType[TextureDataType["UNSIGNED_INT_2_10_10_10_REV"] = 13] = "UNSIGNED_INT_2_10_10_10_REV";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureDataType[TextureDataType["UNSIGNED_INT_10F_11F_11F_REV"] = 14] = "UNSIGNED_INT_10F_11F_11F_REV";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureDataType[TextureDataType["UNSIGNED_INT_5_9_9_9_REV"] = 15] = "UNSIGNED_INT_5_9_9_9_REV";
-        /**
-         * using a WebGL 2 context
-         */
-        TextureDataType[TextureDataType["UNSIGNED_INT_24_8"] = 16] = "UNSIGNED_INT_24_8";
-        /**
-         * using a WebGL 2 context
-         *  (pixels must be null)
-         */
-        TextureDataType[TextureDataType["FLOAT_32_UNSIGNED_INT_24_8_REV"] = 17] = "FLOAT_32_UNSIGNED_INT_24_8_REV";
+        TextureDataType["UNSIGNED_SHORT_5_5_5_1"] = "UNSIGNED_SHORT_5_5_5_1";
+        // /**
+        //  * When using the WEBGL_depth_texture extension:
+        //  */
+        // UNSIGNED_SHORT = "UNSIGNED_SHORT",
+        // /**
+        //  * When using the WEBGL_depth_texture extension:
+        //  */
+        // UNSIGNED_INT = "UNSIGNED_INT",
+        // /**
+        //  * When using the WEBGL_depth_texture extension:
+        //  *  (constant provided by the extension)
+        //  */
+        // UNSIGNED_INT_24_8_WEBGL = "UNSIGNED_INT_24_8_WEBGL",
+        // //When using the OES_texture_half_float extension:
+        // /**
+        //  * When using the OES_texture_float extension:
+        //  */
+        // FLOAT = "FLOAT",
+        // /**
+        //  * When using the OES_texture_half_float extension:
+        //  *  (constant provided by the extension)
+        //  */
+        // HALF_FLOAT_OES = "HALF_FLOAT_OES",
+        // // When using a WebGL 2 context, the following values are available additionally:
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // BYTE = "BYTE",
+        // // UNSIGNED_SHORT   // 与上面合并处理
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // SHORT = "SHORT",
+        // // UNSIGNED_INT     // 与上面合并处理
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // INT = "INT",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // HALF_FLOAT = "HALF_FLOAT",
+        // // FLOAT               // 与上面合并处理
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // UNSIGNED_INT_2_10_10_10_REV = "UNSIGNED_INT_2_10_10_10_REV",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // UNSIGNED_INT_10F_11F_11F_REV = "UNSIGNED_INT_10F_11F_11F_REV",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // UNSIGNED_INT_5_9_9_9_REV = "UNSIGNED_INT_5_9_9_9_REV",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // UNSIGNED_INT_24_8 = "UNSIGNED_INT_24_8",
+        // /**
+        //  * using a WebGL 2 context
+        //  *  (pixels must be null)
+        //  */
+        // FLOAT_32_UNSIGNED_INT_24_8_REV = "FLOAT_32_UNSIGNED_INT_24_8_REV",
     })(TextureDataType = feng3d.TextureDataType || (feng3d.TextureDataType = {}));
-    feng3d.enums.getTextureDataTypeValue = function (gl) {
-        var gl2 = gl;
-        return function (textureDataType) {
-            var value = gl.UNSIGNED_BYTE;
-            switch (textureDataType) {
-                case TextureDataType.UNSIGNED_BYTE:
-                    value = gl.UNSIGNED_BYTE;
-                    break;
-                case TextureDataType.UNSIGNED_SHORT_5_6_5:
-                    value = gl.UNSIGNED_SHORT_5_6_5;
-                    break;
-                case TextureDataType.UNSIGNED_SHORT_4_4_4_4:
-                    value = gl.UNSIGNED_SHORT_4_4_4_4;
-                    break;
-                case TextureDataType.UNSIGNED_SHORT_5_5_5_1:
-                    value = gl.UNSIGNED_SHORT_5_5_5_1;
-                    break;
-                case TextureDataType.UNSIGNED_SHORT:
-                    feng3d.assert(!!gl.extensions.webGLDepthTexture || gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl.UNSIGNED_SHORT;
-                    break;
-                case TextureDataType.UNSIGNED_INT:
-                    feng3d.assert(!!gl.extensions.webGLDepthTexture || gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl.UNSIGNED_INT;
-                    break;
-                case TextureDataType.UNSIGNED_INT_24_8_WEBGL:
-                    feng3d.assert(!!gl.extensions.webGLDepthTexture, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl.extensions.webGLDepthTexture.UNSIGNED_INT_24_8_WEBGL;
-                    break;
-                case TextureDataType.FLOAT:
-                    feng3d.assert(!!gl.extensions.oESTextureFloat || gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl.FLOAT;
-                    break;
-                case TextureDataType.HALF_FLOAT_OES:
-                    feng3d.assert(!!gl.extensions.oESTextureHalfFloat, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl.extensions.oESTextureHalfFloat.HALF_FLOAT_OES;
-                    break;
-                case TextureDataType.BYTE:
-                    feng3d.assert(gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl.BYTE;
-                    break;
-                case TextureDataType.SHORT:
-                    feng3d.assert(gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl.SHORT;
-                    break;
-                case TextureDataType.INT:
-                    feng3d.assert(gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl.INT;
-                    break;
-                case TextureDataType.HALF_FLOAT:
-                    feng3d.assert(gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl2.HALF_FLOAT;
-                    break;
-                case TextureDataType.UNSIGNED_INT_2_10_10_10_REV:
-                    feng3d.assert(gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl2.UNSIGNED_INT_2_10_10_10_REV;
-                    break;
-                case TextureDataType.UNSIGNED_INT_10F_11F_11F_REV:
-                    feng3d.assert(gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl2.UNSIGNED_INT_10F_11F_11F_REV;
-                    break;
-                case TextureDataType.UNSIGNED_INT_5_9_9_9_REV:
-                    feng3d.assert(gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl2.UNSIGNED_INT_5_9_9_9_REV;
-                    break;
-                case TextureDataType.UNSIGNED_INT_24_8:
-                    feng3d.assert(gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl2.UNSIGNED_INT_24_8;
-                    break;
-                case TextureDataType.FLOAT_32_UNSIGNED_INT_24_8_REV:
-                    feng3d.assert(gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    value = gl2.FLOAT_32_UNSIGNED_INT_24_8_REV;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureDataType + " " + textureDataType);
-                    break;
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9712,45 +9297,16 @@ var feng3d;
      */
     var TextureMinFilter;
     (function (TextureMinFilter) {
-        TextureMinFilter[TextureMinFilter["LINEAR"] = 0] = "LINEAR";
-        TextureMinFilter[TextureMinFilter["NEAREST"] = 1] = "NEAREST";
-        TextureMinFilter[TextureMinFilter["NEAREST_MIPMAP_NEAREST"] = 2] = "NEAREST_MIPMAP_NEAREST";
-        TextureMinFilter[TextureMinFilter["LINEAR_MIPMAP_NEAREST"] = 3] = "LINEAR_MIPMAP_NEAREST";
+        TextureMinFilter["LINEAR"] = "LINEAR";
+        TextureMinFilter["NEAREST"] = "NEAREST";
+        TextureMinFilter["NEAREST_MIPMAP_NEAREST"] = "NEAREST_MIPMAP_NEAREST";
+        TextureMinFilter["LINEAR_MIPMAP_NEAREST"] = "LINEAR_MIPMAP_NEAREST";
         /**
          *  (default value)
          */
-        TextureMinFilter[TextureMinFilter["NEAREST_MIPMAP_LINEAR"] = 4] = "NEAREST_MIPMAP_LINEAR";
-        TextureMinFilter[TextureMinFilter["LINEAR_MIPMAP_LINEAR"] = 5] = "LINEAR_MIPMAP_LINEAR";
+        TextureMinFilter["NEAREST_MIPMAP_LINEAR"] = "NEAREST_MIPMAP_LINEAR";
+        TextureMinFilter["LINEAR_MIPMAP_LINEAR"] = "LINEAR_MIPMAP_LINEAR";
     })(TextureMinFilter = feng3d.TextureMinFilter || (feng3d.TextureMinFilter = {}));
-    feng3d.enums.getTextureMinFilterValue = function (gl) {
-        return function (textureMinFilter) {
-            var value = gl.NEAREST_MIPMAP_LINEAR;
-            switch (textureMinFilter) {
-                case TextureMinFilter.LINEAR:
-                    value = gl.LINEAR;
-                    break;
-                case TextureMinFilter.NEAREST:
-                    value = gl.NEAREST;
-                    break;
-                case TextureMinFilter.NEAREST_MIPMAP_NEAREST:
-                    value = gl.NEAREST_MIPMAP_NEAREST;
-                    break;
-                case TextureMinFilter.LINEAR_MIPMAP_NEAREST:
-                    value = gl.LINEAR_MIPMAP_NEAREST;
-                    break;
-                case TextureMinFilter.NEAREST_MIPMAP_LINEAR:
-                    value = gl.NEAREST_MIPMAP_LINEAR;
-                    break;
-                case TextureMinFilter.LINEAR_MIPMAP_LINEAR:
-                    value = gl.LINEAR_MIPMAP_LINEAR;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureMinFilter + " " + textureMinFilter);
-                    break;
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9764,26 +9320,9 @@ var feng3d;
         /**
          *  (default value)
          */
-        TextureMagFilter[TextureMagFilter["LINEAR"] = 0] = "LINEAR";
-        TextureMagFilter[TextureMagFilter["NEAREST"] = 1] = "NEAREST";
+        TextureMagFilter["LINEAR"] = "LINEAR";
+        TextureMagFilter["NEAREST"] = "NEAREST";
     })(TextureMagFilter = feng3d.TextureMagFilter || (feng3d.TextureMagFilter = {}));
-    feng3d.enums.getTextureMagFilterValue = function (gl) {
-        return function (textureMagFilter) {
-            var value = gl.LINEAR;
-            switch (textureMagFilter) {
-                case TextureMagFilter.LINEAR:
-                    value = gl.LINEAR;
-                    break;
-                case TextureMagFilter.NEAREST:
-                    value = gl.NEAREST;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureMagFilter + " " + textureMagFilter);
-                    break;
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9797,30 +9336,10 @@ var feng3d;
         /**
          * (default value)
          */
-        TextureWrap[TextureWrap["REPEAT"] = 0] = "REPEAT";
-        TextureWrap[TextureWrap["CLAMP_TO_EDGE"] = 1] = "CLAMP_TO_EDGE";
-        TextureWrap[TextureWrap["MIRRORED_REPEAT"] = 2] = "MIRRORED_REPEAT";
+        TextureWrap["REPEAT"] = "REPEAT";
+        TextureWrap["CLAMP_TO_EDGE"] = "CLAMP_TO_EDGE";
+        TextureWrap["MIRRORED_REPEAT"] = "MIRRORED_REPEAT";
     })(TextureWrap = feng3d.TextureWrap || (feng3d.TextureWrap = {}));
-    feng3d.enums.getTextureWrapValue = function (gl) {
-        return function (textureWrap) {
-            var value = gl.REPEAT;
-            switch (textureWrap) {
-                case TextureWrap.REPEAT:
-                    value = gl.REPEAT;
-                    break;
-                case TextureWrap.CLAMP_TO_EDGE:
-                    value = gl.CLAMP_TO_EDGE;
-                    break;
-                case TextureWrap.MIRRORED_REPEAT:
-                    value = gl.MIRRORED_REPEAT;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + TextureWrap + " " + textureWrap);
-                    break;
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9834,59 +9353,29 @@ var feng3d;
         /**
          * signed 8-bit integer, with values in [-128, 127]
          */
-        GLArrayType[GLArrayType["BYTE"] = 0] = "BYTE";
+        GLArrayType["BYTE"] = "BYTE";
         /**
          *  signed 16-bit integer, with values in [-32768, 32767]
          */
-        GLArrayType[GLArrayType["SHORT"] = 1] = "SHORT";
+        GLArrayType["SHORT"] = "SHORT";
         /**
          * unsigned 8-bit integer, with values in [0, 255]
          */
-        GLArrayType[GLArrayType["UNSIGNED_BYTE"] = 2] = "UNSIGNED_BYTE";
+        GLArrayType["UNSIGNED_BYTE"] = "UNSIGNED_BYTE";
         /**
          * unsigned 16-bit integer, with values in [0, 65535]
          */
-        GLArrayType[GLArrayType["UNSIGNED_SHORT"] = 3] = "UNSIGNED_SHORT";
+        GLArrayType["UNSIGNED_SHORT"] = "UNSIGNED_SHORT";
         /**
          * 32-bit floating point number
          */
-        GLArrayType[GLArrayType["FLOAT"] = 4] = "FLOAT";
-        /**
-         * using a WebGL 2 context
-         * 16-bit floating point number
-         */
-        GLArrayType[GLArrayType["HALF_FLOAT"] = 5] = "HALF_FLOAT";
+        GLArrayType["FLOAT"] = "FLOAT";
+        // /**
+        //  * using a WebGL 2 context
+        //  * 16-bit floating point number
+        //  */
+        // HALF_FLOAT = "HALF_FLOAT",
     })(GLArrayType = feng3d.GLArrayType || (feng3d.GLArrayType = {}));
-    feng3d.enums.getGLArrayTypeValue = function (gl) {
-        var gl2 = gl;
-        return function (glArrayType) {
-            var value = gl.FUNC_ADD;
-            switch (glArrayType) {
-                case GLArrayType.BYTE:
-                    value = gl.BYTE;
-                    break;
-                case GLArrayType.SHORT:
-                    value = gl.SHORT;
-                    break;
-                case GLArrayType.UNSIGNED_BYTE:
-                    value = gl.UNSIGNED_BYTE;
-                    break;
-                case GLArrayType.UNSIGNED_SHORT:
-                    value = gl.UNSIGNED_SHORT;
-                    break;
-                case GLArrayType.FLOAT:
-                    value = gl.FLOAT;
-                    break;
-                case GLArrayType.HALF_FLOAT:
-                    feng3d.assert(gl.webgl2, "\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + GLArrayType + " " + glArrayType);
-                    value = gl2.HALF_FLOAT;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + GLArrayType + " " + glArrayType);
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9900,71 +9389,36 @@ var feng3d;
         /**
          * (never pass)
          */
-        DepthFunc[DepthFunc["NEVER"] = 0] = "NEVER";
+        DepthFunc["NEVER"] = "NEVER";
         /**
          *  (pass if the incoming value is less than the depth buffer value)
          */
-        DepthFunc[DepthFunc["LESS"] = 1] = "LESS";
+        DepthFunc["LESS"] = "LESS";
         /**
          *  (pass if the incoming value equals the the depth buffer value)
          */
-        DepthFunc[DepthFunc["EQUAL"] = 2] = "EQUAL";
+        DepthFunc["EQUAL"] = "EQUAL";
         /**
          *  (pass if the incoming value is less than or equal to the depth buffer value)
          */
-        DepthFunc[DepthFunc["LEQUAL"] = 3] = "LEQUAL";
+        DepthFunc["LEQUAL"] = "LEQUAL";
         /**
          * (pass if the incoming value is greater than the depth buffer value)
          */
-        DepthFunc[DepthFunc["GREATER"] = 4] = "GREATER";
+        DepthFunc["GREATER"] = "GREATER";
         /**
          * (pass if the incoming value is not equal to the depth buffer value)
          */
-        DepthFunc[DepthFunc["NOTEQUAL"] = 5] = "NOTEQUAL";
+        DepthFunc["NOTEQUAL"] = "NOTEQUAL";
         /**
          * (pass if the incoming value is greater than or equal to the depth buffer value)
          */
-        DepthFunc[DepthFunc["GEQUAL"] = 6] = "GEQUAL";
+        DepthFunc["GEQUAL"] = "GEQUAL";
         /**
          *  (always pass)
          */
-        DepthFunc[DepthFunc["ALWAYS"] = 7] = "ALWAYS";
+        DepthFunc["ALWAYS"] = "ALWAYS";
     })(DepthFunc = feng3d.DepthFunc || (feng3d.DepthFunc = {}));
-    feng3d.enums.getdDepthFuncValue = function (gl) {
-        return function (depthFunc) {
-            var value = gl.LESS;
-            switch (depthFunc) {
-                case DepthFunc.NEVER:
-                    value = gl.NEVER;
-                    break;
-                case DepthFunc.LESS:
-                    value = gl.LESS;
-                    break;
-                case DepthFunc.EQUAL:
-                    value = gl.EQUAL;
-                    break;
-                case DepthFunc.LEQUAL:
-                    value = gl.LEQUAL;
-                    break;
-                case DepthFunc.GREATER:
-                    value = gl.GREATER;
-                    break;
-                case DepthFunc.NOTEQUAL:
-                    value = gl.NOTEQUAL;
-                    break;
-                case DepthFunc.GEQUAL:
-                    value = gl.GEQUAL;
-                    break;
-                case DepthFunc.ALWAYS:
-                    value = gl.ALWAYS;
-                    break;
-                default:
-                    feng3d.error("\u65E0\u6CD5\u5904\u7406\u679A\u4E3E " + DepthFunc + " " + depthFunc);
-                    break;
-            }
-            return value;
-        };
-    };
 })(feng3d || (feng3d = {}));
 // Type definitions for WebGL Extensions
 // Project: http://webgl.org/
@@ -10005,7 +9459,6 @@ var feng3d;
                 gl.webgl2 = true;
             //
             new feng3d.GLExtension(gl);
-            new feng3d.GLEnum(gl);
             new feng3d.GLAdvanced(gl);
             new feng3d.Renderer(gl);
             gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
@@ -10732,7 +10185,7 @@ var feng3d;
                 this.invalid = false;
                 this._value = new Float32Array(feng3d.lazy.getvalue(this._data));
             }
-            var type = gl.enums.getGLArrayTypeValue(this.type);
+            var type = gl[this.type];
             gl.enableVertexAttribArray(location);
             var buffer = this.getBuffer(gl);
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -10880,11 +10333,11 @@ var feng3d;
             }
             this._activePixels = currentPixels;
             var texture = this.getTexture(gl);
-            var textureType = gl.enums.getTextureTypeValue(this._textureType);
-            var minFilter = gl.enums.getTextureMinFilterValue(this.minFilter);
-            var magFilter = gl.enums.getTextureMagFilterValue(this.magFilter);
-            var wrapS = gl.enums.getTextureWrapValue(this.wrapS);
-            var wrapT = gl.enums.getTextureWrapValue(this.wrapT);
+            var textureType = gl[this._textureType];
+            var minFilter = gl[this.minFilter];
+            var magFilter = gl[this.magFilter];
+            var wrapS = gl[this.wrapS];
+            var wrapT = gl[this.wrapT];
             var isPowerOfTwo = true;
             var pixels = this._activePixels;
             if (pixels instanceof HTMLImageElement)
@@ -10924,7 +10377,7 @@ var feng3d;
                     throw "";
                 }
                 texture = newtexture;
-                var textureType = gl.enums.getTextureTypeValue(this._textureType);
+                var textureType = gl[this._textureType];
                 //设置图片y轴方向
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, this.flipY ? 1 : 0);
                 gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premulAlpha ? 1 : 0);
@@ -10943,8 +10396,8 @@ var feng3d;
          * 初始化纹理
          */
         TextureInfo.prototype.initTexture = function (gl) {
-            var format = gl.enums.getTextureFormatValue(this._format);
-            var type = gl.enums.getTextureDataTypeValue(this._type);
+            var format = gl[this._format];
+            var type = gl[this._type];
             switch (this._textureType) {
                 case feng3d.TextureType.TEXTURE_CUBE_MAP:
                     var pixels = this._activePixels;
@@ -10958,7 +10411,7 @@ var feng3d;
                     break;
                 case feng3d.TextureType.TEXTURE_2D:
                     var _pixel = this._activePixels;
-                    var textureType = gl.enums.getTextureTypeValue(this._textureType);
+                    var textureType = gl[this._textureType];
                     gl.texImage2D(textureType, 0, format, format, type, _pixel);
                     break;
                 default:
@@ -11537,7 +10990,7 @@ var feng3d;
             };
             function activeShaderParams(shaderParams) {
                 var cullfaceEnum = feng3d.lazy.getvalue(shaderParams.cullFace);
-                var blendEquation = gl.enums.getBlendEquationValue(feng3d.lazy.getvalue(shaderParams.blendEquation));
+                var blendEquation = gl[shaderParams.blendEquation];
                 var sfactor = gl.enums.getBlendFactorValue(feng3d.lazy.getvalue(shaderParams.sfactor));
                 var dfactor = gl.enums.getBlendFactorValue(feng3d.lazy.getvalue(shaderParams.dfactor));
                 var cullFace = gl.enums.getCullFaceValue(feng3d.lazy.getvalue(shaderParams.cullFace));
@@ -11685,7 +11138,7 @@ var feng3d;
                 var vertexNum = 0;
                 if (indexBuffer) {
                     indexBuffer.active(gl);
-                    var arrayType = gl.enums.getGLArrayTypeValue(indexBuffer.type);
+                    var arrayType = gl[indexBuffer.type];
                     if (indexBuffer.count == 0) {
                         feng3d.warn("\u9876\u70B9\u7D22\u5F15\u4E3A0\uFF0C\u4E0D\u8FDB\u884C\u6E32\u67D3\uFF01");
                         return;
@@ -18371,39 +17824,14 @@ var feng3d;
      */
     var Texture2D = /** @class */ (function (_super) {
         __extends(Texture2D, _super);
-        function Texture2D(url) {
-            if (url === void 0) { url = ""; }
+        function Texture2D() {
             var _this = _super.call(this) || this;
-            _this._url = "";
+            _this.url = "";
             _this._textureType = feng3d.TextureType.TEXTURE_2D;
-            _this.url = url;
             _this.noPixels = feng3d.imageDatas.white;
             return _this;
         }
-        Object.defineProperty(Texture2D.prototype, "url", {
-            get: function () {
-                return this._url;
-            },
-            set: function (value) {
-                var _this = this;
-                if (this._url == value)
-                    return;
-                this._url = value;
-                var url = this._url;
-                feng3d.assets.loadImage(url, function (img) {
-                    if (url == _this._url) {
-                        _this._pixels = img;
-                        _this.onLoad();
-                    }
-                });
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Texture2D.prototype, "size", {
-            // noPixels = imageDatas.white;
-            // noPixels = imageDatas.black;
-            // noPixels = imageDatas.defaultNormal;
             /**
              * 纹理尺寸
              */
@@ -18416,13 +17844,6 @@ var feng3d;
             configurable: true
         });
         /**
-         * 处理加载完成
-         */
-        Texture2D.prototype.onLoad = function () {
-            this.invalidate();
-            this.dispatch("loaded");
-        };
-        /**
          * 判断数据是否满足渲染需求
          */
         Texture2D.prototype.checkRenderData = function () {
@@ -18432,10 +17853,21 @@ var feng3d;
                 return false;
             return true;
         };
+        Texture2D.prototype.urlChanged = function () {
+            var _this = this;
+            var url = this.url;
+            feng3d.assets.loadImage(url, function (img) {
+                if (url == _this.url) {
+                    _this._pixels = img;
+                    _this.invalidate();
+                }
+            });
+        };
         __decorate([
             feng3d.serialize(""),
+            feng3d.watch("urlChanged"),
             feng3d.oav()
-        ], Texture2D.prototype, "url", null);
+        ], Texture2D.prototype, "url", void 0);
         return Texture2D;
     }(feng3d.TextureInfo));
     feng3d.Texture2D = Texture2D;

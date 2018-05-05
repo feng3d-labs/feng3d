@@ -10,34 +10,8 @@ namespace feng3d
         /**
          * (default value)
          */
-        REPEAT,
-        CLAMP_TO_EDGE,
-        MIRRORED_REPEAT,
+        REPEAT = "REPEAT",
+        CLAMP_TO_EDGE = "CLAMP_TO_EDGE",
+        MIRRORED_REPEAT = "MIRRORED_REPEAT",
     }
-
-    enums.getTextureWrapValue = (gl: GL) =>
-    {
-        return (textureWrap: TextureWrap) =>
-        {
-            var value = gl.REPEAT;
-
-            switch (textureWrap)
-            {
-                case TextureWrap.REPEAT:
-                    value = gl.REPEAT;
-                    break;
-                case TextureWrap.CLAMP_TO_EDGE:
-                    value = gl.CLAMP_TO_EDGE;
-                    break;
-                case TextureWrap.MIRRORED_REPEAT:
-                    value = gl.MIRRORED_REPEAT;
-                    break;
-                default:
-                    error(`无法处理枚举 ${TextureWrap} ${textureWrap}`);
-                    break;
-            }
-            return value;
-        }
-    }
-
 }

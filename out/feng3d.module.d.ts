@@ -4279,97 +4279,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * @private
-     */
-    var enums: {
-        getBlendEquationValue: (gl: GL) => (blendEquation: BlendEquation) => number;
-        getBlendFactorValue: (gl: GL) => (blendFactor: BlendFactor) => number;
-        getRenderModeValue: (gl: GL) => (renderMode: RenderMode) => number;
-        getTextureTypeValue: (gl: GL) => (textureType: TextureType) => number;
-        getCullFaceValue: (gl: GL) => (cullFace: CullFace) => number;
-        getFrontFaceValue: (gl: GL) => (frontFace: FrontFace) => number;
-        getTextureFormatValue: (gl: GL) => (textureFormat: TextureFormat) => number;
-        getTextureDataTypeValue: (gl: GL) => (textureDataType: TextureDataType) => number;
-        getTextureMinFilterValue: (gl: GL) => (textureMinFilter: TextureMinFilter) => number;
-        getTextureMagFilterValue: (gl: GL) => (textureMagFilter: TextureMagFilter) => number;
-        getTextureWrapValue: (gl: GL) => (textureWrapS: TextureWrap) => number;
-        getGLArrayTypeValue: (gl: GL) => (glArrayType: GLArrayType) => number;
-        getdDepthFuncValue: (gl: GL) => (depthFunc: DepthFunc) => number;
-    };
-    /**
-     * GL枚举
-     */
-    class GLEnum {
-        /**
-         * 根据渲染模式枚举获取真实值
-         * @param renderMode 渲染模式枚举
-         */
-        readonly getRenderModeValue: (renderMode: RenderMode) => number;
-        /**
-         * 根据纹理类型枚举获取真实值
-         * @param textureType   纹理类型枚举
-         */
-        readonly getTextureTypeValue: (textureType: TextureType) => number;
-        /**
-         * 根据混合方法枚举获取真实值
-         * @param blendEquation    混合方法枚举
-         */
-        readonly getBlendEquationValue: (blendEquation: BlendEquation) => number;
-        /**
-         * 根据混合因子枚举获取真实值
-         * @param blendFactor    混合因子枚举
-         */
-        readonly getBlendFactorValue: (blendFactor: BlendFactor) => number;
-        /**
-         * 根据裁剪面枚举获取真实值
-         * @param cullFace  裁剪面枚举
-         */
-        readonly getCullFaceValue: (cullFace: CullFace) => number;
-        /**
-         * 根据正面方向枚举获取真实值
-         * @param frontFace  正面方向枚举
-         */
-        readonly getFrontFaceValue: (frontFace: FrontFace) => number;
-        /**
-         * 根据纹理颜色格式枚举获取真实值
-         * @param textureFormat  纹理颜色格式枚举
-         */
-        readonly getTextureFormatValue: (textureFormat: TextureFormat) => number;
-        /**
-         * 根据纹理数据类型枚举获取真实值
-         * @param textureDataType  纹理数据类型枚举
-         */
-        readonly getTextureDataTypeValue: (textureDataType: TextureDataType) => number;
-        /**
-         * 根据纹理缩小过滤器枚举获取真实值
-         * @param textureMinFilter  纹理缩小过滤器枚举
-         */
-        readonly getTextureMinFilterValue: (textureMinFilter: TextureMinFilter) => number;
-        /**
-         * 根据纹理放大滤波器枚举获取真实值
-         * @param textureMagFilter  纹理放大滤波器枚举
-         */
-        readonly getTextureMagFilterValue: (textureMagFilter: TextureMagFilter) => number;
-        /**
-         * 根据纹理坐标包装函数枚举获取真实值
-         * @param textureWrapS  纹理坐标s包装函数枚举
-         */
-        readonly getTextureWrapValue: (textureWrapS: TextureWrap) => number;
-        /**
-         * 根据纹理坐标包装函数枚举获取真实值
-         * @param glArrayType  纹理坐标s包装函数枚举
-         */
-        readonly getGLArrayTypeValue: (glArrayType: GLArrayType) => number;
-        /**
-         * 根据深度检测方法枚举获取真实值
-         * @param depthFunc  深度检测方法枚举
-         */
-        readonly getdDepthFuncValue: (depthFunc: DepthFunc) => number;
-        constructor(gl: GL);
-    }
-}
-declare namespace feng3d {
-    /**
      * 渲染模式
      * A GLenum specifying the type primitive to render. Possible values are:
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
@@ -4380,33 +4289,33 @@ declare namespace feng3d {
          * 点渲染
          * gl.POINTS: Draws a single dot.
          */
-        POINTS = 0,
+        POINTS = "POINTS",
         /**
          * gl.LINE_LOOP: Draws a straight line to the next vertex, and connects the last vertex back to the first.
          */
-        LINE_LOOP = 1,
+        LINE_LOOP = "LINE_LOOP",
         /**
          * gl.LINE_STRIP: Draws a straight line to the next vertex.
          */
-        LINE_STRIP = 2,
+        LINE_STRIP = "LINE_STRIP",
         /**
          * gl.LINES: Draws a line between a pair of vertices.
          */
-        LINES = 3,
+        LINES = "LINES",
         /**
          * gl.TRIANGLES: Draws a triangle for a group of three vertices.
          */
-        TRIANGLES = 4,
+        TRIANGLES = "TRIANGLES",
         /**
          * gl.TRIANGLE_STRIP
          * @see https://en.wikipedia.org/wiki/Triangle_strip
          */
-        TRIANGLE_STRIP = 5,
+        TRIANGLE_STRIP = "TRIANGLE_STRIP",
         /**
          * gl.TRIANGLE_FAN
          * @see https://en.wikipedia.org/wiki/Triangle_fan
          */
-        TRIANGLE_FAN = 6,
+        TRIANGLE_FAN = "TRIANGLE_FAN",
     }
 }
 declare namespace feng3d {
@@ -4419,21 +4328,21 @@ declare namespace feng3d {
         /**
          * gl.TEXTURE_2D: A two-dimensional texture.
          */
-        TEXTURE_2D = 0,
+        TEXTURE_2D = "TEXTURE_2D",
         /**
          * gl.TEXTURE_CUBE_MAP: A cube-mapped texture.
          */
-        TEXTURE_CUBE_MAP = 1,
+        TEXTURE_CUBE_MAP = "TEXTURE_CUBE_MAP",
         /**
          * using a WebGL 2 context
          * gl.TEXTURE_3D: A three-dimensional texture.
          */
-        TEXTURE_3D = 2,
+        TEXTURE_3D = "TEXTURE_3D",
         /**
          * using a WebGL 2 context
          * gl.TEXTURE_2D_ARRAY: A two-dimensional array texture.
          */
-        TEXTURE_2D_ARRAY = 3,
+        TEXTURE_2D_ARRAY = "TEXTURE_2D_ARRAY",
     }
 }
 declare namespace feng3d {
@@ -4445,35 +4354,15 @@ declare namespace feng3d {
         /**
          *  source + destination
          */
-        FUNC_ADD = 0,
+        FUNC_ADD = "FUNC_ADD",
         /**
          * source - destination
          */
-        FUNC_SUBTRACT = 1,
+        FUNC_SUBTRACT = "FUNC_SUBTRACT",
         /**
          * destination - source
          */
-        FUNC_REVERSE_SUBTRACT = 2,
-        /**
-         * When using the EXT_blend_minmax extension:
-         * Minimum of source and destination
-         */
-        MIN_EXT = 3,
-        /**
-         * When using the EXT_blend_minmax extension:
-         * Maximum of source and destination.
-         */
-        MAX_EXT = 4,
-        /**
-         * using a WebGL 2 context
-         * Minimum of source and destination
-         */
-        MIN = 5,
-        /**
-         * using a WebGL 2 context
-         * Maximum of source and destination.
-         */
-        MAX = 6,
+        FUNC_REVERSE_SUBTRACT = "FUNC_REVERSE_SUBTRACT",
     }
 }
 declare namespace feng3d {
@@ -4484,47 +4373,47 @@ declare namespace feng3d {
         /**
          * 0.0  0.0 0.0
          */
-        ZERO = 0,
+        ZERO = "ZERO",
         /**
          * 1.0  1.0 1.0
          */
-        ONE = 1,
+        ONE = "ONE",
         /**
          * Rs   Gs  Bs
          */
-        SRC_COLOR = 2,
+        SRC_COLOR = "SRC_COLOR",
         /**
          * 1-Rs   1-Gs  1-Bs
          */
-        ONE_MINUS_SRC_COLOR = 3,
+        ONE_MINUS_SRC_COLOR = "ONE_MINUS_SRC_COLOR",
         /**
          * Rd   Gd  Bd
          */
-        DST_COLOR = 4,
+        DST_COLOR = "DST_COLOR",
         /**
          * 1-Rd   1-Gd  1-Bd
          */
-        ONE_MINUS_DST_COLOR = 5,
+        ONE_MINUS_DST_COLOR = "ONE_MINUS_DST_COLOR",
         /**
          * As   As  As
          */
-        SRC_ALPHA = 6,
+        SRC_ALPHA = "SRC_ALPHA",
         /**
          * 1-As   1-As  1-As
          */
-        ONE_MINUS_SRC_ALPHA = 7,
+        ONE_MINUS_SRC_ALPHA = "ONE_MINUS_SRC_ALPHA",
         /**
          * Ad   Ad  Ad
          */
-        DST_ALPHA = 8,
+        DST_ALPHA = "DST_ALPHA",
         /**
          * 1-Ad   1-Ad  1-Ad
          */
-        ONE_MINUS_DST_ALPHA = 9,
+        ONE_MINUS_DST_ALPHA = "ONE_MINUS_DST_ALPHA",
         /**
          * min(As-Ad)   min(As-Ad)  min(As-Ad)
          */
-        SRC_ALPHA_SATURATE = 10,
+        SRC_ALPHA_SATURATE = "SRC_ALPHA_SATURATE",
     }
 }
 declare namespace feng3d {
@@ -4536,19 +4425,19 @@ declare namespace feng3d {
         /**
          * 关闭裁剪面
          */
-        NONE = 0,
+        NONE = "NONE",
         /**
          * 正面
          */
-        FRONT = 1,
+        FRONT = "FRONT",
         /**
          * 背面
          */
-        BACK = 2,
+        BACK = "BACK",
         /**
          * 正面与背面
          */
-        FRONT_AND_BACK = 3,
+        FRONT_AND_BACK = "FRONT_AND_BACK",
     }
 }
 declare namespace feng3d {
@@ -4560,11 +4449,11 @@ declare namespace feng3d {
         /**
          * Clock-wise winding.
          */
-        CW = 0,
+        CW = "CW",
         /**
          *  Counter-clock-wise winding.
          */
-        CCW = 1,
+        CCW = "CCW",
     }
 }
 declare namespace feng3d {
@@ -4577,142 +4466,23 @@ declare namespace feng3d {
         /**
          * Discards the red, green and blue components and reads the alpha component.
          */
-        ALPHA = 0,
+        ALPHA = "ALPHA",
         /**
          *  Discards the alpha components and reads the red, green and blue components.
          */
-        RGB = 1,
+        RGB = "RGB",
         /**
          * Red, green, blue and alpha components are read from the color buffer.
          */
-        RGBA = 2,
+        RGBA = "RGBA",
         /**
          * Each color component is a luminance component, alpha is 1.0.
          */
-        LUMINANCE = 3,
+        LUMINANCE = "LUMINANCE",
         /**
          * Each component is a luminance/alpha component.
          */
-        LUMINANCE_ALPHA = 4,
-        /**
-         * When using the WEBGL_depth_texture extension:
-         */
-        DEPTH_COMPONENT = 5,
-        /**
-         * When using the WEBGL_depth_texture extension:
-         */
-        DEPTH_STENCIL = 6,
-        /**
-         * When using the EXT_sRGB extension:
-         */
-        SRGB_EXT = 7,
-        /**
-         * When using the EXT_sRGB extension:
-         */
-        SRGB_ALPHA_EXT = 8,
-        /**
-         * using a WebGL 2 context
-         */
-        R8 = 9,
-        /**
-         * using a WebGL 2 context
-         */
-        R16F = 10,
-        /**
-         * using a WebGL 2 context
-         */
-        R32F = 11,
-        /**
-         * using a WebGL 2 context
-         */
-        R8UI = 12,
-        /**
-         * using a WebGL 2 context
-         */
-        RG8 = 13,
-        /**
-         * using a WebGL 2 context
-         */
-        RG16F = 14,
-        /**
-         * using a WebGL 2 context
-         */
-        RG32F = 15,
-        /**
-         * using a WebGL 2 context
-         */
-        RG8UI = 16,
-        /**
-         * using a WebGL 2 context
-         */
-        RG16UI = 17,
-        /**
-         * using a WebGL 2 context
-         */
-        RG32UI = 18,
-        /**
-         * using a WebGL 2 context
-         */
-        RGB8 = 19,
-        /**
-         * using a WebGL 2 context
-         */
-        SRGB8 = 20,
-        /**
-         * using a WebGL 2 context
-         */
-        RGB565 = 21,
-        /**
-         * using a WebGL 2 context
-         */
-        R11F_G11F_B10F = 22,
-        /**
-         * using a WebGL 2 context
-         */
-        RGB9_E5 = 23,
-        /**
-         * using a WebGL 2 context
-         */
-        RGB16F = 24,
-        /**
-         * using a WebGL 2 context
-         */
-        RGB32F = 25,
-        /**
-         * using a WebGL 2 context
-         */
-        RGB8UI = 26,
-        /**
-         * using a WebGL 2 context
-         */
-        RGBA8 = 27,
-        /**
-         * using a WebGL 2 context
-         */
-        /**
-         * using a WebGL 2 context
-         */
-        RGB5_A1 = 28,
-        /**
-         * using a WebGL 2 context
-         */
-        RGB10_A2 = 29,
-        /**
-         * using a WebGL 2 context
-         */
-        RGBA4 = 30,
-        /**
-         * using a WebGL 2 context
-         */
-        RGBA16F = 31,
-        /**
-         * using a WebGL 2 context
-         */
-        RGBA32F = 32,
-        /**
-         * using a WebGL 2 context
-         */
-        RGBA8UI = 33,
+        LUMINANCE_ALPHA = "LUMINANCE_ALPHA",
     }
 }
 declare namespace feng3d {
@@ -4725,78 +4495,19 @@ declare namespace feng3d {
         /**
          * 8 bits per channel for gl.RGBA
          */
-        UNSIGNED_BYTE = 0,
+        UNSIGNED_BYTE = "UNSIGNED_BYTE",
         /**
          * 5 red bits, 6 green bits, 5 blue bits.
          */
-        UNSIGNED_SHORT_5_6_5 = 1,
+        UNSIGNED_SHORT_5_6_5 = "UNSIGNED_SHORT_5_6_5",
         /**
          * 4 red bits, 4 green bits, 4 blue bits, 4 alpha bits.
          */
-        UNSIGNED_SHORT_4_4_4_4 = 2,
+        UNSIGNED_SHORT_4_4_4_4 = "UNSIGNED_SHORT_4_4_4_4",
         /**
          * 5 red bits, 5 green bits, 5 blue bits, 1 alpha bit.
          */
-        UNSIGNED_SHORT_5_5_5_1 = 3,
-        /**
-         * When using the WEBGL_depth_texture extension:
-         */
-        UNSIGNED_SHORT = 4,
-        /**
-         * When using the WEBGL_depth_texture extension:
-         */
-        UNSIGNED_INT = 5,
-        /**
-         * When using the WEBGL_depth_texture extension:
-         *  (constant provided by the extension)
-         */
-        UNSIGNED_INT_24_8_WEBGL = 6,
-        /**
-         * When using the OES_texture_float extension:
-         */
-        FLOAT = 7,
-        /**
-         * When using the OES_texture_half_float extension:
-         *  (constant provided by the extension)
-         */
-        HALF_FLOAT_OES = 8,
-        /**
-         * using a WebGL 2 context
-         */
-        BYTE = 9,
-        /**
-         * using a WebGL 2 context
-         */
-        SHORT = 10,
-        /**
-         * using a WebGL 2 context
-         */
-        INT = 11,
-        /**
-         * using a WebGL 2 context
-         */
-        HALF_FLOAT = 12,
-        /**
-         * using a WebGL 2 context
-         */
-        UNSIGNED_INT_2_10_10_10_REV = 13,
-        /**
-         * using a WebGL 2 context
-         */
-        UNSIGNED_INT_10F_11F_11F_REV = 14,
-        /**
-         * using a WebGL 2 context
-         */
-        UNSIGNED_INT_5_9_9_9_REV = 15,
-        /**
-         * using a WebGL 2 context
-         */
-        UNSIGNED_INT_24_8 = 16,
-        /**
-         * using a WebGL 2 context
-         *  (pixels must be null)
-         */
-        FLOAT_32_UNSIGNED_INT_24_8_REV = 17,
+        UNSIGNED_SHORT_5_5_5_1 = "UNSIGNED_SHORT_5_5_5_1",
     }
 }
 declare namespace feng3d {
@@ -4806,15 +4517,15 @@ declare namespace feng3d {
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      */
     enum TextureMinFilter {
-        LINEAR = 0,
-        NEAREST = 1,
-        NEAREST_MIPMAP_NEAREST = 2,
-        LINEAR_MIPMAP_NEAREST = 3,
+        LINEAR = "LINEAR",
+        NEAREST = "NEAREST",
+        NEAREST_MIPMAP_NEAREST = "NEAREST_MIPMAP_NEAREST",
+        LINEAR_MIPMAP_NEAREST = "LINEAR_MIPMAP_NEAREST",
         /**
          *  (default value)
          */
-        NEAREST_MIPMAP_LINEAR = 4,
-        LINEAR_MIPMAP_LINEAR = 5,
+        NEAREST_MIPMAP_LINEAR = "NEAREST_MIPMAP_LINEAR",
+        LINEAR_MIPMAP_LINEAR = "LINEAR_MIPMAP_LINEAR",
     }
 }
 declare namespace feng3d {
@@ -4827,8 +4538,8 @@ declare namespace feng3d {
         /**
          *  (default value)
          */
-        LINEAR = 0,
-        NEAREST = 1,
+        LINEAR = "LINEAR",
+        NEAREST = "NEAREST",
     }
 }
 declare namespace feng3d {
@@ -4841,9 +4552,9 @@ declare namespace feng3d {
         /**
          * (default value)
          */
-        REPEAT = 0,
-        CLAMP_TO_EDGE = 1,
-        MIRRORED_REPEAT = 2,
+        REPEAT = "REPEAT",
+        CLAMP_TO_EDGE = "CLAMP_TO_EDGE",
+        MIRRORED_REPEAT = "MIRRORED_REPEAT",
     }
 }
 declare namespace feng3d {
@@ -4856,28 +4567,23 @@ declare namespace feng3d {
         /**
          * signed 8-bit integer, with values in [-128, 127]
          */
-        BYTE = 0,
+        BYTE = "BYTE",
         /**
          *  signed 16-bit integer, with values in [-32768, 32767]
          */
-        SHORT = 1,
+        SHORT = "SHORT",
         /**
          * unsigned 8-bit integer, with values in [0, 255]
          */
-        UNSIGNED_BYTE = 2,
+        UNSIGNED_BYTE = "UNSIGNED_BYTE",
         /**
          * unsigned 16-bit integer, with values in [0, 65535]
          */
-        UNSIGNED_SHORT = 3,
+        UNSIGNED_SHORT = "UNSIGNED_SHORT",
         /**
          * 32-bit floating point number
          */
-        FLOAT = 4,
-        /**
-         * using a WebGL 2 context
-         * 16-bit floating point number
-         */
-        HALF_FLOAT = 5,
+        FLOAT = "FLOAT",
     }
 }
 declare namespace feng3d {
@@ -4890,35 +4596,35 @@ declare namespace feng3d {
         /**
          * (never pass)
          */
-        NEVER = 0,
+        NEVER = "NEVER",
         /**
          *  (pass if the incoming value is less than the depth buffer value)
          */
-        LESS = 1,
+        LESS = "LESS",
         /**
          *  (pass if the incoming value equals the the depth buffer value)
          */
-        EQUAL = 2,
+        EQUAL = "EQUAL",
         /**
          *  (pass if the incoming value is less than or equal to the depth buffer value)
          */
-        LEQUAL = 3,
+        LEQUAL = "LEQUAL",
         /**
          * (pass if the incoming value is greater than the depth buffer value)
          */
-        GREATER = 4,
+        GREATER = "GREATER",
         /**
          * (pass if the incoming value is not equal to the depth buffer value)
          */
-        NOTEQUAL = 5,
+        NOTEQUAL = "NOTEQUAL",
         /**
          * (pass if the incoming value is greater than or equal to the depth buffer value)
          */
-        GEQUAL = 6,
+        GEQUAL = "GEQUAL",
         /**
          *  (always pass)
          */
-        ALWAYS = 7,
+        ALWAYS = "ALWAYS",
     }
 }
 interface HTMLCanvasElement {
@@ -6166,10 +5872,6 @@ declare namespace feng3d {
          * 渲染器
          */
         renderer: Renderer;
-        /**
-         * GL 枚举
-         */
-        enums: GLEnum;
         /**
          * WebWG2.0 或者 扩展功能
          */
@@ -9137,19 +8839,6 @@ declare namespace feng3d {
     interface Texture2DVO {
         url: string;
     }
-    interface Texture2DEventMap {
-        /**
-         * 纹理加载完成
-         */
-        loaded: any;
-    }
-    interface Texture2D {
-        once<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof Texture2DEventMap>(type: K, data?: Texture2DEventMap[K], bubbles?: boolean): any;
-        has<K extends keyof Texture2DEventMap>(type: K): boolean;
-        on<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any): any;
-    }
     var imageDatas: {
         black: ImageData;
         white: ImageData;
@@ -9165,20 +8854,16 @@ declare namespace feng3d {
     class Texture2D extends TextureInfo {
         protected _pixels: HTMLImageElement;
         url: string;
-        private _url;
         /**
          * 纹理尺寸
          */
         readonly size: Vector2;
-        constructor(url?: string);
-        /**
-         * 处理加载完成
-         */
-        protected onLoad(): void;
+        constructor();
         /**
          * 判断数据是否满足渲染需求
          */
         checkRenderData(): boolean;
+        private urlChanged();
     }
 }
 declare namespace feng3d {

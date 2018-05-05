@@ -141,7 +141,7 @@ namespace feng3d
                 this._value = new Float32Array(lazy.getvalue(this._data));
             }
 
-            var type = gl.enums.getGLArrayTypeValue(this.type);
+            var type = gl[this.type];
 
             gl.enableVertexAttribArray(location);
             var buffer = this.getBuffer(gl);
