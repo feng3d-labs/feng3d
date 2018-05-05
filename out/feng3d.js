@@ -10989,18 +10989,18 @@ var feng3d;
                 disableAttributes(shaderProgram.attributes);
             };
             function activeShaderParams(shaderParams) {
-                var cullfaceEnum = feng3d.lazy.getvalue(shaderParams.cullFace);
+                var cullfaceEnum = shaderParams.cullFace;
                 var blendEquation = gl[shaderParams.blendEquation];
-                var sfactor = gl.enums.getBlendFactorValue(feng3d.lazy.getvalue(shaderParams.sfactor));
-                var dfactor = gl.enums.getBlendFactorValue(feng3d.lazy.getvalue(shaderParams.dfactor));
-                var cullFace = gl.enums.getCullFaceValue(feng3d.lazy.getvalue(shaderParams.cullFace));
-                var frontFace = gl.enums.getFrontFaceValue(feng3d.lazy.getvalue(shaderParams.frontFace));
-                var enableBlend = feng3d.lazy.getvalue(shaderParams.enableBlend);
-                var depthtest = feng3d.lazy.getvalue(shaderParams.depthtest);
-                var depthMask = feng3d.lazy.getvalue(shaderParams.depthMask);
-                var depthFunc = gl.enums.getdDepthFuncValue(feng3d.lazy.getvalue(shaderParams.depthFunc));
-                var viewRect = feng3d.lazy.getvalue(shaderParams.viewRect);
-                var useViewRect = feng3d.lazy.getvalue(shaderParams.useViewRect);
+                var sfactor = gl[shaderParams.sfactor];
+                var dfactor = gl[shaderParams.dfactor];
+                var cullFace = gl[shaderParams.cullFace];
+                var frontFace = gl[shaderParams.frontFace];
+                var enableBlend = shaderParams.enableBlend;
+                var depthtest = shaderParams.depthtest;
+                var depthMask = shaderParams.depthMask;
+                var depthFunc = gl[shaderParams.depthFunc];
+                var viewRect = shaderParams.viewRect;
+                var useViewRect = shaderParams.useViewRect;
                 if (!useViewRect) {
                     var clientRect = gl.canvas.getBoundingClientRect();
                     viewRect = new feng3d.Rectangle(0, 0, clientRect.width, clientRect.height);
@@ -11133,7 +11133,7 @@ var feng3d;
              */
             function dodraw(renderAtomic, renderParams) {
                 var instanceCount = ~~feng3d.lazy.getvalue(renderAtomic.instanceCount);
-                var renderMode = gl.enums.getRenderModeValue(feng3d.lazy.getvalue(renderParams.renderMode));
+                var renderMode = gl[renderParams.renderMode];
                 var indexBuffer = renderAtomic.indexBuffer;
                 var vertexNum = 0;
                 if (indexBuffer) {
@@ -19449,50 +19449,17 @@ var feng3d;
         /**
          * 构建材质
          */
-        function TerrainMergeMethod(blendUrl, splatMergeUrl, splatRepeats) {
-            if (blendUrl === void 0) { blendUrl = ""; }
-            if (splatMergeUrl === void 0) { splatMergeUrl = ""; }
-            if (splatRepeats === void 0) { splatRepeats = new feng3d.Vector4(1, 1, 1, 1); }
+        function TerrainMergeMethod() {
             var _this = _super.call(this) || this;
-            _this.blendTexture = new feng3d.Texture2D(blendUrl);
-            _this.splatMergeTexture = new feng3d.Texture2D(splatMergeUrl || "");
+            _this.splatMergeTexture = new feng3d.Texture2D();
+            _this.blendTexture = new feng3d.Texture2D();
+            _this.splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
             _this.splatMergeTexture.minFilter = feng3d.TextureMinFilter.NEAREST;
             _this.splatMergeTexture.magFilter = feng3d.TextureMagFilter.NEAREST;
             _this.splatMergeTexture.wrapS = feng3d.TextureWrap.REPEAT;
             _this.splatMergeTexture.wrapT = feng3d.TextureWrap.REPEAT;
-            _this.splatRepeats = splatRepeats;
             return _this;
         }
-        Object.defineProperty(TerrainMergeMethod.prototype, "splatMergeTexture", {
-            get: function () {
-                return this._splatMergeTexture;
-            },
-            set: function (value) {
-                this._splatMergeTexture = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainMergeMethod.prototype, "blendTexture", {
-            get: function () {
-                return this._blendTexture;
-            },
-            set: function (value) {
-                this._blendTexture = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainMergeMethod.prototype, "splatRepeats", {
-            get: function () {
-                return this._splatRepeats;
-            },
-            set: function (value) {
-                this._splatRepeats = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         TerrainMergeMethod.prototype.preRender = function (renderAtomic) {
             renderAtomic.uniforms.s_blendTexture = this.blendTexture;
             renderAtomic.uniforms.s_splatMergeTexture = this.splatMergeTexture;
@@ -20439,6 +20406,10 @@ var feng3d;
          * @param callback 加载完成回调
          */
         Assets.prototype.loadImage = function (url, callback) {
+            if (url == "" || url == null) {
+                callback(null);
+                return;
+            }
             this.getAssets(url).loadImage(url, function (img) {
                 if (!img) {
                     console.warn("\u65E0\u6CD5\u52A0\u8F7D\u8D44\u6E90\uFF1A" + url);

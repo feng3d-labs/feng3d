@@ -71,7 +71,7 @@ namespace feng3d
         @oav()
         depthMask = true;
 
-        depthFunc: Lazy<DepthFunc> = DepthFunc.LESS;
+        depthFunc = DepthFunc.LESS;
 
         /**
          * 绘制在画布上的区域

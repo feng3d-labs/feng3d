@@ -6294,7 +6294,7 @@ declare namespace feng3d {
          * 是否开启深度标记
          */
         depthMask: boolean;
-        depthFunc: Lazy<DepthFunc>;
+        depthFunc: DepthFunc;
         /**
          * 绘制在画布上的区域
          */
@@ -9434,15 +9434,12 @@ declare namespace feng3d {
      */
     class TerrainMergeMethod extends EventDispatcher {
         splatMergeTexture: Texture2D;
-        private _splatMergeTexture;
         blendTexture: Texture2D;
-        private _blendTexture;
         splatRepeats: Vector4;
-        private _splatRepeats;
         /**
          * 构建材质
          */
-        constructor(blendUrl?: string, splatMergeUrl?: string, splatRepeats?: Vector4);
+        constructor();
         preRender(renderAtomic: RenderAtomic): void;
     }
 }

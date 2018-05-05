@@ -7,52 +7,23 @@ namespace feng3d
      */
     export class TerrainMergeMethod extends EventDispatcher
     {
-        get splatMergeTexture()
-        {
-            return this._splatMergeTexture;
-        }
-        set splatMergeTexture(value)
-        {
-            this._splatMergeTexture = value;
-        }
-        private _splatMergeTexture: Texture2D;
+        splatMergeTexture = new Texture2D();
 
-        get blendTexture()
-        {
-            return this._blendTexture;
-        }
-        set blendTexture(value)
-        {
-            this._blendTexture = value;
-        }
-        private _blendTexture: Texture2D;
+        blendTexture = new Texture2D();
 
-        get splatRepeats()
-        {
-            return this._splatRepeats;
-        }
-        set splatRepeats(value)
-        {
-            this._splatRepeats = value;
-        }
-        private _splatRepeats: Vector4;
+        splatRepeats = new Vector4(1, 1, 1, 1)
 
         /**
          * 构建材质
          */
-        constructor(blendUrl = "", splatMergeUrl = "", splatRepeats = new Vector4(1, 1, 1, 1))
+        constructor()
         {
             super();
-            this.blendTexture = new Texture2D(blendUrl);
-
-            this.splatMergeTexture = new Texture2D(splatMergeUrl || "");
 
             this.splatMergeTexture.minFilter = TextureMinFilter.NEAREST;
             this.splatMergeTexture.magFilter = TextureMagFilter.NEAREST;
             this.splatMergeTexture.wrapS = TextureWrap.REPEAT;
             this.splatMergeTexture.wrapT = TextureWrap.REPEAT;
-
-            this.splatRepeats = splatRepeats;
         }
 
         preRender(renderAtomic: RenderAtomic)

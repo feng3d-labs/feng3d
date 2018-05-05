@@ -33,18 +33,18 @@ namespace feng3d
 
             function activeShaderParams(shaderParams: RenderParams)
             {
-                var cullfaceEnum = lazy.getvalue(shaderParams.cullFace);
+                var cullfaceEnum = shaderParams.cullFace;
                 var blendEquation = gl[shaderParams.blendEquation];
-                var sfactor = gl.enums.getBlendFactorValue(lazy.getvalue(shaderParams.sfactor));
-                var dfactor = gl.enums.getBlendFactorValue(lazy.getvalue(shaderParams.dfactor));
-                var cullFace = gl.enums.getCullFaceValue(lazy.getvalue(shaderParams.cullFace));
-                var frontFace = gl.enums.getFrontFaceValue(lazy.getvalue(shaderParams.frontFace));
-                var enableBlend = lazy.getvalue(shaderParams.enableBlend);
-                var depthtest = lazy.getvalue(shaderParams.depthtest);
-                var depthMask = lazy.getvalue(shaderParams.depthMask);
-                var depthFunc = gl.enums.getdDepthFuncValue(lazy.getvalue(shaderParams.depthFunc));
-                var viewRect = lazy.getvalue(shaderParams.viewRect);
-                var useViewRect = lazy.getvalue(shaderParams.useViewRect);
+                var sfactor = gl[shaderParams.sfactor];
+                var dfactor = gl[shaderParams.dfactor];
+                var cullFace = gl[shaderParams.cullFace];
+                var frontFace = gl[shaderParams.frontFace];
+                var enableBlend = shaderParams.enableBlend;
+                var depthtest = shaderParams.depthtest;
+                var depthMask = shaderParams.depthMask;
+                var depthFunc = gl[shaderParams.depthFunc];
+                var viewRect = shaderParams.viewRect;
+                var useViewRect = shaderParams.useViewRect;
                 if (!useViewRect)
                 {
                     var clientRect = gl.canvas.getBoundingClientRect();
@@ -207,7 +207,7 @@ namespace feng3d
             {
                 var instanceCount = ~~lazy.getvalue(renderAtomic.instanceCount);
 
-                var renderMode = gl.enums.getRenderModeValue(lazy.getvalue(renderParams.renderMode));
+                var renderMode = gl[renderParams.renderMode];
 
                 var indexBuffer = renderAtomic.indexBuffer;
                 var vertexNum = 0;

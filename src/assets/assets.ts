@@ -43,6 +43,11 @@ namespace feng3d
          */
         loadImage(url: string, callback: (img: HTMLImageElement) => void)
         {
+            if (url == "" || url == null) 
+            {
+                callback(null);
+                return;
+            }
             this.getAssets(url).loadImage(url, (img) =>
             {
                 if (!img)
