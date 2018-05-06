@@ -1,12 +1,24 @@
 namespace feng3d
 {
 
-    export interface IStandardMaterial
-    {
-        uniforms: StandardUniforms;
-    }
+    // export interface IStandardMaterial
+    // {
+    //     uniforms: StandardUniforms;
+    // }
 
-    var a: IStandardMaterial & Material;
+    // var a: IStandardMaterial & Material;
+    var a: Material & { uniforms: StandardUniforms; };
+
+    a.uniforms.s_diffuse
+
+    var m: MaterialFactory;
+    m.create("standard1").uniforms
+    m.create("standard").uniforms.s_diffuse
+
+    export interface MaterialFactory
+    {
+        create(shader: "standard"): Material & { uniforms: StandardUniforms; };
+    }
 
     /**
      * 标准材质
@@ -124,35 +136,35 @@ namespace feng3d
 
         /**
          * 环境映射贴图
-		 */
+         */
         @serialize()
         @oav({ block: "envMap" })
         s_envMap = new TextureCube();
 
         /**
          * 反射率
-		 */
+         */
         @serialize()
         @oav({ block: "envMap" })
         u_reflectivity = 1;
 
         /**
          * 出现雾效果的最近距离
-		 */
+         */
         @serialize()
         @oav({ block: "fog" })
         u_fogMinDistance = 0;
 
-		/**
+        /**
          * 最远距离
-		 */
+         */
         @serialize()
         @oav({ block: "fog" })
         u_fogMaxDistance = 100;
 
         /**
          * 雾的颜色
-		 */
+         */
         @serialize()
         @oav({ block: "fog" })
         u_fogColor = new Color3();
@@ -175,4 +187,11 @@ namespace feng3d
     }
 
     shaderConfig.shaders["standard"].cls = StandardUniforms;
+
+    export var Mat =
+        {
+            standard: StandardUniforms,
+        }
+
+    Mat.standard
 }

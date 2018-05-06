@@ -8901,6 +8901,9 @@ declare namespace feng3d {
 declare namespace feng3d {
 }
 declare namespace feng3d {
+    class MaterialFactory {
+    }
+    var materialFactory: MaterialFactory;
     /**
      * 材质
      * @author feng 2016-05-02
@@ -9007,8 +9010,10 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface IStandardMaterial {
-        uniforms: StandardUniforms;
+    interface MaterialFactory {
+        create(shader: "standard"): Material & {
+            uniforms: StandardUniforms;
+        };
     }
     /**
      * 标准材质
@@ -9100,6 +9105,9 @@ declare namespace feng3d {
         u_fogMode: FogMode;
         constructor();
     }
+    var Mat: {
+        standard: typeof StandardUniforms;
+    };
 }
 declare namespace feng3d {
     /**
@@ -9425,6 +9433,22 @@ declare namespace feng3d {
          */
         constructor();
         preRender(renderAtomic: RenderAtomic): void;
+    }
+    interface MaterialFactory {
+        create(shader: "terrain"): Material & {
+            uniforms: TerrainUniforms;
+        };
+    }
+    class TerrainUniforms extends StandardUniforms {
+        s_splatTexture1: Texture2D;
+        s_splatTexture2: Texture2D;
+        s_splatTexture3: Texture2D;
+        s_blendTexture: Texture2D;
+        u_splatRepeats: Vector4;
+        /**
+         * 构建材质
+         */
+        constructor();
     }
 }
 declare namespace feng3d {

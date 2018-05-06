@@ -1,13 +1,25 @@
 namespace feng3d
 {
 
+    export class MaterialFactory
+    {
+        create(shader: string)
+        {
+            var material = new Material();
+            material.shaderName = shader;
+            return material;
+        }
+    }
+
+    export var materialFactory = new MaterialFactory();
+
     /**
      * 材质
      * @author feng 2016-05-02
      */
-    // @ov({ component: "OVMaterial" })
     export class Material extends EventDispatcher
     {
+
         @oav({ component: "OAVMaterialName" })
         @watch("onShaderChanged")
         shaderName: string;
@@ -44,7 +56,7 @@ namespace feng3d
             {
                 if (this.uniforms.hasOwnProperty(key))
                 {
-                    renderAtomic.uniforms[key] = this.uniforms[key];
+                    renderAtomic.uniforms[<any>key] = this.uniforms[key];
                 }
             }
         }
