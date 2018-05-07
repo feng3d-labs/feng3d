@@ -94,7 +94,7 @@ namespace feng3d
 
             var b = obj.b;
 
-            serialization.setValue(obj, obj1, "b");
+            serialization.setPropertyValue(obj, obj1, "b");
             assert.ok(obj.b == b);
             obj1.b.o.id = 3;
             assert.ok(obj.b != obj1.b);

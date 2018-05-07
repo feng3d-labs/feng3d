@@ -98,7 +98,7 @@ var feng3d;
             obj1.b.c = 5;
             obj1.b.o.id = 5;
             var b = obj.b;
-            feng3d.serialization.setValue(obj, obj1, "b");
+            feng3d.serialization.setPropertyValue(obj, obj1, "b");
             assert.ok(obj.b == b);
             obj1.b.o.id = 3;
             assert.ok(obj.b != obj1.b);

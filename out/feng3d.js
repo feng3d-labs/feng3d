@@ -1956,16 +1956,19 @@ var feng3d;
             if (target["deserialize"])
                 return target["deserialize"](object);
             //默认反序列
+            feng3d.serialization.setValue(target, object);
+            return target;
+        },
+        setValue: function (target, object) {
             var serializableMembers = getSerializableMembers(target);
             for (var i = 0; i < serializableMembers.length; i++) {
                 var property = serializableMembers[i];
                 if (object[property] !== undefined) {
-                    feng3d.serialization.setValue(target, object, property);
+                    feng3d.serialization.setPropertyValue(target, object, property);
                 }
             }
-            return target;
         },
-        setValue: function (target, object, property) {
+        setPropertyValue: function (target, object, property) {
             if (target[property] == object[property])
                 return;
             var objvalue = object[property];
@@ -1984,20 +1987,14 @@ var feng3d;
             }
             // 处理同为Object类型
             if (target[property].constructor == Object && objvalue[CLASS_KEY] == undefined) {
-                for (var key_1 in objvalue) {
-                    feng3d.serialization.setValue(target[property], objvalue, key_1);
+                for (var key in objvalue) {
+                    feng3d.serialization.setPropertyValue(target[property], objvalue, key);
                 }
                 return;
             }
             var targetClassName = feng3d.ClassUtils.getQualifiedClassName(target[property]);
             if (targetClassName == objvalue[CLASS_KEY]) {
-                var serializableMembers = getSerializableMembers(target[property]);
-                for (var i = 0; i < serializableMembers.length; i++) {
-                    var key = serializableMembers[i];
-                    if (objvalue[key] !== undefined) {
-                        feng3d.serialization.setValue(target[property], objvalue, key);
-                    }
-                }
+                feng3d.serialization.setValue(target[property], objvalue);
             }
             else {
                 target[property] = feng3d.serialization.deserialize(objvalue);

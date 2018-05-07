@@ -155,6 +155,11 @@ namespace feng3d
                 return target["deserialize"](object);
 
             //默认反序列
+            serialization.setValue(target, object);
+            return target;
+        },
+        setValue(target: Object, object: Object)
+        {
             var serializableMembers = getSerializableMembers(target);
             for (var i = 0; i < serializableMembers.length; i++)
             {
@@ -162,12 +167,11 @@ namespace feng3d
 
                 if (object[property] !== undefined)
                 {
-                    serialization.setValue(target, object, property);
+                    serialization.setPropertyValue(target, object, property);
                 }
             }
-            return target;
         },
-        setValue(target: Object, object: Object, property: string)
+        setPropertyValue(target: Object, object: Object, property: string)
         {
             if (target[property] == object[property])
                 return;
@@ -193,23 +197,14 @@ namespace feng3d
             {
                 for (const key in objvalue)
                 {
-                    serialization.setValue(target[property], objvalue, key);
+                    serialization.setPropertyValue(target[property], objvalue, key);
                 }
                 return;
             }
             var targetClassName = ClassUtils.getQualifiedClassName(target[property]);
             if (targetClassName == objvalue[CLASS_KEY])
             {
-                var serializableMembers = getSerializableMembers(target[property]);
-                for (var i = 0; i < serializableMembers.length; i++)
-                {
-                    var key = serializableMembers[i];
-
-                    if (objvalue[key] !== undefined)
-                    {
-                        serialization.setValue(target[property], objvalue, key);
-                    }
-                }
+                serialization.setValue(target[property], objvalue);
             } else
             {
                 target[property] = serialization.deserialize(objvalue);
