@@ -9001,12 +9001,10 @@ declare namespace feng3d {
      */
     class StandardMaterial extends Material {
         uniforms: StandardUniforms;
-        terrainMethod: TerrainMethod;
         /**
          * 构建
          */
         constructor();
-        preRender(renderAtomic: RenderAtomic): void;
     }
     /**
      * 雾模式
@@ -9394,22 +9392,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 地形材质
-     * @author feng 2016-04-28
-     */
-    class TerrainMethod extends EventDispatcher {
-        s_splatTexture1: Texture2D;
-        s_splatTexture2: Texture2D;
-        s_splatTexture3: Texture2D;
-        s_blendTexture: Texture2D;
-        u_splatRepeats: Vector4;
-        /**
-         * 构建材质
-         */
-        constructor();
-        preRender(renderAtomic: RenderAtomic): void;
-    }
     interface MaterialFactory {
         create(shader: "terrain"): Material & {
             uniforms: TerrainUniforms;
@@ -9421,10 +9403,6 @@ declare namespace feng3d {
         s_splatTexture3: Texture2D;
         s_blendTexture: Texture2D;
         u_splatRepeats: Vector4;
-        /**
-         * 构建材质
-         */
-        constructor();
     }
 }
 declare namespace feng3d {

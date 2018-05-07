@@ -14,9 +14,6 @@ namespace feng3d
     {
         uniforms = new StandardUniforms();
 
-        terrainMethod = new TerrainMethod();
-        // terrainMethod: TerrainMethod | TerrainMergeMethod;
-
         /**
          * 构建
          */
@@ -24,13 +21,6 @@ namespace feng3d
         {
             super();
             this.shaderName = "standard";
-        }
-
-        preRender(renderAtomic: RenderAtomic)
-        {
-            super.preRender(renderAtomic);
-
-            this.terrainMethod.preRender(renderAtomic);
         }
     }
 

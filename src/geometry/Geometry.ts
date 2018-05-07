@@ -674,6 +674,24 @@ namespace feng3d
 
             var attributes = renderAtomic.attributes;
 
+            this.uvs;
+            this.normals;
+            this.tangents;
+
+            for (const vaId in this._autoAttributeDatas)
+            {
+                if (this._autoAttributeDatas.hasOwnProperty(vaId))
+                {
+                    const element = this._autoAttributeDatas[vaId];
+                    //
+                    var attributeRenderData = attributes[vaId] = attributes[vaId] || new Attribute(vaId, element.data);
+                    if (attributeRenderData.data != element.data)
+                        attributeRenderData.data = element.data;
+                    attributeRenderData.size = element.size;
+                    attributeRenderData.divisor = 0;
+                }
+            }
+
             for (const vaId in this._attributes)
             {
                 if (this._attributes.hasOwnProperty(vaId))
