@@ -72,7 +72,7 @@ namespace feng3d
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
         model.geometry = new PlaneGeometry();
-        model.material = new StandardMaterial();
+        model.material = materialFactory.create("standard");
         return gameobject;
     }
 
@@ -81,7 +81,7 @@ namespace feng3d
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
         model.geometry = new CylinderGeometry();
-        model.material = new StandardMaterial();
+        model.material = materialFactory.create("standard");
         return gameobject;
     }
 
@@ -90,7 +90,7 @@ namespace feng3d
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
         model.geometry = new ConeGeometry();
-        model.material = new StandardMaterial();
+        model.material = materialFactory.create("standard");
         return gameobject;
     }
 
@@ -99,7 +99,7 @@ namespace feng3d
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
         model.geometry = new TorusGeometry();
-        model.material = new StandardMaterial();
+        model.material = materialFactory.create("standard");
         return gameobject;
     }
 
@@ -115,7 +115,7 @@ namespace feng3d
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
         model.geometry = new SphereGeometry();
-        model.material = new StandardMaterial();
+        model.material = materialFactory.create("standard");
         return gameobject;
     }
 
@@ -124,7 +124,7 @@ namespace feng3d
         var gameobject = GameObject.create(name);
         var model = gameobject.addComponent(MeshRenderer);
         model.geometry = new CapsuleGeometry();
-        model.material = new StandardMaterial();
+        model.material = materialFactory.create("standard");
         return gameobject;
     }
 
@@ -147,7 +147,7 @@ namespace feng3d
         var _particleMesh = GameObject.create("particle");
         var meshRenderer = _particleMesh.addComponent(MeshRenderer);
         meshRenderer.geometry = new PointGeometry();
-        var material = meshRenderer.material = new StandardMaterial();
+        var material = meshRenderer.material = materialFactory.create("standard");
         material.renderParams.renderMode = RenderMode.POINTS;
 
         var particleAnimator = _particleMesh.addComponent(ParticleAnimator);

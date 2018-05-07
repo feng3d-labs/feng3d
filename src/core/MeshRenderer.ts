@@ -52,7 +52,7 @@ namespace feng3d
                 this.geometry = new CubeGeometry();
 
             if (!this.material)
-                this.material = new StandardMaterial();
+                this.material = materialFactory.create("standard");
         }
 
         preRender(renderAtomic: RenderAtomic)

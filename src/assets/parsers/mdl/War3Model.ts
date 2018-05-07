@@ -76,7 +76,7 @@ namespace feng3d.war3
 				var material: Material = this.materials[geoset.MaterialID];
 				var fBitmap: FBitmap = this.getFBitmap(material);
 
-				var material1 = new StandardMaterial();
+				var material1 = materialFactory.create("standard");
 				var image: string = fBitmap.image;
 				if (image && image.length > 0)
 				{

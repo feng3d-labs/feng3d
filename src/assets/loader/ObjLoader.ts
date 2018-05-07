@@ -19,7 +19,7 @@ namespace feng3d
     {
         Loader.loadText(url, (content: string) =>
         {
-            var material = new StandardMaterial()
+            var material = materialFactory.create("standard")
             var objData = OBJParser.parser(content);
             var mtl = objData.mtl;
             if (mtl)
@@ -39,7 +39,7 @@ namespace feng3d
 
     function parse(content: string, completed?: (gameObject: GameObject) => void)
     {
-        var material = new StandardMaterial()
+        var material = materialFactory.create("standard")
         var objData = OBJParser.parser(content);
         createObj(objData, material, null, completed);
     }
@@ -77,7 +77,7 @@ namespace feng3d
     {
         var gameObject = GameObject.create();
         var model = gameObject.addComponent(MeshRenderer);
-        model.material = material || new StandardMaterial();
+        model.material = material || materialFactory.create("standard");
         model.material.renderParams.cullFace = CullFace.FRONT;
 
         var geometry = model.geometry = new CustomGeometry();
@@ -112,7 +112,7 @@ namespace feng3d
         {
             var materialInfo = mtlData[subObj.material];
             var kd = materialInfo.kd;
-            var standardMaterial = new StandardMaterial();
+            var standardMaterial = materialFactory.create("standard");
             var materialInfo = mtlData[subObj.material];
             var kd = materialInfo.kd;
             standardMaterial.uniforms.u_diffuse = new Color4(kd[0], kd[1], kd[2]);

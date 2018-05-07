@@ -1,27 +1,9 @@
 namespace feng3d
 {
-
+    export type StandardMaterial = Material & { uniforms: StandardUniforms; };
     export interface MaterialFactory
     {
-        create(shader: "standard"): Material & { uniforms: StandardUniforms; };
-    }
-
-    /**
-     * 标准材质
-     * @author feng 2016-05-02
-     */
-    export class StandardMaterial extends Material
-    {
-        uniforms = new StandardUniforms();
-
-        /**
-         * 构建
-         */
-        constructor()
-        {
-            super();
-            this.shaderName = "standard";
-        }
+        create(shader: "standard"): StandardMaterial;
     }
 
     /**

@@ -8994,21 +8994,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface MaterialFactory {
-        create(shader: "standard"): Material & {
-            uniforms: StandardUniforms;
-        };
-    }
-    /**
-     * 标准材质
-     * @author feng 2016-05-02
-     */
-    class StandardMaterial extends Material {
+    type StandardMaterial = Material & {
         uniforms: StandardUniforms;
-        /**
-         * 构建
-         */
-        constructor();
+    };
+    interface MaterialFactory {
+        create(shader: "standard"): StandardMaterial;
     }
     /**
      * 雾模式
