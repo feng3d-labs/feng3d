@@ -925,19 +925,20 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    var serialization: Serialization;
     /**
      * 序列化装饰器，被装饰属性将被序列化
      * @param {*} target                序列化原型
      * @param {string} propertyKey      序列化属性
      */
     function serialize(target: any, propertyKey: string): void;
-    var serialization: {
+    class Serialization {
         serialize(target: any): any;
         deserialize(object: any): any;
         setValue(target: Object, object: Object): void;
         setPropertyValue(target: Object, object: Object, property: string): void;
         clone<T>(target: T): T;
-    };
+    }
 }
 /**
  * @author mrdoob / http://mrdoob.com/
