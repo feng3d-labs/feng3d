@@ -21,6 +21,7 @@ namespace feng3d
     {
 
         @oav({ component: "OAVMaterialName" })
+        @serialize
         @watch("onShaderChanged")
         shaderName: string;
 

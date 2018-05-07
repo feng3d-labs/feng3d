@@ -18081,6 +18081,7 @@ var feng3d;
         };
         __decorate([
             feng3d.oav({ component: "OAVMaterialName" }),
+            feng3d.serialize,
             feng3d.watch("onShaderChanged")
         ], Material.prototype, "shaderName", void 0);
         __decorate([
