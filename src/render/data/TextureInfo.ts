@@ -1,10 +1,24 @@
 namespace feng3d
 {
+    export interface TextureInfoRaw
+    {
+        anisotropy?: number,
+        flipY?: boolean,
+        format?: TextureFormat,
+        generateMipmap?: boolean,
+        magFilter?: TextureMagFilter,
+        minFilter?: TextureMinFilter,
+        premulAlpha?: boolean,
+        type?: TextureDataType,
+        wrapS?: TextureWrap,
+        wrapT?: TextureWrap
+    }
+
     /**
      * 纹理信息
      * @author feng 2016-12-20
      */
-    export abstract class TextureInfo extends EventDispatcher
+    export abstract class TextureInfo
     {
         /**
          * 纹理类型
@@ -100,6 +114,11 @@ namespace feng3d
          * 是否失效
          */
         private _invalid = true;
+
+        constructor(raw?: TextureInfoRaw)
+        {
+
+        }
 
         /**
          * 判断数据是否满足渲染需求

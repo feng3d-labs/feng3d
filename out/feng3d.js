@@ -10230,84 +10230,51 @@ var feng3d;
      * 纹理信息
      * @author feng 2016-12-20
      */
-    var TextureInfo = /** @class */ (function (_super) {
-        __extends(TextureInfo, _super);
+    var TextureInfo = /** @class */ (function () {
         function TextureInfo() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._format = feng3d.TextureFormat.RGB;
-            _this._type = feng3d.TextureDataType.UNSIGNED_BYTE;
-            _this._generateMipmap = false;
-            _this._flipY = false;
-            _this._premulAlpha = false;
-            _this.minFilter = feng3d.TextureMinFilter.LINEAR;
-            _this.magFilter = feng3d.TextureMagFilter.LINEAR;
-            /**
-             * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
-             */
-            _this.wrapS = feng3d.TextureWrap.REPEAT;
-            /**
-             * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
-             */
-            _this.wrapT = feng3d.TextureWrap.REPEAT;
-            /**
-             * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
-             */
-            _this.anisotropy = 0;
-            /**
-             * 纹理缓冲
-             */
-            _this._textureMap = new Map();
-            /**
-             * 是否失效
-             */
-            _this._invalid = true;
-            return _this;
-        }
-        Object.defineProperty(TextureInfo.prototype, "format", {
             /**
              * 格式
              */
-            get: function () { return this._format; },
-            set: function (value) { this._format = value; this.invalidate(); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureInfo.prototype, "type", {
+            this.format = feng3d.TextureFormat.RGB;
             /**
              * 数据类型
              */
-            get: function () { return this._type; },
-            set: function (value) { this._type = value; this.invalidate(); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureInfo.prototype, "generateMipmap", {
+            this.type = feng3d.TextureDataType.UNSIGNED_BYTE;
             /**
              * 是否生成mipmap
              */
-            get: function () { return this._generateMipmap; },
-            set: function (value) { this._generateMipmap = value; this.invalidate(); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureInfo.prototype, "flipY", {
+            this.generateMipmap = false;
             /**
              * 对图像进行Y轴反转。默认值为false
              */
-            get: function () { return this._flipY; },
-            set: function (value) { this._flipY = value; this.invalidate(); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureInfo.prototype, "premulAlpha", {
+            this.flipY = false;
             /**
              * 将图像RGB颜色值得每一个分量乘以A。默认为false
              */
-            get: function () { return this._premulAlpha; },
-            set: function (value) { this._premulAlpha = value; this.invalidate(); },
-            enumerable: true,
-            configurable: true
-        });
+            this.premulAlpha = false;
+            this.minFilter = feng3d.TextureMinFilter.LINEAR;
+            this.magFilter = feng3d.TextureMagFilter.LINEAR;
+            /**
+             * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
+             */
+            this.wrapS = feng3d.TextureWrap.REPEAT;
+            /**
+             * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
+             */
+            this.wrapT = feng3d.TextureWrap.REPEAT;
+            /**
+             * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
+             */
+            this.anisotropy = 0;
+            /**
+             * 纹理缓冲
+             */
+            this._textureMap = new Map();
+            /**
+             * 是否失效
+             */
+            this._invalid = true;
+        }
         /**
          * 判断数据是否满足渲染需求
          */
@@ -10385,7 +10352,7 @@ var feng3d;
                 gl.bindTexture(textureType, texture);
                 //设置纹理图片
                 this.initTexture(gl);
-                if (this._generateMipmap) {
+                if (this.generateMipmap) {
                     gl.generateMipmap(textureType);
                 }
                 this._textureMap.set(gl, texture);
@@ -10396,8 +10363,8 @@ var feng3d;
          * 初始化纹理
          */
         TextureInfo.prototype.initTexture = function (gl) {
-            var format = gl[this._format];
-            var type = gl[this._type];
+            var format = gl[this.format];
+            var type = gl[this.type];
             switch (this._textureType) {
                 case feng3d.TextureType.TEXTURE_CUBE_MAP:
                     var pixels = this._activePixels;
@@ -10429,24 +10396,29 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize(feng3d.TextureFormat.RGB),
+            feng3d.watch("invalidate"),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureFormat } })
-        ], TextureInfo.prototype, "format", null);
+        ], TextureInfo.prototype, "format", void 0);
         __decorate([
             feng3d.serialize(feng3d.TextureDataType.UNSIGNED_BYTE),
+            feng3d.watch("invalidate"),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureDataType } })
-        ], TextureInfo.prototype, "type", null);
+        ], TextureInfo.prototype, "type", void 0);
         __decorate([
             feng3d.serialize(false),
+            feng3d.watch("invalidate"),
             feng3d.oav()
-        ], TextureInfo.prototype, "generateMipmap", null);
+        ], TextureInfo.prototype, "generateMipmap", void 0);
         __decorate([
             feng3d.serialize(false),
+            feng3d.watch("invalidate"),
             feng3d.oav()
-        ], TextureInfo.prototype, "flipY", null);
+        ], TextureInfo.prototype, "flipY", void 0);
         __decorate([
             feng3d.serialize(false),
+            feng3d.watch("invalidate"),
             feng3d.oav()
-        ], TextureInfo.prototype, "premulAlpha", null);
+        ], TextureInfo.prototype, "premulAlpha", void 0);
         __decorate([
             feng3d.serialize(feng3d.TextureMinFilter.LINEAR),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureMinFilter } })
@@ -10468,7 +10440,7 @@ var feng3d;
             feng3d.oav()
         ], TextureInfo.prototype, "anisotropy", void 0);
         return TextureInfo;
-    }(feng3d.EventDispatcher));
+    }());
     feng3d.TextureInfo = TextureInfo;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -18231,16 +18203,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    // export interface IStandardMaterial
-    // {
-    //     uniforms: StandardUniforms;
-    // }
-    // var a: IStandardMaterial & Material;
-    var a;
-    a.uniforms.s_diffuse;
-    var m;
-    m.create("standard1").uniforms;
-    m.create("standard").uniforms.s_diffuse;
     /**
      * 标准材质
      * @author feng 2016-05-02

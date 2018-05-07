@@ -6502,7 +6502,7 @@ declare namespace feng3d {
      * 纹理信息
      * @author feng 2016-12-20
      */
-    abstract class TextureInfo extends EventDispatcher {
+    abstract class TextureInfo {
         /**
          * 纹理类型
          */
@@ -6511,27 +6511,22 @@ declare namespace feng3d {
          * 格式
          */
         format: TextureFormat;
-        protected _format: TextureFormat;
         /**
          * 数据类型
          */
         type: TextureDataType;
-        private _type;
         /**
          * 是否生成mipmap
          */
         generateMipmap: boolean;
-        private _generateMipmap;
         /**
          * 对图像进行Y轴反转。默认值为false
          */
         flipY: boolean;
-        private _flipY;
         /**
          * 将图像RGB颜色值得每一个分量乘以A。默认为false
          */
         premulAlpha: boolean;
-        private _premulAlpha;
         minFilter: TextureMinFilter;
         magFilter: TextureMagFilter;
         /**

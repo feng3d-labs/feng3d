@@ -189,20 +189,6 @@ namespace feng3d
         w?: number
     }
 
-    export interface TextureInfoRaw
-    {
-        anisotropy?: number,
-        flipY?: boolean,
-        format?: TextureFormat,
-        generateMipmap?: boolean,
-        magFilter?: TextureMagFilter,
-        minFilter?: TextureMinFilter,
-        premulAlpha?: boolean,
-        type?: TextureDataType,
-        wrapS?: TextureWrap,
-        wrapT?: TextureWrap
-    }
-
     export interface Texture2DRaw extends TextureInfoRaw
     {
         "__class__": "feng3d.Texture2D",
