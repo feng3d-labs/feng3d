@@ -1845,25 +1845,30 @@ var feng3d;
      * @param {*} target                序列化原型
      * @param {string} propertyKey      序列化属性
      */
-    function serialize(defaultvalue) {
+    function serialize() {
         return function (target, propertyKey) {
+            var serializeInfo = target[SERIALIZE_KEY];
             if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY))
-                target[SERIALIZE_KEY] = {};
-            target[SERIALIZE_KEY][propertyKey] = defaultvalue;
+                serializeInfo = target[SERIALIZE_KEY] = {};
+            serializeInfo.propertys = serializeInfo.propertys || [];
+            serializeInfo.propertys.push(propertyKey);
         };
     }
     feng3d.serialize = serialize;
 })(feng3d || (feng3d = {}));
 var SERIALIZE_KEY = "__serialize__";
-[Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(function (element) {
-    element.prototype["serialize"] = function (object) {
-        object.value = Array.from(this);
-        return object;
-    };
-    element.prototype["deserialize"] = function (object) {
-        return new (this.constructor)(object.value);
-    };
-});
+// [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
+// {
+//     element.prototype["serialize"] = function (object: { value: number[] })
+//     {
+//         object.value = Array.from(this);
+//         return object;
+//     }
+//     element.prototype["deserialize"] = function (object: { value: number[] })
+//     {
+//         return new (<any>(this.constructor))(object.value);
+//     }
+// });
 (function (feng3d) {
     feng3d.serialization = {
         serialize: serialize,
@@ -1872,29 +1877,33 @@ var SERIALIZE_KEY = "__serialize__";
         clone: clone,
     };
     var CLASS_KEY = "__class__";
+    /**
+     * 获取默认实例
+     */
+    function getDefatutInstance(object) {
+        var serializeInfo = object[SERIALIZE_KEY];
+        serializeInfo.default = serializeInfo.default || new object.constructor();
+        return serializeInfo.default;
+    }
+    /**
+     * 获取序列化属性列表
+     */
     function getSerializableMembers(object, serializableMembers) {
-        serializableMembers = serializableMembers || {};
+        serializableMembers = serializableMembers || [];
         if (object["__proto__"]) {
             getSerializableMembers(object["__proto__"], serializableMembers);
         }
-        var superserializableMembers = object[SERIALIZE_KEY];
-        if (superserializableMembers) {
-            for (var key in superserializableMembers) {
-                serializableMembers[key] = superserializableMembers[key];
+        if (Object.getOwnPropertyDescriptor(object, SERIALIZE_KEY)) {
+            var serializeInfo = object[SERIALIZE_KEY];
+            if (serializeInfo && serializeInfo.propertys) {
+                var propertys = serializeInfo.propertys;
+                for (var i = 0, n = propertys.length; i < n; i++) {
+                    var element = propertys[i];
+                    serializableMembers.push(propertys[i]);
+                }
             }
         }
         return serializableMembers;
-    }
-    function getSortSerializableMembers(object) {
-        var membersobj = getSerializableMembers(object);
-        var memberslist = [];
-        for (var key in membersobj) {
-            if (membersobj.hasOwnProperty(key)) {
-                memberslist.push([key, membersobj[key]]);
-            }
-        }
-        memberslist = memberslist.sort(function (a, b) { return a[0] < b[0] ? -1 : 1; });
-        return memberslist;
     }
     function serialize(target) {
         var result = _serialize(target);
@@ -1944,14 +1953,14 @@ var SERIALIZE_KEY = "__serialize__";
         if (target["serialize"])
             return target["serialize"](object);
         //使用默认序列化
-        var serializableMembers = getSortSerializableMembers(target);
+        var serializableMembers = getSerializableMembers(target);
+        var defatutInstance = getDefatutInstance(target);
         for (var i = 0; i < serializableMembers.length; i++) {
-            var property = serializableMembers[i][0];
-            var objectproperty = property;
-            if (target[property] === serializableMembers[i][1])
+            var property = serializableMembers[i];
+            if (target[property] === defatutInstance[property])
                 continue;
             if (target[property] !== undefined) {
-                object[objectproperty] = _serialize(target[property]);
+                object[property] = _serialize(target[property]);
             }
         }
         return object;
@@ -1997,12 +2006,11 @@ var SERIALIZE_KEY = "__serialize__";
         if (target["deserialize"])
             return target["deserialize"](object);
         //默认反序列
-        var serializableMembers = getSortSerializableMembers(target);
+        var serializableMembers = getSerializableMembers(target);
         for (var i = 0; i < serializableMembers.length; i++) {
-            var property = serializableMembers[i][0];
-            var objectproperty = property;
-            if (object[objectproperty] !== undefined) {
-                target[property] = _deserialize(object[objectproperty]);
+            var property = serializableMembers[i];
+            if (object[property] !== undefined) {
+                target[property] = _deserialize(object[property]);
             }
         }
         return target;
@@ -3097,15 +3105,15 @@ var feng3d;
          */
         Vector3.ZERO = new Vector3();
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Vector3.prototype, "x", void 0);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Vector3.prototype, "y", void 0);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Vector3.prototype, "z", void 0);
         return Vector3;
@@ -3423,19 +3431,19 @@ var feng3d;
             return "<" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + ">";
         };
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Vector4.prototype, "x", void 0);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Vector4.prototype, "y", void 0);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Vector4.prototype, "z", void 0);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Vector4.prototype, "w", void 0);
         return Vector4;
@@ -5566,16 +5574,16 @@ var feng3d;
             this.w = q.w;
         };
         __decorate([
-            feng3d.serialize(0)
+            feng3d.serialize()
         ], Quaternion.prototype, "x", void 0);
         __decorate([
-            feng3d.serialize(0)
+            feng3d.serialize()
         ], Quaternion.prototype, "y", void 0);
         __decorate([
-            feng3d.serialize(0)
+            feng3d.serialize()
         ], Quaternion.prototype, "z", void 0);
         __decorate([
-            feng3d.serialize(0)
+            feng3d.serialize()
         ], Quaternion.prototype, "w", void 0);
         return Quaternion;
     }());
@@ -7421,15 +7429,15 @@ var feng3d;
         };
         __decorate([
             feng3d.oav(),
-            feng3d.serialize(1)
+            feng3d.serialize()
         ], Color3.prototype, "r", void 0);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize(1)
+            feng3d.serialize()
         ], Color3.prototype, "g", void 0);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize(1)
+            feng3d.serialize()
         ], Color3.prototype, "b", void 0);
         return Color3;
     }());
@@ -7580,19 +7588,19 @@ var feng3d;
         };
         __decorate([
             feng3d.oav(),
-            feng3d.serialize(1)
+            feng3d.serialize()
         ], Color4.prototype, "r", void 0);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize(1)
+            feng3d.serialize()
         ], Color4.prototype, "g", void 0);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize(1)
+            feng3d.serialize()
         ], Color4.prototype, "b", void 0);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize(1)
+            feng3d.serialize()
         ], Color4.prototype, "a", void 0);
         return Color4;
     }());
@@ -9909,39 +9917,39 @@ var feng3d;
             this.useViewRect = false;
         }
         __decorate([
-            feng3d.serialize(feng3d.RenderMode.TRIANGLES),
+            feng3d.serialize(),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.RenderMode } })
         ], RenderParams.prototype, "renderMode", void 0);
         __decorate([
-            feng3d.serialize(feng3d.CullFace.BACK),
+            feng3d.serialize(),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.CullFace } })
         ], RenderParams.prototype, "cullFace", void 0);
         __decorate([
-            feng3d.serialize(feng3d.FrontFace.CW),
+            feng3d.serialize(),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.FrontFace } })
         ], RenderParams.prototype, "frontFace", void 0);
         __decorate([
-            feng3d.serialize(false),
+            feng3d.serialize(),
             feng3d.oav()
         ], RenderParams.prototype, "enableBlend", void 0);
         __decorate([
-            feng3d.serialize(feng3d.BlendEquation.FUNC_ADD),
+            feng3d.serialize(),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendEquation } })
         ], RenderParams.prototype, "blendEquation", void 0);
         __decorate([
-            feng3d.serialize(feng3d.BlendFactor.SRC_ALPHA),
+            feng3d.serialize(),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendFactor } })
         ], RenderParams.prototype, "sfactor", void 0);
         __decorate([
-            feng3d.serialize(feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA),
+            feng3d.serialize(),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendFactor } })
         ], RenderParams.prototype, "dfactor", void 0);
         __decorate([
-            feng3d.serialize(true),
+            feng3d.serialize(),
             feng3d.oav()
         ], RenderParams.prototype, "depthtest", void 0);
         __decorate([
-            feng3d.serialize(true),
+            feng3d.serialize(),
             feng3d.oav()
         ], RenderParams.prototype, "depthMask", void 0);
         __decorate([
@@ -10357,48 +10365,48 @@ var feng3d;
             this._textureMap.clear();
         };
         __decorate([
-            feng3d.serialize(feng3d.TextureFormat.RGB),
+            feng3d.serialize(),
             feng3d.watch("invalidate"),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureFormat } })
         ], TextureInfo.prototype, "format", void 0);
         __decorate([
-            feng3d.serialize(feng3d.TextureDataType.UNSIGNED_BYTE),
+            feng3d.serialize(),
             feng3d.watch("invalidate"),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureDataType } })
         ], TextureInfo.prototype, "type", void 0);
         __decorate([
-            feng3d.serialize(false),
+            feng3d.serialize(),
             feng3d.watch("invalidate"),
             feng3d.oav()
         ], TextureInfo.prototype, "generateMipmap", void 0);
         __decorate([
-            feng3d.serialize(false),
+            feng3d.serialize(),
             feng3d.watch("invalidate"),
             feng3d.oav()
         ], TextureInfo.prototype, "flipY", void 0);
         __decorate([
-            feng3d.serialize(false),
+            feng3d.serialize(),
             feng3d.watch("invalidate"),
             feng3d.oav()
         ], TextureInfo.prototype, "premulAlpha", void 0);
         __decorate([
-            feng3d.serialize(feng3d.TextureMinFilter.LINEAR),
+            feng3d.serialize(),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureMinFilter } })
         ], TextureInfo.prototype, "minFilter", void 0);
         __decorate([
-            feng3d.serialize(feng3d.TextureMagFilter.LINEAR),
+            feng3d.serialize(),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureMagFilter } })
         ], TextureInfo.prototype, "magFilter", void 0);
         __decorate([
-            feng3d.serialize(feng3d.TextureWrap.REPEAT),
+            feng3d.serialize(),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureWrap } })
         ], TextureInfo.prototype, "wrapS", void 0);
         __decorate([
-            feng3d.serialize(feng3d.TextureWrap.REPEAT),
+            feng3d.serialize(),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureWrap } })
         ], TextureInfo.prototype, "wrapT", void 0);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], TextureInfo.prototype, "anisotropy", void 0);
         return TextureInfo;
@@ -12406,39 +12414,39 @@ var feng3d;
             this.invalidateTransform();
         };
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Transform.prototype, "x", null);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Transform.prototype, "y", null);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Transform.prototype, "z", null);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Transform.prototype, "rx", null);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Transform.prototype, "ry", null);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav()
         ], Transform.prototype, "rz", null);
         __decorate([
-            feng3d.serialize(1),
+            feng3d.serialize(),
             feng3d.oav()
         ], Transform.prototype, "sx", null);
         __decorate([
-            feng3d.serialize(1),
+            feng3d.serialize(),
             feng3d.oav()
         ], Transform.prototype, "sy", null);
         __decorate([
-            feng3d.serialize(1),
+            feng3d.serialize(),
             feng3d.oav()
         ], Transform.prototype, "sz", null);
         Transform = __decorate([
@@ -12549,7 +12557,7 @@ var feng3d;
             set: function (value) {
                 if (!value)
                     return;
-                for (var i = 0, n = this._children.length; i < n; i++) {
+                for (var i = this._children.length - 1; i >= 0; i--) {
                     this.removeChildAt(i);
                 }
                 for (var i = 0; i < value.length; i++) {
@@ -12974,18 +12982,18 @@ var feng3d;
          */
         GameObject.pool = new Map();
         __decorate([
-            feng3d.serialize(true)
+            feng3d.serialize()
         ], GameObject.prototype, "serializable", void 0);
         __decorate([
             feng3d.serialize(),
             feng3d.oav()
         ], GameObject.prototype, "name", void 0);
         __decorate([
-            feng3d.serialize(true),
+            feng3d.serialize(),
             feng3d.oav()
         ], GameObject.prototype, "visible", void 0);
         __decorate([
-            feng3d.serialize(true),
+            feng3d.serialize(),
             feng3d.oav()
         ], GameObject.prototype, "mouseEnabled", void 0);
         __decorate([
@@ -16583,31 +16591,31 @@ var feng3d;
             return data;
         };
         __decorate([
-            feng3d.serialize(1),
+            feng3d.serialize(),
             feng3d.oav()
         ], CubeGeometry.prototype, "width", null);
         __decorate([
-            feng3d.serialize(1),
+            feng3d.serialize(),
             feng3d.oav()
         ], CubeGeometry.prototype, "height", null);
         __decorate([
-            feng3d.serialize(1),
+            feng3d.serialize(),
             feng3d.oav()
         ], CubeGeometry.prototype, "depth", null);
         __decorate([
-            feng3d.serialize(1),
+            feng3d.serialize(),
             feng3d.oav()
         ], CubeGeometry.prototype, "segmentsW", null);
         __decorate([
-            feng3d.serialize(1),
+            feng3d.serialize(),
             feng3d.oav()
         ], CubeGeometry.prototype, "segmentsH", null);
         __decorate([
-            feng3d.serialize(1),
+            feng3d.serialize(),
             feng3d.oav()
         ], CubeGeometry.prototype, "segmentsD", null);
         __decorate([
-            feng3d.serialize(true),
+            feng3d.serialize(),
             feng3d.oav()
         ], CubeGeometry.prototype, "tile6", null);
         return CubeGeometry;
@@ -17802,7 +17810,7 @@ var feng3d;
             });
         };
         __decorate([
-            feng3d.serialize(""),
+            feng3d.serialize(),
             feng3d.watch("urlChanged"),
             feng3d.oav()
         ], Texture2D.prototype, "url", void 0);
@@ -18283,7 +18291,7 @@ var feng3d;
             feng3d.oav({ block: "diffuse" })
         ], StandardUniforms.prototype, "u_diffuse", void 0);
         __decorate([
-            feng3d.serialize(0),
+            feng3d.serialize(),
             feng3d.oav({ block: "diffuse" })
         ], StandardUniforms.prototype, "u_alphaThreshold", void 0);
         __decorate([
@@ -18299,7 +18307,7 @@ var feng3d;
             feng3d.oav({ block: "specular" })
         ], StandardUniforms.prototype, "u_specular", void 0);
         __decorate([
-            feng3d.serialize(50),
+            feng3d.serialize(),
             feng3d.oav({ block: "specular" })
         ], StandardUniforms.prototype, "u_glossiness", void 0);
         __decorate([
@@ -20303,7 +20311,7 @@ var feng3d;
         ], Animation.prototype, "time", null);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize(false)
+            feng3d.serialize()
         ], Animation.prototype, "isplaying", null);
         __decorate([
             feng3d.oav(),

@@ -39,7 +39,7 @@ namespace feng3d
         private _time = 0;
 
         @oav()
-        @serialize(false)
+        @serialize()
         get isplaying()
         {
             return this._isplaying;

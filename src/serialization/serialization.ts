@@ -5,32 +5,40 @@ namespace feng3d
      * @param {*} target                序列化原型
      * @param {string} propertyKey      序列化属性
      */
-    export function serialize(defaultvalue?: any)
+    export function serialize()
     {
         return (target: any, propertyKey: string) => 
         {
+            var serializeInfo: SerializeInfo = target[SERIALIZE_KEY];
             if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY))
-                target[SERIALIZE_KEY] = {};
-            target[SERIALIZE_KEY][propertyKey] = defaultvalue;
+                serializeInfo = target[SERIALIZE_KEY] = <any>{};
+            serializeInfo.propertys = serializeInfo.propertys || [];
+            serializeInfo.propertys.push(propertyKey);
         }
     }
 }
 
 var SERIALIZE_KEY = "__serialize__";
 
-[Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
+interface SerializeInfo
 {
-    element.prototype["serialize"] = function (object: { value: number[] })
-    {
-        object.value = Array.from(this);
-        return object;
-    }
+    propertys: string[];
+    default: Object;
+}
 
-    element.prototype["deserialize"] = function (object: { value: number[] })
-    {
-        return new (<any>(this.constructor))(object.value);
-    }
-});
+// [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
+// {
+//     element.prototype["serialize"] = function (object: { value: number[] })
+//     {
+//         object.value = Array.from(this);
+//         return object;
+//     }
+
+//     element.prototype["deserialize"] = function (object: { value: number[] })
+//     {
+//         return new (<any>(this.constructor))(object.value);
+//     }
+// });
 
 namespace feng3d
 {
@@ -44,37 +52,40 @@ namespace feng3d
 
     var CLASS_KEY = "__class__";
 
-    function getSerializableMembers(object: Object, serializableMembers?: { [propertyname: string]: any })
+    /**
+     * 获取默认实例
+     */
+    function getDefatutInstance(object: Object)
     {
-        serializableMembers = serializableMembers || {};
+        var serializeInfo: SerializeInfo = object[SERIALIZE_KEY];
+        serializeInfo.default = serializeInfo.default || new (<any>object.constructor)();
+        return serializeInfo.default;
+    }
+
+    /**
+     * 获取序列化属性列表
+     */
+    function getSerializableMembers(object: Object, serializableMembers?: string[])
+    {
+        serializableMembers = serializableMembers || [];
         if (object["__proto__"])
         {
             getSerializableMembers(object["__proto__"], serializableMembers);
         }
-        var superserializableMembers = object[SERIALIZE_KEY];
-        if (superserializableMembers)
+        if (Object.getOwnPropertyDescriptor(object, SERIALIZE_KEY))
         {
-            for (var key in superserializableMembers)
+            var serializeInfo: SerializeInfo = object[SERIALIZE_KEY];
+            if (serializeInfo && serializeInfo.propertys)
             {
-                serializableMembers[key] = superserializableMembers[key];
+                var propertys = serializeInfo.propertys;
+                for (let i = 0, n = propertys.length; i < n; i++)
+                {
+                    const element = propertys[i];
+                    serializableMembers.push(propertys[i]);
+                }
             }
         }
         return serializableMembers;
-    }
-
-    function getSortSerializableMembers(object: Object)
-    {
-        var membersobj = getSerializableMembers(object);
-        var memberslist: [string, any][] = [];
-        for (var key in membersobj)
-        {
-            if (membersobj.hasOwnProperty(key))
-            {
-                memberslist.push([key, membersobj[key]]);
-            }
-        }
-        memberslist = memberslist.sort((a, b) => { return a[0] < b[0] ? -1 : 1 });
-        return memberslist;
     }
 
     function serialize(target)
@@ -146,17 +157,17 @@ namespace feng3d
             return target["serialize"](object);
 
         //使用默认序列化
-        var serializableMembers = getSortSerializableMembers(target);
+        var serializableMembers = getSerializableMembers(target);
+        var defatutInstance = getDefatutInstance(target);
         for (var i = 0; i < serializableMembers.length; i++)
         {
-            var property = serializableMembers[i][0];
-            var objectproperty = property;
+            var property = serializableMembers[i];
 
-            if (target[property] === serializableMembers[i][1])
+            if (target[property] === defatutInstance[property])
                 continue;
             if (target[property] !== undefined)
             {
-                object[objectproperty] = _serialize(target[property]);
+                object[property] = _serialize(target[property]);
             }
         }
         return object;
@@ -216,15 +227,14 @@ namespace feng3d
             return target["deserialize"](object);
 
         //默认反序列
-        var serializableMembers = getSortSerializableMembers(target);
+        var serializableMembers = getSerializableMembers(target);
         for (var i = 0; i < serializableMembers.length; i++)
         {
-            var property = serializableMembers[i][0];
-            var objectproperty = property;
+            var property = serializableMembers[i];
 
-            if (object[objectproperty] !== undefined)
+            if (object[property] !== undefined)
             {
-                target[property] = _deserialize(object[objectproperty]);
+                target[property] = _deserialize(object[property]);
             }
         }
         return target;

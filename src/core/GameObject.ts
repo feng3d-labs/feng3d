@@ -165,7 +165,7 @@ namespace feng3d
         /**
          * 是否可序列化
          */
-        @serialize(true)
+        @serialize()
         serializable = true;
 
         /**
@@ -184,14 +184,14 @@ namespace feng3d
         /**
          * 是否显示
          */
-        @serialize(true)
+        @serialize()
         @oav()
         visible = true;
 
         /**
          * 自身以及子对象是否支持鼠标拾取
          */
-        @serialize(true)
+        @serialize()
         @oav()
         mouseEnabled = true;
 
@@ -243,7 +243,7 @@ namespace feng3d
         set children(value)
         {
             if (!value) return;
-            for (var i = 0, n = this._children.length; i < n; i++)
+            for (var i = this._children.length - 1; i >= 0; i--)
             {
                 this.removeChildAt(i)
             }

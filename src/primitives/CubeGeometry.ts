@@ -7,7 +7,7 @@ namespace feng3d
      */
     export class CubeGeometry extends Geometry
     {
-        @serialize(1)
+        @serialize()
         @oav()
         get width()
         {
@@ -22,7 +22,7 @@ namespace feng3d
         }
         private _width = 1;
 
-        @serialize(1)
+        @serialize()
         @oav()
         get height()
         {
@@ -37,7 +37,7 @@ namespace feng3d
         }
         private _height = 1;
 
-        @serialize(1)
+        @serialize()
         @oav()
         get depth()
         {
@@ -52,7 +52,7 @@ namespace feng3d
         }
         private _depth = 1;
 
-        @serialize(1)
+        @serialize()
         @oav()
         get segmentsW()
         {
@@ -67,7 +67,7 @@ namespace feng3d
         }
         private _segmentsW = 1;
 
-        @serialize(1)
+        @serialize()
         @oav()
         get segmentsH()
         {
@@ -82,7 +82,7 @@ namespace feng3d
         }
         private _segmentsH = 1;
 
-        @serialize(1)
+        @serialize()
         @oav()
         get segmentsD()
         {
@@ -97,7 +97,7 @@ namespace feng3d
         }
         private _segmentsD = 1;
 
-        @serialize(true)
+        @serialize()
         @oav()
         get tile6()
         {

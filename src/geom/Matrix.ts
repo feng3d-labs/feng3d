@@ -57,7 +57,7 @@ namespace feng3d
      */
     export class Matrix
     {
-        public rawData: Float32Array = new Float32Array(6);
+        public rawData = new Float32Array(6);
 
         /**
          * The value that affects the positioning of pixels along the <i>x</i> axis

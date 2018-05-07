@@ -74,7 +74,7 @@ namespace feng3d
         /**
          * 透明阈值，透明度小于该值的像素被片段着色器丢弃
          */
-        @serialize(0)
+        @serialize()
         @oav({ block: "diffuse" })
         u_alphaThreshold = 0;
 
@@ -102,7 +102,7 @@ namespace feng3d
         /**
          * 高光系数
          */
-        @serialize(50)
+        @serialize()
         @oav({ block: "specular" })
         u_glossiness = 50;
 

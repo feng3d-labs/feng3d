@@ -10,7 +10,7 @@ namespace feng3d
         /**
         * 渲染模式，默认RenderMode.TRIANGLES
         */
-        @serialize(RenderMode.TRIANGLES)
+        @serialize()
         @oav({ component: "OAVEnum", componentParam: { enumClass: RenderMode } })
         renderMode = RenderMode.TRIANGLES;
 
@@ -20,11 +20,11 @@ namespace feng3d
          * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
          * 使用gl.frontFace(gl.CW);调整顺时针为正面
          */
-        @serialize(CullFace.BACK)
+        @serialize()
         @oav({ component: "OAVEnum", componentParam: { enumClass: CullFace } })
         cullFace = CullFace.BACK;
 
-        @serialize(FrontFace.CW)
+        @serialize()
         @oav({ component: "OAVEnum", componentParam: { enumClass: FrontFace } })
         frontFace = FrontFace.CW;
 
@@ -32,42 +32,42 @@ namespace feng3d
          * 是否开启混合
          * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
          */
-        @serialize(false)
+        @serialize()
         @oav()
         enableBlend = false;
 
         /**
          * 混合方程，默认BlendEquation.FUNC_ADD
          */
-        @serialize(BlendEquation.FUNC_ADD)
+        @serialize()
         @oav({ component: "OAVEnum", componentParam: { enumClass: BlendEquation } })
         blendEquation = BlendEquation.FUNC_ADD;
 
         /**
          * 源混合因子，默认BlendFactor.SRC_ALPHA
          */
-        @serialize(BlendFactor.SRC_ALPHA)
+        @serialize()
         @oav({ component: "OAVEnum", componentParam: { enumClass: BlendFactor } })
         sfactor = BlendFactor.SRC_ALPHA;
 
         /**
          * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
          */
-        @serialize(BlendFactor.ONE_MINUS_SRC_ALPHA)
+        @serialize()
         @oav({ component: "OAVEnum", componentParam: { enumClass: BlendFactor } })
         dfactor = BlendFactor.ONE_MINUS_SRC_ALPHA;
 
         /**
          * 是否开启深度检查
          */
-        @serialize(true)
+        @serialize()
         @oav()
         depthtest = true;
 
         /**
          * 是否开启深度标记
          */
-        @serialize(true)
+        @serialize()
         @oav()
         depthMask = true;
 

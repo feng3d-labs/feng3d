@@ -28,7 +28,7 @@ namespace feng3d
         /**
          * 格式
          */
-        @serialize(TextureFormat.RGB)
+        @serialize()
         @watch("invalidate")
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureFormat } })
         format = TextureFormat.RGB;
@@ -36,7 +36,7 @@ namespace feng3d
         /**
          * 数据类型
          */
-        @serialize(TextureDataType.UNSIGNED_BYTE)
+        @serialize()
         @watch("invalidate")
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureDataType } })
         type = TextureDataType.UNSIGNED_BYTE;
@@ -44,7 +44,7 @@ namespace feng3d
         /**
          * 是否生成mipmap
          */
-        @serialize(false)
+        @serialize()
         @watch("invalidate")
         @oav()
         generateMipmap = false;
@@ -52,7 +52,7 @@ namespace feng3d
         /**
          * 对图像进行Y轴反转。默认值为false
          */
-        @serialize(false)
+        @serialize()
         @watch("invalidate")
         @oav()
         flipY = false;
@@ -60,34 +60,34 @@ namespace feng3d
         /**
          * 将图像RGB颜色值得每一个分量乘以A。默认为false
          */
-        @serialize(false)
+        @serialize()
         @watch("invalidate")
         @oav()
         premulAlpha = false;
 
-        @serialize(TextureMinFilter.LINEAR)
+        @serialize()
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureMinFilter } })
         minFilter = TextureMinFilter.LINEAR;
 
-        @serialize(TextureMagFilter.LINEAR)
+        @serialize()
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureMagFilter } })
         magFilter = TextureMagFilter.LINEAR;
         /**
          * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
          */
-        @serialize(TextureWrap.REPEAT)
+        @serialize()
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureWrap } })
         wrapS = TextureWrap.REPEAT;
         /**
          * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
          */
-        @serialize(TextureWrap.REPEAT)
+        @serialize()
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureWrap } })
         wrapT = TextureWrap.REPEAT;
         /**
          * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
          */
-        @serialize(0)
+        @serialize()
         @oav()
         anisotropy = 0;
 
