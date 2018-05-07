@@ -9087,11 +9087,7 @@ declare namespace feng3d {
          * 雾模式
          */
         u_fogMode: FogMode;
-        constructor();
     }
-    var Mat: {
-        standard: typeof StandardUniforms;
-    };
 }
 declare namespace feng3d {
     /**

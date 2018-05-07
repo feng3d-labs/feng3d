@@ -49,10 +49,11 @@ namespace feng3d
                 return arr;
             }
 
+            var object = <any>{};
             //处理普通Object
             if (target.constructor === Object)
             {
-                var object = <any>{};
+                object[CLASS_KEY] = "Object";
                 for (var key in target)
                 {
                     if (target.hasOwnProperty(key))
@@ -66,7 +67,6 @@ namespace feng3d
                 return object;
             }
 
-            var object = <any>{};
             //处理方法
             if (typeof target == "function")
             {
@@ -113,11 +113,14 @@ namespace feng3d
                 });
                 return arr;
             }
-
+            if (object.constructor != Object)
+            {
+                return object;
+            }
             // 获取类型
             var className: string = object[CLASS_KEY];
             // 处理普通Object
-            if (className == undefined)
+            if (className == "Object")
             {
                 var target = {};
                 for (var key in object)

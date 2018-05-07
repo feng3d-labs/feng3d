@@ -31,9 +31,6 @@ namespace feng3d
             super.preRender(renderAtomic);
 
             this.terrainMethod.preRender(renderAtomic);
-
-            // 序列化时引发bug
-            this.uniforms.s_normal.noPixels = imageDatas.defaultNormal;
         }
     }
 
@@ -165,19 +162,7 @@ namespace feng3d
         @serialize
         @oav({ block: "fog" })
         u_fogMode = FogMode.NONE;
-
-        constructor()
-        {
-            this.s_normal.noPixels = imageDatas.defaultNormal;
-        }
     }
 
     shaderConfig.shaders["standard"].cls = StandardUniforms;
-
-    export var Mat =
-        {
-            standard: StandardUniforms,
-        }
-
-    Mat.standard
 }

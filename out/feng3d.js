@@ -1880,9 +1880,10 @@ var feng3d;
                 }
                 return arr;
             }
+            var object = {};
             //处理普通Object
             if (target.constructor === Object) {
-                var object = {};
+                object[CLASS_KEY] = "Object";
                 for (var key in target) {
                     if (target.hasOwnProperty(key)) {
                         if (target[key] !== undefined) {
@@ -1892,7 +1893,6 @@ var feng3d;
                 }
                 return object;
             }
-            var object = {};
             //处理方法
             if (typeof target == "function") {
                 object[CLASS_KEY] = "function";
@@ -1929,10 +1929,13 @@ var feng3d;
                 });
                 return arr;
             }
+            if (object.constructor != Object) {
+                return object;
+            }
             // 获取类型
             var className = object[CLASS_KEY];
             // 处理普通Object
-            if (className == undefined) {
+            if (className == "Object") {
                 var target = {};
                 for (var key in object) {
                     target[key] = this.deserialize(object[key]);
@@ -18271,8 +18274,6 @@ var feng3d;
         StandardMaterial.prototype.preRender = function (renderAtomic) {
             _super.prototype.preRender.call(this, renderAtomic);
             this.terrainMethod.preRender(renderAtomic);
-            // 序列化时引发bug
-            this.uniforms.s_normal.noPixels = feng3d.imageDatas.defaultNormal;
         };
         return StandardMaterial;
     }(feng3d.Material));
@@ -18354,7 +18355,6 @@ var feng3d;
              * 雾模式
              */
             this.u_fogMode = FogMode.NONE;
-            this.s_normal.noPixels = feng3d.imageDatas.defaultNormal;
         }
         __decorate([
             feng3d.serialize,
@@ -18428,10 +18428,6 @@ var feng3d;
     }());
     feng3d.StandardUniforms = StandardUniforms;
     feng3d.shaderConfig.shaders["standard"].cls = StandardUniforms;
-    feng3d.Mat = {
-        standard: StandardUniforms,
-    };
-    feng3d.Mat.standard;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
