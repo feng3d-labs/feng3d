@@ -884,18 +884,6 @@ declare namespace feng3d {
         z?: number;
         w?: number;
     }
-    interface TextureInfoRaw {
-        anisotropy?: number;
-        flipY?: boolean;
-        format?: TextureFormat;
-        generateMipmap?: boolean;
-        magFilter?: TextureMagFilter;
-        minFilter?: TextureMinFilter;
-        premulAlpha?: boolean;
-        type?: TextureDataType;
-        wrapS?: TextureWrap;
-        wrapT?: TextureWrap;
-    }
     interface Texture2DRaw extends TextureInfoRaw {
         "__class__": "feng3d.Texture2D";
         url?: "";
@@ -951,9 +939,7 @@ declare namespace feng3d {
 declare var SERIALIZE_KEY: string;
 declare namespace feng3d {
     var serialization: {
-        defaultvaluedontsave: boolean;
-        compress: boolean;
-        serialize: (target: any) => SerializeVO;
+        serialize: (target: any) => any;
         deserialize: (result: any) => any;
         getSerializableMembers: (object: Object, serializableMembers?: {
             [propertyname: string]: any;
@@ -962,12 +948,6 @@ declare namespace feng3d {
         };
         clone: (target: any) => any;
     };
-    interface SerializeVO {
-        defaultvaluedontsave: boolean;
-        compress: boolean;
-        strings: string[];
-        value: any;
-    }
 }
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -6502,6 +6482,18 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface TextureInfoRaw {
+        anisotropy?: number;
+        flipY?: boolean;
+        format?: TextureFormat;
+        generateMipmap?: boolean;
+        magFilter?: TextureMagFilter;
+        minFilter?: TextureMinFilter;
+        premulAlpha?: boolean;
+        type?: TextureDataType;
+        wrapS?: TextureWrap;
+        wrapT?: TextureWrap;
+    }
     /**
      * 纹理信息
      * @author feng 2016-12-20
@@ -6565,6 +6557,7 @@ declare namespace feng3d {
          * 是否失效
          */
         private _invalid;
+        constructor(raw?: TextureInfoRaw);
         /**
          * 判断数据是否满足渲染需求
          */

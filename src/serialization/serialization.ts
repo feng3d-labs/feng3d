@@ -35,15 +35,6 @@ var SERIALIZE_KEY = "__serialize__";
 namespace feng3d
 {
     export var serialization = {
-        /**
-         * 默认数据不保存
-         */
-        defaultvaluedontsave: true,
-        /**
-         * 是否压缩
-         */
-        compress: false,
-
         serialize: serialize,
         deserialize: deserialize,
         getSerializableMembers: getSerializableMembers,
@@ -86,45 +77,20 @@ namespace feng3d
         return memberslist;
     }
 
-    export interface SerializeVO
-    {
-        defaultvaluedontsave: boolean;
-        compress: boolean;
-        strings: string[];
-        value: any;
-    }
-
-    var defaultSerializeVO: SerializeVO = {
-        defaultvaluedontsave: true,
-        compress: false,
-        strings: [],
-        value: null
-    };
-
     function serialize(target)
     {
-        var result: SerializeVO = {
-            defaultvaluedontsave: serialization.defaultvaluedontsave,
-            compress: serialization.compress,
-            strings: [],
-            value: null
-        };
-        result.value = _serialize(target, result);
+        var result = _serialize(target);
         return result;
     }
 
     function deserialize(result: any)
     {
-        if (result.value)
-            var object = _deserialize(result.value, result);
-        else
-            var object = _deserialize(result);
+        var object = _deserialize(result);
         return object;
     }
 
-    function _serialize(target, serializeVO?: SerializeVO)
+    function _serialize(target)
     {
-        serializeVO = serializeVO || defaultSerializeVO;
         //基础类型
         if (
             target == undefined
@@ -151,7 +117,7 @@ namespace feng3d
             var arr: any[] = [];
             for (var i = 0; i < target.length; i++)
             {
-                arr[i] = _serialize(target[i], serializeVO);
+                arr[i] = _serialize(target[i]);
             }
             return arr;
         }
@@ -165,7 +131,7 @@ namespace feng3d
                 {
                     if (target[key] !== undefined)
                     {
-                        object[key] = _serialize(target[key], serializeVO);
+                        object[key] = _serialize(target[key]);
                     }
                 }
             }
@@ -174,17 +140,7 @@ namespace feng3d
 
         var className = ClassUtils.getQualifiedClassName(target);
         var object = <any>{};
-        if (serializeVO.compress)
-        {
-            var typeIndex = serializeVO.strings.indexOf(className);
-            if (typeIndex == -1)
-            {
-                typeIndex = serializeVO.strings.length;
-                serializeVO.strings.push(className);
-            }
-            object["-1"] = typeIndex;
-        } else
-            object[CLASS_KEY] = className;
+        object[CLASS_KEY] = className;
 
         if (target["serialize"])
             return target["serialize"](object);
@@ -194,22 +150,20 @@ namespace feng3d
         for (var i = 0; i < serializableMembers.length; i++)
         {
             var property = serializableMembers[i][0];
-            var objectproperty = serializeVO.compress ? i : property;
+            var objectproperty = property;
 
-            if (serializeVO.defaultvaluedontsave && target[property] === serializableMembers[i][1])
+            if (target[property] === serializableMembers[i][1])
                 continue;
             if (target[property] !== undefined)
             {
-                object[objectproperty] = _serialize(target[property], serializeVO);
+                object[objectproperty] = _serialize(target[property]);
             }
         }
         return object;
     }
 
-    function _deserialize(object, serializeVO?: SerializeVO)
+    function _deserialize(object)
     {
-        serializeVO = serializeVO || defaultSerializeVO;
-
         //基础类型
         if (
             object == undefined
@@ -225,7 +179,7 @@ namespace feng3d
             var arr: any[] = [];
             object.forEach(element =>
             {
-                arr.push(_deserialize(element, serializeVO));
+                arr.push(_deserialize(element));
             });
             return arr;
         }
@@ -239,18 +193,14 @@ namespace feng3d
         }
 
         //处理普通Object
-        var className: string;
-        if (serializeVO.compress)
-            className = serializeVO.strings[object["-1"]];
-        else
-            className = object[CLASS_KEY];
+        var className: string = object[CLASS_KEY];
 
         if (className == undefined)
         {
             var target = {};
             for (var key in object)
             {
-                target[key] = _deserialize(object[key], serializeVO);
+                target[key] = _deserialize(object[key]);
             }
             return target;
         }
@@ -270,11 +220,11 @@ namespace feng3d
         for (var i = 0; i < serializableMembers.length; i++)
         {
             var property = serializableMembers[i][0];
-            var objectproperty = serializeVO.compress ? i : property;
+            var objectproperty = property;
 
             if (object[objectproperty] !== undefined)
             {
-                target[property] = _deserialize(object[objectproperty], serializeVO);
+                target[property] = _deserialize(object[objectproperty]);
             }
         }
         return target;

@@ -1866,14 +1866,6 @@ var SERIALIZE_KEY = "__serialize__";
 });
 (function (feng3d) {
     feng3d.serialization = {
-        /**
-         * 默认数据不保存
-         */
-        defaultvaluedontsave: true,
-        /**
-         * 是否压缩
-         */
-        compress: false,
         serialize: serialize,
         deserialize: deserialize,
         getSerializableMembers: getSerializableMembers,
@@ -1904,31 +1896,15 @@ var SERIALIZE_KEY = "__serialize__";
         memberslist = memberslist.sort(function (a, b) { return a[0] < b[0] ? -1 : 1; });
         return memberslist;
     }
-    var defaultSerializeVO = {
-        defaultvaluedontsave: true,
-        compress: false,
-        strings: [],
-        value: null
-    };
     function serialize(target) {
-        var result = {
-            defaultvaluedontsave: feng3d.serialization.defaultvaluedontsave,
-            compress: feng3d.serialization.compress,
-            strings: [],
-            value: null
-        };
-        result.value = _serialize(target, result);
+        var result = _serialize(target);
         return result;
     }
     function deserialize(result) {
-        if (result.value)
-            var object = _deserialize(result.value, result);
-        else
-            var object = _deserialize(result);
+        var object = _deserialize(result);
         return object;
     }
-    function _serialize(target, serializeVO) {
-        serializeVO = serializeVO || defaultSerializeVO;
+    function _serialize(target) {
         //基础类型
         if (target == undefined
             || target == null
@@ -1947,7 +1923,7 @@ var SERIALIZE_KEY = "__serialize__";
         if (target.constructor === Array) {
             var arr = [];
             for (var i = 0; i < target.length; i++) {
-                arr[i] = _serialize(target[i], serializeVO);
+                arr[i] = _serialize(target[i]);
             }
             return arr;
         }
@@ -1956,7 +1932,7 @@ var SERIALIZE_KEY = "__serialize__";
             for (var key in target) {
                 if (target.hasOwnProperty(key)) {
                     if (target[key] !== undefined) {
-                        object[key] = _serialize(target[key], serializeVO);
+                        object[key] = _serialize(target[key]);
                     }
                 }
             }
@@ -1964,33 +1940,23 @@ var SERIALIZE_KEY = "__serialize__";
         }
         var className = feng3d.ClassUtils.getQualifiedClassName(target);
         var object = {};
-        if (serializeVO.compress) {
-            var typeIndex = serializeVO.strings.indexOf(className);
-            if (typeIndex == -1) {
-                typeIndex = serializeVO.strings.length;
-                serializeVO.strings.push(className);
-            }
-            object["-1"] = typeIndex;
-        }
-        else
-            object[CLASS_KEY] = className;
+        object[CLASS_KEY] = className;
         if (target["serialize"])
             return target["serialize"](object);
         //使用默认序列化
         var serializableMembers = getSortSerializableMembers(target);
         for (var i = 0; i < serializableMembers.length; i++) {
             var property = serializableMembers[i][0];
-            var objectproperty = serializeVO.compress ? i : property;
-            if (serializeVO.defaultvaluedontsave && target[property] === serializableMembers[i][1])
+            var objectproperty = property;
+            if (target[property] === serializableMembers[i][1])
                 continue;
             if (target[property] !== undefined) {
-                object[objectproperty] = _serialize(target[property], serializeVO);
+                object[objectproperty] = _serialize(target[property]);
             }
         }
         return object;
     }
-    function _deserialize(object, serializeVO) {
-        serializeVO = serializeVO || defaultSerializeVO;
+    function _deserialize(object) {
         //基础类型
         if (object == undefined
             || object == null
@@ -2002,7 +1968,7 @@ var SERIALIZE_KEY = "__serialize__";
         if (object.constructor == Array) {
             var arr = [];
             object.forEach(function (element) {
-                arr.push(_deserialize(element, serializeVO));
+                arr.push(_deserialize(element));
             });
             return arr;
         }
@@ -2013,15 +1979,11 @@ var SERIALIZE_KEY = "__serialize__";
             return f;
         }
         //处理普通Object
-        var className;
-        if (serializeVO.compress)
-            className = serializeVO.strings[object["-1"]];
-        else
-            className = object[CLASS_KEY];
+        var className = object[CLASS_KEY];
         if (className == undefined) {
             var target = {};
             for (var key in object) {
-                target[key] = _deserialize(object[key], serializeVO);
+                target[key] = _deserialize(object[key]);
             }
             return target;
         }
@@ -2038,9 +2000,9 @@ var SERIALIZE_KEY = "__serialize__";
         var serializableMembers = getSortSerializableMembers(target);
         for (var i = 0; i < serializableMembers.length; i++) {
             var property = serializableMembers[i][0];
-            var objectproperty = serializeVO.compress ? i : property;
+            var objectproperty = property;
             if (object[objectproperty] !== undefined) {
-                target[property] = _deserialize(object[objectproperty], serializeVO);
+                target[property] = _deserialize(object[objectproperty]);
             }
         }
         return target;
@@ -10231,7 +10193,7 @@ var feng3d;
      * @author feng 2016-12-20
      */
     var TextureInfo = /** @class */ (function () {
-        function TextureInfo() {
+        function TextureInfo(raw) {
             /**
              * 格式
              */
