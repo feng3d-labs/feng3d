@@ -1940,6 +1940,12 @@ var feng3d;
                     continue;
                 }
                 if (target[property].constructor == Array) {
+                    if (target[property].length == 0) {
+                        if (defaultInstance[property].length == 0)
+                            continue;
+                        different[property] = [];
+                        continue;
+                    }
                     different[property] = this.serialize(target[property]);
                     continue;
                 }
