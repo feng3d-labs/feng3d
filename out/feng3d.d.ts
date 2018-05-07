@@ -934,7 +934,8 @@ declare namespace feng3d {
     var serialization: {
         serialize(target: any): any;
         deserialize(object: any): any;
-        clone(target: any): any;
+        setValue(target: Object, object: Object, property: string): void;
+        clone<T>(target: T): T;
     };
 }
 /**

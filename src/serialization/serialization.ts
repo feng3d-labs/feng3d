@@ -162,12 +162,60 @@ namespace feng3d
 
                 if (object[property] !== undefined)
                 {
-                    setValue(target, object, property);
+                    serialization.setValue(target, object, property);
                 }
             }
             return target;
         },
-        clone(target)
+        setValue(target: Object, object: Object, property: string)
+        {
+            if (target[property] == object[property])
+                return;
+            var objvalue = object[property];
+            // 当原值等于null时直接反序列化赋值
+            if (target[property] == null)
+            {
+                target[property] = serialization.deserialize(objvalue);
+                return;
+            }
+            if (isBaseType(objvalue))
+            {
+                target[property] = objvalue;
+                return;
+            }
+            if (objvalue.constructor == Array)
+            {
+                target[property] = serialization.deserialize(objvalue);
+                return;
+            }
+            // 处理同为Object类型
+            if (target[property].constructor == Object && objvalue[CLASS_KEY] == undefined)
+            {
+                for (const key in objvalue)
+                {
+                    serialization.setValue(target[property], objvalue, key);
+                }
+                return;
+            }
+            var targetClassName = ClassUtils.getQualifiedClassName(target[property]);
+            if (targetClassName == objvalue[CLASS_KEY])
+            {
+                var serializableMembers = getSerializableMembers(target[property]);
+                for (var i = 0; i < serializableMembers.length; i++)
+                {
+                    var key = serializableMembers[i];
+
+                    if (objvalue[key] !== undefined)
+                    {
+                        serialization.setValue(target[property], objvalue, key);
+                    }
+                }
+            } else
+            {
+                target[property] = serialization.deserialize(objvalue);
+            }
+        },
+        clone<T>(target: T): T
         {
             return serialization.deserialize(serialization.serialize(target));
         },
@@ -189,18 +237,6 @@ namespace feng3d
             || typeof object == "number"
         )
             return true;
-    }
-
-    function setValue(target: Object, object: Object, property: string)
-    {
-        // 当原值等于null时直接反序列化赋值
-        // if (target[property] == null)
-        // {
-        target[property] = serialization.deserialize(object[property]);
-        // } else
-        // {
-
-        // }
     }
 
     /**

@@ -1960,10 +1960,48 @@ var feng3d;
             for (var i = 0; i < serializableMembers.length; i++) {
                 var property = serializableMembers[i];
                 if (object[property] !== undefined) {
-                    setValue(target, object, property);
+                    feng3d.serialization.setValue(target, object, property);
                 }
             }
             return target;
+        },
+        setValue: function (target, object, property) {
+            if (target[property] == object[property])
+                return;
+            var objvalue = object[property];
+            // 当原值等于null时直接反序列化赋值
+            if (target[property] == null) {
+                target[property] = feng3d.serialization.deserialize(objvalue);
+                return;
+            }
+            if (isBaseType(objvalue)) {
+                target[property] = objvalue;
+                return;
+            }
+            if (objvalue.constructor == Array) {
+                target[property] = feng3d.serialization.deserialize(objvalue);
+                return;
+            }
+            // 处理同为Object类型
+            if (target[property].constructor == Object && objvalue[CLASS_KEY] == undefined) {
+                for (var key_1 in objvalue) {
+                    feng3d.serialization.setValue(target[property], objvalue, key_1);
+                }
+                return;
+            }
+            var targetClassName = feng3d.ClassUtils.getQualifiedClassName(target[property]);
+            if (targetClassName == objvalue[CLASS_KEY]) {
+                var serializableMembers = getSerializableMembers(target[property]);
+                for (var i = 0; i < serializableMembers.length; i++) {
+                    var key = serializableMembers[i];
+                    if (objvalue[key] !== undefined) {
+                        feng3d.serialization.setValue(target[property], objvalue, key);
+                    }
+                }
+            }
+            else {
+                target[property] = feng3d.serialization.deserialize(objvalue);
+            }
         },
         clone: function (target) {
             return feng3d.serialization.deserialize(feng3d.serialization.serialize(target));
@@ -1981,15 +2019,6 @@ var feng3d;
             || typeof object == "string"
             || typeof object == "number")
             return true;
-    }
-    function setValue(target, object, property) {
-        // 当原值等于null时直接反序列化赋值
-        // if (target[property] == null)
-        // {
-        target[property] = feng3d.serialization.deserialize(object[property]);
-        // } else
-        // {
-        // }
     }
     /**
      * 获取默认实例

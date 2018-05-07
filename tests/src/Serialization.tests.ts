@@ -83,5 +83,21 @@ namespace feng3d
 
             assert.ok(r);
         });
+
+        QUnit.test("serialize.setValue 相同类型时不会新建对象", (assert) =>
+        {
+            var obj = { a: 1, b: { c: 3, d: "a", e: "b", o: new C() } };
+            var obj1 = serialization.serialize(obj);
+
+            obj1.b.c = 5;
+            obj1.b.o.id = 5;
+
+            var b = obj.b;
+
+            serialization.setValue(obj, obj1, "b");
+            assert.ok(obj.b == b);
+            obj1.b.o.id = 3;
+            assert.ok(obj.b != obj1.b);
+        });
     });
 }

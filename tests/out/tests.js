@@ -92,6 +92,17 @@ var feng3d;
                 return prev; return obj[item] == result1[item]; }, true);
             assert.ok(r);
         });
+        QUnit.test("serialize.setValue 相同类型时不会新建对象", function (assert) {
+            var obj = { a: 1, b: { c: 3, d: "a", e: "b", o: new C() } };
+            var obj1 = feng3d.serialization.serialize(obj);
+            obj1.b.c = 5;
+            obj1.b.o.id = 5;
+            var b = obj.b;
+            feng3d.serialization.setValue(obj, obj1, "b");
+            assert.ok(obj.b == b);
+            obj1.b.o.id = 3;
+            assert.ok(obj.b != obj1.b);
+        });
     });
 })(feng3d || (feng3d = {}));
 var feng3d;
