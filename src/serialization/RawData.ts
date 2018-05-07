@@ -191,7 +191,7 @@ namespace feng3d
 
     export interface Texture2DRaw extends TextureInfoRaw
     {
-        "__class__": "feng3d.Texture2D",
+        __class__?: "feng3d.Texture2D",
         url?: "",
     }
 

@@ -12,6 +12,7 @@ namespace feng3d
         type?: TextureDataType,
         wrapS?: TextureWrap,
         wrapT?: TextureWrap
+        noPixels?: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[],
     }
 
     /**
@@ -115,8 +116,9 @@ namespace feng3d
          */
         private _invalid = true;
 
-        constructor()
+        constructor(raw?: TextureInfoRaw)
         {
+            serialization.setValue(this, raw);
         }
 
         /**

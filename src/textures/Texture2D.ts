@@ -37,11 +37,11 @@ namespace feng3d
             return new Vector2(this._pixels.width, this._pixels.height);
         }
 
-        constructor()
+        constructor(raw?: Texture2DRaw)
         {
-            super();
+            super(raw);
             this._textureType = TextureType.TEXTURE_2D;
-            this.noPixels = imageDatas.white;
+            this.noPixels = this.noPixels || imageDatas.white;
         }
 
         /**

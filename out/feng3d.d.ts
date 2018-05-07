@@ -881,7 +881,7 @@ declare namespace feng3d {
         w?: number;
     }
     interface Texture2DRaw extends TextureInfoRaw {
-        "__class__": "feng3d.Texture2D";
+        __class__?: "feng3d.Texture2D";
         url?: "";
     }
     interface TerrainMethodRaw {
@@ -6484,6 +6484,7 @@ declare namespace feng3d {
         type?: TextureDataType;
         wrapS?: TextureWrap;
         wrapT?: TextureWrap;
+        noPixels?: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[];
     }
     /**
      * 纹理信息
@@ -6548,7 +6549,7 @@ declare namespace feng3d {
          * 是否失效
          */
         private _invalid;
-        constructor();
+        constructor(raw?: TextureInfoRaw);
         /**
          * 判断数据是否满足渲染需求
          */
@@ -8837,7 +8838,7 @@ declare namespace feng3d {
          * 纹理尺寸
          */
         readonly size: Vector2;
-        constructor();
+        constructor(raw?: Texture2DRaw);
         /**
          * 判断数据是否满足渲染需求
          */

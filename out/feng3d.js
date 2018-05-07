@@ -1959,13 +1959,22 @@ var feng3d;
             return target;
         };
         Serialization.prototype.setValue = function (target, object) {
-            var serializableMembers = getSerializableMembers(target);
-            for (var i = 0; i < serializableMembers.length; i++) {
-                var property = serializableMembers[i];
-                if (object[property] !== undefined) {
+            if (!object)
+                return;
+            for (var property in object) {
+                if (object.hasOwnProperty(property)) {
                     this.setPropertyValue(target, object, property);
                 }
             }
+            // var serializableMembers = getSerializableMembers(target);
+            // for (var i = 0; i < serializableMembers.length; i++)
+            // {
+            //     var property = serializableMembers[i];
+            //     if (object[property] !== undefined)
+            //     {
+            //         this.setPropertyValue(target, object, property);
+            //     }
+            // }
         };
         Serialization.prototype.setPropertyValue = function (target, object, property) {
             if (target[property] == object[property])
@@ -10269,7 +10278,7 @@ var feng3d;
      * @author feng 2016-12-20
      */
     var TextureInfo = /** @class */ (function () {
-        function TextureInfo() {
+        function TextureInfo(raw) {
             /**
              * 格式
              */
@@ -10312,6 +10321,7 @@ var feng3d;
              * 是否失效
              */
             this._invalid = true;
+            feng3d.serialization.setValue(this, raw);
         }
         /**
          * 判断数据是否满足渲染需求
@@ -17838,11 +17848,11 @@ var feng3d;
      */
     var Texture2D = /** @class */ (function (_super) {
         __extends(Texture2D, _super);
-        function Texture2D() {
-            var _this = _super.call(this) || this;
+        function Texture2D(raw) {
+            var _this = _super.call(this, raw) || this;
             _this.url = "";
             _this._textureType = feng3d.TextureType.TEXTURE_2D;
-            _this.noPixels = feng3d.imageDatas.white;
+            _this.noPixels = _this.noPixels || feng3d.imageDatas.white;
             return _this;
         }
         Object.defineProperty(Texture2D.prototype, "size", {
@@ -18298,7 +18308,7 @@ var feng3d;
             /**
              * 漫反射纹理
              */
-            this.s_normal = new feng3d.Texture2D();
+            this.s_normal = new feng3d.Texture2D({ noPixels: feng3d.imageDatas.defaultNormal });
             /**
              * 镜面反射光泽图
              */

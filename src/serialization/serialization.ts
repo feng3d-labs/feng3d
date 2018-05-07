@@ -152,16 +152,26 @@ namespace feng3d
         }
         setValue(target: Object, object: Object)
         {
-            var serializableMembers = getSerializableMembers(target);
-            for (var i = 0; i < serializableMembers.length; i++)
-            {
-                var property = serializableMembers[i];
+            if (!object) return;
 
-                if (object[property] !== undefined)
+            for (const property in object)
+            {
+                if (object.hasOwnProperty(property))
                 {
                     this.setPropertyValue(target, object, property);
                 }
             }
+
+            // var serializableMembers = getSerializableMembers(target);
+            // for (var i = 0; i < serializableMembers.length; i++)
+            // {
+            //     var property = serializableMembers[i];
+
+            //     if (object[property] !== undefined)
+            //     {
+            //         this.setPropertyValue(target, object, property);
+            //     }
+            // }
         }
         setPropertyValue(target: Object, object: Object, property: string)
         {
