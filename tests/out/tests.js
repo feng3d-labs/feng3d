@@ -66,6 +66,32 @@ var feng3d;
             assert.ok(c.a == c1.a);
             assert.ok(c.c == c1.c);
         });
+        QUnit.test("serialize function", function (assert) {
+            function add(a, b) {
+                return a + b;
+            }
+            var result = feng3d.serialization.serialize(add);
+            var result1 = feng3d.serialization.deserialize(result);
+            var a = Math.random();
+            var b = Math.random();
+            assert.ok(result1(a, b) == add(a, b));
+        });
+        QUnit.test("serialize Array", function (assert) {
+            var arr = [1, 2, 3, "a", "b"];
+            var result = feng3d.serialization.serialize(arr);
+            var result1 = feng3d.serialization.deserialize(result);
+            var r = arr.reduce(function (prev, item, index) { if (!prev)
+                return prev; return arr[index] == result1[index]; }, true);
+            assert.ok(r);
+        });
+        QUnit.test("serialize Object", function (assert) {
+            var obj = { a: 1, b: 2, c: 3, d: "a", e: "b" };
+            var result = feng3d.serialization.serialize(obj);
+            var result1 = feng3d.serialization.deserialize(result);
+            var r = Object.keys(obj).reduce(function (prev, item) { if (!prev)
+                return prev; return obj[item] == result1[item]; }, true);
+            assert.ok(r);
+        });
     });
 })(feng3d || (feng3d = {}));
 var feng3d;

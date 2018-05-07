@@ -1869,19 +1869,11 @@ var feng3d;
     feng3d.serialization = {
         serialize: function (target) {
             //基础类型
-            if (target == undefined
-                || target == null
-                || target.constructor == Boolean
-                || target.constructor == String
-                || target.constructor == Number)
+            if (isBaseType(target))
                 return target;
-            //处理对象
+            // 排除不支持序列化对象
             if (target.hasOwnProperty("serializable") && !target["serializable"])
                 return undefined;
-            //处理方法
-            if (target.constructor === Function) {
-                return { __t: "function", data: target.toString() };
-            }
             //处理数组
             if (target.constructor === Array) {
                 var arr = [];
@@ -1890,6 +1882,7 @@ var feng3d;
                 }
                 return arr;
             }
+            //处理普通Object
             if (target.constructor === Object) {
                 var object = {};
                 for (var key in target) {
@@ -1901,8 +1894,14 @@ var feng3d;
                 }
                 return object;
             }
-            var className = feng3d.ClassUtils.getQualifiedClassName(target);
             var object = {};
+            //处理方法
+            if (typeof target == "function") {
+                object[CLASS_KEY] = "function";
+                object.data = target.toString();
+                return object;
+            }
+            var className = feng3d.ClassUtils.getQualifiedClassName(target);
             object[CLASS_KEY] = className;
             if (target["serialize"])
                 return target["serialize"](object);
@@ -1921,11 +1920,7 @@ var feng3d;
         },
         deserialize: function (object) {
             //基础类型
-            if (object == undefined
-                || object == null
-                || typeof object == "boolean"
-                || typeof object == "string"
-                || typeof object == "number")
+            if (isBaseType(object))
                 return object;
             //处理数组
             if (object.constructor == Array) {
@@ -1935,20 +1930,21 @@ var feng3d;
                 });
                 return arr;
             }
-            //处理方法
-            if (object.__t == "function") {
-                var f;
-                eval("f=" + object.data);
-                return f;
-            }
-            //处理普通Object
+            // 获取类型
             var className = object[CLASS_KEY];
+            // 处理普通Object
             if (className == undefined) {
                 var target = {};
                 for (var key in object) {
                     target[key] = feng3d.serialization.deserialize(object[key]);
                 }
                 return target;
+            }
+            //处理方法
+            if (className == "function") {
+                var f;
+                eval("f=" + object.data);
+                return f;
             }
             var cls = feng3d.ClassUtils.getDefinitionByName(className);
             if (!cls) {
@@ -1964,7 +1960,7 @@ var feng3d;
             for (var i = 0; i < serializableMembers.length; i++) {
                 var property = serializableMembers[i];
                 if (object[property] !== undefined) {
-                    target[property] = feng3d.serialization.deserialize(object[property]);
+                    setValue(target, object, property);
                 }
             }
             return target;
@@ -1974,6 +1970,27 @@ var feng3d;
         },
     };
     var CLASS_KEY = "__class__";
+    /**
+     * 判断是否为基础类型（在序列化中不发生变化的对象）
+     */
+    function isBaseType(object) {
+        //基础类型
+        if (object == undefined
+            || object == null
+            || typeof object == "boolean"
+            || typeof object == "string"
+            || typeof object == "number")
+            return true;
+    }
+    function setValue(target, object, property) {
+        // 当原值等于null时直接反序列化赋值
+        // if (target[property] == null)
+        // {
+        target[property] = feng3d.serialization.deserialize(object[property]);
+        // } else
+        // {
+        // }
+    }
     /**
      * 获取默认实例
      */

@@ -40,24 +40,12 @@ namespace feng3d
         serialize(target)
         {
             //基础类型
-            if (
-                target == undefined
-                || target == null
-                || target.constructor == Boolean
-                || target.constructor == String
-                || target.constructor == Number
-            )
+            if (isBaseType(target))
                 return target;
 
-            //处理对象
+            // 排除不支持序列化对象
             if (target.hasOwnProperty("serializable") && !target["serializable"])
                 return undefined;
-
-            //处理方法
-            if (target.constructor === Function)
-            {
-                return { __t: "function", data: target.toString() }
-            }
 
             //处理数组
             if (target.constructor === Array)
@@ -70,6 +58,7 @@ namespace feng3d
                 return arr;
             }
 
+            //处理普通Object
             if (target.constructor === Object)
             {
                 var object = <any>{};
@@ -86,8 +75,16 @@ namespace feng3d
                 return object;
             }
 
-            var className = ClassUtils.getQualifiedClassName(target);
             var object = <any>{};
+            //处理方法
+            if (typeof target == "function")
+            {
+                object[CLASS_KEY] = "function";
+                object.data = target.toString();
+                return object;
+            }
+
+            var className = ClassUtils.getQualifiedClassName(target);
             object[CLASS_KEY] = className;
 
             if (target["serialize"])
@@ -112,14 +109,8 @@ namespace feng3d
         deserialize(object)
         {
             //基础类型
-            if (
-                object == undefined
-                || object == null
-                || typeof object == "boolean"
-                || typeof object == "string"
-                || typeof object == "number"
-            )
-                return object;
+            if (isBaseType(object)) return object;
+
             //处理数组
             if (object.constructor == Array)
             {
@@ -131,17 +122,9 @@ namespace feng3d
                 return arr;
             }
 
-            //处理方法
-            if (object.__t == "function")
-            {
-                var f;
-                eval("f=" + object.data);
-                return f;
-            }
-
-            //处理普通Object
+            // 获取类型
             var className: string = object[CLASS_KEY];
-
+            // 处理普通Object
             if (className == undefined)
             {
                 var target = {};
@@ -151,6 +134,15 @@ namespace feng3d
                 }
                 return target;
             }
+
+            //处理方法
+            if (className == "function")
+            {
+                var f;
+                eval("f=" + object.data);
+                return f;
+            }
+
             var cls = ClassUtils.getDefinitionByName(className);
             if (!cls)
             {
@@ -170,7 +162,7 @@ namespace feng3d
 
                 if (object[property] !== undefined)
                 {
-                    target[property] = serialization.deserialize(object[property]);
+                    setValue(target, object, property);
                 }
             }
             return target;
@@ -182,6 +174,34 @@ namespace feng3d
     };
 
     var CLASS_KEY = "__class__";
+
+    /**
+     * 判断是否为基础类型（在序列化中不发生变化的对象）
+     */
+    function isBaseType(object)
+    {
+        //基础类型
+        if (
+            object == undefined
+            || object == null
+            || typeof object == "boolean"
+            || typeof object == "string"
+            || typeof object == "number"
+        )
+            return true;
+    }
+
+    function setValue(target: Object, object: Object, property: string)
+    {
+        // 当原值等于null时直接反序列化赋值
+        // if (target[property] == null)
+        // {
+        target[property] = serialization.deserialize(object[property]);
+        // } else
+        // {
+
+        // }
+    }
 
     /**
      * 获取默认实例
