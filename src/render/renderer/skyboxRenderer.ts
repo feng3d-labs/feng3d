@@ -82,7 +82,7 @@ namespace feng3d
 
     export class SkyBox extends Component
     {
-        @serialize()
+        @serialize
         @oav()
         get texture()
         {

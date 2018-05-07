@@ -21,7 +21,7 @@ namespace feng3d
         /**
          * The tag of this game object.
          */
-        @serialize()
+        @serialize
         get tag()
         {
             return this._tag;

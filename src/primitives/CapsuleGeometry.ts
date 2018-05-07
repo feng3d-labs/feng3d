@@ -7,7 +7,7 @@ namespace feng3d
      */
     export class CapsuleGeometry extends Geometry
     {
-        @serialize()
+        @serialize
         @oav()
         get radius()
         {
@@ -22,7 +22,7 @@ namespace feng3d
         }
         private _radius = 0.5;
 
-        @serialize()
+        @serialize
         @oav()
         get height()
         {
@@ -37,7 +37,7 @@ namespace feng3d
         }
         private _height = 1
 
-        @serialize()
+        @serialize
         @oav()
         get segmentsW()
         {
@@ -52,7 +52,7 @@ namespace feng3d
         }
         private _segmentsW = 16
 
-        @serialize()
+        @serialize
         @oav()
         get segmentsH()
         {
@@ -67,7 +67,7 @@ namespace feng3d
         }
         private _segmentsH = 15;
 
-        @serialize()
+        @serialize
         @oav()
         get yUp()
         {

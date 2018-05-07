@@ -6,7 +6,7 @@ namespace feng3d
 	 */
 	export class TorusGeometry extends Geometry
 	{
-		@serialize()
+		@serialize
 		@oav()
 		get radius()
 		{
@@ -21,7 +21,7 @@ namespace feng3d
 		}
 		private _radius = 0.5;
 
-		@serialize()
+		@serialize
 		@oav()
 		get tubeRadius()
 		{
@@ -36,7 +36,7 @@ namespace feng3d
 		}
 		private _tubeRadius = 0.1;
 
-		@serialize()
+		@serialize
 		@oav()
 		get segmentsR()
 		{
@@ -51,7 +51,7 @@ namespace feng3d
 		}
 		private _segmentsR = 16;
 
-		@serialize()
+		@serialize
 		@oav()
 		get segmentsT()
 		{
@@ -66,7 +66,7 @@ namespace feng3d
 		}
 		private _segmentsT = 8;
 
-		@serialize()
+		@serialize
 		@oav()
 		get yUp()
 		{

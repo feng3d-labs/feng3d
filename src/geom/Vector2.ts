@@ -35,7 +35,7 @@ namespace feng3d
          * @default 0
          */
         @oav()
-        @serialize()
+        @serialize
         x: number;
 
         /**
@@ -43,7 +43,7 @@ namespace feng3d
          * @default 0
          */
         @oav()
-        @serialize()
+        @serialize
         y: number;
 
         /**

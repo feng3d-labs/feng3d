@@ -11,14 +11,14 @@ namespace feng3d
          */
         private scriptInstance: Script;
 
-        @serialize()
+        @serialize
         scriptData: Object;
 
         /**
          * 脚本路径
          */
         @oav({ componentParam: { dragparam: { accepttype: "file_script" }, textEnabled: false } })
-        @serialize()
+        @serialize
         get script()
         {
             return this._script;

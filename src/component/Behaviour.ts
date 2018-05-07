@@ -20,7 +20,7 @@ namespace feng3d
          * Enabled Behaviours are Updated, disabled Behaviours are not.
          */
         @oav()
-        @serialize()
+        @serialize
         enabled = true;
 
         flag = ScriptFlag.all;

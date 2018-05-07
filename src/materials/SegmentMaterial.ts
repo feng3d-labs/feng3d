@@ -25,7 +25,7 @@ namespace feng3d
         /** 
          * 颜色
          */
-        @serialize()
+        @serialize
         @oav()
         u_segmentColor = new Color4();
     }

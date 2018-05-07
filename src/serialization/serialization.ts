@@ -5,16 +5,13 @@ namespace feng3d
      * @param {*} target                序列化原型
      * @param {string} propertyKey      序列化属性
      */
-    export function serialize()
+    export function serialize(target: any, propertyKey: string)
     {
-        return (target: any, propertyKey: string) => 
-        {
-            var serializeInfo: SerializeInfo = target[SERIALIZE_KEY];
-            if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY))
-                serializeInfo = target[SERIALIZE_KEY] = <any>{};
-            serializeInfo.propertys = serializeInfo.propertys || [];
-            serializeInfo.propertys.push(propertyKey);
-        }
+        var serializeInfo: SerializeInfo = target[SERIALIZE_KEY];
+        if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY))
+            serializeInfo = target[SERIALIZE_KEY] = <any>{};
+        serializeInfo.propertys = serializeInfo.propertys || [];
+        serializeInfo.propertys.push(propertyKey);
     }
 }
 

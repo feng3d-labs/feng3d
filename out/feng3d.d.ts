@@ -930,7 +930,7 @@ declare namespace feng3d {
      * @param {*} target                序列化原型
      * @param {string} propertyKey      序列化属性
      */
-    function serialize(): (target: any, propertyKey: string) => void;
+    function serialize(target: any, propertyKey: string): void;
 }
 declare var SERIALIZE_KEY: string;
 interface SerializeInfo {

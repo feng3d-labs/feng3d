@@ -9,32 +9,32 @@ namespace feng3d
     {
         protected _pixels: HTMLImageElement[];
 
-        @serialize()
+        @serialize
         @oav()
         @watch("urlChanged")
         positive_x_url: string;
 
-        @serialize()
+        @serialize
         @oav()
         @watch("urlChanged")
         positive_y_url: string;
 
-        @serialize()
+        @serialize
         @oav()
         @watch("urlChanged")
         positive_z_url: string;
 
-        @serialize()
+        @serialize
         @oav()
         @watch("urlChanged")
         negative_x_url: string;
 
-        @serialize()
+        @serialize
         @oav()
         @watch("urlChanged")
         negative_y_url: string;
 
-        @serialize()
+        @serialize
         @oav()
         @watch("urlChanged")
         negative_z_url: string;

@@ -34,7 +34,7 @@ namespace feng3d
         /** 
          * 颜色
          */
-        @serialize()
+        @serialize
         @oav()
         u_diffuseInput = new Color4();
     }

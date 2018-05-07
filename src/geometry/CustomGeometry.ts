@@ -5,7 +5,7 @@ namespace feng3d
         /**
          * 顶点索引缓冲
          */
-        @serialize()
+        @serialize
         get indicesBase()
         {
             return this._indices;
@@ -18,7 +18,7 @@ namespace feng3d
         /**
          * 属性数据列表
          */
-        @serialize()
+        @serialize
         get attributes()
         {
             return this._attributes;

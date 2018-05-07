@@ -11,7 +11,7 @@ namespace feng3d
          * 是否开启
          */
         @oav()
-        @serialize()
+        @serialize
         @watch("invalidate")
         enable = true;
 
@@ -19,7 +19,7 @@ namespace feng3d
          * 优先级
          */
         @oav()
-        @serialize()
+        @serialize
         priority = 0;
 
         /**

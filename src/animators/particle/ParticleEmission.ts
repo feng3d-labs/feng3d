@@ -10,14 +10,14 @@ namespace feng3d
          * 发射率，每秒发射粒子数量
          */
         @oav()
-        @serialize()
+        @serialize
         rate = 10;
 
         /**
          * 爆发，在time时刻额外喷射particles粒子
          */
         @oav({ componentParam: { defaultItem: () => { return { time: 0, particles: 30 } } } })
-        @serialize()
+        @serialize
         bursts: { time: number, particles: number }[] = [];
 
         isDirty = true;

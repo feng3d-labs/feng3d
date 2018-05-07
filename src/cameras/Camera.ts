@@ -73,7 +73,7 @@ namespace feng3d
         /**
 		 * 镜头
 		 */
-        @serialize()
+        @serialize
         @oav()
         get lens(): LensBase
         {

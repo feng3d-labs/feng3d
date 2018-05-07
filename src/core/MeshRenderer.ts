@@ -8,7 +8,7 @@ namespace feng3d
          * Returns the instantiated Mesh assigned to the mesh filter.
          */
         @oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } })
-        @serialize()
+        @serialize
         get geometry()
         {
             return this._geometry;
@@ -34,7 +34,7 @@ namespace feng3d
          * Returns the first instantiated Material assigned to the renderer.
          */
         @oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } })
-        @serialize()
+        @serialize
         get material() { return this._material }
         set material(value)
         {

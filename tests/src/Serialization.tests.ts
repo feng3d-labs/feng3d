@@ -2,19 +2,19 @@ namespace feng3d
 {
     export class ObjectBase
     {
-        @serialize()
+        @serialize
         id = 1;
     }
 
     export class C extends ObjectBase
     {
-        // @serialize()
+        // @serialize
         // id = 2;
 
-        @serialize()
+        @serialize
         a = 1;
 
-        @serialize()
+        @serialize
         c = 1;
 
         change()

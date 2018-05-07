@@ -70,15 +70,15 @@ namespace feng3d
     export class OutLineComponent extends Component
     {
         @oav()
-        @serialize()
+        @serialize
         size = 1;
 
         @oav()
-        @serialize()
+        @serialize
         color = new Color4(0.2, 0.2, 0.2, 1.0);
 
         @oav()
-        @serialize()
+        @serialize
         outlineMorphFactor = 0.0;
 
         init(gameobject: GameObject)

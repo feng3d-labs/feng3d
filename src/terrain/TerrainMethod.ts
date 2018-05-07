@@ -57,23 +57,23 @@ namespace feng3d
 
     export class TerrainUniforms extends StandardUniforms
     {
-        @serialize()
+        @serialize
         @oav({ block: "terrain" })
         s_splatTexture1 = new Texture2D();
 
-        @serialize()
+        @serialize
         @oav({ block: "terrain" })
         s_splatTexture2 = new Texture2D();
 
-        @serialize()
+        @serialize
         @oav({ block: "terrain" })
         s_splatTexture3 = new Texture2D();
 
-        @serialize()
+        @serialize
         @oav({ block: "terrain" })
         s_blendTexture = new Texture2D();
 
-        @serialize()
+        @serialize
         @oav({ block: "terrain" })
         u_splatRepeats = new Vector4(1, 1, 1, 1);
 

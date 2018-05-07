@@ -10,25 +10,25 @@ namespace feng3d
          * 红[0,1]
          */
         @oav()
-        @serialize()
+        @serialize
         r = 1;
         /**
          * 绿[0,1]
          */
         @oav()
-        @serialize()
+        @serialize
         g = 1;
         /**
          * 蓝[0,1]
          */
         @oav()
-        @serialize()
+        @serialize
         b = 1;
         /**
          * 透明度[0,1]
          */
         @oav()
-        @serialize()
+        @serialize
         a = 1;
 
         /**

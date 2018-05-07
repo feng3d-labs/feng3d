@@ -11,7 +11,7 @@ namespace feng3d
 		 * 视野
 		 */
         @watch("fieldOfViewChange")
-        @serialize()
+        @serialize
         @oav()
         fieldOfView: number;
 
@@ -19,7 +19,7 @@ namespace feng3d
 		 * 坐标系类型
 		 */
         @watch("coordinateSystemChange")
-        @serialize()
+        @serialize
         @oav()
         coordinateSystem: number;
 

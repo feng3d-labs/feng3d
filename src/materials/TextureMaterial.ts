@@ -21,7 +21,7 @@ namespace feng3d
         /** 
          * 颜色
          */
-        @serialize()
+        @serialize
         @oav()
         u_color = new Color4();
 
@@ -29,7 +29,7 @@ namespace feng3d
          * 纹理数据
          */
         @oav()
-        @serialize()
+        @serialize
         s_texture = new Texture2D();
     }
 

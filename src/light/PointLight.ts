@@ -11,7 +11,7 @@ namespace feng3d
          * 光照范围
          */
         @oav()
-        @serialize()
+        @serialize
         range = 10;
 
         /**

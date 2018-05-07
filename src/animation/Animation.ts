@@ -3,7 +3,7 @@ namespace feng3d
     export class Animation extends Component
     {
         @oav({ componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } })
-        @serialize()
+        @serialize
         get animation()
         {
             return this._animation;
@@ -18,7 +18,7 @@ namespace feng3d
         private _animation: AnimationClip
 
         @oav({ componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: () => new AnimationClip() } })
-        @serialize()
+        @serialize
         animations: AnimationClip[] = [];
 
         /**
@@ -39,7 +39,7 @@ namespace feng3d
         private _time = 0;
 
         @oav()
-        @serialize()
+        @serialize
         get isplaying()
         {
             return this._isplaying;
@@ -57,7 +57,7 @@ namespace feng3d
          * 播放速度
          */
         @oav()
-        @serialize()
+        @serialize
         playspeed = 1;
 
         private _preTime = 0;
@@ -194,16 +194,16 @@ namespace feng3d
 
     export class AnimationClip
     {
-        @serialize()
+        @serialize
         name: string;
         /**
          * 动画时长，单位ms
          */
-        @serialize()
+        @serialize
         length: number;
-        @serialize()
+        @serialize
         loop = true;
-        @serialize()
+        @serialize
         propertyClips: PropertyClip[];
     }
 
@@ -212,16 +212,16 @@ namespace feng3d
         /**
          * 属性路径
          */
-        @serialize()
+        @serialize
         path: PropertyClipPath;
 
-        @serialize()
+        @serialize
         propertyName: string;
 
-        @serialize()
+        @serialize
         type: "Number" | "Vector3" | "Quaternion";
 
-        @serialize()
+        @serialize
         propertyValues: [number, number[]][];
 
         cacheIndex: number;

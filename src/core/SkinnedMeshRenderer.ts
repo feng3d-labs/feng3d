@@ -4,7 +4,7 @@ namespace feng3d
     {
         get single() { return true; }
 
-        @serialize()
+        @serialize
         @oav()
         get skinSkeleton()
         {
@@ -25,7 +25,7 @@ namespace feng3d
          */
         private cacheSkeletonComponent: SkeletonComponent | null;
 
-        @serialize()
+        @serialize
         initMatrix3d: Matrix4x4;
 
         /**
@@ -124,12 +124,12 @@ namespace feng3d
         /**
          * [在整个骨架中的编号，骨骼名称]
          */
-        @serialize()
+        @serialize
         joints: [number, string][] = [];
         /**
          * 当前模型包含骨骼数量
          */
-        @serialize()
+        @serialize
         numJoint = 0;
     }
 

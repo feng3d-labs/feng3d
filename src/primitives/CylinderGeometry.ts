@@ -8,47 +8,47 @@ namespace feng3d
     export class CylinderGeometry extends Geometry
     {
         @watch("invalidateGeometry")
-        @serialize()
+        @serialize
         @oav()
         topRadius = 0.5;
         
         @watch("invalidateGeometry")
-        @serialize()
+        @serialize
         @oav()
         bottomRadius = 0.5;
         
         @watch("invalidateGeometry")
-        @serialize()
+        @serialize
         @oav()
         height = 2;
         
         @watch("invalidateGeometry")
-        @serialize()
+        @serialize
         @oav()
         segmentsW = 16;
         
         @watch("invalidateGeometry")
-        @serialize()
+        @serialize
         @oav()
         segmentsH = 1;
         
         @watch("invalidateGeometry")
-        @serialize()
+        @serialize
         @oav()
         topClosed = true;
         
         @watch("invalidateGeometry")
-        @serialize()
+        @serialize
         @oav()
         bottomClosed = true;
         
         @watch("invalidateGeometry")
-        @serialize()
+        @serialize
         @oav()
         surfaceClosed = true;
         
         @watch("invalidateGeometry")
-        @serialize()
+        @serialize
         @oav()
         yUp = true;
 

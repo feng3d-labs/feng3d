@@ -33,13 +33,13 @@ namespace feng3d
         /**W
          * 背景颜色
          */
-        @serialize()
+        @serialize
         @oav()
         background = new Color4(0, 0, 0, 1);
         /**
          * 环境光强度
          */
-        @serialize()
+        @serialize
         @oav()
         ambientColor = new Color4();
 

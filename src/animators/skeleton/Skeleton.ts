@@ -16,15 +16,15 @@ namespace feng3d
     export class SkeletonJoint
     {
         /** 父关节索引 （-1说明本身是总父节点，这个序号其实就是行号了，譬如上面”origin“节点的序号就是0，无父节点； "body"节点序号是1，父节点序号是0，也就是说父节点是”origin“）*/
-        @serialize()
+        @serialize
         parentIndex = -1;
 
         /** 关节名字 */
-        @serialize()
+        @serialize
         name: string;
 
         /** 骨骼全局矩阵 */
-        @serialize()
+        @serialize
         matrix3D: Matrix4x4;
 
         children: number[] = [];

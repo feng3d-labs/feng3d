@@ -165,7 +165,7 @@ namespace feng3d
         /**
          * 是否可序列化
          */
-        @serialize()
+        @serialize
         serializable = true;
 
         /**
@@ -177,28 +177,28 @@ namespace feng3d
          * The name of the Feng3dObject.
          * Components share the same name with the game object and all attached components.
          */
-        @serialize()
+        @serialize
         @oav()
         name: string;
 
         /**
          * 是否显示
          */
-        @serialize()
+        @serialize
         @oav()
         visible = true;
 
         /**
          * 自身以及子对象是否支持鼠标拾取
          */
-        @serialize()
+        @serialize
         @oav()
         mouseEnabled = true;
 
         /**
          * 模型生成的导航网格类型
          */
-        @serialize()
+        @serialize
         @oav()
         navigationArea = -1;
 
@@ -234,7 +234,7 @@ namespace feng3d
         /**
          * 子对象
          */
-        @serialize()
+        @serialize
         get children()
         {
             return this._children.concat();
@@ -681,7 +681,7 @@ namespace feng3d
 		 * 组件列表
 		 */
         protected _components: Component[] = [];
-        @serialize()
+        @serialize
         @oav({ component: "OAVComponentList" })
         get components()
         {

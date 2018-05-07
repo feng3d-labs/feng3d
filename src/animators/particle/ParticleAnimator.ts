@@ -11,7 +11,7 @@ namespace feng3d
          * 是否正在播放
          */
         @oav()
-        @serialize()
+        @serialize
         get isPlaying()
         {
             return this._isPlaying;
@@ -37,7 +37,7 @@ namespace feng3d
          * 粒子时间
          */
         @oav()
-        @serialize()
+        @serialize
         time = 0;
 
         /**
@@ -49,20 +49,20 @@ namespace feng3d
          * 播放速度
          */
         @oav()
-        @serialize()
+        @serialize
         playspeed = 1;
 
         /**
          * 周期
          */
         @oav()
-        @serialize()
+        @serialize
         cycle = 10000;
 
         /**
          * 生成粒子函数列表，优先级越高先执行
          */
-        @serialize()
+        @serialize
         generateFunctions: ({ generate: (particle: Particle) => void, priority: number })[] = [];
 
         /**
@@ -70,7 +70,7 @@ namespace feng3d
          */
         private _attributes: { [name: string]: number[] } = {};
 
-        @serialize()
+        @serialize
         @oav()
         readonly animations = {
             emission: new ParticleEmission(),
@@ -83,7 +83,7 @@ namespace feng3d
         /**
          * 粒子全局属性
          */
-        @serialize()
+        @serialize
         @oav()
         readonly particleGlobal = new ParticleGlobal();
 
@@ -92,7 +92,7 @@ namespace feng3d
          */
         @watch("invalidate")
         @oav()
-        @serialize()
+        @serialize
         numParticles = 1000;
 
         private _isDirty = true;

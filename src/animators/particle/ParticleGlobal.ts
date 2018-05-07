@@ -12,14 +12,14 @@ namespace feng3d
          * 加速度
          */
         @oav()
-        @serialize()
+        @serialize
         acceleration = new Vector3();
 
         /**
          * 公告牌矩阵
          */
         @oav()
-        @serialize()
+        @serialize
         billboardMatrix = new Matrix4x4();
     }
 }

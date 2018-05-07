@@ -27,7 +27,7 @@ namespace feng3d
 		 * 最近距离
 		 */
 		private _near = 0.3;
-		@serialize()
+		@serialize
 		@oav()
 		get near()
 		{
@@ -45,7 +45,7 @@ namespace feng3d
 		 * 最远距离
 		 */
 		private _far = 2000;
-		@serialize()
+		@serialize
 		@oav()
 		get far()
 		{
@@ -63,7 +63,7 @@ namespace feng3d
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
 		private _aspectRatio = 1;
-		@serialize()
+		@serialize
 		@oav()
 		get aspectRatio()
 		{

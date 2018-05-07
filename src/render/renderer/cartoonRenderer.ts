@@ -11,36 +11,36 @@ namespace feng3d
     export class CartoonComponent extends Component
     {
         @oav()
-        @serialize()
+        @serialize
         outlineSize = 1;
 
         @oav()
-        @serialize()
+        @serialize
         outlineColor = new Color4(0.2, 0.2, 0.2, 1.0);
 
         @oav()
-        @serialize()
+        @serialize
         outlineMorphFactor = 0.0;
 
         /**
          * 半兰伯特值diff，分段值 4个(0.0,1.0)
          */
         @oav({ componentParam: { showw: true } })
-        @serialize()
+        @serialize
         diffuseSegment = new Vector4(0.1, 0.3, 0.6, 1.0);
         /**
          * 半兰伯特值diff，替换分段值 4个(0.0,1.0)
          */
         @oav({ componentParam: { showw: true } })
-        @serialize()
+        @serialize
         diffuseSegmentValue = new Vector4(0.1, 0.3, 0.6, 1.0);
 
         @oav()
-        @serialize()
+        @serialize
         specularSegment = 0.5;
 
         @oav()
-        @serialize()
+        @serialize
         get cartoon_Anti_aliasing()
         {
             return this._cartoon_Anti_aliasing;

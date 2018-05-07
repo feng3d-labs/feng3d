@@ -229,7 +229,7 @@ namespace feng3d
         //------------------------------------------
         // Variables
         //------------------------------------------
-        @serialize()
+        @serialize
         @oav()
         get x(): number
         {
@@ -246,7 +246,7 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        @serialize()
+        @serialize
         @oav()
         get y(): number
         {
@@ -263,7 +263,7 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        @serialize()
+        @serialize
         @oav()
         get z(): number
         {
@@ -280,7 +280,7 @@ namespace feng3d
             this.invalidatePosition();
         }
 
-        @serialize()
+        @serialize
         @oav()
         get rx(): number
         {
@@ -297,7 +297,7 @@ namespace feng3d
             this.invalidateRotation();
         }
 
-        @serialize()
+        @serialize
         @oav()
         get ry(): number
         {
@@ -314,7 +314,7 @@ namespace feng3d
             this.invalidateRotation();
         }
 
-        @serialize()
+        @serialize
         @oav()
         get rz(): number
         {
@@ -331,7 +331,7 @@ namespace feng3d
             this.invalidateRotation();
         }
 
-        @serialize()
+        @serialize
         @oav()
         get sx(): number
         {
@@ -348,7 +348,7 @@ namespace feng3d
             this.invalidateScale();
         }
 
-        @serialize()
+        @serialize
         @oav()
         get sy(): number
         {
@@ -365,7 +365,7 @@ namespace feng3d
             this.invalidateScale();
         }
 
-        @serialize()
+        @serialize
         @oav()
         get sz(): number
         {

@@ -22,7 +22,7 @@ var feng3d;
             this.id = 1;
         }
         __decorate([
-            feng3d.serialize()
+            feng3d.serialize
         ], ObjectBase.prototype, "id", void 0);
         return ObjectBase;
     }());
@@ -30,7 +30,7 @@ var feng3d;
     var C = /** @class */ (function (_super) {
         __extends(C, _super);
         function C() {
-            // @serialize()
+            // @serialize
             // id = 2;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.a = 1;
@@ -41,10 +41,10 @@ var feng3d;
             feng3d.log("change", this.a, arguments);
         };
         __decorate([
-            feng3d.serialize()
+            feng3d.serialize
         ], C.prototype, "a", void 0);
         __decorate([
-            feng3d.serialize()
+            feng3d.serialize
         ], C.prototype, "c", void 0);
         return C;
     }(ObjectBase));

@@ -24,7 +24,7 @@ namespace feng3d
         @watch("onShaderChanged")
         shaderName: string;
 
-        @serialize()
+        @serialize
         // @oav({ component: "OAVMaterialData" })
         @oav({ component: "OAVObjectView" })
         uniforms = {};
@@ -32,7 +32,7 @@ namespace feng3d
         /**
          * 渲染参数
          */
-        @serialize()
+        @serialize
         @oav({ block: "渲染参数", component: "OAVObjectView" })
         renderParams = new RenderParams();
 

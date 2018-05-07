@@ -3,7 +3,7 @@ namespace feng3d
     export class SkeletonComponent extends Component
     {
         /** 骨骼关节数据列表 */
-        @serialize()
+        @serialize
         @oav()
         joints: SkeletonJoint[] = [];
 

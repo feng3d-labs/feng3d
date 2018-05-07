@@ -25,14 +25,14 @@ namespace feng3d
         /** 
          * 颜色
          */
-        @serialize()
+        @serialize
         @oav()
         u_color = new Color4();
 
         /**
          * 点绘制时点的尺寸
          */
-        @serialize()
+        @serialize
         @oav()
         u_PointSize = 1;
     }

@@ -8,7 +8,7 @@ namespace feng3d
     export class PlaneGeometry extends Geometry
     {
         @oav()
-        @serialize()
+        @serialize
         get width()
         {
             return this._width;
@@ -23,7 +23,7 @@ namespace feng3d
         private _width = 1;
 
         @oav()
-        @serialize()
+        @serialize
         get height()
         {
             return this._height;
@@ -38,7 +38,7 @@ namespace feng3d
         private _height = 1;
 
         @oav()
-        @serialize()
+        @serialize
         get segmentsW()
         {
             return this._segmentsW;
@@ -53,7 +53,7 @@ namespace feng3d
         private _segmentsW = 1;
 
         @oav()
-        @serialize()
+        @serialize
         get segmentsH()
         {
             return this._segmentsH;
@@ -68,7 +68,7 @@ namespace feng3d
         private _segmentsH = 1;
 
         @oav()
-        @serialize()
+        @serialize
         get yUp()
         {
             return this._yUp;

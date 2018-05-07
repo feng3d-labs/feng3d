@@ -23,7 +23,7 @@ namespace feng3d
     {
         protected _pixels: HTMLImageElement;
 
-        @serialize()
+        @serialize
         @watch("urlChanged")
         @oav()
         url = "";

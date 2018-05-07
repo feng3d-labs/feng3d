@@ -13,25 +13,25 @@ namespace feng3d
 		/**
 		 * The x value of the quaternion.
 		 */
-        @serialize()
+        @serialize
         x = 0;
 
 		/**
 		 * The y value of the quaternion.
 		 */
-        @serialize()
+        @serialize
         y = 0;
 
 		/**
 		 * The z value of the quaternion.
 		 */
-        @serialize()
+        @serialize
         z = 0;
 
 		/**
 		 * The w value of the quaternion.
 		 */
-        @serialize()
+        @serialize
         w = 1;
 
 		/**

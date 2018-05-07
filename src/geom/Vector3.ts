@@ -56,21 +56,21 @@ namespace feng3d
         /**
         * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
         */
-        @serialize()
+        @serialize
         @oav()
         x = 0;
 
         /**
          * Vector3 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
          */
-        @serialize()
+        @serialize
         @oav()
         y = 0;
 
         /**
          * Vector3 对象中的第三个元素，例如，三维空间中某个点的 z 坐标。默认值为 0
          */
-        @serialize()
+        @serialize
         @oav()
         z = 0;
 

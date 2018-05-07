@@ -10,28 +10,28 @@ namespace feng3d
         /**
          * 灯光类型
          */
-        @serialize()
+        @serialize
         lightType: LightType;
 
         /**
          * 颜色
          */
         @oav()
-        @serialize()
+        @serialize
         color = new Color3();
 
         /**
          * 光照强度
          */
         @oav()
-        @serialize()
+        @serialize
         intensity = 1;
 
         /**
          * 是否生成阴影（未实现）
          */
         @oav()
-        @serialize()
+        @serialize
         castsShadows = false;
 
         private _shadowMap: Texture2D = new Texture2D();
