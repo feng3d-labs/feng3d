@@ -115,9 +115,8 @@ namespace feng3d
          */
         private _invalid = true;
 
-        constructor(raw?: TextureInfoRaw)
+        constructor()
         {
-
         }
 
         /**

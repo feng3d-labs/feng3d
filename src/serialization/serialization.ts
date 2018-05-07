@@ -12,6 +12,29 @@
 //     }
 // });
 
+// interface Object
+// {
+//     /**
+//      * 给对象设置值
+//      * @param target 被修改的对象
+//      * @param object 修改数据
+//      */
+//     __setValue<T>(target: T, object: Object): T;
+// }
+
+// Object.defineProperty(Object.prototype, "__setValue", {
+//     /**
+//      * uv数据
+//      */
+//     value: function <T>(target: T, object: Object): T
+//     {
+//         feng3d.serialization.setValue(target, object);
+//         return target;
+//     },
+//     enumerable: false,
+//     configurable: true
+// });
+
 namespace feng3d
 {
     var SERIALIZE_KEY = "_serialize__";
@@ -31,7 +54,17 @@ namespace feng3d
     {
         var serializeInfo: SerializeInfo = target[SERIALIZE_KEY];
         if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY))
-            serializeInfo = target[SERIALIZE_KEY] = <any>{};
+        {
+            Object.defineProperty(target, SERIALIZE_KEY, {
+                /**
+                 * uv数据
+                 */
+                value: {},
+                enumerable: false,
+                configurable: true
+            });
+        }
+        serializeInfo = target[SERIALIZE_KEY];
         serializeInfo.propertys = serializeInfo.propertys || [];
         serializeInfo.propertys.push(propertyKey);
     }
@@ -193,11 +226,17 @@ namespace feng3d
                 return;
             }
             // 处理同为Object类型
-            if (target[property].constructor == Object && objvalue[CLASS_KEY] == undefined)
+            if (objvalue[CLASS_KEY] == undefined)
             {
-                for (const key in objvalue)
+                if (target[property].constructor == Object)
                 {
-                    serialization.setPropertyValue(target[property], objvalue, key);
+                    for (const key in objvalue)
+                    {
+                        serialization.setPropertyValue(target[property], objvalue, key);
+                    }
+                } else
+                {
+                    serialization.setValue(target[property], objvalue);
                 }
                 return;
             }

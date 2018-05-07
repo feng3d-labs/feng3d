@@ -6551,7 +6551,7 @@ declare namespace feng3d {
          * 是否失效
          */
         private _invalid;
-        constructor(raw?: TextureInfoRaw);
+        constructor();
         /**
          * 判断数据是否满足渲染需求
          */

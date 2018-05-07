@@ -1850,6 +1850,27 @@ var feng3d;
 //         return new (<any>(this.constructor))(object.value);
 //     }
 // });
+// interface Object
+// {
+//     /**
+//      * 给对象设置值
+//      * @param target 被修改的对象
+//      * @param object 修改数据
+//      */
+//     __setValue<T>(target: T, object: Object): T;
+// }
+// Object.defineProperty(Object.prototype, "__setValue", {
+//     /**
+//      * uv数据
+//      */
+//     value: function <T>(target: T, object: Object): T
+//     {
+//         feng3d.serialization.setValue(target, object);
+//         return target;
+//     },
+//     enumerable: false,
+//     configurable: true
+// });
 var feng3d;
 (function (feng3d) {
     var SERIALIZE_KEY = "_serialize__";
@@ -1860,8 +1881,17 @@ var feng3d;
      */
     function serialize(target, propertyKey) {
         var serializeInfo = target[SERIALIZE_KEY];
-        if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY))
-            serializeInfo = target[SERIALIZE_KEY] = {};
+        if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY)) {
+            Object.defineProperty(target, SERIALIZE_KEY, {
+                /**
+                 * uv数据
+                 */
+                value: {},
+                enumerable: false,
+                configurable: true
+            });
+        }
+        serializeInfo = target[SERIALIZE_KEY];
         serializeInfo.propertys = serializeInfo.propertys || [];
         serializeInfo.propertys.push(propertyKey);
     }
@@ -1986,9 +2016,14 @@ var feng3d;
                 return;
             }
             // 处理同为Object类型
-            if (target[property].constructor == Object && objvalue[CLASS_KEY] == undefined) {
-                for (var key in objvalue) {
-                    feng3d.serialization.setPropertyValue(target[property], objvalue, key);
+            if (objvalue[CLASS_KEY] == undefined) {
+                if (target[property].constructor == Object) {
+                    for (var key in objvalue) {
+                        feng3d.serialization.setPropertyValue(target[property], objvalue, key);
+                    }
+                }
+                else {
+                    feng3d.serialization.setValue(target[property], objvalue);
                 }
                 return;
             }
@@ -10228,7 +10263,7 @@ var feng3d;
      * @author feng 2016-12-20
      */
     var TextureInfo = /** @class */ (function () {
-        function TextureInfo(raw) {
+        function TextureInfo() {
             /**
              * 格式
              */
