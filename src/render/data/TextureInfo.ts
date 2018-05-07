@@ -15,46 +15,41 @@ namespace feng3d
          * 格式
          */
         @serialize(TextureFormat.RGB)
+        @watch("invalidate")
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureFormat } })
-        get format() { return this._format; }
-        set format(value) { this._format = value; this.invalidate(); }
-        protected _format = TextureFormat.RGB;
+        format = TextureFormat.RGB;
 
         /**
          * 数据类型
          */
         @serialize(TextureDataType.UNSIGNED_BYTE)
+        @watch("invalidate")
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureDataType } })
-        get type() { return this._type; }
-        set type(value) { this._type = value; this.invalidate(); }
-        private _type = TextureDataType.UNSIGNED_BYTE;
+        type = TextureDataType.UNSIGNED_BYTE;
 
         /**
          * 是否生成mipmap
          */
         @serialize(false)
+        @watch("invalidate")
         @oav()
-        get generateMipmap() { return this._generateMipmap; }
-        set generateMipmap(value) { this._generateMipmap = value; this.invalidate(); }
-        private _generateMipmap = false;
+        generateMipmap = false;
 
         /**
          * 对图像进行Y轴反转。默认值为false
          */
         @serialize(false)
+        @watch("invalidate")
         @oav()
-        get flipY() { return this._flipY; }
-        set flipY(value) { this._flipY = value; this.invalidate(); }
-        private _flipY = false;
+        flipY = false;
 
         /**
          * 将图像RGB颜色值得每一个分量乘以A。默认为false
          */
         @serialize(false)
+        @watch("invalidate")
         @oav()
-        get premulAlpha() { return this._premulAlpha; }
-        set premulAlpha(value) { this._premulAlpha = value; this.invalidate(); }
-        private _premulAlpha = false;
+        premulAlpha = false;
 
         @serialize(TextureMinFilter.LINEAR)
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureMinFilter } })
@@ -202,7 +197,7 @@ namespace feng3d
                 gl.bindTexture(textureType, texture);
                 //设置纹理图片
                 this.initTexture(gl);
-                if (this._generateMipmap)
+                if (this.generateMipmap)
                 {
                     gl.generateMipmap(textureType);
                 }
@@ -216,8 +211,8 @@ namespace feng3d
          */
         private initTexture(gl: GL)
         {
-            var format = gl[this._format];
-            var type = gl[this._type];
+            var format = gl[this.format];
+            var type = gl[this.type];
 
             switch (this._textureType)
             {

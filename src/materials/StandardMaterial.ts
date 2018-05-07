@@ -1,20 +1,6 @@
 namespace feng3d
 {
 
-    // export interface IStandardMaterial
-    // {
-    //     uniforms: StandardUniforms;
-    // }
-
-    // var a: IStandardMaterial & Material;
-    var a: Material & { uniforms: StandardUniforms; };
-
-    a.uniforms.s_diffuse
-
-    var m: MaterialFactory;
-    m.create("standard1").uniforms
-    m.create("standard").uniforms.s_diffuse
-
     export interface MaterialFactory
     {
         create(shader: "standard"): Material & { uniforms: StandardUniforms; };
