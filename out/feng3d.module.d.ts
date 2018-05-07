@@ -935,18 +935,10 @@ declare namespace feng3d {
      * @param {string} propertyKey      序列化属性
      */
     function serialize(target: any, propertyKey: string): void;
-}
-declare var SERIALIZE_KEY: string;
-interface SerializeInfo {
-    propertys: string[];
-    default: Object;
-}
-declare namespace feng3d {
     var serialization: {
-        serialize: (target: any) => any;
-        deserialize: (result: any) => any;
-        getSerializableMembers: (object: Object, serializableMembers?: string[]) => string[];
-        clone: (target: any) => any;
+        serialize(target: any): any;
+        deserialize(object: any): any;
+        clone(target: any): any;
     };
 }
 /**

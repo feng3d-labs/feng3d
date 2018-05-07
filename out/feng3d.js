@@ -1838,8 +1838,21 @@ var feng3d;
     feng3d.RawData = RawData;
     feng3d.rawData = new RawData();
 })(feng3d || (feng3d = {}));
+// [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
+// {
+//     element.prototype["serialize"] = function (object: { value: number[] })
+//     {
+//         object.value = Array.from(this);
+//         return object;
+//     }
+//     element.prototype["deserialize"] = function (object: { value: number[] })
+//     {
+//         return new (<any>(this.constructor))(object.value);
+//     }
+// });
 var feng3d;
 (function (feng3d) {
+    var SERIALIZE_KEY = "_serialize__";
     /**
      * 序列化装饰器，被装饰属性将被序列化
      * @param {*} target                序列化原型
@@ -1853,26 +1866,112 @@ var feng3d;
         serializeInfo.propertys.push(propertyKey);
     }
     feng3d.serialize = serialize;
-})(feng3d || (feng3d = {}));
-var SERIALIZE_KEY = "__serialize__";
-// [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
-// {
-//     element.prototype["serialize"] = function (object: { value: number[] })
-//     {
-//         object.value = Array.from(this);
-//         return object;
-//     }
-//     element.prototype["deserialize"] = function (object: { value: number[] })
-//     {
-//         return new (<any>(this.constructor))(object.value);
-//     }
-// });
-(function (feng3d) {
     feng3d.serialization = {
-        serialize: serialize,
-        deserialize: deserialize,
-        getSerializableMembers: getSerializableMembers,
-        clone: clone,
+        serialize: function (target) {
+            //基础类型
+            if (target == undefined
+                || target == null
+                || target.constructor == Boolean
+                || target.constructor == String
+                || target.constructor == Number)
+                return target;
+            //处理对象
+            if (target.hasOwnProperty("serializable") && !target["serializable"])
+                return undefined;
+            //处理方法
+            if (target.constructor === Function) {
+                return { __t: "function", data: target.toString() };
+            }
+            //处理数组
+            if (target.constructor === Array) {
+                var arr = [];
+                for (var i = 0; i < target.length; i++) {
+                    arr[i] = feng3d.serialization.serialize(target[i]);
+                }
+                return arr;
+            }
+            if (target.constructor === Object) {
+                var object = {};
+                for (var key in target) {
+                    if (target.hasOwnProperty(key)) {
+                        if (target[key] !== undefined) {
+                            object[key] = feng3d.serialization.serialize(target[key]);
+                        }
+                    }
+                }
+                return object;
+            }
+            var className = feng3d.ClassUtils.getQualifiedClassName(target);
+            var object = {};
+            object[CLASS_KEY] = className;
+            if (target["serialize"])
+                return target["serialize"](object);
+            //使用默认序列化
+            var serializableMembers = getSerializableMembers(target);
+            var defatutInstance = getDefatutInstance(target);
+            for (var i = 0; i < serializableMembers.length; i++) {
+                var property = serializableMembers[i];
+                if (target[property] === defatutInstance[property])
+                    continue;
+                if (target[property] !== undefined) {
+                    object[property] = feng3d.serialization.serialize(target[property]);
+                }
+            }
+            return object;
+        },
+        deserialize: function (object) {
+            //基础类型
+            if (object == undefined
+                || object == null
+                || typeof object == "boolean"
+                || typeof object == "string"
+                || typeof object == "number")
+                return object;
+            //处理数组
+            if (object.constructor == Array) {
+                var arr = [];
+                object.forEach(function (element) {
+                    arr.push(feng3d.serialization.deserialize(element));
+                });
+                return arr;
+            }
+            //处理方法
+            if (object.__t == "function") {
+                var f;
+                eval("f=" + object.data);
+                return f;
+            }
+            //处理普通Object
+            var className = object[CLASS_KEY];
+            if (className == undefined) {
+                var target = {};
+                for (var key in object) {
+                    target[key] = feng3d.serialization.deserialize(object[key]);
+                }
+                return target;
+            }
+            var cls = feng3d.ClassUtils.getDefinitionByName(className);
+            if (!cls) {
+                feng3d.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
+                return undefined;
+            }
+            target = new cls();
+            //处理自定义反序列化对象
+            if (target["deserialize"])
+                return target["deserialize"](object);
+            //默认反序列
+            var serializableMembers = getSerializableMembers(target);
+            for (var i = 0; i < serializableMembers.length; i++) {
+                var property = serializableMembers[i];
+                if (object[property] !== undefined) {
+                    target[property] = feng3d.serialization.deserialize(object[property]);
+                }
+            }
+            return target;
+        },
+        clone: function (target) {
+            return feng3d.serialization.deserialize(feng3d.serialization.serialize(target));
+        },
     };
     var CLASS_KEY = "__class__";
     /**
@@ -1902,119 +2001,6 @@ var SERIALIZE_KEY = "__serialize__";
             }
         }
         return serializableMembers;
-    }
-    function serialize(target) {
-        var result = _serialize(target);
-        return result;
-    }
-    function deserialize(result) {
-        var object = _deserialize(result);
-        return object;
-    }
-    function _serialize(target) {
-        //基础类型
-        if (target == undefined
-            || target == null
-            || target.constructor == Boolean
-            || target.constructor == String
-            || target.constructor == Number)
-            return target;
-        //处理对象
-        if (target.hasOwnProperty("serializable") && !target["serializable"])
-            return undefined;
-        //处理方法
-        if (target.constructor === Function) {
-            return { __t: "function", data: target.toString() };
-        }
-        //处理数组
-        if (target.constructor === Array) {
-            var arr = [];
-            for (var i = 0; i < target.length; i++) {
-                arr[i] = _serialize(target[i]);
-            }
-            return arr;
-        }
-        if (target.constructor === Object) {
-            var object = {};
-            for (var key in target) {
-                if (target.hasOwnProperty(key)) {
-                    if (target[key] !== undefined) {
-                        object[key] = _serialize(target[key]);
-                    }
-                }
-            }
-            return object;
-        }
-        var className = feng3d.ClassUtils.getQualifiedClassName(target);
-        var object = {};
-        object[CLASS_KEY] = className;
-        if (target["serialize"])
-            return target["serialize"](object);
-        //使用默认序列化
-        var serializableMembers = getSerializableMembers(target);
-        var defatutInstance = getDefatutInstance(target);
-        for (var i = 0; i < serializableMembers.length; i++) {
-            var property = serializableMembers[i];
-            if (target[property] === defatutInstance[property])
-                continue;
-            if (target[property] !== undefined) {
-                object[property] = _serialize(target[property]);
-            }
-        }
-        return object;
-    }
-    function _deserialize(object) {
-        //基础类型
-        if (object == undefined
-            || object == null
-            || typeof object == "boolean"
-            || typeof object == "string"
-            || typeof object == "number")
-            return object;
-        //处理数组
-        if (object.constructor == Array) {
-            var arr = [];
-            object.forEach(function (element) {
-                arr.push(_deserialize(element));
-            });
-            return arr;
-        }
-        //处理方法
-        if (object.__t == "function") {
-            var f;
-            eval("f=" + object.data);
-            return f;
-        }
-        //处理普通Object
-        var className = object[CLASS_KEY];
-        if (className == undefined) {
-            var target = {};
-            for (var key in object) {
-                target[key] = _deserialize(object[key]);
-            }
-            return target;
-        }
-        var cls = feng3d.ClassUtils.getDefinitionByName(className);
-        if (!cls) {
-            feng3d.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
-            return undefined;
-        }
-        target = new cls();
-        //处理自定义反序列化对象
-        if (target["deserialize"])
-            return target["deserialize"](object);
-        //默认反序列
-        var serializableMembers = getSerializableMembers(target);
-        for (var i = 0; i < serializableMembers.length; i++) {
-            var property = serializableMembers[i];
-            if (object[property] !== undefined) {
-                target[property] = _deserialize(object[property]);
-            }
-        }
-        return target;
-    }
-    function clone(target) {
-        return _deserialize(_serialize(target));
     }
 })(feng3d || (feng3d = {}));
 var feng3d;
