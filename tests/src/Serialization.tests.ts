@@ -99,5 +99,14 @@ namespace feng3d
             obj1.b.o.id = 3;
             assert.ok(obj.b != obj1.b);
         });
+
+        QUnit.test("serialize.different 获取两个数据的差异", (assert) =>
+        {
+            var c = new C();
+            c.id = 8;
+
+            var diff = serialization.different(c, new C());
+            assert.ok(Object.keys(diff).length == 1);
+        });
     });
 }

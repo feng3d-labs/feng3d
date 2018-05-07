@@ -1865,6 +1865,11 @@ var feng3d;
     var Serialization = /** @class */ (function () {
         function Serialization() {
         }
+        /**
+         * 序列化对象
+         * @param target 被序列化的数据
+         * @returns 序列化后可以转换为Json的对象
+         */
         Serialization.prototype.serialize = function (target) {
             //基础类型
             if (isBaseType(target))
@@ -1904,18 +1909,51 @@ var feng3d;
             if (target["serialize"])
                 return target["serialize"](object);
             //使用默认序列化
-            var serializableMembers = getSerializableMembers(target);
-            var defatutInstance = getDefatutInstance(target);
-            for (var i = 0; i < serializableMembers.length; i++) {
-                var property = serializableMembers[i];
-                if (target[property] === defatutInstance[property])
-                    continue;
-                if (target[property] !== undefined) {
-                    object[property] = this.serialize(target[property]);
-                }
-            }
+            var defaultInstance = getDefaultInstance(target);
+            this.different(target, defaultInstance, object);
             return object;
         };
+        /**
+         * 比较两个对象的不同，提取出不同的数据
+         * @param target 用于检测不同的数据
+         * @param defaultInstance   模板（默认）数据
+         * @param different 比较得出的不同（简单结构）数据
+         * @returns 比较得出的不同（简单结构）数据
+         */
+        Serialization.prototype.different = function (target, defaultInstance, different) {
+            different = different || {};
+            var serializableMembers = getSerializableMembers(target);
+            for (var i = 0; i < serializableMembers.length; i++) {
+                var property = serializableMembers[i];
+                if (target[property] === defaultInstance[property])
+                    continue;
+                if (isBaseType(target[property])) {
+                    different[property] = target[property];
+                    continue;
+                }
+                if (defaultInstance[property] == null) {
+                    different[property] = this.serialize(target[property]);
+                    continue;
+                }
+                if (defaultInstance[property].constructor != target[property].constructor) {
+                    different[property] = this.serialize(target[property]);
+                    continue;
+                }
+                if (target[property].constructor == Array) {
+                    different[property] = this.serialize(target[property]);
+                    continue;
+                }
+                var diff = this.different(target[property], defaultInstance[property]);
+                if (Object.keys(diff).length > 0)
+                    different[property] = diff;
+            }
+            return different;
+        };
+        /**
+         * 反序列化
+         * @param object 换为Json的对象
+         * @returns 反序列化后的数据
+         */
         Serialization.prototype.deserialize = function (object) {
             var _this = this;
             //基础类型
@@ -2039,7 +2077,7 @@ var feng3d;
     /**
      * 获取默认实例
      */
-    function getDefatutInstance(object) {
+    function getDefaultInstance(object) {
         var serializeInfo = object[SERIALIZE_KEY];
         serializeInfo.default = serializeInfo.default || new object.constructor();
         return serializeInfo.default;

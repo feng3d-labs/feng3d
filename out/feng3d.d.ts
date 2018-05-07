@@ -933,7 +933,25 @@ declare namespace feng3d {
      */
     function serialize(target: any, propertyKey: string): void;
     class Serialization {
+        /**
+         * 序列化对象
+         * @param target 被序列化的数据
+         * @returns 序列化后可以转换为Json的对象
+         */
         serialize(target: any): any;
+        /**
+         * 比较两个对象的不同，提取出不同的数据
+         * @param target 用于检测不同的数据
+         * @param defaultInstance   模板（默认）数据
+         * @param different 比较得出的不同（简单结构）数据
+         * @returns 比较得出的不同（简单结构）数据
+         */
+        different(target: Object, defaultInstance: Object, different?: Object): Object;
+        /**
+         * 反序列化
+         * @param object 换为Json的对象
+         * @returns 反序列化后的数据
+         */
         deserialize(object: any): any;
         setValue(target: Object, object: Object): void;
         setPropertyValue(target: Object, object: Object, property: string): void;
