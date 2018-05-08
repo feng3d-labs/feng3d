@@ -4,29 +4,21 @@ namespace feng3d
      * 颜色材质
      * @author feng 2016-05-02
      */
-    export class ColorMaterial extends Material
+    export type ColorMaterial = Material & { uniforms: ColorUniforms; };
+    export interface MaterialFactory
     {
-        uniforms = new ColorUniforms();
+        create(shader: "color", raw?: ColorMaterialRaw): ColorMaterial;
+    }
 
-        /**
-         * 构建颜色材质
-         * @param color 颜色
-         * @param alpha 透明的
-         */
-        constructor(color?: Color4)
-        {
-            super();
-            this.shaderName = "color";
-            if (color)
-                this.uniforms.u_diffuseInput.copyFrom(color);
-        }
+    export interface ColorMaterialRaw extends MaterialRaw
+    {
+        uniforms?: ColorUniformsRaw;
+    }
 
-        preRender(renderAtomic: RenderAtomic)
-        {
-            super.preRender(renderAtomic);
-
-            renderAtomic.uniforms.u_diffuseInput = this.uniforms.u_diffuseInput;
-        }
+    export interface ColorUniformsRaw
+    {
+        __class__?: "feng3d.ColorUniforms",
+        u_diffuseInput?: Color4 | Color4Raw
     }
 
     export class ColorUniforms

@@ -67,7 +67,7 @@ namespace feng3d
             xArrow.transform.x = this.lineLength;
             xArrow.transform.rz = -90;
             var meshRenderer = xArrow.addComponent(MeshRenderer);
-            var material = meshRenderer.material = new ColorMaterial();
+            var material = meshRenderer.material = materialFactory.create("color");
             meshRenderer.geometry = new ConeGeometry(this.arrowradius, this.arrowHeight);;
             material.uniforms.u_diffuseInput = new Color4(1, 0, 0);
             this.tridentObject.addChild(xArrow);
@@ -77,7 +77,7 @@ namespace feng3d
             yArrow.showinHierarchy = false;
             yArrow.transform.y = this.lineLength;
             meshRenderer = yArrow.addComponent(MeshRenderer);
-            var material = meshRenderer.material = new ColorMaterial();
+            var material = meshRenderer.material = materialFactory.create("color");
             meshRenderer.geometry = new ConeGeometry(this.arrowradius, this.arrowHeight);
             material.uniforms.u_diffuseInput = new Color4(0, 1, 0);
             this.tridentObject.addChild(yArrow);
@@ -89,7 +89,7 @@ namespace feng3d
             zArrow.transform.rx = 90;
             meshRenderer = zArrow.addComponent(MeshRenderer);
             meshRenderer.geometry = new ConeGeometry(this.arrowradius, this.arrowHeight);
-            var material = meshRenderer.material = new ColorMaterial();
+            var material = meshRenderer.material = materialFactory.create("color");
             material.uniforms.u_diffuseInput = new Color4(0, 0, 1);
             this.tridentObject.addChild(zArrow);
         }

@@ -143,26 +143,6 @@ namespace feng3d
     //-------------------------
     // 材质
     //-------------------------
-
-    export interface MaterialBaseRaw
-    {
-        blendEquation?: BlendEquation;
-        cullFace?: CullFace;
-        depthMask?: boolean;
-        depthtest?: boolean;
-        dfactor?: BlendFactor;
-        enableBlend?: boolean;
-        frontFace?: FrontFace;
-        pointSize?: number;
-        renderMode?: RenderMode;
-        sfactor?: BlendFactor;
-    }
-
-    export interface SegmentMaterialRaw extends MaterialBaseRaw
-    {
-        __class__: "feng3d.SegmentMaterial";
-    }
-
     export interface Color3Raw
     {
         __class__: "feng3d.Color3",
@@ -215,35 +195,5 @@ namespace feng3d
         positive_z_url?: string,
     }
 
-    export interface StandardUniformsRaw
-    {
-        __class__: "feng3d.StandardUniforms",
-        s_ambient?: Texture2DRaw;
-        s_diffuse?: Texture2DRaw,
-        s_envMap?: TextureCubeRaw,
-        s_normal?: Texture2DRaw,
-        s_specular?: Texture2DRaw,
-        u_ambient?: Color3Raw,
-        u_diffuse?: Color3Raw,
-        u_reflectivity?: number,
-        u_specular?: Color3Raw
-    }
-
-    export interface StandardMaterialRaw extends MaterialBaseRaw
-    {
-        __class__: "feng3d.StandardMaterial";
-        terrainMethod?: TerrainMethodRaw;
-
-        uniforms?: StandardUniformsRaw;
-    }
-
     export type ValueOf<T> = T[keyof T];
-
-    export type MaterialRaw = ValueOf<MaterialRawMap>;
-
-    export interface MaterialRawMap
-    {
-        SegmentMaterialRaw: SegmentMaterialRaw;
-        StandardMaterialRaw: StandardMaterialRaw;
-    }
 }

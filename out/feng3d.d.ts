@@ -845,21 +845,6 @@ declare namespace feng3d {
         tubeRadius?: 10;
         yUp?: true;
     }
-    interface MaterialBaseRaw {
-        blendEquation?: BlendEquation;
-        cullFace?: CullFace;
-        depthMask?: boolean;
-        depthtest?: boolean;
-        dfactor?: BlendFactor;
-        enableBlend?: boolean;
-        frontFace?: FrontFace;
-        pointSize?: number;
-        renderMode?: RenderMode;
-        sfactor?: BlendFactor;
-    }
-    interface SegmentMaterialRaw extends MaterialBaseRaw {
-        __class__: "feng3d.SegmentMaterial";
-    }
     interface Color3Raw {
         __class__: "feng3d.Color3";
         b?: number;
@@ -900,29 +885,7 @@ declare namespace feng3d {
         positive_y_url?: string;
         positive_z_url?: string;
     }
-    interface StandardUniformsRaw {
-        __class__: "feng3d.StandardUniforms";
-        s_ambient?: Texture2DRaw;
-        s_diffuse?: Texture2DRaw;
-        s_envMap?: TextureCubeRaw;
-        s_normal?: Texture2DRaw;
-        s_specular?: Texture2DRaw;
-        u_ambient?: Color3Raw;
-        u_diffuse?: Color3Raw;
-        u_reflectivity?: number;
-        u_specular?: Color3Raw;
-    }
-    interface StandardMaterialRaw extends MaterialBaseRaw {
-        __class__: "feng3d.StandardMaterial";
-        terrainMethod?: TerrainMethodRaw;
-        uniforms?: StandardUniformsRaw;
-    }
     type ValueOf<T> = T[keyof T];
-    type MaterialRaw = ValueOf<MaterialRawMap>;
-    interface MaterialRawMap {
-        SegmentMaterialRaw: SegmentMaterialRaw;
-        StandardMaterialRaw: StandardMaterialRaw;
-    }
 }
 declare namespace feng3d {
     var serialization: Serialization;
@@ -8899,6 +8862,18 @@ declare namespace feng3d {
 declare namespace feng3d {
 }
 declare namespace feng3d {
+    interface MaterialRaw {
+        blendEquation?: BlendEquation;
+        cullFace?: CullFace;
+        depthMask?: boolean;
+        depthtest?: boolean;
+        dfactor?: BlendFactor;
+        enableBlend?: boolean;
+        frontFace?: FrontFace;
+        pointSize?: number;
+        renderMode?: RenderMode;
+        sfactor?: BlendFactor;
+    }
     class MaterialFactory {
     }
     var materialFactory: MaterialFactory;
@@ -8917,7 +8892,7 @@ declare namespace feng3d {
          * 渲染程序
          */
         shader: Shader;
-        constructor();
+        constructor(raw?: MaterialRaw);
         preRender(renderAtomic: RenderAtomic): void;
         private onShaderChanged();
     }
@@ -8950,15 +8925,18 @@ declare namespace feng3d {
      * 颜色材质
      * @author feng 2016-05-02
      */
-    class ColorMaterial extends Material {
+    type ColorMaterial = Material & {
         uniforms: ColorUniforms;
-        /**
-         * 构建颜色材质
-         * @param color 颜色
-         * @param alpha 透明的
-         */
-        constructor(color?: Color4);
-        preRender(renderAtomic: RenderAtomic): void;
+    };
+    interface MaterialFactory {
+        create(shader: "color", raw?: ColorMaterialRaw): ColorMaterial;
+    }
+    interface ColorMaterialRaw extends MaterialRaw {
+        uniforms?: ColorUniformsRaw;
+    }
+    interface ColorUniformsRaw {
+        __class__?: "feng3d.ColorUniforms";
+        u_diffuseInput?: Color4 | Color4Raw;
     }
     class ColorUniforms {
         /**
@@ -8979,6 +8957,9 @@ declare namespace feng3d {
          * 构建线段材质
          */
         constructor();
+    }
+    interface SegmentMaterialRaw extends MaterialRaw {
+        __class__: "feng3d.SegmentMaterial";
     }
     class SegmentUniforms {
         /**
@@ -9012,7 +8993,24 @@ declare namespace feng3d {
         uniforms: StandardUniforms;
     };
     interface MaterialFactory {
-        create(shader: "standard"): StandardMaterial;
+        create(shader: "standard", raw?: StandardMaterialRaw): StandardMaterial;
+    }
+    interface StandardMaterialRaw extends MaterialRaw {
+        __class__: "feng3d.StandardMaterial";
+        terrainMethod?: TerrainMethodRaw;
+        uniforms?: StandardUniformsRaw;
+    }
+    interface StandardUniformsRaw {
+        __class__: "feng3d.StandardUniforms";
+        s_ambient?: Texture2DRaw;
+        s_diffuse?: Texture2DRaw;
+        s_envMap?: TextureCubeRaw;
+        s_normal?: Texture2DRaw;
+        s_specular?: Texture2DRaw;
+        u_ambient?: Color3Raw;
+        u_diffuse?: Color3Raw;
+        u_reflectivity?: number;
+        u_specular?: Color3Raw;
     }
     /**
      * 雾模式

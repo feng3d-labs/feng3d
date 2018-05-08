@@ -18083,8 +18083,8 @@ var feng3d;
     var MaterialFactory = /** @class */ (function () {
         function MaterialFactory() {
         }
-        MaterialFactory.prototype.create = function (shader) {
-            var material = new Material();
+        MaterialFactory.prototype.create = function (shader, raw) {
+            var material = new Material(raw);
             material.shaderName = shader;
             return material;
         };
@@ -18098,13 +18098,14 @@ var feng3d;
      */
     var Material = /** @class */ (function (_super) {
         __extends(Material, _super);
-        function Material() {
+        function Material(raw) {
             var _this = _super.call(this) || this;
             _this.uniforms = {};
             /**
              * 渲染参数
              */
             _this.renderParams = new feng3d.RenderParams();
+            feng3d.serialization.setValue(_this, raw);
             _this.shader = new feng3d.Shader();
             return _this;
         }
@@ -18190,32 +18191,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 颜色材质
-     * @author feng 2016-05-02
-     */
-    var ColorMaterial = /** @class */ (function (_super) {
-        __extends(ColorMaterial, _super);
-        /**
-         * 构建颜色材质
-         * @param color 颜色
-         * @param alpha 透明的
-         */
-        function ColorMaterial(color) {
-            var _this = _super.call(this) || this;
-            _this.uniforms = new ColorUniforms();
-            _this.shaderName = "color";
-            if (color)
-                _this.uniforms.u_diffuseInput.copyFrom(color);
-            return _this;
-        }
-        ColorMaterial.prototype.preRender = function (renderAtomic) {
-            _super.prototype.preRender.call(this, renderAtomic);
-            renderAtomic.uniforms.u_diffuseInput = this.uniforms.u_diffuseInput;
-        };
-        return ColorMaterial;
-    }(feng3d.Material));
-    feng3d.ColorMaterial = ColorMaterial;
     var ColorUniforms = /** @class */ (function () {
         function ColorUniforms() {
             /**
@@ -23783,7 +23758,7 @@ var feng3d;
             xArrow.transform.x = this.lineLength;
             xArrow.transform.rz = -90;
             var meshRenderer = xArrow.addComponent(feng3d.MeshRenderer);
-            var material = meshRenderer.material = new feng3d.ColorMaterial();
+            var material = meshRenderer.material = feng3d.materialFactory.create("color");
             meshRenderer.geometry = new feng3d.ConeGeometry(this.arrowradius, this.arrowHeight);
             ;
             material.uniforms.u_diffuseInput = new feng3d.Color4(1, 0, 0);
@@ -23794,7 +23769,7 @@ var feng3d;
             yArrow.showinHierarchy = false;
             yArrow.transform.y = this.lineLength;
             meshRenderer = yArrow.addComponent(feng3d.MeshRenderer);
-            var material = meshRenderer.material = new feng3d.ColorMaterial();
+            var material = meshRenderer.material = feng3d.materialFactory.create("color");
             meshRenderer.geometry = new feng3d.ConeGeometry(this.arrowradius, this.arrowHeight);
             material.uniforms.u_diffuseInput = new feng3d.Color4(0, 1, 0);
             this.tridentObject.addChild(yArrow);
@@ -23806,7 +23781,7 @@ var feng3d;
             zArrow.transform.rx = 90;
             meshRenderer = zArrow.addComponent(feng3d.MeshRenderer);
             meshRenderer.geometry = new feng3d.ConeGeometry(this.arrowradius, this.arrowHeight);
-            var material = meshRenderer.material = new feng3d.ColorMaterial();
+            var material = meshRenderer.material = feng3d.materialFactory.create("color");
             material.uniforms.u_diffuseInput = new feng3d.Color4(0, 0, 1);
             this.tridentObject.addChild(zArrow);
         };

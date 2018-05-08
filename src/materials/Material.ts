@@ -1,11 +1,24 @@
 namespace feng3d
 {
+    export interface MaterialRaw
+    {
+        blendEquation?: BlendEquation;
+        cullFace?: CullFace;
+        depthMask?: boolean;
+        depthtest?: boolean;
+        dfactor?: BlendFactor;
+        enableBlend?: boolean;
+        frontFace?: FrontFace;
+        pointSize?: number;
+        renderMode?: RenderMode;
+        sfactor?: BlendFactor;
+    }
 
     export class MaterialFactory
     {
-        create(shader: string)
+        create(shader: string, raw?: MaterialRaw)
         {
-            var material = new Material();
+            var material = new Material(raw);
             material.shaderName = shader;
             return material;
         }
@@ -42,10 +55,10 @@ namespace feng3d
          */
         shader: Shader;
 
-        constructor()
+        constructor(raw?: MaterialRaw)
         {
             super();
-
+            serialization.setValue(this, raw);
             this.shader = new Shader();
         }
 

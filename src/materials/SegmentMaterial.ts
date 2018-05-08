@@ -20,6 +20,11 @@ namespace feng3d
         }
     }
 
+    export interface SegmentMaterialRaw extends MaterialRaw
+    {
+        __class__: "feng3d.SegmentMaterial";
+    }
+
     export class SegmentUniforms
     {
         /** 
