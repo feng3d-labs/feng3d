@@ -9972,7 +9972,7 @@ var feng3d;
      * @author feng 2016-12-14
      */
     var RenderParams = /** @class */ (function () {
-        function RenderParams() {
+        function RenderParams(raw) {
             /**
             * 渲染模式，默认RenderMode.TRIANGLES
             */
@@ -10019,6 +10019,8 @@ var feng3d;
              * 是否使用 viewRect
              */
             this.useViewRect = false;
+            if (raw)
+                feng3d.serialization.setValue(this, raw);
         }
         __decorate([
             feng3d.serialize,
@@ -18080,6 +18082,9 @@ var feng3d;
      */
     var Material = /** @class */ (function () {
         function Material(raw) {
+            /**
+             * Uniform数据
+             */
             this.uniforms = {};
             /**
              * 渲染参数
@@ -18112,9 +18117,7 @@ var feng3d;
             feng3d.watch("onShaderChanged")
         ], Material.prototype, "shaderName", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ component: "OAVMaterialData" })
-            ,
+            feng3d.serialize,
             feng3d.oav({ component: "OAVObjectView" })
         ], Material.prototype, "uniforms", void 0);
         __decorate([
@@ -18133,16 +18136,12 @@ var feng3d;
      */
     var PointMaterial = /** @class */ (function (_super) {
         __extends(PointMaterial, _super);
-        /**
-         * 构建颜色材质
-         */
         function PointMaterial() {
-            var _this = _super.call(this) || this;
-            _this.uniforms = new PointUniforms();
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.shaderName = "point";
-            _this.renderParams.renderMode = feng3d.RenderMode.POINTS;
+            _this.uniforms = new PointUniforms();
+            _this.renderParams = new feng3d.RenderParams({ renderMode: feng3d.RenderMode.POINTS });
             return _this;
-            //
         }
         return PointMaterial;
     }(feng3d.Material));
@@ -18198,14 +18197,11 @@ var feng3d;
      */
     var SegmentMaterial = /** @class */ (function (_super) {
         __extends(SegmentMaterial, _super);
-        /**
-         * 构建线段材质
-         */
         function SegmentMaterial() {
-            var _this = _super.call(this) || this;
-            _this.uniforms = new SegmentUniforms();
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.shaderName = "segment";
-            _this.renderParams.renderMode = feng3d.RenderMode.LINES;
+            _this.uniforms = new SegmentUniforms();
+            _this.renderParams = new feng3d.RenderParams({ renderMode: feng3d.RenderMode.LINES });
             return _this;
         }
         return SegmentMaterial;

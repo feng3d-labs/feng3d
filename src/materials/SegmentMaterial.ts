@@ -7,17 +7,11 @@ namespace feng3d
 	 */
     export class SegmentMaterial extends Material
     {
+        shaderName = "segment";
+
         uniforms = new SegmentUniforms();
 
-        /**
-         * 构建线段材质
-         */
-        constructor()
-        {
-            super();
-            this.shaderName = "segment";
-            this.renderParams.renderMode = RenderMode.LINES;
-        }
+        renderParams = new RenderParams({ renderMode: RenderMode.LINES });
     }
 
     // export interface SegmentMaterialRaw extends MaterialBaseRaw

@@ -6141,6 +6141,7 @@ declare namespace feng3d {
          * 是否使用 viewRect
          */
         useViewRect: boolean;
+        constructor(raw?: Partial<RenderParams>);
     }
 }
 declare namespace feng3d {
@@ -8866,7 +8867,13 @@ declare namespace feng3d {
      * @author feng 2016-05-02
      */
     class Material {
+        /**
+         * shader名称
+         */
         shaderName: string;
+        /**
+         * Uniform数据
+         */
         uniforms: {};
         /**
          * 渲染参数
@@ -8887,11 +8894,9 @@ declare namespace feng3d {
      * @author feng 2017-01-11
      */
     class PointMaterial extends Material {
+        shaderName: string;
         uniforms: PointUniforms;
-        /**
-         * 构建颜色材质
-         */
-        constructor();
+        renderParams: RenderParams;
     }
     class PointUniforms {
         /**
@@ -8940,11 +8945,9 @@ declare namespace feng3d {
      * @author feng 2016-10-15
      */
     class SegmentMaterial extends Material {
+        shaderName: string;
         uniforms: SegmentUniforms;
-        /**
-         * 构建线段材质
-         */
-        constructor();
+        renderParams: RenderParams;
     }
     class SegmentUniforms {
         /**

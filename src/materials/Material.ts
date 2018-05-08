@@ -33,14 +33,18 @@ namespace feng3d
      */
     export class Material
     {
-
+        /**
+         * shader名称
+         */
         @oav({ component: "OAVMaterialName" })
         @serialize
         @watch("onShaderChanged")
         shaderName: string;
 
+        /**
+         * Uniform数据
+         */
         @serialize
-        // @oav({ component: "OAVMaterialData" })
         @oav({ component: "OAVObjectView" })
         uniforms = {};
 

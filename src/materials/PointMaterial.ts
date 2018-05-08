@@ -6,18 +6,11 @@ namespace feng3d
      */
     export class PointMaterial extends Material
     {
+        shaderName =  "point";
+        
         uniforms = new PointUniforms();
 
-        /**
-         * 构建颜色材质
-         */
-        constructor()
-        {
-            super();
-            this.shaderName = "point";
-            this.renderParams.renderMode = RenderMode.POINTS;
-            //
-        }
+        renderParams = new RenderParams({ renderMode: RenderMode.POINTS });
     }
 
     export class PointUniforms

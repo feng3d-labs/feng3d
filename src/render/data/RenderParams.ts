@@ -84,5 +84,11 @@ namespace feng3d
          */
         @oav()
         useViewRect = false;
+
+        constructor(raw?: Partial<RenderParams>)
+        {
+            if (raw)
+                serialization.setValue(this, raw);
+        }
     }
 }
