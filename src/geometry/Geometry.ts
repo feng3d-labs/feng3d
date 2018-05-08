@@ -1,5 +1,17 @@
 namespace feng3d
 {
+    
+    export type GeometryRaw =
+        SegmentGeometryRaw
+        | PlaneGeometryRaw
+        | CubeGeometryRaw
+        | SphereGeometryRaw
+        | CapsuleGeometryRaw
+        | CylinderGeometryRaw
+        | ConeGeometryRaw
+        | TorusGeometryRaw
+        ;
+
     export interface GeometryEventMap
     {
 		/**

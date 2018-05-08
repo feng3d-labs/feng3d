@@ -1,5 +1,12 @@
 namespace feng3d
 {
+
+    export type ValueOf<T> = T[keyof T];
+    export interface ComponentRawMap
+    {
+    }
+    export type ComponentRaw = ValueOf<ComponentRawMap>;
+
 	/**
      * Base class for everything attached to GameObjects.
      * 

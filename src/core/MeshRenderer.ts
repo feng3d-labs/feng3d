@@ -1,5 +1,17 @@
 namespace feng3d
 {
+    export interface ComponentRawMap
+    {
+        MeshRendererRaw: MeshRendererRaw
+    }
+
+    export interface MeshRendererRaw
+    {
+        __class__: "feng3d.MeshRenderer",
+        geometry?: GeometryRaw,
+        material?: MaterialRaw;
+    }
+
     export class MeshRenderer extends Behaviour
     {
         get single() { return true; }

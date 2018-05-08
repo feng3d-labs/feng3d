@@ -1,5 +1,14 @@
 namespace feng3d
 {
+	export interface TorusGeometryRaw
+	{
+		"__class__": "feng3d.TorusGeometry",
+		radius?: 50,
+		segmentsR?: 16,
+		segmentsT?: 8,
+		tubeRadius?: 10,
+		yUp?: true
+	}
 
 	/**
 	 * 圆环几何体

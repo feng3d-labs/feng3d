@@ -754,38 +754,6 @@ declare namespace feng3d {
     };
 }
 declare namespace feng3d {
-    class RawData {
-        createGameObject(raw: GameObjectRaw): GameObject;
-        create(raw: GameObjectRaw): GameObject;
-    }
-    var rawData: RawData;
-    type GeometryRaw = SegmentGeometryRaw | PlaneGeometryRaw | CubeGeometryRaw | SphereGeometryRaw | CapsuleGeometryRaw | CylinderGeometryRaw | ConeGeometryRaw | TorusGeometryRaw;
-    interface MeshRendererRaw {
-        __class__: "feng3d.MeshRenderer";
-        geometry?: GeometryRaw;
-        material?: MaterialRaw;
-    }
-    interface ConeGeometryRaw {
-        __class__: "feng3d.ConeGeometry";
-        bottomClosed?: boolean;
-        bottomRadius?: number;
-        height?: number;
-        segmentsH?: number;
-        segmentsW?: number;
-        surfaceClosed?: boolean;
-        topClosed?: boolean;
-        topRadius?: number;
-        yUp?: boolean;
-    }
-    interface TorusGeometryRaw {
-        "__class__": "feng3d.TorusGeometry";
-        radius?: 50;
-        segmentsR?: 16;
-        segmentsT?: 8;
-        tubeRadius?: 10;
-        yUp?: true;
-    }
-    type ValueOf<T> = T[keyof T];
 }
 declare namespace feng3d {
     var serialization: Serialization;
@@ -3343,7 +3311,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface Color3Raw {
-        __class__: "feng3d.Color3";
+        __class__?: "feng3d.Color3";
         b?: number;
         g?: number;
         r?: number;
@@ -6664,6 +6632,10 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    type ValueOf<T> = T[keyof T];
+    interface ComponentRawMap {
+    }
+    type ComponentRaw = ValueOf<ComponentRawMap>;
     /**
      * Base class for everything attached to GameObjects.
      *
@@ -6966,6 +6938,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentRawMap {
+        TransformRaw: TransformRaw;
+    }
     interface TransformRaw {
         __class__?: "feng3d.Transform";
         rx?: number;
@@ -7242,11 +7217,6 @@ declare namespace feng3d {
         feng3d = 1,
         editor = 2,
     }
-    interface ComponentRawMap {
-        TransformRaw: TransformRaw;
-        MeshRendererRaw: MeshRendererRaw;
-    }
-    type ComponentRaw = ValueOf<ComponentRawMap>;
     interface GameObjectRaw {
         __class__?: "feng3d.GameObject";
         name?: string;
@@ -7321,7 +7291,7 @@ declare namespace feng3d {
         /**
          * 构建3D对象
          */
-        private constructor();
+        constructor(raw: GameObjectRaw);
         find(name: string): GameObject | null;
         contains(child: GameObject): boolean;
         addChild(child: GameObject): GameObject;
@@ -7435,7 +7405,7 @@ declare namespace feng3d {
          * @param name
          */
         static find(name: string): GameObject;
-        static create(name?: string, callback?: (gameobject: GameObject) => void): GameObject;
+        static create(name?: string, raw?: GameObjectRaw): GameObject;
         /**
          * 组件列表
          */
@@ -7602,6 +7572,14 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentRawMap {
+        MeshRendererRaw: MeshRendererRaw;
+    }
+    interface MeshRendererRaw {
+        __class__: "feng3d.MeshRenderer";
+        geometry?: GeometryRaw;
+        material?: MaterialRaw;
+    }
     class MeshRenderer extends Behaviour {
         readonly single: boolean;
         /**
@@ -7851,6 +7829,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    type GeometryRaw = SegmentGeometryRaw | PlaneGeometryRaw | CubeGeometryRaw | SphereGeometryRaw | CapsuleGeometryRaw | CylinderGeometryRaw | ConeGeometryRaw | TorusGeometryRaw;
     interface GeometryEventMap {
         /**
          * 包围盒失效
@@ -8703,6 +8682,18 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ConeGeometryRaw {
+        __class__: "feng3d.ConeGeometry";
+        bottomClosed?: boolean;
+        bottomRadius?: number;
+        height?: number;
+        segmentsH?: number;
+        segmentsW?: number;
+        surfaceClosed?: boolean;
+        topClosed?: boolean;
+        topRadius?: number;
+        yUp?: boolean;
+    }
     /**
      * 圆锥体
      * @author feng 2017-02-07
@@ -8720,6 +8711,14 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface TorusGeometryRaw {
+        "__class__": "feng3d.TorusGeometry";
+        radius?: 50;
+        segmentsR?: 16;
+        segmentsT?: 8;
+        tubeRadius?: 10;
+        yUp?: true;
+    }
     /**
      * 圆环几何体
      */
@@ -8852,18 +8851,14 @@ declare namespace feng3d {
 declare namespace feng3d {
 }
 declare namespace feng3d {
-    interface MaterialRaw {
+    interface MaterialRawMap {
+    }
+    type MaterialRaw = ValueOf<MaterialRawMap>;
+    interface MaterialBaseRaw {
+        __class__?: "feng3d.Material";
         shaderName?: string;
-        blendEquation?: BlendEquation;
-        cullFace?: CullFace;
-        depthMask?: boolean;
-        depthtest?: boolean;
-        dfactor?: BlendFactor;
-        enableBlend?: boolean;
-        frontFace?: FrontFace;
-        pointSize?: number;
-        renderMode?: RenderMode;
-        sfactor?: BlendFactor;
+        uniforms?: Object;
+        renderParams?: Partial<RenderParams>;
     }
     class MaterialFactory {
     }
@@ -8922,7 +8917,11 @@ declare namespace feng3d {
     interface MaterialFactory {
         create(shader: "color", raw?: ColorMaterialRaw): ColorMaterial;
     }
-    interface ColorMaterialRaw extends MaterialRaw {
+    interface MaterialRawMap {
+        color: ColorMaterialRaw;
+    }
+    interface ColorMaterialRaw extends MaterialBaseRaw {
+        shaderName?: "color";
         uniforms?: ColorUniformsRaw;
     }
     interface ColorUniformsRaw {
@@ -8949,7 +8948,7 @@ declare namespace feng3d {
          */
         constructor();
     }
-    interface SegmentMaterialRaw extends MaterialRaw {
+    interface SegmentMaterialRaw extends MaterialBaseRaw {
         __class__: "feng3d.SegmentMaterial";
     }
     class SegmentUniforms {
@@ -8970,7 +8969,11 @@ declare namespace feng3d {
     interface MaterialFactory {
         create(shader: "texture", raw?: TextureMaterialRaw): TextureMaterial;
     }
-    interface TextureMaterialRaw extends MaterialRaw {
+    interface MaterialRawMap {
+        texture: TextureMaterialRaw;
+    }
+    interface TextureMaterialRaw extends MaterialBaseRaw {
+        shaderName?: "texture";
         uniforms?: TextureUniformsRaw;
     }
     interface TextureUniformsRaw {
@@ -8996,8 +8999,11 @@ declare namespace feng3d {
     interface MaterialFactory {
         create(shader: "standard", raw?: StandardMaterialRaw): StandardMaterial;
     }
-    interface StandardMaterialRaw extends MaterialRaw {
-        __class__?: "feng3d.StandardMaterial";
+    interface MaterialRawMap {
+        standard: StandardMaterialRaw;
+    }
+    interface StandardMaterialRaw extends MaterialBaseRaw {
+        shaderName?: "standard";
         uniforms?: StandardUniformsRaw;
     }
     interface StandardUniformsRaw {
@@ -9110,6 +9116,24 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface LightRaw {
+        /**
+         * 灯光类型
+         */
+        lightType?: LightType;
+        /**
+         * 颜色
+         */
+        color?: Color3 | Color3Raw;
+        /**
+         * 光照强度
+         */
+        intensity?: number;
+        /**
+         * 是否生成阴影（未实现）
+         */
+        castsShadows?: boolean;
+    }
     /**
      * 灯光
      * @author feng 2016-12-12
@@ -9137,6 +9161,12 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentRawMap {
+        DirectionalLight: DirectionalLightRaw;
+    }
+    interface DirectionalLightRaw extends LightRaw {
+        __class__?: "feng3d.DirectionalLight";
+    }
     /**
      * 方向光源
      * @author feng 2016-12-13
@@ -9149,6 +9179,16 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentRawMap {
+        PointLight: PointLightRaw;
+    }
+    interface PointLightRaw extends LightRaw {
+        __class__?: "feng3d.PointLight";
+        /**
+         * 光照范围
+         */
+        range?: number;
+    }
     /**
      * 点光源
      * @author feng 2016-12-13

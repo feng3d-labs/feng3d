@@ -2,7 +2,7 @@ namespace feng3d
 {
     export interface Color3Raw
     {
-        __class__: "feng3d.Color3",
+        __class__?: "feng3d.Color3",
         b?: number,
         g?: number,
         r?: number

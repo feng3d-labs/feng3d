@@ -1820,26 +1820,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var RawData = /** @class */ (function () {
-        function RawData() {
-        }
-        RawData.prototype.createGameObject = function (raw) {
-            return this.create(raw);
-        };
-        // create(raw: TransformRaw): Transform
-        // create(raw: MeshRendererRaw): MeshRenderer
-        // create(raw: CubeGeometryRaw): CubeGeometry
-        RawData.prototype.create = function (raw) {
-            var result = feng3d.serialization.deserialize(raw);
-            return result;
-        };
-        return RawData;
-    }());
-    feng3d.RawData = RawData;
-    feng3d.rawData = new RawData();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     /**
      * 序列化装饰器，被装饰属性将被序列化
      * @param {*} target                序列化原型
@@ -12607,7 +12587,7 @@ var feng3d;
         /**
          * 构建3D对象
          */
-        function GameObject(data) {
+        function GameObject(raw) {
             var _this = _super.call(this) || this;
             _this.renderAtomic = new feng3d.RenderAtomic();
             _this._children = [];
@@ -12642,10 +12622,11 @@ var feng3d;
              * 组件列表
              */
             _this._components = [];
-            _this.name = data ? data.name : "GameObject";
+            _this.name = raw ? raw.name : "GameObject";
             _this.addComponent(feng3d.Transform);
             _this.addComponent(feng3d.BoundingComponent);
             _this.guid = feng3d.FMath.generateUUID();
+            feng3d.serialization.setValue(_this, raw);
             //
             GameObject.pool.set(_this.guid, _this);
             return _this;
@@ -13019,11 +13000,11 @@ var feng3d;
             });
             return target;
         };
-        GameObject.create = function (name, callback) {
+        GameObject.create = function (name, raw) {
             if (name === void 0) { name = "GameObject"; }
-            if (callback === void 0) { callback = null; }
-            var gameobject = new GameObject({ name: name });
-            callback && callback(gameobject);
+            raw = raw || {};
+            raw.name = name;
+            var gameobject = new GameObject(raw);
             return gameobject;
         };
         Object.defineProperty(GameObject.prototype, "components", {

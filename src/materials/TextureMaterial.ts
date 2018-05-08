@@ -10,8 +10,14 @@ namespace feng3d
         create(shader: "texture", raw?: TextureMaterialRaw): TextureMaterial;
     }
 
-    export interface TextureMaterialRaw extends MaterialRaw
+    export interface MaterialRawMap
     {
+        texture: TextureMaterialRaw
+    }
+
+    export interface TextureMaterialRaw extends MaterialBaseRaw
+    {
+        shaderName?: "texture",
         uniforms?: TextureUniformsRaw;
     }
 

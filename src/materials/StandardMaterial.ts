@@ -6,9 +6,14 @@ namespace feng3d
         create(shader: "standard", raw?: StandardMaterialRaw): StandardMaterial;
     }
 
-    export interface StandardMaterialRaw extends MaterialRaw
+    export interface MaterialRawMap
     {
-        __class__?: "feng3d.StandardMaterial";
+        standard: StandardMaterialRaw
+    }
+
+    export interface StandardMaterialRaw extends MaterialBaseRaw
+    {
+        shaderName?: "standard",
         uniforms?: StandardUniformsRaw;
     }
 

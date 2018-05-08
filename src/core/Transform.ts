@@ -1,5 +1,10 @@
 namespace feng3d
 {
+    export interface ComponentRawMap
+    {
+        TransformRaw: TransformRaw
+    }
+
     export interface TransformRaw
     {
         __class__?: "feng3d.Transform";

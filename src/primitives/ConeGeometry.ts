@@ -1,5 +1,18 @@
 namespace feng3d
 {
+	export interface ConeGeometryRaw
+	{
+		__class__: "feng3d.ConeGeometry",
+		bottomClosed?: boolean,
+		bottomRadius?: number,
+		height?: number,
+		segmentsH?: number,
+		segmentsW?: number,
+		surfaceClosed?: boolean,
+		topClosed?: boolean,
+		topRadius?: number,
+		yUp?: boolean
+	}
 
 	/**
 	 * 圆锥体

@@ -10,8 +10,14 @@ namespace feng3d
         create(shader: "color", raw?: ColorMaterialRaw): ColorMaterial;
     }
 
-    export interface ColorMaterialRaw extends MaterialRaw
+    export interface MaterialRawMap
     {
+        color: ColorMaterialRaw
+    }
+
+    export interface ColorMaterialRaw extends MaterialBaseRaw
+    {
+        shaderName?: "color",
         uniforms?: ColorUniformsRaw;
     }
 

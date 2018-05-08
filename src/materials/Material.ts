@@ -1,18 +1,17 @@
 namespace feng3d
 {
-    export interface MaterialRaw
+
+    export interface MaterialRawMap
     {
-        shaderName?: string;
-        blendEquation?: BlendEquation;
-        cullFace?: CullFace;
-        depthMask?: boolean;
-        depthtest?: boolean;
-        dfactor?: BlendFactor;
-        enableBlend?: boolean;
-        frontFace?: FrontFace;
-        pointSize?: number;
-        renderMode?: RenderMode;
-        sfactor?: BlendFactor;
+    }
+    export type MaterialRaw = ValueOf<MaterialRawMap>;
+
+    export interface MaterialBaseRaw
+    {
+        __class__?: "feng3d.Material";
+        shaderName?: string,
+        uniforms?: Object,
+        renderParams?: Partial<RenderParams>,
     }
 
     export class MaterialFactory
@@ -20,7 +19,7 @@ namespace feng3d
         create(shader: string, raw?: MaterialRaw)
         {
             raw = raw || {};
-            raw.shaderName = shader;
+            raw.shaderName = <any>shader;
             var material = new Material(raw);
             return material;
         }

@@ -124,14 +124,6 @@ namespace feng3d
         editor = 2,
     }
 
-    export interface ComponentRawMap
-    {
-        TransformRaw: TransformRaw
-        MeshRendererRaw: MeshRendererRaw
-    }
-
-    export type ComponentRaw = ValueOf<ComponentRawMap>;
-
     export interface GameObjectRaw
     {
         __class__?: "feng3d.GameObject";
@@ -272,13 +264,14 @@ namespace feng3d
         /**
          * 构建3D对象
          */
-        private constructor(data: GameObjectRaw)
+        constructor(raw: GameObjectRaw)
         {
             super();
-            this.name = data ? data.name : "GameObject";
+            this.name = raw ? raw.name : "GameObject";
             this.addComponent(Transform);
             this.addComponent(BoundingComponent);
             this.guid = FMath.generateUUID();
+            serialization.setValue(this, raw);
             //
             GameObject.pool.set(this.guid, this);
         }
@@ -667,10 +660,11 @@ namespace feng3d
             return target;
         }
 
-        static create(name = "GameObject", callback: (gameobject: GameObject) => void = null)
+        static create(name = "GameObject", raw?: GameObjectRaw)
         {
-            var gameobject = new GameObject({ name: name });
-            callback && callback(gameobject)
+            raw = raw || {};
+            raw.name = name;
+            var gameobject = new GameObject(raw);
             return gameobject;
         }
 
