@@ -1,19 +1,25 @@
 namespace feng3d
 {
-
     /**
      * 纹理材质
      * @author feng 2016-12-23
      */
-    export class TextureMaterial extends Material
+    export type TextureMaterial = Material & { uniforms: TextureUniforms; };
+    export interface MaterialFactory
     {
-        uniforms = new TextureUniforms();
+        create(shader: "texture", raw?: TextureMaterialRaw): TextureMaterial;
+    }
 
-        constructor()
-        {
-            super();
-            this.shaderName = "texture";
-        }
+    export interface TextureMaterialRaw extends MaterialRaw
+    {
+        uniforms?: TextureUniformsRaw;
+    }
+
+    export interface TextureUniformsRaw
+    {
+        __class__?: "feng3d.TextureUniforms",
+        u_color?: Color4 | Color4Raw
+        s_texture?: Texture2D | Texture2DRaw
     }
 
     export class TextureUniforms

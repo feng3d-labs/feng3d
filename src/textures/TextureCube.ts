@@ -1,6 +1,16 @@
 namespace feng3d
 {
-
+    export interface TextureCubeRaw extends TextureInfoRaw
+    {
+        __class__: "feng3d.TextureCube",
+        negative_x_url?: string,
+        negative_y_url?: string,
+        negative_z_url?: string,
+        positive_x_url?: string,
+        positive_y_url?: string,
+        positive_z_url?: string,
+    }
+    
     /**
      * 立方体纹理
      * @author feng 2016-12-28

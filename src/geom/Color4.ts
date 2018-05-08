@@ -1,5 +1,14 @@
 namespace feng3d
 {
+    export interface Color4Raw
+    {
+        __class__?: "feng3d.Color4",
+        a?: number,
+        b?: number,
+        g?: number,
+        r?: number
+    }
+
     /**
      * 颜色（包含透明度）
      * @author feng 2016-09-24

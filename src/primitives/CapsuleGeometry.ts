@@ -1,5 +1,14 @@
 namespace feng3d
 {
+    export interface CapsuleGeometryRaw
+    {
+        __class__: "feng3d.CapsuleGeometry",
+        height?: number,
+        radius?: number,
+        segmentsH?: number,
+        segmentsW?: number,
+        yUp?: boolean
+    }
 
     /**
      * 胶囊体几何体

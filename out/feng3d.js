@@ -18248,21 +18248,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 纹理材质
-     * @author feng 2016-12-23
-     */
-    var TextureMaterial = /** @class */ (function (_super) {
-        __extends(TextureMaterial, _super);
-        function TextureMaterial() {
-            var _this = _super.call(this) || this;
-            _this.uniforms = new TextureUniforms();
-            _this.shaderName = "texture";
-            return _this;
-        }
-        return TextureMaterial;
-    }(feng3d.Material));
-    feng3d.TextureMaterial = TextureMaterial;
     var TextureUniforms = /** @class */ (function () {
         function TextureUniforms() {
             /**

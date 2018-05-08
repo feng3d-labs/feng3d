@@ -1,5 +1,9 @@
 namespace feng3d
 {
+    export interface SegmentGeometryRaw
+    {
+        __class__: "feng3d.SegmentGeometry"
+    }
 
     /**
      * 线段组件

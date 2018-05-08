@@ -8,15 +8,13 @@ namespace feng3d
 
     export interface StandardMaterialRaw extends MaterialRaw
     {
-        __class__: "feng3d.StandardMaterial";
-        terrainMethod?: TerrainMethodRaw;
-
+        __class__?: "feng3d.StandardMaterial";
         uniforms?: StandardUniformsRaw;
     }
 
     export interface StandardUniformsRaw
     {
-        __class__: "feng3d.StandardUniforms",
+        __class__?: "feng3d.StandardUniforms",
         s_ambient?: Texture2DRaw;
         s_diffuse?: Texture2DRaw,
         s_envMap?: TextureCubeRaw,

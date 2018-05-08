@@ -1,5 +1,14 @@
 namespace feng3d
 {
+    export interface PlaneGeometryRaw
+    {
+        __class__: "feng3d.PlaneGeometry",
+        height?: number,
+        segmentsH?: number,
+        segmentsW?: number,
+        width?: number,
+        yUp?: boolean
+    }
 
     /**
      * 立方体几何体

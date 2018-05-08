@@ -1,9 +1,10 @@
 namespace feng3d
 {
 
-    export interface Texture2DVO
+    export interface Texture2DRaw extends TextureInfoRaw
     {
-        url: string;
+        __class__?: "feng3d.Texture2D",
+        url?: string,
     }
 
     export var imageDatas = {

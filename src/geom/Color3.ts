@@ -1,5 +1,13 @@
 namespace feng3d
 {
+    export interface Color3Raw
+    {
+        __class__: "feng3d.Color3",
+        b?: number,
+        g?: number,
+        r?: number
+    }
+
     /**
      * 颜色
      * @author feng 2016-09-24

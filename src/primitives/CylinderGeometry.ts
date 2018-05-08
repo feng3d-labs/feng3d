@@ -1,6 +1,18 @@
 namespace feng3d
 {
-
+    export interface CylinderGeometryRaw
+    {
+        __class__: "feng3d.CylinderGeometry",
+        bottomClosed?: boolean,
+        bottomRadius?: number,
+        height?: number,
+        segmentsH?: number,
+        segmentsW?: number,
+        surfaceClosed?: boolean,
+        topClosed?: boolean,
+        topRadius?: number,
+        yUp?: boolean
+    }
     /**
      * 圆柱体几何体
      * @author DawnKing 2016-09-12
@@ -11,42 +23,42 @@ namespace feng3d
         @serialize
         @oav()
         topRadius = 0.5;
-        
+
         @watch("invalidateGeometry")
         @serialize
         @oav()
         bottomRadius = 0.5;
-        
+
         @watch("invalidateGeometry")
         @serialize
         @oav()
         height = 2;
-        
+
         @watch("invalidateGeometry")
         @serialize
         @oav()
         segmentsW = 16;
-        
+
         @watch("invalidateGeometry")
         @serialize
         @oav()
         segmentsH = 1;
-        
+
         @watch("invalidateGeometry")
         @serialize
         @oav()
         topClosed = true;
-        
+
         @watch("invalidateGeometry")
         @serialize
         @oav()
         bottomClosed = true;
-        
+
         @watch("invalidateGeometry")
         @serialize
         @oav()
         surfaceClosed = true;
-        
+
         @watch("invalidateGeometry")
         @serialize
         @oav()

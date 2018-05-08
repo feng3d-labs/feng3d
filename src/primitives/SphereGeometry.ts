@@ -1,5 +1,14 @@
 namespace feng3d
 {
+    export interface SphereGeometryRaw
+    {
+        __class__: "feng3d.SphereGeometry",
+        radius?: number,
+        segmentsH?: number,
+        segmentsW?: number,
+        yUp?: boolean
+    }
+
     /**
      * 球体几何体
      * @author DawnKing 2016-09-12

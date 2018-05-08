@@ -1,5 +1,14 @@
 namespace feng3d
 {
+    export interface TerrainMethodRaw
+    {
+        __class__: "feng3d.TerrainMethod";
+        splatRepeats?: Vector3;
+        splatTexture1: Texture2DRaw
+        splatTexture2: Texture2DRaw
+        splatTexture3: Texture2DRaw
+    }
+    
     export interface MaterialFactory
     {
         create(shader: "terrain"): Material & { uniforms: TerrainUniforms; };

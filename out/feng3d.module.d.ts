@@ -764,70 +764,10 @@ declare namespace feng3d {
     }
     var rawData: RawData;
     type GeometryRaw = SegmentGeometryRaw | PlaneGeometryRaw | CubeGeometryRaw | SphereGeometryRaw | CapsuleGeometryRaw | CylinderGeometryRaw | ConeGeometryRaw | TorusGeometryRaw;
-    interface TransformRaw {
-        __class__: "feng3d.Transform";
-        rx?: number;
-        ry?: number;
-        rz?: number;
-        sx?: number;
-        sy?: number;
-        sz?: number;
-        x?: number;
-        y?: number;
-        z?: number;
-    }
     interface MeshRendererRaw {
         __class__: "feng3d.MeshRenderer";
         geometry?: GeometryRaw;
         material?: MaterialRaw;
-    }
-    interface SegmentGeometryRaw {
-        __class__: "feng3d.SegmentGeometry";
-    }
-    interface CubeGeometryRaw {
-        __class__: "feng3d.CubeGeometry";
-        depth?: number;
-        height?: number;
-        segmentsD?: number;
-        segmentsH?: number;
-        segmentsW?: number;
-        tile6?: boolean;
-        width?: number;
-    }
-    interface PlaneGeometryRaw {
-        __class__: "feng3d.PlaneGeometry";
-        height?: number;
-        segmentsH?: number;
-        segmentsW?: number;
-        width?: number;
-        yUp?: boolean;
-    }
-    interface SphereGeometryRaw {
-        __class__: "feng3d.SphereGeometry";
-        radius?: number;
-        segmentsH?: number;
-        segmentsW?: number;
-        yUp?: boolean;
-    }
-    interface CapsuleGeometryRaw {
-        __class__: "feng3d.CapsuleGeometry";
-        height?: number;
-        radius?: number;
-        segmentsH?: number;
-        segmentsW?: number;
-        yUp?: boolean;
-    }
-    interface CylinderGeometryRaw {
-        __class__: "feng3d.CylinderGeometry";
-        bottomClosed?: boolean;
-        bottomRadius?: number;
-        height?: number;
-        segmentsH?: number;
-        segmentsW?: number;
-        surfaceClosed?: boolean;
-        topClosed?: boolean;
-        topRadius?: number;
-        yUp?: boolean;
     }
     interface ConeGeometryRaw {
         __class__: "feng3d.ConeGeometry";
@@ -848,46 +788,6 @@ declare namespace feng3d {
         segmentsT?: 8;
         tubeRadius?: 10;
         yUp?: true;
-    }
-    interface Color3Raw {
-        __class__: "feng3d.Color3";
-        b?: number;
-        g?: number;
-        r?: number;
-    }
-    interface Color4Raw {
-        __class__?: "feng3d.Color4";
-        a?: number;
-        b?: number;
-        g?: number;
-        r?: number;
-    }
-    interface Vector3DRaw {
-        __class__: "feng3d.Vector3";
-        x?: number;
-        y?: number;
-        z?: number;
-        w?: number;
-    }
-    interface Texture2DRaw extends TextureInfoRaw {
-        __class__?: "feng3d.Texture2D";
-        url?: "";
-    }
-    interface TerrainMethodRaw {
-        __class__: "feng3d.TerrainMethod";
-        splatRepeats?: Vector3;
-        splatTexture1: Texture2DRaw;
-        splatTexture2: Texture2DRaw;
-        splatTexture3: Texture2DRaw;
-    }
-    interface TextureCubeRaw extends TextureInfoRaw {
-        __class__: "feng3d.TextureCube";
-        negative_x_url?: string;
-        negative_y_url?: string;
-        negative_z_url?: string;
-        positive_x_url?: string;
-        positive_y_url?: string;
-        positive_z_url?: string;
     }
     type ValueOf<T> = T[keyof T];
 }
@@ -1127,6 +1027,13 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface Vector3Raw {
+        __class__?: "feng3d.Vector3";
+        x?: number;
+        y?: number;
+        z?: number;
+        w?: number;
+    }
     /**
      * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
      * @author feng 2016-3-21
@@ -3439,6 +3346,12 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface Color3Raw {
+        __class__: "feng3d.Color3";
+        b?: number;
+        g?: number;
+        r?: number;
+    }
     /**
      * 颜色
      * @author feng 2016-09-24
@@ -3648,6 +3561,13 @@ declare namespace feng3d {
     };
 }
 declare namespace feng3d {
+    interface Color4Raw {
+        __class__?: "feng3d.Color4";
+        a?: number;
+        b?: number;
+        g?: number;
+        r?: number;
+    }
     /**
      * 颜色（包含透明度）
      * @author feng 2016-09-24
@@ -7050,6 +6970,18 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface TransformRaw {
+        __class__?: "feng3d.Transform";
+        rx?: number;
+        ry?: number;
+        rz?: number;
+        sx?: number;
+        sy?: number;
+        sz?: number;
+        x?: number;
+        y?: number;
+        z?: number;
+    }
     interface TransformEventMap {
         /**
          * 变换矩阵变化
@@ -8154,6 +8086,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface SegmentGeometryRaw {
+        __class__: "feng3d.SegmentGeometry";
+    }
     /**
      * 线段组件
      * @author feng 2016-10-16
@@ -8455,6 +8390,14 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface PlaneGeometryRaw {
+        __class__: "feng3d.PlaneGeometry";
+        height?: number;
+        segmentsH?: number;
+        segmentsW?: number;
+        width?: number;
+        yUp?: boolean;
+    }
     /**
      * 立方体几何体
      * @author feng 2016-09-12
@@ -8522,6 +8465,16 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface CubeGeometryRaw {
+        __class__: "feng3d.CubeGeometry";
+        depth?: number;
+        height?: number;
+        segmentsD?: number;
+        segmentsH?: number;
+        segmentsW?: number;
+        tile6?: boolean;
+        width?: number;
+    }
     /**
      * 立方体几何体
      * @author feng 2016-09-12
@@ -8595,6 +8548,13 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface SphereGeometryRaw {
+        __class__: "feng3d.SphereGeometry";
+        radius?: number;
+        segmentsH?: number;
+        segmentsW?: number;
+        yUp?: boolean;
+    }
     /**
      * 球体几何体
      * @author DawnKing 2016-09-12
@@ -8640,6 +8600,14 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface CapsuleGeometryRaw {
+        __class__: "feng3d.CapsuleGeometry";
+        height?: number;
+        radius?: number;
+        segmentsH?: number;
+        segmentsW?: number;
+        yUp?: boolean;
+    }
     /**
      * 胶囊体几何体
      * @author DawnKing 2016-09-12
@@ -8689,6 +8657,18 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface CylinderGeometryRaw {
+        __class__: "feng3d.CylinderGeometry";
+        bottomClosed?: boolean;
+        bottomRadius?: number;
+        height?: number;
+        segmentsH?: number;
+        segmentsW?: number;
+        surfaceClosed?: boolean;
+        topClosed?: boolean;
+        topRadius?: number;
+        yUp?: boolean;
+    }
     /**
      * 圆柱体几何体
      * @author DawnKing 2016-09-12
@@ -8801,8 +8781,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface Texture2DVO {
-        url: string;
+    interface Texture2DRaw extends TextureInfoRaw {
+        __class__?: "feng3d.Texture2D";
+        url?: string;
     }
     var imageDatas: {
         black: ImageData;
@@ -8832,6 +8813,15 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface TextureCubeRaw extends TextureInfoRaw {
+        __class__: "feng3d.TextureCube";
+        negative_x_url?: string;
+        negative_y_url?: string;
+        negative_z_url?: string;
+        positive_x_url?: string;
+        positive_y_url?: string;
+        positive_z_url?: string;
+    }
     /**
      * 立方体纹理
      * @author feng 2016-12-28
@@ -8978,9 +8968,19 @@ declare namespace feng3d {
      * 纹理材质
      * @author feng 2016-12-23
      */
-    class TextureMaterial extends Material {
+    type TextureMaterial = Material & {
         uniforms: TextureUniforms;
-        constructor();
+    };
+    interface MaterialFactory {
+        create(shader: "texture", raw?: TextureMaterialRaw): TextureMaterial;
+    }
+    interface TextureMaterialRaw extends MaterialRaw {
+        uniforms?: TextureUniformsRaw;
+    }
+    interface TextureUniformsRaw {
+        __class__?: "feng3d.TextureUniforms";
+        u_color?: Color4 | Color4Raw;
+        s_texture?: Texture2D | Texture2DRaw;
     }
     class TextureUniforms {
         /**
@@ -9001,12 +9001,11 @@ declare namespace feng3d {
         create(shader: "standard", raw?: StandardMaterialRaw): StandardMaterial;
     }
     interface StandardMaterialRaw extends MaterialRaw {
-        __class__: "feng3d.StandardMaterial";
-        terrainMethod?: TerrainMethodRaw;
+        __class__?: "feng3d.StandardMaterial";
         uniforms?: StandardUniformsRaw;
     }
     interface StandardUniformsRaw {
-        __class__: "feng3d.StandardUniforms";
+        __class__?: "feng3d.StandardUniforms";
         s_ambient?: Texture2DRaw;
         s_diffuse?: Texture2DRaw;
         s_envMap?: TextureCubeRaw;
@@ -9403,6 +9402,13 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface TerrainMethodRaw {
+        __class__: "feng3d.TerrainMethod";
+        splatRepeats?: Vector3;
+        splatTexture1: Texture2DRaw;
+        splatTexture2: Texture2DRaw;
+        splatTexture3: Texture2DRaw;
+    }
     interface MaterialFactory {
         create(shader: "terrain"): Material & {
             uniforms: TerrainUniforms;

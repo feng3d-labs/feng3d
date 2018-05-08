@@ -1,5 +1,16 @@
 namespace feng3d
 {
+    export interface CubeGeometryRaw
+    {
+        __class__: "feng3d.CubeGeometry";
+        depth?: number,
+        height?: number,
+        segmentsD?: number,
+        segmentsH?: number,
+        segmentsW?: number,
+        tile6?: boolean,
+        width?: number
+    }
 
     /**
      * 立方体几何体

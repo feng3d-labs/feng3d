@@ -1,5 +1,14 @@
 namespace feng3d
 {
+    export interface Vector3Raw
+    {
+        __class__?: "feng3d.Vector3",
+        x?: number,
+        y?: number,
+        z?: number,
+        w?: number
+    }
+
     /**
      * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
      * @author feng 2016-3-21
