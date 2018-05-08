@@ -682,7 +682,7 @@ namespace feng3d
         preRender(renderAtomic: RenderAtomic)
         {
             renderAtomic.indexBuffer = renderAtomic.indexBuffer || new Index();
-            renderAtomic.indexBuffer.indices = () => this.indices;
+            renderAtomic.indexBuffer.indices = this.indices;
 
             var attributes = renderAtomic.attributes;
 

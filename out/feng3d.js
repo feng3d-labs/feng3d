@@ -10134,6 +10134,18 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Index.prototype, "count", {
+            /**
+             * 渲染数量
+             */
+            get: function () {
+                if (!this._indices)
+                    return 0;
+                return this._indices.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 激活缓冲
          * @param gl
@@ -10142,8 +10154,6 @@ var feng3d;
             if (this.invalid) {
                 this.clear();
                 this.invalid = false;
-                this._value = new Uint16Array(feng3d.lazy.getvalue(this._indices));
-                this.count = this._value.length;
             }
             var buffer = this.getBuffer(gl);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
@@ -10160,7 +10170,7 @@ var feng3d;
                     throw "";
                 }
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this._value, gl.STATIC_DRAW);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this._indices), gl.STATIC_DRAW);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;
@@ -10259,7 +10269,6 @@ var feng3d;
             if (this.invalid) {
                 this.clear();
                 this.invalid = false;
-                this._value = new Float32Array(feng3d.lazy.getvalue(this._data));
             }
             var type = gl[this.type];
             gl.enableVertexAttribArray(location);
@@ -10282,7 +10291,7 @@ var feng3d;
                 }
                 buffer = newbuffer;
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, this._value, gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._data), gl.STATIC_DRAW);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;
@@ -11055,8 +11064,7 @@ var feng3d;
                 var viewRect = shaderParams.viewRect;
                 var useViewRect = shaderParams.useViewRect;
                 if (!useViewRect) {
-                    var clientRect = gl.canvas.getBoundingClientRect();
-                    viewRect = new feng3d.Rectangle(0, 0, clientRect.width, clientRect.height);
+                    viewRect = new feng3d.Rectangle(0, 0, gl.canvas.width, gl.canvas.height);
                 }
                 if (cullfaceEnum != feng3d.CullFace.NONE) {
                     gl.enable(gl.CULL_FACE);
@@ -14887,9 +14895,8 @@ var feng3d;
             }
         };
         Geometry.prototype.preRender = function (renderAtomic) {
-            var _this = this;
             renderAtomic.indexBuffer = renderAtomic.indexBuffer || new feng3d.Index();
-            renderAtomic.indexBuffer.indices = function () { return _this.indices; };
+            renderAtomic.indexBuffer.indices = this.indices;
             var attributes = renderAtomic.attributes;
             this.uvs;
             this.normals;

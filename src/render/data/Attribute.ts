@@ -62,9 +62,7 @@ namespace feng3d
          */
         get data() { return this._data; }
         set data(value) { this.invalid = true; this._data = value; }
-        private _data: Lazy<number[]>;
-
-        private _value: Float32Array;
+        private _data: number[];
 
         /**
          * 数据尺寸
@@ -119,7 +117,7 @@ namespace feng3d
          */
         private _indexBufferMap = new Map<GL, WebGLBuffer>();
 
-        constructor(name: string, data: Lazy<number[]>, size = 3, divisor = 0)
+        constructor(name: string, data: number[], size = 3, divisor = 0)
         {
             this.name = name;
             this._data = data;
@@ -138,7 +136,6 @@ namespace feng3d
             {
                 this.clear();
                 this.invalid = false;
-                this._value = new Float32Array(lazy.getvalue(this._data));
             }
 
             var type = gl[this.type];
@@ -168,7 +165,7 @@ namespace feng3d
                 }
                 buffer = newbuffer;
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, this._value, gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._data), gl.STATIC_DRAW);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;

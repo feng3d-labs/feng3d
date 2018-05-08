@@ -47,8 +47,7 @@ namespace feng3d
                 var useViewRect = shaderParams.useViewRect;
                 if (!useViewRect)
                 {
-                    var clientRect = gl.canvas.getBoundingClientRect();
-                    viewRect = new Rectangle(0, 0, clientRect.width, clientRect.height);
+                    viewRect = new Rectangle(0, 0, gl.canvas.width, gl.canvas.height);
                 }
 
                 if (cullfaceEnum != CullFace.NONE)

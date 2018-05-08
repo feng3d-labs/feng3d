@@ -21,13 +21,17 @@ namespace feng3d
             this._indices = value;
             this.invalid = true;
         }
-        private _indices: Lazy<number[]>;
-        private _value: Uint16Array;
+        private _indices: number[];
 
         /**
          * 渲染数量
          */
-        count: number;
+        get count()
+        {
+            if (!this._indices)
+                return 0;
+            return this._indices.length;
+        }
 
         /**
          * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
@@ -57,8 +61,6 @@ namespace feng3d
             {
                 this.clear();
                 this.invalid = false;
-                this._value = new Uint16Array(lazy.getvalue(this._indices));
-                this.count = this._value.length;
             }
             var buffer = this.getBuffer(gl);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
@@ -79,7 +81,7 @@ namespace feng3d
                     throw "";
                 }
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this._value, gl.STATIC_DRAW);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this._indices), gl.STATIC_DRAW);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;

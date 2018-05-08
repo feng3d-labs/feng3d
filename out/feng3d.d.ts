@@ -6186,13 +6186,12 @@ declare namespace feng3d {
         /**
          * 索引数据
          */
-        indices: Lazy<number[]>;
+        indices: number[];
         private _indices;
-        private _value;
         /**
          * 渲染数量
          */
-        count: number;
+        readonly count: number;
         /**
          * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
          */
@@ -6273,9 +6272,8 @@ declare namespace feng3d {
         /**
          * 属性数据
          */
-        data: Lazy<number[]>;
+        data: number[];
         private _data;
-        private _value;
         /**
          * 数据尺寸
          *
@@ -6323,7 +6321,7 @@ declare namespace feng3d {
          * 顶点数据缓冲
          */
         private _indexBufferMap;
-        constructor(name: string, data: Lazy<number[]>, size?: number, divisor?: number);
+        constructor(name: string, data: number[], size?: number, divisor?: number);
         /**
          *
          * @param gl
