@@ -27,8 +27,7 @@
         "src/utils/ClassUtils.ts",
         "src/utils/Decorators.ts",
         "src/utils/ImageUtil.ts",
-        "src/serialization/RawData.ts",
-        "src/serialization/serialization.ts",
+        "src/utils/Serialization.ts",
         "src/utils/Stats.ts",
         //几何运算
         "src/geom/Math.ts",

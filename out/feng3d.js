@@ -18211,6 +18211,10 @@ var feng3d;
         return SegmentMaterial;
     }(feng3d.Material));
     feng3d.SegmentMaterial = SegmentMaterial;
+    // export interface SegmentMaterialRaw extends MaterialBaseRaw
+    // {
+    //     __class__: "feng3d.SegmentMaterial";
+    // }
     var SegmentUniforms = /** @class */ (function () {
         function SegmentUniforms() {
             /**

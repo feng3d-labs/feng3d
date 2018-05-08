@@ -758,8 +758,6 @@ declare namespace feng3d {
     };
 }
 declare namespace feng3d {
-}
-declare namespace feng3d {
     var serialization: Serialization;
     /**
      * 序列化装饰器，被装饰属性将被序列化
@@ -8951,9 +8949,6 @@ declare namespace feng3d {
          * 构建线段材质
          */
         constructor();
-    }
-    interface SegmentMaterialRaw extends MaterialBaseRaw {
-        __class__: "feng3d.SegmentMaterial";
     }
     class SegmentUniforms {
         /**
