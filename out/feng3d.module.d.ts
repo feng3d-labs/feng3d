@@ -166,9 +166,9 @@ declare namespace feng3d {
         OBVComponent: {};
         OVComponent: {};
         setDefaultTypeAttributeView(type: string, component: AttributeTypeDefinition): void;
-        getObjectView(object: Object, autocreate?: boolean, excludeAttrs?: string[]): any;
-        getAttributeView(attributeViewInfo: AttributeViewInfo): any;
-        getBlockView(blockViewInfo: BlockViewInfo): any;
+        getObjectView(object: Object, autocreate?: boolean, excludeAttrs?: string[]): IObjectView;
+        getAttributeView(attributeViewInfo: AttributeViewInfo): IObjectAttributeView;
+        getBlockView(blockViewInfo: BlockViewInfo): IObjectBlockView;
         addOAV<K extends string>(target: any, propertyKey: string, param?: {
             block?: string;
             component?: K;
@@ -285,6 +285,14 @@ declare namespace feng3d {
          * 属性值
          */
         attributeValue: Object;
+        /**
+         * 对象属性界面
+         */
+        objectView: IObjectView;
+        /**
+         * 对象属性块界面
+         */
+        objectBlockView: IObjectBlockView;
     }
     /**
      * 对象属性块界面接口
@@ -296,13 +304,17 @@ declare namespace feng3d {
          */
         space: Object;
         /**
-         * 更新界面
-         */
-        updateView(): void;
-        /**
          * 块名称
          */
         blockName: string;
+        /**
+         * 对象属性界面
+         */
+        objectView: IObjectView;
+        /**
+         * 更新界面
+         */
+        updateView(): void;
         /**
          * 获取属性界面
          * @param attributeName		属性名称
@@ -6081,7 +6093,9 @@ declare namespace feng3d {
      * shader
      */
     class Shader {
-        shaderName: string;
+        private vertex;
+        private fragment;
+        constructor(vertex: string, fragment: string);
         /**
          * 激活渲染程序
          */
@@ -6500,10 +6514,7 @@ declare namespace feng3d {
                 /**
                  * 处理了 include 的 shader
                  */
-                uninclude?: {
-                    vertex: string;
-                    fragment: string;
-                };
+                shader?: Shader;
             };
         };
         /**
@@ -6523,10 +6534,7 @@ declare namespace feng3d {
         /**
          * 获取shaderCode
          */
-        getShader(shaderName: string): {
-            vertex: string;
-            fragment: string;
-        };
+        getShader(shaderName: string): Shader;
         /**
          * 展开 include
          */
@@ -8876,7 +8884,7 @@ declare namespace feng3d {
         /**
          * Uniform数据
          */
-        uniforms: {};
+        uniforms: StandardUniforms;
         /**
          * 渲染参数
          */

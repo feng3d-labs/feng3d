@@ -1259,7 +1259,13 @@ var feng3d;
          * @param thisObject
          */
         watch: function (host, property, handler, thisObject) {
-            var watchs = host[bindables] = host[bindables] || {};
+            if (!Object.getOwnPropertyDescriptor(host, bindables)) {
+                Object.defineProperty(host, bindables, {
+                    value: {},
+                    enumerable: false,
+                });
+            }
+            var watchs = host[bindables];
             if (!watchs[property]) {
                 var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property);
                 watchs[property] = { value: host[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
@@ -1330,7 +1336,9 @@ var feng3d;
                 feng3d.watcher.watch(host, property, handler, thisObject);
                 return;
             }
-            var watchchains = host[bindablechains] = host[bindablechains] || {};
+            if (!Object.getOwnPropertyDescriptor(host, bindablechains))
+                Object.defineProperty(host, bindablechains, { value: {}, enumerable: false, });
+            var watchchains = host[bindablechains];
             if (!watchchains[property]) {
                 watchchains[property] = [];
             }
@@ -9931,23 +9939,22 @@ var feng3d;
      * shader
      */
     var Shader = /** @class */ (function () {
-        function Shader() {
+        function Shader(vertex, fragment) {
             /**
              * 纹理缓冲
              */
             this._webGLProgramMap = new Map();
+            this.vertex = vertex;
+            this.fragment = fragment;
         }
         /**
          * 激活渲染程序
          */
         Shader.prototype.activeShaderProgram = function (gl) {
-            var shader = feng3d.shaderlib.getShader(this.shaderName);
-            if (!shader)
-                return null;
             //渲染程序
             var shaderProgram = this._webGLProgramMap.get(gl);
             if (!shaderProgram) {
-                shaderProgram = gl.createProgram(shader.vertex, shader.fragment);
+                shaderProgram = gl.createProgram(this.vertex, this.fragment);
                 if (!shaderProgram)
                     return null;
                 this._webGLProgramMap.set(gl, shaderProgram);
@@ -10642,12 +10649,12 @@ var feng3d;
             var shader = this.shaderConfig.shaders[shaderName];
             if (!shader)
                 return;
-            if (!shader.uninclude) {
+            if (!shader.shader) {
                 var vertex = this.uninclude(shader.vertex);
                 var fragment = this.uninclude(shader.fragment);
-                shader.uninclude = { vertex: vertex, fragment: fragment };
+                shader.shader = new feng3d.Shader(vertex, fragment);
             }
-            return shader.uninclude;
+            return shader.shader;
         };
         /**
          * 展开 include
@@ -11456,8 +11463,7 @@ var feng3d;
             renderParams.depthtest = true;
             renderParams.cullFace = feng3d.CullFace.FRONT;
             renderParams.frontFace = feng3d.FrontFace.CW;
-            shader = new feng3d.Shader();
-            shader.shaderName = "outline";
+            shader = feng3d.shaderlib.getShader("outline");
         }
     }
     function draw(renderContext, unblenditems) {
@@ -11538,8 +11544,7 @@ var feng3d;
             renderParams.depthMask = false;
             renderParams.depthtest = true;
             renderParams.depthFunc = feng3d.DepthFunc.LEQUAL;
-            shader = new feng3d.Shader();
-            shader.shaderName = "wireframe";
+            shader = feng3d.shaderlib.getShader("wireframe");
         }
     }
     /**
@@ -11744,8 +11749,7 @@ var feng3d;
             renderParams.depthtest = true;
             renderParams.cullFace = feng3d.CullFace.NONE;
             //
-            shader = new feng3d.Shader();
-            shader.shaderName = "skybox";
+            shader = feng3d.shaderlib.getShader("skybox");
         }
     }
     /**
@@ -18090,18 +18094,20 @@ var feng3d;
     var Material = /** @class */ (function () {
         function Material(raw) {
             /**
+             * shader名称
+             */
+            this.shaderName = "standard";
+            /**
              * Uniform数据
              */
-            this.uniforms = {};
+            this.uniforms = new feng3d.StandardUniforms();
             /**
              * 渲染参数
              */
             this.renderParams = new feng3d.RenderParams();
-            this.shader = new feng3d.Shader();
             feng3d.serialization.setValue(this, raw);
         }
         Material.prototype.preRender = function (renderAtomic) {
-            this.shader.shaderName = this.shaderName;
             for (var key in this.uniforms) {
                 if (this.uniforms.hasOwnProperty(key)) {
                     renderAtomic.uniforms[key] = this.uniforms[key];
@@ -18117,6 +18123,7 @@ var feng3d;
                     this.uniforms = newuniforms;
                 }
             }
+            this.shader = feng3d.shaderlib.getShader(this.shaderName);
         };
         __decorate([
             feng3d.oav({ component: "OAVMaterialName" }),

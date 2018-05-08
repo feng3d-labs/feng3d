@@ -125,7 +125,7 @@ namespace feng3d
 		 * 
 		 * @memberOf ObjectView
 		 */
-		getObjectView(object: Object, autocreate = true, excludeAttrs: string[] = [])
+		getObjectView(object: Object, autocreate = true, excludeAttrs: string[] = []): IObjectView
 		{
 			var classConfig = objectview.getObjectInfo(object, autocreate, excludeAttrs);
 
@@ -156,7 +156,7 @@ namespace feng3d
 		 * 
 		 * @memberOf ObjectView
 		 */
-		getAttributeView(attributeViewInfo: AttributeViewInfo)
+		getAttributeView(attributeViewInfo: AttributeViewInfo): IObjectAttributeView
 		{
 			if (attributeViewInfo.component == null || attributeViewInfo.component == "")
 			{
@@ -189,7 +189,7 @@ namespace feng3d
 		 * 
 		 * @memberOf ObjectView
 		 */
-		getBlockView(blockViewInfo: BlockViewInfo)
+		getBlockView(blockViewInfo: BlockViewInfo): IObjectBlockView
 		{
 			if (blockViewInfo.component == null || blockViewInfo.component == "")
 			{
@@ -593,6 +593,16 @@ namespace feng3d
 		 * 属性值
 		 */
 		attributeValue: Object;
+
+		/**
+		 * 对象属性界面
+		 */
+		objectView: IObjectView;
+
+		/**
+		 * 对象属性块界面
+		 */
+		objectBlockView: IObjectBlockView;
 	}
 
 	/**
@@ -607,14 +617,19 @@ namespace feng3d
 		space: Object;
 
 		/**
-		 * 更新界面
-		 */
-		updateView(): void;
-
-		/**
 		 * 块名称
 		 */
 		blockName: string;
+
+		/**
+		 * 对象属性界面
+		 */
+		objectView: IObjectView;
+
+		/**
+		 * 更新界面
+		 */
+		updateView(): void;
 
 		/**
 		 * 获取属性界面

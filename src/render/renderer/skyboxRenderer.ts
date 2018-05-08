@@ -6,7 +6,7 @@ namespace feng3d
 
     var renderAtomic: RenderAtomic;
     var renderParams: RenderParams;
-    var shader:Shader;
+    var shader: Shader;
 
     function init()
     {
@@ -45,8 +45,7 @@ namespace feng3d
             renderParams.cullFace = CullFace.NONE;
 
             //
-            shader = new Shader();
-            shader.shaderName = "skybox";
+            shader = shaderlib.getShader("skybox");
         }
     }
 
@@ -65,12 +64,12 @@ namespace feng3d
             return;
         var skybox = skyboxs[0];
 
-        
+
         //
         renderAtomic.renderParams = renderParams;
         renderAtomic.shader = shader;
         skybox.gameObject.preRender(renderAtomic);
-        
+
         //
         renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
         renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix

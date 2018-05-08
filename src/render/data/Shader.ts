@@ -5,22 +5,25 @@ namespace feng3d
      */
     export class Shader
     {
-        shaderName: string;
+        private vertex: string;
+        private fragment: string
+
+        constructor(vertex: string, fragment: string)
+        {
+            this.vertex = vertex;
+            this.fragment = fragment;
+        }
 
         /**
          * 激活渲染程序
          */
         activeShaderProgram(gl: GL)
         {
-            var shader = shaderlib.getShader(this.shaderName);
-
-            if (!shader) return null;
-
             //渲染程序
             var shaderProgram = this._webGLProgramMap.get(gl);
             if (!shaderProgram)
             {
-                shaderProgram = gl.createProgram(shader.vertex, shader.fragment);
+                shaderProgram = gl.createProgram(this.vertex, this.fragment);
                 if (!shaderProgram)
                     return null;
                 this._webGLProgramMap.set(gl, shaderProgram);

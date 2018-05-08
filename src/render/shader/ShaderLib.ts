@@ -25,10 +25,7 @@ namespace feng3d
                 /**
                  * 处理了 include 的 shader
                  */
-                uninclude?: {
-                    vertex: string,
-                    fragment: string,
-                },
+                shader?: Shader,
             }
         },
         /**
@@ -64,13 +61,13 @@ namespace feng3d
             var shader = this.shaderConfig.shaders[shaderName];
             if (!shader) return;
 
-            if (!shader.uninclude)
+            if (!shader.shader)
             {
                 var vertex = this.uninclude(shader.vertex);
                 var fragment = this.uninclude(shader.fragment);
-                shader.uninclude = { vertex: vertex, fragment: fragment };
+                shader.shader = new Shader(vertex, fragment);
             }
-            return shader.uninclude;
+            return shader.shader;
         }
 
         /**

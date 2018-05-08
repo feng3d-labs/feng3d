@@ -11,7 +11,14 @@ namespace feng3d
          */
         watch<T extends Object>(host: T, property: keyof T, handler: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
         {
-            var watchs: Watchs = host[bindables] = host[bindables] || {};
+            if (!Object.getOwnPropertyDescriptor(host, bindables))
+            {
+                Object.defineProperty(host, bindables, {
+                    value: {},
+                    enumerable: false,
+                });
+            }
+            var watchs: Watchs = host[bindables];
             if (!watchs[property])
             {
                 var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property);
@@ -98,8 +105,9 @@ namespace feng3d
                 watcher.watch(host, property, handler, thisObject);
                 return;
             }
-
-            var watchchains: WatchChains = host[bindablechains] = host[bindablechains] || {};
+            if (!Object.getOwnPropertyDescriptor(host, bindablechains))
+                Object.defineProperty(host, bindablechains, { value: {}, enumerable: false, });
+            var watchchains: WatchChains = host[bindablechains];
             if (!watchchains[property])
             {
                 watchchains[property] = [];

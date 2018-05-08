@@ -39,14 +39,14 @@ namespace feng3d
         @oav({ component: "OAVMaterialName" })
         @serialize
         @watch("onShaderChanged")
-        shaderName: string;
+        shaderName = "standard";
 
         /**
          * Uniform数据
          */
         @serialize
         @oav({ component: "OAVObjectView" })
-        uniforms = {};
+        uniforms = new StandardUniforms();
 
         /**
          * 渲染参数
@@ -62,14 +62,11 @@ namespace feng3d
 
         constructor(raw?: MaterialRaw)
         {
-            this.shader = new Shader();
             serialization.setValue(this, raw);
         }
 
         preRender(renderAtomic: RenderAtomic)
         {
-            this.shader.shaderName = this.shaderName;
-
             for (const key in this.uniforms)
             {
                 if (this.uniforms.hasOwnProperty(key))
@@ -91,6 +88,7 @@ namespace feng3d
                     this.uniforms = newuniforms;
                 }
             }
+            this.shader = shaderlib.getShader(this.shaderName);
         }
     }
 }
