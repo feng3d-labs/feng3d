@@ -8944,10 +8944,25 @@ declare namespace feng3d {
      * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
      * @author feng 2016-10-15
      */
-    class SegmentMaterial extends Material {
-        shaderName: string;
+    type SegmentMaterial = Material & {
         uniforms: SegmentUniforms;
-        renderParams: RenderParams;
+    };
+    interface MaterialFactory {
+        create(shader: "segment", raw?: SegmentMaterialRaw): SegmentMaterial;
+    }
+    interface MaterialRawMap {
+        segment: SegmentMaterialRaw;
+    }
+    interface SegmentMaterialRaw extends MaterialBaseRaw {
+        shaderName?: "segment";
+        uniforms?: SegmentUniformsRaw;
+    }
+    interface SegmentUniformsRaw {
+        __class__?: "feng3d.SegmentUniforms";
+        /**
+         * 颜色
+         */
+        u_segmentColor?: Color4 | Color4Raw;
     }
     class SegmentUniforms {
         /**

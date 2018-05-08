@@ -24,7 +24,7 @@ namespace feng3d
     export interface ColorUniformsRaw
     {
         __class__?: "feng3d.ColorUniforms",
-        u_diffuseInput?: Color4 | Color4Raw
+        u_diffuseInput?: Color4 | Color4Raw,
     }
 
     export class ColorUniforms

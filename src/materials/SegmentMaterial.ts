@@ -5,19 +5,31 @@ namespace feng3d
      * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
 	 * @author feng 2016-10-15
 	 */
-    export class SegmentMaterial extends Material
+    export type SegmentMaterial = Material & { uniforms: SegmentUniforms; };
+    export interface MaterialFactory
     {
-        shaderName = "segment";
-
-        uniforms = new SegmentUniforms();
-
-        renderParams = new RenderParams({ renderMode: RenderMode.LINES });
+        create(shader: "segment", raw?: SegmentMaterialRaw): SegmentMaterial;
     }
 
-    // export interface SegmentMaterialRaw extends MaterialBaseRaw
-    // {
-    //     __class__: "feng3d.SegmentMaterial";
-    // }
+    export interface MaterialRawMap
+    {
+        segment: SegmentMaterialRaw
+    }
+
+    export interface SegmentMaterialRaw extends MaterialBaseRaw
+    {
+        shaderName?: "segment",
+        uniforms?: SegmentUniformsRaw;
+    }
+
+    export interface SegmentUniformsRaw
+    {
+        __class__?: "feng3d.SegmentUniforms",
+        /** 
+         * 颜色
+         */
+        u_segmentColor?: Color4 | Color4Raw,
+    }
 
     export class SegmentUniforms
     {

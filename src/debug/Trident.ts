@@ -38,7 +38,7 @@ namespace feng3d
             segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(this.lineLength, 0, 0), new Color4(1, 0, 0), new Color4(1, 0, 0)));
             var meshRenderer = xLine.addComponent(MeshRenderer);
             meshRenderer.geometry = segmentGeometry;
-            meshRenderer.material = new SegmentMaterial();
+            meshRenderer.material = materialFactory.create("segment", { renderParams: { renderMode: RenderMode.LINES } });
             this.tridentObject.addChild(xLine);
             //
             var yLine = GameObject.create("yLine");
@@ -47,7 +47,7 @@ namespace feng3d
             var segmentGeometry = new SegmentGeometry();
             segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(0, this.lineLength, 0), new Color4(0, 1, 0), new Color4(0, 1, 0)));
             meshRenderer = yLine.addComponent(MeshRenderer);
-            meshRenderer.material = new SegmentMaterial();
+            meshRenderer.material = materialFactory.create("segment", { renderParams: { renderMode: RenderMode.LINES } });
             meshRenderer.geometry = segmentGeometry;
             this.tridentObject.addChild(yLine);
             //
@@ -57,7 +57,7 @@ namespace feng3d
             var segmentGeometry = new SegmentGeometry();
             segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(0, 0, this.lineLength), new Color4(0, 0, 1), new Color4(0, 0, 1)));
             meshRenderer = zLine.addComponent(MeshRenderer);
-            meshRenderer.material = new SegmentMaterial();
+            meshRenderer.material = materialFactory.create("segment", { renderParams: { renderMode: RenderMode.LINES } });
             meshRenderer.geometry = segmentGeometry;
             this.tridentObject.addChild(zLine);
             //
