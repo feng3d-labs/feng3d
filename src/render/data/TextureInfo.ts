@@ -116,6 +116,18 @@ namespace feng3d
          */
         private _invalid = true;
 
+        /**
+         * 是否为2的幂贴图
+         */
+        get isPowerOfTwo()
+        {
+            var isPowerOfTwo = true;
+            var pixels = this._activePixels;
+            if (pixels instanceof HTMLImageElement)
+                isPowerOfTwo = FMath.isPowerOfTwo(pixels.width) && FMath.isPowerOfTwo(pixels.height);
+            return isPowerOfTwo;
+        }
+
         constructor(raw?: TextureInfoRaw)
         {
             serialization.setValue(this, raw);
@@ -161,11 +173,7 @@ namespace feng3d
             var wrapS = gl[this.wrapS];
             var wrapT = gl[this.wrapT];
 
-            var isPowerOfTwo = true;
-            var pixels = this._activePixels;
-            if (pixels instanceof HTMLImageElement)
-                isPowerOfTwo = FMath.isPowerOfTwo(pixels.width) && FMath.isPowerOfTwo(pixels.height);
-            if (!isPowerOfTwo)
+            if (!this.isPowerOfTwo)
             {
                 wrapS = gl.CLAMP_TO_EDGE;
                 wrapT = gl.CLAMP_TO_EDGE;
@@ -217,7 +225,7 @@ namespace feng3d
                 gl.bindTexture(textureType, texture);
                 //设置纹理图片
                 this.initTexture(gl);
-                if (this.generateMipmap)
+                if (this.generateMipmap && this.isPowerOfTwo)
                 {
                     gl.generateMipmap(textureType);
                 }

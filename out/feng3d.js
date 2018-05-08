@@ -159,394 +159,6 @@ Array.prototype.isUnique = function (compareFn) {
 var feng3d;
 (function (feng3d) {
     /**
-     * 标记objectview对象界面类
-     */
-    function OVComponent(component) {
-        return function (constructor) {
-            component = component || constructor["name"];
-            feng3d.objectview.OVComponent[component] = constructor;
-        };
-    }
-    feng3d.OVComponent = OVComponent;
-    /**
-     * 标记objectview块界面类
-     */
-    function OBVComponent(component) {
-        return function (constructor) {
-            component = component || constructor["name"];
-            feng3d.objectview.OBVComponent[component] = constructor;
-        };
-    }
-    feng3d.OBVComponent = OBVComponent;
-    /**
-     * 标记objectview属性界面类
-     */
-    function OAVComponent(component) {
-        return function (constructor) {
-            component = component || constructor["name"];
-            feng3d.objectview.OAVComponent[component] = constructor;
-        };
-    }
-    feng3d.OAVComponent = OAVComponent;
-    /**
-     * objectview类装饰器
-     */
-    function ov(param) {
-        return function (constructor) {
-            if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
-                constructor["prototype"][OBJECTVIEW_KEY] = {};
-            var objectview = constructor["prototype"][OBJECTVIEW_KEY];
-            objectview.component = param.component;
-            objectview.componentParam = param.componentParam;
-        };
-    }
-    feng3d.ov = ov;
-    // /**
-    //  * objectview类装饰器
-    //  */
-    // export function obv<K extends keyof OBVComponentParam>(param: { name: string; component?: K; componentParam?: OBVComponentParam[K]; })
-    // {
-    // 	return (constructor: Function) =>
-    // 	{
-    // 		if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
-    // 			constructor["prototype"][OBJECTVIEW_KEY] = {};
-    // 		var objectview: ClassDefinition = constructor["prototype"][OBJECTVIEW_KEY];
-    // 		var blockDefinitionVec: BlockDefinition[] = objectview.blockDefinitionVec = objectview.blockDefinitionVec || [];
-    // 		blockDefinitionVec.push({
-    // 			name: param.name,
-    // 			component: param.component,
-    // 			componentParam: param.componentParam,
-    // 		});
-    // 	}
-    // }
-    /**
-     * objectview属性装饰器
-     * @param param 参数
-     */
-    function oav(param) {
-        return function (target, propertyKey) {
-            feng3d.objectview.addOAV(target, propertyKey, param);
-        };
-    }
-    feng3d.oav = oav;
-    /**
-     * 对象界面
-     * @author feng 2016-3-10
-     */
-    feng3d.objectview = {
-        /**
-         * 默认基础类型对象界面类定义
-         */
-        defaultBaseObjectViewClass: "",
-        /**
-         * 默认对象界面类定义
-         */
-        defaultObjectViewClass: "",
-        /**
-         * 默认对象属性界面类定义
-         */
-        defaultObjectAttributeViewClass: "",
-        /**
-         * 属性块默认界面
-         */
-        defaultObjectAttributeBlockView: "",
-        /**
-         * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
-         */
-        defaultTypeAttributeView: {},
-        OAVComponent: {},
-        OBVComponent: {},
-        OVComponent: {},
-        setDefaultTypeAttributeView: function (type, component) {
-            feng3d.objectview.defaultTypeAttributeView[type] = component;
-        },
-        /**
-         * 获取对象界面
-         *
-         * @static
-         * @param {Object} object				用于生成界面的对象
-         * @param autocreate					当对象没有注册属性时是否自动创建属性信息
-         * @param excludeAttrs					排除属性列表
-         * @returns 							对象界面
-         *
-         * @memberOf ObjectView
-         */
-        getObjectView: function (object, autocreate, excludeAttrs) {
-            if (autocreate === void 0) { autocreate = true; }
-            if (excludeAttrs === void 0) { excludeAttrs = []; }
-            var classConfig = feng3d.objectview.getObjectInfo(object, autocreate, excludeAttrs);
-            if (classConfig.component == null || classConfig.component == "") {
-                //返回基础类型界面类定义
-                if (!(classConfig.owner instanceof Object)) {
-                    classConfig.component = feng3d.objectview.defaultBaseObjectViewClass;
-                }
-                else {
-                    //使用默认类型界面类定义
-                    classConfig.component = feng3d.objectview.defaultObjectViewClass;
-                }
-            }
-            var cls = feng3d.objectview.OVComponent[classConfig.component];
-            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
-            var view = new cls(classConfig);
-            return view;
-        },
-        /**
-         * 获取属性界面
-         *
-         * @static
-         * @param {AttributeViewInfo} attributeViewInfo			属性界面信息
-         * @returns {egret.DisplayObject}						属性界面
-         *
-         * @memberOf ObjectView
-         */
-        getAttributeView: function (attributeViewInfo) {
-            if (attributeViewInfo.component == null || attributeViewInfo.component == "") {
-                var defaultViewClass = feng3d.objectview.defaultTypeAttributeView[attributeViewInfo.type];
-                var tempComponent = defaultViewClass ? defaultViewClass.component : "";
-                if (tempComponent != null && tempComponent != "") {
-                    attributeViewInfo.component = defaultViewClass.component;
-                    attributeViewInfo.componentParam = defaultViewClass.componentParam || attributeViewInfo.componentParam;
-                }
-            }
-            if (attributeViewInfo.component == null || attributeViewInfo.component == "") {
-                //使用默认对象属性界面类定义
-                attributeViewInfo.component = feng3d.objectview.defaultObjectAttributeViewClass;
-            }
-            var cls = feng3d.objectview.OAVComponent[attributeViewInfo.component];
-            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + attributeViewInfo.component + " \u5BF9\u5E94\u7684\u5C5E\u6027\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + attributeViewInfo.component + " \u4E2D\u4F7F\u7528@OVAComponent()\u6807\u8BB0");
-            var view = new cls(attributeViewInfo);
-            return view;
-        },
-        /**
-         * 获取块界面
-         *
-         * @static
-         * @param {BlockViewInfo} blockViewInfo			块界面信息
-         * @returns {egret.DisplayObject}				块界面
-         *
-         * @memberOf ObjectView
-         */
-        getBlockView: function (blockViewInfo) {
-            if (blockViewInfo.component == null || blockViewInfo.component == "") {
-                //返回默认对象属性界面类定义
-                blockViewInfo.component = feng3d.objectview.defaultObjectAttributeBlockView;
-            }
-            var cls = feng3d.objectview.OBVComponent[blockViewInfo.component];
-            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + blockViewInfo.component + " \u5BF9\u5E94\u7684\u5757\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + blockViewInfo.component + " \u4E2D\u4F7F\u7528@OVBComponent()\u6807\u8BB0");
-            var view = new cls(blockViewInfo);
-            return view;
-        },
-        addOAV: function (target, propertyKey, param) {
-            if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
-                target[OBJECTVIEW_KEY] = {};
-            var objectview = target[OBJECTVIEW_KEY] || {};
-            var attributeDefinitionVec = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
-            attributeDefinitionVec.push({
-                name: propertyKey, block: param && param.block, component: param && param.component, componentParam: param && param.componentParam
-            });
-        },
-        /**
-         * 获取对象信息
-         * @param object				对象
-         * @param autocreate			当对象没有注册属性时是否自动创建属性信息
-         * @param excludeAttrs			排除属性列表
-         * @return
-         */
-        getObjectInfo: function (object, autocreate, excludeAttrs) {
-            if (autocreate === void 0) { autocreate = true; }
-            if (excludeAttrs === void 0) { excludeAttrs = []; }
-            if (typeof object == "string" || typeof object == "number" || typeof object == "boolean") {
-                return {
-                    objectAttributeInfos: [],
-                    objectBlockInfos: [],
-                    owner: object,
-                    component: "",
-                    componentParam: undefined
-                };
-            }
-            var classConfig = getInheritClassDefinition(object, autocreate);
-            classConfig = classConfig || {
-                component: "",
-                componentParam: null,
-                attributeDefinitionVec: [],
-                blockDefinitionVec: [],
-            };
-            var objectAttributeInfos = [];
-            classConfig.attributeDefinitionVec.forEach(function (attributeDefinition) {
-                if (excludeAttrs.indexOf(attributeDefinition.name) == -1) {
-                    objectAttributeInfos.push({
-                        name: attributeDefinition.name,
-                        block: attributeDefinition.block,
-                        component: attributeDefinition.component,
-                        componentParam: attributeDefinition.componentParam,
-                        owner: object,
-                        writable: true,
-                        type: getAttributeType(object[attributeDefinition.name])
-                    });
-                }
-            });
-            function getAttributeType(attribute) {
-                if (attribute == null)
-                    return "null";
-                if (typeof attribute == "number")
-                    return "number";
-                return attribute.constructor.name;
-            }
-            var objectInfo = {
-                objectAttributeInfos: objectAttributeInfos,
-                objectBlockInfos: getObjectBlockInfos(object, objectAttributeInfos, classConfig.blockDefinitionVec),
-                owner: object,
-                component: classConfig.component,
-                componentParam: classConfig.componentParam
-            };
-            return objectInfo;
-        },
-    };
-    var OBJECTVIEW_KEY = "__objectview__";
-    function mergeClassDefinition(oldClassDefinition, newClassDefinition) {
-        if (newClassDefinition.component && newClassDefinition.component.length > 0) {
-            oldClassDefinition.component = newClassDefinition.component;
-            oldClassDefinition.componentParam = newClassDefinition.componentParam;
-        }
-        //合并属性
-        oldClassDefinition.attributeDefinitionVec = oldClassDefinition.attributeDefinitionVec || [];
-        if (newClassDefinition.attributeDefinitionVec && newClassDefinition.attributeDefinitionVec.length > 0) {
-            newClassDefinition.attributeDefinitionVec.forEach(function (newAttributeDefinition) {
-                var isfound = false;
-                oldClassDefinition.attributeDefinitionVec.forEach(function (oldAttributeDefinition) {
-                    if (newAttributeDefinition && oldAttributeDefinition.name == newAttributeDefinition.name) {
-                        oldAttributeDefinition.block = newAttributeDefinition.block;
-                        oldAttributeDefinition.component = newAttributeDefinition.component;
-                        oldAttributeDefinition.componentParam = newAttributeDefinition.componentParam;
-                        isfound = true;
-                    }
-                });
-                if (!isfound) {
-                    oldClassDefinition.attributeDefinitionVec.push(newAttributeDefinition);
-                }
-            });
-        }
-        //合并块
-        oldClassDefinition.blockDefinitionVec = oldClassDefinition.blockDefinitionVec || [];
-        if (newClassDefinition.blockDefinitionVec && newClassDefinition.blockDefinitionVec.length > 0) {
-            newClassDefinition.blockDefinitionVec.forEach(function (newBlockDefinition) {
-                var isfound = false;
-                oldClassDefinition.blockDefinitionVec.forEach(function (oldBlockDefinition) {
-                    if (newBlockDefinition && newBlockDefinition.name == oldBlockDefinition.name) {
-                        oldBlockDefinition.component = newBlockDefinition.component;
-                        oldBlockDefinition.componentParam = newBlockDefinition.componentParam;
-                        isfound = true;
-                    }
-                });
-                if (!isfound) {
-                    oldClassDefinition.blockDefinitionVec.push(newBlockDefinition);
-                }
-            });
-        }
-    }
-    function getInheritClassDefinition(object, autocreate) {
-        if (autocreate === void 0) { autocreate = true; }
-        var classConfigVec = [];
-        var prototype = object;
-        while (prototype) {
-            var classConfig = prototype[OBJECTVIEW_KEY];
-            if (classConfig)
-                classConfigVec.push(classConfig);
-            prototype = prototype["__proto__"];
-        }
-        var resultclassConfig;
-        if (classConfigVec.length > 0) {
-            resultclassConfig = {};
-            for (var i = 0; i < classConfigVec.length; i++) {
-                mergeClassDefinition(resultclassConfig, classConfigVec[i]);
-            }
-        }
-        else if (autocreate) {
-            resultclassConfig = getDefaultClassConfig(object);
-        }
-        return resultclassConfig;
-    }
-    function getDefaultClassConfig(object, filterReg) {
-        if (filterReg === void 0) { filterReg = /(([a-zA-Z0-9])+|(\d+))/; }
-        //
-        var attributeNames = [];
-        for (var key in object) {
-            var result = filterReg.exec(key);
-            if (result && result[0] == key) {
-                var value = object[key];
-                if (value === undefined || value instanceof Function)
-                    continue;
-                attributeNames.push(key);
-            }
-        }
-        attributeNames = attributeNames.sort();
-        var attributeDefinitionVec = [];
-        attributeNames.forEach(function (element) {
-            attributeDefinitionVec.push({
-                name: element,
-                block: "",
-            });
-        });
-        var defaultClassConfig = {
-            component: "",
-            attributeDefinitionVec: attributeDefinitionVec,
-            blockDefinitionVec: []
-        };
-        return defaultClassConfig;
-    }
-    /**
-     * 获取对象块信息列表
-     * @param {Object} object			对象
-     * @returns {BlockViewInfo[]}		对象块信息列表
-     */
-    function getObjectBlockInfos(object, objectAttributeInfos, blockDefinitionVec) {
-        var objectBlockInfos = [];
-        var dic = {};
-        var objectBlockInfo;
-        //收集块信息
-        var i = 0;
-        var tempVec = [];
-        for (i = 0; i < objectAttributeInfos.length; i++) {
-            var blockName = objectAttributeInfos[i].block || "";
-            objectBlockInfo = dic[blockName];
-            if (objectBlockInfo == null) {
-                objectBlockInfo = dic[blockName] = { name: blockName, owner: object, itemList: [] };
-                tempVec.push(objectBlockInfo);
-            }
-            objectBlockInfo.itemList.push(objectAttributeInfos[i]);
-        }
-        //按快的默认顺序生成 块信息列表
-        var blockDefinition;
-        var pushDic = {};
-        if (blockDefinitionVec) {
-            for (i = 0; i < blockDefinitionVec.length; i++) {
-                blockDefinition = blockDefinitionVec[i];
-                objectBlockInfo = dic[blockDefinition.name];
-                if (objectBlockInfo == null) {
-                    objectBlockInfo = {
-                        name: blockDefinition.name,
-                        owner: object,
-                        itemList: []
-                    };
-                }
-                objectBlockInfo.component = blockDefinition.component;
-                objectBlockInfo.componentParam = blockDefinition.componentParam;
-                objectBlockInfos.push(objectBlockInfo);
-                pushDic[objectBlockInfo.name] = true;
-            }
-        }
-        //添加剩余的块信息
-        for (i = 0; i < tempVec.length; i++) {
-            if (Boolean(pushDic[tempVec[i].name]) == false) {
-                objectBlockInfos.push(tempVec[i]);
-            }
-        }
-        return objectBlockInfos;
-    }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 测试代码运行时间
      * @param fn 被测试的方法
      * @param labal 标签
@@ -1439,6 +1051,704 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 序列化装饰器，被装饰属性将被序列化
+     * @param {*} target                序列化原型
+     * @param {string} propertyKey      序列化属性
+     */
+    function serialize(target, propertyKey) {
+        var serializeInfo = target[SERIALIZE_KEY];
+        if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY)) {
+            Object.defineProperty(target, SERIALIZE_KEY, {
+                /**
+                 * uv数据
+                 */
+                value: {},
+                enumerable: false,
+                configurable: true
+            });
+        }
+        serializeInfo = target[SERIALIZE_KEY];
+        serializeInfo.propertys = serializeInfo.propertys || [];
+        serializeInfo.propertys.push(propertyKey);
+    }
+    feng3d.serialize = serialize;
+    var Serialization = /** @class */ (function () {
+        function Serialization() {
+        }
+        /**
+         * 序列化对象
+         * @param target 被序列化的数据
+         * @returns 序列化后可以转换为Json的对象
+         */
+        Serialization.prototype.serialize = function (target) {
+            //基础类型
+            if (isBaseType(target))
+                return target;
+            // 排除不支持序列化对象
+            if (target.hasOwnProperty("serializable") && !target["serializable"])
+                return undefined;
+            //处理数组
+            if (target.constructor === Array) {
+                var arr = [];
+                for (var i = 0; i < target.length; i++) {
+                    arr[i] = this.serialize(target[i]);
+                }
+                return arr;
+            }
+            var object = {};
+            //处理普通Object
+            if (target.constructor === Object) {
+                object[CLASS_KEY] = "Object";
+                for (var key in target) {
+                    if (target.hasOwnProperty(key)) {
+                        if (target[key] !== undefined) {
+                            object[key] = this.serialize(target[key]);
+                        }
+                    }
+                }
+                return object;
+            }
+            //处理方法
+            if (typeof target == "function") {
+                object[CLASS_KEY] = "function";
+                object.data = target.toString();
+                return object;
+            }
+            var className = feng3d.ClassUtils.getQualifiedClassName(target);
+            object[CLASS_KEY] = className;
+            if (target["serialize"])
+                return target["serialize"](object);
+            //使用默认序列化
+            var defaultInstance = getDefaultInstance(target);
+            this.different(target, defaultInstance, object);
+            return object;
+        };
+        /**
+         * 比较两个对象的不同，提取出不同的数据
+         * @param target 用于检测不同的数据
+         * @param defaultInstance   模板（默认）数据
+         * @param different 比较得出的不同（简单结构）数据
+         * @returns 比较得出的不同（简单结构）数据
+         */
+        Serialization.prototype.different = function (target, defaultInstance, different) {
+            different = different || {};
+            var serializableMembers = getSerializableMembers(target);
+            for (var i = 0; i < serializableMembers.length; i++) {
+                var property = serializableMembers[i];
+                if (target[property] === defaultInstance[property])
+                    continue;
+                if (isBaseType(target[property])) {
+                    different[property] = target[property];
+                    continue;
+                }
+                if (defaultInstance[property] == null) {
+                    different[property] = this.serialize(target[property]);
+                    continue;
+                }
+                if (defaultInstance[property].constructor != target[property].constructor) {
+                    different[property] = this.serialize(target[property]);
+                    continue;
+                }
+                if (target[property].constructor == Array) {
+                    if (target[property].length == 0) {
+                        if (defaultInstance[property].length == 0)
+                            continue;
+                        different[property] = [];
+                        continue;
+                    }
+                    different[property] = this.serialize(target[property]);
+                    continue;
+                }
+                var diff = this.different(target[property], defaultInstance[property]);
+                if (Object.keys(diff).length > 0)
+                    different[property] = diff;
+            }
+            return different;
+        };
+        /**
+         * 反序列化
+         * @param object 换为Json的对象
+         * @returns 反序列化后的数据
+         */
+        Serialization.prototype.deserialize = function (object) {
+            var _this = this;
+            //基础类型
+            if (isBaseType(object))
+                return object;
+            //处理数组
+            if (object.constructor == Array) {
+                var arr = [];
+                object.forEach(function (element) {
+                    arr.push(_this.deserialize(element));
+                });
+                return arr;
+            }
+            if (object.constructor != Object) {
+                return object;
+            }
+            // 获取类型
+            var className = object[CLASS_KEY];
+            // 处理普通Object
+            if (className == "Object" || className == null) {
+                var target = {};
+                for (var key in object) {
+                    target[key] = this.deserialize(object[key]);
+                }
+                return target;
+            }
+            //处理方法
+            if (className == "function") {
+                var f;
+                eval("f=" + object.data);
+                return f;
+            }
+            var cls = feng3d.ClassUtils.getDefinitionByName(className);
+            if (!cls) {
+                feng3d.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
+                return undefined;
+            }
+            target = new cls();
+            //处理自定义反序列化对象
+            if (target["deserialize"])
+                return target["deserialize"](object);
+            //默认反序列
+            this.setValue(target, object);
+            return target;
+        };
+        Serialization.prototype.setValue = function (target, object) {
+            if (!object)
+                return;
+            for (var property in object) {
+                if (object.hasOwnProperty(property)) {
+                    this.setPropertyValue(target, object, property);
+                }
+            }
+            // var serializableMembers = getSerializableMembers(target);
+            // for (var i = 0; i < serializableMembers.length; i++)
+            // {
+            //     var property = serializableMembers[i];
+            //     if (object[property] !== undefined)
+            //     {
+            //         this.setPropertyValue(target, object, property);
+            //     }
+            // }
+        };
+        Serialization.prototype.setPropertyValue = function (target, object, property) {
+            if (target[property] == object[property])
+                return;
+            var objvalue = object[property];
+            // 当原值等于null时直接反序列化赋值
+            if (target[property] == null) {
+                target[property] = this.deserialize(objvalue);
+                return;
+            }
+            if (isBaseType(objvalue)) {
+                target[property] = objvalue;
+                return;
+            }
+            if (objvalue.constructor == Array) {
+                target[property] = this.deserialize(objvalue);
+                return;
+            }
+            // 处理同为Object类型
+            if (objvalue[CLASS_KEY] == undefined) {
+                if (target[property].constructor == Object) {
+                    for (var key in objvalue) {
+                        this.setPropertyValue(target[property], objvalue, key);
+                    }
+                }
+                else {
+                    this.setValue(target[property], objvalue);
+                }
+                return;
+            }
+            var targetClassName = feng3d.ClassUtils.getQualifiedClassName(target[property]);
+            if (targetClassName == objvalue[CLASS_KEY]) {
+                this.setValue(target[property], objvalue);
+            }
+            else {
+                target[property] = this.deserialize(objvalue);
+            }
+        };
+        Serialization.prototype.clone = function (target) {
+            return this.deserialize(this.serialize(target));
+        };
+        return Serialization;
+    }());
+    feng3d.Serialization = Serialization;
+    var CLASS_KEY = "__class__";
+    var SERIALIZE_KEY = "_serialize__";
+    /**
+     * 判断是否为基础类型（在序列化中不发生变化的对象）
+     */
+    function isBaseType(object) {
+        //基础类型
+        if (object == undefined
+            || object == null
+            || typeof object == "boolean"
+            || typeof object == "string"
+            || typeof object == "number")
+            return true;
+    }
+    /**
+     * 获取默认实例
+     */
+    function getDefaultInstance(object) {
+        var serializeInfo = object[SERIALIZE_KEY];
+        serializeInfo.default = serializeInfo.default || new object.constructor();
+        return serializeInfo.default;
+    }
+    /**
+     * 获取序列化属性列表
+     */
+    function getSerializableMembers(object, serializableMembers) {
+        serializableMembers = serializableMembers || [];
+        if (object["__proto__"]) {
+            getSerializableMembers(object["__proto__"], serializableMembers);
+        }
+        if (Object.getOwnPropertyDescriptor(object, SERIALIZE_KEY)) {
+            var serializeInfo = object[SERIALIZE_KEY];
+            if (serializeInfo && serializeInfo.propertys) {
+                var propertys = serializeInfo.propertys;
+                for (var i = 0, n = propertys.length; i < n; i++) {
+                    var element = propertys[i];
+                    serializableMembers.push(propertys[i]);
+                }
+            }
+        }
+        return serializableMembers;
+    }
+    feng3d.serialization = new Serialization();
+})(feng3d || (feng3d = {}));
+// [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
+// {
+//     element.prototype["serialize"] = function (object: { value: number[] })
+//     {
+//         object.value = Array.from(this);
+//         return object;
+//     }
+//     element.prototype["deserialize"] = function (object: { value: number[] })
+//     {
+//         return new (<any>(this.constructor))(object.value);
+//     }
+// });
+// interface Object
+// {
+//     /**
+//      * 给对象设置值
+//      * @param target 被修改的对象
+//      * @param object 修改数据
+//      */
+//     __setValue<T>(target: T, object: Object): T;
+// }
+// Object.defineProperty(Object.prototype, "__setValue", {
+//     /**
+//      * uv数据
+//      */
+//     value: function <T>(target: T, object: Object): T
+//     {
+//         feng3d.serialization.setValue(target, object);
+//         return target;
+//     },
+//     enumerable: false,
+//     configurable: true
+// }); 
+var feng3d;
+(function (feng3d) {
+    /**
+     * 标记objectview对象界面类
+     */
+    function OVComponent(component) {
+        return function (constructor) {
+            component = component || constructor["name"];
+            feng3d.objectview.OVComponent[component] = constructor;
+        };
+    }
+    feng3d.OVComponent = OVComponent;
+    /**
+     * 标记objectview块界面类
+     */
+    function OBVComponent(component) {
+        return function (constructor) {
+            component = component || constructor["name"];
+            feng3d.objectview.OBVComponent[component] = constructor;
+        };
+    }
+    feng3d.OBVComponent = OBVComponent;
+    /**
+     * 标记objectview属性界面类
+     */
+    function OAVComponent(component) {
+        return function (constructor) {
+            component = component || constructor["name"];
+            feng3d.objectview.OAVComponent[component] = constructor;
+        };
+    }
+    feng3d.OAVComponent = OAVComponent;
+    /**
+     * objectview类装饰器
+     */
+    function ov(param) {
+        return function (constructor) {
+            if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
+                constructor["prototype"][OBJECTVIEW_KEY] = {};
+            var objectview = constructor["prototype"][OBJECTVIEW_KEY];
+            objectview.component = param.component;
+            objectview.componentParam = param.componentParam;
+        };
+    }
+    feng3d.ov = ov;
+    // /**
+    //  * objectview类装饰器
+    //  */
+    // export function obv<K extends keyof OBVComponentParam>(param: { name: string; component?: K; componentParam?: OBVComponentParam[K]; })
+    // {
+    // 	return (constructor: Function) =>
+    // 	{
+    // 		if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
+    // 			constructor["prototype"][OBJECTVIEW_KEY] = {};
+    // 		var objectview: ClassDefinition = constructor["prototype"][OBJECTVIEW_KEY];
+    // 		var blockDefinitionVec: BlockDefinition[] = objectview.blockDefinitionVec = objectview.blockDefinitionVec || [];
+    // 		blockDefinitionVec.push({
+    // 			name: param.name,
+    // 			component: param.component,
+    // 			componentParam: param.componentParam,
+    // 		});
+    // 	}
+    // }
+    /**
+     * objectview属性装饰器
+     * @param param 参数
+     */
+    function oav(param) {
+        return function (target, propertyKey) {
+            feng3d.objectview.addOAV(target, propertyKey, param);
+        };
+    }
+    feng3d.oav = oav;
+    /**
+     * 对象界面
+     * @author feng 2016-3-10
+     */
+    var ObjectView = /** @class */ (function () {
+        function ObjectView() {
+            /**
+             * 默认基础类型对象界面类定义
+             */
+            this.defaultBaseObjectViewClass = "";
+            /**
+             * 默认对象界面类定义
+             */
+            this.defaultObjectViewClass = "";
+            /**
+             * 默认对象属性界面类定义
+             */
+            this.defaultObjectAttributeViewClass = "";
+            /**
+             * 属性块默认界面
+             */
+            this.defaultObjectAttributeBlockView = "";
+            /**
+             * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
+             */
+            this.defaultTypeAttributeView = {};
+            this.OAVComponent = {};
+            this.OBVComponent = {};
+            this.OVComponent = {};
+        }
+        ObjectView.prototype.setDefaultTypeAttributeView = function (type, component) {
+            this.defaultTypeAttributeView[type] = component;
+        };
+        /**
+         * 获取对象界面
+         *
+         * @static
+         * @param {Object} object				用于生成界面的对象
+         * @param autocreate					当对象没有注册属性时是否自动创建属性信息
+         * @param excludeAttrs					排除属性列表
+         * @returns 							对象界面
+         *
+         * @memberOf ObjectView
+         */
+        ObjectView.prototype.getObjectView = function (object, autocreate, excludeAttrs) {
+            if (autocreate === void 0) { autocreate = true; }
+            if (excludeAttrs === void 0) { excludeAttrs = []; }
+            var classConfig = this.getObjectInfo(object, autocreate, excludeAttrs);
+            if (classConfig.component == null || classConfig.component == "") {
+                //返回基础类型界面类定义
+                if (!(classConfig.owner instanceof Object)) {
+                    classConfig.component = this.defaultBaseObjectViewClass;
+                }
+                else {
+                    //使用默认类型界面类定义
+                    classConfig.component = this.defaultObjectViewClass;
+                }
+            }
+            var cls = this.OVComponent[classConfig.component];
+            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
+            var view = new cls(classConfig);
+            return view;
+        };
+        /**
+         * 获取属性界面
+         *
+         * @static
+         * @param {AttributeViewInfo} attributeViewInfo			属性界面信息
+         * @returns {egret.DisplayObject}						属性界面
+         *
+         * @memberOf ObjectView
+         */
+        ObjectView.prototype.getAttributeView = function (attributeViewInfo) {
+            if (attributeViewInfo.component == null || attributeViewInfo.component == "") {
+                var defaultViewClass = this.defaultTypeAttributeView[attributeViewInfo.type];
+                var tempComponent = defaultViewClass ? defaultViewClass.component : "";
+                if (tempComponent != null && tempComponent != "") {
+                    attributeViewInfo.component = defaultViewClass.component;
+                    attributeViewInfo.componentParam = defaultViewClass.componentParam || attributeViewInfo.componentParam;
+                }
+            }
+            if (attributeViewInfo.component == null || attributeViewInfo.component == "") {
+                //使用默认对象属性界面类定义
+                attributeViewInfo.component = this.defaultObjectAttributeViewClass;
+            }
+            var cls = this.OAVComponent[attributeViewInfo.component];
+            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + attributeViewInfo.component + " \u5BF9\u5E94\u7684\u5C5E\u6027\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + attributeViewInfo.component + " \u4E2D\u4F7F\u7528@OVAComponent()\u6807\u8BB0");
+            var view = new cls(attributeViewInfo);
+            return view;
+        };
+        /**
+         * 获取块界面
+         *
+         * @static
+         * @param {BlockViewInfo} blockViewInfo			块界面信息
+         * @returns {egret.DisplayObject}				块界面
+         *
+         * @memberOf ObjectView
+         */
+        ObjectView.prototype.getBlockView = function (blockViewInfo) {
+            if (blockViewInfo.component == null || blockViewInfo.component == "") {
+                //返回默认对象属性界面类定义
+                blockViewInfo.component = this.defaultObjectAttributeBlockView;
+            }
+            var cls = this.OBVComponent[blockViewInfo.component];
+            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + blockViewInfo.component + " \u5BF9\u5E94\u7684\u5757\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + blockViewInfo.component + " \u4E2D\u4F7F\u7528@OVBComponent()\u6807\u8BB0");
+            var view = new cls(blockViewInfo);
+            return view;
+        };
+        ObjectView.prototype.addOAV = function (target, propertyKey, param) {
+            if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
+                target[OBJECTVIEW_KEY] = {};
+            var objectview = target[OBJECTVIEW_KEY] || {};
+            var attributeDefinitionVec = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
+            attributeDefinitionVec.push({
+                name: propertyKey, block: param && param.block, component: param && param.component, componentParam: param && param.componentParam
+            });
+        };
+        /**
+         * 获取对象信息
+         * @param object				对象
+         * @param autocreate			当对象没有注册属性时是否自动创建属性信息
+         * @param excludeAttrs			排除属性列表
+         * @return
+         */
+        ObjectView.prototype.getObjectInfo = function (object, autocreate, excludeAttrs) {
+            if (autocreate === void 0) { autocreate = true; }
+            if (excludeAttrs === void 0) { excludeAttrs = []; }
+            if (typeof object == "string" || typeof object == "number" || typeof object == "boolean") {
+                return {
+                    objectAttributeInfos: [],
+                    objectBlockInfos: [],
+                    owner: object,
+                    component: "",
+                    componentParam: undefined
+                };
+            }
+            var classConfig = getInheritClassDefinition(object, autocreate);
+            classConfig = classConfig || {
+                component: "",
+                componentParam: null,
+                attributeDefinitionVec: [],
+                blockDefinitionVec: [],
+            };
+            var objectAttributeInfos = [];
+            classConfig.attributeDefinitionVec.forEach(function (attributeDefinition) {
+                if (excludeAttrs.indexOf(attributeDefinition.name) == -1) {
+                    objectAttributeInfos.push({
+                        name: attributeDefinition.name,
+                        block: attributeDefinition.block,
+                        component: attributeDefinition.component,
+                        componentParam: attributeDefinition.componentParam,
+                        owner: object,
+                        writable: true,
+                        type: getAttributeType(object[attributeDefinition.name])
+                    });
+                }
+            });
+            function getAttributeType(attribute) {
+                if (attribute == null)
+                    return "null";
+                if (typeof attribute == "number")
+                    return "number";
+                return attribute.constructor.name;
+            }
+            var objectInfo = {
+                objectAttributeInfos: objectAttributeInfos,
+                objectBlockInfos: getObjectBlockInfos(object, objectAttributeInfos, classConfig.blockDefinitionVec),
+                owner: object,
+                component: classConfig.component,
+                componentParam: classConfig.componentParam
+            };
+            return objectInfo;
+        };
+        return ObjectView;
+    }());
+    feng3d.ObjectView = ObjectView;
+    feng3d.objectview = new ObjectView();
+    var OBJECTVIEW_KEY = "__objectview__";
+    function mergeClassDefinition(oldClassDefinition, newClassDefinition) {
+        if (newClassDefinition.component && newClassDefinition.component.length > 0) {
+            oldClassDefinition.component = newClassDefinition.component;
+            oldClassDefinition.componentParam = newClassDefinition.componentParam;
+        }
+        //合并属性
+        oldClassDefinition.attributeDefinitionVec = oldClassDefinition.attributeDefinitionVec || [];
+        if (newClassDefinition.attributeDefinitionVec && newClassDefinition.attributeDefinitionVec.length > 0) {
+            newClassDefinition.attributeDefinitionVec.forEach(function (newAttributeDefinition) {
+                var isfound = false;
+                oldClassDefinition.attributeDefinitionVec.forEach(function (oldAttributeDefinition) {
+                    if (newAttributeDefinition && oldAttributeDefinition.name == newAttributeDefinition.name) {
+                        oldAttributeDefinition.block = newAttributeDefinition.block;
+                        oldAttributeDefinition.component = newAttributeDefinition.component;
+                        oldAttributeDefinition.componentParam = newAttributeDefinition.componentParam;
+                        isfound = true;
+                    }
+                });
+                if (!isfound) {
+                    oldClassDefinition.attributeDefinitionVec.push(newAttributeDefinition);
+                }
+            });
+        }
+        //合并块
+        oldClassDefinition.blockDefinitionVec = oldClassDefinition.blockDefinitionVec || [];
+        if (newClassDefinition.blockDefinitionVec && newClassDefinition.blockDefinitionVec.length > 0) {
+            newClassDefinition.blockDefinitionVec.forEach(function (newBlockDefinition) {
+                var isfound = false;
+                oldClassDefinition.blockDefinitionVec.forEach(function (oldBlockDefinition) {
+                    if (newBlockDefinition && newBlockDefinition.name == oldBlockDefinition.name) {
+                        oldBlockDefinition.component = newBlockDefinition.component;
+                        oldBlockDefinition.componentParam = newBlockDefinition.componentParam;
+                        isfound = true;
+                    }
+                });
+                if (!isfound) {
+                    oldClassDefinition.blockDefinitionVec.push(newBlockDefinition);
+                }
+            });
+        }
+    }
+    function getInheritClassDefinition(object, autocreate) {
+        if (autocreate === void 0) { autocreate = true; }
+        var classConfigVec = [];
+        var prototype = object;
+        while (prototype) {
+            var classConfig = prototype[OBJECTVIEW_KEY];
+            if (classConfig)
+                classConfigVec.push(classConfig);
+            prototype = prototype["__proto__"];
+        }
+        var resultclassConfig;
+        if (classConfigVec.length > 0) {
+            resultclassConfig = {};
+            for (var i = 0; i < classConfigVec.length; i++) {
+                mergeClassDefinition(resultclassConfig, classConfigVec[i]);
+            }
+        }
+        else if (autocreate) {
+            resultclassConfig = getDefaultClassConfig(object);
+        }
+        return resultclassConfig;
+    }
+    function getDefaultClassConfig(object, filterReg) {
+        if (filterReg === void 0) { filterReg = /(([a-zA-Z0-9])+|(\d+))/; }
+        //
+        var attributeNames = [];
+        for (var key in object) {
+            var result = filterReg.exec(key);
+            if (result && result[0] == key) {
+                var value = object[key];
+                if (value === undefined || value instanceof Function)
+                    continue;
+                attributeNames.push(key);
+            }
+        }
+        attributeNames = attributeNames.sort();
+        var attributeDefinitionVec = [];
+        attributeNames.forEach(function (element) {
+            attributeDefinitionVec.push({
+                name: element,
+                block: "",
+            });
+        });
+        var defaultClassConfig = {
+            component: "",
+            attributeDefinitionVec: attributeDefinitionVec,
+            blockDefinitionVec: []
+        };
+        return defaultClassConfig;
+    }
+    /**
+     * 获取对象块信息列表
+     * @param {Object} object			对象
+     * @returns {BlockViewInfo[]}		对象块信息列表
+     */
+    function getObjectBlockInfos(object, objectAttributeInfos, blockDefinitionVec) {
+        var objectBlockInfos = [];
+        var dic = {};
+        var objectBlockInfo;
+        //收集块信息
+        var i = 0;
+        var tempVec = [];
+        for (i = 0; i < objectAttributeInfos.length; i++) {
+            var blockName = objectAttributeInfos[i].block || "";
+            objectBlockInfo = dic[blockName];
+            if (objectBlockInfo == null) {
+                objectBlockInfo = dic[blockName] = { name: blockName, owner: object, itemList: [] };
+                tempVec.push(objectBlockInfo);
+            }
+            objectBlockInfo.itemList.push(objectAttributeInfos[i]);
+        }
+        //按快的默认顺序生成 块信息列表
+        var blockDefinition;
+        var pushDic = {};
+        if (blockDefinitionVec) {
+            for (i = 0; i < blockDefinitionVec.length; i++) {
+                blockDefinition = blockDefinitionVec[i];
+                objectBlockInfo = dic[blockDefinition.name];
+                if (objectBlockInfo == null) {
+                    objectBlockInfo = {
+                        name: blockDefinition.name,
+                        owner: object,
+                        itemList: []
+                    };
+                }
+                objectBlockInfo.component = blockDefinition.component;
+                objectBlockInfo.componentParam = blockDefinition.componentParam;
+                objectBlockInfos.push(objectBlockInfo);
+                pushDic[objectBlockInfo.name] = true;
+            }
+        }
+        //添加剩余的块信息
+        for (i = 0; i < tempVec.length; i++) {
+            if (Boolean(pushDic[tempVec[i].name]) == false) {
+                objectBlockInfos.push(tempVec[i]);
+            }
+        }
+        return objectBlockInfos;
+    }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 数据类型转换
      * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
      * @see http://blog.csdn.net/yinwhm12/article/details/73482904
@@ -1826,311 +2136,6 @@ var feng3d;
         },
     };
 })(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 序列化装饰器，被装饰属性将被序列化
-     * @param {*} target                序列化原型
-     * @param {string} propertyKey      序列化属性
-     */
-    function serialize(target, propertyKey) {
-        var serializeInfo = target[SERIALIZE_KEY];
-        if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY)) {
-            Object.defineProperty(target, SERIALIZE_KEY, {
-                /**
-                 * uv数据
-                 */
-                value: {},
-                enumerable: false,
-                configurable: true
-            });
-        }
-        serializeInfo = target[SERIALIZE_KEY];
-        serializeInfo.propertys = serializeInfo.propertys || [];
-        serializeInfo.propertys.push(propertyKey);
-    }
-    feng3d.serialize = serialize;
-    var Serialization = /** @class */ (function () {
-        function Serialization() {
-        }
-        /**
-         * 序列化对象
-         * @param target 被序列化的数据
-         * @returns 序列化后可以转换为Json的对象
-         */
-        Serialization.prototype.serialize = function (target) {
-            //基础类型
-            if (isBaseType(target))
-                return target;
-            // 排除不支持序列化对象
-            if (target.hasOwnProperty("serializable") && !target["serializable"])
-                return undefined;
-            //处理数组
-            if (target.constructor === Array) {
-                var arr = [];
-                for (var i = 0; i < target.length; i++) {
-                    arr[i] = this.serialize(target[i]);
-                }
-                return arr;
-            }
-            var object = {};
-            //处理普通Object
-            if (target.constructor === Object) {
-                object[CLASS_KEY] = "Object";
-                for (var key in target) {
-                    if (target.hasOwnProperty(key)) {
-                        if (target[key] !== undefined) {
-                            object[key] = this.serialize(target[key]);
-                        }
-                    }
-                }
-                return object;
-            }
-            //处理方法
-            if (typeof target == "function") {
-                object[CLASS_KEY] = "function";
-                object.data = target.toString();
-                return object;
-            }
-            var className = feng3d.ClassUtils.getQualifiedClassName(target);
-            object[CLASS_KEY] = className;
-            if (target["serialize"])
-                return target["serialize"](object);
-            //使用默认序列化
-            var defaultInstance = getDefaultInstance(target);
-            this.different(target, defaultInstance, object);
-            return object;
-        };
-        /**
-         * 比较两个对象的不同，提取出不同的数据
-         * @param target 用于检测不同的数据
-         * @param defaultInstance   模板（默认）数据
-         * @param different 比较得出的不同（简单结构）数据
-         * @returns 比较得出的不同（简单结构）数据
-         */
-        Serialization.prototype.different = function (target, defaultInstance, different) {
-            different = different || {};
-            var serializableMembers = getSerializableMembers(target);
-            for (var i = 0; i < serializableMembers.length; i++) {
-                var property = serializableMembers[i];
-                if (target[property] === defaultInstance[property])
-                    continue;
-                if (isBaseType(target[property])) {
-                    different[property] = target[property];
-                    continue;
-                }
-                if (defaultInstance[property] == null) {
-                    different[property] = this.serialize(target[property]);
-                    continue;
-                }
-                if (defaultInstance[property].constructor != target[property].constructor) {
-                    different[property] = this.serialize(target[property]);
-                    continue;
-                }
-                if (target[property].constructor == Array) {
-                    if (target[property].length == 0) {
-                        if (defaultInstance[property].length == 0)
-                            continue;
-                        different[property] = [];
-                        continue;
-                    }
-                    different[property] = this.serialize(target[property]);
-                    continue;
-                }
-                var diff = this.different(target[property], defaultInstance[property]);
-                if (Object.keys(diff).length > 0)
-                    different[property] = diff;
-            }
-            return different;
-        };
-        /**
-         * 反序列化
-         * @param object 换为Json的对象
-         * @returns 反序列化后的数据
-         */
-        Serialization.prototype.deserialize = function (object) {
-            var _this = this;
-            //基础类型
-            if (isBaseType(object))
-                return object;
-            //处理数组
-            if (object.constructor == Array) {
-                var arr = [];
-                object.forEach(function (element) {
-                    arr.push(_this.deserialize(element));
-                });
-                return arr;
-            }
-            if (object.constructor != Object) {
-                return object;
-            }
-            // 获取类型
-            var className = object[CLASS_KEY];
-            // 处理普通Object
-            if (className == "Object" || className == null) {
-                var target = {};
-                for (var key in object) {
-                    target[key] = this.deserialize(object[key]);
-                }
-                return target;
-            }
-            //处理方法
-            if (className == "function") {
-                var f;
-                eval("f=" + object.data);
-                return f;
-            }
-            var cls = feng3d.ClassUtils.getDefinitionByName(className);
-            if (!cls) {
-                feng3d.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
-                return undefined;
-            }
-            target = new cls();
-            //处理自定义反序列化对象
-            if (target["deserialize"])
-                return target["deserialize"](object);
-            //默认反序列
-            this.setValue(target, object);
-            return target;
-        };
-        Serialization.prototype.setValue = function (target, object) {
-            if (!object)
-                return;
-            for (var property in object) {
-                if (object.hasOwnProperty(property)) {
-                    this.setPropertyValue(target, object, property);
-                }
-            }
-            // var serializableMembers = getSerializableMembers(target);
-            // for (var i = 0; i < serializableMembers.length; i++)
-            // {
-            //     var property = serializableMembers[i];
-            //     if (object[property] !== undefined)
-            //     {
-            //         this.setPropertyValue(target, object, property);
-            //     }
-            // }
-        };
-        Serialization.prototype.setPropertyValue = function (target, object, property) {
-            if (target[property] == object[property])
-                return;
-            var objvalue = object[property];
-            // 当原值等于null时直接反序列化赋值
-            if (target[property] == null) {
-                target[property] = this.deserialize(objvalue);
-                return;
-            }
-            if (isBaseType(objvalue)) {
-                target[property] = objvalue;
-                return;
-            }
-            if (objvalue.constructor == Array) {
-                target[property] = this.deserialize(objvalue);
-                return;
-            }
-            // 处理同为Object类型
-            if (objvalue[CLASS_KEY] == undefined) {
-                if (target[property].constructor == Object) {
-                    for (var key in objvalue) {
-                        this.setPropertyValue(target[property], objvalue, key);
-                    }
-                }
-                else {
-                    this.setValue(target[property], objvalue);
-                }
-                return;
-            }
-            var targetClassName = feng3d.ClassUtils.getQualifiedClassName(target[property]);
-            if (targetClassName == objvalue[CLASS_KEY]) {
-                this.setValue(target[property], objvalue);
-            }
-            else {
-                target[property] = this.deserialize(objvalue);
-            }
-        };
-        Serialization.prototype.clone = function (target) {
-            return this.deserialize(this.serialize(target));
-        };
-        return Serialization;
-    }());
-    feng3d.Serialization = Serialization;
-    var CLASS_KEY = "__class__";
-    var SERIALIZE_KEY = "_serialize__";
-    /**
-     * 判断是否为基础类型（在序列化中不发生变化的对象）
-     */
-    function isBaseType(object) {
-        //基础类型
-        if (object == undefined
-            || object == null
-            || typeof object == "boolean"
-            || typeof object == "string"
-            || typeof object == "number")
-            return true;
-    }
-    /**
-     * 获取默认实例
-     */
-    function getDefaultInstance(object) {
-        var serializeInfo = object[SERIALIZE_KEY];
-        serializeInfo.default = serializeInfo.default || new object.constructor();
-        return serializeInfo.default;
-    }
-    /**
-     * 获取序列化属性列表
-     */
-    function getSerializableMembers(object, serializableMembers) {
-        serializableMembers = serializableMembers || [];
-        if (object["__proto__"]) {
-            getSerializableMembers(object["__proto__"], serializableMembers);
-        }
-        if (Object.getOwnPropertyDescriptor(object, SERIALIZE_KEY)) {
-            var serializeInfo = object[SERIALIZE_KEY];
-            if (serializeInfo && serializeInfo.propertys) {
-                var propertys = serializeInfo.propertys;
-                for (var i = 0, n = propertys.length; i < n; i++) {
-                    var element = propertys[i];
-                    serializableMembers.push(propertys[i]);
-                }
-            }
-        }
-        return serializableMembers;
-    }
-    feng3d.serialization = new Serialization();
-})(feng3d || (feng3d = {}));
-// [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
-// {
-//     element.prototype["serialize"] = function (object: { value: number[] })
-//     {
-//         object.value = Array.from(this);
-//         return object;
-//     }
-//     element.prototype["deserialize"] = function (object: { value: number[] })
-//     {
-//         return new (<any>(this.constructor))(object.value);
-//     }
-// });
-// interface Object
-// {
-//     /**
-//      * 给对象设置值
-//      * @param target 被修改的对象
-//      * @param object 修改数据
-//      */
-//     __setValue<T>(target: T, object: Object): T;
-// }
-// Object.defineProperty(Object.prototype, "__setValue", {
-//     /**
-//      * uv数据
-//      */
-//     value: function <T>(target: T, object: Object): T
-//     {
-//         feng3d.serialization.setValue(target, object);
-//         return target;
-//     },
-//     enumerable: false,
-//     configurable: true
-// }); 
 var feng3d;
 (function (feng3d) {
     var Stats = /** @class */ (function () {
@@ -10368,6 +10373,20 @@ var feng3d;
             this._invalid = true;
             feng3d.serialization.setValue(this, raw);
         }
+        Object.defineProperty(TextureInfo.prototype, "isPowerOfTwo", {
+            /**
+             * 是否为2的幂贴图
+             */
+            get: function () {
+                var isPowerOfTwo = true;
+                var pixels = this._activePixels;
+                if (pixels instanceof HTMLImageElement)
+                    isPowerOfTwo = feng3d.FMath.isPowerOfTwo(pixels.width) && feng3d.FMath.isPowerOfTwo(pixels.height);
+                return isPowerOfTwo;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 判断数据是否满足渲染需求
          */
@@ -10398,11 +10417,7 @@ var feng3d;
             var magFilter = gl[this.magFilter];
             var wrapS = gl[this.wrapS];
             var wrapT = gl[this.wrapT];
-            var isPowerOfTwo = true;
-            var pixels = this._activePixels;
-            if (pixels instanceof HTMLImageElement)
-                isPowerOfTwo = feng3d.FMath.isPowerOfTwo(pixels.width) && feng3d.FMath.isPowerOfTwo(pixels.height);
-            if (!isPowerOfTwo) {
+            if (!this.isPowerOfTwo) {
                 wrapS = gl.CLAMP_TO_EDGE;
                 wrapT = gl.CLAMP_TO_EDGE;
             }
@@ -10445,7 +10460,7 @@ var feng3d;
                 gl.bindTexture(textureType, texture);
                 //设置纹理图片
                 this.initTexture(gl);
-                if (this.generateMipmap) {
+                if (this.generateMipmap && this.isPowerOfTwo) {
                     gl.generateMipmap(textureType);
                 }
                 this._textureMap.set(gl, texture);

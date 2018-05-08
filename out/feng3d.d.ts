@@ -121,6 +121,252 @@ interface Array<T> {
 }
 declare namespace feng3d {
     /**
+     * 测试代码运行时间
+     * @param fn 被测试的方法
+     * @param labal 标签
+     */
+    function time(fn: Function, labal?: string): void;
+    /**
+     * 断言，测试不通过时报错
+     * @param test 测试项
+     * @param message 测试失败时提示信息
+     * @param optionalParams
+     */
+    function assert(test?: boolean, message?: string, ...optionalParams: any[]): void;
+    /**
+     * 输出错误
+     * @param message 错误信息
+     * @param optionalParams
+     */
+    function error(message?: any, ...optionalParams: any[]): void;
+    /**
+     * 记录日志信息
+     * @param message 日志信息
+     * @param optionalParams
+     */
+    function log(message?: any, ...optionalParams: any[]): void;
+    /**
+     * 警告
+     * @param message 警告信息
+     * @param optionalParams
+     */
+    function warn(message?: any, ...optionalParams: any[]): void;
+}
+declare namespace feng3d {
+    /**
+     * 事件
+     */
+    interface Event<T> {
+        /**
+         * 事件的类型。类型区分大小写。
+         */
+        type: string;
+        /**
+         * 事件携带的自定义数据
+         */
+        data: T;
+        /**
+         * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        bubbles?: boolean;
+        /**
+         * 事件目标。
+         */
+        target?: any;
+        /**
+         * 当前正在使用某个事件侦听器处理 Event 对象的对象。
+         */
+        currentTarget?: any;
+        /**
+         * 是否停止处理事件监听器
+         */
+        isStop?: boolean;
+        /**
+         * 是否停止冒泡
+         */
+        isStopBubbles?: boolean;
+    }
+    interface IEventDispatcher<T> {
+        once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): any;
+        has<K extends keyof T>(type: K): boolean;
+        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => any, thisObject?: any): any;
+    }
+    const EVENT_KEY = "__event__";
+    /**
+     * 事件适配器
+     */
+    class EventDispatcher {
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
+        /**
+         * 派发事件
+         * @param event   事件对象
+         */
+        dispatchEvent(event: Event<any>): void;
+        /**
+         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
+         * @param type                      事件的类型。类型区分大小写。
+         * @param data                      事件携带的自定义数据。
+         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        dispatch(type: string, data?: any, bubbles?: boolean): void;
+        /**
+         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
+         *
+         * @param type		事件的类型。
+         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
+         */
+        has(type: string): boolean;
+        /**
+         * 添加监听
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        on(type: string, listener: (event: any) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         */
+        off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 代理 EventTarget, 处理js事件中this关键字问题
+     * @author feng 2016-12-19
+     */
+    class EventProxy<T> extends EventDispatcher {
+        clientX: number;
+        clientY: number;
+        /**
+         * 是否右击
+         */
+        rightmouse: boolean;
+        key: string;
+        keyCode: number;
+        wheelDelta: number;
+        private listentypes;
+        private target;
+        constructor(target: EventTarget);
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once<K extends keyof T>(type: K, listener: (event: T[K]) => void, thisObject?: any, priority?: number): void;
+        /**
+         * 添加监听
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        on<K extends keyof T>(type: K, listener: (event: T[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         */
+        off<K extends keyof T>(type?: K, listener?: (event: T[K]) => any, thisObject?: any): void;
+        /**
+         * 键盘按下事件
+         */
+        private onMouseKey;
+        /**
+         * 清理数据
+         */
+        private clear();
+    }
+    /**
+     * 键盘鼠标输入
+     */
+    var windowEventProxy: EventProxy<WindowEventMap>;
+}
+declare namespace feng3d {
+    var loadjs: {
+        load: (params: {
+            paths: string | string[] | {
+                url: string;
+                type: string;
+            } | {
+                url: string;
+                type: string;
+            }[];
+            bundleId?: string;
+            success?: () => void;
+            error?: (pathsNotFound?: string[]) => void;
+            async?: boolean;
+            numRetries?: number;
+            before?: (path: {
+                url: string;
+                type: string;
+            }, e: any) => boolean;
+            onitemload?: (url: string, content: string) => void;
+        }) => void;
+        ready: (params: {
+            depends: string | string[];
+            success?: () => void;
+            error?: (pathsNotFound?: string[]) => void;
+        }) => void;
+    };
+}
+declare namespace feng3d {
+    var watcher: {
+        watch<T extends Object>(host: T, property: keyof T, handler: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        unwatch<T extends Object>(host: T, property: keyof T, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+    };
+}
+declare namespace feng3d {
+    var serialization: Serialization;
+    /**
+     * 序列化装饰器，被装饰属性将被序列化
+     * @param {*} target                序列化原型
+     * @param {string} propertyKey      序列化属性
+     */
+    function serialize(target: any, propertyKey: string): void;
+    class Serialization {
+        /**
+         * 序列化对象
+         * @param target 被序列化的数据
+         * @returns 序列化后可以转换为Json的对象
+         */
+        serialize(target: any): any;
+        /**
+         * 比较两个对象的不同，提取出不同的数据
+         * @param target 用于检测不同的数据
+         * @param defaultInstance   模板（默认）数据
+         * @param different 比较得出的不同（简单结构）数据
+         * @returns 比较得出的不同（简单结构）数据
+         */
+        different(target: Object, defaultInstance: Object, different?: Object): Object;
+        /**
+         * 反序列化
+         * @param object 换为Json的对象
+         * @returns 反序列化后的数据
+         */
+        deserialize(object: any): any;
+        setValue(target: Object, object: Object): void;
+        setPropertyValue(target: Object, object: Object, property: string): void;
+        clone<T>(target: T): T;
+    }
+}
+declare namespace feng3d {
+    /**
      * 标记objectview对象界面类
      */
     function OVComponent(component?: string): (constructor: Function) => void;
@@ -150,28 +396,83 @@ declare namespace feng3d {
     }): (target: any, propertyKey: string) => void;
     /**
      * 对象界面
+     */
+    var objectview: ObjectView;
+    /**
+     * 对象界面
      * @author feng 2016-3-10
      */
-    var objectview: {
+    class ObjectView {
+        /**
+         * 默认基础类型对象界面类定义
+         */
         defaultBaseObjectViewClass: string;
+        /**
+         * 默认对象界面类定义
+         */
         defaultObjectViewClass: string;
+        /**
+         * 默认对象属性界面类定义
+         */
         defaultObjectAttributeViewClass: string;
+        /**
+         * 属性块默认界面
+         */
         defaultObjectAttributeBlockView: string;
+        /**
+         * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
+         */
         defaultTypeAttributeView: {};
         OAVComponent: {};
         OBVComponent: {};
         OVComponent: {};
         setDefaultTypeAttributeView(type: string, component: AttributeTypeDefinition): void;
+        /**
+         * 获取对象界面
+         *
+         * @static
+         * @param {Object} object				用于生成界面的对象
+         * @param autocreate					当对象没有注册属性时是否自动创建属性信息
+         * @param excludeAttrs					排除属性列表
+         * @returns 							对象界面
+         *
+         * @memberOf ObjectView
+         */
         getObjectView(object: Object, autocreate?: boolean, excludeAttrs?: string[]): IObjectView;
+        /**
+         * 获取属性界面
+         *
+         * @static
+         * @param {AttributeViewInfo} attributeViewInfo			属性界面信息
+         * @returns {egret.DisplayObject}						属性界面
+         *
+         * @memberOf ObjectView
+         */
         getAttributeView(attributeViewInfo: AttributeViewInfo): IObjectAttributeView;
+        /**
+         * 获取块界面
+         *
+         * @static
+         * @param {BlockViewInfo} blockViewInfo			块界面信息
+         * @returns {egret.DisplayObject}				块界面
+         *
+         * @memberOf ObjectView
+         */
         getBlockView(blockViewInfo: BlockViewInfo): IObjectBlockView;
-        addOAV<K extends string>(target: any, propertyKey: string, param?: {
+        addOAV<K extends keyof OAVComponentParam>(target: any, propertyKey: string, param?: {
             block?: string;
             component?: K;
             componentParam?: OAVComponentParam[K];
         }): void;
+        /**
+         * 获取对象信息
+         * @param object				对象
+         * @param autocreate			当对象没有注册属性时是否自动创建属性信息
+         * @param excludeAttrs			排除属性列表
+         * @return
+         */
         getObjectInfo(object: Object, autocreate?: boolean, excludeAttrs?: string[]): ObjectViewInfo;
-    };
+    }
     interface OAVComponentParam {
         属性组件名称: "属性组件参数";
         [component: string]: any;
@@ -428,218 +729,6 @@ declare namespace feng3d {
         owner: Object;
     }
 }
-declare namespace feng3d {
-    /**
-     * 测试代码运行时间
-     * @param fn 被测试的方法
-     * @param labal 标签
-     */
-    function time(fn: Function, labal?: string): void;
-    /**
-     * 断言，测试不通过时报错
-     * @param test 测试项
-     * @param message 测试失败时提示信息
-     * @param optionalParams
-     */
-    function assert(test?: boolean, message?: string, ...optionalParams: any[]): void;
-    /**
-     * 输出错误
-     * @param message 错误信息
-     * @param optionalParams
-     */
-    function error(message?: any, ...optionalParams: any[]): void;
-    /**
-     * 记录日志信息
-     * @param message 日志信息
-     * @param optionalParams
-     */
-    function log(message?: any, ...optionalParams: any[]): void;
-    /**
-     * 警告
-     * @param message 警告信息
-     * @param optionalParams
-     */
-    function warn(message?: any, ...optionalParams: any[]): void;
-}
-declare namespace feng3d {
-    /**
-     * 事件
-     */
-    interface Event<T> {
-        /**
-         * 事件的类型。类型区分大小写。
-         */
-        type: string;
-        /**
-         * 事件携带的自定义数据
-         */
-        data: T;
-        /**
-         * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
-         */
-        bubbles?: boolean;
-        /**
-         * 事件目标。
-         */
-        target?: any;
-        /**
-         * 当前正在使用某个事件侦听器处理 Event 对象的对象。
-         */
-        currentTarget?: any;
-        /**
-         * 是否停止处理事件监听器
-         */
-        isStop?: boolean;
-        /**
-         * 是否停止冒泡
-         */
-        isStopBubbles?: boolean;
-    }
-    interface IEventDispatcher<T> {
-        once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): any;
-        has<K extends keyof T>(type: K): boolean;
-        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => any, thisObject?: any): any;
-    }
-    const EVENT_KEY = "__event__";
-    /**
-     * 事件适配器
-     */
-    class EventDispatcher {
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
-        /**
-         * 派发事件
-         * @param event   事件对象
-         */
-        dispatchEvent(event: Event<any>): void;
-        /**
-         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
-         * @param type                      事件的类型。类型区分大小写。
-         * @param data                      事件携带的自定义数据。
-         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
-         */
-        dispatch(type: string, data?: any, bubbles?: boolean): void;
-        /**
-         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
-         *
-         * @param type		事件的类型。
-         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
-         */
-        has(type: string): boolean;
-        /**
-         * 添加监听
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        on(type: string, listener: (event: any) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         */
-        off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 代理 EventTarget, 处理js事件中this关键字问题
-     * @author feng 2016-12-19
-     */
-    class EventProxy<T> extends EventDispatcher {
-        clientX: number;
-        clientY: number;
-        /**
-         * 是否右击
-         */
-        rightmouse: boolean;
-        key: string;
-        keyCode: number;
-        wheelDelta: number;
-        private listentypes;
-        private target;
-        constructor(target: EventTarget);
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        once<K extends keyof T>(type: K, listener: (event: T[K]) => void, thisObject?: any, priority?: number): void;
-        /**
-         * 添加监听
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        on<K extends keyof T>(type: K, listener: (event: T[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         */
-        off<K extends keyof T>(type?: K, listener?: (event: T[K]) => any, thisObject?: any): void;
-        /**
-         * 键盘按下事件
-         */
-        private onMouseKey;
-        /**
-         * 清理数据
-         */
-        private clear();
-    }
-    /**
-     * 键盘鼠标输入
-     */
-    var windowEventProxy: EventProxy<WindowEventMap>;
-}
-declare namespace feng3d {
-    var loadjs: {
-        load: (params: {
-            paths: string | string[] | {
-                url: string;
-                type: string;
-            } | {
-                url: string;
-                type: string;
-            }[];
-            bundleId?: string;
-            success?: () => void;
-            error?: (pathsNotFound?: string[]) => void;
-            async?: boolean;
-            numRetries?: number;
-            before?: (path: {
-                url: string;
-                type: string;
-            }, e: any) => boolean;
-            onitemload?: (url: string, content: string) => void;
-        }) => void;
-        ready: (params: {
-            depends: string | string[];
-            success?: () => void;
-            error?: (pathsNotFound?: string[]) => void;
-        }) => void;
-    };
-}
-declare namespace feng3d {
-    var watcher: {
-        watch<T extends Object>(host: T, property: keyof T, handler: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
-        unwatch<T extends Object>(host: T, property: keyof T, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
-        watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
-        unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
-    };
-}
 /**
  * The unescape() function computes a new string in which hexadecimal escape sequences are replaced with the character that it represents. The escape sequences might be introduced by a function like escape. Usually, decodeURI or decodeURIComponent are preferred over unescape.
  * @param str A string to be decoded.
@@ -764,40 +853,6 @@ declare namespace feng3d {
         getImageDataFromUrl(url: string, callback: (imageData: ImageData) => void): void;
         createImageData(width?: number, height?: number, fillcolor?: number): ImageData;
     };
-}
-declare namespace feng3d {
-    var serialization: Serialization;
-    /**
-     * 序列化装饰器，被装饰属性将被序列化
-     * @param {*} target                序列化原型
-     * @param {string} propertyKey      序列化属性
-     */
-    function serialize(target: any, propertyKey: string): void;
-    class Serialization {
-        /**
-         * 序列化对象
-         * @param target 被序列化的数据
-         * @returns 序列化后可以转换为Json的对象
-         */
-        serialize(target: any): any;
-        /**
-         * 比较两个对象的不同，提取出不同的数据
-         * @param target 用于检测不同的数据
-         * @param defaultInstance   模板（默认）数据
-         * @param different 比较得出的不同（简单结构）数据
-         * @returns 比较得出的不同（简单结构）数据
-         */
-        different(target: Object, defaultInstance: Object, different?: Object): Object;
-        /**
-         * 反序列化
-         * @param object 换为Json的对象
-         * @returns 反序列化后的数据
-         */
-        deserialize(object: any): any;
-        setValue(target: Object, object: Object): void;
-        setPropertyValue(target: Object, object: Object, property: string): void;
-        clone<T>(target: T): T;
-    }
 }
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -6429,6 +6484,10 @@ declare namespace feng3d {
          * 是否失效
          */
         private _invalid;
+        /**
+         * 是否为2的幂贴图
+         */
+        readonly isPowerOfTwo: boolean;
         constructor(raw?: TextureInfoRaw);
         /**
          * 判断数据是否满足渲染需求

@@ -84,36 +84,42 @@ namespace feng3d
 
 	/**
 	 * 对象界面
+	 */
+	export var objectview: ObjectView;
+
+	/**
+	 * 对象界面
 	 * @author feng 2016-3-10
 	 */
-	export var objectview = {
+	export class ObjectView
+	{
 		/**
 		 * 默认基础类型对象界面类定义
 		 */
-		defaultBaseObjectViewClass: "",
+		defaultBaseObjectViewClass = ""
 		/**
 		 * 默认对象界面类定义
 		 */
-		defaultObjectViewClass: "",
+		defaultObjectViewClass = ""
 		/**
 		 * 默认对象属性界面类定义
 		 */
-		defaultObjectAttributeViewClass: "",
+		defaultObjectAttributeViewClass = ""
 		/**
 		 * 属性块默认界面
 		 */
-		defaultObjectAttributeBlockView: "",
+		defaultObjectAttributeBlockView = ""
 		/**
 		 * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
 		 */
-		defaultTypeAttributeView: {},
-		OAVComponent: {},
-		OBVComponent: {},
-		OVComponent: {},
+		defaultTypeAttributeView = {}
+		OAVComponent = {}
+		OBVComponent = {}
+		OVComponent = {}
 		setDefaultTypeAttributeView(type: string, component: AttributeTypeDefinition)
 		{
-			objectview.defaultTypeAttributeView[type] = component;
-		},
+			this.defaultTypeAttributeView[type] = component;
+		}
 		/**
 		 * 获取对象界面
 		 * 
@@ -127,26 +133,26 @@ namespace feng3d
 		 */
 		getObjectView(object: Object, autocreate = true, excludeAttrs: string[] = []): IObjectView
 		{
-			var classConfig = objectview.getObjectInfo(object, autocreate, excludeAttrs);
+			var classConfig = this.getObjectInfo(object, autocreate, excludeAttrs);
 
 			if (classConfig.component == null || classConfig.component == "")
 			{
 				//返回基础类型界面类定义
 				if (!(classConfig.owner instanceof Object))
 				{
-					classConfig.component = objectview.defaultBaseObjectViewClass;
+					classConfig.component = this.defaultBaseObjectViewClass;
 				} else
 				{
 					//使用默认类型界面类定义
-					classConfig.component = objectview.defaultObjectViewClass;
+					classConfig.component = this.defaultObjectViewClass;
 				}
 			}
 
-			var cls = objectview.OVComponent[classConfig.component];
+			var cls = this.OVComponent[classConfig.component];
 			assert(cls != null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
 			var view = new cls(classConfig)
 			return view;
-		},
+		}
 		/**
 		 * 获取属性界面
 		 * 
@@ -160,7 +166,7 @@ namespace feng3d
 		{
 			if (attributeViewInfo.component == null || attributeViewInfo.component == "")
 			{
-				var defaultViewClass = objectview.defaultTypeAttributeView[attributeViewInfo.type];
+				var defaultViewClass = this.defaultTypeAttributeView[attributeViewInfo.type];
 				var tempComponent = defaultViewClass ? defaultViewClass.component : "";
 				if (tempComponent != null && tempComponent != "")
 				{
@@ -172,14 +178,14 @@ namespace feng3d
 			if (attributeViewInfo.component == null || attributeViewInfo.component == "")
 			{
 				//使用默认对象属性界面类定义
-				attributeViewInfo.component = objectview.defaultObjectAttributeViewClass;
+				attributeViewInfo.component = this.defaultObjectAttributeViewClass;
 			}
 
-			var cls = objectview.OAVComponent[attributeViewInfo.component];
+			var cls = this.OAVComponent[attributeViewInfo.component];
 			assert(cls != null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
 			var view = new cls(attributeViewInfo);
 			return view;
-		},
+		}
 		/**
 		 * 获取块界面
 		 * 
@@ -194,14 +200,14 @@ namespace feng3d
 			if (blockViewInfo.component == null || blockViewInfo.component == "")
 			{
 				//返回默认对象属性界面类定义
-				blockViewInfo.component = objectview.defaultObjectAttributeBlockView;
+				blockViewInfo.component = this.defaultObjectAttributeBlockView;
 			}
 
-			var cls = objectview.OBVComponent[blockViewInfo.component];
+			var cls = this.OBVComponent[blockViewInfo.component];
 			assert(cls != null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
 			var view = new cls(blockViewInfo);
 			return view;
-		},
+		}
 		addOAV<K extends keyof OAVComponentParam>(target: any, propertyKey: string, param?: { block?: string; component?: K; componentParam?: OAVComponentParam[K]; })
 		{
 			if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
@@ -211,7 +217,7 @@ namespace feng3d
 			attributeDefinitionVec.push({
 				name: propertyKey, block: param && param.block, component: param && param.component, componentParam: param && param.componentParam
 			});
-		},
+		}
 		/**
 		 * 获取对象信息
 		 * @param object				对象
@@ -278,8 +284,10 @@ namespace feng3d
 				componentParam: classConfig.componentParam
 			};
 			return objectInfo;
-		},
+		}
 	}
+
+	objectview = new ObjectView();
 
 	var OBJECTVIEW_KEY = "__objectview__";
 

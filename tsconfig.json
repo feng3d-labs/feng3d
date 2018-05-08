@@ -14,8 +14,6 @@
         "src/polyfill/Map.ts",
         "src/polyfill/Array.ts",
         //
-        "src/objectview.ts",
-        //
         "src/debug/debug.ts",
         //
         "src/event/EventDispatcher.ts",
@@ -23,11 +21,12 @@
         "src/resources/load.ts",
         //基础工具
         "src/utils/watcher.ts",
+        "src/utils/Serialization.ts",
+        "src/utils/ObjectView.ts",
         "src/utils/dataTransform.ts",
         "src/utils/ClassUtils.ts",
         "src/utils/Decorators.ts",
         "src/utils/ImageUtil.ts",
-        "src/utils/Serialization.ts",
         "src/utils/Stats.ts",
         //几何运算
         "src/geom/Math.ts",
