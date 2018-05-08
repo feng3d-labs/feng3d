@@ -8886,7 +8886,7 @@ declare namespace feng3d {
      * 材质
      * @author feng 2016-05-02
      */
-    class Material extends EventDispatcher {
+    class Material {
         shaderName: string;
         uniforms: {};
         /**

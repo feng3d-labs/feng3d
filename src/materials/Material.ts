@@ -32,7 +32,7 @@ namespace feng3d
      * 材质
      * @author feng 2016-05-02
      */
-    export class Material extends EventDispatcher
+    export class Material
     {
 
         @oav({ component: "OAVMaterialName" })
@@ -59,9 +59,7 @@ namespace feng3d
 
         constructor(raw?: MaterialRaw)
         {
-            super();
             this.shader = new Shader();
-            this.shaderName = raw.shaderName;
             serialization.setValue(this, raw);
         }
 

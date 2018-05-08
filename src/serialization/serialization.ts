@@ -170,7 +170,7 @@ namespace feng3d
             // 获取类型
             var className: string = object[CLASS_KEY];
             // 处理普通Object
-            if (className == "Object")
+            if (className == "Object" || className == null)
             {
                 var target = {};
                 for (var key in object)

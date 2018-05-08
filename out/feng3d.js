@@ -1979,7 +1979,7 @@ var feng3d;
             // 获取类型
             var className = object[CLASS_KEY];
             // 处理普通Object
-            if (className == "Object") {
+            if (className == "Object" || className == null) {
                 var target = {};
                 for (var key in object) {
                     target[key] = this.deserialize(object[key]);
@@ -18097,19 +18097,15 @@ var feng3d;
      * 材质
      * @author feng 2016-05-02
      */
-    var Material = /** @class */ (function (_super) {
-        __extends(Material, _super);
+    var Material = /** @class */ (function () {
         function Material(raw) {
-            var _this = _super.call(this) || this;
-            _this.uniforms = {};
+            this.uniforms = {};
             /**
              * 渲染参数
              */
-            _this.renderParams = new feng3d.RenderParams();
-            _this.shader = new feng3d.Shader();
-            _this.shaderName = raw.shaderName;
-            feng3d.serialization.setValue(_this, raw);
-            return _this;
+            this.renderParams = new feng3d.RenderParams();
+            this.shader = new feng3d.Shader();
+            feng3d.serialization.setValue(this, raw);
         }
         Material.prototype.preRender = function (renderAtomic) {
             this.shader.shaderName = this.shaderName;
@@ -18145,7 +18141,7 @@ var feng3d;
             feng3d.oav({ block: "渲染参数", component: "OAVObjectView" })
         ], Material.prototype, "renderParams", void 0);
         return Material;
-    }(feng3d.EventDispatcher));
+    }());
     feng3d.Material = Material;
 })(feng3d || (feng3d = {}));
 var feng3d;
