@@ -24,6 +24,9 @@ namespace feng3d
 
     export interface SegmentUniformsRaw
     {
+        /**
+         * 类全名
+         */
         __class__?: "feng3d.SegmentUniforms",
         /** 
          * 颜色

@@ -18130,22 +18130,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 颜色材质
-     * @author feng 2017-01-11
-     */
-    var PointMaterial = /** @class */ (function (_super) {
-        __extends(PointMaterial, _super);
-        function PointMaterial() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.shaderName = "point";
-            _this.uniforms = new PointUniforms();
-            _this.renderParams = new feng3d.RenderParams({ renderMode: feng3d.RenderMode.POINTS });
-            return _this;
-        }
-        return PointMaterial;
-    }(feng3d.Material));
-    feng3d.PointMaterial = PointMaterial;
     var PointUniforms = /** @class */ (function () {
         function PointUniforms() {
             /**
