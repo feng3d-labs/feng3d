@@ -18084,8 +18084,9 @@ var feng3d;
         function MaterialFactory() {
         }
         MaterialFactory.prototype.create = function (shader, raw) {
+            raw = raw || {};
+            raw.shaderName = shader;
             var material = new Material(raw);
-            material.shaderName = shader;
             return material;
         };
         return MaterialFactory;
@@ -18105,8 +18106,9 @@ var feng3d;
              * 渲染参数
              */
             _this.renderParams = new feng3d.RenderParams();
-            feng3d.serialization.setValue(_this, raw);
             _this.shader = new feng3d.Shader();
+            _this.shaderName = raw.shaderName;
+            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         Material.prototype.preRender = function (renderAtomic) {
@@ -18120,8 +18122,11 @@ var feng3d;
         Material.prototype.onShaderChanged = function () {
             var cls = feng3d.shaderConfig.shaders[this.shaderName].cls;
             if (cls) {
-                if (!(this.uniforms instanceof cls))
-                    this.uniforms = new cls();
+                if (!(this.uniforms instanceof cls)) {
+                    var newuniforms = new cls();
+                    feng3d.serialization.setValue(newuniforms, this.uniforms);
+                    this.uniforms = newuniforms;
+                }
             }
         };
         __decorate([

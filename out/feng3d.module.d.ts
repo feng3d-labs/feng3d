@@ -856,7 +856,7 @@ declare namespace feng3d {
         r?: number;
     }
     interface Color4Raw {
-        __class__: "feng3d.Color4";
+        __class__?: "feng3d.Color4";
         a?: number;
         b?: number;
         g?: number;
@@ -8867,6 +8867,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface MaterialRaw {
+        shaderName?: string;
         blendEquation?: BlendEquation;
         cullFace?: CullFace;
         depthMask?: boolean;

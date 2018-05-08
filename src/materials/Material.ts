@@ -2,6 +2,7 @@ namespace feng3d
 {
     export interface MaterialRaw
     {
+        shaderName?: string;
         blendEquation?: BlendEquation;
         cullFace?: CullFace;
         depthMask?: boolean;
@@ -18,8 +19,9 @@ namespace feng3d
     {
         create(shader: string, raw?: MaterialRaw)
         {
+            raw = raw || {};
+            raw.shaderName = shader;
             var material = new Material(raw);
-            material.shaderName = shader;
             return material;
         }
     }
@@ -58,8 +60,9 @@ namespace feng3d
         constructor(raw?: MaterialRaw)
         {
             super();
-            serialization.setValue(this, raw);
             this.shader = new Shader();
+            this.shaderName = raw.shaderName;
+            serialization.setValue(this, raw);
         }
 
         preRender(renderAtomic: RenderAtomic)
@@ -81,7 +84,11 @@ namespace feng3d
             if (cls)
             {
                 if (!(this.uniforms instanceof cls))
-                    this.uniforms = new cls();
+                {
+                    var newuniforms = new cls();
+                    serialization.setValue(newuniforms, this.uniforms);
+                    this.uniforms = newuniforms;
+                }
             }
         }
     }
