@@ -862,7 +862,97 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.watcher = {
+    /**
+     * 观察装饰器，观察被装饰属性的变化
+     *
+     * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a"
+     *
+     * 通过使用 eval 函数 生成出 与自己手动写的set get 一样的函数，性能已经接近 手动写的get set函数。
+     *
+     * 性能：
+     * chrome：
+     * 测试 get ：
+Test.ts:100 watch与getset最大耗时比 1.2222222222222223
+Test.ts:101 watch与getset最小耗时比 0.7674418604651163
+Test.ts:102 watch与getset平均耗时比 0.9558823529411765
+Test.ts:103 watch平均耗时比 13
+Test.ts:104 getset平均耗时比 13.6
+Test.ts:98 测试 set ：
+Test.ts:100 watch与getset最大耗时比 4.5
+Test.ts:101 watch与getset最小耗时比 2.409090909090909
+Test.ts:102 watch与getset平均耗时比 3.037037037037037
+Test.ts:103 watch平均耗时比 57.4
+Test.ts:104 getset平均耗时比 18.9
+
+     *
+     * nodejs:
+     * 测试 get ：
+watch与getset最大耗时比 1.3333333333333333
+watch与getset最小耗时比 0.55
+watch与getset平均耗时比 1.0075757575757576
+watch平均耗时比 13.3
+getset平均耗时比 13.2
+测试 set ：
+watch与getset最大耗时比 4.9
+watch与getset最小耗时比 3
+watch与getset平均耗时比 4.143497757847534
+watch平均耗时比 92.4
+getset平均耗时比 22.3
+     *
+     *
+     * firefox:
+     * 测试 get ：  Test.js:122:5
+watch与getset最大耗时比 4.142857142857143  Test.js:124:5
+watch与getset最小耗时比 0.4090909090909091  Test.js:125:5
+watch与getset平均耗时比 1.0725806451612903  Test.js:126:5
+watch平均耗时比 13.3  Test.js:127:5
+getset平均耗时比 12.4  Test.js:128:5
+测试 set ：  Test.js:122:5
+watch与getset最大耗时比 1.5333333333333334  Test.js:124:5
+watch与getset最小耗时比 0.6842105263157895  Test.js:125:5
+watch与getset平均耗时比 0.9595375722543352  Test.js:126:5
+watch平均耗时比 16.6  Test.js:127:5
+getset平均耗时比 17.3
+     *
+     * 结果分析：
+     * chrome、nodejs、firefox运行结果出现差异,firefox运行结果最完美
+     *
+     * 使用watch后的get测试的消耗与手动写get消耗一致
+     * chrome与nodejs上set消耗是手动写set的消耗(3-4)倍
+     *
+     * 注：不适用eval的情况下，chrome表现最好的，与此次测试结果差不多；在nodejs与firfox上将会出现比使用eval情况下消耗的（40-400）倍，其中详细原因不明，求高人解释！
+     *
+     * @param onChange 属性变化回调
+     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
+     */
+    function watch(onChange) {
+        return function (target, propertyKey) {
+            var key = "_" + propertyKey;
+            var get;
+            // get = function () { return this[key]; };
+            eval("get = function (){return this." + key + "}");
+            var set;
+            // set = function (value)
+            // {
+            //     if (this[key] === value)
+            //         return;
+            //     var oldValue = this[key];
+            //     this[key] = value;
+            //     this[onChange](propertyKey, oldValue, this[key]);
+            // };
+            eval("set = function (value){\n                if (this." + key + " == value)\n                    return;\n                var oldValue = this." + key + ";\n                this." + key + " = value;\n                this." + onChange + "(\"" + propertyKey + "\", oldValue, this." + key + ");\n            }");
+            Object.defineProperty(target, propertyKey, {
+                get: get,
+                set: set,
+                enumerable: true,
+                configurable: true
+            });
+        };
+    }
+    feng3d.watch = watch;
+    var Watcher = /** @class */ (function () {
+        function Watcher() {
+        }
         /**
          * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
          * @param host
@@ -870,7 +960,7 @@ var feng3d;
          * @param handler
          * @param thisObject
          */
-        watch: function (host, property, handler, thisObject) {
+        Watcher.prototype.watch = function (host, property, handler, thisObject) {
             if (!Object.getOwnPropertyDescriptor(host, bindables)) {
                 Object.defineProperty(host, bindables, {
                     value: {},
@@ -916,8 +1006,8 @@ var feng3d;
             var has = propertywatchs.handlers.reduce(function (v, item) { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
             if (!has)
                 propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
-        },
-        unwatch: function (host, property, handler, thisObject) {
+        };
+        Watcher.prototype.unwatch = function (host, property, handler, thisObject) {
             var watchs = host[bindables];
             if (!watchs)
                 return;
@@ -941,11 +1031,12 @@ var feng3d;
                     delete host[bindables];
                 }
             }
-        },
-        watchchain: function (host, property, handler, thisObject) {
+        };
+        Watcher.prototype.watchchain = function (host, property, handler, thisObject) {
+            var _this = this;
             var notIndex = property.indexOf(".");
             if (notIndex == -1) {
-                feng3d.watcher.watch(host, property, handler, thisObject);
+                this.watch(host, property, handler, thisObject);
                 return;
             }
             if (!Object.getOwnPropertyDescriptor(host, bindablechains))
@@ -961,15 +1052,15 @@ var feng3d;
                 var currentp = property.substr(0, notIndex);
                 var nextp = property.substr(notIndex + 1);
                 if (host[currentp]) {
-                    feng3d.watcher.watchchain(host[currentp], nextp, handler, thisObject);
+                    this.watchchain(host[currentp], nextp, handler, thisObject);
                 }
                 // 添加链监听
                 var watchchainFun = function (h, p, oldvalue) {
                     var newvalue = h[p];
                     if (oldvalue)
-                        feng3d.watcher.unwatchchain(oldvalue, nextp, handler, thisObject);
+                        _this.unwatchchain(oldvalue, nextp, handler, thisObject);
                     if (newvalue)
-                        feng3d.watcher.watchchain(newvalue, nextp, handler, thisObject);
+                        _this.watchchain(newvalue, nextp, handler, thisObject);
                     // 当更换对象且监听值发生改变时触发处理函数
                     try {
                         var ov = eval("oldvalue." + nextp + "");
@@ -987,15 +1078,15 @@ var feng3d;
                         handler.call(thisObject, newvalue, nextp, ov);
                     }
                 };
-                feng3d.watcher.watch(host, currentp, watchchainFun);
+                this.watch(host, currentp, watchchainFun);
                 // 记录链监听函数
                 propertywatchs.push({ handler: handler, thisObject: thisObject, watchchainFun: watchchainFun });
             }
-        },
-        unwatchchain: function (host, property, handler, thisObject) {
+        };
+        Watcher.prototype.unwatchchain = function (host, property, handler, thisObject) {
             var notIndex = property.indexOf(".");
             if (notIndex == -1) {
-                feng3d.watcher.unwatch(host, property, handler, thisObject);
+                this.unwatch(host, property, handler, thisObject);
                 return;
             }
             var currentp = property.substr(0, notIndex);
@@ -1011,10 +1102,10 @@ var feng3d;
                 if (handler == null || (handler == element.handler && thisObject == element.thisObject)) {
                     // 删除下级监听链
                     if (host[currentp]) {
-                        feng3d.watcher.unwatchchain(host[currentp], nextp, element.handler, element.thisObject);
+                        this.unwatchchain(host[currentp], nextp, element.handler, element.thisObject);
                     }
                     // 删除链监听
-                    feng3d.watcher.unwatch(host, currentp, element.watchchainFun);
+                    this.unwatch(host, currentp, element.watchchainFun);
                     // 清理记录链监听函数
                     propertywatchs.splice(i, 1);
                 }
@@ -1025,8 +1116,11 @@ var feng3d;
             if (Object.keys(watchchains).length == 0) {
                 delete host[bindablechains];
             }
-        },
-    };
+        };
+        return Watcher;
+    }());
+    feng3d.Watcher = Watcher;
+    feng3d.watcher = new Watcher();
     var bindables = "__watchs__";
     var bindablechains = "__watchchains__";
     function getPropertyDescriptor(host, property) {
@@ -1749,68 +1843,302 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 心跳计时器
+     */
+    var Ticker = /** @class */ (function () {
+        function Ticker() {
+            /**
+             * 帧率
+             */
+            this.frameRate = 60;
+        }
+        /**
+         * 注册帧函数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.onframe = function (func, thisObject, priority) {
+            var _this = this;
+            if (priority === void 0) { priority = 0; }
+            this.on(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
+            return this;
+        };
+        /**
+         * 注册帧函数（只执行一次）
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.onceframe = function (func, thisObject, priority) {
+            var _this = this;
+            if (priority === void 0) { priority = 0; }
+            this.once(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
+            return this;
+        };
+        /**
+         * 注销帧函数（只执行一次）
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.offframe = function (func, thisObject) {
+            var _this = this;
+            this.off(function () { return 1000 / _this.frameRate; }, func, thisObject);
+            return this;
+        };
+        /**
+         * 注册周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.on = function (interval, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: false });
+            return this;
+        };
+        /**
+         * 注册周期函数（只执行一次）
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.once = function (interval, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: true });
+            return this;
+        };
+        /**
+         * 注销周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         */
+        Ticker.prototype.off = function (interval, func, thisObject) {
+            removeTickerFunc({ interval: interval, func: func, thisObject: thisObject });
+            return this;
+        };
+        /**
+         * 重复指定次数 执行函数
+         * @param interval  执行周期，以ms为单位
+         * @param 	repeatCount     执行次数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.repeat = function (interval, repeatCount, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            repeatCount = ~~repeatCount;
+            if (repeatCount < 1)
+                return;
+            var timer = new Timer(this, interval, repeatCount, func, thisObject, priority);
+            return timer;
+        };
+        return Ticker;
+    }());
+    feng3d.Ticker = Ticker;
+    feng3d.ticker = new Ticker();
+    var Timer = /** @class */ (function () {
+        function Timer(ticker, interval, repeatCount, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            /**
+             * 计时器从 0 开始后触发的总次数。
+             */
+            this.currentCount = 0;
+            this.ticker = ticker;
+            this.interval = interval;
+            this.func = func;
+            this.thisObject = thisObject;
+            this.priority = priority;
+        }
+        /**
+         * 如果计时器尚未运行，则启动计时器。
+         */
+        Timer.prototype.start = function () {
+            this.ticker.on(this.interval, this.runfunc, this, this.priority);
+            return this;
+        };
+        /**
+         * 停止计时器。
+         */
+        Timer.prototype.stop = function () {
+            this.ticker.off(this.interval, this.runfunc, this);
+            return this;
+        };
+        /**
+         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。
+         */
+        Timer.prototype.reset = function () {
+            this.stop();
+            this.currentCount = 0;
+            return this;
+        };
+        Timer.prototype.runfunc = function () {
+            this.func.call(this.thisObject);
+            this.currentCount++;
+            this.repeatCount--;
+            if (this.repeatCount < 1)
+                this.stop();
+        };
+        return Timer;
+    }());
+    feng3d.Timer = Timer;
+    var tickerFuncs = [];
+    function addTickerFunc(item) {
+        if (running) {
+            affers.push([addTickerFunc, [item]]);
+            return;
+        }
+        removeTickerFunc(item);
+        if (item.priority == undefined)
+            item.priority = 0;
+        item.runtime = Date.now() + feng3d.lazy.getvalue(item.interval);
+        tickerFuncs.push(item);
+    }
+    function removeTickerFunc(item) {
+        if (running) {
+            affers.push([removeTickerFunc, [item]]);
+            return;
+        }
+        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
+            var element = tickerFuncs[i];
+            if (feng3d.lazy.getvalue(element.interval) == feng3d.lazy.getvalue(item.interval)
+                && element.func == item.func
+                && element.thisObject == item.thisObject) {
+                tickerFuncs.splice(i, 1);
+            }
+        }
+    }
+    var running = false;
+    var affers = [];
+    function runTickerFuncs() {
+        running = true;
+        //倒序，优先级高的排在后面
+        tickerFuncs.sort(function (a, b) {
+            return a.priority - b.priority;
+        });
+        var currenttime = Date.now();
+        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
+            var element = tickerFuncs[i];
+            if (element.runtime < currenttime) {
+                // try
+                // {
+                element.func.call(element.thisObject);
+                // } catch (error)
+                // {
+                //     warn(`${element.func} 方法执行错误，从 ticker 中移除`, error)
+                //     tickerFuncs.splice(i, 1);
+                //     continue;
+                // }
+                if (element.once) {
+                    tickerFuncs.splice(i, 1);
+                    continue;
+                }
+                element.runtime = nextRuntime(element.runtime, feng3d.lazy.getvalue(element.interval));
+            }
+        }
+        running = false;
+        for (var i = 0; i < affers.length; i++) {
+            var affer = affers[i];
+            affer[0].apply(null, affer[1]);
+        }
+        affers.length = 0;
+        localrequestAnimationFrame(runTickerFuncs);
+        function nextRuntime(runtime, interval) {
+            return runtime + Math.ceil((currenttime - runtime) / interval) * interval;
+        }
+    }
+    var localrequestAnimationFrame;
+    if (typeof requestAnimationFrame == "undefined") {
+        if (typeof window != "undefined") {
+            localrequestAnimationFrame =
+                window["requestAnimationFrame"] ||
+                    window["webkitRequestAnimationFrame"] ||
+                    window["mozRequestAnimationFrame"] ||
+                    window["oRequestAnimationFrame"] ||
+                    window["msRequestAnimationFrame"];
+        }
+        else {
+            localrequestAnimationFrame = function (callback) {
+                return window.setTimeout(callback, 1000 / feng3d.ticker.frameRate);
+            };
+        }
+    }
+    else {
+        localrequestAnimationFrame = requestAnimationFrame;
+    }
+    runTickerFuncs();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 数据类型转换
      * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
      * @see http://blog.csdn.net/yinwhm12/article/details/73482904
      */
-    feng3d.dataTransform = {
+    var DataTransform = /** @class */ (function () {
+        function DataTransform() {
+        }
         /**
          * Blob to ArrayBuffer
          */
-        blobToArrayBuffer: function (blob, callback) {
+        DataTransform.prototype.blobToArrayBuffer = function (blob, callback) {
             var reader = new FileReader();
             reader.onload = function (e) {
                 callback(e.target["result"]);
             };
             reader.readAsArrayBuffer(blob);
-        },
+        };
         /**
          * ArrayBuffer to Blob
          */
-        arrayBufferToBlob: function (arrayBuffer, callback) {
+        DataTransform.prototype.arrayBufferToBlob = function (arrayBuffer, callback) {
             var blob = new Blob([arrayBuffer]); // 注意必须包裹[]
             callback(blob);
-        },
+        };
         /**
          * ArrayBuffer to Uint8
          * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
          */
-        arrayBufferToUint8: function (arrayBuffer, callback) {
+        DataTransform.prototype.arrayBufferToUint8 = function (arrayBuffer, callback) {
             var buffer = new ArrayBuffer(32);
             var u8 = new Uint8Array(arrayBuffer);
             callback(u8);
-        },
+        };
         /**
          * Uint8 to ArrayBuffer
          * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
          */
-        uint8ToArrayBuffer: function (uint8Array, callback) {
+        DataTransform.prototype.uint8ToArrayBuffer = function (uint8Array, callback) {
             var buffer = uint8Array.buffer;
             callback(buffer);
-        },
+        };
         /**
          * Array to ArrayBuffer
          * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
          */
-        arrayToArrayBuffer: function (array, callback) {
+        DataTransform.prototype.arrayToArrayBuffer = function (array, callback) {
             var uint8 = new Uint8Array(array);
             var buffer = uint8.buffer;
             callback(buffer);
-        },
+        };
         /**
          * TypeArray to Array
          */
-        uint8ArrayToArray: function (u8a) {
+        DataTransform.prototype.uint8ArrayToArray = function (u8a) {
             var arr = [];
             for (var i = 0; i < u8a.length; i++) {
                 arr.push(u8a[i]);
             }
             return arr;
-        },
+        };
         /**
          * canvas转换为dataURL
          */
-        canvasToDataURL: function (canvas, type, callback) {
+        DataTransform.prototype.canvasToDataURL = function (canvas, type, callback) {
             if (type == "png") {
                 var png = canvas.toDataURL("image/png");
                 callback(png);
@@ -1819,75 +2147,78 @@ var feng3d;
                 var jpg = canvas.toDataURL("image/jpeg", 0.8);
                 callback(jpg);
             }
-        },
+        };
         /**
          * File、Blob对象转换为dataURL
          * File对象也是一个Blob对象，二者的处理相同。
          */
-        blobToDataURL: function (blob, callback) {
+        DataTransform.prototype.blobToDataURL = function (blob, callback) {
             var a = new FileReader();
             a.onload = function (e) {
                 callback(e.target["result"]);
             };
             a.readAsDataURL(blob);
-        },
+        };
         /**
          * dataURL转换为Blob对象
          */
-        dataURLtoBlob: function (dataurl, callback) {
+        DataTransform.prototype.dataURLtoBlob = function (dataurl, callback) {
             var arr = dataurl.split(","), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
             while (n--) {
                 u8arr[n] = bstr.charCodeAt(n);
             }
             var blob = new Blob([u8arr], { type: mime });
             callback(blob);
-        },
+        };
         /**
          * dataURL图片数据转换为HTMLImageElement
          * dataURL图片数据绘制到canvas
          * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
          */
-        dataURLDrawCanvas: function (dataurl, canvas, callback) {
-            feng3d.dataTransform.dataURLToImage(dataurl, function (img) {
+        DataTransform.prototype.dataURLDrawCanvas = function (dataurl, canvas, callback) {
+            this.dataURLToImage(dataurl, function (img) {
                 // canvas.drawImage(img);
                 callback(img);
             });
-        },
-        arrayBufferToDataURL: function (arrayBuffer, callback) {
-            feng3d.dataTransform.arrayBufferToBlob(arrayBuffer, function (blob) {
-                feng3d.dataTransform.blobToDataURL(blob, callback);
+        };
+        DataTransform.prototype.arrayBufferToDataURL = function (arrayBuffer, callback) {
+            var _this = this;
+            this.arrayBufferToBlob(arrayBuffer, function (blob) {
+                _this.blobToDataURL(blob, callback);
             });
-        },
-        dataURLToImage: function (dataurl, callback) {
+        };
+        DataTransform.prototype.dataURLToImage = function (dataurl, callback) {
             var img = new Image();
             img.onload = function () {
                 callback(img);
             };
             img.src = dataurl;
-        },
-        arrayBufferToImage: function (arrayBuffer, callback) {
-            feng3d.dataTransform.arrayBufferToDataURL(arrayBuffer, function (dataurl) {
-                feng3d.dataTransform.dataURLToImage(dataurl, callback);
+        };
+        DataTransform.prototype.arrayBufferToImage = function (arrayBuffer, callback) {
+            var _this = this;
+            this.arrayBufferToDataURL(arrayBuffer, function (dataurl) {
+                _this.dataURLToImage(dataurl, callback);
             });
-        },
-        blobToText: function (blob, callback) {
+        };
+        DataTransform.prototype.blobToText = function (blob, callback) {
             var a = new FileReader();
             a.onload = function (e) { callback(e.target["result"]); };
             a.readAsText(blob);
-        },
-        arrayBufferToText: function (arrayBuffer, callback) {
-            feng3d.dataTransform.arrayBufferToBlob(arrayBuffer, function (blob) {
-                feng3d.dataTransform.blobToText(blob, callback);
+        };
+        DataTransform.prototype.arrayBufferToText = function (arrayBuffer, callback) {
+            var _this = this;
+            this.arrayBufferToBlob(arrayBuffer, function (blob) {
+                _this.blobToText(blob, callback);
             });
-        },
-        stringToUint8Array: function (str, callback) {
+        };
+        DataTransform.prototype.stringToUint8Array = function (str, callback) {
             var utf8 = unescape(encodeURIComponent(str));
             var uint8Array = new Uint8Array(utf8.split('').map(function (item) {
                 return item.charCodeAt(0);
             }));
             callback(uint8Array);
-        },
-        uint8ArrayToString: function (arr, callback) {
+        };
+        DataTransform.prototype.uint8ArrayToString = function (arr, callback) {
             // or [].slice.apply(arr)
             // var utf8 = Array.from(arr).map(function (item)
             var utf8 = [].slice.apply(arr).map(function (item) {
@@ -1895,8 +2226,11 @@ var feng3d;
             }).join('');
             var str = decodeURIComponent(escape(utf8));
             callback(str);
-        },
-    };
+        };
+        return DataTransform;
+    }());
+    feng3d.DataTransform = DataTransform;
+    feng3d.dataTransform = new DataTransform();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -1987,97 +2321,6 @@ var feng3d;
             _classNameSpaces.push(namespace);
         }
     }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 观察装饰器，观察被装饰属性的变化
-     *
-     * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a"
-     *
-     * 通过使用 eval 函数 生成出 与自己手动写的set get 一样的函数，性能已经接近 手动写的get set函数。
-     *
-     * 性能：
-     * chrome：
-     * 测试 get ：
-Test.ts:100 watch与getset最大耗时比 1.2222222222222223
-Test.ts:101 watch与getset最小耗时比 0.7674418604651163
-Test.ts:102 watch与getset平均耗时比 0.9558823529411765
-Test.ts:103 watch平均耗时比 13
-Test.ts:104 getset平均耗时比 13.6
-Test.ts:98 测试 set ：
-Test.ts:100 watch与getset最大耗时比 4.5
-Test.ts:101 watch与getset最小耗时比 2.409090909090909
-Test.ts:102 watch与getset平均耗时比 3.037037037037037
-Test.ts:103 watch平均耗时比 57.4
-Test.ts:104 getset平均耗时比 18.9
-
-     *
-     * nodejs:
-     * 测试 get ：
-watch与getset最大耗时比 1.3333333333333333
-watch与getset最小耗时比 0.55
-watch与getset平均耗时比 1.0075757575757576
-watch平均耗时比 13.3
-getset平均耗时比 13.2
-测试 set ：
-watch与getset最大耗时比 4.9
-watch与getset最小耗时比 3
-watch与getset平均耗时比 4.143497757847534
-watch平均耗时比 92.4
-getset平均耗时比 22.3
-     *
-     *
-     * firefox:
-     * 测试 get ：  Test.js:122:5
-watch与getset最大耗时比 4.142857142857143  Test.js:124:5
-watch与getset最小耗时比 0.4090909090909091  Test.js:125:5
-watch与getset平均耗时比 1.0725806451612903  Test.js:126:5
-watch平均耗时比 13.3  Test.js:127:5
-getset平均耗时比 12.4  Test.js:128:5
-测试 set ：  Test.js:122:5
-watch与getset最大耗时比 1.5333333333333334  Test.js:124:5
-watch与getset最小耗时比 0.6842105263157895  Test.js:125:5
-watch与getset平均耗时比 0.9595375722543352  Test.js:126:5
-watch平均耗时比 16.6  Test.js:127:5
-getset平均耗时比 17.3
-     *
-     * 结果分析：
-     * chrome、nodejs、firefox运行结果出现差异,firefox运行结果最完美
-     *
-     * 使用watch后的get测试的消耗与手动写get消耗一致
-     * chrome与nodejs上set消耗是手动写set的消耗(3-4)倍
-     *
-     * 注：不适用eval的情况下，chrome表现最好的，与此次测试结果差不多；在nodejs与firfox上将会出现比使用eval情况下消耗的（40-400）倍，其中详细原因不明，求高人解释！
-     *
-     * @param onChange 属性变化回调
-     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
-     */
-    function watch(onChange) {
-        return function (target, propertyKey) {
-            var key = "_" + propertyKey;
-            var get;
-            // get = function () { return this[key]; };
-            eval("get = function (){return this." + key + "}");
-            var set;
-            // set = function (value)
-            // {
-            //     if (this[key] === value)
-            //         return;
-            //     var oldValue = this[key];
-            //     this[key] = value;
-            //     this[onChange](propertyKey, oldValue, this[key]);
-            // };
-            eval("set = function (value){\n                if (this." + key + " == value)\n                    return;\n                var oldValue = this." + key + ";\n                this." + key + " = value;\n                this." + onChange + "(\"" + propertyKey + "\", oldValue, this." + key + ");\n            }");
-            Object.defineProperty(target, propertyKey, {
-                get: get,
-                set: set,
-                enumerable: true,
-                configurable: true
-            });
-        };
-    }
-    feng3d.watch = watch;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -8041,231 +8284,6 @@ var feng3d;
         return TriangleGeometry;
     }());
     feng3d.TriangleGeometry = TriangleGeometry;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 心跳计时器
-     */
-    feng3d.ticker = {
-        /**
-         * 帧率
-         */
-        frameRate: 60,
-        /**
-         * 注册帧函数
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        onframe: function (func, thisObject, priority) {
-            var _this = this;
-            if (priority === void 0) { priority = 0; }
-            this.on(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
-            return this;
-        },
-        /**
-         * 注册帧函数（只执行一次）
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        onceframe: function (func, thisObject, priority) {
-            var _this = this;
-            if (priority === void 0) { priority = 0; }
-            this.once(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
-            return this;
-        },
-        /**
-         * 注销帧函数（只执行一次）
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        offframe: function (func, thisObject) {
-            var _this = this;
-            this.off(function () { return 1000 / _this.frameRate; }, func, thisObject);
-            return this;
-        },
-        /**
-         * 注册周期函数
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        on: function (interval, func, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: false });
-            return this;
-        },
-        /**
-         * 注册周期函数（只执行一次）
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        once: function (interval, func, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: true });
-            return this;
-        },
-        /**
-         * 注销周期函数
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         */
-        off: function (interval, func, thisObject) {
-            removeTickerFunc({ interval: interval, func: func, thisObject: thisObject });
-            return this;
-        },
-        /**
-         * 重复指定次数 执行函数
-         * @param interval  执行周期，以ms为单位
-         * @param 	repeatCount     执行次数
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        repeat: function (interval, repeatCount, func, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            repeatCount = ~~repeatCount;
-            if (repeatCount < 1)
-                return;
-            var runfunc = function () {
-                func.call(thisObject);
-                timer.currentCount++;
-                repeatCount--;
-                if (repeatCount < 1)
-                    timer.stop();
-            };
-            var __this = this;
-            var timer = {
-                /**
-                 * 计时器从 0 开始后触发的总次数。
-                 */
-                currentCount: 0,
-                /**
-                 * 计时器事件间的延迟（以毫秒为单位）。
-                 */
-                delay: interval,
-                /**
-                 * 设置的计时器运行总次数。
-                 */
-                repeatCount: repeatCount,
-                /**
-                 * 如果计时器尚未运行，则启动计时器。
-                 */
-                start: function () {
-                    __this.on(interval, runfunc, undefined, priority);
-                    return this;
-                },
-                /**
-                 * 停止计时器。
-                 */
-                stop: function () {
-                    __this.off(interval, runfunc);
-                    return this;
-                },
-                /**
-                 * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。
-                 */
-                reset: function () {
-                    this.stop();
-                    this.currentCount = 0;
-                    return this;
-                },
-            };
-            return timer;
-        },
-    };
-    var tickerFuncs = [];
-    function addTickerFunc(item) {
-        if (running) {
-            affers.push([addTickerFunc, [item]]);
-            return;
-        }
-        removeTickerFunc(item);
-        if (item.priority == undefined)
-            item.priority = 0;
-        item.runtime = Date.now() + feng3d.lazy.getvalue(item.interval);
-        tickerFuncs.push(item);
-    }
-    function removeTickerFunc(item) {
-        if (running) {
-            affers.push([removeTickerFunc, [item]]);
-            return;
-        }
-        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
-            var element = tickerFuncs[i];
-            if (feng3d.lazy.getvalue(element.interval) == feng3d.lazy.getvalue(item.interval)
-                && element.func == item.func
-                && element.thisObject == item.thisObject) {
-                tickerFuncs.splice(i, 1);
-            }
-        }
-    }
-    var running = false;
-    var affers = [];
-    function runTickerFuncs() {
-        running = true;
-        //倒序，优先级高的排在后面
-        tickerFuncs.sort(function (a, b) {
-            return a.priority - b.priority;
-        });
-        var currenttime = Date.now();
-        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
-            var element = tickerFuncs[i];
-            if (element.runtime < currenttime) {
-                // try
-                // {
-                element.func.call(element.thisObject);
-                // } catch (error)
-                // {
-                //     warn(`${element.func} 方法执行错误，从 ticker 中移除`, error)
-                //     tickerFuncs.splice(i, 1);
-                //     continue;
-                // }
-                if (element.once) {
-                    tickerFuncs.splice(i, 1);
-                    continue;
-                }
-                element.runtime = nextRuntime(element.runtime, feng3d.lazy.getvalue(element.interval));
-            }
-        }
-        running = false;
-        for (var i = 0; i < affers.length; i++) {
-            var affer = affers[i];
-            affer[0].apply(null, affer[1]);
-        }
-        affers.length = 0;
-        localrequestAnimationFrame(runTickerFuncs);
-        function nextRuntime(runtime, interval) {
-            return runtime + Math.ceil((currenttime - runtime) / interval) * interval;
-        }
-    }
-    var localrequestAnimationFrame;
-    if (typeof requestAnimationFrame == "undefined") {
-        if (typeof window != "undefined") {
-            localrequestAnimationFrame =
-                window["requestAnimationFrame"] ||
-                    window["webkitRequestAnimationFrame"] ||
-                    window["mozRequestAnimationFrame"] ||
-                    window["oRequestAnimationFrame"] ||
-                    window["msRequestAnimationFrame"];
-        }
-        else {
-            localrequestAnimationFrame = function (callback) {
-                return window.setTimeout(callback, 1000 / feng3d.ticker.frameRate);
-            };
-        }
-    }
-    else {
-        localrequestAnimationFrame = requestAnimationFrame;
-    }
-    runTickerFuncs();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

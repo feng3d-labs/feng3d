@@ -20,12 +20,12 @@
         "src/event/EventProxy.ts",
         "src/resources/load.ts",
         //基础工具
-        "src/utils/watcher.ts",
+        "src/utils/Watcher.ts",
         "src/utils/Serialization.ts",
         "src/utils/ObjectView.ts",
-        "src/utils/dataTransform.ts",
+        "src/utils/Ticker.ts",
+        "src/utils/DataTransform.ts",
         "src/utils/ClassUtils.ts",
-        "src/utils/Decorators.ts",
         "src/utils/ImageUtil.ts",
         "src/utils/Stats.ts",
         //几何运算
@@ -51,8 +51,6 @@
         "src/geom/Color4.ts",
         "src/geom/Frustum.ts",
         "src/geom/TriangleGeometry.ts",
-        //
-        "src/utils/ticker.ts",
         //快捷键模块
         "src/shortcut/Keyboard.ts",
         "src/shortcut/handle/KeyCapture.ts",

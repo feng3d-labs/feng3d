@@ -328,12 +328,84 @@ declare namespace feng3d {
     };
 }
 declare namespace feng3d {
-    var watcher: {
+    /**
+     * 观察装饰器，观察被装饰属性的变化
+     *
+     * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a"
+     *
+     * 通过使用 eval 函数 生成出 与自己手动写的set get 一样的函数，性能已经接近 手动写的get set函数。
+     *
+     * 性能：
+     * chrome：
+     * 测试 get ：
+Test.ts:100 watch与getset最大耗时比 1.2222222222222223
+Test.ts:101 watch与getset最小耗时比 0.7674418604651163
+Test.ts:102 watch与getset平均耗时比 0.9558823529411765
+Test.ts:103 watch平均耗时比 13
+Test.ts:104 getset平均耗时比 13.6
+Test.ts:98 测试 set ：
+Test.ts:100 watch与getset最大耗时比 4.5
+Test.ts:101 watch与getset最小耗时比 2.409090909090909
+Test.ts:102 watch与getset平均耗时比 3.037037037037037
+Test.ts:103 watch平均耗时比 57.4
+Test.ts:104 getset平均耗时比 18.9
+
+     *
+     * nodejs:
+     * 测试 get ：
+watch与getset最大耗时比 1.3333333333333333
+watch与getset最小耗时比 0.55
+watch与getset平均耗时比 1.0075757575757576
+watch平均耗时比 13.3
+getset平均耗时比 13.2
+测试 set ：
+watch与getset最大耗时比 4.9
+watch与getset最小耗时比 3
+watch与getset平均耗时比 4.143497757847534
+watch平均耗时比 92.4
+getset平均耗时比 22.3
+     *
+     *
+     * firefox:
+     * 测试 get ：  Test.js:122:5
+watch与getset最大耗时比 4.142857142857143  Test.js:124:5
+watch与getset最小耗时比 0.4090909090909091  Test.js:125:5
+watch与getset平均耗时比 1.0725806451612903  Test.js:126:5
+watch平均耗时比 13.3  Test.js:127:5
+getset平均耗时比 12.4  Test.js:128:5
+测试 set ：  Test.js:122:5
+watch与getset最大耗时比 1.5333333333333334  Test.js:124:5
+watch与getset最小耗时比 0.6842105263157895  Test.js:125:5
+watch与getset平均耗时比 0.9595375722543352  Test.js:126:5
+watch平均耗时比 16.6  Test.js:127:5
+getset平均耗时比 17.3
+     *
+     * 结果分析：
+     * chrome、nodejs、firefox运行结果出现差异,firefox运行结果最完美
+     *
+     * 使用watch后的get测试的消耗与手动写get消耗一致
+     * chrome与nodejs上set消耗是手动写set的消耗(3-4)倍
+     *
+     * 注：不适用eval的情况下，chrome表现最好的，与此次测试结果差不多；在nodejs与firfox上将会出现比使用eval情况下消耗的（40-400）倍，其中详细原因不明，求高人解释！
+     *
+     * @param onChange 属性变化回调
+     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
+     */
+    function watch(onChange: string): (target: any, propertyKey: string) => void;
+    var watcher: Watcher;
+    class Watcher {
+        /**
+         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
+         * @param host
+         * @param property
+         * @param handler
+         * @param thisObject
+         */
         watch<T extends Object>(host: T, property: keyof T, handler: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
         unwatch<T extends Object>(host: T, property: keyof T, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
         watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
         unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
-    };
+    }
 }
 declare namespace feng3d {
     var serialization: Serialization;
@@ -733,6 +805,107 @@ declare namespace feng3d {
         owner: Object;
     }
 }
+declare namespace feng3d {
+    /**
+     * 心跳计时器
+     */
+    var ticker: Ticker;
+    /**
+     * 心跳计时器
+     */
+    class Ticker {
+        /**
+         * 帧率
+         */
+        frameRate: number;
+        /**
+         * 注册帧函数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        onframe(func: () => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 注册帧函数（只执行一次）
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        onceframe(func: () => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 注销帧函数（只执行一次）
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        offframe(func: () => void, thisObject?: Object): this;
+        /**
+         * 注册周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        on(interval: Lazy<number>, func: () => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 注册周期函数（只执行一次）
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        once(interval: Lazy<number>, func: () => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 注销周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         */
+        off(interval: Lazy<number>, func: () => void, thisObject?: Object): this;
+        /**
+         * 重复指定次数 执行函数
+         * @param interval  执行周期，以ms为单位
+         * @param 	repeatCount     执行次数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        repeat(interval: Lazy<number>, repeatCount: number, func: () => void, thisObject?: Object, priority?: number): Timer;
+    }
+    class Timer {
+        private ticker;
+        private interval;
+        private priority;
+        private func;
+        private thisObject;
+        /**
+         * 计时器从 0 开始后触发的总次数。
+         */
+        currentCount: number;
+        /**
+         * 计时器事件间的延迟（以毫秒为单位）。
+         */
+        delay: number;
+        /**
+         * 设置的计时器运行总次数。
+         */
+        repeatCount: number;
+        constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: () => void, thisObject?: Object, priority?: number);
+        /**
+         * 如果计时器尚未运行，则启动计时器。
+         */
+        start(): this;
+        /**
+         * 停止计时器。
+         */
+        stop(): this;
+        /**
+         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。
+         */
+        reset(): this;
+        private runfunc();
+    }
+}
 /**
  * The unescape() function computes a new string in which hexadecimal escape sequences are replaced with the character that it represents. The escape sequences might be introduced by a function like escape. Usually, decodeURI or decodeURIComponent are preferred over unescape.
  * @param str A string to be decoded.
@@ -753,16 +926,58 @@ declare namespace feng3d {
      * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
      * @see http://blog.csdn.net/yinwhm12/article/details/73482904
      */
-    var dataTransform: {
+    var dataTransform: DataTransform;
+    /**
+     * 数据类型转换
+     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
+     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
+     */
+    class DataTransform {
+        /**
+         * Blob to ArrayBuffer
+         */
         blobToArrayBuffer(blob: Blob, callback: (arrayBuffer: ArrayBuffer) => void): void;
+        /**
+         * ArrayBuffer to Blob
+         */
         arrayBufferToBlob(arrayBuffer: ArrayBuffer, callback: (blob: Blob) => void): void;
+        /**
+         * ArrayBuffer to Uint8
+         * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
         arrayBufferToUint8(arrayBuffer: ArrayBuffer, callback: (uint8Array: Uint8Array) => void): void;
+        /**
+         * Uint8 to ArrayBuffer
+         * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
         uint8ToArrayBuffer(uint8Array: Uint8Array, callback: (arrayBuffer: ArrayBuffer) => void): void;
+        /**
+         * Array to ArrayBuffer
+         * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
+         */
         arrayToArrayBuffer(array: number[], callback: (arrayBuffer: ArrayBuffer) => void): void;
+        /**
+         * TypeArray to Array
+         */
         uint8ArrayToArray(u8a: Uint8Array): number[];
+        /**
+         * canvas转换为dataURL
+         */
         canvasToDataURL(canvas: HTMLCanvasElement, type: "png" | "jpeg", callback: (dataurl: string) => void): void;
+        /**
+         * File、Blob对象转换为dataURL
+         * File对象也是一个Blob对象，二者的处理相同。
+         */
         blobToDataURL(blob: Blob, callback: (dataurl: string) => void): void;
+        /**
+         * dataURL转换为Blob对象
+         */
         dataURLtoBlob(dataurl: string, callback: (blob: Blob) => void): void;
+        /**
+         * dataURL图片数据转换为HTMLImageElement
+         * dataURL图片数据绘制到canvas
+         * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
+         */
         dataURLDrawCanvas(dataurl: string, canvas: HTMLCanvasElement, callback: (img: HTMLImageElement) => void): void;
         arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void): void;
         dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
@@ -771,7 +986,7 @@ declare namespace feng3d {
         arrayBufferToText(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
         stringToUint8Array(str: string, callback: (uint8Array: Uint8Array) => void): void;
         uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void): void;
-    };
+    }
 }
 declare namespace feng3d {
     /**
@@ -783,72 +998,6 @@ declare namespace feng3d {
         getDefinitionByName: (name: string) => any;
         addClassNameSpace: (namespace: string) => void;
     };
-}
-declare namespace feng3d {
-    /**
-     * 观察装饰器，观察被装饰属性的变化
-     *
-     * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a"
-     *
-     * 通过使用 eval 函数 生成出 与自己手动写的set get 一样的函数，性能已经接近 手动写的get set函数。
-     *
-     * 性能：
-     * chrome：
-     * 测试 get ：
-Test.ts:100 watch与getset最大耗时比 1.2222222222222223
-Test.ts:101 watch与getset最小耗时比 0.7674418604651163
-Test.ts:102 watch与getset平均耗时比 0.9558823529411765
-Test.ts:103 watch平均耗时比 13
-Test.ts:104 getset平均耗时比 13.6
-Test.ts:98 测试 set ：
-Test.ts:100 watch与getset最大耗时比 4.5
-Test.ts:101 watch与getset最小耗时比 2.409090909090909
-Test.ts:102 watch与getset平均耗时比 3.037037037037037
-Test.ts:103 watch平均耗时比 57.4
-Test.ts:104 getset平均耗时比 18.9
-
-     *
-     * nodejs:
-     * 测试 get ：
-watch与getset最大耗时比 1.3333333333333333
-watch与getset最小耗时比 0.55
-watch与getset平均耗时比 1.0075757575757576
-watch平均耗时比 13.3
-getset平均耗时比 13.2
-测试 set ：
-watch与getset最大耗时比 4.9
-watch与getset最小耗时比 3
-watch与getset平均耗时比 4.143497757847534
-watch平均耗时比 92.4
-getset平均耗时比 22.3
-     *
-     *
-     * firefox:
-     * 测试 get ：  Test.js:122:5
-watch与getset最大耗时比 4.142857142857143  Test.js:124:5
-watch与getset最小耗时比 0.4090909090909091  Test.js:125:5
-watch与getset平均耗时比 1.0725806451612903  Test.js:126:5
-watch平均耗时比 13.3  Test.js:127:5
-getset平均耗时比 12.4  Test.js:128:5
-测试 set ：  Test.js:122:5
-watch与getset最大耗时比 1.5333333333333334  Test.js:124:5
-watch与getset最小耗时比 0.6842105263157895  Test.js:125:5
-watch与getset平均耗时比 0.9595375722543352  Test.js:126:5
-watch平均耗时比 16.6  Test.js:127:5
-getset平均耗时比 17.3
-     *
-     * 结果分析：
-     * chrome、nodejs、firefox运行结果出现差异,firefox运行结果最完美
-     *
-     * 使用watch后的get测试的消耗与手动写get消耗一致
-     * chrome与nodejs上set消耗是手动写set的消耗(3-4)倍
-     *
-     * 注：不适用eval的情况下，chrome表现最好的，与此次测试结果差不多；在nodejs与firfox上将会出现比使用eval情况下消耗的（40-400）倍，其中详细原因不明，求高人解释！
-     *
-     * @param onChange 属性变化回调
-     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
-     */
-    function watch(onChange: string): (target: any, propertyKey: string) => void;
 }
 declare namespace feng3d {
     var ImageUtil: {
@@ -3787,29 +3936,6 @@ declare namespace feng3d {
          * 克隆
          */
         clone(): TriangleGeometry;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 心跳计时器
-     */
-    var ticker: {
-        frameRate: number;
-        onframe: (func: () => void, thisObject?: Object, priority?: number) => any;
-        onceframe: (func: () => void, thisObject?: Object, priority?: number) => any;
-        offframe: (func: () => void, thisObject?: Object) => any;
-        on: (interval: Lazy<number>, func: () => void, thisObject?: Object, priority?: number) => any;
-        once: (interval: Lazy<number>, func: () => void, thisObject?: Object, priority?: number) => any;
-        off: (interval: Lazy<number>, func: () => void, thisObject?: Object) => any;
-        repeat: (interval: Lazy<number>, repeatCount: number, func: () => void, thisObject?: Object, priority?: number) => Timer;
-    };
-    interface Timer {
-        currentCount: number;
-        delay: Lazy<number>;
-        repeatCount: number;
-        start: () => Timer;
-        stop: () => Timer;
-        reset: () => Timer;
     }
 }
 declare namespace feng3d {
