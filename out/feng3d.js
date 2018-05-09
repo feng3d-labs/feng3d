@@ -18107,9 +18107,17 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 材质工厂
+     */
     var MaterialFactory = /** @class */ (function () {
         function MaterialFactory() {
         }
+        /**
+         * 创建材质
+         * @param shader shader名称
+         * @param raw 材质数据
+         */
         MaterialFactory.prototype.create = function (shader, raw) {
             raw = raw || {};
             raw.shaderName = shader;
@@ -19152,6 +19160,10 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 默认高度图
+     */
+    var defaultHeightMap = feng3d.ImageUtil.createImageData();
+    /**
      * 地形几何体
      * @author feng 2016-04-28
      */
@@ -19163,8 +19175,8 @@ var feng3d;
          * @param    width	地形宽度
          * @param    height	地形高度
          * @param    depth	地形深度
-         * @param    segmentsW	x轴上网格段数
-         * @param    segmentsH	y轴上网格段数
+         * @param    segmentsW	横向网格段数
+         * @param    segmentsH	纵向网格段数
          * @param    maxElevation	最大地形高度
          * @param    minElevation	最小地形高度
          */
@@ -19178,13 +19190,13 @@ var feng3d;
             if (maxElevation === void 0) { maxElevation = 255; }
             if (minElevation === void 0) { minElevation = 0; }
             var _this = _super.call(this) || this;
-            _this._width = 10;
-            _this._height = 1;
-            _this._depth = 10;
-            _this._segmentsW = 30;
-            _this._segmentsH = 30;
-            _this._maxElevation = 255;
-            _this._minElevation = 0;
+            _this.width = 10;
+            _this.height = 1;
+            _this.depth = 10;
+            _this.segmentsW = 30;
+            _this.segmentsH = 30;
+            _this.maxElevation = 255;
+            _this.minElevation = 0;
             _this.width = width;
             _this.height = height;
             _this.depth = depth;
@@ -19200,102 +19212,21 @@ var feng3d;
                 });
             }
             else {
-                _this._heightMap = feng3d.ImageUtil.createImageData();
+                _this._heightMap = defaultHeightMap;
                 _this.invalidateGeometry();
             }
             return _this;
         }
-        Object.defineProperty(TerrainGeometry.prototype, "width", {
-            get: function () {
-                return this._width;
-            },
-            set: function (value) {
-                if (this._width == value)
-                    return;
-                this._width = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainGeometry.prototype, "height", {
-            get: function () {
-                return this._height;
-            },
-            set: function (value) {
-                if (this._height == value)
-                    return;
-                this._height = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainGeometry.prototype, "depth", {
-            get: function () {
-                return this._depth;
-            },
-            set: function (value) {
-                if (this._depth == value)
-                    return;
-                this._depth = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainGeometry.prototype, "segmentsW", {
-            get: function () {
-                return this._segmentsW;
-            },
-            set: function (value) {
-                if (this._segmentsW == value)
-                    return;
-                this._segmentsW = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainGeometry.prototype, "segmentsH", {
-            get: function () {
-                return this._segmentsH;
-            },
-            set: function (value) {
-                if (this._segmentsH == value)
-                    return;
-                this._segmentsH = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainGeometry.prototype, "maxElevation", {
-            get: function () {
-                return this._maxElevation;
-            },
-            set: function (value) {
-                if (this._maxElevation == value)
-                    return;
-                this._maxElevation = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TerrainGeometry.prototype, "minElevation", {
-            get: function () {
-                return this._minElevation;
-            },
-            set: function (value) {
-                if (this._minElevation == value)
-                    return;
-                this._minElevation = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
+        /**
+         * 几何体变脏
+         */
+        TerrainGeometry.prototype.invalidateGeometry = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            _super.prototype.invalidateGeometry.call(this);
+        };
         /**
          * 创建顶点坐标
          */
@@ -19411,6 +19342,46 @@ var feng3d;
             var alpha = data[index + 3]; //透明度
             return blue;
         };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TerrainGeometry.prototype, "heightMapUrl", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TerrainGeometry.prototype, "width", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TerrainGeometry.prototype, "height", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TerrainGeometry.prototype, "depth", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TerrainGeometry.prototype, "segmentsW", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TerrainGeometry.prototype, "segmentsH", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TerrainGeometry.prototype, "maxElevation", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TerrainGeometry.prototype, "minElevation", void 0);
         return TerrainGeometry;
     }(feng3d.Geometry));
     feng3d.TerrainGeometry = TerrainGeometry;

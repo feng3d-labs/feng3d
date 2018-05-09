@@ -182,7 +182,7 @@
         "src/pick/Raycaster.ts",
         //地形
         "src/terrain/TerrainGeometry.ts",
-        "src/terrain/TerrainMethod.ts",
+        "src/terrain/TerrainMaterial.ts",
         "src/terrain/TerrainMergeMethod.ts",
         "src/terrain/TerrainData.ts",
         "src/terrain/Terrain.ts",

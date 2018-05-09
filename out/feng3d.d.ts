@@ -9044,12 +9044,18 @@ declare namespace feng3d {
     interface MaterialRawMap {
     }
     type MaterialRaw = ValueOf<MaterialRawMap>;
+    /**
+     * 基础材质原始数据
+     */
     interface MaterialBaseRaw {
         __class__?: "feng3d.Material";
         shaderName?: string;
         uniforms?: Object;
         renderParams?: Partial<RenderParams>;
     }
+    /**
+     * 材质工厂
+     */
     class MaterialFactory {
     }
     var materialFactory: MaterialFactory;
@@ -9612,26 +9618,49 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface TerrainGeometryRaw {
+        /**
+         * 地形宽度
+         */
+        width: number;
+        /**
+         * 地形高度
+         */
+        height: number;
+        /**
+         * 地形深度
+         */
+        depth: number;
+        /**
+         * 横向网格段数
+         */
+        segmentsW: number;
+        /**
+         * 纵向网格段数
+         */
+        segmentsH: number;
+        /**
+         * 最大地形高度
+         */
+        maxElevation: number;
+        /**
+         * 最小地形高度
+         */
+        minElevation: number;
+    }
     /**
      * 地形几何体
      * @author feng 2016-04-28
      */
-    class TerrainGeometry extends Geometry {
+    class TerrainGeometry extends Geometry implements TerrainGeometryRaw {
         heightMapUrl: string;
         width: number;
-        private _width;
         height: number;
-        private _height;
         depth: number;
-        private _depth;
         segmentsW: number;
-        private _segmentsW;
         segmentsH: number;
-        private _segmentsH;
         maxElevation: number;
-        private _maxElevation;
         minElevation: number;
-        private _minElevation;
         private _heightMap;
         /**
          * 创建高度地形 拥有segmentsW*segmentsH个顶点
@@ -9639,12 +9668,16 @@ declare namespace feng3d {
          * @param    width	地形宽度
          * @param    height	地形高度
          * @param    depth	地形深度
-         * @param    segmentsW	x轴上网格段数
-         * @param    segmentsH	y轴上网格段数
+         * @param    segmentsW	横向网格段数
+         * @param    segmentsH	纵向网格段数
          * @param    maxElevation	最大地形高度
          * @param    minElevation	最小地形高度
          */
         constructor(heightMapUrl?: string, width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, maxElevation?: number, minElevation?: number);
+        /**
+         * 几何体变脏
+         */
+        protected invalidateGeometry(...args: any[]): void;
         /**
          * 创建顶点坐标
          */
@@ -9667,17 +9700,35 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface TerrainMethodRaw {
-        __class__: "feng3d.TerrainMethod";
-        splatRepeats?: Vector3;
-        splatTexture1: Texture2DRaw;
-        splatTexture2: Texture2DRaw;
-        splatTexture3: Texture2DRaw;
-    }
+    type TerrainMaterial = Material & {
+        uniforms: TerrainUniforms;
+    };
     interface MaterialFactory {
-        create(shader: "terrain"): Material & {
-            uniforms: TerrainUniforms;
-        };
+        create(shader: "terrain", raw?: TerrainMaterialRaw): TerrainMaterial;
+    }
+    interface MaterialRawMap {
+        terrain: TerrainMaterialRaw;
+    }
+    interface TerrainMaterialRaw extends MaterialBaseRaw {
+        shaderName?: "terrain";
+        uniforms?: TerrainUniformsRaw;
+    }
+    interface TerrainUniformsRaw {
+        __class__?: "feng3d.TerrainUniforms";
+        s_ambient?: Texture2DRaw;
+        s_diffuse?: Texture2DRaw;
+        s_envMap?: TextureCubeRaw;
+        s_normal?: Texture2DRaw;
+        s_specular?: Texture2DRaw;
+        u_ambient?: Color3Raw;
+        u_diffuse?: Color3Raw;
+        u_reflectivity?: number;
+        u_specular?: Color3Raw;
+        s_splatTexture1: Texture2D | Texture2DRaw;
+        s_splatTexture2: Texture2D | Texture2DRaw;
+        s_splatTexture3: Texture2D | Texture2DRaw;
+        s_blendTexture: Texture2D | Texture2DRaw;
+        u_splatRepeats: Vector4;
     }
     class TerrainUniforms extends StandardUniforms {
         s_splatTexture1: Texture2D;

@@ -1,6 +1,7 @@
 namespace feng3d
 {
     export type StandardMaterial = Material & { uniforms: StandardUniforms; };
+
     export interface MaterialFactory
     {
         create(shader: "standard", raw?: StandardMaterialRaw): StandardMaterial;

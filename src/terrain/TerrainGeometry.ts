@@ -1,104 +1,94 @@
 namespace feng3d
 {
 
+    export interface TerrainGeometryRaw
+    {
+        /**
+         * 地形宽度
+         */
+        width: number;
+
+        /**
+         * 地形高度
+         */
+        height: number;
+
+        /**
+         * 地形深度
+         */
+        depth: number;
+
+        /**
+         * 横向网格段数
+         */
+        segmentsW: number;
+
+        /**
+         * 纵向网格段数
+         */
+        segmentsH: number;
+
+        /**
+         * 最大地形高度
+         */
+        maxElevation: number;
+
+        /**
+         * 最小地形高度
+         */
+        minElevation: number;
+    }
+
+    /**
+     * 默认高度图
+     */
+    var defaultHeightMap = ImageUtil.createImageData();
+
     /**
      * 地形几何体
      * @author feng 2016-04-28
      */
-    export class TerrainGeometry extends Geometry
+    export class TerrainGeometry extends Geometry implements TerrainGeometryRaw
     {
+        @serialize
+        @oav()
+        @watch("invalidateGeometry")
         heightMapUrl: string;
 
-        get width()
-        {
-            return this._width;
-        }
-        set width(value)
-        {
-            if (this._width == value)
-                return;
-            this._width = value;
-            this.invalidateGeometry();
-        }
-        private _width = 10;
+        @serialize
+        @oav()
+        @watch("invalidateGeometry")
+        width = 10;
 
-        get height()
-        {
-            return this._height;
-        }
-        set height(value)
-        {
-            if (this._height == value)
-                return;
-            this._height = value;
-            this.invalidateGeometry();
-        }
-        private _height = 1;
+        @serialize
+        @oav()
+        @watch("invalidateGeometry")
+        height = 1;
 
-        get depth()
-        {
-            return this._depth;
-        }
-        set depth(value)
-        {
-            if (this._depth == value)
-                return;
-            this._depth = value;
-            this.invalidateGeometry();
-        }
-        private _depth = 10;
+        @serialize
+        @oav()
+        @watch("invalidateGeometry")
+        depth = 10;
 
-        get segmentsW()
-        {
-            return this._segmentsW;
-        }
-        set segmentsW(value)
-        {
-            if (this._segmentsW == value)
-                return;
-            this._segmentsW = value;
-            this.invalidateGeometry();
-        }
-        private _segmentsW = 30;
+        @serialize
+        @oav()
+        @watch("invalidateGeometry")
+        segmentsW = 30;
 
-        get segmentsH()
-        {
-            return this._segmentsH;
-        }
-        set segmentsH(value)
-        {
-            if (this._segmentsH == value)
-                return;
-            this._segmentsH = value;
-            this.invalidateGeometry();
-        }
-        private _segmentsH = 30;
+        @serialize
+        @oav()
+        @watch("invalidateGeometry")
+        segmentsH = 30;
 
-        get maxElevation()
-        {
-            return this._maxElevation;
-        }
-        set maxElevation(value)
-        {
-            if (this._maxElevation == value)
-                return;
-            this._maxElevation = value;
-            this.invalidateGeometry();
-        }
-        private _maxElevation = 255;
+        @serialize
+        @oav()
+        @watch("invalidateGeometry")
+        maxElevation = 255;
 
-        get minElevation()
-        {
-            return this._minElevation;
-        }
-        set minElevation(value)
-        {
-            if (this._minElevation == value)
-                return;
-            this._minElevation = value;
-            this.invalidateGeometry();
-        }
-        private _minElevation = 0;
+        @serialize
+        @oav()
+        @watch("invalidateGeometry")
+        minElevation = 0;
 
         private _heightMap: ImageData;
 
@@ -108,8 +98,8 @@ namespace feng3d
 		 * @param    width	地形宽度
 		 * @param    height	地形高度
 		 * @param    depth	地形深度
-		 * @param    segmentsW	x轴上网格段数
-		 * @param    segmentsH	y轴上网格段数
+		 * @param    segmentsW	横向网格段数
+		 * @param    segmentsH	纵向网格段数
 		 * @param    maxElevation	最大地形高度
 		 * @param    minElevation	最小地形高度
 		 */
@@ -135,9 +125,18 @@ namespace feng3d
                 });
             } else
             {
-                this._heightMap = ImageUtil.createImageData();
+                this._heightMap = defaultHeightMap;
                 this.invalidateGeometry();
             }
+        }
+
+        /**
+         * 几何体变脏
+         */
+        protected invalidateGeometry(...args)
+        {
+
+            super.invalidateGeometry();
         }
 
 		/**
