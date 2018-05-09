@@ -9710,35 +9710,42 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 地形几何体原始数据
+     */
     interface TerrainGeometryRaw {
+        /**
+         * 高度图路径
+         */
+        heightMapUrl?: string;
         /**
          * 地形宽度
          */
-        width: number;
+        width?: number;
         /**
          * 地形高度
          */
-        height: number;
+        height?: number;
         /**
          * 地形深度
          */
-        depth: number;
+        depth?: number;
         /**
          * 横向网格段数
          */
-        segmentsW: number;
+        segmentsW?: number;
         /**
          * 纵向网格段数
          */
-        segmentsH: number;
+        segmentsH?: number;
         /**
          * 最大地形高度
          */
-        maxElevation: number;
+        maxElevation?: number;
         /**
          * 最小地形高度
          */
-        minElevation: number;
+        minElevation?: number;
     }
     /**
      * 地形几何体
@@ -9756,20 +9763,12 @@ declare namespace feng3d {
         private _heightMap;
         /**
          * 创建高度地形 拥有segmentsW*segmentsH个顶点
-         * @param    heightMap	高度图
-         * @param    width	地形宽度
-         * @param    height	地形高度
-         * @param    depth	地形深度
-         * @param    segmentsW	横向网格段数
-         * @param    segmentsH	纵向网格段数
-         * @param    maxElevation	最大地形高度
-         * @param    minElevation	最小地形高度
          */
-        constructor(heightMapUrl?: string, width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, maxElevation?: number, minElevation?: number);
+        constructor(raw?: TerrainGeometryRaw);
         /**
          * 几何体变脏
          */
-        protected invalidateGeometry(...args: any[]): void;
+        protected invalidateGeometry(propertyKey?: string, oldValue?: any, newValue?: any): void;
         /**
          * 创建顶点坐标
          */

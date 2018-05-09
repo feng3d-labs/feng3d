@@ -1,42 +1,49 @@
 namespace feng3d
 {
 
+    /**
+     * 地形几何体原始数据
+     */
     export interface TerrainGeometryRaw
     {
         /**
+         * 高度图路径
+         */
+        heightMapUrl?: string
+        /**
          * 地形宽度
          */
-        width: number;
+        width?: number;
 
         /**
          * 地形高度
          */
-        height: number;
+        height?: number;
 
         /**
          * 地形深度
          */
-        depth: number;
+        depth?: number;
 
         /**
          * 横向网格段数
          */
-        segmentsW: number;
+        segmentsW?: number;
 
         /**
          * 纵向网格段数
          */
-        segmentsH: number;
+        segmentsH?: number;
 
         /**
          * 最大地形高度
          */
-        maxElevation: number;
+        maxElevation?: number;
 
         /**
          * 最小地形高度
          */
-        minElevation: number;
+        minElevation?: number;
     }
 
     /**
@@ -90,53 +97,34 @@ namespace feng3d
         @watch("invalidateGeometry")
         minElevation = 0;
 
-        private _heightMap: ImageData;
+        private _heightMap = defaultHeightMap;
 
 		/**
 		 * 创建高度地形 拥有segmentsW*segmentsH个顶点
-		 * @param    heightMap	高度图
-		 * @param    width	地形宽度
-		 * @param    height	地形高度
-		 * @param    depth	地形深度
-		 * @param    segmentsW	横向网格段数
-		 * @param    segmentsH	纵向网格段数
-		 * @param    maxElevation	最大地形高度
-		 * @param    minElevation	最小地形高度
 		 */
-        constructor(heightMapUrl: string = null, width = 500, height = 200, depth = 500, segmentsW = 30, segmentsH = 30, maxElevation = 255, minElevation = 0)
+        constructor(raw?: TerrainGeometryRaw)
         {
             super();
+            this.name = "terrain";
+            serialization.setValue(this, raw);
+        }
 
-            this.width = width;
-            this.height = height;
-            this.depth = depth;
-            this.segmentsW = segmentsW;
-            this.segmentsH = segmentsH;
-            this.maxElevation = maxElevation;
-            this.minElevation = minElevation;
-            this.heightMapUrl = heightMapUrl;
-
-            if (heightMapUrl)
+        /**
+         * 几何体变脏
+         */
+        protected invalidateGeometry(propertyKey?: string, oldValue?, newValue?)
+        {
+            if (propertyKey == "heightMapUrl")
             {
-                ImageUtil.getImageDataFromUrl(heightMapUrl, (imageData) =>
+                ImageUtil.getImageDataFromUrl(newValue, (imageData) =>
                 {
                     this._heightMap = imageData;
                     this.invalidateGeometry();
                 });
             } else
             {
-                this._heightMap = defaultHeightMap;
-                this.invalidateGeometry();
+                super.invalidateGeometry();
             }
-        }
-
-        /**
-         * 几何体变脏
-         */
-        protected invalidateGeometry(...args)
-        {
-
-            super.invalidateGeometry();
         }
 
 		/**

@@ -18763,24 +18763,8 @@ var feng3d;
         __extends(TerrainGeometry, _super);
         /**
          * 创建高度地形 拥有segmentsW*segmentsH个顶点
-         * @param    heightMap	高度图
-         * @param    width	地形宽度
-         * @param    height	地形高度
-         * @param    depth	地形深度
-         * @param    segmentsW	横向网格段数
-         * @param    segmentsH	纵向网格段数
-         * @param    maxElevation	最大地形高度
-         * @param    minElevation	最小地形高度
          */
-        function TerrainGeometry(heightMapUrl, width, height, depth, segmentsW, segmentsH, maxElevation, minElevation) {
-            if (heightMapUrl === void 0) { heightMapUrl = null; }
-            if (width === void 0) { width = 500; }
-            if (height === void 0) { height = 200; }
-            if (depth === void 0) { depth = 500; }
-            if (segmentsW === void 0) { segmentsW = 30; }
-            if (segmentsH === void 0) { segmentsH = 30; }
-            if (maxElevation === void 0) { maxElevation = 255; }
-            if (minElevation === void 0) { minElevation = 0; }
+        function TerrainGeometry(raw) {
             var _this = _super.call(this) || this;
             _this.width = 10;
             _this.height = 1;
@@ -18789,35 +18773,25 @@ var feng3d;
             _this.segmentsH = 30;
             _this.maxElevation = 255;
             _this.minElevation = 0;
-            _this.width = width;
-            _this.height = height;
-            _this.depth = depth;
-            _this.segmentsW = segmentsW;
-            _this.segmentsH = segmentsH;
-            _this.maxElevation = maxElevation;
-            _this.minElevation = minElevation;
-            _this.heightMapUrl = heightMapUrl;
-            if (heightMapUrl) {
-                feng3d.ImageUtil.getImageDataFromUrl(heightMapUrl, function (imageData) {
-                    _this._heightMap = imageData;
-                    _this.invalidateGeometry();
-                });
-            }
-            else {
-                _this._heightMap = defaultHeightMap;
-                _this.invalidateGeometry();
-            }
+            _this._heightMap = defaultHeightMap;
+            _this.name = "terrain";
+            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
          * 几何体变脏
          */
-        TerrainGeometry.prototype.invalidateGeometry = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
+        TerrainGeometry.prototype.invalidateGeometry = function (propertyKey, oldValue, newValue) {
+            var _this = this;
+            if (propertyKey == "heightMapUrl") {
+                feng3d.ImageUtil.getImageDataFromUrl(newValue, function (imageData) {
+                    _this._heightMap = imageData;
+                    _this.invalidateGeometry();
+                });
             }
-            _super.prototype.invalidateGeometry.call(this);
+            else {
+                _super.prototype.invalidateGeometry.call(this);
+            }
         };
         /**
          * 创建顶点坐标
