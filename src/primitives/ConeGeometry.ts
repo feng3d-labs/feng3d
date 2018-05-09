@@ -2,7 +2,7 @@ namespace feng3d
 {
 	export interface ConeGeometryRaw
 	{
-		__class__: "feng3d.ConeGeometry",
+		__class__?: "feng3d.ConeGeometry",
 		bottomClosed?: boolean,
 		bottomRadius?: number,
 		height?: number,
@@ -18,7 +18,7 @@ namespace feng3d
 	 * 圆锥体
      * @author feng 2017-02-07
 	 */
-	export class ConeGeometry extends CylinderGeometry
+	export class ConeGeometry extends CylinderGeometry implements ConeGeometryRaw
 	{
 		/**
 		 * 创建圆锥体

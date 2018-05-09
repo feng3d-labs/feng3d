@@ -1,95 +1,63 @@
 namespace feng3d
 {
+    /**
+     * 平面几何体原始数据
+     */
     export interface PlaneGeometryRaw
     {
-        __class__: "feng3d.PlaneGeometry",
-        height?: number,
-        segmentsH?: number,
-        segmentsW?: number,
+        __class__?: "feng3d.PlaneGeometry",
+        /**
+         * 宽度
+         */
         width?: number,
+        /**
+         * 高度
+         */
+        height?: number,
+        /**
+         * 横向分割数
+         */
+        segmentsW?: number,
+        /**
+         * 纵向分割数
+         */
+        segmentsH?: number,
+        /**
+         * 是否朝上
+         */
         yUp?: boolean
     }
 
     /**
-     * 立方体几何体
+     * 平面几何体
      * @author feng 2016-09-12
      */
-    export class PlaneGeometry extends Geometry
+    export class PlaneGeometry extends Geometry implements PlaneGeometryRaw
     {
         @oav()
         @serialize
-        get width()
-        {
-            return this._width;
-        }
-        set width(value)
-        {
-            if (this._width == value)
-                return;
-            this._width = value;
-            this.invalidateGeometry();
-        }
-        private _width = 1;
+        @watch("invalidateGeometry")
+        width = 1;
 
         @oav()
         @serialize
-        get height()
-        {
-            return this._height;
-        }
-        set height(value)
-        {
-            if (this._height == value)
-                return;
-            this._height = value;
-            this.invalidateGeometry();
-        }
-        private _height = 1;
+        @watch("invalidateGeometry")
+        height = 1;
 
         @oav()
         @serialize
-        get segmentsW()
-        {
-            return this._segmentsW;
-        }
-        set segmentsW(value)
-        {
-            if (this._segmentsW == value)
-                return;
-            this._segmentsW = value;
-            this.invalidateGeometry();
-        }
-        private _segmentsW = 1;
+        @watch("invalidateGeometry")
+        segmentsW = 1;
 
         @oav()
         @serialize
-        get segmentsH()
-        {
-            return this._segmentsH;
-        }
-        set segmentsH(value)
-        {
-            if (this._segmentsH == value)
-                return;
-            this._segmentsH = value;
-            this.invalidateGeometry();
-        }
-        private _segmentsH = 1;
+        @watch("invalidateGeometry")
+        segmentsH = 1;
 
         @oav()
         @serialize
-        get yUp()
-        {
-            return this._yUp;
-        }
-        set yUp(value)
-        {
-            if (this._yUp == value)
-                return;
-            this._yUp = value;
-            this.invalidateGeometry();
-        }
-        private _yUp = true;
+        @watch("invalidateGeometry")
+        yUp = true;
 
         /**
          * 创建平面几何体

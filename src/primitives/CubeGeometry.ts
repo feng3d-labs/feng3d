@@ -1,127 +1,82 @@
 namespace feng3d
 {
+    /**
+     * 立方体几何体原始数据
+     */
     export interface CubeGeometryRaw
     {
-        __class__: "feng3d.CubeGeometry";
-        depth?: number,
-        height?: number,
-        segmentsD?: number,
-        segmentsH?: number,
-        segmentsW?: number,
-        tile6?: boolean,
+        __class__?: "feng3d.CubeGeometry";
+        /**
+         * 宽度
+         */
         width?: number
+        /**
+         * 高度
+         */
+        height?: number,
+        /**
+         * 深度
+         */
+        depth?: number,
+        /**
+         * 宽度方向分割数
+         */
+        segmentsW?: number,
+        /**
+         * 高度方向分割数
+         */
+        segmentsH?: number,
+        /**
+         * 深度方向分割数
+         */
+        segmentsD?: number,
+        /**
+         * 是否为6块贴图，默认true。
+         */
+        tile6?: boolean,
     }
 
     /**
      * 立方体几何体
      * @author feng 2016-09-12
      */
-    export class CubeGeometry extends Geometry
+    export class CubeGeometry extends Geometry implements CubeGeometryRaw
     {
         @serialize
         @oav()
-        get width()
-        {
-            return this._width;
-        }
-        set width(value)
-        {
-            if (this._width == value)
-                return;
-            this._width = value;
-            this.invalidateGeometry();
-        }
-        private _width = 1;
+        @watch("invalidateGeometry")
+        width = 1;
 
         @serialize
         @oav()
-        get height()
-        {
-            return this._height;
-        }
-        set height(value)
-        {
-            if (this._height == value)
-                return;
-            this._height = value;
-            this.invalidateGeometry();
-        }
-        private _height = 1;
+        @watch("invalidateGeometry")
+        height = 1;
 
         @serialize
         @oav()
-        get depth()
-        {
-            return this._depth;
-        }
-        set depth(value)
-        {
-            if (this._depth == value)
-                return;
-            this._depth = value;
-            this.invalidateGeometry();
-        }
-        private _depth = 1;
+        @watch("invalidateGeometry")
+        depth = 1;
 
         @serialize
         @oav()
-        get segmentsW()
-        {
-            return this._segmentsW;
-        }
-        set segmentsW(value)
-        {
-            if (this._segmentsW == value)
-                return;
-            this._segmentsW = value;
-            this.invalidateGeometry();
-        }
-        private _segmentsW = 1;
+        @watch("invalidateGeometry")
+        segmentsW = 1;
 
         @serialize
         @oav()
-        get segmentsH()
-        {
-            return this._segmentsH;
-        }
-        set segmentsH(value)
-        {
-            if (this._segmentsH == value)
-                return;
-            this._segmentsH = value;
-            this.invalidateGeometry();
-        }
-        private _segmentsH = 1;
+        @watch("invalidateGeometry")
+        segmentsH = 1;
 
         @serialize
         @oav()
-        get segmentsD()
-        {
-            return this._segmentsD;
-        }
-        set segmentsD(value)
-        {
-            if (this._segmentsD == value)
-                return;
-            this._segmentsD = value;
-            this.invalidateGeometry();
-        }
-        private _segmentsD = 1;
+        @watch("invalidateGeometry")
+        @watch("invalidateGeometry")
+        segmentsD = 1;
 
         @serialize
         @oav()
-        get tile6()
-        {
-            return this._tile6;
-        }
-        set tile6(value)
-        {
-            if (this._tile6 == value)
-                return;
-            this._tile6 = value;
-            this.invalidateGeometry();
-        }
-        private _tile6 = true;
+        @watch("invalidateGeometry")
+        tile6 = true;
 
         /**
          * 创建立方几何体

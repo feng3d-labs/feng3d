@@ -1,12 +1,30 @@
 namespace feng3d
 {
+    /**
+     * 胶囊体几何体原始数据
+     */
     export interface CapsuleGeometryRaw
     {
-        __class__: "feng3d.CapsuleGeometry",
-        height?: number,
+        __class__?: "feng3d.CapsuleGeometry",
+        /**
+         * 胶囊体半径
+         */
         radius?: number,
+        /**
+         * 胶囊体高度
+         */
+        height?: number,
+        /**
+         * 横向分割数
+         */
         segmentsH?: number,
+        /**
+         * 纵向分割数
+         */
         segmentsW?: number,
+        /**
+         * 正面朝向 true:Y+ false:Z+
+         */
         yUp?: boolean
     }
 
@@ -14,82 +32,32 @@ namespace feng3d
      * 胶囊体几何体
      * @author DawnKing 2016-09-12
      */
-    export class CapsuleGeometry extends Geometry
+    export class CapsuleGeometry extends Geometry implements CapsuleGeometryRaw
     {
         @serialize
         @oav()
-        get radius()
-        {
-            return this._radius;
-        }
-        set radius(value)
-        {
-            if (this._radius == value)
-                return;
-            this._radius = value;
-            this.invalidateGeometry();
-        }
-        private _radius = 0.5;
+        @watch("invalidateGeometry")
+        radius = 0.5;
 
         @serialize
         @oav()
-        get height()
-        {
-            return this._height;
-        }
-        set height(value)
-        {
-            if (this._height == value)
-                return;
-            this._height = value;
-            this.invalidateGeometry();
-        }
-        private _height = 1
+        @watch("invalidateGeometry")
+        height = 1
 
         @serialize
         @oav()
-        get segmentsW()
-        {
-            return this._segmentsW;
-        }
-        set segmentsW(value)
-        {
-            if (this._segmentsW == value)
-                return;
-            this._segmentsW = value;
-            this.invalidateGeometry();
-        }
-        private _segmentsW = 16
+        @watch("invalidateGeometry")
+        segmentsW = 16
 
         @serialize
         @oav()
-        get segmentsH()
-        {
-            return this._segmentsH;
-        }
-        set segmentsH(value)
-        {
-            if (this._segmentsH == value)
-                return;
-            this._segmentsH = value;
-            this.invalidateGeometry();
-        }
-        private _segmentsH = 15;
+        @watch("invalidateGeometry")
+        segmentsH = 15;
 
         @serialize
         @oav()
-        get yUp()
-        {
-            return this._yUp;
-        }
-        set yUp(value)
-        {
-            if (this._yUp == value)
-                return;
-            this._yUp = value;
-            this.invalidateGeometry();
-        }
-        private _yUp = true;
+        @watch("invalidateGeometry")
+        yUp = true;
 
         /**
          * 创建胶囊几何体

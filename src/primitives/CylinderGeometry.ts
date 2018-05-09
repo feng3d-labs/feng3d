@@ -1,23 +1,54 @@
 namespace feng3d
 {
+    /**
+     * 圆柱体几何体原始数据
+     */
     export interface CylinderGeometryRaw
     {
-        __class__: "feng3d.CylinderGeometry",
-        bottomClosed?: boolean,
-        bottomRadius?: number,
-        height?: number,
-        segmentsH?: number,
-        segmentsW?: number,
-        surfaceClosed?: boolean,
-        topClosed?: boolean,
+        __class__?: "feng3d.CylinderGeometry",
+        /**
+         * 顶部半径
+         */
         topRadius?: number,
+        /**
+         * 底部半径
+         */
+        bottomRadius?: number,
+        /**
+         * 高度
+         */
+        height?: number,
+        /**
+         * 横向分割数
+         */
+        segmentsW?: number,
+        /**
+         * 纵向分割数
+         */
+        segmentsH?: number,
+        /**
+         * 顶部是否封口
+         */
+        topClosed?: boolean,
+        /**
+         * 底部是否封口
+         */
+        bottomClosed?: boolean,
+        /**
+         * 侧面是否封口
+         */
+        surfaceClosed?: boolean,
+        /**
+         * 是否朝上
+         */
         yUp?: boolean
     }
+
     /**
      * 圆柱体几何体
      * @author DawnKing 2016-09-12
      */
-    export class CylinderGeometry extends Geometry
+    export class CylinderGeometry extends Geometry implements CylinderGeometryRaw
     {
         @watch("invalidateGeometry")
         @serialize

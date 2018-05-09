@@ -1,11 +1,26 @@
 namespace feng3d
 {
+    /**
+     * 球体几何体原始数据
+     */
     export interface SphereGeometryRaw
     {
-        __class__: "feng3d.SphereGeometry",
+        __class__?: "feng3d.SphereGeometry",
+        /**
+         * 球体半径
+         */
         radius?: number,
-        segmentsH?: number,
+        /**
+         * 横向分割数
+         */
         segmentsW?: number,
+        /**
+         * 纵向分割数
+         */
+        segmentsH?: number,
+        /**
+         * 是否朝上
+         */
         yUp?: boolean
     }
 
@@ -13,67 +28,27 @@ namespace feng3d
      * 球体几何体
      * @author DawnKing 2016-09-12
      */
-    export class SphereGeometry extends Geometry
+    export class SphereGeometry extends Geometry implements SphereGeometryRaw
     {
         @serialize
         @oav()
-        get radius()
-        {
-            return this._radius;
-        }
-        set radius(value)
-        {
-            if (this._radius == value)
-                return;
-            this._radius = value;
-            this.invalidateGeometry();
-        }
-        private _radius = 50;
+        @watch("invalidateGeometry")
+        radius = 50;
 
         @serialize
         @oav()
-        get segmentsW()
-        {
-            return this._segmentsW;
-        }
-        set segmentsW(value)
-        {
-            if (this._segmentsW == value)
-                return;
-            this._segmentsW = value;
-            this.invalidateGeometry();
-        }
-        private _segmentsW = 16;
+        @watch("invalidateGeometry")
+        segmentsW = 16;
 
         @serialize
         @oav()
-        get segmentsH()
-        {
-            return this._segmentsH;
-        }
-        set segmentsH(value)
-        {
-            if (this._segmentsH == value)
-                return;
-            this._segmentsH = value;
-            this.invalidateGeometry();
-        }
-        private _segmentsH = 12;
+        @watch("invalidateGeometry")
+        segmentsH = 12;
 
         @serialize
         @oav()
-        get yUp()
-        {
-            return this._yUp;
-        }
-        set yUp(value)
-        {
-            if (this._yUp == value)
-                return;
-            this._yUp = value;
-            this.invalidateGeometry();
-        }
-        private _yUp = true;
+        @watch("invalidateGeometry")
+        yUp = true;
 
         /**
          * 创建球形几何体
