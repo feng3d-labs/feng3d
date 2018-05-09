@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    
+
     export type GeometryRaw =
         SegmentGeometryRaw
         | PlaneGeometryRaw
@@ -432,7 +432,7 @@ namespace feng3d
         {
             this.updateGrometry();
 
-            var uvs = this.uvs;
+            var uvs = this.uvs.concat();
             var len = uvs.length;
             var ratioU = scaleU / this._scaleU;
             var ratioV = scaleV / this._scaleV;

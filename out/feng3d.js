@@ -14716,7 +14716,7 @@ var feng3d;
             if (scaleU === void 0) { scaleU = 1; }
             if (scaleV === void 0) { scaleV = 1; }
             this.updateGrometry();
-            var uvs = this.uvs;
+            var uvs = this.uvs.concat();
             var len = uvs.length;
             var ratioU = scaleU / this._scaleU;
             var ratioV = scaleV / this._scaleV;
