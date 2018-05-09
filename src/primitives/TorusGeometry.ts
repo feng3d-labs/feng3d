@@ -1,94 +1,63 @@
 namespace feng3d
 {
+	/**
+	 * 圆环几何体原始数据
+	 */
 	export interface TorusGeometryRaw
 	{
-		"__class__": "feng3d.TorusGeometry",
-		radius?: 50,
-		segmentsR?: 16,
-		segmentsT?: 8,
-		tubeRadius?: 10,
-		yUp?: true
+		__class__?: "feng3d.TorusGeometry",
+		/**
+		 * 半径
+		 */
+		radius?: number,
+		/**
+		 * 半径方向分割数
+		 */
+		segmentsR?: number,
+
+		/**
+		 * 管道方向分割数
+		 */
+		segmentsT?: number,
+		/**
+		 * 管道半径
+		 */
+		tubeRadius?: number,
+		/**
+		 * 是否朝上
+		 */
+		yUp?: boolean
 	}
 
 	/**
 	 * 圆环几何体
 	 */
-	export class TorusGeometry extends Geometry
+	export class TorusGeometry extends Geometry implements TorusGeometryRaw
 	{
 		@serialize
 		@oav()
-		get radius()
-		{
-			return this._radius;
-		}
-		set radius(value)
-		{
-			if (this._radius == value)
-				return;
-			this._radius = value;
-			this.invalidateGeometry();
-		}
-		private _radius = 0.5;
+		@watch("invalidateGeometry")
+		radius = 0.5;
 
 		@serialize
 		@oav()
-		get tubeRadius()
-		{
-			return this._tubeRadius;
-		}
-		set tubeRadius(value)
-		{
-			if (this._tubeRadius == value)
-				return;
-			this._tubeRadius = value;
-			this.invalidateGeometry();
-		}
-		private _tubeRadius = 0.1;
+		@watch("invalidateGeometry")
+		tubeRadius = 0.1;
 
 		@serialize
 		@oav()
-		get segmentsR()
-		{
-			return this._segmentsR;
-		}
-		set segmentR(value)
-		{
-			if (this._segmentsR == value)
-				return;
-			this._segmentsR = value;
-			this.invalidateGeometry();
-		}
-		private _segmentsR = 16;
+		@watch("invalidateGeometry")
+		segmentsR = 16;
 
 		@serialize
 		@oav()
-		get segmentsT()
-		{
-			return this._segmentsT;
-		}
-		set segmentsT(value)
-		{
-			if (this._segmentsT == value)
-				return;
-			this._segmentsT = value;
-			this.invalidateGeometry();
-		}
-		private _segmentsT = 8;
+		@watch("invalidateGeometry")
+		segmentsT = 8;
 
 		@serialize
 		@oav()
-		get yUp()
-		{
-			return this._yUp;
-		}
-		set yUp(value)
-		{
-			if (this._yUp == value)
-				return;
-			this._yUp = value;
-			this.invalidateGeometry();
-		}
-		private _yUp = true;
+		@watch("invalidateGeometry")
+		yUp = true;
 
 		/**
 		 * 创建<code>Torus</code>实例
@@ -105,7 +74,7 @@ namespace feng3d
 			this.name = "Torus";
 			this.radius = radius;
 			this.tubeRadius = tubeRadius;
-			this.segmentR = segmentsR;
+			this.segmentsR = segmentsR;
 			this.segmentsT = segmentsT;
 			this.yUp = yUp;
 		}
@@ -167,7 +136,7 @@ namespace feng3d
 
 			// evaluate target number of vertices, triangles and indices
 			this._numVertices = (this.segmentsT + 1) * (this.segmentsR + 1); // this.segmentsT + 1 because of closure, this.segmentsR + 1 because of closure
-			numTriangles = this.segmentsT * this.segmentsR * 2; // each level has segmentR quads, each of 2 triangles
+			numTriangles = this.segmentsT * this.segmentsR * 2; // each level has segmentsR quads, each of 2 triangles
 
 			this._vertexPositionData = [];
 			this._vertexNormalData = [];

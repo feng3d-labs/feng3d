@@ -8901,29 +8901,41 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 圆环几何体原始数据
+     */
     interface TorusGeometryRaw {
-        "__class__": "feng3d.TorusGeometry";
-        radius?: 50;
-        segmentsR?: 16;
-        segmentsT?: 8;
-        tubeRadius?: 10;
-        yUp?: true;
+        __class__?: "feng3d.TorusGeometry";
+        /**
+         * 半径
+         */
+        radius?: number;
+        /**
+         * 半径方向分割数
+         */
+        segmentsR?: number;
+        /**
+         * 管道方向分割数
+         */
+        segmentsT?: number;
+        /**
+         * 管道半径
+         */
+        tubeRadius?: number;
+        /**
+         * 是否朝上
+         */
+        yUp?: boolean;
     }
     /**
      * 圆环几何体
      */
-    class TorusGeometry extends Geometry {
+    class TorusGeometry extends Geometry implements TorusGeometryRaw {
         radius: number;
-        private _radius;
         tubeRadius: number;
-        private _tubeRadius;
-        readonly segmentsR: number;
-        segmentR: any;
-        private _segmentsR;
+        segmentsR: number;
         segmentsT: number;
-        private _segmentsT;
         yUp: boolean;
-        private _yUp;
         /**
          * 创建<code>Torus</code>实例
          * @param radius						圆环半径

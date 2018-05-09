@@ -17682,91 +17682,22 @@ var feng3d;
             if (segmentsT === void 0) { segmentsT = 8; }
             if (yUp === void 0) { yUp = true; }
             var _this = _super.call(this) || this;
-            _this._radius = 0.5;
-            _this._tubeRadius = 0.1;
-            _this._segmentsR = 16;
-            _this._segmentsT = 8;
-            _this._yUp = true;
+            _this.radius = 0.5;
+            _this.tubeRadius = 0.1;
+            _this.segmentsR = 16;
+            _this.segmentsT = 8;
+            _this.yUp = true;
             _this._vertexPositionStride = 3;
             _this._vertexNormalStride = 3;
             _this._vertexTangentStride = 3;
             _this.name = "Torus";
             _this.radius = radius;
             _this.tubeRadius = tubeRadius;
-            _this.segmentR = segmentsR;
+            _this.segmentsR = segmentsR;
             _this.segmentsT = segmentsT;
             _this.yUp = yUp;
             return _this;
         }
-        Object.defineProperty(TorusGeometry.prototype, "radius", {
-            get: function () {
-                return this._radius;
-            },
-            set: function (value) {
-                if (this._radius == value)
-                    return;
-                this._radius = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TorusGeometry.prototype, "tubeRadius", {
-            get: function () {
-                return this._tubeRadius;
-            },
-            set: function (value) {
-                if (this._tubeRadius == value)
-                    return;
-                this._tubeRadius = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TorusGeometry.prototype, "segmentsR", {
-            get: function () {
-                return this._segmentsR;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TorusGeometry.prototype, "segmentR", {
-            set: function (value) {
-                if (this._segmentsR == value)
-                    return;
-                this._segmentsR = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TorusGeometry.prototype, "segmentsT", {
-            get: function () {
-                return this._segmentsT;
-            },
-            set: function (value) {
-                if (this._segmentsT == value)
-                    return;
-                this._segmentsT = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TorusGeometry.prototype, "yUp", {
-            get: function () {
-                return this._yUp;
-            },
-            set: function (value) {
-                if (this._yUp == value)
-                    return;
-                this._yUp = value;
-                this.invalidateGeometry();
-            },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 添加顶点数据
          */
@@ -17806,7 +17737,7 @@ var feng3d;
             this._currentTriangleIndex = 0;
             // evaluate target number of vertices, triangles and indices
             this._numVertices = (this.segmentsT + 1) * (this.segmentsR + 1); // this.segmentsT + 1 because of closure, this.segmentsR + 1 because of closure
-            numTriangles = this.segmentsT * this.segmentsR * 2; // each level has segmentR quads, each of 2 triangles
+            numTriangles = this.segmentsT * this.segmentsR * 2; // each level has segmentsR quads, each of 2 triangles
             this._vertexPositionData = [];
             this._vertexNormalData = [];
             this._vertexTangentData = [];
@@ -17898,24 +17829,29 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
-        ], TorusGeometry.prototype, "radius", null);
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TorusGeometry.prototype, "radius", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
-        ], TorusGeometry.prototype, "tubeRadius", null);
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TorusGeometry.prototype, "tubeRadius", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
-        ], TorusGeometry.prototype, "segmentsR", null);
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TorusGeometry.prototype, "segmentsR", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
-        ], TorusGeometry.prototype, "segmentsT", null);
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TorusGeometry.prototype, "segmentsT", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
-        ], TorusGeometry.prototype, "yUp", null);
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], TorusGeometry.prototype, "yUp", void 0);
         return TorusGeometry;
     }(feng3d.Geometry));
     feng3d.TorusGeometry = TorusGeometry;
@@ -17978,7 +17914,7 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.watch("urlChanged"),
-            feng3d.oav()
+            feng3d.oav({ componentParam: { dragparam: { accepttype: "image" }, textEnabled: false } })
         ], Texture2D.prototype, "url", void 0);
         return Texture2D;
     }(feng3d.TextureInfo));
