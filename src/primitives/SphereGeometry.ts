@@ -33,7 +33,7 @@ namespace feng3d
         @serialize
         @oav()
         @watch("invalidateGeometry")
-        radius = 50;
+        radius = 0.5;
 
         @serialize
         @oav()

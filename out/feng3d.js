@@ -16624,7 +16624,7 @@ var feng3d;
          */
         function SphereGeometry(raw) {
             var _this = _super.call(this) || this;
-            _this.radius = 50;
+            _this.radius = 0.5;
             _this.segmentsW = 16;
             _this.segmentsH = 12;
             _this.yUp = true;
@@ -18910,7 +18910,7 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
+            feng3d.oav({ componentParam: { dragparam: { accepttype: "image" }, textEnabled: false } }),
             feng3d.watch("invalidateGeometry")
         ], TerrainGeometry.prototype, "heightMapUrl", void 0);
         __decorate([

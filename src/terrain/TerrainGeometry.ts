@@ -58,7 +58,7 @@ namespace feng3d
     export class TerrainGeometry extends Geometry implements TerrainGeometryRaw
     {
         @serialize
-        @oav()
+        @oav({ componentParam: { dragparam: { accepttype: "image" }, textEnabled: false } })
         @watch("invalidateGeometry")
         heightMapUrl: string;
 
