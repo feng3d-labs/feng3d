@@ -3,14 +3,29 @@ namespace feng3d
 	export interface ConeGeometryRaw
 	{
 		__class__?: "feng3d.ConeGeometry",
-		bottomClosed?: boolean,
+        /**
+         * 底部半径
+         */
 		bottomRadius?: number,
+        /**
+         * 高度
+         */
 		height?: number,
-		segmentsH?: number,
+        /**
+         * 横向分割数
+         */
 		segmentsW?: number,
-		surfaceClosed?: boolean,
-		topClosed?: boolean,
-		topRadius?: number,
+        /**
+         * 纵向分割数
+         */
+		segmentsH?: number,
+        /**
+         * 底部是否封口
+         */
+		bottomClosed?: boolean,
+        /**
+         * 是否朝上
+         */
 		yUp?: boolean
 	}
 
@@ -20,17 +35,18 @@ namespace feng3d
 	 */
 	export class ConeGeometry extends CylinderGeometry implements ConeGeometryRaw
 	{
+		topRadius = 0;
+
+		topClosed = false;
+
+		surfaceClosed = true;
+
 		/**
 		 * 创建圆锥体
-		 * @param radius 底部半径
-		 * @param height 高度
-		 * @param segmentsW
-		 * @param segmentsH
-		 * @param yUp
 		 */
-		constructor(radius = 0.5, height = 1, segmentsW = 16, segmentsH = 1, closed = true, yUp = true)
+		constructor(raw?: ConeGeometryRaw)
 		{
-			super(0, radius, height, segmentsW, segmentsH, false, closed, true, yUp);
+			super(<any>raw);
 			this.name = "Cone";
 		}
 	}

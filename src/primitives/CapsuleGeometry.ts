@@ -67,15 +67,11 @@ namespace feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(radius = 0.5, height = 1, segmentsW = 16, segmentsH = 15, yUp = true)
+        constructor(raw?: CapsuleGeometryRaw)
         {
             super();
             this.name = "Capsule";
-            this.radius = radius;
-            this.height = height;
-            this.segmentsW = segmentsW;
-            this.segmentsH = segmentsH;
-            this.yUp = yUp;
+            serialization.setValue(this, raw);
         }
 
         /**

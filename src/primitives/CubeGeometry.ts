@@ -80,25 +80,12 @@ namespace feng3d
 
         /**
          * 创建立方几何体
-         * @param   width           宽度，默认为1。
-         * @param   height          高度，默认为1。
-         * @param   depth           深度，默认为1。
-         * @param   segmentsW       宽度方向分割，默认为1。
-         * @param   segmentsH       高度方向分割，默认为1。
-         * @param   segmentsD       深度方向分割，默认为1。
-         * @param   tile6           是否为6块贴图，默认true。
          */
-        constructor(width = 1, height = 1, depth = 1, segmentsW = 1, segmentsH = 1, segmentsD = 1, tile6 = true)
+        constructor(raw?: CubeGeometryRaw)
         {
             super();
             this.name = "Cube";
-            this.width = width;
-            this.height = height;
-            this.depth = depth;
-            this.segmentsW = segmentsW;
-            this.segmentsH = segmentsH;
-            this.segmentsD = segmentsD;
-            this.tile6 = tile6;
+            serialization.setValue(this, raw);
         }
 
         protected buildGeometry()

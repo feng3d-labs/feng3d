@@ -10,6 +10,12 @@ namespace feng3d
 		 * 半径
 		 */
 		radius?: number,
+
+		/**
+		 * 管道半径
+		 */
+		tubeRadius?: number,
+
 		/**
 		 * 半径方向分割数
 		 */
@@ -19,10 +25,7 @@ namespace feng3d
 		 * 管道方向分割数
 		 */
 		segmentsT?: number,
-		/**
-		 * 管道半径
-		 */
-		tubeRadius?: number,
+
 		/**
 		 * 是否朝上
 		 */
@@ -61,22 +64,13 @@ namespace feng3d
 
 		/**
 		 * 创建<code>Torus</code>实例
-		 * @param radius						圆环半径
-		 * @param tubeRadius					管道半径
-		 * @param segmentsR						横向段数
-		 * @param segmentsT						纵向段数
-		 * @param yUp							Y轴是否朝上
 		 */
-		constructor(radius = 0.5, tubeRadius = 0.1, segmentsR = 16, segmentsT = 8, yUp = true)
+		constructor(raw?: TorusGeometryRaw)
 		{
 			super();
 
 			this.name = "Torus";
-			this.radius = radius;
-			this.tubeRadius = tubeRadius;
-			this.segmentsR = segmentsR;
-			this.segmentsT = segmentsT;
-			this.yUp = yUp;
+			serialization.setValue(this, raw);
 		}
 
 		//

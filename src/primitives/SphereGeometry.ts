@@ -52,20 +52,13 @@ namespace feng3d
 
         /**
          * 创建球形几何体
-         * @param radius 球体半径
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(radius = 0.5, segmentsW = 16, segmentsH = 12, yUp = true)
+        constructor(raw?: SphereGeometryRaw)
         {
             super();
 
             this.name = "Sphere";
-            this.radius = radius;
-            this.segmentsW = this.segmentsW;
-            this.segmentsH = this.segmentsH;
-            this.yUp = yUp;
+            serialization.setValue(this, raw);
         }
 
         /**

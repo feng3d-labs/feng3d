@@ -98,20 +98,12 @@ namespace feng3d
         /**
          * 创建圆柱体
          */
-        constructor(topRadius = 0.5, bottomRadius = 0.5, height = 2, segmentsW = 16, segmentsH = 1, topClosed = true, bottomClosed = true, surfaceClosed = true, yUp = true)
+        constructor(raw?: CylinderGeometryRaw)
         {
             super();
 
             this.name = "Cylinder";
-            this.topRadius = topRadius;
-            this.bottomRadius = bottomRadius;
-            this.height = height;
-            this.segmentsW = segmentsW;
-            this.segmentsH = segmentsH;
-            this.topClosed = topClosed;
-            this.bottomClosed = bottomClosed;
-            this.surfaceClosed = surfaceClosed;
-            this.yUp = yUp;
+            serialization.setValue(this, raw);
         }
 
         /**

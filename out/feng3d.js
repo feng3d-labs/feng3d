@@ -16008,18 +16008,8 @@ var feng3d;
         __extends(PlaneGeometry, _super);
         /**
          * 创建平面几何体
-         * @param width 宽度
-         * @param height 高度
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        function PlaneGeometry(width, height, segmentsW, segmentsH, yUp) {
-            if (width === void 0) { width = 1; }
-            if (height === void 0) { height = 1; }
-            if (segmentsW === void 0) { segmentsW = 1; }
-            if (segmentsH === void 0) { segmentsH = 1; }
-            if (yUp === void 0) { yUp = true; }
+        function PlaneGeometry(raw) {
             var _this = _super.call(this) || this;
             _this.width = 1;
             _this.height = 1;
@@ -16027,11 +16017,7 @@ var feng3d;
             _this.segmentsH = 1;
             _this.yUp = true;
             _this.name = "Plane";
-            _this.width = width;
-            _this.height = height;
-            _this.segmentsW = segmentsW;
-            _this.segmentsH = segmentsH;
-            _this.yUp = yUp;
+            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
@@ -16227,22 +16213,8 @@ var feng3d;
         __extends(CubeGeometry, _super);
         /**
          * 创建立方几何体
-         * @param   width           宽度，默认为1。
-         * @param   height          高度，默认为1。
-         * @param   depth           深度，默认为1。
-         * @param   segmentsW       宽度方向分割，默认为1。
-         * @param   segmentsH       高度方向分割，默认为1。
-         * @param   segmentsD       深度方向分割，默认为1。
-         * @param   tile6           是否为6块贴图，默认true。
          */
-        function CubeGeometry(width, height, depth, segmentsW, segmentsH, segmentsD, tile6) {
-            if (width === void 0) { width = 1; }
-            if (height === void 0) { height = 1; }
-            if (depth === void 0) { depth = 1; }
-            if (segmentsW === void 0) { segmentsW = 1; }
-            if (segmentsH === void 0) { segmentsH = 1; }
-            if (segmentsD === void 0) { segmentsD = 1; }
-            if (tile6 === void 0) { tile6 = true; }
+        function CubeGeometry(raw) {
             var _this = _super.call(this) || this;
             _this.width = 1;
             _this.height = 1;
@@ -16252,13 +16224,7 @@ var feng3d;
             _this.segmentsD = 1;
             _this.tile6 = true;
             _this.name = "Cube";
-            _this.width = width;
-            _this.height = height;
-            _this.depth = depth;
-            _this.segmentsW = segmentsW;
-            _this.segmentsH = segmentsH;
-            _this.segmentsD = segmentsD;
-            _this.tile6 = tile6;
+            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         CubeGeometry.prototype.buildGeometry = function () {
@@ -16655,26 +16621,15 @@ var feng3d;
         __extends(SphereGeometry, _super);
         /**
          * 创建球形几何体
-         * @param radius 球体半径
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        function SphereGeometry(radius, segmentsW, segmentsH, yUp) {
-            if (radius === void 0) { radius = 0.5; }
-            if (segmentsW === void 0) { segmentsW = 16; }
-            if (segmentsH === void 0) { segmentsH = 12; }
-            if (yUp === void 0) { yUp = true; }
+        function SphereGeometry(raw) {
             var _this = _super.call(this) || this;
             _this.radius = 50;
             _this.segmentsW = 16;
             _this.segmentsH = 12;
             _this.yUp = true;
             _this.name = "Sphere";
-            _this.radius = radius;
-            _this.segmentsW = _this.segmentsW;
-            _this.segmentsH = _this.segmentsH;
-            _this.yUp = yUp;
+            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
@@ -16849,12 +16804,7 @@ var feng3d;
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        function CapsuleGeometry(radius, height, segmentsW, segmentsH, yUp) {
-            if (radius === void 0) { radius = 0.5; }
-            if (height === void 0) { height = 1; }
-            if (segmentsW === void 0) { segmentsW = 16; }
-            if (segmentsH === void 0) { segmentsH = 15; }
-            if (yUp === void 0) { yUp = true; }
+        function CapsuleGeometry(raw) {
             var _this = _super.call(this) || this;
             _this.radius = 0.5;
             _this.height = 1;
@@ -16862,11 +16812,7 @@ var feng3d;
             _this.segmentsH = 15;
             _this.yUp = true;
             _this.name = "Capsule";
-            _this.radius = radius;
-            _this.height = height;
-            _this.segmentsW = segmentsW;
-            _this.segmentsH = segmentsH;
-            _this.yUp = yUp;
+            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
@@ -17042,16 +16988,7 @@ var feng3d;
         /**
          * 创建圆柱体
          */
-        function CylinderGeometry(topRadius, bottomRadius, height, segmentsW, segmentsH, topClosed, bottomClosed, surfaceClosed, yUp) {
-            if (topRadius === void 0) { topRadius = 0.5; }
-            if (bottomRadius === void 0) { bottomRadius = 0.5; }
-            if (height === void 0) { height = 2; }
-            if (segmentsW === void 0) { segmentsW = 16; }
-            if (segmentsH === void 0) { segmentsH = 1; }
-            if (topClosed === void 0) { topClosed = true; }
-            if (bottomClosed === void 0) { bottomClosed = true; }
-            if (surfaceClosed === void 0) { surfaceClosed = true; }
-            if (yUp === void 0) { yUp = true; }
+        function CylinderGeometry(raw) {
             var _this = _super.call(this) || this;
             _this.topRadius = 0.5;
             _this.bottomRadius = 0.5;
@@ -17063,15 +17000,7 @@ var feng3d;
             _this.surfaceClosed = true;
             _this.yUp = true;
             _this.name = "Cylinder";
-            _this.topRadius = topRadius;
-            _this.bottomRadius = bottomRadius;
-            _this.height = height;
-            _this.segmentsW = segmentsW;
-            _this.segmentsH = segmentsH;
-            _this.topClosed = topClosed;
-            _this.bottomClosed = bottomClosed;
-            _this.surfaceClosed = surfaceClosed;
-            _this.yUp = yUp;
+            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
@@ -17388,20 +17317,12 @@ var feng3d;
         __extends(ConeGeometry, _super);
         /**
          * 创建圆锥体
-         * @param radius 底部半径
-         * @param height 高度
-         * @param segmentsW
-         * @param segmentsH
-         * @param yUp
          */
-        function ConeGeometry(radius, height, segmentsW, segmentsH, closed, yUp) {
-            if (radius === void 0) { radius = 0.5; }
-            if (height === void 0) { height = 1; }
-            if (segmentsW === void 0) { segmentsW = 16; }
-            if (segmentsH === void 0) { segmentsH = 1; }
-            if (closed === void 0) { closed = true; }
-            if (yUp === void 0) { yUp = true; }
-            var _this = _super.call(this, 0, radius, height, segmentsW, segmentsH, false, closed, true, yUp) || this;
+        function ConeGeometry(raw) {
+            var _this = _super.call(this, raw) || this;
+            _this.topRadius = 0;
+            _this.topClosed = false;
+            _this.surfaceClosed = true;
             _this.name = "Cone";
             return _this;
         }
@@ -17418,18 +17339,8 @@ var feng3d;
         __extends(TorusGeometry, _super);
         /**
          * 创建<code>Torus</code>实例
-         * @param radius						圆环半径
-         * @param tubeRadius					管道半径
-         * @param segmentsR						横向段数
-         * @param segmentsT						纵向段数
-         * @param yUp							Y轴是否朝上
          */
-        function TorusGeometry(radius, tubeRadius, segmentsR, segmentsT, yUp) {
-            if (radius === void 0) { radius = 0.5; }
-            if (tubeRadius === void 0) { tubeRadius = 0.1; }
-            if (segmentsR === void 0) { segmentsR = 16; }
-            if (segmentsT === void 0) { segmentsT = 8; }
-            if (yUp === void 0) { yUp = true; }
+        function TorusGeometry(raw) {
             var _this = _super.call(this) || this;
             _this.radius = 0.5;
             _this.tubeRadius = 0.1;
@@ -17440,11 +17351,7 @@ var feng3d;
             _this._vertexNormalStride = 3;
             _this._vertexTangentStride = 3;
             _this.name = "Torus";
-            _this.radius = radius;
-            _this.tubeRadius = tubeRadius;
-            _this.segmentsR = segmentsR;
-            _this.segmentsT = segmentsT;
-            _this.yUp = yUp;
+            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
@@ -23392,7 +23299,7 @@ var feng3d;
             xArrow.transform.rz = -90;
             var meshRenderer = xArrow.addComponent(feng3d.MeshRenderer);
             var material = meshRenderer.material = feng3d.materialFactory.create("color");
-            meshRenderer.geometry = new feng3d.ConeGeometry(this.arrowradius, this.arrowHeight);
+            meshRenderer.geometry = new feng3d.ConeGeometry({ bottomRadius: this.arrowradius, height: this.arrowHeight });
             ;
             material.uniforms.u_diffuseInput = new feng3d.Color4(1, 0, 0);
             this.tridentObject.addChild(xArrow);
@@ -23403,7 +23310,7 @@ var feng3d;
             yArrow.transform.y = this.lineLength;
             meshRenderer = yArrow.addComponent(feng3d.MeshRenderer);
             var material = meshRenderer.material = feng3d.materialFactory.create("color");
-            meshRenderer.geometry = new feng3d.ConeGeometry(this.arrowradius, this.arrowHeight);
+            meshRenderer.geometry = new feng3d.ConeGeometry({ bottomRadius: this.arrowradius, height: this.arrowHeight });
             material.uniforms.u_diffuseInput = new feng3d.Color4(0, 1, 0);
             this.tridentObject.addChild(yArrow);
             //
@@ -23413,7 +23320,7 @@ var feng3d;
             zArrow.transform.z = this.lineLength;
             zArrow.transform.rx = 90;
             meshRenderer = zArrow.addComponent(feng3d.MeshRenderer);
-            meshRenderer.geometry = new feng3d.ConeGeometry(this.arrowradius, this.arrowHeight);
+            meshRenderer.geometry = new feng3d.ConeGeometry({ bottomRadius: this.arrowradius, height: this.arrowHeight });
             var material = meshRenderer.material = feng3d.materialFactory.create("color");
             material.uniforms.u_diffuseInput = new feng3d.Color4(0, 0, 1);
             this.tridentObject.addChild(zArrow);

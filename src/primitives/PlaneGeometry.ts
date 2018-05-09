@@ -61,22 +61,13 @@ namespace feng3d
 
         /**
          * 创建平面几何体
-         * @param width 宽度
-         * @param height 高度
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(width = 1, height = 1, segmentsW = 1, segmentsH = 1, yUp = true)
+        constructor(raw?: PlaneGeometryRaw)
         {
             super();
 
             this.name = "Plane";
-            this.width = width;
-            this.height = height;
-            this.segmentsW = segmentsW;
-            this.segmentsH = segmentsH;
-            this.yUp = yUp;
+            serialization.setValue(this, raw);
         }
 
         /**
