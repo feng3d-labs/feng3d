@@ -91,7 +91,8 @@ namespace feng3d
 
         private onBoundsInvalid(event: Event<Geometry>)
         {
-            this.gameObject.dispatch(<any>event.type, event.data);
+            if (this.gameObject)
+                this.gameObject.dispatch(<any>event.type, event.data);
         }
     }
 }

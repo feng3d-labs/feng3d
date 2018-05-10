@@ -20,5 +20,6 @@ vec4 terrainMethod(vec4 diffuseColor,vec2 v_uv) {
     t_uv = v_uv.xy * u_splatRepeats.w;
     tColor = texture2D(s_splatTexture3,t_uv);
     diffuseColor = (tColor - diffuseColor) * blend.z + diffuseColor;
+
     return diffuseColor;
 }

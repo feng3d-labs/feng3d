@@ -8944,6 +8944,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 圆锥体原始数据
+     */
     interface ConeGeometryRaw {
         __class__?: "feng3d.ConeGeometry";
         /**
@@ -9887,6 +9890,7 @@ declare namespace feng3d {
          * 地形几何体数据
          */
         geometry: TerrainGeometry;
+        material: TerrainMaterial;
     }
 }
 declare namespace feng3d {

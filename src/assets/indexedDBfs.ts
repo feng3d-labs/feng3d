@@ -176,6 +176,7 @@ namespace feng3d
         },
         readdir(path: string, callback: (err: Error | null, files: string[] | null) => void): void
         {
+            assert(path.charAt(path.length - 1) == "/", `文件夹路径必须以 / 结尾！`)
             getAllKeys((err, allfilepaths) =>
             {
                 if (!allfilepaths)
@@ -186,10 +187,13 @@ namespace feng3d
                 var subfilemap = {};
                 allfilepaths.forEach(element =>
                 {
-                    var result = new RegExp(path + "\\/([\\w\\s\\(\\).\\u4e00-\\u9fa5]+)\\b").exec(element);
-                    if (result != null)
+                    if (element.substr(0, path.length) == path && element != path)
                     {
-                        subfilemap[result[1]] = 1;
+                        var result = element.substr(path.length);
+                        var index = result.indexOf("/");
+                        if (index != -1)
+                            result = result.substring(0, index + 1);
+                        subfilemap[result] = 1;
                     }
                 });
                 var files = Object.keys(subfilemap);
@@ -231,6 +235,7 @@ namespace feng3d
         },
         mkdir(path: string, callback: (err: Error | null) => void): void
         {
+            assert(path.charAt(path.length - 1) == "/", `文件夹路径必须以 / 结尾！`)
             set(path, { isDirectory: true, birthtime: new Date() }, callback);
         },
         rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void

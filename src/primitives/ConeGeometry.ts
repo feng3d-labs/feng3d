@@ -1,5 +1,8 @@
 namespace feng3d
 {
+	/**
+	 * 圆锥体原始数据
+	 */
 	export interface ConeGeometryRaw
 	{
 		__class__?: "feng3d.ConeGeometry",

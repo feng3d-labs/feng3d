@@ -14,5 +14,7 @@ namespace feng3d
          * 地形几何体数据
          */
         geometry = new TerrainGeometry();
+
+        material = materialFactory.create("terrain");
     }
 }
