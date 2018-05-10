@@ -170,28 +170,25 @@ namespace feng3d
          * Components share the same name with the game object and all attached components.
          */
         @serialize
-        @oav()
+        @oav({ component: "OAVGameObjectName" })
         name: string;
 
         /**
          * 是否显示
          */
         @serialize
-        @oav()
         visible = true;
 
         /**
          * 自身以及子对象是否支持鼠标拾取
          */
         @serialize
-        @oav()
         mouseEnabled = true;
 
         /**
          * 模型生成的导航网格类型
          */
         @serialize
-        @oav()
         navigationArea = -1;
 
         /**

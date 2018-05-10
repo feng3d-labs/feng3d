@@ -13139,19 +13139,16 @@ var feng3d;
         ], GameObject.prototype, "serializable", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ component: "OAVGameObjectName" })
         ], GameObject.prototype, "name", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], GameObject.prototype, "visible", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], GameObject.prototype, "mouseEnabled", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], GameObject.prototype, "navigationArea", void 0);
         __decorate([
             feng3d.serialize
