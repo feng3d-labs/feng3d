@@ -149,7 +149,6 @@ namespace feng3d
             var y: number;
 
             var vertices: number[] = [];
-            var normals: number[] = [];
             var indices: number[] = [];
 
             numVerts = 0;
@@ -175,10 +174,6 @@ namespace feng3d
                     vertices[numVerts++] = y;
                     vertices[numVerts++] = z;
 
-                    normals[numVerts - 3] = 0;
-                    normals[numVerts - 2] = 1;
-                    normals[numVerts - 1] = 0;
-
                     if (xi != this.segmentsW && zi != this.segmentsH)
                     {
                         //增加 一个顶点同时 生成一个格子或两个三角形
@@ -194,7 +189,6 @@ namespace feng3d
             }
             var uvs = this.buildUVs();
             this.setVAData("a_position", vertices, 3);
-            this.setVAData("a_normal", normals, 3);
             this.setVAData("a_uv", uvs, 2);
             this.indices = indices;
         }

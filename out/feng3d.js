@@ -18813,7 +18813,6 @@ var feng3d;
             var u, v;
             var y;
             var vertices = [];
-            var normals = [];
             var indices = [];
             numVerts = 0;
             var col;
@@ -18833,9 +18832,6 @@ var feng3d;
                     vertices[numVerts++] = x;
                     vertices[numVerts++] = y;
                     vertices[numVerts++] = z;
-                    normals[numVerts - 3] = 0;
-                    normals[numVerts - 2] = 1;
-                    normals[numVerts - 1] = 0;
                     if (xi != this.segmentsW && zi != this.segmentsH) {
                         //增加 一个顶点同时 生成一个格子或两个三角形
                         base = xi + zi * tw;
@@ -18850,7 +18846,6 @@ var feng3d;
             }
             var uvs = this.buildUVs();
             this.setVAData("a_position", vertices, 3);
-            this.setVAData("a_normal", normals, 3);
             this.setVAData("a_uv", uvs, 2);
             this.indices = indices;
         };
