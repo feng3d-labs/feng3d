@@ -20453,7 +20453,7 @@ var feng3d;
     /** 顶点法线正则 */
     var vnReg = /vn\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/;
     /** 顶点uv正则 */
-    var vtReg = /vt\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/;
+    var vtReg = /vt\s+([-\d.]+)\s+([-\d.]+)(\s+([-\d.]+))?/;
     /** 使用材质正则 */
     var usemtlReg = /usemtl\s+([\w.]+)/;
     /** 面正则 vertex */
@@ -20497,7 +20497,7 @@ var feng3d;
             objData.vn.push({ x: parseFloat(result[1]), y: parseFloat(result[2]), z: parseFloat(result[3]) });
         }
         else if ((result = vtReg.exec(line)) && result[0] == line) {
-            objData.vt.push({ u: parseFloat(result[1]), v: 1 - parseFloat(result[2]), s: parseFloat(result[3]) });
+            objData.vt.push({ u: parseFloat(result[1]), v: 1 - parseFloat(result[2]), s: parseFloat(result[4]) });
         }
         else if ((result = gReg.exec(line)) && result[0] == line) {
             if (currentSubObj == null) {
