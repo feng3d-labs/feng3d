@@ -1227,6 +1227,8 @@ var feng3d;
         Serialization.prototype.different = function (target, defaultInstance, different) {
             different = different || {};
             var serializableMembers = getSerializableMembers(target);
+            if (target.constructor == Object)
+                serializableMembers = Object.keys(target);
             for (var i = 0; i < serializableMembers.length; i++) {
                 var property = serializableMembers[i];
                 if (target[property] === defaultInstance[property])

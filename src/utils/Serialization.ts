@@ -103,6 +103,8 @@ namespace feng3d
         {
             different = different || {};
             var serializableMembers = getSerializableMembers(target);
+            if (target.constructor == Object)
+                serializableMembers = Object.keys(target);
             for (var i = 0; i < serializableMembers.length; i++)
             {
                 var property = serializableMembers[i];
