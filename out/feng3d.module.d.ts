@@ -10394,7 +10394,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * Obj模型Mtl解析器
-     * @author feng 2017-01-13
      */
     var MtlParser: {
         parser: (context: string) => Mtl_Mtl;
@@ -10408,6 +10407,10 @@ declare namespace feng3d {
         ni: number;
         d: number;
         illum: number;
+        map_Bump: string;
+        map_Ka: string;
+        map_Kd: string;
+        map_Ks: string;
     };
     type Mtl_Mtl = {
         [name: string]: Mtl_Material;

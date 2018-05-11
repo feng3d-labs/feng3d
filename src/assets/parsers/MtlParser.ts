@@ -3,7 +3,6 @@ namespace feng3d
 
 	/**
 	 * Obj模型Mtl解析器
-     * @author feng 2017-01-13
 	 */
     export var MtlParser = {
         parser: parser
@@ -18,10 +17,14 @@ namespace feng3d
         ni: number;
         d: number;
         illum: number;
+        map_Bump: string;
+        map_Ka: string;
+        map_Kd: string;
+        map_Ks: string;
     };
     export type Mtl_Mtl = { [name: string]: Mtl_Material }
 
-    function parser(context: string)
+    function parser(context: string): Mtl_Mtl
     {
         var mtl: Mtl_Mtl = {};
         var lines = context.split("\n");
@@ -42,6 +45,10 @@ namespace feng3d
     var niReg = /Ni\s+([\d.]+)/;
     var dReg = /d\s+([\d.]+)/;
     var illumReg = /illum\s+([\d]+)/;
+    var map_Bump_Reg = /map_Bump\s+([\w\W]+\.[\w\W]+)/;
+    var map_Ka_Reg = /map_Ka\s+([\w\W]+\.[\w\W]+)/;
+    var map_Kd_Reg = /map_Kd\s+([\w\W]+\.[\w\W]+)/;
+    var map_Ks_Reg = /map_Ks\s+([\w\W]+\.[\w\W]+)/;
     var currentMaterial: Mtl_Material;
 
     function parserLine(line: string, mtl: Mtl_Mtl)
@@ -57,7 +64,7 @@ namespace feng3d
         var result: RegExpExecArray | null;
         if ((result = newmtlReg.exec(line)) && result[0] == line)
         {
-            currentMaterial = { name: result[1], ka: [], kd: [], ks: [], ns: 0, ni: 0, d: 0, illum: 0 };
+            currentMaterial = { name: result[1], ka: [], kd: [], ks: [], ns: 0, ni: 0, d: 0, illum: 0, map_Bump: "", map_Ka: "", map_Kd: "", map_Ks: "" };
             mtl[currentMaterial.name] = currentMaterial;
         } else if ((result = kaReg.exec(line)) && result[0] == line)
         {
@@ -80,6 +87,19 @@ namespace feng3d
         } else if ((result = illumReg.exec(line)) && result[0] == line)
         {
             currentMaterial.illum = parseFloat(result[1]);
+        }
+        else if ((result = map_Bump_Reg.exec(line)) && result[0] == line)
+        {
+            currentMaterial.map_Bump = result[1];
+        } else if ((result = map_Ka_Reg.exec(line)) && result[0] == line)
+        {
+            currentMaterial.map_Ka = result[1];
+        } else if ((result = map_Kd_Reg.exec(line)) && result[0] == line)
+        {
+            currentMaterial.map_Kd = result[1];
+        } else if ((result = map_Ks_Reg.exec(line)) && result[0] == line)
+        {
+            currentMaterial.map_Ks = result[1];
         } else
         {
             throw new Error(`无法解析${line}`);
