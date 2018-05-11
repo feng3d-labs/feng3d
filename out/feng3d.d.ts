@@ -979,7 +979,8 @@ declare namespace feng3d {
         dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
         arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
         blobToText(blob: Blob, callback: (content: string) => void): void;
-        arrayBufferToText(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
+        stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void): void;
+        arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
         stringToUint8Array(str: string, callback: (uint8Array: Uint8Array) => void): void;
         uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void): void;
     }

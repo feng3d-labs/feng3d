@@ -217,7 +217,7 @@ namespace feng3d
                     callback(err, null);
                     return;
                 }
-                var str = dataTransform.arrayBufferToText(<ArrayBuffer>data.data, (content) =>
+                var str = dataTransform.arrayBufferToString(<ArrayBuffer>data.data, (content) =>
                 {
                     callback(null, content);
                 });

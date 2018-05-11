@@ -2207,7 +2207,13 @@ var feng3d;
             a.onload = function (e) { callback(e.target["result"]); };
             a.readAsText(blob);
         };
-        DataTransform.prototype.arrayBufferToText = function (arrayBuffer, callback) {
+        DataTransform.prototype.stringToArrayBuffer = function (str, callback) {
+            var _this = this;
+            this.stringToUint8Array(str, function (unit8Array) {
+                _this.uint8ToArrayBuffer(unit8Array, callback);
+            });
+        };
+        DataTransform.prototype.arrayBufferToString = function (arrayBuffer, callback) {
             var _this = this;
             this.arrayBufferToBlob(arrayBuffer, function (blob) {
                 _this.blobToText(blob, callback);
@@ -14128,26 +14134,27 @@ var feng3d;
         }
         else if (feng3d.assets.fstype == feng3d.FSType.indexedDB) {
             feng3d.storage.get(feng3d.DBname, feng3d.projectname, scriptPath, function (err, data) {
-                var content = data.data;
-                // var reg = /var ([a-zA-Z0-9_$]+) = \/\*\* @class \*\//;
-                var reg = new RegExp("var ([a-zA-Z0-9_$]+) = \\/\\*\\* @class \\*\\/");
-                var result = content.match(reg);
-                feng3d.assert(result && !!result[1], "脚本中找不到类定义！");
-                var classname = result[1];
-                //处理类定义放在 namespace 中 /([a-zA-Z0-9_$.]+Test)\s*=\s*Test/
-                reg = new RegExp("([a-zA-Z0-9_$.]+" + classname + ")\\s*=\\s*" + classname);
-                result = content.match(reg);
-                if (result)
-                    classname = result[1];
-                resultScript.className = classname;
-                //
-                var windowEval = eval.bind(window);
-                //
-                content += "\n//# sourceURL=" + scriptPath;
-                windowEval(content);
-                //
-                resultScriptCache[scriptPath] = resultScript;
-                onload && onload(resultScript);
+                feng3d.dataTransform.arrayBufferToString(data.data, function (content) {
+                    // var reg = /var ([a-zA-Z0-9_$]+) = \/\*\* @class \*\//;
+                    var reg = new RegExp("var ([a-zA-Z0-9_$]+) = \\/\\*\\* @class \\*\\/");
+                    var result = content.match(reg);
+                    feng3d.assert(result && !!result[1], "脚本中找不到类定义！");
+                    var classname = result[1];
+                    //处理类定义放在 namespace 中 /([a-zA-Z0-9_$.]+Test)\s*=\s*Test/
+                    reg = new RegExp("([a-zA-Z0-9_$.]+" + classname + ")\\s*=\\s*" + classname);
+                    result = content.match(reg);
+                    if (result)
+                        classname = result[1];
+                    resultScript.className = classname;
+                    //
+                    var windowEval = eval.bind(window);
+                    //
+                    content += "\n//# sourceURL=" + scriptPath;
+                    windowEval(content);
+                    //
+                    resultScriptCache[scriptPath] = resultScript;
+                    onload && onload(resultScript);
+                });
             });
         }
     }
@@ -20347,7 +20354,7 @@ var feng3d;
                     callback(err, null);
                     return;
                 }
-                var str = feng3d.dataTransform.arrayBufferToText(data.data, function (content) {
+                var str = feng3d.dataTransform.arrayBufferToString(data.data, function (content) {
                     callback(null, content);
                 });
             });

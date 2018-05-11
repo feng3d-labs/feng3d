@@ -175,7 +175,15 @@ namespace feng3d
             a.onload = function (e) { callback(e.target["result"]); };
             a.readAsText(blob);
         }
-        arrayBufferToText(arrayBuffer: ArrayBuffer, callback: (content: string) => void)
+        stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void)
+        {
+            this.stringToUint8Array(str, (unit8Array) =>
+            {
+                this.uint8ToArrayBuffer(unit8Array, callback);
+            });
+
+        }
+        arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void)
         {
             this.arrayBufferToBlob(arrayBuffer, (blob) =>
             {
