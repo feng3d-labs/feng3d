@@ -17568,7 +17568,7 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.watch("urlChanged"),
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "image" }, textEnabled: false } })
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         ], Texture2D.prototype, "url", void 0);
         return Texture2D;
     }(feng3d.TextureInfo));
