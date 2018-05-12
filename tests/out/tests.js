@@ -115,19 +115,19 @@ var feng3d;
 (function (feng3d) {
     QUnit.module("ClassUtils", function () {
         QUnit.test("getQualifiedClassName", function (assert) {
-            var className = feng3d.ClassUtils.getQualifiedClassName(feng3d.EventDispatcher);
+            var className = feng3d.classUtils.getQualifiedClassName(feng3d.EventDispatcher);
             assert.ok(className == "feng3d.EventDispatcher");
-            var className = feng3d.ClassUtils.getQualifiedClassName(true);
+            var className = feng3d.classUtils.getQualifiedClassName(true);
             assert.ok(className == "Boolean");
-            var className = feng3d.ClassUtils.getQualifiedClassName(Boolean);
+            var className = feng3d.classUtils.getQualifiedClassName(Boolean);
             assert.ok(className == "Boolean");
-            var className = feng3d.ClassUtils.getQualifiedClassName("1");
+            var className = feng3d.classUtils.getQualifiedClassName("1");
             assert.ok(className == "String");
-            var className = feng3d.ClassUtils.getQualifiedClassName(String);
+            var className = feng3d.classUtils.getQualifiedClassName(String);
             assert.ok(className == "String");
-            var className = feng3d.ClassUtils.getQualifiedClassName(123);
+            var className = feng3d.classUtils.getQualifiedClassName(123);
             assert.ok(className == "Number");
-            var className = feng3d.ClassUtils.getQualifiedClassName(Number);
+            var className = feng3d.classUtils.getQualifiedClassName(Number);
             assert.ok(className == "Number");
         });
     });

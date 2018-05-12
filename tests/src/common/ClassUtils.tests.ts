@@ -4,25 +4,25 @@ namespace feng3d
     {
         QUnit.test("getQualifiedClassName", (assert) =>
         {
-            var className = ClassUtils.getQualifiedClassName(EventDispatcher);
+            var className = classUtils.getQualifiedClassName(EventDispatcher);
             assert.ok(className == "feng3d.EventDispatcher");
 
-            var className = ClassUtils.getQualifiedClassName(true);
+            var className = classUtils.getQualifiedClassName(true);
             assert.ok(className == "Boolean");
 
-            var className = ClassUtils.getQualifiedClassName(Boolean);
+            var className = classUtils.getQualifiedClassName(Boolean);
             assert.ok(className == "Boolean");
 
-            var className = ClassUtils.getQualifiedClassName("1");
+            var className = classUtils.getQualifiedClassName("1");
             assert.ok(className == "String");
 
-            var className = ClassUtils.getQualifiedClassName(String);
+            var className = classUtils.getQualifiedClassName(String);
             assert.ok(className == "String");
 
-            var className = ClassUtils.getQualifiedClassName(123);
+            var className = classUtils.getQualifiedClassName(123);
             assert.ok(className == "Number");
 
-            var className = ClassUtils.getQualifiedClassName(Number);
+            var className = classUtils.getQualifiedClassName(Number);
             assert.ok(className == "Number");
         });
     });

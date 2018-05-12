@@ -223,7 +223,7 @@ namespace feng3d
                 vector3DData[index * 4 + 3] = data.a;
             } else
             {
-                throw new Error(`无法处理${ClassUtils.getQualifiedClassName(data)}粒子属性`);
+                throw new Error(`无法处理${classUtils.getQualifiedClassName(data)}粒子属性`);
             }
         }
 

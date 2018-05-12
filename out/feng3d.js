@@ -1208,7 +1208,7 @@ var feng3d;
                 object.data = target.toString();
                 return object;
             }
-            var className = feng3d.ClassUtils.getQualifiedClassName(target);
+            var className = feng3d.classUtils.getQualifiedClassName(target);
             object[CLASS_KEY] = className;
             if (target["serialize"])
                 return target["serialize"](object);
@@ -1298,7 +1298,7 @@ var feng3d;
                 eval("f=" + object.data);
                 return f;
             }
-            var cls = feng3d.ClassUtils.getDefinitionByName(className);
+            var cls = feng3d.classUtils.getDefinitionByName(className);
             if (!cls) {
                 feng3d.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
                 return undefined;
@@ -1358,7 +1358,7 @@ var feng3d;
                 }
                 return;
             }
-            var targetClassName = feng3d.ClassUtils.getQualifiedClassName(target[property]);
+            var targetClassName = feng3d.classUtils.getQualifiedClassName(target[property]);
             if (targetClassName == objvalue[CLASS_KEY]) {
                 this.setValue(target[property], objvalue);
             }
@@ -2247,67 +2247,78 @@ var feng3d;
      * 类工具
      * @author feng 2017-02-15
      */
-    feng3d.ClassUtils = {
-        getQualifiedClassName: getQualifiedClassName,
-        getDefinitionByName: getDefinitionByName,
-        addClassNameSpace: addClassNameSpace,
-    };
+    var ClassUtils = /** @class */ (function () {
+        function ClassUtils() {
+        }
+        /**
+         * 返回对象的完全限定类名。
+         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
+         * （如number)和类对象
+         * @returns 包含完全限定类名称的字符串。
+         */
+        ClassUtils.prototype.getQualifiedClassName = function (value) {
+            if (value == null)
+                return "null";
+            var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
+            if (prototype.hasOwnProperty(CLASS_KEY))
+                return prototype[CLASS_KEY];
+            var className = prototype.constructor.name;
+            if (_global[className] == prototype.constructor)
+                return className;
+            //在可能的命名空间内查找
+            for (var i = 0; i < _classNameSpaces.length; i++) {
+                var tryClassName = _classNameSpaces[i] + "." + className;
+                if (this.getDefinitionByName(tryClassName) == prototype.constructor) {
+                    className = tryClassName;
+                    registerClass(prototype.constructor, className);
+                    return className;
+                }
+            }
+            feng3d.error("\u672A\u5728\u7ED9\u51FA\u7684\u547D\u540D\u7A7A\u95F4 " + _classNameSpaces + " \u5185\u627E\u5230 " + value + " \u7684\u5B9A\u4E49");
+            return "undefined";
+        };
+        /**
+         * 返回 name 参数指定的类的类对象引用。
+         * @param name 类的名称。
+         */
+        ClassUtils.prototype.getDefinitionByName = function (name) {
+            if (name == "null")
+                return null;
+            if (!name)
+                return null;
+            if (_global[name])
+                return _global[name];
+            if (_definitionCache[name])
+                return _definitionCache[name];
+            var paths = name.split(".");
+            var length = paths.length;
+            var definition = _global;
+            for (var i = 0; i < length; i++) {
+                var path = paths[i];
+                definition = definition[path];
+                if (!definition) {
+                    return null;
+                }
+            }
+            _definitionCache[name] = definition;
+            return definition;
+        };
+        /**
+         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
+         */
+        ClassUtils.prototype.addClassNameSpace = function (namespace) {
+            if (_classNameSpaces.indexOf(namespace) == -1) {
+                _classNameSpaces.push(namespace);
+            }
+        };
+        return ClassUtils;
+    }());
+    feng3d.ClassUtils = ClassUtils;
+    ;
+    feng3d.classUtils = new ClassUtils();
     var _definitionCache = {};
     var _global = window;
     var _classNameSpaces = ["feng3d"];
-    /**
-     * 返回对象的完全限定类名。
-     * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
-     * （如number)和类对象
-     * @returns 包含完全限定类名称的字符串。
-     */
-    function getQualifiedClassName(value) {
-        if (value == null)
-            return "null";
-        var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
-        if (prototype.hasOwnProperty(CLASS_KEY))
-            return prototype[CLASS_KEY];
-        var className = prototype.constructor.name;
-        if (_global[className] == prototype.constructor)
-            return className;
-        //在可能的命名空间内查找
-        for (var i = 0; i < _classNameSpaces.length; i++) {
-            var tryClassName = _classNameSpaces[i] + "." + className;
-            if (feng3d.ClassUtils.getDefinitionByName(tryClassName) == prototype.constructor) {
-                className = tryClassName;
-                registerClass(prototype.constructor, className);
-                return className;
-            }
-        }
-        feng3d.error("\u672A\u5728\u7ED9\u51FA\u7684\u547D\u540D\u7A7A\u95F4 " + _classNameSpaces + " \u5185\u627E\u5230 " + value + " \u7684\u5B9A\u4E49");
-        return "undefined";
-    }
-    /**
-     * 返回 name 参数指定的类的类对象引用。
-     * @param name 类的名称。
-     */
-    function getDefinitionByName(name) {
-        if (name == "null")
-            return null;
-        if (!name)
-            return null;
-        if (_global[name])
-            return _global[name];
-        if (_definitionCache[name])
-            return _definitionCache[name];
-        var paths = name.split(".");
-        var length = paths.length;
-        var definition = _global;
-        for (var i = 0; i < length; i++) {
-            var path = paths[i];
-            definition = definition[path];
-            if (!definition) {
-                return null;
-            }
-        }
-        _definitionCache[name] = definition;
-        return definition;
-    }
     /**
      * 为一个类定义注册完全限定类名
      * @param classDefinition 类定义
@@ -2321,31 +2332,30 @@ var feng3d;
             writable: true
         });
     }
-    /**
-     * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
-     */
-    function addClassNameSpace(namespace) {
-        if (_classNameSpaces.indexOf(namespace) == -1) {
-            _classNameSpaces.push(namespace);
-        }
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.ImageUtil = {
+    /**
+     * 图片相关工具
+     */
+    var ImageUtil = /** @class */ (function () {
+        function ImageUtil() {
+        }
         /**
          * 加载图片
          * @param url 图片路径
          * @param callback 加载完成回调
          */
-        loadImage: function (url, callback) {
+        ImageUtil.prototype.loadImage = function (url, callback) {
             feng3d.assets.loadImage(url, callback);
-        },
+        };
         /**
          * 获取图片数据
          * @param image 加载完成的图片元素
          */
-        getImageData: function (image) {
+        ImageUtil.prototype.getImageData = function (image) {
+            if (!image)
+                return null;
             var canvasImg = document.createElement("canvas");
             canvasImg.width = image.width;
             canvasImg.height = image.height;
@@ -2354,25 +2364,26 @@ var feng3d;
             ctxt.drawImage(image, 0, 0);
             var imageData = ctxt.getImageData(0, 0, image.width, image.height); //读取整张图片的像素。
             return imageData;
-        },
+        };
         /**
          * 从url获取图片数据
          * @param url 图片路径
          * @param callback 获取图片数据完成回调
          */
-        getImageDataFromUrl: function (url, callback) {
-            feng3d.ImageUtil.loadImage(url, function (image) {
-                var imageData = feng3d.ImageUtil.getImageData(image);
+        ImageUtil.prototype.getImageDataFromUrl = function (url, callback) {
+            var _this = this;
+            this.loadImage(url, function (image) {
+                var imageData = _this.getImageData(image);
                 callback(imageData);
             });
-        },
+        };
         /**
          * 创建ImageData
          * @param width 数据宽度
          * @param height 数据高度
          * @param fillcolor 填充颜色
          */
-        createImageData: function (width, height, fillcolor) {
+        ImageUtil.prototype.createImageData = function (width, height, fillcolor) {
             if (width === void 0) { width = 1024; }
             if (height === void 0) { height = 1024; }
             if (fillcolor === void 0) { fillcolor = 0; }
@@ -2384,8 +2395,11 @@ var feng3d;
             ctx.fillRect(0, 0, width, height);
             var imageData = ctx.getImageData(0, 0, width, height);
             return imageData;
-        },
-    };
+        };
+        return ImageUtil;
+    }());
+    feng3d.ImageUtil = ImageUtil;
+    feng3d.imageUtil = new ImageUtil();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -14028,7 +14042,7 @@ var feng3d;
         };
         ScriptComponent.prototype.initScript = function () {
             if (this._script && this.gameObject && feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
-                var cls = feng3d.ClassUtils.getDefinitionByName(this._script);
+                var cls = feng3d.classUtils.getDefinitionByName(this._script);
                 this.scriptInstance = new cls(this);
                 var scriptData = this.scriptData = this.scriptData || {};
                 for (var key in scriptData) {
@@ -17428,12 +17442,12 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     feng3d.imageDatas = {
-        black: feng3d.ImageUtil.createImageData(1, 1, feng3d.ColorKeywords.black),
-        white: feng3d.ImageUtil.createImageData(1, 1, feng3d.ColorKeywords.white),
-        red: feng3d.ImageUtil.createImageData(1, 1, feng3d.ColorKeywords.red),
-        green: feng3d.ImageUtil.createImageData(1, 1, feng3d.ColorKeywords.green),
-        blue: feng3d.ImageUtil.createImageData(1, 1, feng3d.ColorKeywords.blue),
-        defaultNormal: feng3d.ImageUtil.createImageData(1, 1, 0x8080ff),
+        black: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.black),
+        white: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.white),
+        red: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.red),
+        green: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.green),
+        blue: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.blue),
+        defaultNormal: feng3d.imageUtil.createImageData(1, 1, 0x8080ff),
     };
     /**
      * 2D纹理
@@ -18667,7 +18681,7 @@ var feng3d;
     /**
      * 默认高度图
      */
-    var defaultHeightMap = feng3d.ImageUtil.createImageData();
+    var defaultHeightMap = feng3d.imageUtil.createImageData();
     /**
      * 地形几何体
      * @author feng 2016-04-28
@@ -18697,9 +18711,11 @@ var feng3d;
         TerrainGeometry.prototype.invalidateGeometry = function (propertyKey, oldValue, newValue) {
             var _this = this;
             if (propertyKey == "heightMapUrl") {
-                feng3d.ImageUtil.getImageDataFromUrl(newValue, function (imageData) {
-                    _this._heightMap = imageData;
-                    _this.invalidateGeometry();
+                feng3d.imageUtil.getImageDataFromUrl(newValue, function (imageData) {
+                    if (imageData) {
+                        _this._heightMap = imageData;
+                        _super.prototype.invalidateGeometry.call(_this);
+                    }
                 });
             }
             else {
@@ -19528,7 +19544,7 @@ var feng3d;
                 vector3DData[index * 4 + 3] = data.a;
             }
             else {
-                throw new Error("\u65E0\u6CD5\u5904\u7406" + feng3d.ClassUtils.getQualifiedClassName(data) + "\u7C92\u5B50\u5C5E\u6027");
+                throw new Error("\u65E0\u6CD5\u5904\u7406" + feng3d.classUtils.getQualifiedClassName(data) + "\u7C92\u5B50\u5C5E\u6027");
             }
         };
         ParticleAnimator.prototype.preRender = function (renderAtomic) {
@@ -19741,7 +19757,7 @@ var feng3d;
                         propertyHost = propertyHost.find(element[1]);
                         break;
                     case PropertyClipPathItemType.Component:
-                        var componentType = feng3d.ClassUtils.getDefinitionByName(element[1]);
+                        var componentType = feng3d.classUtils.getDefinitionByName(element[1]);
                         propertyHost = propertyHost.getComponent(componentType);
                         break;
                     default:
@@ -23243,156 +23259,148 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.GameObjectFactory = {
-        create: create,
-        createGameObject: createGameObject,
-        createCube: createCube,
-        createPlane: createPlane,
-        createCylinder: createCylinder,
-        createSphere: createSphere,
-        createCapsule: createCapsule,
-        createCone: createCone,
-        createTorus: createTorus,
-        createTerrain: createTerrain,
-        createParticle: createParticle,
-        createCamera: createCamera,
-        createPointLight: createPointLight,
-    };
-    function create(name) {
-        if (name === void 0) { name = "GameObject"; }
-        var gameobject = feng3d.GameObject.create(name);
-        gameobject.mouseEnabled = true;
-        if (name == "GameObject")
-            return gameobject;
-        var meshRenderer = gameobject.addComponent(feng3d.MeshRenderer);
-        switch (name) {
-            case "Plane":
-                meshRenderer.geometry = new feng3d.PlaneGeometry();
-                break;
-            case "Cube":
-                meshRenderer.geometry = new feng3d.CubeGeometry();
-                break;
-            case "Sphere":
-                meshRenderer.geometry = new feng3d.SphereGeometry();
-                break;
-            case "Capsule":
-                meshRenderer.geometry = new feng3d.CapsuleGeometry();
-                break;
-            case "Cylinder":
-                meshRenderer.geometry = new feng3d.CylinderGeometry();
-                break;
-            case "Cone":
-                meshRenderer.geometry = new feng3d.ConeGeometry();
-                break;
-            case "Torus":
-                meshRenderer.geometry = new feng3d.TorusGeometry();
-                break;
-            case "Particle":
-                meshRenderer.geometry = new feng3d.TorusGeometry();
-                break;
+    var GameObjectFactory = /** @class */ (function () {
+        function GameObjectFactory() {
         }
-        return gameobject;
-    }
-    function createGameObject(name) {
-        if (name === void 0) { name = "GameObject"; }
-        var gameobject = feng3d.GameObject.create(name);
-        return gameobject;
-    }
-    function createCube(name) {
-        if (name === void 0) { name = "cube"; }
-        var gameobject = feng3d.GameObject.create(name);
-        var model = gameobject.addComponent(feng3d.MeshRenderer);
-        model.geometry = new feng3d.CubeGeometry();
-        return gameobject;
-    }
-    function createPlane(name) {
-        if (name === void 0) { name = "plane"; }
-        var gameobject = feng3d.GameObject.create(name);
-        var model = gameobject.addComponent(feng3d.MeshRenderer);
-        model.geometry = new feng3d.PlaneGeometry();
-        model.material = feng3d.materialFactory.create("standard");
-        return gameobject;
-    }
-    function createCylinder(name) {
-        if (name === void 0) { name = "cylinder"; }
-        var gameobject = feng3d.GameObject.create(name);
-        var model = gameobject.addComponent(feng3d.MeshRenderer);
-        model.geometry = new feng3d.CylinderGeometry();
-        model.material = feng3d.materialFactory.create("standard");
-        return gameobject;
-    }
-    function createCone(name) {
-        if (name === void 0) { name = "Cone"; }
-        var gameobject = feng3d.GameObject.create(name);
-        var model = gameobject.addComponent(feng3d.MeshRenderer);
-        model.geometry = new feng3d.ConeGeometry();
-        model.material = feng3d.materialFactory.create("standard");
-        return gameobject;
-    }
-    function createTorus(name) {
-        if (name === void 0) { name = "Torus"; }
-        var gameobject = feng3d.GameObject.create(name);
-        var model = gameobject.addComponent(feng3d.MeshRenderer);
-        model.geometry = new feng3d.TorusGeometry();
-        model.material = feng3d.materialFactory.create("standard");
-        return gameobject;
-    }
-    function createTerrain(name) {
-        if (name === void 0) { name = "Terrain"; }
-        var gameobject = feng3d.GameObject.create(name);
-        gameobject.addComponent(feng3d.Terrain);
-        return gameobject;
-    }
-    function createSphere(name) {
-        if (name === void 0) { name = "sphere"; }
-        var gameobject = feng3d.GameObject.create(name);
-        var model = gameobject.addComponent(feng3d.MeshRenderer);
-        model.geometry = new feng3d.SphereGeometry();
-        model.material = feng3d.materialFactory.create("standard");
-        return gameobject;
-    }
-    function createCapsule(name) {
-        if (name === void 0) { name = "capsule"; }
-        var gameobject = feng3d.GameObject.create(name);
-        var model = gameobject.addComponent(feng3d.MeshRenderer);
-        model.geometry = new feng3d.CapsuleGeometry();
-        model.material = feng3d.materialFactory.create("standard");
-        return gameobject;
-    }
-    function createCamera(name) {
-        if (name === void 0) { name = "Camera"; }
-        var gameobject = feng3d.GameObject.create(name);
-        gameobject.addComponent(feng3d.Camera);
-        return gameobject;
-    }
-    function createPointLight(name) {
-        if (name === void 0) { name = "PointLight"; }
-        var gameobject = feng3d.GameObject.create(name);
-        gameobject.addComponent(feng3d.PointLight);
-        return gameobject;
-    }
-    function createParticle(name) {
-        if (name === void 0) { name = "Particle"; }
-        var _particleMesh = feng3d.GameObject.create("particle");
-        var meshRenderer = _particleMesh.addComponent(feng3d.MeshRenderer);
-        meshRenderer.geometry = new feng3d.PointGeometry();
-        var material = meshRenderer.material = feng3d.materialFactory.create("standard");
-        material.renderParams.renderMode = feng3d.RenderMode.POINTS;
-        var particleAnimator = _particleMesh.addComponent(feng3d.ParticleAnimator);
-        particleAnimator.numParticles = 1000;
-        //通过函数来创建粒子初始状态
-        particleAnimator.generateFunctions.push({
-            generate: function (particle) {
-                particle.birthTime = Math.random() * 5 - 5;
-                particle.lifetime = 5;
-                var degree2 = Math.random() * Math.PI * 2;
-                var r = Math.random() * 1;
-                particle.velocity = new feng3d.Vector3(r * Math.cos(degree2), r * 2, r * Math.sin(degree2));
-            }, priority: 0
-        });
-        particleAnimator.cycle = 10;
-        return _particleMesh;
-    }
+        GameObjectFactory.prototype.create = function (name) {
+            if (name === void 0) { name = "GameObject"; }
+            var gameobject = feng3d.GameObject.create(name);
+            gameobject.mouseEnabled = true;
+            if (name == "GameObject")
+                return gameobject;
+            var meshRenderer = gameobject.addComponent(feng3d.MeshRenderer);
+            switch (name) {
+                case "Plane":
+                    meshRenderer.geometry = new feng3d.PlaneGeometry();
+                    break;
+                case "Cube":
+                    meshRenderer.geometry = new feng3d.CubeGeometry();
+                    break;
+                case "Sphere":
+                    meshRenderer.geometry = new feng3d.SphereGeometry();
+                    break;
+                case "Capsule":
+                    meshRenderer.geometry = new feng3d.CapsuleGeometry();
+                    break;
+                case "Cylinder":
+                    meshRenderer.geometry = new feng3d.CylinderGeometry();
+                    break;
+                case "Cone":
+                    meshRenderer.geometry = new feng3d.ConeGeometry();
+                    break;
+                case "Torus":
+                    meshRenderer.geometry = new feng3d.TorusGeometry();
+                    break;
+                case "Particle":
+                    meshRenderer.geometry = new feng3d.TorusGeometry();
+                    break;
+            }
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createGameObject = function (name) {
+            if (name === void 0) { name = "GameObject"; }
+            var gameobject = feng3d.GameObject.create(name);
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createCube = function (name) {
+            if (name === void 0) { name = "cube"; }
+            var gameobject = feng3d.GameObject.create(name);
+            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            model.geometry = new feng3d.CubeGeometry();
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createPlane = function (name) {
+            if (name === void 0) { name = "plane"; }
+            var gameobject = feng3d.GameObject.create(name);
+            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            model.geometry = new feng3d.PlaneGeometry();
+            model.material = feng3d.materialFactory.create("standard");
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createCylinder = function (name) {
+            if (name === void 0) { name = "cylinder"; }
+            var gameobject = feng3d.GameObject.create(name);
+            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            model.geometry = new feng3d.CylinderGeometry();
+            model.material = feng3d.materialFactory.create("standard");
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createCone = function (name) {
+            if (name === void 0) { name = "Cone"; }
+            var gameobject = feng3d.GameObject.create(name);
+            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            model.geometry = new feng3d.ConeGeometry();
+            model.material = feng3d.materialFactory.create("standard");
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createTorus = function (name) {
+            if (name === void 0) { name = "Torus"; }
+            var gameobject = feng3d.GameObject.create(name);
+            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            model.geometry = new feng3d.TorusGeometry();
+            model.material = feng3d.materialFactory.create("standard");
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createTerrain = function (name) {
+            if (name === void 0) { name = "Terrain"; }
+            var gameobject = feng3d.GameObject.create(name);
+            gameobject.addComponent(feng3d.Terrain);
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createSphere = function (name) {
+            if (name === void 0) { name = "sphere"; }
+            var gameobject = feng3d.GameObject.create(name);
+            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            model.geometry = new feng3d.SphereGeometry();
+            model.material = feng3d.materialFactory.create("standard");
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createCapsule = function (name) {
+            if (name === void 0) { name = "capsule"; }
+            var gameobject = feng3d.GameObject.create(name);
+            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            model.geometry = new feng3d.CapsuleGeometry();
+            model.material = feng3d.materialFactory.create("standard");
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createCamera = function (name) {
+            if (name === void 0) { name = "Camera"; }
+            var gameobject = feng3d.GameObject.create(name);
+            gameobject.addComponent(feng3d.Camera);
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createPointLight = function (name) {
+            if (name === void 0) { name = "PointLight"; }
+            var gameobject = feng3d.GameObject.create(name);
+            gameobject.addComponent(feng3d.PointLight);
+            return gameobject;
+        };
+        GameObjectFactory.prototype.createParticle = function (name) {
+            if (name === void 0) { name = "Particle"; }
+            var _particleMesh = feng3d.GameObject.create("particle");
+            var meshRenderer = _particleMesh.addComponent(feng3d.MeshRenderer);
+            meshRenderer.geometry = new feng3d.PointGeometry();
+            var material = meshRenderer.material = feng3d.materialFactory.create("standard");
+            material.renderParams.renderMode = feng3d.RenderMode.POINTS;
+            var particleAnimator = _particleMesh.addComponent(feng3d.ParticleAnimator);
+            particleAnimator.numParticles = 1000;
+            //通过函数来创建粒子初始状态
+            particleAnimator.generateFunctions.push({
+                generate: function (particle) {
+                    particle.birthTime = Math.random() * 5 - 5;
+                    particle.lifetime = 5;
+                    var degree2 = Math.random() * Math.PI * 2;
+                    var r = Math.random() * 1;
+                    particle.velocity = new feng3d.Vector3(r * Math.cos(degree2), r * 2, r * Math.sin(degree2));
+                }, priority: 0
+            });
+            particleAnimator.cycle = 10;
+            return _particleMesh;
+        };
+        return GameObjectFactory;
+    }());
+    feng3d.GameObjectFactory = GameObjectFactory;
+    feng3d.gameObjectFactory = new GameObjectFactory();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

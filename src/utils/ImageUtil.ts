@@ -1,7 +1,15 @@
 namespace feng3d
 {
-    export var ImageUtil = {
+    /**
+     * 图片相关工具
+     */
+    export var imageUtil: ImageUtil;
 
+    /**
+     * 图片相关工具
+     */
+    export class ImageUtil
+    {
         /**
          * 加载图片
          * @param url 图片路径
@@ -10,13 +18,14 @@ namespace feng3d
         loadImage(url: string, callback: (image: HTMLImageElement) => void) 
         {
             assets.loadImage(url, callback);
-        },
+        }
         /**
          * 获取图片数据
          * @param image 加载完成的图片元素
          */
         getImageData(image: HTMLImageElement) 
         {
+            if (!image) return null;
             var canvasImg = document.createElement("canvas");
             canvasImg.width = image.width;
             canvasImg.height = image.height;
@@ -26,7 +35,7 @@ namespace feng3d
             ctxt.drawImage(image, 0, 0);
             var imageData = ctxt.getImageData(0, 0, image.width, image.height);//读取整张图片的像素。
             return imageData;
-        },
+        }
         /**
          * 从url获取图片数据
          * @param url 图片路径
@@ -34,12 +43,12 @@ namespace feng3d
          */
         getImageDataFromUrl(url: string, callback: (imageData: ImageData) => void) 
         {
-            ImageUtil.loadImage(url, (image) =>
+            this.loadImage(url, (image) =>
             {
-                var imageData = ImageUtil.getImageData(image);
+                var imageData = this.getImageData(image);
                 callback(imageData);
             });
-        },
+        }
         /**
          * 创建ImageData
          * @param width 数据宽度
@@ -59,6 +68,8 @@ namespace feng3d
             var imageData = ctx.getImageData(0, 0, width, height);
 
             return imageData;
-        },
-    };
+        }
+    }
+
+    imageUtil = new ImageUtil();
 }

@@ -80,7 +80,7 @@ namespace feng3d
                 return object;
             }
 
-            var className = ClassUtils.getQualifiedClassName(target);
+            var className = classUtils.getQualifiedClassName(target);
             object[CLASS_KEY] = className;
 
             if (target["serialize"])
@@ -190,7 +190,7 @@ namespace feng3d
                 return f;
             }
 
-            var cls = ClassUtils.getDefinitionByName(className);
+            var cls = classUtils.getDefinitionByName(className);
             if (!cls)
             {
                 warn(`无法序列号对象 ${className}`);
@@ -264,7 +264,7 @@ namespace feng3d
                 }
                 return;
             }
-            var targetClassName = ClassUtils.getQualifiedClassName(target[property]);
+            var targetClassName = classUtils.getQualifiedClassName(target[property]);
             if (targetClassName == objvalue[CLASS_KEY])
             {
                 this.setValue(target[property], objvalue);

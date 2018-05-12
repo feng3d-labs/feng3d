@@ -8,12 +8,12 @@ namespace feng3d
     }
 
     export var imageDatas = {
-        black: ImageUtil.createImageData(1, 1, ColorKeywords.black),
-        white: ImageUtil.createImageData(1, 1, ColorKeywords.white),
-        red: ImageUtil.createImageData(1, 1, ColorKeywords.red),
-        green: ImageUtil.createImageData(1, 1, ColorKeywords.green),
-        blue: ImageUtil.createImageData(1, 1, ColorKeywords.blue),
-        defaultNormal: ImageUtil.createImageData(1, 1, 0x8080ff),
+        black: imageUtil.createImageData(1, 1, ColorKeywords.black),
+        white: imageUtil.createImageData(1, 1, ColorKeywords.white),
+        red: imageUtil.createImageData(1, 1, ColorKeywords.red),
+        green: imageUtil.createImageData(1, 1, ColorKeywords.green),
+        blue: imageUtil.createImageData(1, 1, ColorKeywords.blue),
+        defaultNormal: imageUtil.createImageData(1, 1, 0x8080ff),
     }
 
     /**

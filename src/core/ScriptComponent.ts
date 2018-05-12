@@ -43,7 +43,7 @@ namespace feng3d
         {
             if (this._script && this.gameObject && runEnvironment == RunEnvironment.feng3d)
             {
-                var cls = ClassUtils.getDefinitionByName(this._script);
+                var cls = classUtils.getDefinitionByName(this._script);
                 this.scriptInstance = new cls(this);
                 var scriptData = this.scriptData = this.scriptData || {};
                 for (const key in scriptData)

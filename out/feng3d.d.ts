@@ -990,19 +990,64 @@ declare namespace feng3d {
      * 类工具
      * @author feng 2017-02-15
      */
-    var ClassUtils: {
-        getQualifiedClassName: (value: any) => string;
-        getDefinitionByName: (name: string) => any;
-        addClassNameSpace: (namespace: string) => void;
-    };
+    var classUtils: ClassUtils;
+    /**
+     * 类工具
+     * @author feng 2017-02-15
+     */
+    class ClassUtils {
+        /**
+         * 返回对象的完全限定类名。
+         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
+         * （如number)和类对象
+         * @returns 包含完全限定类名称的字符串。
+         */
+        getQualifiedClassName(value: any): string;
+        /**
+         * 返回 name 参数指定的类的类对象引用。
+         * @param name 类的名称。
+         */
+        getDefinitionByName(name: string): any;
+        /**
+         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
+         */
+        addClassNameSpace(namespace: string): void;
+    }
 }
 declare namespace feng3d {
-    var ImageUtil: {
+    /**
+     * 图片相关工具
+     */
+    var imageUtil: ImageUtil;
+    /**
+     * 图片相关工具
+     */
+    class ImageUtil {
+        /**
+         * 加载图片
+         * @param url 图片路径
+         * @param callback 加载完成回调
+         */
         loadImage(url: string, callback: (image: HTMLImageElement) => void): void;
+        /**
+         * 获取图片数据
+         * @param image 加载完成的图片元素
+         */
         getImageData(image: HTMLImageElement): ImageData;
+        /**
+         * 从url获取图片数据
+         * @param url 图片路径
+         * @param callback 获取图片数据完成回调
+         */
         getImageDataFromUrl(url: string, callback: (imageData: ImageData) => void): void;
+        /**
+         * 创建ImageData
+         * @param width 数据宽度
+         * @param height 数据高度
+         * @param fillcolor 填充颜色
+         */
         createImageData(width?: number, height?: number, fillcolor?: number): ImageData;
-    };
+    }
 }
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -10879,21 +10924,22 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    var GameObjectFactory: {
-        create: (name?: string) => GameObject;
-        createGameObject: (name?: string) => GameObject;
-        createCube: (name?: string) => GameObject;
-        createPlane: (name?: string) => GameObject;
-        createCylinder: (name?: string) => GameObject;
-        createSphere: (name?: string) => GameObject;
-        createCapsule: (name?: string) => GameObject;
-        createCone: (name?: string) => GameObject;
-        createTorus: (name?: string) => GameObject;
-        createTerrain: (name?: string) => GameObject;
-        createParticle: (name?: string) => GameObject;
-        createCamera: (name?: string) => GameObject;
-        createPointLight: (name?: string) => GameObject;
-    };
+    var gameObjectFactory: GameObjectFactory;
+    class GameObjectFactory {
+        create(name?: string): GameObject;
+        createGameObject(name?: string): GameObject;
+        createCube(name?: string): GameObject;
+        createPlane(name?: string): GameObject;
+        createCylinder(name?: string): GameObject;
+        createCone(name?: string): GameObject;
+        createTorus(name?: string): GameObject;
+        createTerrain(name?: string): GameObject;
+        createSphere(name?: string): GameObject;
+        createCapsule(name?: string): GameObject;
+        createCamera(name?: string): GameObject;
+        createPointLight(name?: string): GameObject;
+        createParticle(name?: string): GameObject;
+    }
 }
 declare namespace feng3d {
     /**

@@ -49,7 +49,7 @@ namespace feng3d
     /**
      * 默认高度图
      */
-    var defaultHeightMap = ImageUtil.createImageData();
+    var defaultHeightMap = imageUtil.createImageData();
 
     /**
      * 地形几何体
@@ -116,10 +116,13 @@ namespace feng3d
         {
             if (propertyKey == "heightMapUrl")
             {
-                ImageUtil.getImageDataFromUrl(newValue, (imageData) =>
+                imageUtil.getImageDataFromUrl(newValue, (imageData) =>
                 {
-                    this._heightMap = imageData;
-                    this.invalidateGeometry();
+                    if (imageData)
+                    {
+                        this._heightMap = imageData;
+                        super.invalidateGeometry();
+                    }
                 });
             } else
             {

@@ -136,7 +136,7 @@ namespace feng3d
                         propertyHost = propertyHost.find(element[1]);
                         break;
                     case PropertyClipPathItemType.Component:
-                        var componentType = ClassUtils.getDefinitionByName(element[1]);
+                        var componentType = classUtils.getDefinitionByName(element[1]);
                         propertyHost = propertyHost.getComponent(componentType);
                         break;
                     default:
