@@ -14028,7 +14028,8 @@ var feng3d;
         };
         ScriptComponent.prototype.initScript = function () {
             if (this._script && this.gameObject && feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
-                this.scriptInstance = feng3d.ClassUtils.getDefinitionByName(this._script);
+                var cls = feng3d.ClassUtils.getDefinitionByName(this._script);
+                this.scriptInstance = new cls(this);
                 var scriptData = this.scriptData = this.scriptData || {};
                 for (var key in scriptData) {
                     if (scriptData.hasOwnProperty(key)) {
@@ -14057,7 +14058,7 @@ var feng3d;
             feng3d.serialize
         ], ScriptComponent.prototype, "scriptData", void 0);
         __decorate([
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "file_script" }, textEnabled: false } }),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } }),
             feng3d.serialize
         ], ScriptComponent.prototype, "script", null);
         return ScriptComponent;
