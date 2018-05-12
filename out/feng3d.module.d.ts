@@ -7893,7 +7893,6 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
-        static addScript: (scriptPath: string, callback?: (scriptClass: new (component?: ScriptComponent) => Script) => void) => void;
     }
 }
 declare namespace feng3d {

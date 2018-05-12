@@ -14027,18 +14027,15 @@ var feng3d;
             this.enabled = this.enabled;
         };
         ScriptComponent.prototype.initScript = function () {
-            var _this = this;
             if (this._script && this.gameObject && feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
-                addScript(this._script, function (scriptClass) {
-                    _this.scriptInstance = new scriptClass(_this);
-                    var scriptData = _this.scriptData = _this.scriptData || {};
-                    for (var key in scriptData) {
-                        if (scriptData.hasOwnProperty(key)) {
-                            _this.scriptInstance[key] = scriptData[key];
-                        }
+                this.scriptInstance = feng3d.ClassUtils.getDefinitionByName(this._script);
+                var scriptData = this.scriptData = this.scriptData || {};
+                for (var key in scriptData) {
+                    if (scriptData.hasOwnProperty(key)) {
+                        this.scriptInstance[key] = scriptData[key];
                     }
-                    _this.scriptInstance.init();
-                });
+                }
+                this.scriptInstance.init();
             }
         };
         /**
@@ -14056,7 +14053,6 @@ var feng3d;
             this.scriptInstance = null;
             _super.prototype.dispose.call(this);
         };
-        ScriptComponent.addScript = addScript;
         __decorate([
             feng3d.serialize
         ], ScriptComponent.prototype, "scriptData", void 0);
@@ -14067,97 +14063,6 @@ var feng3d;
         return ScriptComponent;
     }(feng3d.Behaviour));
     feng3d.ScriptComponent = ScriptComponent;
-    var resultScriptCache = {};
-    function addScript(scriptPath, callback) {
-        var jspath = scriptPath.replace(/\.ts\b/, ".js");
-        loadJs(jspath, function (resultScript) {
-            var windowEval = eval.bind(window);
-            var cls = windowEval(resultScript.className);
-            callback && callback(cls);
-        });
-    }
-    function removeScript(gameObject, script) {
-        if (script instanceof ScriptComponent) {
-            script.enabled = false;
-            gameObject.removeComponent(script);
-        }
-        else {
-            var scripts = gameObject.getComponents(ScriptComponent);
-            while (scripts.length > 0) {
-                var scriptComponent = scripts[scripts.length - 1];
-                scripts.pop();
-                if (scriptComponent.script == script) {
-                    removeScript(gameObject, scriptComponent);
-                }
-            }
-        }
-    }
-    function reloadJS(scriptPath) {
-        delete resultScriptCache[scriptPath];
-        loadJs(scriptPath);
-    }
-    function loadJs(scriptPath, onload) {
-        if (resultScriptCache[scriptPath] && feng3d.runEnvironment != feng3d.RunEnvironment.editor) {
-            onload && onload(resultScriptCache[scriptPath]);
-            return;
-        }
-        var resultScript = {};
-        if (feng3d.assets.fstype == feng3d.FSType.http) {
-            var loadPath = scriptPath + ("?version=" + Math.random());
-            feng3d.Loader.loadText(loadPath, function (content) {
-                // var reg = /var ([a-zA-Z0-9_$]+) = \/\*\* @class \*\//;
-                var reg = new RegExp("var ([a-zA-Z0-9_$]+) = \\/\\*\\* @class \\*\\/");
-                var result = content.match(reg);
-                feng3d.assert(result && !!result[1], "脚本中找不到类定义！");
-                var classname = result[1];
-                //处理类定义放在 namespace 中 /([a-zA-Z0-9_$.]+Test)\s*=\s*Test/
-                reg = new RegExp("([a-zA-Z0-9_$.]+" + classname + ")\\s*=\\s*" + classname);
-                result = content.match(reg);
-                if (result)
-                    classname = result[1];
-                resultScript.className = classname;
-                var scriptTag = document.getElementById(scriptPath);
-                var head = document.getElementsByTagName('head').item(0);
-                if (scriptTag)
-                    head.removeChild(scriptTag);
-                var script = document.createElement('script');
-                script.onload = function (e) {
-                    resultScript.script = script;
-                    resultScriptCache[scriptPath] = resultScript;
-                    onload && onload(resultScript);
-                };
-                script.src = loadPath;
-                script.type = 'text/javascript';
-                script.id = scriptPath;
-                head.appendChild(script);
-            });
-        }
-        else if (feng3d.assets.fstype == feng3d.FSType.indexedDB) {
-            feng3d.storage.get(feng3d.DBname, feng3d.projectname, scriptPath, function (err, data) {
-                feng3d.dataTransform.arrayBufferToString(data.data, function (content) {
-                    // var reg = /var ([a-zA-Z0-9_$]+) = \/\*\* @class \*\//;
-                    var reg = new RegExp("var ([a-zA-Z0-9_$]+) = \\/\\*\\* @class \\*\\/");
-                    var result = content.match(reg);
-                    feng3d.assert(result && !!result[1], "脚本中找不到类定义！");
-                    var classname = result[1];
-                    //处理类定义放在 namespace 中 /([a-zA-Z0-9_$.]+Test)\s*=\s*Test/
-                    reg = new RegExp("([a-zA-Z0-9_$.]+" + classname + ")\\s*=\\s*" + classname);
-                    result = content.match(reg);
-                    if (result)
-                        classname = result[1];
-                    resultScript.className = classname;
-                    //
-                    var windowEval = eval.bind(window);
-                    //
-                    content += "\n//# sourceURL=" + scriptPath;
-                    windowEval(content);
-                    //
-                    resultScriptCache[scriptPath] = resultScript;
-                    onload && onload(resultScript);
-                });
-            });
-        }
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
