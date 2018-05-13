@@ -2281,14 +2281,15 @@ var feng3d;
          * 返回 name 参数指定的类的类对象引用。
          * @param name 类的名称。
          */
-        ClassUtils.prototype.getDefinitionByName = function (name) {
+        ClassUtils.prototype.getDefinitionByName = function (name, readCache) {
+            if (readCache === void 0) { readCache = true; }
             if (name == "null")
                 return null;
             if (!name)
                 return null;
             if (_global[name])
                 return _global[name];
-            if (_definitionCache[name])
+            if (readCache && _definitionCache[name])
                 return _definitionCache[name];
             var paths = name.split(".");
             var length = paths.length;

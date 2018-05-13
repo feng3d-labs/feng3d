@@ -1007,7 +1007,7 @@ declare namespace feng3d {
          * 返回 name 参数指定的类的类对象引用。
          * @param name 类的名称。
          */
-        getDefinitionByName(name: string): any;
+        getDefinitionByName(name: string, readCache?: boolean): any;
         /**
          * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
          */

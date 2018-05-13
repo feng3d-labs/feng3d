@@ -50,7 +50,7 @@ namespace feng3d
          * 返回 name 参数指定的类的类对象引用。
          * @param name 类的名称。
          */
-        getDefinitionByName(name: string): any
+        getDefinitionByName(name: string, readCache = true): any
         {
             if (name == "null")
                 return null;
@@ -58,7 +58,7 @@ namespace feng3d
                 return null;
             if (_global[name])
                 return _global[name];
-            if (_definitionCache[name])
+            if (readCache && _definitionCache[name])
                 return _definitionCache[name];
 
             var paths = name.split(".");
