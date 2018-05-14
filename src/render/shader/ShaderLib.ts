@@ -53,6 +53,11 @@ namespace feng3d
         }
         private _shaderConfig: ShaderConfig;
 
+        constructor()
+        {
+            globalEvent.on("shaderChanged", this.onShaderChanged, this);
+        }
+
         /**
          * 获取shaderCode
          */
@@ -87,6 +92,18 @@ namespace feng3d
                 match = includeRegExp.exec(shaderCode);
             }
             return shaderCode;
+        }
+
+        private onShaderChanged()
+        {
+            for (const key in this.shaderConfig.shaders)
+            {
+                if (this.shaderConfig.shaders.hasOwnProperty(key))
+                {
+                    const element = this.shaderConfig.shaders[key];
+                    element.shader = null;
+                }
+            }
         }
 
         /**

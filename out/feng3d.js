@@ -476,6 +476,21 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 全局事件
+     */
+    var GlobalEventDispatcher = /** @class */ (function (_super) {
+        __extends(GlobalEventDispatcher, _super);
+        function GlobalEventDispatcher() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return GlobalEventDispatcher;
+    }(feng3d.EventDispatcher));
+    feng3d.GlobalEventDispatcher = GlobalEventDispatcher;
+    feng3d.globalEvent = new GlobalEventDispatcher();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     feng3d.loadjs = {
         load: load,
         ready: ready,
@@ -10686,6 +10701,7 @@ var feng3d;
      */
     var ShaderLib = /** @class */ (function () {
         function ShaderLib() {
+            feng3d.globalEvent.on("shaderChanged", this.onShaderChanged, this);
         }
         Object.defineProperty(ShaderLib.prototype, "shaderConfig", {
             get: function () {
@@ -10727,6 +10743,14 @@ var feng3d;
                 match = includeRegExp.exec(shaderCode);
             }
             return shaderCode;
+        };
+        ShaderLib.prototype.onShaderChanged = function () {
+            for (var key in this.shaderConfig.shaders) {
+                if (this.shaderConfig.shaders.hasOwnProperty(key)) {
+                    var element = this.shaderConfig.shaders[key];
+                    element.shader = null;
+                }
+            }
         };
         /**
          * 获取shader列表
@@ -17667,6 +17691,7 @@ var feng3d;
              */
             this.renderParams = new feng3d.RenderParams();
             feng3d.serialization.setValue(this, raw);
+            feng3d.globalEvent.on("shaderChanged", this.onShaderChanged, this);
         }
         Material.prototype.preRender = function (renderAtomic) {
             for (var key in this.uniforms) {
@@ -17680,7 +17705,7 @@ var feng3d;
             if (cls) {
                 if (!(this.uniforms instanceof cls)) {
                     var newuniforms = new cls();
-                    feng3d.serialization.setValue(newuniforms, this.uniforms);
+                    // serialization.setValue(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
             }

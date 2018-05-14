@@ -296,6 +296,34 @@ declare namespace feng3d {
     var windowEventProxy: EventProxy<WindowEventMap>;
 }
 declare namespace feng3d {
+    /**
+     * 全局事件
+     */
+    var globalEvent: GlobalEventDispatcher;
+    interface GlobalEventMap {
+        /**
+         * shader资源发生变化
+         */
+        shaderChanged: any;
+        /**
+         * 脚本发生变化
+         */
+        scriptChanged: any;
+    }
+    interface GlobalEventDispatcher {
+        once<K extends keyof GlobalEventMap>(type: K, listener: (event: Event<GlobalEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof GlobalEventMap>(type: K, data?: GlobalEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof GlobalEventMap>(type: K): boolean;
+        on<K extends keyof GlobalEventMap>(type: K, listener: (event: Event<GlobalEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof GlobalEventMap>(type?: K, listener?: (event: Event<GlobalEventMap[K]>) => any, thisObject?: any): any;
+    }
+    /**
+     * 全局事件
+     */
+    class GlobalEventDispatcher extends EventDispatcher {
+    }
+}
+declare namespace feng3d {
     var loadjs: {
         load: (params: {
             paths: string | string[] | {
@@ -6758,6 +6786,7 @@ declare namespace feng3d {
     class ShaderLib {
         shaderConfig: ShaderConfig;
         private _shaderConfig;
+        constructor();
         /**
          * 获取shaderCode
          */
@@ -6766,6 +6795,7 @@ declare namespace feng3d {
          * 展开 include
          */
         private uninclude(shaderCode);
+        private onShaderChanged();
         /**
          * 获取shader列表
          */

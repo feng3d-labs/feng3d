@@ -74,6 +74,7 @@ namespace feng3d
         constructor(raw?: MaterialRaw)
         {
             serialization.setValue(this, raw);
+            globalEvent.on("shaderChanged", this.onShaderChanged, this);
         }
 
         preRender(renderAtomic: RenderAtomic)
@@ -95,7 +96,7 @@ namespace feng3d
                 if (!(this.uniforms instanceof cls))
                 {
                     var newuniforms = new cls();
-                    serialization.setValue(newuniforms, this.uniforms);
+                    // serialization.setValue(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
             }
