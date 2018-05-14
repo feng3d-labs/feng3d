@@ -11,6 +11,9 @@
   * [介绍脚本](script.md)
   * [创建新脚本](createscript.md)
 
+* 资源
+  * [着色器](shader.md)
+
 * 导航
   * [![](_images/editor.png)](http://feng3d.gitee.io/editor)
   * [![](_images/examples.png)](http://feng3d.gitee.io/examples)

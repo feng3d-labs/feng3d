@@ -4,7 +4,7 @@
 
 ![新的脚本](_images/createscript.jpg)
 
-双击面板中的脚本资源，然后它会在代码编辑器中被打开。
+在文件上右键菜单选择“编辑”。
 
 ![代码编辑器](_images/codeeditor.jpg)
 
