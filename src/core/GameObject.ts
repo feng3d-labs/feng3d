@@ -436,12 +436,12 @@ namespace feng3d
 
         /**
          * 添加脚本
-         * @param url   脚本路径
+         * @param script   脚本路径
          */
-        addScript(url: string)
+        addScript(script: string)
         {
-            var script = this.addComponent(ScriptComponent);
-            script.script = url;
+            var scriptComponent = this.addComponent(ScriptComponent);
+            scriptComponent.script = script;
             return script;
         }
 

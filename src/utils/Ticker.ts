@@ -159,9 +159,9 @@ namespace feng3d
 
         private runfunc()
         {
-            this.func.call(this.thisObject);
             this.currentCount++;
             this.repeatCount--;
+            this.func.call(this.thisObject);
             if (this.repeatCount < 1)
                 this.stop();
         }

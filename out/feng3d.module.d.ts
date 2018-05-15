@@ -7595,9 +7595,9 @@ declare namespace feng3d {
         addComponent<T extends Component>(param: ComponentConstructor<T>, callback?: (component: T) => void): T;
         /**
          * 添加脚本
-         * @param url   脚本路径
+         * @param script   脚本路径
          */
-        addScript(url: string): ScriptComponent;
+        addScript(script: string): string;
         /**
          * 判断是否拥有组件
          * @param com	被检测的组件

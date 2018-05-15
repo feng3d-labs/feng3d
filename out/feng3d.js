@@ -1994,9 +1994,9 @@ var feng3d;
             return this;
         };
         Timer.prototype.runfunc = function () {
-            this.func.call(this.thisObject);
             this.currentCount++;
             this.repeatCount--;
+            this.func.call(this.thisObject);
             if (this.repeatCount < 1)
                 this.stop();
         };
@@ -12918,11 +12918,11 @@ var feng3d;
         };
         /**
          * 添加脚本
-         * @param url   脚本路径
+         * @param script   脚本路径
          */
-        GameObject.prototype.addScript = function (url) {
-            var script = this.addComponent(feng3d.ScriptComponent);
-            script.script = url;
+        GameObject.prototype.addScript = function (script) {
+            var scriptComponent = this.addComponent(feng3d.ScriptComponent);
+            scriptComponent.script = script;
             return script;
         };
         /**
