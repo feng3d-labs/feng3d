@@ -113,7 +113,7 @@ namespace feng3d
         // listify
         if (bundleIds instanceof String)
         {
-            bundleIds = [bundleIds];
+            bundleIds = <string[]>[bundleIds];
         }
 
         // define callback function

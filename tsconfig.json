@@ -14,13 +14,12 @@
         "src/polyfill/Map.ts",
         "src/polyfill/Array.ts",
         //
-        "src/debug/debug.ts",
-        //
         "src/event/EventDispatcher.ts",
         "src/event/EventProxy.ts",
         "src/event/GlobalEventDispatcher.ts",
         "src/resources/load.ts",
         //基础工具
+        "src/utils/debug.ts",
         "src/utils/Watcher.ts",
         "src/utils/Serialization.ts",
         "src/utils/ObjectView.ts",
@@ -130,8 +129,6 @@
         "src/component/HoldSizeComponent.ts",
         "src/component/BillboardComponent.ts",
         "src/core/MeshRenderer.ts",
-        "src/core/SkeletonComponent.ts",
-        "src/core/SkinnedMeshRenderer.ts",
         "src/core/ScriptComponent.ts",
         "src/core/Script.ts",
         //3D场景
@@ -169,7 +166,6 @@
         "src/materials/SegmentMaterial.ts",
         "src/materials/TextureMaterial.ts",
         "src/materials/StandardMaterial.ts",
-        "src/materials/SkeletonMaterial.ts",
         //灯光
         "src/light/LightType.ts",
         "src/light/Light.ts",
@@ -200,6 +196,9 @@
         "src/animators/particle/ParticleAnimator.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
+        "src/animators/skeleton/SkeletonComponent.ts",
+        "src/animators/skeleton/SkinnedMeshRenderer.ts",
+        "src/animators/skeleton/SkeletonMaterial.ts",
         //
         "src/animation/Animation.ts",
         //
@@ -220,8 +219,6 @@
         "src/assets/loader/ObjLoader.ts",
         "src/assets/loader/MD5Loader.ts",
         "src/assets/loader/mdlLoader.ts",
-        //
-        "src/debug/Trident.ts",
         //
         "src/utils/GameObjectFactory.ts",
         //

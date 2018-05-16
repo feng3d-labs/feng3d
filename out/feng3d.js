@@ -158,77 +158,6 @@ Array.prototype.isUnique = function (compareFn) {
 };
 var feng3d;
 (function (feng3d) {
-    /**
-     * 测试代码运行时间
-     * @param fn 被测试的方法
-     * @param labal 标签
-     */
-    function time(fn, labal) {
-        labal = labal || fn["name"] || "Anonymous function " + Math.random();
-        console.time(labal);
-        fn();
-        console.timeEnd(labal);
-    }
-    feng3d.time = time;
-    /**
-     * 断言，测试不通过时报错
-     * @param test 测试项
-     * @param message 测试失败时提示信息
-     * @param optionalParams
-     */
-    function assert(test, message) {
-        var optionalParams = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            optionalParams[_i - 2] = arguments[_i];
-        }
-        if (!test)
-            debugger;
-        console.assert.apply(null, arguments);
-    }
-    feng3d.assert = assert;
-    /**
-     * 输出错误
-     * @param message 错误信息
-     * @param optionalParams
-     */
-    function error(message) {
-        var optionalParams = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            optionalParams[_i - 1] = arguments[_i];
-        }
-        debugger;
-        console.error.apply(null, arguments);
-    }
-    feng3d.error = error;
-    /**
-     * 记录日志信息
-     * @param message 日志信息
-     * @param optionalParams
-     */
-    function log(message) {
-        var optionalParams = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            optionalParams[_i - 1] = arguments[_i];
-        }
-        console.log.apply(null, arguments);
-    }
-    feng3d.log = log;
-    /**
-     * 警告
-     * @param message 警告信息
-     * @param optionalParams
-     */
-    function warn(message) {
-        var optionalParams = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            optionalParams[_i - 1] = arguments[_i];
-        }
-        console.warn.apply(null, arguments);
-    }
-    feng3d.warn = warn;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     feng3d.EVENT_KEY = "__event__";
     function getBubbleTargets(target) {
         return [target["parent"]];
@@ -874,6 +803,77 @@ var feng3d;
         { reg: /(\.png\b)/i, type: types.image },
         { reg: /(\.jpg\b)/i, type: types.image },
     ];
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 测试代码运行时间
+     * @param fn 被测试的方法
+     * @param labal 标签
+     */
+    function time(fn, labal) {
+        labal = labal || fn["name"] || "Anonymous function " + Math.random();
+        console.time(labal);
+        fn();
+        console.timeEnd(labal);
+    }
+    feng3d.time = time;
+    /**
+     * 断言，测试不通过时报错
+     * @param test 测试项
+     * @param message 测试失败时提示信息
+     * @param optionalParams
+     */
+    function assert(test, message) {
+        var optionalParams = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            optionalParams[_i - 2] = arguments[_i];
+        }
+        if (!test)
+            debugger;
+        console.assert.apply(null, arguments);
+    }
+    feng3d.assert = assert;
+    /**
+     * 输出错误
+     * @param message 错误信息
+     * @param optionalParams
+     */
+    function error(message) {
+        var optionalParams = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            optionalParams[_i - 1] = arguments[_i];
+        }
+        debugger;
+        console.error.apply(null, arguments);
+    }
+    feng3d.error = error;
+    /**
+     * 记录日志信息
+     * @param message 日志信息
+     * @param optionalParams
+     */
+    function log(message) {
+        var optionalParams = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            optionalParams[_i - 1] = arguments[_i];
+        }
+        console.log.apply(null, arguments);
+    }
+    feng3d.log = log;
+    /**
+     * 警告
+     * @param message 警告信息
+     * @param optionalParams
+     */
+    function warn(message) {
+        var optionalParams = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            optionalParams[_i - 1] = arguments[_i];
+        }
+        console.warn.apply(null, arguments);
+    }
+    feng3d.warn = warn;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -13741,310 +13741,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var SkeletonComponent = /** @class */ (function (_super) {
-        __extends(SkeletonComponent, _super);
-        function SkeletonComponent() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            /** 骨骼关节数据列表 */
-            _this.joints = [];
-            _this.isInitJoints = false;
-            return _this;
-        }
-        Object.defineProperty(SkeletonComponent.prototype, "globalMatrices", {
-            /**
-             * 当前骨骼姿势的全局矩阵
-             * @see #globalPose
-             */
-            get: function () {
-                if (!this.isInitJoints) {
-                    this.initSkeleton();
-                    this.isInitJoints = true;
-                }
-                if (this._globalPropertiesInvalid) {
-                    this.updateGlobalProperties();
-                    this._globalPropertiesInvalid = false;
-                }
-                return this._globalMatrices;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        SkeletonComponent.prototype.initSkeleton = function () {
-            this.jointGameobjects = [];
-            this.jointGameObjectMap = {};
-            //
-            this.createSkeletonGameObject();
-            //
-            this._globalPropertiesInvalid = true;
-            this._jointsInvalid = [];
-            this._globalMatrix3DsInvalid = [];
-            this.globalMatrix3Ds = [];
-            this._globalMatrices = [];
-            //
-            var jointNum = this.joints.length;
-            for (var i = 0; i < jointNum; i++) {
-                this._jointsInvalid[i] = true;
-                this._globalMatrix3DsInvalid[i] = true;
-                this.globalMatrix3Ds[i] = new feng3d.Matrix4x4();
-                this._globalMatrices[i] = new feng3d.Matrix4x4();
-            }
-        };
-        /**
-         * 更新骨骼全局变换矩阵
-         */
-        SkeletonComponent.prototype.updateGlobalProperties = function () {
-            //姿势变换矩阵
-            var joints = this.joints;
-            var jointGameobjects = this.jointGameobjects;
-            var globalMatrix3Ds = this.globalMatrix3Ds;
-            var _globalMatrix3DsInvalid = this._globalMatrix3DsInvalid;
-            //遍历每个关节
-            for (var i = 0; i < joints.length; ++i) {
-                if (!this._jointsInvalid[i])
-                    continue;
-                this._globalMatrices[i]
-                    .copyFrom(globalMatrix3d(i))
-                    .prepend(joints[i].invertMatrix3D);
-                this._jointsInvalid[i] = false;
-            }
-            function globalMatrix3d(index) {
-                if (!_globalMatrix3DsInvalid[index])
-                    return globalMatrix3Ds[index];
-                var jointPose = joints[index];
-                var jointGameobject = jointGameobjects[index];
-                globalMatrix3Ds[index] = jointGameobject.transform.matrix3d.clone();
-                if (jointPose.parentIndex >= 0) {
-                    var parentGlobalMatrix3d = globalMatrix3d(jointPose.parentIndex);
-                    globalMatrix3Ds[index].append(parentGlobalMatrix3d);
-                }
-                _globalMatrix3DsInvalid[index] = false;
-                return globalMatrix3Ds[index];
-            }
-        };
-        SkeletonComponent.prototype.invalidjoint = function (jointIndex) {
-            var _this = this;
-            this._globalPropertiesInvalid = true;
-            this._jointsInvalid[jointIndex] = true;
-            this._globalMatrix3DsInvalid[jointIndex] = true;
-            this.joints[jointIndex].children.forEach(function (element) {
-                _this.invalidjoint(element);
-            });
-        };
-        SkeletonComponent.prototype.createSkeletonGameObject = function () {
-            var skeleton = this;
-            var joints = skeleton.joints;
-            var jointGameobjects = this.jointGameobjects;
-            var jointGameObjectMap = this.jointGameObjectMap;
-            for (var i = 0; i < joints.length; i++) {
-                createJoint(i);
-            }
-            function createJoint(i) {
-                if (jointGameobjects[i])
-                    return jointGameobjects[i].gameObject;
-                var skeletonJoint = joints[i];
-                var parentGameobject;
-                if (skeletonJoint.parentIndex != -1) {
-                    parentGameobject = createJoint(skeletonJoint.parentIndex);
-                    joints[skeletonJoint.parentIndex].children.push(i);
-                }
-                else {
-                    parentGameobject = skeleton.gameObject;
-                }
-                var jointGameobject = parentGameobject.find(skeletonJoint.name);
-                if (!jointGameobject) {
-                    jointGameobject = feng3d.GameObject.create(skeletonJoint.name);
-                    jointGameobject.serializable = false;
-                    parentGameobject.addChild(jointGameobject);
-                }
-                var transform = jointGameobject.transform;
-                var matrix3D = skeletonJoint.matrix3D;
-                if (skeletonJoint.parentIndex != -1) {
-                    matrix3D = matrix3D.clone().append(joints[skeletonJoint.parentIndex].invertMatrix3D);
-                }
-                transform.matrix3d = matrix3D;
-                transform.on("transformChanged", function () {
-                    skeleton.invalidjoint(i);
-                });
-                jointGameobjects[i] = transform;
-                jointGameObjectMap[skeletonJoint.name] = transform;
-                return jointGameobject;
-            }
-        };
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], SkeletonComponent.prototype, "joints", void 0);
-        return SkeletonComponent;
-    }(feng3d.Component));
-    feng3d.SkeletonComponent = SkeletonComponent;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var SkinnedMeshRenderer = /** @class */ (function (_super) {
-        __extends(SkinnedMeshRenderer, _super);
-        function SkinnedMeshRenderer() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.skeletonGlobalMatriices = [];
-            return _this;
-        }
-        Object.defineProperty(SkinnedMeshRenderer.prototype, "single", {
-            get: function () { return true; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(SkinnedMeshRenderer.prototype, "skinSkeleton", {
-            get: function () {
-                return this._skinSkeleton;
-            },
-            set: function (value) {
-                if (this._skinSkeleton == value)
-                    return;
-                this._skinSkeleton = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 创建一个骨骼动画类
-         */
-        SkinnedMeshRenderer.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
-        };
-        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_modelMatrix", {
-            get: function () {
-                if (this.cacheSkeletonComponent)
-                    return this.cacheSkeletonComponent.transform.localToWorldMatrix;
-                return this.transform.localToWorldMatrix;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_ITModelMatrix", {
-            get: function () {
-                if (this.cacheSkeletonComponent)
-                    return this.cacheSkeletonComponent.transform.ITlocalToWorldMatrix;
-                return this.transform.ITlocalToWorldMatrix;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_skeletonGlobalMatriices", {
-            get: function () {
-                if (!this.cacheSkeletonComponent) {
-                    var gameObject = this.gameObject;
-                    var skeletonComponent = null;
-                    while (gameObject && !skeletonComponent) {
-                        skeletonComponent = gameObject.getComponent(feng3d.SkeletonComponent);
-                        gameObject = gameObject.parent;
-                    }
-                    this.cacheSkeletonComponent = skeletonComponent;
-                }
-                if (this._skinSkeleton && this.cacheSkeletonComponent) {
-                    var joints = this._skinSkeleton.joints;
-                    var globalMatrices = this.cacheSkeletonComponent.globalMatrices;
-                    for (var i = joints.length - 1; i >= 0; i--) {
-                        this.skeletonGlobalMatriices[i] = globalMatrices[joints[i][0]];
-                        if (this.initMatrix3d) {
-                            this.skeletonGlobalMatriices[i] = this.skeletonGlobalMatriices[i].clone()
-                                .prepend(this.initMatrix3d);
-                        }
-                    }
-                    return this.skeletonGlobalMatriices;
-                }
-                return defaultglobalMatrices();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        SkinnedMeshRenderer.prototype.preRender = function (renderAtomic) {
-            var _this = this;
-            _super.prototype.preRender.call(this, renderAtomic);
-            renderAtomic.uniforms.u_modelMatrix = function () { return _this.u_modelMatrix; };
-            renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.u_ITModelMatrix; };
-            //
-            renderAtomic.uniforms.u_skeletonGlobalMatriices = function () { return _this.u_skeletonGlobalMatriices; };
-        };
-        /**
-         * 销毁
-         */
-        SkinnedMeshRenderer.prototype.dispose = function () {
-            _super.prototype.dispose.call(this);
-        };
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], SkinnedMeshRenderer.prototype, "skinSkeleton", null);
-        __decorate([
-            feng3d.serialize
-        ], SkinnedMeshRenderer.prototype, "initMatrix3d", void 0);
-        return SkinnedMeshRenderer;
-    }(feng3d.MeshRenderer));
-    feng3d.SkinnedMeshRenderer = SkinnedMeshRenderer;
-    /**
-     * 默认单位矩阵
-     */
-    function defaultglobalMatrices() {
-        if (!_defaultglobalMatrices) {
-            _defaultglobalMatrices = [];
-            _defaultglobalMatrices.length = 150;
-            var matrix3d = new feng3d.Matrix4x4();
-            for (var i = 0; i < 150; i++) {
-                _defaultglobalMatrices[i] = matrix3d;
-            }
-        }
-        return _defaultglobalMatrices;
-    }
-    var _defaultglobalMatrices;
-    var SkinSkeleton = /** @class */ (function () {
-        function SkinSkeleton() {
-            /**
-             * [在整个骨架中的编号，骨骼名称]
-             */
-            this.joints = [];
-            /**
-             * 当前模型包含骨骼数量
-             */
-            this.numJoint = 0;
-        }
-        __decorate([
-            feng3d.serialize
-        ], SkinSkeleton.prototype, "joints", void 0);
-        __decorate([
-            feng3d.serialize
-        ], SkinSkeleton.prototype, "numJoint", void 0);
-        return SkinSkeleton;
-    }());
-    feng3d.SkinSkeleton = SkinSkeleton;
-    var SkinSkeletonTemp = /** @class */ (function (_super) {
-        __extends(SkinSkeletonTemp, _super);
-        function SkinSkeletonTemp() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * temp 解析时临时数据
-             */
-            _this.cache_map = {};
-            return _this;
-        }
-        SkinSkeletonTemp.prototype.resetJointIndices = function (jointIndices, skeleton) {
-            var len = jointIndices.length;
-            for (var i = 0; i < len; i++) {
-                if (this.cache_map[jointIndices[i]] === undefined)
-                    this.cache_map[jointIndices[i]] = this.numJoint++;
-                jointIndices[i] = this.cache_map[jointIndices[i]];
-            }
-            this.joints.length = 0;
-            for (var key in this.cache_map) {
-                if (this.cache_map.hasOwnProperty(key)) {
-                    this.joints[this.cache_map[key]] = [parseInt(key), skeleton.joints[key].name];
-                }
-            }
-        };
-        return SkinSkeletonTemp;
-    }(SkinSkeleton));
-    feng3d.SkinSkeletonTemp = SkinSkeletonTemp;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     /**
      * 3d对象脚本
      * @author feng 2017-03-11
@@ -17886,53 +17582,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var SkeletonUniforms = /** @class */ (function (_super) {
-        __extends(SkeletonUniforms, _super);
-        function SkeletonUniforms() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.s_splatTexture1 = new feng3d.Texture2D({
-                generateMipmap: true,
-                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-            });
-            _this.s_splatTexture2 = new feng3d.Texture2D({
-                generateMipmap: true,
-                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-            });
-            _this.s_splatTexture3 = new feng3d.Texture2D({
-                generateMipmap: true,
-                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-            });
-            _this.s_blendTexture = new feng3d.Texture2D();
-            _this.u_splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
-            return _this;
-        }
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "skeleton" })
-        ], SkeletonUniforms.prototype, "s_splatTexture1", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "skeleton" })
-        ], SkeletonUniforms.prototype, "s_splatTexture2", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "skeleton" })
-        ], SkeletonUniforms.prototype, "s_splatTexture3", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "skeleton" })
-        ], SkeletonUniforms.prototype, "s_blendTexture", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "skeleton" })
-        ], SkeletonUniforms.prototype, "u_splatRepeats", void 0);
-        return SkeletonUniforms;
-    }(feng3d.StandardUniforms));
-    feng3d.SkeletonUniforms = SkeletonUniforms;
-    feng3d.shaderConfig.shaders["skeleton"].cls = SkeletonUniforms;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     /**
      * 灯光类型
      * @author feng 2016-12-12
@@ -19634,6 +19283,357 @@ var feng3d;
         return SkeletonJoint;
     }());
     feng3d.SkeletonJoint = SkeletonJoint;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var SkeletonComponent = /** @class */ (function (_super) {
+        __extends(SkeletonComponent, _super);
+        function SkeletonComponent() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /** 骨骼关节数据列表 */
+            _this.joints = [];
+            _this.isInitJoints = false;
+            return _this;
+        }
+        Object.defineProperty(SkeletonComponent.prototype, "globalMatrices", {
+            /**
+             * 当前骨骼姿势的全局矩阵
+             * @see #globalPose
+             */
+            get: function () {
+                if (!this.isInitJoints) {
+                    this.initSkeleton();
+                    this.isInitJoints = true;
+                }
+                if (this._globalPropertiesInvalid) {
+                    this.updateGlobalProperties();
+                    this._globalPropertiesInvalid = false;
+                }
+                return this._globalMatrices;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        SkeletonComponent.prototype.initSkeleton = function () {
+            this.jointGameobjects = [];
+            this.jointGameObjectMap = {};
+            //
+            this.createSkeletonGameObject();
+            //
+            this._globalPropertiesInvalid = true;
+            this._jointsInvalid = [];
+            this._globalMatrix3DsInvalid = [];
+            this.globalMatrix3Ds = [];
+            this._globalMatrices = [];
+            //
+            var jointNum = this.joints.length;
+            for (var i = 0; i < jointNum; i++) {
+                this._jointsInvalid[i] = true;
+                this._globalMatrix3DsInvalid[i] = true;
+                this.globalMatrix3Ds[i] = new feng3d.Matrix4x4();
+                this._globalMatrices[i] = new feng3d.Matrix4x4();
+            }
+        };
+        /**
+         * 更新骨骼全局变换矩阵
+         */
+        SkeletonComponent.prototype.updateGlobalProperties = function () {
+            //姿势变换矩阵
+            var joints = this.joints;
+            var jointGameobjects = this.jointGameobjects;
+            var globalMatrix3Ds = this.globalMatrix3Ds;
+            var _globalMatrix3DsInvalid = this._globalMatrix3DsInvalid;
+            //遍历每个关节
+            for (var i = 0; i < joints.length; ++i) {
+                if (!this._jointsInvalid[i])
+                    continue;
+                this._globalMatrices[i]
+                    .copyFrom(globalMatrix3d(i))
+                    .prepend(joints[i].invertMatrix3D);
+                this._jointsInvalid[i] = false;
+            }
+            function globalMatrix3d(index) {
+                if (!_globalMatrix3DsInvalid[index])
+                    return globalMatrix3Ds[index];
+                var jointPose = joints[index];
+                var jointGameobject = jointGameobjects[index];
+                globalMatrix3Ds[index] = jointGameobject.transform.matrix3d.clone();
+                if (jointPose.parentIndex >= 0) {
+                    var parentGlobalMatrix3d = globalMatrix3d(jointPose.parentIndex);
+                    globalMatrix3Ds[index].append(parentGlobalMatrix3d);
+                }
+                _globalMatrix3DsInvalid[index] = false;
+                return globalMatrix3Ds[index];
+            }
+        };
+        SkeletonComponent.prototype.invalidjoint = function (jointIndex) {
+            var _this = this;
+            this._globalPropertiesInvalid = true;
+            this._jointsInvalid[jointIndex] = true;
+            this._globalMatrix3DsInvalid[jointIndex] = true;
+            this.joints[jointIndex].children.forEach(function (element) {
+                _this.invalidjoint(element);
+            });
+        };
+        SkeletonComponent.prototype.createSkeletonGameObject = function () {
+            var skeleton = this;
+            var joints = skeleton.joints;
+            var jointGameobjects = this.jointGameobjects;
+            var jointGameObjectMap = this.jointGameObjectMap;
+            for (var i = 0; i < joints.length; i++) {
+                createJoint(i);
+            }
+            function createJoint(i) {
+                if (jointGameobjects[i])
+                    return jointGameobjects[i].gameObject;
+                var skeletonJoint = joints[i];
+                var parentGameobject;
+                if (skeletonJoint.parentIndex != -1) {
+                    parentGameobject = createJoint(skeletonJoint.parentIndex);
+                    joints[skeletonJoint.parentIndex].children.push(i);
+                }
+                else {
+                    parentGameobject = skeleton.gameObject;
+                }
+                var jointGameobject = parentGameobject.find(skeletonJoint.name);
+                if (!jointGameobject) {
+                    jointGameobject = feng3d.GameObject.create(skeletonJoint.name);
+                    jointGameobject.serializable = false;
+                    parentGameobject.addChild(jointGameobject);
+                }
+                var transform = jointGameobject.transform;
+                var matrix3D = skeletonJoint.matrix3D;
+                if (skeletonJoint.parentIndex != -1) {
+                    matrix3D = matrix3D.clone().append(joints[skeletonJoint.parentIndex].invertMatrix3D);
+                }
+                transform.matrix3d = matrix3D;
+                transform.on("transformChanged", function () {
+                    skeleton.invalidjoint(i);
+                });
+                jointGameobjects[i] = transform;
+                jointGameObjectMap[skeletonJoint.name] = transform;
+                return jointGameobject;
+            }
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], SkeletonComponent.prototype, "joints", void 0);
+        return SkeletonComponent;
+    }(feng3d.Component));
+    feng3d.SkeletonComponent = SkeletonComponent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var SkinnedMeshRenderer = /** @class */ (function (_super) {
+        __extends(SkinnedMeshRenderer, _super);
+        function SkinnedMeshRenderer() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.skeletonGlobalMatriices = [];
+            return _this;
+        }
+        Object.defineProperty(SkinnedMeshRenderer.prototype, "single", {
+            get: function () { return true; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SkinnedMeshRenderer.prototype, "skinSkeleton", {
+            get: function () {
+                return this._skinSkeleton;
+            },
+            set: function (value) {
+                if (this._skinSkeleton == value)
+                    return;
+                this._skinSkeleton = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 创建一个骨骼动画类
+         */
+        SkinnedMeshRenderer.prototype.init = function (gameObject) {
+            _super.prototype.init.call(this, gameObject);
+        };
+        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_modelMatrix", {
+            get: function () {
+                if (this.cacheSkeletonComponent)
+                    return this.cacheSkeletonComponent.transform.localToWorldMatrix;
+                return this.transform.localToWorldMatrix;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_ITModelMatrix", {
+            get: function () {
+                if (this.cacheSkeletonComponent)
+                    return this.cacheSkeletonComponent.transform.ITlocalToWorldMatrix;
+                return this.transform.ITlocalToWorldMatrix;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_skeletonGlobalMatriices", {
+            get: function () {
+                if (!this.cacheSkeletonComponent) {
+                    var gameObject = this.gameObject;
+                    var skeletonComponent = null;
+                    while (gameObject && !skeletonComponent) {
+                        skeletonComponent = gameObject.getComponent(feng3d.SkeletonComponent);
+                        gameObject = gameObject.parent;
+                    }
+                    this.cacheSkeletonComponent = skeletonComponent;
+                }
+                if (this._skinSkeleton && this.cacheSkeletonComponent) {
+                    var joints = this._skinSkeleton.joints;
+                    var globalMatrices = this.cacheSkeletonComponent.globalMatrices;
+                    for (var i = joints.length - 1; i >= 0; i--) {
+                        this.skeletonGlobalMatriices[i] = globalMatrices[joints[i][0]];
+                        if (this.initMatrix3d) {
+                            this.skeletonGlobalMatriices[i] = this.skeletonGlobalMatriices[i].clone()
+                                .prepend(this.initMatrix3d);
+                        }
+                    }
+                    return this.skeletonGlobalMatriices;
+                }
+                return defaultglobalMatrices();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        SkinnedMeshRenderer.prototype.preRender = function (renderAtomic) {
+            var _this = this;
+            _super.prototype.preRender.call(this, renderAtomic);
+            renderAtomic.uniforms.u_modelMatrix = function () { return _this.u_modelMatrix; };
+            renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.u_ITModelMatrix; };
+            //
+            renderAtomic.uniforms.u_skeletonGlobalMatriices = function () { return _this.u_skeletonGlobalMatriices; };
+        };
+        /**
+         * 销毁
+         */
+        SkinnedMeshRenderer.prototype.dispose = function () {
+            _super.prototype.dispose.call(this);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], SkinnedMeshRenderer.prototype, "skinSkeleton", null);
+        __decorate([
+            feng3d.serialize
+        ], SkinnedMeshRenderer.prototype, "initMatrix3d", void 0);
+        return SkinnedMeshRenderer;
+    }(feng3d.MeshRenderer));
+    feng3d.SkinnedMeshRenderer = SkinnedMeshRenderer;
+    /**
+     * 默认单位矩阵
+     */
+    function defaultglobalMatrices() {
+        if (!_defaultglobalMatrices) {
+            _defaultglobalMatrices = [];
+            _defaultglobalMatrices.length = 150;
+            var matrix3d = new feng3d.Matrix4x4();
+            for (var i = 0; i < 150; i++) {
+                _defaultglobalMatrices[i] = matrix3d;
+            }
+        }
+        return _defaultglobalMatrices;
+    }
+    var _defaultglobalMatrices;
+    var SkinSkeleton = /** @class */ (function () {
+        function SkinSkeleton() {
+            /**
+             * [在整个骨架中的编号，骨骼名称]
+             */
+            this.joints = [];
+            /**
+             * 当前模型包含骨骼数量
+             */
+            this.numJoint = 0;
+        }
+        __decorate([
+            feng3d.serialize
+        ], SkinSkeleton.prototype, "joints", void 0);
+        __decorate([
+            feng3d.serialize
+        ], SkinSkeleton.prototype, "numJoint", void 0);
+        return SkinSkeleton;
+    }());
+    feng3d.SkinSkeleton = SkinSkeleton;
+    var SkinSkeletonTemp = /** @class */ (function (_super) {
+        __extends(SkinSkeletonTemp, _super);
+        function SkinSkeletonTemp() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * temp 解析时临时数据
+             */
+            _this.cache_map = {};
+            return _this;
+        }
+        SkinSkeletonTemp.prototype.resetJointIndices = function (jointIndices, skeleton) {
+            var len = jointIndices.length;
+            for (var i = 0; i < len; i++) {
+                if (this.cache_map[jointIndices[i]] === undefined)
+                    this.cache_map[jointIndices[i]] = this.numJoint++;
+                jointIndices[i] = this.cache_map[jointIndices[i]];
+            }
+            this.joints.length = 0;
+            for (var key in this.cache_map) {
+                if (this.cache_map.hasOwnProperty(key)) {
+                    this.joints[this.cache_map[key]] = [parseInt(key), skeleton.joints[key].name];
+                }
+            }
+        };
+        return SkinSkeletonTemp;
+    }(SkinSkeleton));
+    feng3d.SkinSkeletonTemp = SkinSkeletonTemp;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var SkeletonUniforms = /** @class */ (function (_super) {
+        __extends(SkeletonUniforms, _super);
+        function SkeletonUniforms() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.s_splatTexture1 = new feng3d.Texture2D({
+                generateMipmap: true,
+                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
+            });
+            _this.s_splatTexture2 = new feng3d.Texture2D({
+                generateMipmap: true,
+                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
+            });
+            _this.s_splatTexture3 = new feng3d.Texture2D({
+                generateMipmap: true,
+                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
+            });
+            _this.s_blendTexture = new feng3d.Texture2D();
+            _this.u_splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
+            return _this;
+        }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "skeleton" })
+        ], SkeletonUniforms.prototype, "s_splatTexture1", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "skeleton" })
+        ], SkeletonUniforms.prototype, "s_splatTexture2", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "skeleton" })
+        ], SkeletonUniforms.prototype, "s_splatTexture3", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "skeleton" })
+        ], SkeletonUniforms.prototype, "s_blendTexture", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "skeleton" })
+        ], SkeletonUniforms.prototype, "u_splatRepeats", void 0);
+        return SkeletonUniforms;
+    }(feng3d.StandardUniforms));
+    feng3d.SkeletonUniforms = SkeletonUniforms;
+    feng3d.shaderConfig.shaders["skeleton"].cls = SkeletonUniforms;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

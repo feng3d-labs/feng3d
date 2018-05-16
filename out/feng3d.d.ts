@@ -121,39 +121,6 @@ interface Array<T> {
 }
 declare namespace feng3d {
     /**
-     * 测试代码运行时间
-     * @param fn 被测试的方法
-     * @param labal 标签
-     */
-    function time(fn: Function, labal?: string): void;
-    /**
-     * 断言，测试不通过时报错
-     * @param test 测试项
-     * @param message 测试失败时提示信息
-     * @param optionalParams
-     */
-    function assert(test?: boolean, message?: string, ...optionalParams: any[]): void;
-    /**
-     * 输出错误
-     * @param message 错误信息
-     * @param optionalParams
-     */
-    function error(message?: any, ...optionalParams: any[]): void;
-    /**
-     * 记录日志信息
-     * @param message 日志信息
-     * @param optionalParams
-     */
-    function log(message?: any, ...optionalParams: any[]): void;
-    /**
-     * 警告
-     * @param message 警告信息
-     * @param optionalParams
-     */
-    function warn(message?: any, ...optionalParams: any[]): void;
-}
-declare namespace feng3d {
-    /**
      * 事件
      */
     interface Event<T> {
@@ -350,6 +317,39 @@ declare namespace feng3d {
             error?: (pathsNotFound?: string[]) => void;
         }) => void;
     };
+}
+declare namespace feng3d {
+    /**
+     * 测试代码运行时间
+     * @param fn 被测试的方法
+     * @param labal 标签
+     */
+    function time(fn: Function, labal?: string): void;
+    /**
+     * 断言，测试不通过时报错
+     * @param test 测试项
+     * @param message 测试失败时提示信息
+     * @param optionalParams
+     */
+    function assert(test?: boolean, message?: string, ...optionalParams: any[]): void;
+    /**
+     * 输出错误
+     * @param message 错误信息
+     * @param optionalParams
+     */
+    function error(message?: any, ...optionalParams: any[]): void;
+    /**
+     * 记录日志信息
+     * @param message 日志信息
+     * @param optionalParams
+     */
+    function log(message?: any, ...optionalParams: any[]): void;
+    /**
+     * 警告
+     * @param message 警告信息
+     * @param optionalParams
+     */
+    function warn(message?: any, ...optionalParams: any[]): void;
 }
 declare namespace feng3d {
     /**
@@ -7877,76 +7877,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class SkeletonComponent extends Component {
-        /** 骨骼关节数据列表 */
-        joints: SkeletonJoint[];
-        private isInitJoints;
-        /**
-         * 当前骨骼姿势的全局矩阵
-         * @see #globalPose
-         */
-        readonly globalMatrices: Matrix4x4[];
-        private jointGameobjects;
-        private jointGameObjectMap;
-        private _globalPropertiesInvalid;
-        private _jointsInvalid;
-        private _globalMatrix3DsInvalid;
-        private globalMatrix3Ds;
-        private _globalMatrices;
-        initSkeleton(): void;
-        /**
-         * 更新骨骼全局变换矩阵
-         */
-        private updateGlobalProperties();
-        private invalidjoint(jointIndex);
-        private createSkeletonGameObject();
-    }
-}
-declare namespace feng3d {
-    class SkinnedMeshRenderer extends MeshRenderer {
-        readonly single: boolean;
-        skinSkeleton: SkinSkeleton;
-        private _skinSkeleton;
-        private skeletonGlobalMatriices;
-        /**
-         * 缓存，通过寻找父节点获得
-         */
-        private cacheSkeletonComponent;
-        initMatrix3d: Matrix4x4;
-        /**
-         * 创建一个骨骼动画类
-         */
-        init(gameObject: GameObject): void;
-        private readonly u_modelMatrix;
-        private readonly u_ITModelMatrix;
-        private readonly u_skeletonGlobalMatriices;
-        preRender(renderAtomic: RenderAtomic): void;
-        /**
-         * 销毁
-         */
-        dispose(): void;
-    }
-    class SkinSkeleton {
-        /**
-         * [在整个骨架中的编号，骨骼名称]
-         */
-        joints: [number, string][];
-        /**
-         * 当前模型包含骨骼数量
-         */
-        numJoint: number;
-    }
-    class SkinSkeletonTemp extends SkinSkeleton {
-        /**
-         * temp 解析时临时数据
-         */
-        cache_map: {
-            [oldjointid: number]: number;
-        };
-        resetJointIndices(jointIndices: number[], skeleton: SkeletonComponent): void;
-    }
-}
-declare namespace feng3d {
     /**
      * 3d对象脚本
      * @author feng 2017-03-11
@@ -9466,45 +9396,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type SkeletonMaterial = Material & {
-        uniforms: SkeletonUniforms;
-    };
-    interface MaterialFactory {
-        create(shader: "skeleton", raw?: SkeletonMaterialRaw): SkeletonMaterial;
-    }
-    interface MaterialRawMap {
-        skeleton: SkeletonMaterialRaw;
-    }
-    interface SkeletonMaterialRaw extends MaterialBaseRaw {
-        shaderName?: "skeleton";
-        uniforms?: SkeletonUniformsRaw;
-    }
-    interface SkeletonUniformsRaw {
-        __class__?: "feng3d.SkeletonUniforms";
-        s_ambient?: Texture2DRaw;
-        s_diffuse?: Texture2DRaw;
-        s_envMap?: TextureCubeRaw;
-        s_normal?: Texture2DRaw;
-        s_specular?: Texture2DRaw;
-        u_ambient?: Color3Raw;
-        u_diffuse?: Color3Raw;
-        u_reflectivity?: number;
-        u_specular?: Color3Raw;
-        s_splatTexture1: Texture2D | Texture2DRaw;
-        s_splatTexture2: Texture2D | Texture2DRaw;
-        s_splatTexture3: Texture2D | Texture2DRaw;
-        s_blendTexture: Texture2D | Texture2DRaw;
-        u_splatRepeats: Vector4;
-    }
-    class SkeletonUniforms extends StandardUniforms {
-        s_splatTexture1: Texture2D;
-        s_splatTexture2: Texture2D;
-        s_splatTexture3: Texture2D;
-        s_blendTexture: Texture2D;
-        u_splatRepeats: Vector4;
-    }
-}
-declare namespace feng3d {
     /**
      * 灯光类型
      * @author feng 2016-12-12
@@ -10242,6 +10133,115 @@ declare namespace feng3d {
         children: number[];
         readonly invertMatrix3D: Matrix4x4;
         private _invertMatrix3D;
+    }
+}
+declare namespace feng3d {
+    class SkeletonComponent extends Component {
+        /** 骨骼关节数据列表 */
+        joints: SkeletonJoint[];
+        private isInitJoints;
+        /**
+         * 当前骨骼姿势的全局矩阵
+         * @see #globalPose
+         */
+        readonly globalMatrices: Matrix4x4[];
+        private jointGameobjects;
+        private jointGameObjectMap;
+        private _globalPropertiesInvalid;
+        private _jointsInvalid;
+        private _globalMatrix3DsInvalid;
+        private globalMatrix3Ds;
+        private _globalMatrices;
+        initSkeleton(): void;
+        /**
+         * 更新骨骼全局变换矩阵
+         */
+        private updateGlobalProperties();
+        private invalidjoint(jointIndex);
+        private createSkeletonGameObject();
+    }
+}
+declare namespace feng3d {
+    class SkinnedMeshRenderer extends MeshRenderer {
+        readonly single: boolean;
+        skinSkeleton: SkinSkeleton;
+        private _skinSkeleton;
+        private skeletonGlobalMatriices;
+        /**
+         * 缓存，通过寻找父节点获得
+         */
+        private cacheSkeletonComponent;
+        initMatrix3d: Matrix4x4;
+        /**
+         * 创建一个骨骼动画类
+         */
+        init(gameObject: GameObject): void;
+        private readonly u_modelMatrix;
+        private readonly u_ITModelMatrix;
+        private readonly u_skeletonGlobalMatriices;
+        preRender(renderAtomic: RenderAtomic): void;
+        /**
+         * 销毁
+         */
+        dispose(): void;
+    }
+    class SkinSkeleton {
+        /**
+         * [在整个骨架中的编号，骨骼名称]
+         */
+        joints: [number, string][];
+        /**
+         * 当前模型包含骨骼数量
+         */
+        numJoint: number;
+    }
+    class SkinSkeletonTemp extends SkinSkeleton {
+        /**
+         * temp 解析时临时数据
+         */
+        cache_map: {
+            [oldjointid: number]: number;
+        };
+        resetJointIndices(jointIndices: number[], skeleton: SkeletonComponent): void;
+    }
+}
+declare namespace feng3d {
+    type SkeletonMaterial = Material & {
+        uniforms: SkeletonUniforms;
+    };
+    interface MaterialFactory {
+        create(shader: "skeleton", raw?: SkeletonMaterialRaw): SkeletonMaterial;
+    }
+    interface MaterialRawMap {
+        skeleton: SkeletonMaterialRaw;
+    }
+    interface SkeletonMaterialRaw extends MaterialBaseRaw {
+        shaderName?: "skeleton";
+        uniforms?: SkeletonUniformsRaw;
+    }
+    interface SkeletonUniformsRaw {
+        __class__?: "feng3d.SkeletonUniforms";
+        s_ambient?: Texture2DRaw;
+        s_diffuse?: Texture2DRaw;
+        s_envMap?: TextureCubeRaw;
+        s_normal?: Texture2DRaw;
+        s_specular?: Texture2DRaw;
+        u_ambient?: Color3Raw;
+        u_diffuse?: Color3Raw;
+        u_reflectivity?: number;
+        u_specular?: Color3Raw;
+        s_splatTexture1: Texture2D | Texture2DRaw;
+        s_splatTexture2: Texture2D | Texture2DRaw;
+        s_splatTexture3: Texture2D | Texture2DRaw;
+        s_blendTexture: Texture2D | Texture2DRaw;
+        u_splatRepeats: Vector4;
+    }
+    class SkeletonUniforms extends StandardUniforms {
+        s_splatTexture1: Texture2D;
+        s_splatTexture2: Texture2D;
+        s_splatTexture3: Texture2D;
+        s_blendTexture: Texture2D;
+        u_splatRepeats: Vector4;
     }
 }
 declare namespace feng3d {
