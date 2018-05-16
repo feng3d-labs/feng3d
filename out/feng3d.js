@@ -10808,7 +10808,7 @@ var feng3d;
             },
             "skeleton": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#include<envmap.fragment>\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n    #ifdef HAS_SPECULAR_SAMPLER\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n    #endif\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    finalColor = envmapMethod(finalColor);\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nattribute vec3 a_tangent;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\n#include<skeleton.vertex>\r\n\r\nuniform float u_PointSize;\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n\r\n    position = skeletonAnimation(position);\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出全局坐标\r\n    v_globalPosition = globalPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n    \r\n    gl_PointSize = u_PointSize;\r\n}"
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nattribute vec3 a_tangent;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform float u_PointSize;\r\n\r\nattribute vec4 a_jointindex0;\r\nattribute vec4 a_jointweight0;\r\n\r\n#ifdef HAS_a_jointindex1\r\n    attribute vec4 a_jointindex1;\r\n    attribute vec4 a_jointweight1;\r\n#endif\r\n\r\nuniform mat4 u_skeletonGlobalMatriices[150];\r\n\r\nvec4 skeletonAnimation(vec4 position) {\r\n\r\n    vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);\r\n    for(int i = 0; i < 4; i++){\r\n        totalPosition += u_skeletonGlobalMatriices[int(a_jointindex0[i])] * position * a_jointweight0[i];\r\n    }\r\n    #ifdef HAS_a_jointindex1\r\n        for(int i = 0; i < 4; i++){\r\n            totalPosition += u_skeletonGlobalMatriices[int(a_jointindex1[i])] * position * a_jointweight1[i];\r\n        }\r\n    #endif\r\n    position.xyz = totalPosition.xyz;\r\n    return position;\r\n}\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n\r\n    position = skeletonAnimation(position);\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出全局坐标\r\n    v_globalPosition = globalPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n    \r\n    gl_PointSize = u_PointSize;\r\n}"
             },
             "skybox": {
                 "fragment": "\r\n\r\nprecision highp float;\r\n\r\nuniform samplerCube s_skyboxTexture;\r\nuniform mat4 u_cameraMatrix;\r\n\r\nvarying vec3 v_worldPos;\r\n\r\n\r\n\r\nvoid main(){\r\n    vec3 viewDir = normalize(v_worldPos - u_cameraMatrix[3].xyz);\r\n    gl_FragColor = textureCube(s_skyboxTexture, viewDir);\r\n}",
@@ -10840,7 +10840,6 @@ var feng3d;
             "particle.vertex": "//根据是否提供(a_particle_position)数据自动定义 #define D_(a_particle_position)\r\n\r\n#ifdef D_a_particle_birthTime\r\n    attribute float a_particle_birthTime;\r\n#endif\r\n\r\n#ifdef D_a_particle_position\r\n    attribute vec3 a_particle_position;\r\n#endif\r\n\r\n#ifdef D_a_particle_velocity\r\n    attribute vec3 a_particle_velocity;\r\n#endif\r\n\r\n#ifdef D_a_particle_lifetime\r\n    attribute float a_particle_lifetime;\r\n#endif\r\n\r\n#ifdef D_a_particle_color\r\n    attribute vec4 a_particle_color;\r\n    varying vec4 v_particle_color;\r\n#endif\r\n\r\nuniform float u_particleTime;\r\n\r\n#ifdef D_u_particle_acceleration\r\n    uniform vec3 u_particle_acceleration;\r\n#endif\r\n\r\n#ifdef D_u_particle_billboardMatrix\r\n    uniform mat4 u_particle_billboardMatrix;\r\n#endif\r\n\r\nvec4 particleAnimation(vec4 position) {\r\n\r\n    #ifdef D_a_particle_birthTime\r\n    float pTime = u_particleTime - a_particle_birthTime;\r\n    if(pTime > 0.0){\r\n\r\n        #ifdef D_a_particle_lifetime\r\n            pTime = mod(pTime,a_particle_lifetime);\r\n        #endif\r\n\r\n        vec3 pVelocity = vec3(0.0,0.0,0.0);\r\n\r\n        #ifdef D_u_particle_billboardMatrix\r\n            position = u_particle_billboardMatrix * position;\r\n        #endif\r\n\r\n        #ifdef D_a_particle_position\r\n            position.xyz = position.xyz + a_particle_position;\r\n        #endif\r\n\r\n        #ifdef D_a_particle_velocity\r\n            pVelocity = pVelocity + a_particle_velocity;\r\n        #endif\r\n\r\n        #ifdef D_u_particle_acceleration\r\n            pVelocity = pVelocity + u_particle_acceleration * pTime;\r\n        #endif\r\n        \r\n        #ifdef D_a_particle_color\r\n            v_particle_color = a_particle_color;\r\n        #endif\r\n\r\n        position.xyz = position.xyz + pVelocity * pTime;\r\n    }\r\n    #endif\r\n    \r\n    return position;\r\n}",
             "pointLightShading1.declare": "//参考资料\r\n//http://blog.csdn.net/leonwei/article/details/44539217\r\n//https://github.com/mcleary/pbr/blob/master/shaders/phong_pbr_frag.glsl\r\n\r\n#if NUM_POINTLIGHT > 0\r\n    //点光源位置列表\r\n    uniform vec3 u_pointLightPositions[NUM_POINTLIGHT];\r\n    //点光源漫反射颜色\r\n    uniform vec3 u_pointLightColors[NUM_POINTLIGHT];\r\n    //点光源镜面反射颜色\r\n    uniform float u_pointLightIntensitys[NUM_POINTLIGHT];\r\n    //反射率\r\n    uniform float u_reflectance;\r\n    //粗糙度\r\n    uniform float u_roughness;\r\n    //金属度\r\n    uniform float u_metalic;\r\n\r\n    vec3 fresnelSchlick(float VdotH,vec3 reflectance){\r\n\r\n        return reflectance + (1.0 - reflectance) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);\r\n        // return reflectance;\r\n    }\r\n\r\n    float normalDistributionGGX(float NdotH,float alphaG){\r\n\r\n        float alphaG2 = alphaG * alphaG;\r\n        float d = NdotH * NdotH * (alphaG2 - 1.0) + 1.0; \r\n        return alphaG2 / (3.1415926 * d * d);\r\n    }\r\n\r\n    float smithVisibility(float dot,float alphaG){\r\n\r\n        float tanSquared = (1.0 - dot * dot) / (dot * dot);\r\n        return 2.0 / (1.0 + sqrt(1.0 + alphaG * alphaG * tanSquared));\r\n    }\r\n\r\n    vec3 calculateLight(vec3 normal,vec3 viewDir,vec3 lightDir,vec3 lightColor,float lightIntensity,vec3 baseColor,vec3 reflectance,float roughness){\r\n\r\n        //BRDF = D(h) * F(1, h) * V(l, v, h) / (4 * dot(n, l) * dot(n, v));\r\n\r\n        vec3 halfVec = normalize(lightDir + viewDir);\r\n        float NdotL = clamp(dot(normal,lightDir),0.0,1.0);\r\n        float NdotH = clamp(dot(normal,halfVec),0.0,1.0);\r\n        float NdotV = max(abs(dot(normal,viewDir)),0.000001);\r\n        float VdotH = clamp(dot(viewDir, halfVec),0.0,1.0);\r\n        \r\n        float alphaG = max(roughness * roughness,0.0005);\r\n\r\n        //F(v,h)\r\n        vec3 F = fresnelSchlick(VdotH, reflectance);\r\n\r\n        //D(h)\r\n        float D = normalDistributionGGX(NdotH,alphaG);\r\n\r\n        //V(l,h)\r\n        float V = smithVisibility(NdotL,alphaG) * smithVisibility(NdotV,alphaG) / (4.0 * NdotL * NdotV);\r\n\r\n        vec3 specular = max(0.0, D * V) * 3.1415926 * F;\r\n        \r\n        return (baseColor + specular) * NdotL * lightColor * lightIntensity;\r\n    }\r\n\r\n    //渲染点光源\r\n    vec3 pointLightShading(vec3 normal,vec3 baseColor){\r\n\r\n        float reflectance = u_reflectance;\r\n        float roughness = u_roughness;\r\n        float metalic = u_metalic;\r\n\r\n        reflectance = mix(0.0,0.5,reflectance);\r\n        vec3 realBaseColor = (1.0 - metalic) * baseColor;\r\n        vec3 realReflectance = mix(vec3(reflectance),baseColor,metalic);\r\n\r\n        vec3 totalLightColor = vec3(0.0,0.0,0.0);\r\n        for(int i = 0;i<NUM_POINTLIGHT;i++){\r\n            //光照方向\r\n            vec3 lightDir = normalize(u_pointLightPositions[i] - v_globalPosition);\r\n            //视线方向\r\n            vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_globalPosition);\r\n            //灯光颜色\r\n            vec3 lightColor = u_pointLightColors[i];\r\n            //灯光强度\r\n            float lightIntensity = u_pointLightIntensitys[i];\r\n\r\n            totalLightColor = totalLightColor + calculateLight(normal,viewDir,lightDir,lightColor,lightIntensity,realBaseColor,realReflectance,roughness);\r\n        }\r\n        \r\n        return totalLightColor;\r\n    }\r\n#endif",
             "pointLightShading1.main": "#if NUM_POINTLIGHT > 0\r\n    // finalColor = finalColor * 0.5 +  pointLightShading(v_normal,u_baseColor) * 0.5;\r\n    finalColor.xyz = pointLightShading(v_normal,finalColor.xyz);\r\n#endif",
-            "skeleton.vertex": "attribute vec4 a_jointindex0;\r\nattribute vec4 a_jointweight0;\r\n\r\n#ifdef HAS_a_jointindex1\r\n    attribute vec4 a_jointindex1;\r\n    attribute vec4 a_jointweight1;\r\n#endif\r\n\r\nuniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];\r\n\r\nvec4 skeletonAnimation(vec4 position) {\r\n\r\n    vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);\r\n    for(int i = 0; i < 4; i++){\r\n        totalPosition += u_skeletonGlobalMatriices[int(a_jointindex0[i])] * position * a_jointweight0[i];\r\n    }\r\n    #ifdef HAS_a_jointindex1\r\n        for(int i = 0; i < 4; i++){\r\n            totalPosition += u_skeletonGlobalMatriices[int(a_jointindex1[i])] * position * a_jointweight1[i];\r\n        }\r\n    #endif\r\n    position.xyz = totalPosition.xyz;\r\n    return position;\r\n}",
             "terrain.fragment": "#ifdef USE_TERRAIN_MERGE\r\n    #include<terrainMerge.fragment>\r\n#else\r\n    #include<terrainDefault.fragment>\r\n#endif",
             "terrainDefault.fragment": "uniform sampler2D s_splatTexture1;\r\nuniform sampler2D s_splatTexture2;\r\nuniform sampler2D s_splatTexture3;\r\n\r\nuniform sampler2D s_blendTexture;\r\nuniform vec4 u_splatRepeats;\r\n\r\nvec4 terrainMethod(vec4 diffuseColor,vec2 v_uv) {\r\n\r\n    vec4 blend = texture2D(s_blendTexture,v_uv);\r\n\r\n    vec2 t_uv = v_uv.xy * u_splatRepeats.y;\r\n    vec4 tColor = texture2D(s_splatTexture1,t_uv);\r\n    diffuseColor = (tColor - diffuseColor) * blend.x + diffuseColor;\r\n\r\n    t_uv = v_uv.xy * u_splatRepeats.z;\r\n    tColor = texture2D(s_splatTexture2,t_uv);\r\n    diffuseColor = (tColor - diffuseColor) * blend.y + diffuseColor;\r\n\r\n    t_uv = v_uv.xy * u_splatRepeats.w;\r\n    tColor = texture2D(s_splatTexture3,t_uv);\r\n    diffuseColor = (tColor - diffuseColor) * blend.z + diffuseColor;\r\n\r\n    return diffuseColor;\r\n}",
             "terrainMerge.fragment.1": "//代码实现lod，使用默认线性插值\r\n#extension GL_EXT_shader_texture_lod : enable\r\n#extension GL_OES_standard_derivatives : enable\r\n\r\n#define LOD_LINEAR\r\n\r\nuniform sampler2D s_splatMergeTexture;\r\nuniform sampler2D s_blendTexture;\r\nuniform vec4 u_splatRepeats;\r\n\r\nvec2 imageSize =    vec2(2048.0,1024.0);\r\nvec4 offset[3];\r\nvec2 tileSize = vec2(512.0,512.0);\r\n// float maxLod = 7.0;\r\nfloat maxLod = 5.0;\r\n\r\nvec4 terrainTexture2DLod(sampler2D s_splatMergeTexture,vec2 uv,float lod,vec4 offset){\r\n\r\n    //计算不同lod像素缩放以及起始坐标\r\n    vec4 lodvec = vec4(0.5,1.0,0.0,0.0);\r\n    lodvec.x = lodvec.x * pow(0.5,lod);\r\n    lodvec.y = lodvec.x * 2.0;\r\n    lodvec.z = 1.0 - lodvec.y;\r\n\r\n    //lod块尺寸\r\n    vec2 lodSize = imageSize * lodvec.xy;\r\n    vec2 lodPixelOffset = 1.0 / lodSize;\r\n\r\n    //扩展边缘一像素\r\n    offset.xy = offset.xy - lodPixelOffset * 2.0;\r\n    offset.zw = offset.zw + lodPixelOffset;\r\n    //lod块中uv\r\n    vec2 t_uv = uv * offset.xy + offset.zw;\r\n    t_uv = t_uv * lodvec.xy;\r\n    //取整像素\r\n    t_uv = (t_uv * imageSize + vec2(-0.0,0.0)) / imageSize;\r\n    // t_uv = (t_uv * imageSize + 0.5) / imageSize;\r\n    // t_uv = floor(t_uv * imageSize - 1.0) / imageSize;\r\n    // t_uv = ceil(t_uv * imageSize + 1.0) / imageSize;\r\n    //添加lod起始坐标\r\n    t_uv = t_uv * (1.0 - 1.0 / imageSize);\r\n    t_uv = t_uv + lodvec.zw;\r\n    vec4 tColor = texture2D(s_splatMergeTexture,t_uv);\r\n\r\n    return tColor;\r\n\r\n    // return vec4(mixFactor.x,mixFactor.y,0.0,1.0);\r\n    // return vec4(mixFactor.x + 0.5,mixFactor.y + 0.5,0.0,1.0);\r\n}\r\n\r\n//参考 http://blog.csdn.net/cgwbr/article/details/6620318\r\n//计算MipMap层函数：\r\nfloat mipmapLevel(vec2 uv, vec2 textureSize)\r\n{\r\n    vec2 dx = dFdx(uv * textureSize.x);\r\n    vec2 dy = dFdy(uv * textureSize.y);\r\n    float d = max(dot(dx, dx), dot(dy, dy));  \r\n    return 0.5 * log2(d);\r\n}\r\n\r\nvec4 terrainTexture2D(sampler2D s_splatMergeTexture,vec2 t_uv,float lod,vec4 offset){\r\n \r\n    #ifdef LOD_LINEAR\r\n        vec4 tColor = mix(terrainTexture2DLod(s_splatMergeTexture,t_uv,floor(lod),offset),terrainTexture2DLod(s_splatMergeTexture,t_uv,ceil(lod),offset),fract(lod));\r\n    #else\r\n        vec4 tColor = terrainTexture2DLod(s_splatMergeTexture,t_uv,floor(lod),offset);\r\n    #endif\r\n\r\n    return tColor;\r\n}\r\n\r\nvec4 terrainMethod(vec4 diffuseColor,vec2 v_uv) {\r\n    \r\n    offset[0] = vec4(0.5,0.5,0.0,0.0);\r\n    offset[1] = vec4(0.5,0.5,0.5,0.0);\r\n    offset[2] = vec4(0.5,0.5,0.0,0.5);\r\n    \r\n    vec4 blend = texture2D(s_blendTexture,v_uv);\r\n    for(int i = 0; i < 3; i++)\r\n    {\r\n        vec2 t_uv = v_uv.xy * u_splatRepeats[i];\r\n        float lod = mipmapLevel(t_uv,tileSize);\r\n        lod = clamp(lod,0.0,maxLod);\r\n        // lod = 5.0;\r\n        t_uv = fract(t_uv);\r\n        vec4 tColor = terrainTexture2D(s_splatMergeTexture,t_uv,lod,offset[i]);\r\n        diffuseColor = (tColor - diffuseColor) * blend[i] + diffuseColor;\r\n    }\r\n\r\n    // diffuseColor.xyz = vec3(1.0,0.0,0.0);\r\n    // diffuseColor.xyz = vec3(floor(lod)/7.0,0.0,0.0);\r\n    return diffuseColor;\r\n}",
@@ -13684,20 +13683,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(MeshRenderer.prototype, "material", {
-            /**
-             * 材质
-             * Returns the first instantiated Material assigned to the renderer.
-             */
-            get: function () { return this._material; },
-            set: function (value) {
-                if (this._material == value)
-                    return;
-                this._material = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         MeshRenderer.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
             if (!this.geometry)
@@ -13713,7 +13698,7 @@ var feng3d;
             renderAtomic.uniforms.u_ITMVMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose(); };
             //
             this._geometry.preRender(renderAtomic);
-            this._material.preRender(renderAtomic);
+            this.material.preRender(renderAtomic);
         };
         /**
          * 销毁
@@ -13734,7 +13719,7 @@ var feng3d;
         __decorate([
             feng3d.oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } }),
             feng3d.serialize
-        ], MeshRenderer.prototype, "material", null);
+        ], MeshRenderer.prototype, "material", void 0);
         return MeshRenderer;
     }(feng3d.Behaviour));
     feng3d.MeshRenderer = MeshRenderer;
@@ -19425,27 +19410,18 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var supportNUM_SKELETONJOINT = 150;
     var SkinnedMeshRenderer = /** @class */ (function (_super) {
         __extends(SkinnedMeshRenderer, _super);
         function SkinnedMeshRenderer() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.skeletonGlobalMatriices = [];
+            _this.material = feng3d.materialFactory.create("skeleton");
+            _this.skeletonGlobalMatriices = (function () { var v = [new feng3d.Matrix4x4()]; var i = supportNUM_SKELETONJOINT; while (i-- > 1)
+                v.push(v[0]); return v; })();
             return _this;
         }
         Object.defineProperty(SkinnedMeshRenderer.prototype, "single", {
             get: function () { return true; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(SkinnedMeshRenderer.prototype, "skinSkeleton", {
-            get: function () {
-                return this._skinSkeleton;
-            },
-            set: function (value) {
-                if (this._skinSkeleton == value)
-                    return;
-                this._skinSkeleton = value;
-            },
             enumerable: true,
             configurable: true
         });
@@ -19484,8 +19460,8 @@ var feng3d;
                     }
                     this.cacheSkeletonComponent = skeletonComponent;
                 }
-                if (this._skinSkeleton && this.cacheSkeletonComponent) {
-                    var joints = this._skinSkeleton.joints;
+                if (this.skinSkeleton && this.cacheSkeletonComponent) {
+                    var joints = this.skinSkeleton.joints;
                     var globalMatrices = this.cacheSkeletonComponent.globalMatrices;
                     for (var i = joints.length - 1; i >= 0; i--) {
                         this.skeletonGlobalMatriices[i] = globalMatrices[joints[i][0]];
@@ -19494,9 +19470,8 @@ var feng3d;
                                 .prepend(this.initMatrix3d);
                         }
                     }
-                    return this.skeletonGlobalMatriices;
                 }
-                return defaultglobalMatrices();
+                return this.skeletonGlobalMatriices;
             },
             enumerable: true,
             configurable: true
@@ -19518,28 +19493,17 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.oav()
-        ], SkinnedMeshRenderer.prototype, "skinSkeleton", null);
+        ], SkinnedMeshRenderer.prototype, "skinSkeleton", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], SkinnedMeshRenderer.prototype, "material", void 0);
         __decorate([
             feng3d.serialize
         ], SkinnedMeshRenderer.prototype, "initMatrix3d", void 0);
         return SkinnedMeshRenderer;
     }(feng3d.MeshRenderer));
     feng3d.SkinnedMeshRenderer = SkinnedMeshRenderer;
-    /**
-     * 默认单位矩阵
-     */
-    function defaultglobalMatrices() {
-        if (!_defaultglobalMatrices) {
-            _defaultglobalMatrices = [];
-            _defaultglobalMatrices.length = 150;
-            var matrix3d = new feng3d.Matrix4x4();
-            for (var i = 0; i < 150; i++) {
-                _defaultglobalMatrices[i] = matrix3d;
-            }
-        }
-        return _defaultglobalMatrices;
-    }
-    var _defaultglobalMatrices;
     var SkinSkeleton = /** @class */ (function () {
         function SkinSkeleton() {
             /**
@@ -19593,43 +19557,8 @@ var feng3d;
     var SkeletonUniforms = /** @class */ (function (_super) {
         __extends(SkeletonUniforms, _super);
         function SkeletonUniforms() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.s_splatTexture1 = new feng3d.Texture2D({
-                generateMipmap: true,
-                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-            });
-            _this.s_splatTexture2 = new feng3d.Texture2D({
-                generateMipmap: true,
-                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-            });
-            _this.s_splatTexture3 = new feng3d.Texture2D({
-                generateMipmap: true,
-                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-            });
-            _this.s_blendTexture = new feng3d.Texture2D();
-            _this.u_splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "skeleton" })
-        ], SkeletonUniforms.prototype, "s_splatTexture1", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "skeleton" })
-        ], SkeletonUniforms.prototype, "s_splatTexture2", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "skeleton" })
-        ], SkeletonUniforms.prototype, "s_splatTexture3", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "skeleton" })
-        ], SkeletonUniforms.prototype, "s_blendTexture", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "skeleton" })
-        ], SkeletonUniforms.prototype, "u_splatRepeats", void 0);
         return SkeletonUniforms;
     }(feng3d.StandardUniforms));
     feng3d.SkeletonUniforms = SkeletonUniforms;
@@ -21335,6 +21264,9 @@ var feng3d;
                 this.skeletonComponent.joints = skeletonjoints;
                 for (var i = 0; i < this.geosets.length; i++) {
                     var geoset = this.geosets[i];
+                    var mesh = this.meshs[i] = feng3d.GameObject.create();
+                    // var meshRenderer = mesh.addComponent(MeshRenderer);
+                    var meshRenderer = mesh.addComponent(feng3d.SkinnedMeshRenderer);
                     var geometry = new feng3d.CustomGeometry();
                     geometry.positions = geoset.Vertices;
                     geometry.uvs = geoset.TVertices;
@@ -21349,20 +21281,15 @@ var feng3d;
                     geometry.setVAData("a_jointweight0", skins.jointWeights0, 4);
                     var material = this.materials[geoset.MaterialID];
                     var fBitmap = this.getFBitmap(material);
-                    var material1 = feng3d.materialFactory.create("standard");
                     var image = fBitmap.image;
                     if (image && image.length > 0) {
                         image = image.substring(0, image.indexOf("."));
                         image += ".JPG";
                         image = this.root + image;
-                        material1.uniforms.s_diffuse.url = image;
-                        material1.renderParams.cullFace = feng3d.CullFace.FRONT;
+                        meshRenderer.material.uniforms.s_diffuse.url = image;
+                        meshRenderer.material.renderParams.cullFace = feng3d.CullFace.FRONT;
                     }
-                    var mesh = this.meshs[i] = feng3d.GameObject.create();
-                    // var meshRenderer = mesh.addComponent(MeshRenderer);
-                    var meshRenderer = mesh.addComponent(feng3d.SkinnedMeshRenderer);
                     meshRenderer.geometry = geometry;
-                    meshRenderer.material = material1;
                     meshRenderer.skinSkeleton = skinSkeleton;
                     container.addChild(mesh);
                 }
@@ -22883,7 +22810,6 @@ var feng3d;
             var skeletonGameObject = feng3d.GameObject.create();
             var skinnedMeshRenderer = skeletonGameObject.addComponent(feng3d.SkinnedMeshRenderer);
             skinnedMeshRenderer.geometry = geometry;
-            skinnedMeshRenderer.material = feng3d.materialFactory.create("standard");
             skinnedMeshRenderer.skinSkeleton = skinSkeleton;
             gameObject.addChild(skeletonGameObject);
         }

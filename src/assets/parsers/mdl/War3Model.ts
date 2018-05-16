@@ -56,6 +56,10 @@ namespace feng3d.war3
 			for (var i: number = 0; i < this.geosets.length; i++)
 			{
 				var geoset: Geoset = this.geosets[i];
+				
+				var mesh: GameObject = this.meshs[i] = GameObject.create();
+				// var meshRenderer = mesh.addComponent(MeshRenderer);
+				var meshRenderer = mesh.addComponent(SkinnedMeshRenderer);
 
 				var geometry: CustomGeometry = new CustomGeometry();
 				geometry.positions = geoset.Vertices;
@@ -76,7 +80,6 @@ namespace feng3d.war3
 				var material: Material = this.materials[geoset.MaterialID];
 				var fBitmap: FBitmap = this.getFBitmap(material);
 
-				var material1 = materialFactory.create("standard");
 				var image: string = fBitmap.image;
 				if (image && image.length > 0)
 				{
@@ -84,15 +87,11 @@ namespace feng3d.war3
 					image += ".JPG";
 					image = this.root + image;
 
-					material1.uniforms.s_diffuse.url = image;
-					material1.renderParams.cullFace = CullFace.FRONT;
+					meshRenderer.material.uniforms.s_diffuse.url = image;
+					meshRenderer.material.renderParams.cullFace = CullFace.FRONT;
 				}
 
-				var mesh: GameObject = this.meshs[i] = GameObject.create();
-				// var meshRenderer = mesh.addComponent(MeshRenderer);
-				var meshRenderer = mesh.addComponent(SkinnedMeshRenderer);
 				meshRenderer.geometry = geometry;
-				meshRenderer.material = material1;
 				meshRenderer.skinSkeleton = skinSkeleton;
 
 				container.addChild(mesh);

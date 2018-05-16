@@ -7870,7 +7870,6 @@ declare namespace feng3d {
          * Returns the first instantiated Material assigned to the renderer.
          */
         material: Material;
-        private _material;
         init(gameObject: GameObject): void;
         preRender(renderAtomic: RenderAtomic): void;
         /**
@@ -10169,7 +10168,7 @@ declare namespace feng3d {
     class SkinnedMeshRenderer extends MeshRenderer {
         readonly single: boolean;
         skinSkeleton: SkinSkeleton;
-        private _skinSkeleton;
+        material: SkeletonMaterial;
         private skeletonGlobalMatriices;
         /**
          * 缓存，通过寻找父节点获得
@@ -10234,18 +10233,8 @@ declare namespace feng3d {
         u_diffuse?: Color3Raw;
         u_reflectivity?: number;
         u_specular?: Color3Raw;
-        s_splatTexture1: Texture2D | Texture2DRaw;
-        s_splatTexture2: Texture2D | Texture2DRaw;
-        s_splatTexture3: Texture2D | Texture2DRaw;
-        s_blendTexture: Texture2D | Texture2DRaw;
-        u_splatRepeats: Vector4;
     }
     class SkeletonUniforms extends StandardUniforms {
-        s_splatTexture1: Texture2D;
-        s_splatTexture2: Texture2D;
-        s_splatTexture3: Texture2D;
-        s_blendTexture: Texture2D;
-        u_splatRepeats: Vector4;
     }
 }
 declare namespace feng3d {

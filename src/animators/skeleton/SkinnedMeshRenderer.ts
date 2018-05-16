@@ -1,24 +1,20 @@
 namespace feng3d
 {
+    var supportNUM_SKELETONJOINT = 150;
+
     export class SkinnedMeshRenderer extends MeshRenderer
     {
         get single() { return true; }
 
         @serialize
         @oav()
-        get skinSkeleton()
-        {
-            return this._skinSkeleton;
-        }
-        set skinSkeleton(value)
-        {
-            if (this._skinSkeleton == value)
-                return;
-            this._skinSkeleton = value;
-        }
-        private _skinSkeleton: SkinSkeleton;
+        skinSkeleton: SkinSkeleton;
+        
+        @serialize
+        @oav()
+        material = materialFactory.create("skeleton");
 
-        private skeletonGlobalMatriices: Matrix4x4[] = [];
+        private skeletonGlobalMatriices: Matrix4x4[] = (() => { var v = [new Matrix4x4()]; var i = supportNUM_SKELETONJOINT; while (i-- > 1) v.push(v[0]); return v; })();
 
         /**
          * 缓存，通过寻找父节点获得
@@ -63,9 +59,9 @@ namespace feng3d
                 }
                 this.cacheSkeletonComponent = skeletonComponent;
             }
-            if (this._skinSkeleton && this.cacheSkeletonComponent)
+            if (this.skinSkeleton && this.cacheSkeletonComponent)
             {
-                var joints = this._skinSkeleton.joints;
+                var joints = this.skinSkeleton.joints;
                 var globalMatrices = this.cacheSkeletonComponent.globalMatrices;
                 for (var i = joints.length - 1; i >= 0; i--)
                 {
@@ -76,9 +72,8 @@ namespace feng3d
                             .prepend(this.initMatrix3d);
                     }
                 }
-                return this.skeletonGlobalMatriices;
             }
-            return defaultglobalMatrices();
+            return this.skeletonGlobalMatriices;
         }
 
         preRender(renderAtomic: RenderAtomic)
@@ -99,25 +94,6 @@ namespace feng3d
             super.dispose();
         }
     }
-
-    /**
-     * 默认单位矩阵
-     */
-    function defaultglobalMatrices()
-    {
-        if (!_defaultglobalMatrices)
-        {
-            _defaultglobalMatrices = [];
-            _defaultglobalMatrices.length = 150;
-            var matrix3d = new Matrix4x4();
-            for (var i = 0; i < 150; i++)
-            {
-                _defaultglobalMatrices[i] = matrix3d;
-            }
-        }
-        return _defaultglobalMatrices;
-    }
-    var _defaultglobalMatrices: Matrix4x4[];
 
     export class SkinSkeleton
     {

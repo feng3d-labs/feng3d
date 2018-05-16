@@ -47,14 +47,7 @@ namespace feng3d
          */
         @oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } })
         @serialize
-        get material() { return this._material }
-        set material(value)
-        {
-            if (this._material == value)
-                return;
-            this._material = value;
-        }
-        private _material: Material;
+        material: Material;
 
         init(gameObject: GameObject)
         {
@@ -76,7 +69,7 @@ namespace feng3d
 
             //
             this._geometry.preRender(renderAtomic);
-            this._material.preRender(renderAtomic);
+            this.material.preRender(renderAtomic);
         }
 
         /**
