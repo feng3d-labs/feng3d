@@ -7825,6 +7825,8 @@ var feng3d;
             }
             return str.toUpperCase();
         };
+        Color3.WHITE = new Color3();
+        Color3.BLACK = new Color3(0, 0, 0);
         __decorate([
             feng3d.oav(),
             feng3d.serialize
@@ -7984,6 +7986,8 @@ var feng3d;
             vector4.w = this.a;
             return vector4;
         };
+        Color4.WHITE = new Color4();
+        Color4.BLACK = new Color4(0, 0, 0);
         __decorate([
             feng3d.oav(),
             feng3d.serialize
@@ -15345,9 +15349,14 @@ var feng3d;
             var colorData = [];
             for (var i = 0; i < numSegments; i++) {
                 var element = this.segments[i];
+                var start = element.start || feng3d.Vector3.ZERO;
+                var end = element.end || feng3d.Vector3.ZERO;
+                ;
+                var startColor = element.startColor || feng3d.Color4.WHITE;
+                var endColor = element.endColor || feng3d.Color4.WHITE;
                 indices.push(i * 2, i * 2 + 1);
-                positionData.push(element.start.x, element.start.y, element.start.z, element.end.x, element.end.y, element.end.z);
-                colorData.push(element.startColor.r, element.startColor.g, element.startColor.b, element.startColor.a, element.endColor.r, element.endColor.g, element.endColor.b, element.endColor.a);
+                positionData.push(start.x, start.y, start.z, end.x, end.y, end.z);
+                colorData.push(startColor.r, startColor.g, startColor.b, startColor.a, endColor.r, endColor.g, endColor.b, endColor.a);
             }
             this.setVAData("a_position", positionData, 3);
             this.setVAData("a_color", colorData, 4);
@@ -15361,30 +15370,6 @@ var feng3d;
         return SegmentGeometry;
     }(feng3d.Geometry));
     feng3d.SegmentGeometry = SegmentGeometry;
-    /**
-     * 线段
-     * @author feng 2016-10-16
-     */
-    var Segment = /** @class */ (function () {
-        /**
-         * 创建线段
-         * @param start 起点坐标
-         * @param end 终点坐标
-         * @param colorStart 起点颜色
-         * @param colorEnd 终点颜色
-         * @param thickness 线段厚度
-         */
-        function Segment(start, end, colorStart, colorEnd) {
-            if (colorStart === void 0) { colorStart = new feng3d.Color4(); }
-            if (colorEnd === void 0) { colorEnd = new feng3d.Color4(); }
-            this.start = start;
-            this.end = end;
-            this.startColor = colorStart;
-            this.endColor = colorEnd;
-        }
-        return Segment;
-    }());
-    feng3d.Segment = Segment;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23229,7 +23214,7 @@ var feng3d;
             var xLine = feng3d.GameObject.create("xLine");
             xLine.showinHierarchy = false;
             var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.segments.push(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(this.lineLength, 0, 0), new feng3d.Color4(1, 0, 0), new feng3d.Color4(1, 0, 0)));
+            segmentGeometry.segments.push({ start: new feng3d.Vector3(), end: new feng3d.Vector3(this.lineLength, 0, 0), startColor: new feng3d.Color4(1, 0, 0), endColor: new feng3d.Color4(1, 0, 0) });
             segmentGeometry.invalidateGeometry();
             var meshRenderer = xLine.addComponent(feng3d.MeshRenderer);
             meshRenderer.geometry = segmentGeometry;
@@ -23239,7 +23224,7 @@ var feng3d;
             var yLine = feng3d.GameObject.create("yLine");
             yLine.showinHierarchy = false;
             var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.segments.push(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(0, this.lineLength, 0), new feng3d.Color4(0, 1, 0), new feng3d.Color4(0, 1, 0)));
+            segmentGeometry.segments.push({ start: new feng3d.Vector3(), end: new feng3d.Vector3(0, this.lineLength, 0), startColor: new feng3d.Color4(0, 1, 0), endColor: new feng3d.Color4(0, 1, 0) });
             segmentGeometry.invalidateGeometry();
             meshRenderer = yLine.addComponent(feng3d.MeshRenderer);
             meshRenderer.material = feng3d.materialFactory.create("segment", { renderParams: { renderMode: feng3d.RenderMode.LINES } });
@@ -23249,7 +23234,7 @@ var feng3d;
             var zLine = feng3d.GameObject.create("zLine");
             zLine.showinHierarchy = false;
             var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.segments.push(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(0, 0, this.lineLength), new feng3d.Color4(0, 0, 1), new feng3d.Color4(0, 0, 1)));
+            segmentGeometry.segments.push({ start: new feng3d.Vector3(), end: new feng3d.Vector3(0, 0, this.lineLength), startColor: new feng3d.Color4(0, 0, 1), endColor: new feng3d.Color4(0, 0, 1) });
             segmentGeometry.invalidateGeometry();
             meshRenderer = zLine.addComponent(feng3d.MeshRenderer);
             meshRenderer.material = feng3d.materialFactory.create("segment", { renderParams: { renderMode: feng3d.RenderMode.LINES } });
@@ -23655,6 +23640,27 @@ var feng3d;
     feng3d.log("Feng3D version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+
+(function universalModuleDefinition(root, factory)
+{
+    if (root && root["feng3d"])
+    {
+        return;
+    }
+    if (typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory();
+    else if (typeof define === 'function' && define.amd)
+        define([], factory);
+    else if (typeof exports === 'object')
+        exports["feng3d"] = factory();
+    else
+    {
+        root["feng3d"] = factory();
+    }
+})(this, function ()
+{
+    return feng3d;
+});
 
 (function universalModuleDefinition(root, factory)
 {

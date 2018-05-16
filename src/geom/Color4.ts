@@ -15,6 +15,9 @@ namespace feng3d
      */
     export class Color4
     {
+        static WHITE = new Color4();
+        static BLACK = new Color4(0, 0, 0);
+
         /**
          * 红[0,1]
          */

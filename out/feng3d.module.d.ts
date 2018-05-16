@@ -3613,6 +3613,8 @@ declare namespace feng3d {
      * @author feng 2016-09-24
      */
     class Color3 {
+        static WHITE: Color3;
+        static BLACK: Color3;
         /**
          * 红[0,1]
          */
@@ -3829,6 +3831,8 @@ declare namespace feng3d {
      * @author feng 2016-09-24
      */
     class Color4 {
+        static WHITE: Color4;
+        static BLACK: Color4;
         /**
          * 红[0,1]
          */
@@ -8353,20 +8357,23 @@ declare namespace feng3d {
      * 线段
      * @author feng 2016-10-16
      */
-    class Segment {
-        start: Vector3;
-        end: Vector3;
-        startColor: Color4;
-        endColor: Color4;
+    interface Segment {
         /**
-         * 创建线段
-         * @param start 起点坐标
-         * @param end 终点坐标
-         * @param colorStart 起点颜色
-         * @param colorEnd 终点颜色
-         * @param thickness 线段厚度
+         * 起点坐标
          */
-        constructor(start: Vector3, end: Vector3, colorStart?: Color4, colorEnd?: Color4);
+        start?: Vector3;
+        /**
+         * 终点坐标
+         */
+        end?: Vector3;
+        /**
+         * 起点颜色
+         */
+        startColor?: Color4;
+        /**
+         * 线段厚度
+         */
+        endColor?: Color4;
     }
 }
 declare namespace feng3d {
