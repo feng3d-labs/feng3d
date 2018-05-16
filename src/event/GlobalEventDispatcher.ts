@@ -15,6 +15,10 @@ namespace feng3d
          * 脚本发生变化
          */
         scriptChanged
+        /**
+         * 图片资源发生变化
+         */
+        imageAssetsChanged: { url: string }
     }
 
     export interface GlobalEventDispatcher

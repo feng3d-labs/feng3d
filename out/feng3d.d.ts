@@ -276,6 +276,12 @@ declare namespace feng3d {
          * 脚本发生变化
          */
         scriptChanged: any;
+        /**
+         * 图片资源发生变化
+         */
+        imageAssetsChanged: {
+            url: string;
+        };
     }
     interface GlobalEventDispatcher {
         once<K extends keyof GlobalEventMap>(type: K, listener: (event: Event<GlobalEventMap[K]>) => void, thisObject?: any, priority?: number): void;
@@ -9059,6 +9065,7 @@ declare namespace feng3d {
          */
         checkRenderData(): boolean;
         private urlChanged();
+        private onImageAssetsChanged(e);
     }
 }
 declare namespace feng3d {

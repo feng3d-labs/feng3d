@@ -48,6 +48,7 @@ namespace feng3d
     function createMD5Mesh(md5MeshData: MD5MeshData, completed?: (gameObject: GameObject) => void)
     {
         var gameObject = GameObject.create();
+        gameObject.addComponent(Animation);
         gameObject.transform.rx = -90;
 
         //顶点最大关节关联数

@@ -17081,6 +17081,7 @@ var feng3d;
             _this.url = "";
             _this._textureType = feng3d.TextureType.TEXTURE_2D;
             _this.noPixels = _this.noPixels || feng3d.imageDatas.white;
+            feng3d.globalEvent.on("imageAssetsChanged", _this.onImageAssetsChanged, _this);
             return _this;
         }
         Object.defineProperty(Texture2D.prototype, "size", {
@@ -17114,6 +17115,10 @@ var feng3d;
                     _this.invalidate();
                 }
             });
+        };
+        Texture2D.prototype.onImageAssetsChanged = function (e) {
+            if (this.url == e.data.url)
+                this.urlChanged();
         };
         __decorate([
             feng3d.serialize,
@@ -22797,6 +22802,7 @@ var feng3d;
     }
     function createMD5Mesh(md5MeshData, completed) {
         var gameObject = feng3d.GameObject.create();
+        gameObject.addComponent(feng3d.Animation);
         gameObject.transform.rx = -90;
         //顶点最大关节关联数
         var _maxJointCount = calculateMaxJointCount(md5MeshData);

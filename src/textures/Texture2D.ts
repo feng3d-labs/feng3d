@@ -43,6 +43,7 @@ namespace feng3d
             super(raw);
             this._textureType = TextureType.TEXTURE_2D;
             this.noPixels = this.noPixels || imageDatas.white;
+            globalEvent.on("imageAssetsChanged", this.onImageAssetsChanged, this);
         }
 
         /**
@@ -70,6 +71,12 @@ namespace feng3d
                     this.invalidate();
                 }
             });
+        }
+
+        private onImageAssetsChanged(e: Event<{ url: string; }>)
+        {
+            if (this.url == e.data.url)
+                this.urlChanged();
         }
     }
 }
