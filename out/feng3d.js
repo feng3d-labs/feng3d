@@ -10807,7 +10807,7 @@ var feng3d;
                 "vertex": "\r\n\r\nattribute vec3 a_position;\r\n\r\nuniform mat4 u_cameraMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nuniform float u_skyBoxSize;\r\n\r\nvarying vec3 v_worldPos;\r\n\r\nvoid main(){\r\n    vec3 worldPos = a_position.xyz * u_skyBoxSize + u_cameraMatrix[3].xyz;\r\n    gl_Position = u_viewProjection * vec4(worldPos.xyz,1.0);\r\n    v_worldPos = worldPos;\r\n}"
             },
             "standard": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#include<envmap.fragment>\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.fragment>\r\n#endif\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n\r\n    vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n    specularColor.xyz = specularMapColor.xyz;\r\n    glossiness = glossiness * specularMapColor.w;\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    finalColor = envmapMethod(finalColor);\r\n\r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        finalColor = particleAnimation(finalColor);\r\n    #endif\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#include<envmap.fragment>\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.fragment>\r\n#endif\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n\r\n    vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n    specularColor.xyz = specularColor * specularMapColor.xyz;\r\n    glossiness = glossiness * specularMapColor.w;\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    finalColor = envmapMethod(finalColor);\r\n\r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        finalColor = particleAnimation(finalColor);\r\n    #endif\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
                 "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nattribute vec3 a_tangent;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform float u_PointSize;\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.vertex>\r\n#endif\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n    \r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        position = particleAnimation(position);\r\n    #endif\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出全局坐标\r\n    v_globalPosition = globalPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n    \r\n    gl_PointSize = u_PointSize;\r\n}"
             },
             "terrain": {
@@ -14917,6 +14917,9 @@ var feng3d;
                 }
             }
         };
+        __decorate([
+            feng3d.oav()
+        ], Geometry.prototype, "invalidateGeometry", null);
         return Geometry;
     }(feng3d.Feng3dObject));
     feng3d.Geometry = Geometry;
@@ -15323,38 +15326,25 @@ var feng3d;
         __extends(SegmentGeometry, _super);
         function SegmentGeometry() {
             var _this = _super.call(this) || this;
-            _this.segments_ = [];
+            /**
+             * 线段列表
+             * 修改数组内数据时需要手动调用 invalidateGeometry();
+             */
+            _this.segments = [];
             return _this;
         }
-        /**
-         * 添加线段
-         * @param segment		            线段数据
-         */
-        SegmentGeometry.prototype.addSegment = function (segment) {
-            this.segments_.push(segment);
-            this.invalidateGeometry();
-        };
-        /**
-         * 设置线段
-         * @param segment		            线段数据
-         * @param index		                线段索引
-         */
-        SegmentGeometry.prototype.setSegmentAt = function (segment, index) {
-            this.segments_[index] = segment;
-            this.invalidateGeometry();
-        };
         /**
          * 更新几何体
          */
         SegmentGeometry.prototype.buildGeometry = function () {
             var segmentPositionStep = 6;
             var segmentColorStep = 8;
-            var numSegments = this.segments_.length;
+            var numSegments = this.segments.length;
             var indices = [];
             var positionData = [];
             var colorData = [];
             for (var i = 0; i < numSegments; i++) {
-                var element = this.segments_[i];
+                var element = this.segments[i];
                 indices.push(i * 2, i * 2 + 1);
                 positionData.push(element.start.x, element.start.y, element.start.z, element.end.x, element.end.y, element.end.z);
                 colorData.push(element.startColor.r, element.startColor.g, element.startColor.b, element.startColor.a, element.endColor.r, element.endColor.g, element.endColor.b, element.endColor.a);
@@ -15363,33 +15353,11 @@ var feng3d;
             this.setVAData("a_color", colorData, 4);
             this.indices = indices;
         };
-        /**
-         * 获取线段数据
-         * @param index 		线段索引
-         * @return				线段数据
-         */
-        SegmentGeometry.prototype.getSegment = function (index) {
-            if (index < this.segments_.length)
-                return this.segments_[index];
-            return null;
-        };
-        /**
-         * 移除所有线段
-         */
-        SegmentGeometry.prototype.removeAllSegments = function () {
-            this.segments.length = 0;
-            this.invalidateGeometry();
-        };
-        Object.defineProperty(SegmentGeometry.prototype, "segments", {
-            /**
-             * 线段列表
-             */
-            get: function () {
-                return this.segments_;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], SegmentGeometry.prototype, "segments", void 0);
         return SegmentGeometry;
     }(feng3d.Geometry));
     feng3d.SegmentGeometry = SegmentGeometry;
@@ -23259,37 +23227,36 @@ var feng3d;
         };
         Trident.prototype.buildTrident = function () {
             var xLine = feng3d.GameObject.create("xLine");
-            xLine.serializable = false;
             xLine.showinHierarchy = false;
             var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(this.lineLength, 0, 0), new feng3d.Color4(1, 0, 0), new feng3d.Color4(1, 0, 0)));
+            segmentGeometry.segments.push(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(this.lineLength, 0, 0), new feng3d.Color4(1, 0, 0), new feng3d.Color4(1, 0, 0)));
+            segmentGeometry.invalidateGeometry();
             var meshRenderer = xLine.addComponent(feng3d.MeshRenderer);
             meshRenderer.geometry = segmentGeometry;
             meshRenderer.material = feng3d.materialFactory.create("segment", { renderParams: { renderMode: feng3d.RenderMode.LINES } });
             this.tridentObject.addChild(xLine);
             //
             var yLine = feng3d.GameObject.create("yLine");
-            yLine.serializable = false;
             yLine.showinHierarchy = false;
             var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(0, this.lineLength, 0), new feng3d.Color4(0, 1, 0), new feng3d.Color4(0, 1, 0)));
+            segmentGeometry.segments.push(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(0, this.lineLength, 0), new feng3d.Color4(0, 1, 0), new feng3d.Color4(0, 1, 0)));
+            segmentGeometry.invalidateGeometry();
             meshRenderer = yLine.addComponent(feng3d.MeshRenderer);
             meshRenderer.material = feng3d.materialFactory.create("segment", { renderParams: { renderMode: feng3d.RenderMode.LINES } });
             meshRenderer.geometry = segmentGeometry;
             this.tridentObject.addChild(yLine);
             //
             var zLine = feng3d.GameObject.create("zLine");
-            zLine.serializable = false;
             zLine.showinHierarchy = false;
             var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.addSegment(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(0, 0, this.lineLength), new feng3d.Color4(0, 0, 1), new feng3d.Color4(0, 0, 1)));
+            segmentGeometry.segments.push(new feng3d.Segment(new feng3d.Vector3(), new feng3d.Vector3(0, 0, this.lineLength), new feng3d.Color4(0, 0, 1), new feng3d.Color4(0, 0, 1)));
+            segmentGeometry.invalidateGeometry();
             meshRenderer = zLine.addComponent(feng3d.MeshRenderer);
             meshRenderer.material = feng3d.materialFactory.create("segment", { renderParams: { renderMode: feng3d.RenderMode.LINES } });
             meshRenderer.geometry = segmentGeometry;
             this.tridentObject.addChild(zLine);
             //
             var xArrow = feng3d.GameObject.create("xArrow");
-            xArrow.serializable = false;
             xArrow.showinHierarchy = false;
             xArrow.transform.x = this.lineLength;
             xArrow.transform.rz = -90;
@@ -23301,7 +23268,6 @@ var feng3d;
             this.tridentObject.addChild(xArrow);
             //
             var yArrow = feng3d.GameObject.create("yArrow");
-            yArrow.serializable = false;
             yArrow.showinHierarchy = false;
             yArrow.transform.y = this.lineLength;
             meshRenderer = yArrow.addComponent(feng3d.MeshRenderer);
@@ -23311,7 +23277,6 @@ var feng3d;
             this.tridentObject.addChild(yArrow);
             //
             var zArrow = feng3d.GameObject.create("zArrow");
-            zArrow.serializable = false;
             zArrow.showinHierarchy = false;
             zArrow.transform.z = this.lineLength;
             zArrow.transform.rx = 90;

@@ -112,7 +112,7 @@ namespace feng3d
         /**
          * 几何体变脏
          */
-        protected invalidateGeometry(propertyKey?: string, oldValue?, newValue?)
+        invalidateGeometry(propertyKey?: string, oldValue?, newValue?)
         {
             if (propertyKey == "heightMapUrl")
             {

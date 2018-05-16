@@ -8175,7 +8175,7 @@ declare namespace feng3d {
         /**
          * 几何体变脏
          */
-        protected invalidateGeometry(): void;
+        invalidateGeometry(): void;
         /**
          * 更新几何体
          */
@@ -8338,37 +8338,16 @@ declare namespace feng3d {
      * @author feng 2016-10-16
      */
     class SegmentGeometry extends Geometry {
-        private segments_;
+        /**
+         * 线段列表
+         * 修改数组内数据时需要手动调用 invalidateGeometry();
+         */
+        segments: Segment[];
         constructor();
-        /**
-         * 添加线段
-         * @param segment		            线段数据
-         */
-        addSegment(segment: Segment): void;
-        /**
-         * 设置线段
-         * @param segment		            线段数据
-         * @param index		                线段索引
-         */
-        setSegmentAt(segment: Segment, index: number): void;
         /**
          * 更新几何体
          */
         protected buildGeometry(): void;
-        /**
-         * 获取线段数据
-         * @param index 		线段索引
-         * @return				线段数据
-         */
-        getSegment(index: number): Segment;
-        /**
-         * 移除所有线段
-         */
-        removeAllSegments(): void;
-        /**
-         * 线段列表
-         */
-        readonly segments: Segment[];
     }
     /**
      * 线段
@@ -9885,7 +9864,7 @@ declare namespace feng3d {
         /**
          * 几何体变脏
          */
-        protected invalidateGeometry(propertyKey?: string, oldValue?: any, newValue?: any): void;
+        invalidateGeometry(propertyKey?: string, oldValue?: any, newValue?: any): void;
         /**
          * 创建顶点坐标
          */

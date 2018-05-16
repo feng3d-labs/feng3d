@@ -70,7 +70,7 @@ void main(void)
     vec3 specularColor = u_specular;
 
     vec4 specularMapColor = texture2D(s_specular, v_uv);
-    specularColor.xyz = specularMapColor.xyz;
+    specularColor.xyz = specularColor * specularMapColor.xyz;
     glossiness = glossiness * specularMapColor.w;
     
     finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);

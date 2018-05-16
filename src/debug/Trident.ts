@@ -32,37 +32,36 @@ namespace feng3d
         private buildTrident()
         {
             var xLine = GameObject.create("xLine");
-            xLine.serializable = false;
             xLine.showinHierarchy = false;
             var segmentGeometry = new SegmentGeometry();
-            segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(this.lineLength, 0, 0), new Color4(1, 0, 0), new Color4(1, 0, 0)));
+            segmentGeometry.segments.push(new Segment(new Vector3(), new Vector3(this.lineLength, 0, 0), new Color4(1, 0, 0), new Color4(1, 0, 0)));
+            segmentGeometry.invalidateGeometry();
             var meshRenderer = xLine.addComponent(MeshRenderer);
             meshRenderer.geometry = segmentGeometry;
             meshRenderer.material = materialFactory.create("segment", { renderParams: { renderMode: RenderMode.LINES } });
             this.tridentObject.addChild(xLine);
             //
             var yLine = GameObject.create("yLine");
-            yLine.serializable = false;
             yLine.showinHierarchy = false;
             var segmentGeometry = new SegmentGeometry();
-            segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(0, this.lineLength, 0), new Color4(0, 1, 0), new Color4(0, 1, 0)));
+            segmentGeometry.segments.push(new Segment(new Vector3(), new Vector3(0, this.lineLength, 0), new Color4(0, 1, 0), new Color4(0, 1, 0)));
+            segmentGeometry.invalidateGeometry();
             meshRenderer = yLine.addComponent(MeshRenderer);
             meshRenderer.material = materialFactory.create("segment", { renderParams: { renderMode: RenderMode.LINES } });
             meshRenderer.geometry = segmentGeometry;
             this.tridentObject.addChild(yLine);
             //
             var zLine = GameObject.create("zLine");
-            zLine.serializable = false;
             zLine.showinHierarchy = false;
             var segmentGeometry = new SegmentGeometry();
-            segmentGeometry.addSegment(new Segment(new Vector3(), new Vector3(0, 0, this.lineLength), new Color4(0, 0, 1), new Color4(0, 0, 1)));
+            segmentGeometry.segments.push(new Segment(new Vector3(), new Vector3(0, 0, this.lineLength), new Color4(0, 0, 1), new Color4(0, 0, 1)));
+            segmentGeometry.invalidateGeometry();
             meshRenderer = zLine.addComponent(MeshRenderer);
             meshRenderer.material = materialFactory.create("segment", { renderParams: { renderMode: RenderMode.LINES } });
             meshRenderer.geometry = segmentGeometry;
             this.tridentObject.addChild(zLine);
             //
             var xArrow = GameObject.create("xArrow");
-            xArrow.serializable = false;
             xArrow.showinHierarchy = false;
             xArrow.transform.x = this.lineLength;
             xArrow.transform.rz = -90;
@@ -73,7 +72,6 @@ namespace feng3d
             this.tridentObject.addChild(xArrow);
             //
             var yArrow = GameObject.create("yArrow");
-            yArrow.serializable = false;
             yArrow.showinHierarchy = false;
             yArrow.transform.y = this.lineLength;
             meshRenderer = yArrow.addComponent(MeshRenderer);
@@ -83,7 +81,6 @@ namespace feng3d
             this.tridentObject.addChild(yArrow);
             //
             var zArrow = GameObject.create("zArrow");
-            zArrow.serializable = false;
             zArrow.showinHierarchy = false;
             zArrow.transform.z = this.lineLength;
             zArrow.transform.rx = 90;

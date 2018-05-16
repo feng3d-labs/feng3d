@@ -166,7 +166,8 @@ namespace feng3d
         /**
          * 几何体变脏
          */
-        protected invalidateGeometry()
+        @oav()
+        invalidateGeometry()
         {
             this._geometryInvalid = true;
             this.invalidateBounds();
