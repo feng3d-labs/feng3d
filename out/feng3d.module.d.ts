@@ -1153,6 +1153,10 @@ declare namespace feng3d {
      */
     class Vector2 {
         /**
+         * 原点
+         */
+        static ZERO: Vector2;
+        /**
          * 将一对极坐标转换为笛卡尔点坐标。
          * @param len 极坐标对的长度。
          * @param angle 极坐标对的角度（以弧度表示）。
@@ -8291,46 +8295,25 @@ declare namespace feng3d {
      * @author feng 2017-01-11
      */
     class PointGeometry extends Geometry {
-        private _points;
-        constructor();
         /**
-         * 添加点
-         * @param point		点数据
+         * 点数据列表
+         * 修改数组内数据时需要手动调用 invalidateGeometry();
          */
-        addPoint(point: PointInfo, needUpdateGeometry?: boolean): void;
+        points: PointInfo[];
         /**
          * 构建几何体
          */
         buildGeometry(): void;
-        /**
-         * 获取线段数据
-         * @param index 		线段索引
-         * @return				线段数据
-         */
-        getPoint(index: number): PointInfo;
-        /**
-         * 移除所有线段
-         */
-        removeAllPoints(): void;
-        /**
-         * 线段列表
-         */
-        readonly points: PointInfo[];
     }
     /**
      * 点信息
      * @author feng 2016-10-16
      */
-    class PointInfo {
-        position: Vector3;
-        color: Color4;
-        normal: Vector3;
-        uv: Vector2;
-        /**
-         * 创建点
-         * @param position 坐标
-         */
-        constructor(position?: Vector3, color?: Color4, uv?: Vector2, normal?: Vector3);
+    interface PointInfo {
+        position?: Vector3;
+        color?: Color4;
+        normal?: Vector3;
+        uv?: Vector2;
     }
 }
 declare namespace feng3d {
@@ -10967,20 +10950,6 @@ declare namespace feng3d {
     var mdlLoader: {
         load: (mdlurl: string, callback: (gameObject: GameObject) => void) => void;
     };
-}
-declare namespace feng3d {
-    /**
-     * 坐标系，三叉戟
-     * @author feng 2017-02-06
-     */
-    class Trident extends Component {
-        lineLength: number;
-        arrowradius: number;
-        arrowHeight: number;
-        tridentObject: GameObject;
-        init(gameObject: GameObject): void;
-        private buildTrident();
-    }
 }
 declare namespace feng3d {
     var gameObjectFactory: GameObjectFactory;

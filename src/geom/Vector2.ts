@@ -8,6 +8,10 @@ namespace feng3d
      */
     export class Vector2
     {
+        /**
+         * 原点
+         */
+        static ZERO = new Vector2();
 
         /**
          * 将一对极坐标转换为笛卡尔点坐标。

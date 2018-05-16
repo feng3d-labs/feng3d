@@ -2887,6 +2887,10 @@ var feng3d;
         Vector2.prototype.toArray = function () {
             return [this.x, this.y];
         };
+        /**
+         * 原点
+         */
+        Vector2.ZERO = new Vector2();
         __decorate([
             feng3d.oav(),
             feng3d.serialize
@@ -15229,37 +15233,35 @@ var feng3d;
     var PointGeometry = /** @class */ (function (_super) {
         __extends(PointGeometry, _super);
         function PointGeometry() {
-            var _this = _super.call(this) || this;
-            _this._points = [];
-            _this.addPoint(new PointInfo(new feng3d.Vector3(0, 0, 0)));
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 点数据列表
+             * 修改数组内数据时需要手动调用 invalidateGeometry();
+             */
+            _this.points = [{}];
             return _this;
         }
-        /**
-         * 添加点
-         * @param point		点数据
-         */
-        PointGeometry.prototype.addPoint = function (point, needUpdateGeometry) {
-            if (needUpdateGeometry === void 0) { needUpdateGeometry = true; }
-            this._points.push(point);
-            this.invalidateGeometry();
-        };
         /**
          * 构建几何体
          */
         PointGeometry.prototype.buildGeometry = function () {
-            var numPoints = this._points.length;
+            var numPoints = this.points.length;
             var indices = [];
             var positionData = [];
             var normalData = [];
             var uvData = [];
             var colors = [];
             for (var i = 0; i < numPoints; i++) {
-                var element = this._points[i];
+                var element = this.points[i];
+                var position = element.position || feng3d.Vector3.ZERO;
+                var color = element.color || feng3d.Color4.WHITE;
+                var normal = element.normal || feng3d.Vector3.ZERO;
+                var uv = element.uv || feng3d.Vector2.ZERO;
                 indices[i] = i;
-                positionData.push(element.position.x, element.position.y, element.position.z);
-                normalData.push(element.normal.x, element.normal.y, element.normal.z);
-                uvData.push(element.uv.x, element.uv.y);
-                colors.push(element.color.r, element.color.g, element.color.b, element.color.a);
+                positionData.push(position.x, position.y, position.z);
+                normalData.push(normal.x, normal.y, normal.z);
+                uvData.push(uv.x, uv.y);
+                colors.push(color.r, color.g, color.b, color.a);
             }
             this.positions = positionData;
             this.uvs = uvData;
@@ -15267,58 +15269,14 @@ var feng3d;
             this.indices = indices;
             this.setVAData("a_color", colors, 4);
         };
-        /**
-         * 获取线段数据
-         * @param index 		线段索引
-         * @return				线段数据
-         */
-        PointGeometry.prototype.getPoint = function (index) {
-            if (index < this._points.length)
-                return this._points[index];
-            return null;
-        };
-        /**
-         * 移除所有线段
-         */
-        PointGeometry.prototype.removeAllPoints = function () {
-            this.points.length = 0;
-            this.invalidateGeometry();
-        };
-        Object.defineProperty(PointGeometry.prototype, "points", {
-            /**
-             * 线段列表
-             */
-            get: function () {
-                return this._points;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateGeometry")
+        ], PointGeometry.prototype, "points", void 0);
         return PointGeometry;
     }(feng3d.Geometry));
     feng3d.PointGeometry = PointGeometry;
-    /**
-     * 点信息
-     * @author feng 2016-10-16
-     */
-    var PointInfo = /** @class */ (function () {
-        /**
-         * 创建点
-         * @param position 坐标
-         */
-        function PointInfo(position, color, uv, normal) {
-            if (position === void 0) { position = new feng3d.Vector3(); }
-            if (color === void 0) { color = new feng3d.Color4(); }
-            if (uv === void 0) { uv = new feng3d.Vector2(); }
-            if (normal === void 0) { normal = new feng3d.Vector3(0, 1, 0); }
-            this.position = position;
-            this.color = color;
-            this.normal = normal;
-            this.uv = uv;
-        }
-        return PointInfo;
-    }());
-    feng3d.PointInfo = PointInfo;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23189,103 +23147,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 坐标系，三叉戟
-     * @author feng 2017-02-06
-     */
-    var Trident = /** @class */ (function (_super) {
-        __extends(Trident, _super);
-        function Trident() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.lineLength = 1;
-            _this.arrowradius = 0.05;
-            _this.arrowHeight = 0.18;
-            return _this;
-        }
-        Trident.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
-            var tridentObject = this.tridentObject = feng3d.GameObject.create("trident");
-            tridentObject.mouseEnabled = false;
-            tridentObject.transform.showInInspector = false;
-            gameObject.addChild(tridentObject);
-            this.buildTrident();
-        };
-        Trident.prototype.buildTrident = function () {
-            var xLine = feng3d.GameObject.create("xLine");
-            xLine.showinHierarchy = false;
-            var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.segments.push({ start: new feng3d.Vector3(), end: new feng3d.Vector3(this.lineLength, 0, 0), startColor: new feng3d.Color4(1, 0, 0), endColor: new feng3d.Color4(1, 0, 0) });
-            segmentGeometry.invalidateGeometry();
-            var meshRenderer = xLine.addComponent(feng3d.MeshRenderer);
-            meshRenderer.geometry = segmentGeometry;
-            meshRenderer.material = feng3d.materialFactory.create("segment", { renderParams: { renderMode: feng3d.RenderMode.LINES } });
-            this.tridentObject.addChild(xLine);
-            //
-            var yLine = feng3d.GameObject.create("yLine");
-            yLine.showinHierarchy = false;
-            var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.segments.push({ start: new feng3d.Vector3(), end: new feng3d.Vector3(0, this.lineLength, 0), startColor: new feng3d.Color4(0, 1, 0), endColor: new feng3d.Color4(0, 1, 0) });
-            segmentGeometry.invalidateGeometry();
-            meshRenderer = yLine.addComponent(feng3d.MeshRenderer);
-            meshRenderer.material = feng3d.materialFactory.create("segment", { renderParams: { renderMode: feng3d.RenderMode.LINES } });
-            meshRenderer.geometry = segmentGeometry;
-            this.tridentObject.addChild(yLine);
-            //
-            var zLine = feng3d.GameObject.create("zLine");
-            zLine.showinHierarchy = false;
-            var segmentGeometry = new feng3d.SegmentGeometry();
-            segmentGeometry.segments.push({ start: new feng3d.Vector3(), end: new feng3d.Vector3(0, 0, this.lineLength), startColor: new feng3d.Color4(0, 0, 1), endColor: new feng3d.Color4(0, 0, 1) });
-            segmentGeometry.invalidateGeometry();
-            meshRenderer = zLine.addComponent(feng3d.MeshRenderer);
-            meshRenderer.material = feng3d.materialFactory.create("segment", { renderParams: { renderMode: feng3d.RenderMode.LINES } });
-            meshRenderer.geometry = segmentGeometry;
-            this.tridentObject.addChild(zLine);
-            //
-            var xArrow = feng3d.GameObject.create("xArrow");
-            xArrow.showinHierarchy = false;
-            xArrow.transform.x = this.lineLength;
-            xArrow.transform.rz = -90;
-            var meshRenderer = xArrow.addComponent(feng3d.MeshRenderer);
-            var material = meshRenderer.material = feng3d.materialFactory.create("color");
-            meshRenderer.geometry = new feng3d.ConeGeometry({ bottomRadius: this.arrowradius, height: this.arrowHeight });
-            ;
-            material.uniforms.u_diffuseInput = new feng3d.Color4(1, 0, 0);
-            this.tridentObject.addChild(xArrow);
-            //
-            var yArrow = feng3d.GameObject.create("yArrow");
-            yArrow.showinHierarchy = false;
-            yArrow.transform.y = this.lineLength;
-            meshRenderer = yArrow.addComponent(feng3d.MeshRenderer);
-            var material = meshRenderer.material = feng3d.materialFactory.create("color");
-            meshRenderer.geometry = new feng3d.ConeGeometry({ bottomRadius: this.arrowradius, height: this.arrowHeight });
-            material.uniforms.u_diffuseInput = new feng3d.Color4(0, 1, 0);
-            this.tridentObject.addChild(yArrow);
-            //
-            var zArrow = feng3d.GameObject.create("zArrow");
-            zArrow.showinHierarchy = false;
-            zArrow.transform.z = this.lineLength;
-            zArrow.transform.rx = 90;
-            meshRenderer = zArrow.addComponent(feng3d.MeshRenderer);
-            meshRenderer.geometry = new feng3d.ConeGeometry({ bottomRadius: this.arrowradius, height: this.arrowHeight });
-            var material = meshRenderer.material = feng3d.materialFactory.create("color");
-            material.uniforms.u_diffuseInput = new feng3d.Color4(0, 0, 1);
-            this.tridentObject.addChild(zArrow);
-        };
-        __decorate([
-            feng3d.oav()
-        ], Trident.prototype, "lineLength", void 0);
-        __decorate([
-            feng3d.oav()
-        ], Trident.prototype, "arrowradius", void 0);
-        __decorate([
-            feng3d.oav()
-        ], Trident.prototype, "arrowHeight", void 0);
-        return Trident;
-    }(feng3d.Component));
-    feng3d.Trident = Trident;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var GameObjectFactory = /** @class */ (function () {
         function GameObjectFactory() {
         }
@@ -23640,27 +23501,6 @@ var feng3d;
     feng3d.log("Feng3D version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-
-(function universalModuleDefinition(root, factory)
-{
-    if (root && root["feng3d"])
-    {
-        return;
-    }
-    if (typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
-    else if (typeof define === 'function' && define.amd)
-        define([], factory);
-    else if (typeof exports === 'object')
-        exports["feng3d"] = factory();
-    else
-    {
-        root["feng3d"] = factory();
-    }
-})(this, function ()
-{
-    return feng3d;
-});
 
 (function universalModuleDefinition(root, factory)
 {

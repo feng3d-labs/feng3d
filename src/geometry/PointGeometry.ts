@@ -7,30 +7,21 @@ namespace feng3d
      */
     export class PointGeometry extends Geometry
     {
-        private _points: PointInfo[] = [];
-
-        constructor()
-        {
-            super();
-            this.addPoint(new PointInfo(new Vector3(0, 0, 0)))
-        }
-
         /**
-		 * 添加点
-		 * @param point		点数据
-		 */
-        addPoint(point: PointInfo, needUpdateGeometry = true)
-        {
-            this._points.push(point);
-            this.invalidateGeometry();
-        }
+         * 点数据列表
+         * 修改数组内数据时需要手动调用 invalidateGeometry();
+         */
+        @serialize
+        @oav()
+        @watch("invalidateGeometry")
+        points: PointInfo[] = [{}];
 
         /**
          * 构建几何体
          */
         buildGeometry()
         {
-            var numPoints = this._points.length;
+            var numPoints = this.points.length;
             var indices: number[] = [];
             var positionData: number[] = [];
             var normalData: number[] = [];
@@ -39,12 +30,16 @@ namespace feng3d
 
             for (var i = 0; i < numPoints; i++)
             {
-                var element = this._points[i];
+                var element = this.points[i];
+                var position = element.position || Vector3.ZERO;
+                var color = element.color || Color4.WHITE;
+                var normal = element.normal || Vector3.ZERO;
+                var uv = element.uv || Vector2.ZERO;
                 indices[i] = i;
-                positionData.push(element.position.x, element.position.y, element.position.z);
-                normalData.push(element.normal.x, element.normal.y, element.normal.z);
-                uvData.push(element.uv.x, element.uv.y);
-                colors.push(element.color.r, element.color.g, element.color.b, element.color.a);
+                positionData.push(position.x, position.y, position.z);
+                normalData.push(normal.x, normal.y, normal.z);
+                uvData.push(uv.x, uv.y);
+                colors.push(color.r, color.g, color.b, color.a);
             }
             this.positions = positionData;
             this.uvs = uvData;
@@ -52,58 +47,17 @@ namespace feng3d
             this.indices = indices;
             this.setVAData("a_color", colors, 4)
         }
-
-        /**
-		 * 获取线段数据
-		 * @param index 		线段索引
-		 * @return				线段数据
-		 */
-        getPoint(index: number)
-        {
-            if (index < this._points.length)
-                return this._points[index];
-            return null;
-        }
-
-		/**
-		 * 移除所有线段
-		 */
-        removeAllPoints()
-        {
-            this.points.length = 0;
-            this.invalidateGeometry();
-        }
-
-		/**
-		 * 线段列表
-		 */
-        get points(): PointInfo[]
-        {
-            return this._points;
-        }
     }
 
     /**
      * 点信息
      * @author feng 2016-10-16
      */
-    export class PointInfo
+    export interface PointInfo
     {
-        position: Vector3;
-        color: Color4;
-        normal: Vector3;
-        uv: Vector2;
-
-        /**
-		 * 创建点
-		 * @param position 坐标
-		 */
-        constructor(position = new Vector3(), color = new Color4(), uv = new Vector2(), normal = new Vector3(0, 1, 0))
-        {
-            this.position = position;
-            this.color = color;
-            this.normal = normal;
-            this.uv = uv;
-        }
+        position?: Vector3;
+        color?: Color4;
+        normal?: Vector3;
+        uv?: Vector2;
     }
 }
