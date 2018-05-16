@@ -28,10 +28,6 @@ uniform vec4 u_sceneAmbientColor;
 uniform vec4 u_ambient;
 uniform sampler2D s_ambient;
 
-#ifdef HAS_TERRAIN_METHOD
-    #include<terrain.fragment>
-#endif
-
 #include<lightShading.fragment>
 
 #include<fog.fragment>
@@ -61,10 +57,6 @@ void main(void)
         discard;
     }
 
-    #ifdef HAS_TERRAIN_METHOD
-        diffuseColor = terrainMethod(diffuseColor, v_uv);
-    #endif
-
     //环境光
     vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;
     ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;
@@ -76,11 +68,10 @@ void main(void)
     float glossiness = u_glossiness;
     //获取镜面反射基本颜色
     vec3 specularColor = u_specular;
-    #ifdef HAS_SPECULAR_SAMPLER
-        vec4 specularMapColor = texture2D(s_specular, v_uv);
-        specularColor.xyz = specularMapColor.xyz;
-        glossiness = glossiness * specularMapColor.w;
-    #endif
+
+    vec4 specularMapColor = texture2D(s_specular, v_uv);
+    specularColor.xyz = specularMapColor.xyz;
+    glossiness = glossiness * specularMapColor.w;
     
     finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
 

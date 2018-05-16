@@ -19,10 +19,6 @@ attribute vec3 a_tangent;
 varying vec3 v_tangent;
 varying vec3 v_bitangent;
 
-#ifdef HAS_SKELETON_ANIMATION
-    #include<skeleton.vertex>
-#endif
-
 uniform float u_PointSize;
 
 #ifdef HAS_PARTICLE_ANIMATOR
@@ -32,10 +28,6 @@ uniform float u_PointSize;
 void main(void) {
 
     vec4 position = vec4(a_position,1.0);
-
-    #ifdef HAS_SKELETON_ANIMATION
-        position = skeletonAnimation(position);
-    #endif
     
     #ifdef HAS_PARTICLE_ANIMATOR
         position = particleAnimation(position);
