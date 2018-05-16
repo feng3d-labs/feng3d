@@ -169,6 +169,7 @@
         "src/materials/SegmentMaterial.ts",
         "src/materials/TextureMaterial.ts",
         "src/materials/StandardMaterial.ts",
+        "src/materials/SkeletonMaterial.ts",
         //灯光
         "src/light/LightType.ts",
         "src/light/Light.ts",

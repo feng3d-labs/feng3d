@@ -17971,6 +17971,53 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var SkeletonUniforms = /** @class */ (function (_super) {
+        __extends(SkeletonUniforms, _super);
+        function SkeletonUniforms() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.s_splatTexture1 = new feng3d.Texture2D({
+                generateMipmap: true,
+                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
+            });
+            _this.s_splatTexture2 = new feng3d.Texture2D({
+                generateMipmap: true,
+                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
+            });
+            _this.s_splatTexture3 = new feng3d.Texture2D({
+                generateMipmap: true,
+                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
+            });
+            _this.s_blendTexture = new feng3d.Texture2D();
+            _this.u_splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
+            return _this;
+        }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "skeleton" })
+        ], SkeletonUniforms.prototype, "s_splatTexture1", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "skeleton" })
+        ], SkeletonUniforms.prototype, "s_splatTexture2", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "skeleton" })
+        ], SkeletonUniforms.prototype, "s_splatTexture3", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "skeleton" })
+        ], SkeletonUniforms.prototype, "s_blendTexture", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "skeleton" })
+        ], SkeletonUniforms.prototype, "u_splatRepeats", void 0);
+        return SkeletonUniforms;
+    }(feng3d.StandardUniforms));
+    feng3d.SkeletonUniforms = SkeletonUniforms;
+    feng3d.shaderConfig.shaders["skeleton"].cls = SkeletonUniforms;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 灯光类型
      * @author feng 2016-12-12

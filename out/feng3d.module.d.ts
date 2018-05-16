@@ -9501,6 +9501,45 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    type SkeletonMaterial = Material & {
+        uniforms: SkeletonUniforms;
+    };
+    interface MaterialFactory {
+        create(shader: "skeleton", raw?: SkeletonMaterialRaw): SkeletonMaterial;
+    }
+    interface MaterialRawMap {
+        skeleton: SkeletonMaterialRaw;
+    }
+    interface SkeletonMaterialRaw extends MaterialBaseRaw {
+        shaderName?: "skeleton";
+        uniforms?: SkeletonUniformsRaw;
+    }
+    interface SkeletonUniformsRaw {
+        __class__?: "feng3d.SkeletonUniforms";
+        s_ambient?: Texture2DRaw;
+        s_diffuse?: Texture2DRaw;
+        s_envMap?: TextureCubeRaw;
+        s_normal?: Texture2DRaw;
+        s_specular?: Texture2DRaw;
+        u_ambient?: Color3Raw;
+        u_diffuse?: Color3Raw;
+        u_reflectivity?: number;
+        u_specular?: Color3Raw;
+        s_splatTexture1: Texture2D | Texture2DRaw;
+        s_splatTexture2: Texture2D | Texture2DRaw;
+        s_splatTexture3: Texture2D | Texture2DRaw;
+        s_blendTexture: Texture2D | Texture2DRaw;
+        u_splatRepeats: Vector4;
+    }
+    class SkeletonUniforms extends StandardUniforms {
+        s_splatTexture1: Texture2D;
+        s_splatTexture2: Texture2D;
+        s_splatTexture3: Texture2D;
+        s_blendTexture: Texture2D;
+        u_splatRepeats: Vector4;
+    }
+}
+declare namespace feng3d {
     /**
      * 灯光类型
      * @author feng 2016-12-12
