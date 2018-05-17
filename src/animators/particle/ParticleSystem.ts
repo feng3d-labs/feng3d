@@ -147,7 +147,7 @@ namespace feng3d
             //
             for (var i = 0; i < this.numParticles; i++)
             {
-                var particle = <Particle>{};
+                var particle = new Particle();
                 particle.index = i;
                 particle.total = this.numParticles;
                 generateFunctions.forEach(element =>
@@ -233,7 +233,7 @@ namespace feng3d
             {
                 var vector3DData = this._attributes[attribute];
 
-                var attributeRenderData = renderAtomic.attributes[name] = renderAtomic.attributes[name] || new Attribute(name, vector3DData);
+                var attributeRenderData = renderAtomic.attributes[attribute] = renderAtomic.attributes[attribute] || new Attribute(attribute, vector3DData);
                 attributeRenderData.data = vector3DData;
                 attributeRenderData.size = vector3DData.length / this.numParticles;
                 attributeRenderData.divisor = 1;

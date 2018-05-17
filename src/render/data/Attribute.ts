@@ -60,9 +60,8 @@ namespace feng3d
         /**
          * 属性数据
          */
-        get data() { return this._data; }
-        set data(value) { this.invalid = true; this._data = value; }
-        private _data: number[];
+        @watch("invalidate")
+        data: number[];
 
         /**
          * 数据尺寸
@@ -120,7 +119,7 @@ namespace feng3d
         constructor(name: string, data: number[], size = 3, divisor = 0)
         {
             this.name = name;
-            this._data = data;
+            this.data = data;
             this.size = size;
             this.divisor = divisor;
         }
@@ -149,6 +148,11 @@ namespace feng3d
             gl.advanced.vertexAttribDivisor(location, this.divisor);
         }
 
+        private invalidate()
+        {
+            this.invalid = true;
+        }
+
         /**
          * 获取缓冲
          */
@@ -165,7 +169,7 @@ namespace feng3d
                 }
                 buffer = newbuffer;
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._data), gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl.STATIC_DRAW);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;

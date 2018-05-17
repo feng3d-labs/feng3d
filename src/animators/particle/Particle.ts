@@ -7,57 +7,57 @@ namespace feng3d
 	 * 例如：position 对应 a_particle_position 与 #define D_a_particle_position
 	 * @author feng 2017-01-12
 	 */
-	export interface Particle
+	export class Particle
 	{
 
 		/**
 		 * 索引
 		 */
-		index: number;
+		index = 0;
 
 		/**
 		 * 粒子总数量
 		 */
-		total: number;
+		total = 1000;
 
 		/**
 		 * 出生时间
 		 */
-		birthTime: number;
+		birthTime = 0;
 
 		/**
 		 * 寿命
 		 */
-		lifetime: number;
+		lifetime = 5;
 
 		/**
 		 * 位移
 		 */
-		position: Vector3;
+		position = new Vector3();
 
 		/**
 		 * 旋转
 		 */
-		rotation: Vector3;
+		rotation = new Vector3();
 
 		/**
 		 * 缩放
 		 */
-		scale: Vector3;
+		scalenew = new Vector3(1, 1, 1);
 
 		/**
 		 * 速度
 		 */
-		velocity: Vector3;
+		velocity = new Vector3();
 
 		/**
 		 * 加速度
 		 */
-		acceleration: Vector3;
+		acceleration = new Vector3();
 
 		/**
 		 * 颜色
 		 */
-		color: Color4;
+		color = new Color4();
 	}
 }

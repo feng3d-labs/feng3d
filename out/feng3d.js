@@ -10323,19 +10323,10 @@ var feng3d;
              */
             this._indexBufferMap = new Map();
             this.name = name;
-            this._data = data;
+            this.data = data;
             this.size = size;
             this.divisor = divisor;
         }
-        Object.defineProperty(Attribute.prototype, "data", {
-            /**
-             * 属性数据
-             */
-            get: function () { return this._data; },
-            set: function (value) { this.invalid = true; this._data = value; },
-            enumerable: true,
-            configurable: true
-        });
         /**
          *
          * @param gl
@@ -10354,6 +10345,9 @@ var feng3d;
             //渲染时必须重置
             gl.advanced.vertexAttribDivisor(location, this.divisor);
         };
+        Attribute.prototype.invalidate = function () {
+            this.invalid = true;
+        };
         /**
          * 获取缓冲
          */
@@ -10367,7 +10361,7 @@ var feng3d;
                 }
                 buffer = newbuffer;
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._data), gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl.STATIC_DRAW);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;
@@ -10381,6 +10375,9 @@ var feng3d;
             });
             this._indexBufferMap.clear();
         };
+        __decorate([
+            feng3d.watch("invalidate")
+        ], Attribute.prototype, "data", void 0);
         return Attribute;
     }());
     feng3d.Attribute = Attribute;
@@ -10795,8 +10792,8 @@ var feng3d;
                 "vertex": "precision mediump float;  \r\n\r\n//此处将填充宏定义\r\n#define macros\r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_cameraMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\nuniform float u_outlineMorphFactor;\r\n\r\n#ifdef HAS_SKELETON_ANIMATION\r\n    #include<skeleton.vertex>\r\n#endif\r\n\r\nuniform float u_outlineSize;\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n\r\n    #ifdef HAS_SKELETON_ANIMATION\r\n        position = skeletonAnimation(position);\r\n    #endif\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //全局法线\r\n    vec3 globalNormal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n\r\n    float depth = distance(globalPosition.xyz , u_cameraMatrix[3].xyz);\r\n    \r\n    vec3 offsetDir = mix(globalNormal,normalize(globalPosition.xyz),u_outlineMorphFactor);\r\n    //摄像机远近保持粗细一致\r\n    offsetDir = offsetDir * depth * u_scaleByDepth;\r\n    //描边宽度\r\n    offsetDir = offsetDir * u_outlineSize;\r\n\r\n    globalPosition.xyz = globalPosition.xyz + offsetDir;//\r\n\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n}"
             },
             "particle": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#include<envmap.fragment>\r\n\r\nvarying vec4 v_particle_color;\r\n\r\nvec4 particleAnimation(vec4 color) {\r\n\r\n    #ifdef D_a_particle_color\r\n        color = color * v_particle_color;\r\n    #endif\r\n    return color;\r\n}\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n\r\n    vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n    specularColor.xyz = specularColor * specularMapColor.xyz;\r\n    glossiness = glossiness * specularMapColor.w;\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    finalColor = envmapMethod(finalColor);\r\n\r\n    finalColor = particleAnimation(finalColor);\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_globalPosition;\r\nvarying vec3 v_normal;\r\n\r\nattribute vec3 a_tangent;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform float u_PointSize;\r\n\r\n//\r\nattribute float a_particle_birthTime;\r\nattribute vec3 a_particle_position;\r\nattribute vec3 a_particle_velocity;\r\nattribute float a_particle_lifetime;\r\nattribute vec4 a_particle_color;\r\n\r\nvarying vec4 v_particle_color;\r\n\r\nuniform float u_particleTime;\r\nuniform vec3 u_particle_acceleration;\r\nuniform mat4 u_particle_billboardMatrix;\r\n\r\nvec4 particleAnimation(vec4 position) {\r\n\r\n    float pTime = u_particleTime - a_particle_birthTime;\r\n    if(pTime > 0.0){\r\n\r\n        pTime = mod(pTime,a_particle_lifetime);\r\n\r\n        vec3 pVelocity = vec3(0.0,0.0,0.0);\r\n\r\n        position = u_particle_billboardMatrix * position;\r\n        position.xyz = position.xyz + a_particle_position;\r\n        pVelocity = pVelocity + a_particle_velocity;\r\n        pVelocity = pVelocity + u_particle_acceleration * pTime;\r\n        v_particle_color = a_particle_color;\r\n\r\n        position.xyz = position.xyz + pVelocity * pTime;\r\n    }\r\n    \r\n    return position;\r\n}\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n    \r\n    position = particleAnimation(position);\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出全局坐标\r\n    v_globalPosition = globalPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n    \r\n    gl_PointSize = u_PointSize;\r\n}"
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\nvarying vec4 v_particle_color;\r\n\r\nvec4 particleAnimation(vec4 color) {\r\n\r\n    return color * v_particle_color;\r\n}\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    finalColor = particleAnimation(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_PointSize;\r\n\r\n//\r\nattribute float a_particle_birthTime;\r\nattribute vec3 a_particle_position;\r\nattribute vec3 a_particle_velocity;\r\nattribute float a_particle_lifetime;\r\nattribute vec4 a_particle_color;\r\n\r\nvarying vec4 v_particle_color;\r\n\r\nuniform float u_particleTime;\r\nuniform vec3 u_particle_acceleration;\r\nuniform mat4 u_particle_billboardMatrix;\r\n\r\nvec4 particleAnimation(vec4 position) {\r\n\r\n    float pTime = u_particleTime - a_particle_birthTime;\r\n    if(pTime > 0.0){\r\n\r\n        pTime = mod(pTime,a_particle_lifetime);\r\n\r\n        vec3 pVelocity = vec3(0.0,0.0,0.0);\r\n\r\n        position = u_particle_billboardMatrix * position;\r\n        position.xyz = position.xyz + a_particle_position;\r\n        pVelocity = pVelocity + a_particle_velocity;\r\n        pVelocity = pVelocity + u_particle_acceleration * pTime;\r\n        v_particle_color = a_particle_color;\r\n\r\n        position.xyz = position.xyz + pVelocity * pTime;\r\n    }\r\n    \r\n    return position;\r\n}\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n    \r\n    position = particleAnimation(position);\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    gl_PointSize = u_PointSize;\r\n}"
             },
             "point": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec4 v_color;\r\nuniform vec4 u_color;\r\n\r\nvoid main(void) {\r\n   \r\n    gl_FragColor = v_color * u_color;\r\n}\r\n",
@@ -18753,6 +18750,61 @@ var feng3d;
      * 例如：position 对应 a_particle_position 与 #define D_a_particle_position
      * @author feng 2017-01-12
      */
+    var Particle = /** @class */ (function () {
+        function Particle() {
+            /**
+             * 索引
+             */
+            this.index = 0;
+            /**
+             * 粒子总数量
+             */
+            this.total = 1000;
+            /**
+             * 出生时间
+             */
+            this.birthTime = 0;
+            /**
+             * 寿命
+             */
+            this.lifetime = 5;
+            /**
+             * 位移
+             */
+            this.position = new feng3d.Vector3();
+            /**
+             * 旋转
+             */
+            this.rotation = new feng3d.Vector3();
+            /**
+             * 缩放
+             */
+            this.scalenew = new feng3d.Vector3(1, 1, 1);
+            /**
+             * 速度
+             */
+            this.velocity = new feng3d.Vector3();
+            /**
+             * 加速度
+             */
+            this.acceleration = new feng3d.Vector3();
+            /**
+             * 颜色
+             */
+            this.color = new feng3d.Color4();
+        }
+        return Particle;
+    }());
+    feng3d.Particle = Particle;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子
+     * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性,并且属性值不为空时会自动添加 "#define D_a_particle_${attribute}"
+     * 例如：position 对应 a_particle_position 与 #define D_a_particle_position
+     * @author feng 2017-01-12
+     */
     var ParticleGlobal = /** @class */ (function () {
         function ParticleGlobal() {
             /**
@@ -19100,7 +19152,7 @@ var feng3d;
             generateFunctions.sort(function (a, b) { return b.priority - a.priority; });
             //
             for (var i = 0; i < this.numParticles; i++) {
-                var particle = {};
+                var particle = new feng3d.Particle();
                 particle.index = i;
                 particle.total = this.numParticles;
                 generateFunctions.forEach(function (element) {
@@ -19170,7 +19222,7 @@ var feng3d;
             //更新宏定义
             for (var attribute in this._attributes) {
                 var vector3DData = this._attributes[attribute];
-                var attributeRenderData = renderAtomic.attributes[name] = renderAtomic.attributes[name] || new feng3d.Attribute(name, vector3DData);
+                var attributeRenderData = renderAtomic.attributes[attribute] = renderAtomic.attributes[attribute] || new feng3d.Attribute(attribute, vector3DData);
                 attributeRenderData.data = vector3DData;
                 attributeRenderData.size = vector3DData.length / this.numParticles;
                 attributeRenderData.divisor = 1;

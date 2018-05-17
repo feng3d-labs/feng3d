@@ -6560,7 +6560,6 @@ declare namespace feng3d {
          * 属性数据
          */
         data: number[];
-        private _data;
         /**
          * 数据尺寸
          *
@@ -6615,6 +6614,7 @@ declare namespace feng3d {
          * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
          */
         active(gl: GL, location: number): void;
+        private invalidate();
         /**
          * 获取缓冲
          */
@@ -9904,7 +9904,7 @@ declare namespace feng3d {
      * 例如：position 对应 a_particle_position 与 #define D_a_particle_position
      * @author feng 2017-01-12
      */
-    interface Particle {
+    class Particle {
         /**
          * 索引
          */
@@ -9932,7 +9932,7 @@ declare namespace feng3d {
         /**
          * 缩放
          */
-        scale: Vector3;
+        scalenew: Vector3;
         /**
          * 速度
          */
