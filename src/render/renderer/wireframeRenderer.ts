@@ -9,6 +9,7 @@ namespace feng3d
 
     var renderParams: RenderParams;
     var shader: Shader;
+    var wireframe_skeleton_shader: Shader;
 
     function init()
     {
@@ -22,6 +23,7 @@ namespace feng3d
             renderParams.depthFunc = DepthFunc.LEQUAL;
 
             shader = shaderlib.getShader("wireframe");
+            wireframe_skeleton_shader = shaderlib.getShader("wireframe_skeleton");
         }
     }
 
@@ -44,10 +46,7 @@ namespace feng3d
             var item = unblenditems[i].item;
             if (item.getComponent(WireframeComponent))
             {
-                var renderAtomic = item.gameObject.renderAtomic;
-                item.gameObject.preRender(renderAtomic);
-                var meshRenderer = item.getComponent(MeshRenderer);
-                drawGameObject(gl, renderAtomic);            //
+                drawGameObject(gl, item.gameObject);            //
             }
         }
     }
@@ -55,8 +54,12 @@ namespace feng3d
     /**
      * 绘制3D对象
      */
-    function drawGameObject(gl: GL, renderAtomic: RenderAtomic)
+    function drawGameObject(gl: GL, gameObject: GameObject)
     {
+        var renderAtomic = gameObject.renderAtomic;
+        gameObject.preRender(renderAtomic);
+        var meshRenderer = gameObject.getComponent(MeshRenderer);
+
         var renderMode = lazy.getvalue(renderAtomic.renderParams.renderMode);
         if (renderMode == RenderMode.POINTS
             || renderMode == RenderMode.LINES
@@ -68,7 +71,13 @@ namespace feng3d
         init();
 
         var oldshader = renderAtomic.shader;
-        renderAtomic.shader = shader;
+        if (meshRenderer instanceof SkinnedMeshRenderer)
+        {
+            renderAtomic.shader = wireframe_skeleton_shader;
+        } else
+        {
+            renderAtomic.shader = shader;
+        }
 
         var oldrenderParams = renderAtomic.renderParams;
         renderAtomic.renderParams = renderParams;
