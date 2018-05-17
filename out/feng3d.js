@@ -20229,31 +20229,6 @@ var feng3d;
                 deletefiles(removelists, callback || (function () { }));
             });
         };
-        /**
-         * 获取文件绝对路径
-         */
-        IndexedDBfs.prototype.getAbsolutePath = function (path, callback) {
-            callback(null, null);
-        };
-        /**
-         * 获取指定文件下所有文件路径列表
-         */
-        IndexedDBfs.prototype.getAllfilepathInFolder = function (dirpath, callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
-                if (!allfilepaths) {
-                    callback(err, null);
-                    return;
-                }
-                var files = [];
-                allfilepaths.forEach(function (element) {
-                    var result = new RegExp(dirpath + "\\b").exec(element);
-                    if (result != null && result.index == 0) {
-                        files.push(element);
-                    }
-                });
-                callback(null, files);
-            });
-        };
         return IndexedDBfs;
     }(IndexedDBReadFS));
     feng3d.IndexedDBfs = IndexedDBfs;
@@ -20409,7 +20384,7 @@ var feng3d;
          * @param callback 回调函数
          */
         ReadWriteAssets.prototype.readdir = function (path, callback) {
-            feng3d.assert(path.charAt(path.length - 1) == "/", "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
+            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
             this.fs.readdir(path, callback);
         };
         /**
@@ -20418,7 +20393,7 @@ var feng3d;
          * @param callback 回调函数
          */
         ReadWriteAssets.prototype.mkdir = function (path, callback) {
-            feng3d.assert(path.charAt(path.length - 1) == "/", "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
+            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
             this.fs.mkdir(path, callback);
         };
         /**
@@ -20449,16 +20424,42 @@ var feng3d;
             this.fs.remove(path, callback);
         };
         /**
-         * 获取文件绝对路径
-         */
-        ReadWriteAssets.prototype.getAbsolutePath = function (path, callback) {
-            this.fs.getAbsolutePath(path, callback);
-        };
-        /**
          * 获取指定文件下所有文件路径列表
          */
         ReadWriteAssets.prototype.getAllfilepathInFolder = function (dirpath, callback) {
-            this.fs.getAllfilepathInFolder(dirpath, callback);
+            var _this = this;
+            feng3d.assert(this.isDir(dirpath), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
+            var dirs = [dirpath];
+            var result = [];
+            var currentdir = "";
+            // 递归获取文件
+            var handle = function () {
+                if (dirs.length > 0) {
+                    currentdir = dirs.shift();
+                    _this.readdir(currentdir, function (err, files) {
+                        files.forEach(function (element) {
+                            var childpath = currentdir + element;
+                            result.push(childpath);
+                            if (_this.isDir(childpath))
+                                dirs.push(childpath);
+                        });
+                        handle();
+                    });
+                }
+                else {
+                    callback(null, result);
+                }
+            };
+            handle();
+        };
+        /**
+         * 是否为文件夹
+         * @param path 文件路径
+         */
+        ReadWriteAssets.prototype.isDir = function (path) {
+            if (path == "")
+                return true;
+            return path.charAt(path.length - 1) == "/";
         };
         return ReadWriteAssets;
     }(ReadAssets));

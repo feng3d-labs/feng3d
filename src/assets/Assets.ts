@@ -127,7 +127,7 @@ namespace feng3d
          */
         readdir(path: string, callback: (err: Error, files: string[]) => void): void
         {
-            assert(path.charAt(path.length - 1) == "/", `文件夹路径必须以 / 结尾！`)
+            assert(this.isDir(path), `文件夹路径必须以 / 结尾！`)
             this.fs.readdir(path, callback);
         }
 
@@ -138,7 +138,7 @@ namespace feng3d
          */
         mkdir(path: string, callback: (err: Error) => void): void
         {
-            assert(path.charAt(path.length - 1) == "/", `文件夹路径必须以 / 结尾！`)
+            assert(this.isDir(path), `文件夹路径必须以 / 结尾！`)
             this.fs.mkdir(path, callback);
         }
 
@@ -179,18 +179,49 @@ namespace feng3d
             this.fs.remove(path, callback);
         }
         /**
-         * 获取文件绝对路径
-         */
-        getAbsolutePath(path: string, callback: (err: Error | null, absolutePath: string | null) => void): void
-        {
-            this.fs.getAbsolutePath(path, callback);
-        }
-        /**
          * 获取指定文件下所有文件路径列表
          */
-        getAllfilepathInFolder(dirpath: string, callback: (err: Error | null, filepaths: string[] | null) => void): void
+        getAllfilepathInFolder(dirpath: string, callback: (err: Error, filepaths: string[]) => void): void
         {
-            this.fs.getAllfilepathInFolder(dirpath, callback);
+            assert(this.isDir(dirpath), `文件夹路径必须以 / 结尾！`)
+
+            var dirs = [dirpath];
+            var result = [];
+            var currentdir = "";
+
+            // 递归获取文件
+            var handle = () =>
+            {
+                if (dirs.length > 0)
+                {
+                    currentdir = dirs.shift();
+                    this.readdir(currentdir, (err, files) =>
+                    {
+                        files.forEach(element =>
+                        {
+                            var childpath = currentdir + element;
+                            result.push(childpath);
+                            if (this.isDir(childpath))
+                                dirs.push(childpath);
+                        });
+                        handle();
+                    });
+                } else
+                {
+                    callback(null, result);
+                }
+            }
+            handle();
+        }
+
+        /**
+         * 是否为文件夹
+         * @param path 文件路径
+         */
+        isDir(path: string)
+        {
+            if (path == "") return true;
+            return path.charAt(path.length - 1) == "/";
         }
     }
 
@@ -257,13 +288,5 @@ namespace feng3d
         rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void;
         move(src: string, dest: string, callback?: ((err: Error | null) => void) | undefined): void;
         remove(path: string, callback?: ((err: Error | null) => void) | undefined): void;
-        /**
-         * 获取文件绝对路径
-         */
-        getAbsolutePath(path: string, callback: (err: Error | null, absolutePath: string | null) => void): void;
-        /**
-         * 获取指定文件下所有文件路径列表
-         */
-        getAllfilepathInFolder(dirpath: string, callback: (err: Error | null, filepaths: string[] | null) => void): void;
     }
 }

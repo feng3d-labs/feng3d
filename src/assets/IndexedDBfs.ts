@@ -269,37 +269,6 @@ namespace feng3d
                 deletefiles(removelists, callback || (() => { }));
             });
         }
-        /**
-         * 获取文件绝对路径
-         */
-        getAbsolutePath(path: string, callback: (err: Error | null, absolutePath: string | null) => void): void
-        {
-            callback(null, null);
-        }
-        /**
-         * 获取指定文件下所有文件路径列表
-         */
-        getAllfilepathInFolder(dirpath: string, callback: (err: Error | null, filepaths: string[] | null) => void): void
-        {
-            storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
-            {
-                if (!allfilepaths)
-                {
-                    callback(err, null);
-                    return;
-                }
-                var files: string[] = [];
-                allfilepaths.forEach(element =>
-                {
-                    var result = new RegExp(dirpath + "\\b").exec(element);
-                    if (result != null && result.index == 0)
-                    {
-                        files.push(element);
-                    }
-                });
-                callback(null, files);
-            });
-        }
     }
 
     indexedDBfs = new IndexedDBfs();
