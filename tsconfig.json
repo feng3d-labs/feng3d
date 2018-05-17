@@ -203,7 +203,7 @@
         //
         "src/animation/Animation.ts",
         //
-        "src/assets/assets.ts",
+        "src/assets/Assets.ts",
         "src/assets/HttpAssets.ts",
         //
         "src/assets/storage.ts",
