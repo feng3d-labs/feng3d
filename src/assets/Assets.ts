@@ -48,11 +48,30 @@ namespace feng3d
         }
 
         /**
+         * 读取文件为字符串
+         */
+        readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void
+        {
+            this.readFile(path, (err, data) =>
+            {
+                if (err)
+                {
+                    callback(err, null);
+                    return;
+                }
+                dataTransform.arrayBufferToString(data, (content) =>
+                {
+                    callback(null, content);
+                });
+            });
+        }
+
+        /**
          * 加载图片
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        loadImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
+        readFileAsImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
             if (path == "" || path == null) 
             {
@@ -113,6 +132,17 @@ namespace feng3d
         }
 
         /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        mkdir(path: string, callback: (err: Error) => void): void
+        {
+            assert(path.charAt(path.length - 1) == "/", `文件夹路径必须以 / 结尾！`)
+            this.fs.mkdir(path, callback);
+        }
+
+        /**
          * 删除文件
          * @param path 文件路径
          * @param callback 回调函数
@@ -136,17 +166,6 @@ namespace feng3d
 
         ///--------------------------
 
-        /**
-         * 读取文件为字符串
-         */
-        readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void
-        {
-            this.fs.readFileAsString(path, callback);
-        }
-        mkdir(path: string, callback: (err: Error | null) => void): void
-        {
-            this.fs.mkdir(path, callback);
-        }
         rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void
         {
             this.fs.rename(oldPath, newPath, callback);
@@ -212,6 +231,13 @@ namespace feng3d
         readdir(path: string, callback: (err: Error, files: string[]) => void): void;
 
         /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        mkdir(path: string, callback: (err: Error) => void): void;
+
+        /**
          * 删除文件
          * @param path 文件路径
          * @param callback 回调函数
@@ -228,11 +254,6 @@ namespace feng3d
 
         ///-----------------------------
 
-        /**
-         * 读取文件为字符串
-         */
-        readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void;
-        mkdir(path: string, callback: (err: Error | null) => void): void;
         rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void;
         move(src: string, dest: string, callback?: ((err: Error | null) => void) | undefined): void;
         remove(path: string, callback?: ((err: Error | null) => void) | undefined): void;

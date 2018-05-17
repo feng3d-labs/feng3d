@@ -17,7 +17,7 @@ namespace feng3d
          */
         loadImage(url: string, callback: (err: Error, image: HTMLImageElement) => void) 
         {
-            assets.loadImage(url, callback);
+            assets.readFileAsImage(url, callback);
         }
         /**
          * 获取图片数据

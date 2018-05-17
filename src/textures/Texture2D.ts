@@ -66,7 +66,7 @@ namespace feng3d
         private urlChanged()
         {
             var url = this.url;
-            assets.loadImage(url, (err, img) =>
+            assets.readFileAsImage(url, (err, img) =>
             {
                 if (url == this.url)
                 {

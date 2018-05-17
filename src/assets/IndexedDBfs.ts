@@ -191,6 +191,16 @@ namespace feng3d
         }
 
         /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        mkdir(path: string, callback: (err: Error) => void): void
+        {
+            storage.set(this.DBname, this.projectname, path, { isDirectory: true, birthtime: new Date() }, callback);
+        }
+
+        /**
          * 删除文件
          * @param path 文件路径
          * @param callback 回调函数
@@ -213,30 +223,6 @@ namespace feng3d
 
         ///---------------------------
 
-        /**
-         * 读取文件为字符串
-         */
-        readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void
-        {
-            storage.get(this.DBname, this.projectname, path, (err, data) =>
-            {
-                path
-                if (err)
-                {
-                    callback(err, null);
-                    return;
-                }
-                var str = dataTransform.arrayBufferToString(<ArrayBuffer>data.data, (content) =>
-                {
-                    callback(null, content);
-                });
-            });
-        }
-        mkdir(path: string, callback: (err: Error | null) => void): void
-        {
-            assert(path.charAt(path.length - 1) == "/", `文件夹路径必须以 / 结尾！`)
-            storage.set(this.DBname, this.projectname, path, { isDirectory: true, birthtime: new Date() }, callback);
-        }
         rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void
         {
             storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>

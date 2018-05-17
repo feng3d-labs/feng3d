@@ -100,7 +100,7 @@ namespace feng3d
             function loadImage(url: string, index: number)
             {
                 if (!url) return;
-                assets.loadImage(url, (err, img) =>
+                assets.readFileAsImage(url, (err, img) =>
                 {
                     __this._pixels[index] = img;
                     __this.invalidate();

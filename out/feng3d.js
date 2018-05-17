@@ -2363,7 +2363,7 @@ var feng3d;
          * @param callback 加载完成回调
          */
         ImageUtil.prototype.loadImage = function (url, callback) {
-            feng3d.assets.loadImage(url, callback);
+            feng3d.assets.readFileAsImage(url, callback);
         };
         /**
          * 获取图片数据
@@ -17120,7 +17120,7 @@ var feng3d;
         Texture2D.prototype.urlChanged = function () {
             var _this = this;
             var url = this.url;
-            feng3d.assets.loadImage(url, function (err, img) {
+            feng3d.assets.readFileAsImage(url, function (err, img) {
                 if (url == _this.url) {
                     _this._pixels = img;
                     _this.invalidate();
@@ -17188,7 +17188,7 @@ var feng3d;
             function loadImage(url, index) {
                 if (!url)
                     return;
-                feng3d.assets.loadImage(url, function (err, img) {
+                feng3d.assets.readFileAsImage(url, function (err, img) {
                     __this._pixels[index] = img;
                     __this.invalidate();
                 });
@@ -20169,6 +20169,14 @@ var feng3d;
             });
         };
         /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.mkdir = function (path, callback) {
+            feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: true, birthtime: new Date() }, callback);
+        };
+        /**
          * 删除文件
          * @param path 文件路径
          * @param callback 回调函数
@@ -20186,25 +20194,6 @@ var feng3d;
             feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
         };
         ///---------------------------
-        /**
-         * 读取文件为字符串
-         */
-        IndexedDBfs.prototype.readFileAsString = function (path, callback) {
-            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                path;
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                var str = feng3d.dataTransform.arrayBufferToString(data.data, function (content) {
-                    callback(null, content);
-                });
-            });
-        };
-        IndexedDBfs.prototype.mkdir = function (path, callback) {
-            feng3d.assert(path.charAt(path.length - 1) == "/", "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: true, birthtime: new Date() }, callback);
-        };
         IndexedDBfs.prototype.rename = function (oldPath, newPath, callback) {
             feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
                 if (!allfilepaths) {
@@ -20356,11 +20345,25 @@ var feng3d;
             readFS.readFile(path, callback);
         };
         /**
+         * 读取文件为字符串
+         */
+        ReadAssets.prototype.readFileAsString = function (path, callback) {
+            this.readFile(path, function (err, data) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                feng3d.dataTransform.arrayBufferToString(data, function (content) {
+                    callback(null, content);
+                });
+            });
+        };
+        /**
          * 加载图片
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        ReadAssets.prototype.loadImage = function (path, callback) {
+        ReadAssets.prototype.readFileAsImage = function (path, callback) {
             if (path == "" || path == null) {
                 callback(new Error("无效路径!"), null);
                 return;
@@ -20410,6 +20413,15 @@ var feng3d;
             this.fs.readdir(path, callback);
         };
         /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.mkdir = function (path, callback) {
+            feng3d.assert(path.charAt(path.length - 1) == "/", "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
+            this.fs.mkdir(path, callback);
+        };
+        /**
          * 删除文件
          * @param path 文件路径
          * @param callback 回调函数
@@ -20427,15 +20439,6 @@ var feng3d;
             this.fs.writeFile(path, data, callback);
         };
         ///--------------------------
-        /**
-         * 读取文件为字符串
-         */
-        ReadWriteAssets.prototype.readFileAsString = function (path, callback) {
-            this.fs.readFileAsString(path, callback);
-        };
-        ReadWriteAssets.prototype.mkdir = function (path, callback) {
-            this.fs.mkdir(path, callback);
-        };
         ReadWriteAssets.prototype.rename = function (oldPath, newPath, callback) {
             this.fs.rename(oldPath, newPath, callback);
         };
