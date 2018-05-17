@@ -133,15 +133,11 @@ namespace feng3d
         createParticle(name = "Particle")
         {
             var _particleMesh = GameObject.create("particle");
-            var meshRenderer = _particleMesh.addComponent(MeshRenderer);
-            meshRenderer.geometry = new PointGeometry();
-            var material = meshRenderer.material = materialFactory.create("standard");
-            material.renderParams.renderMode = RenderMode.POINTS;
+            var particleSystem = _particleMesh.addComponent(ParticleSystem);
 
-            var particleAnimator = _particleMesh.addComponent(ParticleAnimator);
-            particleAnimator.numParticles = 1000;
+            particleSystem.numParticles = 1000;
             //通过函数来创建粒子初始状态
-            particleAnimator.generateFunctions.push({
+            particleSystem.generateFunctions.push({
                 generate: (particle) =>
                 {
                     particle.birthTime = Math.random() * 5 - 5;
@@ -151,7 +147,7 @@ namespace feng3d
                     particle.velocity = new Vector3(r * Math.cos(degree2), r * 2, r * Math.sin(degree2));
                 }, priority: 0
             });
-            particleAnimator.cycle = 10;
+            particleSystem.cycle = 10;
             return _particleMesh;
         }
     }

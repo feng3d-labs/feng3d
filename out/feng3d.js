@@ -18804,9 +18804,9 @@ var feng3d;
          */
         ParticleComponent.prototype.generateParticle = function (particle) {
         };
-        ParticleComponent.prototype.setRenderState = function (particleAnimator) {
+        ParticleComponent.prototype.setRenderState = function (particleSystem) {
             if (this.isDirty) {
-                particleAnimator.invalidate();
+                particleSystem.invalidate();
                 this.isDirty = false;
             }
         };
@@ -18979,18 +18979,18 @@ var feng3d;
         function ParticleBillboard() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        ParticleBillboard.prototype.setRenderState = function (particleAnimator) {
+        ParticleBillboard.prototype.setRenderState = function (particleSystem) {
             if (this.camera && this.enable) {
                 if (this.billboardAxis)
                     this.billboardAxis.normalize();
                 var _matrix = new feng3d.Matrix4x4;
-                var gameObject = particleAnimator.gameObject;
+                var gameObject = particleSystem.gameObject;
                 _matrix.copyFrom(gameObject.transform.localToWorldMatrix);
                 _matrix.lookAt(this.camera.transform.localToWorldMatrix.position, this.billboardAxis || feng3d.Vector3.Y_AXIS);
-                particleAnimator.particleGlobal.billboardMatrix = _matrix;
+                particleSystem.particleGlobal.billboardMatrix = _matrix;
             }
             else {
-                particleAnimator.particleGlobal.billboardMatrix = new feng3d.Matrix4x4();
+                particleSystem.particleGlobal.billboardMatrix = new feng3d.Matrix4x4();
             }
         };
         return ParticleBillboard;
@@ -19007,7 +19007,8 @@ var feng3d;
         __extends(ParticleSystem, _super);
         function ParticleSystem() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.material = feng3d.materialFactory.create("particle");
+            _this.geometry = new feng3d.PointGeometry();
+            _this.material = feng3d.materialFactory.create("particle", { renderParams: { renderMode: feng3d.RenderMode.POINTS } });
             /**
              * 是否正在播放
              */
@@ -19151,6 +19152,7 @@ var feng3d;
         };
         ParticleSystem.prototype.preRender = function (renderAtomic) {
             var _this = this;
+            _super.prototype.preRender.call(this, renderAtomic);
             renderAtomic.instanceCount = function () { return _this.numParticles; };
             //
             renderAtomic.uniforms.u_particleTime = function () { return _this.time; };
@@ -19172,6 +19174,10 @@ var feng3d;
                 attributeRenderData.divisor = 1;
             }
         };
+        __decorate([
+            feng3d.oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } }),
+            feng3d.serialize
+        ], ParticleSystem.prototype, "geometry", void 0);
         __decorate([
             feng3d.oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } }),
             feng3d.serialize
@@ -23173,14 +23179,10 @@ var feng3d;
         GameObjectFactory.prototype.createParticle = function (name) {
             if (name === void 0) { name = "Particle"; }
             var _particleMesh = feng3d.GameObject.create("particle");
-            var meshRenderer = _particleMesh.addComponent(feng3d.MeshRenderer);
-            meshRenderer.geometry = new feng3d.PointGeometry();
-            var material = meshRenderer.material = feng3d.materialFactory.create("standard");
-            material.renderParams.renderMode = feng3d.RenderMode.POINTS;
-            var particleAnimator = _particleMesh.addComponent(ParticleAnimator);
-            particleAnimator.numParticles = 1000;
+            var particleSystem = _particleMesh.addComponent(feng3d.ParticleSystem);
+            particleSystem.numParticles = 1000;
             //通过函数来创建粒子初始状态
-            particleAnimator.generateFunctions.push({
+            particleSystem.generateFunctions.push({
                 generate: function (particle) {
                     particle.birthTime = Math.random() * 5 - 5;
                     particle.lifetime = 5;
@@ -23189,7 +23191,7 @@ var feng3d;
                     particle.velocity = new feng3d.Vector3(r * Math.cos(degree2), r * 2, r * Math.sin(degree2));
                 }, priority: 0
             });
-            particleAnimator.cycle = 10;
+            particleSystem.cycle = 10;
             return _particleMesh;
         };
         return GameObjectFactory;

@@ -41,11 +41,11 @@ namespace feng3d
 
         }
 
-        setRenderState(particleAnimator: ParticleAnimator)
+        setRenderState(particleSystem: ParticleSystem)
         {
             if (this.isDirty)
             {
-                particleAnimator.invalidate();
+                particleSystem.invalidate();
                 this.isDirty = false;
             }
         }

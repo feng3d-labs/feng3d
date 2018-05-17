@@ -854,21 +854,21 @@ declare namespace feng3d {
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        onframe(func: () => void, thisObject?: Object, priority?: number): this;
+        onframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
         /**
          * 注册帧函数（只执行一次）
          * @param func  执行方法
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        onceframe(func: () => void, thisObject?: Object, priority?: number): this;
+        onceframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
         /**
          * 注销帧函数（只执行一次）
          * @param func  执行方法
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        offframe(func: () => void, thisObject?: Object): this;
+        offframe(func: (interval: number) => void, thisObject?: Object): this;
         /**
          * 注册周期函数
          * @param interval  执行周期，以ms为单位
@@ -876,7 +876,7 @@ declare namespace feng3d {
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        on(interval: Lazy<number>, func: () => void, thisObject?: Object, priority?: number): this;
+        on(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
         /**
          * 注册周期函数（只执行一次）
          * @param interval  执行周期，以ms为单位
@@ -884,14 +884,14 @@ declare namespace feng3d {
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        once(interval: Lazy<number>, func: () => void, thisObject?: Object, priority?: number): this;
+        once(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
         /**
          * 注销周期函数
          * @param interval  执行周期，以ms为单位
          * @param func  执行方法
          * @param thisObject    方法this指针
          */
-        off(interval: Lazy<number>, func: () => void, thisObject?: Object): this;
+        off(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object): this;
         /**
          * 重复指定次数 执行函数
          * @param interval  执行周期，以ms为单位
@@ -900,7 +900,7 @@ declare namespace feng3d {
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        repeat(interval: Lazy<number>, repeatCount: number, func: () => void, thisObject?: Object, priority?: number): Timer;
+        repeat(interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number): Timer;
     }
     class Timer {
         private ticker;
@@ -920,7 +920,7 @@ declare namespace feng3d {
          * 设置的计时器运行总次数。
          */
         repeatCount: number;
-        constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: () => void, thisObject?: Object, priority?: number);
+        constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number);
         /**
          * 如果计时器尚未运行，则启动计时器。
          */
@@ -6623,16 +6623,37 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface TextureInfoRaw {
+        /**
+         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
+         */
         anisotropy?: number;
+        /**
+         * 对图像进行Y轴反转。默认值为false
+         */
         flipY?: boolean;
+        /**
+         * 格式
+         */
         format?: TextureFormat;
+        /**
+         * 是否生成mipmap
+         */
         generateMipmap?: boolean;
         magFilter?: TextureMagFilter;
         minFilter?: TextureMinFilter;
         premulAlpha?: boolean;
         type?: TextureDataType;
+        /**
+         * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
+         */
         wrapS?: TextureWrap;
+        /**
+         * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
+         */
         wrapT?: TextureWrap;
+        /**
+         * 当贴图数据未加载好等情况时代替使用
+         */
         noPixels?: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[];
     }
     /**
@@ -7009,7 +7030,7 @@ declare namespace feng3d {
         /**
          * 每帧执行
          */
-        update(): void;
+        update(interval?: number): void;
     }
 }
 declare namespace feng3d {
@@ -8024,7 +8045,7 @@ declare namespace feng3d {
         init(gameObject: GameObject): void;
         dispose(): void;
         initCollectComponents(): void;
-        private onEnterFrame();
+        private onEnterFrame(interval);
         update(): void;
         readonly mouseCheckObjects: {
             layer: number;
@@ -9038,6 +9059,9 @@ declare namespace feng3d {
 declare namespace feng3d {
     interface Texture2DRaw extends TextureInfoRaw {
         __class__?: "feng3d.Texture2D";
+        /**
+         * 纹理路径
+         */
         url?: string;
     }
     var imageDatas: {
@@ -9961,7 +9985,7 @@ declare namespace feng3d {
          * @param particle                  粒子
          */
         generateParticle(particle: Particle): void;
-        setRenderState(particleAnimator: ParticleAnimator): void;
+        setRenderState(particleSystem: ParticleSystem): void;
     }
 }
 declare namespace feng3d {
@@ -10043,28 +10067,25 @@ declare namespace feng3d {
         camera: Camera;
         /** 广告牌轴线 */
         billboardAxis: Vector3;
-        setRenderState(particleAnimator: ParticleAnimator): void;
+        setRenderState(particleSystem: ParticleSystem): void;
     }
 }
 declare namespace feng3d {
     /**
-     * 粒子动画
+     * 粒子系统
      * @author feng 2017-01-09
      */
-    class ParticleAnimator extends Component {
+    class ParticleSystem extends MeshRenderer {
+        geometry: Geometry;
+        material: Material;
         /**
          * 是否正在播放
          */
         isPlaying: boolean;
-        private _isPlaying;
         /**
          * 粒子时间
          */
         time: number;
-        /**
-         * 起始时间
-         */
-        preTime: number;
         /**
          * 播放速度
          */
@@ -10102,7 +10123,7 @@ declare namespace feng3d {
         private _isDirty;
         readonly single: boolean;
         init(gameObject: GameObject): void;
-        private update();
+        update(interval: number): void;
         private updateRenderState();
         invalidate(): void;
         /**
@@ -10122,6 +10143,35 @@ declare namespace feng3d {
          */
         private collectionParticleAttribute(attribute, particle);
         preRender(renderAtomic: RenderAtomic): void;
+    }
+}
+declare namespace feng3d {
+    type ParticleMaterial = Material & {
+        uniforms: ParticleUniforms;
+    };
+    interface MaterialFactory {
+        create(shader: "particle", raw?: ParticleMaterialRaw): ParticleMaterial;
+    }
+    interface MaterialRawMap {
+        particle: ParticleMaterialRaw;
+    }
+    interface ParticleMaterialRaw extends MaterialBaseRaw {
+        shaderName?: "particle";
+        uniforms?: ParticleUniformsRaw;
+    }
+    interface ParticleUniformsRaw {
+        __class__?: "feng3d.ParticleUniforms";
+        s_ambient?: Texture2DRaw;
+        s_diffuse?: Texture2DRaw;
+        s_envMap?: TextureCubeRaw;
+        s_normal?: Texture2DRaw;
+        s_specular?: Texture2DRaw;
+        u_ambient?: Color3Raw;
+        u_diffuse?: Color3Raw;
+        u_reflectivity?: number;
+        u_specular?: Color3Raw;
+    }
+    class ParticleUniforms extends StandardUniforms {
     }
 }
 declare namespace feng3d {
@@ -10251,13 +10301,11 @@ declare namespace feng3d {
         time: number;
         private _time;
         isplaying: boolean;
-        private _isplaying;
         /**
          * 播放速度
          */
         playspeed: number;
-        private _preTime;
-        update(): void;
+        update(interval: number): void;
         private num;
         private updateAni();
         private _objectCache;
