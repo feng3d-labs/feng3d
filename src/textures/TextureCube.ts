@@ -10,7 +10,7 @@ namespace feng3d
         positive_y_url?: string,
         positive_z_url?: string,
     }
-    
+
     /**
      * 立方体纹理
      * @author feng 2016-12-28
@@ -100,7 +100,7 @@ namespace feng3d
             function loadImage(url: string, index: number)
             {
                 if (!url) return;
-                assets.loadImage(url, (img) =>
+                assets.loadImage(url, (err, img) =>
                 {
                     __this._pixels[index] = img;
                     __this.invalidate();

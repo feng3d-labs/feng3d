@@ -15,7 +15,7 @@ namespace feng3d
          * @param url 图片路径
          * @param callback 加载完成回调
          */
-        loadImage(url: string, callback: (image: HTMLImageElement) => void) 
+        loadImage(url: string, callback: (err: Error, image: HTMLImageElement) => void) 
         {
             assets.loadImage(url, callback);
         }
@@ -43,7 +43,7 @@ namespace feng3d
          */
         getImageDataFromUrl(url: string, callback: (imageData: ImageData) => void) 
         {
-            this.loadImage(url, (image) =>
+            this.loadImage(url, (err, image) =>
             {
                 var imageData = this.getImageData(image);
                 callback(imageData);

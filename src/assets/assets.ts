@@ -11,27 +11,26 @@ namespace feng3d
     }
 
     export var assets: Assets;
-    export var assetsmap = assetsmap || {};
+    export var assetsmap: { [fstype: string]: ReadFS } = {};
 
     export interface IAssets
     {
-
         /**
          * 加载图片
          * @param url 图片路径
          * @param callback 加载完成回调
          */
-        loadImage(url: string, callback: (img: HTMLImageElement) => void): void;
+        loadImage(url: string, callback: (err: Error, img: HTMLImageElement) => void): void;
     }
 
     export class Assets implements IAssets
     {
         fstype = FSType.http;
 
-        private getAssets(url: string)
+        private getAssets(path: string)
         {
-            if (url.indexOf("http://") != -1
-                || url.indexOf("https://") != -1
+            if (path.indexOf("http://") != -1
+                || path.indexOf("https://") != -1
             )
                 return assetsmap[FSType.http];
             return assetsmap[this.fstype];
@@ -39,26 +38,44 @@ namespace feng3d
 
         /**
          * 加载图片
-         * @param url 图片路径
+         * @param path 图片路径
          * @param callback 加载完成回调
          */
-        loadImage(url: string, callback: (img: HTMLImageElement) => void)
+        loadImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
-            if (url == "" || url == null) 
+            if (path == "" || path == null) 
             {
-                callback(null);
+                callback(new Error("无效路径!"), null);
                 return;
             }
-            this.getAssets(url).loadImage(url, (img) =>
+            var readFS = this.getAssets(path);
+            readFS.readFile(path, (err, data) =>
             {
-                if (!img)
+                if (err)
                 {
-                    console.warn(`无法加载资源：${url}`);
+                    callback(err, null);
+                    return;
                 }
-                callback(img);
+                dataTransform.arrayBufferToImage(data, (img) =>
+                {
+                    callback(null, img);
+                });
             });
         }
     }
 
     assets = new Assets();
+
+    /**
+     * 可读文件系统
+     */
+    export interface ReadFS
+    {
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readFile(path: string, callback: (err, data: ArrayBuffer) => void);
+    }
 }

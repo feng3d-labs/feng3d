@@ -8,20 +8,16 @@ namespace feng3d
     /**
      * 索引数据资源
      */
-    export class IndexedDBAssets implements IAssets
+    export class IndexedDBAssets implements ReadFS
     {
-        loadImage(url: string, callback: (img: HTMLImageElement) => void): void
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readFile(path: string, callback: (err, data: ArrayBuffer) => void)
         {
-            indexedDBfs.readFile(url, (err, data) =>
-            {
-                if (data)
-                {
-                    dataTransform.arrayBufferToImage(data, callback);
-                } else
-                {
-                    callback(null);
-                }
-            });
+            indexedDBfs.readFile(path, callback);
         }
     }
 
