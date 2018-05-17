@@ -24,7 +24,7 @@ namespace feng3d
         /**
          * 可读文件系统
          */
-        readFS: ReadFS = new HttpReadFS();
+        readFS: ReadFS = httpReadFS;
 
         get type()
         {
@@ -38,7 +38,13 @@ namespace feng3d
          */
         readFile(path: string, callback: (err, data: ArrayBuffer) => void)
         {
-            this.readFS.readFile(path, callback);
+            var readFS = this.readFS;
+            if (path.indexOf("http://") != -1
+                || path.indexOf("https://") != -1
+            )
+                readFS = httpReadFS;
+
+            readFS.readFile(path, callback);
         }
 
         /**

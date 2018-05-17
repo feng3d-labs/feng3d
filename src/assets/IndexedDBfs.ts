@@ -3,12 +3,12 @@ namespace feng3d
     /**
      * 索引数据资源
      */
-    export var indexedDBAssets: IndexedDBAssets;
+    export var indexedDBReadFS: IndexedDBReadFS;
 
     /**
      * 索引数据资源
      */
-    export class IndexedDBAssets implements ReadFS
+    export class IndexedDBReadFS implements ReadFS
     {
         get type()
         {
@@ -16,17 +16,35 @@ namespace feng3d
         }
 
         /**
+         * 数据库名称
+         */
+        DBname: string;
+        /**
+         * 项目名称（表单名称）
+         */
+        projectname: string;
+
+        constructor(DBname = "feng3d-editor", projectname = "testproject")
+        {
+            this.DBname = DBname;
+            this.projectname = projectname;
+        }
+
+        /**
          * 读取文件
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFile(path: string, callback: (err, data: ArrayBuffer) => void)
+        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void)
         {
-            indexedDBfs.readFile(path, callback);
+            storage.get(this.DBname, this.projectname, path, (err, data) =>
+            {
+                callback(null, data ? data.data : null);
+            });
         }
     }
 
-    indexedDBAssets = new IndexedDBAssets();
+    indexedDBReadFS = new IndexedDBReadFS();
 
     function copy(sourcekey: string | number, targetkey: string | number, callback?: (err?: Error | null) => void)
     {
@@ -113,17 +131,8 @@ namespace feng3d
     /**
      * 索引数据文件系统
      */
-    export class IndexedDBfs implements FS  
+    export class IndexedDBfs extends IndexedDBReadFS implements FS  
     {
-        /**
-         * 数据库名称
-         */
-        DBname = "feng3d-editor";
-        /**
-         * 项目名称（表单名称）
-         */
-        projectname = "testproject";
-
         hasProject(projectname: string, callback: (has: boolean) => void)
         {
             storage.hasObjectStore(this.DBname, projectname, callback);
@@ -214,16 +223,6 @@ namespace feng3d
                 {
                     callback(null, content);
                 });
-            });
-        }
-        /**
-         * 读取文件为Buffer
-         */
-        readFile(path: string, callback: (err: Error | null, data: ArrayBuffer | undefined) => void): void
-        {
-            storage.get(this.DBname, this.projectname, path, (err, data) =>
-            {
-                callback(null, data ? data.data : null);
             });
         }
         mkdir(path: string, callback: (err: Error | null) => void): void

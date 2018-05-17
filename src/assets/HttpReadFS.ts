@@ -3,6 +3,11 @@ namespace feng3d
     /**
      * Http可读文件系统
      */
+    export var httpReadFS: HttpReadFS;
+
+    /**
+     * Http可读文件系统
+     */
     export class HttpReadFS implements ReadFS
     {
         get type()
@@ -43,4 +48,5 @@ namespace feng3d
             request.send();
         }
     }
+    httpReadFS = new HttpReadFS();
 }

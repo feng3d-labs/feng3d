@@ -6,7 +6,15 @@ interface IDBObjectStore
 namespace feng3d
 {
     var databases: { [name: string]: IDBDatabase } = {};
-    export var storage = {
+    /**
+     * 
+     */
+    export var storage: Storage;
+    /**
+     * 
+     */
+    export class Storage
+    {
         /**
          * 是否支持 indexedDB 
          */
@@ -22,7 +30,7 @@ namespace feng3d
                 }
             }
             return true;
-        },
+        }
         getDatabase(dbname: string, callback: (err, database: IDBDatabase) => void)
         {
             if (databases[dbname])
@@ -42,7 +50,7 @@ namespace feng3d
                 callback(event, <any>null);
                 request.onerror = null;
             };
-        },
+        }
         deleteDatabase(dbname: string, callback?: (err) => void)
         {
             var request = indexedDB.deleteDatabase(dbname);
@@ -57,17 +65,17 @@ namespace feng3d
                 callback && callback(event);
                 request.onerror = null;
             };
-        },
+        }
         hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void)
         {
-            storage.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (err, database) =>
             {
                 callback(database.objectStoreNames.contains(objectStroreName));
             });
-        },
+        }
         getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void)
         {
-            storage.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (err, database) =>
             {
                 var objectStoreNames: string[] = [];
                 for (let i = 0; i < database.objectStoreNames.length; i++)
@@ -76,10 +84,10 @@ namespace feng3d
                 }
                 callback(null, objectStoreNames)
             });
-        },
+        }
         createObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void)
         {
-            storage.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (err, database) =>
             {
                 if (database.objectStoreNames.contains(objectStroreName))
                 {
@@ -107,10 +115,10 @@ namespace feng3d
                     request.onerror = null;
                 };
             });
-        },
+        }
         deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void)
         {
-            storage.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (err, database) =>
             {
                 if (!database.objectStoreNames.contains(objectStroreName))
                 {
@@ -138,10 +146,10 @@ namespace feng3d
                     request.onerror = null;
                 };
             });
-        },
+        }
         getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error | null, keys: string[] | null) => void)
         {
-            storage.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (err, database) =>
             {
                 try
                 {
@@ -158,10 +166,10 @@ namespace feng3d
                     callback && callback(error, null);
                 }
             });
-        },
+        }
         get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error | null, data: any) => void)
         {
-            storage.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (err, database) =>
             {
                 var transaction = database.transaction([objectStroreName], 'readwrite');
                 var objectStore = transaction.objectStore(objectStroreName);
@@ -173,10 +181,10 @@ namespace feng3d
                     request.onsuccess = null;
                 };
             });
-        },
+        }
         set(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: (err: Error | null) => void)
         {
-            storage.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (err, database) =>
             {
                 try
                 {
@@ -193,10 +201,10 @@ namespace feng3d
                     callback && callback(error);
                 }
             });
-        },
+        }
         delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void)
         {
-            storage.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (err, database) =>
             {
                 try
                 {
@@ -213,10 +221,10 @@ namespace feng3d
                     callback && callback(error);
                 }
             });
-        },
+        }
         clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void)
         {
-            storage.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (err, database) =>
             {
                 try
                 {
@@ -235,4 +243,6 @@ namespace feng3d
             });
         }
     }
+
+    storage = new Storage();
 }

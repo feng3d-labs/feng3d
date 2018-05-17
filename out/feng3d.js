@@ -19834,117 +19834,17 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 文件系统类型
-     */
-    var FSType;
-    (function (FSType) {
-        FSType["http"] = "http";
-        FSType["native"] = "native";
-        FSType["indexedDB"] = "indexedDB";
-    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
-    /**
-     * 资源
-     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
-     */
-    var Assets = /** @class */ (function () {
-        function Assets() {
-            /**
-             * 可读文件系统
-             */
-            this.readFS = new feng3d.HttpReadFS();
-        }
-        Object.defineProperty(Assets.prototype, "type", {
-            get: function () {
-                return this.readFS.type;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        Assets.prototype.readFile = function (path, callback) {
-            this.readFS.readFile(path, callback);
-        };
-        /**
-         * 加载图片
-         * @param path 图片路径
-         * @param callback 加载完成回调
-         */
-        Assets.prototype.loadImage = function (path, callback) {
-            if (path == "" || path == null) {
-                callback(new Error("无效路径!"), null);
-                return;
-            }
-            this.readFile(path, function (err, data) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                feng3d.dataTransform.arrayBufferToImage(data, function (img) {
-                    callback(null, img);
-                });
-            });
-        };
-        return Assets;
-    }());
-    feng3d.Assets = Assets;
-    feng3d.assets = new Assets();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * Http可读文件系统
-     */
-    var HttpReadFS = /** @class */ (function () {
-        function HttpReadFS() {
-        }
-        Object.defineProperty(HttpReadFS.prototype, "type", {
-            get: function () {
-                return feng3d.FSType.http;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        HttpReadFS.prototype.readFile = function (path, callback) {
-            var request = new XMLHttpRequest();
-            request.open('Get', path, true);
-            request.responseType = "arraybuffer";
-            request.onreadystatechange = function (ev) {
-                if (request.readyState == 4) {
-                    request.onreadystatechange = null;
-                    if (request.status >= 200 && request.status < 300) {
-                        callback(null, request.response);
-                    }
-                    else {
-                        callback(new Error(path + " 加载失败！"), null);
-                    }
-                }
-            };
-            request.onprogress = function (ev) {
-            };
-            request.send();
-        };
-        return HttpReadFS;
-    }());
-    feng3d.HttpReadFS = HttpReadFS;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var databases = {};
-    feng3d.storage = {
+    /**
+     *
+     */
+    var Storage = /** @class */ (function () {
+        function Storage() {
+        }
         /**
          * 是否支持 indexedDB
          */
-        support: function () {
+        Storage.prototype.support = function () {
             if (typeof indexedDB == "undefined") {
                 indexedDB = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
                 if (indexedDB == undefined) {
@@ -19952,8 +19852,8 @@ var feng3d;
                 }
             }
             return true;
-        },
-        getDatabase: function (dbname, callback) {
+        };
+        Storage.prototype.getDatabase = function (dbname, callback) {
             if (databases[dbname]) {
                 callback(null, databases[dbname]);
                 return;
@@ -19968,8 +19868,8 @@ var feng3d;
                 callback(event, null);
                 request.onerror = null;
             };
-        },
-        deleteDatabase: function (dbname, callback) {
+        };
+        Storage.prototype.deleteDatabase = function (dbname, callback) {
             var request = indexedDB.deleteDatabase(dbname);
             request.onsuccess = function (event) {
                 delete databases[dbname];
@@ -19980,23 +19880,23 @@ var feng3d;
                 callback && callback(event);
                 request.onerror = null;
             };
-        },
-        hasObjectStore: function (dbname, objectStroreName, callback) {
-            feng3d.storage.getDatabase(dbname, function (err, database) {
+        };
+        Storage.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
                 callback(database.objectStoreNames.contains(objectStroreName));
             });
-        },
-        getObjectStoreNames: function (dbname, callback) {
-            feng3d.storage.getDatabase(dbname, function (err, database) {
+        };
+        Storage.prototype.getObjectStoreNames = function (dbname, callback) {
+            this.getDatabase(dbname, function (err, database) {
                 var objectStoreNames = [];
                 for (var i = 0; i < database.objectStoreNames.length; i++) {
                     objectStoreNames.push(database.objectStoreNames.item(i));
                 }
                 callback(null, objectStoreNames);
             });
-        },
-        createObjectStore: function (dbname, objectStroreName, callback) {
-            feng3d.storage.getDatabase(dbname, function (err, database) {
+        };
+        Storage.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
                 if (database.objectStoreNames.contains(objectStroreName)) {
                     callback && callback(null);
                     return;
@@ -20019,9 +19919,9 @@ var feng3d;
                     request.onerror = null;
                 };
             });
-        },
-        deleteObjectStore: function (dbname, objectStroreName, callback) {
-            feng3d.storage.getDatabase(dbname, function (err, database) {
+        };
+        Storage.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
                 if (!database.objectStoreNames.contains(objectStroreName)) {
                     callback && callback(null);
                     return;
@@ -20044,9 +19944,9 @@ var feng3d;
                     request.onerror = null;
                 };
             });
-        },
-        getAllKeys: function (dbname, objectStroreName, callback) {
-            feng3d.storage.getDatabase(dbname, function (err, database) {
+        };
+        Storage.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
                     var objectStore = transaction.objectStore(objectStroreName);
@@ -20060,9 +19960,9 @@ var feng3d;
                     callback && callback(error, null);
                 }
             });
-        },
-        get: function (dbname, objectStroreName, key, callback) {
-            feng3d.storage.getDatabase(dbname, function (err, database) {
+        };
+        Storage.prototype.get = function (dbname, objectStroreName, key, callback) {
+            this.getDatabase(dbname, function (err, database) {
                 var transaction = database.transaction([objectStroreName], 'readwrite');
                 var objectStore = transaction.objectStore(objectStroreName);
                 var request = objectStore.get(key);
@@ -20072,9 +19972,9 @@ var feng3d;
                     request.onsuccess = null;
                 };
             });
-        },
-        set: function (dbname, objectStroreName, key, data, callback) {
-            feng3d.storage.getDatabase(dbname, function (err, database) {
+        };
+        Storage.prototype.set = function (dbname, objectStroreName, key, data, callback) {
+            this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
                     var objectStore = transaction.objectStore(objectStroreName);
@@ -20088,9 +19988,9 @@ var feng3d;
                     callback && callback(error);
                 }
             });
-        },
-        delete: function (dbname, objectStroreName, key, callback) {
-            feng3d.storage.getDatabase(dbname, function (err, database) {
+        };
+        Storage.prototype.delete = function (dbname, objectStroreName, key, callback) {
+            this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
                     var objectStore = transaction.objectStore(objectStroreName);
@@ -20104,9 +20004,9 @@ var feng3d;
                     callback && callback(error);
                 }
             });
-        },
-        clear: function (dbname, objectStroreName, callback) {
-            feng3d.storage.getDatabase(dbname, function (err, database) {
+        };
+        Storage.prototype.clear = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
                     var objectStore = transaction.objectStore(objectStroreName);
@@ -20120,18 +20020,25 @@ var feng3d;
                     callback && callback(error);
                 }
             });
-        }
-    };
+        };
+        return Storage;
+    }());
+    feng3d.Storage = Storage;
+    feng3d.storage = new Storage();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
      * 索引数据资源
      */
-    var IndexedDBAssets = /** @class */ (function () {
-        function IndexedDBAssets() {
+    var IndexedDBReadFS = /** @class */ (function () {
+        function IndexedDBReadFS(DBname, projectname) {
+            if (DBname === void 0) { DBname = "feng3d-editor"; }
+            if (projectname === void 0) { projectname = "testproject"; }
+            this.DBname = DBname;
+            this.projectname = projectname;
         }
-        Object.defineProperty(IndexedDBAssets.prototype, "type", {
+        Object.defineProperty(IndexedDBReadFS.prototype, "type", {
             get: function () {
                 return feng3d.FSType.indexedDB;
             },
@@ -20143,13 +20050,15 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        IndexedDBAssets.prototype.readFile = function (path, callback) {
-            feng3d.indexedDBfs.readFile(path, callback);
+        IndexedDBReadFS.prototype.readFile = function (path, callback) {
+            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
+                callback(null, data ? data.data : null);
+            });
         };
-        return IndexedDBAssets;
+        return IndexedDBReadFS;
     }());
-    feng3d.IndexedDBAssets = IndexedDBAssets;
-    feng3d.indexedDBAssets = new IndexedDBAssets();
+    feng3d.IndexedDBReadFS = IndexedDBReadFS;
+    feng3d.indexedDBReadFS = new IndexedDBReadFS();
     function copy(sourcekey, targetkey, callback) {
         feng3d.storage.get(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, sourcekey, function (err, data) {
             if (err) {
@@ -20208,16 +20117,10 @@ var feng3d;
     /**
      * 索引数据文件系统
      */
-    var IndexedDBfs = /** @class */ (function () {
+    var IndexedDBfs = /** @class */ (function (_super) {
+        __extends(IndexedDBfs, _super);
         function IndexedDBfs() {
-            /**
-             * 数据库名称
-             */
-            this.DBname = "feng3d-editor";
-            /**
-             * 项目名称（表单名称）
-             */
-            this.projectname = "testproject";
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         IndexedDBfs.prototype.hasProject = function (projectname, callback) {
             feng3d.storage.hasObjectStore(this.DBname, projectname, callback);
@@ -20293,14 +20196,6 @@ var feng3d;
                 });
             });
         };
-        /**
-         * 读取文件为Buffer
-         */
-        IndexedDBfs.prototype.readFile = function (path, callback) {
-            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                callback(null, data ? data.data : null);
-            });
-        };
         IndexedDBfs.prototype.mkdir = function (path, callback) {
             feng3d.assert(path.charAt(path.length - 1) == "/", "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
             feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: true, birthtime: new Date() }, callback);
@@ -20366,9 +20261,119 @@ var feng3d;
             });
         };
         return IndexedDBfs;
-    }());
+    }(IndexedDBReadFS));
     feng3d.IndexedDBfs = IndexedDBfs;
     feng3d.indexedDBfs = new IndexedDBfs();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Http可读文件系统
+     */
+    var HttpReadFS = /** @class */ (function () {
+        function HttpReadFS() {
+        }
+        Object.defineProperty(HttpReadFS.prototype, "type", {
+            get: function () {
+                return feng3d.FSType.http;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        HttpReadFS.prototype.readFile = function (path, callback) {
+            var request = new XMLHttpRequest();
+            request.open('Get', path, true);
+            request.responseType = "arraybuffer";
+            request.onreadystatechange = function (ev) {
+                if (request.readyState == 4) {
+                    request.onreadystatechange = null;
+                    if (request.status >= 200 && request.status < 300) {
+                        callback(null, request.response);
+                    }
+                    else {
+                        callback(new Error(path + " 加载失败！"), null);
+                    }
+                }
+            };
+            request.onprogress = function (ev) {
+            };
+            request.send();
+        };
+        return HttpReadFS;
+    }());
+    feng3d.HttpReadFS = HttpReadFS;
+    feng3d.httpReadFS = new HttpReadFS();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 文件系统类型
+     */
+    var FSType;
+    (function (FSType) {
+        FSType["http"] = "http";
+        FSType["native"] = "native";
+        FSType["indexedDB"] = "indexedDB";
+    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
+    /**
+     * 资源
+     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
+     */
+    var Assets = /** @class */ (function () {
+        function Assets() {
+            /**
+             * 可读文件系统
+             */
+            this.readFS = feng3d.httpReadFS;
+        }
+        Object.defineProperty(Assets.prototype, "type", {
+            get: function () {
+                return this.readFS.type;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        Assets.prototype.readFile = function (path, callback) {
+            var readFS = this.readFS;
+            if (path.indexOf("http://") != -1
+                || path.indexOf("https://") != -1)
+                readFS = feng3d.httpReadFS;
+            readFS.readFile(path, callback);
+        };
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        Assets.prototype.loadImage = function (path, callback) {
+            if (path == "" || path == null) {
+                callback(new Error("无效路径!"), null);
+                return;
+            }
+            this.readFile(path, function (err, data) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                feng3d.dataTransform.arrayBufferToImage(data, function (img) {
+                    callback(null, img);
+                });
+            });
+        };
+        return Assets;
+    }());
+    feng3d.Assets = Assets;
+    feng3d.assets = new Assets();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23523,48 +23528,6 @@ var feng3d;
     feng3d.log("Feng3D version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-
-(function universalModuleDefinition(root, factory)
-{
-    if (root && root["feng3d"])
-    {
-        return;
-    }
-    if (typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
-    else if (typeof define === 'function' && define.amd)
-        define([], factory);
-    else if (typeof exports === 'object')
-        exports["feng3d"] = factory();
-    else
-    {
-        root["feng3d"] = factory();
-    }
-})(this, function ()
-{
-    return feng3d;
-});
-
-(function universalModuleDefinition(root, factory)
-{
-    if (root && root["feng3d"])
-    {
-        return;
-    }
-    if (typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
-    else if (typeof define === 'function' && define.amd)
-        define([], factory);
-    else if (typeof exports === 'object')
-        exports["feng3d"] = factory();
-    else
-    {
-        root["feng3d"] = factory();
-    }
-})(this, function ()
-{
-    return feng3d;
-});
 
 (function universalModuleDefinition(root, factory)
 {
