@@ -18890,7 +18890,7 @@ var feng3d;
             /**
              * 发射率，每秒发射粒子数量
              */
-            _this.rate = 10;
+            _this.rate = 100;
             /**
              * 爆发，在time时刻额外喷射particles粒子
              */
@@ -19241,8 +19241,7 @@ var feng3d;
             feng3d.serialize
         ], ParticleSystem.prototype, "isPlaying", void 0);
         __decorate([
-            feng3d.oav(),
-            feng3d.serialize
+            feng3d.oav()
         ], ParticleSystem.prototype, "time", void 0);
         __decorate([
             feng3d.oav(),
@@ -23234,18 +23233,19 @@ var feng3d;
             if (name === void 0) { name = "Particle"; }
             var _particleMesh = feng3d.GameObject.create("particle");
             var particleSystem = _particleMesh.addComponent(feng3d.ParticleSystem);
-            particleSystem.numParticles = 1000;
-            //通过函数来创建粒子初始状态
-            particleSystem.generateFunctions.push({
-                generate: function (particle) {
-                    particle.birthTime = Math.random() * 5 - 5;
-                    particle.lifetime = 5;
-                    var degree2 = Math.random() * Math.PI * 2;
-                    var r = Math.random() * 1;
-                    particle.velocity = new feng3d.Vector3(r * Math.cos(degree2), r * 2, r * Math.sin(degree2));
-                }, priority: 0
-            });
-            particleSystem.cycle = 10;
+            // particleSystem.numParticles = 1000;
+            // //通过函数来创建粒子初始状态
+            // particleSystem.generateFunctions.push({
+            //     generate: (particle) =>
+            //     {
+            //         particle.birthTime = Math.random() * 5 - 5;
+            //         particle.lifetime = 5;
+            //         var degree2 = Math.random() * Math.PI * 2;
+            //         var r = Math.random() * 1;
+            //         particle.velocity = new Vector3(r * Math.cos(degree2), r * 2, r * Math.sin(degree2));
+            //     }, priority: 0
+            // });
+            // particleSystem.cycle = 10;
             return _particleMesh;
         };
         return GameObjectFactory;

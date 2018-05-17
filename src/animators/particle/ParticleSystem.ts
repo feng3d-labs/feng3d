@@ -27,7 +27,6 @@ namespace feng3d
          * 粒子时间
          */
         @oav()
-        @serialize
         time = 0;
 
         /**

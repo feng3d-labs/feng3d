@@ -11,7 +11,7 @@ namespace feng3d
          */
         @oav()
         @serialize
-        rate = 10;
+        rate = 100;
 
         /**
          * 爆发，在time时刻额外喷射particles粒子
