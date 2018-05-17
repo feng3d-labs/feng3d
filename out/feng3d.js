@@ -20324,14 +20324,14 @@ var feng3d;
      * 资源
      * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
      */
-    var Assets = /** @class */ (function () {
-        function Assets() {
+    var ReadAssets = /** @class */ (function () {
+        function ReadAssets() {
             /**
              * 可读文件系统
              */
             this.readFS = feng3d.httpReadFS;
         }
-        Object.defineProperty(Assets.prototype, "type", {
+        Object.defineProperty(ReadAssets.prototype, "type", {
             get: function () {
                 return this.readFS.type;
             },
@@ -20343,7 +20343,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        Assets.prototype.readFile = function (path, callback) {
+        ReadAssets.prototype.readFile = function (path, callback) {
             var readFS = this.readFS;
             if (path.indexOf("http://") != -1
                 || path.indexOf("https://") != -1)
@@ -20355,7 +20355,7 @@ var feng3d;
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        Assets.prototype.loadImage = function (path, callback) {
+        ReadAssets.prototype.loadImage = function (path, callback) {
             if (path == "" || path == null) {
                 callback(new Error("无效路径!"), null);
                 return;
@@ -20370,10 +20370,76 @@ var feng3d;
                 });
             });
         };
-        return Assets;
+        return ReadAssets;
     }());
-    feng3d.Assets = Assets;
-    feng3d.assets = new Assets();
+    feng3d.ReadAssets = ReadAssets;
+    feng3d.assets = new ReadAssets();
+    var ReadWriteAssets = /** @class */ (function (_super) {
+        __extends(ReadWriteAssets, _super);
+        function ReadWriteAssets() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 可读写文件系统
+             */
+            _this.readFS = feng3d.indexedDBfs;
+            return _this;
+        }
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.readdir = function (path, callback) {
+            this.readFS.readdir(path, callback);
+        };
+        ReadWriteAssets.prototype.hasProject = function (projectname, callback) {
+            this.readFS.hasProject(projectname, callback);
+        };
+        ReadWriteAssets.prototype.getProjectList = function (callback) {
+            this.readFS.getProjectList(callback);
+        };
+        ReadWriteAssets.prototype.initproject = function (projectname, callback) {
+            this.readFS.initproject(projectname, callback);
+        };
+        ReadWriteAssets.prototype.stat = function (path, callback) {
+            this.readFS.stat(path, callback);
+        };
+        ReadWriteAssets.prototype.writeFile = function (path, data, callback) {
+            this.readFS.writeFile(path, data, callback);
+        };
+        /**
+         * 读取文件为字符串
+         */
+        ReadWriteAssets.prototype.readFileAsString = function (path, callback) {
+            this.readFS.readFileAsString(path, callback);
+        };
+        ReadWriteAssets.prototype.mkdir = function (path, callback) {
+            this.readFS.mkdir(path, callback);
+        };
+        ReadWriteAssets.prototype.rename = function (oldPath, newPath, callback) {
+            this.readFS.rename(oldPath, newPath, callback);
+        };
+        ReadWriteAssets.prototype.move = function (src, dest, callback) {
+            this.readFS.move(src, dest, callback);
+        };
+        ReadWriteAssets.prototype.remove = function (path, callback) {
+            this.readFS.remove(path, callback);
+        };
+        /**
+         * 获取文件绝对路径
+         */
+        ReadWriteAssets.prototype.getAbsolutePath = function (path, callback) {
+            this.readFS.getAbsolutePath(path, callback);
+        };
+        /**
+         * 获取指定文件下所有文件路径列表
+         */
+        ReadWriteAssets.prototype.getAllfilepathInFolder = function (dirpath, callback) {
+            this.readFS.getAllfilepathInFolder(dirpath, callback);
+        };
+        return ReadWriteAssets;
+    }(ReadAssets));
+    feng3d.ReadWriteAssets = ReadWriteAssets;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
