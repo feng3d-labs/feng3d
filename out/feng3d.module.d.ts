@@ -10406,8 +10406,6 @@ declare namespace feng3d {
     };
 }
 declare namespace feng3d {
-    var DBname: string;
-    var projectname: string;
     /**
      * 索引数据资源
      */
@@ -10426,6 +10424,14 @@ declare namespace feng3d {
      * 索引数据文件系统
      */
     class IndexedDBfs implements FS {
+        /**
+         * 数据库名称
+         */
+        DBname: string;
+        /**
+         * 项目名称（表单名称）
+         */
+        projectname: string;
         hasProject(projectname: string, callback: (has: boolean) => void): void;
         getProjectList(callback: (err: Error | null, projects: string[] | null) => void): void;
         initproject(projectname1: string, callback: () => void): void;

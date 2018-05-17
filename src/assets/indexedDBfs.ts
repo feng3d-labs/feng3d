@@ -1,8 +1,5 @@
 namespace feng3d
 {
-    export var DBname = "feng3d-editor";
-    export var projectname = "testproject";
-
     /**
      * 索引数据资源
      */
@@ -32,14 +29,14 @@ namespace feng3d
 
     function copy(sourcekey: string | number, targetkey: string | number, callback?: (err?: Error | null) => void)
     {
-        storage.get(DBname, projectname, sourcekey, (err, data) =>
+        storage.get(indexedDBfs.DBname, indexedDBfs.projectname, sourcekey, (err, data) =>
         {
             if (err)
             {
                 callback && callback(err);
                 return;
             }
-            storage.set(DBname, projectname, targetkey, data, callback);
+            storage.set(indexedDBfs.DBname, indexedDBfs.projectname, targetkey, data, callback);
         });
     }
 
@@ -52,7 +49,7 @@ namespace feng3d
                 callback && callback(err);
                 return;
             }
-            storage.delete(DBname, projectname, sourcekey, callback);
+            storage.delete(indexedDBfs.DBname, indexedDBfs.projectname, sourcekey, callback);
         });
     }
 
@@ -93,7 +90,7 @@ namespace feng3d
     {
         if (deletelists.length > 0)
         {
-            storage.delete(DBname, projectname, <string>deletelists.shift(), (err) =>
+            storage.delete(indexedDBfs.DBname, indexedDBfs.projectname, <string>deletelists.shift(), (err) =>
             {
                 if (err)
                 {
@@ -117,24 +114,33 @@ namespace feng3d
      */
     export class IndexedDBfs implements FS  
     {
+        /**
+         * 数据库名称
+         */
+        DBname = "feng3d-editor";
+        /**
+         * 项目名称（表单名称）
+         */
+        projectname = "testproject";
+
         hasProject(projectname: string, callback: (has: boolean) => void)
         {
-            storage.hasObjectStore(DBname, projectname, callback);
+            storage.hasObjectStore(this.DBname, projectname, callback);
         }
         getProjectList(callback: (err: Error | null, projects: string[] | null) => void)
         {
-            storage.getObjectStoreNames(DBname, callback)
+            storage.getObjectStoreNames(this.DBname, callback)
         }
         initproject(projectname1: string, callback: () => void)
         {
-            storage.createObjectStore(DBname, projectname1, (err) =>
+            storage.createObjectStore(this.DBname, projectname1, (err) =>
             {
                 if (err)
                 {
                     warn(err);
                     return;
                 }
-                projectname = projectname1;
+                this.projectname = projectname1;
                 // todo 启动监听 ts代码变化自动编译
                 callback();
             });
@@ -142,7 +148,7 @@ namespace feng3d
         //
         stat(path: string, callback: (err: Error | null, stats: FileInfo | null) => void): void
         {
-            storage.get(DBname, projectname, path, (err, data) =>
+            storage.get(this.DBname, this.projectname, path, (err, data) =>
             {
                 if (data)
                 {
@@ -163,7 +169,7 @@ namespace feng3d
         readdir(path: string, callback: (err: Error | null, files: string[] | null) => void): void
         {
             assert(path.charAt(path.length - 1) == "/", `文件夹路径必须以 / 结尾！`)
-            storage.getAllKeys(DBname, projectname, (err, allfilepaths) =>
+            storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
             {
                 if (!allfilepaths)
                 {
@@ -188,14 +194,14 @@ namespace feng3d
         }
         writeFile(path: string, data: ArrayBuffer, callback?: (err: Error | null) => void): void
         {
-            storage.set(DBname, projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
+            storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
         }
         /**
          * 读取文件为字符串
          */
         readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void
         {
-            storage.get(DBname, projectname, path, (err, data) =>
+            storage.get(this.DBname, this.projectname, path, (err, data) =>
             {
                 path
                 if (err)
@@ -214,7 +220,7 @@ namespace feng3d
          */
         readFile(path: string, callback: (err: Error | null, data: ArrayBuffer | undefined) => void): void
         {
-            storage.get(DBname, projectname, path, (err, data) =>
+            storage.get(this.DBname, this.projectname, path, (err, data) =>
             {
                 callback(null, data ? data.data : null);
             });
@@ -222,11 +228,11 @@ namespace feng3d
         mkdir(path: string, callback: (err: Error | null) => void): void
         {
             assert(path.charAt(path.length - 1) == "/", `文件夹路径必须以 / 结尾！`)
-            storage.set(DBname, projectname, path, { isDirectory: true, birthtime: new Date() }, callback);
+            storage.set(this.DBname, this.projectname, path, { isDirectory: true, birthtime: new Date() }, callback);
         }
         rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void
         {
-            storage.getAllKeys(DBname, projectname, (err, allfilepaths) =>
+            storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
             {
                 if (!allfilepaths)
                 {
@@ -251,7 +257,7 @@ namespace feng3d
         }
         remove(path: string, callback?: (err: Error | null) => void): void
         {
-            storage.getAllKeys(DBname, projectname, (err, allfilepaths) =>
+            storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
             {
                 if (!allfilepaths)
                 {
@@ -282,7 +288,7 @@ namespace feng3d
          */
         getAllfilepathInFolder(dirpath: string, callback: (err: Error | null, filepaths: string[] | null) => void): void
         {
-            storage.getAllKeys(DBname, projectname, (err, allfilepaths) =>
+            storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
             {
                 if (!allfilepaths)
                 {

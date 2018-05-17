@@ -20088,8 +20088,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.DBname = "feng3d-editor";
-    feng3d.projectname = "testproject";
     /**
      * 索引数据资源
      */
@@ -20111,12 +20109,12 @@ var feng3d;
     feng3d.IndexedDBAssets = IndexedDBAssets;
     feng3d.assetsmap[feng3d.FSType.indexedDB] = feng3d.indexedDBAssets = new IndexedDBAssets();
     function copy(sourcekey, targetkey, callback) {
-        feng3d.storage.get(feng3d.DBname, feng3d.projectname, sourcekey, function (err, data) {
+        feng3d.storage.get(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, sourcekey, function (err, data) {
             if (err) {
                 callback && callback(err);
                 return;
             }
-            feng3d.storage.set(feng3d.DBname, feng3d.projectname, targetkey, data, callback);
+            feng3d.storage.set(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, targetkey, data, callback);
         });
     }
     function move(sourcekey, targetkey, callback) {
@@ -20125,7 +20123,7 @@ var feng3d;
                 callback && callback(err);
                 return;
             }
-            feng3d.storage.delete(feng3d.DBname, feng3d.projectname, sourcekey, callback);
+            feng3d.storage.delete(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, sourcekey, callback);
         });
     }
     function movefiles(movelists, callback) {
@@ -20154,7 +20152,7 @@ var feng3d;
     }
     function deletefiles(deletelists, callback) {
         if (deletelists.length > 0) {
-            feng3d.storage.delete(feng3d.DBname, feng3d.projectname, deletelists.shift(), function (err) {
+            feng3d.storage.delete(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, deletelists.shift(), function (err) {
                 if (err) {
                     callback(err);
                     return;
@@ -20170,27 +20168,36 @@ var feng3d;
      */
     var IndexedDBfs = /** @class */ (function () {
         function IndexedDBfs() {
+            /**
+             * 数据库名称
+             */
+            this.DBname = "feng3d-editor";
+            /**
+             * 项目名称（表单名称）
+             */
+            this.projectname = "testproject";
         }
         IndexedDBfs.prototype.hasProject = function (projectname, callback) {
-            feng3d.storage.hasObjectStore(feng3d.DBname, projectname, callback);
+            feng3d.storage.hasObjectStore(this.DBname, projectname, callback);
         };
         IndexedDBfs.prototype.getProjectList = function (callback) {
-            feng3d.storage.getObjectStoreNames(feng3d.DBname, callback);
+            feng3d.storage.getObjectStoreNames(this.DBname, callback);
         };
         IndexedDBfs.prototype.initproject = function (projectname1, callback) {
-            feng3d.storage.createObjectStore(feng3d.DBname, projectname1, function (err) {
+            var _this = this;
+            feng3d.storage.createObjectStore(this.DBname, projectname1, function (err) {
                 if (err) {
                     feng3d.warn(err);
                     return;
                 }
-                feng3d.projectname = projectname1;
+                _this.projectname = projectname1;
                 // todo 启动监听 ts代码变化自动编译
                 callback();
             });
         };
         //
         IndexedDBfs.prototype.stat = function (path, callback) {
-            feng3d.storage.get(feng3d.DBname, feng3d.projectname, path, function (err, data) {
+            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
                 if (data) {
                     callback(err, {
                         path: path,
@@ -20207,7 +20214,7 @@ var feng3d;
         };
         IndexedDBfs.prototype.readdir = function (path, callback) {
             feng3d.assert(path.charAt(path.length - 1) == "/", "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            feng3d.storage.getAllKeys(feng3d.DBname, feng3d.projectname, function (err, allfilepaths) {
+            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
                 if (!allfilepaths) {
                     callback(err, null);
                     return;
@@ -20227,13 +20234,13 @@ var feng3d;
             });
         };
         IndexedDBfs.prototype.writeFile = function (path, data, callback) {
-            feng3d.storage.set(feng3d.DBname, feng3d.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
+            feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
         };
         /**
          * 读取文件为字符串
          */
         IndexedDBfs.prototype.readFileAsString = function (path, callback) {
-            feng3d.storage.get(feng3d.DBname, feng3d.projectname, path, function (err, data) {
+            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
                 path;
                 if (err) {
                     callback(err, null);
@@ -20248,16 +20255,16 @@ var feng3d;
          * 读取文件为Buffer
          */
         IndexedDBfs.prototype.readFile = function (path, callback) {
-            feng3d.storage.get(feng3d.DBname, feng3d.projectname, path, function (err, data) {
+            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
                 callback(null, data ? data.data : null);
             });
         };
         IndexedDBfs.prototype.mkdir = function (path, callback) {
             feng3d.assert(path.charAt(path.length - 1) == "/", "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            feng3d.storage.set(feng3d.DBname, feng3d.projectname, path, { isDirectory: true, birthtime: new Date() }, callback);
+            feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: true, birthtime: new Date() }, callback);
         };
         IndexedDBfs.prototype.rename = function (oldPath, newPath, callback) {
-            feng3d.storage.getAllKeys(feng3d.DBname, feng3d.projectname, function (err, allfilepaths) {
+            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
                 if (!allfilepaths) {
                     callback(err);
                     return;
@@ -20276,7 +20283,7 @@ var feng3d;
             this.rename(src, dest, callback || (function () { }));
         };
         IndexedDBfs.prototype.remove = function (path, callback) {
-            feng3d.storage.getAllKeys(feng3d.DBname, feng3d.projectname, function (err, allfilepaths) {
+            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
                 if (!allfilepaths) {
                     callback && callback(err);
                     return;
@@ -20301,7 +20308,7 @@ var feng3d;
          * 获取指定文件下所有文件路径列表
          */
         IndexedDBfs.prototype.getAllfilepathInFolder = function (dirpath, callback) {
-            feng3d.storage.getAllKeys(feng3d.DBname, feng3d.projectname, function (err, allfilepaths) {
+            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
                 if (!allfilepaths) {
                     callback(err, null);
                     return;
