@@ -24,7 +24,7 @@ namespace feng3d
         /**
          * 可读文件系统
          */
-        readFS: ReadFS = httpAssets;
+        readFS: ReadFS = new HttpReadFS();
 
         get type()
         {

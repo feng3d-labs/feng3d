@@ -19852,7 +19852,7 @@ var feng3d;
             /**
              * 可读文件系统
              */
-            this.readFS = feng3d.httpAssets;
+            this.readFS = new feng3d.HttpReadFS();
         }
         Object.defineProperty(Assets.prototype, "type", {
             get: function () {
@@ -19896,10 +19896,13 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var HttpAssets = /** @class */ (function () {
-        function HttpAssets() {
+    /**
+     * Http可读文件系统
+     */
+    var HttpReadFS = /** @class */ (function () {
+        function HttpReadFS() {
         }
-        Object.defineProperty(HttpAssets.prototype, "type", {
+        Object.defineProperty(HttpReadFS.prototype, "type", {
             get: function () {
                 return feng3d.FSType.http;
             },
@@ -19911,7 +19914,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        HttpAssets.prototype.readFile = function (path, callback) {
+        HttpReadFS.prototype.readFile = function (path, callback) {
             var request = new XMLHttpRequest();
             request.open('Get', path, true);
             request.responseType = "arraybuffer";
@@ -19930,10 +19933,9 @@ var feng3d;
             };
             request.send();
         };
-        return HttpAssets;
+        return HttpReadFS;
     }());
-    feng3d.HttpAssets = HttpAssets;
-    feng3d.httpAssets = new HttpAssets();
+    feng3d.HttpReadFS = HttpReadFS;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23521,6 +23523,48 @@ var feng3d;
     feng3d.log("Feng3D version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+
+(function universalModuleDefinition(root, factory)
+{
+    if (root && root["feng3d"])
+    {
+        return;
+    }
+    if (typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory();
+    else if (typeof define === 'function' && define.amd)
+        define([], factory);
+    else if (typeof exports === 'object')
+        exports["feng3d"] = factory();
+    else
+    {
+        root["feng3d"] = factory();
+    }
+})(this, function ()
+{
+    return feng3d;
+});
+
+(function universalModuleDefinition(root, factory)
+{
+    if (root && root["feng3d"])
+    {
+        return;
+    }
+    if (typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory();
+    else if (typeof define === 'function' && define.amd)
+        define([], factory);
+    else if (typeof exports === 'object')
+        exports["feng3d"] = factory();
+    else
+    {
+        root["feng3d"] = factory();
+    }
+})(this, function ()
+{
+    return feng3d;
+});
 
 (function universalModuleDefinition(root, factory)
 {

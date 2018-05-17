@@ -204,10 +204,10 @@
         "src/animation/Animation.ts",
         //
         "src/assets/Assets.ts",
-        "src/assets/HttpAssets.ts",
+        "src/assets/HttpReadFS.ts",
         //
-        "src/assets/storage.ts",
-        "src/assets/indexedDBfs.ts",
+        "src/assets/Storage.ts",
+        "src/assets/IndexedDBfs.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MtlParser.ts",

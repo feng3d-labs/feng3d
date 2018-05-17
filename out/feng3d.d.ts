@@ -10394,8 +10394,10 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    var httpAssets: HttpAssets;
-    class HttpAssets implements ReadFS {
+    /**
+     * Http可读文件系统
+     */
+    class HttpReadFS implements ReadFS {
         readonly type: FSType;
         /**
          * 读取文件

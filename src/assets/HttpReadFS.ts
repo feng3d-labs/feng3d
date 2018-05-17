@@ -1,8 +1,9 @@
 namespace feng3d
 {
-    export var httpAssets: HttpAssets;
-
-    export class HttpAssets implements ReadFS
+    /**
+     * Http可读文件系统
+     */
+    export class HttpReadFS implements ReadFS
     {
         get type()
         {
@@ -42,6 +43,4 @@ namespace feng3d
             request.send();
         }
     }
-
-    httpAssets = new HttpAssets();
 }
