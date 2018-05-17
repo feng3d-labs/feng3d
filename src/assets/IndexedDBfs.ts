@@ -133,6 +133,37 @@ namespace feng3d
      */
     export class IndexedDBfs extends IndexedDBReadFS implements ReadWriteFS
     {
+        /**
+         * 获取文件信息
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void
+        {
+            storage.get(this.DBname, this.projectname, path, (err, data) =>
+            {
+                if (data)
+                {
+                    callback(null, {
+                        path: path,
+                        birthtime: data.birthtime.getTime(),
+                        mtime: data.birthtime.getTime(),
+                        isDirectory: data.isDirectory,
+                        size: 0
+                    });
+                }
+                else
+                {
+                    callback(new Error(path + " 不存在"), null);
+                }
+            });
+        }
+
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
         readdir(path: string, callback: (err: Error, files: string[]) => void): void
         {
             storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
@@ -182,50 +213,6 @@ namespace feng3d
 
         ///---------------------------
 
-
-        hasProject(projectname: string, callback: (has: boolean) => void)
-        {
-            storage.hasObjectStore(this.DBname, projectname, callback);
-        }
-        getProjectList(callback: (err: Error | null, projects: string[] | null) => void)
-        {
-            storage.getObjectStoreNames(this.DBname, callback)
-        }
-        initproject(projectname1: string, callback: () => void)
-        {
-            storage.createObjectStore(this.DBname, projectname1, (err) =>
-            {
-                if (err)
-                {
-                    warn(err);
-                    return;
-                }
-                this.projectname = projectname1;
-                // todo 启动监听 ts代码变化自动编译
-                callback();
-            });
-        }
-        //
-        stat(path: string, callback: (err: Error | null, stats: FileInfo | null) => void): void
-        {
-            storage.get(this.DBname, this.projectname, path, (err, data) =>
-            {
-                if (data)
-                {
-                    callback(err, {
-                        path: path,
-                        birthtime: data.birthtime.getTime(),
-                        mtime: data.birthtime.getTime(),
-                        isDirectory: data.isDirectory,
-                        size: 0
-                    });
-                }
-                else
-                {
-                    callback(new Error(path + " 不存在"), null);
-                }
-            });
-        }
         /**
          * 读取文件为字符串
          */

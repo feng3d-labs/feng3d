@@ -92,6 +92,16 @@ namespace feng3d
         }
 
         /**
+         * 获取文件信息
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void
+        {
+            this.fs.stat(path, callback);
+        }
+
+        /**
          * 读取文件夹中文件列表
          * @param path 路径
          * @param callback 回调函数
@@ -125,22 +135,7 @@ namespace feng3d
 
 
         ///--------------------------
-        hasProject(projectname: string, callback: (has: boolean) => void): void
-        {
-            this.fs.hasProject(projectname, callback);
-        }
-        getProjectList(callback: (err: Error | null, projects: string[] | null) => void): void
-        {
-            this.fs.getProjectList(callback);
-        }
-        initproject(projectname: string, callback: () => void): void
-        {
-            this.fs.initproject(projectname, callback);
-        }
-        stat(path: string, callback: (err: Error | null, stats: FileInfo | null) => void): void
-        {
-            this.fs.stat(path, callback);
-        }
+
         /**
          * 读取文件为字符串
          */
@@ -203,6 +198,13 @@ namespace feng3d
     export interface ReadWriteFS extends ReadFS
     {
         /**
+         * 获取文件信息
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void;
+
+        /**
          * 读取文件夹中文件列表
          * @param path 路径
          * @param callback 回调函数
@@ -226,10 +228,6 @@ namespace feng3d
 
         ///-----------------------------
 
-        hasProject(projectname: string, callback: (has: boolean) => void): void;
-        getProjectList(callback: (err: Error | null, projects: string[] | null) => void): void;
-        initproject(projectname: string, callback: () => void): void;
-        stat(path: string, callback: (err: Error | null, stats: FileInfo | null) => void): void;
         /**
          * 读取文件为字符串
          */

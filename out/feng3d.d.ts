@@ -10404,6 +10404,17 @@ declare namespace feng3d {
      * 索引数据文件系统
      */
     class IndexedDBfs extends IndexedDBReadFS implements ReadWriteFS {
+        /**
+         * 获取文件信息
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void;
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
         readdir(path: string, callback: (err: Error, files: string[]) => void): void;
         /**
          * 删除文件
@@ -10418,10 +10429,6 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
-        hasProject(projectname: string, callback: (has: boolean) => void): void;
-        getProjectList(callback: (err: Error | null, projects: string[] | null) => void): void;
-        initproject(projectname1: string, callback: () => void): void;
-        stat(path: string, callback: (err: Error | null, stats: FileInfo | null) => void): void;
         /**
          * 读取文件为字符串
          */
@@ -10508,6 +10515,12 @@ declare namespace feng3d {
         fs: IndexedDBfs;
         constructor(readWriteFS?: ReadWriteFS);
         /**
+         * 获取文件信息
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void;
+        /**
          * 读取文件夹中文件列表
          * @param path 路径
          * @param callback 回调函数
@@ -10526,10 +10539,6 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
-        hasProject(projectname: string, callback: (has: boolean) => void): void;
-        getProjectList(callback: (err: Error | null, projects: string[] | null) => void): void;
-        initproject(projectname: string, callback: () => void): void;
-        stat(path: string, callback: (err: Error | null, stats: FileInfo | null) => void): void;
         /**
          * 读取文件为字符串
          */
@@ -10567,6 +10576,12 @@ declare namespace feng3d {
      */
     interface ReadWriteFS extends ReadFS {
         /**
+         * 获取文件信息
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void;
+        /**
          * 读取文件夹中文件列表
          * @param path 路径
          * @param callback 回调函数
@@ -10585,10 +10600,6 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
-        hasProject(projectname: string, callback: (has: boolean) => void): void;
-        getProjectList(callback: (err: Error | null, projects: string[] | null) => void): void;
-        initproject(projectname: string, callback: () => void): void;
-        stat(path: string, callback: (err: Error | null, stats: FileInfo | null) => void): void;
         /**
          * 读取文件为字符串
          */

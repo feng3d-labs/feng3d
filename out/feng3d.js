@@ -20122,6 +20122,32 @@ var feng3d;
         function IndexedDBfs() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * 获取文件信息
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.stat = function (path, callback) {
+            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
+                if (data) {
+                    callback(null, {
+                        path: path,
+                        birthtime: data.birthtime.getTime(),
+                        mtime: data.birthtime.getTime(),
+                        isDirectory: data.isDirectory,
+                        size: 0
+                    });
+                }
+                else {
+                    callback(new Error(path + " 不存在"), null);
+                }
+            });
+        };
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
         IndexedDBfs.prototype.readdir = function (path, callback) {
             feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
                 if (!allfilepaths) {
@@ -20160,41 +20186,6 @@ var feng3d;
             feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
         };
         ///---------------------------
-        IndexedDBfs.prototype.hasProject = function (projectname, callback) {
-            feng3d.storage.hasObjectStore(this.DBname, projectname, callback);
-        };
-        IndexedDBfs.prototype.getProjectList = function (callback) {
-            feng3d.storage.getObjectStoreNames(this.DBname, callback);
-        };
-        IndexedDBfs.prototype.initproject = function (projectname1, callback) {
-            var _this = this;
-            feng3d.storage.createObjectStore(this.DBname, projectname1, function (err) {
-                if (err) {
-                    feng3d.warn(err);
-                    return;
-                }
-                _this.projectname = projectname1;
-                // todo 启动监听 ts代码变化自动编译
-                callback();
-            });
-        };
-        //
-        IndexedDBfs.prototype.stat = function (path, callback) {
-            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                if (data) {
-                    callback(err, {
-                        path: path,
-                        birthtime: data.birthtime.getTime(),
-                        mtime: data.birthtime.getTime(),
-                        isDirectory: data.isDirectory,
-                        size: 0
-                    });
-                }
-                else {
-                    callback(new Error(path + " 不存在"), null);
-                }
-            });
-        };
         /**
          * 读取文件为字符串
          */
@@ -20402,6 +20393,14 @@ var feng3d;
             return _this;
         }
         /**
+         * 获取文件信息
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.stat = function (path, callback) {
+            this.fs.stat(path, callback);
+        };
+        /**
          * 读取文件夹中文件列表
          * @param path 路径
          * @param callback 回调函数
@@ -20428,18 +20427,6 @@ var feng3d;
             this.fs.writeFile(path, data, callback);
         };
         ///--------------------------
-        ReadWriteAssets.prototype.hasProject = function (projectname, callback) {
-            this.fs.hasProject(projectname, callback);
-        };
-        ReadWriteAssets.prototype.getProjectList = function (callback) {
-            this.fs.getProjectList(callback);
-        };
-        ReadWriteAssets.prototype.initproject = function (projectname, callback) {
-            this.fs.initproject(projectname, callback);
-        };
-        ReadWriteAssets.prototype.stat = function (path, callback) {
-            this.fs.stat(path, callback);
-        };
         /**
          * 读取文件为字符串
          */
