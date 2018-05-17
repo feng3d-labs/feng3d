@@ -133,6 +133,56 @@ namespace feng3d
      */
     export class IndexedDBfs extends IndexedDBReadFS implements ReadWriteFS
     {
+        readdir(path: string, callback: (err: Error, files: string[]) => void): void
+        {
+            storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
+            {
+                if (!allfilepaths)
+                {
+                    callback(err, null);
+                    return;
+                }
+                var subfilemap = {};
+                allfilepaths.forEach(element =>
+                {
+                    if (element.substr(0, path.length) == path && element != path)
+                    {
+                        var result = element.substr(path.length);
+                        var index = result.indexOf("/");
+                        if (index != -1)
+                            result = result.substring(0, index + 1);
+                        subfilemap[result] = 1;
+                    }
+                });
+                var files = Object.keys(subfilemap);
+                callback(null, files);
+            });
+        }
+
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        deleteFile(path: string, callback: (err: Error) => void)
+        {
+            storage.delete(this.DBname, this.projectname, path, callback);
+        }
+
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void)
+        {
+            storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
+        }
+
+        ///---------------------------
+
+
         hasProject(projectname: string, callback: (has: boolean) => void)
         {
             storage.hasObjectStore(this.DBname, projectname, callback);
@@ -175,36 +225,6 @@ namespace feng3d
                     callback(new Error(path + " 不存在"), null);
                 }
             });
-        }
-        readdir(path: string, callback: (err: Error, files: string[]) => void): void
-        {
-            assert(path.charAt(path.length - 1) == "/", `文件夹路径必须以 / 结尾！`)
-            storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
-            {
-                if (!allfilepaths)
-                {
-                    callback(err, null);
-                    return;
-                }
-                var subfilemap = {};
-                allfilepaths.forEach(element =>
-                {
-                    if (element.substr(0, path.length) == path && element != path)
-                    {
-                        var result = element.substr(path.length);
-                        var index = result.indexOf("/");
-                        if (index != -1)
-                            result = result.substring(0, index + 1);
-                        subfilemap[result] = 1;
-                    }
-                });
-                var files = Object.keys(subfilemap);
-                callback(null, files);
-            });
-        }
-        writeFile(path: string, data: ArrayBuffer, callback?: (err: Error | null) => void): void
-        {
-            storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
         }
         /**
          * 读取文件为字符串

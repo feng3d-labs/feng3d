@@ -20122,6 +20122,44 @@ var feng3d;
         function IndexedDBfs() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        IndexedDBfs.prototype.readdir = function (path, callback) {
+            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
+                if (!allfilepaths) {
+                    callback(err, null);
+                    return;
+                }
+                var subfilemap = {};
+                allfilepaths.forEach(function (element) {
+                    if (element.substr(0, path.length) == path && element != path) {
+                        var result = element.substr(path.length);
+                        var index = result.indexOf("/");
+                        if (index != -1)
+                            result = result.substring(0, index + 1);
+                        subfilemap[result] = 1;
+                    }
+                });
+                var files = Object.keys(subfilemap);
+                callback(null, files);
+            });
+        };
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.deleteFile = function (path, callback) {
+            feng3d.storage.delete(this.DBname, this.projectname, path, callback);
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.writeFile = function (path, data, callback) {
+            feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
+        };
+        ///---------------------------
         IndexedDBfs.prototype.hasProject = function (projectname, callback) {
             feng3d.storage.hasObjectStore(this.DBname, projectname, callback);
         };
@@ -20156,30 +20194,6 @@ var feng3d;
                     callback(new Error(path + " 不存在"), null);
                 }
             });
-        };
-        IndexedDBfs.prototype.readdir = function (path, callback) {
-            feng3d.assert(path.charAt(path.length - 1) == "/", "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
-                if (!allfilepaths) {
-                    callback(err, null);
-                    return;
-                }
-                var subfilemap = {};
-                allfilepaths.forEach(function (element) {
-                    if (element.substr(0, path.length) == path && element != path) {
-                        var result = element.substr(path.length);
-                        var index = result.indexOf("/");
-                        if (index != -1)
-                            result = result.substring(0, index + 1);
-                        subfilemap[result] = 1;
-                    }
-                });
-                var files = Object.keys(subfilemap);
-                callback(null, files);
-            });
-        };
-        IndexedDBfs.prototype.writeFile = function (path, data, callback) {
-            feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
         };
         /**
          * 读取文件为字符串
@@ -20381,6 +20395,7 @@ var feng3d;
             /**
              * 可读写文件系统
              */
+            // fs: ReadWriteFS = indexedDBfs;
             _this.fs = feng3d.indexedDBfs;
             if (readWriteFS)
                 _this.fs = readWriteFS;
@@ -20392,8 +20407,27 @@ var feng3d;
          * @param callback 回调函数
          */
         ReadWriteAssets.prototype.readdir = function (path, callback) {
+            feng3d.assert(path.charAt(path.length - 1) == "/", "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
             this.fs.readdir(path, callback);
         };
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.deleteFile = function (path, callback) {
+            this.fs.deleteFile(path, callback);
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.writeFile = function (path, data, callback) {
+            this.fs.writeFile(path, data, callback);
+        };
+        ///--------------------------
         ReadWriteAssets.prototype.hasProject = function (projectname, callback) {
             this.fs.hasProject(projectname, callback);
         };
@@ -20405,9 +20439,6 @@ var feng3d;
         };
         ReadWriteAssets.prototype.stat = function (path, callback) {
             this.fs.stat(path, callback);
-        };
-        ReadWriteAssets.prototype.writeFile = function (path, data, callback) {
-            this.fs.writeFile(path, data, callback);
         };
         /**
          * 读取文件为字符串

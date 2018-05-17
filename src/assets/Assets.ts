@@ -81,13 +81,14 @@ namespace feng3d
         /**
          * 可读写文件系统
          */
-        fs: ReadWriteFS = indexedDBfs;
+        // fs: ReadWriteFS = indexedDBfs;
+        fs = indexedDBfs;
 
         constructor(readWriteFS?: ReadWriteFS)
         {
             super();
             if (readWriteFS)
-                this.fs = readWriteFS;
+                this.fs = <any>readWriteFS;
         }
 
         /**
@@ -97,9 +98,33 @@ namespace feng3d
          */
         readdir(path: string, callback: (err: Error, files: string[]) => void): void
         {
+            assert(path.charAt(path.length - 1) == "/", `文件夹路径必须以 / 结尾！`)
             this.fs.readdir(path, callback);
         }
 
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        deleteFile(path: string, callback: (err: Error) => void)
+        {
+            this.fs.deleteFile(path, callback);
+        }
+
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void)
+        {
+            this.fs.writeFile(path, data, callback);
+        }
+
+
+        ///--------------------------
         hasProject(projectname: string, callback: (has: boolean) => void): void
         {
             this.fs.hasProject(projectname, callback);
@@ -115,10 +140,6 @@ namespace feng3d
         stat(path: string, callback: (err: Error | null, stats: FileInfo | null) => void): void
         {
             this.fs.stat(path, callback);
-        }
-        writeFile(path: string, data: ArrayBuffer, callback?: ((err: Error | null) => void) | undefined): void
-        {
-            this.fs.writeFile(path, data, callback);
         }
         /**
          * 读取文件为字符串
@@ -188,12 +209,27 @@ namespace feng3d
          */
         readdir(path: string, callback: (err: Error, files: string[]) => void): void;
 
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        deleteFile(path: string, callback: (err) => void): void;
+
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+
+        ///-----------------------------
 
         hasProject(projectname: string, callback: (has: boolean) => void): void;
         getProjectList(callback: (err: Error | null, projects: string[] | null) => void): void;
         initproject(projectname: string, callback: () => void): void;
         stat(path: string, callback: (err: Error | null, stats: FileInfo | null) => void): void;
-        writeFile(path: string, data: ArrayBuffer, callback?: ((err: Error | null) => void) | undefined): void;
         /**
          * 读取文件为字符串
          */
