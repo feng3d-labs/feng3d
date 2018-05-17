@@ -205,8 +205,6 @@
         //
         "src/assets/assets.ts",
         "src/assets/HttpAssets.ts",
-        "src/assets/storage.ts",
-        "src/assets/indexedDBfs.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MtlParser.ts",

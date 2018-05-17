@@ -10370,41 +10370,6 @@ declare namespace feng3d {
          */
         loadImage(url: string, callback: (img: HTMLImageElement) => void): void;
     }
-    type FileInfo = {
-        path: string;
-        birthtime: number;
-        mtime: number;
-        isDirectory: boolean;
-        size: number;
-    };
-    interface FS {
-        hasProject(projectname: string, callback: (has: boolean) => void): void;
-        getProjectList(callback: (err: Error | null, projects: string[] | null) => void): void;
-        initproject(projectname: string, callback: () => void): void;
-        stat(path: string, callback: (err: Error | null, stats: FileInfo | null) => void): void;
-        readdir(path: string, callback: (err: Error | null, files: string[] | null) => void): void;
-        writeFile(path: string, data: ArrayBuffer, callback?: ((err: Error | null) => void) | undefined): void;
-        /**
-         * 读取文件为字符串
-         */
-        readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void;
-        /**
-         * 读取文件为Buffer
-         */
-        readFile(path: string, callback: (err: Error | null, data: ArrayBuffer | undefined) => void): void;
-        mkdir(path: string, callback: (err: Error | null) => void): void;
-        rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void;
-        move(src: string, dest: string, callback?: ((err: Error | null) => void) | undefined): void;
-        remove(path: string, callback?: ((err: Error | null) => void) | undefined): void;
-        /**
-         * 获取文件绝对路径
-         */
-        getAbsolutePath(path: string, callback: (err: Error | null, absolutePath: string | null) => void): void;
-        /**
-         * 获取指定文件下所有文件路径列表
-         */
-        getAllfilepathInFolder(dirpath: string, callback: (err: Error | null, filepaths: string[] | null) => void): void;
-    }
 }
 declare namespace feng3d {
     var httpAssets: HttpAssets;
@@ -10416,34 +10381,6 @@ declare namespace feng3d {
          */
         loadImage(url: string, callback: (img: HTMLImageElement) => void): void;
     }
-}
-interface IDBObjectStore {
-    getAllKeys(): IDBRequest;
-}
-declare namespace feng3d {
-    var storage: {
-        support(): boolean;
-        getDatabase(dbname: string, callback: (err: any, database: IDBDatabase) => void): void;
-        deleteDatabase(dbname: string, callback?: (err: any) => void): void;
-        hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void): void;
-        getObjectStoreNames(dbname: string, callback: (err: Error, objectStoreNames: string[]) => void): void;
-        createObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
-        deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
-        getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void): void;
-        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: any) => void): void;
-        set(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: (err: Error) => void): void;
-        delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
-        clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
-    };
-}
-declare namespace feng3d {
-    var DBname: string;
-    var projectname: string;
-    var indexedDBAssets: IndexedDBAssets;
-    class IndexedDBAssets implements IAssets {
-        loadImage(url: string, callback: (img: HTMLImageElement) => void): void;
-    }
-    var indexedDBfs: FS;
 }
 declare namespace feng3d {
     /**
