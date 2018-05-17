@@ -19843,16 +19843,31 @@ var feng3d;
         FSType["native"] = "native";
         FSType["indexedDB"] = "indexedDB";
     })(FSType = feng3d.FSType || (feng3d.FSType = {}));
-    feng3d.assetsmap = {};
+    /**
+     * 资源
+     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
+     */
     var Assets = /** @class */ (function () {
         function Assets() {
-            this.fstype = FSType.http;
+            /**
+             * 可读文件系统
+             */
+            this.readFS = feng3d.httpAssets;
         }
-        Assets.prototype.getAssets = function (path) {
-            if (path.indexOf("http://") != -1
-                || path.indexOf("https://") != -1)
-                return feng3d.assetsmap[FSType.http];
-            return feng3d.assetsmap[this.fstype];
+        Object.defineProperty(Assets.prototype, "type", {
+            get: function () {
+                return this.readFS.type;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        Assets.prototype.readFile = function (path, callback) {
+            this.readFS.readFile(path, callback);
         };
         /**
          * 加载图片
@@ -19864,8 +19879,7 @@ var feng3d;
                 callback(new Error("无效路径!"), null);
                 return;
             }
-            var readFS = this.getAssets(path);
-            readFS.readFile(path, function (err, data) {
+            this.readFile(path, function (err, data) {
                 if (err) {
                     callback(err, null);
                     return;
@@ -19885,6 +19899,13 @@ var feng3d;
     var HttpAssets = /** @class */ (function () {
         function HttpAssets() {
         }
+        Object.defineProperty(HttpAssets.prototype, "type", {
+            get: function () {
+                return feng3d.FSType.http;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 读取文件
          * @param path 路径
@@ -19909,24 +19930,10 @@ var feng3d;
             };
             request.send();
         };
-        /**
-         * 加载图片
-         * @param url 图片路径
-         * @param callback 加载完成回调
-         */
-        HttpAssets.prototype.loadImage = function (url, callback) {
-            var image = new Image();
-            image.crossOrigin = "Anonymous";
-            image.onload = function () {
-                callback && callback(image);
-                image.onload = null;
-            };
-            image.src = url;
-        };
         return HttpAssets;
     }());
     feng3d.HttpAssets = HttpAssets;
-    feng3d.assetsmap[feng3d.FSType.http] = feng3d.httpAssets = new HttpAssets();
+    feng3d.httpAssets = new HttpAssets();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20122,6 +20129,13 @@ var feng3d;
     var IndexedDBAssets = /** @class */ (function () {
         function IndexedDBAssets() {
         }
+        Object.defineProperty(IndexedDBAssets.prototype, "type", {
+            get: function () {
+                return feng3d.FSType.indexedDB;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 读取文件
          * @param path 路径
@@ -20133,7 +20147,7 @@ var feng3d;
         return IndexedDBAssets;
     }());
     feng3d.IndexedDBAssets = IndexedDBAssets;
-    feng3d.assetsmap[feng3d.FSType.indexedDB] = feng3d.indexedDBAssets = new IndexedDBAssets();
+    feng3d.indexedDBAssets = new IndexedDBAssets();
     function copy(sourcekey, targetkey, callback) {
         feng3d.storage.get(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, sourcekey, function (err, data) {
             if (err) {

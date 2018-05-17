@@ -10,30 +10,35 @@ namespace feng3d
         indexedDB = "indexedDB"
     }
 
+    /**
+     * 资源系统
+     */
     export var assets: Assets;
-    export var assetsmap: { [fstype: string]: ReadFS } = {};
 
-    export interface IAssets
+    /**
+     * 资源
+     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
+     */
+    export class Assets implements ReadFS
     {
         /**
-         * 加载图片
-         * @param url 图片路径
-         * @param callback 加载完成回调
+         * 可读文件系统
          */
-        loadImage(url: string, callback: (err: Error, img: HTMLImageElement) => void): void;
-    }
+        readFS: ReadFS = httpAssets;
 
-    export class Assets implements IAssets
-    {
-        fstype = FSType.http;
-
-        private getAssets(path: string)
+        get type()
         {
-            if (path.indexOf("http://") != -1
-                || path.indexOf("https://") != -1
-            )
-                return assetsmap[FSType.http];
-            return assetsmap[this.fstype];
+            return this.readFS.type;
+        }
+
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readFile(path: string, callback: (err, data: ArrayBuffer) => void)
+        {
+            this.readFS.readFile(path, callback);
         }
 
         /**
@@ -48,8 +53,7 @@ namespace feng3d
                 callback(new Error("无效路径!"), null);
                 return;
             }
-            var readFS = this.getAssets(path);
-            readFS.readFile(path, (err, data) =>
+            this.readFile(path, (err, data) =>
             {
                 if (err)
                 {
@@ -71,6 +75,10 @@ namespace feng3d
      */
     export interface ReadFS
     {
+        /**
+         * 文件系统类型
+         */
+        readonly type: FSType;
         /**
          * 读取文件
          * @param path 路径

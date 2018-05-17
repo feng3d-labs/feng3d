@@ -4,6 +4,11 @@ namespace feng3d
 
     export class HttpAssets implements ReadFS
     {
+        get type()
+        {
+            return FSType.http;
+        }
+
         /**
          * 读取文件
          * @param path 路径
@@ -36,24 +41,7 @@ namespace feng3d
             };
             request.send();
         }
-
-        /**
-         * 加载图片
-         * @param url 图片路径
-         * @param callback 加载完成回调
-         */
-        loadImage(url: string, callback: (img: HTMLImageElement) => void): void
-        {
-            var image = new Image();
-            image.crossOrigin = "Anonymous";
-            image.onload = () =>
-            {
-                callback && callback(image);
-                image.onload = null;
-            }
-            image.src = url;
-        }
     }
 
-    assetsmap[FSType.http] = httpAssets = new HttpAssets();
+    httpAssets = new HttpAssets();
 }

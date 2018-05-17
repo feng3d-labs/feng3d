@@ -10,6 +10,11 @@ namespace feng3d
      */
     export class IndexedDBAssets implements ReadFS
     {
+        get type()
+        {
+            return FSType.indexedDB;
+        }
+
         /**
          * 读取文件
          * @param path 路径
@@ -21,7 +26,7 @@ namespace feng3d
         }
     }
 
-    assetsmap[FSType.indexedDB] = indexedDBAssets = new IndexedDBAssets();
+    indexedDBAssets = new IndexedDBAssets();
 
     function copy(sourcekey: string | number, targetkey: string | number, callback?: (err?: Error | null) => void)
     {
