@@ -2,10 +2,10 @@ namespace feng3d
 {
 
     /**
-     * 粒子动画
+     * 粒子系统
      * @author feng 2017-01-09
      */
-    export class ParticleAnimator extends Component
+    export class ParticleSystem extends Component
     {
         /**
          * 是否正在播放

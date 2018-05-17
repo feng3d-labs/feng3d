@@ -193,7 +193,7 @@
         "src/animators/particle/ParticleVelocity.ts",
         "src/animators/particle/ParticleColor.ts",
         "src/animators/particle/ParticleBillboard.ts",
-        "src/animators/particle/ParticleAnimator.ts",
+        "src/animators/particle/ParticleSystem.ts",
         "src/animators/particle/ParticleMaterial.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
