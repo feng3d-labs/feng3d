@@ -5,33 +5,23 @@ namespace feng3d
      * 粒子系统
      * @author feng 2017-01-09
      */
-    export class ParticleSystem extends Component
+    export class ParticleSystem extends MeshRenderer
     {
+
+        @oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } })
+        @serialize
+        geometry = new PointGeometry();
+
+        @oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } })
+        @serialize
+        material = materialFactory.create("particle", { renderParams: { renderMode: RenderMode.POINTS } });
+
         /**
          * 是否正在播放
          */
         @oav()
         @serialize
-        get isPlaying()
-        {
-            return this._isPlaying;
-        }
-        set isPlaying(value)
-        {
-            if (this._isPlaying == value)
-                return;
-            if (this._isPlaying)
-            {
-                ticker.offframe(this.update, this);
-            }
-            this._isPlaying = value;
-            if (this._isPlaying)
-            {
-                this.preTime = Date.now();
-                ticker.onframe(this.update, this);
-            }
-        }
-        private _isPlaying = true;
+        isPlaying = true;
 
         /**
          * 粒子时间
@@ -39,11 +29,6 @@ namespace feng3d
         @oav()
         @serialize
         time = 0;
-
-        /**
-         * 起始时间
-         */
-        preTime = 0;
 
         /**
          * 播放速度
@@ -103,19 +88,14 @@ namespace feng3d
         {
             super.init(gameObject);
 
-            if (this._isPlaying)
-            {
-                this.preTime = Date.now();
-                ticker.onframe(this.update, this);
-            }
-
             this.updateRenderState();
         }
 
-        private update()
+        update(interval: number)
         {
-            this.time = (this.time + ((Date.now() - this.preTime) * this.playspeed / 1000) + this.cycle) % this.cycle;
-            this.preTime = Date.now();
+            if (!this.isPlaying) return;
+
+            this.time = (this.time + (interval * this.playspeed / 1000) + this.cycle) % this.cycle;
 
             this.updateRenderState();
         }
@@ -229,6 +209,8 @@ namespace feng3d
 
         preRender(renderAtomic: RenderAtomic)
         {
+            super.preRender(renderAtomic);
+
             renderAtomic.instanceCount = () => this.numParticles;
             //
             renderAtomic.uniforms.u_particleTime = () => this.time;

@@ -20,7 +20,7 @@ namespace feng3d
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        onframe(func: () => void, thisObject?: Object, priority = 0)
+        onframe(func: (interval: number) => void, thisObject?: Object, priority = 0)
         {
             this.on(() => 1000 / this.frameRate, func, thisObject, priority);
             return this;
@@ -31,7 +31,7 @@ namespace feng3d
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        onceframe(func: () => void, thisObject?: Object, priority = 0)
+        onceframe(func: (interval: number) => void, thisObject?: Object, priority = 0)
         {
             this.once(() => 1000 / this.frameRate, func, thisObject, priority);
             return this;
@@ -42,7 +42,7 @@ namespace feng3d
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        offframe(func: () => void, thisObject?: Object)
+        offframe(func: (interval: number) => void, thisObject?: Object)
         {
             this.off(() => 1000 / this.frameRate, func, thisObject);
             return this;
@@ -54,7 +54,7 @@ namespace feng3d
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        on(interval: Lazy<number>, func: () => void, thisObject?: Object, priority = 0)
+        on(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority = 0)
         {
             addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: false });
             return this;
@@ -66,7 +66,7 @@ namespace feng3d
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        once(interval: Lazy<number>, func: () => void, thisObject?: Object, priority = 0)
+        once(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority = 0)
         {
             addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: true });
             return this;
@@ -77,7 +77,7 @@ namespace feng3d
          * @param func  执行方法
          * @param thisObject    方法this指针
          */
-        off(interval: Lazy<number>, func: () => void, thisObject?: Object)
+        off(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object)
         {
             removeTickerFunc({ interval: interval, func: func, thisObject: thisObject });
             return this;
@@ -90,7 +90,7 @@ namespace feng3d
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        repeat(interval: Lazy<number>, repeatCount: number, func: () => void, thisObject?: Object, priority = 0)
+        repeat(interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority = 0)
         {
             repeatCount = ~~repeatCount;
             if (repeatCount < 1)
@@ -107,7 +107,7 @@ namespace feng3d
         private ticker: Ticker;
         private interval: Lazy<number>;
         private priority: number;
-        private func: () => void;
+        private func: (interval: number) => void;
         private thisObject: Object
 
         /**
@@ -123,7 +123,7 @@ namespace feng3d
          */
         repeatCount: number
 
-        constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: () => void, thisObject?: Object, priority = 0)
+        constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority = 0)
         {
             this.ticker = ticker;
             this.interval = interval;
@@ -161,7 +161,7 @@ namespace feng3d
         {
             this.currentCount++;
             this.repeatCount--;
-            this.func.call(this.thisObject);
+            this.func.call(this.thisObject, lazy.getvalue(this.interval));
             if (this.repeatCount < 1)
                 this.stop();
         }
@@ -170,7 +170,7 @@ namespace feng3d
     interface TickerFuncItem
     {
         interval: Lazy<number>,
-        func: () => void,
+        func: (interval: number) => void,
         thisObject?: Object,
         priority?: number,
         once?: boolean
@@ -232,7 +232,7 @@ namespace feng3d
             {
                 // try
                 // {
-                element.func.call(element.thisObject);
+                element.func.call(element.thisObject, lazy.getvalue(element.interval));
                 // } catch (error)
                 // {
                 //     warn(`${element.func} 方法执行错误，从 ticker 中移除`, error)

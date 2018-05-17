@@ -130,17 +130,17 @@ namespace feng3d
             }
         }
 
-        private onEnterFrame()
+        private onEnterFrame(interval: number)
         {
             this.collectComponents.animations.list.forEach(element =>
             {
                 if (element.isplaying)
-                    element.update();
+                    element.update(interval);
             });
             this.collectComponents.behaviours.list.forEach(element =>
             {
                 if (element.isVisibleAndEnabled && (this.updateScriptFlag & element.flag))
-                    element.update();
+                    element.update(interval);
             });
         }
 

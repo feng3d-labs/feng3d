@@ -6,7 +6,7 @@ namespace feng3d
         editor = 1 << 1,
         all = (1 << 8) - 1,
     }
-    
+
     /**
      * Behaviours are Components that can be enabled or disabled.
      * 
@@ -38,7 +38,7 @@ namespace feng3d
         /**
          * 每帧执行
          */
-        update()
+        update(interval?: number)
         {
         }
     }

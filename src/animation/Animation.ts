@@ -40,18 +40,7 @@ namespace feng3d
 
         @oav()
         @serialize
-        get isplaying()
-        {
-            return this._isplaying;
-        }
-        set isplaying(value)
-        {
-            if (this._isplaying == value)
-                return;
-            this._preTime = Date.now();
-            this._isplaying = value;
-        }
-        private _isplaying = false;
+        isplaying = false;
 
         /**
          * 播放速度
@@ -60,13 +49,9 @@ namespace feng3d
         @serialize
         playspeed = 1;
 
-        private _preTime = 0;
-
-        public update()
+        public update(interval: number)
         {
-            var nowTime = Date.now();
-            this.time += (nowTime - this._preTime) * this.playspeed;
-            this._preTime = nowTime;
+            this.time += interval * this.playspeed;
         }
         private num = 0;
         private updateAni()
