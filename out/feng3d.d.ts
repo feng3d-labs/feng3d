@@ -10474,7 +10474,7 @@ declare namespace feng3d {
         /**
          * 可读文件系统
          */
-        readFS: ReadFS;
+        fs: ReadFS;
         readonly type: FSType;
         /**
          * 读取文件
@@ -10493,7 +10493,8 @@ declare namespace feng3d {
         /**
          * 可读写文件系统
          */
-        readFS: ReadWriteFS;
+        fs: ReadWriteFS;
+        constructor(readWriteFS?: ReadWriteFS);
         /**
          * 读取文件夹中文件列表
          * @param path 路径

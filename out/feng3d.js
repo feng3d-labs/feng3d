@@ -20329,11 +20329,11 @@ var feng3d;
             /**
              * 可读文件系统
              */
-            this.readFS = feng3d.httpReadFS;
+            this.fs = feng3d.httpReadFS;
         }
         Object.defineProperty(ReadAssets.prototype, "type", {
             get: function () {
-                return this.readFS.type;
+                return this.fs.type;
             },
             enumerable: true,
             configurable: true
@@ -20344,7 +20344,7 @@ var feng3d;
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         ReadAssets.prototype.readFile = function (path, callback) {
-            var readFS = this.readFS;
+            var readFS = this.fs;
             if (path.indexOf("http://") != -1
                 || path.indexOf("https://") != -1)
                 readFS = feng3d.httpReadFS;
@@ -20376,12 +20376,14 @@ var feng3d;
     feng3d.assets = new ReadAssets();
     var ReadWriteAssets = /** @class */ (function (_super) {
         __extends(ReadWriteAssets, _super);
-        function ReadWriteAssets() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function ReadWriteAssets(readWriteFS) {
+            var _this = _super.call(this) || this;
             /**
              * 可读写文件系统
              */
-            _this.readFS = feng3d.indexedDBfs;
+            _this.fs = feng3d.indexedDBfs;
+            if (readWriteFS)
+                _this.fs = readWriteFS;
             return _this;
         }
         /**
@@ -20390,52 +20392,52 @@ var feng3d;
          * @param callback 回调函数
          */
         ReadWriteAssets.prototype.readdir = function (path, callback) {
-            this.readFS.readdir(path, callback);
+            this.fs.readdir(path, callback);
         };
         ReadWriteAssets.prototype.hasProject = function (projectname, callback) {
-            this.readFS.hasProject(projectname, callback);
+            this.fs.hasProject(projectname, callback);
         };
         ReadWriteAssets.prototype.getProjectList = function (callback) {
-            this.readFS.getProjectList(callback);
+            this.fs.getProjectList(callback);
         };
         ReadWriteAssets.prototype.initproject = function (projectname, callback) {
-            this.readFS.initproject(projectname, callback);
+            this.fs.initproject(projectname, callback);
         };
         ReadWriteAssets.prototype.stat = function (path, callback) {
-            this.readFS.stat(path, callback);
+            this.fs.stat(path, callback);
         };
         ReadWriteAssets.prototype.writeFile = function (path, data, callback) {
-            this.readFS.writeFile(path, data, callback);
+            this.fs.writeFile(path, data, callback);
         };
         /**
          * 读取文件为字符串
          */
         ReadWriteAssets.prototype.readFileAsString = function (path, callback) {
-            this.readFS.readFileAsString(path, callback);
+            this.fs.readFileAsString(path, callback);
         };
         ReadWriteAssets.prototype.mkdir = function (path, callback) {
-            this.readFS.mkdir(path, callback);
+            this.fs.mkdir(path, callback);
         };
         ReadWriteAssets.prototype.rename = function (oldPath, newPath, callback) {
-            this.readFS.rename(oldPath, newPath, callback);
+            this.fs.rename(oldPath, newPath, callback);
         };
         ReadWriteAssets.prototype.move = function (src, dest, callback) {
-            this.readFS.move(src, dest, callback);
+            this.fs.move(src, dest, callback);
         };
         ReadWriteAssets.prototype.remove = function (path, callback) {
-            this.readFS.remove(path, callback);
+            this.fs.remove(path, callback);
         };
         /**
          * 获取文件绝对路径
          */
         ReadWriteAssets.prototype.getAbsolutePath = function (path, callback) {
-            this.readFS.getAbsolutePath(path, callback);
+            this.fs.getAbsolutePath(path, callback);
         };
         /**
          * 获取指定文件下所有文件路径列表
          */
         ReadWriteAssets.prototype.getAllfilepathInFolder = function (dirpath, callback) {
-            this.readFS.getAllfilepathInFolder(dirpath, callback);
+            this.fs.getAllfilepathInFolder(dirpath, callback);
         };
         return ReadWriteAssets;
     }(ReadAssets));

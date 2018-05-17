@@ -24,11 +24,11 @@ namespace feng3d
         /**
          * 可读文件系统
          */
-        readFS: ReadFS = httpReadFS;
+        fs: ReadFS = httpReadFS;
 
         get type()
         {
-            return this.readFS.type;
+            return this.fs.type;
         }
 
         /**
@@ -38,7 +38,7 @@ namespace feng3d
          */
         readFile(path: string, callback: (err, data: ArrayBuffer) => void)
         {
-            var readFS = this.readFS;
+            var readFS = this.fs;
             if (path.indexOf("http://") != -1
                 || path.indexOf("https://") != -1
             )
@@ -81,7 +81,14 @@ namespace feng3d
         /**
          * 可读写文件系统
          */
-        readFS: ReadWriteFS = indexedDBfs;
+        fs: ReadWriteFS = indexedDBfs;
+
+        constructor(readWriteFS?: ReadWriteFS)
+        {
+            super();
+            if (readWriteFS)
+                this.fs = readWriteFS;
+        }
 
         /**
          * 读取文件夹中文件列表
@@ -90,65 +97,65 @@ namespace feng3d
          */
         readdir(path: string, callback: (err: Error, files: string[]) => void): void
         {
-            this.readFS.readdir(path, callback);
+            this.fs.readdir(path, callback);
         }
 
         hasProject(projectname: string, callback: (has: boolean) => void): void
         {
-            this.readFS.hasProject(projectname, callback);
+            this.fs.hasProject(projectname, callback);
         }
         getProjectList(callback: (err: Error | null, projects: string[] | null) => void): void
         {
-            this.readFS.getProjectList(callback);
+            this.fs.getProjectList(callback);
         }
         initproject(projectname: string, callback: () => void): void
         {
-            this.readFS.initproject(projectname, callback);
+            this.fs.initproject(projectname, callback);
         }
         stat(path: string, callback: (err: Error | null, stats: FileInfo | null) => void): void
         {
-            this.readFS.stat(path, callback);
+            this.fs.stat(path, callback);
         }
         writeFile(path: string, data: ArrayBuffer, callback?: ((err: Error | null) => void) | undefined): void
         {
-            this.readFS.writeFile(path, data, callback);
+            this.fs.writeFile(path, data, callback);
         }
         /**
          * 读取文件为字符串
          */
         readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void
         {
-            this.readFS.readFileAsString(path, callback);
+            this.fs.readFileAsString(path, callback);
         }
         mkdir(path: string, callback: (err: Error | null) => void): void
         {
-            this.readFS.mkdir(path, callback);
+            this.fs.mkdir(path, callback);
         }
         rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void
         {
-            this.readFS.rename(oldPath, newPath, callback);
+            this.fs.rename(oldPath, newPath, callback);
         }
         move(src: string, dest: string, callback?: ((err: Error | null) => void) | undefined): void
         {
-            this.readFS.move(src, dest, callback);
+            this.fs.move(src, dest, callback);
         }
         remove(path: string, callback?: ((err: Error | null) => void) | undefined): void
         {
-            this.readFS.remove(path, callback);
+            this.fs.remove(path, callback);
         }
         /**
          * 获取文件绝对路径
          */
         getAbsolutePath(path: string, callback: (err: Error | null, absolutePath: string | null) => void): void
         {
-            this.readFS.getAbsolutePath(path, callback);
+            this.fs.getAbsolutePath(path, callback);
         }
         /**
          * 获取指定文件下所有文件路径列表
          */
         getAllfilepathInFolder(dirpath: string, callback: (err: Error | null, filepaths: string[] | null) => void): void
         {
-            this.readFS.getAllfilepathInFolder(dirpath, callback);
+            this.fs.getAllfilepathInFolder(dirpath, callback);
         }
     }
 
