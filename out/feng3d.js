@@ -20059,61 +20059,6 @@ var feng3d;
     }());
     feng3d.IndexedDBReadFS = IndexedDBReadFS;
     feng3d.indexedDBReadFS = new IndexedDBReadFS();
-    function copy(sourcekey, targetkey, callback) {
-        feng3d.storage.get(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, sourcekey, function (err, data) {
-            if (err) {
-                callback && callback(err);
-                return;
-            }
-            feng3d.storage.set(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, targetkey, data, callback);
-        });
-    }
-    function move(sourcekey, targetkey, callback) {
-        copy(sourcekey, targetkey, function (err) {
-            if (err) {
-                callback && callback(err);
-                return;
-            }
-            feng3d.storage.delete(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, sourcekey, callback);
-        });
-    }
-    function movefiles(movelists, callback) {
-        copyfiles(movelists.concat(), function (err) {
-            if (err) {
-                callback(err);
-                return;
-            }
-            var deletelists = movelists.reduce(function (value, current) { value.push(current[0]); return value; }, []);
-            deletefiles(deletelists, callback);
-        });
-    }
-    function copyfiles(copylists, callback) {
-        if (copylists.length > 0) {
-            var copyitem = copylists.shift();
-            copy(copyitem[0], copyitem[1], function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-                copyfiles(copylists, callback);
-            });
-            return;
-        }
-        callback(null);
-    }
-    function deletefiles(deletelists, callback) {
-        if (deletelists.length > 0) {
-            feng3d.storage.delete(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, deletelists.shift(), function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-                deletefiles(deletelists, callback);
-            });
-            return;
-        }
-        callback(null);
-    }
     /**
      * 索引数据文件系统
      */
@@ -20193,9 +20138,76 @@ var feng3d;
         IndexedDBfs.prototype.writeFile = function (path, data, callback) {
             feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
         };
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.getAllPaths = function (callback) {
+            feng3d.storage.getAllKeys(this.DBname, this.projectname, callback);
+        };
         ///---------------------------
+        IndexedDBfs.prototype.copyFile = function (sourcekey, targetkey, callback) {
+            feng3d.storage.get(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, sourcekey, function (err, data) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                feng3d.storage.set(feng3d.indexedDBfs.DBname, feng3d.indexedDBfs.projectname, targetkey, data, callback);
+            });
+        };
+        IndexedDBfs.prototype.moveFile = function (sourcekey, targetkey, callback) {
+            var _this = this;
+            this.copyFile(sourcekey, targetkey, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.deleteFile(sourcekey, callback);
+            });
+        };
+        IndexedDBfs.prototype.moveFiles = function (movelists, callback) {
+            var _this = this;
+            this.copyFiles(movelists.concat(), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                var deletelists = movelists.reduce(function (value, current) { value.push(current[0]); return value; }, []);
+                _this.deleteFiles(deletelists, callback);
+            });
+        };
+        IndexedDBfs.prototype.copyFiles = function (copylists, callback) {
+            var _this = this;
+            if (copylists.length > 0) {
+                var copyitem = copylists.shift();
+                this.copyFile(copyitem[0], copyitem[1], function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    }
+                    _this.copyFiles(copylists, callback);
+                });
+                return;
+            }
+            callback(null);
+        };
+        IndexedDBfs.prototype.deleteFiles = function (deletelists, callback) {
+            var _this = this;
+            if (deletelists.length > 0) {
+                this.deleteFile(deletelists.shift(), function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    }
+                    _this.deleteFiles(deletelists, callback);
+                });
+                return;
+            }
+            callback(null);
+        };
         IndexedDBfs.prototype.rename = function (oldPath, newPath, callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
+            var _this = this;
+            this.getAllPaths(function (err, allfilepaths) {
                 if (!allfilepaths) {
                     callback(err);
                     return;
@@ -20203,18 +20215,19 @@ var feng3d;
                 var renamelists = [[oldPath, newPath]];
                 allfilepaths.forEach(function (element) {
                     var result = new RegExp(oldPath + "\\b").exec(element);
-                    if (result != null && result.index == 0) {
+                    if (result != null && result.index == 0 && element != oldPath) {
                         renamelists.push([element, element.replace(oldPath, newPath)]);
                     }
                 });
-                movefiles(renamelists, callback);
+                _this.moveFiles(renamelists, callback);
             });
         };
         IndexedDBfs.prototype.move = function (src, dest, callback) {
             this.rename(src, dest, callback || (function () { }));
         };
         IndexedDBfs.prototype.remove = function (path, callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
+            var _this = this;
+            this.getAllPaths(function (err, allfilepaths) {
                 if (!allfilepaths) {
                     callback && callback(err);
                     return;
@@ -20226,7 +20239,7 @@ var feng3d;
                         removelists.push(element);
                     }
                 });
-                deletefiles(removelists, callback || (function () { }));
+                _this.deleteFiles(removelists, callback || (function () { }));
             });
         };
         return IndexedDBfs;
@@ -20412,6 +20425,13 @@ var feng3d;
          */
         ReadWriteAssets.prototype.writeFile = function (path, data, callback) {
             this.fs.writeFile(path, data, callback);
+        };
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.getAllPaths = function (callback) {
+            this.fs.getAllPaths(callback);
         };
         ///--------------------------
         ReadWriteAssets.prototype.rename = function (oldPath, newPath, callback) {

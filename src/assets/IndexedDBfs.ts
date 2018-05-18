@@ -46,83 +46,6 @@ namespace feng3d
 
     indexedDBReadFS = new IndexedDBReadFS();
 
-    function copy(sourcekey: string | number, targetkey: string | number, callback?: (err?: Error | null) => void)
-    {
-        storage.get(indexedDBfs.DBname, indexedDBfs.projectname, sourcekey, (err, data) =>
-        {
-            if (err)
-            {
-                callback && callback(err);
-                return;
-            }
-            storage.set(indexedDBfs.DBname, indexedDBfs.projectname, targetkey, data, callback);
-        });
-    }
-
-    function move(sourcekey: string | number, targetkey: string | number, callback?: (err?: Error) => void)
-    {
-        copy(sourcekey, targetkey, (err) =>
-        {
-            if (err)
-            {
-                callback && callback(err);
-                return;
-            }
-            storage.delete(indexedDBfs.DBname, indexedDBfs.projectname, sourcekey, callback);
-        });
-    }
-
-    function movefiles(movelists: [string, string][], callback: (err: Error | null) => void)
-    {
-        copyfiles(movelists.concat(), (err) =>
-        {
-            if (err)
-            {
-                callback(err);
-                return;
-            }
-            var deletelists = movelists.reduce((value: string[], current) => { value.push(current[0]); return value; }, [])
-            deletefiles(deletelists, callback);
-        });
-    }
-
-    function copyfiles(copylists: [string, string][], callback: (err: Error | null) => void)
-    {
-        if (copylists.length > 0)
-        {
-            var copyitem: [string, string] = <any>copylists.shift();
-            copy(copyitem[0], copyitem[1], (err) =>
-            {
-                if (err)
-                {
-                    callback(err);
-                    return;
-                }
-                copyfiles(copylists, callback);
-            });
-            return;
-        }
-        callback(null);
-    }
-
-    function deletefiles(deletelists: string[], callback: (err: Error | null) => void)
-    {
-        if (deletelists.length > 0)
-        {
-            storage.delete(indexedDBfs.DBname, indexedDBfs.projectname, <string>deletelists.shift(), (err) =>
-            {
-                if (err)
-                {
-                    callback(err);
-                    return;
-                }
-                deletefiles(deletelists, callback);
-            });
-            return;
-        }
-        callback(null);
-    }
-
     /**
      * 索引数据文件系统
      */
@@ -221,11 +144,97 @@ namespace feng3d
             storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
         }
 
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        getAllPaths(callback: (err: Error, allPaths: string[]) => void)
+        {
+            storage.getAllKeys(this.DBname, this.projectname, callback);
+        }
+
         ///---------------------------
+
+        copyFile(sourcekey: string, targetkey: string, callback?: (err?: Error) => void)
+        {
+            storage.get(indexedDBfs.DBname, indexedDBfs.projectname, sourcekey, (err, data) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+                storage.set(indexedDBfs.DBname, indexedDBfs.projectname, targetkey, data, callback);
+            });
+        }
+
+        moveFile(sourcekey: string, targetkey: string, callback?: (err?: Error) => void)
+        {
+            this.copyFile(sourcekey, targetkey, (err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+                this.deleteFile(sourcekey, callback);
+            });
+        }
+
+        moveFiles(movelists: [string, string][], callback: (err: Error | null) => void)
+        {
+            this.copyFiles(movelists.concat(), (err) =>
+            {
+                if (err)
+                {
+                    callback(err);
+                    return;
+                }
+                var deletelists = movelists.reduce((value: string[], current) => { value.push(current[0]); return value; }, [])
+                this.deleteFiles(deletelists, callback);
+            });
+        }
+
+        copyFiles(copylists: [string, string][], callback: (err: Error | null) => void)
+        {
+            if (copylists.length > 0)
+            {
+                var copyitem: [string, string] = <any>copylists.shift();
+                this.copyFile(copyitem[0], copyitem[1], (err) =>
+                {
+                    if (err)
+                    {
+                        callback(err);
+                        return;
+                    }
+                    this.copyFiles(copylists, callback);
+                });
+                return;
+            }
+            callback(null);
+        }
+
+        deleteFiles(deletelists: string[], callback: (err: Error | null) => void)
+        {
+            if (deletelists.length > 0)
+            {
+                this.deleteFile(<string>deletelists.shift(), (err) =>
+                {
+                    if (err)
+                    {
+                        callback(err);
+                        return;
+                    }
+                    this.deleteFiles(deletelists, callback);
+                });
+                return;
+            }
+            callback(null);
+        }
 
         rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void
         {
-            storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
+            this.getAllPaths((err, allfilepaths) =>
             {
                 if (!allfilepaths)
                 {
@@ -236,21 +245,23 @@ namespace feng3d
                 allfilepaths.forEach(element =>
                 {
                     var result = new RegExp(oldPath + "\\b").exec(element);
-                    if (result != null && result.index == 0)
+                    if (result != null && result.index == 0 && element != oldPath)
                     {
                         renamelists.push([element, element.replace(oldPath, newPath)]);
                     }
                 });
-                movefiles(renamelists, callback);
+                this.moveFiles(renamelists, callback);
             });
         }
+
         move(src: string, dest: string, callback?: (err: Error | null) => void): void
         {
             this.rename(src, dest, callback || (() => { }));
         }
+
         remove(path: string, callback?: (err: Error | null) => void): void
         {
-            storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
+            this.getAllPaths((err, allfilepaths) =>
             {
                 if (!allfilepaths)
                 {
@@ -266,7 +277,7 @@ namespace feng3d
                         removelists.push(element);
                     }
                 });
-                deletefiles(removelists, callback || (() => { }));
+                this.deleteFiles(removelists, callback || (() => { }));
             });
         }
     }

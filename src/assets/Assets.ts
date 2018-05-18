@@ -163,6 +163,14 @@ namespace feng3d
             this.fs.writeFile(path, data, callback);
         }
 
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        getAllPaths(callback: (err: Error, allPaths: string[]) => void)
+        {
+            this.fs.getAllPaths(callback);
+        }
 
         ///--------------------------
 
@@ -178,6 +186,7 @@ namespace feng3d
         {
             this.fs.remove(path, callback);
         }
+
         /**
          * 获取指定文件下所有文件路径列表
          */
@@ -283,10 +292,10 @@ namespace feng3d
          */
         writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
 
-        ///-----------------------------
-
-        rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void;
-        move(src: string, dest: string, callback?: ((err: Error | null) => void) | undefined): void;
-        remove(path: string, callback?: ((err: Error | null) => void) | undefined): void;
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        getAllPaths(callback: (err: Error, allPaths: string[]) => void);
     }
 }

@@ -147,7 +147,7 @@ namespace feng3d
                 };
             });
         }
-        getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error | null, keys: string[] | null) => void)
+        getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void)
         {
             this.getDatabase(dbname, (err, database) =>
             {

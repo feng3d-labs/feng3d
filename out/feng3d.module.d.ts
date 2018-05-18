@@ -10367,7 +10367,7 @@ declare namespace feng3d {
         getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void): void;
         createObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void): void;
         deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void): void;
-        getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error | null, keys: string[] | null) => void): void;
+        getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void): void;
         get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error | null, data: any) => void): void;
         set(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: (err: Error | null) => void): void;
         delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
@@ -10439,6 +10439,16 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
+        copyFile(sourcekey: string, targetkey: string, callback?: (err?: Error) => void): void;
+        moveFile(sourcekey: string, targetkey: string, callback?: (err?: Error) => void): void;
+        moveFiles(movelists: [string, string][], callback: (err: Error | null) => void): void;
+        copyFiles(copylists: [string, string][], callback: (err: Error | null) => void): void;
+        deleteFiles(deletelists: string[], callback: (err: Error | null) => void): void;
         rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void;
         move(src: string, dest: string, callback?: (err: Error | null) => void): void;
         remove(path: string, callback?: (err: Error | null) => void): void;
@@ -10546,6 +10556,11 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
         rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void;
         move(src: string, dest: string, callback?: ((err: Error | null) => void) | undefined): void;
         remove(path: string, callback?: ((err: Error | null) => void) | undefined): void;
@@ -10609,9 +10624,11 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
-        rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void;
-        move(src: string, dest: string, callback?: ((err: Error | null) => void) | undefined): void;
-        remove(path: string, callback?: ((err: Error | null) => void) | undefined): void;
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        getAllPaths(callback: (err: Error, allPaths: string[]) => void): any;
     }
 }
 declare namespace feng3d {
