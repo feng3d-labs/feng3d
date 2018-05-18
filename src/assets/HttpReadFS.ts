@@ -10,9 +10,19 @@ namespace feng3d
      */
     export class HttpReadFS implements ReadFS
     {
+        /**
+         * 根路径
+         */
+        rootPath = "";
+
         get type()
         {
             return FSType.http;
+        }
+
+        constructor()
+        {
+            this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
         }
 
         /**
@@ -22,30 +32,27 @@ namespace feng3d
          */
         readFile(path: string, callback: (err, data: ArrayBuffer) => void)
         {
-            var request = new XMLHttpRequest();
-            request.open('Get', path, true);
-            request.responseType = "arraybuffer";
-            request.onreadystatechange = (ev) =>
-            {
-                if (request.readyState == 4)
-                {// 4 = "loaded"
+            // rootPath
+            Loader.loadBinary(path,
+                (content) =>
+                {
+                    callback(null, content);
+                },
+                null,
+                (e) =>
+                {
+                    callback(e, null);
+                });
+        }
 
-                    request.onreadystatechange = <any>null;
-
-                    if (request.status >= 200 && request.status < 300)
-                    {
-                        callback(null, request.response);
-                    } else
-                    {
-                        callback(new Error(path + " 加载失败！"), null);
-                    }
-                }
-            }
-            request.onprogress = (ev) =>
-            {
-
-            };
-            request.send();
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void
+        {
+            callback(null, this.rootPath + path);
         }
     }
     httpReadFS = new HttpReadFS();

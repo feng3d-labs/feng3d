@@ -1,14 +1,14 @@
 namespace feng3d
 {
     /**
-     * 索引数据资源
+     * 索引数据文件系统
      */
-    export var indexedDBReadFS: IndexedDBReadFS;
+    export var indexedDBfs: IndexedDBfs;
 
     /**
-     * 索引数据资源
+     * 索引数据文件系统
      */
-    export class IndexedDBReadFS implements ReadFS
+    export class IndexedDBfs implements ReadWriteFS
     {
         get type()
         {
@@ -42,20 +42,17 @@ namespace feng3d
                 callback(null, data ? data.data : null);
             });
         }
-    }
 
-    indexedDBReadFS = new IndexedDBReadFS();
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void
+        {
+            callback(null, path);
+        }
 
-    /**
-     * 索引数据文件系统
-     */
-    export var indexedDBfs: IndexedDBfs;
-
-    /**
-     * 索引数据文件系统
-     */
-    export class IndexedDBfs extends IndexedDBReadFS implements ReadWriteFS
-    {
         /**
          * 获取文件信息
          * @param path 文件路径
@@ -155,7 +152,7 @@ namespace feng3d
 
         ///---------------------------
 
-        copyFile(sourcekey: string, targetkey: string, callback?: (err?: Error) => void)
+        copyFile(sourcekey: string, targetkey: string, callback: (err: Error) => void)
         {
             storage.get(indexedDBfs.DBname, indexedDBfs.projectname, sourcekey, (err, data) =>
             {
@@ -168,7 +165,7 @@ namespace feng3d
             });
         }
 
-        moveFile(sourcekey: string, targetkey: string, callback?: (err?: Error) => void)
+        moveFile(sourcekey: string, targetkey: string, callback: (err: Error) => void)
         {
             this.copyFile(sourcekey, targetkey, (err) =>
             {
@@ -181,7 +178,7 @@ namespace feng3d
             });
         }
 
-        moveFiles(movelists: [string, string][], callback: (err: Error | null) => void)
+        moveFiles(movelists: [string, string][], callback: (err: Error) => void)
         {
             this.copyFiles(movelists.concat(), (err) =>
             {
@@ -195,7 +192,7 @@ namespace feng3d
             });
         }
 
-        copyFiles(copylists: [string, string][], callback: (err: Error | null) => void)
+        copyFiles(copylists: [string, string][], callback: (err: Error) => void)
         {
             if (copylists.length > 0)
             {
@@ -214,7 +211,7 @@ namespace feng3d
             callback(null);
         }
 
-        deleteFiles(deletelists: string[], callback: (err: Error | null) => void)
+        deleteFiles(deletelists: string[], callback: (err: Error) => void)
         {
             if (deletelists.length > 0)
             {
@@ -232,7 +229,7 @@ namespace feng3d
             callback(null);
         }
 
-        rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void
+        rename(oldPath: string, newPath: string, callback: (err: Error) => void): void
         {
             this.getAllPaths((err, allfilepaths) =>
             {
@@ -254,12 +251,12 @@ namespace feng3d
             });
         }
 
-        move(src: string, dest: string, callback?: (err: Error | null) => void): void
+        move(src: string, dest: string, callback: (err: Error) => void): void
         {
-            this.rename(src, dest, callback || (() => { }));
+            this.rename(src, dest, callback);
         }
 
-        remove(path: string, callback?: (err: Error | null) => void): void
+        remove(path: string, callback: (err: Error) => void): void
         {
             this.getAllPaths((err, allfilepaths) =>
             {
@@ -277,7 +274,7 @@ namespace feng3d
                         removelists.push(element);
                     }
                 });
-                this.deleteFiles(removelists, callback || (() => { }));
+                this.deleteFiles(removelists, callback);
             });
         }
     }

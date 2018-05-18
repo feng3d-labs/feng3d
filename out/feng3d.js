@@ -20029,16 +20029,16 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 索引数据资源
+     * 索引数据文件系统
      */
-    var IndexedDBReadFS = /** @class */ (function () {
-        function IndexedDBReadFS(DBname, projectname) {
+    var IndexedDBfs = /** @class */ (function () {
+        function IndexedDBfs(DBname, projectname) {
             if (DBname === void 0) { DBname = "feng3d-editor"; }
             if (projectname === void 0) { projectname = "testproject"; }
             this.DBname = DBname;
             this.projectname = projectname;
         }
-        Object.defineProperty(IndexedDBReadFS.prototype, "type", {
+        Object.defineProperty(IndexedDBfs.prototype, "type", {
             get: function () {
                 return feng3d.FSType.indexedDB;
             },
@@ -20050,23 +20050,19 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        IndexedDBReadFS.prototype.readFile = function (path, callback) {
+        IndexedDBfs.prototype.readFile = function (path, callback) {
             feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
                 callback(null, data ? data.data : null);
             });
         };
-        return IndexedDBReadFS;
-    }());
-    feng3d.IndexedDBReadFS = IndexedDBReadFS;
-    feng3d.indexedDBReadFS = new IndexedDBReadFS();
-    /**
-     * 索引数据文件系统
-     */
-    var IndexedDBfs = /** @class */ (function (_super) {
-        __extends(IndexedDBfs, _super);
-        function IndexedDBfs() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.getAbsolutePath = function (path, callback) {
+            callback(null, path);
+        };
         /**
          * 获取文件信息
          * @param path 文件路径
@@ -20223,7 +20219,7 @@ var feng3d;
             });
         };
         IndexedDBfs.prototype.move = function (src, dest, callback) {
-            this.rename(src, dest, callback || (function () { }));
+            this.rename(src, dest, callback);
         };
         IndexedDBfs.prototype.remove = function (path, callback) {
             var _this = this;
@@ -20239,11 +20235,11 @@ var feng3d;
                         removelists.push(element);
                     }
                 });
-                _this.deleteFiles(removelists, callback || (function () { }));
+                _this.deleteFiles(removelists, callback);
             });
         };
         return IndexedDBfs;
-    }(IndexedDBReadFS));
+    }());
     feng3d.IndexedDBfs = IndexedDBfs;
     feng3d.indexedDBfs = new IndexedDBfs();
 })(feng3d || (feng3d = {}));
@@ -20254,6 +20250,11 @@ var feng3d;
      */
     var HttpReadFS = /** @class */ (function () {
         function HttpReadFS() {
+            /**
+             * 根路径
+             */
+            this.rootPath = "";
+            this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
         }
         Object.defineProperty(HttpReadFS.prototype, "type", {
             get: function () {
@@ -20268,23 +20269,20 @@ var feng3d;
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         HttpReadFS.prototype.readFile = function (path, callback) {
-            var request = new XMLHttpRequest();
-            request.open('Get', path, true);
-            request.responseType = "arraybuffer";
-            request.onreadystatechange = function (ev) {
-                if (request.readyState == 4) {
-                    request.onreadystatechange = null;
-                    if (request.status >= 200 && request.status < 300) {
-                        callback(null, request.response);
-                    }
-                    else {
-                        callback(new Error(path + " 加载失败！"), null);
-                    }
-                }
-            };
-            request.onprogress = function (ev) {
-            };
-            request.send();
+            // rootPath
+            feng3d.Loader.loadBinary(path, function (content) {
+                callback(null, content);
+            }, null, function (e) {
+                callback(e, null);
+            });
+        };
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        HttpReadFS.prototype.getAbsolutePath = function (path, callback) {
+            callback(null, this.rootPath + path);
         };
         return HttpReadFS;
     }());
@@ -20331,6 +20329,14 @@ var feng3d;
                 || path.indexOf("https://") != -1)
                 readFS = feng3d.httpReadFS;
             readFS.readFile(path, callback);
+        };
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        ReadAssets.prototype.getAbsolutePath = function (path, callback) {
+            this.fs.getAbsolutePath(path, callback);
         };
         /**
          * 读取文件为字符串
@@ -20434,12 +20440,29 @@ var feng3d;
             this.fs.getAllPaths(callback);
         };
         ///--------------------------
-        ReadWriteAssets.prototype.rename = function (oldPath, newPath, callback) {
-            this.fs.rename(oldPath, newPath, callback);
+        /**
+         * 重命名文件(夹)
+         * @param src 原路径
+         * @param dest 新路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.rename = function (src, dest, callback) {
+            this.fs.rename(src, dest, callback);
         };
+        /**
+         * 移动文件(夹)
+         * @param 原路径
+         * @param 新路径
+         * @param callback 回调函数
+         */
         ReadWriteAssets.prototype.move = function (src, dest, callback) {
             this.fs.move(src, dest, callback);
         };
+        /**
+         * 移除文件(夹)
+         * @param path 路径
+         * @param callback 回调函数
+         */
         ReadWriteAssets.prototype.remove = function (path, callback) {
             this.fs.remove(path, callback);
         };

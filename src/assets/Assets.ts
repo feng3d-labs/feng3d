@@ -48,6 +48,16 @@ namespace feng3d
         }
 
         /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void
+        {
+            this.fs.getAbsolutePath(path, callback);
+        }
+
+        /**
          * 读取文件为字符串
          */
         readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void
@@ -174,15 +184,34 @@ namespace feng3d
 
         ///--------------------------
 
-        rename(oldPath: string, newPath: string, callback: (err: Error | null) => void): void
+        /**
+         * 重命名文件(夹)
+         * @param src 原路径
+         * @param dest 新路径
+         * @param callback 回调函数
+         */
+        rename(src: string, dest: string, callback: (err: Error) => void): void
         {
-            this.fs.rename(oldPath, newPath, callback);
+            this.fs.rename(src, dest, callback);
         }
-        move(src: string, dest: string, callback?: ((err: Error | null) => void) | undefined): void
+
+        /**
+         * 移动文件(夹)
+         * @param 原路径
+         * @param 新路径
+         * @param callback 回调函数
+         */
+        move(src: string, dest: string, callback?: (err: Error) => void): void
         {
             this.fs.move(src, dest, callback);
         }
-        remove(path: string, callback?: ((err: Error | null) => void) | undefined): void
+
+        /**
+         * 移除文件(夹)
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        remove(path: string, callback?: (err: Error) => void): void
         {
             this.fs.remove(path, callback);
         }
@@ -249,6 +278,13 @@ namespace feng3d
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         readFile(path: string, callback: (err, data: ArrayBuffer) => void);
+
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void
     }
 
     /**
@@ -291,6 +327,21 @@ namespace feng3d
          * @param callback 回调函数
          */
         writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+
+        /**
+         * 移动文件(夹)
+         * @param 原路径
+         * @param 新路径
+         * @param callback 回调函数
+         */
+        move(src: string, dest: string, callback?: (err: Error) => void): void
+
+        /**
+         * 移除文件(夹)
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        remove(path: string, callback?: (err: Error) => void): void
 
         /**
          * 获取所有文件路径
