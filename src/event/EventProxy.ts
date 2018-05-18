@@ -6,6 +6,8 @@ namespace feng3d
      */
     export class EventProxy<T> extends EventDispatcher
     {
+        pageX = 0;
+        pageY = 0;
         clientX = 0;
         clientY = 0;
 
@@ -86,13 +88,15 @@ namespace feng3d
 		 */
         private onMouseKey = (event) =>
         {
-            this.clear();
+            // this.clear();
 
             if (event["clientX"] != undefined)
             {
                 event = <MouseEvent>event;
                 this.clientX = event.clientX;
                 this.clientY = event.clientY;
+                this.pageX = event.pageX;
+                this.pageY = event.pageY;
             }
 
             if (event instanceof MouseEvent)
@@ -110,6 +114,12 @@ namespace feng3d
             {
                 this.wheelDelta = event.wheelDelta;
             }
+
+            // 赋值上次鼠标事件值
+            event.clientX = this.clientX;
+            event.clientY = this.clientY;
+            event.pageX = this.pageX;
+            event.pageY = this.pageY;
 
             this.dispatchEvent(<any>event);
         }

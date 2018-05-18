@@ -304,6 +304,8 @@ var feng3d;
         __extends(EventProxy, _super);
         function EventProxy(target) {
             var _this = _super.call(this) || this;
+            _this.pageX = 0;
+            _this.pageY = 0;
             _this.clientX = 0;
             _this.clientY = 0;
             /**
@@ -318,11 +320,13 @@ var feng3d;
              * 键盘按下事件
              */
             _this.onMouseKey = function (event) {
-                _this.clear();
+                // this.clear();
                 if (event["clientX"] != undefined) {
                     event = event;
                     _this.clientX = event.clientX;
                     _this.clientY = event.clientY;
+                    _this.pageX = event.pageX;
+                    _this.pageY = event.pageY;
                 }
                 if (event instanceof MouseEvent) {
                     _this.rightmouse = event.button == 2;
@@ -334,6 +338,11 @@ var feng3d;
                 if (event instanceof WheelEvent) {
                     _this.wheelDelta = event.wheelDelta;
                 }
+                // 赋值上次鼠标事件值
+                event.clientX = _this.clientX;
+                event.clientY = _this.clientY;
+                event.pageX = _this.pageX;
+                event.pageY = _this.pageY;
                 _this.dispatchEvent(event);
             };
             _this.target = target;

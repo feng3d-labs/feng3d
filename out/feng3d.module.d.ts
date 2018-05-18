@@ -218,6 +218,8 @@ declare namespace feng3d {
      * @author feng 2016-12-19
      */
     class EventProxy<T> extends EventDispatcher {
+        pageX: number;
+        pageY: number;
         clientX: number;
         clientY: number;
         /**
