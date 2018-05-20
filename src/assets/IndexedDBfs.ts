@@ -136,7 +136,7 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void)
+        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void)
         {
             storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
         }
@@ -153,5 +153,26 @@ namespace feng3d
 
     indexedDBfs = new IndexedDBfs();
 
-    export type FileInfo = { path: string, birthtime: number, mtime: number, isDirectory: boolean, size: number };
+    export type FileInfo = {
+        /**
+         * 路径
+         */
+        path: string,
+        /**
+         * 创建时间
+         */
+        birthtime: number,
+        /**
+         * 修改时间
+         */
+        mtime: number,
+        /**
+         * 是否为文件夹
+         */
+        isDirectory: boolean,
+        /**
+         * 大小
+         */
+        size: number
+    };
 }

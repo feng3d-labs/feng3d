@@ -24,7 +24,7 @@ namespace feng3d
         /**
          * 可读文件系统
          */
-        fs: ReadFS = httpReadFS;
+        fs: ReadFS = httpFS;
 
         get type()
         {
@@ -42,11 +42,11 @@ namespace feng3d
             if (path.indexOf("http://") != -1
                 || path.indexOf("https://") != -1
             )
-                readFS = httpReadFS;
+                readFS = httpFS;
             if (path.indexOf("file:///") != -1
                 || path.indexOf("file:///") != -1
             )
-                readFS = httpReadFS;
+                readFS = httpFS;
 
             readFS.readFile(path, callback);
         }
@@ -114,8 +114,17 @@ namespace feng3d
         /**
          * 可读写文件系统
          */
-        // fs: ReadWriteFS = indexedDBfs;
-        fs = indexedDBfs;
+        fs: ReadWriteFS = indexedDBfs;
+        // fs = indexedDBfs;
+
+        get projectname()
+        {
+            return this.fs.projectname;
+        }
+        set projectname(v)
+        {
+            this.fs.projectname = v;
+        }
 
         constructor(readWriteFS?: ReadWriteFS)
         {
@@ -172,7 +181,7 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void)
+        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void)
         {
             if (this.isDir(path))
             {
@@ -452,6 +461,10 @@ namespace feng3d
     export interface ReadWriteFS extends ReadFS
     {
         /**
+         * 项目名称
+         */
+        projectname: string
+        /**
          * 获取文件信息
          * @param path 文件路径
          * @param callback 回调函数
@@ -485,6 +498,6 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
     }
 }

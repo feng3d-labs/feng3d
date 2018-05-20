@@ -10437,7 +10437,7 @@ declare namespace feng3d {
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -10445,10 +10445,25 @@ declare namespace feng3d {
         getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
     }
     type FileInfo = {
+        /**
+         * 路径
+         */
         path: string;
+        /**
+         * 创建时间
+         */
         birthtime: number;
+        /**
+         * 修改时间
+         */
         mtime: number;
+        /**
+         * 是否为文件夹
+         */
         isDirectory: boolean;
+        /**
+         * 大小
+         */
         size: number;
     };
 }
@@ -10456,11 +10471,11 @@ declare namespace feng3d {
     /**
      * Http可读文件系统
      */
-    var httpReadFS: HttpReadFS;
+    var httpFS: HttpFS;
     /**
      * Http可读文件系统
      */
-    class HttpReadFS implements ReadFS {
+    class HttpFS implements ReadFS {
         /**
          * 根路径
          */
@@ -10531,7 +10546,8 @@ declare namespace feng3d {
         /**
          * 可读写文件系统
          */
-        fs: IndexedDBfs;
+        fs: ReadWriteFS;
+        projectname: string;
         constructor(readWriteFS?: ReadWriteFS);
         /**
          * 获取文件信息
@@ -10563,7 +10579,7 @@ declare namespace feng3d {
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -10664,6 +10680,10 @@ declare namespace feng3d {
      */
     interface ReadWriteFS extends ReadFS {
         /**
+         * 项目名称
+         */
+        projectname: string;
+        /**
          * 获取文件信息
          * @param path 文件路径
          * @param callback 回调函数
@@ -10693,7 +10713,7 @@ declare namespace feng3d {
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {

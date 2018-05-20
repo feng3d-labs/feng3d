@@ -3,12 +3,12 @@ namespace feng3d
     /**
      * Http可读文件系统
      */
-    export var httpReadFS: HttpReadFS;
+    export var httpFS: HttpFS;
 
     /**
      * Http可读文件系统
      */
-    export class HttpReadFS implements ReadFS
+    export class HttpFS implements ReadFS
     {
         /**
          * 根路径
@@ -55,5 +55,5 @@ namespace feng3d
             callback(null, this.rootPath + path);
         }
     }
-    httpReadFS = new HttpReadFS();
+    httpFS = new HttpFS();
 }

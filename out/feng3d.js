@@ -20160,15 +20160,15 @@ var feng3d;
     /**
      * Http可读文件系统
      */
-    var HttpReadFS = /** @class */ (function () {
-        function HttpReadFS() {
+    var HttpFS = /** @class */ (function () {
+        function HttpFS() {
             /**
              * 根路径
              */
             this.rootPath = "";
             this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
         }
-        Object.defineProperty(HttpReadFS.prototype, "type", {
+        Object.defineProperty(HttpFS.prototype, "type", {
             get: function () {
                 return feng3d.FSType.http;
             },
@@ -20180,7 +20180,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        HttpReadFS.prototype.readFile = function (path, callback) {
+        HttpFS.prototype.readFile = function (path, callback) {
             // rootPath
             feng3d.Loader.loadBinary(path, function (content) {
                 callback(null, content);
@@ -20193,13 +20193,13 @@ var feng3d;
          * @param path （相对）路径
          * @param callback 回调函数
          */
-        HttpReadFS.prototype.getAbsolutePath = function (path, callback) {
+        HttpFS.prototype.getAbsolutePath = function (path, callback) {
             callback(null, this.rootPath + path);
         };
-        return HttpReadFS;
+        return HttpFS;
     }());
-    feng3d.HttpReadFS = HttpReadFS;
-    feng3d.httpReadFS = new HttpReadFS();
+    feng3d.HttpFS = HttpFS;
+    feng3d.httpFS = new HttpFS();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20221,7 +20221,7 @@ var feng3d;
             /**
              * 可读文件系统
              */
-            this.fs = feng3d.httpReadFS;
+            this.fs = feng3d.httpFS;
         }
         Object.defineProperty(ReadAssets.prototype, "type", {
             get: function () {
@@ -20239,10 +20239,10 @@ var feng3d;
             var readFS = this.fs;
             if (path.indexOf("http://") != -1
                 || path.indexOf("https://") != -1)
-                readFS = feng3d.httpReadFS;
+                readFS = feng3d.httpFS;
             if (path.indexOf("file:///") != -1
                 || path.indexOf("file:///") != -1)
-                readFS = feng3d.httpReadFS;
+                readFS = feng3d.httpFS;
             readFS.readFile(path, callback);
         };
         /**
@@ -20298,12 +20298,22 @@ var feng3d;
             /**
              * 可读写文件系统
              */
-            // fs: ReadWriteFS = indexedDBfs;
             _this.fs = feng3d.indexedDBfs;
             if (readWriteFS)
                 _this.fs = readWriteFS;
             return _this;
         }
+        Object.defineProperty(ReadWriteAssets.prototype, "projectname", {
+            // fs = indexedDBfs;
+            get: function () {
+                return this.fs.projectname;
+            },
+            set: function (v) {
+                this.fs.projectname = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 获取文件信息
          * @param path 文件路径
