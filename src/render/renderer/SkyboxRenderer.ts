@@ -83,17 +83,7 @@ namespace feng3d
     {
         @serialize
         @oav()
-        get texture()
-        {
-            return this._texture;
-        }
-        set texture(value)
-        {
-            if (this._texture == value)
-                return;
-            this._texture = value;
-        }
-        private _texture: TextureCube;
+        texture = new TextureCube();
 
         constructor()
         {

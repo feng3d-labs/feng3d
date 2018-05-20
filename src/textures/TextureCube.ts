@@ -20,33 +20,33 @@ namespace feng3d
         protected _pixels: HTMLImageElement[];
 
         @serialize
-        @oav()
         @watch("urlChanged")
+        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         positive_x_url: string;
 
         @serialize
-        @oav()
         @watch("urlChanged")
+        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         positive_y_url: string;
 
         @serialize
-        @oav()
         @watch("urlChanged")
+        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         positive_z_url: string;
 
         @serialize
-        @oav()
         @watch("urlChanged")
+        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         negative_x_url: string;
 
         @serialize
-        @oav()
         @watch("urlChanged")
+        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         negative_y_url: string;
 
         @serialize
-        @oav()
         @watch("urlChanged")
+        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         negative_z_url: string;
 
         constructor(images?: string[])

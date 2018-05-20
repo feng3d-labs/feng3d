@@ -11888,21 +11888,11 @@ var feng3d;
     var SkyBox = /** @class */ (function (_super) {
         __extends(SkyBox, _super);
         function SkyBox() {
-            return _super.call(this) || this;
+            var _this = _super.call(this) || this;
+            _this.texture = new feng3d.TextureCube();
+            return _this;
             //
         }
-        Object.defineProperty(SkyBox.prototype, "texture", {
-            get: function () {
-                return this._texture;
-            },
-            set: function (value) {
-                if (this._texture == value)
-                    return;
-                this._texture = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         SkyBox.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
         };
@@ -11913,7 +11903,7 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.oav()
-        ], SkyBox.prototype, "texture", null);
+        ], SkyBox.prototype, "texture", void 0);
         return SkyBox;
     }(feng3d.Component));
     feng3d.SkyBox = SkyBox;
@@ -17205,33 +17195,33 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("urlChanged")
+            feng3d.watch("urlChanged"),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         ], TextureCube.prototype, "positive_x_url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("urlChanged")
+            feng3d.watch("urlChanged"),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         ], TextureCube.prototype, "positive_y_url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("urlChanged")
+            feng3d.watch("urlChanged"),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         ], TextureCube.prototype, "positive_z_url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("urlChanged")
+            feng3d.watch("urlChanged"),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         ], TextureCube.prototype, "negative_x_url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("urlChanged")
+            feng3d.watch("urlChanged"),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         ], TextureCube.prototype, "negative_y_url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("urlChanged")
+            feng3d.watch("urlChanged"),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         ], TextureCube.prototype, "negative_z_url", void 0);
         return TextureCube;
     }(feng3d.TextureInfo));

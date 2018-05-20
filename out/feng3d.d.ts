@@ -7214,7 +7214,6 @@ declare namespace feng3d {
     };
     class SkyBox extends Component {
         texture: TextureCube;
-        private _texture;
         constructor();
         init(gameObject: GameObject): void;
         preRender(renderAtomic: RenderAtomic): void;
