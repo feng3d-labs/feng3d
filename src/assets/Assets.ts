@@ -43,6 +43,10 @@ namespace feng3d
                 || path.indexOf("https://") != -1
             )
                 readFS = httpReadFS;
+            if (path.indexOf("file:///") != -1
+                || path.indexOf("file:///") != -1
+            )
+                readFS = httpReadFS;
 
             readFS.readFile(path, callback);
         }

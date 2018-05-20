@@ -56,16 +56,16 @@ interface ReadonlyMap<K, V> {
     has(key: K): boolean;
     readonly size: number;
 }
-interface WeakMap<K extends object, V> {
+interface WeakMap<K extends Object, V> {
     delete(key: K): boolean;
     get(key: K): V | undefined;
     has(key: K): boolean;
     set(key: K, value: V): this;
 }
 interface WeakMapConstructor {
-    new (): WeakMap<object, any>;
-    new <K extends object, V>(entries?: [K, V][]): WeakMap<K, V>;
-    readonly prototype: WeakMap<object, any>;
+    new (): WeakMap<Object, any>;
+    new <K extends Object, V>(entries?: [K, V][]): WeakMap<K, V>;
+    readonly prototype: WeakMap<Object, any>;
 }
 declare var WeakMap: WeakMapConstructor;
 interface Set<T> {
@@ -93,9 +93,9 @@ interface WeakSet<T> {
     has(value: T): boolean;
 }
 interface WeakSetConstructor {
-    new (): WeakSet<object>;
-    new <T extends object>(values?: T[]): WeakSet<T>;
-    readonly prototype: WeakSet<object>;
+    new (): WeakSet<Object>;
+    new <T extends Object>(values?: T[]): WeakSet<T>;
+    readonly prototype: WeakSet<Object>;
 }
 declare var WeakSet: WeakSetConstructor;
 interface Map<K, V> {

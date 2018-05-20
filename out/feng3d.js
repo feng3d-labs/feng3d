@@ -20240,6 +20240,9 @@ var feng3d;
             if (path.indexOf("http://") != -1
                 || path.indexOf("https://") != -1)
                 readFS = feng3d.httpReadFS;
+            if (path.indexOf("file:///") != -1
+                || path.indexOf("file:///") != -1)
+                readFS = feng3d.httpReadFS;
             readFS.readFile(path, callback);
         };
         /**
