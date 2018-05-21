@@ -54,28 +54,15 @@ namespace feng3d
         }
 
         /**
-         * 获取文件信息
+         * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
-        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void
+        exists(path: string, callback: (exists: boolean) => void): void
         {
             storage.get(this.DBname, this.projectname, path, (err, data) =>
             {
-                if (data)
-                {
-                    callback(null, {
-                        path: path,
-                        birthtime: data.birthtime.getTime(),
-                        mtime: data.birthtime.getTime(),
-                        isDirectory: data.isDirectory,
-                        size: 0
-                    });
-                }
-                else
-                {
-                    callback(new Error(path + " 不存在"), null);
-                }
+                callback(!!data);
             });
         }
 
@@ -152,27 +139,4 @@ namespace feng3d
     }
 
     indexedDBfs = new IndexedDBfs();
-
-    export type FileInfo = {
-        /**
-         * 路径
-         */
-        path: string,
-        /**
-         * 创建时间
-         */
-        birthtime: number,
-        /**
-         * 修改时间
-         */
-        mtime: number,
-        /**
-         * 是否为文件夹
-         */
-        isDirectory: boolean,
-        /**
-         * 大小
-         */
-        size: number
-    };
 }

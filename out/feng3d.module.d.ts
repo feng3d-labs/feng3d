@@ -10396,11 +10396,11 @@ declare namespace feng3d {
          */
         getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
         /**
-         * 获取文件信息
+         * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
-        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void;
+        exists(path: string, callback: (exists: boolean) => void): void;
         /**
          * 读取文件夹中文件列表
          * @param path 路径
@@ -10432,28 +10432,6 @@ declare namespace feng3d {
          */
         getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
     }
-    type FileInfo = {
-        /**
-         * 路径
-         */
-        path: string;
-        /**
-         * 创建时间
-         */
-        birthtime: number;
-        /**
-         * 修改时间
-         */
-        mtime: number;
-        /**
-         * 是否为文件夹
-         */
-        isDirectory: boolean;
-        /**
-         * 大小
-         */
-        size: number;
-    };
 }
 declare namespace feng3d {
     /**
@@ -10538,11 +10516,11 @@ declare namespace feng3d {
         projectname: string;
         constructor(readWriteFS?: ReadWriteFS);
         /**
-         * 获取文件信息
+         * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
-        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void;
+        exists(path: string, callback: (exists: boolean) => void): void;
         /**
          * 读取文件夹中文件列表
          * @param path 路径
@@ -10672,11 +10650,11 @@ declare namespace feng3d {
          */
         projectname: string;
         /**
-         * 获取文件信息
+         * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
-        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void;
+        exists(path: string, callback: (exists: boolean) => void): void;
         /**
          * 读取文件夹中文件列表
          * @param path 路径

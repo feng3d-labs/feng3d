@@ -20074,24 +20074,13 @@ var feng3d;
             callback(null, path);
         };
         /**
-         * 获取文件信息
+         * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.stat = function (path, callback) {
+        IndexedDBfs.prototype.exists = function (path, callback) {
             feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                if (data) {
-                    callback(null, {
-                        path: path,
-                        birthtime: data.birthtime.getTime(),
-                        mtime: data.birthtime.getTime(),
-                        isDirectory: data.isDirectory,
-                        size: 0
-                    });
-                }
-                else {
-                    callback(new Error(path + " 不存在"), null);
-                }
+                callback(!!data);
             });
         };
         /**
@@ -20316,12 +20305,12 @@ var feng3d;
             configurable: true
         });
         /**
-         * 获取文件信息
+         * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.stat = function (path, callback) {
-            this.fs.stat(path, callback);
+        ReadWriteAssets.prototype.exists = function (path, callback) {
+            this.fs.exists(path, callback);
         };
         /**
          * 读取文件夹中文件列表

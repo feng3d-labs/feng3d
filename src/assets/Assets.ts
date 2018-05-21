@@ -134,13 +134,13 @@ namespace feng3d
         }
 
         /**
-         * 获取文件信息
+         * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
-        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void
+        exists(path: string, callback: (exists: boolean) => void): void
         {
-            this.fs.stat(path, callback);
+            this.fs.exists(path, callback);
         }
 
         /**
@@ -464,12 +464,13 @@ namespace feng3d
          * 项目名称
          */
         projectname: string
+
         /**
-         * 获取文件信息
+         * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
-        stat(path: string, callback: (err: Error, stats: FileInfo) => void): void;
+        exists(path: string, callback: (exists: boolean) => void): void;
 
         /**
          * 读取文件夹中文件列表
