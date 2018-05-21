@@ -9055,16 +9055,16 @@ var feng3d;
          * gl.TEXTURE_CUBE_MAP: A cube-mapped texture.
          */
         TextureType["TEXTURE_CUBE_MAP"] = "TEXTURE_CUBE_MAP";
-        /**
-         * using a WebGL 2 context
-         * gl.TEXTURE_3D: A three-dimensional texture.
-         */
-        TextureType["TEXTURE_3D"] = "TEXTURE_3D";
-        /**
-         * using a WebGL 2 context
-         * gl.TEXTURE_2D_ARRAY: A two-dimensional array texture.
-         */
-        TextureType["TEXTURE_2D_ARRAY"] = "TEXTURE_2D_ARRAY";
+        // /**
+        //  * using a WebGL 2 context
+        //  * gl.TEXTURE_3D: A three-dimensional texture.
+        //  */
+        // TEXTURE_3D = "TEXTURE_3D",
+        // /**
+        //  * using a WebGL 2 context
+        //  * gl.TEXTURE_2D_ARRAY: A two-dimensional array texture.
+        //  */
+        // TEXTURE_2D_ARRAY = "TEXTURE_2D_ARRAY",
     })(TextureType = feng3d.TextureType || (feng3d.TextureType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
