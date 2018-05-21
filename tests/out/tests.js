@@ -459,6 +459,40 @@ QUnit.module("Array", function () {
         assert.ok(arr0.unique(function (a, b) { return a.n == b.n; }));
     });
 });
+QUnit.module("PathUtils", function () {
+    QUnit.test("getName", function (assert) {
+        assert.ok(feng3d.pathUtils.getName("a") == "a");
+        assert.ok(feng3d.pathUtils.getName("a.txt") == "a.txt");
+        assert.ok(feng3d.pathUtils.getName("a/") == "a");
+        assert.ok(feng3d.pathUtils.getName("a.b/") == "a.b");
+    });
+    QUnit.test("getExtension", function (assert) {
+        assert.ok(feng3d.pathUtils.getExtension("a.txt") == "txt");
+        assert.ok(feng3d.pathUtils.getExtension("a") == "");
+        assert.ok(feng3d.pathUtils.getExtension("a.b/b") == "");
+        assert.ok(feng3d.pathUtils.getExtension("a.b/b.txt") == "txt");
+        assert.ok(feng3d.pathUtils.getExtension("a.b/.txt") == "txt");
+    });
+    QUnit.test("getParentPath", function (assert) {
+        assert.ok(feng3d.pathUtils.getParentPath("a/a.txt") == "a/");
+        assert.ok(feng3d.pathUtils.getParentPath("a/b") == "a/");
+        assert.ok(feng3d.pathUtils.getParentPath("a/b/") == "a/");
+    });
+    QUnit.test("isDirectory", function (assert) {
+        assert.ok(feng3d.pathUtils.isDirectory("a/a.txt") == false);
+        assert.ok(feng3d.pathUtils.isDirectory("a/b") == false);
+        assert.ok(feng3d.pathUtils.isDirectory("a/b/") == true);
+    });
+    QUnit.test("getDirDepth", function (assert) {
+        assert.ok(feng3d.pathUtils.getDirDepth("a") == 0);
+        assert.ok(feng3d.pathUtils.getDirDepth("a/") == 0);
+        assert.ok(feng3d.pathUtils.getDirDepth("a/a.txt") == 1);
+        assert.ok(feng3d.pathUtils.getDirDepth("a/b") == 1);
+        assert.ok(feng3d.pathUtils.getDirDepth("a/b/") == 1);
+        assert.ok(feng3d.pathUtils.getDirDepth("a/b/a") == 2);
+        assert.ok(feng3d.pathUtils.getDirDepth("a/b/a/") == 2);
+    });
+});
 QUnit.module("watcher", function () {
     QUnit.test("watch Object", function (assert) {
         var o = { a: 1 };

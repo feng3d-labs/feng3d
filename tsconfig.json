@@ -28,6 +28,7 @@
         "src/utils/ClassUtils.ts",
         "src/utils/ImageUtil.ts",
         "src/utils/Stats.ts",
+        "src/utils/PathUtils.ts",
         //几何运算
         "src/geom/Math.ts",
         "src/geom/Vector2.ts",

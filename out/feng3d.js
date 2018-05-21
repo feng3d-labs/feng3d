@@ -2553,6 +2553,69 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 路径工具
+     */
+    var PathUtils = /** @class */ (function () {
+        function PathUtils() {
+        }
+        /**
+         * 获取带后缀名称
+         * @param path 路径
+         */
+        PathUtils.prototype.getName = function (path) {
+            var paths = path.split("/");
+            var name = paths.pop();
+            if (name == "")
+                name = paths.pop();
+            return name;
+        };
+        /**
+         * 获取后缀
+         * @param path 路径
+         */
+        PathUtils.prototype.getExtension = function (path) {
+            var name = this.getName(path);
+            var names = name.split(".");
+            names.shift();
+            var extension = names.join(".");
+            return extension;
+        };
+        /**
+         * 父路径
+         * @param path 路径
+         */
+        PathUtils.prototype.getParentPath = function (path) {
+            var paths = path.split("/");
+            if (this.isDirectory(path))
+                paths.pop();
+            paths.pop();
+            return paths.join("/") + "/";
+        };
+        /**
+         * 是否文件夹
+         * @param path 路径
+         */
+        PathUtils.prototype.isDirectory = function (path) {
+            return path.split("/").pop() == "";
+        };
+        /**
+         * 获取目录深度
+         * @param path 路径
+         */
+        PathUtils.prototype.getDirDepth = function (path) {
+            var length = path.split("/").length;
+            if (this.isDirectory(path))
+                length--;
+            return length - 1;
+        };
+        return PathUtils;
+    }());
+    feng3d.PathUtils = PathUtils;
+    feng3d.pathUtils = new PathUtils();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     feng3d.FMath = {
         /**
          * 角度转弧度因子

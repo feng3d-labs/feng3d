@@ -1128,6 +1128,42 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 路径工具
+     */
+    var pathUtils: PathUtils;
+    /**
+     * 路径工具
+     */
+    class PathUtils {
+        /**
+         * 获取带后缀名称
+         * @param path 路径
+         */
+        getName(path: string): string;
+        /**
+         * 获取后缀
+         * @param path 路径
+         */
+        getExtension(path: string): string;
+        /**
+         * 父路径
+         * @param path 路径
+         */
+        getParentPath(path: string): string;
+        /**
+         * 是否文件夹
+         * @param path 路径
+         */
+        isDirectory(path: string): boolean;
+        /**
+         * 获取目录深度
+         * @param path 路径
+         */
+        getDirDepth(path: string): number;
+    }
+}
+declare namespace feng3d {
     var FMath: {
         DEG2RAD: number;
         RAD2DEG: number;
