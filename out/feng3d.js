@@ -1174,19 +1174,17 @@ var feng3d;
      * @param {string} propertyKey      序列化属性
      */
     function serialize(target, propertyKey) {
-        var serializeInfo = target[SERIALIZE_KEY];
         if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY)) {
             Object.defineProperty(target, SERIALIZE_KEY, {
                 /**
                  * uv数据
                  */
-                value: {},
+                value: { propertys: [] },
                 enumerable: false,
                 configurable: true
             });
         }
-        serializeInfo = target[SERIALIZE_KEY];
-        serializeInfo.propertys = serializeInfo.propertys || [];
+        var serializeInfo = target[SERIALIZE_KEY];
         serializeInfo.propertys.push(propertyKey);
     }
     feng3d.serialize = serialize;
@@ -1414,6 +1412,16 @@ var feng3d;
      * 获取默认实例
      */
     function getDefaultInstance(object) {
+        if (!Object.getOwnPropertyDescriptor(object, SERIALIZE_KEY)) {
+            Object.defineProperty(object, SERIALIZE_KEY, {
+                /**
+                 * uv数据
+                 */
+                value: { propertys: [] },
+                enumerable: false,
+                configurable: true
+            });
+        }
         var serializeInfo = object[SERIALIZE_KEY];
         serializeInfo.default = serializeInfo.default || new object.constructor();
         return serializeInfo.default;
@@ -13722,13 +13730,19 @@ var feng3d;
             if (this.gameObject)
                 this.gameObject.dispatch(event.type, event.data);
         };
+        MeshRenderer.prototype.materialChanged = function () {
+            if (this.material && this.material.constructor == Object) {
+                feng3d.error("material 必须继承与 Material!");
+            }
+        };
         __decorate([
             feng3d.oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } }),
             feng3d.serialize
         ], MeshRenderer.prototype, "geometry", null);
         __decorate([
             feng3d.oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } }),
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.watch("materialChanged")
         ], MeshRenderer.prototype, "material", void 0);
         return MeshRenderer;
     }(feng3d.Behaviour));

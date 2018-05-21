@@ -7895,6 +7895,7 @@ declare namespace feng3d {
          */
         dispose(): void;
         private onBoundsInvalid(event);
+        private materialChanged();
     }
 }
 declare namespace feng3d {

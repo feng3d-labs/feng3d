@@ -47,6 +47,7 @@ namespace feng3d
          */
         @oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } })
         @serialize
+        @watch("materialChanged")
         material: Material;
 
         init(gameObject: GameObject)
@@ -86,6 +87,14 @@ namespace feng3d
         {
             if (this.gameObject)
                 this.gameObject.dispatch(<any>event.type, event.data);
+        }
+
+        private materialChanged()
+        {
+            if(this.material && this.material.constructor == Object)
+            {
+                error("material 必须继承与 Material!");
+            }
         }
     }
 }

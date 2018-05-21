@@ -9,20 +9,18 @@ namespace feng3d
      */
     export function serialize(target: any, propertyKey: string)
     {
-        var serializeInfo: SerializeInfo = target[SERIALIZE_KEY];
         if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY))
         {
             Object.defineProperty(target, SERIALIZE_KEY, {
                 /**
                  * uv数据
                  */
-                value: {},
+                value: { propertys: [] },
                 enumerable: false,
                 configurable: true
             });
         }
-        serializeInfo = target[SERIALIZE_KEY];
-        serializeInfo.propertys = serializeInfo.propertys || [];
+        var serializeInfo: SerializeInfo = target[SERIALIZE_KEY];
         serializeInfo.propertys.push(propertyKey);
     }
 
@@ -310,6 +308,17 @@ namespace feng3d
      */
     function getDefaultInstance(object: Object)
     {
+        if (!Object.getOwnPropertyDescriptor(object, SERIALIZE_KEY))
+        {
+            Object.defineProperty(object, SERIALIZE_KEY, {
+                /**
+                 * uv数据
+                 */
+                value: { propertys: [] },
+                enumerable: false,
+                configurable: true
+            });
+        }
         var serializeInfo: SerializeInfo = object[SERIALIZE_KEY];
         serializeInfo.default = serializeInfo.default || new (<any>object.constructor)();
         return serializeInfo.default;
