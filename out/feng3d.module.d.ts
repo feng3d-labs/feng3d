@@ -7623,7 +7623,7 @@ declare namespace feng3d {
          * 添加脚本
          * @param script   脚本路径
          */
-        addScript(script: string): string;
+        addScript(script: string): ScriptComponent;
         /**
          * 判断是否拥有组件
          * @param com	被检测的组件
@@ -7905,17 +7905,15 @@ declare namespace feng3d {
      */
     class ScriptComponent extends Behaviour {
         /**
-         * 脚本对象
-         */
-        private scriptInstance;
-        scriptData: Object;
-        /**
          * 脚本路径
          */
         script: string;
-        private _script;
+        /**
+         * 脚本对象
+         */
+        scriptInstance: Script;
         init(gameObject: GameObject): void;
-        private initScript();
+        private scriptChanged();
         /**
          * 每帧执行
          */

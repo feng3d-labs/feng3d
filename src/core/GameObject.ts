@@ -440,9 +440,10 @@ namespace feng3d
          */
         addScript(script: string)
         {
-            var scriptComponent = this.addComponent(ScriptComponent);
+            var scriptComponent = new ScriptComponent();
             scriptComponent.script = script;
-            return script;
+            this.addComponentAt(scriptComponent, this._components.length);
+            return scriptComponent;
         }
 
         /**

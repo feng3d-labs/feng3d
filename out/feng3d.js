@@ -12950,9 +12950,10 @@ var feng3d;
          * @param script   脚本路径
          */
         GameObject.prototype.addScript = function (script) {
-            var scriptComponent = this.addComponent(feng3d.ScriptComponent);
+            var scriptComponent = new feng3d.ScriptComponent();
             scriptComponent.script = script;
-            return script;
+            this.addComponentAt(scriptComponent, this._components.length);
+            return scriptComponent;
         };
         /**
          * 判断是否拥有组件
@@ -13758,65 +13759,61 @@ var feng3d;
         __extends(ScriptComponent, _super);
         function ScriptComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._script = "";
-            return _this;
-        }
-        Object.defineProperty(ScriptComponent.prototype, "script", {
             /**
              * 脚本路径
              */
-            get: function () {
-                return this._script;
-            },
-            set: function (value) {
-                if (this._script == value)
-                    return;
-                this._script = value;
-                this.initScript();
-            },
-            enumerable: true,
-            configurable: true
-        });
+            _this.script = "";
+            return _this;
+        }
         ScriptComponent.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
-            this.initScript();
-            this.enabled = this.enabled;
+            if (feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
+                this.scriptInstance && this.scriptInstance.init();
+            }
         };
-        ScriptComponent.prototype.initScript = function () {
-            if (this._script && this.gameObject && feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
-                var cls = feng3d.classUtils.getDefinitionByName(this._script);
-                this.scriptInstance = new cls(this);
-                var scriptData = this.scriptData = this.scriptData || {};
-                for (var key in scriptData) {
-                    if (scriptData.hasOwnProperty(key)) {
-                        this.scriptInstance[key] = scriptData[key];
-                    }
+        ScriptComponent.prototype.scriptChanged = function () {
+            if (this.scriptInstance) {
+                if (feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
+                    this.scriptInstance.dispose();
                 }
-                this.scriptInstance.init();
+                this.scriptInstance = null;
+            }
+            if (this.script) {
+                var cls = feng3d.classUtils.getDefinitionByName(this.script);
+                this.scriptInstance = new cls(this);
+                if (feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
+                    if (this.gameObject)
+                        this.scriptInstance.init();
+                }
             }
         };
         /**
          * 每帧执行
          */
         ScriptComponent.prototype.update = function () {
-            this.scriptInstance && this.scriptInstance.update();
+            if (feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
+                this.scriptInstance && this.scriptInstance.update();
+            }
         };
         /**
          * 销毁
          */
         ScriptComponent.prototype.dispose = function () {
             this.enabled = false;
-            this.scriptInstance && this.scriptInstance.dispose();
+            if (feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
+                this.scriptInstance && this.scriptInstance.dispose();
+            }
             this.scriptInstance = null;
             _super.prototype.dispose.call(this);
         };
         __decorate([
-            feng3d.serialize
-        ], ScriptComponent.prototype, "scriptData", void 0);
-        __decorate([
             feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } }),
+            feng3d.serialize,
+            feng3d.watch("scriptChanged")
+        ], ScriptComponent.prototype, "script", void 0);
+        __decorate([
             feng3d.serialize
-        ], ScriptComponent.prototype, "script", null);
+        ], ScriptComponent.prototype, "scriptInstance", void 0);
         return ScriptComponent;
     }(feng3d.Behaviour));
     feng3d.ScriptComponent = ScriptComponent;

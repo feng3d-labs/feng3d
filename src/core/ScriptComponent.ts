@@ -7,53 +7,47 @@ namespace feng3d
     export class ScriptComponent extends Behaviour
     {
         /**
-         * 脚本对象
-         */
-        private scriptInstance: Script;
-
-        @serialize
-        scriptData: Object;
-
-        /**
          * 脚本路径
          */
         @oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } })
         @serialize
-        get script()
-        {
-            return this._script;
-        }
-        set script(value)
-        {
-            if (this._script == value)
-                return;
-            this._script = value;
-            this.initScript();
-        }
-        private _script = "";
+        @watch("scriptChanged")
+        script = "";
+
+        /**
+         * 脚本对象
+         */
+        @serialize
+        scriptInstance: Script;
 
         init(gameObject: GameObject)
         {
             super.init(gameObject);
-            this.initScript();
-            this.enabled = this.enabled;
+            if (runEnvironment == RunEnvironment.feng3d)
+            {
+                this.scriptInstance && this.scriptInstance.init();
+            }
         }
 
-        private initScript()
+        private scriptChanged()
         {
-            if (this._script && this.gameObject && runEnvironment == RunEnvironment.feng3d)
+            if (this.scriptInstance)
             {
-                var cls = classUtils.getDefinitionByName(this._script);
-                this.scriptInstance = new cls(this);
-                var scriptData = this.scriptData = this.scriptData || {};
-                for (const key in scriptData)
+                if (runEnvironment == RunEnvironment.feng3d)
                 {
-                    if (scriptData.hasOwnProperty(key))
-                    {
-                        this.scriptInstance[key] = scriptData[key];
-                    }
+                    this.scriptInstance.dispose();
                 }
-                this.scriptInstance.init();
+                this.scriptInstance = null;
+            }
+            if (this.script)
+            {
+                var cls = classUtils.getDefinitionByName(this.script);
+                this.scriptInstance = new cls(this);
+                if (runEnvironment == RunEnvironment.feng3d)
+                {
+                    if (this.gameObject)
+                        this.scriptInstance.init();
+                }
             }
         }
 
@@ -62,7 +56,10 @@ namespace feng3d
          */
         update()
         {
-            this.scriptInstance && this.scriptInstance.update();
+            if (runEnvironment == RunEnvironment.feng3d)
+            {
+                this.scriptInstance && this.scriptInstance.update();
+            }
         }
 
         /**
@@ -71,7 +68,11 @@ namespace feng3d
         dispose()
         {
             this.enabled = false;
-            this.scriptInstance && this.scriptInstance.dispose();
+
+            if (runEnvironment == RunEnvironment.feng3d)
+            {
+                this.scriptInstance && this.scriptInstance.dispose();
+            }
             this.scriptInstance = null;
             super.dispose();
         }
