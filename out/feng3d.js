@@ -20062,7 +20062,7 @@ var feng3d;
          */
         IndexedDBfs.prototype.readFile = function (path, callback) {
             feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                callback(null, data ? data.data : null);
+                callback(null, data);
             });
         };
         /**
@@ -20114,7 +20114,7 @@ var feng3d;
          * @param callback 回调函数
          */
         IndexedDBfs.prototype.mkdir = function (path, callback) {
-            feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: true, birthtime: new Date() }, callback);
+            feng3d.storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
         };
         /**
          * 删除文件
@@ -20131,7 +20131,7 @@ var feng3d;
          * @param callback 回调函数
          */
         IndexedDBfs.prototype.writeFile = function (path, data, callback) {
-            feng3d.storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
+            feng3d.storage.set(this.DBname, this.projectname, path, data, callback);
         };
         /**
          * 获取所有文件路径

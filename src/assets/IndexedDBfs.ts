@@ -39,7 +39,7 @@ namespace feng3d
         {
             storage.get(this.DBname, this.projectname, path, (err, data) =>
             {
-                callback(null, data ? data.data : null);
+                callback(null, data);
             });
         }
 
@@ -104,7 +104,7 @@ namespace feng3d
          */
         mkdir(path: string, callback: (err: Error) => void): void
         {
-            storage.set(this.DBname, this.projectname, path, { isDirectory: true, birthtime: new Date() }, callback);
+            storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
         }
 
         /**
@@ -125,7 +125,7 @@ namespace feng3d
          */
         writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void)
         {
-            storage.set(this.DBname, this.projectname, path, { isDirectory: false, birthtime: new Date(), data: data }, callback);
+            storage.set(this.DBname, this.projectname, path, data, callback);
         }
 
         /**

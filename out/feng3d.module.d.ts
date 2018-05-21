@@ -10358,8 +10358,8 @@ declare namespace feng3d {
         createObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void): void;
         deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void): void;
         getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void): void;
-        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error | null, data: any) => void): void;
-        set(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: (err: Error | null) => void): void;
+        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void): void;
+        set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void): void;
         delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
         clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
     }

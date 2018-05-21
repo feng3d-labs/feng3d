@@ -167,7 +167,7 @@ namespace feng3d
                 }
             });
         }
-        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error | null, data: any) => void)
+        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void)
         {
             this.getDatabase(dbname, (err, database) =>
             {
@@ -182,7 +182,7 @@ namespace feng3d
                 };
             });
         }
-        set(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: (err: Error | null) => void)
+        set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void)
         {
             this.getDatabase(dbname, (err, database) =>
             {
