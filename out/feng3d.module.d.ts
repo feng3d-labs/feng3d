@@ -230,7 +230,8 @@ declare namespace feng3d {
         keyCode: number;
         wheelDelta: number;
         private listentypes;
-        private target;
+        target: EventTarget;
+        private _target;
         constructor(target: EventTarget);
         /**
          * 监听一次事件后将会被移除
@@ -7751,8 +7752,6 @@ declare namespace feng3d {
         private updateBounds();
     }
 }
-declare namespace feng3d {
-}
 interface HTMLCanvasElement {
     gl: feng3d.GL;
 }
@@ -11230,11 +11229,18 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    class MouseInput {
+    }
+    class CanvasMouseInput {
+        private canvas;
+        constructor(canvas: HTMLCanvasElement);
+    }
     /**
      * 鼠标事件管理
      * @author feng 2014-4-29
      */
     class Mouse3DManager {
+        private mouseInput;
         private mouseX;
         private mouseY;
         readonly selectedGameObject: GameObject;

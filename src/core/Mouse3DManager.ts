@@ -1,11 +1,30 @@
 namespace feng3d
 {
+
+    export class MouseInput
+    {
+        
+    }
+
+    export class CanvasMouseInput
+    {
+        private canvas: HTMLCanvasElement;
+
+        constructor(canvas: HTMLCanvasElement)
+        {
+            this.canvas = canvas;
+            
+        }
+    }
+
     /**
      * 鼠标事件管理
      * @author feng 2014-4-29
      */
     export class Mouse3DManager
     {
+        private mouseInput: MouseInput;
+
         //
         private mouseX = 0;
         private mouseY = 0;

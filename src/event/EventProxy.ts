@@ -24,7 +24,30 @@ namespace feng3d
 
         private listentypes: string[] = [];
 
-        private target: EventTarget;
+        get target()
+        {
+            return this._target;
+        }
+        set target(v)
+        {
+            if (this._target)
+            {
+                this.listentypes.forEach(element =>
+                {
+                    this._target.removeEventListener(element, this.onMouseKey);
+                });
+            }
+            this._target = v;
+            if (this._target)
+            {
+                this.listentypes.forEach(element =>
+                {
+                    this._target.addEventListener(element, this.onMouseKey);
+                });
+            }
+        }
+
+        private _target: EventTarget;
 
         constructor(target: EventTarget)
         {
@@ -56,7 +79,7 @@ namespace feng3d
             if (this.listentypes.indexOf(type) == -1)
             {
                 this.listentypes.push(type);
-                this.target.addEventListener(type, this.onMouseKey);
+                this._target.addEventListener(type, this.onMouseKey);
             }
         }
 
@@ -73,12 +96,12 @@ namespace feng3d
             {
                 this.listentypes.forEach(element =>
                 {
-                    this.target.removeEventListener(element, this.onMouseKey);
+                    this._target.removeEventListener(element, this.onMouseKey);
                 });
                 this.listentypes.length = 0;
             } else if (!this.has(type))
             {
-                this.target.removeEventListener(type, this.onMouseKey);
+                this._target.removeEventListener(type, this.onMouseKey);
                 this.listentypes.splice(this.listentypes.indexOf(type), 1);
             }
         }

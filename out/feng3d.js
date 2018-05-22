@@ -348,6 +348,27 @@ var feng3d;
             _this.target = target;
             return _this;
         }
+        Object.defineProperty(EventProxy.prototype, "target", {
+            get: function () {
+                return this._target;
+            },
+            set: function (v) {
+                var _this = this;
+                if (this._target) {
+                    this.listentypes.forEach(function (element) {
+                        _this._target.removeEventListener(element, _this.onMouseKey);
+                    });
+                }
+                this._target = v;
+                if (this._target) {
+                    this.listentypes.forEach(function (element) {
+                        _this._target.addEventListener(element, _this.onMouseKey);
+                    });
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
@@ -370,7 +391,7 @@ var feng3d;
             _super.prototype.on.call(this, type, listener, thisObject, priority, once);
             if (this.listentypes.indexOf(type) == -1) {
                 this.listentypes.push(type);
-                this.target.addEventListener(type, this.onMouseKey);
+                this._target.addEventListener(type, this.onMouseKey);
             }
         };
         /**
@@ -384,12 +405,12 @@ var feng3d;
             _super.prototype.off.call(this, type, listener, thisObject);
             if (!type) {
                 this.listentypes.forEach(function (element) {
-                    _this.target.removeEventListener(element, _this.onMouseKey);
+                    _this._target.removeEventListener(element, _this.onMouseKey);
                 });
                 this.listentypes.length = 0;
             }
             else if (!this.has(type)) {
-                this.target.removeEventListener(type, this.onMouseKey);
+                this._target.removeEventListener(type, this.onMouseKey);
                 this.listentypes.splice(this.listentypes.indexOf(type), 1);
             }
         };
@@ -23561,6 +23582,19 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var MouseInput = /** @class */ (function () {
+        function MouseInput() {
+        }
+        return MouseInput;
+    }());
+    feng3d.MouseInput = MouseInput;
+    var CanvasMouseInput = /** @class */ (function () {
+        function CanvasMouseInput(canvas) {
+            this.canvas = canvas;
+        }
+        return CanvasMouseInput;
+    }());
+    feng3d.CanvasMouseInput = CanvasMouseInput;
     /**
      * 鼠标事件管理
      * @author feng 2014-4-29
