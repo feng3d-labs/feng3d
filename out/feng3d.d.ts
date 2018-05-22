@@ -11233,7 +11233,8 @@ declare namespace feng3d {
     class Mouse3DManager {
         private mouseX;
         private mouseY;
-        private selectedGameObject;
+        readonly selectedGameObject: GameObject;
+        private _selectedGameObject;
         private mouseEventTypes;
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
@@ -11244,7 +11245,8 @@ declare namespace feng3d {
          */
         private gameObjectClickNum;
         private _catchMouseMove;
-        private enable;
+        enable: boolean;
+        private _enable;
         private canvas;
         /**
          * 渲染
@@ -11253,15 +11255,12 @@ declare namespace feng3d {
         /**
          * 是否捕捉鼠标移动，默认false。
          */
-        catchMouseMove(value: any): void;
-        getSelectedGameObject(): GameObject;
-        setEnable(value: boolean): void;
-        getEnable(): boolean;
+        private catchMouseMove(value);
         constructor(canvas: HTMLCanvasElement);
         /**
          * 监听鼠标事件收集事件类型
          */
-        onMouseEvent(event: MouseEvent): void;
+        private onMouseEvent(event);
         pick(scene3d: Scene3D, camera: Camera): void;
         /**
          * 设置选中对象

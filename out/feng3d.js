@@ -23572,11 +23572,40 @@ var feng3d;
             this.mouseY = 0;
             this.mouseEventTypes = [];
             this._catchMouseMove = false;
-            this.enable = false;
+            this._enable = false;
             //
-            this.setEnable(true);
+            this.enable = true;
             this.canvas = canvas;
         }
+        Object.defineProperty(Mouse3DManager.prototype, "selectedGameObject", {
+            get: function () {
+                return this._selectedGameObject;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mouse3DManager.prototype, "enable", {
+            get: function () {
+                return this._enable;
+            },
+            set: function (value) {
+                if (this._enable) {
+                    feng3d.windowEventProxy.off("click", this.onMouseEvent, this);
+                    feng3d.windowEventProxy.off("dblclick", this.onMouseEvent, this);
+                    feng3d.windowEventProxy.off("mousedown", this.onMouseEvent, this);
+                    feng3d.windowEventProxy.off("mouseup", this.onMouseEvent, this);
+                }
+                this._enable = value;
+                if (this._enable) {
+                    feng3d.windowEventProxy.on("click", this.onMouseEvent, this);
+                    feng3d.windowEventProxy.on("dblclick", this.onMouseEvent, this);
+                    feng3d.windowEventProxy.on("mousedown", this.onMouseEvent, this);
+                    feng3d.windowEventProxy.on("mouseup", this.onMouseEvent, this);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 渲染
          */
@@ -23603,27 +23632,6 @@ var feng3d;
             if (this._catchMouseMove) {
                 feng3d.windowEventProxy.on("mousemove", this.onMouseEvent, this);
             }
-        };
-        Mouse3DManager.prototype.getSelectedGameObject = function () {
-            return this.selectedGameObject;
-        };
-        Mouse3DManager.prototype.setEnable = function (value) {
-            if (this.enable) {
-                feng3d.windowEventProxy.off("click", this.onMouseEvent, this);
-                feng3d.windowEventProxy.off("dblclick", this.onMouseEvent, this);
-                feng3d.windowEventProxy.off("mousedown", this.onMouseEvent, this);
-                feng3d.windowEventProxy.off("mouseup", this.onMouseEvent, this);
-            }
-            this.enable = value;
-            if (this.enable) {
-                feng3d.windowEventProxy.on("click", this.onMouseEvent, this);
-                feng3d.windowEventProxy.on("dblclick", this.onMouseEvent, this);
-                feng3d.windowEventProxy.on("mousedown", this.onMouseEvent, this);
-                feng3d.windowEventProxy.on("mouseup", this.onMouseEvent, this);
-            }
-        };
-        Mouse3DManager.prototype.getEnable = function () {
-            return this.enable;
         };
         /**
          * 监听鼠标事件收集事件类型
@@ -23667,43 +23675,43 @@ var feng3d;
          */
         Mouse3DManager.prototype.setSelectedGameObject = function (value) {
             var _this = this;
-            if (this.selectedGameObject != value) {
-                if (this.selectedGameObject)
-                    this.selectedGameObject.dispatch("mouseout", null, true);
+            if (this._selectedGameObject != value) {
+                if (this._selectedGameObject)
+                    this._selectedGameObject.dispatch("mouseout", null, true);
                 if (value)
                     value.dispatch("mouseover", null, true);
             }
-            this.selectedGameObject = value;
-            if (this.selectedGameObject) {
+            this._selectedGameObject = value;
+            if (this._selectedGameObject) {
                 this.mouseEventTypes.forEach(function (element) {
                     switch (element) {
                         case "mousedown":
-                            if (_this.preMouseDownGameObject != _this.selectedGameObject) {
+                            if (_this.preMouseDownGameObject != _this._selectedGameObject) {
                                 _this.gameObjectClickNum = 0;
-                                _this.preMouseDownGameObject = _this.selectedGameObject;
+                                _this.preMouseDownGameObject = _this._selectedGameObject;
                             }
-                            _this.selectedGameObject.dispatch(element, null, true);
+                            _this._selectedGameObject.dispatch(element, null, true);
                             break;
                         case "mouseup":
-                            if (_this.selectedGameObject == _this.preMouseDownGameObject) {
+                            if (_this._selectedGameObject == _this.preMouseDownGameObject) {
                                 _this.gameObjectClickNum++;
                             }
                             else {
                                 _this.gameObjectClickNum = 0;
                                 _this.preMouseDownGameObject = null;
                             }
-                            _this.selectedGameObject.dispatch(element, null, true);
+                            _this._selectedGameObject.dispatch(element, null, true);
                             break;
                         case "mousemove":
-                            _this.selectedGameObject.dispatch(element, null, true);
+                            _this._selectedGameObject.dispatch(element, null, true);
                             break;
                         case "click":
                             if (_this.gameObjectClickNum > 0)
-                                _this.selectedGameObject.dispatch(element, null, true);
+                                _this._selectedGameObject.dispatch(element, null, true);
                             break;
                         case "dblclick":
                             if (_this.gameObjectClickNum > 1)
-                                _this.selectedGameObject.dispatch(element, null, true);
+                                _this._selectedGameObject.dispatch(element, null, true);
                             break;
                     }
                 });
