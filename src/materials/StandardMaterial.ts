@@ -119,7 +119,7 @@ namespace feng3d
          * 环境映射贴图
          */
         @serialize
-        @oav({ block: "envMap" })
+        @oav({ block: "envMap", componentParam: { dragparam: { accepttype: "texturecube", datatype: "texturecube" } } })
         s_envMap = new TextureCube();
 
         /**

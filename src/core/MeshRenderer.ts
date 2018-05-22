@@ -19,7 +19,7 @@ namespace feng3d
         /**
          * Returns the instantiated Mesh assigned to the mesh filter.
          */
-        @oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } })
+        @oav({ component: "OAVPick", componentParam: { accepttype: "geometry", datatype: "geometry" } })
         @serialize
         get geometry()
         {
@@ -45,7 +45,7 @@ namespace feng3d
          * 材质
          * Returns the first instantiated Material assigned to the renderer.
          */
-        @oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } })
+        @oav({ component: "OAVPick", componentParam: { accepttype: "material", datatype: "material" } })
         @serialize
         @watch("materialChanged")
         material: Material;
@@ -91,7 +91,7 @@ namespace feng3d
 
         private materialChanged()
         {
-            if(this.material && this.material.constructor == Object)
+            if (this.material && this.material.constructor == Object)
             {
                 error("material 必须继承与 Material!");
             }

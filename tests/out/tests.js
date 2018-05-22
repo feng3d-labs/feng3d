@@ -461,10 +461,10 @@ QUnit.module("Array", function () {
 });
 QUnit.module("PathUtils", function () {
     QUnit.test("getName", function (assert) {
-        assert.ok(feng3d.pathUtils.getName("a") == "a");
-        assert.ok(feng3d.pathUtils.getName("a.txt") == "a.txt");
-        assert.ok(feng3d.pathUtils.getName("a/") == "a");
-        assert.ok(feng3d.pathUtils.getName("a.b/") == "a.b");
+        assert.ok(feng3d.pathUtils.getNameWithExtension("a") == "a");
+        assert.ok(feng3d.pathUtils.getNameWithExtension("a.txt") == "a.txt");
+        assert.ok(feng3d.pathUtils.getNameWithExtension("a/") == "a");
+        assert.ok(feng3d.pathUtils.getNameWithExtension("a.b/") == "a.b");
     });
     QUnit.test("getExtension", function (assert) {
         assert.ok(feng3d.pathUtils.getExtension("a.txt") == "txt");

@@ -2584,10 +2584,21 @@ var feng3d;
         function PathUtils() {
         }
         /**
-         * 获取带后缀名称
+         * 获取不带后缀名称
          * @param path 路径
          */
         PathUtils.prototype.getName = function (path) {
+            var name = this.getNameWithExtension(path);
+            if (this.isDirectory(path))
+                return name;
+            name = name.split(".").shift();
+            return name;
+        };
+        /**
+         * 获取带后缀名称
+         * @param path 路径
+         */
+        PathUtils.prototype.getNameWithExtension = function (path) {
             var paths = path.split("/");
             var name = paths.pop();
             if (name == "")
@@ -2599,7 +2610,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getExtension = function (path) {
-            var name = this.getName(path);
+            var name = this.getNameWithExtension(path);
             var names = name.split(".");
             names.shift();
             var extension = names.join(".");
@@ -2637,6 +2648,810 @@ var feng3d;
     }());
     feng3d.PathUtils = PathUtils;
     feng3d.pathUtils = new PathUtils();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var databases = {};
+    /**
+     *
+     */
+    var Storage = /** @class */ (function () {
+        function Storage() {
+        }
+        /**
+         * 是否支持 indexedDB
+         */
+        Storage.prototype.support = function () {
+            if (typeof indexedDB == "undefined") {
+                indexedDB = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
+                if (indexedDB == undefined) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        Storage.prototype.getDatabase = function (dbname, callback) {
+            if (databases[dbname]) {
+                callback(null, databases[dbname]);
+                return;
+            }
+            var request = indexedDB.open(dbname);
+            request.onsuccess = function (event) {
+                databases[dbname] = event.target["result"];
+                callback(null, databases[dbname]);
+                request.onsuccess = null;
+            };
+            request.onerror = function (event) {
+                callback(event, null);
+                request.onerror = null;
+            };
+        };
+        Storage.prototype.deleteDatabase = function (dbname, callback) {
+            var request = indexedDB.deleteDatabase(dbname);
+            request.onsuccess = function (event) {
+                delete databases[dbname];
+                callback && callback(null);
+                request.onsuccess = null;
+            };
+            request.onerror = function (event) {
+                callback && callback(event);
+                request.onerror = null;
+            };
+        };
+        Storage.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                callback(database.objectStoreNames.contains(objectStroreName));
+            });
+        };
+        Storage.prototype.getObjectStoreNames = function (dbname, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                var objectStoreNames = [];
+                for (var i = 0; i < database.objectStoreNames.length; i++) {
+                    objectStoreNames.push(database.objectStoreNames.item(i));
+                }
+                callback(null, objectStoreNames);
+            });
+        };
+        Storage.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                if (database.objectStoreNames.contains(objectStroreName)) {
+                    callback && callback(null);
+                    return;
+                }
+                database.close();
+                var request = indexedDB.open(database.name, database.version + 1);
+                request.onupgradeneeded = function (event) {
+                    var newdatabase = event.target["result"];
+                    newdatabase.createObjectStore(objectStroreName);
+                    callback && callback(null);
+                    request.onupgradeneeded = null;
+                };
+                request.onsuccess = function (event) {
+                    var newdatabase = event.target["result"];
+                    databases[newdatabase.name] = newdatabase;
+                    request.onsuccess = null;
+                };
+                request.onerror = function (event) {
+                    callback && callback(event);
+                    request.onerror = null;
+                };
+            });
+        };
+        Storage.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                if (!database.objectStoreNames.contains(objectStroreName)) {
+                    callback && callback(null);
+                    return;
+                }
+                database.close();
+                var request = indexedDB.open(database.name, database.version + 1);
+                request.onupgradeneeded = function (event) {
+                    var newdatabase = event.target["result"];
+                    newdatabase.deleteObjectStore(objectStroreName);
+                    callback && callback(null);
+                    request.onupgradeneeded = null;
+                };
+                request.onsuccess = function (event) {
+                    var newdatabase = event.target["result"];
+                    databases[newdatabase.name] = newdatabase;
+                    request.onsuccess = null;
+                };
+                request.onerror = function (event) {
+                    callback && callback(event);
+                    request.onerror = null;
+                };
+            });
+        };
+        Storage.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.getAllKeys();
+                    request.onsuccess = function (event) {
+                        callback && callback(null, event.target["result"]);
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error, null);
+                }
+            });
+        };
+        Storage.prototype.get = function (dbname, objectStroreName, key, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                var transaction = database.transaction([objectStroreName], 'readwrite');
+                var objectStore = transaction.objectStore(objectStroreName);
+                var request = objectStore.get(key);
+                request.onsuccess = function (event) {
+                    var result = event.target["result"];
+                    callback && callback(result ? null : new Error("\u6CA1\u6709\u627E\u5230\u8D44\u6E90 " + key), result);
+                    request.onsuccess = null;
+                };
+            });
+        };
+        Storage.prototype.set = function (dbname, objectStroreName, key, data, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.put(data, key);
+                    request.onsuccess = function (event) {
+                        callback && callback(null);
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error);
+                }
+            });
+        };
+        Storage.prototype.delete = function (dbname, objectStroreName, key, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.delete(key);
+                    request.onsuccess = function (event) {
+                        callback && callback();
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error);
+                }
+            });
+        };
+        Storage.prototype.clear = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.clear();
+                    request.onsuccess = function (event) {
+                        callback && callback();
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error);
+                }
+            });
+        };
+        return Storage;
+    }());
+    feng3d.Storage = Storage;
+    feng3d.storage = new Storage();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 索引数据文件系统
+     */
+    var IndexedDBfs = /** @class */ (function () {
+        function IndexedDBfs(DBname, projectname) {
+            if (DBname === void 0) { DBname = "feng3d-editor"; }
+            if (projectname === void 0) { projectname = "testproject"; }
+            this.DBname = DBname;
+            this.projectname = projectname;
+        }
+        Object.defineProperty(IndexedDBfs.prototype, "type", {
+            get: function () {
+                return feng3d.FSType.indexedDB;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        IndexedDBfs.prototype.readFile = function (path, callback) {
+            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
+                callback(null, data);
+            });
+        };
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.getAbsolutePath = function (path, callback) {
+            callback(null, path);
+        };
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.exists = function (path, callback) {
+            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
+                callback(!!data);
+            });
+        };
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.readdir = function (path, callback) {
+            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
+                if (!allfilepaths) {
+                    callback(err, null);
+                    return;
+                }
+                var subfilemap = {};
+                allfilepaths.forEach(function (element) {
+                    if (element.substr(0, path.length) == path && element != path) {
+                        var result = element.substr(path.length);
+                        var index = result.indexOf("/");
+                        if (index != -1)
+                            result = result.substring(0, index + 1);
+                        subfilemap[result] = 1;
+                    }
+                });
+                var files = Object.keys(subfilemap);
+                callback(null, files);
+            });
+        };
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.mkdir = function (path, callback) {
+            feng3d.storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
+        };
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.deleteFile = function (path, callback) {
+            feng3d.storage.delete(this.DBname, this.projectname, path, callback);
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.writeFile = function (path, data, callback) {
+            feng3d.storage.set(this.DBname, this.projectname, path, data, callback);
+        };
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.getAllPaths = function (callback) {
+            feng3d.storage.getAllKeys(this.DBname, this.projectname, callback);
+        };
+        return IndexedDBfs;
+    }());
+    feng3d.IndexedDBfs = IndexedDBfs;
+    feng3d.indexedDBfs = new IndexedDBfs();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Http可读文件系统
+     */
+    var HttpFS = /** @class */ (function () {
+        function HttpFS() {
+            /**
+             * 根路径
+             */
+            this.rootPath = "";
+            this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
+        }
+        Object.defineProperty(HttpFS.prototype, "type", {
+            get: function () {
+                return feng3d.FSType.http;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        HttpFS.prototype.readFile = function (path, callback) {
+            // rootPath
+            feng3d.Loader.loadBinary(path, function (content) {
+                callback(null, content);
+            }, null, function (e) {
+                callback(e, null);
+            });
+        };
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        HttpFS.prototype.getAbsolutePath = function (path, callback) {
+            callback(null, this.rootPath + path);
+        };
+        return HttpFS;
+    }());
+    feng3d.HttpFS = HttpFS;
+    feng3d.httpFS = new HttpFS();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 文件系统类型
+     */
+    var FSType;
+    (function (FSType) {
+        FSType["http"] = "http";
+        FSType["native"] = "native";
+        FSType["indexedDB"] = "indexedDB";
+    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
+    /**
+     * 资源
+     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
+     */
+    var ReadAssets = /** @class */ (function () {
+        function ReadAssets() {
+            /**
+             * 可读文件系统
+             */
+            this.fs = feng3d.httpFS;
+        }
+        Object.defineProperty(ReadAssets.prototype, "type", {
+            get: function () {
+                return this.fs.type;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        ReadAssets.prototype.readFile = function (path, callback) {
+            var readFS = this.fs;
+            if (path.indexOf("http://") != -1
+                || path.indexOf("https://") != -1)
+                readFS = feng3d.httpFS;
+            if (path.indexOf("file:///") != -1
+                || path.indexOf("file:///") != -1)
+                readFS = feng3d.httpFS;
+            readFS.readFile(path, callback);
+        };
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        ReadAssets.prototype.getAbsolutePath = function (path, callback) {
+            this.fs.getAbsolutePath(path, callback);
+        };
+        /**
+         * 读取文件为字符串
+         */
+        ReadAssets.prototype.readFileAsString = function (path, callback) {
+            this.readFile(path, function (err, data) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                feng3d.dataTransform.arrayBufferToString(data, function (content) {
+                    callback(null, content);
+                });
+            });
+        };
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        ReadAssets.prototype.readFileAsImage = function (path, callback) {
+            if (path == "" || path == null) {
+                callback(new Error("无效路径!"), null);
+                return;
+            }
+            this.readFile(path, function (err, data) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                feng3d.dataTransform.arrayBufferToImage(data, function (img) {
+                    callback(null, img);
+                });
+            });
+        };
+        return ReadAssets;
+    }());
+    feng3d.ReadAssets = ReadAssets;
+    feng3d.assets = new ReadAssets();
+    var ReadWriteAssets = /** @class */ (function (_super) {
+        __extends(ReadWriteAssets, _super);
+        function ReadWriteAssets(readWriteFS) {
+            var _this = _super.call(this) || this;
+            /**
+             * 可读写文件系统
+             */
+            _this.fs = feng3d.indexedDBfs;
+            if (readWriteFS)
+                _this.fs = readWriteFS;
+            return _this;
+        }
+        Object.defineProperty(ReadWriteAssets.prototype, "projectname", {
+            // fs = indexedDBfs;
+            get: function () {
+                return this.fs.projectname;
+            },
+            set: function (v) {
+                this.fs.projectname = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.exists = function (path, callback) {
+            this.fs.exists(path, callback);
+        };
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.readdir = function (path, callback) {
+            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
+            this.fs.readdir(path, callback);
+        };
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.mkdir = function (path, callback) {
+            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
+            this.fs.mkdir(path, callback);
+        };
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.deleteFile = function (path, callback) {
+            this.fs.deleteFile(path, callback);
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.writeFile = function (path, data, callback) {
+            if (this.isDir(path)) {
+                this.fs.mkdir(path, callback);
+            }
+            else {
+                this.fs.writeFile(path, data, callback);
+            }
+        };
+        ///--------------------------
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.getAllPaths = function (callback) {
+            this.getAllfilepathInFolder("", callback);
+        };
+        /**
+         * 获取指定文件下所有文件路径列表
+         */
+        ReadWriteAssets.prototype.getAllfilepathInFolder = function (dirpath, callback) {
+            var _this = this;
+            feng3d.assert(this.isDir(dirpath), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
+            var dirs = [dirpath];
+            var result = [];
+            var currentdir = "";
+            // 递归获取文件
+            var handle = function () {
+                if (dirs.length > 0) {
+                    currentdir = dirs.shift();
+                    _this.readdir(currentdir, function (err, files) {
+                        files.forEach(function (element) {
+                            var childpath = currentdir + element;
+                            result.push(childpath);
+                            if (_this.isDir(childpath))
+                                dirs.push(childpath);
+                        });
+                        handle();
+                    });
+                }
+                else {
+                    callback(null, result);
+                }
+            };
+            handle();
+        };
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.copyFile = function (src, dest, callback) {
+            var _this = this;
+            this.readFile(src, function (err, data) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.writeFile(dest, data, callback);
+            });
+        };
+        /**
+         * 移动文件
+         * @param src 源路径
+         * @param dest 目标路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.moveFile = function (src, dest, callback) {
+            var _this = this;
+            this.copyFile(src, dest, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.deleteFile(src, callback);
+            });
+        };
+        /**
+         * 重命名文件
+         * @param oldPath 老路径
+         * @param newPath 新路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.renameFile = function (oldPath, newPath, callback) {
+            this.moveFile(oldPath, newPath, callback);
+        };
+        /**
+         * 移动一组文件
+         * @param movelists 移动列表
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.moveFiles = function (movelists, callback) {
+            var _this = this;
+            this.copyFiles(movelists.concat(), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                var deletelists = movelists.reduce(function (value, current) { value.push(current[0]); return value; }, []);
+                _this.deleteFiles(deletelists, callback);
+            });
+        };
+        /**
+         * 复制一组文件
+         * @param copylists 复制列表
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.copyFiles = function (copylists, callback) {
+            var _this = this;
+            if (copylists.length > 0) {
+                var copyitem = copylists.shift();
+                this.copyFile(copyitem[0], copyitem[1], function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    }
+                    _this.copyFiles(copylists, callback);
+                });
+                return;
+            }
+            callback(null);
+        };
+        /**
+         * 删除一组文件
+         * @param deletelists 删除列表
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.deleteFiles = function (deletelists, callback) {
+            var _this = this;
+            if (deletelists.length > 0) {
+                this.deleteFile(deletelists.shift(), function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    }
+                    _this.deleteFiles(deletelists, callback);
+                });
+                return;
+            }
+            callback(null);
+        };
+        /**
+         * 重命名文件(夹)
+         * @param oldPath 老路径
+         * @param newPath 新路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.rename = function (oldPath, newPath, callback) {
+            var _this = this;
+            if (this.isDir(oldPath)) {
+                this.getAllfilepathInFolder(oldPath, function (err, filepaths) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    }
+                    var renamelists = [[oldPath, newPath]];
+                    filepaths.forEach(function (element) {
+                        renamelists.push([element, element.replace(oldPath, newPath)]);
+                    });
+                    _this.moveFiles(renamelists, callback);
+                });
+            }
+            else {
+                this.renameFile(oldPath, newPath, callback);
+            }
+        };
+        /**
+         * 移动文件(夹)
+         * @param src 源路径
+         * @param dest 目标路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.move = function (src, dest, callback) {
+            this.rename(src, dest, callback);
+        };
+        /**
+         * 删除文件(夹)
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.delete = function (path, callback) {
+            var _this = this;
+            if (this.isDir(path)) {
+                this.getAllfilepathInFolder(path, function (err, filepaths) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    var removelists = filepaths.concat(path);
+                    _this.deleteFiles(removelists, callback);
+                });
+            }
+            else {
+                this.deleteFile(path, callback);
+            }
+        };
+        /**
+         * 是否为文件夹
+         * @param path 文件路径
+         */
+        ReadWriteAssets.prototype.isDir = function (path) {
+            if (path == "")
+                return true;
+            return path.charAt(path.length - 1) == "/";
+        };
+        return ReadWriteAssets;
+    }(ReadAssets));
+    feng3d.ReadWriteAssets = ReadWriteAssets;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 资源扩展名
+     */
+    var AssetExtension;
+    (function (AssetExtension) {
+        /**
+         * 文件夹
+         */
+        AssetExtension["folder"] = "folder";
+        /**
+         * png 图片
+         */
+        AssetExtension["png"] = "png";
+        /**
+         * jpg图片
+         */
+        AssetExtension["jpg"] = "jpg";
+        /**
+         * jpeg图片
+         */
+        AssetExtension["jpeg"] = "jpeg";
+        /**
+         * gif图片
+         */
+        AssetExtension["gif"] = "gif";
+        /**
+         * ts文件
+         */
+        AssetExtension["ts"] = "ts";
+        /**
+         * js文件
+         */
+        AssetExtension["js"] = "js";
+        /**
+         * 文本文件
+         */
+        AssetExtension["txt"] = "txt";
+        /**
+         * json文件
+         */
+        AssetExtension["json"] = "json";
+        // -- feng3d中的类型
+        /**
+         * 材质
+         */
+        AssetExtension["material"] = "material.json";
+        /**
+         * 几何体
+         */
+        AssetExtension["geometry"] = "geometry.json";
+        /**
+         * 游戏对象
+         */
+        AssetExtension["gameobject"] = "gameobject.json";
+        /**
+         * 场景文件
+         */
+        AssetExtension["scene"] = "scene.json";
+        /**
+         * 动画文件
+         */
+        AssetExtension["anim"] = "anim.json";
+        /**
+         * 着色器文件
+         */
+        AssetExtension["shader"] = "shader.ts";
+        /**
+         * 脚本文件
+         */
+        AssetExtension["script"] = "script.ts";
+    })(AssetExtension = feng3d.AssetExtension || (feng3d.AssetExtension = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * feng3d资源
+     */
+    var Feng3dAssets = /** @class */ (function () {
+        function Feng3dAssets() {
+        }
+        Feng3dAssets.prototype.pathChanged = function () {
+            // 更新名字
+            this.name = feng3d.pathUtils.getName(this.path);
+        };
+        __decorate([
+            feng3d.watch("pathChanged")
+        ], Feng3dAssets.prototype, "path", void 0);
+        return Feng3dAssets;
+    }());
+    feng3d.Feng3dAssets = Feng3dAssets;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -13825,11 +14640,11 @@ var feng3d;
             }
         };
         __decorate([
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } }),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "geometry", datatype: "geometry" } }),
             feng3d.serialize
         ], MeshRenderer.prototype, "geometry", null);
         __decorate([
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } }),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "material", datatype: "material" } }),
             feng3d.serialize,
             feng3d.watch("materialChanged")
         ], MeshRenderer.prototype, "material", void 0);
@@ -17386,22 +18201,25 @@ var feng3d;
      * 材质
      * @author feng 2016-05-02
      */
-    var Material = /** @class */ (function () {
+    var Material = /** @class */ (function (_super) {
+        __extends(Material, _super);
         function Material(raw) {
+            var _this = _super.call(this) || this;
             /**
              * shader名称
              */
-            this.shaderName = "standard";
+            _this.shaderName = "standard";
             /**
              * Uniform数据
              */
-            this.uniforms = new feng3d.StandardUniforms();
+            _this.uniforms = new feng3d.StandardUniforms();
             /**
              * 渲染参数
              */
-            this.renderParams = new feng3d.RenderParams();
-            feng3d.serialization.setValue(this, raw);
-            feng3d.feng3dDispatcher.on("assets.shaderChanged", this.onShaderChanged, this);
+            _this.renderParams = new feng3d.RenderParams();
+            feng3d.serialization.setValue(_this, raw);
+            feng3d.feng3dDispatcher.on("assets.shaderChanged", _this.onShaderChanged, _this);
+            return _this;
         }
         Material.prototype.preRender = function (renderAtomic) {
             for (var key in this.uniforms) {
@@ -17435,7 +18253,7 @@ var feng3d;
             feng3d.oav({ block: "渲染参数", component: "OAVObjectView" })
         ], Material.prototype, "renderParams", void 0);
         return Material;
-    }());
+    }(feng3d.Feng3dAssets));
     feng3d.Material = Material;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -17648,7 +18466,7 @@ var feng3d;
         ], StandardUniforms.prototype, "u_ambient", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "envMap" })
+            feng3d.oav({ block: "envMap", componentParam: { dragparam: { accepttype: "texturecube", datatype: "texturecube" } } })
         ], StandardUniforms.prototype, "s_envMap", void 0);
         __decorate([
             feng3d.serialize,
@@ -19929,717 +20747,6 @@ var feng3d;
         PropertyClipPathItemType[PropertyClipPathItemType["GameObject"] = 0] = "GameObject";
         PropertyClipPathItemType[PropertyClipPathItemType["Component"] = 1] = "Component";
     })(PropertyClipPathItemType = feng3d.PropertyClipPathItemType || (feng3d.PropertyClipPathItemType = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var databases = {};
-    /**
-     *
-     */
-    var Storage = /** @class */ (function () {
-        function Storage() {
-        }
-        /**
-         * 是否支持 indexedDB
-         */
-        Storage.prototype.support = function () {
-            if (typeof indexedDB == "undefined") {
-                indexedDB = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
-                if (indexedDB == undefined) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        Storage.prototype.getDatabase = function (dbname, callback) {
-            if (databases[dbname]) {
-                callback(null, databases[dbname]);
-                return;
-            }
-            var request = indexedDB.open(dbname);
-            request.onsuccess = function (event) {
-                databases[dbname] = event.target["result"];
-                callback(null, databases[dbname]);
-                request.onsuccess = null;
-            };
-            request.onerror = function (event) {
-                callback(event, null);
-                request.onerror = null;
-            };
-        };
-        Storage.prototype.deleteDatabase = function (dbname, callback) {
-            var request = indexedDB.deleteDatabase(dbname);
-            request.onsuccess = function (event) {
-                delete databases[dbname];
-                callback && callback(null);
-                request.onsuccess = null;
-            };
-            request.onerror = function (event) {
-                callback && callback(event);
-                request.onerror = null;
-            };
-        };
-        Storage.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                callback(database.objectStoreNames.contains(objectStroreName));
-            });
-        };
-        Storage.prototype.getObjectStoreNames = function (dbname, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                var objectStoreNames = [];
-                for (var i = 0; i < database.objectStoreNames.length; i++) {
-                    objectStoreNames.push(database.objectStoreNames.item(i));
-                }
-                callback(null, objectStoreNames);
-            });
-        };
-        Storage.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                if (database.objectStoreNames.contains(objectStroreName)) {
-                    callback && callback(null);
-                    return;
-                }
-                database.close();
-                var request = indexedDB.open(database.name, database.version + 1);
-                request.onupgradeneeded = function (event) {
-                    var newdatabase = event.target["result"];
-                    newdatabase.createObjectStore(objectStroreName);
-                    callback && callback(null);
-                    request.onupgradeneeded = null;
-                };
-                request.onsuccess = function (event) {
-                    var newdatabase = event.target["result"];
-                    databases[newdatabase.name] = newdatabase;
-                    request.onsuccess = null;
-                };
-                request.onerror = function (event) {
-                    callback && callback(event);
-                    request.onerror = null;
-                };
-            });
-        };
-        Storage.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                if (!database.objectStoreNames.contains(objectStroreName)) {
-                    callback && callback(null);
-                    return;
-                }
-                database.close();
-                var request = indexedDB.open(database.name, database.version + 1);
-                request.onupgradeneeded = function (event) {
-                    var newdatabase = event.target["result"];
-                    newdatabase.deleteObjectStore(objectStroreName);
-                    callback && callback(null);
-                    request.onupgradeneeded = null;
-                };
-                request.onsuccess = function (event) {
-                    var newdatabase = event.target["result"];
-                    databases[newdatabase.name] = newdatabase;
-                    request.onsuccess = null;
-                };
-                request.onerror = function (event) {
-                    callback && callback(event);
-                    request.onerror = null;
-                };
-            });
-        };
-        Storage.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.getAllKeys();
-                    request.onsuccess = function (event) {
-                        callback && callback(null, event.target["result"]);
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error, null);
-                }
-            });
-        };
-        Storage.prototype.get = function (dbname, objectStroreName, key, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                var transaction = database.transaction([objectStroreName], 'readwrite');
-                var objectStore = transaction.objectStore(objectStroreName);
-                var request = objectStore.get(key);
-                request.onsuccess = function (event) {
-                    var result = event.target["result"];
-                    callback && callback(result ? null : new Error("\u6CA1\u6709\u627E\u5230\u8D44\u6E90 " + key), result);
-                    request.onsuccess = null;
-                };
-            });
-        };
-        Storage.prototype.set = function (dbname, objectStroreName, key, data, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.put(data, key);
-                    request.onsuccess = function (event) {
-                        callback && callback(null);
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error);
-                }
-            });
-        };
-        Storage.prototype.delete = function (dbname, objectStroreName, key, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.delete(key);
-                    request.onsuccess = function (event) {
-                        callback && callback();
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error);
-                }
-            });
-        };
-        Storage.prototype.clear = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.clear();
-                    request.onsuccess = function (event) {
-                        callback && callback();
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error);
-                }
-            });
-        };
-        return Storage;
-    }());
-    feng3d.Storage = Storage;
-    feng3d.storage = new Storage();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 索引数据文件系统
-     */
-    var IndexedDBfs = /** @class */ (function () {
-        function IndexedDBfs(DBname, projectname) {
-            if (DBname === void 0) { DBname = "feng3d-editor"; }
-            if (projectname === void 0) { projectname = "testproject"; }
-            this.DBname = DBname;
-            this.projectname = projectname;
-        }
-        Object.defineProperty(IndexedDBfs.prototype, "type", {
-            get: function () {
-                return feng3d.FSType.indexedDB;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        IndexedDBfs.prototype.readFile = function (path, callback) {
-            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                callback(null, data);
-            });
-        };
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.getAbsolutePath = function (path, callback) {
-            callback(null, path);
-        };
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.exists = function (path, callback) {
-            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                callback(!!data);
-            });
-        };
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.readdir = function (path, callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
-                if (!allfilepaths) {
-                    callback(err, null);
-                    return;
-                }
-                var subfilemap = {};
-                allfilepaths.forEach(function (element) {
-                    if (element.substr(0, path.length) == path && element != path) {
-                        var result = element.substr(path.length);
-                        var index = result.indexOf("/");
-                        if (index != -1)
-                            result = result.substring(0, index + 1);
-                        subfilemap[result] = 1;
-                    }
-                });
-                var files = Object.keys(subfilemap);
-                callback(null, files);
-            });
-        };
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.mkdir = function (path, callback) {
-            feng3d.storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
-        };
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.deleteFile = function (path, callback) {
-            feng3d.storage.delete(this.DBname, this.projectname, path, callback);
-        };
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.writeFile = function (path, data, callback) {
-            feng3d.storage.set(this.DBname, this.projectname, path, data, callback);
-        };
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.getAllPaths = function (callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, callback);
-        };
-        return IndexedDBfs;
-    }());
-    feng3d.IndexedDBfs = IndexedDBfs;
-    feng3d.indexedDBfs = new IndexedDBfs();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * Http可读文件系统
-     */
-    var HttpFS = /** @class */ (function () {
-        function HttpFS() {
-            /**
-             * 根路径
-             */
-            this.rootPath = "";
-            this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
-        }
-        Object.defineProperty(HttpFS.prototype, "type", {
-            get: function () {
-                return feng3d.FSType.http;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        HttpFS.prototype.readFile = function (path, callback) {
-            // rootPath
-            feng3d.Loader.loadBinary(path, function (content) {
-                callback(null, content);
-            }, null, function (e) {
-                callback(e, null);
-            });
-        };
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        HttpFS.prototype.getAbsolutePath = function (path, callback) {
-            callback(null, this.rootPath + path);
-        };
-        return HttpFS;
-    }());
-    feng3d.HttpFS = HttpFS;
-    feng3d.httpFS = new HttpFS();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 文件系统类型
-     */
-    var FSType;
-    (function (FSType) {
-        FSType["http"] = "http";
-        FSType["native"] = "native";
-        FSType["indexedDB"] = "indexedDB";
-    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
-    /**
-     * 资源
-     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
-     */
-    var ReadAssets = /** @class */ (function () {
-        function ReadAssets() {
-            /**
-             * 可读文件系统
-             */
-            this.fs = feng3d.httpFS;
-        }
-        Object.defineProperty(ReadAssets.prototype, "type", {
-            get: function () {
-                return this.fs.type;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        ReadAssets.prototype.readFile = function (path, callback) {
-            var readFS = this.fs;
-            if (path.indexOf("http://") != -1
-                || path.indexOf("https://") != -1)
-                readFS = feng3d.httpFS;
-            if (path.indexOf("file:///") != -1
-                || path.indexOf("file:///") != -1)
-                readFS = feng3d.httpFS;
-            readFS.readFile(path, callback);
-        };
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        ReadAssets.prototype.getAbsolutePath = function (path, callback) {
-            this.fs.getAbsolutePath(path, callback);
-        };
-        /**
-         * 读取文件为字符串
-         */
-        ReadAssets.prototype.readFileAsString = function (path, callback) {
-            this.readFile(path, function (err, data) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                feng3d.dataTransform.arrayBufferToString(data, function (content) {
-                    callback(null, content);
-                });
-            });
-        };
-        /**
-         * 加载图片
-         * @param path 图片路径
-         * @param callback 加载完成回调
-         */
-        ReadAssets.prototype.readFileAsImage = function (path, callback) {
-            if (path == "" || path == null) {
-                callback(new Error("无效路径!"), null);
-                return;
-            }
-            this.readFile(path, function (err, data) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                feng3d.dataTransform.arrayBufferToImage(data, function (img) {
-                    callback(null, img);
-                });
-            });
-        };
-        return ReadAssets;
-    }());
-    feng3d.ReadAssets = ReadAssets;
-    feng3d.assets = new ReadAssets();
-    var ReadWriteAssets = /** @class */ (function (_super) {
-        __extends(ReadWriteAssets, _super);
-        function ReadWriteAssets(readWriteFS) {
-            var _this = _super.call(this) || this;
-            /**
-             * 可读写文件系统
-             */
-            _this.fs = feng3d.indexedDBfs;
-            if (readWriteFS)
-                _this.fs = readWriteFS;
-            return _this;
-        }
-        Object.defineProperty(ReadWriteAssets.prototype, "projectname", {
-            // fs = indexedDBfs;
-            get: function () {
-                return this.fs.projectname;
-            },
-            set: function (v) {
-                this.fs.projectname = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.exists = function (path, callback) {
-            this.fs.exists(path, callback);
-        };
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.readdir = function (path, callback) {
-            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            this.fs.readdir(path, callback);
-        };
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.mkdir = function (path, callback) {
-            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            this.fs.mkdir(path, callback);
-        };
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.deleteFile = function (path, callback) {
-            this.fs.deleteFile(path, callback);
-        };
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.writeFile = function (path, data, callback) {
-            if (this.isDir(path)) {
-                this.fs.mkdir(path, callback);
-            }
-            else {
-                this.fs.writeFile(path, data, callback);
-            }
-        };
-        ///--------------------------
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.getAllPaths = function (callback) {
-            this.getAllfilepathInFolder("", callback);
-        };
-        /**
-         * 获取指定文件下所有文件路径列表
-         */
-        ReadWriteAssets.prototype.getAllfilepathInFolder = function (dirpath, callback) {
-            var _this = this;
-            feng3d.assert(this.isDir(dirpath), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            var dirs = [dirpath];
-            var result = [];
-            var currentdir = "";
-            // 递归获取文件
-            var handle = function () {
-                if (dirs.length > 0) {
-                    currentdir = dirs.shift();
-                    _this.readdir(currentdir, function (err, files) {
-                        files.forEach(function (element) {
-                            var childpath = currentdir + element;
-                            result.push(childpath);
-                            if (_this.isDir(childpath))
-                                dirs.push(childpath);
-                        });
-                        handle();
-                    });
-                }
-                else {
-                    callback(null, result);
-                }
-            };
-            handle();
-        };
-        /**
-         * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.copyFile = function (src, dest, callback) {
-            var _this = this;
-            this.readFile(src, function (err, data) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                _this.writeFile(dest, data, callback);
-            });
-        };
-        /**
-         * 移动文件
-         * @param src 源路径
-         * @param dest 目标路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.moveFile = function (src, dest, callback) {
-            var _this = this;
-            this.copyFile(src, dest, function (err) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                _this.deleteFile(src, callback);
-            });
-        };
-        /**
-         * 重命名文件
-         * @param oldPath 老路径
-         * @param newPath 新路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.renameFile = function (oldPath, newPath, callback) {
-            this.moveFile(oldPath, newPath, callback);
-        };
-        /**
-         * 移动一组文件
-         * @param movelists 移动列表
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.moveFiles = function (movelists, callback) {
-            var _this = this;
-            this.copyFiles(movelists.concat(), function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-                var deletelists = movelists.reduce(function (value, current) { value.push(current[0]); return value; }, []);
-                _this.deleteFiles(deletelists, callback);
-            });
-        };
-        /**
-         * 复制一组文件
-         * @param copylists 复制列表
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.copyFiles = function (copylists, callback) {
-            var _this = this;
-            if (copylists.length > 0) {
-                var copyitem = copylists.shift();
-                this.copyFile(copyitem[0], copyitem[1], function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }
-                    _this.copyFiles(copylists, callback);
-                });
-                return;
-            }
-            callback(null);
-        };
-        /**
-         * 删除一组文件
-         * @param deletelists 删除列表
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.deleteFiles = function (deletelists, callback) {
-            var _this = this;
-            if (deletelists.length > 0) {
-                this.deleteFile(deletelists.shift(), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }
-                    _this.deleteFiles(deletelists, callback);
-                });
-                return;
-            }
-            callback(null);
-        };
-        /**
-         * 重命名文件(夹)
-         * @param oldPath 老路径
-         * @param newPath 新路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.rename = function (oldPath, newPath, callback) {
-            var _this = this;
-            if (this.isDir(oldPath)) {
-                this.getAllfilepathInFolder(oldPath, function (err, filepaths) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }
-                    var renamelists = [[oldPath, newPath]];
-                    filepaths.forEach(function (element) {
-                        renamelists.push([element, element.replace(oldPath, newPath)]);
-                    });
-                    _this.moveFiles(renamelists, callback);
-                });
-            }
-            else {
-                this.renameFile(oldPath, newPath, callback);
-            }
-        };
-        /**
-         * 移动文件(夹)
-         * @param src 源路径
-         * @param dest 目标路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.move = function (src, dest, callback) {
-            this.rename(src, dest, callback);
-        };
-        /**
-         * 删除文件(夹)
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.delete = function (path, callback) {
-            var _this = this;
-            if (this.isDir(path)) {
-                this.getAllfilepathInFolder(path, function (err, filepaths) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    var removelists = filepaths.concat(path);
-                    _this.deleteFiles(removelists, callback);
-                });
-            }
-            else {
-                this.deleteFile(path, callback);
-            }
-        };
-        /**
-         * 是否为文件夹
-         * @param path 文件路径
-         */
-        ReadWriteAssets.prototype.isDir = function (path) {
-            if (path == "")
-                return true;
-            return path.charAt(path.length - 1) == "/";
-        };
-        return ReadWriteAssets;
-    }(ReadAssets));
-    feng3d.ReadWriteAssets = ReadWriteAssets;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

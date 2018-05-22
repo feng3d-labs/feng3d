@@ -29,6 +29,13 @@
         "src/utils/ImageUtil.ts",
         "src/utils/Stats.ts",
         "src/utils/PathUtils.ts",
+        //
+        "src/assets/Storage.ts",
+        "src/assets/IndexedDBfs.ts",
+        "src/assets/HttpFS.ts",
+        "src/assets/Assets.ts",
+        "src/assets/AssetExtension.ts",
+        "src/assets/Feng3dAssets.ts",
         //几何运算
         "src/geom/Math.ts",
         "src/geom/Vector2.ts",
@@ -202,11 +209,6 @@
         "src/animators/skeleton/SkeletonMaterial.ts",
         //
         "src/animation/Animation.ts",
-        //
-        "src/assets/Storage.ts",
-        "src/assets/IndexedDBfs.ts",
-        "src/assets/HttpFS.ts",
-        "src/assets/Assets.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MtlParser.ts",

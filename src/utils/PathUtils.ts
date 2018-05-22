@@ -10,10 +10,23 @@ namespace feng3d
     export class PathUtils
     {
         /**
-         * 获取带后缀名称
+         * 获取不带后缀名称
          * @param path 路径
          */
         getName(path: string)
+        {
+            var name = this.getNameWithExtension(path);
+            if (this.isDirectory(path))
+                return name;
+            name = name.split(".").shift();
+            return name;
+        }
+
+        /**
+         * 获取带后缀名称
+         * @param path 路径
+         */
+        getNameWithExtension(path: string)
         {
             var paths = path.split("/");
             var name = paths.pop();
@@ -28,7 +41,7 @@ namespace feng3d
          */
         getExtension(path: string)
         {
-            var name = this.getName(path);
+            var name = this.getNameWithExtension(path);
             var names = name.split(".");
             names.shift();
             var extension = names.join(".");

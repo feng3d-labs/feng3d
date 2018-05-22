@@ -42,7 +42,7 @@ namespace feng3d
      * 材质
      * @author feng 2016-05-02
      */
-    export class Material
+    export class Material extends Feng3dAssets
     {
         /**
          * shader名称
@@ -73,6 +73,7 @@ namespace feng3d
 
         constructor(raw?: MaterialRaw)
         {
+            super();
             serialization.setValue(this, raw);
             feng3dDispatcher.on("assets.shaderChanged", this.onShaderChanged, this);
         }

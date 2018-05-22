@@ -1143,10 +1143,15 @@ declare namespace feng3d {
      */
     class PathUtils {
         /**
-         * 获取带后缀名称
+         * 获取不带后缀名称
          * @param path 路径
          */
         getName(path: string): string;
+        /**
+         * 获取带后缀名称
+         * @param path 路径
+         */
+        getNameWithExtension(path: string): string;
         /**
          * 获取后缀
          * @param path 路径
@@ -1167,6 +1172,444 @@ declare namespace feng3d {
          * @param path 路径
          */
         getDirDepth(path: string): number;
+    }
+}
+interface IDBObjectStore {
+    getAllKeys(): IDBRequest;
+}
+declare namespace feng3d {
+    /**
+     *
+     */
+    var storage: Storage;
+    /**
+     *
+     */
+    class Storage {
+        /**
+         * 是否支持 indexedDB
+         */
+        support(): boolean;
+        getDatabase(dbname: string, callback: (err, database: IDBDatabase) => void): void;
+        deleteDatabase(dbname: string, callback?: (err) => void): void;
+        hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void): void;
+        getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void): void;
+        createObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void): void;
+        deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void): void;
+        getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void): void;
+        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void): void;
+        set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
+        clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 索引数据文件系统
+     */
+    var indexedDBfs: IndexedDBfs;
+    /**
+     * 索引数据文件系统
+     */
+    class IndexedDBfs implements ReadWriteFS {
+        readonly type: FSType;
+        /**
+         * 数据库名称
+         */
+        DBname: string;
+        /**
+         * 项目名称（表单名称）
+         */
+        projectname: string;
+        constructor(DBname?: string, projectname?: string);
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        exists(path: string, callback: (exists: boolean) => void): void;
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        mkdir(path: string, callback: (err: Error) => void): void;
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        deleteFile(path: string, callback: (err: Error) => void): void;
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Http可读文件系统
+     */
+    var httpFS: HttpFS;
+    /**
+     * Http可读文件系统
+     */
+    class HttpFS implements ReadFS {
+        /**
+         * 根路径
+         */
+        rootPath: string;
+        readonly type: FSType;
+        constructor();
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readFile(path: string, callback: (err, data: ArrayBuffer) => void): void;
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 文件系统类型
+     */
+    enum FSType {
+        http = "http",
+        native = "native",
+        indexedDB = "indexedDB",
+    }
+    /**
+     * 资源系统
+     */
+    var assets: ReadAssets;
+    /**
+     * 资源
+     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
+     */
+    class ReadAssets implements ReadFS {
+        /**
+         * 可读文件系统
+         */
+        fs: ReadFS;
+        readonly type: FSType;
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readFile(path: string, callback: (err, data: ArrayBuffer) => void): void;
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        /**
+         * 读取文件为字符串
+         */
+        readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void;
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        readFileAsImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+    }
+    class ReadWriteAssets extends ReadAssets implements ReadWriteFS {
+        /**
+         * 可读写文件系统
+         */
+        fs: ReadWriteFS;
+        projectname: string;
+        constructor(readWriteFS?: ReadWriteFS);
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        exists(path: string, callback: (exists: boolean) => void): void;
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        mkdir(path: string, callback: (err: Error) => void): void;
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        deleteFile(path: string, callback: (err: Error) => void): void;
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
+        /**
+         * 获取指定文件下所有文件路径列表
+         */
+        getAllfilepathInFolder(dirpath: string, callback: (err: Error, filepaths: string[]) => void): void;
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        copyFile(src: string, dest: string, callback: (err: Error) => void): void;
+        /**
+         * 移动文件
+         * @param src 源路径
+         * @param dest 目标路径
+         * @param callback 回调函数
+         */
+        moveFile(src: string, dest: string, callback: (err: Error) => void): void;
+        /**
+         * 重命名文件
+         * @param oldPath 老路径
+         * @param newPath 新路径
+         * @param callback 回调函数
+         */
+        renameFile(oldPath: string, newPath: string, callback: (err: Error) => void): void;
+        /**
+         * 移动一组文件
+         * @param movelists 移动列表
+         * @param callback 回调函数
+         */
+        moveFiles(movelists: [string, string][], callback: (err: Error) => void): void;
+        /**
+         * 复制一组文件
+         * @param copylists 复制列表
+         * @param callback 回调函数
+         */
+        copyFiles(copylists: [string, string][], callback: (err: Error) => void): void;
+        /**
+         * 删除一组文件
+         * @param deletelists 删除列表
+         * @param callback 回调函数
+         */
+        deleteFiles(deletelists: string[], callback: (err: Error) => void): void;
+        /**
+         * 重命名文件(夹)
+         * @param oldPath 老路径
+         * @param newPath 新路径
+         * @param callback 回调函数
+         */
+        rename(oldPath: string, newPath: string, callback: (err: Error) => void): void;
+        /**
+         * 移动文件(夹)
+         * @param src 源路径
+         * @param dest 目标路径
+         * @param callback 回调函数
+         */
+        move(src: string, dest: string, callback: (err: Error) => void): void;
+        /**
+         * 删除文件(夹)
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        delete(path: string, callback: (err: Error) => void): void;
+        /**
+         * 是否为文件夹
+         * @param path 文件路径
+         */
+        isDir(path: string): boolean;
+    }
+    /**
+     * 可读文件系统
+     */
+    interface ReadFS {
+        /**
+         * 文件系统类型
+         */
+        readonly type: FSType;
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readFile(path: string, callback: (err, data: ArrayBuffer) => void): any;
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+    }
+    /**
+     * 可读写文件系统
+     */
+    interface ReadWriteFS extends ReadFS {
+        /**
+         * 项目名称
+         */
+        projectname: string;
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        exists(path: string, callback: (exists: boolean) => void): void;
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        mkdir(path: string, callback: (err: Error) => void): void;
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        deleteFile(path: string, callback: (err) => void): void;
+        /**
+         * 写(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 资源扩展名
+     */
+    enum AssetExtension {
+        /**
+         * 文件夹
+         */
+        folder = "folder",
+        /**
+         * png 图片
+         */
+        png = "png",
+        /**
+         * jpg图片
+         */
+        jpg = "jpg",
+        /**
+         * jpeg图片
+         */
+        jpeg = "jpeg",
+        /**
+         * gif图片
+         */
+        gif = "gif",
+        /**
+         * ts文件
+         */
+        ts = "ts",
+        /**
+         * js文件
+         */
+        js = "js",
+        /**
+         * 文本文件
+         */
+        txt = "txt",
+        /**
+         * json文件
+         */
+        json = "json",
+        /**
+         * 材质
+         */
+        material = "material.json",
+        /**
+         * 几何体
+         */
+        geometry = "geometry.json",
+        /**
+         * 游戏对象
+         */
+        gameobject = "gameobject.json",
+        /**
+         * 场景文件
+         */
+        scene = "scene.json",
+        /**
+         * 动画文件
+         */
+        anim = "anim.json",
+        /**
+         * 着色器文件
+         */
+        shader = "shader.ts",
+        /**
+         * 脚本文件
+         */
+        script = "script.ts",
+    }
+}
+declare namespace feng3d {
+    /**
+     * feng3d资源
+     */
+    class Feng3dAssets {
+        /**
+         * 路径
+         */
+        path: string;
+        /**
+         * 文件(夹)名称
+         */
+        name: string;
+        /**
+         * 扩展名
+         */
+        extension: AssetExtension;
+        private pathChanged();
     }
 }
 declare namespace feng3d {
@@ -9134,7 +9577,7 @@ declare namespace feng3d {
      * 材质
      * @author feng 2016-05-02
      */
-    class Material {
+    class Material extends Feng3dAssets {
         /**
          * shader名称
          */
@@ -10315,353 +10758,6 @@ declare namespace feng3d {
     enum PropertyClipPathItemType {
         GameObject = 0,
         Component = 1,
-    }
-}
-interface IDBObjectStore {
-    getAllKeys(): IDBRequest;
-}
-declare namespace feng3d {
-    /**
-     *
-     */
-    var storage: Storage;
-    /**
-     *
-     */
-    class Storage {
-        /**
-         * 是否支持 indexedDB
-         */
-        support(): boolean;
-        getDatabase(dbname: string, callback: (err, database: IDBDatabase) => void): void;
-        deleteDatabase(dbname: string, callback?: (err) => void): void;
-        hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void): void;
-        getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void): void;
-        createObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void): void;
-        deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void): void;
-        getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void): void;
-        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void): void;
-        set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void): void;
-        delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
-        clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 索引数据文件系统
-     */
-    var indexedDBfs: IndexedDBfs;
-    /**
-     * 索引数据文件系统
-     */
-    class IndexedDBfs implements ReadWriteFS {
-        readonly type: FSType;
-        /**
-         * 数据库名称
-         */
-        DBname: string;
-        /**
-         * 项目名称（表单名称）
-         */
-        projectname: string;
-        constructor(DBname?: string, projectname?: string);
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        exists(path: string, callback: (exists: boolean) => void): void;
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        mkdir(path: string, callback: (err: Error) => void): void;
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        deleteFile(path: string, callback: (err: Error) => void): void;
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * Http可读文件系统
-     */
-    var httpFS: HttpFS;
-    /**
-     * Http可读文件系统
-     */
-    class HttpFS implements ReadFS {
-        /**
-         * 根路径
-         */
-        rootPath: string;
-        readonly type: FSType;
-        constructor();
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readFile(path: string, callback: (err, data: ArrayBuffer) => void): void;
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 文件系统类型
-     */
-    enum FSType {
-        http = "http",
-        native = "native",
-        indexedDB = "indexedDB",
-    }
-    /**
-     * 资源系统
-     */
-    var assets: ReadAssets;
-    /**
-     * 资源
-     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
-     */
-    class ReadAssets implements ReadFS {
-        /**
-         * 可读文件系统
-         */
-        fs: ReadFS;
-        readonly type: FSType;
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readFile(path: string, callback: (err, data: ArrayBuffer) => void): void;
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-        /**
-         * 读取文件为字符串
-         */
-        readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void;
-        /**
-         * 加载图片
-         * @param path 图片路径
-         * @param callback 加载完成回调
-         */
-        readFileAsImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
-    }
-    class ReadWriteAssets extends ReadAssets implements ReadWriteFS {
-        /**
-         * 可读写文件系统
-         */
-        fs: ReadWriteFS;
-        projectname: string;
-        constructor(readWriteFS?: ReadWriteFS);
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        exists(path: string, callback: (exists: boolean) => void): void;
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        mkdir(path: string, callback: (err: Error) => void): void;
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        deleteFile(path: string, callback: (err: Error) => void): void;
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
-        /**
-         * 获取指定文件下所有文件路径列表
-         */
-        getAllfilepathInFolder(dirpath: string, callback: (err: Error, filepaths: string[]) => void): void;
-        /**
-         * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
-         * @param callback 回调函数
-         */
-        copyFile(src: string, dest: string, callback: (err: Error) => void): void;
-        /**
-         * 移动文件
-         * @param src 源路径
-         * @param dest 目标路径
-         * @param callback 回调函数
-         */
-        moveFile(src: string, dest: string, callback: (err: Error) => void): void;
-        /**
-         * 重命名文件
-         * @param oldPath 老路径
-         * @param newPath 新路径
-         * @param callback 回调函数
-         */
-        renameFile(oldPath: string, newPath: string, callback: (err: Error) => void): void;
-        /**
-         * 移动一组文件
-         * @param movelists 移动列表
-         * @param callback 回调函数
-         */
-        moveFiles(movelists: [string, string][], callback: (err: Error) => void): void;
-        /**
-         * 复制一组文件
-         * @param copylists 复制列表
-         * @param callback 回调函数
-         */
-        copyFiles(copylists: [string, string][], callback: (err: Error) => void): void;
-        /**
-         * 删除一组文件
-         * @param deletelists 删除列表
-         * @param callback 回调函数
-         */
-        deleteFiles(deletelists: string[], callback: (err: Error) => void): void;
-        /**
-         * 重命名文件(夹)
-         * @param oldPath 老路径
-         * @param newPath 新路径
-         * @param callback 回调函数
-         */
-        rename(oldPath: string, newPath: string, callback: (err: Error) => void): void;
-        /**
-         * 移动文件(夹)
-         * @param src 源路径
-         * @param dest 目标路径
-         * @param callback 回调函数
-         */
-        move(src: string, dest: string, callback: (err: Error) => void): void;
-        /**
-         * 删除文件(夹)
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        delete(path: string, callback: (err: Error) => void): void;
-        /**
-         * 是否为文件夹
-         * @param path 文件路径
-         */
-        isDir(path: string): boolean;
-    }
-    /**
-     * 可读文件系统
-     */
-    interface ReadFS {
-        /**
-         * 文件系统类型
-         */
-        readonly type: FSType;
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readFile(path: string, callback: (err, data: ArrayBuffer) => void): any;
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-    }
-    /**
-     * 可读写文件系统
-     */
-    interface ReadWriteFS extends ReadFS {
-        /**
-         * 项目名称
-         */
-        projectname: string;
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        exists(path: string, callback: (exists: boolean) => void): void;
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        mkdir(path: string, callback: (err: Error) => void): void;
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        deleteFile(path: string, callback: (err) => void): void;
-        /**
-         * 写(新建)文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
