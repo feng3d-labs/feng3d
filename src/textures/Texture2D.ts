@@ -46,7 +46,7 @@ namespace feng3d
             super(raw);
             this._textureType = TextureType.TEXTURE_2D;
             this.noPixels = this.noPixels || imageDatas.white;
-            globalEvent.on("imageAssetsChanged", this.onImageAssetsChanged, this);
+            feng3dDispatcher.on("assets.imageAssetsChanged", this.onImageAssetsChanged, this);
         }
 
         /**

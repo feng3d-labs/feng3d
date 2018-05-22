@@ -268,34 +268,34 @@ declare namespace feng3d {
     /**
      * 全局事件
      */
-    var globalEvent: GlobalEventDispatcher;
-    interface GlobalEventMap {
+    var feng3dDispatcher: Feng3dDispatcher;
+    interface Feng3dEventMap {
         /**
          * shader资源发生变化
          */
-        shaderChanged: any;
+        "assets.shaderChanged": any;
         /**
          * 脚本发生变化
          */
-        scriptChanged: any;
+        "assets.scriptChanged": any;
         /**
          * 图片资源发生变化
          */
-        imageAssetsChanged: {
+        "assets.imageAssetsChanged": {
             url: string;
         };
     }
-    interface GlobalEventDispatcher {
-        once<K extends keyof GlobalEventMap>(type: K, listener: (event: Event<GlobalEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GlobalEventMap>(type: K, data?: GlobalEventMap[K], bubbles?: boolean): any;
-        has<K extends keyof GlobalEventMap>(type: K): boolean;
-        on<K extends keyof GlobalEventMap>(type: K, listener: (event: Event<GlobalEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof GlobalEventMap>(type?: K, listener?: (event: Event<GlobalEventMap[K]>) => any, thisObject?: any): any;
+    interface Feng3dDispatcher {
+        once<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof Feng3dEventMap>(type: K, data?: Feng3dEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof Feng3dEventMap>(type: K): boolean;
+        on<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof Feng3dEventMap>(type?: K, listener?: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * 全局事件
      */
-    class GlobalEventDispatcher extends EventDispatcher {
+    class Feng3dDispatcher extends EventDispatcher {
     }
 }
 declare namespace feng3d {
@@ -363,6 +363,9 @@ declare namespace feng3d {
     /**
      * 观察装饰器，观察被装饰属性的变化
      *
+     * @param onChange 属性变化回调  例如参数为“onChange”时，回调将会调用this.onChange(property, oldValue, newValue)
+     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
+     *
      * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a"
      *
      * 通过使用 eval 函数 生成出 与自己手动写的set get 一样的函数，性能已经接近 手动写的get set函数。
@@ -420,10 +423,8 @@ getset平均耗时比 17.3
      *
      * 注：不适用eval的情况下，chrome表现最好的，与此次测试结果差不多；在nodejs与firfox上将会出现比使用eval情况下消耗的（40-400）倍，其中详细原因不明，求高人解释！
      *
-     * @param onChange 属性变化回调
-     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
      */
-    function watch(onChange: string): (target: any, propertyKey: string) => void;
+    function watch(onChange: string): (target: any, property: string) => void;
     var watcher: Watcher;
     class Watcher {
         /**

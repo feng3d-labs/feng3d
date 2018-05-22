@@ -4,6 +4,9 @@ namespace feng3d
     /**
      * 观察装饰器，观察被装饰属性的变化
      * 
+     * @param onChange 属性变化回调  例如参数为“onChange”时，回调将会调用this.onChange(property, oldValue, newValue)
+     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
+     * 
      * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a" 
      * 
      * 通过使用 eval 函数 生成出 与自己手动写的set get 一样的函数，性能已经接近 手动写的get set函数。
@@ -61,14 +64,12 @@ getset平均耗时比 17.3
      * 
      * 注：不适用eval的情况下，chrome表现最好的，与此次测试结果差不多；在nodejs与firfox上将会出现比使用eval情况下消耗的（40-400）倍，其中详细原因不明，求高人解释！
      * 
-     * @param onChange 属性变化回调
-     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
      */
     export function watch(onChange: string)
     {
-        return (target: any, propertyKey: string) =>
+        return (target: any, property: string) =>
         {
-            var key = "_" + propertyKey;
+            var key = "_" + property;
             var get;
             // get = function () { return this[key]; };
             eval(`get = function (){return this.${key}}`);
@@ -87,10 +88,10 @@ getset平均耗时比 17.3
                     return;
                 var oldValue = this.${key};
                 this.${key} = value;
-                this.${onChange}("${propertyKey}", oldValue, this.${key});
+                this.${onChange}("${property}", oldValue, value);
             }`);
 
-            Object.defineProperty(target, propertyKey, {
+            Object.defineProperty(target, property, {
                 get: get,
                 set: set,
                 enumerable: true,

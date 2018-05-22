@@ -74,7 +74,7 @@ namespace feng3d
         constructor(raw?: MaterialRaw)
         {
             serialization.setValue(this, raw);
-            globalEvent.on("shaderChanged", this.onShaderChanged, this);
+            feng3dDispatcher.on("assets.shaderChanged", this.onShaderChanged, this);
         }
 
         preRender(renderAtomic: RenderAtomic)
