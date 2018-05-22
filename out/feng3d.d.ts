@@ -7437,61 +7437,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     type ComponentConstructor<T> = (new () => T);
-    interface Mouse3DEventMap {
-        /**
-         * 鼠标移出对象
-         */
-        mouseout: any;
-        /**
-         * 鼠标移入对象
-         */
-        mouseover: any;
-        /**
-         * 鼠标在对象上移动
-         */
-        mousemove: any;
-        /**
-         * 鼠标左键按下
-         */
-        mousedown: any;
-        /**
-         * 鼠标左键弹起
-         */
-        mouseup: any;
-        /**
-         * 单击
-         */
-        click: any;
-        /**
-         * 鼠标中键按下
-         */
-        middlemousedown: any;
-        /**
-         * 鼠标中键弹起
-         */
-        middlemouseup: any;
-        /**
-         * 鼠标中键单击
-         */
-        middleclick: any;
-        /**
-         * 鼠标右键按下
-         */
-        rightmousedown: any;
-        /**
-         * 鼠标右键弹起
-         */
-        rightmouseup: any;
-        /**
-         * 鼠标右键单击
-         */
-        rightclick: any;
-        /**
-         * 鼠标双击
-         */
-        dblclick: any;
-    }
-    interface GameObjectEventMap extends Mouse3DEventMap {
+    interface GameObjectEventMap {
         /**
          * 添加子组件事件
          */
@@ -11285,12 +11231,96 @@ declare namespace feng3d {
      * @author feng 2014-4-29
      */
     class Mouse3DManager {
-        draw: (scene3d: Scene3D, camera: Camera, viewRect: Rectangle) => void;
-        catchMouseMove: (value: any) => void;
-        getSelectedGameObject: () => GameObject;
-        setEnable: (value: boolean) => void;
-        getEnable: () => boolean;
+        private mouseX;
+        private mouseY;
+        private selectedGameObject;
+        private mouseEventTypes;
+        /**
+         * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
+         */
+        private preMouseDownGameObject;
+        /**
+         * 统计处理click次数，判断是否达到dblclick
+         */
+        private gameObjectClickNum;
+        private _catchMouseMove;
+        private enable;
+        private canvas;
+        /**
+         * 渲染
+         */
+        draw(scene3d: Scene3D, camera: Camera, viewRect: Rectangle): void;
+        /**
+         * 是否捕捉鼠标移动，默认false。
+         */
+        catchMouseMove(value: any): void;
+        getSelectedGameObject(): GameObject;
+        setEnable(value: boolean): void;
+        getEnable(): boolean;
         constructor(canvas: HTMLCanvasElement);
+        /**
+         * 监听鼠标事件收集事件类型
+         */
+        onMouseEvent(event: MouseEvent): void;
+        pick(scene3d: Scene3D, camera: Camera): void;
+        /**
+         * 设置选中对象
+         */
+        setSelectedGameObject(value: GameObject): void;
+    }
+    interface GameObjectEventMap {
+        /**
+         * 鼠标移出对象
+         */
+        mouseout: any;
+        /**
+         * 鼠标移入对象
+         */
+        mouseover: any;
+        /**
+         * 鼠标在对象上移动
+         */
+        mousemove: any;
+        /**
+         * 鼠标左键按下
+         */
+        mousedown: any;
+        /**
+         * 鼠标左键弹起
+         */
+        mouseup: any;
+        /**
+         * 单击
+         */
+        click: any;
+        /**
+         * 鼠标中键按下
+         */
+        middlemousedown: any;
+        /**
+         * 鼠标中键弹起
+         */
+        middlemouseup: any;
+        /**
+         * 鼠标中键单击
+         */
+        middleclick: any;
+        /**
+         * 鼠标右键按下
+         */
+        rightmousedown: any;
+        /**
+         * 鼠标右键弹起
+         */
+        rightmouseup: any;
+        /**
+         * 鼠标右键单击
+         */
+        rightclick: any;
+        /**
+         * 鼠标双击
+         */
+        dblclick: any;
     }
 }
 declare namespace feng3d {

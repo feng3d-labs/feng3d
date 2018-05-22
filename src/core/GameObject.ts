@@ -3,63 +3,7 @@ namespace feng3d
 
     export type ComponentConstructor<T> = (new () => T);
 
-    export interface Mouse3DEventMap
-    {
-        /**
-         * 鼠标移出对象
-         */
-        mouseout
-        /**
-         * 鼠标移入对象
-         */
-        mouseover
-        /**
-         * 鼠标在对象上移动
-         */
-        mousemove
-        /**
-         * 鼠标左键按下
-         */
-        mousedown
-        /**
-         * 鼠标左键弹起
-         */
-        mouseup
-        /**
-         * 单击
-         */
-        click
-        /**
-         * 鼠标中键按下
-         */
-        middlemousedown
-        /**
-         * 鼠标中键弹起
-         */
-        middlemouseup
-        /**
-         * 鼠标中键单击
-         */
-        middleclick
-        /**
-         * 鼠标右键按下
-         */
-        rightmousedown
-        /**
-         * 鼠标右键弹起
-         */
-        rightmouseup
-        /**
-         * 鼠标右键单击
-         */
-        rightclick
-        /**
-         * 鼠标双击
-         */
-        dblclick
-    }
-
-    export interface GameObjectEventMap extends Mouse3DEventMap
+    export interface GameObjectEventMap
     {
         /**
 		 * 添加子组件事件

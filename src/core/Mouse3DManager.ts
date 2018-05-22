@@ -6,211 +6,258 @@ namespace feng3d
      */
     export class Mouse3DManager
     {
-        draw: (scene3d: Scene3D, camera: Camera, viewRect: Rectangle) => void;
-        catchMouseMove: (value: any) => void;
-        getSelectedGameObject: () => GameObject;
-        setEnable: (value: boolean) => void;
-        getEnable: () => boolean;
+        //
+        private mouseX = 0;
+        private mouseY = 0;
+
+        private selectedGameObject: GameObject;
+        private mouseEventTypes: string[] = [];
+
+        /**
+         * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
+         */
+        private preMouseDownGameObject: GameObject | null;
+        /**
+         * 统计处理click次数，判断是否达到dblclick
+         */
+        private gameObjectClickNum: number;
+
+        private _catchMouseMove = false;
+        private enable = false;
+        private canvas: HTMLCanvasElement
+
+        /**
+         * 渲染
+         */
+        draw(scene3d: Scene3D, camera: Camera, viewRect: Rectangle)
+        {
+            if (!viewRect.contains(this.mouseX, this.mouseY))
+                return;
+            if (this.mouseEventTypes.length == 0)
+                return;
+            var mouseCollisionEntitys = scene3d.mouseCheckObjects;
+            if (mouseCollisionEntitys.length == 0)
+                return;
+
+            this.pick(scene3d, camera);
+        }
+
+        /**
+         * 是否捕捉鼠标移动，默认false。
+         */
+        catchMouseMove(value)
+        {
+            if (this._catchMouseMove == value)
+                return;
+            if (this._catchMouseMove)
+            {
+                windowEventProxy.off("mousemove", this.onMouseEvent, this);
+            }
+            this._catchMouseMove = value;
+            if (this._catchMouseMove)
+            {
+                windowEventProxy.on("mousemove", this.onMouseEvent, this);
+            }
+        }
+
+        getSelectedGameObject()
+        {
+            return this.selectedGameObject;
+        }
+
+        setEnable(value: boolean)
+        {
+            if (this.enable)
+            {
+                windowEventProxy.off("click", this.onMouseEvent, this);
+                windowEventProxy.off("dblclick", this.onMouseEvent, this);
+                windowEventProxy.off("mousedown", this.onMouseEvent, this);
+                windowEventProxy.off("mouseup", this.onMouseEvent, this);
+            }
+            this.enable = value;
+            if (this.enable)
+            {
+                windowEventProxy.on("click", this.onMouseEvent, this);
+                windowEventProxy.on("dblclick", this.onMouseEvent, this);
+                windowEventProxy.on("mousedown", this.onMouseEvent, this);
+                windowEventProxy.on("mouseup", this.onMouseEvent, this);
+            }
+        }
+
+        getEnable()
+        {
+            return this.enable;
+        }
 
         constructor(canvas: HTMLCanvasElement)
         {
             //
-            var mouseX = 0;
-            var mouseY = 0;
-
-            var selectedGameObject: GameObject;
-            var mouseEventTypes: string[] = [];
-
-            /**
-             * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
-             */
-            var preMouseDownGameObject: GameObject | null;
-            /**
-             * 统计处理click次数，判断是否达到dblclick
-             */
-            var gameObjectClickNum: number;
-
-            var _catchMouseMove = false;
-            var enable = false;
-
-            this.draw = draw;
-            this.catchMouseMove = catchMouseMove;
-            this.getSelectedGameObject = getSelectedGameObject;
-            this.setEnable = setEnable;
-            this.getEnable = getEnable;
-            //
-            setEnable(true);
-
-            function setEnable(value: boolean)
-            {
-                if (enable)
-                {
-                    windowEventProxy.off("click", onMouseEvent, null);
-                    windowEventProxy.off("dblclick", onMouseEvent, null);
-                    windowEventProxy.off("mousedown", onMouseEvent, null);
-                    windowEventProxy.off("mouseup", onMouseEvent, null);
-                }
-                enable = value;
-                if (enable)
-                {
-                    windowEventProxy.on("click", onMouseEvent, null);
-                    windowEventProxy.on("dblclick", onMouseEvent, null);
-                    windowEventProxy.on("mousedown", onMouseEvent, null);
-                    windowEventProxy.on("mouseup", onMouseEvent, null);
-                }
-            }
-
-            function getEnable()
-            {
-                return enable;
-            }
-
-            /**
-             * 是否捕捉鼠标移动，默认false。
-             */
-            function catchMouseMove(value)
-            {
-                if (_catchMouseMove == value)
-                    return;
-                if (_catchMouseMove)
-                {
-                    windowEventProxy.off("mousemove", onMouseEvent, null);
-                }
-                _catchMouseMove = value;
-                if (_catchMouseMove)
-                {
-                    windowEventProxy.on("mousemove", onMouseEvent, null);
-                }
-            }
-
-            /**
-             * 监听鼠标事件收集事件类型
-             */
-            function onMouseEvent(event: MouseEvent)
-            {
-                var canvasRect = canvas.getBoundingClientRect();
-                var bound = new Rectangle(canvasRect.left, canvasRect.top, canvasRect.width, canvasRect.height);
-                if (!bound.contains(windowEventProxy.clientX, windowEventProxy.clientY))
-                    return;
-
-                var type = event.type;
-                // 处理鼠标中键与右键
-                if (event instanceof MouseEvent)
-                {
-                    if (["click", "mousedown", "mouseup"].indexOf(event.type) != -1)
-                    {
-                        type = ["", "middle", "right"][event.button] + event.type;
-                    }
-                }
-
-                if (mouseEventTypes.indexOf(type) == -1)
-                    mouseEventTypes.push(type);
-                mouseX = event.clientX;
-                mouseY = event.clientY;
-            }
-
-            /**
-             * 渲染
-             */
-            function draw(scene3d: Scene3D, camera: Camera, viewRect: Rectangle)
-            {
-                if (!viewRect.contains(mouseX, mouseY))
-                    return;
-                if (mouseEventTypes.length == 0)
-                    return;
-                var mouseCollisionEntitys = scene3d.mouseCheckObjects;
-                if (mouseCollisionEntitys.length == 0)
-                    return;
-
-                pick(scene3d, camera);
-            }
-
-            function pick(scene3d: Scene3D, camera: Camera)
-            {
-                var mouseRay3D = camera.getMouseRay3D();
-                //计算得到鼠标射线相交的物体
-                var mouseCollisionEntitys = scene3d.mouseCheckObjects;
-
-                var pickingCollisionVO: PickingCollisionVO | null = null;
-                for (var i = 0; i < mouseCollisionEntitys.length; i++)
-                {
-                    var entitys = mouseCollisionEntitys[i].objects;
-                    pickingCollisionVO = raycaster.pick(mouseRay3D, entitys);
-                    if (pickingCollisionVO)
-                        break;
-                }
-
-                var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
-
-                if (gameobject)
-                    setSelectedGameObject(gameobject);
-                else
-                    setSelectedGameObject(scene3d.gameObject);
-            }
-
-            /**
-             * 设置选中对象
-             */
-            function setSelectedGameObject(value: GameObject)
-            {
-                if (selectedGameObject != value)
-                {
-                    if (selectedGameObject)
-                        selectedGameObject.dispatch("mouseout", null, true);
-                    if (value)
-                        value.dispatch("mouseover", null, true);
-                }
-                selectedGameObject = value;
-                if (selectedGameObject)
-                {
-                    mouseEventTypes.forEach(element =>
-                    {
-                        switch (element)
-                        {
-                            case "mousedown":
-                                if (preMouseDownGameObject != selectedGameObject)
-                                {
-                                    gameObjectClickNum = 0;
-                                    preMouseDownGameObject = selectedGameObject;
-                                }
-                                selectedGameObject.dispatch(element, null, true);
-                                break;
-                            case "mouseup":
-                                if (selectedGameObject == preMouseDownGameObject)
-                                {
-                                    gameObjectClickNum++;
-                                } else
-                                {
-                                    gameObjectClickNum = 0;
-                                    preMouseDownGameObject = null;
-                                }
-                                selectedGameObject.dispatch(element, null, true);
-                                break;
-                            case "mousemove":
-                                selectedGameObject.dispatch(element, null, true);
-                                break;
-                            case "click":
-                                if (gameObjectClickNum > 0)
-                                    selectedGameObject.dispatch(element, null, true);
-                                break;
-                            case "dblclick":
-                                if (gameObjectClickNum > 1)
-                                    selectedGameObject.dispatch(element, null, true);
-                                break;
-                        }
-                    });
-                } else
-                {
-                    gameObjectClickNum = 0;
-                    preMouseDownGameObject = null;
-                }
-                mouseEventTypes.length = 0;
-            }
-
-            function getSelectedGameObject()
-            {
-                return selectedGameObject;
-            }
+            this.setEnable(true);
+            this.canvas = canvas;
         }
+
+        /**
+         * 监听鼠标事件收集事件类型
+         */
+        onMouseEvent(event: MouseEvent)
+        {
+            var canvasRect = this.canvas.getBoundingClientRect();
+            var bound = new Rectangle(canvasRect.left, canvasRect.top, canvasRect.width, canvasRect.height);
+            if (!bound.contains(windowEventProxy.clientX, windowEventProxy.clientY))
+                return;
+
+            var type = event.type;
+            // 处理鼠标中键与右键
+            if (event instanceof MouseEvent)
+            {
+                if (["click", "mousedown", "mouseup"].indexOf(event.type) != -1)
+                {
+                    type = ["", "middle", "right"][event.button] + event.type;
+                }
+            }
+
+            if (this.mouseEventTypes.indexOf(type) == -1)
+                this.mouseEventTypes.push(type);
+            this.mouseX = event.clientX;
+            this.mouseY = event.clientY;
+        }
+
+        pick(scene3d: Scene3D, camera: Camera)
+        {
+            var mouseRay3D = camera.getMouseRay3D();
+            //计算得到鼠标射线相交的物体
+            var mouseCollisionEntitys = scene3d.mouseCheckObjects;
+
+            var pickingCollisionVO: PickingCollisionVO | null = null;
+            for (var i = 0; i < mouseCollisionEntitys.length; i++)
+            {
+                var entitys = mouseCollisionEntitys[i].objects;
+                pickingCollisionVO = raycaster.pick(mouseRay3D, entitys);
+                if (pickingCollisionVO)
+                    break;
+            }
+
+            var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
+
+            if (gameobject)
+                this.setSelectedGameObject(gameobject);
+            else
+                this.setSelectedGameObject(scene3d.gameObject);
+        }
+
+        /**
+         * 设置选中对象
+         */
+        setSelectedGameObject(value: GameObject)
+        {
+            if (this.selectedGameObject != value)
+            {
+                if (this.selectedGameObject)
+                    this.selectedGameObject.dispatch("mouseout", null, true);
+                if (value)
+                    value.dispatch("mouseover", null, true);
+            }
+            this.selectedGameObject = value;
+            if (this.selectedGameObject)
+            {
+                this.mouseEventTypes.forEach(element =>
+                {
+                    switch (element)
+                    {
+                        case "mousedown":
+                            if (this.preMouseDownGameObject != this.selectedGameObject)
+                            {
+                                this.gameObjectClickNum = 0;
+                                this.preMouseDownGameObject = this.selectedGameObject;
+                            }
+                            this.selectedGameObject.dispatch(element, null, true);
+                            break;
+                        case "mouseup":
+                            if (this.selectedGameObject == this.preMouseDownGameObject)
+                            {
+                                this.gameObjectClickNum++;
+                            } else
+                            {
+                                this.gameObjectClickNum = 0;
+                                this.preMouseDownGameObject = null;
+                            }
+                            this.selectedGameObject.dispatch(element, null, true);
+                            break;
+                        case "mousemove":
+                            this.selectedGameObject.dispatch(element, null, true);
+                            break;
+                        case "click":
+                            if (this.gameObjectClickNum > 0)
+                                this.selectedGameObject.dispatch(element, null, true);
+                            break;
+                        case "dblclick":
+                            if (this.gameObjectClickNum > 1)
+                                this.selectedGameObject.dispatch(element, null, true);
+                            break;
+                    }
+                });
+            } else
+            {
+                this.gameObjectClickNum = 0;
+                this.preMouseDownGameObject = null;
+            }
+            this.mouseEventTypes.length = 0;
+        }
+    }
+
+    export interface GameObjectEventMap
+    {
+        /**
+         * 鼠标移出对象
+         */
+        mouseout
+        /**
+         * 鼠标移入对象
+         */
+        mouseover
+        /**
+         * 鼠标在对象上移动
+         */
+        mousemove
+        /**
+         * 鼠标左键按下
+         */
+        mousedown
+        /**
+         * 鼠标左键弹起
+         */
+        mouseup
+        /**
+         * 单击
+         */
+        click
+        /**
+         * 鼠标中键按下
+         */
+        middlemousedown
+        /**
+         * 鼠标中键弹起
+         */
+        middlemouseup
+        /**
+         * 鼠标中键单击
+         */
+        middleclick
+        /**
+         * 鼠标右键按下
+         */
+        rightmousedown
+        /**
+         * 鼠标右键弹起
+         */
+        rightmouseup
+        /**
+         * 鼠标右键单击
+         */
+        rightclick
+        /**
+         * 鼠标双击
+         */
+        dblclick
     }
 }
