@@ -17415,7 +17415,7 @@ var feng3d;
             if (cls) {
                 if (!(this.uniforms instanceof cls)) {
                     var newuniforms = new cls();
-                    // serialization.setValue(newuniforms, this.uniforms);
+                    feng3d.serialization.setValue(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
             }

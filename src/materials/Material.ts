@@ -96,7 +96,7 @@ namespace feng3d
                 if (!(this.uniforms instanceof cls))
                 {
                     var newuniforms = new cls();
-                    // serialization.setValue(newuniforms, this.uniforms);
+                    serialization.setValue(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
             }
