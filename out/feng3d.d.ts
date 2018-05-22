@@ -228,7 +228,7 @@ declare namespace feng3d {
         private listentypes;
         target: EventTarget;
         private _target;
-        constructor(target: EventTarget);
+        constructor(target?: EventTarget);
         /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
@@ -7438,7 +7438,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     type ComponentConstructor<T> = (new () => T);
-    interface GameObjectEventMap {
+    interface GameObjectEventMap extends MouseEventMap {
         /**
          * 添加子组件事件
          */
@@ -11225,20 +11225,46 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class MouseInput {
+    interface MouseInput {
+        once<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        has<K extends keyof MouseEventMap>(type: K): boolean;
+        on<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof MouseEventMap>(type?: K, listener?: (event: Event<MouseEventMap[K]>) => any, thisObject?: any): any;
     }
-    class CanvasMouseInput {
-        private canvas;
-        constructor(canvas: HTMLCanvasElement);
+    /**
+     * 鼠标事件输入
+     */
+    class MouseInput extends EventDispatcher {
+        /**
+         * 是否启动
+         */
+        enable: boolean;
+        /**
+         * 是否捕获鼠标移动
+         */
+        catchMouseMove: boolean;
+        /**
+         * 派发事件
+         * @param event   事件对象
+         */
+        dispatchEvent(event: Event<any>): void;
+    }
+    /**
+     * Window鼠标事件输入
+     */
+    class WindowMouseInput extends MouseInput {
+        constructor();
+        /**
+         * 监听鼠标事件收集事件类型
+         */
+        private onMouseEvent(event);
     }
     /**
      * 鼠标事件管理
      * @author feng 2014-4-29
      */
     class Mouse3DManager {
-        private mouseInput;
-        private mouseX;
-        private mouseY;
+        mouseInput: MouseInput;
         readonly selectedGameObject: GameObject;
         private _selectedGameObject;
         private mouseEventTypes;
@@ -11250,82 +11276,119 @@ declare namespace feng3d {
          * 统计处理click次数，判断是否达到dblclick
          */
         private gameObjectClickNum;
-        private _catchMouseMove;
-        enable: boolean;
-        private _enable;
-        private canvas;
+        /**
+         * 视窗，鼠标在该矩形内时为有效事件
+         */
+        viewport: Lazy<Rectangle>;
+        constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
+        private mouseInputChanged(property, oldValue, newValue);
         /**
          * 渲染
          */
-        draw(scene3d: Scene3D, camera: Camera, viewRect: Rectangle): void;
-        /**
-         * 是否捕捉鼠标移动，默认false。
-         */
-        private catchMouseMove(value);
-        constructor(canvas: HTMLCanvasElement);
+        draw(scene3d: Scene3D, camera: Camera): void;
+        dispatch(type: any): void;
         /**
          * 监听鼠标事件收集事件类型
          */
         private onMouseEvent(event);
-        pick(scene3d: Scene3D, camera: Camera): void;
+        private pick(scene3d, camera);
         /**
          * 设置选中对象
          */
-        setSelectedGameObject(value: GameObject): void;
+        private setSelectedGameObject(value);
     }
-    interface GameObjectEventMap {
+    interface MouseEventMap {
         /**
          * 鼠标移出对象
          */
-        mouseout: any;
+        mouseout: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 鼠标移入对象
          */
-        mouseover: any;
+        mouseover: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 鼠标在对象上移动
          */
-        mousemove: any;
+        mousemove: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 鼠标左键按下
          */
-        mousedown: any;
+        mousedown: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 鼠标左键弹起
          */
-        mouseup: any;
+        mouseup: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 单击
          */
-        click: any;
+        click: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 鼠标中键按下
          */
-        middlemousedown: any;
+        middlemousedown: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 鼠标中键弹起
          */
-        middlemouseup: any;
+        middlemouseup: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 鼠标中键单击
          */
-        middleclick: any;
+        middleclick: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 鼠标右键按下
          */
-        rightmousedown: any;
+        rightmousedown: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 鼠标右键弹起
          */
-        rightmouseup: any;
+        rightmouseup: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 鼠标右键单击
          */
-        rightclick: any;
+        rightclick: {
+            clientX: number;
+            clientY: number;
+        };
         /**
          * 鼠标双击
          */
-        dblclick: any;
+        dblclick: {
+            clientX: number;
+            clientY: number;
+        };
     }
 }
 declare namespace feng3d {

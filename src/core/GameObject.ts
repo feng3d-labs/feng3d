@@ -3,7 +3,7 @@ namespace feng3d
 
     export type ComponentConstructor<T> = (new () => T);
 
-    export interface GameObjectEventMap
+    export interface GameObjectEventMap extends MouseEventMap
     {
         /**
 		 * 添加子组件事件

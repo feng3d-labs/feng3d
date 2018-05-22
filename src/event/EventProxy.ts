@@ -30,6 +30,7 @@ namespace feng3d
         }
         set target(v)
         {
+            if (this._target == v) return;
             if (this._target)
             {
                 this.listentypes.forEach(element =>
@@ -49,7 +50,7 @@ namespace feng3d
 
         private _target: EventTarget;
 
-        constructor(target: EventTarget)
+        constructor(target?: EventTarget)
         {
             super();
             this.target = target;

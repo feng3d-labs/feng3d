@@ -121,7 +121,7 @@ namespace feng3d
             this.start();
 
             this.renderContext = new RenderContext();
-            this.mouse3DManager = new Mouse3DManager(canvas);
+            this.mouse3DManager = new Mouse3DManager(new WindowMouseInput(),() => this.viewRect);
         }
 
         /**
@@ -174,7 +174,7 @@ namespace feng3d
             this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
-            this.mouse3DManager.draw(this.scene, this.camera, viewRect);
+            this.mouse3DManager.draw(this.scene, this.camera);
 
             //绘制阴影图
             // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
