@@ -7,11 +7,11 @@ namespace feng3d
     export type ColorMaterial = Material & { uniforms: ColorUniforms; };
     export interface MaterialFactory
     {
-        create(shader: "color", raw?: Partial<ColorMaterial>): ColorMaterial;
+        create(shader: "color", raw?: gPartial<ColorMaterial>): ColorMaterial;
     }
     export interface MaterialRawMap
     {
-        color: Partial<ColorMaterial>
+        color: gPartial<ColorMaterial>
     }
     export class ColorUniforms
     {

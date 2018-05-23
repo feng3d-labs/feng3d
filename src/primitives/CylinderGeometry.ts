@@ -81,7 +81,7 @@ namespace feng3d
         /**
          * 创建圆柱体
          */
-        constructor(raw?: Partial<CylinderGeometry>)
+        constructor(raw?: gPartial<CylinderGeometry>)
         {
             super();
 

@@ -4,12 +4,12 @@ namespace feng3d
 
     export interface MaterialFactory
     {
-        create(shader: "particle", raw?: Partial<ParticleMaterial>): ParticleMaterial;
+        create(shader: "particle", raw?: gPartial<ParticleMaterial>): ParticleMaterial;
     }
 
     export interface MaterialRawMap
     {
-        particle: Partial<ParticleMaterial>
+        particle: gPartial<ParticleMaterial>
     }
 
     export class ParticleUniforms extends StandardUniforms

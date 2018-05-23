@@ -9,11 +9,11 @@ namespace feng3d
 
     export interface MaterialFactory
     {
-        create(shader: "standard", raw?: Partial<StandardMaterial>): StandardMaterial;
+        create(shader: "standard", raw?: gPartial<StandardMaterial>): StandardMaterial;
     }
     export interface MaterialRawMap
     {
-        standard: Partial<StandardMaterial>
+        standard: gPartial<StandardMaterial>
     }
     /**
      * 雾模式

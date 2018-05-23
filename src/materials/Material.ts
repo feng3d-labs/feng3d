@@ -10,7 +10,7 @@ namespace feng3d
          * @param shader shader名称
          * @param raw 材质数据
          */
-        create(shader: string, raw?: Partial<Material>)
+        create(shader: string, raw?: gPartial<Material>)
         {
             raw = raw || {};
             raw.shaderName = <any>shader;
@@ -54,7 +54,7 @@ namespace feng3d
          */
         shader: Shader;
 
-        constructor(raw?: Partial<Material>)
+        constructor(raw?: gPartial<Material>)
         {
             super();
             serialization.setValue(this, raw);

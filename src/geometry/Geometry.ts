@@ -2,14 +2,14 @@ namespace feng3d
 {
 
     export type Geometrys =
-        Partial<SegmentGeometry> & { __class__: "feng3d.SegmentGeometry" }
-        | Partial<PlaneGeometry>
-        | Partial<CubeGeometry>
-        | Partial<SphereGeometry>
-        | Partial<CapsuleGeometry>
-        | Partial<CylinderGeometry>
-        | Partial<ConeGeometry>
-        | Partial<TorusGeometry>
+        gPartial<SegmentGeometry> & { __class__: "feng3d.SegmentGeometry" }
+        | gPartial<PlaneGeometry>
+        | gPartial<CubeGeometry>
+        | gPartial<SphereGeometry>
+        | gPartial<CapsuleGeometry>
+        | gPartial<CylinderGeometry>
+        | gPartial<ConeGeometry>
+        | gPartial<TorusGeometry>
         ;
 
     export interface GeometryEventMap

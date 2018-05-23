@@ -41,7 +41,7 @@ namespace feng3d
         /**
          * 创建球形几何体
          */
-        constructor(raw?: Partial<SphereGeometry>)
+        constructor(raw?: gPartial<SphereGeometry>)
         {
             super();
 

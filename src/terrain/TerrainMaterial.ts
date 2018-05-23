@@ -4,7 +4,7 @@ namespace feng3d
 
     export interface MaterialFactory
     {
-        create(shader: "terrain", raw?: Partial<TerrainMaterial>): TerrainMaterial;
+        create(shader: "terrain", raw?: gPartial<TerrainMaterial>): TerrainMaterial;
     }
 
     export class TerrainUniforms extends StandardUniforms

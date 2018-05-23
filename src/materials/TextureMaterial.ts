@@ -7,11 +7,11 @@ namespace feng3d
     export type TextureMaterial = Material & { uniforms: TextureUniforms; };
     export interface MaterialFactory
     {
-        create(shader: "texture", raw?: Partial<TextureMaterial>): TextureMaterial;
+        create(shader: "texture", raw?: gPartial<TextureMaterial>): TextureMaterial;
     }
     export interface MaterialRawMap
     {
-        texture: Partial<TextureMaterial>
+        texture: gPartial<TextureMaterial>
     }
     export class TextureUniforms
     {

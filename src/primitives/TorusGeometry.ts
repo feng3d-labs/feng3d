@@ -48,7 +48,7 @@ namespace feng3d
 		/**
 		 * 创建<code>Torus</code>实例
 		 */
-		constructor(raw?: Partial<TorusGeometry>)
+		constructor(raw?: gPartial<TorusGeometry>)
 		{
 			super();
 

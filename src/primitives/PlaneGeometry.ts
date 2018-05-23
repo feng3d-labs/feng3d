@@ -49,7 +49,7 @@ namespace feng3d
         /**
          * 创建平面几何体
          */
-        constructor(raw?: Partial<PlaneGeometry>)
+        constructor(raw?: gPartial<PlaneGeometry>)
         {
             super();
 

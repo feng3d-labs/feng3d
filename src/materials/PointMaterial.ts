@@ -8,12 +8,12 @@ namespace feng3d
 
     export interface MaterialFactory
     {
-        create(shader: "point", raw?: Partial<PointMaterial>): PointMaterial;
+        create(shader: "point", raw?: gPartial<PointMaterial>): PointMaterial;
     }
 
     export interface MaterialRawMap
     {
-        point: Partial<PointMaterial>
+        point: gPartial<PointMaterial>
     }
 
     export class PointUniforms

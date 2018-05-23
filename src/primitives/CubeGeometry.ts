@@ -67,7 +67,7 @@ namespace feng3d
         /**
          * 创建立方几何体
          */
-        constructor(raw?: Partial<CubeGeometry>)
+        constructor(raw?: gPartial<CubeGeometry>)
         {
             super();
             this.name = "Cube";

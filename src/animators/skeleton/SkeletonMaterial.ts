@@ -4,11 +4,11 @@ namespace feng3d
 
     export interface MaterialFactory
     {
-        create(shader: "skeleton", raw?: Partial<SkeletonMaterial>): SkeletonMaterial;
+        create(shader: "skeleton", raw?: gPartial<SkeletonMaterial>): SkeletonMaterial;
     }
     export interface MaterialRawMap
     {
-        skeleton: Partial<SkeletonMaterial>
+        skeleton: gPartial<SkeletonMaterial>
     }
     export class SkeletonUniforms extends StandardUniforms
     {

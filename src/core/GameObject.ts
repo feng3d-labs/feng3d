@@ -197,7 +197,7 @@ namespace feng3d
         /**
          * 构建3D对象
          */
-        constructor(raw: Partial<GameObject>)
+        constructor(raw: gPartial<GameObject>)
         {
             super();
             this.name = raw ? raw.name : "GameObject";
@@ -594,7 +594,7 @@ namespace feng3d
             return target;
         }
 
-        static create(name = "GameObject", raw?: Partial<GameObject>)
+        static create(name = "GameObject", raw?: gPartial<GameObject>)
         {
             raw = raw || {};
             raw.name = name;

@@ -24,7 +24,7 @@ namespace feng3d
 		/**
 		 * 创建圆锥体
 		 */
-		constructor(raw?: Partial<ConeGeometry>)
+		constructor(raw?: gPartial<ConeGeometry>)
 		{
 			super(<any>raw);
 			this.name = "Cone";

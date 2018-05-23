@@ -54,7 +54,7 @@ namespace feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(raw?: Partial<CapsuleGeometry>)
+        constructor(raw?: gPartial<CapsuleGeometry>)
         {
             super();
             this.name = "Capsule";

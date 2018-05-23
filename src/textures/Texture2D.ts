@@ -31,7 +31,7 @@ namespace feng3d
             return new Vector2(this._pixels.width, this._pixels.height);
         }
 
-        constructor(raw?: Partial<Texture2D>)
+        constructor(raw?: gPartial<Texture2D>)
         {
             super(raw);
             this._textureType = TextureType.TEXTURE_2D;
