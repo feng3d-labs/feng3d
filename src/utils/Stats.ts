@@ -6,23 +6,6 @@ interface Performance
     memory;
 }
 
-interface Element
-{
-    style: {
-        display,
-        cssText,
-        cursor,
-        position,
-        top,
-        width,
-        height,
-        textAlign,
-        opacity,
-        left,
-        textDecoration,
-    }
-}
-
 namespace feng3d
 {
     export class Stats
@@ -72,7 +55,7 @@ namespace feng3d
             {
                 for (var i = 0; i < container.children.length; i++)
                 {
-                    container.children[i].style.display = i === id ? 'block' : 'none';
+                    (<HTMLCanvasElement>container.children[i]).style.display = i === id ? 'block' : 'none';
                 }
                 mode = id;
             }
