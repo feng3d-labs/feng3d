@@ -65,7 +65,7 @@ namespace feng3d
          */
         once<K extends keyof T>(type: K, listener: (event: T[K]) => void, thisObject?: any, priority?: number): void
         {
-            super.once(type, listener, thisObject, priority)
+            this.on(type, listener, thisObject, priority, true)
         }
 
         /**
