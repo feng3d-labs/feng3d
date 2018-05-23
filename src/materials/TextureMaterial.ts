@@ -7,27 +7,12 @@ namespace feng3d
     export type TextureMaterial = Material & { uniforms: TextureUniforms; };
     export interface MaterialFactory
     {
-        create(shader: "texture", raw?: TextureMaterialRaw): TextureMaterial;
+        create(shader: "texture", raw?: Partial<TextureMaterial>): TextureMaterial;
     }
-
     export interface MaterialRawMap
     {
-        texture: TextureMaterialRaw
+        texture: Partial<TextureMaterial>
     }
-
-    export interface TextureMaterialRaw extends MaterialBaseRaw
-    {
-        shaderName?: "texture",
-        uniforms?: TextureUniformsRaw;
-    }
-
-    export interface TextureUniformsRaw
-    {
-        __class__?: "feng3d.TextureUniforms",
-        u_color?: Color4 | Color4Raw
-        s_texture?: Texture2D | Texture2DRaw
-    }
-
     export class TextureUniforms
     {
         /** 

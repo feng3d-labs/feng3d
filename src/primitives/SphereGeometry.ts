@@ -1,50 +1,38 @@
 namespace feng3d
 {
     /**
-     * 球体几何体原始数据
-     */
-    export interface SphereGeometryRaw
-    {
-        __class__?: "feng3d.SphereGeometry",
-        /**
-         * 球体半径
-         */
-        radius?: number,
-        /**
-         * 横向分割数
-         */
-        segmentsW?: number,
-        /**
-         * 纵向分割数
-         */
-        segmentsH?: number,
-        /**
-         * 是否朝上
-         */
-        yUp?: boolean
-    }
-
-    /**
      * 球体几何体
      * @author DawnKing 2016-09-12
      */
-    export class SphereGeometry extends Geometry implements SphereGeometryRaw
+    export class SphereGeometry extends Geometry
     {
+        /**
+         * 球体半径
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         radius = 0.5;
 
+        /**
+         * 横向分割数
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         segmentsW = 16;
 
+        /**
+         * 纵向分割数
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         segmentsH = 12;
 
+        /**
+         * 是否朝上
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
@@ -53,7 +41,7 @@ namespace feng3d
         /**
          * 创建球形几何体
          */
-        constructor(raw?: SphereGeometryRaw)
+        constructor(raw?: Partial<SphereGeometry>)
         {
             super();
 

@@ -1,62 +1,45 @@
 namespace feng3d
 {
 	/**
-	 * 圆环几何体原始数据
+	 * 圆环几何体
 	 */
-	export interface TorusGeometryRaw
+	export class TorusGeometry extends Geometry
 	{
-		__class__?: "feng3d.TorusGeometry",
 		/**
 		 * 半径
 		 */
-		radius?: number,
-
-		/**
-		 * 管道半径
-		 */
-		tubeRadius?: number,
-
-		/**
-		 * 半径方向分割数
-		 */
-		segmentsR?: number,
-
-		/**
-		 * 管道方向分割数
-		 */
-		segmentsT?: number,
-
-		/**
-		 * 是否朝上
-		 */
-		yUp?: boolean
-	}
-
-	/**
-	 * 圆环几何体
-	 */
-	export class TorusGeometry extends Geometry implements TorusGeometryRaw
-	{
 		@serialize
 		@oav()
 		@watch("invalidateGeometry")
 		radius = 0.5;
 
+		/**
+		 * 管道半径
+		 */
 		@serialize
 		@oav()
 		@watch("invalidateGeometry")
 		tubeRadius = 0.1;
 
+		/**
+		 * 半径方向分割数
+		 */
 		@serialize
 		@oav()
 		@watch("invalidateGeometry")
 		segmentsR = 16;
 
+		/**
+		 * 管道方向分割数
+		 */
 		@serialize
 		@oav()
 		@watch("invalidateGeometry")
 		segmentsT = 8;
 
+		/**
+		 * 是否朝上
+		 */
 		@serialize
 		@oav()
 		@watch("invalidateGeometry")
@@ -65,7 +48,7 @@ namespace feng3d
 		/**
 		 * 创建<code>Torus</code>实例
 		 */
-		constructor(raw?: TorusGeometryRaw)
+		constructor(raw?: Partial<TorusGeometry>)
 		{
 			super();
 

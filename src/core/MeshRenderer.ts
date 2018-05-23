@@ -8,8 +8,8 @@ namespace feng3d
     export interface MeshRendererRaw
     {
         __class__: "feng3d.MeshRenderer",
-        geometry?: GeometryRaw,
-        material?: MaterialRaw;
+        geometry?: Geometrys,
+        material?: ValueOf<MaterialRawMap>;
     }
 
     export class MeshRenderer extends Behaviour

@@ -1,22 +1,5 @@
 namespace feng3d
 {
-
-    export interface MaterialRawMap
-    {
-    }
-    export type MaterialRaw = ValueOf<MaterialRawMap>;
-
-    /**
-     * 基础材质原始数据
-     */
-    export interface MaterialBaseRaw
-    {
-        __class__?: "feng3d.Material";
-        shaderName?: string,
-        uniforms?: Object,
-        renderParams?: Partial<RenderParams>,
-    }
-
     /**
      * 材质工厂
      */
@@ -27,7 +10,7 @@ namespace feng3d
          * @param shader shader名称
          * @param raw 材质数据
          */
-        create(shader: string, raw?: MaterialRaw)
+        create(shader: string, raw?: Partial<Material>)
         {
             raw = raw || {};
             raw.shaderName = <any>shader;
@@ -71,7 +54,7 @@ namespace feng3d
          */
         shader: Shader;
 
-        constructor(raw?: MaterialRaw)
+        constructor(raw?: Partial<Material>)
         {
             super();
             serialization.setValue(this, raw);

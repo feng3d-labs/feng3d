@@ -11307,51 +11307,54 @@ var feng3d;
      * 纹理信息
      * @author feng 2016-12-20
      */
-    var TextureInfo = /** @class */ (function () {
+    var TextureInfo = /** @class */ (function (_super) {
+        __extends(TextureInfo, _super);
         function TextureInfo(raw) {
+            var _this = this;
             /**
              * 格式
              */
-            this.format = feng3d.TextureFormat.RGB;
+            _this.format = feng3d.TextureFormat.RGB;
             /**
              * 数据类型
              */
-            this.type = feng3d.TextureDataType.UNSIGNED_BYTE;
+            _this.type = feng3d.TextureDataType.UNSIGNED_BYTE;
             /**
              * 是否生成mipmap
              */
-            this.generateMipmap = false;
+            _this.generateMipmap = false;
             /**
              * 对图像进行Y轴反转。默认值为false
              */
-            this.flipY = false;
+            _this.flipY = false;
             /**
              * 将图像RGB颜色值得每一个分量乘以A。默认为false
              */
-            this.premulAlpha = false;
-            this.minFilter = feng3d.TextureMinFilter.LINEAR;
-            this.magFilter = feng3d.TextureMagFilter.LINEAR;
+            _this.premulAlpha = false;
+            _this.minFilter = feng3d.TextureMinFilter.LINEAR;
+            _this.magFilter = feng3d.TextureMagFilter.LINEAR;
             /**
              * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
              */
-            this.wrapS = feng3d.TextureWrap.REPEAT;
+            _this.wrapS = feng3d.TextureWrap.REPEAT;
             /**
              * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
              */
-            this.wrapT = feng3d.TextureWrap.REPEAT;
+            _this.wrapT = feng3d.TextureWrap.REPEAT;
             /**
              * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
              */
-            this.anisotropy = 0;
+            _this.anisotropy = 0;
             /**
              * 纹理缓冲
              */
-            this._textureMap = new Map();
+            _this._textureMap = new Map();
             /**
              * 是否失效
              */
-            this._invalid = true;
-            feng3d.serialization.setValue(this, raw);
+            _this._invalid = true;
+            feng3d.serialization.setValue(_this, raw);
+            return _this;
         }
         Object.defineProperty(TextureInfo.prototype, "isPowerOfTwo", {
             /**
@@ -11528,7 +11531,7 @@ var feng3d;
             feng3d.oav()
         ], TextureInfo.prototype, "anisotropy", void 0);
         return TextureInfo;
-    }());
+    }(Object));
     feng3d.TextureInfo = TextureInfo;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -16483,10 +16486,25 @@ var feng3d;
          */
         function PlaneGeometry(raw) {
             var _this = _super.call(this) || this;
+            /**
+             * 宽度
+             */
             _this.width = 1;
+            /**
+             * 高度
+             */
             _this.height = 1;
+            /**
+             * 横向分割数
+             */
             _this.segmentsW = 1;
+            /**
+             * 纵向分割数
+             */
             _this.segmentsH = 1;
+            /**
+             * 是否朝上
+             */
             _this.yUp = true;
             _this.name = "Plane";
             feng3d.serialization.setValue(_this, raw);
@@ -16688,12 +16706,33 @@ var feng3d;
          */
         function CubeGeometry(raw) {
             var _this = _super.call(this) || this;
+            /**
+             * 宽度
+             */
             _this.width = 1;
+            /**
+             * 高度
+             */
             _this.height = 1;
+            /**
+             * 深度
+             */
             _this.depth = 1;
+            /**
+             * 宽度方向分割数
+             */
             _this.segmentsW = 1;
+            /**
+             * 高度方向分割数
+             */
             _this.segmentsH = 1;
+            /**
+             * 深度方向分割数
+             */
             _this.segmentsD = 1;
+            /**
+             * 是否为6块贴图，默认true。
+             */
             _this.tile6 = true;
             _this.name = "Cube";
             feng3d.serialization.setValue(_this, raw);
@@ -17096,9 +17135,21 @@ var feng3d;
          */
         function SphereGeometry(raw) {
             var _this = _super.call(this) || this;
+            /**
+             * 球体半径
+             */
             _this.radius = 0.5;
+            /**
+             * 横向分割数
+             */
             _this.segmentsW = 16;
+            /**
+             * 纵向分割数
+             */
             _this.segmentsH = 12;
+            /**
+             * 是否朝上
+             */
             _this.yUp = true;
             _this.name = "Sphere";
             feng3d.serialization.setValue(_this, raw);
@@ -17278,10 +17329,25 @@ var feng3d;
          */
         function CapsuleGeometry(raw) {
             var _this = _super.call(this) || this;
+            /**
+             * 胶囊体半径
+             */
             _this.radius = 0.5;
+            /**
+             * 胶囊体高度
+             */
             _this.height = 1;
+            /**
+             * 横向分割数
+             */
             _this.segmentsW = 16;
+            /**
+             * 纵向分割数
+             */
             _this.segmentsH = 15;
+            /**
+             * 正面朝向 true:Y+ false:Z+
+             */
             _this.yUp = true;
             _this.name = "Capsule";
             feng3d.serialization.setValue(_this, raw);
@@ -17462,14 +17528,41 @@ var feng3d;
          */
         function CylinderGeometry(raw) {
             var _this = _super.call(this) || this;
+            /**
+             * 顶部半径
+             */
             _this.topRadius = 0.5;
+            /**
+             * 底部半径
+             */
             _this.bottomRadius = 0.5;
+            /**
+             * 高度
+             */
             _this.height = 2;
+            /**
+             * 横向分割数
+             */
             _this.segmentsW = 16;
+            /**
+             * 纵向分割数
+             */
             _this.segmentsH = 1;
+            /**
+             * 顶部是否封口
+             */
             _this.topClosed = true;
+            /**
+             * 底部是否封口
+             */
             _this.bottomClosed = true;
+            /**
+             * 侧面是否封口
+             */
             _this.surfaceClosed = true;
+            /**
+             * 是否朝上
+             */
             _this.yUp = true;
             _this.name = "Cylinder";
             feng3d.serialization.setValue(_this, raw);
@@ -17792,8 +17885,17 @@ var feng3d;
          */
         function ConeGeometry(raw) {
             var _this = _super.call(this, raw) || this;
+            /**
+             * 底部半径 private
+             */
             _this.topRadius = 0;
+            /**
+             * 顶部是否封口 private
+             */
             _this.topClosed = false;
+            /**
+             * 侧面是否封口 private
+             */
             _this.surfaceClosed = true;
             _this.name = "Cone";
             return _this;
@@ -17814,10 +17916,25 @@ var feng3d;
          */
         function TorusGeometry(raw) {
             var _this = _super.call(this) || this;
+            /**
+             * 半径
+             */
             _this.radius = 0.5;
+            /**
+             * 管道半径
+             */
             _this.tubeRadius = 0.1;
+            /**
+             * 半径方向分割数
+             */
             _this.segmentsR = 16;
+            /**
+             * 管道方向分割数
+             */
             _this.segmentsT = 8;
+            /**
+             * 是否朝上
+             */
             _this.yUp = true;
             _this._vertexPositionStride = 3;
             _this._vertexNormalStride = 3;

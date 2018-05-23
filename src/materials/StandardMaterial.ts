@@ -1,37 +1,20 @@
+interface Object
+{
+    __class__: string;
+}
+
 namespace feng3d
 {
     export type StandardMaterial = Material & { uniforms: StandardUniforms; };
 
     export interface MaterialFactory
     {
-        create(shader: "standard", raw?: StandardMaterialRaw): StandardMaterial;
+        create(shader: "standard", raw?: Partial<StandardMaterial>): StandardMaterial;
     }
-
     export interface MaterialRawMap
     {
-        standard: StandardMaterialRaw
+        standard: Partial<StandardMaterial>
     }
-
-    export interface StandardMaterialRaw extends MaterialBaseRaw
-    {
-        shaderName?: "standard",
-        uniforms?: StandardUniformsRaw;
-    }
-
-    export interface StandardUniformsRaw
-    {
-        __class__?: "feng3d.StandardUniforms",
-        s_ambient?: Texture2DRaw;
-        s_diffuse?: Texture2DRaw,
-        s_envMap?: TextureCubeRaw,
-        s_normal?: Texture2DRaw,
-        s_specular?: Texture2DRaw,
-        u_ambient?: Color3Raw,
-        u_diffuse?: Color3Raw,
-        u_reflectivity?: number,
-        u_specular?: Color3Raw
-    }
-
     /**
      * 雾模式
      */

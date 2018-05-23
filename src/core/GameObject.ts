@@ -68,14 +68,6 @@ namespace feng3d
         editor = 2,
     }
 
-    export interface GameObjectRaw
-    {
-        __class__?: "feng3d.GameObject";
-        name?: string;
-        children?: GameObjectRaw[];
-        components?: ComponentRaw[];
-    }
-
     /**
      * Base class for all entities in feng3d scenes.
      */
@@ -205,7 +197,7 @@ namespace feng3d
         /**
          * 构建3D对象
          */
-        constructor(raw: GameObjectRaw)
+        constructor(raw: Partial<GameObject>)
         {
             super();
             this.name = raw ? raw.name : "GameObject";
@@ -602,7 +594,7 @@ namespace feng3d
             return target;
         }
 
-        static create(name = "GameObject", raw?: GameObjectRaw)
+        static create(name = "GameObject", raw?: Partial<GameObject>)
         {
             raw = raw || {};
             raw.name = name;

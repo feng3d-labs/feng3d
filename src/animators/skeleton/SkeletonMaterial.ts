@@ -4,34 +4,12 @@ namespace feng3d
 
     export interface MaterialFactory
     {
-        create(shader: "skeleton", raw?: SkeletonMaterialRaw): SkeletonMaterial;
+        create(shader: "skeleton", raw?: Partial<SkeletonMaterial>): SkeletonMaterial;
     }
-
     export interface MaterialRawMap
     {
-        skeleton: SkeletonMaterialRaw
+        skeleton: Partial<SkeletonMaterial>
     }
-
-    export interface SkeletonMaterialRaw extends MaterialBaseRaw
-    {
-        shaderName?: "skeleton",
-        uniforms?: SkeletonUniformsRaw;
-    }
-
-    export interface SkeletonUniformsRaw
-    {
-        __class__?: "feng3d.SkeletonUniforms",
-        s_ambient?: Texture2DRaw;
-        s_diffuse?: Texture2DRaw,
-        s_envMap?: TextureCubeRaw,
-        s_normal?: Texture2DRaw,
-        s_specular?: Texture2DRaw,
-        u_ambient?: Color3Raw,
-        u_diffuse?: Color3Raw,
-        u_reflectivity?: number,
-        u_specular?: Color3Raw
-    }
-
     export class SkeletonUniforms extends StandardUniforms
     {
 

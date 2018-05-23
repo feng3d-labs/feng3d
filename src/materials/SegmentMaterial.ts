@@ -8,30 +8,11 @@ namespace feng3d
     export type SegmentMaterial = Material & { uniforms: SegmentUniforms; };
     export interface MaterialFactory
     {
-        create(shader: "segment", raw?: SegmentMaterialRaw): SegmentMaterial;
+        create(shader: "segment", raw?: Partial<SegmentMaterial>): SegmentMaterial;
     }
-
     export interface MaterialRawMap
     {
-        segment: SegmentMaterialRaw
-    }
-
-    export interface SegmentMaterialRaw extends MaterialBaseRaw
-    {
-        shaderName?: "segment",
-        uniforms?: SegmentUniformsRaw;
-    }
-
-    export interface SegmentUniformsRaw
-    {
-        /**
-         * 类全名
-         */
-        __class__?: "feng3d.SegmentUniforms",
-        /** 
-         * 颜色
-         */
-        u_segmentColor?: Color4 | Color4Raw,
+        segment: Partial<SegmentMaterial>
     }
 
     export class SegmentUniforms

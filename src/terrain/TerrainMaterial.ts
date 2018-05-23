@@ -4,42 +4,7 @@ namespace feng3d
 
     export interface MaterialFactory
     {
-        create(shader: "terrain", raw?: TerrainMaterialRaw): TerrainMaterial;
-    }
-
-    export interface MaterialRawMap
-    {
-        terrain: TerrainMaterialRaw
-    }
-
-    export interface TerrainMaterialRaw extends MaterialBaseRaw
-    {
-        shaderName?: "terrain",
-        uniforms?: TerrainUniformsRaw;
-    }
-
-    export interface TerrainUniformsRaw
-    {
-        __class__?: "feng3d.TerrainUniforms",
-        s_ambient?: Texture2DRaw;
-        s_diffuse?: Texture2DRaw,
-        s_envMap?: TextureCubeRaw,
-        s_normal?: Texture2DRaw,
-        s_specular?: Texture2DRaw,
-        u_ambient?: Color3Raw,
-        u_diffuse?: Color3Raw,
-        u_reflectivity?: number,
-        u_specular?: Color3Raw
-
-        s_splatTexture1: Texture2D | Texture2DRaw;
-
-        s_splatTexture2: Texture2D | Texture2DRaw
-
-        s_splatTexture3: Texture2D | Texture2DRaw
-
-        s_blendTexture: Texture2D | Texture2DRaw;
-
-        u_splatRepeats: Vector4;
+        create(shader: "terrain", raw?: Partial<TerrainMaterial>): TerrainMaterial;
     }
 
     export class TerrainUniforms extends StandardUniforms

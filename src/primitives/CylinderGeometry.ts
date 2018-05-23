@@ -1,95 +1,78 @@
 namespace feng3d
 {
     /**
-     * 圆柱体几何体原始数据
-     */
-    export interface CylinderGeometryRaw
-    {
-        __class__?: "feng3d.CylinderGeometry",
-        /**
-         * 顶部半径
-         */
-        topRadius?: number,
-        /**
-         * 底部半径
-         */
-        bottomRadius?: number,
-        /**
-         * 高度
-         */
-        height?: number,
-        /**
-         * 横向分割数
-         */
-        segmentsW?: number,
-        /**
-         * 纵向分割数
-         */
-        segmentsH?: number,
-        /**
-         * 顶部是否封口
-         */
-        topClosed?: boolean,
-        /**
-         * 底部是否封口
-         */
-        bottomClosed?: boolean,
-        /**
-         * 侧面是否封口
-         */
-        surfaceClosed?: boolean,
-        /**
-         * 是否朝上
-         */
-        yUp?: boolean
-    }
-
-    /**
      * 圆柱体几何体
      * @author DawnKing 2016-09-12
      */
-    export class CylinderGeometry extends Geometry implements CylinderGeometryRaw
+    export class CylinderGeometry extends Geometry
     {
+        /**
+         * 顶部半径
+         */
         @watch("invalidateGeometry")
         @serialize
         @oav()
         topRadius = 0.5;
 
+        /**
+         * 底部半径
+         */
         @watch("invalidateGeometry")
         @serialize
         @oav()
         bottomRadius = 0.5;
 
+        /**
+         * 高度
+         */
         @watch("invalidateGeometry")
         @serialize
         @oav()
         height = 2;
 
+        /**
+         * 横向分割数
+         */
         @watch("invalidateGeometry")
         @serialize
         @oav()
         segmentsW = 16;
 
+        /**
+         * 纵向分割数
+         */
         @watch("invalidateGeometry")
         @serialize
         @oav()
         segmentsH = 1;
 
+        /**
+         * 顶部是否封口
+         */
         @watch("invalidateGeometry")
         @serialize
         @oav()
         topClosed = true;
 
+        /**
+         * 底部是否封口
+         */
         @watch("invalidateGeometry")
         @serialize
         @oav()
         bottomClosed = true;
 
+        /**
+         * 侧面是否封口
+         */
         @watch("invalidateGeometry")
         @serialize
         @oav()
         surfaceClosed = true;
 
+        /**
+         * 是否朝上
+         */
         @watch("invalidateGeometry")
         @serialize
         @oav()
@@ -98,7 +81,7 @@ namespace feng3d
         /**
          * 创建圆柱体
          */
-        constructor(raw?: CylinderGeometryRaw)
+        constructor(raw?: Partial<CylinderGeometry>)
         {
             super();
 

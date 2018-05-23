@@ -1,15 +1,5 @@
 namespace feng3d
 {
-
-    export interface Texture2DRaw extends TextureInfoRaw
-    {
-        __class__?: "feng3d.Texture2D",
-        /**
-         * 纹理路径
-         */
-        url?: string,
-    }
-
     export var imageDatas = {
         black: imageUtil.createImageData(1, 1, ColorKeywords.black),
         white: imageUtil.createImageData(1, 1, ColorKeywords.white),
@@ -41,7 +31,7 @@ namespace feng3d
             return new Vector2(this._pixels.width, this._pixels.height);
         }
 
-        constructor(raw?: Texture2DRaw)
+        constructor(raw?: Partial<Texture2D>)
         {
             super(raw);
             this._textureType = TextureType.TEXTURE_2D;

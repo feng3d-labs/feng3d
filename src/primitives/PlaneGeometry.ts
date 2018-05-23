@@ -1,59 +1,46 @@
 namespace feng3d
 {
     /**
-     * 平面几何体原始数据
-     */
-    export interface PlaneGeometryRaw
-    {
-        __class__?: "feng3d.PlaneGeometry",
-        /**
-         * 宽度
-         */
-        width?: number,
-        /**
-         * 高度
-         */
-        height?: number,
-        /**
-         * 横向分割数
-         */
-        segmentsW?: number,
-        /**
-         * 纵向分割数
-         */
-        segmentsH?: number,
-        /**
-         * 是否朝上
-         */
-        yUp?: boolean
-    }
-
-    /**
      * 平面几何体
      * @author feng 2016-09-12
      */
-    export class PlaneGeometry extends Geometry implements PlaneGeometryRaw
+    export class PlaneGeometry extends Geometry
     {
+        /**
+         * 宽度
+         */
         @oav()
         @serialize
         @watch("invalidateGeometry")
         width = 1;
 
+        /**
+         * 高度
+         */
         @oav()
         @serialize
         @watch("invalidateGeometry")
         height = 1;
 
+        /**
+         * 横向分割数
+         */
         @oav()
         @serialize
         @watch("invalidateGeometry")
         segmentsW = 1;
 
+        /**
+         * 纵向分割数
+         */
         @oav()
         @serialize
         @watch("invalidateGeometry")
         segmentsH = 1;
 
+        /**
+         * 是否朝上
+         */
         @oav()
         @serialize
         @watch("invalidateGeometry")
@@ -62,7 +49,7 @@ namespace feng3d
         /**
          * 创建平面几何体
          */
-        constructor(raw?: PlaneGeometryRaw)
+        constructor(raw?: Partial<PlaneGeometry>)
         {
             super();
 

@@ -1,59 +1,46 @@
 namespace feng3d
 {
     /**
-     * 胶囊体几何体原始数据
-     */
-    export interface CapsuleGeometryRaw
-    {
-        __class__?: "feng3d.CapsuleGeometry",
-        /**
-         * 胶囊体半径
-         */
-        radius?: number,
-        /**
-         * 胶囊体高度
-         */
-        height?: number,
-        /**
-         * 横向分割数
-         */
-        segmentsH?: number,
-        /**
-         * 纵向分割数
-         */
-        segmentsW?: number,
-        /**
-         * 正面朝向 true:Y+ false:Z+
-         */
-        yUp?: boolean
-    }
-
-    /**
      * 胶囊体几何体
      * @author DawnKing 2016-09-12
      */
-    export class CapsuleGeometry extends Geometry implements CapsuleGeometryRaw
+    export class CapsuleGeometry extends Geometry
     {
+        /**
+         * 胶囊体半径
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         radius = 0.5;
 
+        /**
+         * 胶囊体高度
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         height = 1
 
+        /**
+         * 横向分割数
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         segmentsW = 16
 
+        /**
+         * 纵向分割数
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         segmentsH = 15;
 
+        /**
+         * 正面朝向 true:Y+ false:Z+
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
@@ -67,7 +54,7 @@ namespace feng3d
          * @param segmentsH 纵向分割数
          * @param yUp 正面朝向 true:Y+ false:Z+
          */
-        constructor(raw?: CapsuleGeometryRaw)
+        constructor(raw?: Partial<CapsuleGeometry>)
         {
             super();
             this.name = "Capsule";

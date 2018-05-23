@@ -1,78 +1,64 @@
 namespace feng3d
 {
-    /**
-     * 立方体几何体原始数据
-     */
-    export interface CubeGeometryRaw
-    {
-        __class__?: "feng3d.CubeGeometry";
-        /**
-         * 宽度
-         */
-        width?: number
-        /**
-         * 高度
-         */
-        height?: number,
-        /**
-         * 深度
-         */
-        depth?: number,
-        /**
-         * 宽度方向分割数
-         */
-        segmentsW?: number,
-        /**
-         * 高度方向分割数
-         */
-        segmentsH?: number,
-        /**
-         * 深度方向分割数
-         */
-        segmentsD?: number,
-        /**
-         * 是否为6块贴图，默认true。
-         */
-        tile6?: boolean,
-    }
 
     /**
      * 立方体几何体
      * @author feng 2016-09-12
      */
-    export class CubeGeometry extends Geometry implements CubeGeometryRaw
+    export class CubeGeometry extends Geometry
     {
+        /**
+         * 宽度
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         width = 1;
 
+        /**
+         * 高度
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         height = 1;
 
+        /**
+         * 深度
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         depth = 1;
 
+        /**
+         * 宽度方向分割数
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         segmentsW = 1;
 
+        /**
+         * 高度方向分割数
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         segmentsH = 1;
 
+        /**
+         * 深度方向分割数
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         @watch("invalidateGeometry")
         segmentsD = 1;
 
+        /**
+         * 是否为6块贴图，默认true。
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
@@ -81,7 +67,7 @@ namespace feng3d
         /**
          * 创建立方几何体
          */
-        constructor(raw?: CubeGeometryRaw)
+        constructor(raw?: Partial<CubeGeometry>)
         {
             super();
             this.name = "Cube";
