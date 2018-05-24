@@ -15,13 +15,17 @@ namespace feng3d
      */
     export class Texture2D extends TextureInfo
     {
-        protected _pixels: HTMLImageElement;
+        protected _pixels: ImageData | HTMLImageElement;
+
+        noPixels = imageDatas.white;
 
         @serialize
         @watch("urlChanged")
         @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         url = "";
 
+        protected _textureType = TextureType.TEXTURE_2D;
+        
         /**
          * 纹理尺寸
          */
@@ -34,8 +38,7 @@ namespace feng3d
         constructor(raw?: gPartial<Texture2D>)
         {
             super(raw);
-            this._textureType = TextureType.TEXTURE_2D;
-            this.noPixels = this.noPixels || imageDatas.white;
+            //
             feng3dDispatcher.on("assets.imageAssetsChanged", this.onImageAssetsChanged, this);
         }
 
@@ -44,13 +47,7 @@ namespace feng3d
          */
         checkRenderData()
         {
-            if (!this._pixels)
-                return false;
-
-            if (!this._pixels.width || !this._pixels.height)
-                return false;
-
-            return true;
+            return !!this._pixels;
         }
 
         private urlChanged()
@@ -60,7 +57,12 @@ namespace feng3d
             {
                 if (url == this.url)
                 {
-                    this._pixels = img;
+                    if (err)
+                    {
+                        // error(err);
+                        this._pixels = null;
+                    } else
+                        this._pixels = img;
                     this.invalidate();
                 }
             });

@@ -18142,9 +18142,10 @@ var feng3d;
         __extends(Texture2D, _super);
         function Texture2D(raw) {
             var _this = _super.call(this, raw) || this;
+            _this.noPixels = feng3d.imageDatas.white;
             _this.url = "";
             _this._textureType = feng3d.TextureType.TEXTURE_2D;
-            _this.noPixels = _this.noPixels || feng3d.imageDatas.white;
+            //
             feng3d.feng3dDispatcher.on("assets.imageAssetsChanged", _this.onImageAssetsChanged, _this);
             return _this;
         }
@@ -18164,18 +18165,19 @@ var feng3d;
          * 判断数据是否满足渲染需求
          */
         Texture2D.prototype.checkRenderData = function () {
-            if (!this._pixels)
-                return false;
-            if (!this._pixels.width || !this._pixels.height)
-                return false;
-            return true;
+            return !!this._pixels;
         };
         Texture2D.prototype.urlChanged = function () {
             var _this = this;
             var url = this.url;
             feng3d.assets.readFileAsImage(url, function (err, img) {
                 if (url == _this.url) {
-                    _this._pixels = img;
+                    if (err) {
+                        // error(err);
+                        _this._pixels = null;
+                    }
+                    else
+                        _this._pixels = img;
                     _this.invalidate();
                 }
             });
@@ -18204,39 +18206,34 @@ var feng3d;
         function TextureCube(raw) {
             var _this = _super.call(this, raw) || this;
             _this._pixels = [];
-            _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
             _this.noPixels = [feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white];
+            _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
             return _this;
         }
         /**
          * 判断数据是否满足渲染需求
          */
         TextureCube.prototype.checkRenderData = function () {
-            if (!this._pixels)
-                return false;
             for (var i = 0; i < 6; i++) {
                 var element = this._pixels[i];
-                if (!element || !element.width || !element.height)
+                if (!element)
                     return false;
             }
             return true;
         };
-        TextureCube.prototype.urlChanged = function () {
-            var __this = this;
-            loadImage(this.positive_x_url, 0);
-            loadImage(this.positive_y_url, 1);
-            loadImage(this.positive_z_url, 2);
-            loadImage(this.negative_x_url, 3);
-            loadImage(this.negative_y_url, 4);
-            loadImage(this.negative_z_url, 5);
-            function loadImage(url, index) {
-                if (!url)
-                    return;
-                feng3d.assets.readFileAsImage(url, function (err, img) {
-                    __this._pixels[index] = img;
-                    __this.invalidate();
-                });
-            }
+        TextureCube.prototype.urlChanged = function (property, oldValue, newValue) {
+            var _this = this;
+            var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
+            feng3d.assert(index != -1);
+            feng3d.assets.readFileAsImage(newValue, function (err, img) {
+                if (err) {
+                    // error(err);
+                    _this._pixels[index] = null;
+                }
+                else
+                    _this._pixels[index] = img;
+                _this.invalidate();
+            });
         };
         __decorate([
             feng3d.serialize,

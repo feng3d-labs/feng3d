@@ -6,8 +6,6 @@ namespace feng3d
      */
     export class TextureCube extends TextureInfo
     {
-        protected _pixels: HTMLImageElement[] = [];
-
         @serialize
         @watch("urlChanged")
         @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
@@ -38,12 +36,15 @@ namespace feng3d
         @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         negative_z_url: string;
 
+        protected _pixels: (HTMLImageElement | ImageData)[] = [];
+
+        noPixels = [imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white];
+
+        protected _textureType = TextureType.TEXTURE_CUBE_MAP;
+
         constructor(raw?: gPartial<TextureCube>)
         {
             super(raw);
-            this._textureType = TextureType.TEXTURE_CUBE_MAP;
-
-            this.noPixels = [imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white];
         }
 
         /**
@@ -51,39 +52,30 @@ namespace feng3d
          */
         checkRenderData()
         {
-            if (!this._pixels)
-                return false;
-
             for (var i = 0; i < 6; i++)
             {
                 var element = this._pixels[i];
-                if (!element || !element.width || !element.height)
+                if (!element)
                     return false;
             }
-
             return true;
         }
 
-        private urlChanged()
+        private urlChanged(property: string, oldValue: string, newValue: string)
         {
-            var __this = this;
-
-            loadImage(this.positive_x_url, 0);
-            loadImage(this.positive_y_url, 1);
-            loadImage(this.positive_z_url, 2);
-            loadImage(this.negative_x_url, 3);
-            loadImage(this.negative_y_url, 4);
-            loadImage(this.negative_z_url, 5);
-
-            function loadImage(url: string, index: number)
+            var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
+            assert(index != -1);
+            assets.readFileAsImage(newValue, (err, img) =>
             {
-                if (!url) return;
-                assets.readFileAsImage(url, (err, img) =>
+                if (err)
                 {
-                    __this._pixels[index] = img;
-                    __this.invalidate();
-                });
-            }
+                    // error(err);
+                    this._pixels[index] = null;
+                }
+                else
+                    this._pixels[index] = img;
+                this.invalidate();
+            });
         }
     }
 }

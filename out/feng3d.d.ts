@@ -7135,15 +7135,15 @@ declare namespace feng3d {
         /**
          * 需要使用的贴图数据
          */
-        protected _pixels: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[];
+        protected _pixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
-        noPixels: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[];
+        noPixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
         /**
          * 当前使用的贴图数据
          */
-        protected _activePixels: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[];
+        protected _activePixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
         /**
          * 纹理缓冲
          */
@@ -9368,8 +9368,10 @@ declare namespace feng3d {
      * @author feng 2016-12-20
      */
     class Texture2D extends TextureInfo {
-        protected _pixels: HTMLImageElement;
+        protected _pixels: ImageData | HTMLImageElement;
+        noPixels: ImageData;
         url: string;
+        protected _textureType: TextureType;
         /**
          * 纹理尺寸
          */
@@ -9389,19 +9391,21 @@ declare namespace feng3d {
      * @author feng 2016-12-28
      */
     class TextureCube extends TextureInfo {
-        protected _pixels: HTMLImageElement[];
         positive_x_url: string;
         positive_y_url: string;
         positive_z_url: string;
         negative_x_url: string;
         negative_y_url: string;
         negative_z_url: string;
+        protected _pixels: (HTMLImageElement | ImageData)[];
+        noPixels: ImageData[];
+        protected _textureType: TextureType;
         constructor(raw?: gPartial<TextureCube>);
         /**
          * 判断数据是否满足渲染需求
          */
         checkRenderData(): boolean;
-        private urlChanged();
+        private urlChanged(property, oldValue, newValue);
     }
 }
 declare namespace feng3d {

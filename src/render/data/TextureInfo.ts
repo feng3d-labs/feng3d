@@ -80,17 +80,17 @@ namespace feng3d
         /**
          * 需要使用的贴图数据
          */
-        protected _pixels: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[];
+        protected _pixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
 
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
-        noPixels: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[];
+        noPixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
 
         /**
          * 当前使用的贴图数据
          */
-        protected _activePixels: ImageData | ImageData[] | HTMLImageElement | HTMLImageElement[];
+        protected _activePixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
 
         /**
          * 纹理缓冲
