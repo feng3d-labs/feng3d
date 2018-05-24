@@ -2239,6 +2239,12 @@ var feng3d;
                 callback(img);
             });
         };
+        DataTransform.prototype.dataURLToArrayBuffer = function (dataurl, callback) {
+            var _this = this;
+            this.dataURLtoBlob(dataurl, function (blob) {
+                _this.blobToArrayBuffer(blob, callback);
+            });
+        };
         DataTransform.prototype.arrayBufferToDataURL = function (arrayBuffer, callback) {
             var _this = this;
             this.arrayBufferToBlob(arrayBuffer, function (blob) {

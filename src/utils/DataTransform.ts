@@ -146,6 +146,13 @@ namespace feng3d
                 callback(img);
             });
         }
+        dataURLToArrayBuffer(dataurl: string, callback: (arraybuffer: ArrayBuffer) => void)
+        {
+            this.dataURLtoBlob(dataurl, (blob) =>
+            {
+                this.blobToArrayBuffer(blob, callback)
+            });
+        }
         arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void)
         {
             this.arrayBufferToBlob(arrayBuffer, (blob) =>
