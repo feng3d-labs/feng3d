@@ -123,7 +123,9 @@
         "src/render/renderer/OutlineRenderer.ts",
         "src/render/renderer/WireframeRenderer.ts",
         "src/render/renderer/CartoonRenderer.ts",
-        "src/render/renderer/SkyboxRenderer.ts",
+        //
+        "src/skybox/Skybox.ts",
+        "src/skybox/SkyboxRenderer.ts",
         //后处理效果
         "src/render/postEffect/PostEffect.ts",
         "src/render/postEffect/FXAAEffect.ts",

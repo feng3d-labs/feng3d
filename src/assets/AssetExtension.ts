@@ -43,6 +43,14 @@ namespace feng3d
         json = "json",
         // -- feng3d中的类型
         /**
+         * 纹理
+         */
+        texture2d = "texture2d.json",
+        /**
+         * 立方体纹理
+         */
+        texturecube = "texturecube.json",
+        /**
          * 材质
          */
         material = "material.json",

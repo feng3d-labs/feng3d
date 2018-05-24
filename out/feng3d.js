@@ -3411,6 +3411,14 @@ var feng3d;
         AssetExtension["json"] = "json";
         // -- feng3d中的类型
         /**
+         * 纹理
+         */
+        AssetExtension["texture2d"] = "texture2d.json";
+        /**
+         * 立方体纹理
+         */
+        AssetExtension["texturecube"] = "texturecube.json";
+        /**
          * 材质
          */
         AssetExtension["material"] = "material.json";
@@ -12736,76 +12744,14 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.skyboxRenderer = {
-        draw: draw
-    };
-    var renderAtomic;
-    var renderParams;
-    var shader;
-    function init() {
-        if (!renderAtomic) {
-            renderAtomic = new feng3d.RenderAtomic();
-            //八个顶点，32个number
-            var vertexPositionData = [
-                -1, 1, -1,
-                1, 1, -1,
-                1, 1, 1,
-                -1, 1, 1,
-                -1, -1, -1,
-                1, -1, -1,
-                1, -1, 1,
-                -1, -1, 1 //
-            ];
-            renderAtomic.attributes.a_position = new feng3d.Attribute("a_position", vertexPositionData, 3);
-            //6个面，12个三角形，36个顶点索引
-            var indices = [
-                0, 1, 2, 2, 3, 0,
-                6, 5, 4, 4, 7, 6,
-                2, 6, 7, 7, 3, 2,
-                4, 5, 1, 1, 0, 4,
-                4, 0, 3, 3, 7, 4,
-                2, 1, 5, 5, 6, 2 //
-            ];
-            renderAtomic.indexBuffer = new feng3d.Index();
-            renderAtomic.indexBuffer.indices = indices;
-            //
-            renderParams = new feng3d.RenderParams();
-            renderParams.renderMode = feng3d.RenderMode.TRIANGLES;
-            renderParams.enableBlend = false;
-            renderParams.depthMask = true;
-            renderParams.depthtest = true;
-            renderParams.cullFace = feng3d.CullFace.NONE;
-            //
-            shader = feng3d.shaderlib.getShader("skybox");
-        }
-    }
     /**
-     * 渲染
+     * 天空盒组件
      */
-    function draw(gl, scene3d, camera, renderObjectflag) {
-        init();
-        var skyboxs = scene3d.collectComponents.skyboxs.list.filter(function (skybox) {
-            return skybox.gameObject.visible && (renderObjectflag & skybox.gameObject.flag);
-        });
-        if (skyboxs.length == 0)
-            return;
-        var skybox = skyboxs[0];
-        //
-        renderAtomic.renderParams = renderParams;
-        renderAtomic.shader = shader;
-        skybox.gameObject.preRender(renderAtomic);
-        //
-        renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
-        renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
-        renderAtomic.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
-        renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-        gl.renderer.draw(renderAtomic);
-    }
     var SkyBox = /** @class */ (function (_super) {
         __extends(SkyBox, _super);
         function SkyBox() {
             var _this = _super.call(this) || this;
-            _this.texture = new feng3d.TextureCube();
+            _this.s_skyboxTexture = new feng3d.TextureCube();
             return _this;
             //
         }
@@ -12814,15 +12760,89 @@ var feng3d;
         };
         SkyBox.prototype.preRender = function (renderAtomic) {
             var _this = this;
-            renderAtomic.uniforms.s_skyboxTexture = function () { return _this.texture; };
+            renderAtomic.uniforms.s_skyboxTexture = function () { return _this.s_skyboxTexture; };
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
-        ], SkyBox.prototype, "texture", void 0);
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
+        ], SkyBox.prototype, "s_skyboxTexture", void 0);
         return SkyBox;
     }(feng3d.Component));
     feng3d.SkyBox = SkyBox;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 天空盒渲染器
+     */
+    var SkyboxRenderer = /** @class */ (function () {
+        function SkyboxRenderer() {
+        }
+        SkyboxRenderer.prototype.init = function () {
+            if (!this.renderAtomic) {
+                var renderAtomic = new feng3d.RenderAtomic();
+                //八个顶点，32个number
+                var vertexPositionData = [
+                    -1, 1, -1,
+                    1, 1, -1,
+                    1, 1, 1,
+                    -1, 1, 1,
+                    -1, -1, -1,
+                    1, -1, -1,
+                    1, -1, 1,
+                    -1, -1, 1 //
+                ];
+                renderAtomic.attributes.a_position = new feng3d.Attribute("a_position", vertexPositionData, 3);
+                //6个面，12个三角形，36个顶点索引
+                var indices = [
+                    0, 1, 2, 2, 3, 0,
+                    6, 5, 4, 4, 7, 6,
+                    2, 6, 7, 7, 3, 2,
+                    4, 5, 1, 1, 0, 4,
+                    4, 0, 3, 3, 7, 4,
+                    2, 1, 5, 5, 6, 2 //
+                ];
+                renderAtomic.indexBuffer = new feng3d.Index();
+                renderAtomic.indexBuffer.indices = indices;
+                this.renderAtomic = renderAtomic;
+                //
+                var renderParams = new feng3d.RenderParams();
+                renderParams.renderMode = feng3d.RenderMode.TRIANGLES;
+                renderParams.enableBlend = false;
+                renderParams.depthMask = true;
+                renderParams.depthtest = true;
+                renderParams.cullFace = feng3d.CullFace.NONE;
+                this.renderParams = renderParams;
+                //
+                this.shader = feng3d.shaderlib.getShader("skybox");
+            }
+        };
+        /**
+         * 渲染
+         */
+        SkyboxRenderer.prototype.draw = function (gl, scene3d, camera, renderObjectflag) {
+            this.init();
+            var skyboxs = scene3d.collectComponents.skyboxs.list.filter(function (skybox) {
+                return skybox.gameObject.visible && (renderObjectflag & skybox.gameObject.flag);
+            });
+            if (skyboxs.length == 0)
+                return;
+            var skybox = skyboxs[0];
+            //
+            this.renderAtomic.renderParams = this.renderParams;
+            this.renderAtomic.shader = this.shader;
+            skybox.gameObject.preRender(this.renderAtomic);
+            //
+            this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
+            this.renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
+            this.renderAtomic.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
+            this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
+            gl.renderer.draw(this.renderAtomic);
+        };
+        return SkyboxRenderer;
+    }());
+    feng3d.SkyboxRenderer = SkyboxRenderer;
+    feng3d.skyboxRenderer = new SkyboxRenderer();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -18577,7 +18597,7 @@ var feng3d;
         ], StandardUniforms.prototype, "u_ambient", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "envMap", componentParam: { dragparam: { accepttype: "texturecube", datatype: "texturecube" } } })
+            feng3d.oav({ component: "OAVPick", block: "envMap", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         ], StandardUniforms.prototype, "s_envMap", void 0);
         __decorate([
             feng3d.serialize,
