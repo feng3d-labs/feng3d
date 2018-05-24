@@ -6,7 +6,7 @@ namespace feng3d
      */
     export class TextureCube extends TextureInfo
     {
-        protected _pixels: HTMLImageElement[];
+        protected _pixels: HTMLImageElement[] = [];
 
         @serialize
         @watch("urlChanged")
@@ -38,23 +38,12 @@ namespace feng3d
         @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         negative_z_url: string;
 
-        constructor(images?: string[])
+        constructor(raw?: gPartial<TextureCube>)
         {
-            super();
+            super(raw);
             this._textureType = TextureType.TEXTURE_CUBE_MAP;
 
             this.noPixels = [imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white];
-            this._pixels = [];
-            if (images)
-            {
-                this.positive_x_url = images[0];
-                this.positive_y_url = images[1];
-                this.positive_z_url = images[2];
-                this.negative_x_url = images[3];
-                this.negative_y_url = images[4];
-                this.negative_z_url = images[5];
-                this.urlChanged();
-            }
         }
 
         /**

@@ -9368,7 +9368,7 @@ declare namespace feng3d {
         negative_x_url: string;
         negative_y_url: string;
         negative_z_url: string;
-        constructor(images?: string[]);
+        constructor(raw?: gPartial<TextureCube>);
         /**
          * 判断数据是否满足渲染需求
          */
