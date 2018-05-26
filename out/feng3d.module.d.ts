@@ -7480,6 +7480,7 @@ declare namespace feng3d {
          * 每帧执行
          */
         update(interval?: number): void;
+        dispose(): void;
     }
 }
 declare namespace feng3d {
@@ -9933,6 +9934,7 @@ declare namespace feng3d {
         init(gameObject: GameObject): void;
         private onScenetransformChanged();
         private enabledChanged();
+        dispose(): void;
     }
 }
 interface AudioListener {
@@ -9966,17 +9968,40 @@ interface AudioListener {
 }
 declare namespace feng3d {
     /**
-     * 声源
+     * 音量与距离算法
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/PannerNode/distanceModel
      */
-    class AudioSource extends Component {
+    enum DistanceModelType {
+        /**
+         * 1 - rolloffFactor * (distance - refDistance) / (maxDistance - refDistance)
+         */
+        linear = "linear",
+        /**
+         * refDistance / (refDistance + rolloffFactor * (distance - refDistance))
+         */
+        inverse = "inverse",
+        /**
+         * pow(distance / refDistance, -rolloffFactor)
+         */
+        exponential = "exponential",
+    }
+    /**
+     * 声源
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
+     */
+    class AudioSource extends Behaviour {
         private panner;
         private source;
         private buffer;
         private gain;
+        enabled: boolean;
         /**
          * 声音文件路径
          */
         url: string;
+        /**
+         * 是否循环播放
+         */
         loop: boolean;
         private _loop;
         /**
@@ -9984,20 +10009,47 @@ declare namespace feng3d {
          */
         volume: number;
         private _volume;
+        /**
+         * 是否启用位置影响声音
+         */
+        enablePosition: boolean;
+        private _enablePosition;
         coneInnerAngle: number;
         private _coneInnerAngle;
         coneOuterAngle: number;
         private _coneOuterAngle;
         coneOuterGain: number;
         private _coneOuterGain;
+        /**
+         * 该接口的distanceModel属性PannerNode是一个枚举值，用于确定在音频源离开收听者时用于减少音频源音量的算法。
+         *
+         * 可能的值是：
+         * * linear：根据以下公式计算由距离引起的增益的线性距离模型：
+         *      1 - rolloffFactor * (distance - refDistance) / (maxDistance - refDistance)
+         * * inverse：根据以下公式计算由距离引起的增益的反距离模型：
+         *      refDistance / (refDistance + rolloffFactor * (distance - refDistance))
+         * * exponential：按照下式计算由距离引起的增益的指数距离模型
+         *      pow(distance / refDistance, -rolloffFactor)。
+         *
+         * inverse是的默认值distanceModel。
+         */
         distanceModel: DistanceModelType;
         private _distanceModel;
+        /**
+         * 表示音频源和收听者之间的最大距离，之后音量不会再降低。该值仅由linear距离模型使用。默认值是10000。
+         */
         maxDistance: number;
         private _maxDistance;
         panningModel: "equalpower";
         private _panningModel;
+        /**
+         * 表示随着音频源远离收听者而减小音量的参考距离。此值由所有距离模型使用。默认值是1。
+         */
         refDistance: number;
         private _refDistance;
+        /**
+         * 描述了音源离开收听者音量降低的速度。此值由所有距离模型使用。默认值是1。
+         */
         rolloffFactor: number;
         private _rolloffFactor;
         constructor();
@@ -10006,6 +10058,11 @@ declare namespace feng3d {
         private onUrlChanged();
         play(): void;
         stop(): void;
+        private connect();
+        private disconnect();
+        private getAudioNodes();
+        private enabledChanged();
+        dispose(): void;
     }
 }
 interface PannerNode {

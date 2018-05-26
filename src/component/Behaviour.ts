@@ -41,5 +41,11 @@ namespace feng3d
         update(interval?: number)
         {
         }
+
+        dispose()
+        {
+            this.enabled = false;
+            super.dispose();
+        }
     }
 }

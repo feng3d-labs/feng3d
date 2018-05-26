@@ -1,14 +1,38 @@
 namespace feng3d
 {
     /**
-     * 声源
+     * 音量与距离算法
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/PannerNode/distanceModel
      */
-    export class AudioSource extends Component
+    export enum DistanceModelType
+    {
+        /**
+         * 1 - rolloffFactor * (distance - refDistance) / (maxDistance - refDistance)
+         */
+        linear = "linear",
+        /**
+         * refDistance / (refDistance + rolloffFactor * (distance - refDistance))
+         */
+        inverse = "inverse",
+        /**
+         * pow(distance / refDistance, -rolloffFactor)
+         */
+        exponential = "exponential",
+    }
+
+    /**
+     * 声源
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
+     */
+    export class AudioSource extends Behaviour
     {
         private panner: PannerNode;
         private source: AudioBufferSourceNode;
         private buffer: AudioBuffer;
         private gain: GainNode;
+
+        @watch("enabledChanged")
+        enabled = true;
 
         /**
          * 声音文件路径
@@ -18,6 +42,9 @@ namespace feng3d
         @watch("onUrlChanged")
         url = "";
 
+        /**
+         * 是否循环播放
+         */
         @serialize
         @oav()
         get loop()
@@ -47,8 +74,25 @@ namespace feng3d
         }
         private _volume: number;
 
+        /**
+         * 是否启用位置影响声音
+         */
         @serialize
         @oav()
+        get enablePosition()
+        {
+            return this._enablePosition;
+        }
+        set enablePosition(v)
+        {
+            this.disconnect();
+            this._enablePosition = v;
+            this.connect();
+        }
+        private _enablePosition = true;;
+
+        // @serialize
+        // @oav()
         get coneInnerAngle()
         {
             return this._coneInnerAngle;
@@ -60,8 +104,8 @@ namespace feng3d
         }
         private _coneInnerAngle: number;
 
-        @serialize
-        @oav()
+        // @serialize
+        // @oav()
         get coneOuterAngle()
         {
             return this._coneOuterAngle;
@@ -73,8 +117,8 @@ namespace feng3d
         }
         private _coneOuterAngle: number;
 
-        @serialize
-        @oav()
+        // @serialize
+        // @oav()
         get coneOuterGain()
         {
             return this._coneOuterGain;
@@ -86,8 +130,21 @@ namespace feng3d
         }
         private _coneOuterGain: number;
 
+        /**
+         * 该接口的distanceModel属性PannerNode是一个枚举值，用于确定在音频源离开收听者时用于减少音频源音量的算法。
+         * 
+         * 可能的值是：
+         * * linear：根据以下公式计算由距离引起的增益的线性距离模型：
+         *      1 - rolloffFactor * (distance - refDistance) / (maxDistance - refDistance)
+         * * inverse：根据以下公式计算由距离引起的增益的反距离模型：
+         *      refDistance / (refDistance + rolloffFactor * (distance - refDistance))
+         * * exponential：按照下式计算由距离引起的增益的指数距离模型
+         *      pow(distance / refDistance, -rolloffFactor)。
+         * 
+         * inverse是的默认值distanceModel。
+         */
         @serialize
-        @oav()
+        @oav({ component: "OAVEnum", componentParam: { enumClass: DistanceModelType } })
         get distanceModel()
         {
             return this._distanceModel;
@@ -99,6 +156,9 @@ namespace feng3d
         }
         private _distanceModel: DistanceModelType;
 
+        /**
+         * 表示音频源和收听者之间的最大距离，之后音量不会再降低。该值仅由linear距离模型使用。默认值是10000。
+         */
         @serialize
         @oav()
         get maxDistance()
@@ -112,8 +172,8 @@ namespace feng3d
         }
         private _maxDistance: number;
 
-        @serialize
-        @oav()
+        // @serialize
+        // @oav()
         get panningModel()
         {
             return this._panningModel;
@@ -125,6 +185,9 @@ namespace feng3d
         }
         private _panningModel: PanningModelType;
 
+        /**
+         * 表示随着音频源远离收听者而减小音量的参考距离。此值由所有距离模型使用。默认值是1。
+         */
         @serialize
         @oav()
         get refDistance()
@@ -138,6 +201,9 @@ namespace feng3d
         }
         private _refDistance: number;
 
+        /**
+         * 描述了音源离开收听者音量降低的速度。此值由所有距离模型使用。默认值是1。
+         */
         @serialize
         @oav()
         get rolloffFactor()
@@ -156,7 +222,7 @@ namespace feng3d
             super();
             this.panner = createPanner();
             this.panningModel = <any>'HRTF';
-            this.distanceModel = 'inverse';
+            this.distanceModel = DistanceModelType.inverse;
             this.refDistance = 1;
             this.maxDistance = 10000;
             this.rolloffFactor = 1;
@@ -167,8 +233,8 @@ namespace feng3d
             this.gain = audioCtx.createGain();
             this.volume = 1;
             //
-            this.gain.connect(globalGain);
-            this.panner.connect(this.gain);
+            this.enabledChanged()
+            this.connect();
         }
 
         init(gameObject: GameObject)
@@ -225,7 +291,7 @@ namespace feng3d
             {
                 this.source = audioCtx.createBufferSource();
                 this.source.buffer = this.buffer;
-                this.source.connect(this.panner);
+                this.connect();
                 this.source.loop = this.loop;
                 this.source.start(0);
             }
@@ -237,9 +303,55 @@ namespace feng3d
             if (this.source)
             {
                 this.source.stop(0);
-                this.source.disconnect(this.panner);
+                this.disconnect();
                 this.source = null;
             }
+        }
+
+        private connect()
+        {
+            var arr = this.getAudioNodes();
+            for (let i = 0; i < arr.length - 1; i++)
+            {
+                arr[i + 1].connect(arr[i]);
+            }
+        }
+
+        private disconnect()
+        {
+            var arr = this.getAudioNodes();
+            for (let i = 0; i < arr.length - 1; i++)
+            {
+                arr[i + 1].disconnect(arr[i]);
+            }
+        }
+
+        private getAudioNodes()
+        {
+            var arr: AudioNode[] = [];
+            arr.push(this.gain);
+            if (this._enablePosition)
+                arr.push(this.panner);
+            if (this.source)
+                arr.push(this.source);
+            return arr;
+        }
+
+        private enabledChanged()
+        {
+            if (!this.gain)
+                return;
+            if (this.enabled)
+                this.gain.connect(globalGain);
+            else
+                this.gain.disconnect(globalGain);
+        }
+
+        dispose()
+        {
+            this.gameObject.off("scenetransformChanged", this.onScenetransformChanged, this);
+            this.disconnect();
+            super.dispose();
         }
     }
 }

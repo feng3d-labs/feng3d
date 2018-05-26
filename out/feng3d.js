@@ -12068,6 +12068,10 @@ var feng3d;
          */
         Behaviour.prototype.update = function (interval) {
         };
+        Behaviour.prototype.dispose = function () {
+            this.enabled = false;
+            _super.prototype.dispose.call(this);
+        };
         __decorate([
             feng3d.oav(),
             feng3d.serialize
@@ -19428,6 +19432,10 @@ var feng3d;
                 feng3d.globalGain.disconnect(this.gain);
             }
         };
+        AudioListener.prototype.dispose = function () {
+            this.gameObject.off("scenetransformChanged", this.onScenetransformChanged, this);
+            _super.prototype.dispose.call(this);
+        };
         __decorate([
             feng3d.watch("enabledChanged")
         ], AudioListener.prototype, "enabled", void 0);
@@ -19466,20 +19474,42 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 音量与距离算法
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/PannerNode/distanceModel
+     */
+    var DistanceModelType;
+    (function (DistanceModelType) {
+        /**
+         * 1 - rolloffFactor * (distance - refDistance) / (maxDistance - refDistance)
+         */
+        DistanceModelType["linear"] = "linear";
+        /**
+         * refDistance / (refDistance + rolloffFactor * (distance - refDistance))
+         */
+        DistanceModelType["inverse"] = "inverse";
+        /**
+         * pow(distance / refDistance, -rolloffFactor)
+         */
+        DistanceModelType["exponential"] = "exponential";
+    })(DistanceModelType = feng3d.DistanceModelType || (feng3d.DistanceModelType = {}));
+    /**
      * 声源
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
      */
     var AudioSource = /** @class */ (function (_super) {
         __extends(AudioSource, _super);
         function AudioSource() {
             var _this = _super.call(this) || this;
+            _this.enabled = true;
             /**
              * 声音文件路径
              */
             _this.url = "";
             _this._loop = true;
+            _this._enablePosition = true;
             _this.panner = createPanner();
             _this.panningModel = 'HRTF';
-            _this.distanceModel = 'inverse';
+            _this.distanceModel = DistanceModelType.inverse;
             _this.refDistance = 1;
             _this.maxDistance = 10000;
             _this.rolloffFactor = 1;
@@ -19490,11 +19520,14 @@ var feng3d;
             _this.gain = feng3d.audioCtx.createGain();
             _this.volume = 1;
             //
-            _this.gain.connect(feng3d.globalGain);
-            _this.panner.connect(_this.gain);
+            _this.enabledChanged();
+            _this.connect();
             return _this;
         }
         Object.defineProperty(AudioSource.prototype, "loop", {
+            /**
+             * 是否循环播放
+             */
             get: function () {
                 return this._loop;
             },
@@ -19520,7 +19553,25 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AudioSource.prototype, "enablePosition", {
+            /**
+             * 是否启用位置影响声音
+             */
+            get: function () {
+                return this._enablePosition;
+            },
+            set: function (v) {
+                this.disconnect();
+                this._enablePosition = v;
+                this.connect();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ;
         Object.defineProperty(AudioSource.prototype, "coneInnerAngle", {
+            // @serialize
+            // @oav()
             get: function () {
                 return this._coneInnerAngle;
             },
@@ -19532,6 +19583,8 @@ var feng3d;
             configurable: true
         });
         Object.defineProperty(AudioSource.prototype, "coneOuterAngle", {
+            // @serialize
+            // @oav()
             get: function () {
                 return this._coneOuterAngle;
             },
@@ -19543,6 +19596,8 @@ var feng3d;
             configurable: true
         });
         Object.defineProperty(AudioSource.prototype, "coneOuterGain", {
+            // @serialize
+            // @oav()
             get: function () {
                 return this._coneOuterGain;
             },
@@ -19554,6 +19609,19 @@ var feng3d;
             configurable: true
         });
         Object.defineProperty(AudioSource.prototype, "distanceModel", {
+            /**
+             * 该接口的distanceModel属性PannerNode是一个枚举值，用于确定在音频源离开收听者时用于减少音频源音量的算法。
+             *
+             * 可能的值是：
+             * * linear：根据以下公式计算由距离引起的增益的线性距离模型：
+             *      1 - rolloffFactor * (distance - refDistance) / (maxDistance - refDistance)
+             * * inverse：根据以下公式计算由距离引起的增益的反距离模型：
+             *      refDistance / (refDistance + rolloffFactor * (distance - refDistance))
+             * * exponential：按照下式计算由距离引起的增益的指数距离模型
+             *      pow(distance / refDistance, -rolloffFactor)。
+             *
+             * inverse是的默认值distanceModel。
+             */
             get: function () {
                 return this._distanceModel;
             },
@@ -19565,6 +19633,9 @@ var feng3d;
             configurable: true
         });
         Object.defineProperty(AudioSource.prototype, "maxDistance", {
+            /**
+             * 表示音频源和收听者之间的最大距离，之后音量不会再降低。该值仅由linear距离模型使用。默认值是10000。
+             */
             get: function () {
                 return this._maxDistance;
             },
@@ -19576,6 +19647,8 @@ var feng3d;
             configurable: true
         });
         Object.defineProperty(AudioSource.prototype, "panningModel", {
+            // @serialize
+            // @oav()
             get: function () {
                 return this._panningModel;
             },
@@ -19587,6 +19660,9 @@ var feng3d;
             configurable: true
         });
         Object.defineProperty(AudioSource.prototype, "refDistance", {
+            /**
+             * 表示随着音频源远离收听者而减小音量的参考距离。此值由所有距离模型使用。默认值是1。
+             */
             get: function () {
                 return this._refDistance;
             },
@@ -19598,6 +19674,9 @@ var feng3d;
             configurable: true
         });
         Object.defineProperty(AudioSource.prototype, "rolloffFactor", {
+            /**
+             * 描述了音源离开收听者音量降低的速度。此值由所有距离模型使用。默认值是1。
+             */
             get: function () {
                 return this._rolloffFactor;
             },
@@ -19648,7 +19727,7 @@ var feng3d;
             if (this.buffer) {
                 this.source = feng3d.audioCtx.createBufferSource();
                 this.source.buffer = this.buffer;
-                this.source.connect(this.panner);
+                this.connect();
                 this.source.loop = this.loop;
                 this.source.start(0);
             }
@@ -19656,10 +19735,47 @@ var feng3d;
         AudioSource.prototype.stop = function () {
             if (this.source) {
                 this.source.stop(0);
-                this.source.disconnect(this.panner);
+                this.disconnect();
                 this.source = null;
             }
         };
+        AudioSource.prototype.connect = function () {
+            var arr = this.getAudioNodes();
+            for (var i = 0; i < arr.length - 1; i++) {
+                arr[i + 1].connect(arr[i]);
+            }
+        };
+        AudioSource.prototype.disconnect = function () {
+            var arr = this.getAudioNodes();
+            for (var i = 0; i < arr.length - 1; i++) {
+                arr[i + 1].disconnect(arr[i]);
+            }
+        };
+        AudioSource.prototype.getAudioNodes = function () {
+            var arr = [];
+            arr.push(this.gain);
+            if (this._enablePosition)
+                arr.push(this.panner);
+            if (this.source)
+                arr.push(this.source);
+            return arr;
+        };
+        AudioSource.prototype.enabledChanged = function () {
+            if (!this.gain)
+                return;
+            if (this.enabled)
+                this.gain.connect(feng3d.globalGain);
+            else
+                this.gain.disconnect(feng3d.globalGain);
+        };
+        AudioSource.prototype.dispose = function () {
+            this.gameObject.off("scenetransformChanged", this.onScenetransformChanged, this);
+            this.disconnect();
+            _super.prototype.dispose.call(this);
+        };
+        __decorate([
+            feng3d.watch("enabledChanged")
+        ], AudioSource.prototype, "enabled", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "audio" } }),
@@ -19676,27 +19792,15 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.oav()
-        ], AudioSource.prototype, "coneInnerAngle", null);
+        ], AudioSource.prototype, "enablePosition", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
-        ], AudioSource.prototype, "coneOuterAngle", null);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], AudioSource.prototype, "coneOuterGain", null);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: DistanceModelType } })
         ], AudioSource.prototype, "distanceModel", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav()
         ], AudioSource.prototype, "maxDistance", null);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], AudioSource.prototype, "panningModel", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav()
@@ -19712,7 +19816,7 @@ var feng3d;
             feng3d.oav()
         ], AudioSource.prototype, "stop", null);
         return AudioSource;
-    }(feng3d.Component));
+    }(feng3d.Behaviour));
     feng3d.AudioSource = AudioSource;
 })(feng3d || (feng3d = {}));
 function createPanner() {

@@ -72,6 +72,12 @@ namespace feng3d
                 globalGain.disconnect(this.gain);
             }
         }
+
+        dispose()
+        {
+            this.gameObject.off("scenetransformChanged", this.onScenetransformChanged, this);
+            super.dispose();
+        }
     }
 }
 
