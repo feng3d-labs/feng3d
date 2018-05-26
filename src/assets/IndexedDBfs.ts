@@ -39,7 +39,7 @@ namespace feng3d
         {
             storage.get(this.DBname, this.projectname, path, (err, data) =>
             {
-                callback(null, data);
+                callback(err, data);
             });
         }
 

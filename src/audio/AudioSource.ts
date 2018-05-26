@@ -6,7 +6,8 @@ namespace feng3d
     export class AudioSource extends Component
     {
         private panner = createPanner();
-        private source = audioCtx.createBufferSource();
+        private source: AudioBufferSourceNode;
+        private buffer: AudioBuffer;
 
         /**
          * 声音文件路径
@@ -91,35 +92,51 @@ namespace feng3d
 
         private onUrlChanged()
         {
+            this.stop();
             if (this.url)
             {
+                var url = this.url;
                 assets.readFile(this.url, (err, data) =>
                 {
                     if (err)
                     {
-                        err(err);
+                        warn(err);
                         return;
                     }
+                    if (url != this.url)
+                        return;
                     audioCtx.decodeAudioData(data, (buffer) =>
                     {
-                        this.source.buffer = buffer;
-
-                        this.source.connect(this.panner);
-                        this.panner.connect(audioCtx.destination);
-                        this.source.loop = this.loop;
+                        this.buffer = buffer;
                     })
                 })
             }
         }
 
+        @oav()
         play()
         {
-            this.source && this.source.start(0);
+            this.stop();
+            if (this.buffer)
+            {
+                this.source = audioCtx.createBufferSource();
+                this.source.buffer = this.buffer;
+                this.source.connect(this.panner);
+                this.panner.connect(audioCtx.destination);
+                this.source.loop = this.loop;
+                this.source.start(0);
+            }
         }
 
+        @oav()
         stop()
         {
-            this.source && this.source.stop(0);
+            if (this.source)
+            {
+                this.source.stop(0);
+                this.source.disconnect(this.panner);
+                this.source = null;
+            }
         }
 
         private onLoopChanged() { this.source && (this.source.loop = this.loop); };

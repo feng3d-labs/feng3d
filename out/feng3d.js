@@ -2875,7 +2875,7 @@ var feng3d;
          */
         IndexedDBfs.prototype.readFile = function (path, callback) {
             feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                callback(null, data);
+                callback(err, data);
             });
         };
         /**
@@ -19358,6 +19358,268 @@ var feng3d;
         return false;
     }
 })(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 声音监听器
+     */
+    var AudioListener = /** @class */ (function (_super) {
+        __extends(AudioListener, _super);
+        function AudioListener() {
+            var _this = _super.call(this) || this;
+            _this.enabled = true;
+            _this.gain = feng3d.audioCtx.createGain();
+            _this.gain.connect(feng3d.audioCtx.destination);
+            _this.enabledChanged();
+            return _this;
+        }
+        AudioListener.prototype.init = function (gameObject) {
+            _super.prototype.init.call(this, gameObject);
+            this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
+            this.onScenetransformChanged();
+        };
+        AudioListener.prototype.onScenetransformChanged = function () {
+            var scenePosition = this.transform.scenePosition;
+            //
+            var listener = feng3d.audioCtx.listener;
+            if (listener.positionX) {
+                listener.positionX.value = scenePosition.x;
+                listener.positionY.value = scenePosition.y;
+                listener.positionZ.value = scenePosition.z;
+            }
+            else {
+                listener.setPosition(scenePosition.x, scenePosition.y, scenePosition.z);
+            }
+        };
+        AudioListener.prototype.enabledChanged = function () {
+            if (!this.gain)
+                return;
+            if (this.enabled) {
+                feng3d.globalGain.connect(this.gain);
+            }
+            else {
+                feng3d.globalGain.disconnect(this.gain);
+            }
+            // if (this.isListening == this.enabled)
+            //     return;
+            // if (audioCtx.state === 'running')
+            // {
+            //     // 暂停
+            //     audioCtx.suspend().then(() =>
+            //     {
+            //         this.isListening = false;
+            //     });
+            // } else if (audioCtx.state === 'suspended')
+            // {
+            //     // 继续
+            //     audioCtx.resume().then(() =>
+            //     {
+            //         this.isListening = true;
+            //     });
+            // }
+        };
+        __decorate([
+            feng3d.watch("enabledChanged")
+        ], AudioListener.prototype, "enabled", void 0);
+        return AudioListener;
+    }(feng3d.Behaviour));
+    feng3d.AudioListener = AudioListener;
+})(feng3d || (feng3d = {}));
+(function () {
+    window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];
+    var audioCtx = feng3d.audioCtx = new AudioContext();
+    var globalGain = feng3d.globalGain = audioCtx.createGain();
+    // globalGain.connect(audioCtx.destination);
+    var listener = audioCtx.listener;
+    audioCtx.createGain();
+    if (listener.forwardX) {
+        listener.forwardX.value = 0;
+        listener.forwardY.value = 0;
+        listener.forwardZ.value = -1;
+        listener.upX.value = 0;
+        listener.upY.value = 1;
+        listener.upZ.value = 0;
+    }
+    else {
+        listener.setOrientation(0, 0, -1, 0, 1, 0);
+    }
+})();
+var feng3d;
+(function (feng3d) {
+    /**
+     * 声源
+     */
+    var AudioSource = /** @class */ (function (_super) {
+        __extends(AudioSource, _super);
+        function AudioSource() {
+            var _this = _super.call(this) || this;
+            _this.panner = createPanner();
+            /**
+             * 声音文件路径
+             */
+            _this.url = "";
+            _this.loop = true;
+            _this.coneInnerAngle = 360;
+            _this.coneOuterAngle = 0;
+            _this.coneOuterGain = 0;
+            _this.distanceModel = 'inverse';
+            _this.maxDistance = 10000;
+            _this.panningModel = 'HRTF';
+            _this.refDistance = 1;
+            _this.rolloffFactor = 1;
+            return _this;
+        }
+        AudioSource.prototype.init = function (gameObject) {
+            _super.prototype.init.call(this, gameObject);
+            this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
+        };
+        AudioSource.prototype.onScenetransformChanged = function () {
+            var scenePosition = this.transform.scenePosition;
+            //
+            var panner = this.panner;
+            if (panner.positionX) {
+                panner.positionX.value = scenePosition.x;
+                panner.positionY.value = scenePosition.y;
+                panner.positionZ.value = scenePosition.z;
+            }
+            else {
+                panner.setPosition(scenePosition.x, scenePosition.y, scenePosition.z);
+            }
+        };
+        AudioSource.prototype.onUrlChanged = function () {
+            var _this = this;
+            this.stop();
+            if (this.url) {
+                var url = this.url;
+                feng3d.assets.readFile(this.url, function (err, data) {
+                    if (err) {
+                        feng3d.warn(err);
+                        return;
+                    }
+                    if (url != _this.url)
+                        return;
+                    feng3d.audioCtx.decodeAudioData(data, function (buffer) {
+                        _this.buffer = buffer;
+                    });
+                });
+            }
+        };
+        AudioSource.prototype.play = function () {
+            this.stop();
+            if (this.buffer) {
+                this.source = feng3d.audioCtx.createBufferSource();
+                this.source.buffer = this.buffer;
+                this.source.connect(this.panner);
+                this.panner.connect(feng3d.audioCtx.destination);
+                this.source.loop = this.loop;
+                this.source.start(0);
+            }
+        };
+        AudioSource.prototype.stop = function () {
+            if (this.source) {
+                this.source.stop(0);
+                this.source.disconnect(this.panner);
+                this.source = null;
+            }
+        };
+        AudioSource.prototype.onLoopChanged = function () { this.source && (this.source.loop = this.loop); };
+        ;
+        AudioSource.prototype.onConeInnerAngleChanged = function () { this.panner.coneInnerAngle && (this.panner.coneInnerAngle = this.coneInnerAngle); };
+        ;
+        AudioSource.prototype.onConeOuterAngleChanged = function () { this.panner.coneOuterAngle && (this.panner.coneOuterAngle = this.coneOuterAngle); };
+        ;
+        AudioSource.prototype.onConeOuterGainChanged = function () { this.panner.coneOuterGain && (this.panner.coneOuterGain = this.coneOuterGain); };
+        ;
+        AudioSource.prototype.onDistanceModelChanged = function () { this.panner.distanceModel && (this.panner.distanceModel = this.distanceModel); };
+        ;
+        AudioSource.prototype.onMaxDistanceChanged = function () { this.panner.maxDistance && (this.panner.maxDistance = this.maxDistance); };
+        ;
+        AudioSource.prototype.onPanningModelChanged = function () { this.panner.panningModel && (this.panner.panningModel = this.panningModel); };
+        ;
+        AudioSource.prototype.onRefDistanceChanged = function () { this.panner.refDistance && (this.panner.refDistance = this.refDistance); };
+        ;
+        AudioSource.prototype.onRolloffFactorChanged = function () { this.panner.rolloffFactor && (this.panner.rolloffFactor = this.rolloffFactor); };
+        ;
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("onUrlChanged")
+        ], AudioSource.prototype, "url", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("onLoopChanged")
+        ], AudioSource.prototype, "loop", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("onConeInnerAngleChanged")
+        ], AudioSource.prototype, "coneInnerAngle", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("onConeOuterAngleChanged")
+        ], AudioSource.prototype, "coneOuterAngle", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("onConeOuterGainChanged")
+        ], AudioSource.prototype, "coneOuterGain", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("onDistanceModelChanged")
+        ], AudioSource.prototype, "distanceModel", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("onMaxDistanceChanged")
+        ], AudioSource.prototype, "maxDistance", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("onPanningModelChanged")
+        ], AudioSource.prototype, "panningModel", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("onRefDistanceChanged")
+        ], AudioSource.prototype, "refDistance", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("onRolloffFactorChanged")
+        ], AudioSource.prototype, "rolloffFactor", void 0);
+        __decorate([
+            feng3d.oav()
+        ], AudioSource.prototype, "play", null);
+        __decorate([
+            feng3d.oav()
+        ], AudioSource.prototype, "stop", null);
+        return AudioSource;
+    }(feng3d.Component));
+    feng3d.AudioSource = AudioSource;
+})(feng3d || (feng3d = {}));
+function createPanner() {
+    var panner = this.panner = feng3d.audioCtx.createPanner();
+    panner.panningModel = 'HRTF';
+    panner.distanceModel = 'inverse';
+    panner.refDistance = 1;
+    panner.maxDistance = 10000;
+    panner.rolloffFactor = 1;
+    panner.coneInnerAngle = 360;
+    panner.coneOuterAngle = 0;
+    panner.coneOuterGain = 0;
+    if (panner.orientationX) {
+        panner.orientationX.value = 1;
+        panner.orientationY.value = 0;
+        panner.orientationZ.value = 0;
+    }
+    else {
+        panner.setOrientation(1, 0, 0);
+    }
+    return panner;
+}
 var feng3d;
 (function (feng3d) {
     /**

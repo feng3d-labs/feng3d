@@ -1,16 +1,36 @@
 namespace feng3d
 {
     export var audioCtx: AudioContext;
+    export var globalGain: GainNode;
 
     /**
      * 声音监听器
      */
-    export class AudioListener extends Component
+    export class AudioListener extends Behaviour
     {
+        // /**
+        //  * 是否监听中
+        //  */
+        // private isListening = true;
+
+        gain: GainNode;
+
+        @watch("enabledChanged")
+        enabled = true;
+
+        constructor()
+        {
+            super();
+            this.gain = audioCtx.createGain();
+            this.gain.connect(audioCtx.destination);
+            this.enabledChanged();
+        }
+
         init(gameObject: GameObject)
         {
             super.init(gameObject);
             this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
+            this.onScenetransformChanged();
         }
 
         private onScenetransformChanged()
@@ -28,6 +48,36 @@ namespace feng3d
             {
                 listener.setPosition(scenePosition.x, scenePosition.y, scenePosition.z);
             }
+        }
+
+        private enabledChanged()
+        {
+            if (!this.gain) return;
+            if (this.enabled)
+            {
+                globalGain.connect(this.gain);
+            } else
+            {
+                globalGain.disconnect(this.gain);
+            }
+
+            // if (this.isListening == this.enabled)
+            //     return;
+            // if (audioCtx.state === 'running')
+            // {
+            //     // 暂停
+            //     audioCtx.suspend().then(() =>
+            //     {
+            //         this.isListening = false;
+            //     });
+            // } else if (audioCtx.state === 'suspended')
+            // {
+            //     // 继续
+            //     audioCtx.resume().then(() =>
+            //     {
+            //         this.isListening = true;
+            //     });
+            // }
         }
     }
 }
@@ -52,7 +102,10 @@ interface AudioListener
     window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];
 
     var audioCtx = feng3d.audioCtx = new AudioContext();
+    var globalGain = feng3d.globalGain = audioCtx.createGain();
+    // globalGain.connect(audioCtx.destination);
     var listener = audioCtx.listener;
+    audioCtx.createGain();
     if (listener.forwardX)
     {
         listener.forwardX.value = 0;
