@@ -8,11 +8,6 @@ namespace feng3d
      */
     export class AudioListener extends Behaviour
     {
-        // /**
-        //  * 是否监听中
-        //  */
-        // private isListening = true;
-
         gain: GainNode;
 
         @watch("enabledChanged")
@@ -60,24 +55,6 @@ namespace feng3d
             {
                 globalGain.disconnect(this.gain);
             }
-
-            // if (this.isListening == this.enabled)
-            //     return;
-            // if (audioCtx.state === 'running')
-            // {
-            //     // 暂停
-            //     audioCtx.suspend().then(() =>
-            //     {
-            //         this.isListening = false;
-            //     });
-            // } else if (audioCtx.state === 'suspended')
-            // {
-            //     // 继续
-            //     audioCtx.resume().then(() =>
-            //     {
-            //         this.isListening = true;
-            //     });
-            // }
         }
     }
 }
@@ -102,8 +79,8 @@ interface AudioListener
     window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];
 
     var audioCtx = feng3d.audioCtx = new AudioContext();
-    var globalGain = feng3d.globalGain = audioCtx.createGain();
-    // globalGain.connect(audioCtx.destination);
+    feng3d.globalGain = audioCtx.createGain();
+    //
     var listener = audioCtx.listener;
     audioCtx.createGain();
     if (listener.forwardX)

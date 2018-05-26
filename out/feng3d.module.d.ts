@@ -1533,6 +1533,18 @@ declare namespace feng3d {
          */
         gif = "gif",
         /**
+         * mp3声音
+         */
+        mp3 = "mp3",
+        /**
+         * ogg声音
+         */
+        ogg = "ogg",
+        /**
+         * wav声音
+         */
+        wav = "wav",
+        /**
          * ts文件
          */
         ts = "ts",
@@ -9955,17 +9967,23 @@ declare namespace feng3d {
         private panner;
         private source;
         private buffer;
+        private gain;
         /**
          * 声音文件路径
          */
         url: string;
         loop: boolean;
+        private _loop;
+        /**
+         * 音量
+         */
+        volume: number;
         coneInnerAngle: number;
         coneOuterAngle: number;
         coneOuterGain: number;
         distanceModel: DistanceModelType;
         maxDistance: number;
-        panningModel: PanningModelType;
+        panningModel: "equalpower";
         refDistance: number;
         rolloffFactor: number;
         constructor();
@@ -9974,15 +9992,6 @@ declare namespace feng3d {
         private onUrlChanged();
         play(): void;
         stop(): void;
-        private onLoopChanged();
-        private onConeInnerAngleChanged();
-        private onConeOuterAngleChanged();
-        private onConeOuterGainChanged();
-        private onDistanceModelChanged();
-        private onMaxDistanceChanged();
-        private onPanningModelChanged();
-        private onRefDistanceChanged();
-        private onRolloffFactorChanged();
     }
 }
 interface PannerNode {

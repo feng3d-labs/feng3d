@@ -26,6 +26,18 @@ namespace feng3d
          */
         gif = "gif",
         /**
+         * mp3声音
+         */
+        mp3 = "mp3",
+        /**
+         * ogg声音
+         */
+        ogg = "ogg",
+        /**
+         * wav声音
+         */
+        wav = "wav",
+        /**
          * ts文件
          */
         ts = "ts",

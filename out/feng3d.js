@@ -3394,6 +3394,18 @@ var feng3d;
          */
         AssetExtension["gif"] = "gif";
         /**
+         * mp3声音
+         */
+        AssetExtension["mp3"] = "mp3";
+        /**
+         * ogg声音
+         */
+        AssetExtension["ogg"] = "ogg";
+        /**
+         * wav声音
+         */
+        AssetExtension["wav"] = "wav";
+        /**
          * ts文件
          */
         AssetExtension["ts"] = "ts";
@@ -19400,23 +19412,6 @@ var feng3d;
             else {
                 feng3d.globalGain.disconnect(this.gain);
             }
-            // if (this.isListening == this.enabled)
-            //     return;
-            // if (audioCtx.state === 'running')
-            // {
-            //     // 暂停
-            //     audioCtx.suspend().then(() =>
-            //     {
-            //         this.isListening = false;
-            //     });
-            // } else if (audioCtx.state === 'suspended')
-            // {
-            //     // 继续
-            //     audioCtx.resume().then(() =>
-            //     {
-            //         this.isListening = true;
-            //     });
-            // }
         };
         __decorate([
             feng3d.watch("enabledChanged")
@@ -19428,8 +19423,8 @@ var feng3d;
 (function () {
     window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];
     var audioCtx = feng3d.audioCtx = new AudioContext();
-    var globalGain = feng3d.globalGain = audioCtx.createGain();
-    // globalGain.connect(audioCtx.destination);
+    feng3d.globalGain = audioCtx.createGain();
+    //
     var listener = audioCtx.listener;
     audioCtx.createGain();
     if (listener.forwardX) {
@@ -19453,22 +19448,122 @@ var feng3d;
         __extends(AudioSource, _super);
         function AudioSource() {
             var _this = _super.call(this) || this;
-            _this.panner = createPanner();
             /**
              * 声音文件路径
              */
             _this.url = "";
-            _this.loop = true;
-            _this.coneInnerAngle = 360;
-            _this.coneOuterAngle = 0;
-            _this.coneOuterGain = 0;
-            _this.distanceModel = 'inverse';
-            _this.maxDistance = 10000;
-            _this.panningModel = 'HRTF';
-            _this.refDistance = 1;
-            _this.rolloffFactor = 1;
+            _this._loop = true;
+            _this.panner = createPanner();
+            _this.gain = feng3d.audioCtx.createGain();
+            _this.gain.connect(feng3d.globalGain);
+            _this.panner.connect(_this.gain);
             return _this;
         }
+        Object.defineProperty(AudioSource.prototype, "loop", {
+            get: function () {
+                return this._loop;
+            },
+            set: function (v) {
+                this._loop = v;
+                if (this.source)
+                    this.source.loop = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AudioSource.prototype, "volume", {
+            /**
+             * 音量
+             */
+            get: function () {
+                return this.gain.gain.value;
+            },
+            set: function (v) {
+                this.gain.gain.setTargetAtTime(v, feng3d.audioCtx.currentTime, 0.01);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AudioSource.prototype, "coneInnerAngle", {
+            get: function () {
+                return this.panner.coneInnerAngle;
+            },
+            set: function (v) {
+                this.panner.coneInnerAngle = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AudioSource.prototype, "coneOuterAngle", {
+            get: function () {
+                return this.panner.coneOuterAngle;
+            },
+            set: function (v) {
+                this.panner.coneOuterAngle = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AudioSource.prototype, "coneOuterGain", {
+            get: function () {
+                return this.panner.coneOuterGain;
+            },
+            set: function (v) {
+                this.panner.coneOuterGain = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AudioSource.prototype, "distanceModel", {
+            get: function () {
+                return this.panner.distanceModel;
+            },
+            set: function (v) {
+                this.panner.distanceModel = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AudioSource.prototype, "maxDistance", {
+            get: function () {
+                return this.panner.maxDistance;
+            },
+            set: function (v) {
+                this.panner.maxDistance = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AudioSource.prototype, "panningModel", {
+            get: function () {
+                return this.panner.panningModel;
+            },
+            set: function (v) {
+                this.panner.panningModel = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AudioSource.prototype, "refDistance", {
+            get: function () {
+                return this.panner.refDistance;
+            },
+            set: function (v) {
+                this.panner.refDistance = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AudioSource.prototype, "rolloffFactor", {
+            get: function () {
+                return this.panner.rolloffFactor;
+            },
+            set: function (v) {
+                this.panner.rolloffFactor = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         AudioSource.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
             this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
@@ -19510,7 +19605,6 @@ var feng3d;
                 this.source = feng3d.audioCtx.createBufferSource();
                 this.source.buffer = this.buffer;
                 this.source.connect(this.panner);
-                this.panner.connect(feng3d.audioCtx.destination);
                 this.source.loop = this.loop;
                 this.source.start(0);
             }
@@ -19522,74 +19616,51 @@ var feng3d;
                 this.source = null;
             }
         };
-        AudioSource.prototype.onLoopChanged = function () { this.source && (this.source.loop = this.loop); };
-        ;
-        AudioSource.prototype.onConeInnerAngleChanged = function () { this.panner.coneInnerAngle && (this.panner.coneInnerAngle = this.coneInnerAngle); };
-        ;
-        AudioSource.prototype.onConeOuterAngleChanged = function () { this.panner.coneOuterAngle && (this.panner.coneOuterAngle = this.coneOuterAngle); };
-        ;
-        AudioSource.prototype.onConeOuterGainChanged = function () { this.panner.coneOuterGain && (this.panner.coneOuterGain = this.coneOuterGain); };
-        ;
-        AudioSource.prototype.onDistanceModelChanged = function () { this.panner.distanceModel && (this.panner.distanceModel = this.distanceModel); };
-        ;
-        AudioSource.prototype.onMaxDistanceChanged = function () { this.panner.maxDistance && (this.panner.maxDistance = this.maxDistance); };
-        ;
-        AudioSource.prototype.onPanningModelChanged = function () { this.panner.panningModel && (this.panner.panningModel = this.panningModel); };
-        ;
-        AudioSource.prototype.onRefDistanceChanged = function () { this.panner.refDistance && (this.panner.refDistance = this.refDistance); };
-        ;
-        AudioSource.prototype.onRolloffFactorChanged = function () { this.panner.rolloffFactor && (this.panner.rolloffFactor = this.rolloffFactor); };
-        ;
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "audio" } }),
             feng3d.watch("onUrlChanged")
         ], AudioSource.prototype, "url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("onLoopChanged")
-        ], AudioSource.prototype, "loop", void 0);
+            feng3d.oav()
+        ], AudioSource.prototype, "loop", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("onConeInnerAngleChanged")
-        ], AudioSource.prototype, "coneInnerAngle", void 0);
+            feng3d.oav()
+        ], AudioSource.prototype, "volume", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("onConeOuterAngleChanged")
-        ], AudioSource.prototype, "coneOuterAngle", void 0);
+            feng3d.oav()
+        ], AudioSource.prototype, "coneInnerAngle", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("onConeOuterGainChanged")
-        ], AudioSource.prototype, "coneOuterGain", void 0);
+            feng3d.oav()
+        ], AudioSource.prototype, "coneOuterAngle", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("onDistanceModelChanged")
-        ], AudioSource.prototype, "distanceModel", void 0);
+            feng3d.oav()
+        ], AudioSource.prototype, "coneOuterGain", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("onMaxDistanceChanged")
-        ], AudioSource.prototype, "maxDistance", void 0);
+            feng3d.oav()
+        ], AudioSource.prototype, "distanceModel", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("onPanningModelChanged")
-        ], AudioSource.prototype, "panningModel", void 0);
+            feng3d.oav()
+        ], AudioSource.prototype, "maxDistance", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("onRefDistanceChanged")
-        ], AudioSource.prototype, "refDistance", void 0);
+            feng3d.oav()
+        ], AudioSource.prototype, "panningModel", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("onRolloffFactorChanged")
-        ], AudioSource.prototype, "rolloffFactor", void 0);
+            feng3d.oav()
+        ], AudioSource.prototype, "refDistance", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], AudioSource.prototype, "rolloffFactor", null);
         __decorate([
             feng3d.oav()
         ], AudioSource.prototype, "play", null);
