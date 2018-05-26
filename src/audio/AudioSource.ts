@@ -38,107 +38,135 @@ namespace feng3d
         @oav()
         get volume()
         {
-            return this.gain.gain.value;
+            return this._volume;
         }
         set volume(v)
         {
+            this._volume = v;
             this.gain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
         }
+        private _volume: number;
 
         @serialize
         @oav()
         get coneInnerAngle()
         {
-            return this.panner.coneInnerAngle;
+            return this._coneInnerAngle;
         }
         set coneInnerAngle(v)
         {
+            this._coneInnerAngle = v;
             this.panner.coneInnerAngle = v;
         }
+        private _coneInnerAngle: number;
 
         @serialize
         @oav()
         get coneOuterAngle()
         {
-            return this.panner.coneOuterAngle;
+            return this._coneOuterAngle;
         }
         set coneOuterAngle(v)
         {
+            this._coneOuterAngle = v;
             this.panner.coneOuterAngle = v;
         }
+        private _coneOuterAngle: number;
 
         @serialize
         @oav()
         get coneOuterGain()
         {
-            return this.panner.coneOuterGain;
+            return this._coneOuterGain;
         }
         set coneOuterGain(v)
         {
+            this._coneOuterGain = v;
             this.panner.coneOuterGain = v;
         }
+        private _coneOuterGain: number;
 
         @serialize
         @oav()
         get distanceModel()
         {
-            return this.panner.distanceModel;
+            return this._distanceModel;
         }
         set distanceModel(v)
         {
+            this._distanceModel = v;
             this.panner.distanceModel = v;
         }
+        private _distanceModel: DistanceModelType;
 
         @serialize
         @oav()
         get maxDistance()
         {
-            return this.panner.maxDistance;
+            return this._maxDistance;
         }
         set maxDistance(v)
         {
+            this._maxDistance = v;
             this.panner.maxDistance = v;
         }
+        private _maxDistance: number;
 
         @serialize
         @oav()
         get panningModel()
         {
-            return this.panner.panningModel;
+            return this._panningModel;
         }
         set panningModel(v)
         {
+            this._panningModel = v;
             this.panner.panningModel = v;
         }
+        private _panningModel: PanningModelType;
 
         @serialize
         @oav()
         get refDistance()
         {
-            return this.panner.refDistance;
+            return this._refDistance;
         }
         set refDistance(v)
         {
+            this._refDistance = v;
             this.panner.refDistance = v;
         }
+        private _refDistance: number;
 
         @serialize
         @oav()
         get rolloffFactor()
         {
-            return this.panner.rolloffFactor;
+            return this._rolloffFactor;
         }
         set rolloffFactor(v)
         {
+            this._rolloffFactor = v;
             this.panner.rolloffFactor = v;
         }
+        private _rolloffFactor: number;
 
         constructor()
         {
             super();
             this.panner = createPanner();
+            this.panningModel = <any>'HRTF';
+            this.distanceModel = 'inverse';
+            this.refDistance = 1;
+            this.maxDistance = 10000;
+            this.rolloffFactor = 1;
+            this.coneInnerAngle = 360;
+            this.coneOuterAngle = 0;
+            this.coneOuterGain = 0;
+            //
             this.gain = audioCtx.createGain();
-
+            this.volume = 1;
+            //
             this.gain.connect(globalGain);
             this.panner.connect(this.gain);
         }
@@ -230,14 +258,6 @@ interface PannerNode
 function createPanner()
 {
     var panner = this.panner = feng3d.audioCtx.createPanner();
-    panner.panningModel = <any>'HRTF';
-    panner.distanceModel = 'inverse';
-    panner.refDistance = 1;
-    panner.maxDistance = 10000;
-    panner.rolloffFactor = 1;
-    panner.coneInnerAngle = 360;
-    panner.coneOuterAngle = 0;
-    panner.coneOuterGain = 0;
 
     if (panner.orientationX)
     {

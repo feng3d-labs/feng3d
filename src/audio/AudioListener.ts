@@ -13,6 +13,22 @@ namespace feng3d
         @watch("enabledChanged")
         enabled = true;
 
+        /**
+         * 音量
+         */
+        @serialize
+        @oav()
+        get volume()
+        {
+            return this._volume;
+        }
+        set volume(v)
+        {
+            this._volume = v;
+            this.gain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
+        }
+        private _volume = 1;
+
         constructor()
         {
             super();
@@ -79,7 +95,12 @@ interface AudioListener
     window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];
 
     var audioCtx = feng3d.audioCtx = new AudioContext();
-    feng3d.globalGain = audioCtx.createGain();
+    var globalGain = feng3d.globalGain = audioCtx.createGain();
+    // 新增无音Gain，避免没有AudioListener组件时暂停声音播放进度
+    var zeroGain = audioCtx.createGain();
+    zeroGain.connect(audioCtx.destination);
+    globalGain.connect(zeroGain);
+    zeroGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
     //
     var listener = audioCtx.listener;
     audioCtx.createGain();

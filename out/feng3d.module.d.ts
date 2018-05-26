@@ -9924,6 +9924,11 @@ declare namespace feng3d {
     class AudioListener extends Behaviour {
         gain: GainNode;
         enabled: boolean;
+        /**
+         * 音量
+         */
+        volume: number;
+        private _volume;
         constructor();
         init(gameObject: GameObject): void;
         private onScenetransformChanged();
@@ -9978,14 +9983,23 @@ declare namespace feng3d {
          * 音量
          */
         volume: number;
+        private _volume;
         coneInnerAngle: number;
+        private _coneInnerAngle;
         coneOuterAngle: number;
+        private _coneOuterAngle;
         coneOuterGain: number;
+        private _coneOuterGain;
         distanceModel: DistanceModelType;
+        private _distanceModel;
         maxDistance: number;
+        private _maxDistance;
         panningModel: "equalpower";
+        private _panningModel;
         refDistance: number;
+        private _refDistance;
         rolloffFactor: number;
+        private _rolloffFactor;
         constructor();
         init(gameObject: GameObject): void;
         private onScenetransformChanged();
