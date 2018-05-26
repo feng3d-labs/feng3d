@@ -1,24 +1,5 @@
 namespace feng3d
 {
-    export interface ComponentRawMap
-    {
-        TransformRaw: TransformRaw
-    }
-
-    export interface TransformRaw
-    {
-        __class__?: "feng3d.Transform";
-        rx?: number;
-        ry?: number;
-        rz?: number;
-        sx?: number;
-        sy?: number;
-        sz?: number;
-        x?: number;
-        y?: number;
-        z?: number;
-    }
-
     export interface TransformEventMap
     {
         /**

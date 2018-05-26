@@ -187,6 +187,9 @@
         "src/controllers/FPSController.ts",
         //拾取
         "src/pick/Raycaster.ts",
+        // 声音
+        "src/audio/AudioListener.ts",
+        "src/audio/AudioSource.ts",
         //地形
         "src/terrain/TerrainGeometry.ts",
         "src/terrain/TerrainMaterial.ts",
