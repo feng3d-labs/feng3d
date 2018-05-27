@@ -13,7 +13,7 @@ namespace feng3d
         @oav()
         @serialize
         @watch("invalidate")
-        enable = true;
+        enabled = true;
 
         /**
          * 数据是否变脏

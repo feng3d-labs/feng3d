@@ -62,7 +62,7 @@ namespace feng3d
          * 粒子状态控制模块列表
          */
         @serialize
-        @oav({ block: "粒子模块", component: "OAVObjectView" })
+        @oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         readonly components = [
             new ParticleEmission(),
             new ParticlePosition(),

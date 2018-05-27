@@ -20400,7 +20400,7 @@ var feng3d;
             /**
              * 是否开启
              */
-            this.enable = true;
+            this.enabled = true;
             /**
              * 数据是否变脏
              */
@@ -20425,7 +20425,7 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize,
             feng3d.watch("invalidate")
-        ], ParticleComponent.prototype, "enable", void 0);
+        ], ParticleComponent.prototype, "enabled", void 0);
         return ParticleComponent;
     }());
     feng3d.ParticleComponent = ParticleComponent;
@@ -20586,7 +20586,7 @@ var feng3d;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         ParticleBillboard.prototype.setRenderState = function (particleSystem) {
-            if (this.camera && this.enable) {
+            if (this.camera && this.enabled) {
                 if (this.billboardAxis)
                     this.billboardAxis.normalize();
                 var _matrix = new feng3d.Matrix4x4;
@@ -20800,7 +20800,7 @@ var feng3d;
         ], ParticleSystem.prototype, "particleGlobal", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "粒子模块", component: "OAVObjectView" })
+            feng3d.oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         ], ParticleSystem.prototype, "components", void 0);
         return ParticleSystem;
     }(feng3d.MeshRenderer));

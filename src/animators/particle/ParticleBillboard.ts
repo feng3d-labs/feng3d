@@ -12,7 +12,7 @@ namespace feng3d
 
         setRenderState(particleSystem: ParticleSystem)
         {
-            if (this.camera && this.enable)
+            if (this.camera && this.enabled)
             {
                 if (this.billboardAxis)
                     this.billboardAxis.normalize();

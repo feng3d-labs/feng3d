@@ -10332,7 +10332,7 @@ declare namespace feng3d {
         /**
          * 是否开启
          */
-        enable: boolean;
+        enabled: boolean;
         /**
          * 数据是否变脏
          */
