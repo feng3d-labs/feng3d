@@ -44,25 +44,19 @@ namespace feng3d
         cycle = 10000;
 
         /**
-         * 生成粒子函数列表，优先级越高先执行
-         */
-        @serialize
-        generateFunctions: ({ generate: (particle: Particle, particleSystem: ParticleSystem) => void, priority: number })[] = [];
-
-        /**
          * 属性数据列表
          */
         private _attributes: { [name: string]: number[] } = {};
 
         @serialize
         @oav()
-        readonly animations = {
-            emission: new ParticleEmission(),
-            position: new ParticlePosition(),
-            velocity: new ParticleVelocity(),
-            color: new ParticleColor(),
-            billboard: new ParticleBillboard(),
-        };
+        readonly animations = [
+            new ParticleEmission(),
+            new ParticlePosition(),
+            new ParticleVelocity(),
+            new ParticleColor(),
+            new ParticleBillboard(),
+        ];
 
         /**
          * 粒子全局属性
@@ -101,14 +95,10 @@ namespace feng3d
 
         private updateRenderState()
         {
-            for (const key in this.animations)
+            this.animations.forEach(element =>
             {
-                if (this.animations.hasOwnProperty(key))
-                {
-                    const element: ParticleComponent = this.animations[key];
-                    element.setRenderState(this);
-                }
-            }
+                element.setRenderState(this);
+            });
 
             if (this._isDirty)
             {
@@ -127,30 +117,16 @@ namespace feng3d
          */
         private generateParticles()
         {
-            var generateFunctions = this.generateFunctions.concat();
-
             this._attributes = {};
 
-            for (const key in this.animations)
-            {
-                if (this.animations.hasOwnProperty(key))
-                {
-                    const element: ParticleComponent = this.animations[key];
-                    if (element.enable)
-                        generateFunctions.push({ generate: element.generateParticle.bind(element), priority: element.priority });
-                }
-            }
-
-            //按优先级排序，优先级越高先执行
-            generateFunctions.sort((a: { priority: number; }, b: { priority: number; }) => { return b.priority - a.priority; })
             //
             for (var i = 0; i < this.numParticles; i++)
             {
                 var particle = new Particle();
                 particle.index = i;
-                generateFunctions.forEach(element =>
+                this.animations.forEach(element =>
                 {
-                    element.generate(particle, this);
+                    element.generateParticle(particle, this);
                 });
                 this.collectionParticle(particle);
             }

@@ -20605,20 +20605,16 @@ var feng3d;
              */
             _this.cycle = 10000;
             /**
-             * 生成粒子函数列表，优先级越高先执行
-             */
-            _this.generateFunctions = [];
-            /**
              * 属性数据列表
              */
             _this._attributes = {};
-            _this.animations = {
-                emission: new feng3d.ParticleEmission(),
-                position: new feng3d.ParticlePosition(),
-                velocity: new feng3d.ParticleVelocity(),
-                color: new feng3d.ParticleColor(),
-                billboard: new feng3d.ParticleBillboard(),
-            };
+            _this.animations = [
+                new feng3d.ParticleEmission(),
+                new feng3d.ParticlePosition(),
+                new feng3d.ParticleVelocity(),
+                new feng3d.ParticleColor(),
+                new feng3d.ParticleBillboard(),
+            ];
             /**
              * 粒子全局属性
              */
@@ -20646,12 +20642,10 @@ var feng3d;
             this.updateRenderState();
         };
         ParticleSystem.prototype.updateRenderState = function () {
-            for (var key in this.animations) {
-                if (this.animations.hasOwnProperty(key)) {
-                    var element = this.animations[key];
-                    element.setRenderState(this);
-                }
-            }
+            var _this = this;
+            this.animations.forEach(function (element) {
+                element.setRenderState(_this);
+            });
             if (this._isDirty) {
                 this.generateParticles();
                 this._isDirty = false;
@@ -20665,23 +20659,13 @@ var feng3d;
          */
         ParticleSystem.prototype.generateParticles = function () {
             var _this = this;
-            var generateFunctions = this.generateFunctions.concat();
             this._attributes = {};
-            for (var key in this.animations) {
-                if (this.animations.hasOwnProperty(key)) {
-                    var element = this.animations[key];
-                    if (element.enable)
-                        generateFunctions.push({ generate: element.generateParticle.bind(element), priority: element.priority });
-                }
-            }
-            //按优先级排序，优先级越高先执行
-            generateFunctions.sort(function (a, b) { return b.priority - a.priority; });
             //
             for (var i = 0; i < this.numParticles; i++) {
                 var particle = new feng3d.Particle();
                 particle.index = i;
-                generateFunctions.forEach(function (element) {
-                    element.generate(particle, _this);
+                this.animations.forEach(function (element) {
+                    element.generateParticle(particle, _this);
                 });
                 this.collectionParticle(particle);
             }
@@ -20775,9 +20759,6 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], ParticleSystem.prototype, "cycle", void 0);
-        __decorate([
-            feng3d.serialize
-        ], ParticleSystem.prototype, "generateFunctions", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav()

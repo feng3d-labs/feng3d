@@ -10437,23 +10437,10 @@ declare namespace feng3d {
          */
         cycle: number;
         /**
-         * 生成粒子函数列表，优先级越高先执行
-         */
-        generateFunctions: ({
-            generate: (particle: Particle, particleSystem: ParticleSystem) => void;
-            priority: number;
-        })[];
-        /**
          * 属性数据列表
          */
         private _attributes;
-        readonly animations: {
-            emission: ParticleEmission;
-            position: ParticlePosition;
-            velocity: ParticleVelocity;
-            color: ParticleColor;
-            billboard: ParticleBillboard;
-        };
+        readonly animations: ParticlePosition[];
         /**
          * 粒子全局属性
          */
