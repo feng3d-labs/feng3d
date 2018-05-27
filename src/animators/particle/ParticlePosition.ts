@@ -10,7 +10,7 @@ namespace feng3d
 		 * 创建粒子属性
          * @param particle                  粒子
 		 */
-        generateParticle(particle: Particle)
+        generateParticle(particle: Particle, particleSystem: ParticleSystem)
         {
             var baseRange = 1;
             var x = (Math.random() - 0.5) * baseRange;

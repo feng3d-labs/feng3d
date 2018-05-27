@@ -16,11 +16,6 @@ namespace feng3d
 		index = 0;
 
 		/**
-		 * 粒子总数量
-		 */
-		total = 1000;
-
-		/**
 		 * 出生时间
 		 */
 		birthTime = 0;
@@ -43,7 +38,7 @@ namespace feng3d
 		/**
 		 * 缩放
 		 */
-		scalenew = new Vector3(1, 1, 1);
+		scale = new Vector3(1, 1, 1);
 
 		/**
 		 * 速度

@@ -10256,10 +10256,6 @@ declare namespace feng3d {
          */
         index: number;
         /**
-         * 粒子总数量
-         */
-        total: number;
-        /**
          * 出生时间
          */
         birthTime: number;
@@ -10278,7 +10274,7 @@ declare namespace feng3d {
         /**
          * 缩放
          */
-        scalenew: Vector3;
+        scale: Vector3;
         /**
          * 速度
          */
@@ -10334,7 +10330,7 @@ declare namespace feng3d {
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generateParticle(particle: Particle): void;
+        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
         setRenderState(particleSystem: ParticleSystem): void;
     }
 }
@@ -10363,7 +10359,7 @@ declare namespace feng3d {
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generateParticle(particle: Particle): void;
+        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
         /**
          * 获取出生时间数组
          */
@@ -10380,7 +10376,7 @@ declare namespace feng3d {
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generateParticle(particle: Particle): void;
+        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
     }
 }
 declare namespace feng3d {
@@ -10393,7 +10389,7 @@ declare namespace feng3d {
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generateParticle(particle: Particle): void;
+        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
     }
 }
 declare namespace feng3d {
@@ -10406,7 +10402,7 @@ declare namespace feng3d {
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generateParticle(particle: Particle): void;
+        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
     }
 }
 declare namespace feng3d {
@@ -10448,7 +10444,7 @@ declare namespace feng3d {
          * 生成粒子函数列表，优先级越高先执行
          */
         generateFunctions: ({
-            generate: (particle: Particle) => void;
+            generate: (particle: Particle, particleSystem: ParticleSystem) => void;
             priority: number;
         })[];
         /**

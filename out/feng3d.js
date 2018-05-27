@@ -11738,7 +11738,7 @@ var feng3d;
             },
             "particle": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\nvarying vec4 v_particle_color;\r\n\r\nvec4 particleAnimation(vec4 color) {\r\n\r\n    return color * v_particle_color;\r\n}\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    finalColor = particleAnimation(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_PointSize;\r\n\r\n//\r\nattribute float a_particle_birthTime;\r\nattribute vec3 a_particle_position;\r\nattribute vec3 a_particle_velocity;\r\nattribute float a_particle_lifetime;\r\nattribute vec4 a_particle_color;\r\n\r\nvarying vec4 v_particle_color;\r\n\r\nuniform float u_particleTime;\r\nuniform vec3 u_particle_acceleration;\r\nuniform mat4 u_particle_billboardMatrix;\r\n\r\nvec4 particleAnimation(vec4 position) {\r\n\r\n    float pTime = u_particleTime - a_particle_birthTime;\r\n    if(pTime > 0.0){\r\n\r\n        pTime = mod(pTime,a_particle_lifetime);\r\n\r\n        vec3 pVelocity = vec3(0.0,0.0,0.0);\r\n\r\n        position = u_particle_billboardMatrix * position;\r\n        position.xyz = position.xyz + a_particle_position;\r\n        pVelocity = pVelocity + a_particle_velocity;\r\n        pVelocity = pVelocity + u_particle_acceleration * pTime;\r\n        v_particle_color = a_particle_color;\r\n\r\n        position.xyz = position.xyz + pVelocity * pTime;\r\n    }\r\n    \r\n    return position;\r\n}\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n    \r\n    position = particleAnimation(position);\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    gl_PointSize = u_PointSize;\r\n}"
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_PointSize;\r\n\r\n//\r\nattribute float a_particle_birthTime;\r\nattribute vec3 a_particle_position;\r\nattribute vec3 a_particle_velocity;\r\nattribute float a_particle_lifetime;\r\nattribute vec4 a_particle_color;\r\n\r\nvarying vec4 v_particle_color;\r\n\r\nuniform float u_particleTime;\r\n//\r\nuniform float u_particle_duration;\r\nuniform vec3 u_particle_acceleration;\r\nuniform mat4 u_particle_billboardMatrix;\r\n//\r\n\r\nvec4 particleAnimation(vec4 position) {\r\n\r\n    float pTime = u_particleTime - a_particle_birthTime;\r\n    if(pTime > 0.0){\r\n\r\n        pTime = mod(pTime,a_particle_lifetime);\r\n\r\n        vec3 pVelocity = vec3(0.0,0.0,0.0);\r\n\r\n        position = u_particle_billboardMatrix * position;\r\n        position.xyz = position.xyz + a_particle_position;\r\n        pVelocity = pVelocity + a_particle_velocity;\r\n        pVelocity = pVelocity + u_particle_acceleration * pTime;\r\n        v_particle_color = a_particle_color;\r\n\r\n        position.xyz = position.xyz + pVelocity * pTime;\r\n    }\r\n    \r\n    return position;\r\n}\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n    \r\n    position = particleAnimation(position);\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    gl_PointSize = u_PointSize;\r\n}"
             },
             "point": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec4 v_color;\r\nuniform vec4 u_color;\r\n\r\nvoid main(void) {\r\n   \r\n    gl_FragColor = v_color * u_color;\r\n}\r\n",
@@ -20286,10 +20286,6 @@ var feng3d;
              */
             this.index = 0;
             /**
-             * 粒子总数量
-             */
-            this.total = 1000;
-            /**
              * 出生时间
              */
             this.birthTime = 0;
@@ -20308,7 +20304,7 @@ var feng3d;
             /**
              * 缩放
              */
-            this.scalenew = new feng3d.Vector3(1, 1, 1);
+            this.scale = new feng3d.Vector3(1, 1, 1);
             /**
              * 速度
              */
@@ -20385,7 +20381,7 @@ var feng3d;
          * 创建粒子属性
          * @param particle                  粒子
          */
-        ParticleComponent.prototype.generateParticle = function (particle) {
+        ParticleComponent.prototype.generateParticle = function (particle, particleSystem) {
         };
         ParticleComponent.prototype.setRenderState = function (particleSystem) {
             if (this.isDirty) {
@@ -20432,11 +20428,11 @@ var feng3d;
          * 创建粒子属性
          * @param particle                  粒子
          */
-        ParticleEmission.prototype.generateParticle = function (particle) {
-            if (this._numParticles != particle.total)
+        ParticleEmission.prototype.generateParticle = function (particle, particleSystem) {
+            if (this._numParticles != particleSystem.numParticles)
                 this.isDirty = true;
-            this._numParticles = particle.total;
-            particle.birthTime = this.getBirthTimeArray(particle.total)[particle.index];
+            this._numParticles = particleSystem.numParticles;
+            particle.birthTime = this.getBirthTimeArray(particleSystem.numParticles)[particle.index];
         };
         /**
          * 获取出生时间数组
@@ -20495,7 +20491,7 @@ var feng3d;
          * 创建粒子属性
          * @param particle                  粒子
          */
-        ParticlePosition.prototype.generateParticle = function (particle) {
+        ParticlePosition.prototype.generateParticle = function (particle, particleSystem) {
             var baseRange = 1;
             var x = (Math.random() - 0.5) * baseRange;
             var y = (Math.random() - 0.5) * baseRange;
@@ -20522,7 +20518,7 @@ var feng3d;
          * 创建粒子属性
          * @param particle                  粒子
          */
-        ParticleVelocity.prototype.generateParticle = function (particle) {
+        ParticleVelocity.prototype.generateParticle = function (particle, particleSystem) {
             var baseVelocity = 1;
             var x = (Math.random() - 0.5) * baseVelocity;
             var y = baseVelocity;
@@ -20548,8 +20544,8 @@ var feng3d;
          * 创建粒子属性
          * @param particle                  粒子
          */
-        ParticleColor.prototype.generateParticle = function (particle) {
-            particle.color = new feng3d.Color4(1, 0, 0, 1).mix(new feng3d.Color4(0, 1, 0, 1), particle.index / particle.total);
+        ParticleColor.prototype.generateParticle = function (particle, particleSystem) {
+            particle.color = new feng3d.Color4(1, 0, 0, 1).mix(new feng3d.Color4(0, 1, 0, 1), particle.index / particleSystem.numParticles);
         };
         return ParticleColor;
     }(feng3d.ParticleComponent));
@@ -20668,6 +20664,7 @@ var feng3d;
          * 生成粒子
          */
         ParticleSystem.prototype.generateParticles = function () {
+            var _this = this;
             var generateFunctions = this.generateFunctions.concat();
             this._attributes = {};
             for (var key in this.animations) {
@@ -20683,9 +20680,8 @@ var feng3d;
             for (var i = 0; i < this.numParticles; i++) {
                 var particle = new feng3d.Particle();
                 particle.index = i;
-                particle.total = this.numParticles;
                 generateFunctions.forEach(function (element) {
-                    element.generate(particle);
+                    element.generate(particle, _this);
                 });
                 this.collectionParticle(particle);
             }
@@ -20709,7 +20705,6 @@ var feng3d;
             var attributeID = "a_particle_" + attribute;
             var data = particle[attribute];
             var index = particle.index;
-            var numParticles = particle.total;
             //
             var vector3DData;
             if (typeof data == "number") {

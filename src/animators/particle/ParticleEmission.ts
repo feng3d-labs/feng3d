@@ -36,13 +36,13 @@ namespace feng3d
 		 * 创建粒子属性
          * @param particle                  粒子
 		 */
-        generateParticle(particle: Particle)
+        generateParticle(particle: Particle, particleSystem: ParticleSystem)
         {
-            if (this._numParticles != particle.total)
+            if (this._numParticles != particleSystem.numParticles)
                 this.isDirty = true;
-            this._numParticles = particle.total;
+            this._numParticles = particleSystem.numParticles;
 
-            particle.birthTime = this.getBirthTimeArray(particle.total)[particle.index];
+            particle.birthTime = this.getBirthTimeArray(particleSystem.numParticles)[particle.index];
         }
 
         /**

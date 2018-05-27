@@ -10,9 +10,9 @@ namespace feng3d
 		 * 创建粒子属性
          * @param particle                  粒子
 		 */
-        generateParticle(particle: Particle)
+        generateParticle(particle: Particle, particleSystem: ParticleSystem)
         {
-            particle.color = new Color4(1, 0, 0, 1).mix(new Color4(0, 1, 0, 1), particle.index / particle.total);
+            particle.color = new Color4(1, 0, 0, 1).mix(new Color4(0, 1, 0, 1), particle.index / particleSystem.numParticles);
         }
     }
 }

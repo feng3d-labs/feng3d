@@ -47,7 +47,7 @@ namespace feng3d
          * 生成粒子函数列表，优先级越高先执行
          */
         @serialize
-        generateFunctions: ({ generate: (particle: Particle) => void, priority: number })[] = [];
+        generateFunctions: ({ generate: (particle: Particle, particleSystem: ParticleSystem) => void, priority: number })[] = [];
 
         /**
          * 属性数据列表
@@ -148,10 +148,9 @@ namespace feng3d
             {
                 var particle = new Particle();
                 particle.index = i;
-                particle.total = this.numParticles;
                 generateFunctions.forEach(element =>
                 {
-                    element.generate(particle);
+                    element.generate(particle, this);
                 });
                 this.collectionParticle(particle);
             }
@@ -180,7 +179,6 @@ namespace feng3d
             var attributeID = "a_particle_" + attribute;
             var data = particle[attribute];
             var index = particle.index;
-            var numParticles = particle.total;
             //
             var vector3DData: number[];
             if (typeof data == "number")
