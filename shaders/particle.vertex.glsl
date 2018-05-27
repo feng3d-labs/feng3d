@@ -27,6 +27,7 @@ uniform float u_particleTime;
 uniform vec3 u_particle_position;
 uniform vec3 u_particle_velocity;
 uniform vec3 u_particle_acceleration;
+uniform vec4 u_particle_color;
 uniform mat4 u_particle_billboardMatrix;
 
 vec3 particleAnimation(vec3 position) {
@@ -49,7 +50,7 @@ vec3 particleAnimation(vec3 position) {
         position.xyz = position.xyz + pVelocity * pTime;
 
         // 颜色
-        v_particle_color = a_particle_color;
+        v_particle_color = a_particle_color * u_particle_color;
     }
     
     return position;

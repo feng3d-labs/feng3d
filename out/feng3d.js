@@ -11738,7 +11738,7 @@ var feng3d;
             },
             "particle": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\nvarying vec4 v_particle_color;\r\n\r\nvec4 particleAnimation(vec4 color) {\r\n\r\n    return color * v_particle_color;\r\n}\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    finalColor = particleAnimation(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_PointSize;\r\n\r\n//\r\nattribute float a_particle_birthTime;\r\nattribute vec3 a_particle_position;\r\nattribute vec3 a_particle_velocity;\r\nattribute vec3 a_particle_acceleration;\r\nattribute float a_particle_lifetime;\r\nattribute vec4 a_particle_color;\r\n\r\nvarying vec4 v_particle_color;\r\n\r\nuniform float u_particleTime;\r\nuniform vec3 u_particle_position;\r\nuniform vec3 u_particle_velocity;\r\nuniform vec3 u_particle_acceleration;\r\nuniform mat4 u_particle_billboardMatrix;\r\n\r\nvec3 particleAnimation(vec3 position) {\r\n\r\n    float pTime = u_particleTime - a_particle_birthTime;\r\n    if(pTime > 0.0){\r\n        // 当前时间\r\n        pTime = mod(pTime,a_particle_lifetime);\r\n\r\n        // 加速度\r\n        vec3 acceleration = a_particle_acceleration + u_particle_acceleration;\r\n\r\n        // 速度\r\n        vec3 pVelocity = a_particle_velocity + u_particle_velocity;\r\n        pVelocity = pVelocity + acceleration * pTime;\r\n\r\n        // 位移\r\n        position = (u_particle_billboardMatrix * vec4(position,1.0)).xyz;\r\n        position.xyz = position.xyz + a_particle_position + u_particle_position;\r\n        position.xyz = position.xyz + pVelocity * pTime;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n    }\r\n    \r\n    return position;\r\n}\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n    \r\n    position.xyz = particleAnimation(position.xyz);\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    gl_PointSize = u_PointSize;\r\n}"
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_PointSize;\r\n\r\n//\r\nattribute float a_particle_birthTime;\r\nattribute vec3 a_particle_position;\r\nattribute vec3 a_particle_velocity;\r\nattribute vec3 a_particle_acceleration;\r\nattribute float a_particle_lifetime;\r\nattribute vec4 a_particle_color;\r\n\r\nvarying vec4 v_particle_color;\r\n\r\nuniform float u_particleTime;\r\nuniform vec3 u_particle_position;\r\nuniform vec3 u_particle_velocity;\r\nuniform vec3 u_particle_acceleration;\r\nuniform vec4 u_particle_color;\r\nuniform mat4 u_particle_billboardMatrix;\r\n\r\nvec3 particleAnimation(vec3 position) {\r\n\r\n    float pTime = u_particleTime - a_particle_birthTime;\r\n    if(pTime > 0.0){\r\n        // 当前时间\r\n        pTime = mod(pTime,a_particle_lifetime);\r\n\r\n        // 加速度\r\n        vec3 acceleration = a_particle_acceleration + u_particle_acceleration;\r\n\r\n        // 速度\r\n        vec3 pVelocity = a_particle_velocity + u_particle_velocity;\r\n        pVelocity = pVelocity + acceleration * pTime;\r\n\r\n        // 位移\r\n        position = (u_particle_billboardMatrix * vec4(position,1.0)).xyz;\r\n        position.xyz = position.xyz + a_particle_position + u_particle_position;\r\n        position.xyz = position.xyz + pVelocity * pTime;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color * u_particle_color;\r\n    }\r\n    \r\n    return position;\r\n}\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n    \r\n    position.xyz = particleAnimation(position.xyz);\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 globalPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * globalPosition;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    gl_PointSize = u_PointSize;\r\n}"
             },
             "point": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec4 v_color;\r\nuniform vec4 u_color;\r\n\r\nvoid main(void) {\r\n   \r\n    gl_FragColor = v_color * u_color;\r\n}\r\n",
@@ -20357,6 +20357,10 @@ var feng3d;
              */
             this.acceleration = new feng3d.Vector3();
             /**
+             * 颜色
+             */
+            this.color = new feng3d.Color4();
+            /**
              * 公告牌矩阵
              */
             // @oav()
@@ -20374,6 +20378,10 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], ParticleGlobal.prototype, "acceleration", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], ParticleGlobal.prototype, "color", void 0);
         __decorate([
             feng3d.serialize
         ], ParticleGlobal.prototype, "billboardMatrix", void 0);

@@ -10314,6 +10314,10 @@ declare namespace feng3d {
          */
         acceleration: Vector3;
         /**
+         * 颜色
+         */
+        color: Color4;
+        /**
          * 公告牌矩阵
          */
         billboardMatrix: Matrix4x4;

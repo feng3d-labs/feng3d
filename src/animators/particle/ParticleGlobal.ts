@@ -42,6 +42,13 @@ namespace feng3d
         @oav()
         @serialize
         acceleration = new Vector3();
+        
+		/**
+         * 颜色
+		 */
+        @oav()
+        @serialize
+		color = new Color4();
 
         /**
          * 公告牌矩阵
