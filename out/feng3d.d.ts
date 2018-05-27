@@ -10242,8 +10242,8 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 粒子
-     * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性,并且属性值不为空时会自动添加 "#define D_a_particle_${attribute}"
-     * 例如：position 对应 a_particle_position 与 #define D_a_particle_position
+     * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性"
+     * 例如：position 对应 a_particle_position
      * @author feng 2017-01-12
      */
     class Particle {
@@ -10266,11 +10266,9 @@ declare namespace feng3d {
         /**
          * 旋转
          */
-        rotation: Vector3;
         /**
          * 缩放
          */
-        scale: Vector3;
         /**
          * 速度
          */
@@ -10287,12 +10285,26 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子
-     * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性,并且属性值不为空时会自动添加 "#define D_a_particle_${attribute}"
-     * 例如：position 对应 a_particle_position 与 #define D_a_particle_position
+     * 粒子全局属性，作用于所有粒子
+     * 粒子系统会自动在shader中匹配一个"u_particle_${attribute}"uniform数据
+     * 例如：position 对应 u_particle_position
      * @author feng 2017-01-12
      */
     class ParticleGlobal {
+        /**
+         * 位移
+         */
+        position: Vector3;
+        /**
+         * 旋转
+         */
+        /**
+         * 缩放
+         */
+        /**
+         * 速度
+         */
+        velocity: Vector3;
         /**
          * 加速度
          */
