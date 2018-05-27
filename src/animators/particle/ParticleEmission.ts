@@ -29,7 +29,6 @@ namespace feng3d
         constructor()
         {
             super();
-            this.priority = Number.MAX_VALUE;
         }
 
         /**

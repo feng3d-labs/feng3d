@@ -16,13 +16,6 @@ namespace feng3d
         enable = true;
 
         /**
-         * 优先级
-         */
-        @oav()
-        @serialize
-        priority = 0;
-
-        /**
          * 数据是否变脏
          */
         isDirty = true;

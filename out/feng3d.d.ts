@@ -10326,10 +10326,6 @@ declare namespace feng3d {
          */
         enable: boolean;
         /**
-         * 优先级
-         */
-        priority: number;
-        /**
          * 数据是否变脏
          */
         isDirty: boolean;

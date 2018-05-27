@@ -20394,10 +20394,6 @@ var feng3d;
              */
             this.enable = true;
             /**
-             * 优先级
-             */
-            this.priority = 0;
-            /**
              * 数据是否变脏
              */
             this.isDirty = true;
@@ -20422,10 +20418,6 @@ var feng3d;
             feng3d.serialize,
             feng3d.watch("invalidate")
         ], ParticleComponent.prototype, "enable", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], ParticleComponent.prototype, "priority", void 0);
         return ParticleComponent;
     }());
     feng3d.ParticleComponent = ParticleComponent;
@@ -20449,7 +20441,6 @@ var feng3d;
              */
             _this.bursts = [];
             _this.isDirty = true;
-            _this.priority = Number.MAX_VALUE;
             return _this;
         }
         /**
