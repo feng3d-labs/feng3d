@@ -20359,6 +20359,7 @@ var feng3d;
             /**
              * 公告牌矩阵
              */
+            // @oav()
             this.billboardMatrix = new feng3d.Matrix4x4();
         }
         __decorate([
@@ -20374,7 +20375,6 @@ var feng3d;
             feng3d.serialize
         ], ParticleGlobal.prototype, "acceleration", void 0);
         __decorate([
-            feng3d.oav(),
             feng3d.serialize
         ], ParticleGlobal.prototype, "billboardMatrix", void 0);
         return ParticleGlobal;
@@ -20631,7 +20631,10 @@ var feng3d;
              * 粒子全局属性
              */
             _this.particleGlobal = new feng3d.ParticleGlobal();
-            _this.animations = [
+            /**
+             * 粒子状态控制模块列表
+             */
+            _this.components = [
                 new feng3d.ParticleEmission(),
                 new feng3d.ParticlePosition(),
                 new feng3d.ParticleVelocity(),
@@ -20662,7 +20665,7 @@ var feng3d;
         };
         ParticleSystem.prototype.updateRenderState = function () {
             var _this = this;
-            this.animations.forEach(function (element) {
+            this.components.forEach(function (element) {
                 element.setRenderState(_this);
             });
             if (this._isDirty) {
@@ -20683,7 +20686,7 @@ var feng3d;
             for (var i = 0; i < this.numParticles; i++) {
                 var particle = new feng3d.Particle();
                 particle.index = i;
-                this.animations.forEach(function (element) {
+                this.components.forEach(function (element) {
                     element.generateParticle(particle, _this);
                 });
                 this.collectionParticle(particle);
@@ -20785,12 +20788,12 @@ var feng3d;
         ], ParticleSystem.prototype, "material", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ block: "全局属性", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "particleGlobal", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
-        ], ParticleSystem.prototype, "animations", void 0);
+            feng3d.oav({ block: "粒子模块", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "components", void 0);
         return ParticleSystem;
     }(feng3d.MeshRenderer));
     feng3d.ParticleSystem = ParticleSystem;

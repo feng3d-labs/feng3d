@@ -10456,7 +10456,10 @@ declare namespace feng3d {
          * 粒子全局属性
          */
         readonly particleGlobal: ParticleGlobal;
-        readonly animations: ParticlePosition[];
+        /**
+         * 粒子状态控制模块列表
+         */
+        readonly components: ParticlePosition[];
         /**
          * 属性数据列表
          */

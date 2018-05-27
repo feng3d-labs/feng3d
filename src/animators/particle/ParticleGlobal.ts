@@ -46,7 +46,7 @@ namespace feng3d
         /**
          * 公告牌矩阵
          */
-        @oav()
+        // @oav()
         @serialize
         billboardMatrix = new Matrix4x4();
     }

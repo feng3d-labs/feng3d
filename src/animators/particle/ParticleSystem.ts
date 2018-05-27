@@ -55,12 +55,15 @@ namespace feng3d
          * 粒子全局属性
          */
         @serialize
-        @oav()
+        @oav({ block: "全局属性", component: "OAVObjectView" })
         readonly particleGlobal = new ParticleGlobal();
 
+        /**
+         * 粒子状态控制模块列表
+         */
         @serialize
-        @oav()
-        readonly animations = [
+        @oav({ block: "粒子模块", component: "OAVObjectView" })
+        readonly components = [
             new ParticleEmission(),
             new ParticlePosition(),
             new ParticleVelocity(),
@@ -94,7 +97,7 @@ namespace feng3d
 
         private updateRenderState()
         {
-            this.animations.forEach(element =>
+            this.components.forEach(element =>
             {
                 element.setRenderState(this);
             });
@@ -123,7 +126,7 @@ namespace feng3d
             {
                 var particle = new Particle();
                 particle.index = i;
-                this.animations.forEach(element =>
+                this.components.forEach(element =>
                 {
                     element.generateParticle(particle, this);
                 });
