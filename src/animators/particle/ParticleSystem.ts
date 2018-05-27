@@ -8,14 +8,6 @@ namespace feng3d
     export class ParticleSystem extends MeshRenderer
     {
 
-        @oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } })
-        @serialize
-        geometry: Geometry = new PointGeometry();
-
-        @oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } })
-        @serialize
-        material: Material = materialFactory.create("particle", { renderParams: { renderMode: RenderMode.POINTS } });
-
         /**
          * 是否正在播放
          */
@@ -44,9 +36,27 @@ namespace feng3d
         cycle = 10000;
 
         /**
-         * 属性数据列表
+         * 粒子数量
          */
-        private _attributes: { [name: string]: number[] } = {};
+        @watch("invalidate")
+        @oav()
+        @serialize
+        numParticles = 1000;
+
+        @oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } })
+        @serialize
+        geometry: Geometry = new PointGeometry();
+
+        @oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } })
+        @serialize
+        material: Material = materialFactory.create("particle", { renderParams: { renderMode: RenderMode.POINTS } });
+
+        /**
+         * 粒子全局属性
+         */
+        @serialize
+        @oav()
+        readonly particleGlobal = new ParticleGlobal();
 
         @serialize
         @oav()
@@ -59,20 +69,9 @@ namespace feng3d
         ];
 
         /**
-         * 粒子全局属性
+         * 属性数据列表
          */
-        @serialize
-        @oav()
-        readonly particleGlobal = new ParticleGlobal();
-
-        /**
-         * 粒子数量
-         */
-        @watch("invalidate")
-        @oav()
-        @serialize
-        numParticles = 1000;
-
+        private _attributes: { [name: string]: number[] } = {};
         private _isDirty = true;
 
         get single() { return true; }

@@ -20605,8 +20605,6 @@ var feng3d;
         __extends(ParticleSystem, _super);
         function ParticleSystem() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.geometry = new feng3d.PointGeometry();
-            _this.material = feng3d.materialFactory.create("particle", { renderParams: { renderMode: feng3d.RenderMode.POINTS } });
             /**
              * 是否正在播放
              */
@@ -20624,9 +20622,15 @@ var feng3d;
              */
             _this.cycle = 10000;
             /**
-             * 属性数据列表
+             * 粒子数量
              */
-            _this._attributes = {};
+            _this.numParticles = 1000;
+            _this.geometry = new feng3d.PointGeometry();
+            _this.material = feng3d.materialFactory.create("particle", { renderParams: { renderMode: feng3d.RenderMode.POINTS } });
+            /**
+             * 粒子全局属性
+             */
+            _this.particleGlobal = new feng3d.ParticleGlobal();
             _this.animations = [
                 new feng3d.ParticleEmission(),
                 new feng3d.ParticlePosition(),
@@ -20635,13 +20639,9 @@ var feng3d;
                 new feng3d.ParticleBillboard(),
             ];
             /**
-             * 粒子全局属性
+             * 属性数据列表
              */
-            _this.particleGlobal = new feng3d.ParticleGlobal();
-            /**
-             * 粒子数量
-             */
-            _this.numParticles = 1000;
+            _this._attributes = {};
             _this._isDirty = true;
             return _this;
         }
@@ -20756,14 +20756,6 @@ var feng3d;
             }
         };
         __decorate([
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } }),
-            feng3d.serialize
-        ], ParticleSystem.prototype, "geometry", void 0);
-        __decorate([
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } }),
-            feng3d.serialize
-        ], ParticleSystem.prototype, "material", void 0);
-        __decorate([
             feng3d.oav(),
             feng3d.serialize
         ], ParticleSystem.prototype, "isPlaying", void 0);
@@ -20779,18 +20771,26 @@ var feng3d;
             feng3d.serialize
         ], ParticleSystem.prototype, "cycle", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], ParticleSystem.prototype, "animations", void 0);
+            feng3d.watch("invalidate"),
+            feng3d.oav(),
+            feng3d.serialize
+        ], ParticleSystem.prototype, "numParticles", void 0);
+        __decorate([
+            feng3d.oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } }),
+            feng3d.serialize
+        ], ParticleSystem.prototype, "geometry", void 0);
+        __decorate([
+            feng3d.oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } }),
+            feng3d.serialize
+        ], ParticleSystem.prototype, "material", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav()
         ], ParticleSystem.prototype, "particleGlobal", void 0);
         __decorate([
-            feng3d.watch("invalidate"),
-            feng3d.oav(),
-            feng3d.serialize
-        ], ParticleSystem.prototype, "numParticles", void 0);
+            feng3d.serialize,
+            feng3d.oav()
+        ], ParticleSystem.prototype, "animations", void 0);
         return ParticleSystem;
     }(feng3d.MeshRenderer));
     feng3d.ParticleSystem = ParticleSystem;
