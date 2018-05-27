@@ -17,8 +17,6 @@ namespace feng3d
             var y = (Math.random() - 0.5) * baseRange;
             var z = (Math.random() - 0.5) * baseRange;
             particle.position = new Vector3(x, y, z);
-
-            particle.position = new Vector3();
         }
     }
 }

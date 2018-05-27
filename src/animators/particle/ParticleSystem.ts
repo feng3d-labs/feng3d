@@ -82,8 +82,6 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
-
-            this.updateRenderState();
         }
 
         update(interval: number)
@@ -91,22 +89,6 @@ namespace feng3d
             if (!this.isPlaying) return;
 
             this.time = (this.time + (interval * this.playspeed / 1000) + this.cycle) % this.cycle;
-
-            this.updateRenderState();
-        }
-
-        private updateRenderState()
-        {
-            this.components.forEach(element =>
-            {
-                element.setRenderState(this);
-            });
-
-            if (this._isDirty)
-            {
-                this.generateParticles();
-                this._isDirty = false;
-            }
         }
 
         public invalidate()
@@ -128,7 +110,8 @@ namespace feng3d
                 particle.index = i;
                 this.components.forEach(element =>
                 {
-                    element.generateParticle(particle, this);
+                    if (element.enabled)
+                        element.generateParticle(particle, this);
                 });
                 this.collectionParticle(particle);
             }
@@ -185,6 +168,17 @@ namespace feng3d
         preRender(renderAtomic: RenderAtomic)
         {
             super.preRender(renderAtomic);
+
+            this.components.forEach(element =>
+            {
+                element.setRenderState(this, renderAtomic);
+            });
+
+            if (this._isDirty)
+            {
+                this.generateParticles();
+                this._isDirty = false;
+            }
 
             renderAtomic.instanceCount = () => this.numParticles;
             //

@@ -1,30 +1,25 @@
 namespace feng3d
 {
+    /**
+     * 公告牌粒子组件
+     * 开启后粒子将不会收到受到旋转控制，始终面向摄像机
+     */
     export class ParticleBillboard extends ParticleComponent
     {
-        /**
-         * 看向的摄像机
-         */
-        camera: Camera;
-
-        /** 广告牌轴线 */
-        billboardAxis: Vector3;
-
-        setRenderState(particleSystem: ParticleSystem)
+        setRenderState(particleSystem: ParticleSystem, renderAtomic: RenderAtomic)
         {
-            if (this.camera && this.enabled)
-            {
-                if (this.billboardAxis)
-                    this.billboardAxis.normalize();
+            super.setRenderState(particleSystem, renderAtomic);
 
-                var _matrix = new Matrix4x4;
+            var cameraMatrix = lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix)
+            if (this.enabled && cameraMatrix)
+            {
                 var gameObject = particleSystem.gameObject;
-                _matrix.copyFrom(gameObject.transform.localToWorldMatrix);
-                _matrix.lookAt(this.camera.transform.localToWorldMatrix.position, this.billboardAxis || Vector3.Y_AXIS);
-                particleSystem.particleGlobal.billboardMatrix = _matrix;
+                var matrix = particleSystem.particleGlobal.billboardMatrix;
+                matrix.copyFrom(gameObject.transform.localToWorldMatrix);
+                matrix.lookAt(cameraMatrix.position, cameraMatrix.up);
             } else
             {
-                particleSystem.particleGlobal.billboardMatrix = new Matrix4x4();
+                particleSystem.particleGlobal.billboardMatrix.identity();
             }
         }
     }

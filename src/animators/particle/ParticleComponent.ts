@@ -34,7 +34,7 @@ namespace feng3d
 
         }
 
-        setRenderState(particleSystem: ParticleSystem)
+        setRenderState(particleSystem: ParticleSystem, renderAtomic: RenderAtomic)
         {
             if (this.isDirty)
             {

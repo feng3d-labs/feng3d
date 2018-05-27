@@ -10339,7 +10339,7 @@ declare namespace feng3d {
          * @param particle                  粒子
          */
         generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
-        setRenderState(particleSystem: ParticleSystem): void;
+        setRenderState(particleSystem: ParticleSystem, renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -10407,6 +10407,14 @@ declare namespace feng3d {
      */
     class ParticleColor extends ParticleComponent {
         /**
+         * 起始颜色
+         */
+        startColor: Color4;
+        /**
+         * 结束颜色
+         */
+        endColor: Color4;
+        /**
          * 创建粒子属性
          * @param particle                  粒子
          */
@@ -10414,14 +10422,12 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 公告牌粒子组件
+     * 开启后粒子将不会收到受到旋转控制，始终面向摄像机
+     */
     class ParticleBillboard extends ParticleComponent {
-        /**
-         * 看向的摄像机
-         */
-        camera: Camera;
-        /** 广告牌轴线 */
-        billboardAxis: Vector3;
-        setRenderState(particleSystem: ParticleSystem): void;
+        setRenderState(particleSystem: ParticleSystem, renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -10468,7 +10474,6 @@ declare namespace feng3d {
         readonly single: boolean;
         init(gameObject: GameObject): void;
         update(interval: number): void;
-        private updateRenderState();
         invalidate(): void;
         /**
          * 生成粒子
