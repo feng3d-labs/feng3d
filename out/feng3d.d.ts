@@ -98,27 +98,6 @@ interface Map<K, V> {
     getKeys(): K[];
     getValues(): V[];
 }
-interface ArrayConstructor {
-    /**
-     * Creates an array from an array-like object.
-     * @param arrayLike An array-like object to convert to an array.
-     * @param mapfn A mapping function to call on every element of the array.
-     * @param thisArg Value of 'this' used to invoke the mapfn.
-     */
-    from<T, U = T>(arrayLike: ArrayLike<T>, mapfn?: (v: T, k: number) => U, thisArg?: any): U[];
-}
-interface Array<T> {
-    /**
-     * 使数组元素变得唯一,除去相同值
-     * @param compareFn 比较函数
-     */
-    unique(compareFn?: (a: T, b: T) => boolean): this;
-    /**
-     * 数组元素是否唯一
-     * @param compareFn 比较函数
-     */
-    isUnique(compareFn?: (a: T, b: T) => boolean): boolean;
-}
 declare module ds {
     /**
      * 工具
@@ -129,7 +108,28 @@ declare module ds {
      */
     class Utils {
         /**
-         * 二分查找
+         * 初始化数组
+         * @param arraylike 类数组
+         */
+        arrayFrom<T>(arraylike: ArrayLike<T>): T[];
+        /**
+         * 使数组元素变得唯一,除去相同值
+         * @param equalFn 比较函数
+         */
+        arrayUnique<T>(arr: T[], equal?: (a: T, b: T) => boolean): this;
+        /**
+         * 数组元素是否唯一
+         * @param equalFn 比较函数
+         */
+        arrayIsUnique<T>(array: T[], equalFn?: (a: T, b: T) => boolean): boolean;
+        /**
+         * 创建数组
+         * @param length 长度
+         * @param itemFunc 创建元素方法
+         */
+        createArray<T>(length: number, itemFunc: (index: number) => T): T[];
+        /**
+         * 二分查找,如果有多个则返回第一个
          * @param   array   数组
          * @param	target	寻找的目标
          * @param	compare	比较函数
@@ -139,7 +139,7 @@ declare module ds {
          */
         binarySearch<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
         /**
-         * 二分查找插入位置
+         * 二分查找插入位置,如果有多个则返回第一个
          * @param   array   数组
          * @param	target	寻找的目标
          * @param	compare	比较函数
@@ -188,13 +188,13 @@ declare namespace ds {
         private last;
         private length;
         /**
-         * 头部添加元素
+         * 头部添加元素，如果多个元素则保持顺序不变
          * @param items 元素列表
          * @returns 长度
          */
         unshift(...items: T[]): number;
         /**
-         * 尾部添加元素
+         * 尾部添加元素，如果多个元素则保持顺序不变
          * @param items 元素列表
          * @returns 长度
          */
@@ -4611,7 +4611,7 @@ declare namespace feng3d {
          * @param segment 线段
          * @return 线段相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内，2：横跨几何体
          */
-        classifySegment(segment: Segment3D): 1 | 2 | 0 | -1;
+        classifySegment(segment: Segment3D): 1 | 0 | -1 | 2;
         /**
          * 给指定三角形分类
          * @param triangle 三角形

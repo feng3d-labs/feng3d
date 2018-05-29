@@ -55,107 +55,6 @@ Map.prototype.getValues = function () {
     });
     return values;
 };
-// see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from#Polyfill
-// Production steps of ECMA-262, Edition 6, 22.1.2.1
-if (!Array.from) {
-    (function () {
-        var toStr = Object.prototype.toString;
-        var isCallable = function (fn) {
-            return typeof fn === 'function' || toStr.call(fn) === '[object Function]';
-        };
-        var toInteger = function (value) {
-            var number = Number(value);
-            if (isNaN(number)) {
-                return 0;
-            }
-            if (number === 0 || !isFinite(number)) {
-                return number;
-            }
-            return (number > 0 ? 1 : -1) * Math.floor(Math.abs(number));
-        };
-        var maxSafeInteger = Math.pow(2, 53) - 1;
-        var toLength = function (value) {
-            var len = toInteger(value);
-            return Math.min(Math.max(len, 0), maxSafeInteger);
-        };
-        // The length property of the from method is 1.
-        Array.from = function from(arrayLike /*, mapFn, thisArg */) {
-            // 1. Let C be the this value.
-            var C = this;
-            // 2. Let items be ToObject(arrayLike).
-            var items = Object(arrayLike);
-            // 3. ReturnIfAbrupt(items).
-            if (arrayLike == null) {
-                throw new TypeError('Array.from requires an array-like object - not null or undefined');
-            }
-            // 4. If mapfn is undefined, then let mapping be false.
-            var mapFn = arguments.length > 1 ? arguments[1] : void undefined;
-            var T;
-            if (typeof mapFn !== 'undefined') {
-                // 5. else
-                // 5. a If IsCallable(mapfn) is false, throw a TypeError exception.
-                if (!isCallable(mapFn)) {
-                    throw new TypeError('Array.from: when provided, the second argument must be a function');
-                }
-                // 5. b. If thisArg was supplied, let T be thisArg; else let T be undefined.
-                if (arguments.length > 2) {
-                    T = arguments[2];
-                }
-            }
-            // 10. Let lenValue be Get(items, "length").
-            // 11. Let len be ToLength(lenValue).
-            var len = toLength(items.length);
-            // 13. If IsConstructor(C) is true, then
-            // 13. a. Let A be the result of calling the [[Construct]] internal method 
-            // of C with an argument list containing the single item len.
-            // 14. a. Else, Let A be ArrayCreate(len).
-            var A = isCallable(C) ? Object(new C(len)) : new Array(len);
-            // 16. Let k be 0.
-            var k = 0;
-            // 17. Repeat, while k < len… (also steps a - h)
-            var kValue;
-            while (k < len) {
-                kValue = items[k];
-                if (mapFn) {
-                    A[k] = typeof T === 'undefined' ? mapFn(kValue, k) : mapFn.call(T, kValue, k);
-                }
-                else {
-                    A[k] = kValue;
-                }
-                k += 1;
-            }
-            // 18. Let putStatus be Put(A, "length", len, true).
-            A.length = len;
-            // 20. Return A.
-            return A;
-        };
-    }());
-}
-Array.prototype.unique = function (compareFn) {
-    if (compareFn === void 0) { compareFn = function (a, b) { return (a == b); }; }
-    var arr = this;
-    for (var i = arr.length - 1; i >= 0; i--) {
-        for (var j = 0; j < i; j++) {
-            if (compareFn(arr[i], arr[j])) {
-                arr.splice(i, 1);
-                break;
-            }
-        }
-    }
-    return this;
-};
-Array.prototype.isUnique = function (compareFn) {
-    if (compareFn === void 0) { compareFn = function (a, b) { return (a == b); }; }
-    var arr = this;
-    for (var i = arr.length - 1; i >= 0; i--) {
-        for (var j = 0; j < i; j++) {
-            if (compareFn(arr[i], arr[j])) {
-                return false;
-            }
-        }
-    }
-    return true;
-};
 var ds;
 (function (ds) {
     /**
@@ -165,7 +64,61 @@ var ds;
         function Utils() {
         }
         /**
-         * 二分查找
+         * 初始化数组
+         * @param arraylike 类数组
+         */
+        Utils.prototype.arrayFrom = function (arraylike) {
+            var arr = [];
+            for (var i = 0; i < arraylike.length; i++) {
+                arr[i] = arraylike[i];
+            }
+            return arr;
+        };
+        /**
+         * 使数组元素变得唯一,除去相同值
+         * @param equalFn 比较函数
+         */
+        Utils.prototype.arrayUnique = function (arr, equal) {
+            if (equal === void 0) { equal = function (a, b) { return (a == b); }; }
+            for (var i = arr.length - 1; i >= 0; i--) {
+                for (var j = 0; j < i; j++) {
+                    if (equal(arr[i], arr[j])) {
+                        arr.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+            return this;
+        };
+        /**
+         * 数组元素是否唯一
+         * @param equalFn 比较函数
+         */
+        Utils.prototype.arrayIsUnique = function (array, equalFn) {
+            if (equalFn === void 0) { equalFn = function (a, b) { return (a == b); }; }
+            for (var i = array.length - 1; i >= 0; i--) {
+                for (var j = 0; j < i; j++) {
+                    if (equalFn(array[i], array[j])) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+        /**
+         * 创建数组
+         * @param length 长度
+         * @param itemFunc 创建元素方法
+         */
+        Utils.prototype.createArray = function (length, itemFunc) {
+            var arr = [];
+            for (var i = 0; i < length; i++) {
+                arr[i] = itemFunc(i);
+            }
+            return arr;
+        };
+        /**
+         * 二分查找,如果有多个则返回第一个
          * @param   array   数组
          * @param	target	寻找的目标
          * @param	compare	比较函数
@@ -180,7 +133,7 @@ var ds;
             return -1;
         };
         /**
-         * 二分查找插入位置
+         * 二分查找插入位置,如果有多个则返回第一个
          * @param   array   数组
          * @param	target	寻找的目标
          * @param	compare	比较函数
@@ -192,18 +145,15 @@ var ds;
             if (start === undefined)
                 start = 0;
             if (end === undefined)
-                end = array.length - 1;
+                end = array.length;
             if (start == end)
                 return start;
-            if (compare(array[start], target) >= 0) {
+            if (compare(array[start], target) == 0) {
                 return start;
-            }
-            if (compare(array[end], target) < 0) {
-                return end;
             }
             var middle = ~~((start + end) / 2);
             if (compare(array[middle], target) < 0) {
-                start = middle;
+                start = middle + 1;
             }
             else {
                 end = middle;
@@ -292,29 +242,29 @@ var ds;
             this.length = 0;
         }
         /**
-         * 头部添加元素
+         * 头部添加元素，如果多个元素则保持顺序不变
          * @param items 元素列表
          * @returns 长度
          */
         LinkedList.prototype.unshift = function () {
-            var _this = this;
             var items = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 items[_i] = arguments[_i];
             }
-            items.forEach(function (item) {
-                var newitem = { item: item, previous: null, next: _this.first };
-                if (_this.first)
-                    _this.first.previous = newitem;
-                _this.first = newitem;
-                if (!_this.last)
-                    _this.last = _this.first;
-                _this.length++;
-            });
+            for (var i = items.length - 1; i >= 0; i--) {
+                var item = items[i];
+                var newitem = { item: item, previous: null, next: this.first };
+                if (this.first)
+                    this.first.previous = newitem;
+                this.first = newitem;
+                if (!this.last)
+                    this.last = this.first;
+                this.length++;
+            }
             return this.length;
         };
         /**
-         * 尾部添加元素
+         * 尾部添加元素，如果多个元素则保持顺序不变
          * @param items 元素列表
          * @returns 长度
          */
@@ -9400,7 +9350,8 @@ var feng3d;
          * 获取所有顶点，去除重复顶点
          */
         TriangleGeometry.prototype.getPoints = function () {
-            var ps = this.triangles.reduce(function (v, t) { return v.concat(t.getPoints()); }, []).unique(function (a, b) { return a.equals(b); });
+            var ps = this.triangles.reduce(function (v, t) { return v.concat(t.getPoints()); }, []);
+            ds.utils.arrayUnique(ps, function (a, b) { return a.equals(b); });
             return ps;
         };
         /**
@@ -9524,11 +9475,11 @@ var feng3d;
                 ps.push(r);
             });
             // 清除相同的线段
-            ss.unique(function (a, b) { return a.equals(b); });
+            ds.utils.arrayUnique(ss, function (a, b) { return a.equals(b); });
             // 删除在相交线段上的交点
             ps = ps.filter(function (p) { return ss.every(function (s) { return !s.onWithPoint(p); }); });
             // 清除相同点
-            ps.unique(function (a, b) { return a.equals(b); });
+            ds.utils.arrayUnique(ps, function (a, b) { return a.equals(b); });
             if (ss.length + ps.length == 0)
                 return null;
             return { segments: ss, points: ps };

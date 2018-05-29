@@ -10,25 +10,26 @@ namespace ds
         private length = 0;
 
         /**
-         * 头部添加元素
+         * 头部添加元素，如果多个元素则保持顺序不变
          * @param items 元素列表
          * @returns 长度
          */
         unshift(...items: T[])
         {
-            items.forEach(item =>
+            for (let i = items.length - 1; i >= 0; i--)
             {
+                const item = items[i];
                 var newitem: Node<T> = { item: item, previous: null, next: this.first };
                 if (this.first) this.first.previous = newitem;
                 this.first = newitem;
                 if (!this.last) this.last = this.first;
                 this.length++
-            });
+            }
             return this.length
         }
 
         /**
-         * 尾部添加元素
+         * 尾部添加元素，如果多个元素则保持顺序不变
          * @param items 元素列表
          * @returns 长度
          */

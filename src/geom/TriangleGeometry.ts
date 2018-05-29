@@ -40,7 +40,8 @@ namespace feng3d
          */
         getPoints()
         {
-            var ps = this.triangles.reduce((v: Vector3[], t) => { return v.concat(t.getPoints()); }, []).unique((a, b) => a.equals(b));
+            var ps = this.triangles.reduce((v: Vector3[], t) => { return v.concat(t.getPoints()); }, []);
+            ds.utils.arrayUnique(ps, (a, b) => a.equals(b));
             return ps;
         }
 
@@ -179,11 +180,11 @@ namespace feng3d
             });
 
             // 清除相同的线段
-            ss.unique((a, b) => a.equals(b));
+            ds.utils.arrayUnique(ss, (a, b) => a.equals(b));
             // 删除在相交线段上的交点
             ps = ps.filter((p) => { return ss.every((s) => { return !s.onWithPoint(p); }); });
             // 清除相同点
-            ps.unique((a, b) => a.equals(b));
+            ds.utils.arrayUnique(ps, (a, b) => a.equals(b));
             if (ss.length + ps.length == 0)
                 return null;
             return { segments: ss, points: ps };
