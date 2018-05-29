@@ -119,6 +119,145 @@ interface Array<T> {
      */
     isUnique(compareFn?: (a: T, b: T) => boolean): boolean;
 }
+declare module ds {
+    /**
+     * 工具
+     */
+    var utils: Utils;
+    /**
+     * 工具
+     */
+    class Utils {
+        /**
+         * 二分查找
+         * @param   array   数组
+         * @param	target	寻找的目标
+         * @param	compare	比较函数
+         * @param   start   起始位置
+         * @param   end     结束位置
+         * @return          查找到目标时返回所在位置，否则返回-1
+         */
+        binarySearch<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
+        /**
+         * 二分查找插入位置
+         * @param   array   数组
+         * @param	target	寻找的目标
+         * @param	compare	比较函数
+         * @param   start   起始位置
+         * @param   end     结束位置
+         * @return          目标所在位置（如果该位置上不是目标对象，则该索引为该目标可插入的位置）
+         */
+        binarySearchInsert<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
+    }
+}
+declare namespace ds {
+    /**
+     * 队列，只能从后面进，前面出
+     * 使用单向链表实现
+     */
+    class Queue<T> {
+        private first;
+        private last;
+        private length;
+        /**
+         * 尾部添加元素（进队）
+         * @param items 元素列表
+         * @returns 长度
+         */
+        push(...items: T[]): number;
+        /**
+         * 头部移除元素（出队）
+         */
+        shift(): T;
+        /**
+         * 转换为数组
+         */
+        toArray(): T[];
+        /**
+         * 从数组初始化链表
+         */
+        fromArray(array: T[]): this;
+    }
+}
+declare namespace ds {
+    /**
+     * (双向)链表
+     */
+    class LinkedList<T> {
+        private first;
+        private last;
+        private length;
+        /**
+         * 头部添加元素
+         * @param items 元素列表
+         * @returns 长度
+         */
+        unshift(...items: T[]): number;
+        /**
+         * 尾部添加元素
+         * @param items 元素列表
+         * @returns 长度
+         */
+        push(...items: T[]): number;
+        /**
+         * 头部移除元素
+         */
+        shift(): T | undefined;
+        /**
+         * 尾部移除元素
+         */
+        pop(): T | undefined;
+        /**
+         * 转换为数组
+         */
+        toArray(): T[];
+        /**
+         * 从数组初始化链表
+         */
+        fromArray(array: T[]): this;
+    }
+}
+declare module ds {
+    /**
+     * 优先队列，自动按优先级排序
+     * 基于数组实现
+     */
+    class PriorityQueue<T> {
+        private items;
+        /**
+         * 队列长度
+         */
+        readonly length: number;
+        /**
+         * 比较函数
+         */
+        compare: (a: T, b: T) => number;
+        private _compare;
+        /**
+         * 构建优先数组
+         * @param   compare     比较函数
+         */
+        constructor(compare: (a: T, b: T) => number);
+        /**
+         * 尾部添加元素（进队）
+         * @param items 元素列表
+         * @returns 长度
+         */
+        push(...items: T[]): number;
+        /**
+         * 头部移除元素（出队）
+         */
+        shift(): T;
+        /**
+         * 转换为数组
+         */
+        toArray(): T[];
+        /**
+         * 从数组初始化链表
+         */
+        fromArray(array: T[]): T[];
+    }
+}
 declare namespace feng3d {
     /**
      * 事件

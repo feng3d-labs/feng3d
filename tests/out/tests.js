@@ -132,6 +132,23 @@ var feng3d;
         });
     });
 })(feng3d || (feng3d = {}));
+QUnit.module("Array", function () {
+    QUnit.test("unique", function (assert) {
+        var n = 100;
+        var arr = [];
+        while (n-- > 0) {
+            arr.push(Math.floor(Math.random() * 10));
+        }
+        arr.unique();
+        assert.ok(arr.unique());
+        var arr0 = [];
+        while (n-- > 0) {
+            arr0.push({ n: Math.floor(Math.random() * 10) });
+        }
+        arr0.unique(function (a, b) { return a.n == b.n; });
+        assert.ok(arr0.isUnique(function (a, b) { return a.n == b.n; }));
+    });
+});
 var feng3d;
 (function (feng3d) {
     QUnit.module("Box3", function () {
@@ -442,23 +459,6 @@ var feng3d;
         });
     });
 })(feng3d || (feng3d = {}));
-QUnit.module("Array", function () {
-    QUnit.test("unique", function (assert) {
-        var n = 100;
-        var arr = [];
-        while (n-- > 0) {
-            arr.push(Math.floor(Math.random() * 10));
-        }
-        arr.unique();
-        assert.ok(arr.unique());
-        var arr0 = [];
-        while (n-- > 0) {
-            arr0.push({ n: Math.floor(Math.random() * 10) });
-        }
-        arr0.unique(function (a, b) { return a.n == b.n; });
-        assert.ok(arr0.unique(function (a, b) { return a.n == b.n; }));
-    });
-});
 QUnit.module("PathUtils", function () {
     QUnit.test("getName", function (assert) {
         assert.ok(feng3d.pathUtils.getNameWithExtension("a") == "a");

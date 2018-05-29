@@ -156,6 +156,313 @@ Array.prototype.isUnique = function (compareFn) {
     }
     return true;
 };
+var ds;
+(function (ds) {
+    /**
+     * 工具
+     */
+    var Utils = /** @class */ (function () {
+        function Utils() {
+        }
+        /**
+         * 二分查找
+         * @param   array   数组
+         * @param	target	寻找的目标
+         * @param	compare	比较函数
+         * @param   start   起始位置
+         * @param   end     结束位置
+         * @return          查找到目标时返回所在位置，否则返回-1
+         */
+        Utils.prototype.binarySearch = function (array, target, compare, start, end) {
+            var insert = this.binarySearchInsert(array, target, compare, start, end);
+            if (array[insert] == target)
+                return insert;
+            return -1;
+        };
+        /**
+         * 二分查找插入位置
+         * @param   array   数组
+         * @param	target	寻找的目标
+         * @param	compare	比较函数
+         * @param   start   起始位置
+         * @param   end     结束位置
+         * @return          目标所在位置（如果该位置上不是目标对象，则该索引为该目标可插入的位置）
+         */
+        Utils.prototype.binarySearchInsert = function (array, target, compare, start, end) {
+            if (start === undefined)
+                start = 0;
+            if (end === undefined)
+                end = array.length - 1;
+            if (start == end)
+                return start;
+            if (compare(array[start], target) >= 0) {
+                return start;
+            }
+            if (compare(array[end], target) < 0) {
+                return end;
+            }
+            var middle = ~~((start + end) / 2);
+            if (compare(array[middle], target) < 0) {
+                start = middle;
+            }
+            else {
+                end = middle;
+            }
+            return this.binarySearchInsert(array, target, compare, start, end);
+        };
+        return Utils;
+    }());
+    ds.Utils = Utils;
+    ds.utils = new Utils();
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 队列，只能从后面进，前面出
+     * 使用单向链表实现
+     */
+    var Queue = /** @class */ (function () {
+        function Queue() {
+            this.length = 0;
+        }
+        /**
+         * 尾部添加元素（进队）
+         * @param items 元素列表
+         * @returns 长度
+         */
+        Queue.prototype.push = function () {
+            var _this = this;
+            var items = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                items[_i] = arguments[_i];
+            }
+            items.forEach(function (item) {
+                var node = { item: item, next: null };
+                if (_this.last)
+                    _this.last.next = node;
+                _this.last = node;
+                if (!_this.first)
+                    _this.first = node;
+                _this.length++;
+            });
+            return this.length;
+        };
+        /**
+         * 头部移除元素（出队）
+         */
+        Queue.prototype.shift = function () {
+            var removeitem = this.first ? this.first.item : undefined;
+            if (this.length == 1)
+                this.first = this.last = null;
+            if (this.first)
+                this.first = this.first.next;
+            return removeitem;
+        };
+        /**
+         * 转换为数组
+         */
+        Queue.prototype.toArray = function () {
+            var arr = [];
+            var node = this.first;
+            while (node) {
+                arr.push(node.item);
+                node = node.next;
+            }
+            return arr;
+        };
+        /**
+         * 从数组初始化链表
+         */
+        Queue.prototype.fromArray = function (array) {
+            this.first = this.last = null;
+            this.push.apply(this, array);
+            return this;
+        };
+        return Queue;
+    }());
+    ds.Queue = Queue;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * (双向)链表
+     */
+    var LinkedList = /** @class */ (function () {
+        function LinkedList() {
+            this.length = 0;
+        }
+        /**
+         * 头部添加元素
+         * @param items 元素列表
+         * @returns 长度
+         */
+        LinkedList.prototype.unshift = function () {
+            var _this = this;
+            var items = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                items[_i] = arguments[_i];
+            }
+            items.forEach(function (item) {
+                var newitem = { item: item, previous: null, next: _this.first };
+                if (_this.first)
+                    _this.first.previous = newitem;
+                _this.first = newitem;
+                if (!_this.last)
+                    _this.last = _this.first;
+                _this.length++;
+            });
+            return this.length;
+        };
+        /**
+         * 尾部添加元素
+         * @param items 元素列表
+         * @returns 长度
+         */
+        LinkedList.prototype.push = function () {
+            var _this = this;
+            var items = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                items[_i] = arguments[_i];
+            }
+            items.forEach(function (item) {
+                var node = { item: item, previous: _this.last, next: null };
+                if (_this.last)
+                    _this.last.next = node;
+                _this.last = node;
+                if (!_this.first)
+                    _this.first = node;
+                _this.length++;
+            });
+            return this.length;
+        };
+        /**
+         * 头部移除元素
+         */
+        LinkedList.prototype.shift = function () {
+            var removeitem = this.first ? this.first.item : undefined;
+            if (this.length == 1)
+                this.first = this.last = null;
+            if (this.first)
+                this.first = this.first.next;
+            if (this.first)
+                this.first.previous = null;
+            return removeitem;
+        };
+        /**
+         * 尾部移除元素
+         */
+        LinkedList.prototype.pop = function () {
+            var removeitem = this.last ? this.last.item : undefined;
+            if (this.length == 1)
+                this.first = this.last = null;
+            if (this.last)
+                this.last = this.last.previous;
+            if (this.last)
+                this.last.next = null;
+            return removeitem;
+        };
+        /**
+         * 转换为数组
+         */
+        LinkedList.prototype.toArray = function () {
+            var arr = [];
+            var node = this.first;
+            while (node) {
+                arr.push(node.item);
+                node = node.next;
+            }
+            return arr;
+        };
+        /**
+         * 从数组初始化链表
+         */
+        LinkedList.prototype.fromArray = function (array) {
+            this.first = this.last = null;
+            this.push.apply(this, array);
+            return this;
+        };
+        return LinkedList;
+    }());
+    ds.LinkedList = LinkedList;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 优先队列，自动按优先级排序
+     * 基于数组实现
+     */
+    var PriorityQueue = /** @class */ (function () {
+        /**
+         * 构建优先数组
+         * @param   compare     比较函数
+         */
+        function PriorityQueue(compare) {
+            this.items = [];
+            this.compare = compare;
+        }
+        Object.defineProperty(PriorityQueue.prototype, "length", {
+            /**
+             * 队列长度
+             */
+            get: function () {
+                return this.items.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PriorityQueue.prototype, "compare", {
+            /**
+             * 比较函数
+             */
+            get: function () {
+                return this._compare;
+            },
+            set: function (v) {
+                this._compare = v;
+                this.items.sort(this._compare);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 尾部添加元素（进队）
+         * @param items 元素列表
+         * @returns 长度
+         */
+        PriorityQueue.prototype.push = function () {
+            var _this = this;
+            var items = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                items[_i] = arguments[_i];
+            }
+            items.forEach(function (item) {
+                var insert = ds.utils.binarySearchInsert(_this.items, item, _this._compare);
+                _this.items.splice(insert, 0, item);
+            });
+            return this.items.length;
+        };
+        /**
+         * 头部移除元素（出队）
+         */
+        PriorityQueue.prototype.shift = function () {
+            return this.items.shift();
+        };
+        /**
+         * 转换为数组
+         */
+        PriorityQueue.prototype.toArray = function () {
+            return this.items.concat();
+        };
+        /**
+         * 从数组初始化链表
+         */
+        PriorityQueue.prototype.fromArray = function (array) {
+            return this.items = array.concat();
+        };
+        return PriorityQueue;
+    }());
+    ds.PriorityQueue = PriorityQueue;
+})(ds || (ds = {}));
 var feng3d;
 (function (feng3d) {
     feng3d.EVENT_KEY = "__event__";

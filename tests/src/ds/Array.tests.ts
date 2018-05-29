@@ -19,6 +19,6 @@ QUnit.module("Array", () =>
         }
         arr0.unique((a, b) => { return a.n == b.n; });
 
-        assert.ok(arr0.unique((a, b) => { return a.n == b.n; }));
+        assert.ok(arr0.isUnique((a, b) => { return a.n == b.n; }));
     });
 });

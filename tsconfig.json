@@ -10,9 +10,14 @@
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //
-        "src/polyfill/Object.ts",
-        "src/polyfill/Map.ts",
-        "src/polyfill/Array.ts",
+        "src/ds/Object.ts",
+        "src/ds/Map.ts",
+        "src/ds/Array.ts",
+        //
+        "src/ds/Utils.ts",
+        "src/ds/Queue.ts",
+        "src/ds/LinkedList.ts",
+        "src/ds/PriorityQueue.ts",
         //
         "src/event/EventDispatcher.ts",
         "src/event/EventProxy.ts",
