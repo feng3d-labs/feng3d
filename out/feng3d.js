@@ -407,7 +407,8 @@ var ds;
          * 从数组初始化链表
          */
         PriorityQueue.prototype.fromArray = function (array) {
-            return this.items = array.concat();
+            this.items = array.concat();
+            this.items.sort(this._compare);
         };
         return PriorityQueue;
     }());

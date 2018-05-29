@@ -255,7 +255,7 @@ declare module ds {
         /**
          * 从数组初始化链表
          */
-        fromArray(array: T[]): T[];
+        fromArray(array: T[]): void;
     }
 }
 declare namespace feng3d {

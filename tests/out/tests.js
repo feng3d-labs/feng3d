@@ -187,6 +187,77 @@ QUnit.module("LinkedList", function () {
         assert.deepEqual(ll.toArray(), arr);
     });
 });
+QUnit.module("PriorityQueue", function () {
+    QUnit.test("push", function (assert) {
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var compare = function (a, b) { return a - b; };
+        var q = new ds.PriorityQueue(compare);
+        q.push.apply(q, arr);
+        var sortarr = arr.concat().sort(compare);
+        assert.deepEqual(q.toArray(), sortarr);
+        arr.push(1);
+        q.push(1);
+        sortarr = arr.concat().sort();
+        assert.deepEqual(q.toArray(), sortarr);
+    });
+    QUnit.test("shift", function (assert) {
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var compare = function (a, b) { return a - b; };
+        var q = new ds.PriorityQueue(compare);
+        q.push.apply(q, arr);
+        var sortarr = arr.concat().sort(compare);
+        for (var i = sortarr.length - 1; i >= 0; i--) {
+            assert.deepEqual(q.shift(), sortarr.shift());
+        }
+    });
+    QUnit.test("toArray", function (assert) {
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var compare = function (a, b) { return a - b; };
+        var q = new ds.PriorityQueue(compare);
+        q.push.apply(q, arr);
+        var sortarr = arr.concat().sort(compare);
+        assert.deepEqual(q.toArray(), sortarr);
+    });
+    QUnit.test("fromArray", function (assert) {
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var compare = function (a, b) { return a - b; };
+        var q = new ds.PriorityQueue(compare);
+        q.fromArray(arr);
+        var sortarr = arr.concat().sort(compare);
+        assert.deepEqual(q.toArray(), sortarr);
+    });
+});
+QUnit.module("Queue", function () {
+    QUnit.test("push", function (assert) {
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var q = new ds.Queue();
+        q.push.apply(q, arr);
+        assert.deepEqual(q.toArray(), arr);
+        arr.push(1);
+        q.push(1);
+        assert.deepEqual(q.toArray(), arr);
+    });
+    QUnit.test("shift", function (assert) {
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var q = new ds.Queue();
+        q.push.apply(q, arr);
+        for (var i = arr.length - 1; i >= 0; i--) {
+            assert.deepEqual(q.shift(), arr.shift());
+        }
+    });
+    QUnit.test("toArray", function (assert) {
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var q = new ds.Queue();
+        q.push.apply(q, arr);
+        assert.deepEqual(q.toArray(), arr);
+    });
+    QUnit.test("fromArray", function (assert) {
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var q = new ds.Queue();
+        q.fromArray(arr);
+        assert.deepEqual(q.toArray(), arr);
+    });
+});
 QUnit.module("Utils", function () {
     QUnit.test("arrayFrom", function (assert) {
         var arr = ds.utils.createArray(100, function () { return Math.floor(Math.random() * 100); });

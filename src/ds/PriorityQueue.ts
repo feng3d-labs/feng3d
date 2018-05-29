@@ -75,7 +75,8 @@ module ds
          */
         fromArray(array: T[])
         {
-            return this.items = array.concat();
+            this.items = array.concat();
+            this.items.sort(this._compare);
         }
     }
 }
