@@ -2,7 +2,7 @@ namespace feng3d
 {
     export class Animation extends Component
     {
-        @oav({ componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } })
+        @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } })
         @serialize
         get animation()
         {
@@ -17,7 +17,7 @@ namespace feng3d
         }
         private _animation: AnimationClip
 
-        @oav({ componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: () => new AnimationClip() } })
+        @oav({ component: "OAVArray", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: () => new AnimationClip() } })
         @serialize
         animations: AnimationClip[] = [];
 

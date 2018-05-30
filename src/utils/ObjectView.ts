@@ -39,7 +39,7 @@ namespace feng3d
 	/**
 	 * objectview类装饰器
 	 */
-	export function ov<K extends keyof OVComponentParam>(param: { component?: K; componentParam?: OVComponentParam[K]; })
+	export function ov<K extends keyof OVComponentParamMap>(param: { component?: K; componentParam?: OVComponentParamMap[K]; })
 	{
 		return (constructor: Function) =>
 		{
@@ -74,7 +74,7 @@ namespace feng3d
 	 * objectview属性装饰器
 	 * @param param 参数
 	 */
-	export function oav<K extends keyof OAVComponentParam>(param?: { block?: string; component?: K; componentParam?: OAVComponentParam[K]; })
+	export function oav<K extends keyof OAVComponentParamMap>(param?: { block?: string; component?: K; componentParam?: OAVComponentParamMap[K]; })
 	{
 		return (target: any, propertyKey: string) =>
 		{
@@ -208,7 +208,7 @@ namespace feng3d
 			var view = new cls(blockViewInfo);
 			return view;
 		}
-		addOAV<K extends keyof OAVComponentParam>(target: any, propertyKey: string, param?: { block?: string; component?: K; componentParam?: OAVComponentParam[K]; })
+		addOAV<K extends keyof OAVComponentParamMap>(target: any, propertyKey: string, param?: { block?: string; component?: K; componentParam?: OAVComponentParamMap[K]; })
 		{
 			if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
 				target[OBJECTVIEW_KEY] = {};
@@ -468,17 +468,37 @@ namespace feng3d
 		return objectBlockInfos;
 	}
 
-	export interface OAVComponentParam
+	/**
+	 * OAV 组件基本参数
+	 */
+	export interface OAVComponentParamBase
 	{
-		属性组件名称: "属性组件参数";
-		[component: string]: any;
+		/**
+		 * 标签
+		 */
+		label?: string;
+		/**
+		 * 提示信息
+		 */
+		tooltip?: string;
 	}
-	export interface OBVComponentParam
+
+	/**
+	 * OAV 组件参数映射
+	 * {key: OAV组件名称,value：组件参数类定义}
+	 */
+	export interface OAVComponentParamMap
+	{
+		[component: string]: OAVComponentParamBase;
+	}
+
+	export interface OBVComponentParamMap
 	{
 		块组件名称: "块组件参数";
 		[component: string]: any;
 	}
-	export interface OVComponentParam
+
+	export interface OVComponentParamMap
 	{
 		类组件名称: "类组件参数";
 		[component: string]: any;
@@ -709,7 +729,7 @@ namespace feng3d
 		/**
 		 * 组件参数
 		 */
-		componentParam?: Object;
+		componentParam?: OAVComponentParamBase;
 
 		/**
 		 * 属性所属对象

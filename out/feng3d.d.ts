@@ -630,18 +630,18 @@ declare namespace feng3d {
     /**
      * objectview类装饰器
      */
-    function ov<K extends keyof OVComponentParam>(param: {
+    function ov<K extends keyof OVComponentParamMap>(param: {
         component?: K;
-        componentParam?: OVComponentParam[K];
+        componentParam?: OVComponentParamMap[K];
     }): (constructor: Function) => void;
     /**
      * objectview属性装饰器
      * @param param 参数
      */
-    function oav<K extends keyof OAVComponentParam>(param?: {
+    function oav<K extends keyof OAVComponentParamMap>(param?: {
         block?: string;
         component?: K;
-        componentParam?: OAVComponentParam[K];
+        componentParam?: OAVComponentParamMap[K];
     }): (target: any, propertyKey: string) => void;
     /**
      * 对象界面
@@ -708,10 +708,10 @@ declare namespace feng3d {
          * @memberOf ObjectView
          */
         getBlockView(blockViewInfo: BlockViewInfo): IObjectBlockView;
-        addOAV<K extends keyof OAVComponentParam>(target: any, propertyKey: string, param?: {
+        addOAV<K extends keyof OAVComponentParamMap>(target: any, propertyKey: string, param?: {
             block?: string;
             component?: K;
-            componentParam?: OAVComponentParam[K];
+            componentParam?: OAVComponentParamMap[K];
         }): void;
         /**
          * 获取对象信息
@@ -722,15 +722,31 @@ declare namespace feng3d {
          */
         getObjectInfo(object: Object, autocreate?: boolean, excludeAttrs?: string[]): ObjectViewInfo;
     }
-    interface OAVComponentParam {
-        属性组件名称: "属性组件参数";
-        [component: string]: any;
+    /**
+     * OAV 组件基本参数
+     */
+    interface OAVComponentParamBase {
+        /**
+         * 标签
+         */
+        label?: string;
+        /**
+         * 提示信息
+         */
+        tooltip?: string;
     }
-    interface OBVComponentParam {
+    /**
+     * OAV 组件参数映射
+     * {key: OAV组件名称,value：组件参数类定义}
+     */
+    interface OAVComponentParamMap {
+        [component: string]: OAVComponentParamBase;
+    }
+    interface OBVComponentParamMap {
         块组件名称: "块组件参数";
         [component: string]: any;
     }
-    interface OVComponentParam {
+    interface OVComponentParamMap {
         类组件名称: "类组件参数";
         [component: string]: any;
     }
@@ -919,7 +935,7 @@ declare namespace feng3d {
         /**
          * 组件参数
          */
-        componentParam?: Object;
+        componentParam?: OAVComponentParamBase;
         /**
          * 属性所属对象
          */
@@ -976,6 +992,80 @@ declare namespace feng3d {
          * 保存类的一个实例，为了能够获取动态属性信息
          */
         owner: Object;
+    }
+}
+declare namespace feng3d {
+    interface OAVComponentParamMap {
+        OAVDefault: OAVDefaultParam;
+        OAVArray: OAVArrayParam;
+        OAVPick: OAVPickParam;
+        OAVEnum: OAVEnumParam;
+    }
+    /**
+     * OAVDefault 组件参数
+     */
+    interface OAVDefaultParam extends OAVComponentParamBase {
+        /**
+         * 文本是否可编辑
+         */
+        textEnabled?: boolean;
+        /**
+         * 拾取参数
+         */
+        dragparam?: {
+            /**
+             * 可接受数据类型
+             */
+            accepttype: string;
+            /**
+             * 提供数据类型
+             */
+            datatype?: string;
+        };
+    }
+    /**
+     * OAVArray 组件参数
+     */
+    interface OAVArrayParam extends OAVComponentParamBase {
+        /**
+         * 拾取参数
+         */
+        dragparam?: {
+            /**
+             * 可接受数据类型
+             */
+            accepttype: string;
+            /**
+             * 提供数据类型
+             */
+            datatype?: string;
+        };
+        /**
+         * 添加item时默认数据，赋值 ()=>any
+         */
+        defaultItem: any;
+    }
+    /**
+     * OAVPick 组件参数
+     */
+    interface OAVPickParam extends OAVComponentParamBase {
+        /**
+         * 可接受数据类型
+         */
+        accepttype: string;
+        /**
+         * 提供数据类型
+         */
+        datatype?: string;
+    }
+    /**
+     * OAVEnum 组件参数
+     */
+    interface OAVEnumParam extends OAVComponentParamBase {
+        /**
+         * 枚举类型
+         */
+        enumClass: any;
     }
 }
 declare namespace feng3d {

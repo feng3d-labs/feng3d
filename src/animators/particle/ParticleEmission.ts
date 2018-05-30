@@ -16,7 +16,7 @@ namespace feng3d
         /**
          * 爆发，在time时刻额外喷射particles粒子
          */
-        @oav({ componentParam: { defaultItem: () => { return { time: 0, particles: 30 } } } })
+        @oav({ component: "OAVArray", componentParam: { defaultItem: () => { return { time: 0, particles: 30 } } } })
         @serialize
         bursts: { time: number, particles: number }[] = [];
 

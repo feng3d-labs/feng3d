@@ -13002,11 +13002,11 @@ var feng3d;
             feng3d.serialize
         ], CartoonComponent.prototype, "outlineMorphFactor", void 0);
         __decorate([
-            feng3d.oav({ componentParam: { showw: true } }),
+            feng3d.oav(),
             feng3d.serialize
         ], CartoonComponent.prototype, "diffuseSegment", void 0);
         __decorate([
-            feng3d.oav({ componentParam: { showw: true } }),
+            feng3d.oav(),
             feng3d.serialize
         ], CartoonComponent.prototype, "diffuseSegmentValue", void 0);
         __decorate([
@@ -18468,7 +18468,7 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.watch("urlChanged"),
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
+            feng3d.oav({ component: "OAVPick", componentParam: { label: "路径", accepttype: "image" } })
         ], Texture2D.prototype, "url", void 0);
         return Texture2D;
     }(feng3d.TextureInfo));
@@ -20327,7 +20327,7 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "image" }, textEnabled: false } }),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } }),
             feng3d.watch("invalidateGeometry")
         ], TerrainGeometry.prototype, "heightMapUrl", void 0);
         __decorate([
@@ -20834,7 +20834,7 @@ var feng3d;
             feng3d.serialize
         ], ParticleEmission.prototype, "rate", void 0);
         __decorate([
-            feng3d.oav({ componentParam: { defaultItem: function () { return { time: 0, particles: 30 }; } } }),
+            feng3d.oav({ component: "OAVArray", componentParam: { defaultItem: function () { return { time: 0, particles: 30 }; } } }),
             feng3d.serialize
         ], ParticleEmission.prototype, "bursts", void 0);
         return ParticleEmission;
@@ -21140,11 +21140,11 @@ var feng3d;
             feng3d.serialize
         ], ParticleSystem.prototype, "numParticles", void 0);
         __decorate([
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } }),
+            feng3d.oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "geometry", void 0);
         __decorate([
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "material", datatype: "material" } } }),
+            feng3d.oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "material", datatype: "material" } } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "material", void 0);
         __decorate([
@@ -21619,11 +21619,11 @@ var feng3d;
             _super.prototype.dispose.call(this);
         };
         __decorate([
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } }),
+            feng3d.oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } }),
             feng3d.serialize
         ], Animation.prototype, "animation", null);
         __decorate([
-            feng3d.oav({ componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: function () { return new AnimationClip(); } } }),
+            feng3d.oav({ component: "OAVArray", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: function () { return new AnimationClip(); } } }),
             feng3d.serialize
         ], Animation.prototype, "animations", void 0);
         __decorate([

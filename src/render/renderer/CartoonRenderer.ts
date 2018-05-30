@@ -25,13 +25,13 @@ namespace feng3d
         /**
          * 半兰伯特值diff，分段值 4个(0.0,1.0)
          */
-        @oav({ componentParam: { showw: true } })
+        @oav()
         @serialize
         diffuseSegment = new Vector4(0.1, 0.3, 0.6, 1.0);
         /**
          * 半兰伯特值diff，替换分段值 4个(0.0,1.0)
          */
-        @oav({ componentParam: { showw: true } })
+        @oav()
         @serialize
         diffuseSegmentValue = new Vector4(0.1, 0.3, 0.6, 1.0);
 
