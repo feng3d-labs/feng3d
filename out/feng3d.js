@@ -20951,6 +20951,7 @@ var feng3d;
                 var matrix = particleSystem.particleGlobal.billboardMatrix;
                 matrix.copyFrom(gameObject.transform.localToWorldMatrix);
                 matrix.lookAt(cameraMatrix.position, cameraMatrix.up);
+                matrix.position = feng3d.Vector3.ZERO;
             }
             else {
                 particleSystem.particleGlobal.billboardMatrix.identity();
