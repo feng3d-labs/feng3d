@@ -10,15 +10,15 @@ function shaderPack(root) {
     var count = 0;
 
     function changeHandler(event, filename) {
-        console.log(filename + " 发生变化")
         count++;
         setTimeout(function () {
             count--;
             if (count == 0)
                 pack();
-        }, 100);
+        }, 1000);
 
         function pack() {
+            console.log(filename + " 发生变化")
             try {
                 var savePath = root + "/" + "src/autofiles/ShaderConfig.ts";
                 var shaders = readFiles(getFilePaths(root + "/" + "shaders", null, 1));

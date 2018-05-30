@@ -68,7 +68,7 @@ vec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientC
         //
         vec3 lightOffset = u_pointLightPositions[i] - v_worldPosition;
         float lightDistance = length(lightOffset);
-        //光照方向
+        //光源方向
         vec3 lightDir = normalize(lightOffset);
         //灯光颜色
         vec3 lightColor = u_pointLightColors[i];
@@ -85,7 +85,7 @@ vec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientC
 
     // 处理方向光源
     for(int i = 0;i<2;i++){
-        //光照方向
+        //光源方向
         vec3 lightDir = normalize(-u_directionalLightDirections[i]);
         //灯光颜色
         vec3 lightColor = u_directionalLightColors[i];

@@ -15,7 +15,7 @@ namespace feng3d
             if (sun)
             {
                 this.material.uniforms.u_sunColor = sun.color;
-                this.material.uniforms.u_sunDirection = sun.transform.localToWorldMatrix.forward;
+                this.material.uniforms.u_sunDirection = sun.transform.localToWorldMatrix.forward.clone().negate();
             }
 
             this.material.uniforms.u_time += 1.0 / 60.0;
