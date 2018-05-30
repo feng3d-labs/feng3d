@@ -1,6 +1,6 @@
 uniform sampler2D mirrorSampler;
 uniform float alpha;
-uniform float time;
+uniform float u_time;
 uniform float size;
 uniform float distortionScale;
 uniform sampler2D normalSampler;
@@ -9,14 +9,14 @@ uniform vec3 sunDirection;
 uniform vec3 eye;
 uniform vec3 waterColor;
 
-varying vec4 mirrorCoord;
-varying vec4 worldPosition;
+varying vec4 v_mirrorCoord;
+varying vec4 v_worldPosition;
 
 vec4 getNoise( vec2 uv ) {
-	vec2 uv0 = ( uv / 103.0 ) + vec2(time / 17.0, time / 29.0);
-	vec2 uv1 = uv / 107.0-vec2( time / -19.0, time / 31.0 );
-	vec2 uv2 = uv / vec2( 8907.0, 9803.0 ) + vec2( time / 101.0, time / 97.0 );
-	vec2 uv3 = uv / vec2( 1091.0, 1027.0 ) - vec2( time / 109.0, time / -113.0 );
+	vec2 uv0 = ( uv / 103.0 ) + vec2(u_time / 17.0, u_time / 29.0);
+	vec2 uv1 = uv / 107.0-vec2( u_time / -19.0, u_time / 31.0 );
+	vec2 uv2 = uv / vec2( 8907.0, 9803.0 ) + vec2( u_time / 101.0, u_time / 97.0 );
+	vec2 uv3 = uv / vec2( 1091.0, 1027.0 ) - vec2( u_time / 109.0, u_time / -113.0 );
 	vec4 noise = texture2D( normalSampler, uv0 ) +
 		texture2D( normalSampler, uv1 ) +
 		texture2D( normalSampler, uv2 ) +
@@ -32,16 +32,16 @@ void sunLight( const vec3 surfaceNormal, const vec3 eyeDirection, float shiny, f
 }
 
 void main() {
-	vec4 noise = getNoise( worldPosition.xz * size );
+	vec4 noise = getNoise( v_worldPosition.xz * size );
 	vec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );
 	vec3 diffuseLight = vec3(0.0);
 	vec3 specularLight = vec3(0.0);
-	vec3 worldToEye = eye-worldPosition.xyz;
+	vec3 worldToEye = eye-v_worldPosition.xyz;
 	vec3 eyeDirection = normalize( worldToEye );
 	sunLight( surfaceNormal, eyeDirection, 100.0, 2.0, 0.5, diffuseLight, specularLight );
 	float distance = length(worldToEye);
 	vec2 distortion = surfaceNormal.xz * ( 0.001 + 1.0 / distance ) * distortionScale;
-	vec3 reflectionSample = vec3( texture2D( mirrorSampler, mirrorCoord.xy / mirrorCoord.z + distortion ) );
+	vec3 reflectionSample = vec3( texture2D( mirrorSampler, v_mirrorCoord.xy / v_mirrorCoord.z + distortion ) );
 	float theta = max( dot( eyeDirection, surfaceNormal ), 0.0 );
 	float rf0 = 0.3;
 	float reflectance = rf0 + ( 1.0 - rf0 ) * pow( ( 1.0 - theta ), 5.0 );

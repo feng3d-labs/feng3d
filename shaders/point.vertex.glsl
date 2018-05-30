@@ -10,8 +10,8 @@ varying vec4 v_color;
 
 void main(void) {
 
-    vec4 globalPosition = u_modelMatrix * vec4(a_position, 1.0);
-    gl_Position = u_viewProjection * globalPosition;
+    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);
+    gl_Position = u_viewProjection * worldPosition;
     gl_PointSize = u_PointSize;
 
     v_color = a_color;

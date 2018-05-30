@@ -36,11 +36,11 @@ void main(void) {
     vec3 normal = a_normal;
 
     //获取全局坐标
-    vec4 globalPosition = u_modelMatrix * position;
+    vec4 worldPosition = u_modelMatrix * position;
     //计算投影坐标
-    gl_Position = u_viewProjection * globalPosition;
+    gl_Position = u_viewProjection * worldPosition;
     //输出全局坐标
-    v_worldPosition = globalPosition.xyz;
+    v_worldPosition = worldPosition.xyz;
     //输出uv
     v_uv = a_uv;
 

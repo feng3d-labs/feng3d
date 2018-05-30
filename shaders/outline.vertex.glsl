@@ -31,20 +31,20 @@ void main(void) {
     vec3 normal = a_normal;
 
     //全局坐标
-    vec4 globalPosition = u_modelMatrix * position;
+    vec4 worldPosition = u_modelMatrix * position;
     //全局法线
     vec3 globalNormal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);
 
-    float depth = distance(globalPosition.xyz , u_cameraMatrix[3].xyz);
+    float depth = distance(worldPosition.xyz , u_cameraMatrix[3].xyz);
     
-    vec3 offsetDir = mix(globalNormal,normalize(globalPosition.xyz),u_outlineMorphFactor);
+    vec3 offsetDir = mix(globalNormal,normalize(worldPosition.xyz),u_outlineMorphFactor);
     //摄像机远近保持粗细一致
     offsetDir = offsetDir * depth * u_scaleByDepth;
     //描边宽度
     offsetDir = offsetDir * u_outlineSize;
 
-    globalPosition.xyz = globalPosition.xyz + offsetDir;//
+    worldPosition.xyz = worldPosition.xyz + offsetDir;//
 
     //计算投影坐标
-    gl_Position = u_viewProjection * globalPosition;
+    gl_Position = u_viewProjection * worldPosition;
 }
