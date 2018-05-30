@@ -19704,7 +19704,7 @@ var feng3d;
         ], AudioListener.prototype, "enabled", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ componentParam: { tooltip: "音量" } })
         ], AudioListener.prototype, "volume", null);
         return AudioListener;
     }(feng3d.Behaviour));
@@ -20041,36 +20041,36 @@ var feng3d;
         ], AudioSource.prototype, "enabled", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "audio" } }),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "audio", tooltip: "声音文件路径" } }),
             feng3d.watch("onUrlChanged")
         ], AudioSource.prototype, "url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ componentParam: { tooltip: "是否循环播放" } })
         ], AudioSource.prototype, "loop", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ componentParam: { tooltip: "音量" } })
         ], AudioSource.prototype, "volume", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ componentParam: { tooltip: "是否启用位置影响声音" } })
         ], AudioSource.prototype, "enablePosition", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: DistanceModelType } })
+            feng3d.oav({ component: "OAVEnum", componentParam: { tooltip: "距离模式，距离影响声音的方式", enumClass: DistanceModelType } })
         ], AudioSource.prototype, "distanceModel", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ componentParam: { tooltip: "表示音频源和收听者之间的最大距离，之后音量不会再降低。该值仅由linear距离模型使用。默认值是10000。" } })
         ], AudioSource.prototype, "maxDistance", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ componentParam: { tooltip: "表示随着音频源远离收听者而减小音量的参考距离。此值由所有距离模型使用。默认值是1。" } })
         ], AudioSource.prototype, "refDistance", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ componentParam: { tooltip: "描述了音源离开收听者音量降低的速度。此值由所有距离模型使用。默认值是1。" } })
         ], AudioSource.prototype, "rolloffFactor", null);
         __decorate([
             feng3d.oav()

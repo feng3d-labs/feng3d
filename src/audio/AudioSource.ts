@@ -38,7 +38,7 @@ namespace feng3d
          * 声音文件路径
          */
         @serialize
-        @oav({ component: "OAVPick", componentParam: { accepttype: "audio" } })
+        @oav({ component: "OAVPick", componentParam: { accepttype: "audio", tooltip: "声音文件路径" } })
         @watch("onUrlChanged")
         url = "";
 
@@ -46,7 +46,7 @@ namespace feng3d
          * 是否循环播放
          */
         @serialize
-        @oav()
+        @oav({ componentParam: { tooltip: "是否循环播放" } })
         get loop()
         {
             return this._loop;
@@ -62,7 +62,7 @@ namespace feng3d
          * 音量
          */
         @serialize
-        @oav()
+        @oav({ componentParam: { tooltip: "音量" } })
         get volume()
         {
             return this._volume;
@@ -78,7 +78,7 @@ namespace feng3d
          * 是否启用位置影响声音
          */
         @serialize
-        @oav()
+        @oav({ componentParam: { tooltip: "是否启用位置影响声音" } })
         get enablePosition()
         {
             return this._enablePosition;
@@ -144,7 +144,7 @@ namespace feng3d
          * inverse是的默认值distanceModel。
          */
         @serialize
-        @oav({ component: "OAVEnum", componentParam: { enumClass: DistanceModelType } })
+        @oav({ component: "OAVEnum", componentParam: { tooltip: "距离模式，距离影响声音的方式", enumClass: DistanceModelType } })
         get distanceModel()
         {
             return this._distanceModel;
@@ -160,7 +160,7 @@ namespace feng3d
          * 表示音频源和收听者之间的最大距离，之后音量不会再降低。该值仅由linear距离模型使用。默认值是10000。
          */
         @serialize
-        @oav()
+        @oav({ componentParam: { tooltip: "表示音频源和收听者之间的最大距离，之后音量不会再降低。该值仅由linear距离模型使用。默认值是10000。" } })
         get maxDistance()
         {
             return this._maxDistance;
@@ -189,7 +189,7 @@ namespace feng3d
          * 表示随着音频源远离收听者而减小音量的参考距离。此值由所有距离模型使用。默认值是1。
          */
         @serialize
-        @oav()
+        @oav({ componentParam: { tooltip: "表示随着音频源远离收听者而减小音量的参考距离。此值由所有距离模型使用。默认值是1。" } })
         get refDistance()
         {
             return this._refDistance;
@@ -205,7 +205,7 @@ namespace feng3d
          * 描述了音源离开收听者音量降低的速度。此值由所有距离模型使用。默认值是1。
          */
         @serialize
-        @oav()
+        @oav({ componentParam: { tooltip: "描述了音源离开收听者音量降低的速度。此值由所有距离模型使用。默认值是1。" } })
         get rolloffFactor()
         {
             return this._rolloffFactor;

@@ -17,7 +17,7 @@ namespace feng3d
          * 音量
          */
         @serialize
-        @oav()
+        @oav({ componentParam: { tooltip: "音量" } })
         get volume()
         {
             return this._volume;
