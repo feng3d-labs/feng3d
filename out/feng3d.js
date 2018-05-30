@@ -21121,23 +21121,23 @@ var feng3d;
             }
         };
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ componentParam: { tooltip: "是否播放中" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "isPlaying", void 0);
         __decorate([
-            feng3d.oav()
+            feng3d.oav({ componentParam: { tooltip: "当前粒子时间" } })
         ], ParticleSystem.prototype, "time", void 0);
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ componentParam: { tooltip: "播放速度，可以为负值，-1表示反方向一倍速度播放" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "playspeed", void 0);
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ componentParam: { tooltip: "粒子系统周期，time=0与time=10000有相同效果" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "cycle", void 0);
         __decorate([
             feng3d.watch("invalidate"),
-            feng3d.oav(),
+            feng3d.oav({ componentParam: { tooltip: "粒子系统拥有粒子的数量" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "numParticles", void 0);
         __decorate([
@@ -21150,12 +21150,15 @@ var feng3d;
         ], ParticleSystem.prototype, "material", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "全局属性", component: "OAVObjectView" })
+            feng3d.oav({ block: "全局属性", component: "OAVObjectView", componentParam: { tooltip: "粒子全局属性，作用与所有粒子。" } })
         ], ParticleSystem.prototype, "particleGlobal", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         ], ParticleSystem.prototype, "components", void 0);
+        __decorate([
+            feng3d.oav({ componentParam: { tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" } })
+        ], ParticleSystem.prototype, "invalidate", null);
         return ParticleSystem;
     }(feng3d.MeshRenderer));
     feng3d.ParticleSystem = ParticleSystem;

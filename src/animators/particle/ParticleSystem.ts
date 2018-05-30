@@ -11,27 +11,27 @@ namespace feng3d
         /**
          * 是否正在播放
          */
-        @oav()
+        @oav({ componentParam: { tooltip: "是否播放中" } })
         @serialize
         isPlaying = true;
 
         /**
          * 粒子时间
          */
-        @oav()
+        @oav({ componentParam: { tooltip: "当前粒子时间" } })
         time = 0;
 
         /**
          * 播放速度
          */
-        @oav()
+        @oav({ componentParam: { tooltip: "播放速度，可以为负值，-1表示反方向一倍速度播放" } })
         @serialize
         playspeed = 1;
 
         /**
          * 周期
          */
-        @oav()
+        @oav({ componentParam: { tooltip: "粒子系统周期，time=0与time=10000有相同效果" } })
         @serialize
         cycle = 10000;
 
@@ -39,7 +39,7 @@ namespace feng3d
          * 粒子数量
          */
         @watch("invalidate")
-        @oav()
+        @oav({ componentParam: { tooltip: "粒子系统拥有粒子的数量" } })
         @serialize
         numParticles = 1000;
 
@@ -55,7 +55,7 @@ namespace feng3d
          * 粒子全局属性
          */
         @serialize
-        @oav({ block: "全局属性", component: "OAVObjectView" })
+        @oav({ block: "全局属性", component: "OAVObjectView", componentParam: { tooltip: "粒子全局属性，作用与所有粒子。" } })
         readonly particleGlobal = new ParticleGlobal();
 
         /**
@@ -91,6 +91,7 @@ namespace feng3d
             this.time = (this.time + (interval * this.playspeed / 1000) + this.cycle) % this.cycle;
         }
 
+        @oav({ componentParam: { tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" } })
         public invalidate()
         {
             this._isDirty = true;
