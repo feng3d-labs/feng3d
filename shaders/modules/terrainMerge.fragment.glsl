@@ -89,7 +89,7 @@ float mipmapLevel(vec2 uv)
 float mipmapLevel1(vec2 uv)
 {
     //视线方向
-    vec3 viewDir = u_cameraMatrix[3].xyz - v_globalPosition.xyz;
+    vec3 viewDir = u_cameraMatrix[3].xyz - v_worldPosition.xyz;
     float fogDistance = length(viewDir);
     float value = u_scaleByDepth * fogDistance * u_uvPositionScale;//uv变化率与距离成正比，0.001为顶点位置与uv的变化比率
     viewDir = normalize(viewDir);

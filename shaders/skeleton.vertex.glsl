@@ -11,7 +11,7 @@ uniform mat4 u_viewProjection;
 uniform float u_scaleByDepth;
 
 varying vec2 v_uv;
-varying vec3 v_globalPosition;
+varying vec3 v_worldPosition;
 varying vec3 v_normal;
 
 attribute vec3 a_tangent;
@@ -36,7 +36,7 @@ void main(void) {
     //计算投影坐标
     gl_Position = u_viewProjection * globalPosition;
     //输出全局坐标
-    v_globalPosition = globalPosition.xyz;
+    v_worldPosition = globalPosition.xyz;
     //输出uv
     v_uv = a_uv;
 

@@ -12,7 +12,6 @@
         //
         "src/ds/Object.ts",
         "src/ds/Map.ts",
-        "src/ds/Array.ts",
         //
         "src/ds/Utils.ts",
         "src/ds/Queue.ts",

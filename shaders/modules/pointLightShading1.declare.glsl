@@ -75,9 +75,9 @@
         vec3 totalLightColor = vec3(0.0,0.0,0.0);
         for(int i = 0;i<NUM_POINTLIGHT;i++){
             //光照方向
-            vec3 lightDir = normalize(u_pointLightPositions[i] - v_globalPosition);
+            vec3 lightDir = normalize(u_pointLightPositions[i] - v_worldPosition);
             //视线方向
-            vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_globalPosition);
+            vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_worldPosition);
             //灯光颜色
             vec3 lightColor = u_pointLightColors[i];
             //灯光强度

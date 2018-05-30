@@ -1,7 +1,7 @@
 precision mediump float;
 
 varying vec2 v_uv;
-varying vec3 v_globalPosition;
+varying vec3 v_worldPosition;
 varying vec3 v_normal;
 
 varying vec3 v_tangent;
