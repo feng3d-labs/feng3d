@@ -1,6 +1,7 @@
 attribute vec3 a_position;
 
 uniform mat4 u_modelMatrix;
+uniform mat4 u_viewProjection;
 
 uniform mat4 u_textureMatrix;
 

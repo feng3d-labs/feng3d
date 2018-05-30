@@ -194,6 +194,9 @@
         // 声音
         "src/audio/AudioListener.ts",
         "src/audio/AudioSource.ts",
+        //水
+        "src/water/Water.ts",
+        "src/water/WaterMaterial.ts",
         //地形
         "src/terrain/TerrainGeometry.ts",
         "src/terrain/TerrainMaterial.ts",

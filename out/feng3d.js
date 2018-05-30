@@ -12032,8 +12032,8 @@ var feng3d;
                 "vertex": "\r\n\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\n\r\nvarying vec2 v_uv;\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvoid main(void) {\r\n\r\n    gl_Position = u_viewProjection * u_modelMatrix * vec4(a_position, 1.0);\r\n    v_uv = a_uv;\r\n}"
             },
             "water": {
-                "fragment": "uniform sampler2D mirrorSampler;\r\nuniform sampler2D normalSampler;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nvarying vec4 v_mirrorCoord;\r\nvarying vec4 v_worldPosition;\r\n\r\nuniform float u_alpha;\r\nuniform float u_time;\r\nuniform float u_size;\r\nuniform float u_distortionScale;\r\nuniform vec3 u_sunColor;\r\nuniform vec3 u_sunDirection;\r\nuniform vec3 u_waterColor;\r\n\r\n\r\nvec4 getNoise( vec2 uv ) {\r\n\tvec2 uv0 = ( uv / 103.0 ) + vec2(u_time / 17.0, u_time / 29.0);\r\n\tvec2 uv1 = uv / 107.0-vec2( u_time / -19.0, u_time / 31.0 );\r\n\tvec2 uv2 = uv / vec2( 8907.0, 9803.0 ) + vec2( u_time / 101.0, u_time / 97.0 );\r\n\tvec2 uv3 = uv / vec2( 1091.0, 1027.0 ) - vec2( u_time / 109.0, u_time / -113.0 );\r\n\tvec4 noise = texture2D( normalSampler, uv0 ) +\r\n\t\ttexture2D( normalSampler, uv1 ) +\r\n\t\ttexture2D( normalSampler, uv2 ) +\r\n\t\ttexture2D( normalSampler, uv3 );\r\n\treturn noise * 0.5 - 1.0;\r\n}\r\n\r\nvoid sunLight( const vec3 surfaceNormal, const vec3 eyeDirection, float shiny, float spec, float diffuse, inout vec3 diffuseColor, inout vec3 specularColor ) {\r\n\tvec3 reflection = normalize( reflect( -u_sunDirection, surfaceNormal ) );\r\n\tfloat direction = max( 0.0, dot( eyeDirection, reflection ) );\r\n\tspecularColor += pow( direction, shiny ) * u_sunColor * spec;\r\n\tdiffuseColor += max( dot( u_sunDirection, surfaceNormal ), 0.0 ) * u_sunColor * diffuse;\r\n}\r\n\r\nvoid main() {\r\n\tvec4 noise = getNoise( v_worldPosition.xz * u_size );\r\n\tvec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );\r\n\tvec3 diffuseLight = vec3(0.0);\r\n\tvec3 specularLight = vec3(0.0);\r\n\tvec3 worldToEye = u_cameraMatrix[3].xyz-v_worldPosition.xyz;\r\n\tvec3 eyeDirection = normalize( worldToEye );\r\n\tsunLight( surfaceNormal, eyeDirection, 100.0, 2.0, 0.5, diffuseLight, specularLight );\r\n\tfloat distance = length(worldToEye);\r\n\tvec2 distortion = surfaceNormal.xz * ( 0.001 + 1.0 / distance ) * u_distortionScale;\r\n\tvec3 reflectionSample = vec3( texture2D( mirrorSampler, v_mirrorCoord.xy / v_mirrorCoord.z + distortion ) );\r\n\tfloat theta = max( dot( eyeDirection, surfaceNormal ), 0.0 );\r\n\tfloat rf0 = 0.3;\r\n\tfloat reflectance = rf0 + ( 1.0 - rf0 ) * pow( ( 1.0 - theta ), 5.0 );\r\n\tvec3 scatter = max( 0.0, dot( surfaceNormal, eyeDirection ) ) * u_waterColor;\r\n\tvec3 albedo = mix( ( u_sunColor * diffuseLight * 0.3 + scatter ) * getShadowMask(), ( vec3( 0.1 ) + reflectionSample * 0.9 + reflectionSample * specularLight ), reflectance);\r\n\tvec3 outgoingLight = albedo;\r\n\tgl_FragColor = vec4( outgoingLight, u_alpha );\r\n}",
-                "vertex": "attribute vec3 a_position;\r\n\r\nuniform mat4 u_modelMatrix;\r\n\r\nuniform mat4 u_textureMatrix;\r\n\r\nvarying vec4 v_mirrorCoord;\r\nvarying vec4 v_worldPosition;\r\n\r\nvoid main() {\r\n\r\n\tvec4 position = vec4(a_position,1.0);\r\n\t//获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n\t\r\n\tv_worldPosition = worldPosition;\r\n\tv_mirrorCoord = u_textureMatrix * worldPosition;\r\n}"
+                "fragment": "precision mediump float;  \r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nvarying vec4 v_mirrorCoord;\r\nvarying vec4 v_worldPosition;\r\n\r\nuniform sampler2D s_mirrorSampler;\r\nuniform sampler2D s_normalSampler;\r\n\r\nuniform float u_alpha;\r\nuniform float u_time;\r\nuniform float u_size;\r\nuniform float u_distortionScale;\r\nuniform vec3 u_sunColor;\r\nuniform vec3 u_sunDirection;\r\nuniform vec3 u_waterColor;\r\n\r\nvec4 getNoise( vec2 uv ) {\r\n\tvec2 uv0 = ( uv / 103.0 ) + vec2(u_time / 17.0, u_time / 29.0);\r\n\tvec2 uv1 = uv / 107.0-vec2( u_time / -19.0, u_time / 31.0 );\r\n\tvec2 uv2 = uv / vec2( 8907.0, 9803.0 ) + vec2( u_time / 101.0, u_time / 97.0 );\r\n\tvec2 uv3 = uv / vec2( 1091.0, 1027.0 ) - vec2( u_time / 109.0, u_time / -113.0 );\r\n\tvec4 noise = texture2D( s_normalSampler, uv0 ) +\r\n\t\ttexture2D( s_normalSampler, uv1 ) +\r\n\t\ttexture2D( s_normalSampler, uv2 ) +\r\n\t\ttexture2D( s_normalSampler, uv3 );\r\n\treturn noise * 0.5 - 1.0;\r\n}\r\n\r\nvoid sunLight( const vec3 surfaceNormal, const vec3 eyeDirection, float shiny, float spec, float diffuse, inout vec3 diffuseColor, inout vec3 specularColor ) {\r\n\tvec3 reflection = normalize( reflect( -u_sunDirection, surfaceNormal ) );\r\n\tfloat direction = max( 0.0, dot( eyeDirection, reflection ) );\r\n\tspecularColor += pow( direction, shiny ) * u_sunColor * spec;\r\n\tdiffuseColor += max( dot( u_sunDirection, surfaceNormal ), 0.0 ) * u_sunColor * diffuse;\r\n}\r\n\r\nvoid main() {\r\n\tvec4 noise = getNoise( v_worldPosition.xz * u_size );\r\n\tvec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );\r\n\tvec3 diffuseLight = vec3(0.0);\r\n\tvec3 specularLight = vec3(0.0);\r\n\tvec3 worldToEye = u_cameraMatrix[3].xyz-v_worldPosition.xyz;\r\n\tvec3 eyeDirection = normalize( worldToEye );\r\n\tsunLight( surfaceNormal, eyeDirection, 100.0, 2.0, 0.5, diffuseLight, specularLight );\r\n\tfloat distance = length(worldToEye);\r\n\tvec2 distortion = surfaceNormal.xz * ( 0.001 + 1.0 / distance ) * u_distortionScale;\r\n\tvec3 reflectionSample = vec3( texture2D( s_mirrorSampler, v_mirrorCoord.xy / v_mirrorCoord.z + distortion ) );\r\n\tfloat theta = max( dot( eyeDirection, surfaceNormal ), 0.0 );\r\n\tfloat rf0 = 0.3;\r\n\tfloat reflectance = rf0 + ( 1.0 - rf0 ) * pow( ( 1.0 - theta ), 5.0 );\r\n\tvec3 scatter = max( 0.0, dot( surfaceNormal, eyeDirection ) ) * u_waterColor;\r\n\r\n\tfloat shadowMask = 1.0;\r\n\t// float shadowMask = getShadowMask();\r\n\r\n\tvec3 albedo = mix( ( u_sunColor * diffuseLight * 0.3 + scatter ) * shadowMask, ( vec3( 0.1 ) + reflectionSample * 0.9 + reflectionSample * specularLight ), reflectance);\r\n\tvec3 outgoingLight = albedo;\r\n\tgl_FragColor = vec4( outgoingLight, u_alpha );\r\n}",
+                "vertex": "attribute vec3 a_position;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nuniform mat4 u_textureMatrix;\r\n\r\nvarying vec4 v_mirrorCoord;\r\nvarying vec4 v_worldPosition;\r\n\r\nvoid main() {\r\n\r\n\tvec4 position = vec4(a_position,1.0);\r\n\t//获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n\t\r\n\tv_worldPosition = worldPosition;\r\n\tv_mirrorCoord = u_textureMatrix * worldPosition;\r\n}"
             },
             "wireframe": {
                 "fragment": "precision mediump float;\r\n\r\nuniform vec4 u_wireframeColor;\r\n\r\nvoid main(void) {\r\n    gl_FragColor = u_wireframeColor;\r\n}",
@@ -20097,6 +20097,79 @@ function createPanner() {
 var feng3d;
 (function (feng3d) {
     /**
+     * The Water component renders the terrain.
+     */
+    var Water = /** @class */ (function (_super) {
+        __extends(Water, _super);
+        function Water() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.geometry = new feng3d.PlaneGeometry({ width: 10, height: 10 });
+            _this.material = feng3d.materialFactory.create("water");
+            return _this;
+        }
+        return Water;
+    }(feng3d.MeshRenderer));
+    feng3d.Water = Water;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var WaterUniforms = /** @class */ (function () {
+        function WaterUniforms() {
+            this.u_textureMatrix = new feng3d.Matrix4x4();
+            this.u_alpha = 1.0;
+            this.u_time = 0.0;
+            this.u_size = 1.0;
+            this.u_distortionScale = 20.0;
+            this.u_sunColor = new feng3d.Color3().fromUnit(0x7F7F7F);
+            this.u_sunDirection = new feng3d.Vector3(0.70707, 0.70707, 0);
+            this.u_waterColor = new feng3d.Color3().fromUnit(0x555555);
+            this.s_mirrorSampler = new feng3d.Texture2D();
+            this.s_normalSampler = new feng3d.Texture2D();
+        }
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], WaterUniforms.prototype, "u_alpha", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], WaterUniforms.prototype, "u_time", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], WaterUniforms.prototype, "u_size", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], WaterUniforms.prototype, "u_distortionScale", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], WaterUniforms.prototype, "u_sunColor", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], WaterUniforms.prototype, "u_sunDirection", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], WaterUniforms.prototype, "u_waterColor", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], WaterUniforms.prototype, "s_mirrorSampler", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], WaterUniforms.prototype, "s_normalSampler", void 0);
+        return WaterUniforms;
+    }());
+    feng3d.WaterUniforms = WaterUniforms;
+    feng3d.shaderConfig.shaders["water"].cls = WaterUniforms;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 默认高度图
      */
     var defaultHeightMap = feng3d.imageUtil.createImageData();
@@ -24438,41 +24511,6 @@ var feng3d;
     var GameObjectFactory = /** @class */ (function () {
         function GameObjectFactory() {
         }
-        GameObjectFactory.prototype.create = function (name) {
-            if (name === void 0) { name = "GameObject"; }
-            var gameobject = feng3d.GameObject.create(name);
-            gameobject.mouseEnabled = true;
-            if (name == "GameObject")
-                return gameobject;
-            var meshRenderer = gameobject.addComponent(feng3d.MeshRenderer);
-            switch (name) {
-                case "Plane":
-                    meshRenderer.geometry = new feng3d.PlaneGeometry();
-                    break;
-                case "Cube":
-                    meshRenderer.geometry = new feng3d.CubeGeometry();
-                    break;
-                case "Sphere":
-                    meshRenderer.geometry = new feng3d.SphereGeometry();
-                    break;
-                case "Capsule":
-                    meshRenderer.geometry = new feng3d.CapsuleGeometry();
-                    break;
-                case "Cylinder":
-                    meshRenderer.geometry = new feng3d.CylinderGeometry();
-                    break;
-                case "Cone":
-                    meshRenderer.geometry = new feng3d.ConeGeometry();
-                    break;
-                case "Torus":
-                    meshRenderer.geometry = new feng3d.TorusGeometry();
-                    break;
-                case "Particle":
-                    meshRenderer.geometry = new feng3d.TorusGeometry();
-                    break;
-            }
-            return gameobject;
-        };
         GameObjectFactory.prototype.createGameObject = function (name) {
             if (name === void 0) { name = "GameObject"; }
             var gameobject = feng3d.GameObject.create(name);
@@ -24569,6 +24607,12 @@ var feng3d;
             // });
             // particleSystem.cycle = 10;
             return _particleMesh;
+        };
+        GameObjectFactory.prototype.createWater = function (name) {
+            if (name === void 0) { name = "water"; }
+            var gameobject = feng3d.GameObject.create(name);
+            gameobject.addComponent(feng3d.Water);
+            return gameobject;
         };
         return GameObjectFactory;
     }());

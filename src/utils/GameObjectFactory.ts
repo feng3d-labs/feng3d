@@ -4,43 +4,6 @@ namespace feng3d
 
     export class GameObjectFactory
     {
-        create(name = "GameObject")
-        {
-            var gameobject = GameObject.create(name);
-            gameobject.mouseEnabled = true;
-            if (name == "GameObject")
-                return gameobject;
-            var meshRenderer = gameobject.addComponent(MeshRenderer);
-            switch (name)
-            {
-                case "Plane":
-                    meshRenderer.geometry = new PlaneGeometry();
-                    break;
-                case "Cube":
-                    meshRenderer.geometry = new CubeGeometry();
-                    break;
-                case "Sphere":
-                    meshRenderer.geometry = new SphereGeometry();
-                    break;
-                case "Capsule":
-                    meshRenderer.geometry = new CapsuleGeometry();
-                    break;
-                case "Cylinder":
-                    meshRenderer.geometry = new CylinderGeometry();
-                    break;
-                case "Cone":
-                    meshRenderer.geometry = new ConeGeometry();
-                    break;
-                case "Torus":
-                    meshRenderer.geometry = new TorusGeometry();
-                    break;
-                case "Particle":
-                    meshRenderer.geometry = new TorusGeometry();
-                    break;
-            }
-            return gameobject;
-        }
-
         createGameObject(name = "GameObject")
         {
             var gameobject = GameObject.create(name);
@@ -149,6 +112,13 @@ namespace feng3d
             // });
             // particleSystem.cycle = 10;
             return _particleMesh;
+        }
+
+        createWater(name: string = "water")
+        {
+            var gameobject = GameObject.create(name);
+            gameobject.addComponent(Water);
+            return gameobject;
         }
     }
 
