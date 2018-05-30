@@ -14945,11 +14945,11 @@ var feng3d;
             }
         };
         __decorate([
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "geometry", datatype: "geometry" } }),
+            feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } }),
             feng3d.serialize
         ], MeshRenderer.prototype, "geometry", null);
         __decorate([
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "material", datatype: "material" } }),
+            feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } }),
             feng3d.serialize,
             feng3d.watch("materialChanged")
         ], MeshRenderer.prototype, "material", void 0);
@@ -18468,7 +18468,7 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.watch("urlChanged"),
-            feng3d.oav({ component: "OAVPick", componentParam: { label: "路径", accepttype: "image" } })
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         ], Texture2D.prototype, "url", void 0);
         return Texture2D;
     }(feng3d.TextureInfo));

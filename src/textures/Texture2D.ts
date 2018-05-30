@@ -21,7 +21,7 @@ namespace feng3d
 
         @serialize
         @watch("urlChanged")
-        @oav({ component: "OAVPick", componentParam: { label: "路径", accepttype: "image" } })
+        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         url = "";
 
         protected _textureType = TextureType.TEXTURE_2D;
