@@ -35,15 +35,15 @@
         return 2.0 / (1.0 + sqrt(1.0 + alphaG * alphaG * tanSquared));
     }
 
-    vec3 calculateLight(vec3 normal,vec3 viewDir,vec3 lightDir,vec3 lightColor,float lightIntensity,vec3 baseColor,vec3 reflectance,float roughness){
+    vec3 calculateLight(vec3 normal,vec3 cameraDir,vec3 lightDir,vec3 lightColor,float lightIntensity,vec3 baseColor,vec3 reflectance,float roughness){
 
         //BRDF = D(h) * F(1, h) * V(l, v, h) / (4 * dot(n, l) * dot(n, v));
 
-        vec3 halfVec = normalize(lightDir + viewDir);
+        vec3 halfVec = normalize(lightDir + cameraDir);
         float NdotL = clamp(dot(normal,lightDir),0.0,1.0);
         float NdotH = clamp(dot(normal,halfVec),0.0,1.0);
-        float NdotV = max(abs(dot(normal,viewDir)),0.000001);
-        float VdotH = clamp(dot(viewDir, halfVec),0.0,1.0);
+        float NdotV = max(abs(dot(normal,cameraDir)),0.000001);
+        float VdotH = clamp(dot(cameraDir, halfVec),0.0,1.0);
         
         float alphaG = max(roughness * roughness,0.0005);
 
@@ -77,13 +77,13 @@
             //光照方向
             vec3 lightDir = normalize(u_pointLightPositions[i] - v_worldPosition);
             //视线方向
-            vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_worldPosition);
+            vec3 cameraDir = normalize(u_cameraMatrix[3].xyz - v_worldPosition);
             //灯光颜色
             vec3 lightColor = u_pointLightColors[i];
             //灯光强度
             float lightIntensity = u_pointLightIntensitys[i];
 
-            totalLightColor = totalLightColor + calculateLight(normal,viewDir,lightDir,lightColor,lightIntensity,realBaseColor,realReflectance,roughness);
+            totalLightColor = totalLightColor + calculateLight(normal,cameraDir,lightDir,lightColor,lightIntensity,realBaseColor,realReflectance,roughness);
         }
         
         return totalLightColor;

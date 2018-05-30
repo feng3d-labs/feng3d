@@ -42,9 +42,9 @@ float cartoonLightDiffuse(vec3 normal,vec3 lightDir){
 }
 
 //镜面反射漫反射
-float cartoonLightSpecular(vec3 normal,vec3 lightDir,vec3 viewDir,float glossiness){
+float cartoonLightSpecular(vec3 normal,vec3 lightDir,vec3 cameraDir,float glossiness){
 
-    vec3 halfVec = normalize(lightDir + viewDir);
+    vec3 halfVec = normalize(lightDir + cameraDir);
     float specComp = max(dot(normal,halfVec),0.0);
     specComp = pow(specComp, glossiness);
 

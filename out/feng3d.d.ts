@@ -10228,6 +10228,7 @@ declare namespace feng3d {
     class Water extends MeshRenderer {
         geometry: PlaneGeometry;
         material: WaterMaterial;
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -10238,16 +10239,16 @@ declare namespace feng3d {
         create(shader: "water", raw?: gPartial<WaterMaterial>): WaterMaterial;
     }
     class WaterUniforms {
-        u_textureMatrix: Matrix4x4;
         u_alpha: number;
         u_time: number;
         u_size: number;
         u_distortionScale: number;
-        u_sunColor: Color3;
-        u_sunDirection: Vector3;
         u_waterColor: Color3;
         s_mirrorSampler: Texture2D;
         s_normalSampler: Texture2D;
+        u_textureMatrix: Matrix4x4;
+        u_sunColor: Color3;
+        u_sunDirection: Vector3;
     }
 }
 declare namespace feng3d {

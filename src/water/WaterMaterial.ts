@@ -9,8 +9,6 @@ namespace feng3d
 
     export class WaterUniforms
     {
-        u_textureMatrix = new Matrix4x4();
-
         @oav()
         @serialize
         u_alpha = 1.0;
@@ -29,14 +27,6 @@ namespace feng3d
 
         @oav()
         @serialize
-        u_sunColor = new Color3().fromUnit(0x7F7F7F);
-
-        @oav()
-        @serialize
-        u_sunDirection = new Vector3(0.70707, 0.70707, 0);
-
-        @oav()
-        @serialize
         u_waterColor = new Color3().fromUnit(0x555555);
 
         @oav()
@@ -46,6 +36,10 @@ namespace feng3d
         @oav()
         @serialize
         s_normalSampler = new Texture2D();
+
+        u_textureMatrix = new Matrix4x4();
+        u_sunColor = new Color3().fromUnit(0x7F7F7F);
+        u_sunDirection = new Vector3(0.70707, 0.70707, 0);
     }
 
     shaderConfig.shaders["water"].cls = WaterUniforms;

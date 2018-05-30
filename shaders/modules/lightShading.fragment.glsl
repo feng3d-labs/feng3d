@@ -29,12 +29,12 @@ float calculateLightDiffuse(vec3 normal,vec3 lightDir){
 }
 
 //计算光照镜面反射系数
-float calculateLightSpecular(vec3 normal,vec3 lightDir,vec3 viewDir,float glossiness){
+float calculateLightSpecular(vec3 normal,vec3 lightDir,vec3 cameraDir,float glossiness){
 
     #ifdef IS_CARTOON
-        return cartoonLightSpecular(normal,lightDir,viewDir,glossiness);
+        return cartoonLightSpecular(normal,lightDir,cameraDir,glossiness);
     #else
-        vec3 halfVec = normalize(lightDir + viewDir);
+        vec3 halfVec = normalize(lightDir + cameraDir);
         float specComp = max(dot(normal,halfVec),0.0);
         specComp = pow(specComp, glossiness);
 
@@ -57,8 +57,8 @@ float computeDistanceLightFalloff(float lightDistance, float range)
 //渲染点光源
 vec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientColor,float glossiness){
 
-    //视线方向
-    vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_worldPosition);
+    //摄像机方向
+    vec3 cameraDir = normalize(u_cameraMatrix[3].xyz - v_worldPosition);
 
     vec3 totalDiffuseLightColor = vec3(0.0,0.0,0.0);
     vec3 totalSpecularLightColor = vec3(0.0,0.0,0.0);
@@ -80,7 +80,7 @@ vec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientC
         lightIntensity = lightIntensity * attenuation;
         //
         totalDiffuseLightColor = totalDiffuseLightColor +  calculateLightDiffuse(normal,lightDir) * lightColor * lightIntensity;
-        totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,viewDir,glossiness) * lightColor * lightIntensity;
+        totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,cameraDir,glossiness) * lightColor * lightIntensity;
     }
 
     // 处理方向光源
@@ -93,7 +93,7 @@ vec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientC
         float lightIntensity = u_directionalLightIntensitys[i];
         //
         totalDiffuseLightColor = totalDiffuseLightColor +  calculateLightDiffuse(normal,lightDir) * lightColor * lightIntensity;
-        totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,viewDir,glossiness) * lightColor * lightIntensity;
+        totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,cameraDir,glossiness) * lightColor * lightIntensity;
     }
 
     vec3 resultColor = vec3(0.0,0.0,0.0);
