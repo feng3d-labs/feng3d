@@ -54,5 +54,10 @@ namespace feng3d
 		 * 颜色
 		 */
 		color = new Color4();
+
+		constructor(index: number)
+		{
+			this.index = index;
+		}
 	}
 }

@@ -10544,6 +10544,7 @@ declare namespace feng3d {
          * 颜色
          */
         color: Color4;
+        constructor(index: number);
     }
 }
 declare namespace feng3d {
@@ -10625,7 +10626,16 @@ declare namespace feng3d {
         isDirty: boolean;
         private _numParticles;
         private _birthTimes;
+        /**
+         * 上次发射时间
+         */
+        pretime: number;
         constructor();
+        /**
+         * 发射粒子
+         * @param time 当前粒子时间
+         */
+        emit(time: number, deathParticles: Particle[], survivalParticles: Particle[], changedParticles: Particle[]): void;
         /**
          * 创建粒子属性
          * @param particle                  粒子
@@ -10726,6 +10736,27 @@ declare namespace feng3d {
          */
         readonly particleGlobal: ParticleGlobal;
         /**
+         * 粒子最大数量
+         */
+        maxParticles: number;
+        /**
+         * 粒子列表
+         */
+        private particles;
+        /**
+         * 死亡粒子列表，这些粒子可以被发射器进行发射
+         */
+        private deathParticles;
+        /**
+         * 存活粒子列表，这些粒子将会在帧刷中进行状态计算，当生命周期结束时将会被移除且加入到死亡粒子列表中
+         */
+        private survivalParticles;
+        /**
+         * 被修改过的粒子列表，这些粒子将会在渲染前进行更新渲染va数据
+         */
+        private changedParticles;
+        private readonly particleEmission;
+        /**
          * 粒子状态控制模块列表
          */
         readonly components: ParticlePosition[];
@@ -10738,6 +10769,7 @@ declare namespace feng3d {
         init(gameObject: GameObject): void;
         update(interval: number): void;
         invalidate(): void;
+        private numParticlesChanged();
         /**
          * 生成粒子
          */

@@ -59,6 +59,36 @@ namespace feng3d
         readonly particleGlobal = new ParticleGlobal();
 
         /**
+         * 粒子最大数量
+         */
+        @watch("numParticlesChanged")
+        @oav({ componentParam: { tooltip: "粒子系统拥有粒子的数量" } })
+        @serialize
+        maxParticles = 1000;
+
+        /**
+         * 粒子列表
+         */
+        private particles: Particle[] = [];
+        /**
+         * 死亡粒子列表，这些粒子可以被发射器进行发射
+         */
+        private deathParticles: Particle[] = [];
+        /**
+         * 存活粒子列表，这些粒子将会在帧刷中进行状态计算，当生命周期结束时将会被移除且加入到死亡粒子列表中
+         */
+        private survivalParticles: Particle[] = [];
+        /**
+         * 被修改过的粒子列表，这些粒子将会在渲染前进行更新渲染va数据
+         */
+        private changedParticles: Particle[] = [];
+
+        private get particleEmission(): ParticleEmission
+        {
+            return <any>this.components[0];
+        }
+
+        /**
          * 粒子状态控制模块列表
          */
         @serialize
@@ -89,12 +119,29 @@ namespace feng3d
             if (!this.isPlaying) return;
 
             this.time = (this.time + (interval * this.playspeed / 1000) + this.cycle) % this.cycle;
+
+            this.particleEmission.emit(this.time, this.deathParticles, this.survivalParticles, this.changedParticles);
         }
 
         @oav({ componentParam: { tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" } })
         public invalidate()
         {
             this._isDirty = true;
+        }
+
+        private numParticlesChanged()
+        {
+            this.particles.length = 0;
+            //
+            for (var i = 0; i < this.maxParticles; i++)
+            {
+                this.particles.push(new Particle(i));
+            }
+            this.particleEmission.pretime = 0;
+            this.deathParticles = this.particles.concat();
+            this.survivalParticles = [];
+            this.changedParticles = this.particles.concat();
+            this.invalidate();
         }
 
         /**
@@ -107,8 +154,7 @@ namespace feng3d
             //
             for (var i = 0; i < this.numParticles; i++)
             {
-                var particle = new Particle();
-                particle.index = i;
+                var particle = new Particle(i);
                 this.components.forEach(element =>
                 {
                     if (element.enabled)
