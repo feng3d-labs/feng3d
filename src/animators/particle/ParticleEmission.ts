@@ -9,14 +9,14 @@ namespace feng3d
         /**
          * 发射率，每秒发射粒子数量
          */
-        @oav()
+        @oav({ componentParam: { tooltip: "每秒发射粒子数量" } })
         @serialize
         rate = 100;
 
         /**
          * 爆发，在time时刻额外喷射particles粒子
          */
-        @oav({ component: "OAVArray", componentParam: { defaultItem: () => { return { time: 0, particles: 30 } } } })
+        @oav({ component: "OAVArray", componentParam: { tooltip: "在指定时间进行额外发射指定数量的粒子", defaultItem: () => { return { time: 0, particles: 30 } } } })
         @serialize
         bursts: { time: number, particles: number }[] = [];
 

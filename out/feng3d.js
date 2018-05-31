@@ -20830,11 +20830,11 @@ var feng3d;
             return this._birthTimes;
         };
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ componentParam: { tooltip: "每秒发射粒子数量" } }),
             feng3d.serialize
         ], ParticleEmission.prototype, "rate", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVArray", componentParam: { defaultItem: function () { return { time: 0, particles: 30 }; } } }),
+            feng3d.oav({ component: "OAVArray", componentParam: { tooltip: "在指定时间进行额外发射指定数量的粒子", defaultItem: function () { return { time: 0, particles: 30 }; } } }),
             feng3d.serialize
         ], ParticleEmission.prototype, "bursts", void 0);
         return ParticleEmission;
