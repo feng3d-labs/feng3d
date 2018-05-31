@@ -83,10 +83,7 @@ namespace feng3d
          */
         private changedParticles: Particle[] = [];
 
-        private get particleEmission(): ParticleEmission
-        {
-            return <any>this.components[0];
-        }
+        private particleEmission = new ParticleEmission();
 
         /**
          * 粒子状态控制模块列表
@@ -94,7 +91,7 @@ namespace feng3d
         @serialize
         @oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         readonly components = [
-            new ParticleEmission(),
+            this.particleEmission,
             new ParticlePosition(),
             new ParticleVelocity(),
             new ParticleColor(),
@@ -131,13 +128,13 @@ namespace feng3d
 
         private numParticlesChanged()
         {
-            this.particles.length = 0;
+            this.particles = [];
             //
             for (var i = 0; i < this.maxParticles; i++)
             {
                 this.particles.push(new Particle(i));
             }
-            this.particleEmission.pretime = 0;
+            if (this.particleEmission) this.particleEmission.pretime = 0;
             this.deathParticles = this.particles.concat();
             this.survivalParticles = [];
             this.changedParticles = this.particles.concat();

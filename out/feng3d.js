@@ -20804,9 +20804,12 @@ var feng3d;
             //计算事件段内正常发射了粒子
             var step = 1 / this.rate;
             for (var i = this.pretime; i < time; i += step) {
+                emits.push({ time: i, num: 1 });
             }
             //按时间降序排列，获取该事件段内爆发的粒子
-            var bursts = this.bursts.concat().sort(function (a, b) { return b.time - a.time; }).filter(function (a) { return (_this.pretime <= a.time && a.time < time); });
+            var bursts = this.bursts.filter(function (a) { return (_this.pretime <= a.time && a.time < time); });
+            //
+            emits = emits.concat(bursts).sort(function (a, b) { return b.time - a.time; });
             this.rate;
             this.pretime;
             time;
@@ -20840,7 +20843,7 @@ var feng3d;
                     while (bursts.length > 0 && bursts[bursts.length - 1].time <= time) {
                         var burst = bursts.pop();
                         if (burst) {
-                            for (i = 0; i < burst.particles; i++) {
+                            for (i = 0; i < burst.num; i++) {
                                 birthTimes[index++] = burst.time;
                             }
                         }
@@ -20857,7 +20860,7 @@ var feng3d;
             feng3d.serialize
         ], ParticleEmission.prototype, "rate", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVArray", componentParam: { tooltip: "在指定时间进行额外发射指定数量的粒子", defaultItem: function () { return { time: 0, particles: 30 }; } } }),
+            feng3d.oav({ component: "OAVArray", componentParam: { tooltip: "在指定时间进行额外发射指定数量的粒子", defaultItem: function () { return { time: 0, num: 30 }; } } }),
             feng3d.serialize
         ], ParticleEmission.prototype, "bursts", void 0);
         return ParticleEmission;
@@ -21040,11 +21043,12 @@ var feng3d;
              * 被修改过的粒子列表，这些粒子将会在渲染前进行更新渲染va数据
              */
             _this.changedParticles = [];
+            _this.particleEmission = new feng3d.ParticleEmission();
             /**
              * 粒子状态控制模块列表
              */
             _this.components = [
-                new feng3d.ParticleEmission(),
+                _this.particleEmission,
                 new feng3d.ParticlePosition(),
                 new feng3d.ParticleVelocity(),
                 new feng3d.ParticleColor(),
@@ -21057,13 +21061,6 @@ var feng3d;
             _this._isDirty = true;
             return _this;
         }
-        Object.defineProperty(ParticleSystem.prototype, "particleEmission", {
-            get: function () {
-                return this.components[0];
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(ParticleSystem.prototype, "single", {
             get: function () { return true; },
             enumerable: true,
@@ -21082,12 +21079,13 @@ var feng3d;
             this._isDirty = true;
         };
         ParticleSystem.prototype.numParticlesChanged = function () {
-            this.particles.length = 0;
+            this.particles = [];
             //
             for (var i = 0; i < this.maxParticles; i++) {
                 this.particles.push(new feng3d.Particle(i));
             }
-            this.particleEmission.pretime = 0;
+            if (this.particleEmission)
+                this.particleEmission.pretime = 0;
             this.deathParticles = this.particles.concat();
             this.survivalParticles = [];
             this.changedParticles = this.particles.concat();

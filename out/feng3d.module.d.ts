@@ -10621,7 +10621,7 @@ declare namespace feng3d {
          */
         bursts: {
             time: number;
-            particles: number;
+            num: number;
         }[];
         isDirty: boolean;
         private _numParticles;
@@ -10755,7 +10755,7 @@ declare namespace feng3d {
          * 被修改过的粒子列表，这些粒子将会在渲染前进行更新渲染va数据
          */
         private changedParticles;
-        private readonly particleEmission;
+        private particleEmission;
         /**
          * 粒子状态控制模块列表
          */

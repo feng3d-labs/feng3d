@@ -16,9 +16,9 @@ namespace feng3d
         /**
          * 爆发，在time时刻额外喷射particles粒子
          */
-        @oav({ component: "OAVArray", componentParam: { tooltip: "在指定时间进行额外发射指定数量的粒子", defaultItem: () => { return { time: 0, particles: 30 } } } })
+        @oav({ component: "OAVArray", componentParam: { tooltip: "在指定时间进行额外发射指定数量的粒子", defaultItem: () => { return { time: 0, num: 30 } } } })
         @serialize
-        bursts: { time: number, particles: number }[] = [];
+        bursts: { time: number, num: number }[] = [];
 
         isDirty = true;
 
@@ -42,16 +42,19 @@ namespace feng3d
          */
         emit(time: number, deathParticles: Particle[], survivalParticles: Particle[], changedParticles: Particle[])
         {
-            var emits: { time: number, particles: number }[] = [];
+            var emits: { time: number, num: number }[] = [];
             //计算事件段内正常发射了粒子
             var step = 1 / this.rate;
             for (var i = this.pretime; i < time; i += step)
             {
-                
+                emits.push({ time: i, num: 1 });
             }
             //按时间降序排列，获取该事件段内爆发的粒子
-            var bursts = this.bursts.concat().sort((a: { time: number; }, b: { time: number; }) => { return b.time - a.time }).filter((a) => (this.pretime <= a.time && a.time < time));
-
+            var bursts = this.bursts.filter((a) => (this.pretime <= a.time && a.time < time));
+            //
+            emits = emits.concat(bursts).sort((a: { time: number; }, b: { time: number; }) => { return b.time - a.time });
+            
+            
 
             this.rate
             this.pretime
@@ -96,7 +99,7 @@ namespace feng3d
                         var burst = bursts.pop();
                         if (burst)
                         {
-                            for (i = 0; i < burst.particles; i++)
+                            for (i = 0; i < burst.num; i++)
                             {
                                 birthTimes[index++] = burst.time;
                             }
