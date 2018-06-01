@@ -67,6 +67,11 @@ namespace feng3d
         maxParticles = 1000;
 
         /**
+         * 开始寿命，粒子发射器发射时赋予粒子寿命以s为单位，粒子的寿命将会随时间而流逝，等于0时将会消失
+         */
+        startLifetime = 5;
+
+        /**
          * 粒子列表
          */
         private particles: Particle[] = [];

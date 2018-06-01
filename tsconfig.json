@@ -215,6 +215,7 @@
         "src/animators/particle/ParticleBillboard.ts",
         "src/animators/particle/ParticleSystem.ts",
         "src/animators/particle/ParticleMaterial.ts",
+        "src/animators/particle/tools/ParticleNumber.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonComponent.ts",

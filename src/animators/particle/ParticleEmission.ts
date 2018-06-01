@@ -42,6 +42,8 @@ namespace feng3d
          */
         emit(time: number, deathParticles: Particle[], survivalParticles: Particle[], changedParticles: Particle[])
         {
+            if (deathParticles.length == 0)
+                return;
             var emits: { time: number, num: number }[] = [];
             //计算事件段内正常发射了粒子
             var step = 1 / this.rate;
@@ -53,8 +55,21 @@ namespace feng3d
             var bursts = this.bursts.filter((a) => (this.pretime <= a.time && a.time < time));
             //
             emits = emits.concat(bursts).sort((a: { time: number; }, b: { time: number; }) => { return b.time - a.time });
-            
-            
+            for (let i = 0; i < emits.length; i++)
+            {
+                if (deathParticles.length == 0)
+                    return;
+                const element = emits[i];
+                for (let j = 0; j < element.num; j++)
+                {
+                    if (deathParticles.length == 0)
+                        return;
+                    // 获取将要发射粒子的寿命
+                    
+                    // getLifetime();
+
+                }
+            }
 
             this.rate
             this.pretime
