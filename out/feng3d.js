@@ -20618,7 +20618,7 @@ var feng3d;
      * @author feng 2017-01-12
      */
     var Particle = /** @class */ (function () {
-        function Particle() {
+        function Particle(index) {
             /**
              * 索引
              */
@@ -20655,6 +20655,7 @@ var feng3d;
              * 颜色
              */
             this.color = new feng3d.Color4();
+            this.index = index;
         }
         return Particle;
     }());
@@ -20787,8 +20788,33 @@ var feng3d;
              */
             _this.bursts = [];
             _this.isDirty = true;
+            /**
+             * 上次发射时间
+             */
+            _this.pretime = 0;
             return _this;
         }
+        /**
+         * 发射粒子
+         * @param time 当前粒子时间
+         */
+        ParticleEmission.prototype.emit = function (time, deathParticles, survivalParticles, changedParticles) {
+            var _this = this;
+            var emits = [];
+            //计算事件段内正常发射了粒子
+            var step = 1 / this.rate;
+            for (var i = this.pretime; i < time; i += step) {
+                emits.push({ time: i, num: 1 });
+            }
+            //按时间降序排列，获取该事件段内爆发的粒子
+            var bursts = this.bursts.filter(function (a) { return (_this.pretime <= a.time && a.time < time); });
+            //
+            emits = emits.concat(bursts).sort(function (a, b) { return b.time - a.time; });
+            this.rate;
+            this.pretime;
+            time;
+            ds.utils;
+        };
         /**
          * 创建粒子属性
          * @param particle                  粒子
@@ -20817,7 +20843,7 @@ var feng3d;
                     while (bursts.length > 0 && bursts[bursts.length - 1].time <= time) {
                         var burst = bursts.pop();
                         if (burst) {
-                            for (i = 0; i < burst.particles; i++) {
+                            for (i = 0; i < burst.num; i++) {
                                 birthTimes[index++] = burst.time;
                             }
                         }
@@ -20830,11 +20856,11 @@ var feng3d;
             return this._birthTimes;
         };
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ componentParam: { tooltip: "每秒发射粒子数量" } }),
             feng3d.serialize
         ], ParticleEmission.prototype, "rate", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVArray", componentParam: { defaultItem: function () { return { time: 0, particles: 30 }; } } }),
+            feng3d.oav({ component: "OAVArray", componentParam: { tooltip: "在指定时间进行额外发射指定数量的粒子", defaultItem: function () { return { time: 0, num: 30 }; } } }),
             feng3d.serialize
         ], ParticleEmission.prototype, "bursts", void 0);
         return ParticleEmission;
@@ -20951,6 +20977,7 @@ var feng3d;
                 var matrix = particleSystem.particleGlobal.billboardMatrix;
                 matrix.copyFrom(gameObject.transform.localToWorldMatrix);
                 matrix.lookAt(cameraMatrix.position, cameraMatrix.up);
+                matrix.position = feng3d.Vector3.ZERO;
             }
             else {
                 particleSystem.particleGlobal.billboardMatrix.identity();
@@ -20997,10 +21024,31 @@ var feng3d;
              */
             _this.particleGlobal = new feng3d.ParticleGlobal();
             /**
+             * 粒子最大数量
+             */
+            _this.maxParticles = 1000;
+            /**
+             * 粒子列表
+             */
+            _this.particles = [];
+            /**
+             * 死亡粒子列表，这些粒子可以被发射器进行发射
+             */
+            _this.deathParticles = [];
+            /**
+             * 存活粒子列表，这些粒子将会在帧刷中进行状态计算，当生命周期结束时将会被移除且加入到死亡粒子列表中
+             */
+            _this.survivalParticles = [];
+            /**
+             * 被修改过的粒子列表，这些粒子将会在渲染前进行更新渲染va数据
+             */
+            _this.changedParticles = [];
+            _this.particleEmission = new feng3d.ParticleEmission();
+            /**
              * 粒子状态控制模块列表
              */
             _this.components = [
-                new feng3d.ParticleEmission(),
+                _this.particleEmission,
                 new feng3d.ParticlePosition(),
                 new feng3d.ParticleVelocity(),
                 new feng3d.ParticleColor(),
@@ -21025,9 +21073,23 @@ var feng3d;
             if (!this.isPlaying)
                 return;
             this.time = (this.time + (interval * this.playspeed / 1000) + this.cycle) % this.cycle;
+            this.particleEmission.emit(this.time, this.deathParticles, this.survivalParticles, this.changedParticles);
         };
         ParticleSystem.prototype.invalidate = function () {
             this._isDirty = true;
+        };
+        ParticleSystem.prototype.numParticlesChanged = function () {
+            this.particles = [];
+            //
+            for (var i = 0; i < this.maxParticles; i++) {
+                this.particles.push(new feng3d.Particle(i));
+            }
+            if (this.particleEmission)
+                this.particleEmission.pretime = 0;
+            this.deathParticles = this.particles.concat();
+            this.survivalParticles = [];
+            this.changedParticles = this.particles.concat();
+            this.invalidate();
         };
         /**
          * 生成粒子
@@ -21037,8 +21099,7 @@ var feng3d;
             this._attributes = {};
             //
             for (var i = 0; i < this.numParticles; i++) {
-                var particle = new feng3d.Particle();
-                particle.index = i;
+                var particle = new feng3d.Particle(i);
                 this.components.forEach(function (element) {
                     if (element.enabled)
                         element.generateParticle(particle, _this);
@@ -21120,23 +21181,23 @@ var feng3d;
             }
         };
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ componentParam: { tooltip: "是否播放中" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "isPlaying", void 0);
         __decorate([
-            feng3d.oav()
+            feng3d.oav({ componentParam: { tooltip: "当前粒子时间" } })
         ], ParticleSystem.prototype, "time", void 0);
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ componentParam: { tooltip: "播放速度，可以为负值，-1表示反方向一倍速度播放" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "playspeed", void 0);
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ componentParam: { tooltip: "粒子系统周期，time=0与time=10000有相同效果" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "cycle", void 0);
         __decorate([
             feng3d.watch("invalidate"),
-            feng3d.oav(),
+            feng3d.oav({ componentParam: { tooltip: "粒子系统拥有粒子的数量" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "numParticles", void 0);
         __decorate([
@@ -21149,12 +21210,20 @@ var feng3d;
         ], ParticleSystem.prototype, "material", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "全局属性", component: "OAVObjectView" })
+            feng3d.oav({ block: "全局属性", component: "OAVObjectView", componentParam: { tooltip: "粒子全局属性，作用与所有粒子。" } })
         ], ParticleSystem.prototype, "particleGlobal", void 0);
+        __decorate([
+            feng3d.watch("numParticlesChanged"),
+            feng3d.oav({ componentParam: { tooltip: "粒子系统拥有粒子的数量" } }),
+            feng3d.serialize
+        ], ParticleSystem.prototype, "maxParticles", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         ], ParticleSystem.prototype, "components", void 0);
+        __decorate([
+            feng3d.oav({ componentParam: { tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" } })
+        ], ParticleSystem.prototype, "invalidate", null);
         return ParticleSystem;
     }(feng3d.MeshRenderer));
     feng3d.ParticleSystem = ParticleSystem;

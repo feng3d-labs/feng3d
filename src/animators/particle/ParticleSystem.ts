@@ -11,27 +11,27 @@ namespace feng3d
         /**
          * 是否正在播放
          */
-        @oav()
+        @oav({ componentParam: { tooltip: "是否播放中" } })
         @serialize
         isPlaying = true;
 
         /**
          * 粒子时间
          */
-        @oav()
+        @oav({ componentParam: { tooltip: "当前粒子时间" } })
         time = 0;
 
         /**
          * 播放速度
          */
-        @oav()
+        @oav({ componentParam: { tooltip: "播放速度，可以为负值，-1表示反方向一倍速度播放" } })
         @serialize
         playspeed = 1;
 
         /**
          * 周期
          */
-        @oav()
+        @oav({ componentParam: { tooltip: "粒子系统周期，time=0与time=10000有相同效果" } })
         @serialize
         cycle = 10000;
 
@@ -39,7 +39,7 @@ namespace feng3d
          * 粒子数量
          */
         @watch("invalidate")
-        @oav()
+        @oav({ componentParam: { tooltip: "粒子系统拥有粒子的数量" } })
         @serialize
         numParticles = 1000;
 
@@ -55,8 +55,40 @@ namespace feng3d
          * 粒子全局属性
          */
         @serialize
-        @oav({ block: "全局属性", component: "OAVObjectView" })
+        @oav({ block: "全局属性", component: "OAVObjectView", componentParam: { tooltip: "粒子全局属性，作用与所有粒子。" } })
         readonly particleGlobal = new ParticleGlobal();
+
+        /**
+         * 粒子最大数量
+         */
+        @watch("numParticlesChanged")
+        @oav({ componentParam: { tooltip: "粒子系统拥有粒子的数量" } })
+        @serialize
+        maxParticles = 1000;
+
+        /**
+         * 开始寿命，粒子发射器发射时赋予粒子寿命以s为单位，粒子的寿命将会随时间而流逝，等于0时将会消失
+         */
+        startLifetime = 5;
+
+        /**
+         * 粒子列表
+         */
+        private particles: Particle[] = [];
+        /**
+         * 死亡粒子列表，这些粒子可以被发射器进行发射
+         */
+        private deathParticles: Particle[] = [];
+        /**
+         * 存活粒子列表，这些粒子将会在帧刷中进行状态计算，当生命周期结束时将会被移除且加入到死亡粒子列表中
+         */
+        private survivalParticles: Particle[] = [];
+        /**
+         * 被修改过的粒子列表，这些粒子将会在渲染前进行更新渲染va数据
+         */
+        private changedParticles: Particle[] = [];
+
+        private particleEmission = new ParticleEmission();
 
         /**
          * 粒子状态控制模块列表
@@ -64,7 +96,7 @@ namespace feng3d
         @serialize
         @oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         readonly components = [
-            new ParticleEmission(),
+            this.particleEmission,
             new ParticlePosition(),
             new ParticleVelocity(),
             new ParticleColor(),
@@ -89,11 +121,29 @@ namespace feng3d
             if (!this.isPlaying) return;
 
             this.time = (this.time + (interval * this.playspeed / 1000) + this.cycle) % this.cycle;
+
+            this.particleEmission.emit(this.time, this.deathParticles, this.survivalParticles, this.changedParticles);
         }
 
+        @oav({ componentParam: { tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" } })
         public invalidate()
         {
             this._isDirty = true;
+        }
+
+        private numParticlesChanged()
+        {
+            this.particles = [];
+            //
+            for (var i = 0; i < this.maxParticles; i++)
+            {
+                this.particles.push(new Particle(i));
+            }
+            if (this.particleEmission) this.particleEmission.pretime = 0;
+            this.deathParticles = this.particles.concat();
+            this.survivalParticles = [];
+            this.changedParticles = this.particles.concat();
+            this.invalidate();
         }
 
         /**
@@ -106,8 +156,7 @@ namespace feng3d
             //
             for (var i = 0; i < this.numParticles; i++)
             {
-                var particle = new Particle();
-                particle.index = i;
+                var particle = new Particle(i);
                 this.components.forEach(element =>
                 {
                     if (element.enabled)
