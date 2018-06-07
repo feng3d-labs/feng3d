@@ -11,8 +11,23 @@
 ## 贡献
 
 首先感谢天底下所有愿意奉献的人！
-1. 如果你有什么想法或者需求欢迎在 [issues](https://gitee.com/feng3d/feng3d/issues) 发布
+1. 如果你有什么想法或者需求欢迎在 [issues](https://github.com/feng3d-labs/feng3d/issues) 发布
 
-## 交流
+## 项目托管
+1. github 提供最新的源代码
+    * https://github.com/feng3d-labs
+    
+1. gitee 提供了不亚于github的功能除了知名度，提升国内开发者访问效率。不定时同步github上项目。
+    * https://gitee.com/feng3d
 
-QQ群：519732759
+## 关于
+
+网站：http://feng3d.com/
+
+github：https://github.com/wardenfeng
+
+github：https://github.com/feng3d-labs
+
+getee：https://gitee.com/feng3d
+
+feng3d交流QQ群:519732759
