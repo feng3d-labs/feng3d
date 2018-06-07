@@ -20126,8 +20126,10 @@ var feng3d;
     var WaterUniforms = /** @class */ (function () {
         function WaterUniforms() {
             this.u_alpha = 1.0;
+            // @serialize
+            // @oav({ componentParam: { tooltip: "水体运动时间，默认自动递增" } })
             this.u_time = 0.0;
-            this.u_size = 1.0;
+            this.u_size = 10.0;
             this.u_distortionScale = 20.0;
             this.u_waterColor = new feng3d.Color3().fromUnit(0x555555);
             this.s_normalSampler = new feng3d.Texture2D();
@@ -20143,10 +20145,6 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ componentParam: { tooltip: "透明度" } })
         ], WaterUniforms.prototype, "u_alpha", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "水体运动时间，默认自动递增" } })
-        ], WaterUniforms.prototype, "u_time", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ componentParam: { tooltip: "水体展现的尺寸" } })

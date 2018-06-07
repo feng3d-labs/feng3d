@@ -13,13 +13,13 @@ namespace feng3d
         @oav({ componentParam: { tooltip: "透明度" } })
         u_alpha = 1.0;
 
-        @serialize
-        @oav({ componentParam: { tooltip: "水体运动时间，默认自动递增" } })
+        // @serialize
+        // @oav({ componentParam: { tooltip: "水体运动时间，默认自动递增" } })
         u_time = 0.0;
 
         @serialize
         @oav({ componentParam: { tooltip: "水体展现的尺寸" } })
-        u_size = 1.0;
+        u_size = 10.0;
 
         @oav()
         @serialize
