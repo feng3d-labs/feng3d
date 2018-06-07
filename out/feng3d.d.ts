@@ -10334,8 +10334,11 @@ declare namespace feng3d {
         u_size: number;
         u_distortionScale: number;
         u_waterColor: Color3;
-        s_mirrorSampler: Texture2D;
         s_normalSampler: Texture2D;
+        /**
+         * 镜面反射贴图
+         */
+        s_mirrorSampler: Texture2D;
         u_textureMatrix: Matrix4x4;
         u_sunColor: Color3;
         u_sunDirection: Vector3;

@@ -20130,39 +20130,39 @@ var feng3d;
             this.u_size = 1.0;
             this.u_distortionScale = 20.0;
             this.u_waterColor = new feng3d.Color3().fromUnit(0x555555);
-            this.s_mirrorSampler = new feng3d.Texture2D();
             this.s_normalSampler = new feng3d.Texture2D();
+            /**
+             * 镜面反射贴图
+             */
+            this.s_mirrorSampler = new feng3d.Texture2D();
             this.u_textureMatrix = new feng3d.Matrix4x4();
             this.u_sunColor = new feng3d.Color3().fromUnit(0x7F7F7F);
             this.u_sunDirection = new feng3d.Vector3(0.70707, 0.70707, 0);
         }
         __decorate([
-            feng3d.oav(),
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav({ componentParam: { tooltip: "透明度" } })
         ], WaterUniforms.prototype, "u_alpha", void 0);
         __decorate([
-            feng3d.oav(),
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav({ componentParam: { tooltip: "水体运动时间，默认自动递增" } })
         ], WaterUniforms.prototype, "u_time", void 0);
         __decorate([
-            feng3d.oav(),
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav({ componentParam: { tooltip: "水体展现的尺寸" } })
         ], WaterUniforms.prototype, "u_size", void 0);
         __decorate([
             feng3d.oav(),
             feng3d.serialize
         ], WaterUniforms.prototype, "u_distortionScale", void 0);
         __decorate([
-            feng3d.oav(),
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav({ componentParam: { tooltip: "水体颜色" } })
         ], WaterUniforms.prototype, "u_waterColor", void 0);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize
-        ], WaterUniforms.prototype, "s_mirrorSampler", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav({ componentParam: { tooltip: "水体法线图" } })
         ], WaterUniforms.prototype, "s_normalSampler", void 0);
         return WaterUniforms;
     }());
