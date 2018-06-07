@@ -10739,6 +10739,10 @@ declare namespace feng3d {
          */
         maxParticles: number;
         /**
+         * 开始寿命，粒子发射器发射时赋予粒子寿命以s为单位，粒子的寿命将会随时间而流逝，等于0时将会消失
+         */
+        startLifetime: number;
+        /**
          * 粒子列表
          */
         private particles;
@@ -10799,6 +10803,46 @@ declare namespace feng3d {
         particle: gPartial<ParticleMaterial>;
     }
     class ParticleUniforms extends StandardUniforms {
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子数字类型
+     */
+    enum ParticleNumberType {
+        /**
+         * 常数
+         */
+        constant = 0,
+        /**
+         * 曲线
+         */
+        curve = 1,
+        /**
+         * 两个常量之间进行随机
+         */
+        randomBetweenTwoConstants = 2,
+        /**
+         * 两个曲线之间进行随机
+         */
+        randomBetweenTwoCurves = 3,
+    }
+    /**
+     * 粒子数字，被用与生成粒子起始寿命等
+     */
+    class ParticleNumber {
+        /**
+         * 类型
+         */
+        type: ParticleNumberType;
+        /**
+         * 常量，type 为 ParticleNumberType.constant 与 ParticleNumberType.randomBetweenTwoConstants 时有效。
+         */
+        constant: number;
+        /**
+         * 第二个常量，type 为 ParticleNumberType.randomBetweenTwoConstants 时有效，将与 constant 属性配合使用。
+         */
+        constant1: number;
     }
 }
 declare namespace feng3d {

@@ -20800,6 +20800,8 @@ var feng3d;
          */
         ParticleEmission.prototype.emit = function (time, deathParticles, survivalParticles, changedParticles) {
             var _this = this;
+            if (deathParticles.length == 0)
+                return;
             var emits = [];
             //计算事件段内正常发射了粒子
             var step = 1 / this.rate;
@@ -20810,6 +20812,17 @@ var feng3d;
             var bursts = this.bursts.filter(function (a) { return (_this.pretime <= a.time && a.time < time); });
             //
             emits = emits.concat(bursts).sort(function (a, b) { return b.time - a.time; });
+            for (var i_1 = 0; i_1 < emits.length; i_1++) {
+                if (deathParticles.length == 0)
+                    return;
+                var element = emits[i_1];
+                for (var j = 0; j < element.num; j++) {
+                    if (deathParticles.length == 0)
+                        return;
+                    // 获取将要发射粒子的寿命
+                    // getLifetime();
+                }
+            }
             this.rate;
             this.pretime;
             time;
@@ -21028,6 +21041,10 @@ var feng3d;
              */
             _this.maxParticles = 1000;
             /**
+             * 开始寿命，粒子发射器发射时赋予粒子寿命以s为单位，粒子的寿命将会随时间而流逝，等于0时将会消失
+             */
+            _this.startLifetime = 5;
+            /**
              * 粒子列表
              */
             _this.particles = [];
@@ -21239,6 +21256,48 @@ var feng3d;
     }(feng3d.StandardUniforms));
     feng3d.ParticleUniforms = ParticleUniforms;
     feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子数字类型
+     */
+    var ParticleNumberType;
+    (function (ParticleNumberType) {
+        /**
+         * 常数
+         */
+        ParticleNumberType[ParticleNumberType["constant"] = 0] = "constant";
+        /**
+         * 曲线
+         */
+        ParticleNumberType[ParticleNumberType["curve"] = 1] = "curve";
+        /**
+         * 两个常量之间进行随机
+         */
+        ParticleNumberType[ParticleNumberType["randomBetweenTwoConstants"] = 2] = "randomBetweenTwoConstants";
+        /**
+         * 两个曲线之间进行随机
+         */
+        ParticleNumberType[ParticleNumberType["randomBetweenTwoCurves"] = 3] = "randomBetweenTwoCurves";
+    })(ParticleNumberType = feng3d.ParticleNumberType || (feng3d.ParticleNumberType = {}));
+    /**
+     * 粒子数字，被用与生成粒子起始寿命等
+     */
+    var ParticleNumber = /** @class */ (function () {
+        function ParticleNumber() {
+            /**
+             * 常量，type 为 ParticleNumberType.constant 与 ParticleNumberType.randomBetweenTwoConstants 时有效。
+             */
+            this.constant = 0;
+            /**
+             * 第二个常量，type 为 ParticleNumberType.randomBetweenTwoConstants 时有效，将与 constant 属性配合使用。
+             */
+            this.constant1 = 0;
+        }
+        return ParticleNumber;
+    }());
+    feng3d.ParticleNumber = ParticleNumber;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
