@@ -352,7 +352,7 @@ declare namespace feng3d {
      * 代理 EventTarget, 处理js事件中this关键字问题
      * @author feng 2016-12-19
      */
-    class EventProxy<T> extends EventDispatcher {
+    class EventProxy extends EventDispatcher {
         pageX: number;
         pageY: number;
         clientX: number;
@@ -375,21 +375,21 @@ declare namespace feng3d {
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        once<K extends keyof T>(type: K, listener: (event: T[K]) => void, thisObject?: any, priority?: number): void;
+        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
         /**
          * 添加监听
          * @param type						事件的类型。
          * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        on<K extends keyof T>(type: K, listener: (event: T[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        on(type: string, listener: (event: any) => any, thisObject?: any, priority?: number, once?: boolean): void;
         /**
          * 移除监听
          * @param dispatcher 派发器
          * @param type						事件的类型。
          * @param listener					要删除的侦听器对象。
          */
-        off<K extends keyof T>(type?: K, listener?: (event: T[K]) => any, thisObject?: any): void;
+        off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
         /**
          * 键盘按下事件
          */
@@ -399,10 +399,21 @@ declare namespace feng3d {
          */
         private clear();
     }
+}
+declare namespace feng3d {
+    interface WindowEventProxy {
+        once<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof WindowEventMap>(type: K, data?: WindowEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof WindowEventMap>(type: K): boolean;
+        on<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof WindowEventMap>(type?: K, listener?: (event: WindowEventMap[K]) => any, thisObject?: any): any;
+    }
+    class WindowEventProxy extends EventProxy {
+    }
     /**
      * 键盘鼠标输入
      */
-    var windowEventProxy: EventProxy<WindowEventMap>;
+    var windowEventProxy: WindowEventProxy;
 }
 declare namespace feng3d {
     /**

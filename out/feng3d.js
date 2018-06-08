@@ -688,10 +688,21 @@ var feng3d;
         return EventProxy;
     }(feng3d.EventDispatcher));
     feng3d.EventProxy = EventProxy;
-    /**
-     * 键盘鼠标输入
-     */
-    feng3d.windowEventProxy = new EventProxy(window);
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var WindowEventProxy = /** @class */ (function (_super) {
+        __extends(WindowEventProxy, _super);
+        function WindowEventProxy() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return WindowEventProxy;
+    }(feng3d.EventProxy));
+    feng3d.WindowEventProxy = WindowEventProxy;
+    if (typeof global != "undefined")
+        feng3d.windowEventProxy = new WindowEventProxy(global);
+    else
+        feng3d.windowEventProxy = new WindowEventProxy(window);
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

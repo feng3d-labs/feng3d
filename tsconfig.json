@@ -20,6 +20,7 @@
         //
         "src/event/EventDispatcher.ts",
         "src/event/EventProxy.ts",
+        "src/event/WindowEventProxy.ts",
         "src/event/Feng3dDispatcher.ts",
         "src/resources/load.ts",
         //基础工具

@@ -4,7 +4,7 @@ namespace feng3d
      * 代理 EventTarget, 处理js事件中this关键字问题
      * @author feng 2016-12-19
      */
-    export class EventProxy<T> extends EventDispatcher
+    export class EventProxy extends EventDispatcher
     {
         pageX = 0;
         pageY = 0;
@@ -63,7 +63,7 @@ namespace feng3d
 		 * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        once<K extends keyof T>(type: K, listener: (event: T[K]) => void, thisObject?: any, priority?: number): void
+        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void
         {
             this.on(type, listener, thisObject, priority, true)
         }
@@ -74,7 +74,7 @@ namespace feng3d
 		 * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        on<K extends keyof T>(type: K, listener: (event: T[K]) => any, thisObject?: any, priority = 0, once = false)
+        on(type: string, listener: (event: any) => any, thisObject?: any, priority = 0, once = false)
         {
             super.on(type, listener, thisObject, priority, once);
             if (this.listentypes.indexOf(type) == -1)
@@ -90,7 +90,7 @@ namespace feng3d
 		 * @param type						事件的类型。
 		 * @param listener					要删除的侦听器对象。
          */
-        off<K extends keyof T>(type?: K, listener?: (event: T[K]) => any, thisObject?: any)
+        off(type?: string, listener?: (event: any) => any, thisObject?: any)
         {
             super.off(type, listener, thisObject);
             if (!type)
@@ -161,9 +161,4 @@ namespace feng3d
             this.wheelDelta = 0;
         }
     }
-
-    /**
-     * 键盘鼠标输入
-     */
-    export var windowEventProxy = new EventProxy<WindowEventMap>(window);
 }
