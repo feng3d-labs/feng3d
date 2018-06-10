@@ -11,13 +11,13 @@
 ## 贡献
 
 首先感谢天底下所有愿意奉献的人！
-1. 如果你有什么想法或者需求欢迎在 [issues](https://github.com/feng3d-labs/feng3d/issues) 发布
+1. 如果你有什么想法或者需求欢迎在 [issues](https://gitee.com/feng3d/feng3d/issues) 发布
 
 ## 项目托管
-1. github 提供最新的源代码
+1. github 国内访问较慢，有时甚至无法访问，放弃作为主仓库，将会不定期从gitee上同步。
     * https://github.com/feng3d-labs
-    
-1. gitee 提供了不亚于github的功能除了知名度，提升国内开发者访问效率。不定时同步github上项目。
+
+1. gitee 提供了不亚于github的功能除了知名度，国内访问速度非常快，开发效率，作为主要仓库。
     * https://gitee.com/feng3d
 
 ## 关于
