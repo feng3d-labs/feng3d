@@ -18,6 +18,11 @@
         "src/ds/LinkedList.ts",
         "src/ds/PriorityQueue.ts",
         //
+        "src/math/Bezier.ts",
+        "src/math/EquationSolving.ts",
+        "src/math/HighFunction.ts",
+        "src/math/CubicBeziers.ts",
+        //
         "src/event/EventDispatcher.ts",
         "src/event/EventProxy.ts",
         "src/event/WindowEventProxy.ts",

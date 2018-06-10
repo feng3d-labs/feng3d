@@ -11,14 +11,14 @@ namespace feng3d
         constant,
 
         /**
-         * 曲线
-         */
-        curve,
-
-        /**
          * 两个常量之间进行随机
          */
         randomBetweenTwoConstants,
+
+        /**
+         * 曲线
+         */
+        curve,
 
         /**
          * 两个曲线之间进行随机
@@ -46,6 +46,6 @@ namespace feng3d
          */
         constant1 = 0;
 
-
+        curvedata
     }
 }
