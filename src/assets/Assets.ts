@@ -36,7 +36,7 @@ namespace feng3d
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFile(path: string, callback: (err, data: ArrayBuffer) => void)
+        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void)
         {
             var readFS = this.fs;
             if (path.indexOf("http://") != -1
@@ -445,7 +445,7 @@ namespace feng3d
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFile(path: string, callback: (err, data: ArrayBuffer) => void);
+        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void);
 
         /**
          * 获取文件绝对路径
@@ -491,7 +491,7 @@ namespace feng3d
          * @param path 文件路径
          * @param callback 回调函数
          */
-        deleteFile(path: string, callback: (err) => void): void;
+        deleteFile(path: string, callback: (err: Error) => void): void;
 
         /**
          * 写(新建)文件

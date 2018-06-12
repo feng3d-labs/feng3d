@@ -563,12 +563,12 @@ declare namespace feng3d {
          * @param f 函数
          * @param delta Δx，进过测试该值太小或者过大都会导致求导准确率降低（个人猜测是计算机计算精度问题导致）
          */
-        getDerivative(f: (x) => number, delta?: number): (x: any) => number;
+        getDerivative(f: (x: number) => number, delta?: number): (x: number) => number;
         /**
          * 函数是否连续
          * @param f 函数
          */
-        isContinuous(f: (x) => number): boolean;
+        isContinuous(f: (x: number) => number): boolean;
         /**
          * 方程 f(x) == 0 在 [a, b] 区间内是否有解
          *
@@ -581,7 +581,7 @@ declare namespace feng3d {
          *
          * @returns 是否有解
          */
-        hasSolution(f: (x) => number, a: number, b: number, errorcallback?: (err: Error) => void): boolean;
+        hasSolution(f: (x: number) => number, a: number, b: number, errorcallback?: (err: Error) => void): boolean;
         /**
          * 二分法 求解 f(x) == 0
          *
@@ -595,7 +595,7 @@ declare namespace feng3d {
          *
          * @returns 不存在解时返回 undefined ，存在时返回 解
          */
-        binary(f: (x) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
+        binary(f: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
         /**
          * 连线法 求解 f(x) == 0
          *
@@ -615,7 +615,7 @@ declare namespace feng3d {
          *
          * @returns 不存在解时返回 undefined ，存在时返回 解
          */
-        line(f: (x) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
+        line(f: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
         /**
          * 切线法 求解 f(x) == 0
          *
@@ -640,7 +640,7 @@ declare namespace feng3d {
          *
          * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
          */
-        tangent(f: (x) => number, f1: (x) => number, f2: (x) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
+        tangent(f: (x: number) => number, f1: (x: number) => number, f2: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
         /**
          * 割线法（弦截法） 求解 f(x) == 0
          *
@@ -665,7 +665,7 @@ declare namespace feng3d {
          *
          * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
          */
-        secant(f: (x) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
+        secant(f: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
     }
 }
 declare namespace feng3d {
@@ -1956,12 +1956,12 @@ declare namespace feng3d {
          * 是否支持 indexedDB
          */
         support(): boolean;
-        getDatabase(dbname: string, callback: (err, database: IDBDatabase) => void): void;
-        deleteDatabase(dbname: string, callback?: (err) => void): void;
+        getDatabase(dbname: string, callback: (err: any, database: IDBDatabase) => void): void;
+        deleteDatabase(dbname: string, callback?: (err: any) => void): void;
         hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void): void;
         getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void): void;
-        createObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void): void;
-        deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void): void;
+        createObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
+        deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
         getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void): void;
         get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void): void;
         set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void): void;
@@ -2058,7 +2058,7 @@ declare namespace feng3d {
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFile(path: string, callback: (err, data: ArrayBuffer) => void): void;
+        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -2095,7 +2095,7 @@ declare namespace feng3d {
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFile(path: string, callback: (err, data: ArrayBuffer) => void): void;
+        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -2238,7 +2238,7 @@ declare namespace feng3d {
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFile(path: string, callback: (err, data: ArrayBuffer) => void): any;
+        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void): any;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -2277,7 +2277,7 @@ declare namespace feng3d {
          * @param path 文件路径
          * @param callback 回调函数
          */
-        deleteFile(path: string, callback: (err) => void): void;
+        deleteFile(path: string, callback: (err: Error) => void): void;
         /**
          * 写(新建)文件
          * @param path 文件路径
@@ -8029,7 +8029,7 @@ declare namespace feng3d {
                  * 从glsl读取的fragment shader
                  */
                 fragment: string;
-                cls?: new (...arg) => any;
+                cls?: new (...arg: any[]) => any;
                 /**
                  * 处理了 include 的 shader
                  */

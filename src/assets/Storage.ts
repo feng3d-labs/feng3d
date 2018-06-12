@@ -31,7 +31,7 @@ namespace feng3d
             }
             return true;
         }
-        getDatabase(dbname: string, callback: (err, database: IDBDatabase) => void)
+        getDatabase(dbname: string, callback: (err: any, database: IDBDatabase) => void)
         {
             if (databases[dbname])
             {
@@ -51,7 +51,7 @@ namespace feng3d
                 request.onerror = null;
             };
         }
-        deleteDatabase(dbname: string, callback?: (err) => void)
+        deleteDatabase(dbname: string, callback?: (err: any) => void)
         {
             var request = indexedDB.deleteDatabase(dbname);
             request.onsuccess = function (event)
@@ -85,7 +85,7 @@ namespace feng3d
                 callback(null, objectStoreNames)
             });
         }
-        createObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void)
+        createObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void)
         {
             this.getDatabase(dbname, (err, database) =>
             {
@@ -116,7 +116,7 @@ namespace feng3d
                 };
             });
         }
-        deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err) => void)
+        deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void)
         {
             this.getDatabase(dbname, (err, database) =>
             {

@@ -1,6 +1,6 @@
 {
   "name": "feng3d",
-  "version": "201806.12.0",
+  "version": "201806.12.3",
   "description": "webgl 3d engine",
   "main": "out/feng3d.js",
   "types": "out/feng3d.module.d.ts",
@@ -10,8 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "files": [
-    "out",
-    "src"
+    "out"
   ],
   "repository": {
     "type": "git",

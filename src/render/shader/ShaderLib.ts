@@ -21,7 +21,7 @@ namespace feng3d
                  * 从glsl读取的fragment shader
                  */
                 fragment: string,
-                cls?: new (...arg) => any,
+                cls?: new (...arg: any[]) => any,
                 /**
                  * 处理了 include 的 shader
                  */

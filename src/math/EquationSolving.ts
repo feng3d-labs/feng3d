@@ -53,9 +53,9 @@ namespace feng3d
          * @param f 函数
          * @param delta Δx，进过测试该值太小或者过大都会导致求导准确率降低（个人猜测是计算机计算精度问题导致）
          */
-        getDerivative(f: (x) => number, delta = 0.000000001)
+        getDerivative(f: (x: number) => number, delta = 0.000000001)
         {
-            return (x) =>
+            return (x: number) =>
             {
                 var d = (f(x + delta) - f(x)) / delta;
                 return d;
@@ -66,7 +66,7 @@ namespace feng3d
          * 函数是否连续
          * @param f 函数
          */
-        isContinuous(f: (x) => number)
+        isContinuous(f: (x: number) => number)
         {
             return true;
         }
@@ -83,7 +83,7 @@ namespace feng3d
          * 
          * @returns 是否有解
          */
-        hasSolution(f: (x) => number, a: number, b: number, errorcallback?: (err: Error) => void)
+        hasSolution(f: (x: number) => number, a: number, b: number, errorcallback?: (err: Error) => void)
         {
             if (!this.isContinuous(f))
             {
@@ -113,7 +113,7 @@ namespace feng3d
          * 
          * @returns 不存在解时返回 undefined ，存在时返回 解
          */
-        binary(f: (x) => number, a: number, b: number, precision = 0.0000001, errorcallback?: (err: Error) => void)
+        binary(f: (x: number) => number, a: number, b: number, precision = 0.0000001, errorcallback?: (err: Error) => void)
         {
             if (!this.hasSolution(f, a, b, errorcallback)) return undefined;
 
@@ -163,7 +163,7 @@ namespace feng3d
          * 
          * @returns 不存在解时返回 undefined ，存在时返回 解
          */
-        line(f: (x) => number, a: number, b: number, precision = 0.0000001, errorcallback?: (err: Error) => void)
+        line(f: (x: number) => number, a: number, b: number, precision = 0.0000001, errorcallback?: (err: Error) => void)
         {
             if (!this.hasSolution(f, a, b, errorcallback)) return undefined;
 
@@ -219,7 +219,7 @@ namespace feng3d
          * 
          * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
          */
-        tangent(f: (x) => number, f1: (x) => number, f2: (x) => number, a: number, b: number, precision = 0.0000001, errorcallback?: (err: Error) => void)
+        tangent(f: (x: number) => number, f1: (x: number) => number, f2: (x: number) => number, a: number, b: number, precision = 0.0000001, errorcallback?: (err: Error) => void)
         {
             if (!this.hasSolution(f, a, b, errorcallback)) return undefined;
 
@@ -327,7 +327,7 @@ namespace feng3d
          * 
          * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
          */
-        secant(f: (x) => number, a: number, b: number, precision = 0.0000001, errorcallback?: (err: Error) => void)
+        secant(f: (x: number) => number, a: number, b: number, precision = 0.0000001, errorcallback?: (err: Error) => void)
         {
             if (!this.hasSolution(f, a, b, errorcallback)) return undefined;
 
