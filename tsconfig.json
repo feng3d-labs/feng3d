@@ -134,7 +134,7 @@
         "src/render/renderer/ShadowRenderer.ts",
         "src/render/renderer/OutlineRenderer.ts",
         "src/render/renderer/WireframeRenderer.ts",
-        "src/render/renderer/CartoonRenderer.ts",
+        "src/render/renderer/CartoonComponent.ts",
         //
         "src/skybox/Skybox.ts",
         "src/skybox/SkyboxRenderer.ts",

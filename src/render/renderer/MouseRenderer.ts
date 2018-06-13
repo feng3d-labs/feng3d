@@ -1,5 +1,6 @@
 namespace feng3d
 {
+    export var mouseRenderer: MouseRenderer;
 
     /**
      * 鼠标拾取渲染器
@@ -75,5 +76,5 @@ namespace feng3d
         }
     }
 
-    export var glMousePicker = new MouseRenderer();
+    mouseRenderer = new MouseRenderer();
 }

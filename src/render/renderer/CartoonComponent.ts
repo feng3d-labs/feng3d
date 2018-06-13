@@ -1,11 +1,6 @@
 namespace feng3d
 {
     /**
-     * 卡通渲染
-     */
-    export var cartoonRenderer = {};
-
-    /**
      * 参考
      */
     export class CartoonComponent extends Component

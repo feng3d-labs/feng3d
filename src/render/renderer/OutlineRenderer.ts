@@ -3,66 +3,73 @@ namespace feng3d
     /**
      * 轮廓渲染器
      */
-    export var outlineRenderer = {
-        draw: draw,
-    };
-
-    var shader: Shader;
-    var renderParams: RenderParams;
-    function init()
-    {
-        if (!renderParams)
-        {
-            renderParams = new RenderParams();
-            renderParams.renderMode = RenderMode.TRIANGLES;
-            renderParams.enableBlend = false;
-            renderParams.depthMask = true;
-            renderParams.depthtest = true;
-            renderParams.cullFace = CullFace.FRONT;
-            renderParams.frontFace = FrontFace.CW;
-
-            shader = shaderlib.getShader("outline");
-        }
-    }
-
-    function draw(gl: GL, unblenditems: {
-        depth: number;
-        item: MeshRenderer;
-        enableBlend: boolean;
-    }[])
-    {
-        for (var i = 0; i < unblenditems.length; i++)
-        {
-            var item = unblenditems[i].item;
-            if (item.getComponent(OutLineComponent) || item.getComponent(CartoonComponent))
-            {
-                var renderAtomic = item.gameObject.renderAtomic;
-                item.gameObject.preRender(renderAtomic);
-                var meshRenderer = item.getComponent(MeshRenderer);
-                drawGameObject(gl, renderAtomic);            //
-            }
-        }
-    }
+    export var outlineRenderer: OutlineRenderer;
 
     /**
-     * 绘制3D对象
+     * 轮廓渲染器
      */
-    function drawGameObject(gl: GL, renderAtomic: RenderAtomic)
+    export class OutlineRenderer
     {
-        init();
+        private shader: Shader;
+        private renderParams: RenderParams;
 
-        var oldshader = renderAtomic.shader;
-        renderAtomic.shader = shader;
+        init()
+        {
+            if (!this.renderParams)
+            {
+                var renderParams = this.renderParams = new RenderParams();
+                renderParams.renderMode = RenderMode.TRIANGLES;
+                renderParams.enableBlend = false;
+                renderParams.depthMask = true;
+                renderParams.depthtest = true;
+                renderParams.cullFace = CullFace.FRONT;
+                renderParams.frontFace = FrontFace.CW;
 
-        var oldRenderParams = renderAtomic.renderParams;
-        renderAtomic.renderParams = renderParams;
+                this.shader = shaderlib.getShader("outline");
+            }
+        }
 
-        gl.renderer.draw(renderAtomic);
+        draw(gl: GL, unblenditems: {
+            depth: number;
+            item: MeshRenderer;
+            enableBlend: boolean;
+        }[])
+        {
+            for (var i = 0; i < unblenditems.length; i++)
+            {
+                var item = unblenditems[i].item;
+                if (item.getComponent(OutLineComponent) || item.getComponent(CartoonComponent))
+                {
+                    var renderAtomic = item.gameObject.renderAtomic;
+                    item.gameObject.preRender(renderAtomic);
+                    var meshRenderer = item.getComponent(MeshRenderer);
+                    this.drawGameObject(gl, renderAtomic);            //
+                }
+            }
+        }
 
-        //
-        renderAtomic.shader = oldshader;
-        renderAtomic.renderParams = oldRenderParams;
+        /**
+         * 绘制3D对象
+         */
+        drawGameObject(gl: GL, renderAtomic: RenderAtomic)
+        {
+            this.init();
+
+            var oldshader = renderAtomic.shader;
+            renderAtomic.shader = this.shader;
+
+            var oldRenderParams = renderAtomic.renderParams;
+            renderAtomic.renderParams = this.renderParams;
+
+            gl.renderer.draw(renderAtomic);
+
+            //
+            renderAtomic.shader = oldshader;
+            renderAtomic.renderParams = oldRenderParams;
+        }
     }
+
+    outlineRenderer = new OutlineRenderer();
 
     export class OutLineComponent extends Component
     {

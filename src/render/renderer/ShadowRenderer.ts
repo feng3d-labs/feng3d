@@ -5,28 +5,30 @@ namespace feng3d
      * 阴影图渲染器
      * @author  feng    2017-03-25
      */
-    export var shadowRenderer = {
-        draw: draw
-    };
+    export var shadowRenderer: ShadowRenderer;
 
-    /**
-     * 渲染
-     */
-    function draw(gl: GL, scene3d: Scene3D, camera: Camera)
+    export class ShadowRenderer
     {
-        var lights = scene3d.collectComponents.pointLights.list;
-        for (var i = 0; i < lights.length; i++)
+        /**
+         * 渲染
+         */
+        draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
-            var light = lights[i];
+            var lights = scene3d.collectComponents.pointLights.list;
+            for (var i = 0; i < lights.length; i++)
+            {
+                var light = lights[i];
 
-            var frameBufferObject = new FrameBufferObject();
-            frameBufferObject.init(gl);
-            frameBufferObject.active(gl);
-            // MeshRenderer.meshRenderers.forEach(element =>
-            // {
-            //     this.drawRenderables(renderContext, element);
-            // });
-            frameBufferObject.deactive(gl);
+                var frameBufferObject = new FrameBufferObject();
+                frameBufferObject.init(gl);
+                frameBufferObject.active(gl);
+                // MeshRenderer.meshRenderers.forEach(element =>
+                // {
+                //     this.drawRenderables(renderContext, element);
+                // });
+                frameBufferObject.deactive(gl);
+            }
         }
     }
+    shadowRenderer = new ShadowRenderer();
 }

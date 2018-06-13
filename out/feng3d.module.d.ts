@@ -8300,8 +8300,17 @@ declare namespace feng3d {
      * 前向渲染器
      * @author feng 2017-02-20
      */
-    var forwardRenderer: {
-        draw: (gl: GL, scene3d: Scene3D, camera: Camera, renderObjectflag: GameObjectFlag) => {
+    var forwardRenderer: ForwardRenderer;
+    /**
+     * 前向渲染器
+     * @author feng 2017-02-20
+     */
+    class ForwardRenderer {
+        private renderContext;
+        /**
+         * 渲染
+         */
+        draw(gl: GL, scene3d: Scene3D, camera: Camera, renderObjectflag: GameObjectFlag): {
             blenditems: {
                 depth: number;
                 item: MeshRenderer;
@@ -8313,7 +8322,9 @@ declare namespace feng3d {
                 enableBlend: boolean;
             }[];
         };
-    };
+        drawRenderables(meshRenderer: MeshRenderer, gl: GL): void;
+        collectForwardRender(gameObject: GameObject, frustum: Frustum, renderObjectflag: GameObjectFlag): MeshRenderer[];
+    }
 }
 declare namespace feng3d {
     /**
@@ -8325,6 +8336,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    var mouseRenderer: MouseRenderer;
     /**
      * 鼠标拾取渲染器
      * @author feng 2017-02-06
@@ -8341,7 +8353,6 @@ declare namespace feng3d {
          */
         protected drawGameObject(gl: GL, renderAtomic: RenderAtomic): void;
     }
-    var glMousePicker: MouseRenderer;
 }
 declare namespace feng3d {
     /**
@@ -8356,21 +8367,36 @@ declare namespace feng3d {
      * 阴影图渲染器
      * @author  feng    2017-03-25
      */
-    var shadowRenderer: {
-        draw: (gl: GL, scene3d: Scene3D, camera: Camera) => void;
-    };
+    var shadowRenderer: ShadowRenderer;
+    class ShadowRenderer {
+        /**
+         * 渲染
+         */
+        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
+    }
 }
 declare namespace feng3d {
     /**
      * 轮廓渲染器
      */
-    var outlineRenderer: {
-        draw: (gl: GL, unblenditems: {
+    var outlineRenderer: OutlineRenderer;
+    /**
+     * 轮廓渲染器
+     */
+    class OutlineRenderer {
+        private shader;
+        private renderParams;
+        init(): void;
+        draw(gl: GL, unblenditems: {
             depth: number;
             item: MeshRenderer;
             enableBlend: boolean;
-        }[]) => void;
-    };
+        }[]): void;
+        /**
+         * 绘制3D对象
+         */
+        drawGameObject(gl: GL, renderAtomic: RenderAtomic): void;
+    }
     class OutLineComponent extends Component {
         size: number;
         color: Color4;
@@ -8398,13 +8424,25 @@ declare namespace feng3d {
     /**
      * 线框渲染器
      */
-    var wireframeRenderer: {
-        draw: (gl: GL, unblenditems: {
+    var wireframeRenderer: WireframeRenderer;
+    class WireframeRenderer {
+        private renderParams;
+        private shader;
+        private wireframe_skeleton_shader;
+        init(): void;
+        /**
+         * 渲染
+         */
+        draw(gl: GL, unblenditems: {
             depth: number;
             item: MeshRenderer;
             enableBlend: boolean;
-        }[]) => void;
-    };
+        }[]): void;
+        /**
+         * 绘制3D对象
+         */
+        drawGameObject(gl: GL, gameObject: GameObject): void;
+    }
     interface RenderAtomic {
         /**
          * 顶点索引缓冲
@@ -8423,10 +8461,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 卡通渲染
-     */
-    var cartoonRenderer: {};
     /**
      * 参考
      */
