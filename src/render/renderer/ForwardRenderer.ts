@@ -9,16 +9,18 @@ namespace feng3d
         draw: draw,
     };
 
+    var renderContext = new RenderContext();
+
     /**
      * 渲染
      */
-    function draw(renderContext: RenderContext, renderObjectflag: GameObjectFlag)
+    function draw(gl: GL, scene3d: Scene3D, camera: Camera, renderObjectflag: GameObjectFlag)
     {
-        var frustum = renderContext.camera.frustum;
+        var frustum = camera.frustum;
 
-        var meshRenderers = collectForwardRender(renderContext.scene3d.gameObject, frustum, renderObjectflag);
+        var meshRenderers = collectForwardRender(scene3d.gameObject, frustum, renderObjectflag);
 
-        var camerapos = renderContext.camera.transform.scenePosition;
+        var camerapos = camera.transform.scenePosition;
 
         var maps = meshRenderers.map((item) =>
         {
@@ -41,24 +43,26 @@ namespace feng3d
             return a.depth - b.depth;
         });
 
-        var gl = renderContext.gl;
+        renderContext.gl = gl;
+        renderContext.camera = camera;
+        renderContext.scene3d = scene3d;
+
         for (var i = 0; i < unblenditems.length; i++)
         {
-            drawRenderables(unblenditems[i].item, renderContext)
+            drawRenderables(unblenditems[i].item, gl)
         }
 
         for (var i = 0; i < blenditems.length; i++)
         {
-            drawRenderables(blenditems[i].item, renderContext)
+            drawRenderables(blenditems[i].item, gl)
         }
 
         return { blenditems: blenditems, unblenditems: unblenditems };
     }
 
-    function drawRenderables(meshRenderer: MeshRenderer, renderContext: RenderContext)
+    function drawRenderables(meshRenderer: MeshRenderer, gl: GL)
     {
         //更新数据
-        var gl = renderContext.gl;
         // try
         // {
         //绘制

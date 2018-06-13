@@ -63,11 +63,6 @@ namespace feng3d
         renderObjectflag = GameObjectFlag.feng3d;
 
         /**
-         * 渲染环境
-         */
-        private renderContext: RenderContext;
-
-        /**
          * 鼠标事件管理
          */
         mouse3DManager: Mouse3DManager;
@@ -120,8 +115,7 @@ namespace feng3d
 
             this.start();
 
-            this.renderContext = new RenderContext();
-            this.mouse3DManager = new Mouse3DManager(new WindowMouseInput(),() => this.viewRect);
+            this.mouse3DManager = new Mouse3DManager(new WindowMouseInput(), () => this.viewRect);
         }
 
         /**
@@ -164,10 +158,6 @@ namespace feng3d
             this.canvas.width = this.canvas.clientWidth;
             this.canvas.height = this.canvas.clientHeight;
 
-            this.renderContext.camera = this.camera;
-            this.renderContext.scene3d = this.scene;
-            this.renderContext.gl = this.gl;
-
             var viewRect = this.viewRect;
 
             this.camera.viewRect = viewRect;
@@ -177,20 +167,19 @@ namespace feng3d
             this.mouse3DManager.draw(this.scene, this.camera);
 
             //绘制阴影图
-            // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
+            shadowRenderer.draw(this.gl, this.scene, this.camera);
 
             init(this.gl, this.scene);
 
             skyboxRenderer.draw(this.gl, this.scene, this.camera, this.renderObjectflag);
 
             // 默认渲染
-            var forwardresult = forwardRenderer.draw(this.renderContext, this.renderObjectflag);
+            var forwardresult = forwardRenderer.draw(this.gl, this.scene, this.camera, this.renderObjectflag);
 
-            outlineRenderer.draw(this.renderContext, forwardresult.unblenditems);
+            outlineRenderer.draw(this.gl, forwardresult.unblenditems);
 
-            wireframeRenderer.draw(this.renderContext, forwardresult.unblenditems);
+            wireframeRenderer.draw(this.gl, forwardresult.unblenditems);
         }
-
     }
 
     function init(gl: GL, scene3D: Scene3D)

@@ -12939,6 +12939,76 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 帧缓冲对象
+     * @author feng 2017-02-18
+     */
+    var FrameBufferObject = /** @class */ (function () {
+        function FrameBufferObject() {
+            this.OFFSCREEN_WIDTH = 1024;
+            this.OFFSCREEN_HEIGHT = 1024;
+        }
+        FrameBufferObject.prototype.init = function (gl) {
+            // Create a framebuffer object (FBO)
+            this.framebuffer = gl.createFramebuffer();
+            if (!this.framebuffer) {
+                feng3d.debuger && alert('Failed to create frame buffer object');
+                return this.clear(gl);
+            }
+            // Create a texture object and set its size and parameters
+            this.texture = gl.createTexture(); // Create a texture object
+            if (!this.texture) {
+                feng3d.debuger && alert('Failed to create texture object');
+                return this.clear(gl);
+            }
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            // Create a renderbuffer object and Set its size and parameters
+            this.depthBuffer = gl.createRenderbuffer(); // Create a renderbuffer object
+            if (!this.depthBuffer) {
+                feng3d.debuger && alert('Failed to create renderbuffer object');
+                return this.clear(gl);
+            }
+            gl.bindRenderbuffer(gl.RENDERBUFFER, this.depthBuffer);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
+            // Attach the texture and the renderbuffer object to the FBO
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.depthBuffer);
+            // Check if FBO is configured correctly
+            var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+            if (gl.FRAMEBUFFER_COMPLETE !== e) {
+                feng3d.debuger && alert('Frame buffer object is incomplete: ' + e.toString());
+                return this.clear(gl);
+            }
+            // Unbind the buffer object
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        };
+        FrameBufferObject.prototype.active = function (gl) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+        };
+        FrameBufferObject.prototype.deactive = function (gl) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        };
+        FrameBufferObject.prototype.clear = function (gl) {
+            if (this.framebuffer)
+                gl.deleteFramebuffer(this.framebuffer);
+            if (this.texture)
+                gl.deleteTexture(this.texture);
+            if (this.depthBuffer)
+                gl.deleteRenderbuffer(this.depthBuffer);
+            return null;
+        };
+        return FrameBufferObject;
+    }());
+    feng3d.FrameBufferObject = FrameBufferObject;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 渲染环境
      * @author feng 2017-01-04
      */
@@ -13681,13 +13751,14 @@ var feng3d;
     feng3d.forwardRenderer = {
         draw: draw,
     };
+    var renderContext = new feng3d.RenderContext();
     /**
      * 渲染
      */
-    function draw(renderContext, renderObjectflag) {
-        var frustum = renderContext.camera.frustum;
-        var meshRenderers = collectForwardRender(renderContext.scene3d.gameObject, frustum, renderObjectflag);
-        var camerapos = renderContext.camera.transform.scenePosition;
+    function draw(gl, scene3d, camera, renderObjectflag) {
+        var frustum = camera.frustum;
+        var meshRenderers = collectForwardRender(scene3d.gameObject, frustum, renderObjectflag);
+        var camerapos = camera.transform.scenePosition;
         var maps = meshRenderers.map(function (item) {
             return {
                 depth: item.transform.scenePosition.subTo(camerapos).length,
@@ -13703,18 +13774,19 @@ var feng3d;
         unblenditems = unblenditems.sort(function (a, b) {
             return a.depth - b.depth;
         });
-        var gl = renderContext.gl;
+        renderContext.gl = gl;
+        renderContext.camera = camera;
+        renderContext.scene3d = scene3d;
         for (var i = 0; i < unblenditems.length; i++) {
-            drawRenderables(unblenditems[i].item, renderContext);
+            drawRenderables(unblenditems[i].item, gl);
         }
         for (var i = 0; i < blenditems.length; i++) {
-            drawRenderables(blenditems[i].item, renderContext);
+            drawRenderables(blenditems[i].item, gl);
         }
         return { blenditems: blenditems, unblenditems: unblenditems };
     }
-    function drawRenderables(meshRenderer, renderContext) {
+    function drawRenderables(meshRenderer, gl) {
         //更新数据
-        var gl = renderContext.gl;
         // try
         // {
         //绘制
@@ -13851,23 +13923,21 @@ var feng3d;
     feng3d.shadowRenderer = {
         draw: draw
     };
-    // private frameBufferObject: FrameBufferObject;
     /**
      * 渲染
      */
-    function draw(renderContext) {
-        var gl = renderContext.gl;
-        var lights = renderContext.scene3d.collectComponents.pointLights.list;
+    function draw(gl, scene3d, camera) {
+        var lights = scene3d.collectComponents.pointLights.list;
         for (var i = 0; i < lights.length; i++) {
             var light = lights[i];
-            // var frameBufferObject = new FrameBufferObject();
-            // frameBufferObject.init(gl);
-            // frameBufferObject.active(gl);
+            var frameBufferObject = new feng3d.FrameBufferObject();
+            frameBufferObject.init(gl);
+            frameBufferObject.active(gl);
             // MeshRenderer.meshRenderers.forEach(element =>
             // {
-            // this.drawRenderables(renderContext, element);
+            //     this.drawRenderables(renderContext, element);
             // });
-            // frameBufferObject.deactive(gl);
+            frameBufferObject.deactive(gl);
         }
     }
 })(feng3d || (feng3d = {}));
@@ -13893,8 +13963,7 @@ var feng3d;
             shader = feng3d.shaderlib.getShader("outline");
         }
     }
-    function draw(renderContext, unblenditems) {
-        var gl = renderContext.gl;
+    function draw(gl, unblenditems) {
         for (var i = 0; i < unblenditems.length; i++) {
             var item = unblenditems[i].item;
             if (item.getComponent(OutLineComponent) || item.getComponent(feng3d.CartoonComponent)) {
@@ -13979,10 +14048,9 @@ var feng3d;
     /**
      * 渲染
      */
-    function draw(renderContext, unblenditems) {
+    function draw(gl, unblenditems) {
         if (unblenditems.length == 0)
             return;
-        var gl = renderContext.gl;
         for (var i = 0; i < unblenditems.length; i++) {
             var item = unblenditems[i].item;
             if (item.getComponent(WireframeComponent)) {
@@ -15725,7 +15793,6 @@ var feng3d;
             this.scene = scene || feng3d.GameObject.create("scene").addComponent(feng3d.Scene3D);
             this.camera = camera;
             this.start();
-            this.renderContext = new feng3d.RenderContext();
             this.mouse3DManager = new feng3d.Mouse3DManager(new feng3d.WindowMouseInput(), function () { return _this.viewRect; });
         }
         Object.defineProperty(Engine.prototype, "camera", {
@@ -15825,22 +15892,19 @@ var feng3d;
             this.scene.update();
             this.canvas.width = this.canvas.clientWidth;
             this.canvas.height = this.canvas.clientHeight;
-            this.renderContext.camera = this.camera;
-            this.renderContext.scene3d = this.scene;
-            this.renderContext.gl = this.gl;
             var viewRect = this.viewRect;
             this.camera.viewRect = viewRect;
             this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
             //鼠标拾取渲染
             this.mouse3DManager.draw(this.scene, this.camera);
             //绘制阴影图
-            // this.shadowRenderer.draw(this._gl, this._scene, this._camera.camera);
+            feng3d.shadowRenderer.draw(this.gl, this.scene, this.camera);
             init(this.gl, this.scene);
             feng3d.skyboxRenderer.draw(this.gl, this.scene, this.camera, this.renderObjectflag);
             // 默认渲染
-            var forwardresult = feng3d.forwardRenderer.draw(this.renderContext, this.renderObjectflag);
-            feng3d.outlineRenderer.draw(this.renderContext, forwardresult.unblenditems);
-            feng3d.wireframeRenderer.draw(this.renderContext, forwardresult.unblenditems);
+            var forwardresult = feng3d.forwardRenderer.draw(this.gl, this.scene, this.camera, this.renderObjectflag);
+            feng3d.outlineRenderer.draw(this.gl, forwardresult.unblenditems);
+            feng3d.wireframeRenderer.draw(this.gl, forwardresult.unblenditems);
         };
         return Engine;
     }());

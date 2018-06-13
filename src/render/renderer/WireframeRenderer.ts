@@ -30,7 +30,7 @@ namespace feng3d
     /**
      * 渲染
      */
-    function draw(renderContext: RenderContext, unblenditems: {
+    function draw(gl: GL, unblenditems: {
         depth: number;
         item: MeshRenderer;
         enableBlend: boolean;
@@ -38,8 +38,6 @@ namespace feng3d
     {
         if (unblenditems.length == 0)
             return;
-
-        var gl = renderContext.gl;
 
         for (var i = 0; i < unblenditems.length; i++)
         {

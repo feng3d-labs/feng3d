@@ -8,28 +8,25 @@ namespace feng3d
     export var shadowRenderer = {
         draw: draw
     };
-    // private frameBufferObject: FrameBufferObject;
 
     /**
      * 渲染
      */
-    function draw(renderContext: RenderContext)
+    function draw(gl: GL, scene3d: Scene3D, camera: Camera)
     {
-        var gl = renderContext.gl;
-
-        var lights = renderContext.scene3d.collectComponents.pointLights.list;
+        var lights = scene3d.collectComponents.pointLights.list;
         for (var i = 0; i < lights.length; i++)
         {
             var light = lights[i];
 
-            // var frameBufferObject = new FrameBufferObject();
-            // frameBufferObject.init(gl);
-            // frameBufferObject.active(gl);
+            var frameBufferObject = new FrameBufferObject();
+            frameBufferObject.init(gl);
+            frameBufferObject.active(gl);
             // MeshRenderer.meshRenderers.forEach(element =>
             // {
-            // this.drawRenderables(renderContext, element);
+            //     this.drawRenderables(renderContext, element);
             // });
-            // frameBufferObject.deactive(gl);
+            frameBufferObject.deactive(gl);
         }
     }
 }

@@ -7983,6 +7983,24 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 帧缓冲对象
+     * @author feng 2017-02-18
+     */
+    class FrameBufferObject {
+        OFFSCREEN_WIDTH: number;
+        OFFSCREEN_HEIGHT: number;
+        framebuffer: WebGLFramebuffer;
+        texture: WebGLTexture;
+        depthBuffer: WebGLRenderbuffer;
+        t: Texture2D;
+        init(gl: GL): any;
+        active(gl: GL): void;
+        deactive(gl: GL): void;
+        clear(gl: GL): any;
+    }
+}
+declare namespace feng3d {
+    /**
      * 渲染环境
      * @author feng 2017-01-04
      */
@@ -8279,7 +8297,7 @@ declare namespace feng3d {
      * @author feng 2017-02-20
      */
     var forwardRenderer: {
-        draw: (renderContext: RenderContext, renderObjectflag: GameObjectFlag) => {
+        draw: (gl: GL, scene3d: Scene3D, camera: Camera, renderObjectflag: GameObjectFlag) => {
             blenditems: {
                 depth: number;
                 item: MeshRenderer;
@@ -8335,7 +8353,7 @@ declare namespace feng3d {
      * @author  feng    2017-03-25
      */
     var shadowRenderer: {
-        draw: (renderContext: RenderContext) => void;
+        draw: (gl: GL, scene3d: Scene3D, camera: Camera) => void;
     };
 }
 declare namespace feng3d {
@@ -8343,7 +8361,7 @@ declare namespace feng3d {
      * 轮廓渲染器
      */
     var outlineRenderer: {
-        draw: (renderContext: RenderContext, unblenditems: {
+        draw: (gl: GL, unblenditems: {
             depth: number;
             item: MeshRenderer;
             enableBlend: boolean;
@@ -8377,7 +8395,7 @@ declare namespace feng3d {
      * 线框渲染器
      */
     var wireframeRenderer: {
-        draw: (renderContext: RenderContext, unblenditems: {
+        draw: (gl: GL, unblenditems: {
             depth: number;
             item: MeshRenderer;
             enableBlend: boolean;
@@ -8970,10 +8988,6 @@ declare namespace feng3d {
          * 渲染对象标记，用于过滤渲染对象
          */
         renderObjectflag: GameObjectFlag;
-        /**
-         * 渲染环境
-         */
-        private renderContext;
         /**
          * 鼠标事件管理
          */

@@ -25,14 +25,12 @@ namespace feng3d
         }
     }
 
-    function draw(renderContext: RenderContext, unblenditems: {
+    function draw(gl: GL, unblenditems: {
         depth: number;
         item: MeshRenderer;
         enableBlend: boolean;
     }[])
     {
-        var gl = renderContext.gl;
-
         for (var i = 0; i < unblenditems.length; i++)
         {
             var item = unblenditems[i].item;
