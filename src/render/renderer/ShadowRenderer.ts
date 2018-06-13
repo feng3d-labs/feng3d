@@ -17,17 +17,20 @@ namespace feng3d
             var lights = scene3d.collectComponents.pointLights.list;
             for (var i = 0; i < lights.length; i++)
             {
-                var light = lights[i];
-
-                var frameBufferObject = new FrameBufferObject();
-                frameBufferObject.init(gl);
-                frameBufferObject.active(gl);
-                // MeshRenderer.meshRenderers.forEach(element =>
-                // {
-                //     this.drawRenderables(renderContext, element);
-                // });
-                frameBufferObject.deactive(gl);
+                this.drawForLight(gl, lights[i], scene3d, camera);
             }
+        }
+
+        drawForLight(gl: GL, light: PointLight, scene3d: Scene3D, camera: Camera): any
+        {
+            var frameBufferObject = new FrameBufferObject();
+            frameBufferObject.init(gl);
+            frameBufferObject.active(gl);
+            // MeshRenderer.meshRenderers.forEach(element =>
+            // {
+            //     this.drawRenderables(renderContext, element);
+            // });
+            frameBufferObject.deactive(gl);
         }
     }
     shadowRenderer = new ShadowRenderer();

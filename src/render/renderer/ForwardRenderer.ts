@@ -20,7 +20,7 @@ namespace feng3d
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
-            var meshRenderers = scene3d.getActiveMeshRenderers(scene3d.gameObject, camera);
+            var meshRenderers = scene3d.getPickCache(camera).getActiveMeshRenderers();
 
             var camerapos = camera.transform.scenePosition;
 
@@ -44,6 +44,8 @@ namespace feng3d
             {
                 return a.depth - b.depth;
             });
+
+
 
             this.renderContext.gl = gl;
             this.renderContext.camera = camera;

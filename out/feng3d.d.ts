@@ -8330,7 +8330,10 @@ declare namespace feng3d {
      * @author  feng    2017-03-25
      */
     class DepthRenderer {
-        constructor();
+        /**
+         * 渲染
+         */
+        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -8371,6 +8374,7 @@ declare namespace feng3d {
          * 渲染
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
+        drawForLight(gl: GL, light: PointLight, scene3d: Scene3D, camera: Camera): any;
     }
 }
 declare namespace feng3d {
@@ -8814,6 +8818,10 @@ declare namespace feng3d {
          * 子组件个数
          */
         readonly numComponents: number;
+        /**
+         * 全局是否可见
+         */
+        readonly globalVisible: any;
         /**
          * 构建3D对象
          */
@@ -9273,6 +9281,22 @@ declare namespace feng3d {
          * 获取天空盒
          */
         getActiveSkyBox(): SkyBox;
+        private pickMap;
+        /**
+         * 获取拾取缓存
+         * @param camera
+         */
+        getPickCache(camera: Camera): ScenePickCache;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 场景拾取缓存
+     */
+    class ScenePickCache {
+        private scene;
+        private camera;
+        constructor(scene: Scene3D, camera: Camera);
         /**
          * 获取需要渲染的对象
          *
@@ -9284,7 +9308,7 @@ declare namespace feng3d {
          * @param gameObject
          * @param camera
          */
-        getActiveMeshRenderers(gameObject: GameObject, camera: Camera): MeshRenderer[];
+        getActiveMeshRenderers(): MeshRenderer[];
     }
 }
 declare namespace feng3d {

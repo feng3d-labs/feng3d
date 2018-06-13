@@ -255,43 +255,23 @@ namespace feng3d
         {
             var skyboxs = this.collectComponents.skyboxs.list.filter((skybox) =>
             {
-                return skybox.gameObject.visible;
+                return skybox.gameObject.globalVisible;
             });
             return skyboxs[0];
         }
 
+        private pickMap = new Map<Camera, ScenePickCache>();
         /**
-         * 获取需要渲染的对象
-         * 
-         * #### 渲染需求条件
-         * 1. visible == true
-         * 1. 在摄像机视锥内
-         * 1. meshRenderer.enabled == true
-         * 
-         * @param gameObject 
+         * 获取拾取缓存
          * @param camera 
          */
-        getActiveMeshRenderers(gameObject: GameObject, camera: Camera)
+        getPickCache(camera: Camera)
         {
-            if (!gameObject.visible)
-                return [];
-            var meshRenderers: MeshRenderer[] = [];
-            var meshRenderer = gameObject.getComponent(MeshRenderer);
-            if (meshRenderer && meshRenderer.enabled)
-            {
-                var boundingComponent = gameObject.getComponent(Bounding);
-                if (boundingComponent.selfWorldBounds)
-                {
-                    if (camera.frustum.intersectsBox(boundingComponent.selfWorldBounds))
-                        meshRenderers.push(meshRenderer);
-                }
-            }
-
-            gameObject.children.forEach(element =>
-            {
-                meshRenderers = meshRenderers.concat(this.getActiveMeshRenderers(element, camera));
-            });
-            return meshRenderers;
+            if (this.pickMap.get(camera))
+                return this.pickMap.get(camera);
+            var pick = new ScenePickCache(this, camera);
+            this.pickMap.set(camera, pick);
+            return pick;
         }
     }
 }

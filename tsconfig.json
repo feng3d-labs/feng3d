@@ -154,6 +154,7 @@
         "src/core/Script.ts",
         //3D场景
         "src/scene/Scene3D.ts",
+        "src/scene/ScenePickCache.ts",
         //几何体
         "src/geometry/Geometry.ts",
         "src/geometry/CustomGeometry.ts",

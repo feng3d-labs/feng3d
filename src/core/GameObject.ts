@@ -180,6 +180,16 @@ namespace feng3d
             return this._components.length;
         }
 
+        /**
+         * 全局是否可见
+         */
+        get globalVisible()
+        {
+            if (this.parent)
+                return this.visible && this.parent.globalVisible;
+            return this.visible;
+        }
+
         //------------------------------------------
         // Functions
         //------------------------------------------

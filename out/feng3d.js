@@ -13756,7 +13756,7 @@ var feng3d;
          * 渲染
          */
         ForwardRenderer.prototype.draw = function (gl, scene3d, camera) {
-            var meshRenderers = scene3d.getActiveMeshRenderers(scene3d.gameObject, camera);
+            var meshRenderers = scene3d.getPickCache(camera).getActiveMeshRenderers();
             var camerapos = camera.transform.scenePosition;
             var maps = meshRenderers.map(function (item) {
                 return {
@@ -13816,6 +13816,11 @@ var feng3d;
     var DepthRenderer = /** @class */ (function () {
         function DepthRenderer() {
         }
+        /**
+         * 渲染
+         */
+        DepthRenderer.prototype.draw = function (gl, scene3d, camera) {
+        };
         return DepthRenderer;
     }());
     feng3d.DepthRenderer = DepthRenderer;
@@ -13909,16 +13914,18 @@ var feng3d;
         ShadowRenderer.prototype.draw = function (gl, scene3d, camera) {
             var lights = scene3d.collectComponents.pointLights.list;
             for (var i = 0; i < lights.length; i++) {
-                var light = lights[i];
-                var frameBufferObject = new feng3d.FrameBufferObject();
-                frameBufferObject.init(gl);
-                frameBufferObject.active(gl);
-                // MeshRenderer.meshRenderers.forEach(element =>
-                // {
-                //     this.drawRenderables(renderContext, element);
-                // });
-                frameBufferObject.deactive(gl);
+                this.drawForLight(gl, lights[i], scene3d, camera);
             }
+        };
+        ShadowRenderer.prototype.drawForLight = function (gl, light, scene3d, camera) {
+            var frameBufferObject = new feng3d.FrameBufferObject();
+            frameBufferObject.init(gl);
+            frameBufferObject.active(gl);
+            // MeshRenderer.meshRenderers.forEach(element =>
+            // {
+            //     this.drawRenderables(renderContext, element);
+            // });
+            frameBufferObject.deactive(gl);
         };
         return ShadowRenderer;
     }());
@@ -15188,6 +15195,18 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(GameObject.prototype, "globalVisible", {
+            /**
+             * 全局是否可见
+             */
+            get: function () {
+                if (this.parent)
+                    return this.visible && this.parent.globalVisible;
+                return this.visible;
+            },
+            enumerable: true,
+            configurable: true
+        });
         GameObject.prototype.find = function (name) {
             if (this.name == name)
                 return this;
@@ -16275,6 +16294,7 @@ var feng3d;
              * 指定更新脚本标记，用于过滤需要调用update的脚本
              */
             _this.updateScriptFlag = feng3d.ScriptFlag.feng3d;
+            _this.pickMap = new Map();
             return _this;
         }
         /**
@@ -16404,38 +16424,20 @@ var feng3d;
          */
         Scene3D.prototype.getActiveSkyBox = function () {
             var skyboxs = this.collectComponents.skyboxs.list.filter(function (skybox) {
-                return skybox.gameObject.visible;
+                return skybox.gameObject.globalVisible;
             });
             return skyboxs[0];
         };
         /**
-         * 获取需要渲染的对象
-         *
-         * #### 渲染需求条件
-         * 1. visible == true
-         * 1. 在摄像机视锥内
-         * 1. meshRenderer.enabled == true
-         *
-         * @param gameObject
+         * 获取拾取缓存
          * @param camera
          */
-        Scene3D.prototype.getActiveMeshRenderers = function (gameObject, camera) {
-            var _this = this;
-            if (!gameObject.visible)
-                return [];
-            var meshRenderers = [];
-            var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
-            if (meshRenderer && meshRenderer.enabled) {
-                var boundingComponent = gameObject.getComponent(feng3d.Bounding);
-                if (boundingComponent.selfWorldBounds) {
-                    if (camera.frustum.intersectsBox(boundingComponent.selfWorldBounds))
-                        meshRenderers.push(meshRenderer);
-                }
-            }
-            gameObject.children.forEach(function (element) {
-                meshRenderers = meshRenderers.concat(_this.getActiveMeshRenderers(element, camera));
-            });
-            return meshRenderers;
+        Scene3D.prototype.getPickCache = function (camera) {
+            if (this.pickMap.get(camera))
+                return this.pickMap.get(camera);
+            var pick = new feng3d.ScenePickCache(this, camera);
+            this.pickMap.set(camera, pick);
+            return pick;
         };
         __decorate([
             feng3d.serialize,
@@ -16448,6 +16450,50 @@ var feng3d;
         return Scene3D;
     }(feng3d.Component));
     feng3d.Scene3D = Scene3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 场景拾取缓存
+     */
+    var ScenePickCache = /** @class */ (function () {
+        function ScenePickCache(scene, camera) {
+            this.scene = scene;
+            this.camera = camera;
+        }
+        /**
+         * 获取需要渲染的对象
+         *
+         * #### 渲染需求条件
+         * 1. visible == true
+         * 1. 在摄像机视锥内
+         * 1. meshRenderer.enabled == true
+         *
+         * @param gameObject
+         * @param camera
+         */
+        ScenePickCache.prototype.getActiveMeshRenderers = function () {
+            var meshRenderers = [];
+            var gameObjects = [this.scene.gameObject];
+            while (gameObjects.length > 0) {
+                var gameObject = gameObjects.pop();
+                if (!gameObject.visible)
+                    continue;
+                var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
+                if (meshRenderer && meshRenderer.enabled) {
+                    var boundingComponent = gameObject.getComponent(feng3d.Bounding);
+                    if (boundingComponent.selfWorldBounds) {
+                        if (this.camera.frustum.intersectsBox(boundingComponent.selfWorldBounds))
+                            meshRenderers.push(meshRenderer);
+                    }
+                }
+                gameObjects = gameObjects.concat(gameObject.children);
+            }
+            return meshRenderers;
+        };
+        return ScenePickCache;
+    }());
+    feng3d.ScenePickCache = ScenePickCache;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
