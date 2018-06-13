@@ -28,7 +28,7 @@ interface ReadonlyMap<K, V>
 }
 
 // 参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap
-interface WeakMap<K extends Object, V>
+interface WeakMap<K extends object, V>
 {
     delete(key: K): boolean;
     get(key: K): V | undefined;
@@ -38,9 +38,9 @@ interface WeakMap<K extends Object, V>
 
 interface WeakMapConstructor
 {
-    new(): WeakMap<Object, any>;
-    new <K extends Object, V>(entries?: [K, V][]): WeakMap<K, V>;
-    readonly prototype: WeakMap<Object, any>;
+    new(): WeakMap<object, any>;
+    new <K extends object, V>(entries?: [K, V][]): WeakMap<K, V>;
+    readonly prototype: WeakMap<object, any>;
 }
 declare var WeakMap: WeakMapConstructor;
 
@@ -81,9 +81,9 @@ interface WeakSet<T>
 
 interface WeakSetConstructor
 {
-    new(): WeakSet<Object>;
-    new <T extends Object>(values?: T[]): WeakSet<T>;
-    readonly prototype: WeakSet<Object>;
+    new(): WeakSet<object>;
+    new <T extends object>(values?: T[]): WeakSet<T>;
+    readonly prototype: WeakSet<object>;
 }
 declare var WeakSet: WeakSetConstructor;
 
