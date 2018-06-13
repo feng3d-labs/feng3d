@@ -62,12 +62,6 @@ namespace feng3d
         editor: 100
     };
 
-    export enum GameObjectFlag
-    {
-        feng3d = 1,
-        editor = 2,
-    }
-
     /**
      * Base class for all entities in feng3d scenes.
      */
@@ -126,11 +120,6 @@ namespace feng3d
          */
         @serialize
         navigationArea = -1;
-
-        /**
-         * 标记
-         */
-        flag = GameObjectFlag.feng3d;
 
         /**
          * 用户自定义数据

@@ -8753,10 +8753,6 @@ declare namespace feng3d {
     var mouselayer: {
         editor: number;
     };
-    enum GameObjectFlag {
-        feng3d = 1,
-        editor = 2,
-    }
     /**
      * Base class for all entities in feng3d scenes.
      */
@@ -8799,10 +8795,6 @@ declare namespace feng3d {
          * 模型生成的导航网格类型
          */
         navigationArea: number;
-        /**
-         * 标记
-         */
-        flag: GameObjectFlag;
         /**
          * 用户自定义数据
          */
@@ -9208,10 +9200,6 @@ declare namespace feng3d {
      * @author feng 2016-05-01
      */
     class Scene3D extends Component {
-        /**
-         * 渲染对象标记，用于过滤渲染对象
-         */
-        renderObjectflag: GameObjectFlag;
         /**
          * 是否编辑器模式
          */

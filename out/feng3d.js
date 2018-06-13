@@ -15079,11 +15079,6 @@ var feng3d;
     feng3d.mouselayer = {
         editor: 100
     };
-    var GameObjectFlag;
-    (function (GameObjectFlag) {
-        GameObjectFlag[GameObjectFlag["feng3d"] = 1] = "feng3d";
-        GameObjectFlag[GameObjectFlag["editor"] = 2] = "editor";
-    })(GameObjectFlag = feng3d.GameObjectFlag || (feng3d.GameObjectFlag = {}));
     /**
      * Base class for all entities in feng3d scenes.
      */
@@ -15119,10 +15114,6 @@ var feng3d;
              * 模型生成的导航网格类型
              */
             _this.navigationArea = -1;
-            /**
-             * 标记
-             */
-            _this.flag = GameObjectFlag.feng3d;
             //------------------------------------------
             // Protected Properties
             //------------------------------------------
@@ -16270,10 +16261,6 @@ var feng3d;
         function Scene3D() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
-             * 渲染对象标记，用于过滤渲染对象
-             */
-            _this.renderObjectflag = feng3d.GameObjectFlag.feng3d;
-            /**
              * 是否编辑器模式
              */
             _this.iseditor = false;
@@ -16417,17 +16404,14 @@ var feng3d;
          * 获取天空盒
          */
         Scene3D.prototype.getActiveSkyBox = function () {
-            var _this = this;
             var skyboxs = this.collectComponents.skyboxs.list.filter(function (skybox) {
-                return skybox.gameObject.visible && (_this.renderObjectflag & skybox.gameObject.flag);
+                return skybox.gameObject.visible;
             });
             return skyboxs[0];
         };
         Scene3D.prototype.collectForwardRender = function (gameObject, frustum) {
             var _this = this;
             if (!gameObject.visible)
-                return [];
-            if (!(this.renderObjectflag & gameObject.flag))
                 return [];
             var meshRenderers = [];
             var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
