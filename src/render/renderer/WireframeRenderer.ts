@@ -30,18 +30,16 @@ namespace feng3d
         /**
          * 渲染
          */
-        draw(gl: GL, unblenditems: {
-            depth: number;
-            item: MeshRenderer;
-            enableBlend: boolean;
-        }[])
+        draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
+            var unblenditems = scene3d.getPickCache(camera).unblenditems;
+
             if (unblenditems.length == 0)
                 return;
 
             for (var i = 0; i < unblenditems.length; i++)
             {
-                var item = unblenditems[i].item;
+                var item = unblenditems[i];
                 if (item.getComponent(WireframeComponent))
                 {
                     this.drawGameObject(gl, item.gameObject);            //

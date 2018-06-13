@@ -29,21 +29,16 @@ namespace feng3d
             }
         }
 
-        draw(gl: GL, unblenditems: {
-            depth: number;
-            item: MeshRenderer;
-            enableBlend: boolean;
-        }[])
+        draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
+            var unblenditems = scene3d.getPickCache(camera).unblenditems;
+
             for (var i = 0; i < unblenditems.length; i++)
             {
-                var item = unblenditems[i].item;
+                var item = unblenditems[i];
                 if (item.getComponent(OutLineComponent) || item.getComponent(CartoonComponent))
                 {
-                    var renderAtomic = item.gameObject.renderAtomic;
-                    item.gameObject.preRender(renderAtomic);
-                    var meshRenderer = item.getComponent(MeshRenderer);
-                    this.drawGameObject(gl, renderAtomic);            //
+                    this.drawGameObject(gl, item.gameObject);            //
                 }
             }
         }
@@ -51,9 +46,12 @@ namespace feng3d
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, renderAtomic: RenderAtomic)
+        drawGameObject(gl: GL, gameObject: GameObject)
         {
             this.init();
+
+            var renderAtomic = gameObject.renderAtomic;
+            gameObject.preRender(renderAtomic);
 
             var oldshader = renderAtomic.shader;
             renderAtomic.shader = this.shader;

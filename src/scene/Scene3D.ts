@@ -132,6 +132,9 @@ namespace feng3d
 
         private onEnterFrame(interval: number)
         {
+            // 每帧清理拾取缓存
+            this.pickMap.forEach(item => item.clear());
+
             this.collectComponents.animations.list.forEach(element =>
             {
                 if (element.isplaying)

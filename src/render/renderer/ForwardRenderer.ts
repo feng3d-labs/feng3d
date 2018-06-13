@@ -20,48 +20,14 @@ namespace feng3d
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
-            var meshRenderers = scene3d.getPickCache(camera).getActiveMeshRenderers();
-
-            var camerapos = camera.transform.scenePosition;
-
-            var maps = meshRenderers.map((item) =>
-            {
-                return {
-                    depth: item.transform.scenePosition.subTo(camerapos).length,
-                    item: item,
-                    enableBlend: item.material.renderParams.enableBlend,
-                }
-            });
-
-            var blenditems = maps.filter((item) => { return item.enableBlend; });
-            var unblenditems = maps.filter((item) => { return !item.enableBlend; });
-
-            blenditems = blenditems.sort((a, b) =>
-            {
-                return b.depth - a.depth;
-            });
-            unblenditems = unblenditems.sort((a, b) =>
-            {
-                return a.depth - b.depth;
-            });
-
-
+            var blenditems = scene3d.getPickCache(camera).blenditems;
+            var unblenditems = scene3d.getPickCache(camera).unblenditems;
 
             this.renderContext.gl = gl;
             this.renderContext.camera = camera;
             this.renderContext.scene3d = scene3d;
 
-            for (var i = 0; i < unblenditems.length; i++)
-            {
-                this.drawRenderables(unblenditems[i].item, gl)
-            }
-
-            for (var i = 0; i < blenditems.length; i++)
-            {
-                this.drawRenderables(blenditems[i].item, gl)
-            }
-
-            return { blenditems: blenditems, unblenditems: unblenditems };
+            unblenditems.concat(blenditems).forEach(item => this.drawRenderables(item, gl));
         }
 
         drawRenderables(meshRenderer: MeshRenderer, gl: GL)

@@ -162,7 +162,7 @@ namespace feng3d
             this.mouse3DManager.draw(this.scene, this.camera);
 
             //绘制阴影图
-            shadowRenderer.draw(this.gl, this.scene, this.camera);
+            // shadowRenderer.draw(this.gl, this.scene, this.camera);
 
             init(this.gl, this.scene);
 
@@ -171,9 +171,9 @@ namespace feng3d
             // 默认渲染
             var forwardresult = forwardRenderer.draw(this.gl, this.scene, this.camera);
 
-            outlineRenderer.draw(this.gl, forwardresult.unblenditems);
+            outlineRenderer.draw(this.gl, this.scene, this.camera);
 
-            wireframeRenderer.draw(this.gl, forwardresult.unblenditems);
+            wireframeRenderer.draw(this.gl, this.scene, this.camera);
         }
     }
 

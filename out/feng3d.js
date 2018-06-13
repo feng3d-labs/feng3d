@@ -13756,33 +13756,13 @@ var feng3d;
          * 渲染
          */
         ForwardRenderer.prototype.draw = function (gl, scene3d, camera) {
-            var meshRenderers = scene3d.getPickCache(camera).getActiveMeshRenderers();
-            var camerapos = camera.transform.scenePosition;
-            var maps = meshRenderers.map(function (item) {
-                return {
-                    depth: item.transform.scenePosition.subTo(camerapos).length,
-                    item: item,
-                    enableBlend: item.material.renderParams.enableBlend,
-                };
-            });
-            var blenditems = maps.filter(function (item) { return item.enableBlend; });
-            var unblenditems = maps.filter(function (item) { return !item.enableBlend; });
-            blenditems = blenditems.sort(function (a, b) {
-                return b.depth - a.depth;
-            });
-            unblenditems = unblenditems.sort(function (a, b) {
-                return a.depth - b.depth;
-            });
+            var _this = this;
+            var blenditems = scene3d.getPickCache(camera).blenditems;
+            var unblenditems = scene3d.getPickCache(camera).unblenditems;
             this.renderContext.gl = gl;
             this.renderContext.camera = camera;
             this.renderContext.scene3d = scene3d;
-            for (var i = 0; i < unblenditems.length; i++) {
-                this.drawRenderables(unblenditems[i].item, gl);
-            }
-            for (var i = 0; i < blenditems.length; i++) {
-                this.drawRenderables(blenditems[i].item, gl);
-            }
-            return { blenditems: blenditems, unblenditems: unblenditems };
+            unblenditems.concat(blenditems).forEach(function (item) { return _this.drawRenderables(item, gl); });
         };
         ForwardRenderer.prototype.drawRenderables = function (meshRenderer, gl) {
             //更新数据
@@ -13952,22 +13932,22 @@ var feng3d;
                 this.shader = feng3d.shaderlib.getShader("outline");
             }
         };
-        OutlineRenderer.prototype.draw = function (gl, unblenditems) {
+        OutlineRenderer.prototype.draw = function (gl, scene3d, camera) {
+            var unblenditems = scene3d.getPickCache(camera).unblenditems;
             for (var i = 0; i < unblenditems.length; i++) {
-                var item = unblenditems[i].item;
+                var item = unblenditems[i];
                 if (item.getComponent(OutLineComponent) || item.getComponent(feng3d.CartoonComponent)) {
-                    var renderAtomic = item.gameObject.renderAtomic;
-                    item.gameObject.preRender(renderAtomic);
-                    var meshRenderer = item.getComponent(feng3d.MeshRenderer);
-                    this.drawGameObject(gl, renderAtomic); //
+                    this.drawGameObject(gl, item.gameObject); //
                 }
             }
         };
         /**
          * 绘制3D对象
          */
-        OutlineRenderer.prototype.drawGameObject = function (gl, renderAtomic) {
+        OutlineRenderer.prototype.drawGameObject = function (gl, gameObject) {
             this.init();
+            var renderAtomic = gameObject.renderAtomic;
+            gameObject.preRender(renderAtomic);
             var oldshader = renderAtomic.shader;
             renderAtomic.shader = this.shader;
             var oldRenderParams = renderAtomic.renderParams;
@@ -14035,11 +14015,12 @@ var feng3d;
         /**
          * 渲染
          */
-        WireframeRenderer.prototype.draw = function (gl, unblenditems) {
+        WireframeRenderer.prototype.draw = function (gl, scene3d, camera) {
+            var unblenditems = scene3d.getPickCache(camera).unblenditems;
             if (unblenditems.length == 0)
                 return;
             for (var i = 0; i < unblenditems.length; i++) {
-                var item = unblenditems[i].item;
+                var item = unblenditems[i];
                 if (item.getComponent(WireframeComponent)) {
                     this.drawGameObject(gl, item.gameObject); //
                 }
@@ -15893,13 +15874,13 @@ var feng3d;
             //鼠标拾取渲染
             this.mouse3DManager.draw(this.scene, this.camera);
             //绘制阴影图
-            feng3d.shadowRenderer.draw(this.gl, this.scene, this.camera);
+            // shadowRenderer.draw(this.gl, this.scene, this.camera);
             init(this.gl, this.scene);
             feng3d.skyboxRenderer.draw(this.gl, this.scene, this.camera);
             // 默认渲染
             var forwardresult = feng3d.forwardRenderer.draw(this.gl, this.scene, this.camera);
-            feng3d.outlineRenderer.draw(this.gl, forwardresult.unblenditems);
-            feng3d.wireframeRenderer.draw(this.gl, forwardresult.unblenditems);
+            feng3d.outlineRenderer.draw(this.gl, this.scene, this.camera);
+            feng3d.wireframeRenderer.draw(this.gl, this.scene, this.camera);
         };
         return Engine;
     }());
@@ -16333,6 +16314,8 @@ var feng3d;
         };
         Scene3D.prototype.onEnterFrame = function (interval) {
             var _this = this;
+            // 每帧清理拾取缓存
+            this.pickMap.forEach(function (item) { return item.clear(); });
             this.collectComponents.animations.list.forEach(function (element) {
                 if (element.isplaying)
                     element.update(interval);
@@ -16461,35 +16444,92 @@ var feng3d;
             this.scene = scene;
             this.camera = camera;
         }
-        /**
-         * 获取需要渲染的对象
-         *
-         * #### 渲染需求条件
-         * 1. visible == true
-         * 1. 在摄像机视锥内
-         * 1. meshRenderer.enabled == true
-         *
-         * @param gameObject
-         * @param camera
-         */
-        ScenePickCache.prototype.getActiveMeshRenderers = function () {
-            var meshRenderers = [];
-            var gameObjects = [this.scene.gameObject];
-            while (gameObjects.length > 0) {
-                var gameObject = gameObjects.pop();
-                if (!gameObject.visible)
-                    continue;
-                var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
-                if (meshRenderer && meshRenderer.enabled) {
-                    var boundingComponent = gameObject.getComponent(feng3d.Bounding);
-                    if (boundingComponent.selfWorldBounds) {
-                        if (this.camera.frustum.intersectsBox(boundingComponent.selfWorldBounds))
-                            meshRenderers.push(meshRenderer);
+        Object.defineProperty(ScenePickCache.prototype, "activeMeshRenderers", {
+            /**
+             * 获取需要渲染的对象
+             *
+             * #### 渲染需求条件
+             * 1. visible == true
+             * 1. 在摄像机视锥内
+             * 1. meshRenderer.enabled == true
+             *
+             * @param gameObject
+             * @param camera
+             */
+            get: function () {
+                if (this._activeMeshRenderers)
+                    return this._activeMeshRenderers;
+                var meshRenderers = this._activeMeshRenderers = [];
+                var gameObjects = [this.scene.gameObject];
+                while (gameObjects.length > 0) {
+                    var gameObject = gameObjects.pop();
+                    if (!gameObject.visible)
+                        continue;
+                    var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
+                    if (meshRenderer && meshRenderer.enabled) {
+                        var boundingComponent = gameObject.getComponent(feng3d.Bounding);
+                        if (boundingComponent.selfWorldBounds) {
+                            if (this.camera.frustum.intersectsBox(boundingComponent.selfWorldBounds))
+                                meshRenderers.push(meshRenderer);
+                        }
                     }
+                    gameObjects = gameObjects.concat(gameObject.children);
                 }
-                gameObjects = gameObjects.concat(gameObject.children);
-            }
-            return meshRenderers;
+                return meshRenderers;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ScenePickCache.prototype, "blenditems", {
+            /**
+             * 半透明渲染对象
+             */
+            get: function () {
+                if (this._blenditems)
+                    return this._blenditems;
+                var meshRenderers = this.activeMeshRenderers;
+                var camerapos = this.camera.transform.scenePosition;
+                var blenditems = this._blenditems = meshRenderers.filter(function (item) {
+                    return item.material.renderParams.enableBlend;
+                }).map(function (item) {
+                    return {
+                        depth: item.transform.scenePosition.subTo(camerapos).length,
+                        item: item,
+                        enableBlend: item.material.renderParams.enableBlend,
+                    };
+                }).sort(function (a, b) { return b.depth - a.depth; }).map(function (item) { return item.item; });
+                return blenditems;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ScenePickCache.prototype, "unblenditems", {
+            /**
+             * 半透明渲染对象
+             */
+            get: function () {
+                if (this._unblenditems)
+                    return this._unblenditems;
+                var meshRenderers = this.activeMeshRenderers;
+                var camerapos = this.camera.transform.scenePosition;
+                var unblenditems = this._unblenditems = meshRenderers.filter(function (item) {
+                    return item.material.renderParams.enableBlend;
+                }).map(function (item) {
+                    return {
+                        depth: item.transform.scenePosition.subTo(camerapos).length,
+                        item: item,
+                        enableBlend: !item.material.renderParams.enableBlend,
+                    };
+                }).sort(function (a, b) { return a.depth - b.depth; }).map(function (item) { return item.item; });
+                return unblenditems;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ScenePickCache.prototype.clear = function () {
+            this._blenditems = null;
+            this._unblenditems = null;
+            this._activeMeshRenderers = null;
         };
         return ScenePickCache;
     }());

@@ -8309,18 +8309,7 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera): {
-            blenditems: {
-                depth: number;
-                item: MeshRenderer;
-                enableBlend: boolean;
-            }[];
-            unblenditems: {
-                depth: number;
-                item: MeshRenderer;
-                enableBlend: boolean;
-            }[];
-        };
+        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
         drawRenderables(meshRenderer: MeshRenderer, gl: GL): void;
     }
 }
@@ -8389,15 +8378,11 @@ declare namespace feng3d {
         private shader;
         private renderParams;
         init(): void;
-        draw(gl: GL, unblenditems: {
-            depth: number;
-            item: MeshRenderer;
-            enableBlend: boolean;
-        }[]): void;
+        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, renderAtomic: RenderAtomic): void;
+        drawGameObject(gl: GL, gameObject: GameObject): void;
     }
     class OutLineComponent extends Component {
         size: number;
@@ -8435,11 +8420,7 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, unblenditems: {
-            depth: number;
-            item: MeshRenderer;
-            enableBlend: boolean;
-        }[]): void;
+        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
         /**
          * 绘制3D对象
          */
@@ -9296,6 +9277,9 @@ declare namespace feng3d {
     class ScenePickCache {
         private scene;
         private camera;
+        private _activeMeshRenderers;
+        private _blenditems;
+        private _unblenditems;
         constructor(scene: Scene3D, camera: Camera);
         /**
          * 获取需要渲染的对象
@@ -9308,7 +9292,16 @@ declare namespace feng3d {
          * @param gameObject
          * @param camera
          */
-        getActiveMeshRenderers(): MeshRenderer[];
+        readonly activeMeshRenderers: MeshRenderer[];
+        /**
+         * 半透明渲染对象
+         */
+        readonly blenditems: MeshRenderer[];
+        /**
+         * 半透明渲染对象
+         */
+        readonly unblenditems: MeshRenderer[];
+        clear(): void;
     }
 }
 declare namespace feng3d {

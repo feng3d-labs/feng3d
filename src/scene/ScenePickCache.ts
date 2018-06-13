@@ -8,6 +8,11 @@ namespace feng3d
         private scene: Scene3D
         private camera: Camera;
 
+        //
+        private _activeMeshRenderers: MeshRenderer[];
+        private _blenditems: MeshRenderer[];
+        private _unblenditems: MeshRenderer[];
+
         constructor(scene: Scene3D, camera: Camera)
         {
             this.scene = scene;
@@ -25,9 +30,12 @@ namespace feng3d
          * @param gameObject 
          * @param camera 
          */
-        getActiveMeshRenderers()
+        get activeMeshRenderers()
         {
-            var meshRenderers: MeshRenderer[] = [];
+            if (this._activeMeshRenderers)
+                return this._activeMeshRenderers;
+
+            var meshRenderers: MeshRenderer[] = this._activeMeshRenderers = [];
 
             var gameObjects = [this.scene.gameObject];
             while (gameObjects.length > 0)
@@ -49,6 +57,65 @@ namespace feng3d
                 gameObjects = gameObjects.concat(gameObject.children);
             }
             return meshRenderers;
+        }
+
+        /**
+         * 半透明渲染对象
+         */
+        get blenditems()
+        {
+            if (this._blenditems)
+                return this._blenditems;
+
+            var meshRenderers = this.activeMeshRenderers;
+            var camerapos = this.camera.transform.scenePosition;
+
+            var blenditems = this._blenditems = meshRenderers.filter((item) =>
+            {
+                return item.material.renderParams.enableBlend;
+            }).map((item) =>
+            {
+                return {
+                    depth: item.transform.scenePosition.subTo(camerapos).length,
+                    item: item,
+                    enableBlend: item.material.renderParams.enableBlend,
+                }
+            }).sort((a, b) => b.depth - a.depth).map((item) => item.item);
+
+            return blenditems;
+        }
+
+        /**
+         * 半透明渲染对象
+         */
+        get unblenditems()
+        {
+            if (this._unblenditems)
+                return this._unblenditems;
+
+            var meshRenderers = this.activeMeshRenderers;
+            var camerapos = this.camera.transform.scenePosition;
+
+            var unblenditems = this._unblenditems = meshRenderers.filter((item) =>
+            {
+                return item.material.renderParams.enableBlend;
+            }).map((item) =>
+            {
+                return {
+                    depth: item.transform.scenePosition.subTo(camerapos).length,
+                    item: item,
+                    enableBlend: !item.material.renderParams.enableBlend,
+                }
+            }).sort((a, b) => a.depth - b.depth).map((item) => item.item);
+
+            return unblenditems;
+        }
+
+        clear()
+        {
+            this._blenditems = null;
+            this._unblenditems = null;
+            this._activeMeshRenderers = null;
         }
     }
 }
