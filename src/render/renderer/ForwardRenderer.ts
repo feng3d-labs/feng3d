@@ -18,11 +18,11 @@ namespace feng3d
         /**
          * 渲染
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera, renderObjectflag: GameObjectFlag)
+        draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
             var frustum = camera.frustum;
 
-            var meshRenderers = this.collectForwardRender(scene3d.gameObject, frustum, renderObjectflag);
+            var meshRenderers = scene3d.collectForwardRender(scene3d.gameObject, frustum);
 
             var camerapos = camera.transform.scenePosition;
 
@@ -86,31 +86,6 @@ namespace feng3d
             // {
             //     log(error);
             // }
-        }
-
-        collectForwardRender(gameObject: GameObject, frustum: Frustum, renderObjectflag: GameObjectFlag)
-        {
-            if (!gameObject.visible)
-                return [];
-            if (!(renderObjectflag & gameObject.flag))
-                return [];
-            var meshRenderers: MeshRenderer[] = [];
-            var meshRenderer = gameObject.getComponent(MeshRenderer);
-            if (meshRenderer && meshRenderer.enabled)
-            {
-                var boundingComponent = gameObject.getComponent(BoundingComponent);
-                if (boundingComponent.selfWorldBounds)
-                {
-                    if (frustum.intersectsBox(boundingComponent.selfWorldBounds))
-                        meshRenderers.push(meshRenderer);
-                }
-            }
-
-            gameObject.children.forEach(element =>
-            {
-                meshRenderers = meshRenderers.concat(this.collectForwardRender(element, frustum, renderObjectflag));
-            });
-            return meshRenderers;
         }
     }
 

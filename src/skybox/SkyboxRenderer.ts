@@ -58,19 +58,28 @@ namespace feng3d
         }
 
         /**
-         * 渲染
+         * 绘制场景中天空盒
+         * @param gl 
+         * @param scene3d 场景
+         * @param camera 摄像机
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera, renderObjectflag: GameObjectFlag)
+        draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
-            this.init();
+            var skybox = scene3d.getActiveSkyBox();
+            this.drawSkyBox(gl, skybox, camera);
+        }
 
-            var skyboxs = scene3d.collectComponents.skyboxs.list.filter((skybox) =>
-            {
-                return skybox.gameObject.visible && (renderObjectflag & skybox.gameObject.flag);
-            });
-            if (skyboxs.length == 0)
-                return;
-            var skybox = skyboxs[0];
+        /**
+         * 绘制天空盒
+         * @param gl 
+         * @param skybox 天空盒
+         * @param camera 摄像机
+         */
+        drawSkyBox(gl: GL, skybox: SkyBox, camera: Camera)
+        {
+            if (!skybox) return;
+
+            this.init();
 
             //
             this.renderAtomic.renderParams = this.renderParams;

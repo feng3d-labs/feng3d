@@ -27,6 +27,10 @@ namespace feng3d
     export class Scene3D extends Component
     {
         /**
+         * 渲染对象标记，用于过滤渲染对象
+         */
+        renderObjectflag = GameObjectFlag.feng3d;
+        /**
          * 是否编辑器模式
          */
         iseditor = false;
@@ -246,6 +250,43 @@ namespace feng3d
                 }
             }
             this.dispatch("removeComponentFromScene", component);
+        }
+
+        /**
+         * 获取天空盒
+         */
+        getActiveSkyBox()
+        {
+            var skyboxs = this.collectComponents.skyboxs.list.filter((skybox) =>
+            {
+                return skybox.gameObject.visible && (this.renderObjectflag & skybox.gameObject.flag);
+            });
+            return skyboxs[0];
+        }
+
+        collectForwardRender(gameObject: GameObject, frustum: Frustum)
+        {
+            if (!gameObject.visible)
+                return [];
+            if (!(this.renderObjectflag & gameObject.flag))
+                return [];
+            var meshRenderers: MeshRenderer[] = [];
+            var meshRenderer = gameObject.getComponent(MeshRenderer);
+            if (meshRenderer && meshRenderer.enabled)
+            {
+                var boundingComponent = gameObject.getComponent(BoundingComponent);
+                if (boundingComponent.selfWorldBounds)
+                {
+                    if (frustum.intersectsBox(boundingComponent.selfWorldBounds))
+                        meshRenderers.push(meshRenderer);
+                }
+            }
+
+            gameObject.children.forEach(element =>
+            {
+                meshRenderers = meshRenderers.concat(this.collectForwardRender(element, frustum));
+            });
+            return meshRenderers;
         }
     }
 }

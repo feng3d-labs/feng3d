@@ -13755,9 +13755,9 @@ var feng3d;
         /**
          * 渲染
          */
-        ForwardRenderer.prototype.draw = function (gl, scene3d, camera, renderObjectflag) {
+        ForwardRenderer.prototype.draw = function (gl, scene3d, camera) {
             var frustum = camera.frustum;
-            var meshRenderers = this.collectForwardRender(scene3d.gameObject, frustum, renderObjectflag);
+            var meshRenderers = scene3d.collectForwardRender(scene3d.gameObject, frustum);
             var camerapos = camera.transform.scenePosition;
             var maps = meshRenderers.map(function (item) {
                 return {
@@ -13802,26 +13802,6 @@ var feng3d;
             // {
             //     log(error);
             // }
-        };
-        ForwardRenderer.prototype.collectForwardRender = function (gameObject, frustum, renderObjectflag) {
-            var _this = this;
-            if (!gameObject.visible)
-                return [];
-            if (!(renderObjectflag & gameObject.flag))
-                return [];
-            var meshRenderers = [];
-            var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
-            if (meshRenderer && meshRenderer.enabled) {
-                var boundingComponent = gameObject.getComponent(feng3d.BoundingComponent);
-                if (boundingComponent.selfWorldBounds) {
-                    if (frustum.intersectsBox(boundingComponent.selfWorldBounds))
-                        meshRenderers.push(meshRenderer);
-                }
-            }
-            gameObject.children.forEach(function (element) {
-                meshRenderers = meshRenderers.concat(_this.collectForwardRender(element, frustum, renderObjectflag));
-            });
-            return meshRenderers;
         };
         return ForwardRenderer;
     }());
@@ -14286,16 +14266,25 @@ var feng3d;
             }
         };
         /**
-         * 渲染
+         * 绘制场景中天空盒
+         * @param gl
+         * @param scene3d 场景
+         * @param camera 摄像机
          */
-        SkyboxRenderer.prototype.draw = function (gl, scene3d, camera, renderObjectflag) {
-            this.init();
-            var skyboxs = scene3d.collectComponents.skyboxs.list.filter(function (skybox) {
-                return skybox.gameObject.visible && (renderObjectflag & skybox.gameObject.flag);
-            });
-            if (skyboxs.length == 0)
+        SkyboxRenderer.prototype.draw = function (gl, scene3d, camera) {
+            var skybox = scene3d.getActiveSkyBox();
+            this.drawSkyBox(gl, skybox, camera);
+        };
+        /**
+         * 绘制天空盒
+         * @param gl
+         * @param skybox 天空盒
+         * @param camera 摄像机
+         */
+        SkyboxRenderer.prototype.drawSkyBox = function (gl, skybox, camera) {
+            if (!skybox)
                 return;
-            var skybox = skyboxs[0];
+            this.init();
             //
             this.renderAtomic.renderParams = this.renderParams;
             this.renderAtomic.shader = this.shader;
@@ -15775,10 +15764,6 @@ var feng3d;
          */
         function Engine(canvas, scene, camera) {
             var _this = this;
-            /**
-             * 渲染对象标记，用于过滤渲染对象
-             */
-            this.renderObjectflag = feng3d.GameObjectFlag.feng3d;
             if (!canvas) {
                 canvas = document.createElement("canvas");
                 canvas.id = "glcanvas";
@@ -15901,9 +15886,9 @@ var feng3d;
             //绘制阴影图
             feng3d.shadowRenderer.draw(this.gl, this.scene, this.camera);
             init(this.gl, this.scene);
-            feng3d.skyboxRenderer.draw(this.gl, this.scene, this.camera, this.renderObjectflag);
+            feng3d.skyboxRenderer.draw(this.gl, this.scene, this.camera);
             // 默认渲染
-            var forwardresult = feng3d.forwardRenderer.draw(this.gl, this.scene, this.camera, this.renderObjectflag);
+            var forwardresult = feng3d.forwardRenderer.draw(this.gl, this.scene, this.camera);
             feng3d.outlineRenderer.draw(this.gl, forwardresult.unblenditems);
             feng3d.wireframeRenderer.draw(this.gl, forwardresult.unblenditems);
         };
@@ -16285,6 +16270,10 @@ var feng3d;
         function Scene3D() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
+             * 渲染对象标记，用于过滤渲染对象
+             */
+            _this.renderObjectflag = feng3d.GameObjectFlag.feng3d;
+            /**
              * 是否编辑器模式
              */
             _this.iseditor = false;
@@ -16423,6 +16412,36 @@ var feng3d;
                 }
             }
             this.dispatch("removeComponentFromScene", component);
+        };
+        /**
+         * 获取天空盒
+         */
+        Scene3D.prototype.getActiveSkyBox = function () {
+            var _this = this;
+            var skyboxs = this.collectComponents.skyboxs.list.filter(function (skybox) {
+                return skybox.gameObject.visible && (_this.renderObjectflag & skybox.gameObject.flag);
+            });
+            return skyboxs[0];
+        };
+        Scene3D.prototype.collectForwardRender = function (gameObject, frustum) {
+            var _this = this;
+            if (!gameObject.visible)
+                return [];
+            if (!(this.renderObjectflag & gameObject.flag))
+                return [];
+            var meshRenderers = [];
+            var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
+            if (meshRenderer && meshRenderer.enabled) {
+                var boundingComponent = gameObject.getComponent(feng3d.BoundingComponent);
+                if (boundingComponent.selfWorldBounds) {
+                    if (frustum.intersectsBox(boundingComponent.selfWorldBounds))
+                        meshRenderers.push(meshRenderer);
+                }
+            }
+            gameObject.children.forEach(function (element) {
+                meshRenderers = meshRenderers.concat(_this.collectForwardRender(element, frustum));
+            });
+            return meshRenderers;
         };
         __decorate([
             feng3d.serialize,

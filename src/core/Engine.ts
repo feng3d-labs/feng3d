@@ -58,11 +58,6 @@ namespace feng3d
         }
 
         /**
-         * 渲染对象标记，用于过滤渲染对象
-         */
-        renderObjectflag = GameObjectFlag.feng3d;
-
-        /**
          * 鼠标事件管理
          */
         mouse3DManager: Mouse3DManager;
@@ -171,10 +166,10 @@ namespace feng3d
 
             init(this.gl, this.scene);
 
-            skyboxRenderer.draw(this.gl, this.scene, this.camera, this.renderObjectflag);
+            skyboxRenderer.draw(this.gl, this.scene, this.camera);
 
             // 默认渲染
-            var forwardresult = forwardRenderer.draw(this.gl, this.scene, this.camera, this.renderObjectflag);
+            var forwardresult = forwardRenderer.draw(this.gl, this.scene, this.camera);
 
             outlineRenderer.draw(this.gl, forwardresult.unblenditems);
 

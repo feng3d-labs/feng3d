@@ -8309,7 +8309,7 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera, renderObjectflag: GameObjectFlag): {
+        draw(gl: GL, scene3d: Scene3D, camera: Camera): {
             blenditems: {
                 depth: number;
                 item: MeshRenderer;
@@ -8322,7 +8322,6 @@ declare namespace feng3d {
             }[];
         };
         drawRenderables(meshRenderer: MeshRenderer, gl: GL): void;
-        collectForwardRender(gameObject: GameObject, frustum: Frustum, renderObjectflag: GameObjectFlag): MeshRenderer[];
     }
 }
 declare namespace feng3d {
@@ -8512,9 +8511,19 @@ declare namespace feng3d {
         private shader;
         init(): void;
         /**
-         * 渲染
+         * 绘制场景中天空盒
+         * @param gl
+         * @param scene3d 场景
+         * @param camera 摄像机
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera, renderObjectflag: GameObjectFlag): void;
+        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
+        /**
+         * 绘制天空盒
+         * @param gl
+         * @param skybox 天空盒
+         * @param camera 摄像机
+         */
+        drawSkyBox(gl: GL, skybox: SkyBox, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -9022,10 +9031,6 @@ declare namespace feng3d {
         readonly root: GameObject;
         readonly gl: GL;
         /**
-         * 渲染对象标记，用于过滤渲染对象
-         */
-        renderObjectflag: GameObjectFlag;
-        /**
          * 鼠标事件管理
          */
         mouse3DManager: Mouse3DManager;
@@ -9204,6 +9209,10 @@ declare namespace feng3d {
      */
     class Scene3D extends Component {
         /**
+         * 渲染对象标记，用于过滤渲染对象
+         */
+        renderObjectflag: GameObjectFlag;
+        /**
          * 是否编辑器模式
          */
         iseditor: boolean;
@@ -9272,6 +9281,11 @@ declare namespace feng3d {
         _removeGameObject(gameobject: GameObject): void;
         _addComponent(component: Component): void;
         _removeComponent(component: Component): void;
+        /**
+         * 获取天空盒
+         */
+        getActiveSkyBox(): SkyBox;
+        collectForwardRender(gameObject: GameObject, frustum: Frustum): MeshRenderer[];
     }
 }
 declare namespace feng3d {
