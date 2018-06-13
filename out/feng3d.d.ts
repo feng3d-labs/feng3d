@@ -1,3 +1,6 @@
+declare module 'feng3d' {
+    export = feng3d;
+}
 interface ObjectConstructor {
     /**
      * Copy the values of all of the enumerable own properties from one or more source objects to a

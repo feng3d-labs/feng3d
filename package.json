@@ -1,9 +1,9 @@
 {
   "name": "feng3d",
-  "version": "201806.12.3",
+  "version": "201806.13.0",
   "description": "webgl 3d engine",
   "main": "out/feng3d.js",
-  "types": "out/feng3d.module.d.ts",
+  "types": "out/feng3d.d.ts",
   "scripts": {
     "build": "node build.js",
     "build:w": "node build.js",

@@ -60,12 +60,13 @@ function watchProject(project)
                 if (fs.existsSync(outdtsFilePath))
                 {
                     //计算 module.d.ts 路径
-                    var moduledtsPath = ((path) =>
-                    {
-                        var paths = path.split(".");
-                        paths.splice(-2, 0, "module");
-                        return paths.join(".");
-                    })(outdtsFilePath);
+                    var moduledtsPath = outdtsFilePath;
+                    // var moduledtsPath = ((path) =>
+                    // {
+                    //     var paths = path.split(".");
+                    //     paths.splice(-2, 0, "module");
+                    //     return paths.join(".");
+                    // })(outdtsFilePath);
                     writeFile(moduledtsPath, getdeclaremodule("feng3d") + "\n" + readFile(outdtsFilePath));
                 }
             }
@@ -80,8 +81,7 @@ function watchProject(project)
 
 function getdeclaremodule(moduleName)
 {
-    return `
-declare module '${moduleName}' {
+    return `declare module '${moduleName}' {
     export = ${moduleName};
 }`;
 }
