@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 包围盒组件
      */
-    export class BoundingComponent extends Component
+    export class Bounding extends Component
     {
         get single() { return true; }
 
@@ -97,7 +97,7 @@ namespace feng3d
             if (!box) box = new Box(this.transform.position, this.transform.position);
             this.gameObject.children.forEach(element =>
             {
-                var ebox = element.getComponent(BoundingComponent).worldBounds;
+                var ebox = element.getComponent(Bounding).worldBounds;
                 box.union(ebox);
             });
             return box;

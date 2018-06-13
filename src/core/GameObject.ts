@@ -191,7 +191,7 @@ namespace feng3d
             super();
             this.name = raw ? raw.name : "GameObject";
             this.addComponent(Transform);
-            this.addComponent(BoundingComponent);
+            this.addComponent(Bounding);
             this.guid = FMath.generateUUID();
             serialization.setValue(this, raw);
             //

@@ -15123,7 +15123,7 @@ var feng3d;
             _this._components = [];
             _this.name = raw ? raw.name : "GameObject";
             _this.addComponent(feng3d.Transform);
-            _this.addComponent(feng3d.BoundingComponent);
+            _this.addComponent(feng3d.Bounding);
             _this.guid = feng3d.FMath.generateUUID();
             feng3d.serialization.setValue(_this, raw);
             //
@@ -15619,25 +15619,25 @@ var feng3d;
     /**
      * 包围盒组件
      */
-    var BoundingComponent = /** @class */ (function (_super) {
-        __extends(BoundingComponent, _super);
-        function BoundingComponent() {
+    var Bounding = /** @class */ (function (_super) {
+        __extends(Bounding, _super);
+        function Bounding() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.showInInspector = false;
             _this.serializable = false;
             return _this;
         }
-        Object.defineProperty(BoundingComponent.prototype, "single", {
+        Object.defineProperty(Bounding.prototype, "single", {
             get: function () { return true; },
             enumerable: true,
             configurable: true
         });
-        BoundingComponent.prototype.init = function (gameObject) {
+        Bounding.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
             gameObject.on("boundsInvalid", this.onBoundsChange, this);
             gameObject.on("scenetransformChanged", this.invalidateSceneTransform, this);
         };
-        Object.defineProperty(BoundingComponent.prototype, "selfLocalBounds", {
+        Object.defineProperty(Bounding.prototype, "selfLocalBounds", {
             /**
              * 自身局部包围盒
              */
@@ -15652,7 +15652,7 @@ var feng3d;
         /**
          * @inheritDoc
          */
-        BoundingComponent.prototype.invalidateSceneTransform = function () {
+        Bounding.prototype.invalidateSceneTransform = function () {
             this._selfWorldBounds = null;
         };
         /**
@@ -15660,7 +15660,7 @@ var feng3d;
           * @param ray3D
           * @return
           */
-        BoundingComponent.prototype.isIntersectingRay = function (ray3D) {
+        Bounding.prototype.isIntersectingRay = function (ray3D) {
             if (!this.selfLocalBounds)
                 return null;
             var localNormal = new feng3d.Vector3();
@@ -15684,7 +15684,7 @@ var feng3d;
             };
             return pickingCollisionVO;
         };
-        Object.defineProperty(BoundingComponent.prototype, "selfWorldBounds", {
+        Object.defineProperty(Bounding.prototype, "selfWorldBounds", {
             /**
              * 自身世界包围盒
              */
@@ -15696,7 +15696,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BoundingComponent.prototype, "worldBounds", {
+        Object.defineProperty(Bounding.prototype, "worldBounds", {
             /**
              * 世界包围盒
              */
@@ -15705,7 +15705,7 @@ var feng3d;
                 if (!box)
                     box = new feng3d.Box(this.transform.position, this.transform.position);
                 this.gameObject.children.forEach(function (element) {
-                    var ebox = element.getComponent(BoundingComponent).worldBounds;
+                    var ebox = element.getComponent(Bounding).worldBounds;
                     box.union(ebox);
                 });
                 return box;
@@ -15716,7 +15716,7 @@ var feng3d;
         /**
          * 更新世界边界
          */
-        BoundingComponent.prototype.updateWorldBounds = function () {
+        Bounding.prototype.updateWorldBounds = function () {
             if (this.selfLocalBounds && this.transform.localToWorldMatrix) {
                 this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
             }
@@ -15724,21 +15724,21 @@ var feng3d;
         /**
          * 处理包围盒变换事件
          */
-        BoundingComponent.prototype.onBoundsChange = function () {
+        Bounding.prototype.onBoundsChange = function () {
             this._selfLocalBounds = null;
             this._selfWorldBounds = null;
         };
         /**
          * @inheritDoc
          */
-        BoundingComponent.prototype.updateBounds = function () {
+        Bounding.prototype.updateBounds = function () {
             var meshRenderer = this.gameObject.getComponent(feng3d.MeshRenderer);
             if (meshRenderer && meshRenderer.geometry)
                 this._selfLocalBounds = meshRenderer.geometry.bounding;
         };
-        return BoundingComponent;
+        return Bounding;
     }(feng3d.Component));
-    feng3d.BoundingComponent = BoundingComponent;
+    feng3d.Bounding = Bounding;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16416,7 +16416,7 @@ var feng3d;
             var meshRenderers = [];
             var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
             if (meshRenderer && meshRenderer.enabled) {
-                var boundingComponent = gameObject.getComponent(feng3d.BoundingComponent);
+                var boundingComponent = gameObject.getComponent(feng3d.Bounding);
                 if (boundingComponent.selfWorldBounds) {
                     if (frustum.intersectsBox(boundingComponent.selfWorldBounds))
                         meshRenderers.push(meshRenderer);
@@ -20761,7 +20761,7 @@ var feng3d;
                 return null;
             //与包围盒碰撞
             entitys.forEach(function (entity) {
-                var boundingComponent = entity.getComponent(feng3d.BoundingComponent);
+                var boundingComponent = entity.getComponent(feng3d.Bounding);
                 var pickingCollisionVO = boundingComponent && boundingComponent.isIntersectingRay(ray3D);
                 if (pickingCollisionVO)
                     entities.push(pickingCollisionVO);

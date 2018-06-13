@@ -22,7 +22,7 @@ namespace feng3d
             //与包围盒碰撞
             entitys.forEach(entity =>
             {
-                var boundingComponent = entity.getComponent(BoundingComponent);
+                var boundingComponent = entity.getComponent(Bounding);
                 var pickingCollisionVO = boundingComponent && boundingComponent.isIntersectingRay(ray3D);
                 if (pickingCollisionVO)
                     entities.push(pickingCollisionVO);

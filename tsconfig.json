@@ -144,7 +144,7 @@
         //
         "src/core/Transform.ts",
         "src/core/GameObject.ts",
-        "src/core/BoundingComponent.ts",
+        "src/core/Bounding.ts",
         "src/core/Engine.ts",
         //3D对象组件
         "src/component/HoldSizeComponent.ts",

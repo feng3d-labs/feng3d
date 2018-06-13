@@ -8955,7 +8955,7 @@ declare namespace feng3d {
     /**
      * 包围盒组件
      */
-    class BoundingComponent extends Component {
+    class Bounding extends Component {
         readonly single: boolean;
         showInInspector: boolean;
         serializable: boolean;
