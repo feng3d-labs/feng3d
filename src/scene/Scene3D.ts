@@ -260,7 +260,18 @@ namespace feng3d
             return skyboxs[0];
         }
 
-        collectForwardRender(gameObject: GameObject, frustum: Frustum)
+        /**
+         * 获取需要渲染的对象
+         * 
+         * #### 渲染需求条件
+         * 1. visible == true
+         * 1. 在摄像机视锥内
+         * 1. meshRenderer.enabled == true
+         * 
+         * @param gameObject 
+         * @param camera 
+         */
+        getActiveMeshRenderers(gameObject: GameObject, camera: Camera)
         {
             if (!gameObject.visible)
                 return [];
@@ -271,14 +282,14 @@ namespace feng3d
                 var boundingComponent = gameObject.getComponent(Bounding);
                 if (boundingComponent.selfWorldBounds)
                 {
-                    if (frustum.intersectsBox(boundingComponent.selfWorldBounds))
+                    if (camera.frustum.intersectsBox(boundingComponent.selfWorldBounds))
                         meshRenderers.push(meshRenderer);
                 }
             }
 
             gameObject.children.forEach(element =>
             {
-                meshRenderers = meshRenderers.concat(this.collectForwardRender(element, frustum));
+                meshRenderers = meshRenderers.concat(this.getActiveMeshRenderers(element, camera));
             });
             return meshRenderers;
         }

@@ -9273,7 +9273,18 @@ declare namespace feng3d {
          * 获取天空盒
          */
         getActiveSkyBox(): SkyBox;
-        collectForwardRender(gameObject: GameObject, frustum: Frustum): MeshRenderer[];
+        /**
+         * 获取需要渲染的对象
+         *
+         * #### 渲染需求条件
+         * 1. visible == true
+         * 1. 在摄像机视锥内
+         * 1. meshRenderer.enabled == true
+         *
+         * @param gameObject
+         * @param camera
+         */
+        getActiveMeshRenderers(gameObject: GameObject, camera: Camera): MeshRenderer[];
     }
 }
 declare namespace feng3d {

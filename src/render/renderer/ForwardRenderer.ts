@@ -20,9 +20,7 @@ namespace feng3d
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
-            var frustum = camera.frustum;
-
-            var meshRenderers = scene3d.collectForwardRender(scene3d.gameObject, frustum);
+            var meshRenderers = scene3d.getActiveMeshRenderers(scene3d.gameObject, camera);
 
             var camerapos = camera.transform.scenePosition;
 

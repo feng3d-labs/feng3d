@@ -13756,8 +13756,7 @@ var feng3d;
          * 渲染
          */
         ForwardRenderer.prototype.draw = function (gl, scene3d, camera) {
-            var frustum = camera.frustum;
-            var meshRenderers = scene3d.collectForwardRender(scene3d.gameObject, frustum);
+            var meshRenderers = scene3d.getActiveMeshRenderers(scene3d.gameObject, camera);
             var camerapos = camera.transform.scenePosition;
             var maps = meshRenderers.map(function (item) {
                 return {
@@ -16409,7 +16408,18 @@ var feng3d;
             });
             return skyboxs[0];
         };
-        Scene3D.prototype.collectForwardRender = function (gameObject, frustum) {
+        /**
+         * 获取需要渲染的对象
+         *
+         * #### 渲染需求条件
+         * 1. visible == true
+         * 1. 在摄像机视锥内
+         * 1. meshRenderer.enabled == true
+         *
+         * @param gameObject
+         * @param camera
+         */
+        Scene3D.prototype.getActiveMeshRenderers = function (gameObject, camera) {
             var _this = this;
             if (!gameObject.visible)
                 return [];
@@ -16418,12 +16428,12 @@ var feng3d;
             if (meshRenderer && meshRenderer.enabled) {
                 var boundingComponent = gameObject.getComponent(feng3d.Bounding);
                 if (boundingComponent.selfWorldBounds) {
-                    if (frustum.intersectsBox(boundingComponent.selfWorldBounds))
+                    if (camera.frustum.intersectsBox(boundingComponent.selfWorldBounds))
                         meshRenderers.push(meshRenderer);
                 }
             }
             gameObject.children.forEach(function (element) {
-                meshRenderers = meshRenderers.concat(_this.collectForwardRender(element, frustum));
+                meshRenderers = meshRenderers.concat(_this.getActiveMeshRenderers(element, camera));
             });
             return meshRenderers;
         };
