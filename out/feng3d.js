@@ -16491,13 +16491,7 @@ var feng3d;
                 var camerapos = this.camera.transform.scenePosition;
                 var blenditems = this._blenditems = meshRenderers.filter(function (item) {
                     return item.material.renderParams.enableBlend;
-                }).map(function (item) {
-                    return {
-                        depth: item.transform.scenePosition.subTo(camerapos).length,
-                        item: item,
-                        enableBlend: item.material.renderParams.enableBlend,
-                    };
-                }).sort(function (a, b) { return b.depth - a.depth; }).map(function (item) { return item.item; });
+                }).sort(function (b, a) { return a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared; });
                 return blenditems;
             },
             enumerable: true,
@@ -16513,14 +16507,8 @@ var feng3d;
                 var meshRenderers = this.activeMeshRenderers;
                 var camerapos = this.camera.transform.scenePosition;
                 var unblenditems = this._unblenditems = meshRenderers.filter(function (item) {
-                    return item.material.renderParams.enableBlend;
-                }).map(function (item) {
-                    return {
-                        depth: item.transform.scenePosition.subTo(camerapos).length,
-                        item: item,
-                        enableBlend: !item.material.renderParams.enableBlend,
-                    };
-                }).sort(function (a, b) { return a.depth - b.depth; }).map(function (item) { return item.item; });
+                    return !item.material.renderParams.enableBlend;
+                }).sort(function (a, b) { return a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared; });
                 return unblenditems;
             },
             enumerable: true,

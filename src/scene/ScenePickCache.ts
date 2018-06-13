@@ -73,14 +73,7 @@ namespace feng3d
             var blenditems = this._blenditems = meshRenderers.filter((item) =>
             {
                 return item.material.renderParams.enableBlend;
-            }).map((item) =>
-            {
-                return {
-                    depth: item.transform.scenePosition.subTo(camerapos).length,
-                    item: item,
-                    enableBlend: item.material.renderParams.enableBlend,
-                }
-            }).sort((a, b) => b.depth - a.depth).map((item) => item.item);
+            }).sort((b, a) => a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared);
 
             return blenditems;
         }
@@ -98,15 +91,8 @@ namespace feng3d
 
             var unblenditems = this._unblenditems = meshRenderers.filter((item) =>
             {
-                return item.material.renderParams.enableBlend;
-            }).map((item) =>
-            {
-                return {
-                    depth: item.transform.scenePosition.subTo(camerapos).length,
-                    item: item,
-                    enableBlend: !item.material.renderParams.enableBlend,
-                }
-            }).sort((a, b) => a.depth - b.depth).map((item) => item.item);
+                return !item.material.renderParams.enableBlend;
+            }).sort((a, b) => a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared);
 
             return unblenditems;
         }
