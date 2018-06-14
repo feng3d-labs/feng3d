@@ -17632,8 +17632,6 @@ var feng3d;
              * 视窗缩放比例(width/height)，在渲染器中设置
              */
             _this._aspectRatio = 1;
-            _this._scissorRect = new feng3d.Rectangle();
-            _this._viewPort = new feng3d.Rectangle();
             _this._frustumCorners = [];
             return _this;
         }
@@ -17763,22 +17761,15 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 正射投影镜头
+     */
     var OrthographicLens = /** @class */ (function (_super) {
         __extends(OrthographicLens, _super);
         function OrthographicLens(left, right, top, bottom, near, far) {
             if (near === void 0) { near = 0.1; }
             if (far === void 0) { far = 2000; }
             var _this = _super.call(this) || this;
-            _this.zoom = 1;
-            _this.view = {
-                enabled: true,
-                fullWidth: 1,
-                fullHeight: 1,
-                offsetX: 0,
-                offsetY: 0,
-                width: 1,
-                height: 1
-            };
             _this.isOrthographicCamera = true;
             _this.left = left;
             _this.right = right;
@@ -17788,43 +17779,9 @@ var feng3d;
             _this.far = far;
             return _this;
         }
-        OrthographicLens.prototype.setViewOffset = function (fullWidth, fullHeight, x, y, width, height) {
-            this.view.enabled = true;
-            this.view.fullWidth = fullWidth;
-            this.view.fullHeight = fullHeight;
-            this.view.offsetX = x;
-            this.view.offsetY = y;
-            this.view.width = width;
-            this.view.height = height;
-            this.invalidateMatrix();
-        };
-        OrthographicLens.prototype.clearViewOffset = function () {
-            if (this.view !== null) {
-                this.view.enabled = false;
-            }
-            this.invalidateMatrix();
-        };
         OrthographicLens.prototype.updateMatrix = function () {
             var matrix = this._matrix = new feng3d.Matrix4x4();
-            var dx = (this.right - this.left) / (2 * this.zoom);
-            var dy = (this.top - this.bottom) / (2 * this.zoom);
-            var cx = (this.right + this.left) / 2;
-            var cy = (this.top + this.bottom) / 2;
-            var left = cx - dx;
-            var right = cx + dx;
-            var top = cy + dy;
-            var bottom = cy - dy;
-            if (this.view !== null && this.view.enabled) {
-                var zoomW = this.zoom / (this.view.width / this.view.fullWidth);
-                var zoomH = this.zoom / (this.view.height / this.view.fullHeight);
-                var scaleW = (this.right - this.left) / this.view.width;
-                var scaleH = (this.top - this.bottom) / this.view.height;
-                left += scaleW * (this.view.offsetX / zoomW);
-                right = left + scaleW * (this.view.width / zoomW);
-                top -= scaleH * (this.view.offsetY / zoomH);
-                bottom = top - scaleH * (this.view.height / zoomH);
-            }
-            matrix.setOrtho(left, right, top, bottom, this.near, this.far);
+            this._matrix = matrix.setOrtho(this.left, this.right, this.top, this.bottom, this.near, this.far);
         };
         /**
          * 屏幕坐标投影到摄像机空间坐标
@@ -17935,40 +17892,20 @@ var feng3d;
             var _focalLengthInv = 1 / this._focalLength;
             this._yMax = this.near * _focalLengthInv;
             this._xMax = this._yMax * this.aspectRatio;
-            var left, right, top, bottom;
-            if (this._scissorRect.x == 0 && this._scissorRect.y == 0 && this._scissorRect.width == this._viewPort.width && this._scissorRect.height == this._viewPort.height) {
-                // assume unscissored frustum
-                left = -this._xMax;
-                right = this._xMax;
-                top = -this._yMax;
-                bottom = this._yMax;
-                // assume unscissored frustum
-                raw[0] = this.near / this._xMax;
-                raw[5] = this.near / this._yMax;
-                raw[10] = this.far / (this.far - this.near);
-                raw[11] = 1;
-                raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
-                raw[14] = -this.near * raw[10];
-            }
-            else {
-                // assume scissored frustum
-                var xWidth = this._xMax * (this._viewPort.width / this._scissorRect.width);
-                var yHgt = this._yMax * (this._viewPort.height / this._scissorRect.height);
-                var center = this._xMax * (this._scissorRect.x * 2 - this._viewPort.width) / this._scissorRect.width + this._xMax;
-                var middle = -this._yMax * (this._scissorRect.y * 2 - this._viewPort.height) / this._scissorRect.height - this._yMax;
-                left = center - xWidth;
-                right = center + xWidth;
-                top = middle - yHgt;
-                bottom = middle + yHgt;
-                raw[0] = 2 * this.near / (right - left);
-                raw[5] = 2 * this.near / (bottom - top);
-                raw[8] = (right + left) / (right - left);
-                raw[9] = (bottom + top) / (bottom - top);
-                raw[10] = (this.far + this.near) / (this.far - this.near);
-                raw[11] = 1;
-                raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[12] = raw[13] = raw[15] = 0;
-                raw[14] = -2 * this.far * this.near / (this.far - this.near);
-            }
+            // assume unscissored frustum
+            var left = -this._xMax;
+            var right = this._xMax;
+            var top = this._yMax;
+            var bottom = -this._yMax;
+            // assume unscissored frustum
+            raw[0] = this.near / this._xMax;
+            raw[5] = this.near / this._yMax;
+            raw[10] = this.far / (this.far - this.near);
+            raw[11] = 1;
+            raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
+            raw[14] = -this.near * raw[10];
+            // matrix.setPerspective(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
+            // var matrix1 = new Matrix4x4().setPerspective(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
             // Switch projection transform from left to right handed.
             if (this.coordinateSystem == feng3d.CoordinateSystem.RIGHT_HANDED)
                 raw[5] = -raw[5];
@@ -17976,8 +17913,8 @@ var feng3d;
             var xMaxFar = yMaxFar * this.aspectRatio;
             this._frustumCorners[0] = this._frustumCorners[9] = left;
             this._frustumCorners[3] = this._frustumCorners[6] = right;
-            this._frustumCorners[1] = this._frustumCorners[4] = top;
-            this._frustumCorners[7] = this._frustumCorners[10] = bottom;
+            this._frustumCorners[1] = this._frustumCorners[4] = bottom;
+            this._frustumCorners[7] = this._frustumCorners[10] = top;
             this._frustumCorners[12] = this._frustumCorners[21] = -xMaxFar;
             this._frustumCorners[15] = this._frustumCorners[18] = xMaxFar;
             this._frustumCorners[13] = this._frustumCorners[16] = -yMaxFar;
@@ -20414,10 +20351,9 @@ var feng3d;
     var DirectionalLight = /** @class */ (function (_super) {
         __extends(DirectionalLight, _super);
         function DirectionalLight() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.shadow = new feng3d.DirectionalLightShadow();
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        // shadow = new DirectionalLightShadow();
         /**
          * 构建
          */

@@ -99,45 +99,21 @@ namespace feng3d
             this._yMax = this.near * _focalLengthInv;
             this._xMax = this._yMax * this.aspectRatio;
 
-            var left: number, right: number, top: number, bottom: number;
+            // assume unscissored frustum
+            var left = -this._xMax;
+            var right = this._xMax;
+            var top = this._yMax;
+            var bottom = -this._yMax;
+            // assume unscissored frustum
+            raw[0] = this.near / this._xMax;
+            raw[5] = this.near / this._yMax;
+            raw[10] = this.far / (this.far - this.near);
+            raw[11] = 1;
+            raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
+            raw[14] = -this.near * raw[10];
 
-            if (this._scissorRect.x == 0 && this._scissorRect.y == 0 && this._scissorRect.width == this._viewPort.width && this._scissorRect.height == this._viewPort.height)
-            {
-                // assume unscissored frustum
-                left = -this._xMax;
-                right = this._xMax;
-                top = -this._yMax;
-                bottom = this._yMax;
-                // assume unscissored frustum
-                raw[0] = this.near / this._xMax;
-                raw[5] = this.near / this._yMax;
-                raw[10] = this.far / (this.far - this.near);
-                raw[11] = 1;
-                raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
-                raw[14] = -this.near * raw[10];
-            }
-            else
-            {
-                // assume scissored frustum
-                var xWidth = this._xMax * (this._viewPort.width / this._scissorRect.width);
-                var yHgt = this._yMax * (this._viewPort.height / this._scissorRect.height);
-                var center = this._xMax * (this._scissorRect.x * 2 - this._viewPort.width) / this._scissorRect.width + this._xMax;
-                var middle = -this._yMax * (this._scissorRect.y * 2 - this._viewPort.height) / this._scissorRect.height - this._yMax;
-
-                left = center - xWidth;
-                right = center + xWidth;
-                top = middle - yHgt;
-                bottom = middle + yHgt;
-
-                raw[0] = 2 * this.near / (right - left);
-                raw[5] = 2 * this.near / (bottom - top);
-                raw[8] = (right + left) / (right - left);
-                raw[9] = (bottom + top) / (bottom - top);
-                raw[10] = (this.far + this.near) / (this.far - this.near);
-                raw[11] = 1;
-                raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[12] = raw[13] = raw[15] = 0;
-                raw[14] = -2 * this.far * this.near / (this.far - this.near);
-            }
+            // matrix.setPerspective(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
+            // var matrix1 = new Matrix4x4().setPerspective(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
 
             // Switch projection transform from left to right handed.
             if (this.coordinateSystem == CoordinateSystem.RIGHT_HANDED)
@@ -148,8 +124,8 @@ namespace feng3d
 
             this._frustumCorners[0] = this._frustumCorners[9] = left;
             this._frustumCorners[3] = this._frustumCorners[6] = right;
-            this._frustumCorners[1] = this._frustumCorners[4] = top;
-            this._frustumCorners[7] = this._frustumCorners[10] = bottom;
+            this._frustumCorners[1] = this._frustumCorners[4] = bottom;
+            this._frustumCorners[7] = this._frustumCorners[10] = top;
 
             this._frustumCorners[12] = this._frustumCorners[21] = -xMaxFar;
             this._frustumCorners[15] = this._frustumCorners[18] = xMaxFar;

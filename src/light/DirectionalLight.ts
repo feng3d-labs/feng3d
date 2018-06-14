@@ -17,8 +17,7 @@ namespace feng3d
      */
     export class DirectionalLight extends Light
     {
-
-        shadow = new DirectionalLightShadow();
+        // shadow = new DirectionalLightShadow();
 
         /**
          * 构建

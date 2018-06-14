@@ -9637,8 +9637,6 @@ declare namespace feng3d {
         private _aspectRatio;
         aspectRatio: number;
         protected _matrix: Matrix4x4 | null;
-        protected _scissorRect: Rectangle;
-        protected _viewPort: Rectangle;
         protected _frustumCorners: number[];
         private _unprojection;
         /**
@@ -9684,25 +9682,16 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 正射投影镜头
+     */
     class OrthographicLens extends LensBase {
-        zoom: number;
-        view: {
-            enabled: boolean;
-            fullWidth: number;
-            fullHeight: number;
-            offsetX: number;
-            offsetY: number;
-            width: number;
-            height: number;
-        };
         isOrthographicCamera: boolean;
         left: number;
         right: number;
         top: number;
         bottom: number;
         constructor(left: number, right: number, top: number, bottom: number, near?: number, far?: number);
-        setViewOffset(fullWidth: any, fullHeight: any, x: any, y: any, width: any, height: any): void;
-        clearViewOffset(): void;
         protected updateMatrix(): void;
         /**
          * 屏幕坐标投影到摄像机空间坐标
@@ -10631,7 +10620,6 @@ declare namespace feng3d {
      * @author feng 2016-12-13
      */
     class DirectionalLight extends Light {
-        shadow: any;
         /**
          * 构建
          */

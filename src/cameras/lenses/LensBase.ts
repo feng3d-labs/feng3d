@@ -79,8 +79,6 @@ namespace feng3d
 
 		//
 		protected _matrix: Matrix4x4 | null;
-		protected _scissorRect: Rectangle = new Rectangle();
-		protected _viewPort: Rectangle = new Rectangle();
 
 		protected _frustumCorners: number[] = [];
 
