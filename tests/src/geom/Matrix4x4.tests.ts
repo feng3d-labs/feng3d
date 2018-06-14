@@ -102,10 +102,10 @@ namespace feng3d
 
         QUnit.test("setPerspectiveFromFOV", (assert) =>
         {
-            var fov = Math.random() * Math.PI;
+            var fov = Math.random() * Math.PI* 2 ;
             var aspect = Math.random();
             var near = Math.random();
-            var far = Math.random() + near;
+            var far = Math.random();
             //
             var mat = new Matrix4x4().setPerspectiveFromFOV(fov, aspect, near, far);
             assert.ok(mat.determinant != 0);
@@ -162,11 +162,11 @@ namespace feng3d
         QUnit.test("setPerspective", (assert) =>
         {
             var left = Math.random();
-            var right = Math.random() + left;
+            var right = Math.random();
             var top = Math.random();
-            var bottom = Math.random() + top;
+            var bottom = Math.random();
             var near = Math.random();
-            var far = Math.random() + near;
+            var far = Math.random();
             //
             var mat = new Matrix4x4().setPerspective(left, right, top, bottom, near, far);
             assert.ok(mat.determinant != 0);
