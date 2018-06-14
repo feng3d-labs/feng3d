@@ -62,8 +62,8 @@ namespace feng3d
             assert.ok(mat.determinant != 0);
 
             var invertMat = mat.clone().invert();
-            var v = Vector3.random();
-            var v1 = invertMat.transformVector(mat.transformVector(v));
+            var v = Vector4.random();
+            var v1 = invertMat.transformVector4(mat.transformVector4(v));
             assert.ok(v.equals(v1));
 
             // 测试可视空间的8个顶点是否被正确投影
@@ -111,7 +111,7 @@ namespace feng3d
             assert.ok(mat.determinant != 0);
 
             var invertMat = mat.clone().invert();
-            var v = Vector4.random(); v.w = 1;
+            var v = Vector4.random();
             var v1 = invertMat.transformVector4(mat.transformVector4(v));
 
             assert.ok(v.equals(v1));
@@ -172,7 +172,7 @@ namespace feng3d
             assert.ok(mat.determinant != 0);
 
             var invertMat = mat.clone().invert();
-            var v = Vector4.random(); v.w = 1;
+            var v = Vector4.random();
             var v1 = invertMat.transformVector4(mat.transformVector4(v));
 
             assert.ok(v.equals(v1));
