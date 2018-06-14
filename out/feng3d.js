@@ -7944,9 +7944,9 @@ var feng3d;
          * @param near 可视空间近边界
          * @param far 可视空间远边界
          *
-         * #### 参考
-         * 1. 《WebGL编程指南》 可视空间（正射投影） p234
-         * 1. 《WebGL编程指南》 附录C p437
+         * 可视空间的八个顶点分别被投影到立方体 [(-1, -1, -1), (1, 1, 1)] 八个顶点上
+         *
+         * 将长方体 [(left, bottom, near), (right, top, far)] 投影至立方体 [(-1, -1, -1), (1, 1, 1)] 中
          */
         Matrix4x4.prototype.setOrtho = function (left, right, top, bottom, near, far) {
             var r = this.rawData;
@@ -7960,7 +7960,7 @@ var feng3d;
             r[13] = -(top + bottom) / (top - bottom); // 
             r[2] = 0; /**/
             r[6] = 0; /**/
-            r[10] = -2 / (far - near);
+            r[10] = 2 / (far - near);
             r[14] = -(far + near) / (far - near); //
             r[3] = 0; /**/
             r[7] = 0; /**/
@@ -7970,14 +7970,12 @@ var feng3d;
         };
         /**
          * 初始化透视投影矩阵
-         * @param fov 垂直视角，可视空间顶面和底面间的夹角，必须大于0
+         * @param fov 垂直视角，视锥体顶面和底面间的夹角，必须大于0
          * @param aspect 近裁剪面的宽高比
-         * @param near 可视空间近边界
-         * @param far 可视空间远边界
+         * @param near 视锥体近边界
+         * @param far 视锥体远边界
          *
-         * #### 参考
-         * 1. 《WebGL编程指南》 可视空间（透视投影） p247
-         * 1. 《WebGL编程指南》 附录C p437
+         * 视锥体的八个顶点分别被投影到立方体 [(-1, -1, -1), (1, 1, 1)] 八个顶点上
          */
         Matrix4x4.prototype.setPerspective = function (fov, aspect, near, far) {
             var r = this.rawData;
@@ -7992,11 +7990,11 @@ var feng3d;
             r[13] = 0; // 
             r[2] = 0; /**/
             r[6] = 0; /**/
-            r[10] = -(far + near) / (far - near);
+            r[10] = (far + near) / (far - near);
             r[14] = -2 * (far * near) / (far - near); //
             r[3] = 0; /**/
             r[7] = 0; /**/
-            r[11] = -1; /**/
+            r[11] = 1; /**/
             r[15] = 0; //
             return this;
         };
@@ -18360,7 +18358,7 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 立方体几何体
+     * 立（长）方体几何体
      * @author feng 2016-09-12
      */
     var CubeGeometry = /** @class */ (function (_super) {

@@ -65,6 +65,39 @@ namespace feng3d
             var v = Vector3.random();
             var v1 = invertMat.transformVector(mat.transformVector(v));
             assert.ok(v.equals(v1));
+
+            // 测试可视空间的8个顶点是否被正确投影
+            var lbn = new Vector4(left, bottom, near, 1);
+            var tv = mat.transformVector4(lbn);
+            assert.ok(new Vector4(-1, -1, -1, 1).equals(tv));
+
+            var lbf = new Vector4(left, bottom, far, 1);
+            var tv = mat.transformVector4(lbf);
+            assert.ok(new Vector4(-1, -1, 1, 1).equals(tv));
+
+            var ltn = new Vector4(left, top, near, 1);
+            var tv = mat.transformVector4(ltn);
+            assert.ok(new Vector4(-1, 1, -1, 1).equals(tv));
+
+            var ltf = new Vector4(left, top, far, 1)
+            var tv = mat.transformVector4(ltf);
+            assert.ok(new Vector4(-1, 1, 1, 1).equals(tv));
+
+            var rbn = new Vector4(right, bottom, near, 1);
+            var tv = mat.transformVector4(rbn);
+            assert.ok(new Vector4(1, -1, -1, 1).equals(tv));
+
+            var rbf = new Vector4(right, bottom, far, 1)
+            var tv = mat.transformVector4(rbf);
+            assert.ok(new Vector4(1, -1, 1, 1).equals(tv));
+
+            var rtn = new Vector4(right, top, near, 1);
+            var tv = mat.transformVector4(rtn);
+            assert.ok(new Vector4(1, 1, -1, 1).equals(tv));
+
+            var rtf = new Vector4(right, top, far, 1);
+            var tv = mat.transformVector4(rtf);
+            assert.ok(new Vector4(1, 1, 1, 1).equals(tv));
         });
 
         QUnit.test("setPerspective", (assert) =>
@@ -85,6 +118,48 @@ namespace feng3d
             v1.z = v.z;
 
             assert.ok(v.equals(v1));
+
+            var tan = Math.tan(fov / 2);
+            // 测试可视空间的8个顶点是否被正确投影
+            var lbn = new Vector4(-tan * near * aspect, -tan * near, near, 1);
+            var tv = mat.transformVector4(lbn);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(-1, -1, -1, 1).equals(tv));
+
+            var lbf = new Vector4(-tan * far * aspect, -tan * far, far, 1);
+            var tv = mat.transformVector4(lbf);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(-1, -1, 1, 1).equals(tv));
+
+            var ltn = new Vector4(-tan * near * aspect, tan * near, near, 1);
+            var tv = mat.transformVector4(ltn);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(-1, 1, -1, 1).equals(tv));
+
+            var ltf = new Vector4(-tan * far * aspect, tan * far, far, 1)
+            var tv = mat.transformVector4(ltf);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(-1, 1, 1, 1).equals(tv));
+
+            var rbn = new Vector4(tan * near * aspect, -tan * near, near, 1);
+            var tv = mat.transformVector4(rbn);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(1, -1, -1, 1).equals(tv));
+
+            var rbf = new Vector4(tan * far * aspect, -tan * far, far, 1)
+            var tv = mat.transformVector4(rbf);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(1, -1, 1, 1).equals(tv));
+
+            var rtn = new Vector4(tan * near * aspect, tan * near, near, 1);
+            var tv = mat.transformVector4(rtn);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(1, 1, -1, 1).equals(tv));
+
+            var rtf = new Vector4(tan * far * aspect, tan * far, far, 1);
+            var tv = mat.transformVector4(rtf);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(1, 1, 1, 1).equals(tv));
         });
 
 
