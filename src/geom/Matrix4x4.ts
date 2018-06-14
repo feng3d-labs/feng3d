@@ -1002,7 +1002,7 @@ namespace feng3d
          * 
          * 视锥体的八个顶点分别被投影到立方体 [(-1, -1, -1), (1, 1, 1)] 八个顶点上
          */
-        setPerspective(fov: number, aspect: number, near: number, far: number)
+        setPerspectiveFromFOV(fov: number, aspect: number, near: number, far: number)
         {
             var r = this.rawData;
 
@@ -1012,6 +1012,31 @@ namespace feng3d
             r[1] = 0; /**/                 r[5] = 1 / tanfov2; r[9] = 0;/**/                        r[13] = 0;// 
             r[2] = 0; /**/                 r[6] = 0; /**/      r[10] = (far + near) / (far - near); r[14] = -2 * (far * near) / (far - near);//
             r[3] = 0; /**/                 r[7] = 0; /**/      r[11] = 1; /**/                      r[15] = 0;//
+
+            return this;
+        }
+
+        /**
+         * 初始化透视投影矩阵
+         * @param left 可视空间左边界
+         * @param right 可视空间右边界
+         * @param top 可视空间上边界
+         * @param bottom 可视空间下边界
+         * @param near 可视空间近边界
+         * @param far 可视空间远边界
+         * 
+         * 可视空间的八个顶点分别被投影到立方体 [(-1, -1, -1), (1, 1, 1)] 八个顶点上
+         * 
+         * 将长方体 [(left, bottom, near), (right, top, far)] 投影至立方体 [(-1, -1, -1), (1, 1, 1)] 中
+         */
+        setPerspective(left: number, right: number, top: number, bottom: number, near: number, far: number)
+        {
+            var r = this.rawData;
+
+            r[0] = 2 * near / (right - left); r[4] = 0; /**/     r[8] = 0; /**/                       r[12] = 0;// 
+            r[1] = 0; /**/       r[5] = 2 * near / (top - bottom); r[9] = 0;/**/                        r[13] = 0;// 
+            r[2] = 0; /**/       r[6] = 0; /**/     r[10] = (far + near) / (far - near); r[14] = -2 * (far * near) / (far - near);//
+            r[3] = 0; /**/       r[7] = 0; /**/     r[11] = 1; /**/                      r[15] = 0;//
 
             return this;
         }

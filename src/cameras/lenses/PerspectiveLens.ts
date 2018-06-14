@@ -104,20 +104,11 @@ namespace feng3d
             var right = this._xMax;
             var top = this._yMax;
             var bottom = -this._yMax;
-            // assume unscissored frustum
-            raw[0] = this.near / this._xMax;
-            raw[5] = this.near / this._yMax;
-            raw[10] = this.far / (this.far - this.near);
-            raw[11] = 1;
-            raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
-            raw[14] = -this.near * raw[10];
+            //
 
-            // matrix.setPerspective(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
+            matrix.setPerspectiveFromFOV(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
+            var matrix1 = new Matrix4x4().setPerspective(left, right, top, bottom, this.near, this.far);
             // var matrix1 = new Matrix4x4().setPerspective(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
-
-            // Switch projection transform from left to right handed.
-            if (this.coordinateSystem == CoordinateSystem.RIGHT_HANDED)
-                raw[5] = -raw[5];
 
             var yMaxFar = this.far * _focalLengthInv;
             var xMaxFar = yMaxFar * this.aspectRatio;

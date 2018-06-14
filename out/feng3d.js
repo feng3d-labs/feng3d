@@ -7977,7 +7977,7 @@ var feng3d;
          *
          * 视锥体的八个顶点分别被投影到立方体 [(-1, -1, -1), (1, 1, 1)] 八个顶点上
          */
-        Matrix4x4.prototype.setPerspective = function (fov, aspect, near, far) {
+        Matrix4x4.prototype.setPerspectiveFromFOV = function (fov, aspect, near, far) {
             var r = this.rawData;
             var tanfov2 = Math.tan(fov / 2);
             r[0] = 1 / (aspect * tanfov2);
@@ -7986,6 +7986,39 @@ var feng3d;
             r[12] = 0; // 
             r[1] = 0; /**/
             r[5] = 1 / tanfov2;
+            r[9] = 0; /**/
+            r[13] = 0; // 
+            r[2] = 0; /**/
+            r[6] = 0; /**/
+            r[10] = (far + near) / (far - near);
+            r[14] = -2 * (far * near) / (far - near); //
+            r[3] = 0; /**/
+            r[7] = 0; /**/
+            r[11] = 1; /**/
+            r[15] = 0; //
+            return this;
+        };
+        /**
+         * 初始化透视投影矩阵
+         * @param left 可视空间左边界
+         * @param right 可视空间右边界
+         * @param top 可视空间上边界
+         * @param bottom 可视空间下边界
+         * @param near 可视空间近边界
+         * @param far 可视空间远边界
+         *
+         * 可视空间的八个顶点分别被投影到立方体 [(-1, -1, -1), (1, 1, 1)] 八个顶点上
+         *
+         * 将长方体 [(left, bottom, near), (right, top, far)] 投影至立方体 [(-1, -1, -1), (1, 1, 1)] 中
+         */
+        Matrix4x4.prototype.setPerspective = function (left, right, top, bottom, near, far) {
+            var r = this.rawData;
+            r[0] = 2 * near / (right - left);
+            r[4] = 0; /**/
+            r[8] = 0; /**/
+            r[12] = 0; // 
+            r[1] = 0; /**/
+            r[5] = 2 * near / (top - bottom);
             r[9] = 0; /**/
             r[13] = 0; // 
             r[2] = 0; /**/
@@ -17895,18 +17928,10 @@ var feng3d;
             var right = this._xMax;
             var top = this._yMax;
             var bottom = -this._yMax;
-            // assume unscissored frustum
-            raw[0] = this.near / this._xMax;
-            raw[5] = this.near / this._yMax;
-            raw[10] = this.far / (this.far - this.near);
-            raw[11] = 1;
-            raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
-            raw[14] = -this.near * raw[10];
-            // matrix.setPerspective(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
+            //
+            matrix.setPerspectiveFromFOV(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
+            var matrix1 = new feng3d.Matrix4x4().setPerspective(left, right, top, bottom, this.near, this.far);
             // var matrix1 = new Matrix4x4().setPerspective(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
-            // Switch projection transform from left to right handed.
-            if (this.coordinateSystem == feng3d.CoordinateSystem.RIGHT_HANDED)
-                raw[5] = -raw[5];
             var yMaxFar = this.far * _focalLengthInv;
             var xMaxFar = yMaxFar * this.aspectRatio;
             this._frustumCorners[0] = this._frustumCorners[9] = left;

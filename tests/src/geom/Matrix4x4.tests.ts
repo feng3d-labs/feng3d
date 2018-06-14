@@ -100,26 +100,85 @@ namespace feng3d
             assert.ok(new Vector4(1, 1, 1, 1).equals(tv));
         });
 
-        QUnit.test("setPerspective", (assert) =>
+        QUnit.test("setPerspectiveFromFOV", (assert) =>
         {
             var fov = Math.random() * Math.PI;
             var aspect = Math.random();
             var near = Math.random();
             var far = Math.random() + near;
             //
-            var mat = new Matrix4x4().setPerspective(fov, aspect, near, far);
+            var mat = new Matrix4x4().setPerspectiveFromFOV(fov, aspect, near, far);
             assert.ok(mat.determinant != 0);
 
             var invertMat = mat.clone().invert();
-            var v = Vector3.random();
-            var v1 = invertMat.transformVector(mat.transformVector(v));
-
-            // 透视矩阵并不可逆，但是其中x，y分量（保存不变）可逆
-            v1.z = v.z;
+            var v = Vector4.random(); v.w = 1;
+            var v1 = invertMat.transformVector4(mat.transformVector4(v));
 
             assert.ok(v.equals(v1));
 
             var tan = Math.tan(fov / 2);
+            // 测试可视空间的8个顶点是否被正确投影
+            var lbn = new Vector4(-tan * near * aspect, -tan * near, near, 1);
+            var tv = mat.transformVector4(lbn);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(-1, -1, -1, 1).equals(tv));
+
+            var lbf = new Vector4(-tan * far * aspect, -tan * far, far, 1);
+            var tv = mat.transformVector4(lbf);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(-1, -1, 1, 1).equals(tv));
+
+            var ltn = new Vector4(-tan * near * aspect, tan * near, near, 1);
+            var tv = mat.transformVector4(ltn);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(-1, 1, -1, 1).equals(tv));
+
+            var ltf = new Vector4(-tan * far * aspect, tan * far, far, 1)
+            var tv = mat.transformVector4(ltf);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(-1, 1, 1, 1).equals(tv));
+
+            var rbn = new Vector4(tan * near * aspect, -tan * near, near, 1);
+            var tv = mat.transformVector4(rbn);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(1, -1, -1, 1).equals(tv));
+
+            var rbf = new Vector4(tan * far * aspect, -tan * far, far, 1)
+            var tv = mat.transformVector4(rbf);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(1, -1, 1, 1).equals(tv));
+
+            var rtn = new Vector4(tan * near * aspect, tan * near, near, 1);
+            var tv = mat.transformVector4(rtn);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(1, 1, -1, 1).equals(tv));
+
+            var rtf = new Vector4(tan * far * aspect, tan * far, far, 1);
+            var tv = mat.transformVector4(rtf);
+            tv.scale(1 / tv.w);
+            assert.ok(new Vector4(1, 1, 1, 1).equals(tv));
+        });
+
+        QUnit.test("setPerspective", (assert) =>
+        {
+            var left = Math.random();
+            var right = Math.random() + left;
+            var top = Math.random();
+            var bottom = Math.random() + top;
+            var near = Math.random();
+            var far = Math.random() + near;
+            //
+            var mat = new Matrix4x4().setPerspective(left, right, top, bottom, near, far);
+            assert.ok(mat.determinant != 0);
+
+            var invertMat = mat.clone().invert();
+            var v = Vector4.random(); v.w = 1;
+            var v1 = invertMat.transformVector4(mat.transformVector4(v));
+
+            assert.ok(v.equals(v1));
+
+            var tan = (top - bottom) / 2 / near;
+            var aspect = (right - left) / (top - bottom);
             // 测试可视空间的8个顶点是否被正确投影
             var lbn = new Vector4(-tan * near * aspect, -tan * near, near, 1);
             var tv = mat.transformVector4(lbn);

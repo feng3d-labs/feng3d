@@ -3943,7 +3943,21 @@ declare namespace feng3d {
          *
          * 视锥体的八个顶点分别被投影到立方体 [(-1, -1, -1), (1, 1, 1)] 八个顶点上
          */
-        setPerspective(fov: number, aspect: number, near: number, far: number): this;
+        setPerspectiveFromFOV(fov: number, aspect: number, near: number, far: number): this;
+        /**
+         * 初始化透视投影矩阵
+         * @param left 可视空间左边界
+         * @param right 可视空间右边界
+         * @param top 可视空间上边界
+         * @param bottom 可视空间下边界
+         * @param near 可视空间近边界
+         * @param far 可视空间远边界
+         *
+         * 可视空间的八个顶点分别被投影到立方体 [(-1, -1, -1), (1, 1, 1)] 八个顶点上
+         *
+         * 将长方体 [(left, bottom, near), (right, top, far)] 投影至立方体 [(-1, -1, -1), (1, 1, 1)] 中
+         */
+        setPerspective(left: number, right: number, top: number, bottom: number, near: number, far: number): this;
         /**
          * 以字符串返回矩阵的值
          */
