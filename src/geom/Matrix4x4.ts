@@ -990,6 +990,56 @@ namespace feng3d
         }
 
         /**
+         * 初始化正射投影矩阵
+         * @param left 可视空间左边界
+         * @param right 可视空间右边界
+         * @param top 可视空间上边界
+         * @param bottom 可视空间下边界
+         * @param near 可视空间近边界
+         * @param far 可视空间远边界
+         * 
+         * #### 参考
+         * 1. 《WebGL编程指南》 可视空间（正射投影） p234
+         * 1. 《WebGL编程指南》 附录C p437
+         */
+        setOrtho(left: number, right: number, top: number, bottom: number, near: number, far: number)
+        {
+            var r = this.rawData;
+
+            r[0] = 2 / (right - left); r[4] = 0; /**/             r[8] = 0; /**/             r[12] = -(right + left) / (right - left);// 
+            r[1] = 0; /**/             r[5] = 2 / (top - bottom); r[9] = 0;/**/              r[13] = -(top + bottom) / (top - bottom);// 
+            r[2] = 0; /**/             r[6] = 0; /**/             r[10] = -2 / (far - near); r[14] = -(far + near) / (far - near);//
+            r[3] = 0; /**/             r[7] = 0; /**/             r[11] = 0; /**/            r[15] = 1;//
+
+            return this;
+        }
+
+        /**
+         * 初始化透视投影矩阵
+         * @param fov 垂直视角，可视空间顶面和底面间的夹角，必须大于0
+         * @param aspect 近裁剪面的宽高比
+         * @param near 可视空间近边界
+         * @param far 可视空间远边界
+         * 
+         * #### 参考
+         * 1. 《WebGL编程指南》 可视空间（透视投影） p247
+         * 1. 《WebGL编程指南》 附录C p437
+         */
+        setPerspective(fov: number, aspect: number, near: number, far: number)
+        {
+            var r = this.rawData;
+
+            var tanfov2 = Math.tan(fov / 2);
+
+            r[0] = 1 / (aspect * tanfov2); r[4] = 0; /**/      r[8] = 0; /**/                        r[12] = 0;// 
+            r[1] = 0; /**/                 r[5] = 1 / tanfov2; r[9] = 0;/**/                         r[13] = 0;// 
+            r[2] = 0; /**/                 r[6] = 0; /**/      r[10] = -(far + near) / (far - near); r[14] = -2 * (far * near) / (far - near);//
+            r[3] = 0; /**/                 r[7] = 0; /**/      r[11] = -1; /**/                      r[15] = 0;//
+
+            return this;
+        }
+
+        /**
          * 以字符串返回矩阵的值
          */
         toString(): string

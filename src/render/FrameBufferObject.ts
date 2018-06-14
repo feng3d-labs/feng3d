@@ -13,10 +13,13 @@ namespace feng3d
         texture: WebGLTexture;
         depthBuffer: WebGLRenderbuffer;
 
-        t: Texture2D;
+        private isInit = false;
 
         init(gl: GL)
         {
+            if (this.isInit)
+                return;
+
             // Create a framebuffer object (FBO)
             this.framebuffer = gl.createFramebuffer();
             if (!this.framebuffer)
@@ -64,6 +67,8 @@ namespace feng3d
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.bindTexture(gl.TEXTURE_2D, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+
+            this.isInit = true;
         }
 
         active(gl: GL)
@@ -81,6 +86,7 @@ namespace feng3d
             if (this.framebuffer) gl.deleteFramebuffer(this.framebuffer);
             if (this.texture) gl.deleteTexture(this.texture);
             if (this.depthBuffer) gl.deleteRenderbuffer(this.depthBuffer);
+            this.isInit = false;
             return null;
         }
     }

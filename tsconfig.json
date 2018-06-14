@@ -165,6 +165,7 @@
         //摄像机
         "src/cameras/lenses/CoordinateSystem.ts",
         "src/cameras/lenses/LensBase.ts",
+        "src/cameras/lenses/OrthographicLens.ts",
         "src/cameras/lenses/FreeMatrixLens.ts",
         "src/cameras/lenses/PerspectiveLens.ts",
         "src/cameras/Camera.ts",
@@ -193,6 +194,9 @@
         "src/light/Light.ts",
         "src/light/DirectionalLight.ts",
         "src/light/PointLight.ts",
+        //
+        "src/light/shadow/LightShadow.ts",
+        "src/light/shadow/DirectionalLightShadow.ts",
         //镜头控制
         "src/controllers/ControllerBase.ts",
         "src/controllers/LookAtController.ts",

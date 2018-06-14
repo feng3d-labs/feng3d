@@ -7935,6 +7935,71 @@ var feng3d;
             return Math.sqrt(Math.max(scaleXSq, scaleYSq, scaleZSq));
         };
         /**
+         * 初始化正射投影矩阵
+         * @param left 可视空间左边界
+         * @param right 可视空间右边界
+         * @param top 可视空间上边界
+         * @param bottom 可视空间下边界
+         * @param near 可视空间近边界
+         * @param far 可视空间远边界
+         *
+         * #### 参考
+         * 1. 《WebGL编程指南》 可视空间（正射投影） p234
+         * 1. 《WebGL编程指南》 附录C p437
+         */
+        Matrix4x4.prototype.setOrtho = function (left, right, top, bottom, near, far) {
+            var r = this.rawData;
+            r[0] = 2 / (right - left);
+            r[4] = 0; /**/
+            r[8] = 0; /**/
+            r[12] = -(right + left) / (right - left); // 
+            r[1] = 0; /**/
+            r[5] = 2 / (top - bottom);
+            r[9] = 0; /**/
+            r[13] = -(top + bottom) / (top - bottom); // 
+            r[2] = 0; /**/
+            r[6] = 0; /**/
+            r[10] = -2 / (far - near);
+            r[14] = -(far + near) / (far - near); //
+            r[3] = 0; /**/
+            r[7] = 0; /**/
+            r[11] = 0; /**/
+            r[15] = 1; //
+            return this;
+        };
+        /**
+         * 初始化透视投影矩阵
+         * @param fov 垂直视角，可视空间顶面和底面间的夹角，必须大于0
+         * @param aspect 近裁剪面的宽高比
+         * @param near 可视空间近边界
+         * @param far 可视空间远边界
+         *
+         * #### 参考
+         * 1. 《WebGL编程指南》 可视空间（透视投影） p247
+         * 1. 《WebGL编程指南》 附录C p437
+         */
+        Matrix4x4.prototype.setPerspective = function (fov, aspect, near, far) {
+            var r = this.rawData;
+            var tanfov2 = Math.tan(fov / 2);
+            r[0] = 1 / (aspect * tanfov2);
+            r[4] = 0; /**/
+            r[8] = 0; /**/
+            r[12] = 0; // 
+            r[1] = 0; /**/
+            r[5] = 1 / tanfov2;
+            r[9] = 0; /**/
+            r[13] = 0; // 
+            r[2] = 0; /**/
+            r[6] = 0; /**/
+            r[10] = -(far + near) / (far - near);
+            r[14] = -2 * (far * near) / (far - near); //
+            r[3] = 0; /**/
+            r[7] = 0; /**/
+            r[11] = -1; /**/
+            r[15] = 0; //
+            return this;
+        };
+        /**
          * 以字符串返回矩阵的值
          */
         Matrix4x4.prototype.toString = function () {
@@ -12946,8 +13011,11 @@ var feng3d;
         function FrameBufferObject() {
             this.OFFSCREEN_WIDTH = 1024;
             this.OFFSCREEN_HEIGHT = 1024;
+            this.isInit = false;
         }
         FrameBufferObject.prototype.init = function (gl) {
+            if (this.isInit)
+                return;
             // Create a framebuffer object (FBO)
             this.framebuffer = gl.createFramebuffer();
             if (!this.framebuffer) {
@@ -12986,6 +13054,7 @@ var feng3d;
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.bindTexture(gl.TEXTURE_2D, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            this.isInit = true;
         };
         FrameBufferObject.prototype.active = function (gl) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
@@ -13000,6 +13069,7 @@ var feng3d;
                 gl.deleteTexture(this.texture);
             if (this.depthBuffer)
                 gl.deleteRenderbuffer(this.depthBuffer);
+            this.isInit = false;
             return null;
         };
         return FrameBufferObject;
@@ -13892,7 +13962,7 @@ var feng3d;
          * 渲染
          */
         ShadowRenderer.prototype.draw = function (gl, scene3d, camera) {
-            var lights = scene3d.collectComponents.pointLights.list;
+            var lights = scene3d.collectComponents.directionalLights.list;
             for (var i = 0; i < lights.length; i++) {
                 this.drawForLight(gl, lights[i], scene3d, camera);
             }
@@ -13901,6 +13971,10 @@ var feng3d;
             var frameBufferObject = new feng3d.FrameBufferObject();
             frameBufferObject.init(gl);
             frameBufferObject.active(gl);
+            var unblenditems = scene3d.getPickCache(camera).unblenditems;
+            unblenditems.forEach(function (element) {
+                light;
+            });
             // MeshRenderer.meshRenderers.forEach(element =>
             // {
             //     this.drawRenderables(renderContext, element);
@@ -17619,9 +17693,8 @@ var feng3d;
              * 投影矩阵
              */
             get: function () {
-                if (!this._matrix) {
-                    this._matrix = this.updateMatrix();
-                }
+                if (!this._matrix)
+                    this.updateMatrix();
                 return this._matrix;
             },
             set: function (value) {
@@ -17686,6 +17759,86 @@ var feng3d;
         return LensBase;
     }(feng3d.EventDispatcher));
     feng3d.LensBase = LensBase;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var OrthographicLens = /** @class */ (function (_super) {
+        __extends(OrthographicLens, _super);
+        function OrthographicLens(left, right, top, bottom, near, far) {
+            if (near === void 0) { near = 0.1; }
+            if (far === void 0) { far = 2000; }
+            var _this = _super.call(this) || this;
+            _this.zoom = 1;
+            _this.view = {
+                enabled: true,
+                fullWidth: 1,
+                fullHeight: 1,
+                offsetX: 0,
+                offsetY: 0,
+                width: 1,
+                height: 1
+            };
+            _this.isOrthographicCamera = true;
+            _this.left = left;
+            _this.right = right;
+            _this.top = top;
+            _this.bottom = bottom;
+            _this.near = near;
+            _this.far = far;
+            return _this;
+        }
+        OrthographicLens.prototype.setViewOffset = function (fullWidth, fullHeight, x, y, width, height) {
+            this.view.enabled = true;
+            this.view.fullWidth = fullWidth;
+            this.view.fullHeight = fullHeight;
+            this.view.offsetX = x;
+            this.view.offsetY = y;
+            this.view.width = width;
+            this.view.height = height;
+            this.invalidateMatrix();
+        };
+        OrthographicLens.prototype.clearViewOffset = function () {
+            if (this.view !== null) {
+                this.view.enabled = false;
+            }
+            this.invalidateMatrix();
+        };
+        OrthographicLens.prototype.updateMatrix = function () {
+            var matrix = this._matrix = new feng3d.Matrix4x4();
+            var dx = (this.right - this.left) / (2 * this.zoom);
+            var dy = (this.top - this.bottom) / (2 * this.zoom);
+            var cx = (this.right + this.left) / 2;
+            var cy = (this.top + this.bottom) / 2;
+            var left = cx - dx;
+            var right = cx + dx;
+            var top = cy + dy;
+            var bottom = cy - dy;
+            if (this.view !== null && this.view.enabled) {
+                var zoomW = this.zoom / (this.view.width / this.view.fullWidth);
+                var zoomH = this.zoom / (this.view.height / this.view.fullHeight);
+                var scaleW = (this.right - this.left) / this.view.width;
+                var scaleH = (this.top - this.bottom) / this.view.height;
+                left += scaleW * (this.view.offsetX / zoomW);
+                right = left + scaleW * (this.view.width / zoomW);
+                top -= scaleH * (this.view.offsetY / zoomH);
+                bottom = top - scaleH * (this.view.height / zoomH);
+            }
+            matrix.setOrtho(left, right, top, bottom, this.near, this.far);
+        };
+        /**
+         * 屏幕坐标投影到摄像机空间坐标
+         * @param nX 屏幕坐标X -1（左） -> 1（右）
+         * @param nY 屏幕坐标Y -1（上） -> 1（下）
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        OrthographicLens.prototype.unproject = function (nX, nY, sZ, v) {
+            return null;
+        };
+        return OrthographicLens;
+    }(feng3d.LensBase));
+    feng3d.OrthographicLens = OrthographicLens;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -17775,7 +17928,7 @@ var feng3d;
             return v;
         };
         PerspectiveLens.prototype.updateMatrix = function () {
-            var matrix = new feng3d.Matrix4x4();
+            var matrix = this._matrix = new feng3d.Matrix4x4();
             var raw = matrix.rawData;
             this._focalLength = 1 / Math.tan(this.fieldOfView * Math.PI / 360);
             var _focalLengthInv = 1 / this._focalLength;
@@ -17830,7 +17983,6 @@ var feng3d;
             this._frustumCorners[19] = this._frustumCorners[22] = yMaxFar;
             this._frustumCorners[2] = this._frustumCorners[5] = this._frustumCorners[8] = this._frustumCorners[11] = this.near;
             this._frustumCorners[14] = this._frustumCorners[17] = this._frustumCorners[20] = this._frustumCorners[23] = this.far;
-            return matrix;
         };
         __decorate([
             feng3d.watch("fieldOfViewChange"),
@@ -20261,7 +20413,9 @@ var feng3d;
     var DirectionalLight = /** @class */ (function (_super) {
         __extends(DirectionalLight, _super);
         function DirectionalLight() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.shadow = new feng3d.DirectionalLightShadow();
+            return _this;
         }
         /**
          * 构建
@@ -20304,6 +20458,38 @@ var feng3d;
         return PointLight;
     }(feng3d.Light));
     feng3d.PointLight = PointLight;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 灯光阴影
+     *
+     * #### 参考
+     * 1. https://github.com/mrdoob/three.js/blob/dev/src/lights/LightShadow.js
+     */
+    var LightShadow = /** @class */ (function () {
+        function LightShadow(camera) {
+            this.bias = 0;
+            this.radius = 1;
+            this.mapSize = new feng3d.Vector2(512, 512);
+            this.map = null;
+            this.matrix = new feng3d.Matrix4x4();
+            this.camera = camera;
+        }
+        return LightShadow;
+    }());
+    feng3d.LightShadow = LightShadow;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var DirectionalLightShadow = /** @class */ (function (_super) {
+        __extends(DirectionalLightShadow, _super);
+        function DirectionalLightShadow() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return DirectionalLightShadow;
+    }(feng3d.LightShadow));
+    feng3d.DirectionalLightShadow = DirectionalLightShadow;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

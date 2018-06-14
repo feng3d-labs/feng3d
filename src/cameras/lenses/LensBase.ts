@@ -113,9 +113,7 @@ namespace feng3d
 		get matrix(): Matrix4x4
 		{
 			if (!this._matrix)
-			{
-				this._matrix = this.updateMatrix();
-			}
+				this.updateMatrix();
 			return this._matrix;
 		}
 
@@ -183,6 +181,6 @@ namespace feng3d
 		/**
 		 * 更新投影矩阵
 		 */
-		protected abstract updateMatrix(): Matrix4x4;
+		protected abstract updateMatrix(): void;
 	}
 }

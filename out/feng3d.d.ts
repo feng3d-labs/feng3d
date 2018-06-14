@@ -3921,6 +3921,32 @@ declare namespace feng3d {
          */
         getMaxScaleOnAxis(): number;
         /**
+         * 初始化正射投影矩阵
+         * @param left 可视空间左边界
+         * @param right 可视空间右边界
+         * @param top 可视空间上边界
+         * @param bottom 可视空间下边界
+         * @param near 可视空间近边界
+         * @param far 可视空间远边界
+         *
+         * #### 参考
+         * 1. 《WebGL编程指南》 可视空间（正射投影） p234
+         * 1. 《WebGL编程指南》 附录C p437
+         */
+        setOrtho(left: number, right: number, top: number, bottom: number, near: number, far: number): this;
+        /**
+         * 初始化透视投影矩阵
+         * @param fov 垂直视角，可视空间顶面和底面间的夹角，必须大于0
+         * @param aspect 近裁剪面的宽高比
+         * @param near 可视空间近边界
+         * @param far 可视空间远边界
+         *
+         * #### 参考
+         * 1. 《WebGL编程指南》 可视空间（透视投影） p247
+         * 1. 《WebGL编程指南》 附录C p437
+         */
+        setPerspective(fov: number, aspect: number, near: number, far: number): this;
+        /**
          * 以字符串返回矩阵的值
          */
         toString(): string;
@@ -7995,7 +8021,7 @@ declare namespace feng3d {
         framebuffer: WebGLFramebuffer;
         texture: WebGLTexture;
         depthBuffer: WebGLRenderbuffer;
-        t: Texture2D;
+        private isInit;
         init(gl: GL): any;
         active(gl: GL): void;
         deactive(gl: GL): void;
@@ -8363,7 +8389,7 @@ declare namespace feng3d {
          * 渲染
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
-        drawForLight(gl: GL, light: PointLight, scene3d: Scene3D, camera: Camera): any;
+        drawForLight(gl: GL, light: DirectionalLight, scene3d: Scene3D, camera: Camera): any;
     }
 }
 declare namespace feng3d {
@@ -9654,7 +9680,39 @@ declare namespace feng3d {
         /**
          * 更新投影矩阵
          */
-        protected abstract updateMatrix(): Matrix4x4;
+        protected abstract updateMatrix(): void;
+    }
+}
+declare namespace feng3d {
+    class OrthographicLens extends LensBase {
+        zoom: number;
+        view: {
+            enabled: boolean;
+            fullWidth: number;
+            fullHeight: number;
+            offsetX: number;
+            offsetY: number;
+            width: number;
+            height: number;
+        };
+        isOrthographicCamera: boolean;
+        left: number;
+        right: number;
+        top: number;
+        bottom: number;
+        constructor(left: number, right: number, top: number, bottom: number, near?: number, far?: number);
+        setViewOffset(fullWidth: any, fullHeight: any, x: any, y: any, width: any, height: any): void;
+        clearViewOffset(): void;
+        protected updateMatrix(): void;
+        /**
+         * 屏幕坐标投影到摄像机空间坐标
+         * @param nX 屏幕坐标X -1（左） -> 1（右）
+         * @param nY 屏幕坐标Y -1（上） -> 1（下）
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        unproject(nX: number, nY: number, sZ: number, v?: Vector3): any;
     }
 }
 declare namespace feng3d {
@@ -9706,7 +9764,7 @@ declare namespace feng3d {
          */
         focalLength: number;
         unproject(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
-        protected updateMatrix(): Matrix4x4;
+        protected updateMatrix(): void;
     }
 }
 declare namespace feng3d {
@@ -10573,6 +10631,7 @@ declare namespace feng3d {
      * @author feng 2016-12-13
      */
     class DirectionalLight extends Light {
+        shadow: any;
         /**
          * 构建
          */
@@ -10593,6 +10652,27 @@ declare namespace feng3d {
          * 构建
          */
         init(gameObject: GameObject): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 灯光阴影
+     *
+     * #### 参考
+     * 1. https://github.com/mrdoob/three.js/blob/dev/src/lights/LightShadow.js
+     */
+    class LightShadow {
+        camera: Camera;
+        bias: number;
+        radius: number;
+        mapSize: Vector2;
+        map: any;
+        matrix: Matrix4x4;
+        constructor(camera: Camera);
+    }
+}
+declare namespace feng3d {
+    class DirectionalLightShadow extends LightShadow {
     }
 }
 declare namespace feng3d {

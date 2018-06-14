@@ -14,18 +14,25 @@ namespace feng3d
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
-            var lights = scene3d.collectComponents.pointLights.list;
+            var lights = scene3d.collectComponents.directionalLights.list;
             for (var i = 0; i < lights.length; i++)
             {
                 this.drawForLight(gl, lights[i], scene3d, camera);
             }
         }
 
-        drawForLight(gl: GL, light: PointLight, scene3d: Scene3D, camera: Camera): any
+        drawForLight(gl: GL, light: DirectionalLight, scene3d: Scene3D, camera: Camera): any
         {
             var frameBufferObject = new FrameBufferObject();
             frameBufferObject.init(gl);
             frameBufferObject.active(gl);
+
+            var unblenditems = scene3d.getPickCache(camera).unblenditems;
+            unblenditems.forEach(element =>
+            {
+                light
+            });
+
             // MeshRenderer.meshRenderers.forEach(element =>
             // {
             //     this.drawRenderables(renderContext, element);

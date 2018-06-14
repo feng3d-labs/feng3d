@@ -91,7 +91,7 @@ namespace feng3d
 
         protected updateMatrix()
         {
-            var matrix = new Matrix4x4();
+            var matrix = this._matrix = new Matrix4x4();
             var raw = matrix.rawData;
 
             this._focalLength = 1 / Math.tan(this.fieldOfView * Math.PI / 360);
@@ -158,8 +158,6 @@ namespace feng3d
 
             this._frustumCorners[2] = this._frustumCorners[5] = this._frustumCorners[8] = this._frustumCorners[11] = this.near;
             this._frustumCorners[14] = this._frustumCorners[17] = this._frustumCorners[20] = this._frustumCorners[23] = this.far;
-
-            return matrix;
         }
     }
 }
