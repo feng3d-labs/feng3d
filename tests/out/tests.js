@@ -375,6 +375,36 @@ var feng3d;
             // !!!!
             assert.notOk(mat2.equals(mat3));
         });
+        QUnit.test("setOrtho", function (assert) {
+            var left = Math.random();
+            var right = Math.random() + left;
+            var top = Math.random();
+            var bottom = Math.random() + top;
+            var near = Math.random();
+            var far = Math.random() + near;
+            //
+            var mat = new feng3d.Matrix4x4().setOrtho(left, right, top, bottom, near, far);
+            assert.ok(mat.determinant != 0);
+            var invertMat = mat.clone().invert();
+            var v = feng3d.Vector3.random();
+            var v1 = invertMat.transformVector(mat.transformVector(v));
+            assert.ok(v.equals(v1));
+        });
+        QUnit.test("setPerspective", function (assert) {
+            var fov = Math.random() * Math.PI;
+            var aspect = Math.random();
+            var near = Math.random();
+            var far = Math.random() + near;
+            //
+            var mat = new feng3d.Matrix4x4().setPerspective(fov, aspect, near, far);
+            assert.ok(mat.determinant != 0);
+            var invertMat = mat.clone().invert();
+            var v = feng3d.Vector3.random();
+            var v1 = invertMat.transformVector(mat.transformVector(v));
+            // 透视矩阵并不可逆，但是其中x，y分量（保存不变）可逆
+            v1.z = v.z;
+            assert.ok(v.equals(v1));
+        });
     });
 })(feng3d || (feng3d = {}));
 var feng3d;

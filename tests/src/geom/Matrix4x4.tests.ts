@@ -49,5 +49,44 @@ namespace feng3d
 
         });
 
+        QUnit.test("setOrtho", (assert) =>
+        {
+            var left = Math.random();
+            var right = Math.random() + left;
+            var top = Math.random();
+            var bottom = Math.random() + top;
+            var near = Math.random();
+            var far = Math.random() + near;
+            //
+            var mat = new Matrix4x4().setOrtho(left, right, top, bottom, near, far);
+            assert.ok(mat.determinant != 0);
+
+            var invertMat = mat.clone().invert();
+            var v = Vector3.random();
+            var v1 = invertMat.transformVector(mat.transformVector(v));
+            assert.ok(v.equals(v1));
+        });
+
+        QUnit.test("setPerspective", (assert) =>
+        {
+            var fov = Math.random() * Math.PI;
+            var aspect = Math.random();
+            var near = Math.random();
+            var far = Math.random() + near;
+            //
+            var mat = new Matrix4x4().setPerspective(fov, aspect, near, far);
+            assert.ok(mat.determinant != 0);
+
+            var invertMat = mat.clone().invert();
+            var v = Vector3.random();
+            var v1 = invertMat.transformVector(mat.transformVector(v));
+
+            // 透视矩阵并不可逆，但是其中x，y分量（保存不变）可逆
+            v1.z = v.z;
+
+            assert.ok(v.equals(v1));
+        });
+
+
     });
 }
