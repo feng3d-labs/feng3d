@@ -8,48 +8,22 @@ namespace feng3d
     export class PerspectiveLens extends LensBase
     {
         /**
-		 * 视野
+		 * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
 		 */
-        @watch("fieldOfViewChange")
+        @watch("invalidateMatrix")
         @serialize
         @oav()
-        fieldOfView: number;
-
-		/**
-		 * 坐标系类型
-		 */
-        @watch("coordinateSystemChange")
-        @serialize
-        @oav()
-        coordinateSystem: number;
-
-        //
-        _focalLength: number;
-        private _yMax: number;
-        private _xMax: number;
+        fov: number;
 
 		/**
 		 * 创建一个透视摄像机镜头
-		 * @param fieldOfView 视野
-		 * @param coordinateSystem 坐标系统类型
+		 * @param fov 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
+         * 
 		 */
-        constructor(fieldOfView = 60, coordinateSystem = CoordinateSystem.LEFT_HANDED)
+        constructor(fov = 60, aspectRatio = 1, near = 0.3, far = 2000)
         {
-            super();
-
-            this.fieldOfView = fieldOfView;
-            this.coordinateSystem = coordinateSystem;
-        }
-
-        private fieldOfViewChange()
-        {
-            delete this._focalLength;
-            this.invalidateMatrix();
-        }
-
-        private coordinateSystemChange()
-        {
-            this.invalidateMatrix();
+            super(aspectRatio, near, far);
+            this.fov = fov;
         }
 
 		/**
@@ -57,19 +31,12 @@ namespace feng3d
 		 */
         get focalLength(): number
         {
-            if (!this._focalLength)
-                this._focalLength = 1 / Math.tan(this.fieldOfView * Math.PI / 360);
-            return this._focalLength;
+            return 1 / Math.tan(this.fov * Math.PI / 360);
         }
 
         set focalLength(value: number)
         {
-            if (value == this._focalLength)
-                return;
-
-            this._focalLength = value;
-
-            this.fieldOfView = Math.atan(1 / this._focalLength) * 360 / Math.PI;
+            this.fov = Math.atan(1 / value) * 360 / Math.PI;
         }
 
         unproject(nX: number, nY: number, sZ: number, v = new Vector3()): Vector3
@@ -91,40 +58,7 @@ namespace feng3d
 
         protected updateMatrix()
         {
-            var matrix = this._matrix = new Matrix4x4();
-            var raw = matrix.rawData;
-
-            this._focalLength = 1 / Math.tan(this.fieldOfView * Math.PI / 360);
-            var _focalLengthInv = 1 / this._focalLength;
-            this._yMax = this.near * _focalLengthInv;
-            this._xMax = this._yMax * this.aspectRatio;
-
-            // assume unscissored frustum
-            var left = -this._xMax;
-            var right = this._xMax;
-            var top = this._yMax;
-            var bottom = -this._yMax;
-            //
-
-            matrix.setPerspectiveFromFOV(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
-            var matrix1 = new Matrix4x4().setPerspective(left, right, top, bottom, this.near, this.far);
-            // var matrix1 = new Matrix4x4().setPerspective(this.fieldOfView * Math.PI / 180, this.aspectRatio, this.near, this.far);
-
-            var yMaxFar = this.far * _focalLengthInv;
-            var xMaxFar = yMaxFar * this.aspectRatio;
-
-            this._frustumCorners[0] = this._frustumCorners[9] = left;
-            this._frustumCorners[3] = this._frustumCorners[6] = right;
-            this._frustumCorners[1] = this._frustumCorners[4] = bottom;
-            this._frustumCorners[7] = this._frustumCorners[10] = top;
-
-            this._frustumCorners[12] = this._frustumCorners[21] = -xMaxFar;
-            this._frustumCorners[15] = this._frustumCorners[18] = xMaxFar;
-            this._frustumCorners[13] = this._frustumCorners[16] = -yMaxFar;
-            this._frustumCorners[19] = this._frustumCorners[22] = yMaxFar;
-
-            this._frustumCorners[2] = this._frustumCorners[5] = this._frustumCorners[8] = this._frustumCorners[11] = this.near;
-            this._frustumCorners[14] = this._frustumCorners[17] = this._frustumCorners[20] = this._frustumCorners[23] = this.far;
+            this._matrix.setPerspectiveFromFOV(this.fov * Math.PI / 180, this.aspectRatio, this.near, this.far);
         }
     }
 }

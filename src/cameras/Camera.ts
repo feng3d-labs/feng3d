@@ -165,7 +165,7 @@ namespace feng3d
             var v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
 
             v.x = (v.x + 1.0) * this._viewRect.width / 2.0;
-            v.y = (v.y + 1.0) * this._viewRect.height / 2.0;
+            v.y = (1.0 - v.y) * this._viewRect.height / 2.0;
 
             return v;
         }
@@ -229,8 +229,8 @@ namespace feng3d
             renderAtomic.uniforms.u_viewProjection = () => this.viewProjection;
             renderAtomic.uniforms.u_viewMatrix = () => this.transform.worldToLocalMatrix;
             renderAtomic.uniforms.u_cameraMatrix = () => this.transform.localToWorldMatrix;
-            renderAtomic.uniforms.u_skyBoxSize = () => { return this._lens.far / Math.sqrt(3); };
-            renderAtomic.uniforms.u_scaleByDepth = this.getScaleByDepth(1);
+            renderAtomic.uniforms.u_skyBoxSize = () => this._lens.far / Math.sqrt(3);
+            renderAtomic.uniforms.u_scaleByDepth = () => this.getScaleByDepth(1);
         }
     }
 }

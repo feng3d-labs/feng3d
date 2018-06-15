@@ -9636,33 +9636,27 @@ declare namespace feng3d {
         /**
          * 最近距离
          */
-        private _near;
         near: number;
         /**
          * 最远距离
          */
-        private _far;
         far: number;
         /**
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
-        private _aspectRatio;
         aspectRatio: number;
-        protected _matrix: Matrix4x4 | null;
-        protected _frustumCorners: number[];
+        private _matrixInvalid;
+        private _invertMatrixInvalid;
+        protected _matrix: Matrix4x4;
         private _unprojection;
         /**
          * 创建一个摄像机镜头
          */
-        constructor();
-        /**
-         * Retrieves the corner points of the lens frustum.
-         */
-        frustumCorners: number[];
+        constructor(aspectRatio?: number, near?: number, far?: number);
         /**
          * 投影矩阵
          */
-        matrix: Matrix4x4;
+        readonly matrix: Matrix4x4;
         /**
          * 场景坐标投影到屏幕坐标
          * @param point3d 场景坐标
@@ -9742,24 +9736,15 @@ declare namespace feng3d {
      */
     class PerspectiveLens extends LensBase {
         /**
-         * 视野
+         * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
          */
-        fieldOfView: number;
-        /**
-         * 坐标系类型
-         */
-        coordinateSystem: number;
-        _focalLength: number;
-        private _yMax;
-        private _xMax;
+        fov: number;
         /**
          * 创建一个透视摄像机镜头
-         * @param fieldOfView 视野
-         * @param coordinateSystem 坐标系统类型
+         * @param fov 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
+         *
          */
-        constructor(fieldOfView?: number, coordinateSystem?: number);
-        private fieldOfViewChange();
-        private coordinateSystemChange();
+        constructor(fov?: number, aspectRatio?: number, near?: number, far?: number);
         /**
          * 焦距
          */

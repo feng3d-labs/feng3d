@@ -26,83 +26,42 @@ namespace feng3d
 		/**
 		 * 最近距离
 		 */
-		private _near = 0.3;
 		@serialize
 		@oav()
-		get near()
-		{
-			return this._near;
-		}
-		set near(value)
-		{
-			if (this._near == value)
-				return;
-			this._near = value;
-			this.invalidateMatrix();
-		}
+		@watch("invalidateMatrix")
+		near: number;
 
 		/**
 		 * 最远距离
 		 */
-		private _far = 2000;
 		@serialize
 		@oav()
-		get far()
-		{
-			return this._far;
-		}
-		set far(value)
-		{
-			if (this._far == value)
-				return;
-			this._far = value;
-			this.invalidateMatrix();
-		}
+		@watch("invalidateMatrix")
+		far: number;
 
 		/**
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
-		private _aspectRatio = 1;
 		@serialize
 		@oav()
-		get aspectRatio()
-		{
-			return this._aspectRatio;
-		}
-		set aspectRatio(value)
-		{
-			if (this._aspectRatio == value)
-				return;
-			this._aspectRatio = value;
-			this.invalidateMatrix();
-		}
+		@watch("invalidateMatrix")
+		aspectRatio: number;
 
 		//
-		protected _matrix: Matrix4x4 | null;
-
-		protected _frustumCorners: number[] = [];
-
-		private _unprojection: Matrix4x4 | null;
+		private _matrixInvalid = true;
+		private _invertMatrixInvalid = true;
+		protected _matrix = new Matrix4x4();
+		private _unprojection = new Matrix4x4();
 
 		/**
 		 * 创建一个摄像机镜头
 		 */
-		constructor()
+		constructor(aspectRatio = 1, near = 0.3, far = 2000)
 		{
 			super();
-		}
-
-		/**
-		 * Retrieves the corner points of the lens frustum.
-		 */
-		get frustumCorners(): number[]
-		{
-			return this._frustumCorners;
-		}
-
-		set frustumCorners(frustumCorners: number[])
-		{
-			this._frustumCorners = frustumCorners;
+			this.aspectRatio = aspectRatio;
+			this.near = near;
+			this.far = far;
 		}
 
 		/**
@@ -110,16 +69,12 @@ namespace feng3d
 		 */
 		get matrix(): Matrix4x4
 		{
-			if (!this._matrix)
+			if (this._matrixInvalid)
+			{
 				this.updateMatrix();
+				this._matrixInvalid = false;
+			}
 			return this._matrix;
-		}
-
-		set matrix(value: Matrix4x4)
-		{
-			this._matrix = value;
-			this.dispatch("matrixChanged", this);
-			this.invalidateMatrix();
 		}
 
 		/**
@@ -131,13 +86,8 @@ namespace feng3d
 		project(point3d: Vector3, v = new Vector3()): Vector3
 		{
 			var v4 = this.matrix.transformVector4(Vector4.fromVector3(point3d));
+			v4.scale(1 / v4.w)
 			v4.toVector3(v);
-			v.x = v.x / v4.w;
-			v.y = -v.y / v4.w;
-
-			//z is unaffected by transform
-			v.z = point3d.z;
-
 			return v;
 		}
 
@@ -146,13 +96,12 @@ namespace feng3d
 		 */
 		get unprojectionMatrix(): Matrix4x4
 		{
-			if (!this._unprojection)
+			if (this._invertMatrixInvalid)
 			{
-				this._unprojection = new Matrix4x4();
 				this._unprojection.copyFrom(this.matrix);
 				this._unprojection.invert();
+				this._matrixInvalid = false;
 			}
-
 			return this._unprojection;
 		}
 
@@ -171,8 +120,8 @@ namespace feng3d
 		 */
 		protected invalidateMatrix()
 		{
-			this._matrix = null;
-			this._unprojection = null;
+			this._matrixInvalid = true;
+			this._invertMatrixInvalid = true;
 			this.dispatch("matrixChanged", this);
 		}
 
