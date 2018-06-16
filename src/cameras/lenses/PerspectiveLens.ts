@@ -39,7 +39,19 @@ namespace feng3d
             this.fov = Math.atan(1 / value) * 360 / Math.PI;
         }
 
-        
+		/**
+		 * 世界坐标投影到GPU坐标
+		 * @param point3d 世界坐标
+		 * @param v GPU坐标 (x: [-1, 1], y: [-1, 1])
+		 * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
+		 */
+        project(point3d: Vector3, v = new Vector3()): Vector3
+        {
+            var v4 = this.matrix.transformVector4(Vector4.fromVector3(point3d, 1));
+            v4.scale(1 / v4.w);
+            v4.toVector3(v);
+            return v;
+        }
 
         unproject(nX: number, nY: number, sZ: number, v = new Vector3()): Vector3
         {
@@ -62,7 +74,7 @@ namespace feng3d
 
         protected updateMatrix()
         {
-            this._matrix.setPerspectiveFromFOV(this.fov * Math.PI / 180, this.aspectRatio, this.near, this.far);
+            this._matrix.setPerspectiveFromFOV(this.fov, this.aspectRatio, this.near, this.far);
         }
     }
 }

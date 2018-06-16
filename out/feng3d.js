@@ -7970,7 +7970,7 @@ var feng3d;
         };
         /**
          * 初始化透视投影矩阵
-         * @param fov 垂直视角，视锥体顶面和底面间的夹角，必须大于0
+         * @param fov 垂直视角，视锥体顶面和底面间的夹角，必须大于0 （角度）
          * @param aspect 近裁剪面的宽高比
          * @param near 视锥体近边界
          * @param far 视锥体远边界
@@ -7979,7 +7979,7 @@ var feng3d;
          */
         Matrix4x4.prototype.setPerspectiveFromFOV = function (fov, aspect, near, far) {
             var r = this.rawData;
-            var tanfov2 = Math.tan(fov / 2);
+            var tanfov2 = Math.tan(fov * Math.PI / 360);
             r[0] = 1 / (aspect * tanfov2);
             r[4] = 0; /**/
             r[8] = 0; /**/
@@ -17853,6 +17853,19 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 世界坐标投影到GPU坐标
+         * @param point3d 世界坐标
+         * @param v GPU坐标 (x: [-1, 1], y: [-1, 1])
+         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
+         */
+        PerspectiveLens.prototype.project = function (point3d, v) {
+            if (v === void 0) { v = new feng3d.Vector3(); }
+            var v4 = this.matrix.transformVector4(feng3d.Vector4.fromVector3(point3d, 1));
+            v4.scale(1 / v4.w);
+            v4.toVector3(v);
+            return v;
+        };
         PerspectiveLens.prototype.unproject = function (nX, nY, sZ, v) {
             if (v === void 0) { v = new feng3d.Vector3(); }
             // 由于透视矩阵变换后
@@ -17867,7 +17880,7 @@ var feng3d;
             return v;
         };
         PerspectiveLens.prototype.updateMatrix = function () {
-            this._matrix.setPerspectiveFromFOV(this.fov * Math.PI / 180, this.aspectRatio, this.near, this.far);
+            this._matrix.setPerspectiveFromFOV(this.fov, this.aspectRatio, this.near, this.far);
         };
         __decorate([
             feng3d.watch("invalidateMatrix"),

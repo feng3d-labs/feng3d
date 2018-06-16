@@ -3936,7 +3936,7 @@ declare namespace feng3d {
         setOrtho(left: number, right: number, top: number, bottom: number, near: number, far: number): this;
         /**
          * 初始化透视投影矩阵
-         * @param fov 垂直视角，视锥体顶面和底面间的夹角，必须大于0
+         * @param fov 垂直视角，视锥体顶面和底面间的夹角，必须大于0 （角度）
          * @param aspect 近裁剪面的宽高比
          * @param near 视锥体近边界
          * @param far 视锥体远边界
@@ -9749,6 +9749,13 @@ declare namespace feng3d {
          * 焦距
          */
         focalLength: number;
+        /**
+         * 世界坐标投影到GPU坐标
+         * @param point3d 世界坐标
+         * @param v GPU坐标 (x: [-1, 1], y: [-1, 1])
+         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
+         */
+        project(point3d: Vector3, v?: Vector3): Vector3;
         unproject(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
         protected updateMatrix(): void;
     }

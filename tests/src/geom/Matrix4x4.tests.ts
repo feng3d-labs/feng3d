@@ -133,14 +133,14 @@ namespace feng3d
 
         QUnit.test("setPerspectiveFromFOV，测试可视空间的8个顶点是否被正确投影", (assert) =>
         {
-            var fov = Math.random() * Math.PI * 2;
+            var fov = Math.random() * 360;
             var aspect = Math.random();
             var near = Math.random();
             var far = Math.random();
             //
             var mat = new Matrix4x4().setPerspectiveFromFOV(fov, aspect, near, far);
 
-            var tan = Math.tan(fov / 2);
+            var tan = Math.tan(fov * Math.PI / 360);
             // 测试可视空间的8个顶点是否被正确投影
             var lbn = new Vector4(-tan * near * aspect, -tan * near, near, 1);
             var tv = mat.transformVector4(lbn);
