@@ -17678,19 +17678,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        /**
-         * 场景坐标投影到屏幕坐标
-         * @param point3d 场景坐标
-         * @param v 屏幕坐标（输出）
-         * @return 屏幕坐标
-         */
-        LensBase.prototype.project = function (point3d, v) {
-            if (v === void 0) { v = new feng3d.Vector3(); }
-            var v4 = this.matrix.transformVector4(feng3d.Vector4.fromVector3(point3d));
-            v4.scale(1 / v4.w);
-            v4.toVector3(v);
-            return v;
-        };
         Object.defineProperty(LensBase.prototype, "unprojectionMatrix", {
             /**
              * 投影逆矩阵
@@ -17706,6 +17693,36 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 世界坐标投影到GPU坐标
+         * @param point3d 世界坐标
+         * @param v GPU坐标 (x: [-1, 1], y: [-1, 1])
+         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
+         */
+        LensBase.prototype.project = function (point3d, v) {
+            if (v === void 0) { v = new feng3d.Vector3(); }
+            var v4 = this.matrix.transformVector4(feng3d.Vector4.fromVector3(point3d, 1));
+            v4.toVector3(v);
+            return v;
+        };
+        /**
+         * 屏幕坐标投影到摄像机空间坐标
+         * @param nX GPU坐标X [-1, 1]
+         * @param nY GPU坐标Y [-1, 1]
+         * @param sZ 到摄像机的距离
+         * @param v 世界坐标（输出）
+         * @return 世界坐标
+         */
+        LensBase.prototype.unproject = function (nX, nY, sZ, v) {
+            // 给new Vector4(0, 0, sZ, 1)获取投影后的z值
+            var v0 = this.matrix.transformVector4(new feng3d.Vector4(0, 0, sZ, 1));
+            // 重组投影后坐标
+            var v1 = new feng3d.Vector4(nX, nY, v0.z, 1);
+            // 求逆投影
+            var v2 = this.unprojectionMatrix.transformVector4(v1);
+            v2.toVector3(v);
+            return v;
+        };
         /**
          * 投影矩阵失效
          */
@@ -17838,14 +17855,15 @@ var feng3d;
         });
         PerspectiveLens.prototype.unproject = function (nX, nY, sZ, v) {
             if (v === void 0) { v = new feng3d.Vector3(); }
-            v.x = nX;
-            v.y = -nY;
-            v.z = sZ;
-            v.x *= sZ;
-            v.y *= sZ;
+            // 由于透视矩阵变换后
+            v.init(nX * sZ, nY * sZ, 1);
             this.unprojectionMatrix.transformVector(v, v);
             //z is unaffected by transform
             v.z = sZ;
+            var v0 = this.matrix.transformVector4(new feng3d.Vector4(0, 0, sZ, 1));
+            var v1 = new feng3d.Vector4(nX * sZ, nY * sZ, v0.z * sZ, sZ);
+            var v2 = this.unprojectionMatrix.transformVector4(v1);
+            v2.toVector3(v);
             return v;
         };
         PerspectiveLens.prototype.updateMatrix = function () {
@@ -18010,13 +18028,14 @@ var feng3d;
         };
         /**
          * 屏幕坐标转GPU坐标
-         * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
-         * @return GPU坐标 (x:[-1,1],y:[-1-1])
+         * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
+         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
          */
         Camera.prototype.screenToGpuPosition = function (screenPos) {
             var gpuPos = new feng3d.Vector2();
             gpuPos.x = (screenPos.x * 2 - this._viewRect.width) / this._viewRect.width;
-            gpuPos.y = (screenPos.y * 2 - this._viewRect.height) / this._viewRect.height;
+            // 屏幕坐标与gpu中使用的坐标Y轴方向相反
+            gpuPos.y = -(screenPos.y * 2 - this._viewRect.height) / this._viewRect.height;
             return gpuPos;
         };
         /**

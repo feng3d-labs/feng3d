@@ -9658,25 +9658,25 @@ declare namespace feng3d {
          */
         readonly matrix: Matrix4x4;
         /**
-         * 场景坐标投影到屏幕坐标
-         * @param point3d 场景坐标
-         * @param v 屏幕坐标（输出）
-         * @return 屏幕坐标
-         */
-        project(point3d: Vector3, v?: Vector3): Vector3;
-        /**
          * 投影逆矩阵
          */
         readonly unprojectionMatrix: Matrix4x4;
         /**
-         * 屏幕坐标投影到摄像机空间坐标
-         * @param nX 屏幕坐标X -1（左） -> 1（右）
-         * @param nY 屏幕坐标Y -1（上） -> 1（下）
-         * @param sZ 到屏幕的距离
-         * @param v 场景坐标（输出）
-         * @return 场景坐标
+         * 世界坐标投影到GPU坐标
+         * @param point3d 世界坐标
+         * @param v GPU坐标 (x: [-1, 1], y: [-1, 1])
+         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
          */
-        abstract unproject(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
+        project(point3d: Vector3, v?: Vector3): Vector3;
+        /**
+         * 屏幕坐标投影到摄像机空间坐标
+         * @param nX GPU坐标X [-1, 1]
+         * @param nY GPU坐标Y [-1, 1]
+         * @param sZ 到摄像机的距离
+         * @param v 世界坐标（输出）
+         * @return 世界坐标
+         */
+        unproject(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
         /**
          * 投影矩阵失效
          */
@@ -9831,8 +9831,8 @@ declare namespace feng3d {
         unproject(sX: number, sY: number, sZ: number, v?: Vector3): Vector3;
         /**
          * 屏幕坐标转GPU坐标
-         * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
-         * @return GPU坐标 (x:[-1,1],y:[-1-1])
+         * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
+         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
          */
         screenToGpuPosition(screenPos: Vector2): Vector2;
         /**

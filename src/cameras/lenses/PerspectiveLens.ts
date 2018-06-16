@@ -39,19 +39,23 @@ namespace feng3d
             this.fov = Math.atan(1 / value) * 360 / Math.PI;
         }
 
+        
+
         unproject(nX: number, nY: number, sZ: number, v = new Vector3()): Vector3
         {
-            v.x = nX;
-            v.y = -nY;
-            v.z = sZ;
-
-            v.x *= sZ;
-            v.y *= sZ;
+            // 由于透视矩阵变换后
+            v.init(nX * sZ, nY * sZ, 1);
 
             this.unprojectionMatrix.transformVector(v, v);
 
             //z is unaffected by transform
             v.z = sZ;
+
+            var v0 = this.matrix.transformVector4(new Vector4(0, 0, sZ, 1));
+            var v1 = new Vector4(nX * sZ, nY * sZ, v0.z * sZ, sZ);
+            var v2 = this.unprojectionMatrix.transformVector4(v1);
+
+            v2.toVector3(v);
 
             return v;
         }

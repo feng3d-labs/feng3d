@@ -186,14 +186,15 @@ namespace feng3d
 
         /**
 		 * 屏幕坐标转GPU坐标
-		 * @param screenPos 屏幕坐标 (x:[0-width],y:[0-height])
-		 * @return GPU坐标 (x:[-1,1],y:[-1-1])
+		 * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
+		 * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
 		 */
         screenToGpuPosition(screenPos: Vector2): Vector2
         {
             var gpuPos: Vector2 = new Vector2();
             gpuPos.x = (screenPos.x * 2 - this._viewRect.width) / this._viewRect.width;
-            gpuPos.y = (screenPos.y * 2 - this._viewRect.height) / this._viewRect.height;
+            // 屏幕坐标与gpu中使用的坐标Y轴方向相反
+            gpuPos.y = - (screenPos.y * 2 - this._viewRect.height) / this._viewRect.height;
             return gpuPos;
         }
 
