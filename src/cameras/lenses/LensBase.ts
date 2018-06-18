@@ -125,23 +125,42 @@ namespace feng3d
 		}
 
 		/**
-		 * GPU空间坐标（x,y,z?）投影到摄像机空间指定Z值的坐标
+		 * 逆投影求射线
+		 * 
+		 * 通过GPU空间坐标x与y值求出摄像机空间坐标的射线
+		 * 
+		 * @param x GPU空间坐标x值
+		 * @param y GPU空间坐标y值
+		 */
+		unprojectRay(x: number, y: number)
+		{
+			var p0 = this.unproject(new Vector3(x, y, 0));
+			var p1 = this.unproject(new Vector3(x, y, 1));
+			var ray = new Ray3D(p0, p1.sub(p0));
+			// 获取z==0的点
+			var sp = ray.getPointWithZ(0);
+			ray.position = sp;
+			return ray;
+		}
+
+		/**
+		 * 指定深度逆投影
 		 * 
 		 * 获取投影在指定GPU坐标且摄像机前方（深度）sZ处的点的3D坐标
 		 * 
-		 * @param nX GPU坐标X [-1, 1]
-		 * @param nY GPU坐标Y [-1, 1]
+		 * @param nX GPU空间坐标X
+		 * @param nY GPU空间坐标Y
 		 * @param sZ 到摄像机的距离
 		 * @param v 摄像机空间坐标（输出）
 		 * @return 摄像机空间坐标
 		 */
-		unprojectWithDepth(nX: number, nY: number, sZ: number, v?: Vector3)
+		unprojectWithDepth(nX: number, nY: number, sZ: number, v = new Vector3())
 		{
-			// 给new Vector4(0, 0, sZ, 1)获取投影后的z值
+			// 通过投影(0, 0, sZ)获取投影后的GPU空间坐标z值
 			var v0 = this.matrix.transformVector4(new Vector4(0, 0, sZ, 1));
-			// 重组投影后坐标
+			// 初始化真实GPU空间坐标
 			var v1 = new Vector4(nX, nY, v0.z, 1);
-			// 求逆投影
+			// 计算逆投影
 			var v2 = this.inverseMatrix.transformVector4(v1);
 
 			v2.toVector3(v);

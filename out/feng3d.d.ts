@@ -4150,6 +4150,13 @@ declare namespace feng3d {
          */
         getPoint(length?: number, vout?: Vector3): Vector3;
         /**
+         * 获取指定z值的点
+         * @param z z值
+         * @param vout 目标点（输出）
+         * @returns 目标点
+         */
+        getPointWithZ(z: number, vout?: Vector3): Vector3;
+        /**
          * 指定点到该直线距离
          * @param point 指定点
          */
@@ -9683,12 +9690,21 @@ declare namespace feng3d {
          */
         unproject(point3d: Vector3, v?: Vector3): Vector3;
         /**
-         * GPU空间坐标（x,y,z?）投影到摄像机空间指定Z值的坐标
+         * 逆投影求射线
+         *
+         * 通过GPU空间坐标x与y值求出摄像机空间坐标的射线
+         *
+         * @param x GPU空间坐标x值
+         * @param y GPU空间坐标y值
+         */
+        unprojectRay(x: number, y: number): Ray3D;
+        /**
+         * 指定深度逆投影
          *
          * 获取投影在指定GPU坐标且摄像机前方（深度）sZ处的点的3D坐标
          *
-         * @param nX GPU坐标X [-1, 1]
-         * @param nY GPU坐标Y [-1, 1]
+         * @param nX GPU空间坐标X
+         * @param nY GPU空间坐标Y
          * @param sZ 到摄像机的距离
          * @param v 摄像机空间坐标（输出）
          * @return 摄像机空间坐标
@@ -9767,19 +9783,34 @@ declare namespace feng3d {
          */
         focalLength: number;
         /**
+         * 投影
+         *
          * 摄像机空间坐标投影到GPU空间坐标
+         *
          * @param point3d 摄像机空间坐标
          * @param v GPU空间坐标
          * @return GPU空间坐标
          */
         project(point3d: Vector3, v?: Vector3): Vector3;
         /**
+         * 逆投影
+         *
          * GPU空间坐标投影到摄像机空间坐标
+         *
          * @param point3d GPU空间坐标
          * @param v 摄像机空间坐标（输出）
          * @returns 摄像机空间坐标
          */
         unproject(point3d: Vector3, v?: Vector3): Vector3;
+        /**
+         * 指定深度逆投影
+         *
+         *
+         * @param nX
+         * @param nY
+         * @param sZ
+         * @param v
+         */
         unprojectWithDepth(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
         protected updateMatrix(): void;
     }

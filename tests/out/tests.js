@@ -113,6 +113,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var NUM = 10;
     QUnit.module("PerspectiveLens", function () {
         QUnit.test("project", function (assert) {
             var fov = Math.random() * 360;
@@ -179,6 +180,22 @@ var feng3d;
             var rtf = new feng3d.Vector3(1, 1, 1);
             var tv = perspectiveLens.unproject(rtf);
             assert.ok(new feng3d.Vector3(tan * far * aspect, tan * far, far).equals(tv));
+        });
+        QUnit.test("unprojectRay", function (assert) {
+            var fov = Math.random() * 360;
+            var aspect = Math.random();
+            var near = Math.random();
+            var far = Math.random();
+            var perspectiveLens = new feng3d.PerspectiveLens(fov, aspect, near, far);
+            var x = Math.random();
+            var y = Math.random();
+            for (var i = 0; i < NUM; i++) {
+                var ray = perspectiveLens.unprojectRay(x, y);
+                var p = ray.getPointWithZ(feng3d.FMath.lerp(near, far, Math.random()));
+                var pp = perspectiveLens.project(p);
+                assert.ok(feng3d.FMath.equals(x, pp.x));
+                assert.ok(feng3d.FMath.equals(y, pp.y));
+            }
         });
     });
 })(feng3d || (feng3d = {}));

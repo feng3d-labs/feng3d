@@ -97,6 +97,17 @@ namespace feng3d
         }
 
         /**
+         * 获取指定z值的点
+         * @param z z值
+         * @param vout 目标点（输出）
+         * @returns 目标点
+         */
+        getPointWithZ(z: number, vout = new Vector3())
+        {
+            return this.getPoint((z - this.position.z) / this.direction.z, vout);
+        }
+
+        /**
          * 指定点到该直线距离
          * @param point 指定点
          */
