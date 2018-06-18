@@ -139,20 +139,10 @@ namespace feng3d
 		 * @param y view3D上的X坐标
 		 * @return
 		 */
-        getRay3D(x: number, y: number, ray3D?: Ray3D): Ray3D
+        getRay3D(x: number, y: number, ray3D = new Ray3D()): Ray3D
         {
-            //摄像机坐标
-            var rayPosition: Vector3 = this.unproject(x, y, 0);
-            //摄像机前方1处坐标
-            var rayDirection: Vector3 = this.unproject(x, y, 1);
-            //射线方向
-            rayDirection.x = rayDirection.x - rayPosition.x;
-            rayDirection.y = rayDirection.y - rayPosition.y;
-            rayDirection.z = rayDirection.z - rayPosition.z;
-            rayDirection.normalize();
-            //定义射线
-            ray3D = ray3D || new Ray3D(rayPosition, rayDirection);
-            return ray3D;
+            var gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(x, y));
+            return this.lens.unprojectRay(gpuPos.x, gpuPos.y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix);
         }
 
 		/**
@@ -178,7 +168,7 @@ namespace feng3d
 		 * @param v 场景坐标（输出）
 		 * @return 场景坐标
 		 */
-        unproject(sX: number, sY: number, sZ: number, v?: Vector3): Vector3
+        unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
         {
             var gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(sX, sY));
             return this.transform.localToWorldMatrix.transformVector(this.lens.unprojectWithDepth(gpuPos.x, gpuPos.y, sZ, v), v);

@@ -55,9 +55,11 @@ namespace feng3d
 		aspectRatio: number;
 
 		//
+		protected _matrix = new Matrix4x4();
+
+		//
 		private _matrixInvalid = true;
 		private _invertMatrixInvalid = true;
-		protected _matrix = new Matrix4x4();
 		private _inverseMatrix = new Matrix4x4();
 
 		/**
@@ -132,11 +134,12 @@ namespace feng3d
 		 * @param x GPU空间坐标x值
 		 * @param y GPU空间坐标y值
 		 */
-		unprojectRay(x: number, y: number)
+		unprojectRay(x: number, y: number, ray = new Ray3D())
 		{
 			var p0 = this.unproject(new Vector3(x, y, 0));
 			var p1 = this.unproject(new Vector3(x, y, 1));
-			var ray = new Ray3D(p0, p1.sub(p0));
+			// 初始化射线
+			ray.fromPosAndDir(p0, p1.sub(p0));
 			// 获取z==0的点
 			var sp = ray.getPointWithZ(0);
 			ray.position = sp;

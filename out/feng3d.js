@@ -17672,9 +17672,10 @@ var feng3d;
             if (far === void 0) { far = 2000; }
             var _this = _super.call(this) || this;
             //
+            _this._matrix = new feng3d.Matrix4x4();
+            //
             _this._matrixInvalid = true;
             _this._invertMatrixInvalid = true;
-            _this._matrix = new feng3d.Matrix4x4();
             _this._inverseMatrix = new feng3d.Matrix4x4();
             _this.aspectRatio = aspectRatio;
             _this.near = near;
@@ -17742,10 +17743,12 @@ var feng3d;
          * @param x GPU空间坐标x值
          * @param y GPU空间坐标y值
          */
-        LensBase.prototype.unprojectRay = function (x, y) {
+        LensBase.prototype.unprojectRay = function (x, y, ray) {
+            if (ray === void 0) { ray = new feng3d.Ray3D(); }
             var p0 = this.unproject(new feng3d.Vector3(x, y, 0));
             var p1 = this.unproject(new feng3d.Vector3(x, y, 1));
-            var ray = new feng3d.Ray3D(p0, p1.sub(p0));
+            // 初始化射线
+            ray.fromPosAndDir(p0, p1.sub(p0));
             // 获取z==0的点
             var sp = ray.getPointWithZ(0);
             ray.position = sp;
@@ -18062,18 +18065,9 @@ var feng3d;
          * @return
          */
         Camera.prototype.getRay3D = function (x, y, ray3D) {
-            //摄像机坐标
-            var rayPosition = this.unproject(x, y, 0);
-            //摄像机前方1处坐标
-            var rayDirection = this.unproject(x, y, 1);
-            //射线方向
-            rayDirection.x = rayDirection.x - rayPosition.x;
-            rayDirection.y = rayDirection.y - rayPosition.y;
-            rayDirection.z = rayDirection.z - rayPosition.z;
-            rayDirection.normalize();
-            //定义射线
-            ray3D = ray3D || new feng3d.Ray3D(rayPosition, rayDirection);
-            return ray3D;
+            if (ray3D === void 0) { ray3D = new feng3d.Ray3D(); }
+            var gpuPos = this.screenToGpuPosition(new feng3d.Vector2(x, y));
+            return this.lens.unprojectRay(gpuPos.x, gpuPos.y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix);
         };
         /**
          * 投影坐标（世界坐标转换为3D视图坐标）
@@ -18095,6 +18089,7 @@ var feng3d;
          * @return 场景坐标
          */
         Camera.prototype.unproject = function (sX, sY, sZ, v) {
+            if (v === void 0) { v = new feng3d.Vector3(); }
             var gpuPos = this.screenToGpuPosition(new feng3d.Vector2(sX, sY));
             return this.transform.localToWorldMatrix.transformVector(this.lens.unprojectWithDepth(gpuPos.x, gpuPos.y, sZ, v), v);
         };

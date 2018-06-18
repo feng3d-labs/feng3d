@@ -9659,9 +9659,9 @@ declare namespace feng3d {
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
         aspectRatio: number;
+        protected _matrix: Matrix4x4;
         private _matrixInvalid;
         private _invertMatrixInvalid;
-        protected _matrix: Matrix4x4;
         private _inverseMatrix;
         /**
          * 创建一个摄像机镜头
@@ -9697,7 +9697,7 @@ declare namespace feng3d {
          * @param x GPU空间坐标x值
          * @param y GPU空间坐标y值
          */
-        unprojectRay(x: number, y: number): Ray3D;
+        unprojectRay(x: number, y: number, ray?: Ray3D): Ray3D;
         /**
          * 指定深度逆投影
          *
