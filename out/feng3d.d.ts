@@ -9630,6 +9630,13 @@ declare namespace feng3d {
     }
     /**
      * 摄像机镜头
+     *
+     * 镜头主要作用是投影以及逆投影。
+     * 投影指的是从摄像机空间可视区域内的坐标投影至GPU空间可视区域内的坐标。
+     *
+     * 摄像机可视区域：由近、远，上，下，左，右组成的四棱柱
+     * GPU空间可视区域：立方体 [(-1, -1, -1), (1, 1, 1)]
+     *
      * @author feng 2014-10-14
      */
     abstract class LensBase extends EventDispatcher {
@@ -9648,7 +9655,7 @@ declare namespace feng3d {
         private _matrixInvalid;
         private _invertMatrixInvalid;
         protected _matrix: Matrix4x4;
-        private _unprojection;
+        private _inverseMatrix;
         /**
          * 创建一个摄像机镜头
          */
@@ -9658,25 +9665,35 @@ declare namespace feng3d {
          */
         readonly matrix: Matrix4x4;
         /**
-         * 投影逆矩阵
+         * 逆矩阵
          */
-        readonly unprojectionMatrix: Matrix4x4;
+        readonly inverseMatrix: Matrix4x4;
         /**
-         * 世界坐标投影到GPU坐标
-         * @param point3d 世界坐标
-         * @param v GPU坐标 (x: [-1, 1], y: [-1, 1])
-         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
+         * 摄像机空间坐标投影到GPU空间坐标
+         * @param point3d 摄像机空间坐标
+         * @param v GPU空间坐标
+         * @return GPU空间坐标
          */
         project(point3d: Vector3, v?: Vector3): Vector3;
         /**
-         * 屏幕坐标投影到摄像机空间坐标
+         * GPU空间坐标投影到摄像机空间坐标
+         * @param point3d GPU空间坐标
+         * @param v 摄像机空间坐标（输出）
+         * @returns 摄像机空间坐标
+         */
+        unproject(point3d: Vector3, v?: Vector3): Vector3;
+        /**
+         * GPU空间坐标（x,y,z?）投影到摄像机空间指定Z值的坐标
+         *
+         * 获取投影在指定GPU坐标且摄像机前方（深度）sZ处的点的3D坐标
+         *
          * @param nX GPU坐标X [-1, 1]
          * @param nY GPU坐标Y [-1, 1]
          * @param sZ 到摄像机的距离
-         * @param v 世界坐标（输出）
-         * @return 世界坐标
+         * @param v 摄像机空间坐标（输出）
+         * @return 摄像机空间坐标
          */
-        unproject(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
+        unprojectWithDepth(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
         /**
          * 投影矩阵失效
          */
@@ -9707,7 +9724,7 @@ declare namespace feng3d {
          * @param v 场景坐标（输出）
          * @return 场景坐标
          */
-        unproject(nX: number, nY: number, sZ: number, v?: Vector3): any;
+        unprojectWithDepth(nX: number, nY: number, sZ: number, v?: Vector3): any;
     }
 }
 declare namespace feng3d {
@@ -9726,7 +9743,7 @@ declare namespace feng3d {
          * @param v 场景坐标（输出）
          * @return 场景坐标
          */
-        unproject(nX: number, nY: number, sZ: number, v: Vector3): Vector3;
+        unprojectWithDepth(nX: number, nY: number, sZ: number, v: Vector3): Vector3;
     }
 }
 declare namespace feng3d {
@@ -9750,13 +9767,20 @@ declare namespace feng3d {
          */
         focalLength: number;
         /**
-         * 世界坐标投影到GPU坐标
-         * @param point3d 世界坐标
-         * @param v GPU坐标 (x: [-1, 1], y: [-1, 1])
-         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
+         * 摄像机空间坐标投影到GPU空间坐标
+         * @param point3d 摄像机空间坐标
+         * @param v GPU空间坐标
+         * @return GPU空间坐标
          */
         project(point3d: Vector3, v?: Vector3): Vector3;
-        unproject(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
+        /**
+         * GPU空间坐标投影到摄像机空间坐标
+         * @param point3d GPU空间坐标
+         * @param v 摄像机空间坐标（输出）
+         * @returns 摄像机空间坐标
+         */
+        unproject(point3d: Vector3, v?: Vector3): Vector3;
+        unprojectWithDepth(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
         protected updateMatrix(): void;
     }
 }

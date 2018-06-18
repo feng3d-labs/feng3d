@@ -181,7 +181,7 @@ namespace feng3d
         unproject(sX: number, sY: number, sZ: number, v?: Vector3): Vector3
         {
             var gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(sX, sY));
-            return this.transform.localToWorldMatrix.transformVector(this.lens.unproject(gpuPos.x, gpuPos.y, sZ, v), v);
+            return this.transform.localToWorldMatrix.transformVector(this.lens.unprojectWithDepth(gpuPos.x, gpuPos.y, sZ, v), v);
         }
 
         /**
