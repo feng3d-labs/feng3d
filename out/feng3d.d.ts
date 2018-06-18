@@ -9726,21 +9726,38 @@ declare namespace feng3d {
      */
     class OrthographicLens extends LensBase {
         isOrthographicCamera: boolean;
+        /**
+         * 可视空间左边界
+         */
         left: number;
+        /**
+         * 可视空间右边界
+         */
         right: number;
+        /**
+         * 可视空间上边界
+         */
         top: number;
+        /**
+         * 可视空间下边界
+         */
         bottom: number;
+        /**
+         * 视窗缩放比例(width/height)，在渲染器中设置
+         */
+        aspectRatio: number;
+        /**
+         * 构建正射投影镜头
+         * @param left 可视空间左边界
+         * @param right 可视空间右边界
+         * @param top 可视空间上边界
+         * @param bottom 可视空间下边界
+         * @param near 可视空间近边界
+         * @param far 可视空间远边界
+         */
         constructor(left: number, right: number, top: number, bottom: number, near?: number, far?: number);
         protected updateMatrix(): void;
-        /**
-         * 屏幕坐标投影到摄像机空间坐标
-         * @param nX 屏幕坐标X -1（左） -> 1（右）
-         * @param nY 屏幕坐标Y -1（上） -> 1（下）
-         * @param sZ 到屏幕的距离
-         * @param v 场景坐标（输出）
-         * @return 场景坐标
-         */
-        unprojectWithDepth(nX: number, nY: number, sZ: number, v?: Vector3): any;
+        private aspectRatioChanged();
     }
 }
 declare namespace feng3d {
@@ -9772,6 +9789,10 @@ declare namespace feng3d {
          * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
          */
         fov: number;
+        /**
+         * 视窗缩放比例(width/height)，在渲染器中设置
+         */
+        aspectRatio: number;
         /**
          * 创建一个透视摄像机镜头
          * @param fov 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]

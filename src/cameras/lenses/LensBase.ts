@@ -49,9 +49,6 @@ namespace feng3d
 		/**
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
-		@serialize
-		@oav()
-		@watch("invalidateMatrix")
 		aspectRatio: number;
 
 		//

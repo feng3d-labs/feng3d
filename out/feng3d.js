@@ -17787,11 +17787,6 @@ var feng3d;
             feng3d.oav(),
             feng3d.watch("invalidateMatrix")
         ], LensBase.prototype, "far", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateMatrix")
-        ], LensBase.prototype, "aspectRatio", void 0);
         return LensBase;
     }(feng3d.EventDispatcher));
     feng3d.LensBase = LensBase;
@@ -17803,6 +17798,15 @@ var feng3d;
      */
     var OrthographicLens = /** @class */ (function (_super) {
         __extends(OrthographicLens, _super);
+        /**
+         * 构建正射投影镜头
+         * @param left 可视空间左边界
+         * @param right 可视空间右边界
+         * @param top 可视空间上边界
+         * @param bottom 可视空间下边界
+         * @param near 可视空间近边界
+         * @param far 可视空间远边界
+         */
         function OrthographicLens(left, right, top, bottom, near, far) {
             if (near === void 0) { near = 0.1; }
             if (far === void 0) { far = 2000; }
@@ -17817,20 +17821,40 @@ var feng3d;
             return _this;
         }
         OrthographicLens.prototype.updateMatrix = function () {
-            var matrix = this._matrix = new feng3d.Matrix4x4();
-            this._matrix = matrix.setOrtho(this.left, this.right, this.top, this.bottom, this.near, this.far);
+            this._matrix.setOrtho(this.left, this.right, this.top, this.bottom, this.near, this.far);
         };
-        /**
-         * 屏幕坐标投影到摄像机空间坐标
-         * @param nX 屏幕坐标X -1（左） -> 1（右）
-         * @param nY 屏幕坐标Y -1（上） -> 1（下）
-         * @param sZ 到屏幕的距离
-         * @param v 场景坐标（输出）
-         * @return 场景坐标
-         */
-        OrthographicLens.prototype.unprojectWithDepth = function (nX, nY, sZ, v) {
-            return null;
+        OrthographicLens.prototype.aspectRatioChanged = function () {
+            var h = Math.abs(this.top - this.bottom);
+            var center = (this.left + this.right) / 2;
+            var w = h * this.aspectRatio;
+            this.left = center + 0.5 * w * (this.left - center) / Math.abs(this.left - center);
+            this.right = center + 0.5 * w * (this.right - center) / Math.abs(this.right - center);
         };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateMatrix")
+        ], OrthographicLens.prototype, "left", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateMatrix")
+        ], OrthographicLens.prototype, "right", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateMatrix")
+        ], OrthographicLens.prototype, "top", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateMatrix")
+        ], OrthographicLens.prototype, "bottom", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("aspectRatioChanged")
+        ], OrthographicLens.prototype, "aspectRatio", void 0);
         return OrthographicLens;
     }(feng3d.LensBase));
     feng3d.OrthographicLens = OrthographicLens;
@@ -17949,6 +17973,11 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav()
         ], PerspectiveLens.prototype, "fov", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav(),
+            feng3d.watch("invalidateMatrix")
+        ], PerspectiveLens.prototype, "aspectRatio", void 0);
         return PerspectiveLens;
     }(feng3d.LensBase));
     feng3d.PerspectiveLens = PerspectiveLens;
