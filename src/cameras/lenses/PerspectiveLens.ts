@@ -83,20 +83,6 @@ namespace feng3d
             return v;
         }
 
-        /**
-         * 指定深度逆投影
-         * 
-         * 
-         * @param nX 
-         * @param nY 
-         * @param sZ 
-         * @param v 
-         */
-        unprojectWithDepth(nX: number, nY: number, sZ: number, v = new Vector3()): Vector3
-        {
-            return this.unprojectRay(nX, nY).getPointWithZ(sZ, v);
-        }
-
         protected updateMatrix()
         {
             this._matrix.setPerspectiveFromFOV(this.fov, this.aspectRatio, this.near, this.far);

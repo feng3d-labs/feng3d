@@ -9802,16 +9802,6 @@ declare namespace feng3d {
          * @returns 摄像机空间坐标
          */
         unproject(point3d: Vector3, v?: Vector3): Vector3;
-        /**
-         * 指定深度逆投影
-         *
-         *
-         * @param nX
-         * @param nY
-         * @param sZ
-         * @param v
-         */
-        unprojectWithDepth(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
         protected updateMatrix(): void;
     }
 }

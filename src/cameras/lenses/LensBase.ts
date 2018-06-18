@@ -156,15 +156,7 @@ namespace feng3d
 		 */
 		unprojectWithDepth(nX: number, nY: number, sZ: number, v = new Vector3())
 		{
-			// 通过投影(0, 0, sZ)获取投影后的GPU空间坐标z值
-			var v0 = this.matrix.transformVector4(new Vector4(0, 0, sZ, 1));
-			// 初始化真实GPU空间坐标
-			var v1 = new Vector4(nX, nY, v0.z, 1);
-			// 计算逆投影
-			var v2 = this.inverseMatrix.transformVector4(v1);
-
-			v2.toVector3(v);
-			return v;
+			return this.unprojectRay(nX, nY).getPointWithZ(sZ, v);
 		}
 
 		/**

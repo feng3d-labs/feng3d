@@ -111,5 +111,28 @@ namespace feng3d
                 assert.ok(FMath.equals(y, pp.y));
             }
         });
+
+        QUnit.test("unprojectWithDepth", (assert) =>
+        {
+            var fov = Math.random() * 360;
+            var aspect = Math.random();
+            var near = Math.random();
+            var far = Math.random();
+            var perspectiveLens = new PerspectiveLens(fov, aspect, near, far);
+
+            var x = Math.random();
+            var y = Math.random();
+
+            for (let i = 0; i < NUM; i++)
+            {
+                var sZ = FMath.lerp(near, far, Math.random());
+                var p = perspectiveLens.unprojectWithDepth(x, y, sZ);
+                assert.ok(FMath.equals(sZ, p.z));
+
+                var pp = perspectiveLens.project(p);
+                assert.ok(FMath.equals(x, pp.x));
+                assert.ok(FMath.equals(y, pp.y));
+            }
+        });
     });
 }

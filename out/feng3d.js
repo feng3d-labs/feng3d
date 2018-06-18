@@ -17764,14 +17764,7 @@ var feng3d;
          */
         LensBase.prototype.unprojectWithDepth = function (nX, nY, sZ, v) {
             if (v === void 0) { v = new feng3d.Vector3(); }
-            // 通过投影(0, 0, sZ)获取投影后的GPU空间坐标z值
-            var v0 = this.matrix.transformVector4(new feng3d.Vector4(0, 0, sZ, 1));
-            // 初始化真实GPU空间坐标
-            var v1 = new feng3d.Vector4(nX, nY, v0.z, 1);
-            // 计算逆投影
-            var v2 = this.inverseMatrix.transformVector4(v1);
-            v2.toVector3(v);
-            return v;
+            return this.unprojectRay(nX, nY).getPointWithZ(sZ, v);
         };
         /**
          * 投影矩阵失效
@@ -17944,19 +17937,6 @@ var feng3d;
             // 输出3维坐标
             v44.toVector3(v);
             return v;
-        };
-        /**
-         * 指定深度逆投影
-         *
-         *
-         * @param nX
-         * @param nY
-         * @param sZ
-         * @param v
-         */
-        PerspectiveLens.prototype.unprojectWithDepth = function (nX, nY, sZ, v) {
-            if (v === void 0) { v = new feng3d.Vector3(); }
-            return this.unprojectRay(nX, nY).getPointWithZ(sZ, v);
         };
         PerspectiveLens.prototype.updateMatrix = function () {
             this._matrix.setPerspectiveFromFOV(this.fov, this.aspectRatio, this.near, this.far);
