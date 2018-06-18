@@ -154,8 +154,15 @@ namespace feng3d
         {
             var v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
 
+            // var w = this._viewRect.width;
+            // var h = this._viewRect.height;
+            // var mat = new Matrix(2 / w, 0, 0, -2 / h, -1, 1);
+            // mat.invert();
+            // var p = mat.transformPoint(new Vector2(v.x,v.y));
+
             v.x = (v.x + 1.0) * this._viewRect.width / 2.0;
             v.y = (1.0 - v.y) * this._viewRect.height / 2.0;
+
 
             return v;
         }
@@ -185,6 +192,12 @@ namespace feng3d
             gpuPos.x = (screenPos.x * 2 - this._viewRect.width) / this._viewRect.width;
             // 屏幕坐标与gpu中使用的坐标Y轴方向相反
             gpuPos.y = - (screenPos.y * 2 - this._viewRect.height) / this._viewRect.height;
+
+            // var w = this._viewRect.width;
+            // var h = this._viewRect.height;
+            // var mat = new Matrix(2 / w, 0, 0, -2 / h, -1, 1);
+            // var p = mat.transformPoint(screenPos);
+
             return gpuPos;
         }
 
