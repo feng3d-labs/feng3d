@@ -2561,13 +2561,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface Vector3Raw {
-        __class__?: "feng3d.Vector3";
-        x?: number;
-        y?: number;
-        z?: number;
-        w?: number;
-    }
     /**
      * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
      * @author feng 2016-3-21
@@ -4925,12 +4918,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface Color3Raw {
-        __class__?: "feng3d.Color3";
-        b?: number;
-        g?: number;
-        r?: number;
-    }
     /**
      * 颜色
      * @author feng 2016-09-24
@@ -5142,13 +5129,6 @@ declare namespace feng3d {
     };
 }
 declare namespace feng3d {
-    interface Color4Raw {
-        __class__?: "feng3d.Color4";
-        a?: number;
-        b?: number;
-        g?: number;
-        r?: number;
-    }
     /**
      * 颜色（包含透明度）
      * @author feng 2016-09-24
@@ -10634,24 +10614,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface LightRaw {
-        /**
-         * 灯光类型
-         */
-        lightType?: LightType;
-        /**
-         * 颜色
-         */
-        color?: Color3 | Color3Raw;
-        /**
-         * 光照强度
-         */
-        intensity?: number;
-        /**
-         * 是否生成阴影（未实现）
-         */
-        castsShadows?: boolean;
-    }
     /**
      * 灯光
      * @author feng 2016-12-12
@@ -10679,12 +10641,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface ComponentRawMap {
-        DirectionalLight: DirectionalLightRaw;
-    }
-    interface DirectionalLightRaw extends LightRaw {
-        __class__?: "feng3d.DirectionalLight";
-    }
     /**
      * 方向光源
      * @author feng 2016-12-13
