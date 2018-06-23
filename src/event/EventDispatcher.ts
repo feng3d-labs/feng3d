@@ -39,6 +39,11 @@ namespace feng3d
          * 是否停止冒泡
          */
         isStopBubbles?: boolean
+
+        /**
+         * 事件经过的对象列表，事件路径。
+         */
+        targets?: any[];
     }
 
     export interface IEventDispatcher<T>
@@ -80,6 +85,10 @@ namespace feng3d
          */
         dispatchEvent(event: Event<any>)
         {
+            if (event.targets.indexOf(this) != -1)
+                return;
+            event.targets.push(this);
+
             //设置目标
             event.target || (event.target = this);
             try
@@ -125,7 +134,7 @@ namespace feng3d
          */
         dispatch(type: string, data?: any, bubbles = false)
         {
-            var event: Event<any> = { type: type, data: data, bubbles: bubbles };
+            var event: Event<any> = { type: type, data: data, bubbles: bubbles, targets: [] };
             this.dispatchEvent(event);
         }
 

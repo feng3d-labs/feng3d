@@ -1552,6 +1552,9 @@ var feng3d;
          * @param event   事件对象
          */
         EventDispatcher.prototype.dispatchEvent = function (event) {
+            if (event.targets.indexOf(this) != -1)
+                return;
+            event.targets.push(this);
             //设置目标
             event.target || (event.target = this);
             try {
@@ -1590,7 +1593,7 @@ var feng3d;
          */
         EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
             if (bubbles === void 0) { bubbles = false; }
-            var event = { type: type, data: data, bubbles: bubbles };
+            var event = { type: type, data: data, bubbles: bubbles, targets: [] };
             this.dispatchEvent(event);
         };
         /**

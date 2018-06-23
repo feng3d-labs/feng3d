@@ -834,6 +834,10 @@ declare namespace feng3d {
          * 是否停止冒泡
          */
         isStopBubbles?: boolean;
+        /**
+         * 事件经过的对象列表，事件路径。
+         */
+        targets?: any[];
     }
     interface IEventDispatcher<T> {
         once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
