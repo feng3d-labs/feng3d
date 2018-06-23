@@ -18,11 +18,11 @@ namespace feng3d
         /**
          * 数据是否变脏
          */
-        isDirty = true;
+        isInvalid = true;
 
         invalidate()
         {
-            this.isDirty = true;
+            this.isInvalid = true;
         }
 
         /**
@@ -36,10 +36,10 @@ namespace feng3d
 
         setRenderState(particleSystem: ParticleSystem, renderAtomic: RenderAtomic)
         {
-            if (this.isDirty)
+            if (this.isInvalid)
             {
                 particleSystem.invalidate();
-                this.isDirty = false;
+                this.isInvalid = false;
             }
         }
     }

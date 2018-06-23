@@ -60,7 +60,7 @@ namespace feng3d
 		private _inverseMatrix = new Matrix4x4();
 		//
 		protected _viewBox = new Box();
-		private _viewBoxDirty = true;
+		private _viewBoxInvalid = true;
 
 		/**
 		 * 创建一个摄像机镜头
@@ -107,10 +107,10 @@ namespace feng3d
 		 */
 		get viewBox()
 		{
-			if (this._viewBoxDirty)
+			if (this._viewBoxInvalid)
 			{
 				this.updateViewBox();
-				this._viewBoxDirty = false;
+				this._viewBoxInvalid = false;
 			}
 			return this._viewBox;
 		}
@@ -184,7 +184,7 @@ namespace feng3d
 		{
 			this._matrixInvalid = true;
 			this._invertMatrixInvalid = true;
-			this._viewBoxDirty = true;
+			this._viewBoxInvalid = true;
 			this.dispatch("matrixChanged", this);
 		}
 

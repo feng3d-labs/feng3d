@@ -25,11 +25,11 @@ namespace feng3d
     {
         private _lens: LensBase;
         private _viewProjection: Matrix4x4 = new Matrix4x4();
-        private _viewProjectionDirty = true;
+        private _viewProjectionInvalid = true;
         private _frustum: Frustum;
-        private _frustumDirty = true;
+        private _frustumInvalid = true;
         private _viewBox = new Box();
-        private _viewBoxDirty = true;
+        private _viewBoxInvalid = true;
         private _viewRect: Rectangle = new Rectangle(0, 0, 1, 1);
 
         /**
@@ -55,8 +55,8 @@ namespace feng3d
             this.lens = this.lens || new PerspectiveLens();
 
             this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
-            this._viewProjectionDirty = true;
-            this._frustumDirty = true;
+            this._viewProjectionInvalid = true;
+            this._frustumInvalid = true;
 
             this._frustum = new Frustum();
         }
@@ -66,8 +66,8 @@ namespace feng3d
 		 */
         private onLensMatrixChanged(event: Event<any>)
         {
-            this._viewProjectionDirty = true;
-            this._frustumDirty = true;
+            this._viewProjectionInvalid = true;
+            this._frustumInvalid = true;
 
             this.dispatch(<any>event.type, event.data);
         }
@@ -106,13 +106,13 @@ namespace feng3d
 		 */
         get viewProjection(): Matrix4x4
         {
-            if (this._viewProjectionDirty)
+            if (this._viewProjectionInvalid)
             {
                 //场景空间转摄像机空间
                 this._viewProjection.copyFrom(this.transform.worldToLocalMatrix);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
                 this._viewProjection.append(this._lens.matrix);
-                this._viewProjectionDirty = false;
+                this._viewProjectionInvalid = false;
             }
 
             return this._viewProjection;
@@ -123,8 +123,8 @@ namespace feng3d
          */
         protected onScenetransformChanged()
         {
-            this._viewProjectionDirty = true;
-            this._frustumDirty = true;
+            this._viewProjectionInvalid = true;
+            this._frustumInvalid = true;
         }
 
         /**
@@ -222,10 +222,10 @@ namespace feng3d
 		 */
         get frustum()
         {
-            if (this._frustumDirty)
+            if (this._frustumInvalid)
             {
                 this._frustum.fromMatrix3D(this.viewProjection);
-                this._frustumDirty = false;
+                this._frustumInvalid = false;
             }
             return this._frustum;
         }
@@ -235,10 +235,10 @@ namespace feng3d
          */
         get viewBox()
         {
-            if (this._viewBoxDirty)
+            if (this._viewBoxInvalid)
             {
                 this.updateViewBox();
-                this._viewBoxDirty = false;
+                this._viewBoxInvalid = false;
             }
             return this._viewBox;
         }

@@ -9641,7 +9641,7 @@ declare namespace feng3d {
         private _invertMatrixInvalid;
         private _inverseMatrix;
         protected _viewBox: Box;
-        private _viewBoxDirty;
+        private _viewBoxInvalid;
         /**
          * 创建一个摄像机镜头
          */
@@ -9819,11 +9819,11 @@ declare namespace feng3d {
     class Camera extends Component {
         private _lens;
         private _viewProjection;
-        private _viewProjectionDirty;
+        private _viewProjectionInvalid;
         private _frustum;
-        private _frustumDirty;
+        private _frustumInvalid;
         private _viewBox;
-        private _viewBoxDirty;
+        private _viewBoxInvalid;
         private _viewRect;
         /**
          * 视窗矩形
@@ -11343,7 +11343,7 @@ declare namespace feng3d {
         /**
          * 数据是否变脏
          */
-        isDirty: boolean;
+        isInvalid: boolean;
         invalidate(): void;
         /**
          * 创建粒子属性
@@ -11370,7 +11370,7 @@ declare namespace feng3d {
             time: number;
             num: number;
         }[];
-        isDirty: boolean;
+        isInvalid: boolean;
         private _numParticles;
         private _birthTimes;
         /**
@@ -11515,7 +11515,7 @@ declare namespace feng3d {
          * 属性数据列表
          */
         private _attributes;
-        private _isDirty;
+        private _isInvalid;
         readonly single: boolean;
         init(gameObject: GameObject): void;
         update(interval: number): void;

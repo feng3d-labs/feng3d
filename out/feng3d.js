@@ -17677,7 +17677,7 @@ var feng3d;
             _this._inverseMatrix = new feng3d.Matrix4x4();
             //
             _this._viewBox = new feng3d.Box();
-            _this._viewBoxDirty = true;
+            _this._viewBoxInvalid = true;
             _this.aspect = aspectRatio;
             _this.near = near;
             _this.far = far;
@@ -17719,9 +17719,9 @@ var feng3d;
              * 一个包含可视空间的最小包围盒
              */
             get: function () {
-                if (this._viewBoxDirty) {
+                if (this._viewBoxInvalid) {
                     this.updateViewBox();
-                    this._viewBoxDirty = false;
+                    this._viewBoxInvalid = false;
                 }
                 return this._viewBox;
             },
@@ -17792,7 +17792,7 @@ var feng3d;
         LensBase.prototype.invalidate = function () {
             this._matrixInvalid = true;
             this._invertMatrixInvalid = true;
-            this._viewBoxDirty = true;
+            this._viewBoxInvalid = true;
             this.dispatch("matrixChanged", this);
         };
         __decorate([
@@ -18017,10 +18017,10 @@ var feng3d;
         function Camera() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this._viewProjection = new feng3d.Matrix4x4();
-            _this._viewProjectionDirty = true;
-            _this._frustumDirty = true;
+            _this._viewProjectionInvalid = true;
+            _this._frustumInvalid = true;
             _this._viewBox = new feng3d.Box();
-            _this._viewBoxDirty = true;
+            _this._viewBoxInvalid = true;
             _this._viewRect = new feng3d.Rectangle(0, 0, 1, 1);
             return _this;
         }
@@ -18049,16 +18049,16 @@ var feng3d;
             _super.prototype.init.call(this, gameObject);
             this.lens = this.lens || new feng3d.PerspectiveLens();
             this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
-            this._viewProjectionDirty = true;
-            this._frustumDirty = true;
+            this._viewProjectionInvalid = true;
+            this._frustumInvalid = true;
             this._frustum = new feng3d.Frustum();
         };
         /**
          * 处理镜头变化事件
          */
         Camera.prototype.onLensMatrixChanged = function (event) {
-            this._viewProjectionDirty = true;
-            this._frustumDirty = true;
+            this._viewProjectionInvalid = true;
+            this._frustumInvalid = true;
             this.dispatch(event.type, event.data);
         };
         Object.defineProperty(Camera.prototype, "lens", {
@@ -18088,12 +18088,12 @@ var feng3d;
              * 场景投影矩阵，世界空间转投影空间
              */
             get: function () {
-                if (this._viewProjectionDirty) {
+                if (this._viewProjectionInvalid) {
                     //场景空间转摄像机空间
                     this._viewProjection.copyFrom(this.transform.worldToLocalMatrix);
                     //+摄像机空间转投影空间 = 场景空间转投影空间
                     this._viewProjection.append(this._lens.matrix);
-                    this._viewProjectionDirty = false;
+                    this._viewProjectionInvalid = false;
                 }
                 return this._viewProjection;
             },
@@ -18104,8 +18104,8 @@ var feng3d;
          * 处理场景变换改变事件
          */
         Camera.prototype.onScenetransformChanged = function () {
-            this._viewProjectionDirty = true;
-            this._frustumDirty = true;
+            this._viewProjectionInvalid = true;
+            this._frustumInvalid = true;
         };
         /**
          * 获取鼠标射线（与鼠标重叠的摄像机射线）
@@ -18186,9 +18186,9 @@ var feng3d;
              * 视锥体
              */
             get: function () {
-                if (this._frustumDirty) {
+                if (this._frustumInvalid) {
                     this._frustum.fromMatrix3D(this.viewProjection);
-                    this._frustumDirty = false;
+                    this._frustumInvalid = false;
                 }
                 return this._frustum;
             },
@@ -18200,9 +18200,9 @@ var feng3d;
              * 可视包围盒
              */
             get: function () {
-                if (this._viewBoxDirty) {
+                if (this._viewBoxInvalid) {
                     this.updateViewBox();
-                    this._viewBoxDirty = false;
+                    this._viewBoxInvalid = false;
                 }
                 return this._viewBox;
             },
@@ -22259,10 +22259,10 @@ var feng3d;
             /**
              * 数据是否变脏
              */
-            this.isDirty = true;
+            this.isInvalid = true;
         }
         ParticleComponent.prototype.invalidate = function () {
-            this.isDirty = true;
+            this.isInvalid = true;
         };
         /**
          * 创建粒子属性
@@ -22271,9 +22271,9 @@ var feng3d;
         ParticleComponent.prototype.generateParticle = function (particle, particleSystem) {
         };
         ParticleComponent.prototype.setRenderState = function (particleSystem, renderAtomic) {
-            if (this.isDirty) {
+            if (this.isInvalid) {
                 particleSystem.invalidate();
-                this.isDirty = false;
+                this.isInvalid = false;
             }
         };
         __decorate([
@@ -22303,7 +22303,7 @@ var feng3d;
              * 爆发，在time时刻额外喷射particles粒子
              */
             _this.bursts = [];
-            _this.isDirty = true;
+            _this.isInvalid = true;
             /**
              * 上次发射时间
              */
@@ -22350,7 +22350,7 @@ var feng3d;
          */
         ParticleEmission.prototype.generateParticle = function (particle, particleSystem) {
             if (this._numParticles != particleSystem.numParticles)
-                this.isDirty = true;
+                this.isInvalid = true;
             this._numParticles = particleSystem.numParticles;
             particle.birthTime = this.getBirthTimeArray(particleSystem.numParticles)[particle.index];
         };
@@ -22358,8 +22358,8 @@ var feng3d;
          * 获取出生时间数组
          */
         ParticleEmission.prototype.getBirthTimeArray = function (numParticles) {
-            if (this.isDirty) {
-                this.isDirty = false;
+            if (this.isInvalid) {
+                this.isInvalid = false;
                 var birthTimes = [];
                 var bursts = this.bursts.concat();
                 //按时间降序排列
@@ -22591,7 +22591,7 @@ var feng3d;
              * 属性数据列表
              */
             _this._attributes = {};
-            _this._isDirty = true;
+            _this._isInvalid = true;
             return _this;
         }
         Object.defineProperty(ParticleSystem.prototype, "single", {
@@ -22609,7 +22609,7 @@ var feng3d;
             this.particleEmission.emit(this.time, this.deathParticles, this.survivalParticles, this.changedParticles);
         };
         ParticleSystem.prototype.invalidate = function () {
-            this._isDirty = true;
+            this._isInvalid = true;
         };
         ParticleSystem.prototype.numParticlesChanged = function () {
             this.particles = [];
@@ -22688,9 +22688,9 @@ var feng3d;
             this.components.forEach(function (element) {
                 element.setRenderState(_this, renderAtomic);
             });
-            if (this._isDirty) {
+            if (this._isInvalid) {
                 this.generateParticles();
-                this._isDirty = false;
+                this._isInvalid = false;
             }
             renderAtomic.instanceCount = function () { return _this.numParticles; };
             //

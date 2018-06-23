@@ -107,7 +107,7 @@ namespace feng3d
          * 属性数据列表
          */
         private _attributes: { [name: string]: number[] } = {};
-        private _isDirty = true;
+        private _isInvalid = true;
 
         get single() { return true; }
 
@@ -128,7 +128,7 @@ namespace feng3d
         @oav({ componentParam: { tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" } })
         public invalidate()
         {
-            this._isDirty = true;
+            this._isInvalid = true;
         }
 
         private numParticlesChanged()
@@ -223,10 +223,10 @@ namespace feng3d
                 element.setRenderState(this, renderAtomic);
             });
 
-            if (this._isDirty)
+            if (this._isInvalid)
             {
                 this.generateParticles();
-                this._isDirty = false;
+                this._isInvalid = false;
             }
 
             renderAtomic.instanceCount = () => this.numParticles;

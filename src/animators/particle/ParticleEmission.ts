@@ -20,7 +20,7 @@ namespace feng3d
         @serialize
         bursts: { time: number, num: number }[] = [];
 
-        isDirty = true;
+        isInvalid = true;
 
         private _numParticles;
 
@@ -84,7 +84,7 @@ namespace feng3d
         generateParticle(particle: Particle, particleSystem: ParticleSystem)
         {
             if (this._numParticles != particleSystem.numParticles)
-                this.isDirty = true;
+                this.isInvalid = true;
             this._numParticles = particleSystem.numParticles;
 
             particle.birthTime = this.getBirthTimeArray(particleSystem.numParticles)[particle.index];
@@ -95,9 +95,9 @@ namespace feng3d
          */
         private getBirthTimeArray(numParticles)
         {
-            if (this.isDirty)
+            if (this.isInvalid)
             {
-                this.isDirty = false;
+                this.isInvalid = false;
 
                 var birthTimes: number[] = [];
                 var bursts = this.bursts.concat();
