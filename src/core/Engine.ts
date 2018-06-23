@@ -156,7 +156,7 @@ namespace feng3d
             var viewRect = this.viewRect;
 
             this.camera.viewRect = viewRect;
-            this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
+            this.camera.lens.aspect = viewRect.width / viewRect.height;
 
             //鼠标拾取渲染
             this.mouse3DManager.draw(this.scene, this.camera);

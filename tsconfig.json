@@ -166,7 +166,6 @@
         "src/cameras/lenses/CoordinateSystem.ts",
         "src/cameras/lenses/LensBase.ts",
         "src/cameras/lenses/OrthographicLens.ts",
-        "src/cameras/lenses/FreeMatrixLens.ts",
         "src/cameras/lenses/PerspectiveLens.ts",
         "src/cameras/Camera.ts",
         //几何体

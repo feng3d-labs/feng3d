@@ -28,6 +28,8 @@ namespace feng3d
         private _viewProjectionDirty = true;
         private _frustum: Frustum;
         private _frustumDirty = true;
+        private _viewBox = new Box();
+        private _viewBoxDirty = true;
         private _viewRect: Rectangle = new Rectangle(0, 0, 1, 1);
 
         /**
@@ -221,8 +223,33 @@ namespace feng3d
         get frustum()
         {
             if (this._frustumDirty)
+            {
                 this._frustum.fromMatrix3D(this.viewProjection);
+                this._frustumDirty = false;
+            }
             return this._frustum;
+        }
+
+        /**
+         * 可视包围盒
+         */
+        get viewBox()
+        {
+            if (this._viewBoxDirty)
+            {
+                this.updateViewBox();
+                this._viewBoxDirty = false;
+            }
+            return this._viewBox;
+        }
+
+        /**
+         * 更新可视区域顶点
+         */
+        private updateViewBox()
+        {
+            this._viewBox.copy(this.lens.viewBox);
+            this._viewBox.applyMatrix3D(this.transform.localToWorldMatrix);
         }
 
         preRender(renderAtomic: RenderAtomic)

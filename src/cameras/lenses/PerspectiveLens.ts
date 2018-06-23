@@ -10,18 +10,18 @@ namespace feng3d
         /**
 		 * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
 		 */
-        @watch("invalidateMatrix")
+        @watch("invalidate")
         @serialize
         @oav()
         fov: number;
-        
+
 		/**
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
         @serialize
-		@oav()
-		@watch("invalidateMatrix")
-		aspectRatio: number;
+        @oav()
+        @watch("invalidate")
+        aspect: number;
 
 		/**
 		 * 创建一个透视摄像机镜头
@@ -93,7 +93,26 @@ namespace feng3d
 
         protected updateMatrix()
         {
-            this._matrix.setPerspectiveFromFOV(this.fov, this.aspectRatio, this.near, this.far);
+            this._matrix.setPerspectiveFromFOV(this.fov, this.aspect, this.near, this.far);
+        }
+
+        protected updateViewBox()
+        {
+            var fov = this.fov;
+            var aspect = this.aspect;
+            var near = this.near;
+            var far = this.far;
+            var tan = Math.tan(fov * Math.PI / 360);
+
+            this._viewBox.fromPoints([
+                new Vector3(-tan * near * aspect, -tan * near, near),
+                new Vector3(-tan * far * aspect, -tan * far, far),
+                new Vector3(-tan * near * aspect, tan * near, near),
+                new Vector3(-tan * far * aspect, tan * far, far),
+                new Vector3(tan * near * aspect, -tan * near, near),
+                new Vector3(tan * far * aspect, -tan * far, far),
+                new Vector3(tan * near * aspect, tan * near, near),
+                new Vector3(tan * far * aspect, tan * far, far)]);
         }
     }
 }

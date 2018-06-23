@@ -12,7 +12,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-        @watch("invalidateMatrix")
+        @watch("invalidate")
         left: number;
 
         /**
@@ -20,7 +20,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-        @watch("invalidateMatrix")
+        @watch("invalidate")
         right: number;
 
         /**
@@ -28,7 +28,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-        @watch("invalidateMatrix")
+        @watch("invalidate")
         top: number;
 
         /**
@@ -36,7 +36,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-        @watch("invalidateMatrix")
+        @watch("invalidate")
         bottom: number;
 
 		/**
@@ -45,7 +45,7 @@ namespace feng3d
         @serialize
         @oav()
         @watch("aspectRatioChanged")
-        aspectRatio: number;
+        aspect: number;
 
         /**
          * 构建正射投影镜头
@@ -72,11 +72,32 @@ namespace feng3d
             this._matrix.setOrtho(this.left, this.right, this.top, this.bottom, this.near, this.far);
         }
 
+        protected updateViewBox()
+        {
+            var left = this.left;
+            var right = this.right;
+            var top = this.top;
+            var bottom = this.bottom;
+            var near = this.near;
+            var far = this.far;
+
+            this._viewBox.fromPoints([
+                new Vector3(this.left, this.bottom, this.near),
+                new Vector3(this.left, this.bottom, this.far),
+                new Vector3(this.left, this.top, this.near),
+                new Vector3(this.left, this.top, this.far),
+                new Vector3(this.right, this.bottom, this.near),
+                new Vector3(this.right, this.bottom, this.far),
+                new Vector3(this.right, this.top, this.near),
+                new Vector3(this.right, this.top, this.far),
+            ]);
+        }
+
         private aspectRatioChanged()
         {
             var h = Math.abs(this.top - this.bottom);
             var center = (this.left + this.right) / 2;
-            var w = h * this.aspectRatio;
+            var w = h * this.aspect;
             this.left = center + 0.5 * w * (this.left - center) / Math.abs(this.left - center);
             this.right = center + 0.5 * w * (this.right - center) / Math.abs(this.right - center);
         }

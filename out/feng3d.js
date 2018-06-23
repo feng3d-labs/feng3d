@@ -12333,9 +12333,6 @@ var feng3d;
         return shader;
     }
 })(feng3d || (feng3d = {}));
-/**
- * @author mrdoob / http://mrdoob.com/
- */
 var feng3d;
 (function (feng3d) {
     /**
@@ -14013,6 +14010,7 @@ var feng3d;
             var frameBufferObject = new feng3d.FrameBufferObject();
             frameBufferObject.init(gl);
             frameBufferObject.active(gl);
+            light.shadow.updateByCamera(camera);
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
             unblenditems.forEach(function (element) {
                 light;
@@ -15986,7 +15984,7 @@ var feng3d;
             this.canvas.height = this.canvas.clientHeight;
             var viewRect = this.viewRect;
             this.camera.viewRect = viewRect;
-            this.camera.lens.aspectRatio = viewRect.width / viewRect.height;
+            this.camera.lens.aspect = viewRect.width / viewRect.height;
             //鼠标拾取渲染
             this.mouse3DManager.draw(this.scene, this.camera);
             //绘制阴影图
@@ -17677,7 +17675,10 @@ var feng3d;
             _this._matrixInvalid = true;
             _this._invertMatrixInvalid = true;
             _this._inverseMatrix = new feng3d.Matrix4x4();
-            _this.aspectRatio = aspectRatio;
+            //
+            _this._viewBox = new feng3d.Box();
+            _this._viewBoxDirty = true;
+            _this.aspect = aspectRatio;
             _this.near = near;
             _this.far = far;
             return _this;
@@ -17707,6 +17708,22 @@ var feng3d;
                     this._matrixInvalid = false;
                 }
                 return this._inverseMatrix;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(LensBase.prototype, "viewBox", {
+            /**
+             * 可视包围盒
+             *
+             * 一个包含可视空间的最小包围盒
+             */
+            get: function () {
+                if (this._viewBoxDirty) {
+                    this.updateViewBox();
+                    this._viewBoxDirty = false;
+                }
+                return this._viewBox;
             },
             enumerable: true,
             configurable: true
@@ -17772,20 +17789,21 @@ var feng3d;
         /**
          * 投影矩阵失效
          */
-        LensBase.prototype.invalidateMatrix = function () {
+        LensBase.prototype.invalidate = function () {
             this._matrixInvalid = true;
             this._invertMatrixInvalid = true;
+            this._viewBoxDirty = true;
             this.dispatch("matrixChanged", this);
         };
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
-            feng3d.watch("invalidateMatrix")
+            feng3d.watch("invalidate")
         ], LensBase.prototype, "near", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
-            feng3d.watch("invalidateMatrix")
+            feng3d.watch("invalidate")
         ], LensBase.prototype, "far", void 0);
         return LensBase;
     }(feng3d.EventDispatcher));
@@ -17823,70 +17841,59 @@ var feng3d;
         OrthographicLens.prototype.updateMatrix = function () {
             this._matrix.setOrtho(this.left, this.right, this.top, this.bottom, this.near, this.far);
         };
+        OrthographicLens.prototype.updateViewBox = function () {
+            var left = this.left;
+            var right = this.right;
+            var top = this.top;
+            var bottom = this.bottom;
+            var near = this.near;
+            var far = this.far;
+            this._viewBox.fromPoints([
+                new feng3d.Vector3(this.left, this.bottom, this.near),
+                new feng3d.Vector3(this.left, this.bottom, this.far),
+                new feng3d.Vector3(this.left, this.top, this.near),
+                new feng3d.Vector3(this.left, this.top, this.far),
+                new feng3d.Vector3(this.right, this.bottom, this.near),
+                new feng3d.Vector3(this.right, this.bottom, this.far),
+                new feng3d.Vector3(this.right, this.top, this.near),
+                new feng3d.Vector3(this.right, this.top, this.far),
+            ]);
+        };
         OrthographicLens.prototype.aspectRatioChanged = function () {
             var h = Math.abs(this.top - this.bottom);
             var center = (this.left + this.right) / 2;
-            var w = h * this.aspectRatio;
+            var w = h * this.aspect;
             this.left = center + 0.5 * w * (this.left - center) / Math.abs(this.left - center);
             this.right = center + 0.5 * w * (this.right - center) / Math.abs(this.right - center);
         };
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
-            feng3d.watch("invalidateMatrix")
+            feng3d.watch("invalidate")
         ], OrthographicLens.prototype, "left", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
-            feng3d.watch("invalidateMatrix")
+            feng3d.watch("invalidate")
         ], OrthographicLens.prototype, "right", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
-            feng3d.watch("invalidateMatrix")
+            feng3d.watch("invalidate")
         ], OrthographicLens.prototype, "top", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
-            feng3d.watch("invalidateMatrix")
+            feng3d.watch("invalidate")
         ], OrthographicLens.prototype, "bottom", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
             feng3d.watch("aspectRatioChanged")
-        ], OrthographicLens.prototype, "aspectRatio", void 0);
+        ], OrthographicLens.prototype, "aspect", void 0);
         return OrthographicLens;
     }(feng3d.LensBase));
     feng3d.OrthographicLens = OrthographicLens;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     *
-     * @author feng 2015-5-28
-     */
-    var FreeMatrixLens = /** @class */ (function (_super) {
-        __extends(FreeMatrixLens, _super);
-        function FreeMatrixLens() {
-            return _super.call(this) || this;
-        }
-        FreeMatrixLens.prototype.updateMatrix = function () {
-            return new feng3d.Matrix4x4();
-        };
-        /**
-         * 屏幕坐标投影到摄像机空间坐标
-         * @param nX 屏幕坐标X -1（左） -> 1（右）
-         * @param nY 屏幕坐标Y -1（上） -> 1（下）
-         * @param sZ 到屏幕的距离
-         * @param v 场景坐标（输出）
-         * @return 场景坐标
-         */
-        FreeMatrixLens.prototype.unprojectWithDepth = function (nX, nY, sZ, v) {
-            return new feng3d.Vector3();
-        };
-        return FreeMatrixLens;
-    }(feng3d.LensBase));
-    feng3d.FreeMatrixLens = FreeMatrixLens;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -17966,18 +17973,35 @@ var feng3d;
             return v;
         };
         PerspectiveLens.prototype.updateMatrix = function () {
-            this._matrix.setPerspectiveFromFOV(this.fov, this.aspectRatio, this.near, this.far);
+            this._matrix.setPerspectiveFromFOV(this.fov, this.aspect, this.near, this.far);
+        };
+        PerspectiveLens.prototype.updateViewBox = function () {
+            var fov = this.fov;
+            var aspect = this.aspect;
+            var near = this.near;
+            var far = this.far;
+            var tan = Math.tan(fov * Math.PI / 360);
+            this._viewBox.fromPoints([
+                new feng3d.Vector3(-tan * near * aspect, -tan * near, near),
+                new feng3d.Vector3(-tan * far * aspect, -tan * far, far),
+                new feng3d.Vector3(-tan * near * aspect, tan * near, near),
+                new feng3d.Vector3(-tan * far * aspect, tan * far, far),
+                new feng3d.Vector3(tan * near * aspect, -tan * near, near),
+                new feng3d.Vector3(tan * far * aspect, -tan * far, far),
+                new feng3d.Vector3(tan * near * aspect, tan * near, near),
+                new feng3d.Vector3(tan * far * aspect, tan * far, far)
+            ]);
         };
         __decorate([
-            feng3d.watch("invalidateMatrix"),
+            feng3d.watch("invalidate"),
             feng3d.serialize,
             feng3d.oav()
         ], PerspectiveLens.prototype, "fov", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
-            feng3d.watch("invalidateMatrix")
-        ], PerspectiveLens.prototype, "aspectRatio", void 0);
+            feng3d.watch("invalidate")
+        ], PerspectiveLens.prototype, "aspect", void 0);
         return PerspectiveLens;
     }(feng3d.LensBase));
     feng3d.PerspectiveLens = PerspectiveLens;
@@ -17995,6 +18019,8 @@ var feng3d;
             _this._viewProjection = new feng3d.Matrix4x4();
             _this._viewProjectionDirty = true;
             _this._frustumDirty = true;
+            _this._viewBox = new feng3d.Box();
+            _this._viewBoxDirty = true;
             _this._viewRect = new feng3d.Rectangle(0, 0, 1, 1);
             return _this;
         }
@@ -18160,13 +18186,36 @@ var feng3d;
              * 视锥体
              */
             get: function () {
-                if (this._frustumDirty)
+                if (this._frustumDirty) {
                     this._frustum.fromMatrix3D(this.viewProjection);
+                    this._frustumDirty = false;
+                }
                 return this._frustum;
             },
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Camera.prototype, "viewBox", {
+            /**
+             * 可视包围盒
+             */
+            get: function () {
+                if (this._viewBoxDirty) {
+                    this.updateViewBox();
+                    this._viewBoxDirty = false;
+                }
+                return this._viewBox;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 更新可视区域顶点
+         */
+        Camera.prototype.updateViewBox = function () {
+            this._viewBox.copy(this.lens.viewBox);
+            this._viewBox.applyMatrix3D(this.transform.localToWorldMatrix);
+        };
         Camera.prototype.preRender = function (renderAtomic) {
             var _this = this;
             //
@@ -20399,9 +20448,10 @@ var feng3d;
     var DirectionalLight = /** @class */ (function (_super) {
         __extends(DirectionalLight, _super);
         function DirectionalLight() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
+            _this.shadow = new feng3d.DirectionalLightShadow();
+            return _this;
         }
-        // shadow = new DirectionalLightShadow();
         /**
          * 构建
          */
@@ -20453,14 +20503,27 @@ var feng3d;
      * 1. https://github.com/mrdoob/three.js/blob/dev/src/lights/LightShadow.js
      */
     var LightShadow = /** @class */ (function () {
-        function LightShadow(camera) {
+        // /**
+        //  * 是否失效
+        //  */
+        // protected invalid = true;
+        function LightShadow() {
             this.bias = 0;
             this.radius = 1;
+            /**
+             * 阴影图尺寸
+             */
             this.mapSize = new feng3d.Vector2(512, 512);
             this.map = null;
             this.matrix = new feng3d.Matrix4x4();
-            this.camera = camera;
+            this.camera = feng3d.GameObject.create("LightShadowCamera").addComponent(feng3d.Camera);
         }
+        LightShadow.prototype.viewCameraChange = function () {
+            // this.invalid = true;
+        };
+        __decorate([
+            feng3d.watch("viewCameraChange")
+        ], LightShadow.prototype, "viewCamera", void 0);
         return LightShadow;
     }());
     feng3d.LightShadow = LightShadow;
@@ -20470,8 +20533,20 @@ var feng3d;
     var DirectionalLightShadow = /** @class */ (function (_super) {
         __extends(DirectionalLightShadow, _super);
         function DirectionalLightShadow() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
+            _this.camera.lens = new feng3d.OrthographicLens(-0.5, 0.5, 0.5, -0.5, 0.05, 500);
+            return _this;
         }
+        /**
+         * 通过主摄像机进行更新
+         * @param viewCamera 主摄像机
+         */
+        DirectionalLightShadow.prototype.updateByCamera = function (viewCamera) {
+            viewCamera;
+        };
+        DirectionalLightShadow.prototype.viewCameraChange = function () {
+            this.viewCamera.viewBox;
+        };
         return DirectionalLightShadow;
     }(feng3d.LightShadow));
     feng3d.DirectionalLightShadow = DirectionalLightShadow;

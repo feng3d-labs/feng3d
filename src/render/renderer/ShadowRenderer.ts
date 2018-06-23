@@ -27,6 +27,8 @@ namespace feng3d
             frameBufferObject.init(gl);
             frameBufferObject.active(gl);
 
+            light.shadow.updateByCamera(camera);
+
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
             unblenditems.forEach(element =>
             {

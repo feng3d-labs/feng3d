@@ -1,6 +1,3 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
 namespace feng3d
 {
 

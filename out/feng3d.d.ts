@@ -7368,9 +7368,6 @@ declare namespace feng3d {
         constructor(gl: GL);
     }
 }
-/**
- * @author mrdoob / http://mrdoob.com/
- */
 declare namespace feng3d {
     /**
      * WEBGL 功能
@@ -9638,11 +9635,13 @@ declare namespace feng3d {
         /**
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
-        aspectRatio: number;
+        aspect: number;
         protected _matrix: Matrix4x4;
         private _matrixInvalid;
         private _invertMatrixInvalid;
         private _inverseMatrix;
+        protected _viewBox: Box;
+        private _viewBoxDirty;
         /**
          * 创建一个摄像机镜头
          */
@@ -9655,6 +9654,12 @@ declare namespace feng3d {
          * 逆矩阵
          */
         readonly inverseMatrix: Matrix4x4;
+        /**
+         * 可视包围盒
+         *
+         * 一个包含可视空间的最小包围盒
+         */
+        readonly viewBox: Box;
         /**
          * 摄像机空间坐标投影到GPU空间坐标
          * @param point3d 摄像机空间坐标
@@ -9693,11 +9698,15 @@ declare namespace feng3d {
         /**
          * 投影矩阵失效
          */
-        protected invalidateMatrix(): void;
+        protected invalidate(): void;
         /**
          * 更新投影矩阵
          */
         protected abstract updateMatrix(): void;
+        /**
+         * 更新最小包围盒
+         */
+        protected abstract updateViewBox(): void;
     }
 }
 declare namespace feng3d {
@@ -9725,7 +9734,7 @@ declare namespace feng3d {
         /**
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
-        aspectRatio: number;
+        aspect: number;
         /**
          * 构建正射投影镜头
          * @param left 可视空间左边界
@@ -9737,26 +9746,8 @@ declare namespace feng3d {
          */
         constructor(left: number, right: number, top: number, bottom: number, near?: number, far?: number);
         protected updateMatrix(): void;
+        protected updateViewBox(): void;
         private aspectRatioChanged();
-    }
-}
-declare namespace feng3d {
-    /**
-     *
-     * @author feng 2015-5-28
-     */
-    class FreeMatrixLens extends LensBase {
-        constructor();
-        protected updateMatrix(): Matrix4x4;
-        /**
-         * 屏幕坐标投影到摄像机空间坐标
-         * @param nX 屏幕坐标X -1（左） -> 1（右）
-         * @param nY 屏幕坐标Y -1（上） -> 1（下）
-         * @param sZ 到屏幕的距离
-         * @param v 场景坐标（输出）
-         * @return 场景坐标
-         */
-        unprojectWithDepth(nX: number, nY: number, sZ: number, v: Vector3): Vector3;
     }
 }
 declare namespace feng3d {
@@ -9772,7 +9763,7 @@ declare namespace feng3d {
         /**
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
-        aspectRatio: number;
+        aspect: number;
         /**
          * 创建一个透视摄像机镜头
          * @param fov 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
@@ -9804,6 +9795,7 @@ declare namespace feng3d {
          */
         unproject(point3d: Vector3, v?: Vector3): Vector3;
         protected updateMatrix(): void;
+        protected updateViewBox(): void;
     }
 }
 declare namespace feng3d {
@@ -9830,6 +9822,8 @@ declare namespace feng3d {
         private _viewProjectionDirty;
         private _frustum;
         private _frustumDirty;
+        private _viewBox;
+        private _viewBoxDirty;
         private _viewRect;
         /**
          * 视窗矩形
@@ -9897,6 +9891,14 @@ declare namespace feng3d {
          * 视锥体
          */
         readonly frustum: Frustum;
+        /**
+         * 可视包围盒
+         */
+        readonly viewBox: Box;
+        /**
+         * 更新可视区域顶点
+         */
+        private updateViewBox();
         preRender(renderAtomic: RenderAtomic): void;
     }
 }
@@ -10646,6 +10648,8 @@ declare namespace feng3d {
      * @author feng 2016-12-13
      */
     class DirectionalLight extends Light {
+        shadow: DirectionalLightShadow;
+        constructor();
         /**
          * 构建
          */
@@ -10676,17 +10680,35 @@ declare namespace feng3d {
      * 1. https://github.com/mrdoob/three.js/blob/dev/src/lights/LightShadow.js
      */
     class LightShadow {
+        /**
+         * 投影摄像机
+         */
         camera: Camera;
         bias: number;
         radius: number;
+        /**
+         * 阴影图尺寸
+         */
         mapSize: Vector2;
         map: any;
         matrix: Matrix4x4;
-        constructor(camera: Camera);
+        /**
+         * 观察摄像机
+         */
+        viewCamera: Camera;
+        constructor();
+        protected viewCameraChange(): void;
     }
 }
 declare namespace feng3d {
     class DirectionalLightShadow extends LightShadow {
+        constructor();
+        /**
+         * 通过主摄像机进行更新
+         * @param viewCamera 主摄像机
+         */
+        updateByCamera(viewCamera: Camera): void;
+        protected viewCameraChange(): void;
     }
 }
 declare namespace feng3d {

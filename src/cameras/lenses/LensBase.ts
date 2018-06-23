@@ -35,7 +35,7 @@ namespace feng3d
 		 */
 		@serialize
 		@oav()
-		@watch("invalidateMatrix")
+		@watch("invalidate")
 		near: number;
 
 		/**
@@ -43,13 +43,13 @@ namespace feng3d
 		 */
 		@serialize
 		@oav()
-		@watch("invalidateMatrix")
+		@watch("invalidate")
 		far: number;
 
 		/**
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
-		aspectRatio: number;
+		aspect: number;
 
 		//
 		protected _matrix = new Matrix4x4();
@@ -58,6 +58,9 @@ namespace feng3d
 		private _matrixInvalid = true;
 		private _invertMatrixInvalid = true;
 		private _inverseMatrix = new Matrix4x4();
+		//
+		protected _viewBox = new Box();
+		private _viewBoxDirty = true;
 
 		/**
 		 * 创建一个摄像机镜头
@@ -65,7 +68,7 @@ namespace feng3d
 		constructor(aspectRatio = 1, near = 0.3, far = 2000)
 		{
 			super();
-			this.aspectRatio = aspectRatio;
+			this.aspect = aspectRatio;
 			this.near = near;
 			this.far = far;
 		}
@@ -95,6 +98,21 @@ namespace feng3d
 				this._matrixInvalid = false;
 			}
 			return this._inverseMatrix;
+		}
+
+		/**
+		 * 可视包围盒
+		 * 
+		 * 一个包含可视空间的最小包围盒
+		 */
+		get viewBox()
+		{
+			if (this._viewBoxDirty)
+			{
+				this.updateViewBox();
+				this._viewBoxDirty = false;
+			}
+			return this._viewBox;
 		}
 
 		/**
@@ -162,10 +180,11 @@ namespace feng3d
 		/**
 		 * 投影矩阵失效
 		 */
-		protected invalidateMatrix()
+		protected invalidate()
 		{
 			this._matrixInvalid = true;
 			this._invertMatrixInvalid = true;
+			this._viewBoxDirty = true;
 			this.dispatch("matrixChanged", this);
 		}
 
@@ -173,5 +192,10 @@ namespace feng3d
 		 * 更新投影矩阵
 		 */
 		protected abstract updateMatrix(): void;
+
+		/**
+		 * 更新最小包围盒
+		 */
+		protected abstract updateViewBox(): void;
 	}
 }
