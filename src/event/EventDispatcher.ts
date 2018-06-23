@@ -39,11 +39,6 @@ namespace feng3d
          * 是否停止冒泡
          */
         isStopBubbles?: boolean
-
-        /**
-         * 事件经过的对象列表，事件路径。
-         */
-        targets?: any[];
     }
 
     export interface IEventDispatcher<T>
@@ -81,28 +76,46 @@ namespace feng3d
 
         /**
          * 派发事件
-         * @param event   事件对象
+         * 
+         * 当事件重复流向一个对象时将不会被处理。
+         * 
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
          */
-        dispatchEvent(event: Event<any>)
+        dispatchEvent(e: Event<any>)
         {
-            if (event.targets.indexOf(this) != -1)
-                return;
-            event.targets.push(this);
+            var targets = e["targets"] = e["targets"] || [];
+            if (targets.indexOf(this) != -1)
+                return false;
+            targets.push(this);
 
+            this.handleEvent(e);
+
+            this.handelEventBubbles(e);
+
+            return true;
+        }
+
+        /**
+         * 处理事件
+         * @param e 事件
+         */
+        protected handleEvent(e: Event<any>)
+        {
             //设置目标
-            event.target || (event.target = this);
+            e.target || (e.target = this);
             try
             {
                 //使用 try 处理 MouseEvent 等无法更改currentTarget的对象
-                event.currentTarget = this;
+                e.currentTarget = this;
             } catch (error) { }
-            var listeners: ListenerVO[] = this[EVENT_KEY] && this[EVENT_KEY][event.type];
+            var listeners: ListenerVO[] = this[EVENT_KEY] && this[EVENT_KEY][e.type];
             if (listeners)
             {
                 //遍历调用事件回调函数
-                for (var i = 0; i < listeners.length && !event.isStop; i++)
+                for (var i = 0; i < listeners.length && !e.isStop; i++)
                 {
-                    listeners[i].listener.call(listeners[i].thisObject, event);
+                    listeners[i].listener.call(listeners[i].thisObject, e);
                 }
                 for (var i = listeners.length - 1; i >= 0; i--)
                 {
@@ -110,18 +123,24 @@ namespace feng3d
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete this[EVENT_KEY][event.type];
+                    delete this[EVENT_KEY][e.type];
             }
+        }
 
-            //事件冒泡(冒泡阶段)
-            if (event.bubbles && !event.isStopBubbles)
+        /**
+         * 处理事件冒泡
+         * @param e 事件
+         */
+        protected handelEventBubbles(e: Event<any>)
+        {
+            if (e.bubbles && !e.isStopBubbles)
             {
                 var bubbleTargets = getBubbleTargets(this);
                 for (var i = 0, n = bubbleTargets.length; i < n; i++)
                 {
                     var bubbleTarget = bubbleTargets[i];
-                    if (!event.isStop && bubbleTarget instanceof EventDispatcher)
-                        bubbleTarget.dispatchEvent(event);
+                    if (!e.isStop && bubbleTarget instanceof EventDispatcher)
+                        bubbleTarget.dispatchEvent(e);
                 }
             }
         }
@@ -134,8 +153,8 @@ namespace feng3d
          */
         dispatch(type: string, data?: any, bubbles = false)
         {
-            var event: Event<any> = { type: type, data: data, bubbles: bubbles, targets: [] };
-            this.dispatchEvent(event);
+            var e: Event<any> = { type: type, data: data, bubbles: bubbles };
+            this.dispatchEvent(e);
         }
 
         /**

@@ -135,6 +135,17 @@ namespace feng3d
         private _tag: string;
 
         /**
+         * 派发事件
+         * @param event   事件对象
+         */
+        dispatchEvent(event: Event<any>)
+        {
+            if (this._gameObject)
+                this._gameObject.dispatchEvent(event);
+            return super.dispatchEvent(event);
+        }
+
+        /**
          * 销毁
          */
         dispose()

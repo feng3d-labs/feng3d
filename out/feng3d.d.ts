@@ -834,10 +834,6 @@ declare namespace feng3d {
          * 是否停止冒泡
          */
         isStopBubbles?: boolean;
-        /**
-         * 事件经过的对象列表，事件路径。
-         */
-        targets?: any[];
     }
     interface IEventDispatcher<T> {
         once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
@@ -861,9 +857,23 @@ declare namespace feng3d {
         once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
         /**
          * 派发事件
-         * @param event   事件对象
+         *
+         * 当事件重复流向一个对象时将不会被处理。
+         *
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
          */
-        dispatchEvent(event: Event<any>): void;
+        dispatchEvent(e: Event<any>): boolean;
+        /**
+         * 处理事件
+         * @param e 事件
+         */
+        protected handleEvent(e: Event<any>): void;
+        /**
+         * 处理事件冒泡
+         * @param e 事件
+         */
+        protected handelEventBubbles(e: Event<any>): void;
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
          * @param type                      事件的类型。类型区分大小写。
@@ -8269,6 +8279,11 @@ declare namespace feng3d {
         private _gameObject;
         private _tag;
         /**
+         * 派发事件
+         * @param event   事件对象
+         */
+        dispatchEvent(event: Event<any>): boolean;
+        /**
          * 销毁
          */
         dispose(): void;
@@ -8958,6 +8973,15 @@ declare namespace feng3d {
          * @param index			插入的位置
          */
         private addComponentAt(component, index);
+        /**
+         * 派发事件
+         *
+         * 当事件重复流向一个对象时将不会被处理。
+         *
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
+         */
+        dispatchEvent(e: Event<any>): boolean;
         /**
          * 销毁
          */
@@ -12336,7 +12360,7 @@ declare namespace feng3d {
          * 派发事件
          * @param event   事件对象
          */
-        dispatchEvent(event: Event<any>): void;
+        dispatchEvent(event: Event<any>): boolean;
     }
     /**
      * Window鼠标事件输入

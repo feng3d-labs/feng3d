@@ -667,6 +667,33 @@ namespace feng3d
         }
 
         /**
+         * 派发事件
+         * 
+         * 当事件重复流向一个对象时将不会被处理。
+         * 
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
+         */
+        dispatchEvent(e: Event<any>)
+        {
+            var targets = e["targets"] = e["targets"] || [];
+            if (targets.indexOf(this) != -1)
+                return false;
+            targets.push(this);
+
+            this.handleEvent(e);
+
+            this.components.forEach(element =>
+            {
+                element.dispatchEvent(e);
+            });
+
+            this.handelEventBubbles(e);
+
+            return true;
+        }
+
+        /**
          * 销毁
          */
         dispose()

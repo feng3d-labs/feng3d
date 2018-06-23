@@ -31,10 +31,10 @@ namespace feng3d
         dispatchEvent(event: Event<any>)
         {
             if (!this.enable)
-                return;
+                return false;
             if (!this.catchMouseMove && event.type == "mousemove")
-                return;
-            super.dispatchEvent(event);
+                return false;
+            return super.dispatchEvent(event);
         }
     }
 

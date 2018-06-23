@@ -1549,39 +1549,58 @@ var feng3d;
         };
         /**
          * 派发事件
-         * @param event   事件对象
+         *
+         * 当事件重复流向一个对象时将不会被处理。
+         *
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
          */
-        EventDispatcher.prototype.dispatchEvent = function (event) {
-            if (event.targets.indexOf(this) != -1)
-                return;
-            event.targets.push(this);
+        EventDispatcher.prototype.dispatchEvent = function (e) {
+            var targets = e["targets"] = e["targets"] || [];
+            if (targets.indexOf(this) != -1)
+                return false;
+            targets.push(this);
+            this.handleEvent(e);
+            this.handelEventBubbles(e);
+            return true;
+        };
+        /**
+         * 处理事件
+         * @param e 事件
+         */
+        EventDispatcher.prototype.handleEvent = function (e) {
             //设置目标
-            event.target || (event.target = this);
+            e.target || (e.target = this);
             try {
                 //使用 try 处理 MouseEvent 等无法更改currentTarget的对象
-                event.currentTarget = this;
+                e.currentTarget = this;
             }
             catch (error) { }
-            var listeners = this[feng3d.EVENT_KEY] && this[feng3d.EVENT_KEY][event.type];
+            var listeners = this[feng3d.EVENT_KEY] && this[feng3d.EVENT_KEY][e.type];
             if (listeners) {
                 //遍历调用事件回调函数
-                for (var i = 0; i < listeners.length && !event.isStop; i++) {
-                    listeners[i].listener.call(listeners[i].thisObject, event);
+                for (var i = 0; i < listeners.length && !e.isStop; i++) {
+                    listeners[i].listener.call(listeners[i].thisObject, e);
                 }
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     if (listeners[i].once)
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete this[feng3d.EVENT_KEY][event.type];
+                    delete this[feng3d.EVENT_KEY][e.type];
             }
-            //事件冒泡(冒泡阶段)
-            if (event.bubbles && !event.isStopBubbles) {
+        };
+        /**
+         * 处理事件冒泡
+         * @param e 事件
+         */
+        EventDispatcher.prototype.handelEventBubbles = function (e) {
+            if (e.bubbles && !e.isStopBubbles) {
                 var bubbleTargets = getBubbleTargets(this);
                 for (var i = 0, n = bubbleTargets.length; i < n; i++) {
                     var bubbleTarget = bubbleTargets[i];
-                    if (!event.isStop && bubbleTarget instanceof EventDispatcher)
-                        bubbleTarget.dispatchEvent(event);
+                    if (!e.isStop && bubbleTarget instanceof EventDispatcher)
+                        bubbleTarget.dispatchEvent(e);
                 }
             }
         };
@@ -1593,8 +1612,8 @@ var feng3d;
          */
         EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
             if (bubbles === void 0) { bubbles = false; }
-            var event = { type: type, data: data, bubbles: bubbles, targets: [] };
-            this.dispatchEvent(event);
+            var e = { type: type, data: data, bubbles: bubbles };
+            this.dispatchEvent(e);
         };
         /**
          * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
@@ -13576,6 +13595,15 @@ var feng3d;
             return this.gameObject.getComponentsInChildren(type, filter, result);
         };
         /**
+         * 派发事件
+         * @param event   事件对象
+         */
+        Component.prototype.dispatchEvent = function (event) {
+            if (this._gameObject)
+                this._gameObject.dispatchEvent(event);
+            return _super.prototype.dispatchEvent.call(this, event);
+        };
+        /**
          * 销毁
          */
         Component.prototype.dispose = function () {
@@ -15674,6 +15702,26 @@ var feng3d;
             //派发添加组件事件
             this.dispatch("addedComponent", component);
             this._scene && this._scene._addComponent(component);
+        };
+        /**
+         * 派发事件
+         *
+         * 当事件重复流向一个对象时将不会被处理。
+         *
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
+         */
+        GameObject.prototype.dispatchEvent = function (e) {
+            var targets = e["targets"] = e["targets"] || [];
+            if (targets.indexOf(this) != -1)
+                return false;
+            targets.push(this);
+            this.handleEvent(e);
+            this.components.forEach(function (element) {
+                element.dispatchEvent(e);
+            });
+            this.handelEventBubbles(e);
+            return true;
         };
         /**
          * 销毁
@@ -26293,10 +26341,10 @@ var feng3d;
          */
         MouseInput.prototype.dispatchEvent = function (event) {
             if (!this.enable)
-                return;
+                return false;
             if (!this.catchMouseMove && event.type == "mousemove")
-                return;
-            _super.prototype.dispatchEvent.call(this, event);
+                return false;
+            return _super.prototype.dispatchEvent.call(this, event);
         };
         return MouseInput;
     }(feng3d.EventDispatcher));
