@@ -3,21 +3,12 @@ namespace feng3d
     /**
 	 * 组件事件
 	 */
-    export interface Scene3DEventMap
+    export interface GameObjectEventMap
     {
         addToScene: GameObject;
         removeFromScene: GameObject;
         addComponentToScene: Component;
         removeComponentFromScene: Component;
-    }
-
-    export interface Scene3D
-    {
-        once<K extends keyof Scene3DEventMap>(type: K, listener: (event: Event<Scene3DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof Scene3DEventMap>(type: K, data?: Scene3DEventMap[K], bubbles?: boolean);
-        has<K extends keyof Scene3DEventMap>(type: K): boolean;
-        on<K extends keyof Scene3DEventMap>(type: K, listener: (event: Event<Scene3DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof Scene3DEventMap>(type?: K, listener?: (event: Event<Scene3DEventMap[K]>) => any, thisObject?: any);
     }
 
     /**

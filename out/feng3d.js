@@ -14662,7 +14662,7 @@ var feng3d;
             this._localToWorldMatrix = null;
             this._ITlocalToWorldMatrix = null;
             this._worldToLocalMatrix = null;
-            this.gameObject.dispatch("scenetransformChanged", this);
+            this.dispatch("scenetransformChanged", this);
             //
             for (var i = 0, n = this.gameObject.numChildren; i < n; i++) {
                 this.gameObject.getChildAt(i).transform.invalidateSceneTransform();
@@ -15798,8 +15798,8 @@ var feng3d;
         });
         Bounding.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
-            gameObject.on("boundsInvalid", this.onBoundsChange, this);
-            gameObject.on("scenetransformChanged", this.invalidateSceneTransform, this);
+            this.on("boundsInvalid", this.onBoundsChange, this);
+            this.on("scenetransformChanged", this.invalidateSceneTransform, this);
         };
         Object.defineProperty(Bounding.prototype, "selfLocalBounds", {
             /**
@@ -16094,10 +16094,10 @@ var feng3d;
                 if (this._camera == value)
                     return;
                 if (this._camera)
-                    this._camera.gameObject.off("scenetransformChanged", this.invalidateSceneTransform, this);
+                    this._camera.off("scenetransformChanged", this.invalidateSceneTransform, this);
                 this._camera = value;
                 if (this._camera)
-                    this._camera.gameObject.on("scenetransformChanged", this.invalidateSceneTransform, this);
+                    this._camera.on("scenetransformChanged", this.invalidateSceneTransform, this);
                 this.invalidateSceneTransform();
             },
             enumerable: true,
@@ -16165,10 +16165,10 @@ var feng3d;
                 if (this._camera == value)
                     return;
                 if (this._camera)
-                    this._camera.gameObject.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+                    this._camera.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
                 this._camera = value;
                 if (this._camera)
-                    this._camera.gameObject.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+                    this._camera.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
                 this.invalidHoldSizeMatrix();
             },
             enumerable: true,
@@ -16261,8 +16261,7 @@ var feng3d;
             _super.prototype.dispose.call(this);
         };
         MeshRenderer.prototype.onBoundsInvalid = function (event) {
-            if (this.gameObject)
-                this.gameObject.dispatch(event.type, event.data);
+            this.dispatch(event.type, event.data);
         };
         MeshRenderer.prototype.materialChanged = function () {
             if (this.material && this.material.constructor == Object) {
@@ -18099,7 +18098,7 @@ var feng3d;
         Camera.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
             this.lens = this.lens || new feng3d.PerspectiveLens();
-            this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
+            this.on("scenetransformChanged", this.onScenetransformChanged, this);
             this._viewProjectionInvalid = true;
             this._frustumInvalid = true;
             this._frustum = new feng3d.Frustum();
@@ -21238,7 +21237,7 @@ var feng3d;
         });
         AudioListener.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
-            this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
+            this.on("scenetransformChanged", this.onScenetransformChanged, this);
             this.onScenetransformChanged();
         };
         AudioListener.prototype.onScenetransformChanged = function () {
@@ -21265,7 +21264,7 @@ var feng3d;
             }
         };
         AudioListener.prototype.dispose = function () {
-            this.gameObject.off("scenetransformChanged", this.onScenetransformChanged, this);
+            this.off("scenetransformChanged", this.onScenetransformChanged, this);
             _super.prototype.dispose.call(this);
         };
         __decorate([
@@ -21521,7 +21520,7 @@ var feng3d;
         });
         AudioSource.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
-            this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
+            this.on("scenetransformChanged", this.onScenetransformChanged, this);
         };
         AudioSource.prototype.onScenetransformChanged = function () {
             var scenePosition = this.transform.scenePosition;
@@ -21601,7 +21600,7 @@ var feng3d;
                 this.gain.disconnect(feng3d.globalGain);
         };
         AudioSource.prototype.dispose = function () {
-            this.gameObject.off("scenetransformChanged", this.onScenetransformChanged, this);
+            this.off("scenetransformChanged", this.onScenetransformChanged, this);
             this.disconnect();
             _super.prototype.dispose.call(this);
         };

@@ -1,20 +1,8 @@
 namespace feng3d
 {
-    /**
-	 * @author feng 2014-10-14
-	 */
-    export interface CameraEventMap
+    export interface GameObjectEventMap
     {
         lensChanged;
-    }
-
-    export interface Camera
-    {
-        once<K extends keyof CameraEventMap>(type: K, listener: (event: Event<CameraEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof CameraEventMap>(type: K, data?: CameraEventMap[K], bubbles?: boolean);
-        has<K extends keyof CameraEventMap>(type: K): boolean;
-        on<K extends keyof CameraEventMap>(type: K, listener: (event: Event<CameraEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof CameraEventMap>(type?: K, listener?: (event: Event<CameraEventMap[K]>) => any, thisObject?: any);
     }
 
 	/**
@@ -54,7 +42,7 @@ namespace feng3d
             super.init(gameObject);
             this.lens = this.lens || new PerspectiveLens();
 
-            this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
+            this.on("scenetransformChanged", this.onScenetransformChanged, this);
             this._viewProjectionInvalid = true;
             this._frustumInvalid = true;
 

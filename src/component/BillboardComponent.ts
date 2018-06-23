@@ -15,10 +15,10 @@ namespace feng3d
             if (this._camera == value)
                 return;
             if (this._camera)
-                this._camera.gameObject.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+                this._camera.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
             this._camera = value;
             if (this._camera)
-                this._camera.gameObject.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+                this._camera.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
             this.invalidHoldSizeMatrix();
         }
 

@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface TransformEventMap
+    export interface GameObjectEventMap
     {
         /**
          * 变换矩阵变化
@@ -10,15 +10,11 @@ namespace feng3d
          * 
          */
         updateLocalToWorldMatrix
-    }
 
-    export interface Transform
-    {
-        once<K extends keyof TransformEventMap>(type: K, listener: (event: Event<TransformEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof TransformEventMap>(type: K, data?: TransformEventMap[K], bubbles?: boolean);
-        has<K extends keyof TransformEventMap>(type: K): boolean;
-        on<K extends keyof TransformEventMap>(type: K, listener: (event: Event<TransformEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof TransformEventMap>(type?: K, listener?: (event: Event<TransformEventMap[K]>) => any, thisObject?: any);
+        /**
+         * 场景矩阵变化
+         */
+        scenetransformChanged: Transform;
     }
 
     var fixedNum = 6;
@@ -217,7 +213,7 @@ namespace feng3d
             this._localToWorldMatrix = null;
             this._ITlocalToWorldMatrix = null;
             this._worldToLocalMatrix = null;
-            this.gameObject.dispatch("scenetransformChanged", this);
+            this.dispatch("scenetransformChanged", this);
             //
             for (var i = 0, n = this.gameObject.numChildren; i < n; i++)
             {

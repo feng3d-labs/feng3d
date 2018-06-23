@@ -17,8 +17,8 @@ namespace feng3d
         {
             super.init(gameObject);
 
-            gameObject.on("boundsInvalid", this.onBoundsChange, this);
-            gameObject.on("scenetransformChanged", this.invalidateSceneTransform, this);
+            this.on("boundsInvalid", this.onBoundsChange, this);
+            this.on("scenetransformChanged", this.invalidateSceneTransform, this);
         }
 
 		/**

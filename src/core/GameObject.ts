@@ -39,11 +39,6 @@ namespace feng3d
 		 * 包围盒失效
 		 */
         boundsInvalid: Geometry;
-
-        /**
-         * 场景矩阵变化
-         */
-        scenetransformChanged: Transform;
     }
 
     export interface GameObject

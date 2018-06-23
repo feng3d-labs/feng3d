@@ -240,7 +240,7 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
-            this.gameObject.on("scenetransformChanged", this.onScenetransformChanged, this);
+            this.on("scenetransformChanged", this.onScenetransformChanged, this);
         }
 
         private onScenetransformChanged()
@@ -349,7 +349,7 @@ namespace feng3d
 
         dispose()
         {
-            this.gameObject.off("scenetransformChanged", this.onScenetransformChanged, this);
+            this.off("scenetransformChanged", this.onScenetransformChanged, this);
             this.disconnect();
             super.dispose();
         }

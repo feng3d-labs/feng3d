@@ -8219,6 +8219,13 @@ declare namespace feng3d {
     interface ComponentRawMap {
     }
     type ComponentRaw = ValueOf<ComponentRawMap>;
+    interface Component {
+        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof GameObjectEventMap>(type: K): boolean;
+        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): any;
+    }
     /**
      * Base class for everything attached to GameObjects.
      *
@@ -8573,7 +8580,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface TransformEventMap {
+    interface GameObjectEventMap {
         /**
          * 变换矩阵变化
          */
@@ -8582,13 +8589,10 @@ declare namespace feng3d {
          *
          */
         updateLocalToWorldMatrix: any;
-    }
-    interface Transform {
-        once<K extends keyof TransformEventMap>(type: K, listener: (event: Event<TransformEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof TransformEventMap>(type: K, data?: TransformEventMap[K], bubbles?: boolean): any;
-        has<K extends keyof TransformEventMap>(type: K): boolean;
-        on<K extends keyof TransformEventMap>(type: K, listener: (event: Event<TransformEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof TransformEventMap>(type?: K, listener?: (event: Event<TransformEventMap[K]>) => any, thisObject?: any): any;
+        /**
+         * 场景矩阵变化
+         */
+        scenetransformChanged: Transform;
     }
     /**
      * Position, rotation and scale of an object.
@@ -8761,10 +8765,6 @@ declare namespace feng3d {
          * 包围盒失效
          */
         boundsInvalid: Geometry;
-        /**
-         * 场景矩阵变化
-         */
-        scenetransformChanged: Transform;
     }
     interface GameObject {
         once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
@@ -9221,18 +9221,11 @@ declare namespace feng3d {
     /**
      * 组件事件
      */
-    interface Scene3DEventMap {
+    interface GameObjectEventMap {
         addToScene: GameObject;
         removeFromScene: GameObject;
         addComponentToScene: Component;
         removeComponentFromScene: Component;
-    }
-    interface Scene3D {
-        once<K extends keyof Scene3DEventMap>(type: K, listener: (event: Event<Scene3DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof Scene3DEventMap>(type: K, data?: Scene3DEventMap[K], bubbles?: boolean): any;
-        has<K extends keyof Scene3DEventMap>(type: K): boolean;
-        on<K extends keyof Scene3DEventMap>(type: K, listener: (event: Event<Scene3DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof Scene3DEventMap>(type?: K, listener?: (event: Event<Scene3DEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * 3D场景
@@ -9827,18 +9820,8 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * @author feng 2014-10-14
-     */
-    interface CameraEventMap {
+    interface GameObjectEventMap {
         lensChanged: any;
-    }
-    interface Camera {
-        once<K extends keyof CameraEventMap>(type: K, listener: (event: Event<CameraEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof CameraEventMap>(type: K, data?: CameraEventMap[K], bubbles?: boolean): any;
-        has<K extends keyof CameraEventMap>(type: K): boolean;
-        on<K extends keyof CameraEventMap>(type: K, listener: (event: Event<CameraEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof CameraEventMap>(type?: K, listener?: (event: Event<CameraEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * 摄像机

@@ -85,8 +85,7 @@ namespace feng3d
 
         private onBoundsInvalid(event: Event<Geometry>)
         {
-            if (this.gameObject)
-                this.gameObject.dispatch(<any>event.type, event.data);
+            this.dispatch(<any>event.type, event.data);
         }
 
         private materialChanged()
