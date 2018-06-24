@@ -8411,11 +8411,19 @@ declare namespace feng3d {
      */
     var shadowRenderer: ShadowRenderer;
     class ShadowRenderer {
+        private renderParams;
+        private shader;
+        private skeleton_shader;
+        init(): void;
         /**
          * 渲染
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
         drawForLight(gl: GL, light: DirectionalLight, scene3d: Scene3D, camera: Camera): any;
+        /**
+         * 绘制3D对象
+         */
+        drawGameObject(gl: GL, gameObject: GameObject): void;
     }
 }
 declare namespace feng3d {
@@ -8467,7 +8475,7 @@ declare namespace feng3d {
     class WireframeRenderer {
         private renderParams;
         private shader;
-        private wireframe_skeleton_shader;
+        private skeleton_shader;
         init(): void;
         /**
          * 渲染

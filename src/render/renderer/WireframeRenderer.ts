@@ -9,7 +9,7 @@ namespace feng3d
     {
         private renderParams: RenderParams;
         private shader: Shader;
-        private wireframe_skeleton_shader: Shader;
+        private skeleton_shader: Shader;
 
         init()
         {
@@ -23,7 +23,7 @@ namespace feng3d
                 renderParams.depthFunc = DepthFunc.LEQUAL;
 
                 this.shader = shaderlib.getShader("wireframe");
-                this.wireframe_skeleton_shader = shaderlib.getShader("wireframe_skeleton");
+                this.skeleton_shader = shaderlib.getShader("wireframe_skeleton");
             }
         }
 
@@ -69,7 +69,7 @@ namespace feng3d
             var oldshader = renderAtomic.shader;
             if (meshRenderer instanceof SkinnedMeshRenderer)
             {
-                renderAtomic.shader = this.wireframe_skeleton_shader;
+                renderAtomic.shader = this.skeleton_shader;
             } else
             {
                 renderAtomic.shader = this.shader;

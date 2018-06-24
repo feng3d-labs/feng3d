@@ -13333,6 +13333,10 @@ var feng3d;
                 "fragment": "precision mediump float;\r\n\r\nvoid main() {\r\n    const vec4 bitShift = vec4(1.0, 256.0, 256.0 * 256.0, 256.0 * 256.0 * 256.0);\r\n    const vec4 bitMask = vec4(1.0/256.0, 1.0/256.0, 1.0/256.0, 0.0);\r\n    vec4 rgbaDepth = fract(gl_FragCoord.z * bitShift); // Calculate the value stored into each byte\r\n    rgbaDepth -= rgbaDepth.gbaa * bitMask; // Cut off the value which do not fit in 8 bits\r\n    gl_FragColor = rgbaDepth;\r\n}",
                 "vertex": "attribute vec3 a_position;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvoid main(void) {\r\n\r\n    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
             },
+            "shadow_skeleton": {
+                "fragment": "precision mediump float;\r\n\r\nvoid main() {\r\n    const vec4 bitShift = vec4(1.0, 256.0, 256.0 * 256.0, 256.0 * 256.0 * 256.0);\r\n    const vec4 bitMask = vec4(1.0/256.0, 1.0/256.0, 1.0/256.0, 0.0);\r\n    vec4 rgbaDepth = fract(gl_FragCoord.z * bitShift); // Calculate the value stored into each byte\r\n    rgbaDepth -= rgbaDepth.gbaa * bitMask; // Cut off the value which do not fit in 8 bits\r\n    gl_FragColor = rgbaDepth;\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\nattribute vec3 a_position;\r\nattribute vec4 a_color;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\n#include<skeleton.vertex>\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n\r\n    position = skeletonAnimation(position);\r\n\r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        position = particleAnimation(position);\r\n    #endif\r\n\r\n    gl_Position = u_viewProjection * u_modelMatrix * position;\r\n}"
+            },
             "skeleton": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#include<envmap.fragment>\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n    #ifdef HAS_SPECULAR_SAMPLER\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n    #endif\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    finalColor = envmapMethod(finalColor);\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
                 "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nvarying vec3 v_normal;\r\n\r\nattribute vec3 a_tangent;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform float u_PointSize;\r\n\r\n#include<skeleton.vertex>\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n\r\n    position = skeletonAnimation(position);\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n    //输出全局坐标\r\n    v_worldPosition = worldPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n    \r\n    gl_PointSize = u_PointSize;\r\n}"
@@ -14029,6 +14033,18 @@ var feng3d;
     var ShadowRenderer = /** @class */ (function () {
         function ShadowRenderer() {
         }
+        ShadowRenderer.prototype.init = function () {
+            if (!this.renderParams) {
+                var renderParams = this.renderParams = new feng3d.RenderParams();
+                renderParams.renderMode = feng3d.RenderMode.LINES;
+                renderParams.enableBlend = false;
+                renderParams.depthMask = false;
+                renderParams.depthtest = true;
+                renderParams.depthFunc = feng3d.DepthFunc.LEQUAL;
+                this.shader = feng3d.shaderlib.getShader("shadow");
+                this.skeleton_shader = feng3d.shaderlib.getShader("shadow_skeleton");
+            }
+        };
         /**
          * 渲染
          */
@@ -14039,19 +14055,38 @@ var feng3d;
             }
         };
         ShadowRenderer.prototype.drawForLight = function (gl, light, scene3d, camera) {
+            var _this = this;
             var frameBufferObject = new feng3d.FrameBufferObject();
             frameBufferObject.init(gl);
             frameBufferObject.active(gl);
             light.shadow.updateByCamera(camera);
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
             unblenditems.forEach(function (element) {
-                light;
+                _this.drawGameObject(gl, element.gameObject);
             });
-            // MeshRenderer.meshRenderers.forEach(element =>
-            // {
-            //     this.drawRenderables(renderContext, element);
-            // });
             frameBufferObject.deactive(gl);
+        };
+        /**
+         * 绘制3D对象
+         */
+        ShadowRenderer.prototype.drawGameObject = function (gl, gameObject) {
+            var renderAtomic = gameObject.renderAtomic;
+            gameObject.preRender(renderAtomic);
+            var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
+            this.init();
+            var oldshader = renderAtomic.shader;
+            if (meshRenderer instanceof feng3d.SkinnedMeshRenderer) {
+                renderAtomic.shader = this.skeleton_shader;
+            }
+            else {
+                renderAtomic.shader = this.shader;
+            }
+            var oldrenderParams = renderAtomic.renderParams;
+            renderAtomic.renderParams = this.renderParams;
+            gl.renderer.draw(renderAtomic);
+            //
+            renderAtomic.shader = oldshader;
+            renderAtomic.renderParams = oldrenderParams;
         };
         return ShadowRenderer;
     }());
@@ -14155,7 +14190,7 @@ var feng3d;
                 renderParams.depthtest = true;
                 renderParams.depthFunc = feng3d.DepthFunc.LEQUAL;
                 this.shader = feng3d.shaderlib.getShader("wireframe");
-                this.wireframe_skeleton_shader = feng3d.shaderlib.getShader("wireframe_skeleton");
+                this.skeleton_shader = feng3d.shaderlib.getShader("wireframe_skeleton");
             }
         };
         /**
@@ -14188,7 +14223,7 @@ var feng3d;
             this.init();
             var oldshader = renderAtomic.shader;
             if (meshRenderer instanceof feng3d.SkinnedMeshRenderer) {
-                renderAtomic.shader = this.wireframe_skeleton_shader;
+                renderAtomic.shader = this.skeleton_shader;
             }
             else {
                 renderAtomic.shader = this.shader;

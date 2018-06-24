@@ -9,6 +9,26 @@ namespace feng3d
 
     export class ShadowRenderer
     {
+        private renderParams: RenderParams;
+        private shader: Shader;
+        private skeleton_shader: Shader;
+
+        init()
+        {
+            if (!this.renderParams)
+            {
+                var renderParams = this.renderParams = new RenderParams();
+                renderParams.renderMode = RenderMode.LINES;
+                renderParams.enableBlend = false;
+                renderParams.depthMask = false;
+                renderParams.depthtest = true;
+                renderParams.depthFunc = DepthFunc.LEQUAL;
+
+                this.shader = shaderlib.getShader("shadow");
+                this.skeleton_shader = shaderlib.getShader("shadow_skeleton");
+            }
+        }
+
         /**
          * 渲染
          */
@@ -32,14 +52,40 @@ namespace feng3d
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
             unblenditems.forEach(element =>
             {
-                light
+                this.drawGameObject(gl, element.gameObject);
             });
 
-            // MeshRenderer.meshRenderers.forEach(element =>
-            // {
-            //     this.drawRenderables(renderContext, element);
-            // });
             frameBufferObject.deactive(gl);
+        }
+
+        /**
+         * 绘制3D对象
+         */
+        drawGameObject(gl: GL, gameObject: GameObject)
+        {
+            var renderAtomic = gameObject.renderAtomic;
+            gameObject.preRender(renderAtomic);
+            var meshRenderer = gameObject.getComponent(MeshRenderer);
+
+            this.init();
+
+            var oldshader = renderAtomic.shader;
+            if (meshRenderer instanceof SkinnedMeshRenderer)
+            {
+                renderAtomic.shader = this.skeleton_shader;
+            } else
+            {
+                renderAtomic.shader = this.shader;
+            }
+
+            var oldrenderParams = renderAtomic.renderParams;
+            renderAtomic.renderParams = this.renderParams;
+
+            gl.renderer.draw(renderAtomic);
+
+            //
+            renderAtomic.shader = oldshader;
+            renderAtomic.renderParams = oldrenderParams;
         }
     }
     shadowRenderer = new ShadowRenderer();
