@@ -350,6 +350,18 @@ var feng3d;
         });
     });
 })(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    QUnit.module("GameObject", function () {
+        // @see https://gitee.com/feng3d/feng3d/issues/IK27X
+        QUnit.test("dispatchEvent", function (assert) {
+            var g = new feng3d.GameObject({ name: "t" });
+            var e = g.dispatch("click");
+            g.dispatchEvent(e);
+            assert.ok(e.targets[0] == g);
+        });
+    });
+})(feng3d || (feng3d = {}));
 QUnit.module("LinkedList", function () {
     QUnit.test("LinkedList", function (assert) {
         var ll = new ds.LinkedList();

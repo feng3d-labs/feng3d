@@ -10,11 +10,11 @@ namespace feng3d
 
 	export interface LensBase
 	{
-		once<K extends keyof LensEventMap>(type: K, listener: (event: LensEventMap[K]) => void, thisObject?: any, priority?: number): void;
-		dispatch<K extends keyof LensEventMap>(type: K, data?: LensEventMap[K], bubbles?: boolean);
+		once<K extends keyof LensEventMap>(type: K, listener: (event: Event<LensEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+		dispatch<K extends keyof LensEventMap>(type: K, data?: LensEventMap[K], bubbles?: boolean): Event<LensEventMap[K]>;
 		has<K extends keyof LensEventMap>(type: K): boolean;
-		on<K extends keyof LensEventMap>(type: K, listener: (event: LensEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean);
-		off<K extends keyof LensEventMap>(type?: K, listener?: (event: LensEventMap[K]) => any, thisObject?: any);
+		on<K extends keyof LensEventMap>(type: K, listener: (event: Event<LensEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+		off<K extends keyof LensEventMap>(type?: K, listener?: (event: Event<LensEventMap[K]>) => any, thisObject?: any);
 	}
 
 	/**

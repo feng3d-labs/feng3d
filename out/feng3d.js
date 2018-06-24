@@ -1556,7 +1556,7 @@ var feng3d;
          * @returns 返回事件是否被该对象处理
          */
         EventDispatcher.prototype.dispatchEvent = function (e) {
-            var targets = e["targets"] = e["targets"] || [];
+            var targets = e.targets = e.targets || [];
             if (targets.indexOf(this) != -1)
                 return false;
             targets.push(this);
@@ -1612,8 +1612,9 @@ var feng3d;
          */
         EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
             if (bubbles === void 0) { bubbles = false; }
-            var e = { type: type, data: data, bubbles: bubbles };
+            var e = { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [] };
             this.dispatchEvent(e);
+            return e;
         };
         /**
          * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
@@ -15223,6 +15224,7 @@ var feng3d;
          * 构建3D对象
          */
         function GameObject(raw) {
+            if (raw === void 0) { raw = {}; }
             var _this = _super.call(this) || this;
             _this.renderAtomic = new feng3d.RenderAtomic();
             _this._children = [];
@@ -15253,7 +15255,7 @@ var feng3d;
              * 组件列表
              */
             _this._components = [];
-            _this.name = raw ? raw.name : "GameObject";
+            _this.name = raw.name || "GameObject";
             _this.addComponent(feng3d.Transform);
             _this.addComponent(feng3d.Bounding);
             _this.guid = feng3d.FMath.generateUUID();

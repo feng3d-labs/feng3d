@@ -18,33 +18,38 @@ namespace feng3d
 		/**
 		 * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
 		 */
-        bubbles?: boolean
+        bubbles: boolean
 
 		/**
 		 * 事件目标。
 		 */
-        target?: any;
+        target: any;
 
 		/**
 		 * 当前正在使用某个事件侦听器处理 Event 对象的对象。
 		 */
-        currentTarget?: any;
+        currentTarget: any;
 
         /**
          * 是否停止处理事件监听器
          */
-        isStop?: boolean
+        isStop: boolean
 
         /**
          * 是否停止冒泡
          */
-        isStopBubbles?: boolean
+        isStopBubbles: boolean
+
+        /**
+         * 事件流过的对象列表，事件路径
+         */
+        targets: any[];
     }
 
     export interface IEventDispatcher<T>
     {
         once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean);
+        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
         has<K extends keyof T>(type: K): boolean;
         on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
         off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => any, thisObject?: any);
@@ -84,7 +89,7 @@ namespace feng3d
          */
         dispatchEvent(e: Event<any>)
         {
-            var targets = e["targets"] = e["targets"] || [];
+            var targets = e.targets = e.targets || [];
             if (targets.indexOf(this) != -1)
                 return false;
             targets.push(this);
@@ -153,8 +158,9 @@ namespace feng3d
          */
         dispatch(type: string, data?: any, bubbles = false)
         {
-            var e: Event<any> = { type: type, data: data, bubbles: bubbles };
+            var e: Event<any> = { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [] };
             this.dispatchEvent(e);
+            return e;
         }
 
         /**

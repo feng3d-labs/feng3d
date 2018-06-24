@@ -817,27 +817,31 @@ declare namespace feng3d {
         /**
          * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        bubbles?: boolean;
+        bubbles: boolean;
         /**
          * 事件目标。
          */
-        target?: any;
+        target: any;
         /**
          * 当前正在使用某个事件侦听器处理 Event 对象的对象。
          */
-        currentTarget?: any;
+        currentTarget: any;
         /**
          * 是否停止处理事件监听器
          */
-        isStop?: boolean;
+        isStop: boolean;
         /**
          * 是否停止冒泡
          */
-        isStopBubbles?: boolean;
+        isStopBubbles: boolean;
+        /**
+         * 事件流过的对象列表，事件路径
+         */
+        targets: any[];
     }
     interface IEventDispatcher<T> {
         once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): any;
+        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
         has<K extends keyof T>(type: K): boolean;
         on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => any, thisObject?: any): any;
@@ -880,7 +884,7 @@ declare namespace feng3d {
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        dispatch(type: string, data?: any, bubbles?: boolean): void;
+        dispatch(type: string, data?: any, bubbles?: boolean): Event<any>;
         /**
          * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
          *
@@ -995,7 +999,7 @@ declare namespace feng3d {
     }
     interface Feng3dDispatcher {
         once<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof Feng3dEventMap>(type: K, data?: Feng3dEventMap[K], bubbles?: boolean): any;
+        dispatch<K extends keyof Feng3dEventMap>(type: K, data?: Feng3dEventMap[K], bubbles?: boolean): Event<Feng3dEventMap[K]>;
         has<K extends keyof Feng3dEventMap>(type: K): boolean;
         on<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof Feng3dEventMap>(type?: K, listener?: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any): any;
@@ -8221,7 +8225,7 @@ declare namespace feng3d {
     type ComponentRaw = ValueOf<ComponentRawMap>;
     interface Component {
         once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): any;
+        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
         has<K extends keyof GameObjectEventMap>(type: K): boolean;
         on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): any;
@@ -8768,7 +8772,7 @@ declare namespace feng3d {
     }
     interface GameObject {
         once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): any;
+        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
         has<K extends keyof GameObjectEventMap>(type: K): boolean;
         on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): any;
@@ -8847,7 +8851,7 @@ declare namespace feng3d {
         /**
          * 构建3D对象
          */
-        constructor(raw: gPartial<GameObject>);
+        constructor(raw?: gPartial<GameObject>);
         find(name: string): GameObject | null;
         contains(child: GameObject): boolean;
         addChild(child: GameObject): GameObject;
@@ -9359,7 +9363,7 @@ declare namespace feng3d {
     }
     interface Geometry {
         once<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): any;
+        dispatch<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): Event<GeometryEventMap[K]>;
         has<K extends keyof GeometryEventMap>(type: K): boolean;
         on<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any): any;
@@ -9627,11 +9631,11 @@ declare namespace feng3d {
         matrixChanged: any;
     }
     interface LensBase {
-        once<K extends keyof LensEventMap>(type: K, listener: (event: LensEventMap[K]) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof LensEventMap>(type: K, data?: LensEventMap[K], bubbles?: boolean): any;
+        once<K extends keyof LensEventMap>(type: K, listener: (event: Event<LensEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof LensEventMap>(type: K, data?: LensEventMap[K], bubbles?: boolean): Event<LensEventMap[K]>;
         has<K extends keyof LensEventMap>(type: K): boolean;
-        on<K extends keyof LensEventMap>(type: K, listener: (event: LensEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof LensEventMap>(type?: K, listener?: (event: LensEventMap[K]) => any, thisObject?: any): any;
+        on<K extends keyof LensEventMap>(type: K, listener: (event: Event<LensEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof LensEventMap>(type?: K, listener?: (event: Event<LensEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
      * 摄像机镜头

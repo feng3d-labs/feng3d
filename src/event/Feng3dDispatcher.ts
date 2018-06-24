@@ -24,7 +24,7 @@ namespace feng3d
     export interface Feng3dDispatcher
     {
         once<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof Feng3dEventMap>(type: K, data?: Feng3dEventMap[K], bubbles?: boolean);
+        dispatch<K extends keyof Feng3dEventMap>(type: K, data?: Feng3dEventMap[K], bubbles?: boolean): Event<Feng3dEventMap[K]>;
         has<K extends keyof Feng3dEventMap>(type: K): boolean;
         on<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
         off<K extends keyof Feng3dEventMap>(type?: K, listener?: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any);
