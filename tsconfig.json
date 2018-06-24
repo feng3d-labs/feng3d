@@ -113,7 +113,6 @@
         "src/render/data/TextureInfo.ts",
         "src/render/data/renderdatacollector.ts",
         //
-        "src/render/data/RenderDataHolder.ts",
         "src/render/FrameBufferObject.ts",
         "src/render/RenderContext.ts",
         //
