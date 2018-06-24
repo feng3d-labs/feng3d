@@ -352,13 +352,33 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    QUnit.module("Component", function () {
+        // @see https://gitee.com/feng3d/feng3d/issues/IK27X
+        // 测试Component配发的事件会先传递到GameObject中然后传递到组件中
+        QUnit.test("dispatchEvent", function (assert) {
+            var c = new feng3d.GameObject({ name: "t" }).addComponent(feng3d.Camera);
+            var e = c.dispatch("lensChanged");
+            c.dispatchEvent(e);
+            assert.ok(e.targets[0] == c.gameObject);
+            c.gameObject.components.forEach(function (element) {
+                assert.ok(e.targets.indexOf(element) != -1);
+            });
+        });
+    });
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     QUnit.module("GameObject", function () {
         // @see https://gitee.com/feng3d/feng3d/issues/IK27X
+        // 测试GameObject配发的事件会先处理自身然后传递到组件中
         QUnit.test("dispatchEvent", function (assert) {
             var g = new feng3d.GameObject({ name: "t" });
             var e = g.dispatch("click");
             g.dispatchEvent(e);
             assert.ok(e.targets[0] == g);
+            g.components.forEach(function (element) {
+                assert.ok(e.targets.indexOf(element) != -1);
+            });
         });
     });
 })(feng3d || (feng3d = {}));
