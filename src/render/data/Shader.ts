@@ -5,13 +5,26 @@ namespace feng3d
      */
     export class Shader
     {
+        private shaderName: string;
         private vertex: string;
         private fragment: string
+        private isInit = false;
 
-        constructor(vertex: string, fragment: string)
+        constructor(shaderName: string)
         {
-            this.vertex = vertex;
-            this.fragment = fragment;
+            this.shaderName = shaderName;
+        }
+
+        private init()
+        {
+            if (this.isInit) return;
+
+            var shader = shaderlib.shaderConfig.shaders[this.shaderName];
+
+            this.vertex = shaderlib.uninclude(shader.vertex);
+            this.fragment = shaderlib.uninclude(shader.fragment);
+
+            this.isInit = true;
         }
 
         /**
@@ -19,6 +32,8 @@ namespace feng3d
          */
         activeShaderProgram(gl: GL)
         {
+            this.init();
+
             //渲染程序
             var shaderProgram = this._webGLProgramMap.get(gl);
             if (!shaderProgram)

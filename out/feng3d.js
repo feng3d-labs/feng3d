@@ -12459,18 +12459,27 @@ var feng3d;
      * shader
      */
     var Shader = /** @class */ (function () {
-        function Shader(vertex, fragment) {
+        function Shader(shaderName) {
+            this.isInit = false;
             /**
              * 纹理缓冲
              */
             this._webGLProgramMap = new Map();
-            this.vertex = vertex;
-            this.fragment = fragment;
+            this.shaderName = shaderName;
         }
+        Shader.prototype.init = function () {
+            if (this.isInit)
+                return;
+            var shader = feng3d.shaderlib.shaderConfig.shaders[this.shaderName];
+            this.vertex = feng3d.shaderlib.uninclude(shader.vertex);
+            this.fragment = feng3d.shaderlib.uninclude(shader.fragment);
+            this.isInit = true;
+        };
         /**
          * 激活渲染程序
          */
         Shader.prototype.activeShaderProgram = function (gl) {
+            this.init();
             //渲染程序
             var shaderProgram = this._webGLProgramMap.get(gl);
             if (!shaderProgram) {
@@ -13253,9 +13262,7 @@ var feng3d;
             if (!shader)
                 return;
             if (!shader.shader) {
-                var vertex = this.uninclude(shader.vertex);
-                var fragment = this.uninclude(shader.fragment);
-                shader.shader = new feng3d.Shader(vertex, fragment);
+                shader.shader = new feng3d.Shader(shaderName);
             }
             return shader.shader;
         };
@@ -13688,17 +13695,57 @@ var feng3d;
         function Renderer(gl) {
             feng3d.assert(!gl.renderer, gl + " " + gl.renderer + " \u5B58\u5728\uFF01");
             gl.renderer = this;
-            this.draw = function (renderAtomic) {
-                var shaderProgram = renderAtomic.shader.activeShaderProgram(gl);
+            this.draw = function (renderAtomic1) {
+                var shaderProgram = renderAtomic1.shader.activeShaderProgram(gl);
                 if (!shaderProgram)
+                    return;
+                var renderAtomic = checkRenderData(renderAtomic1);
+                if (!renderAtomic)
                     return;
                 //
                 activeShaderParams(renderAtomic.renderParams);
                 activeAttributes(renderAtomic, shaderProgram.attributes);
                 activeUniforms(renderAtomic, shaderProgram.uniforms);
-                dodraw(renderAtomic, renderAtomic.renderParams);
+                dodraw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
                 disableAttributes(shaderProgram.attributes);
             };
+            function checkRenderData(renderAtomic) {
+                var atomic = new feng3d.RenderAtomic();
+                var shaderProgram = renderAtomic.shader.activeShaderProgram(gl);
+                if (!shaderProgram) {
+                    feng3d.warn("\u7F3A\u5C11\u7740\u8272\u5668\uFF0C\u65E0\u6CD5\u6E32\u67D3!");
+                    return null;
+                }
+                atomic.shader = renderAtomic.shader;
+                for (var key_1 in shaderProgram.attributes) {
+                    if (!renderAtomic.attributes.hasOwnProperty(key_1)) {
+                        feng3d.warn("\u7F3A\u5C11\u9876\u70B9 attribute \u6570\u636E " + key_1 + " \uFF0C\u65E0\u6CD5\u6E32\u67D3!");
+                        return null;
+                    }
+                    atomic.attributes[key_1] = renderAtomic.attributes[key_1];
+                }
+                for (var key in shaderProgram.uniforms) {
+                    var activeInfo = shaderProgram.uniforms[key];
+                    if (activeInfo.uniformBaseName) {
+                        key = activeInfo.uniformBaseName;
+                    }
+                    if (!renderAtomic.uniforms.hasOwnProperty(key)) {
+                        feng3d.warn("\u7F3A\u5C11 uniform \u6570\u636E " + key + " ,\u65E0\u6CD5\u6E32\u67D3\uFF01");
+                        return null;
+                    }
+                    atomic.uniforms[key] = renderAtomic.uniforms[key];
+                }
+                for (var key_2 in renderAtomic.renderParams) {
+                    atomic.renderParams[key_2] = renderAtomic.renderParams[key_2];
+                }
+                atomic.indexBuffer = renderAtomic.indexBuffer;
+                if (!atomic.indexBuffer) {
+                    feng3d.warn("\u786E\u5B9E\u9876\u70B9\u7D22\u5F15\u6570\u636E\uFF0C\u65E0\u6CD5\u6E32\u67D3\uFF01");
+                    return null;
+                }
+                atomic.instanceCount = renderAtomic.instanceCount;
+                return atomic;
+            }
             function activeShaderParams(shaderParams) {
                 var cullfaceEnum = shaderParams.cullFace;
                 var blendEquation = gl[shaderParams.blendEquation];
@@ -13841,9 +13888,8 @@ var feng3d;
             }
             /**
              */
-            function dodraw(renderAtomic, renderParams) {
+            function dodraw(renderAtomic, renderMode) {
                 var instanceCount = ~~feng3d.lazy.getvalue(renderAtomic.instanceCount);
-                var renderMode = gl[renderParams.renderMode];
                 var indexBuffer = renderAtomic.indexBuffer;
                 var vertexNum = 0;
                 if (indexBuffer) {

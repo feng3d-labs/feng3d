@@ -18,17 +18,72 @@ namespace feng3d
 
             gl.renderer = this;
 
-            this.draw = (renderAtomic: RenderAtomic) =>
+            this.draw = (renderAtomic1: RenderAtomic) =>
             {
-                var shaderProgram = renderAtomic.shader.activeShaderProgram(gl);
+                var shaderProgram = renderAtomic1.shader.activeShaderProgram(gl);
                 if (!shaderProgram)
                     return;
+                var renderAtomic = checkRenderData(renderAtomic1);
+                if (!renderAtomic) return;
                 //
                 activeShaderParams(renderAtomic.renderParams);
                 activeAttributes(renderAtomic, shaderProgram.attributes);
                 activeUniforms(renderAtomic, shaderProgram.uniforms);
-                dodraw(renderAtomic, renderAtomic.renderParams);
+                dodraw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
                 disableAttributes(shaderProgram.attributes);
+            }
+
+            function checkRenderData(renderAtomic: RenderAtomic)
+            {
+                var atomic = new RenderAtomic();
+
+                var shaderProgram = renderAtomic.shader.activeShaderProgram(gl);
+                if (!shaderProgram)
+                {
+                    warn(`缺少着色器，无法渲染!`)
+                    return null;
+                }
+                atomic.shader = renderAtomic.shader;
+
+                for (const key in shaderProgram.attributes)
+                {
+                    if (!renderAtomic.attributes.hasOwnProperty(key))
+                    {
+                        warn(`缺少顶点 attribute 数据 ${key} ，无法渲染!`)
+                        return null;
+                    }
+                    atomic.attributes[key] = renderAtomic.attributes[key];
+                }
+
+                for (var key in shaderProgram.uniforms)
+                {
+                    var activeInfo = shaderProgram.uniforms[key];
+                    if (activeInfo.uniformBaseName)
+                    {
+                        key = activeInfo.uniformBaseName;
+                    }
+                    if (!renderAtomic.uniforms.hasOwnProperty(key))
+                    {
+                        warn(`缺少 uniform 数据 ${key} ,无法渲染！`)
+                        return null;
+                    }
+                    atomic.uniforms[key] = renderAtomic.uniforms[key];
+                }
+
+                for (const key in renderAtomic.renderParams)
+                {
+                    atomic.renderParams[key] = renderAtomic.renderParams[key];
+                }
+
+                atomic.indexBuffer = renderAtomic.indexBuffer;
+                if (!atomic.indexBuffer) 
+                {
+                    warn(`确实顶点索引数据，无法渲染！`);
+                    return null;
+                }
+                atomic.instanceCount = renderAtomic.instanceCount;
+
+                return atomic;
             }
 
             function activeShaderParams(shaderParams: RenderParams)
@@ -202,11 +257,9 @@ namespace feng3d
 
             /**
              */
-            function dodraw(renderAtomic: RenderAtomic, renderParams: RenderParams)
+            function dodraw(renderAtomic: RenderAtomic, renderMode: number)
             {
                 var instanceCount = ~~lazy.getvalue(renderAtomic.instanceCount);
-
-                var renderMode = gl[renderParams.renderMode];
 
                 var indexBuffer = renderAtomic.indexBuffer;
                 var vertexNum = 0;

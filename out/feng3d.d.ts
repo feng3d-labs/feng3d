@@ -7660,9 +7660,12 @@ declare namespace feng3d {
      * shader
      */
     class Shader {
+        private shaderName;
         private vertex;
         private fragment;
-        constructor(vertex: string, fragment: string);
+        private isInit;
+        constructor(shaderName: string);
+        private init();
         /**
          * 激活渲染程序
          */
@@ -8113,7 +8116,7 @@ declare namespace feng3d {
         /**
          * 展开 include
          */
-        private uninclude(shaderCode);
+        uninclude(shaderCode: string): string;
         private onShaderChanged();
         /**
          * 获取shader列表

@@ -68,9 +68,7 @@ namespace feng3d
 
             if (!shader.shader)
             {
-                var vertex = this.uninclude(shader.vertex);
-                var fragment = this.uninclude(shader.fragment);
-                shader.shader = new Shader(vertex, fragment);
+                shader.shader = new Shader(shaderName);
             }
             return shader.shader;
         }
@@ -78,7 +76,7 @@ namespace feng3d
         /**
          * 展开 include
          */
-        private uninclude(shaderCode: string)
+        uninclude(shaderCode: string)
         {
             //#include 正则表达式
             var includeRegExp = /#include<(.+)>/g;
