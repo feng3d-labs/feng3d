@@ -7739,6 +7739,10 @@ declare namespace feng3d {
      */
     class RenderAtomic {
         /**
+         * 下一个节点
+         */
+        next: RenderAtomic;
+        /**
          * 顶点索引缓冲
          */
         indexBuffer: Index;
@@ -7762,7 +7766,14 @@ declare namespace feng3d {
          * 渲染参数
          */
         renderParams: RenderParams;
-        constructor();
+        getIndexBuffer(): Index;
+        getAttributes(attributes?: Attributes): Attributes;
+        getAttributeByKey(key: string): any;
+        getUniforms(uniforms?: LazyUniforms): LazyObject<Uniforms>;
+        getUniformByKey(key: string): any;
+        getInstanceCount(): Lazy<number>;
+        getShader(): Shader;
+        getRenderParams(renderParams?: RenderParams): RenderParams;
     }
 }
 declare namespace feng3d {

@@ -7,6 +7,11 @@ namespace feng3d
     export class RenderAtomic
     {
         /**
+         * 下一个节点
+         */
+        next: RenderAtomic;
+
+        /**
          * 顶点索引缓冲
          */
         indexBuffer: Index;
@@ -36,9 +41,123 @@ namespace feng3d
          */
         renderParams = new RenderParams();
 
-        constructor()
+        getIndexBuffer()
         {
-
+            var node: RenderAtomic = this;
+            while (node)
+            {
+                if (node.indexBuffer != undefined)
+                {
+                    return node.indexBuffer;
+                }
+                node = node.next;
+            }
+            return undefined;
         }
+
+        getAttributes(attributes: Attributes = <any>{})
+        {
+            var node: RenderAtomic = this;
+            while (node)
+            {
+                for (const name in node.attributes)
+                {
+                    if (!attributes.hasOwnProperty(name))
+                    {
+                        attributes[name] = node;
+                    }
+                }
+                node = node.next;
+            }
+            return attributes;
+        }
+
+        getAttributeByKey(key: string)
+        {
+            var node: RenderAtomic = this;
+            while (node)
+            {
+                if (node.attributes[key] != undefined)
+                    return node.attributes[key];
+                node = node.next;
+            }
+            return undefined;
+        }
+
+        getUniforms(uniforms: LazyUniforms = <any>{})
+        {
+            var node: RenderAtomic = this;
+            while (node)
+            {
+                for (const name in node.uniforms)
+                {
+                    if (!uniforms.hasOwnProperty(name))
+                    {
+                        uniforms[name] = node;
+                    }
+                }
+                node = node.next;
+            }
+            return uniforms;
+        }
+
+        getUniformByKey(key: string)
+        {
+            var node: RenderAtomic = this;
+            while (node)
+            {
+                if (node.uniforms[key] != undefined)
+                    return node.uniforms[key];
+                node = node.next;
+            }
+            return undefined;
+        }
+
+        getInstanceCount()
+        {
+            var node: RenderAtomic = this;
+            while (node)
+            {
+                if (node.instanceCount != undefined)
+                {
+                    return node.instanceCount;
+                }
+                node = node.next;
+            }
+            return undefined;
+        }
+
+        getShader()
+        {
+            var node: RenderAtomic = this;
+            while (node)
+            {
+                if (node.shader != undefined)
+                {
+                    return node.shader;
+                }
+                node = node.next;
+            }
+            return undefined;
+        }
+
+        getRenderParams(renderParams: RenderParams = <any>{})
+        {
+            var node: RenderAtomic = this;
+            while (node)
+            {
+                for (const name in node.renderParams)
+                {
+                    if (!renderParams.hasOwnProperty(name))
+                    {
+                        renderParams[name] = node.renderParams[name];
+                    }
+                }
+                node = node.next;
+            }
+            return renderParams;
+        }
+
+
     }
 }

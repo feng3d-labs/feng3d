@@ -12625,6 +12625,93 @@ var feng3d;
              */
             this.renderParams = new feng3d.RenderParams();
         }
+        RenderAtomic.prototype.getIndexBuffer = function () {
+            var node = this;
+            while (node) {
+                if (node.indexBuffer != undefined) {
+                    return node.indexBuffer;
+                }
+                node = node.next;
+            }
+            return undefined;
+        };
+        RenderAtomic.prototype.getAttributes = function (attributes) {
+            if (attributes === void 0) { attributes = {}; }
+            var node = this;
+            while (node) {
+                for (var name_1 in node.attributes) {
+                    if (!attributes.hasOwnProperty(name_1)) {
+                        attributes[name_1] = node;
+                    }
+                }
+                node = node.next;
+            }
+            return attributes;
+        };
+        RenderAtomic.prototype.getAttributeByKey = function (key) {
+            var node = this;
+            while (node) {
+                if (node.attributes[key] != undefined)
+                    return node.attributes[key];
+                node = node.next;
+            }
+            return undefined;
+        };
+        RenderAtomic.prototype.getUniforms = function (uniforms) {
+            if (uniforms === void 0) { uniforms = {}; }
+            var node = this;
+            while (node) {
+                for (var name_2 in node.uniforms) {
+                    if (!uniforms.hasOwnProperty(name_2)) {
+                        uniforms[name_2] = node;
+                    }
+                }
+                node = node.next;
+            }
+            return uniforms;
+        };
+        RenderAtomic.prototype.getUniformByKey = function (key) {
+            var node = this;
+            while (node) {
+                if (node.uniforms[key] != undefined)
+                    return node.uniforms[key];
+                node = node.next;
+            }
+            return undefined;
+        };
+        RenderAtomic.prototype.getInstanceCount = function () {
+            var node = this;
+            while (node) {
+                if (node.instanceCount != undefined) {
+                    return node.instanceCount;
+                }
+                node = node.next;
+            }
+            return undefined;
+        };
+        RenderAtomic.prototype.getShader = function () {
+            var node = this;
+            while (node) {
+                if (node.shader != undefined) {
+                    return node.shader;
+                }
+                node = node.next;
+            }
+            return undefined;
+        };
+        RenderAtomic.prototype.getRenderParams = function (renderParams) {
+            if (renderParams === void 0) { renderParams = {}; }
+            var node = this;
+            while (node) {
+                for (var name_3 in node.renderParams) {
+                    if (!renderParams.hasOwnProperty(name_3)) {
+                        renderParams[name_3] = node.renderParams[name_3];
+                    }
+                }
+                node = node.next;
+            }
+            return renderParams;
+        };
         return RenderAtomic;
     }());
     feng3d.RenderAtomic = RenderAtomic;
@@ -13711,14 +13798,16 @@ var feng3d;
             };
             function checkRenderData(renderAtomic) {
                 var atomic = new feng3d.RenderAtomic();
-                var shaderProgram = renderAtomic.shader.activeShaderProgram(gl);
+                var shader = renderAtomic.getShader();
+                var shaderProgram = shader.activeShaderProgram(gl);
                 if (!shaderProgram) {
                     feng3d.warn("\u7F3A\u5C11\u7740\u8272\u5668\uFF0C\u65E0\u6CD5\u6E32\u67D3!");
                     return null;
                 }
-                atomic.shader = renderAtomic.shader;
+                atomic.shader = shader;
                 for (var key_1 in shaderProgram.attributes) {
-                    if (!renderAtomic.attributes.hasOwnProperty(key_1)) {
+                    var attribute = renderAtomic.getAttributeByKey(key_1);
+                    if (attribute == undefined) {
                         feng3d.warn("\u7F3A\u5C11\u9876\u70B9 attribute \u6570\u636E " + key_1 + " \uFF0C\u65E0\u6CD5\u6E32\u67D3!");
                         return null;
                     }
@@ -13729,21 +13818,20 @@ var feng3d;
                     if (activeInfo.uniformBaseName) {
                         key = activeInfo.uniformBaseName;
                     }
-                    if (!renderAtomic.uniforms.hasOwnProperty(key)) {
+                    var uniform = renderAtomic.getUniformByKey(key);
+                    if (uniform == undefined) {
                         feng3d.warn("\u7F3A\u5C11 uniform \u6570\u636E " + key + " ,\u65E0\u6CD5\u6E32\u67D3\uFF01");
                         return null;
                     }
                     atomic.uniforms[key] = renderAtomic.uniforms[key];
                 }
-                for (var key_2 in renderAtomic.renderParams) {
-                    atomic.renderParams[key_2] = renderAtomic.renderParams[key_2];
-                }
-                atomic.indexBuffer = renderAtomic.indexBuffer;
+                atomic.renderParams = renderAtomic.getRenderParams();
+                atomic.indexBuffer = renderAtomic.getIndexBuffer();
                 if (!atomic.indexBuffer) {
                     feng3d.warn("\u786E\u5B9E\u9876\u70B9\u7D22\u5F15\u6570\u636E\uFF0C\u65E0\u6CD5\u6E32\u67D3\uFF01");
                     return null;
                 }
-                atomic.instanceCount = renderAtomic.instanceCount;
+                atomic.instanceCount = renderAtomic.getInstanceCount();
                 return atomic;
             }
             function activeShaderParams(shaderParams) {

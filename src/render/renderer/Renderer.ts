@@ -37,17 +37,20 @@ namespace feng3d
             {
                 var atomic = new RenderAtomic();
 
-                var shaderProgram = renderAtomic.shader.activeShaderProgram(gl);
+
+                var shader = renderAtomic.getShader();
+                var shaderProgram = shader.activeShaderProgram(gl);
                 if (!shaderProgram)
                 {
                     warn(`缺少着色器，无法渲染!`)
                     return null;
                 }
-                atomic.shader = renderAtomic.shader;
+                atomic.shader = shader;
 
                 for (const key in shaderProgram.attributes)
                 {
-                    if (!renderAtomic.attributes.hasOwnProperty(key))
+                    var attribute = renderAtomic.getAttributeByKey(key);
+                    if (attribute == undefined)
                     {
                         warn(`缺少顶点 attribute 数据 ${key} ，无法渲染!`)
                         return null;
@@ -62,7 +65,8 @@ namespace feng3d
                     {
                         key = activeInfo.uniformBaseName;
                     }
-                    if (!renderAtomic.uniforms.hasOwnProperty(key))
+                    var uniform = renderAtomic.getUniformByKey(key);
+                    if (uniform == undefined)
                     {
                         warn(`缺少 uniform 数据 ${key} ,无法渲染！`)
                         return null;
@@ -70,18 +74,15 @@ namespace feng3d
                     atomic.uniforms[key] = renderAtomic.uniforms[key];
                 }
 
-                for (const key in renderAtomic.renderParams)
-                {
-                    atomic.renderParams[key] = renderAtomic.renderParams[key];
-                }
+                atomic.renderParams = renderAtomic.getRenderParams();
 
-                atomic.indexBuffer = renderAtomic.indexBuffer;
+                atomic.indexBuffer = renderAtomic.getIndexBuffer();
                 if (!atomic.indexBuffer) 
                 {
                     warn(`确实顶点索引数据，无法渲染！`);
                     return null;
                 }
-                atomic.instanceCount = renderAtomic.instanceCount;
+                atomic.instanceCount = renderAtomic.getInstanceCount();
 
                 return atomic;
             }
