@@ -13811,7 +13811,7 @@ var feng3d;
                         feng3d.warn("\u7F3A\u5C11\u9876\u70B9 attribute \u6570\u636E " + key_1 + " \uFF0C\u65E0\u6CD5\u6E32\u67D3!");
                         return null;
                     }
-                    atomic.attributes[key_1] = renderAtomic.attributes[key_1];
+                    atomic.attributes[key_1] = attribute;
                 }
                 for (var key in shaderProgram.uniforms) {
                     var activeInfo = shaderProgram.uniforms[key];
@@ -13823,7 +13823,7 @@ var feng3d;
                         feng3d.warn("\u7F3A\u5C11 uniform \u6570\u636E " + key + " ,\u65E0\u6CD5\u6E32\u67D3\uFF01");
                         return null;
                     }
-                    atomic.uniforms[key] = renderAtomic.uniforms[key];
+                    atomic.uniforms[key] = uniform;
                 }
                 atomic.renderParams = renderAtomic.getRenderParams();
                 atomic.indexBuffer = renderAtomic.getIndexBuffer();
@@ -14316,8 +14316,9 @@ var feng3d;
         function WireframeRenderer() {
         }
         WireframeRenderer.prototype.init = function () {
-            if (!this.renderParams) {
-                var renderParams = this.renderParams = new feng3d.RenderParams();
+            if (!this.renderAtomic) {
+                this.renderAtomic = new feng3d.RenderAtomic();
+                var renderParams = this.renderAtomic.renderParams;
                 renderParams.renderMode = feng3d.RenderMode.LINES;
                 renderParams.enableBlend = false;
                 renderParams.depthMask = false;
@@ -14355,15 +14356,13 @@ var feng3d;
                 || renderMode == feng3d.RenderMode.LINE_STRIP)
                 return;
             this.init();
-            var oldshader = renderAtomic.shader;
+            this.renderAtomic.next = renderAtomic;
             if (meshRenderer instanceof feng3d.SkinnedMeshRenderer) {
-                renderAtomic.shader = this.skeleton_shader;
+                this.renderAtomic.shader = this.skeleton_shader;
             }
             else {
-                renderAtomic.shader = this.shader;
+                this.renderAtomic.shader = this.shader;
             }
-            var oldrenderParams = renderAtomic.renderParams;
-            renderAtomic.renderParams = this.renderParams;
             //
             var oldIndexBuffer = renderAtomic.indexBuffer;
             if (!renderAtomic.wireframeindexBuffer || renderAtomic.wireframeindexBuffer.count != 2 * oldIndexBuffer.count) {
@@ -14375,12 +14374,9 @@ var feng3d;
                 renderAtomic.wireframeindexBuffer = new feng3d.Index();
                 renderAtomic.wireframeindexBuffer.indices = wireframeindices;
             }
-            renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
-            gl.renderer.draw(renderAtomic);
-            renderAtomic.indexBuffer = oldIndexBuffer;
+            this.renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
+            gl.renderer.draw(this.renderAtomic);
             //
-            renderAtomic.shader = oldshader;
-            renderAtomic.renderParams = oldrenderParams;
         };
         return WireframeRenderer;
     }());

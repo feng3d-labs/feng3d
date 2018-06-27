@@ -8485,7 +8485,7 @@ declare namespace feng3d {
      */
     var wireframeRenderer: WireframeRenderer;
     class WireframeRenderer {
-        private renderParams;
+        renderAtomic: RenderAtomic;
         private shader;
         private skeleton_shader;
         init(): void;

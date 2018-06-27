@@ -37,7 +37,6 @@ namespace feng3d
             {
                 var atomic = new RenderAtomic();
 
-
                 var shader = renderAtomic.getShader();
                 var shaderProgram = shader.activeShaderProgram(gl);
                 if (!shaderProgram)
@@ -55,7 +54,7 @@ namespace feng3d
                         warn(`缺少顶点 attribute 数据 ${key} ，无法渲染!`)
                         return null;
                     }
-                    atomic.attributes[key] = renderAtomic.attributes[key];
+                    atomic.attributes[key] = attribute;
                 }
 
                 for (var key in shaderProgram.uniforms)
@@ -71,7 +70,7 @@ namespace feng3d
                         warn(`缺少 uniform 数据 ${key} ,无法渲染！`)
                         return null;
                     }
-                    atomic.uniforms[key] = renderAtomic.uniforms[key];
+                    atomic.uniforms[key] = uniform;
                 }
 
                 atomic.renderParams = renderAtomic.getRenderParams();

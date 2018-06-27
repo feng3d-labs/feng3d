@@ -7,15 +7,17 @@ namespace feng3d
 
     export class WireframeRenderer
     {
-        private renderParams: RenderParams;
+        renderAtomic: RenderAtomic;
+
         private shader: Shader;
         private skeleton_shader: Shader;
 
         init()
         {
-            if (!this.renderParams)
+            if (!this.renderAtomic)
             {
-                var renderParams = this.renderParams = new RenderParams();
+                this.renderAtomic = new RenderAtomic();
+                var renderParams = this.renderAtomic.renderParams;
                 renderParams.renderMode = RenderMode.LINES;
                 renderParams.enableBlend = false;
                 renderParams.depthMask = false;
@@ -66,17 +68,14 @@ namespace feng3d
 
             this.init();
 
-            var oldshader = renderAtomic.shader;
+            this.renderAtomic.next = renderAtomic;
             if (meshRenderer instanceof SkinnedMeshRenderer)
             {
-                renderAtomic.shader = this.skeleton_shader;
+                this.renderAtomic.shader = this.skeleton_shader;
             } else
             {
-                renderAtomic.shader = this.shader;
+                this.renderAtomic.shader = this.shader;
             }
-
-            var oldrenderParams = renderAtomic.renderParams;
-            renderAtomic.renderParams = this.renderParams;
 
             //
             var oldIndexBuffer = renderAtomic.indexBuffer;
@@ -95,14 +94,10 @@ namespace feng3d
                 renderAtomic.wireframeindexBuffer = new Index();
                 renderAtomic.wireframeindexBuffer.indices = wireframeindices;
             }
-            renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
+            this.renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
 
-            gl.renderer.draw(renderAtomic);
-
-            renderAtomic.indexBuffer = oldIndexBuffer;
+            gl.renderer.draw(this.renderAtomic);
             //
-            renderAtomic.shader = oldshader;
-            renderAtomic.renderParams = oldrenderParams;
         }
     }
 
