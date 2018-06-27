@@ -7771,7 +7771,7 @@ declare namespace feng3d {
         getAttributeByKey(key: string): any;
         getUniforms(uniforms?: LazyUniforms): LazyObject<Uniforms>;
         getUniformByKey(key: string): any;
-        getInstanceCount(): Lazy<number>;
+        getInstanceCount(): number;
         getShader(): Shader;
         getRenderParams(renderParams?: RenderParams): RenderParams;
     }

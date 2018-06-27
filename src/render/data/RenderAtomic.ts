@@ -64,7 +64,7 @@ namespace feng3d
                 {
                     if (!attributes.hasOwnProperty(name))
                     {
-                        attributes[name] = node;
+                        attributes[name] = node.attributes[name];
                     }
                 }
                 node = node.next;
@@ -93,7 +93,7 @@ namespace feng3d
                 {
                     if (!uniforms.hasOwnProperty(name))
                     {
-                        uniforms[name] = node;
+                        uniforms[name] = lazy.getvalue(node.uniforms[name]);
                     }
                 }
                 node = node.next;
@@ -107,7 +107,7 @@ namespace feng3d
             while (node)
             {
                 if (node.uniforms[key] != undefined)
-                    return node.uniforms[key];
+                    return lazy.getvalue(node.uniforms[key]);
                 node = node.next;
             }
             return undefined;
@@ -120,7 +120,7 @@ namespace feng3d
             {
                 if (node.instanceCount != undefined)
                 {
-                    return node.instanceCount;
+                    return lazy.getvalue(node.instanceCount);
                 }
                 node = node.next;
             }

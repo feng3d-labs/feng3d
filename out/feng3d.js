@@ -12641,7 +12641,7 @@ var feng3d;
             while (node) {
                 for (var name_1 in node.attributes) {
                     if (!attributes.hasOwnProperty(name_1)) {
-                        attributes[name_1] = node;
+                        attributes[name_1] = node.attributes[name_1];
                     }
                 }
                 node = node.next;
@@ -12663,7 +12663,7 @@ var feng3d;
             while (node) {
                 for (var name_2 in node.uniforms) {
                     if (!uniforms.hasOwnProperty(name_2)) {
-                        uniforms[name_2] = node;
+                        uniforms[name_2] = feng3d.lazy.getvalue(node.uniforms[name_2]);
                     }
                 }
                 node = node.next;
@@ -12674,7 +12674,7 @@ var feng3d;
             var node = this;
             while (node) {
                 if (node.uniforms[key] != undefined)
-                    return node.uniforms[key];
+                    return feng3d.lazy.getvalue(node.uniforms[key]);
                 node = node.next;
             }
             return undefined;
@@ -12683,7 +12683,7 @@ var feng3d;
             var node = this;
             while (node) {
                 if (node.instanceCount != undefined) {
-                    return node.instanceCount;
+                    return feng3d.lazy.getvalue(node.instanceCount);
                 }
                 node = node.next;
             }
