@@ -157,7 +157,5 @@ namespace feng3d
             }
             return renderParams;
         }
-
-
     }
 }

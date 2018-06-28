@@ -10,14 +10,14 @@ namespace feng3d
      */
     export class OutlineRenderer
     {
-        private shader: Shader;
-        private renderParams: RenderParams;
+        renderAtomic: RenderAtomic;
 
         init()
         {
-            if (!this.renderParams)
+            if (!this.renderAtomic)
             {
-                var renderParams = this.renderParams = new RenderParams();
+                this.renderAtomic = new RenderAtomic();
+                var renderParams = this.renderAtomic.renderParams;
                 renderParams.renderMode = RenderMode.TRIANGLES;
                 renderParams.enableBlend = false;
                 renderParams.depthMask = true;
@@ -25,7 +25,7 @@ namespace feng3d
                 renderParams.cullFace = CullFace.FRONT;
                 renderParams.frontFace = FrontFace.CW;
 
-                this.shader = shaderlib.getShader("outline");
+                this.renderAtomic.shader = shaderlib.getShader("outline");
             }
         }
 
@@ -53,17 +53,9 @@ namespace feng3d
             var renderAtomic = gameObject.renderAtomic;
             gameObject.preRender(renderAtomic);
 
-            var oldshader = renderAtomic.shader;
-            renderAtomic.shader = this.shader;
+            this.renderAtomic.next = renderAtomic;
 
-            var oldRenderParams = renderAtomic.renderParams;
-            renderAtomic.renderParams = this.renderParams;
-
-            gl.renderer.draw(renderAtomic);
-
-            //
-            renderAtomic.shader = oldshader;
-            renderAtomic.renderParams = oldRenderParams;
+            gl.renderer.draw(this.renderAtomic);
         }
     }
 

@@ -7,6 +7,8 @@ namespace feng3d
      */
     export class RenderContext extends EventDispatcher
     {
+        renderAtomic: RenderAtomic;
+
         NUM_POINTLIGHT = 4;
         NUM_DIRECTIONALLIGHT = 2;
 
@@ -34,6 +36,12 @@ namespace feng3d
          * WebGL实例
          */
         gl: GL;
+
+        constructor()
+        {
+            super();
+            this.renderAtomic = new RenderAtomic();
+        }
 
         preRender(renderAtomic: RenderAtomic)
         {

@@ -13243,9 +13243,10 @@ var feng3d;
     var RenderContext = /** @class */ (function (_super) {
         __extends(RenderContext, _super);
         function RenderContext() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
             _this.NUM_POINTLIGHT = 4;
             _this.NUM_DIRECTIONALLIGHT = 2;
+            _this.renderAtomic = new feng3d.RenderAtomic();
             return _this;
         }
         Object.defineProperty(RenderContext.prototype, "camera", {
@@ -14236,15 +14237,16 @@ var feng3d;
         function OutlineRenderer() {
         }
         OutlineRenderer.prototype.init = function () {
-            if (!this.renderParams) {
-                var renderParams = this.renderParams = new feng3d.RenderParams();
+            if (!this.renderAtomic) {
+                this.renderAtomic = new feng3d.RenderAtomic();
+                var renderParams = this.renderAtomic.renderParams;
                 renderParams.renderMode = feng3d.RenderMode.TRIANGLES;
                 renderParams.enableBlend = false;
                 renderParams.depthMask = true;
                 renderParams.depthtest = true;
                 renderParams.cullFace = feng3d.CullFace.FRONT;
                 renderParams.frontFace = feng3d.FrontFace.CW;
-                this.shader = feng3d.shaderlib.getShader("outline");
+                this.renderAtomic.shader = feng3d.shaderlib.getShader("outline");
             }
         };
         OutlineRenderer.prototype.draw = function (gl, scene3d, camera) {
@@ -14263,14 +14265,8 @@ var feng3d;
             this.init();
             var renderAtomic = gameObject.renderAtomic;
             gameObject.preRender(renderAtomic);
-            var oldshader = renderAtomic.shader;
-            renderAtomic.shader = this.shader;
-            var oldRenderParams = renderAtomic.renderParams;
-            renderAtomic.renderParams = this.renderParams;
-            gl.renderer.draw(renderAtomic);
-            //
-            renderAtomic.shader = oldshader;
-            renderAtomic.renderParams = oldRenderParams;
+            this.renderAtomic.next = renderAtomic;
+            gl.renderer.draw(this.renderAtomic);
         };
         return OutlineRenderer;
     }());

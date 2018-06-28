@@ -8060,6 +8060,7 @@ declare namespace feng3d {
      * @author feng 2017-01-04
      */
     class RenderContext extends EventDispatcher {
+        renderAtomic: RenderAtomic;
         NUM_POINTLIGHT: number;
         NUM_DIRECTIONALLIGHT: number;
         /**
@@ -8075,6 +8076,7 @@ declare namespace feng3d {
          * WebGL实例
          */
         gl: GL;
+        constructor();
         preRender(renderAtomic: RenderAtomic): void;
     }
 }
@@ -8447,8 +8449,7 @@ declare namespace feng3d {
      * 轮廓渲染器
      */
     class OutlineRenderer {
-        private shader;
-        private renderParams;
+        renderAtomic: RenderAtomic;
         init(): void;
         draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
         /**
