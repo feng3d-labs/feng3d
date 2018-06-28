@@ -13249,23 +13249,17 @@ var feng3d;
             _this.renderAtomic = new feng3d.RenderAtomic();
             return _this;
         }
-        Object.defineProperty(RenderContext.prototype, "camera", {
-            /**
-             * 摄像机
-             */
-            get: function () {
-                return this._camera;
-            },
-            set: function (value) {
-                if (this._camera == value)
-                    return;
-                this._camera = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         RenderContext.prototype.preRender = function (renderAtomic) {
-            this.camera.preRender(renderAtomic);
+            var _this = this;
+            var renderAtomic = this.renderAtomic;
+            //
+            renderAtomic.uniforms.u_projectionMatrix = function () { return _this.camera.lens.matrix; };
+            renderAtomic.uniforms.u_viewProjection = function () { return _this.camera.viewProjection; };
+            renderAtomic.uniforms.u_viewMatrix = function () { return _this.camera.transform.worldToLocalMatrix; };
+            renderAtomic.uniforms.u_cameraMatrix = function () { return _this.camera.transform.localToWorldMatrix; };
+            renderAtomic.uniforms.u_skyBoxSize = function () { return _this.camera.lens.far / Math.sqrt(3); };
+            renderAtomic.uniforms.u_scaleByDepth = function () { return _this.camera.getScaleByDepth(1); };
+            //
             var pointLights = this.scene3d.collectComponents.pointLights.list;
             var directionalLights = this.scene3d.collectComponents.directionalLights.list;
             //收集点光源数据
@@ -14039,28 +14033,20 @@ var feng3d;
             var _this = this;
             var blenditems = scene3d.getPickCache(camera).blenditems;
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
-            this.renderContext.gl = gl;
             this.renderContext.camera = camera;
             this.renderContext.scene3d = scene3d;
+            this.renderContext.update();
             unblenditems.concat(blenditems).forEach(function (item) { return _this.drawRenderables(item, gl); });
         };
         ForwardRenderer.prototype.drawRenderables = function (meshRenderer, gl) {
-            //更新数据
-            // try
-            // {
             //绘制
             var material = meshRenderer.material;
             var renderAtomic = meshRenderer.gameObject.renderAtomic;
             renderAtomic.renderParams = material.renderParams;
             renderAtomic.shader = material.shader;
             meshRenderer.gameObject.preRender(renderAtomic);
-            this.renderContext.preRender(renderAtomic);
+            renderAtomic.next = this.renderContext.renderAtomic;
             gl.renderer.draw(renderAtomic);
-            // renderdatacollector.clearRenderDataHolder(renderContext, renderAtomic);
-            // } catch (error)
-            // {
-            //     log(error);
-            // }
         };
         return ForwardRenderer;
     }());
@@ -14101,8 +14087,7 @@ var feng3d;
         /**
          * 渲染
          */
-        MouseRenderer.prototype.draw = function (renderContext, viewRect) {
-            var gl = renderContext.gl;
+        MouseRenderer.prototype.draw = function (gl, viewRect) {
             var mouseX = feng3d.windowEventProxy.clientX;
             var mouseY = feng3d.windowEventProxy.clientY;
             var offsetX = -(mouseX - viewRect.x);
@@ -14112,7 +14097,6 @@ var feng3d;
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             gl.viewport(offsetX, offsetY, viewRect.width, viewRect.height);
             this.objects.length = 1;
-            var gl = renderContext.gl;
             //启动裁剪，只绘制一个像素
             gl.enable(gl.SCISSOR_TEST);
             gl.scissor(0, 0, 1, 1);
@@ -18428,16 +18412,6 @@ var feng3d;
         Camera.prototype.updateViewBox = function () {
             this._viewBox.copy(this.lens.viewBox);
             this._viewBox.applyMatrix3D(this.transform.localToWorldMatrix);
-        };
-        Camera.prototype.preRender = function (renderAtomic) {
-            var _this = this;
-            //
-            renderAtomic.uniforms.u_projectionMatrix = function () { return _this._lens.matrix; };
-            renderAtomic.uniforms.u_viewProjection = function () { return _this.viewProjection; };
-            renderAtomic.uniforms.u_viewMatrix = function () { return _this.transform.worldToLocalMatrix; };
-            renderAtomic.uniforms.u_cameraMatrix = function () { return _this.transform.localToWorldMatrix; };
-            renderAtomic.uniforms.u_skyBoxSize = function () { return _this._lens.far / Math.sqrt(3); };
-            renderAtomic.uniforms.u_scaleByDepth = function () { return _this.getScaleByDepth(1); };
         };
         __decorate([
             feng3d.serialize,
