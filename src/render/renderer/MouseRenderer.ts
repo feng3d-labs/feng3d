@@ -14,10 +14,8 @@ namespace feng3d
         /**
 		 * 渲染
 		 */
-        draw(renderContext: RenderContext, viewRect: Rectangle)
+        draw(gl: GL, viewRect: Rectangle)
         {
-            var gl = renderContext.gl;
-
             var mouseX = windowEventProxy.clientX;
             var mouseY = windowEventProxy.clientY;
 
@@ -31,7 +29,6 @@ namespace feng3d
 
             this.objects.length = 1;
 
-            var gl = renderContext.gl;
             //启动裁剪，只绘制一个像素
             gl.enable(gl.SCISSOR_TEST);
             gl.scissor(0, 0, 1, 1);

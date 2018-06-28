@@ -8067,15 +8067,10 @@ declare namespace feng3d {
          * 摄像机
          */
         camera: Camera;
-        private _camera;
         /**
          * 场景
          */
         scene3d: Scene3D;
-        /**
-         * WebGL实例
-         */
-        gl: GL;
         constructor();
         preRender(renderAtomic: RenderAtomic): void;
     }
@@ -8402,7 +8397,7 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(renderContext: RenderContext, viewRect: Rectangle): GameObject;
+        draw(gl: GL, viewRect: Rectangle): GameObject;
         protected drawRenderables(renderContext: RenderContext, meshRenderer: MeshRenderer): void;
         /**
          * 绘制3D对象
@@ -9935,7 +9930,6 @@ declare namespace feng3d {
          * 更新可视区域顶点
          */
         private updateViewBox();
-        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
