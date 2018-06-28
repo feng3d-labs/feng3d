@@ -8072,7 +8072,7 @@ declare namespace feng3d {
          */
         scene3d: Scene3D;
         constructor();
-        preRender(renderAtomic: RenderAtomic): void;
+        update(): void;
     }
 }
 declare namespace feng3d {

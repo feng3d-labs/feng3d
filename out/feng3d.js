@@ -13249,7 +13249,7 @@ var feng3d;
             _this.renderAtomic = new feng3d.RenderAtomic();
             return _this;
         }
-        RenderContext.prototype.preRender = function (renderAtomic) {
+        RenderContext.prototype.update = function () {
             var _this = this;
             var renderAtomic = this.renderAtomic;
             //

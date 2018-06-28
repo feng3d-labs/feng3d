@@ -7,11 +7,7 @@ namespace feng3d
      */
     export class RenderContext extends EventDispatcher
     {
-<<<<<<< HEAD
         renderAtomic: RenderAtomic;
-=======
-        renderAtomic = new RenderAtomic();
->>>>>>> 2830924081b10fec952d195e90554aa0e45bb2b7
 
         NUM_POINTLIGHT = 4;
         NUM_DIRECTIONALLIGHT = 2;
@@ -32,17 +28,7 @@ namespace feng3d
             this.renderAtomic = new RenderAtomic();
         }
 
-<<<<<<< HEAD
-        constructor()
-        {
-            super();
-            this.renderAtomic = new RenderAtomic();
-        }
-
-        preRender(renderAtomic: RenderAtomic)
-=======
         update()
->>>>>>> 2830924081b10fec952d195e90554aa0e45bb2b7
         {
             var renderAtomic = this.renderAtomic;
             //
