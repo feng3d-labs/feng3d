@@ -239,17 +239,5 @@ namespace feng3d
             this._viewBox.copy(this.lens.viewBox);
             this._viewBox.applyMatrix3D(this.transform.localToWorldMatrix);
         }
-
-        preRender(renderAtomic: RenderAtomic)
-        {
-            //
-            renderAtomic.uniforms.u_projectionMatrix = () => this._lens.matrix;
-
-            renderAtomic.uniforms.u_viewProjection = () => this.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = () => this.transform.worldToLocalMatrix;
-            renderAtomic.uniforms.u_cameraMatrix = () => this.transform.localToWorldMatrix;
-            renderAtomic.uniforms.u_skyBoxSize = () => this._lens.far / Math.sqrt(3);
-            renderAtomic.uniforms.u_scaleByDepth = () => this.getScaleByDepth(1);
-        }
     }
 }

@@ -23,18 +23,15 @@ namespace feng3d
             var blenditems = scene3d.getPickCache(camera).blenditems;
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
 
-            this.renderContext.gl = gl;
             this.renderContext.camera = camera;
             this.renderContext.scene3d = scene3d;
+            this.renderContext.update();
 
             unblenditems.concat(blenditems).forEach(item => this.drawRenderables(item, gl));
         }
 
         drawRenderables(meshRenderer: MeshRenderer, gl: GL)
         {
-            //更新数据
-            // try
-            // {
             //绘制
             var material = meshRenderer.material;
             var renderAtomic = meshRenderer.gameObject.renderAtomic;
@@ -43,15 +40,10 @@ namespace feng3d
             renderAtomic.shader = material.shader;
 
             meshRenderer.gameObject.preRender(renderAtomic);
-            this.renderContext.preRender(renderAtomic);
+
+            renderAtomic.next = this.renderContext.renderAtomic;
 
             gl.renderer.draw(renderAtomic);
-            // renderdatacollector.clearRenderDataHolder(renderContext, renderAtomic);
-
-            // } catch (error)
-            // {
-            //     log(error);
-            // }
         }
     }
 

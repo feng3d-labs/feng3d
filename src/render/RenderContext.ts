@@ -7,38 +7,39 @@ namespace feng3d
      */
     export class RenderContext extends EventDispatcher
     {
+        renderAtomic = new RenderAtomic();
+
         NUM_POINTLIGHT = 4;
         NUM_DIRECTIONALLIGHT = 2;
 
         /**
          * 摄像机
          */
-        get camera()
-        {
-            return this._camera;
-        }
-        set camera(value)
-        {
-            if (this._camera == value)
-                return;
-            this._camera = value;
-        }
-        private _camera: Camera;
+        camera: Camera;
 
         /**
          * 场景
          */
         scene3d: Scene3D;
 
-        /**
-         * WebGL实例
-         */
-        gl: GL;
-
-        preRender(renderAtomic: RenderAtomic)
+        constructor()
         {
-            this.camera.preRender(renderAtomic);
+            super();
+            this.renderAtomic = new RenderAtomic();
+        }
 
+        update()
+        {
+            var renderAtomic = this.renderAtomic;
+            //
+            renderAtomic.uniforms.u_projectionMatrix = () => this.camera.lens.matrix;
+            renderAtomic.uniforms.u_viewProjection = () => this.camera.viewProjection;
+            renderAtomic.uniforms.u_viewMatrix = () => this.camera.transform.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = () => this.camera.transform.localToWorldMatrix;
+            renderAtomic.uniforms.u_skyBoxSize = () => this.camera.lens.far / Math.sqrt(3);
+            renderAtomic.uniforms.u_scaleByDepth = () => this.camera.getScaleByDepth(1);
+
+            //
             var pointLights = this.scene3d.collectComponents.pointLights.list;
             var directionalLights = this.scene3d.collectComponents.directionalLights.list;
 
