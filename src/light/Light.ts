@@ -40,6 +40,11 @@ namespace feng3d
             return this._shadowMap;
         }
 
+        /**
+         * 帧缓冲对象，用于处理光照阴影贴图渲染
+         */
+        frameBufferObject = new FrameBufferObject();
+
         init(gameObject: GameObject)
         {
             super.init(gameObject);

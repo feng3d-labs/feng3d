@@ -9,15 +9,18 @@ namespace feng3d
 
     export class ShadowRenderer
     {
+        renderAtomic: RenderAtomic;
+
         private renderParams: RenderParams;
         private shader: Shader;
         private skeleton_shader: Shader;
 
         init()
         {
-            if (!this.renderParams)
+            if (!this.renderAtomic)
             {
-                var renderParams = this.renderParams = new RenderParams();
+                this.renderAtomic = new RenderAtomic();
+                var renderParams = this.renderAtomic.renderParams;
                 renderParams.renderMode = RenderMode.LINES;
                 renderParams.enableBlend = false;
                 renderParams.depthMask = false;
@@ -43,13 +46,16 @@ namespace feng3d
 
         drawForLight(gl: GL, light: DirectionalLight, scene3d: Scene3D, camera: Camera): any
         {
-            var frameBufferObject = new FrameBufferObject();
-            frameBufferObject.init(gl);
-            frameBufferObject.active(gl);
+            light.frameBufferObject.active(gl);
 
             light.updateShadowByCamera(scene3d, camera);
 
             var shadowCamera = light.shadow.camera;
+
+            this.renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
+            this.renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
+            this.renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
+            this.renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
 
             var unblenditems = scene3d.getPickCache(shadowCamera).unblenditems;
             unblenditems.forEach(element =>
@@ -57,7 +63,7 @@ namespace feng3d
                 this.drawGameObject(gl, element.gameObject);
             });
 
-            frameBufferObject.deactive(gl);
+            light.frameBufferObject.deactive(gl);
         }
 
         /**
@@ -71,23 +77,17 @@ namespace feng3d
 
             this.init();
 
-            var oldshader = renderAtomic.shader;
             if (meshRenderer instanceof SkinnedMeshRenderer)
             {
-                renderAtomic.shader = this.skeleton_shader;
+                this.renderAtomic.shader = this.skeleton_shader;
             } else
             {
-                renderAtomic.shader = this.shader;
+                this.renderAtomic.shader = this.shader;
             }
 
-            var oldrenderParams = renderAtomic.renderParams;
-            renderAtomic.renderParams = this.renderParams;
+            this.renderAtomic.next = renderAtomic;
 
-            gl.renderer.draw(renderAtomic);
-
-            //
-            renderAtomic.shader = oldshader;
-            renderAtomic.renderParams = oldrenderParams;
+            gl.renderer.draw(this.renderAtomic);
         }
     }
     shadowRenderer = new ShadowRenderer();

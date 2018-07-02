@@ -15,7 +15,7 @@ namespace feng3d
 
         private isInit = false;
 
-        init(gl: GL)
+        private init(gl: GL)
         {
             if (this.isInit)
                 return;
@@ -73,6 +73,7 @@ namespace feng3d
 
         active(gl: GL)
         {
+            this.init(gl);
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
         }
 
