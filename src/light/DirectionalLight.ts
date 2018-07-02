@@ -9,6 +9,10 @@ namespace feng3d
     {
         shadow = new DirectionalLightShadow();
 
+        debugShadowMap = true;
+
+        private debugShadowMapObject: GameObject;
+
         /**
          * 光照方向
          */
@@ -53,7 +57,37 @@ namespace feng3d
             this.shadow.camera.transform.lookAt(center);
             //
             this.shadow.camera.lens = new OrthographicLens(-radius, radius, radius, - radius, near, near + worldRadius * 2);
+
+            this.updateDebugShadowMap(viewCamera);
         }
 
+        private updateDebugShadowMap(viewCamera: Camera)
+        {
+            var gameObject = this.debugShadowMapObject;
+            if (!gameObject)
+            {
+                gameObject = this.debugShadowMapObject = gameObjectFactory.createPlane("debugShadowMapObject");
+                gameObject.addComponent(BillboardComponent);
+
+                //材质
+                var model = gameObject.getComponent(MeshRenderer);
+                model.geometry = new feng3d.PlaneGeometry({ width: 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
+                var textureMaterial = model.material = feng3d.materialFactory.create("standard");
+                //
+                // textureMaterial.uniforms.s_diffuse = 'resources/m.png';
+            }
+
+            gameObject.transform.z = viewCamera.lens.near + 0.0001;
+            var billboardComponent = gameObject.getComponent(BillboardComponent);
+            billboardComponent.camera = viewCamera;
+
+            if (this.debugShadowMap)
+            {
+                viewCamera.gameObject.addChild(gameObject);
+            } else
+            {
+                viewCamera.gameObject.removeChild(gameObject);
+            }
+        }
     }
 }
