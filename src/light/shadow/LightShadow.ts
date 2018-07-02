@@ -26,25 +26,9 @@ namespace feng3d
 
         matrix = new Matrix4x4();
 
-        /**
-         * 观察摄像机
-         */
-        @watch("viewCameraChange")
-        viewCamera: Camera;
-
-        // /**
-        //  * 是否失效
-        //  */
-        // protected invalid = true;
-
         constructor()
         {
             this.camera = GameObject.create("LightShadowCamera").addComponent(Camera);
-        }
-
-        protected viewCameraChange()
-        {
-            // this.invalid = true;
         }
     }
 }
