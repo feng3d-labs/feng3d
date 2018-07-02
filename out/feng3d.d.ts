@@ -8044,11 +8044,10 @@ declare namespace feng3d {
     class FrameBufferObject {
         OFFSCREEN_WIDTH: number;
         OFFSCREEN_HEIGHT: number;
-        framebuffer: WebGLFramebuffer;
-        texture: WebGLTexture;
-        depthBuffer: WebGLRenderbuffer;
-        private isInit;
-        init(gl: GL): any;
+        protected _framebufferMap: Map<GL, WebGLFramebuffer>;
+        protected _textureMap: Map<GL, WebGLTexture>;
+        protected _depthBufferMap: Map<GL, WebGLRenderbuffer>;
+        private init(gl);
         active(gl: GL): void;
         deactive(gl: GL): void;
         clear(gl: GL): any;
@@ -8420,6 +8419,7 @@ declare namespace feng3d {
      */
     var shadowRenderer: ShadowRenderer;
     class ShadowRenderer {
+        renderAtomic: RenderAtomic;
         private renderParams;
         private shader;
         private skeleton_shader;
@@ -10669,6 +10669,10 @@ declare namespace feng3d {
         castsShadows: boolean;
         private _shadowMap;
         readonly shadowMap: Texture2D;
+        /**
+         * 帧缓冲对象，用于处理光照阴影贴图渲染
+         */
+        frameBufferObject: FrameBufferObject;
         init(gameObject: GameObject): void;
     }
 }
@@ -10679,11 +10683,23 @@ declare namespace feng3d {
      */
     class DirectionalLight extends Light {
         shadow: DirectionalLightShadow;
+        debugShadowMap: boolean;
+        private debugShadowMapObject;
+        /**
+         * 光照方向
+         */
+        readonly direction: Vector3;
         constructor();
         /**
          * 构建
          */
         init(gameObject: GameObject): void;
+        /**
+         * 通过视窗摄像机进行更新
+         * @param viewCamera 视窗摄像机
+         */
+        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera): void;
+        private updateDebugShadowMap(scene3d, viewCamera);
     }
 }
 declare namespace feng3d {
@@ -10722,23 +10738,11 @@ declare namespace feng3d {
         mapSize: Vector2;
         map: any;
         matrix: Matrix4x4;
-        /**
-         * 观察摄像机
-         */
-        viewCamera: Camera;
         constructor();
-        protected viewCameraChange(): void;
     }
 }
 declare namespace feng3d {
     class DirectionalLightShadow extends LightShadow {
-        constructor();
-        /**
-         * 通过主摄像机进行更新
-         * @param viewCamera 主摄像机
-         */
-        updateByCamera(viewCamera: Camera): void;
-        protected viewCameraChange(): void;
     }
 }
 declare namespace feng3d {

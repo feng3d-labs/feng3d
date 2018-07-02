@@ -46,6 +46,8 @@ namespace feng3d
 
         drawForLight(gl: GL, light: DirectionalLight, scene3d: Scene3D, camera: Camera): any
         {
+            this.init();
+
             light.frameBufferObject.active(gl);
 
             light.updateShadowByCamera(scene3d, camera);
@@ -74,8 +76,6 @@ namespace feng3d
             var renderAtomic = gameObject.renderAtomic;
             gameObject.preRender(renderAtomic);
             var meshRenderer = gameObject.getComponent(MeshRenderer);
-
-            this.init();
 
             if (meshRenderer instanceof SkinnedMeshRenderer)
             {

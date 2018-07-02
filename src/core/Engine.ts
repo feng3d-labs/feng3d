@@ -162,7 +162,7 @@ namespace feng3d
             this.mouse3DManager.draw(this.scene, this.camera);
 
             //绘制阴影图
-            // shadowRenderer.draw(this.gl, this.scene, this.camera);
+            shadowRenderer.draw(this.gl, this.scene, this.camera);
 
             init(this.gl, this.scene);
 

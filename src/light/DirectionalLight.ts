@@ -9,7 +9,8 @@ namespace feng3d
     {
         shadow = new DirectionalLightShadow();
 
-        debugShadowMap = true;
+        @oav({ block: "debug" })
+        debugShadowMap = false;
 
         private debugShadowMapObject: GameObject;
 
@@ -58,15 +59,17 @@ namespace feng3d
             //
             this.shadow.camera.lens = new OrthographicLens(-radius, radius, radius, - radius, near, near + worldRadius * 2);
 
-            this.updateDebugShadowMap(viewCamera);
+            this.updateDebugShadowMap(scene3d, viewCamera);
         }
 
-        private updateDebugShadowMap(viewCamera: Camera)
+        private updateDebugShadowMap(scene3d: Scene3D, viewCamera: Camera)
         {
             var gameObject = this.debugShadowMapObject;
             if (!gameObject)
             {
                 gameObject = this.debugShadowMapObject = gameObjectFactory.createPlane("debugShadowMapObject");
+                gameObject.showinHierarchy = false;
+                gameObject.serializable = false;
                 gameObject.addComponent(BillboardComponent);
 
                 //材质
@@ -77,16 +80,16 @@ namespace feng3d
                 // textureMaterial.uniforms.s_diffuse = 'resources/m.png';
             }
 
-            gameObject.transform.z = viewCamera.lens.near + 0.0001;
+            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scale(viewCamera.lens.near + 0.001));
             var billboardComponent = gameObject.getComponent(BillboardComponent);
             billboardComponent.camera = viewCamera;
 
             if (this.debugShadowMap)
             {
-                viewCamera.gameObject.addChild(gameObject);
+                scene3d.gameObject.addChild(gameObject);
             } else
             {
-                viewCamera.gameObject.removeChild(gameObject);
+                gameObject.remove();
             }
         }
     }
