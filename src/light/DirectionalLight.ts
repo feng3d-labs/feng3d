@@ -9,7 +9,7 @@ namespace feng3d
     {
         shadow = new DirectionalLightShadow();
 
-        @oav({ block: "debug" })
+        @oav({ componentParam: { tooltip: "是否调试阴影图" } })
         debugShadowMap = false;
 
         private debugShadowMapObject: GameObject;

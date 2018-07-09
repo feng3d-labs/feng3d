@@ -20239,6 +20239,23 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 渲染目标纹理
+     */
+    var RenderTargetTexture = /** @class */ (function (_super) {
+        __extends(RenderTargetTexture, _super);
+        function RenderTargetTexture() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.OFFSCREEN_WIDTH = 1024;
+            _this.OFFSCREEN_HEIGHT = 1024;
+            return _this;
+        }
+        return RenderTargetTexture;
+    }(feng3d.TextureInfo));
+    feng3d.RenderTargetTexture = RenderTargetTexture;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 材质工厂
      */
     var MaterialFactory = /** @class */ (function () {
@@ -20718,7 +20735,7 @@ var feng3d;
             }
         };
         __decorate([
-            feng3d.oav({ block: "debug" })
+            feng3d.oav({ componentParam: { tooltip: "是否调试阴影图" } })
         ], DirectionalLight.prototype, "debugShadowMap", void 0);
         return DirectionalLight;
     }(feng3d.Light));

@@ -10408,6 +10408,13 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 渲染目标纹理
+     */
+    class RenderTargetTexture extends TextureInfo {
+        OFFSCREEN_WIDTH: number;
+        OFFSCREEN_HEIGHT: number;
+    }
 }
 declare namespace feng3d {
     /**
