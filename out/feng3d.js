@@ -13000,6 +13000,20 @@ var feng3d;
             return true;
         };
         /**
+         * 纹理尺寸
+         */
+        TextureInfo.prototype.getSize = function () {
+            var pixels = this._activePixels;
+            if (!pixels)
+                new feng3d.Vector2(1, 1);
+            if (!(pixels instanceof Array))
+                pixels = [pixels];
+            if (pixels.length == 0)
+                return new feng3d.Vector2(1, 1);
+            var pixel = pixels[0];
+            return new feng3d.Vector2(pixel.width, pixel.height);
+        };
+        /**
          * 判断数据是否满足渲染需求
          */
         TextureInfo.prototype.checkRenderData = function (pixels) {
@@ -20095,18 +20109,6 @@ var feng3d;
             feng3d.feng3dDispatcher.on("assets.imageAssetsChanged", _this.onImageAssetsChanged, _this);
             return _this;
         }
-        Object.defineProperty(Texture2D.prototype, "size", {
-            /**
-             * 纹理尺寸
-             */
-            get: function () {
-                if (!this._pixels)
-                    new feng3d.Vector2(1, 1);
-                return new feng3d.Vector2(this._pixels.width, this._pixels.height);
-            },
-            enumerable: true,
-            configurable: true
-        });
         Texture2D.prototype.urlChanged = function () {
             var _this = this;
             var url = this.url;
@@ -20146,8 +20148,8 @@ var feng3d;
         function TextureCube(raw) {
             var _this = _super.call(this, raw) || this;
             _this._pixels = [null, null, null, null, null, null];
-            _this.noPixels = [feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white];
             _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
+            _this.noPixels = _this.noPixels || [feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white];
             return _this;
         }
         TextureCube.prototype.urlChanged = function (property, oldValue, newValue) {
@@ -22198,7 +22200,7 @@ var feng3d;
         TerrainMergeMethod.prototype.preRender = function (renderAtomic) {
             renderAtomic.uniforms.s_blendTexture = this.blendTexture;
             renderAtomic.uniforms.s_splatMergeTexture = this.splatMergeTexture;
-            renderAtomic.uniforms.u_splatMergeTextureSize = this.splatMergeTexture.size;
+            renderAtomic.uniforms.u_splatMergeTextureSize = this.splatMergeTexture.getSize();
             renderAtomic.uniforms.u_splatRepeats = this.splatRepeats;
             //
             renderAtomic.uniforms.u_imageSize = new feng3d.Vector2(2048.0, 1024.0);

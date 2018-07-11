@@ -26,15 +26,6 @@ namespace feng3d
 
         protected _textureType = TextureType.TEXTURE_2D;
 
-        /**
-         * 纹理尺寸
-         */
-        get size()
-        {
-            if (!this._pixels) new Vector2(1, 1);
-            return new Vector2(this._pixels.width, this._pixels.height);
-        }
-
         constructor(raw?: gPartial<Texture2D>)
         {
             super(raw);

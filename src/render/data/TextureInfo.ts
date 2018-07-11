@@ -122,6 +122,21 @@ namespace feng3d
             return true;
         }
 
+        /**
+         * 纹理尺寸
+         */
+        getSize()
+        {
+            var pixels = this._activePixels;
+            if (!pixels) new Vector2(1, 1);
+            if (!(pixels instanceof Array))
+                pixels = [pixels];
+            if (pixels.length == 0)
+                return new Vector2(1, 1);
+            var pixel = pixels[0];
+            return new Vector2(pixel.width, pixel.height);
+        }
+
         constructor(raw?: gPartial<TextureInfo>)
         {
             serialization.setValue(this, raw);

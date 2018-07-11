@@ -30,7 +30,7 @@ namespace feng3d
         {
             renderAtomic.uniforms.s_blendTexture = this.blendTexture;
             renderAtomic.uniforms.s_splatMergeTexture = this.splatMergeTexture;
-            renderAtomic.uniforms.u_splatMergeTextureSize = this.splatMergeTexture.size;
+            renderAtomic.uniforms.u_splatMergeTextureSize = this.splatMergeTexture.getSize();
             renderAtomic.uniforms.u_splatRepeats = this.splatRepeats;
             //
             renderAtomic.uniforms.u_imageSize = new Vector2(2048.0, 1024.0);

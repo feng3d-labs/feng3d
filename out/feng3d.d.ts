@@ -8006,6 +8006,10 @@ declare namespace feng3d {
          * 是否为2的幂贴图
          */
         private isPowerOfTwo(pixels);
+        /**
+         * 纹理尺寸
+         */
+        getSize(): Vector2;
         constructor(raw?: gPartial<TextureInfo>);
         /**
          * 判断数据是否满足渲染需求
@@ -10357,10 +10361,6 @@ declare namespace feng3d {
         noPixels: ImageData;
         url: string;
         protected _textureType: TextureType;
-        /**
-         * 纹理尺寸
-         */
-        readonly size: Vector2;
         constructor(raw?: gPartial<Texture2D>);
         private urlChanged();
         private onImageAssetsChanged(e);
@@ -10378,8 +10378,7 @@ declare namespace feng3d {
         negative_x_url: string;
         negative_y_url: string;
         negative_z_url: string;
-        protected _pixels: (HTMLImageElement | ImageData)[];
-        noPixels: ImageData[];
+        protected _pixels: HTMLImageElement[];
         protected _textureType: TextureType;
         constructor(raw?: gPartial<TextureCube>);
         private urlChanged(property, oldValue, newValue);
