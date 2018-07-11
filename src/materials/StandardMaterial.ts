@@ -40,7 +40,7 @@ namespace feng3d
          */
         @serialize
         @oav({ block: "diffuse" })
-        s_diffuse = new Texture2D();
+        s_diffuse = new UrlImageTexture2D();
 
         /**
          * 基本颜色
@@ -61,14 +61,14 @@ namespace feng3d
          */
         @serialize
         @oav({ block: "normalMethod" })
-        s_normal = new Texture2D({ noPixels: imageDatas.defaultNormal });
+        s_normal = new UrlImageTexture2D({ noPixels: imageDatas.defaultNormal });
 
         /**
          * 镜面反射光泽图
          */
         @serialize
         @oav({ block: "specular" })
-        s_specular = new Texture2D();
+        s_specular = new UrlImageTexture2D();
 
         /**
          * 镜面反射颜色
@@ -89,7 +89,7 @@ namespace feng3d
          */
         @serialize
         @oav({ block: "ambient" })
-        s_ambient = new Texture2D();
+        s_ambient = new UrlImageTexture2D();
 
         /**
          * 颜色

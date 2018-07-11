@@ -33,12 +33,12 @@ namespace feng3d
         @oav()
         @serialize
         @oav({ componentParam: { tooltip: "水体法线图" } })
-        s_normalSampler = new Texture2D();
+        s_normalSampler = new UrlImageTexture2D();
         
         /**
          * 镜面反射贴图
          */
-        s_mirrorSampler = new Texture2D();
+        s_mirrorSampler = new UrlImageTexture2D();
         
         u_textureMatrix = new Matrix4x4();
         u_sunColor = new Color3().fromUnit(0x7F7F7F);

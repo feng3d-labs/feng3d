@@ -13,46 +13,18 @@ namespace feng3d
      * 2D纹理
      * @author feng 2016-12-20
      */
-    export class Texture2D extends TextureInfo
+    export abstract class Texture2D extends TextureInfo
     {
-        protected _pixels: ImageData | HTMLImageElement;
-
-        @serialize
-        @watch("urlChanged")
-        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
-        url = "";
+        /**
+         * 当贴图数据未加载好等情况时代替使用
+         */
+        noPixels: ImageData;
 
         constructor(raw?: gPartial<Texture2D>)
         {
             super(raw);
             this.noPixels = this.noPixels || imageDatas.white;
             this._textureType = TextureType.TEXTURE_2D;
-            //
-            feng3dDispatcher.on("assets.imageAssetsChanged", this.onImageAssetsChanged, this);
-        }
-
-        private urlChanged()
-        {
-            var url = this.url;
-            assets.readFileAsImage(url, (err, img) =>
-            {
-                if (url == this.url)
-                {
-                    if (err)
-                    {
-                        // error(err);
-                        this._pixels = null;
-                    } else
-                        this._pixels = img;
-                    this.invalidate();
-                }
-            });
-        }
-
-        private onImageAssetsChanged(e: Event<{ url: string; }>)
-        {
-            if (this.url == e.data.url)
-                this.urlChanged();
         }
     }
 }

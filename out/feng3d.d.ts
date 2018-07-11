@@ -7988,7 +7988,7 @@ declare namespace feng3d {
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
-        noPixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
+        protected noPixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
         /**
          * 当前使用的贴图数据
          */
@@ -7997,8 +7997,8 @@ declare namespace feng3d {
          * 是否为渲染目标纹理
          */
         protected _isRenderTarget: boolean;
-        OFFSCREEN_WIDTH: number;
-        OFFSCREEN_HEIGHT: number;
+        protected OFFSCREEN_WIDTH: number;
+        protected OFFSCREEN_HEIGHT: number;
         /**
          * 纹理缓冲
          */
@@ -10360,12 +10360,62 @@ declare namespace feng3d {
      * 2D纹理
      * @author feng 2016-12-20
      */
-    class Texture2D extends TextureInfo {
-        protected _pixels: ImageData | HTMLImageElement;
-        url: string;
+    abstract class Texture2D extends TextureInfo {
+        /**
+         * 当贴图数据未加载好等情况时代替使用
+         */
+        noPixels: ImageData;
         constructor(raw?: gPartial<Texture2D>);
+    }
+}
+declare namespace feng3d {
+    /**
+     * 2D纹理
+     * @author feng 2016-12-20
+     */
+    class ImageTexture2D extends Texture2D {
+        image: HTMLImageElement;
+        constructor(raw?: gPartial<ImageTexture2D>);
+        private imageChanged();
+    }
+}
+declare namespace feng3d {
+    class UrlImageTexture2D extends ImageTexture2D {
+        url: string;
+        constructor(raw?: gPartial<UrlImageTexture2D>);
         private urlChanged();
         private onImageAssetsChanged(e);
+    }
+}
+declare namespace feng3d {
+    class ImageDataTexture2D extends Texture2D {
+        imageData: ImageData;
+        constructor(raw?: gPartial<ImageDataTexture2D>);
+        private imageDataChanged();
+    }
+}
+declare namespace feng3d {
+    class CanvasTexture2D extends Texture2D {
+        canvas: HTMLCanvasElement;
+        constructor(raw?: gPartial<CanvasTexture2D>);
+        private canvasChanged();
+    }
+}
+declare namespace feng3d {
+    class VideoTexture2D extends Texture2D {
+        video: HTMLVideoElement;
+        constructor(raw?: gPartial<VideoTexture2D>);
+        private videoChanged();
+    }
+}
+declare namespace feng3d {
+    /**
+     * 渲染目标纹理
+     */
+    class RenderTargetTexture2D extends Texture2D {
+        OFFSCREEN_WIDTH: number;
+        OFFSCREEN_HEIGHT: number;
+        constructor(raw?: gPartial<RenderTargetTexture2D>);
     }
 }
 declare namespace feng3d {
@@ -10382,23 +10432,6 @@ declare namespace feng3d {
         negative_z_url: string;
         constructor(raw?: gPartial<TextureCube>);
         private urlChanged(property, oldValue, newValue);
-    }
-}
-declare namespace feng3d {
-    class ImageDataTexture extends TextureInfo {
-        pixels: ImageData;
-        protected _pixels: ImageData;
-        constructor(raw?: gPartial<ImageDataTexture>);
-    }
-}
-declare namespace feng3d {
-    /**
-     * 渲染目标纹理
-     */
-    class RenderTargetTexture extends TextureInfo {
-        OFFSCREEN_WIDTH: number;
-        OFFSCREEN_HEIGHT: number;
-        constructor(raw?: gPartial<RenderTargetTexture>);
     }
 }
 declare namespace feng3d {
@@ -10524,7 +10557,7 @@ declare namespace feng3d {
         /**
          * 纹理数据
          */
-        s_texture: Texture2D;
+        s_texture: UrlImageTexture2D;
     }
 }
 interface Object {
@@ -10557,7 +10590,7 @@ declare namespace feng3d {
         /**
          * 漫反射纹理
          */
-        s_diffuse: Texture2D;
+        s_diffuse: UrlImageTexture2D;
         /**
          * 基本颜色
          */
@@ -10569,11 +10602,11 @@ declare namespace feng3d {
         /**
          * 漫反射纹理
          */
-        s_normal: Texture2D;
+        s_normal: UrlImageTexture2D;
         /**
          * 镜面反射光泽图
          */
-        s_specular: Texture2D;
+        s_specular: UrlImageTexture2D;
         /**
          * 镜面反射颜色
          */
@@ -10585,7 +10618,7 @@ declare namespace feng3d {
         /**
          * 环境纹理
          */
-        s_ambient: Texture2D;
+        s_ambient: UrlImageTexture2D;
         /**
          * 颜色
          */
@@ -11108,11 +11141,11 @@ declare namespace feng3d {
         u_size: number;
         u_distortionScale: number;
         u_waterColor: Color3;
-        s_normalSampler: Texture2D;
+        s_normalSampler: UrlImageTexture2D;
         /**
          * 镜面反射贴图
          */
-        s_mirrorSampler: Texture2D;
+        s_mirrorSampler: UrlImageTexture2D;
         u_textureMatrix: Matrix4x4;
         u_sunColor: Color3;
         u_sunDirection: Vector3;
@@ -11207,10 +11240,10 @@ declare namespace feng3d {
         create(shader: "terrain", raw?: gPartial<TerrainMaterial>): TerrainMaterial;
     }
     class TerrainUniforms extends StandardUniforms {
-        s_splatTexture1: Texture2D;
-        s_splatTexture2: Texture2D;
-        s_splatTexture3: Texture2D;
-        s_blendTexture: Texture2D;
+        s_splatTexture1: UrlImageTexture2D;
+        s_splatTexture2: UrlImageTexture2D;
+        s_splatTexture3: UrlImageTexture2D;
+        s_blendTexture: UrlImageTexture2D;
         u_splatRepeats: Vector4;
     }
 }
@@ -11220,8 +11253,8 @@ declare namespace feng3d {
      * @author feng 2016-04-28
      */
     class TerrainMergeMethod extends EventDispatcher {
-        splatMergeTexture: Texture2D;
-        blendTexture: Texture2D;
+        splatMergeTexture: UrlImageTexture2D;
+        blendTexture: UrlImageTexture2D;
         splatRepeats: Vector4;
         /**
          * 构建材质

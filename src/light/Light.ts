@@ -34,7 +34,7 @@ namespace feng3d
         @serialize
         castsShadows = false;
 
-        private _shadowMap: Texture2D = new Texture2D();
+        private _shadowMap: Texture2D = new RenderTargetTexture2D();
         get shadowMap()
         {
             return this._shadowMap;

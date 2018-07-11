@@ -13207,6 +13207,12 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav()
         ], TextureInfo.prototype, "anisotropy", void 0);
+        __decorate([
+            feng3d.watch("invalidate")
+        ], TextureInfo.prototype, "OFFSCREEN_WIDTH", void 0);
+        __decorate([
+            feng3d.watch("invalidate")
+        ], TextureInfo.prototype, "OFFSCREEN_HEIGHT", void 0);
         return TextureInfo;
     }());
     feng3d.TextureInfo = TextureInfo;
@@ -20128,29 +20134,63 @@ var feng3d;
         __extends(Texture2D, _super);
         function Texture2D(raw) {
             var _this = _super.call(this, raw) || this;
-            _this.url = "";
             _this.noPixels = _this.noPixels || feng3d.imageDatas.white;
             _this._textureType = feng3d.TextureType.TEXTURE_2D;
+            return _this;
+        }
+        return Texture2D;
+    }(feng3d.TextureInfo));
+    feng3d.Texture2D = Texture2D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 2D纹理
+     * @author feng 2016-12-20
+     */
+    var ImageTexture2D = /** @class */ (function (_super) {
+        __extends(ImageTexture2D, _super);
+        function ImageTexture2D(raw) {
+            return _super.call(this, raw) || this;
+        }
+        ImageTexture2D.prototype.imageChanged = function () {
+            this._pixels = this.image;
+            this.invalidate();
+        };
+        __decorate([
+            feng3d.watch("imageChanged")
+        ], ImageTexture2D.prototype, "image", void 0);
+        return ImageTexture2D;
+    }(feng3d.Texture2D));
+    feng3d.ImageTexture2D = ImageTexture2D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var UrlImageTexture2D = /** @class */ (function (_super) {
+        __extends(UrlImageTexture2D, _super);
+        function UrlImageTexture2D(raw) {
+            var _this = _super.call(this, raw) || this;
+            _this.url = "";
             //
             feng3d.feng3dDispatcher.on("assets.imageAssetsChanged", _this.onImageAssetsChanged, _this);
             return _this;
         }
-        Texture2D.prototype.urlChanged = function () {
+        UrlImageTexture2D.prototype.urlChanged = function () {
             var _this = this;
             var url = this.url;
             feng3d.assets.readFileAsImage(url, function (err, img) {
                 if (url == _this.url) {
                     if (err) {
                         // error(err);
-                        _this._pixels = null;
+                        _this.image = null;
                     }
                     else
-                        _this._pixels = img;
+                        _this.image = img;
                     _this.invalidate();
                 }
             });
         };
-        Texture2D.prototype.onImageAssetsChanged = function (e) {
+        UrlImageTexture2D.prototype.onImageAssetsChanged = function (e) {
             if (this.url == e.data.url)
                 this.urlChanged();
         };
@@ -20158,10 +20198,88 @@ var feng3d;
             feng3d.serialize,
             feng3d.watch("urlChanged"),
             feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
-        ], Texture2D.prototype, "url", void 0);
-        return Texture2D;
-    }(feng3d.TextureInfo));
-    feng3d.Texture2D = Texture2D;
+        ], UrlImageTexture2D.prototype, "url", void 0);
+        return UrlImageTexture2D;
+    }(feng3d.ImageTexture2D));
+    feng3d.UrlImageTexture2D = UrlImageTexture2D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var ImageDataTexture2D = /** @class */ (function (_super) {
+        __extends(ImageDataTexture2D, _super);
+        function ImageDataTexture2D(raw) {
+            return _super.call(this, raw) || this;
+        }
+        ImageDataTexture2D.prototype.imageDataChanged = function () {
+            this._pixels = this.imageData;
+            this.invalidate();
+        };
+        __decorate([
+            feng3d.watch("imageDataChanged")
+        ], ImageDataTexture2D.prototype, "imageData", void 0);
+        return ImageDataTexture2D;
+    }(feng3d.Texture2D));
+    feng3d.ImageDataTexture2D = ImageDataTexture2D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var CanvasTexture2D = /** @class */ (function (_super) {
+        __extends(CanvasTexture2D, _super);
+        function CanvasTexture2D(raw) {
+            return _super.call(this, raw) || this;
+        }
+        CanvasTexture2D.prototype.canvasChanged = function () {
+            this._pixels = this.canvas;
+            this.invalidate();
+        };
+        __decorate([
+            feng3d.watch("canvasChanged")
+        ], CanvasTexture2D.prototype, "canvas", void 0);
+        return CanvasTexture2D;
+    }(feng3d.Texture2D));
+    feng3d.CanvasTexture2D = CanvasTexture2D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var VideoTexture2D = /** @class */ (function (_super) {
+        __extends(VideoTexture2D, _super);
+        function VideoTexture2D(raw) {
+            return _super.call(this, raw) || this;
+        }
+        VideoTexture2D.prototype.videoChanged = function () {
+            this._pixels = this.video;
+            this.invalidate();
+        };
+        __decorate([
+            feng3d.watch("videoChanged")
+        ], VideoTexture2D.prototype, "video", void 0);
+        return VideoTexture2D;
+    }(feng3d.Texture2D));
+    feng3d.VideoTexture2D = VideoTexture2D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 渲染目标纹理
+     */
+    var RenderTargetTexture2D = /** @class */ (function (_super) {
+        __extends(RenderTargetTexture2D, _super);
+        function RenderTargetTexture2D(raw) {
+            var _this = _super.call(this, raw) || this;
+            _this.OFFSCREEN_WIDTH = 1024;
+            _this.OFFSCREEN_HEIGHT = 1024;
+            _this._isRenderTarget = true;
+            return _this;
+        }
+        __decorate([
+            feng3d.watch("invalidate")
+        ], RenderTargetTexture2D.prototype, "OFFSCREEN_WIDTH", void 0);
+        __decorate([
+            feng3d.watch("invalidate")
+        ], RenderTargetTexture2D.prototype, "OFFSCREEN_HEIGHT", void 0);
+        return RenderTargetTexture2D;
+    }(feng3d.Texture2D));
+    feng3d.RenderTargetTexture2D = RenderTargetTexture2D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20225,49 +20343,6 @@ var feng3d;
         return TextureCube;
     }(feng3d.TextureInfo));
     feng3d.TextureCube = TextureCube;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var ImageDataTexture = /** @class */ (function (_super) {
-        __extends(ImageDataTexture, _super);
-        function ImageDataTexture(raw) {
-            var _this = _super.call(this, raw) || this;
-            _this.noPixels = _this.noPixels || feng3d.imageDatas.white;
-            _this._textureType = feng3d.TextureType.TEXTURE_2D;
-            return _this;
-        }
-        Object.defineProperty(ImageDataTexture.prototype, "pixels", {
-            get: function () {
-                return this._pixels;
-            },
-            set: function (value) {
-                this._pixels = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return ImageDataTexture;
-    }(feng3d.TextureInfo));
-    feng3d.ImageDataTexture = ImageDataTexture;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 渲染目标纹理
-     */
-    var RenderTargetTexture = /** @class */ (function (_super) {
-        __extends(RenderTargetTexture, _super);
-        function RenderTargetTexture(raw) {
-            var _this = _super.call(this, raw) || this;
-            _this.OFFSCREEN_WIDTH = 1024;
-            _this.OFFSCREEN_HEIGHT = 1024;
-            _this._textureType = feng3d.TextureType.TEXTURE_2D;
-            _this._isRenderTarget = true;
-            return _this;
-        }
-        return RenderTargetTexture;
-    }(feng3d.TextureInfo));
-    feng3d.RenderTargetTexture = RenderTargetTexture;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20424,7 +20499,7 @@ var feng3d;
             /**
              * 纹理数据
              */
-            this.s_texture = new feng3d.Texture2D();
+            this.s_texture = new feng3d.UrlImageTexture2D();
         }
         __decorate([
             feng3d.serialize,
@@ -20460,7 +20535,7 @@ var feng3d;
             /**
              * 漫反射纹理
              */
-            this.s_diffuse = new feng3d.Texture2D();
+            this.s_diffuse = new feng3d.UrlImageTexture2D();
             /**
              * 基本颜色
              */
@@ -20472,11 +20547,11 @@ var feng3d;
             /**
              * 漫反射纹理
              */
-            this.s_normal = new feng3d.Texture2D({ noPixels: feng3d.imageDatas.defaultNormal });
+            this.s_normal = new feng3d.UrlImageTexture2D({ noPixels: feng3d.imageDatas.defaultNormal });
             /**
              * 镜面反射光泽图
              */
-            this.s_specular = new feng3d.Texture2D();
+            this.s_specular = new feng3d.UrlImageTexture2D();
             /**
              * 镜面反射颜色
              */
@@ -20488,7 +20563,7 @@ var feng3d;
             /**
              * 环境纹理
              */
-            this.s_ambient = new feng3d.Texture2D();
+            this.s_ambient = new feng3d.UrlImageTexture2D();
             /**
              * 颜色
              */
@@ -20636,7 +20711,7 @@ var feng3d;
              * 是否生成阴影（未实现）
              */
             _this.castsShadows = false;
-            _this._shadowMap = new feng3d.Texture2D();
+            _this._shadowMap = new feng3d.RenderTargetTexture2D();
             /**
              * 帧缓冲对象，用于处理光照阴影贴图渲染
              */
@@ -21922,11 +21997,11 @@ var feng3d;
             this.u_size = 10.0;
             this.u_distortionScale = 20.0;
             this.u_waterColor = new feng3d.Color3().fromUnit(0x555555);
-            this.s_normalSampler = new feng3d.Texture2D();
+            this.s_normalSampler = new feng3d.UrlImageTexture2D();
             /**
              * 镜面反射贴图
              */
-            this.s_mirrorSampler = new feng3d.Texture2D();
+            this.s_mirrorSampler = new feng3d.UrlImageTexture2D();
             this.u_textureMatrix = new feng3d.Matrix4x4();
             this.u_sunColor = new feng3d.Color3().fromUnit(0x7F7F7F);
             this.u_sunDirection = new feng3d.Vector3(0.70707, 0.70707, 0);
@@ -22163,19 +22238,19 @@ var feng3d;
         __extends(TerrainUniforms, _super);
         function TerrainUniforms() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.s_splatTexture1 = new feng3d.Texture2D({
+            _this.s_splatTexture1 = new feng3d.UrlImageTexture2D({
                 generateMipmap: true,
                 minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
             });
-            _this.s_splatTexture2 = new feng3d.Texture2D({
+            _this.s_splatTexture2 = new feng3d.UrlImageTexture2D({
                 generateMipmap: true,
                 minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
             });
-            _this.s_splatTexture3 = new feng3d.Texture2D({
+            _this.s_splatTexture3 = new feng3d.UrlImageTexture2D({
                 generateMipmap: true,
                 minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
             });
-            _this.s_blendTexture = new feng3d.Texture2D();
+            _this.s_blendTexture = new feng3d.UrlImageTexture2D();
             _this.u_splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
             return _this;
         }
@@ -22217,8 +22292,8 @@ var feng3d;
          */
         function TerrainMergeMethod() {
             var _this = _super.call(this) || this;
-            _this.splatMergeTexture = new feng3d.Texture2D();
-            _this.blendTexture = new feng3d.Texture2D();
+            _this.splatMergeTexture = new feng3d.UrlImageTexture2D();
+            _this.blendTexture = new feng3d.UrlImageTexture2D();
             _this.splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
             _this.splatMergeTexture.minFilter = feng3d.TextureMinFilter.NEAREST;
             _this.splatMergeTexture.magFilter = feng3d.TextureMagFilter.NEAREST;

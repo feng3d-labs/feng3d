@@ -85,7 +85,7 @@ namespace feng3d
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
-        noPixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
+        protected noPixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
 
         /**
          * 当前使用的贴图数据
@@ -97,8 +97,11 @@ namespace feng3d
          */
         protected _isRenderTarget = false;
 
-        OFFSCREEN_WIDTH = 1024;
-        OFFSCREEN_HEIGHT = 1024;
+        @watch("invalidate")
+        protected OFFSCREEN_WIDTH = 1024;
+
+        @watch("invalidate")
+        protected OFFSCREEN_HEIGHT = 1024;
 
         /**
          * 纹理缓冲

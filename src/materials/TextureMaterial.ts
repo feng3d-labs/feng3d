@@ -27,7 +27,7 @@ namespace feng3d
          */
         @oav()
         @serialize
-        s_texture = new Texture2D();
+        s_texture = new UrlImageTexture2D();
     }
 
     shaderConfig.shaders["texture"].cls = TextureUniforms;

@@ -176,9 +176,13 @@
         "src/primitives/TorusGeometry.ts",
         //
         "src/textures/Texture2D.ts",
+        "src/textures/ImageTexture2D.ts",
+        "src/textures/UrlImageTexture2D.ts",
+        "src/textures/ImageDataTexture2D.ts",
+        "src/textures/CanvasTexture2D.ts",
+        "src/textures/VideoTexture2D.ts",
+        "src/textures/RenderTargetTexture2D.ts",
         "src/textures/TextureCube.ts",
-        "src/textures/ImageDataTexture.ts",
-        "src/textures/RenderTargetTexture.ts",
         //材质
         "src/materials/Material.ts",
         "src/materials/PointMaterial.ts",

@@ -11,28 +11,28 @@ namespace feng3d
     {
         @serialize
         @oav({ block: "terrain" })
-        s_splatTexture1 = new Texture2D({
+        s_splatTexture1 = new UrlImageTexture2D({
             generateMipmap: true,
             minFilter: TextureMinFilter.LINEAR_MIPMAP_LINEAR,
         });
 
         @serialize
         @oav({ block: "terrain" })
-        s_splatTexture2 = new Texture2D({
+        s_splatTexture2 = new UrlImageTexture2D({
             generateMipmap: true,
             minFilter: TextureMinFilter.LINEAR_MIPMAP_LINEAR,
         });
 
         @serialize
         @oav({ block: "terrain" })
-        s_splatTexture3 = new Texture2D({
+        s_splatTexture3 = new UrlImageTexture2D({
             generateMipmap: true,
             minFilter: TextureMinFilter.LINEAR_MIPMAP_LINEAR,
         });
 
         @serialize
         @oav({ block: "terrain" })
-        s_blendTexture = new Texture2D();
+        s_blendTexture = new UrlImageTexture2D();
 
         @serialize
         @oav({ block: "terrain" })
