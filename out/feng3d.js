@@ -12979,28 +12979,46 @@ var feng3d;
              * 是否失效
              */
             this._invalid = true;
+            this._isPowerOfTwo = false;
             feng3d.serialization.setValue(this, raw);
         }
-        Object.defineProperty(TextureInfo.prototype, "isPowerOfTwo", {
-            /**
-             * 是否为2的幂贴图
-             */
-            get: function () {
-                var isPowerOfTwo = true;
-                var pixels = this._activePixels;
-                if (pixels instanceof HTMLImageElement)
-                    isPowerOfTwo = feng3d.FMath.isPowerOfTwo(pixels.width) && feng3d.FMath.isPowerOfTwo(pixels.height);
-                return isPowerOfTwo;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        /**
+         * 是否为2的幂贴图
+         */
+        TextureInfo.prototype.isPowerOfTwo = function (pixels) {
+            if (!pixels)
+                return false;
+            if (!(pixels instanceof Array))
+                pixels = [pixels];
+            for (var i = 0; i < pixels.length; i++) {
+                var element = pixels[i];
+                if (element.width == 0 || !feng3d.FMath.isPowerOfTwo(element.width))
+                    return false;
+                if (element.height == 0 || !feng3d.FMath.isPowerOfTwo(element.height))
+                    return false;
+            }
+            return true;
+        };
         /**
          * 判断数据是否满足渲染需求
          */
-        TextureInfo.prototype.checkRenderData = function () {
-            feng3d.debuger && feng3d.assert(false);
-            return false;
+        TextureInfo.prototype.checkRenderData = function (pixels) {
+            if (!pixels)
+                return false;
+            if (!(pixels instanceof Array))
+                pixels = [pixels];
+            if (pixels.length == 0)
+                return false;
+            for (var i = 0; i < pixels.length; i++) {
+                var element = pixels[i];
+                if (!element)
+                    return false;
+                if (element.width == 0)
+                    return false;
+                if (element.height == 0)
+                    return false;
+            }
+            return true;
         };
         /**
          * 使纹理失效
@@ -13013,19 +13031,19 @@ var feng3d;
          * @param gl
          */
         TextureInfo.prototype.active = function (gl) {
-            var currentPixels = this.checkRenderData() ? this._pixels : this.noPixels;
-            if (this._invalid || this._activePixels != currentPixels) {
+            if (this._invalid) {
                 this.clear();
                 this._invalid = false;
+                this._activePixels = this.checkRenderData(this._pixels) ? this._pixels : this.noPixels;
+                this._isPowerOfTwo = this.isPowerOfTwo(this._activePixels);
             }
-            this._activePixels = currentPixels;
             var texture = this.getTexture(gl);
             var textureType = gl[this._textureType];
             var minFilter = gl[this.minFilter];
             var magFilter = gl[this.magFilter];
             var wrapS = gl[this.wrapS];
             var wrapT = gl[this.wrapT];
-            if (!this.isPowerOfTwo) {
+            if (!this._isPowerOfTwo) {
                 wrapS = gl.CLAMP_TO_EDGE;
                 wrapT = gl.CLAMP_TO_EDGE;
             }
@@ -13061,45 +13079,39 @@ var feng3d;
                 }
                 texture = newtexture;
                 var textureType = gl[this._textureType];
+                var format = gl[this.format];
+                var type = gl[this.type];
                 //设置图片y轴方向
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, this.flipY ? 1 : 0);
                 gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premulAlpha ? 1 : 0);
                 //绑定纹理
                 gl.bindTexture(textureType, texture);
                 //设置纹理图片
-                this.initTexture(gl);
-                if (this.generateMipmap && this.isPowerOfTwo) {
+                switch (textureType) {
+                    case gl.TEXTURE_CUBE_MAP:
+                        var pixels = this._activePixels;
+                        var faces = [
+                            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                            gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                        ];
+                        for (var i = 0; i < faces.length; i++) {
+                            gl.texImage2D(faces[i], 0, format, format, type, this._activePixels[i]);
+                        }
+                        break;
+                    case gl.TEXTURE_2D:
+                        var _pixel = this._activePixels;
+                        var textureType = gl[this._textureType];
+                        gl.texImage2D(textureType, 0, format, format, type, _pixel);
+                        break;
+                    default:
+                        throw "";
+                }
+                if (this.generateMipmap && this._isPowerOfTwo) {
                     gl.generateMipmap(textureType);
                 }
                 this._textureMap.set(gl, texture);
             }
             return texture;
-        };
-        /**
-         * 初始化纹理
-         */
-        TextureInfo.prototype.initTexture = function (gl) {
-            var format = gl[this.format];
-            var type = gl[this.type];
-            switch (this._textureType) {
-                case feng3d.TextureType.TEXTURE_CUBE_MAP:
-                    var pixels = this._activePixels;
-                    var faces = [
-                        gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                        gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                    ];
-                    for (var i = 0; i < faces.length; i++) {
-                        gl.texImage2D(faces[i], 0, format, format, type, this._activePixels[i]);
-                    }
-                    break;
-                case feng3d.TextureType.TEXTURE_2D:
-                    var _pixel = this._activePixels;
-                    var textureType = gl[this._textureType];
-                    gl.texImage2D(textureType, 0, format, format, type, _pixel);
-                    break;
-                default:
-                    break;
-            }
         };
         /**
          * 清理纹理
@@ -20095,12 +20107,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        /**
-         * 判断数据是否满足渲染需求
-         */
-        Texture2D.prototype.checkRenderData = function () {
-            return !!this._pixels;
-        };
         Texture2D.prototype.urlChanged = function () {
             var _this = this;
             var url = this.url;
@@ -20139,22 +20145,11 @@ var feng3d;
         __extends(TextureCube, _super);
         function TextureCube(raw) {
             var _this = _super.call(this, raw) || this;
-            _this._pixels = [];
+            _this._pixels = [null, null, null, null, null, null];
             _this.noPixels = [feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white];
             _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
             return _this;
         }
-        /**
-         * 判断数据是否满足渲染需求
-         */
-        TextureCube.prototype.checkRenderData = function () {
-            for (var i = 0; i < 6; i++) {
-                var element = this._pixels[i];
-                if (!element)
-                    return false;
-            }
-            return true;
-        };
         TextureCube.prototype.urlChanged = function (property, oldValue, newValue) {
             var _this = this;
             var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
@@ -20222,16 +20217,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        /**
-         * 判断数据是否满足渲染需求
-         */
-        ImageDataTexture.prototype.checkRenderData = function () {
-            if (!this._pixels)
-                return false;
-            if (!this._pixels.width || !this._pixels.height)
-                return false;
-            return true;
-        };
         return ImageDataTexture;
     }(feng3d.TextureInfo));
     feng3d.ImageDataTexture = ImageDataTexture;

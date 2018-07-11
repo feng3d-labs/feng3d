@@ -36,7 +36,7 @@ namespace feng3d
         @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         negative_z_url: string;
 
-        protected _pixels: (HTMLImageElement | ImageData)[] = [];
+        protected _pixels: (HTMLImageElement | ImageData)[] = [null, null, null, null, null, null];
 
         noPixels = [imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white];
 
@@ -45,20 +45,6 @@ namespace feng3d
         constructor(raw?: gPartial<TextureCube>)
         {
             super(raw);
-        }
-
-        /**
-         * 判断数据是否满足渲染需求
-         */
-        checkRenderData()
-        {
-            for (var i = 0; i < 6; i++)
-            {
-                var element = this._pixels[i];
-                if (!element)
-                    return false;
-            }
-            return true;
         }
 
         private urlChanged(property: string, oldValue: string, newValue: string)

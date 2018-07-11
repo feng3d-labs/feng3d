@@ -80,17 +80,17 @@ namespace feng3d
         /**
          * 需要使用的贴图数据
          */
-        protected _pixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
+        protected _pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
 
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
-        noPixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
+        noPixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
 
         /**
          * 当前使用的贴图数据
          */
-        protected _activePixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
+        protected _activePixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
 
         /**
          * 纹理缓冲
@@ -101,16 +101,25 @@ namespace feng3d
          */
         private _invalid = true;
 
+        private _isPowerOfTwo = false;
+
         /**
          * 是否为2的幂贴图
          */
-        get isPowerOfTwo()
+        private isPowerOfTwo(pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[])
         {
-            var isPowerOfTwo = true;
-            var pixels = this._activePixels;
-            if (pixels instanceof HTMLImageElement)
-                isPowerOfTwo = FMath.isPowerOfTwo(pixels.width) && FMath.isPowerOfTwo(pixels.height);
-            return isPowerOfTwo;
+            if (!pixels) return false;
+            if (!(pixels instanceof Array))
+                pixels = [pixels];
+            for (let i = 0; i < pixels.length; i++)
+            {
+                const element = pixels[i];
+                if (element.width == 0 || !FMath.isPowerOfTwo(element.width))
+                    return false;
+                if (element.height == 0 || !FMath.isPowerOfTwo(element.height))
+                    return false;
+            }
+            return true;
         }
 
         constructor(raw?: gPartial<TextureInfo>)
@@ -121,11 +130,23 @@ namespace feng3d
         /**
          * 判断数据是否满足渲染需求
          */
-        checkRenderData()
+        private checkRenderData(pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[])
         {
-            debuger && assert(false);
+            if (!pixels) return false;
+            if (!(pixels instanceof Array))
+                pixels = [pixels];
 
-            return false;
+            if (pixels.length == 0) return false;
+            for (let i = 0; i < pixels.length; i++)
+            {
+                const element = pixels[i];
+                if (!element) return false;
+                if (element.width == 0)
+                    return false;
+                if (element.height == 0)
+                    return false;
+            }
+            return true;
         }
 
         /**
@@ -142,14 +163,13 @@ namespace feng3d
          */
         active(gl: GL)
         {
-            var currentPixels = this.checkRenderData() ? this._pixels : this.noPixels;
-            if (this._invalid || this._activePixels != currentPixels)
+            if (this._invalid)
             {
                 this.clear();
                 this._invalid = false;
+                this._activePixels = this.checkRenderData(this._pixels) ? this._pixels : this.noPixels;
+                this._isPowerOfTwo = this.isPowerOfTwo(this._activePixels);
             }
-
-            this._activePixels = currentPixels;
 
             var texture = this.getTexture(gl);
             var textureType = gl[this._textureType];
@@ -158,7 +178,7 @@ namespace feng3d
             var wrapS = gl[this.wrapS];
             var wrapT = gl[this.wrapT];
 
-            if (!this.isPowerOfTwo)
+            if (!this._isPowerOfTwo)
             {
                 wrapS = gl.CLAMP_TO_EDGE;
                 wrapT = gl.CLAMP_TO_EDGE;
@@ -203,51 +223,43 @@ namespace feng3d
                 }
                 texture = newtexture;
                 var textureType = gl[this._textureType];
+                var format = gl[this.format];
+                var type = gl[this.type];
+
                 //设置图片y轴方向
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, this.flipY ? 1 : 0);
                 gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premulAlpha ? 1 : 0);
                 //绑定纹理
                 gl.bindTexture(textureType, texture);
                 //设置纹理图片
-                this.initTexture(gl);
-                if (this.generateMipmap && this.isPowerOfTwo)
+                switch (textureType)
+                {
+                    case gl.TEXTURE_CUBE_MAP:
+                        var pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[] = <any>this._activePixels;
+                        var faces = [
+                            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                            gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                        ];
+                        for (var i = 0; i < faces.length; i++)
+                        {
+                            gl.texImage2D(faces[i], 0, format, format, type, this._activePixels[i]);
+                        }
+                        break;
+                    case gl.TEXTURE_2D:
+                        var _pixel: ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap = <any>this._activePixels;
+                        var textureType = gl[this._textureType];
+                        gl.texImage2D(textureType, 0, format, format, type, _pixel);
+                        break;
+                    default:
+                        throw "";
+                }
+                if (this.generateMipmap && this._isPowerOfTwo)
                 {
                     gl.generateMipmap(textureType);
                 }
                 this._textureMap.set(gl, texture);
             }
             return texture;
-        }
-
-        /**
-         * 初始化纹理
-         */
-        private initTexture(gl: GL)
-        {
-            var format = gl[this.format];
-            var type = gl[this.type];
-
-            switch (this._textureType)
-            {
-                case TextureType.TEXTURE_CUBE_MAP:
-                    var pixels: HTMLImageElement[] = <any>this._activePixels;
-                    var faces = [
-                        gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                        gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                    ];
-                    for (var i = 0; i < faces.length; i++)
-                    {
-                        gl.texImage2D(faces[i], 0, format, format, type, this._activePixels[i]);
-                    }
-                    break;
-                case TextureType.TEXTURE_2D:
-                    var _pixel: HTMLImageElement | ImageData = <any>this._activePixels;
-                    var textureType = gl[this._textureType];
-                    gl.texImage2D(textureType, 0, format, format, type, _pixel);
-                    break;
-                default:
-                    break;
-            }
         }
 
         /**

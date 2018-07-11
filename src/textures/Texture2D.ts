@@ -42,14 +42,6 @@ namespace feng3d
             feng3dDispatcher.on("assets.imageAssetsChanged", this.onImageAssetsChanged, this);
         }
 
-        /**
-         * 判断数据是否满足渲染需求
-         */
-        checkRenderData()
-        {
-            return !!this._pixels;
-        }
-
         private urlChanged()
         {
             var url = this.url;

@@ -7984,15 +7984,15 @@ declare namespace feng3d {
         /**
          * 需要使用的贴图数据
          */
-        protected _pixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
+        protected _pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
-        noPixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
+        noPixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
         /**
          * 当前使用的贴图数据
          */
-        protected _activePixels: (ImageData | HTMLImageElement) | (ImageData | HTMLImageElement)[];
+        protected _activePixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
         /**
          * 纹理缓冲
          */
@@ -8001,15 +8001,16 @@ declare namespace feng3d {
          * 是否失效
          */
         private _invalid;
+        private _isPowerOfTwo;
         /**
          * 是否为2的幂贴图
          */
-        readonly isPowerOfTwo: boolean;
+        private isPowerOfTwo(pixels);
         constructor(raw?: gPartial<TextureInfo>);
         /**
          * 判断数据是否满足渲染需求
          */
-        checkRenderData(): boolean;
+        private checkRenderData(pixels);
         /**
          * 使纹理失效
          */
@@ -8024,10 +8025,6 @@ declare namespace feng3d {
          * @param data  数据
          */
         getTexture(gl: GL): WebGLTexture;
-        /**
-         * 初始化纹理
-         */
-        private initTexture(gl);
         /**
          * 清理纹理
          */
@@ -10365,10 +10362,6 @@ declare namespace feng3d {
          */
         readonly size: Vector2;
         constructor(raw?: gPartial<Texture2D>);
-        /**
-         * 判断数据是否满足渲染需求
-         */
-        checkRenderData(): boolean;
         private urlChanged();
         private onImageAssetsChanged(e);
     }
@@ -10389,10 +10382,6 @@ declare namespace feng3d {
         noPixels: ImageData[];
         protected _textureType: TextureType;
         constructor(raw?: gPartial<TextureCube>);
-        /**
-         * 判断数据是否满足渲染需求
-         */
-        checkRenderData(): boolean;
         private urlChanged(property, oldValue, newValue);
     }
 }
@@ -10401,10 +10390,6 @@ declare namespace feng3d {
         pixels: ImageData;
         protected _pixels: ImageData;
         constructor();
-        /**
-         * 判断数据是否满足渲染需求
-         */
-        checkRenderData(): boolean;
     }
 }
 declare namespace feng3d {
