@@ -17,18 +17,16 @@ namespace feng3d
     {
         protected _pixels: ImageData | HTMLImageElement;
 
-        noPixels = imageDatas.white;
-
         @serialize
         @watch("urlChanged")
         @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         url = "";
 
-        protected _textureType = TextureType.TEXTURE_2D;
-
         constructor(raw?: gPartial<Texture2D>)
         {
             super(raw);
+            this.noPixels = this.noPixels || imageDatas.white;
+            this._textureType = TextureType.TEXTURE_2D;
             //
             feng3dDispatcher.on("assets.imageAssetsChanged", this.onImageAssetsChanged, this);
         }

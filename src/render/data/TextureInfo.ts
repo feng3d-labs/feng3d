@@ -93,6 +93,14 @@ namespace feng3d
         protected _activePixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
 
         /**
+         * 是否为渲染目标纹理
+         */
+        protected _isRenderTarget = false;
+
+        OFFSCREEN_WIDTH = 1024;
+        OFFSCREEN_HEIGHT = 1024;
+
+        /**
          * 纹理缓冲
          */
         protected _textureMap = new Map<GL, WebGLTexture>();
@@ -257,13 +265,25 @@ namespace feng3d
                         ];
                         for (var i = 0; i < faces.length; i++)
                         {
-                            gl.texImage2D(faces[i], 0, format, format, type, this._activePixels[i]);
+                            if (this._isRenderTarget)
+                            {
+                                gl.texImage2D(faces[i], 0, format, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT, 0, format, type, null);
+                            } else
+                            {
+                                gl.texImage2D(faces[i], 0, format, format, type, this._activePixels[i]);
+                            }
                         }
                         break;
                     case gl.TEXTURE_2D:
                         var _pixel: ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap = <any>this._activePixels;
                         var textureType = gl[this._textureType];
-                        gl.texImage2D(textureType, 0, format, format, type, _pixel);
+                        if (this._isRenderTarget)
+                        {
+                            gl.texImage2D(textureType, 0, format, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT, 0, format, type, null);
+                        } else
+                        {
+                            gl.texImage2D(textureType, 0, format, format, type, _pixel);
+                        }
                         break;
                     default:
                         throw "";

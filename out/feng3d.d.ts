@@ -7994,6 +7994,12 @@ declare namespace feng3d {
          */
         protected _activePixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
         /**
+         * 是否为渲染目标纹理
+         */
+        protected _isRenderTarget: boolean;
+        OFFSCREEN_WIDTH: number;
+        OFFSCREEN_HEIGHT: number;
+        /**
          * 纹理缓冲
          */
         protected _textureMap: Map<GL, WebGLTexture>;
@@ -10358,9 +10364,7 @@ declare namespace feng3d {
      */
     class Texture2D extends TextureInfo {
         protected _pixels: ImageData | HTMLImageElement;
-        noPixels: ImageData;
         url: string;
-        protected _textureType: TextureType;
         constructor(raw?: gPartial<Texture2D>);
         private urlChanged();
         private onImageAssetsChanged(e);
@@ -10378,8 +10382,6 @@ declare namespace feng3d {
         negative_x_url: string;
         negative_y_url: string;
         negative_z_url: string;
-        protected _pixels: HTMLImageElement[];
-        protected _textureType: TextureType;
         constructor(raw?: gPartial<TextureCube>);
         private urlChanged(property, oldValue, newValue);
     }
@@ -10388,7 +10390,7 @@ declare namespace feng3d {
     class ImageDataTexture extends TextureInfo {
         pixels: ImageData;
         protected _pixels: ImageData;
-        constructor();
+        constructor(raw?: gPartial<ImageDataTexture>);
     }
 }
 declare namespace feng3d {
@@ -10398,6 +10400,7 @@ declare namespace feng3d {
     class RenderTargetTexture extends TextureInfo {
         OFFSCREEN_WIDTH: number;
         OFFSCREEN_HEIGHT: number;
+        constructor(raw?: gPartial<RenderTargetTexture>);
     }
 }
 declare namespace feng3d {

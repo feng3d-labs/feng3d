@@ -12972,6 +12972,12 @@ var feng3d;
              */
             this.anisotropy = 0;
             /**
+             * 是否为渲染目标纹理
+             */
+            this._isRenderTarget = false;
+            this.OFFSCREEN_WIDTH = 1024;
+            this.OFFSCREEN_HEIGHT = 1024;
+            /**
              * 纹理缓冲
              */
             this._textureMap = new Map();
@@ -13109,13 +13115,23 @@ var feng3d;
                             gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                         ];
                         for (var i = 0; i < faces.length; i++) {
-                            gl.texImage2D(faces[i], 0, format, format, type, this._activePixels[i]);
+                            if (this._isRenderTarget) {
+                                gl.texImage2D(faces[i], 0, format, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT, 0, format, type, null);
+                            }
+                            else {
+                                gl.texImage2D(faces[i], 0, format, format, type, this._activePixels[i]);
+                            }
                         }
                         break;
                     case gl.TEXTURE_2D:
                         var _pixel = this._activePixels;
                         var textureType = gl[this._textureType];
-                        gl.texImage2D(textureType, 0, format, format, type, _pixel);
+                        if (this._isRenderTarget) {
+                            gl.texImage2D(textureType, 0, format, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT, 0, format, type, null);
+                        }
+                        else {
+                            gl.texImage2D(textureType, 0, format, format, type, _pixel);
+                        }
                         break;
                     default:
                         throw "";
@@ -20102,8 +20118,8 @@ var feng3d;
         __extends(Texture2D, _super);
         function Texture2D(raw) {
             var _this = _super.call(this, raw) || this;
-            _this.noPixels = feng3d.imageDatas.white;
             _this.url = "";
+            _this.noPixels = _this.noPixels || feng3d.imageDatas.white;
             _this._textureType = feng3d.TextureType.TEXTURE_2D;
             //
             feng3d.feng3dDispatcher.on("assets.imageAssetsChanged", _this.onImageAssetsChanged, _this);
@@ -20147,9 +20163,9 @@ var feng3d;
         __extends(TextureCube, _super);
         function TextureCube(raw) {
             var _this = _super.call(this, raw) || this;
-            _this._pixels = [null, null, null, null, null, null];
-            _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
             _this.noPixels = _this.noPixels || [feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white];
+            _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
+            _this._pixels = [null, null, null, null, null, null];
             return _this;
         }
         TextureCube.prototype.urlChanged = function (property, oldValue, newValue) {
@@ -20204,8 +20220,9 @@ var feng3d;
 (function (feng3d) {
     var ImageDataTexture = /** @class */ (function (_super) {
         __extends(ImageDataTexture, _super);
-        function ImageDataTexture() {
-            var _this = _super.call(this) || this;
+        function ImageDataTexture(raw) {
+            var _this = _super.call(this, raw) || this;
+            _this.noPixels = _this.noPixels || feng3d.imageDatas.white;
             _this._textureType = feng3d.TextureType.TEXTURE_2D;
             return _this;
         }
@@ -20230,10 +20247,12 @@ var feng3d;
      */
     var RenderTargetTexture = /** @class */ (function (_super) {
         __extends(RenderTargetTexture, _super);
-        function RenderTargetTexture() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function RenderTargetTexture(raw) {
+            var _this = _super.call(this, raw) || this;
             _this.OFFSCREEN_WIDTH = 1024;
             _this.OFFSCREEN_HEIGHT = 1024;
+            _this._textureType = feng3d.TextureType.TEXTURE_2D;
+            _this._isRenderTarget = true;
             return _this;
         }
         return RenderTargetTexture;

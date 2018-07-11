@@ -14,9 +14,10 @@ namespace feng3d
 
         protected _pixels: ImageData;
 
-        constructor()
+        constructor(raw?: gPartial<ImageDataTexture>)
         {
-            super();
+            super(raw);
+            this.noPixels = this.noPixels || imageDatas.white;
             this._textureType = TextureType.TEXTURE_2D;
         }
     }
