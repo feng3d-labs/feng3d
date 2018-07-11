@@ -8,8 +8,6 @@ namespace feng3d
         OFFSCREEN_WIDTH = 1024;
         OFFSCREEN_HEIGHT = 1024;
 
-
-
         constructor(raw?: gPartial<RenderTargetTexture>)
         {
             super(raw);

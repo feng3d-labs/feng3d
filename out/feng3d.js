@@ -12992,6 +12992,13 @@ var feng3d;
          * 是否为2的幂贴图
          */
         TextureInfo.prototype.isPowerOfTwo = function (pixels) {
+            if (this._isRenderTarget) {
+                if (this.OFFSCREEN_WIDTH == 0 || !feng3d.FMath.isPowerOfTwo(this.OFFSCREEN_WIDTH))
+                    return false;
+                if (this.OFFSCREEN_HEIGHT == 0 || !feng3d.FMath.isPowerOfTwo(this.OFFSCREEN_HEIGHT))
+                    return false;
+                return true;
+            }
             if (!pixels)
                 return false;
             if (!(pixels instanceof Array))
@@ -13009,6 +13016,9 @@ var feng3d;
          * 纹理尺寸
          */
         TextureInfo.prototype.getSize = function () {
+            if (this._isRenderTarget) {
+                return new feng3d.Vector2(this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
+            }
             var pixels = this._activePixels;
             if (!pixels)
                 new feng3d.Vector2(1, 1);

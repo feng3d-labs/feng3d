@@ -116,6 +116,14 @@ namespace feng3d
          */
         private isPowerOfTwo(pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[])
         {
+            if (this._isRenderTarget)
+            {
+                if (this.OFFSCREEN_WIDTH == 0 || !FMath.isPowerOfTwo(this.OFFSCREEN_WIDTH))
+                    return false;
+                if (this.OFFSCREEN_HEIGHT == 0 || !FMath.isPowerOfTwo(this.OFFSCREEN_HEIGHT))
+                    return false;
+                return true;
+            }
             if (!pixels) return false;
             if (!(pixels instanceof Array))
                 pixels = [pixels];
@@ -135,6 +143,10 @@ namespace feng3d
          */
         getSize()
         {
+            if (this._isRenderTarget)
+            {
+                return new Vector2(this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
+            }
             var pixels = this._activePixels;
             if (!pixels) new Vector2(1, 1);
             if (!(pixels instanceof Array))

@@ -8042,8 +8042,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-}
-declare namespace feng3d {
     /**
      * 帧缓冲对象
      * @author feng 2017-02-18
