@@ -21,10 +21,7 @@ namespace feng3d
             {
                 this.renderAtomic = new RenderAtomic();
                 var renderParams = this.renderAtomic.renderParams;
-                renderParams.renderMode = RenderMode.LINES;
                 renderParams.enableBlend = false;
-                renderParams.depthMask = false;
-                renderParams.depthtest = true;
                 renderParams.depthFunc = DepthFunc.LEQUAL;
 
                 this.shader = shaderlib.getShader("shadow");
@@ -52,14 +49,15 @@ namespace feng3d
 
             light.updateShadowByCamera(scene3d, camera);
 
-            var shadowCamera = light.shadow.camera;
+            // var shadowCamera = light.shadow.camera;
+            var shadowCamera = camera;
 
             this.renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
             this.renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
             this.renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
             this.renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
 
-            var unblenditems = scene3d.getPickCache(shadowCamera).unblenditems;
+            var unblenditems = scene3d.getPickCache(shadowCamera).unblenditems.filter((i) => i.castShadows);
             unblenditems.forEach(element =>
             {
                 this.drawGameObject(gl, element.gameObject);

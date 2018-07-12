@@ -12,8 +12,13 @@ namespace feng3d
         @watch("invalidate")
         OFFSCREEN_HEIGHT = 1024;
 
+        @watch("invalidate")
         frameBuffer: FrameBuffer;
+
+        @watch("invalidate")
         texture: RenderTargetTexture2D;
+
+        @watch("invalidate")
         depthBuffer: RenderBuffer;
 
         /**
@@ -33,21 +38,15 @@ namespace feng3d
         {
             this.OFFSCREEN_WIDTH = width;
             this.OFFSCREEN_HEIGHT = height;
-            //
             this.frameBuffer = new FrameBuffer();
-            //
             this.texture = new RenderTargetTexture2D();
-            this.texture.OFFSCREEN_WIDTH = width;
-            this.texture.OFFSCREEN_HEIGHT = height;
-            //
             this.depthBuffer = new RenderBuffer();
-            this.depthBuffer.OFFSCREEN_WIDTH = width;
-            this.depthBuffer.OFFSCREEN_HEIGHT = height;
         }
 
         active(gl: GL)
         {
             var framebuffer = this.frameBuffer.active(gl);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             if (this._invalid)
             {
                 this._invalid = false;
@@ -60,7 +59,6 @@ namespace feng3d
                 var depthBuffer = this.depthBuffer.active(gl);
 
                 // Attach the texture and the renderbuffer object to the FBO
-                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
 
@@ -73,7 +71,10 @@ namespace feng3d
                 }
             }
 
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
             return framebuffer;
         }
 

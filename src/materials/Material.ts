@@ -40,7 +40,7 @@ namespace feng3d
          */
         @serialize
         @oav({ component: "OAVObjectView" })
-        uniforms = new StandardUniforms();
+        uniforms: Object = new StandardUniforms();
 
         /**
          * 渲染参数

@@ -27,6 +27,7 @@ namespace feng3d
                     debuger && alert('Failed to create frame buffer object');
                     return null;
                 }
+                this._framebufferMap.set(gl, framebuffer);
             }
             return framebuffer;
         }

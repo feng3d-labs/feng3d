@@ -50,6 +50,20 @@ namespace feng3d
         @watch("materialChanged")
         material: Material;
 
+        /**
+         * 是否投射阴影
+         */
+        @oav()
+        @serialize
+        castShadows = false;
+
+        /**
+         * 是否接受阴影
+         */
+        @oav()
+        @serialize
+        receiveShadows = false;
+
         init(gameObject: GameObject)
         {
             super.init(gameObject);

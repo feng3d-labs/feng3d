@@ -13241,6 +13241,7 @@ var feng3d;
                     feng3d.debuger && alert('Failed to create frame buffer object');
                     return null;
                 }
+                this._framebufferMap.set(gl, framebuffer);
             }
             return framebuffer;
         };
@@ -13275,16 +13276,9 @@ var feng3d;
             this._invalid = true;
             this.OFFSCREEN_WIDTH = width;
             this.OFFSCREEN_HEIGHT = height;
-            //
             this.frameBuffer = new feng3d.FrameBuffer();
-            //
             this.texture = new feng3d.RenderTargetTexture2D();
-            this.texture.OFFSCREEN_WIDTH = width;
-            this.texture.OFFSCREEN_HEIGHT = height;
-            //
             this.depthBuffer = new feng3d.RenderBuffer();
-            this.depthBuffer.OFFSCREEN_WIDTH = width;
-            this.depthBuffer.OFFSCREEN_HEIGHT = height;
         }
         /**
          * 使失效
@@ -13294,6 +13288,7 @@ var feng3d;
         };
         FrameBufferObject.prototype.active = function (gl) {
             var framebuffer = this.frameBuffer.active(gl);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             if (this._invalid) {
                 this._invalid = false;
                 this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
@@ -13304,7 +13299,6 @@ var feng3d;
                 var texture = this.texture.active(gl);
                 var depthBuffer = this.depthBuffer.active(gl);
                 // Attach the texture and the renderbuffer object to the FBO
-                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
                 // Check if FBO is configured correctly
@@ -13314,7 +13308,9 @@ var feng3d;
                     return null;
                 }
             }
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             return framebuffer;
         };
         FrameBufferObject.prototype.deactive = function (gl) {
@@ -13326,6 +13322,15 @@ var feng3d;
         __decorate([
             feng3d.watch("invalidate")
         ], FrameBufferObject.prototype, "OFFSCREEN_HEIGHT", void 0);
+        __decorate([
+            feng3d.watch("invalidate")
+        ], FrameBufferObject.prototype, "frameBuffer", void 0);
+        __decorate([
+            feng3d.watch("invalidate")
+        ], FrameBufferObject.prototype, "texture", void 0);
+        __decorate([
+            feng3d.watch("invalidate")
+        ], FrameBufferObject.prototype, "depthBuffer", void 0);
         return FrameBufferObject;
     }());
     feng3d.FrameBufferObject = FrameBufferObject;
@@ -14312,10 +14317,7 @@ var feng3d;
             if (!this.renderAtomic) {
                 this.renderAtomic = new feng3d.RenderAtomic();
                 var renderParams = this.renderAtomic.renderParams;
-                renderParams.renderMode = feng3d.RenderMode.LINES;
                 renderParams.enableBlend = false;
-                renderParams.depthMask = false;
-                renderParams.depthtest = true;
                 renderParams.depthFunc = feng3d.DepthFunc.LEQUAL;
                 this.shader = feng3d.shaderlib.getShader("shadow");
                 this.skeleton_shader = feng3d.shaderlib.getShader("shadow_skeleton");
@@ -14335,12 +14337,13 @@ var feng3d;
             this.init();
             light.frameBufferObject.active(gl);
             light.updateShadowByCamera(scene3d, camera);
-            var shadowCamera = light.shadow.camera;
+            // var shadowCamera = light.shadow.camera;
+            var shadowCamera = camera;
             this.renderAtomic.uniforms.u_projectionMatrix = function () { return shadowCamera.lens.matrix; };
             this.renderAtomic.uniforms.u_viewProjection = function () { return shadowCamera.viewProjection; };
             this.renderAtomic.uniforms.u_viewMatrix = function () { return shadowCamera.transform.worldToLocalMatrix; };
             this.renderAtomic.uniforms.u_cameraMatrix = function () { return shadowCamera.transform.localToWorldMatrix; };
-            var unblenditems = scene3d.getPickCache(shadowCamera).unblenditems;
+            var unblenditems = scene3d.getPickCache(shadowCamera).unblenditems.filter(function (i) { return i.castShadows; });
             unblenditems.forEach(function (element) {
                 _this.drawGameObject(gl, element.gameObject);
             });
@@ -16509,7 +16512,16 @@ var feng3d;
     var MeshRenderer = /** @class */ (function (_super) {
         __extends(MeshRenderer, _super);
         function MeshRenderer() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 是否投射阴影
+             */
+            _this.castShadows = false;
+            /**
+             * 是否接受阴影
+             */
+            _this.receiveShadows = false;
+            return _this;
         }
         Object.defineProperty(MeshRenderer.prototype, "single", {
             get: function () { return true; },
@@ -16579,6 +16591,14 @@ var feng3d;
             feng3d.serialize,
             feng3d.watch("materialChanged")
         ], MeshRenderer.prototype, "material", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], MeshRenderer.prototype, "castShadows", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], MeshRenderer.prototype, "receiveShadows", void 0);
         return MeshRenderer;
     }(feng3d.Behaviour));
     feng3d.MeshRenderer = MeshRenderer;
@@ -20266,10 +20286,15 @@ var feng3d;
         UrlImageTexture2D.prototype.urlChanged = function () {
             var _this = this;
             var url = this.url;
+            if (url == "") {
+                this.image = null;
+                this.invalidate();
+                return;
+            }
             feng3d.assets.readFileAsImage(url, function (err, img) {
                 if (url == _this.url) {
                     if (err) {
-                        // error(err);
+                        feng3d.error(err);
                         _this.image = null;
                     }
                     else
@@ -20901,11 +20926,14 @@ var feng3d;
                 //材质
                 var model = gameObject.getComponent(feng3d.MeshRenderer);
                 model.geometry = new feng3d.PlaneGeometry({ width: 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-                var textureMaterial = model.material = feng3d.materialFactory.create("standard");
+                var textureMaterial = model.material = feng3d.materialFactory.create("texture");
                 //
-                // textureMaterial.uniforms.s_diffuse = 'resources/m.png';
+                // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
+                // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
+                textureMaterial.uniforms.s_texture = this.frameBufferObject.texture;
             }
-            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scale(viewCamera.lens.near + 0.001));
+            var depth = viewCamera.lens.near + 0.001 * (viewCamera.lens.far - viewCamera.lens.near);
+            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleTo(depth));
             var billboardComponent = gameObject.getComponent(feng3d.BillboardComponent);
             billboardComponent.camera = viewCamera;
             if (this.debugShadowMap) {

@@ -9217,6 +9217,14 @@ declare namespace feng3d {
          * Returns the first instantiated Material assigned to the renderer.
          */
         material: Material;
+        /**
+         * 是否投射阴影
+         */
+        castShadows: boolean;
+        /**
+         * 是否接受阴影
+         */
+        receiveShadows: boolean;
         init(gameObject: GameObject): void;
         preRender(renderAtomic: RenderAtomic): void;
         /**
@@ -10498,7 +10506,7 @@ declare namespace feng3d {
         /**
          * Uniform数据
          */
-        uniforms: StandardUniforms;
+        uniforms: Object;
         /**
          * 渲染参数
          */

@@ -17,13 +17,19 @@ namespace feng3d
         private urlChanged()
         {
             var url = this.url;
+            if (url == "")
+            {
+                this.image = null;
+                this.invalidate();
+                return;
+            }
             assets.readFileAsImage(url, (err, img) =>
             {
                 if (url == this.url)
                 {
                     if (err)
                     {
-                        // error(err);
+                        error(err);
                         this.image = null;
                     } else
                         this.image = img;

@@ -75,12 +75,15 @@ namespace feng3d
                 //材质
                 var model = gameObject.getComponent(MeshRenderer);
                 model.geometry = new feng3d.PlaneGeometry({ width: 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-                var textureMaterial = model.material = feng3d.materialFactory.create("standard");
+                var textureMaterial = model.material = feng3d.materialFactory.create("texture");
                 //
-                // textureMaterial.uniforms.s_diffuse = 'resources/m.png';
+                // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
+                // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
+                textureMaterial.uniforms.s_texture = <any>this.frameBufferObject.texture;
             }
 
-            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scale(viewCamera.lens.near + 0.001));
+            var depth = viewCamera.lens.near + 0.001 * (viewCamera.lens.far - viewCamera.lens.near);
+            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleTo(depth));
             var billboardComponent = gameObject.getComponent(BillboardComponent);
             billboardComponent.camera = viewCamera;
 
