@@ -13094,6 +13094,7 @@ var feng3d;
                     feng3d.debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
                 }
             }
+            return texture;
         };
         /**
          * 获取顶点属性缓冲
@@ -13219,88 +13220,175 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var FrameBuffer = /** @class */ (function () {
+        function FrameBuffer() {
+            this._framebufferMap = new Map();
+            /**
+             * 是否失效
+             */
+            this._invalid = true;
+        }
+        FrameBuffer.prototype.active = function (gl) {
+            if (this._invalid) {
+                this._invalid = false;
+                this.clear();
+            }
+            // Create a framebuffer object (FBO)
+            var framebuffer = this._framebufferMap.get(gl);
+            if (!framebuffer) {
+                framebuffer = gl.createFramebuffer();
+                if (!framebuffer) {
+                    feng3d.debuger && alert('Failed to create frame buffer object');
+                    return null;
+                }
+            }
+            return framebuffer;
+        };
+        /**
+         * 清理缓存
+         */
+        FrameBuffer.prototype.clear = function () {
+            this._framebufferMap.forEach(function (v, k) {
+                k.deleteFramebuffer(v);
+            });
+            this._framebufferMap.clear();
+        };
+        return FrameBuffer;
+    }());
+    feng3d.FrameBuffer = FrameBuffer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 帧缓冲对象
      * @author feng 2017-02-18
      */
     var FrameBufferObject = /** @class */ (function () {
-        function FrameBufferObject() {
+        function FrameBufferObject(width, height) {
+            if (width === void 0) { width = 1024; }
+            if (height === void 0) { height = 1024; }
             this.OFFSCREEN_WIDTH = 1024;
             this.OFFSCREEN_HEIGHT = 1024;
-            this._framebufferMap = new Map();
-            this._textureMap = new Map();
-            this._depthBufferMap = new Map();
+            /**
+             * 是否失效
+             */
+            this._invalid = true;
+            this.OFFSCREEN_WIDTH = width;
+            this.OFFSCREEN_HEIGHT = height;
+            //
+            this.frameBuffer = new feng3d.FrameBuffer();
+            //
+            this.texture = new feng3d.RenderTargetTexture2D();
+            this.texture.OFFSCREEN_WIDTH = width;
+            this.texture.OFFSCREEN_HEIGHT = height;
+            //
+            this.depthBuffer = new feng3d.RenderBuffer();
+            this.depthBuffer.OFFSCREEN_WIDTH = width;
+            this.depthBuffer.OFFSCREEN_HEIGHT = height;
         }
-        FrameBufferObject.prototype.init = function (gl) {
-            if (this._framebufferMap.get(gl))
-                return;
-            // Create a framebuffer object (FBO)
-            var framebuffer = gl.createFramebuffer();
-            if (!framebuffer) {
-                feng3d.debuger && alert('Failed to create frame buffer object');
-                return this.clear(gl);
-            }
-            // Create a texture object and set its size and parameters
-            var texture = gl.createTexture(); // Create a texture object
-            if (!texture) {
-                feng3d.debuger && alert('Failed to create texture object');
-                return this.clear(gl);
-            }
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            // Create a renderbuffer object and Set its size and parameters
-            var depthBuffer = gl.createRenderbuffer(); // Create a renderbuffer object
-            if (!depthBuffer) {
-                feng3d.debuger && alert('Failed to create renderbuffer object');
-                return this.clear(gl);
-            }
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
-            // Attach the texture and the renderbuffer object to the FBO
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-            // Check if FBO is configured correctly
-            var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-            if (gl.FRAMEBUFFER_COMPLETE !== e) {
-                feng3d.debuger && alert('Frame buffer object is incomplete: ' + e.toString());
-                return this.clear(gl);
-            }
-            // Unbind the buffer object
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            gl.bindTexture(gl.TEXTURE_2D, null);
-            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-            this._framebufferMap.set(gl, framebuffer);
-            this._textureMap.set(gl, texture);
-            this._depthBufferMap.set(gl, depthBuffer);
+        /**
+         * 使失效
+         */
+        FrameBufferObject.prototype.invalidate = function () {
+            this._invalid = true;
         };
         FrameBufferObject.prototype.active = function (gl) {
-            this.init(gl);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebufferMap.get(gl));
+            var framebuffer = this.frameBuffer.active(gl);
+            if (this._invalid) {
+                this._invalid = false;
+                this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
+                this.texture.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
+                this.depthBuffer.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
+                this.depthBuffer.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
+                //
+                var texture = this.texture.active(gl);
+                var depthBuffer = this.depthBuffer.active(gl);
+                // Attach the texture and the renderbuffer object to the FBO
+                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+                // Check if FBO is configured correctly
+                var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+                if (gl.FRAMEBUFFER_COMPLETE !== e) {
+                    feng3d.debuger && alert('Frame buffer object is incomplete: ' + e.toString());
+                    return null;
+                }
+            }
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            return framebuffer;
         };
         FrameBufferObject.prototype.deactive = function (gl) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         };
-        FrameBufferObject.prototype.clear = function (gl) {
-            if (this._framebufferMap.has(gl)) {
-                gl.deleteFramebuffer(this._framebufferMap.get(gl));
-                this._framebufferMap.delete(gl);
-            }
-            if (this._textureMap.has(gl)) {
-                gl.deleteTexture(this._textureMap.get(gl));
-                this._textureMap.delete(gl);
-            }
-            if (this._depthBufferMap.has(gl)) {
-                gl.deleteRenderbuffer(this._depthBufferMap.get(gl));
-                this._depthBufferMap.delete(gl);
-            }
-            return null;
-        };
+        __decorate([
+            feng3d.watch("invalidate")
+        ], FrameBufferObject.prototype, "OFFSCREEN_WIDTH", void 0);
+        __decorate([
+            feng3d.watch("invalidate")
+        ], FrameBufferObject.prototype, "OFFSCREEN_HEIGHT", void 0);
         return FrameBufferObject;
     }());
     feng3d.FrameBufferObject = FrameBufferObject;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var RenderBuffer = /** @class */ (function () {
+        function RenderBuffer() {
+            this.OFFSCREEN_WIDTH = 1024;
+            this.OFFSCREEN_HEIGHT = 1024;
+            this._depthBufferMap = new Map();
+            /**
+             * 是否失效
+             */
+            this._invalid = true;
+        }
+        /**
+         * 使失效
+         */
+        RenderBuffer.prototype.invalidate = function () {
+            this._invalid = true;
+        };
+        /**
+         * 激活
+         * @param gl
+         */
+        RenderBuffer.prototype.active = function (gl) {
+            if (this._invalid) {
+                this.clear();
+                this._invalid = false;
+            }
+            var depthBuffer = this._depthBufferMap.get(gl);
+            if (!depthBuffer) {
+                // Create a renderbuffer object and Set its size and parameters
+                depthBuffer = gl.createRenderbuffer(); // Create a renderbuffer object
+                if (!depthBuffer) {
+                    feng3d.debuger && alert('Failed to create renderbuffer object');
+                    return;
+                }
+                this._depthBufferMap.set(gl, depthBuffer);
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
+            }
+            return depthBuffer;
+        };
+        /**
+         * 清理纹理
+         */
+        RenderBuffer.prototype.clear = function () {
+            this._depthBufferMap.forEach(function (v, k) {
+                k.deleteRenderbuffer(v);
+            });
+            this._depthBufferMap.clear();
+        };
+        __decorate([
+            feng3d.watch("invalidate")
+        ], RenderBuffer.prototype, "OFFSCREEN_WIDTH", void 0);
+        __decorate([
+            feng3d.watch("invalidate")
+        ], RenderBuffer.prototype, "OFFSCREEN_HEIGHT", void 0);
+        return RenderBuffer;
+    }());
+    feng3d.RenderBuffer = RenderBuffer;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20269,6 +20357,8 @@ var feng3d;
             _this.OFFSCREEN_WIDTH = 1024;
             _this.OFFSCREEN_HEIGHT = 1024;
             _this._isRenderTarget = true;
+            _this.minFilter = feng3d.TextureMinFilter.NEAREST;
+            _this.magFilter = feng3d.TextureMagFilter.NEAREST;
             return _this;
         }
         __decorate([

@@ -111,8 +111,10 @@
         "src/render/data/Index.ts",
         "src/render/data/Attribute.ts",
         "src/render/data/TextureInfo.ts",
+        "src/render/data/FrameBuffer.ts",
         //
         "src/render/FrameBufferObject.ts",
+        "src/render/RenderBuffer.ts",
         "src/render/RenderContext.ts",
         //
         "src/render/shader/ShaderLib.ts",

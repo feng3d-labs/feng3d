@@ -8029,7 +8029,7 @@ declare namespace feng3d {
          * 激活纹理
          * @param gl
          */
-        active(gl: GL): void;
+        active(gl: GL): WebGLTexture;
         /**
          * 获取顶点属性缓冲
          * @param data  数据
@@ -8042,6 +8042,20 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    class FrameBuffer {
+        protected _framebufferMap: Map<GL, WebGLFramebuffer>;
+        /**
+         * 是否失效
+         */
+        private _invalid;
+        active(gl: GL): WebGLFramebuffer;
+        /**
+         * 清理缓存
+         */
+        private clear();
+    }
+}
+declare namespace feng3d {
     /**
      * 帧缓冲对象
      * @author feng 2017-02-18
@@ -8049,13 +8063,44 @@ declare namespace feng3d {
     class FrameBufferObject {
         OFFSCREEN_WIDTH: number;
         OFFSCREEN_HEIGHT: number;
-        protected _framebufferMap: Map<GL, WebGLFramebuffer>;
-        protected _textureMap: Map<GL, WebGLTexture>;
-        protected _depthBufferMap: Map<GL, WebGLRenderbuffer>;
-        private init(gl);
-        active(gl: GL): void;
+        frameBuffer: FrameBuffer;
+        texture: RenderTargetTexture2D;
+        depthBuffer: RenderBuffer;
+        /**
+         * 是否失效
+         */
+        private _invalid;
+        /**
+         * 使失效
+         */
+        protected invalidate(): void;
+        constructor(width?: number, height?: number);
+        active(gl: GL): WebGLFramebuffer;
         deactive(gl: GL): void;
-        clear(gl: GL): any;
+    }
+}
+declare namespace feng3d {
+    class RenderBuffer {
+        OFFSCREEN_WIDTH: number;
+        OFFSCREEN_HEIGHT: number;
+        protected _depthBufferMap: Map<GL, WebGLRenderbuffer>;
+        /**
+         * 是否失效
+         */
+        private _invalid;
+        /**
+         * 使失效
+         */
+        protected invalidate(): void;
+        /**
+         * 激活
+         * @param gl
+         */
+        active(gl: GL): WebGLRenderbuffer;
+        /**
+         * 清理纹理
+         */
+        private clear();
     }
 }
 declare namespace feng3d {
