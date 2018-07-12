@@ -40,24 +40,17 @@ namespace feng3d
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera)
+        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, worldBounds: Box)
         {
-            // 获取视窗摄像机可视区域包围盒
-            var viewBox = viewCamera.viewBox;
             // 
-            var center = viewBox.getCenter();
-            var radius = viewBox.getSize().length;
+            var center = worldBounds.getCenter();
+            var radius = worldBounds.getSize().length;
             // 
-            var worldBounds = scene3d.gameObject.getComponent(Bounding).worldBounds;
-            //
-            var worldCenter = worldBounds.getCenter();
-            var worldRadius = worldBounds.getSize().length;
-            //
             var near = 1;
-            this.shadow.camera.transform.position = center.addTo(this.direction.scaleTo(worldRadius + near - worldCenter.subTo(center).dot(this.direction)).negate());
+            this.shadow.camera.transform.position = center.addTo(this.direction.scaleTo(radius + near).negate());
             this.shadow.camera.transform.lookAt(center);
             //
-            this.shadow.camera.lens = new OrthographicLens(-radius, radius, radius, - radius, near, near + worldRadius * 2);
+            this.shadow.camera.lens = new OrthographicLens(-radius, radius, radius, - radius, near, near + radius * 2);
 
             this.updateDebugShadowMap(scene3d, viewCamera);
         }
@@ -70,6 +63,7 @@ namespace feng3d
                 gameObject = this.debugShadowMapObject = gameObjectFactory.createPlane("debugShadowMapObject");
                 gameObject.showinHierarchy = false;
                 gameObject.serializable = false;
+                gameObject.mouseEnabled = false;
                 gameObject.addComponent(BillboardComponent);
 
                 //材质

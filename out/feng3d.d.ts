@@ -9389,6 +9389,11 @@ declare namespace feng3d {
          * @param camera
          */
         getPickCache(camera: Camera): ScenePickCache;
+        /**
+         * 获取接收光照渲染对象列表
+         * @param light
+         */
+        getPickByDirectionalLight(light: DirectionalLight): MeshRenderer[];
     }
 }
 declare namespace feng3d {
@@ -10776,7 +10781,7 @@ declare namespace feng3d {
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera): void;
+        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, worldBounds: Box): void;
         private updateDebugShadowMap(scene3d, viewCamera);
     }
 }

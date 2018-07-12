@@ -267,5 +267,30 @@ namespace feng3d
             this.pickMap.set(camera, pick);
             return pick;
         }
+
+        /**
+         * 获取接收光照渲染对象列表
+         * @param light 
+         */
+        getPickByDirectionalLight(light: DirectionalLight)
+        {
+            var openlist = [this.gameObject];
+            var targets: MeshRenderer[] = [];
+            while (openlist.length > 0)
+            {
+                var item = openlist.shift();
+                if (!item.visible) continue;
+                var meshRenderer = item.getComponent(MeshRenderer);
+                if (meshRenderer && meshRenderer.castShadows && !meshRenderer.material.renderParams.enableBlend)
+                {
+                    targets.push(meshRenderer);
+                }
+                item.children.forEach(element =>
+                {
+                    openlist.push(element);
+                });
+            }
+            return targets;
+        }
     }
 }

@@ -45,12 +45,23 @@ namespace feng3d
         {
             this.init();
 
+            var meshRenderers = scene3d.getPickByDirectionalLight(light);
+            if (meshRenderers.length == 0)
+                return;
+            var worldBounds: Box = meshRenderers.reduce((pre: Box, i) =>
+            {
+                var box = i.getComponent(Bounding).worldBounds;
+                if (!pre)
+                    return box.clone();
+                pre.union(box);
+                return pre;
+            }, null)
+
             light.frameBufferObject.active(gl);
 
-            light.updateShadowByCamera(scene3d, camera);
+            light.updateShadowByCamera(scene3d, camera, worldBounds);
 
             var shadowCamera = light.shadow.camera;
-            // var shadowCamera = camera;
 
             //
             this.renderAtomic.renderParams.useViewRect = true;
@@ -61,8 +72,7 @@ namespace feng3d
             this.renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
             this.renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
 
-            var unblenditems = scene3d.getPickCache(shadowCamera).unblenditems.filter((i) => i.castShadows);
-            unblenditems.forEach(element =>
+            meshRenderers.forEach(element =>
             {
                 this.drawGameObject(gl, element.gameObject);
             });

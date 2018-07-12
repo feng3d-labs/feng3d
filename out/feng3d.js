@@ -14331,10 +14331,19 @@ var feng3d;
         ShadowRenderer.prototype.drawForLight = function (gl, light, scene3d, camera) {
             var _this = this;
             this.init();
+            var meshRenderers = scene3d.getPickByDirectionalLight(light);
+            if (meshRenderers.length == 0)
+                return;
+            var worldBounds = meshRenderers.reduce(function (pre, i) {
+                var box = i.getComponent(feng3d.Bounding).worldBounds;
+                if (!pre)
+                    return box.clone();
+                pre.union(box);
+                return pre;
+            }, null);
             light.frameBufferObject.active(gl);
-            light.updateShadowByCamera(scene3d, camera);
+            light.updateShadowByCamera(scene3d, camera, worldBounds);
             var shadowCamera = light.shadow.camera;
-            // var shadowCamera = camera;
             //
             this.renderAtomic.renderParams.useViewRect = true;
             this.renderAtomic.renderParams.viewRect = new feng3d.Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -14343,8 +14352,7 @@ var feng3d;
             this.renderAtomic.uniforms.u_viewProjection = function () { return shadowCamera.viewProjection; };
             this.renderAtomic.uniforms.u_viewMatrix = function () { return shadowCamera.transform.worldToLocalMatrix; };
             this.renderAtomic.uniforms.u_cameraMatrix = function () { return shadowCamera.transform.localToWorldMatrix; };
-            var unblenditems = scene3d.getPickCache(shadowCamera).unblenditems.filter(function (i) { return i.castShadows; });
-            unblenditems.forEach(function (element) {
+            meshRenderers.forEach(function (element) {
                 _this.drawGameObject(gl, element.gameObject);
             });
             light.frameBufferObject.deactive(gl);
@@ -16907,6 +16915,27 @@ var feng3d;
             var pick = new feng3d.ScenePickCache(this, camera);
             this.pickMap.set(camera, pick);
             return pick;
+        };
+        /**
+         * 获取接收光照渲染对象列表
+         * @param light
+         */
+        Scene3D.prototype.getPickByDirectionalLight = function (light) {
+            var openlist = [this.gameObject];
+            var targets = [];
+            while (openlist.length > 0) {
+                var item = openlist.shift();
+                if (!item.visible)
+                    continue;
+                var meshRenderer = item.getComponent(feng3d.MeshRenderer);
+                if (meshRenderer && meshRenderer.castShadows && !meshRenderer.material.renderParams.enableBlend) {
+                    targets.push(meshRenderer);
+                }
+                item.children.forEach(function (element) {
+                    openlist.push(element);
+                });
+            }
+            return targets;
         };
         __decorate([
             feng3d.serialize,
@@ -20899,23 +20928,16 @@ var feng3d;
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        DirectionalLight.prototype.updateShadowByCamera = function (scene3d, viewCamera) {
-            // 获取视窗摄像机可视区域包围盒
-            var viewBox = viewCamera.viewBox;
+        DirectionalLight.prototype.updateShadowByCamera = function (scene3d, viewCamera, worldBounds) {
             // 
-            var center = viewBox.getCenter();
-            var radius = viewBox.getSize().length;
+            var center = worldBounds.getCenter();
+            var radius = worldBounds.getSize().length;
             // 
-            var worldBounds = scene3d.gameObject.getComponent(feng3d.Bounding).worldBounds;
-            //
-            var worldCenter = worldBounds.getCenter();
-            var worldRadius = worldBounds.getSize().length;
-            //
             var near = 1;
-            this.shadow.camera.transform.position = center.addTo(this.direction.scaleTo(worldRadius + near - worldCenter.subTo(center).dot(this.direction)).negate());
+            this.shadow.camera.transform.position = center.addTo(this.direction.scaleTo(radius + near).negate());
             this.shadow.camera.transform.lookAt(center);
             //
-            this.shadow.camera.lens = new feng3d.OrthographicLens(-radius, radius, radius, -radius, near, near + worldRadius * 2);
+            this.shadow.camera.lens = new feng3d.OrthographicLens(-radius, radius, radius, -radius, near, near + radius * 2);
             this.updateDebugShadowMap(scene3d, viewCamera);
         };
         DirectionalLight.prototype.updateDebugShadowMap = function (scene3d, viewCamera) {
@@ -20924,6 +20946,7 @@ var feng3d;
                 gameObject = this.debugShadowMapObject = feng3d.gameObjectFactory.createPlane("debugShadowMapObject");
                 gameObject.showinHierarchy = false;
                 gameObject.serializable = false;
+                gameObject.mouseEnabled = false;
                 gameObject.addComponent(feng3d.BillboardComponent);
                 //材质
                 var model = gameObject.getComponent(feng3d.MeshRenderer);
