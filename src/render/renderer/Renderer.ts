@@ -20,7 +20,7 @@ namespace feng3d
 
             this.draw = (renderAtomic1: RenderAtomic) =>
             {
-                var shaderProgram = renderAtomic1.shader.activeShaderProgram(gl);
+                var shaderProgram = renderAtomic1.getShader().activeShaderProgram(gl);
                 if (!shaderProgram)
                     return;
                 var renderAtomic = checkRenderData(renderAtomic1);

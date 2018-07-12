@@ -70,6 +70,8 @@ namespace feng3d
                     renderAtomic.uniforms[<any>key] = this.uniforms[key];
                 }
             }
+            renderAtomic.shader = this.shader;
+            renderAtomic.renderParams = this.renderParams;
         }
 
         private onShaderChanged()

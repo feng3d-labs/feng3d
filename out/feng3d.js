@@ -13308,7 +13308,6 @@ var feng3d;
                     return null;
                 }
             }
-            gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             return framebuffer;
@@ -13939,7 +13938,7 @@ var feng3d;
             feng3d.assert(!gl.renderer, gl + " " + gl.renderer + " \u5B58\u5728\uFF01");
             gl.renderer = this;
             this.draw = function (renderAtomic1) {
-                var shaderProgram = renderAtomic1.shader.activeShaderProgram(gl);
+                var shaderProgram = renderAtomic1.getShader().activeShaderProgram(gl);
                 if (!shaderProgram)
                     return;
                 var renderAtomic = checkRenderData(renderAtomic1);
@@ -14201,10 +14200,7 @@ var feng3d;
         };
         ForwardRenderer.prototype.drawRenderables = function (meshRenderer, gl) {
             //绘制
-            var material = meshRenderer.material;
             var renderAtomic = meshRenderer.gameObject.renderAtomic;
-            renderAtomic.renderParams = material.renderParams;
-            renderAtomic.shader = material.shader;
             meshRenderer.gameObject.preRender(renderAtomic);
             renderAtomic.next = this.renderContext.renderAtomic;
             gl.renderer.draw(renderAtomic);
@@ -14337,8 +14333,12 @@ var feng3d;
             this.init();
             light.frameBufferObject.active(gl);
             light.updateShadowByCamera(scene3d, camera);
-            // var shadowCamera = light.shadow.camera;
-            var shadowCamera = camera;
+            var shadowCamera = light.shadow.camera;
+            // var shadowCamera = camera;
+            //
+            this.renderAtomic.renderParams.useViewRect = true;
+            this.renderAtomic.renderParams.viewRect = new feng3d.Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+            //
             this.renderAtomic.uniforms.u_projectionMatrix = function () { return shadowCamera.lens.matrix; };
             this.renderAtomic.uniforms.u_viewProjection = function () { return shadowCamera.viewProjection; };
             this.renderAtomic.uniforms.u_viewMatrix = function () { return shadowCamera.transform.worldToLocalMatrix; };
@@ -20512,6 +20512,8 @@ var feng3d;
                     renderAtomic.uniforms[key] = this.uniforms[key];
                 }
             }
+            renderAtomic.shader = this.shader;
+            renderAtomic.renderParams = this.renderParams;
         };
         Material.prototype.onShaderChanged = function () {
             var cls = feng3d.shaderConfig.shaders[this.shaderName].cls;

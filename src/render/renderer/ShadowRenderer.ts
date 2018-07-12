@@ -49,9 +49,13 @@ namespace feng3d
 
             light.updateShadowByCamera(scene3d, camera);
 
-            // var shadowCamera = light.shadow.camera;
-            var shadowCamera = camera;
+            var shadowCamera = light.shadow.camera;
+            // var shadowCamera = camera;
 
+            //
+            this.renderAtomic.renderParams.useViewRect = true;
+            this.renderAtomic.renderParams.viewRect = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT)
+            //
             this.renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
             this.renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
             this.renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
