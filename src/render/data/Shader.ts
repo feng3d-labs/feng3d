@@ -1,6 +1,50 @@
 namespace feng3d
 {
     /**
+     * WebGL渲染程序有效信息
+     */
+    export interface UniformInfo
+    {
+        /**
+         * uniform名称
+         */
+        name: string;
+
+        size: number;
+        type: number;
+        /**
+         * uniform地址
+         */
+        location: WebGLUniformLocation;
+        /**
+         * texture索引
+         */
+        textureID: number;
+
+        /**
+         * Uniform数组索引，当Uniform数据为数组数据时生效
+         */
+        index?: number;
+    }
+
+    export interface AttributeInfo
+    {
+        /**
+         * 名称
+         */
+        name: string;
+
+        size: number;
+        type: number;
+
+        /**
+         * 属性地址
+         */
+        location: number;
+
+    }
+
+    /**
      * shader
      */
     export class Shader
@@ -174,52 +218,43 @@ namespace feng3d
 
             //获取属性信息
             var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
-            var attributes: { [name: string]: WebGLActiveInfo } = {};
+            var attributes: { [name: string]: AttributeInfo } = {};
             var i = 0;
             while (i < numAttributes)
             {
                 var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
-                if (activeInfo)
-                {
-                    activeInfo.location = gl.getAttribLocation(shaderProgram, activeInfo.name);
-                    attributes[activeInfo.name] = activeInfo;
-                }
+                attributes[activeInfo.name] = { name: activeInfo.name, size: activeInfo.size, type: activeInfo.type, location: gl.getAttribLocation(shaderProgram, activeInfo.name) };
             }
             //获取uniform信息
             var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
-            var uniforms: { [name: string]: WebGLActiveInfo } = {};
+            var uniforms: { [name: string]: UniformInfo } = {};
             var i = 0;
             var textureID = 0;
             while (i < numUniforms)
             {
                 var activeInfo = gl.getActiveUniform(shaderProgram, i++);
-                if (activeInfo)
+                var name = activeInfo.name;
+                if (name.indexOf("[") != -1)
                 {
-                    if (activeInfo.name.indexOf("[") != -1)
+                    //处理数组
+                    var baseName = activeInfo.name.substring(0, name.indexOf("["));
+                    for (var j = 0; j < activeInfo.size; j++)
                     {
-                        //处理数组
-                        var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
-                        activeInfo.uniformBaseName = baseName;
-                        var uniformLocationlist: WebGLUniformLocation[] = activeInfo.uniformLocation = [];
-                        for (var j = 0; j < activeInfo.size; j++)
+                        name = baseName + `[${j}]`;
+
+                        uniforms[name] = { index: j, name: baseName, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
+                        if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE)
                         {
-                            var location = gl.getUniformLocation(shaderProgram, baseName + `[${j}]`);
-                            location && uniformLocationlist.push(location);
-                        }
-                    } else
-                    {
-                        var uniformLocation = gl.getUniformLocation(shaderProgram, activeInfo.name);
-                        if (uniformLocation)
-                        {
-                            activeInfo.uniformLocation = uniformLocation;
+                            textureID++;
                         }
                     }
+                } else
+                {
+                    uniforms[name] = { name: name, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
                     if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE)
                     {
-                        activeInfo.textureID = textureID;
                         textureID++;
                     }
-                    uniforms[activeInfo.name] = activeInfo;
                 }
             }
 
@@ -233,11 +268,11 @@ namespace feng3d
             /**
              * 属性信息列表
              */
-            attributes: { [name: string]: WebGLActiveInfo };
+            attributes: { [name: string]: AttributeInfo };
             /**
              * uniform信息列表
              */
-            uniforms: { [name: string]: WebGLActiveInfo };
+            uniforms: { [name: string]: UniformInfo };
         }>();
 
         private getMacroCode(variables: string[], valueObj: Object)

@@ -12419,10 +12419,7 @@ var feng3d;
             var i = 0;
             while (i < numAttributes) {
                 var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
-                if (activeInfo) {
-                    activeInfo.location = gl.getAttribLocation(shaderProgram, activeInfo.name);
-                    attributes[activeInfo.name] = activeInfo;
-                }
+                attributes[activeInfo.name] = { name: activeInfo.name, size: activeInfo.size, type: activeInfo.type, location: gl.getAttribLocation(shaderProgram, activeInfo.name) };
             }
             //获取uniform信息
             var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
@@ -12431,28 +12428,23 @@ var feng3d;
             var textureID = 0;
             while (i < numUniforms) {
                 var activeInfo = gl.getActiveUniform(shaderProgram, i++);
-                if (activeInfo) {
-                    if (activeInfo.name.indexOf("[") != -1) {
-                        //处理数组
-                        var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
-                        activeInfo.uniformBaseName = baseName;
-                        var uniformLocationlist = activeInfo.uniformLocation = [];
-                        for (var j = 0; j < activeInfo.size; j++) {
-                            var location = gl.getUniformLocation(shaderProgram, baseName + ("[" + j + "]"));
-                            location && uniformLocationlist.push(location);
+                var name = activeInfo.name;
+                if (name.indexOf("[") != -1) {
+                    //处理数组
+                    var baseName = activeInfo.name.substring(0, name.indexOf("["));
+                    for (var j = 0; j < activeInfo.size; j++) {
+                        name = baseName + ("[" + j + "]");
+                        uniforms[name] = { index: j, name: baseName, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
+                        if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE) {
+                            textureID++;
                         }
                     }
-                    else {
-                        var uniformLocation = gl.getUniformLocation(shaderProgram, activeInfo.name);
-                        if (uniformLocation) {
-                            activeInfo.uniformLocation = uniformLocation;
-                        }
-                    }
+                }
+                else {
+                    uniforms[name] = { name: name, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
                     if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE) {
-                        activeInfo.textureID = textureID;
                         textureID++;
                     }
-                    uniforms[activeInfo.name] = activeInfo;
                 }
             }
             var result = { program: shaderProgram, vertex: vertexShader, fragment: fragmentShader, attributes: attributes, uniforms: uniforms };
@@ -13998,8 +13990,8 @@ var feng3d;
                 }
                 for (var key in shaderResult.uniforms) {
                     var activeInfo = shaderResult.uniforms[key];
-                    if (activeInfo.uniformBaseName) {
-                        key = activeInfo.uniformBaseName;
+                    if (activeInfo.name) {
+                        key = activeInfo.name;
                     }
                     var uniform = renderAtomic.getUniformByKey(key);
                     if (uniform == undefined) {
@@ -14064,11 +14056,9 @@ var feng3d;
              */
             function activeAttributes(renderAtomic, attributeInfos) {
                 for (var name in attributeInfos) {
-                    if (attributeInfos.hasOwnProperty(name)) {
-                        var activeInfo = attributeInfos[name];
-                        var buffer = renderAtomic.attributes[name];
-                        buffer.active(gl, activeInfo.location);
-                    }
+                    var activeInfo = attributeInfos[name];
+                    var buffer = renderAtomic.attributes[name];
+                    buffer.active(gl, activeInfo.location);
                 }
             }
             /**
@@ -14076,10 +14066,8 @@ var feng3d;
              */
             function disableAttributes(attributeInfos) {
                 for (var name in attributeInfos) {
-                    if (attributeInfos.hasOwnProperty(name)) {
-                        var activeInfo = attributeInfos[name];
-                        gl.disableVertexAttribArray(activeInfo.location);
-                    }
+                    var activeInfo = attributeInfos[name];
+                    gl.disableVertexAttribArray(activeInfo.location);
                 }
             }
             /**
@@ -14087,20 +14075,13 @@ var feng3d;
              */
             function activeUniforms(renderAtomic, uniformInfos) {
                 for (var name in uniformInfos) {
-                    if (uniformInfos.hasOwnProperty(name)) {
-                        var activeInfo = uniformInfos[name];
-                        if (activeInfo.uniformBaseName) {
-                            var baseName = activeInfo.uniformBaseName;
-                            var uniformData = feng3d.lazy.getvalue(renderAtomic.uniforms[baseName]);
-                            //处理数组
-                            for (var j = 0; j < activeInfo.size; j++) {
-                                setContext3DUniform({ name: baseName + ("[" + j + "]"), type: activeInfo.type, uniformLocation: activeInfo.uniformLocation[j], textureID: activeInfo.textureID }, uniformData[j]);
-                            }
-                        }
-                        else {
-                            var uniformData = feng3d.lazy.getvalue(renderAtomic.uniforms[activeInfo.name]);
-                            setContext3DUniform(activeInfo, uniformData);
-                        }
+                    var activeInfo = uniformInfos[name];
+                    var uniformData = feng3d.lazy.getvalue(renderAtomic.uniforms[activeInfo.name]);
+                    if (activeInfo.index != undefined) {
+                        setContext3DUniform(activeInfo, uniformData[activeInfo.index]);
+                    }
+                    else {
+                        setContext3DUniform(activeInfo, uniformData);
                     }
                 }
             }
@@ -14108,7 +14089,7 @@ var feng3d;
              * 设置环境Uniform数据
              */
             function setContext3DUniform(activeInfo, data) {
-                var location = activeInfo.uniformLocation;
+                var location = activeInfo.location;
                 switch (activeInfo.type) {
                     case gl.INT:
                         gl.uniform1i(location, data);

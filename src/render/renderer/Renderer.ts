@@ -64,9 +64,9 @@ namespace feng3d
                 for (var key in shaderResult.uniforms)
                 {
                     var activeInfo = shaderResult.uniforms[key];
-                    if (activeInfo.uniformBaseName)
+                    if (activeInfo.name)
                     {
-                        key = activeInfo.uniformBaseName;
+                        key = activeInfo.name;
                     }
                     var uniform = renderAtomic.getUniformByKey(key);
                     if (uniform == undefined)
@@ -145,58 +145,44 @@ namespace feng3d
             /**
              * 激活属性
              */
-            function activeAttributes(renderAtomic: RenderAtomic, attributeInfos: { [name: string]: WebGLActiveInfo })
+            function activeAttributes(renderAtomic: RenderAtomic, attributeInfos: { [name: string]: AttributeInfo })
             {
                 for (var name in attributeInfos)
                 {
-                    if (attributeInfos.hasOwnProperty(name))
-                    {
-                        var activeInfo = attributeInfos[name];
-                        var buffer: Attribute = renderAtomic.attributes[name];
-                        buffer.active(gl, activeInfo.location);
-                    }
+                    var activeInfo = attributeInfos[name];
+                    var buffer: Attribute = renderAtomic.attributes[name];
+                    buffer.active(gl, activeInfo.location);
                 }
             }
 
             /**
              * 激活属性
              */
-            function disableAttributes(attributeInfos: { [name: string]: WebGLActiveInfo })
+            function disableAttributes(attributeInfos: { [name: string]: AttributeInfo })
             {
                 for (var name in attributeInfos)
                 {
-                    if (attributeInfos.hasOwnProperty(name))
-                    {
-                        var activeInfo = attributeInfos[name];
-                        gl.disableVertexAttribArray(activeInfo.location);
-                    }
+                    var activeInfo = attributeInfos[name];
+                    gl.disableVertexAttribArray(activeInfo.location);
                 }
             }
 
             /**
              * 激活常量
              */
-            function activeUniforms(renderAtomic: RenderAtomic, uniformInfos: { [name: string]: WebGLActiveInfo })
+            function activeUniforms(renderAtomic: RenderAtomic, uniformInfos: { [name: string]: UniformInfo })
             {
                 for (var name in uniformInfos)
                 {
-                    if (uniformInfos.hasOwnProperty(name))
+                    var activeInfo = uniformInfos[name];
+                    var uniformData = lazy.getvalue(renderAtomic.uniforms[activeInfo.name]);
+
+                    if (activeInfo.index != undefined)
                     {
-                        var activeInfo = uniformInfos[name];
-                        if (activeInfo.uniformBaseName)
-                        {
-                            var baseName = activeInfo.uniformBaseName;
-                            var uniformData = lazy.getvalue(renderAtomic.uniforms[baseName]);
-                            //处理数组
-                            for (var j = 0; j < activeInfo.size; j++)
-                            {
-                                setContext3DUniform({ name: baseName + `[${j}]`, type: activeInfo.type, uniformLocation: activeInfo.uniformLocation[j], textureID: activeInfo.textureID }, uniformData[j]);
-                            }
-                        } else
-                        {
-                            var uniformData = lazy.getvalue(renderAtomic.uniforms[activeInfo.name]);
-                            setContext3DUniform(activeInfo, uniformData);
-                        }
+                        setContext3DUniform(activeInfo, uniformData[activeInfo.index]);
+                    } else
+                    {
+                        setContext3DUniform(activeInfo, uniformData);
                     }
                 }
             }
@@ -204,9 +190,9 @@ namespace feng3d
             /**
              * 设置环境Uniform数据
              */
-            function setContext3DUniform(activeInfo: { name: string; uniformLocation: WebGLUniformLocation, type: number; textureID: number }, data)
+            function setContext3DUniform(activeInfo: UniformInfo, data)
             {
-                var location = activeInfo.uniformLocation;
+                var location = activeInfo.location;
                 switch (activeInfo.type)
                 {
                     case gl.INT:

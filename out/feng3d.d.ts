@@ -7229,27 +7229,6 @@ declare var WebGL2RenderingContext: {
     readonly TIMEOUT_IGNORED: number;
     readonly MAX_CLIENT_WAIT_TIMEOUT_WEBGL: number;
 };
-/**
- * WebGL渲染程序有效信息
- */
-interface WebGLActiveInfo {
-    /**
-     * 属性地址
-     */
-    location: number;
-    /**
-     * uniform基础名称，例如 arr[10] 基础名称为 arr
-     */
-    uniformBaseName: string;
-    /**
-     * uniform地址
-     */
-    uniformLocation: WebGLUniformLocation | WebGLUniformLocation[];
-    /**
-     * texture索引
-     */
-    textureID: number;
-}
 declare namespace feng3d {
     interface GL extends WebGLRenderingContext {
         /**
@@ -7598,6 +7577,41 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * WebGL渲染程序有效信息
+     */
+    interface UniformInfo {
+        /**
+         * uniform名称
+         */
+        name: string;
+        size: number;
+        type: number;
+        /**
+         * uniform地址
+         */
+        location: WebGLUniformLocation;
+        /**
+         * texture索引
+         */
+        textureID: number;
+        /**
+         * Uniform数组索引，当Uniform数据为数组数据时生效
+         */
+        index?: number;
+    }
+    interface AttributeInfo {
+        /**
+         * 名称
+         */
+        name: string;
+        size: number;
+        type: number;
+        /**
+         * 属性地址
+         */
+        location: number;
+    }
+    /**
      * shader
      */
     class Shader {
@@ -7637,10 +7651,10 @@ declare namespace feng3d {
             vertex: WebGLShader;
             fragment: WebGLShader;
             attributes: {
-                [name: string]: WebGLActiveInfo;
+                [name: string]: AttributeInfo;
             };
             uniforms: {
-                [name: string]: WebGLActiveInfo;
+                [name: string]: UniformInfo;
             };
         };
         protected map: Map<GL, {
@@ -7648,10 +7662,10 @@ declare namespace feng3d {
             vertex: WebGLShader;
             fragment: WebGLShader;
             attributes: {
-                [name: string]: WebGLActiveInfo;
+                [name: string]: AttributeInfo;
             };
             uniforms: {
-                [name: string]: WebGLActiveInfo;
+                [name: string]: UniformInfo;
             };
         }>;
         private getMacroCode(variables, valueObj);
