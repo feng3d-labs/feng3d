@@ -7273,10 +7273,6 @@ declare namespace feng3d {
          */
         renderer: Renderer;
         /**
-         * WebWG2.0 或者 扩展功能
-         */
-        advanced: GLAdvanced;
-        /**
          * 纹理各向异性过滤最大值
          */
         maxAnisotropy: number;
@@ -7291,26 +7287,6 @@ declare namespace feng3d {
         static getGL(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes): GL;
         private static _toolGL;
         static getToolGL(): GL;
-    }
-}
-declare namespace feng3d {
-    /**
-     * WebWG2.0 或者 扩展功能
-     */
-    class GLAdvanced {
-        /**
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/drawElementsInstanced
-         */
-        drawElementsInstanced: (mode: GLenum, count: GLsizei, type: GLenum, offset: GLintptr, instanceCount: GLsizei) => void;
-        /**
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/vertexAttribDivisor
-         */
-        vertexAttribDivisor: (index: GLuint, divisor: GLuint) => void;
-        /**
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/drawArraysInstanced
-         */
-        drawArraysInstanced: (mode: GLenum, first: GLint, count: GLsizei, instanceCount: GLsizei) => void;
-        constructor(gl: GL);
     }
 }
 declare namespace feng3d {

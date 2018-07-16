@@ -12111,7 +12111,6 @@ var feng3d;
                 gl.webgl2 = true;
             //
             new feng3d.GLExtension(gl);
-            new feng3d.GLAdvanced(gl);
             new feng3d.Renderer(gl);
             gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
             gl.clearDepth(1.0); // Clear everything
@@ -12131,54 +12130,6 @@ var feng3d;
         return GL;
     }());
     feng3d.GL = GL;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * WebWG2.0 或者 扩展功能
-     */
-    var GLAdvanced = /** @class */ (function () {
-        function GLAdvanced(gl) {
-            feng3d.assert(!gl.advanced, gl + " " + gl.advanced + " \u5B58\u5728\uFF01");
-            gl.advanced = this;
-            var gl2 = gl;
-            this.drawElementsInstanced = function (mode, count, type, offset, instanceCount) {
-                if (gl.webgl2) {
-                    gl2.drawElementsInstanced(mode, count, type, offset, instanceCount);
-                }
-                else if (!!gl.extensions.aNGLEInstancedArrays) {
-                    gl.extensions.aNGLEInstancedArrays.drawElementsInstancedANGLE(mode, count, type, offset, instanceCount);
-                }
-                else {
-                    feng3d.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawElementsInstanced \uFF01");
-                }
-            };
-            this.vertexAttribDivisor = function (index, divisor) {
-                if (gl.webgl2) {
-                    gl2.vertexAttribDivisor(index, divisor);
-                }
-                else if (!!gl.extensions.aNGLEInstancedArrays) {
-                    gl.extensions.aNGLEInstancedArrays.vertexAttribDivisorANGLE(index, divisor);
-                }
-                else {
-                    feng3d.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 vertexAttribDivisor \uFF01");
-                }
-            };
-            this.drawArraysInstanced = function (mode, first, count, instanceCount) {
-                if (gl.webgl2) {
-                    gl2.drawArraysInstanced(mode, first, count, instanceCount);
-                }
-                else if (!!gl.extensions.aNGLEInstancedArrays) {
-                    gl.extensions.aNGLEInstancedArrays.drawArraysInstancedANGLE(mode, first, count, instanceCount);
-                }
-                else {
-                    feng3d.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawArraysInstanced \uFF01");
-                }
-            };
-        }
-        return GLAdvanced;
-    }());
-    feng3d.GLAdvanced = GLAdvanced;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -12938,8 +12889,16 @@ var feng3d;
             var buffer = this.getBuffer(gl);
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
             gl.vertexAttribPointer(location, this.size, type, this.normalized, this.stride, this.offset);
-            //渲染时必须重置
-            gl.advanced.vertexAttribDivisor(location, this.divisor);
+            if (gl.webgl2) {
+                var gl2 = gl;
+                gl2.vertexAttribDivisor(location, this.divisor);
+            }
+            else if (!!gl.extensions.aNGLEInstancedArrays) {
+                gl.extensions.aNGLEInstancedArrays.vertexAttribDivisorANGLE(location, this.divisor);
+            }
+            else {
+                feng3d.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 vertexAttribDivisor \uFF01");
+            }
         };
         Attribute.prototype.invalidate = function () {
             this.invalid = true;
@@ -14212,7 +14171,16 @@ var feng3d;
                         return;
                     }
                     if (instanceCount > 1) {
-                        gl.advanced.drawElementsInstanced(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
+                        if (gl.webgl2) {
+                            var gl2 = gl;
+                            gl2.drawElementsInstanced(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
+                        }
+                        else if (!!gl.extensions.aNGLEInstancedArrays) {
+                            gl.extensions.aNGLEInstancedArrays.drawElementsInstancedANGLE(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
+                        }
+                        else {
+                            feng3d.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawElementsInstanced \uFF01");
+                        }
                     }
                     else {
                         gl.drawElements(renderMode, indexBuffer.count, arrayType, indexBuffer.offset);
@@ -14233,7 +14201,16 @@ var feng3d;
                         return;
                     }
                     if (instanceCount > 1) {
-                        gl.advanced.drawArraysInstanced(renderMode, 0, vertexNum, instanceCount);
+                        if (gl.webgl2) {
+                            var gl2 = gl;
+                            gl2.drawArraysInstanced(renderMode, 0, vertexNum, instanceCount);
+                        }
+                        else if (!!gl.extensions.aNGLEInstancedArrays) {
+                            gl.extensions.aNGLEInstancedArrays.drawArraysInstancedANGLE(renderMode, 0, vertexNum, instanceCount);
+                        }
+                        else {
+                            feng3d.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawArraysInstanced \uFF01");
+                        }
                     }
                     else {
                         gl.drawArrays(renderMode, 0, vertexNum);

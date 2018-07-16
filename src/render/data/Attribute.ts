@@ -144,8 +144,17 @@ namespace feng3d
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
             gl.vertexAttribPointer(location, this.size, type, this.normalized, this.stride, this.offset);
 
-            //渲染时必须重置
-            gl.advanced.vertexAttribDivisor(location, this.divisor);
+            if (gl.webgl2)
+            {
+                var gl2: WebGL2RenderingContext = <any>gl;
+                gl2.vertexAttribDivisor(location, this.divisor);
+            } else if (!!gl.extensions.aNGLEInstancedArrays)
+            {
+                gl.extensions.aNGLEInstancedArrays.vertexAttribDivisorANGLE(location, this.divisor);
+            } else
+            {
+                warn(`浏览器 不支持 vertexAttribDivisor ！`);
+            }
         }
 
         private invalidate()

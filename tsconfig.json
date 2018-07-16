@@ -100,7 +100,6 @@
         "src/render/gl/webgl2.ts",
         "src/render/gl/GLInterface.ts",
         "src/render/gl/GL.ts",
-        "src/render/gl/GLAdvanced.ts",
         "src/render/gl/GLExtension.ts",
         "src/render/gl/WebGLCapabilities.ts",
         //

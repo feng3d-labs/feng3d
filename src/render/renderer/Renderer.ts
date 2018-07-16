@@ -278,7 +278,17 @@ namespace feng3d
                     }
                     if (instanceCount > 1)
                     {
-                        gl.advanced.drawElementsInstanced(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
+                        if (gl.webgl2)
+                        {
+                            var gl2: WebGL2RenderingContext = <any>gl;
+                            gl2.drawElementsInstanced(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
+                        } else if (!!gl.extensions.aNGLEInstancedArrays)
+                        {
+                            gl.extensions.aNGLEInstancedArrays.drawElementsInstancedANGLE(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
+                        } else
+                        {
+                            warn(`浏览器 不支持 drawElementsInstanced ！`);
+                        }
                     } else
                     {
                         gl.drawElements(renderMode, indexBuffer.count, arrayType, indexBuffer.offset);
@@ -305,14 +315,23 @@ namespace feng3d
                     }
                     if (instanceCount > 1)
                     {
-                        gl.advanced.drawArraysInstanced(renderMode, 0, vertexNum, instanceCount);
+                        if (gl.webgl2)
+                        {
+                            var gl2: WebGL2RenderingContext = <any>gl;
+                            gl2.drawArraysInstanced(renderMode, 0, vertexNum, instanceCount);
+                        } else if (!!gl.extensions.aNGLEInstancedArrays)
+                        {
+                            gl.extensions.aNGLEInstancedArrays.drawArraysInstancedANGLE(renderMode, 0, vertexNum, instanceCount);
+                        } else
+                        {
+                            warn(`浏览器 不支持 drawArraysInstanced ！`);
+                        }
                     }
                     else
                     {
                         gl.drawArrays(renderMode, 0, vertexNum);
                     }
                 }
-
             }
         }
     }

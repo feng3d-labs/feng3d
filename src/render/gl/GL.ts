@@ -28,11 +28,6 @@ namespace feng3d
         renderer: Renderer;
 
         /**
-         * WebWG2.0 或者 扩展功能
-         */
-        advanced: GLAdvanced;
-
-        /**
          * 纹理各向异性过滤最大值
          */
         maxAnisotropy: number;
@@ -69,7 +64,6 @@ namespace feng3d
                 gl.webgl2 = true;
             //
             new GLExtension(gl);
-            new GLAdvanced(gl);
             new Renderer(gl);
             gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
             gl.clearDepth(1.0);                 // Clear everything
