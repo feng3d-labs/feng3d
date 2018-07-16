@@ -234,6 +234,9 @@ namespace feng3d
             renderAtomic.uniforms.u_particleTime = () => this.time;
 
             //
+            renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
+
+            //
             for (const key in this.particleGlobal)
             {
                 if (this.particleGlobal.hasOwnProperty(key))
@@ -242,6 +245,10 @@ namespace feng3d
                     if (element)
                     {
                         renderAtomic.uniforms["u_particle_" + key] = element;
+                        renderAtomic.shaderMacro["D_u_particle_" + key] = true;
+                    } else
+                    {
+                        renderAtomic.shaderMacro["D_u_particle_" + key] = false;
                     }
                 }
             }
@@ -255,6 +262,8 @@ namespace feng3d
                 attributeRenderData.data = vector3DData;
                 attributeRenderData.size = vector3DData.length / this.numParticles;
                 attributeRenderData.divisor = 1;
+
+                renderAtomic.shaderMacro["D_" + attribute] = true;
             }
         }
     }

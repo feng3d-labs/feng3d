@@ -43,6 +43,8 @@ namespace feng3d
             var pointLights = this.scene3d.collectComponents.pointLights.list;
             var directionalLights = this.scene3d.collectComponents.directionalLights.list;
 
+            renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
+
             //收集点光源数据
             var pointLightPositions: Vector3[] = [];
             var pointLightColors: Color3[] = [];
@@ -57,6 +59,12 @@ namespace feng3d
                     pointLightColors.push(pointLight.color);
                     pointLightIntensitys.push(pointLight.intensity);
                     pointLightRanges.push(pointLight.range);
+                    //
+                    renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
+                    renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
+                    renderAtomic.shaderMacro.GLOBAL_POSITION_NEED = 1;
+                    renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
+
                 } else
                 {
                     pointLightPositions.push(new Vector3());
@@ -65,6 +73,7 @@ namespace feng3d
                     pointLightRanges.push(0);
                 }
             }
+            renderAtomic.shaderMacro.NUM_POINTLIGHT = pointLights.length;
             //设置点光源数据
 
             //
@@ -84,6 +93,10 @@ namespace feng3d
                     directionalLightDirections.push(directionalLight.transform.localToWorldMatrix.forward);
                     directionalLightColors.push(directionalLight.color);
                     directionalLightIntensitys.push(directionalLight.intensity);
+                    //
+                    renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
+                    renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
+                    renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
                 } else
                 {
                     directionalLightDirections.push(new Vector3());
@@ -91,6 +104,7 @@ namespace feng3d
                     directionalLightIntensitys.push(0);
                 }
             }
+            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = directionalLights.length;
             //
             renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
             renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;

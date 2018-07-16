@@ -37,6 +37,11 @@ namespace feng3d
         shader: Shader;
 
         /**
+         * shader 中的 宏
+         */
+        shaderMacro: ShaderMacro = <any>{};
+
+        /**
          * 渲染参数
          */
         renderParams = new RenderParams();
@@ -156,6 +161,23 @@ namespace feng3d
                 node = node.next;
             }
             return renderParams;
+        }
+
+        getShaderMacro(shaderMacro: ShaderMacro = <any>{})
+        {
+            var node: RenderAtomic = this;
+            while (node)
+            {
+                for (const name in node.shaderMacro)
+                {
+                    if (!shaderMacro.hasOwnProperty(name))
+                    {
+                        shaderMacro[name] = node.shaderMacro[name];
+                    }
+                }
+                node = node.next;
+            }
+            return shaderMacro;
         }
     }
 }

@@ -117,6 +117,7 @@
         "src/render/RenderBuffer.ts",
         "src/render/RenderContext.ts",
         //
+        "src/render/shader/Macro.ts",
         "src/render/shader/ShaderLib.ts",
         "src/autofiles/ShaderConfig.ts",
         //

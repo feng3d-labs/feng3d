@@ -72,6 +72,8 @@ namespace feng3d
             }
             renderAtomic.shader = this.shader;
             renderAtomic.renderParams = this.renderParams;
+
+            renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == RenderMode.POINTS;
         }
 
         private onShaderChanged()
