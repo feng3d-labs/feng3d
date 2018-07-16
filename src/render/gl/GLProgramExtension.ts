@@ -12,12 +12,6 @@ namespace feng3d
                     return <any>createProgram(gl, arguments[0], arguments[1]);
                 }
                 var webGLProgram: WebGLProgram = oldCreateProgram.apply(gl, arguments);
-                webGLProgram.destroy = function ()
-                {
-                    gl.deleteProgram(webGLProgram);
-                    gl.deleteShader(webGLProgram.fragmentShader);
-                    gl.deleteShader(webGLProgram.vertexShader);
-                };
                 return webGLProgram;
             };
         }

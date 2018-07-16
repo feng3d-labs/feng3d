@@ -23,10 +23,6 @@ interface WebGLProgram
      * uniform信息列表
      */
     uniforms: { [name: string]: WebGLActiveInfo };
-    /**
-     * 销毁
-     */
-    destroy();
 }
 
 /**

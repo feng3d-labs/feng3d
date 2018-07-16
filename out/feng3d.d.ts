@@ -7257,10 +7257,6 @@ interface WebGLProgram {
     uniforms: {
         [name: string]: WebGLActiveInfo;
     };
-    /**
-     * 销毁
-     */
-    destroy(): any;
 }
 /**
  * WebGL渲染程序有效信息
@@ -7712,9 +7708,11 @@ declare namespace feng3d {
          */
         activeShaderProgram(gl: GL): WebGLProgram;
         /**
-         * 纹理缓冲
+         * 着色器程序缓存
          */
         protected _webGLProgramMap: Map<GL, WebGLProgram>;
+        protected _vertexShaderMap: Map<GL, WebGLShader>;
+        protected _fragmentShaderMap: Map<GL, WebGLShader>;
         private getMacroCode(variables, valueObj);
         private clear();
     }
