@@ -28,7 +28,7 @@ namespace feng3d
         intensity = 1;
 
         /**
-         * 是否生成阴影（未实现）
+         * 是否生成阴影
          */
         @oav()
         @serialize

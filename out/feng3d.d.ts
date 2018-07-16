@@ -10747,7 +10747,7 @@ declare namespace feng3d {
          */
         intensity: number;
         /**
-         * 是否生成阴影（未实现）
+         * 是否生成阴影
          */
         castsShadows: boolean;
         private _shadowMap;

@@ -21,18 +21,10 @@ varying vec3 v_bitangent;
 
 uniform float u_PointSize;
 
-#ifdef HAS_PARTICLE_ANIMATOR
-    #include<particle.vertex>
-#endif
-
 void main(void) {
 
     vec4 position = vec4(a_position,1.0);
     
-    #ifdef HAS_PARTICLE_ANIMATOR
-        position = particleAnimation(position);
-    #endif
-
     vec3 normal = a_normal;
 
     //获取全局坐标
