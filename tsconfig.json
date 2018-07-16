@@ -40,6 +40,7 @@
         "src/utils/ImageUtil.ts",
         "src/utils/Stats.ts",
         "src/utils/PathUtils.ts",
+        "src/utils/ShaderMacroUtils.ts",
         //
         "src/assets/Storage.ts",
         "src/assets/IndexedDBfs.ts",

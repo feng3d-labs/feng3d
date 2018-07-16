@@ -1957,6 +1957,25 @@ declare namespace feng3d {
         getDirDepth(path: string): number;
     }
 }
+declare namespace feng3d {
+    /**
+     * 着色器代码宏工具
+     */
+    var shaderMacroUtils: ShaderMacroUtils;
+    class ShaderMacroUtils {
+        /**
+         * 从着色器代码中获取宏变量列表
+         * @param vertex
+         * @param fragment
+         */
+        getMacroVariablesFromShaderCode(vertex: string, fragment: string): any[];
+        /**
+         * 从着色器代码中获取宏变量列表
+         * @param code
+         */
+        getMacroVariablesFromCode(code: string): any[];
+    }
+}
 interface IDBObjectStore {
     getAllKeys(): IDBRequest;
 }
@@ -7660,9 +7679,27 @@ declare namespace feng3d {
      * shader
      */
     class Shader {
+        /**
+         * 着色器名称
+         */
         private shaderName;
+        /**
+         * 顶点着色器代码
+         */
         private vertex;
+        /**
+         * 片段着色器代码
+         */
         private fragment;
+        /**
+         * 顶点着色器宏变量列表
+         */
+        private vertexMacroVariables;
+        /**
+         * 片段着色器宏变量列表
+         */
+        private fragmentMacroVariables;
+        private macroValues;
         /**
          * shader 中的 宏
          */
@@ -7678,7 +7715,7 @@ declare namespace feng3d {
          * 纹理缓冲
          */
         protected _webGLProgramMap: Map<GL, WebGLProgram>;
-        private getMacroCode(macro);
+        private getMacroCode(variables, valueObj);
         private clear();
     }
 }

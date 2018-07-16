@@ -4058,6 +4058,53 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var shaderMacroKeys = ["if", "ifdef", "defined"];
+    var ShaderMacroUtils = /** @class */ (function () {
+        function ShaderMacroUtils() {
+        }
+        /**
+         * 从着色器代码中获取宏变量列表
+         * @param vertex
+         * @param fragment
+         */
+        ShaderMacroUtils.prototype.getMacroVariablesFromShaderCode = function (vertex, fragment) {
+            var variables0 = this.getMacroVariablesFromCode(vertex);
+            var variables1 = this.getMacroVariablesFromCode(fragment);
+            for (var i = 0; i < variables1.length; i++) {
+                var element = variables1[i];
+                if (variables0.indexOf(element) == -1)
+                    variables0.push(element);
+            }
+            return variables0;
+        };
+        /**
+         * 从着色器代码中获取宏变量列表
+         * @param code
+         */
+        ShaderMacroUtils.prototype.getMacroVariablesFromCode = function (code) {
+            var variables = [];
+            var lines = code.split("\n");
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                if (line.indexOf("#if") != -1) {
+                    var reg = /([A-Z\w]+)/g;
+                    var result;
+                    while (result = reg.exec(line)) {
+                        var key = result[1];
+                        if (key != null && isNaN(Number(key)) && shaderMacroKeys.indexOf(key) == -1 && variables.indexOf(key) == -1)
+                            variables.push(key);
+                    }
+                }
+            }
+            return variables;
+        };
+        return ShaderMacroUtils;
+    }());
+    feng3d.ShaderMacroUtils = ShaderMacroUtils;
+    feng3d.shaderMacroUtils = new ShaderMacroUtils();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var databases = {};
     /**
      *
@@ -12460,6 +12507,7 @@ var feng3d;
      */
     var Shader = /** @class */ (function () {
         function Shader(shaderName) {
+            this.macroValues = {};
             /**
              * shader 中的 宏
              */
@@ -12479,15 +12527,34 @@ var feng3d;
                 var shader = feng3d.shaderlib.shaderConfig.shaders[this.shaderName];
                 this.vertex = feng3d.shaderlib.uninclude(shader.vertex);
                 this.fragment = feng3d.shaderlib.uninclude(shader.fragment);
+                this.vertexMacroVariables = feng3d.shaderMacroUtils.getMacroVariablesFromCode(this.vertex);
+                this.fragmentMacroVariables = feng3d.shaderMacroUtils.getMacroVariablesFromCode(this.fragment);
             }
-            // 获取宏定义
-            var shaderMacroStr = this.getMacroCode(this.shaderMacro);
-            var resultVertexCode = this.vertex.replace(/#define\s+macros/, shaderMacroStr);
-            var resultFragmentCode = this.fragment.replace(/#define\s+macros/, shaderMacroStr);
-            if (this.resultVertexCode != resultVertexCode || resultFragmentCode != this.resultFragmentCode) {
+            var vertexMacroInvalid = false;
+            for (var i = 0; i < this.vertexMacroVariables.length; i++) {
+                var macroVariable = this.vertexMacroVariables[i];
+                var value = this.shaderMacro[macroVariable];
+                if (this.macroValues[macroVariable] != value) {
+                    this.macroValues[macroVariable] = value;
+                    vertexMacroInvalid = true;
+                }
+            }
+            var fragmentMacroInvalid = false;
+            for (var i = 0; i < this.fragmentMacroVariables.length; i++) {
+                var macroVariable = this.fragmentMacroVariables[i];
+                var value = this.shaderMacro[macroVariable];
+                if (this.macroValues[macroVariable] != value) {
+                    this.macroValues[macroVariable] = value;
+                    fragmentMacroInvalid = true;
+                }
+            }
+            if (vertexMacroInvalid) {
                 this.clear();
-                this.resultVertexCode = resultVertexCode;
-                this.resultFragmentCode = resultFragmentCode;
+                this.resultVertexCode = this.vertex.replace(/#define\s+macros/, this.getMacroCode(this.vertexMacroVariables, this.macroValues));
+            }
+            if (fragmentMacroInvalid) {
+                this.clear();
+                this.resultFragmentCode = this.vertex.replace(/#define\s+macros/, this.getMacroCode(this.fragmentMacroVariables, this.macroValues));
             }
             //渲染程序
             var shaderProgram = this._webGLProgramMap.get(gl);
@@ -12500,12 +12567,10 @@ var feng3d;
             gl.useProgram(shaderProgram);
             return shaderProgram;
         };
-        Shader.prototype.getMacroCode = function (macro) {
+        Shader.prototype.getMacroCode = function (variables, valueObj) {
             var macroHeader = "";
-            var macroNames = Object.keys(macro);
-            macroNames = macroNames.sort();
-            macroNames.forEach(function (macroName) {
-                var value = macro[macroName];
+            variables.forEach(function (macroName) {
+                var value = valueObj[macroName];
                 if (typeof value == "boolean") {
                     value && (macroHeader += "#define " + macroName + "\n");
                 }
