@@ -23,17 +23,18 @@ namespace feng3d
                 var shaderMacro = renderAtomic1.getShaderMacro();
                 var shader = renderAtomic1.getShader();
                 shader.shaderMacro = shaderMacro;
-                var shaderProgram = shader.activeShaderProgram(gl);
-                if (!shaderProgram)
+                var shaderResult = shader.activeShaderProgram(gl);
+                if (!shaderResult)
                     return;
                 var renderAtomic = checkRenderData(renderAtomic1);
                 if (!renderAtomic) return;
                 //
+                gl.useProgram(shaderResult.program);
                 activeShaderParams(renderAtomic.renderParams);
-                activeAttributes(renderAtomic, shaderProgram.attributes);
-                activeUniforms(renderAtomic, shaderProgram.uniforms);
+                activeAttributes(renderAtomic, shaderResult.attributes);
+                activeUniforms(renderAtomic, shaderResult.uniforms);
                 dodraw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
-                disableAttributes(shaderProgram.attributes);
+                disableAttributes(shaderResult.attributes);
             }
 
             function checkRenderData(renderAtomic: RenderAtomic)
@@ -41,15 +42,15 @@ namespace feng3d
                 var atomic = new RenderAtomic();
 
                 var shader = renderAtomic.getShader();
-                var shaderProgram = shader.activeShaderProgram(gl);
-                if (!shaderProgram)
+                var shaderResult = shader.activeShaderProgram(gl);
+                if (!shaderResult)
                 {
                     warn(`缺少着色器，无法渲染!`)
                     return null;
                 }
                 atomic.shader = shader;
 
-                for (const key in shaderProgram.attributes)
+                for (const key in shaderResult.attributes)
                 {
                     var attribute = renderAtomic.getAttributeByKey(key);
                     if (attribute == undefined)
@@ -60,9 +61,9 @@ namespace feng3d
                     atomic.attributes[key] = attribute;
                 }
 
-                for (var key in shaderProgram.uniforms)
+                for (var key in shaderResult.uniforms)
                 {
-                    var activeInfo = shaderProgram.uniforms[key];
+                    var activeInfo = shaderResult.uniforms[key];
                     if (activeInfo.uniformBaseName)
                     {
                         key = activeInfo.uniformBaseName;

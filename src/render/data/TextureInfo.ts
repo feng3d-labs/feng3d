@@ -234,9 +234,15 @@ namespace feng3d
             if (this.anisotropy)
             {
                 var eXTTextureFilterAnisotropic = gl.extensions.eXTTextureFilterAnisotropic;
-                if (gl.extensions.eXTTextureFilterAnisotropic)
+                if (eXTTextureFilterAnisotropic)
                 {
-                    gl.extensions.eXTTextureFilterAnisotropic.texParameterf(textureType, this.anisotropy);
+                    if (this.anisotropy > gl.maxAnisotropy)
+                    {
+                        this.anisotropy = gl.maxAnisotropy;
+                        warn(`${this.anisotropy} 超出 maxAnisotropy 的最大值 ${gl.maxAnisotropy} ！,使用最大值替换。`);
+                    }
+                    gl.texParameterf(textureType, eXTTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, this.anisotropy);
+
                 } else
                 {
                     debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");

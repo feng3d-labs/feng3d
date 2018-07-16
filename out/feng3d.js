@@ -12191,7 +12191,6 @@ var feng3d;
             gl.extensions = this;
             this.initExtensions(gl);
             this.cacheGLQuery(gl);
-            new feng3d.GLProgramExtension(gl);
         }
         GLExtension.prototype.initExtensions = function (gl) {
             this.aNGLEInstancedArrays = gl.getExtension("ANGLE_instanced_arrays");
@@ -12228,18 +12227,6 @@ var feng3d;
             this.webGLCompressedTextureS3TC = this.webGLCompressedTextureS3TC || gl.getExtension("MOZ_WEBGL_compressed_texture_s3tc");
             this.webGLDepthTexture = this.webGLDepthTexture || gl.getExtension("MOZ_WEBGL_depth_texture");
             this.webGLLoseContext = this.webGLLoseContext || gl.getExtension("MOZ_WEBGL_lose_context");
-            //
-            var eXTTextureFilterAnisotropic = this.eXTTextureFilterAnisotropic;
-            if (eXTTextureFilterAnisotropic) {
-                var maxAnisotropy = eXTTextureFilterAnisotropic.maxAnisotropy = gl.getParameter(eXTTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-                eXTTextureFilterAnisotropic.texParameterf = function (textureType, anisotropy) {
-                    if (anisotropy > maxAnisotropy) {
-                        anisotropy = maxAnisotropy;
-                        feng3d.warn(anisotropy + " \u8D85\u51FA maxAnisotropy \u7684\u6700\u5927\u503C " + maxAnisotropy + " \uFF01,\u4F7F\u7528\u6700\u5927\u503C\u66FF\u6362\u3002");
-                    }
-                    gl.texParameterf(textureType, eXTTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-                };
-            }
         };
         /**
          * 缓存GL查询
@@ -12263,140 +12250,6 @@ var feng3d;
         return GLExtension;
     }());
     feng3d.GLExtension = GLExtension;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var GLProgramExtension = /** @class */ (function () {
-        function GLProgramExtension(gl) {
-            var oldCreateProgram = gl.createProgram;
-            gl.createProgram = function () {
-                if (arguments.length == 2) {
-                    return createProgram(gl, arguments[0], arguments[1]);
-                }
-                var webGLProgram = oldCreateProgram.apply(gl, arguments);
-                return webGLProgram;
-            };
-        }
-        return GLProgramExtension;
-    }());
-    feng3d.GLProgramExtension = GLProgramExtension;
-    /**
-     * Create the linked program object
-     * @param gl GL context
-     * @param vshader a vertex shader program (string)
-     * @param fshader a fragment shader program (string)
-     * @return created program object, or null if the creation has failed
-     */
-    function createProgram(gl, vshader, fshader) {
-        // Create shader object
-        var vertexShader = loadShader(gl, gl.VERTEX_SHADER, vshader);
-        var fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fshader);
-        if (!vertexShader || !fragmentShader) {
-            return null;
-        }
-        // Create a program object
-        var program = gl.createProgram();
-        if (!program) {
-            return null;
-        }
-        // Attach the shader objects
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        // Link the program object
-        gl.linkProgram(program);
-        // Check the result of linking
-        var linked = gl.getProgramParameter(program, gl.LINK_STATUS);
-        if (!linked) {
-            var error = gl.getProgramInfoLog(program);
-            feng3d.debuger && alert('Failed to link program: ' + error);
-            gl.deleteProgram(program);
-            gl.deleteShader(fragmentShader);
-            gl.deleteShader(vertexShader);
-            return null;
-        }
-        program.gl = gl;
-        program.vertexShader = vertexShader;
-        program.fragmentShader = fragmentShader;
-        initProgram(program);
-        return program;
-    }
-    /**
-     * 初始化渲染程序
-     * @param shaderProgram WebGL渲染程序
-     */
-    function initProgram(shaderProgram) {
-        var gl = shaderProgram.gl;
-        //获取属性信息
-        var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
-        shaderProgram.attributes = {};
-        var i = 0;
-        while (i < numAttributes) {
-            var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
-            if (activeInfo) {
-                activeInfo.location = gl.getAttribLocation(shaderProgram, activeInfo.name);
-                shaderProgram.attributes[activeInfo.name] = activeInfo;
-            }
-        }
-        //获取uniform信息
-        var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
-        shaderProgram.uniforms = {};
-        var i = 0;
-        var textureID = 0;
-        while (i < numUniforms) {
-            var activeInfo = gl.getActiveUniform(shaderProgram, i++);
-            if (activeInfo) {
-                if (activeInfo.name.indexOf("[") != -1) {
-                    //处理数组
-                    var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
-                    activeInfo.uniformBaseName = baseName;
-                    var uniformLocationlist = activeInfo.uniformLocation = [];
-                    for (var j = 0; j < activeInfo.size; j++) {
-                        var location = gl.getUniformLocation(shaderProgram, baseName + ("[" + j + "]"));
-                        location && uniformLocationlist.push(location);
-                    }
-                }
-                else {
-                    var uniformLocation = gl.getUniformLocation(shaderProgram, activeInfo.name);
-                    if (uniformLocation) {
-                        activeInfo.uniformLocation = uniformLocation;
-                    }
-                }
-                if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE) {
-                    activeInfo.textureID = textureID;
-                    textureID++;
-                }
-                shaderProgram.uniforms[activeInfo.name] = activeInfo;
-            }
-        }
-    }
-    /**
-     * Create a shader object
-     * @param gl GL context
-     * @param type the type of the shader object to be created
-     * @param source shader program (string)
-     * @return created shader object, or null if the creation has failed.
-     */
-    function loadShader(gl, type, source) {
-        // Create shader object
-        var shader = gl.createShader(type);
-        if (shader == null) {
-            feng3d.debuger && alert('unable to create shader');
-            return null;
-        }
-        // Set the shader program
-        gl.shaderSource(shader, source);
-        // Compile the shader
-        gl.compileShader(shader);
-        // Check the result of compilation
-        var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-        if (!compiled) {
-            var error = gl.getShaderInfoLog(shader);
-            feng3d.debuger && alert('Failed to compile shader: ' + error);
-            gl.deleteShader(shader);
-            return null;
-        }
-        return shader;
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -12507,12 +12360,7 @@ var feng3d;
              * shader 中的 宏
              */
             this.shaderMacro = {};
-            /**
-             * 着色器程序缓存
-             */
-            this._webGLProgramMap = new Map();
-            this._vertexShaderMap = new Map();
-            this._fragmentShaderMap = new Map();
+            this.map = new Map();
             this.shaderName = shaderName;
         }
         /**
@@ -12522,7 +12370,9 @@ var feng3d;
             // 获取着色器代码
             if (this.vertex == null || this.fragment == null) {
                 var shader = feng3d.shaderlib.shaderConfig.shaders[this.shaderName];
+                //
                 this.resultVertexCode = this.vertex = feng3d.shaderlib.uninclude(shader.vertex);
+                //
                 this.resultFragmentCode = this.fragment = feng3d.shaderlib.uninclude(shader.fragment);
                 this.vertexMacroVariables = feng3d.shaderMacroUtils.getMacroVariablesFromCode(this.vertex);
                 this.fragmentMacroVariables = feng3d.shaderMacroUtils.getMacroVariablesFromCode(this.fragment);
@@ -12554,120 +12404,109 @@ var feng3d;
                 this.resultFragmentCode = this.vertex.replace(/#define\s+macros/, this.getMacroCode(this.fragmentMacroVariables, this.macroValues));
             }
             //渲染程序
-            var shaderProgram = this._webGLProgramMap.get(gl);
-            if (!shaderProgram) {
-                var vshader = this.resultVertexCode;
-                var fshader = this.resultFragmentCode;
-                // Create shader object
-                var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-                if (vertexShader == null) {
-                    feng3d.debuger && alert('unable to create shader');
-                    return null;
-                }
-                // Set the shader program
-                gl.shaderSource(vertexShader, vshader);
-                // Compile the shader
-                gl.compileShader(vertexShader);
-                // Check the result of compilation
-                var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
-                if (!compiled) {
-                    var error = gl.getShaderInfoLog(vertexShader);
-                    feng3d.debuger && alert('Failed to compile shader: ' + error);
-                    gl.deleteShader(vertexShader);
-                    return null;
-                }
-                this._vertexShaderMap.set(gl, vertexShader);
-                // Create shader object
-                var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-                if (fragmentShader == null) {
-                    feng3d.debuger && alert('unable to create shader');
-                    return null;
-                }
-                // Set the shader program
-                gl.shaderSource(fragmentShader, fshader);
-                // Compile the shader
-                gl.compileShader(fragmentShader);
-                // Check the result of compilation
-                var compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
-                if (!compiled) {
-                    var error = gl.getShaderInfoLog(fragmentShader);
-                    feng3d.debuger && alert('Failed to compile shader: ' + error);
-                    gl.deleteShader(fragmentShader);
-                    return null;
-                }
-                this._fragmentShaderMap.set(gl, fragmentShader);
-                // Create a program object
-                var shaderProgram = gl.createProgram();
-                if (!shaderProgram) {
-                    return null;
-                }
-                // Attach the shader objects
-                gl.attachShader(shaderProgram, vertexShader);
-                gl.attachShader(shaderProgram, fragmentShader);
-                // Link the program object
-                gl.linkProgram(shaderProgram);
-                // Check the result of linking
-                var linked = gl.getProgramParameter(shaderProgram, gl.LINK_STATUS);
-                if (!linked) {
-                    var error = gl.getProgramInfoLog(shaderProgram);
-                    feng3d.debuger && alert('Failed to link program: ' + error);
-                    gl.deleteProgram(shaderProgram);
-                    gl.deleteShader(fragmentShader);
-                    gl.deleteShader(vertexShader);
-                    return null;
-                }
-                //
-                shaderProgram.gl = gl;
-                shaderProgram.vertexShader = vertexShader;
-                shaderProgram.fragmentShader = fragmentShader;
-                //获取属性信息
-                var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
-                shaderProgram.attributes = {};
-                var i = 0;
-                while (i < numAttributes) {
-                    var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
-                    if (activeInfo) {
-                        activeInfo.location = gl.getAttribLocation(shaderProgram, activeInfo.name);
-                        shaderProgram.attributes[activeInfo.name] = activeInfo;
-                    }
-                }
-                //获取uniform信息
-                var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
-                shaderProgram.uniforms = {};
-                var i = 0;
-                var textureID = 0;
-                while (i < numUniforms) {
-                    var activeInfo = gl.getActiveUniform(shaderProgram, i++);
-                    if (activeInfo) {
-                        if (activeInfo.name.indexOf("[") != -1) {
-                            //处理数组
-                            var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
-                            activeInfo.uniformBaseName = baseName;
-                            var uniformLocationlist = activeInfo.uniformLocation = [];
-                            for (var j = 0; j < activeInfo.size; j++) {
-                                var location = gl.getUniformLocation(shaderProgram, baseName + ("[" + j + "]"));
-                                location && uniformLocationlist.push(location);
-                            }
-                        }
-                        else {
-                            var uniformLocation = gl.getUniformLocation(shaderProgram, activeInfo.name);
-                            if (uniformLocation) {
-                                activeInfo.uniformLocation = uniformLocation;
-                            }
-                        }
-                        if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE) {
-                            activeInfo.textureID = textureID;
-                            textureID++;
-                        }
-                        shaderProgram.uniforms[activeInfo.name] = activeInfo;
-                    }
-                }
-                if (!shaderProgram)
-                    return null;
-                this._webGLProgramMap.set(gl, shaderProgram);
+            if (this.map.has(gl))
+                return this.map.get(gl);
+            // Create shader object
+            var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+            if (vertexShader == null) {
+                feng3d.debuger && alert('unable to create shader');
+                return null;
             }
-            gl.useProgram(shaderProgram);
-            return shaderProgram;
+            // Set the shader program
+            gl.shaderSource(vertexShader, this.resultVertexCode);
+            // Compile the shader
+            gl.compileShader(vertexShader);
+            // Check the result of compilation
+            var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
+            if (!compiled) {
+                var error = gl.getShaderInfoLog(vertexShader);
+                feng3d.debuger && alert('Failed to compile shader: ' + error);
+                gl.deleteShader(vertexShader);
+                return null;
+            }
+            // Create shader object
+            var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+            if (fragmentShader == null) {
+                feng3d.debuger && alert('unable to create shader');
+                return null;
+            }
+            // Set the shader program
+            gl.shaderSource(fragmentShader, this.resultFragmentCode);
+            // Compile the shader
+            gl.compileShader(fragmentShader);
+            // Check the result of compilation
+            var compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
+            if (!compiled) {
+                var error = gl.getShaderInfoLog(fragmentShader);
+                feng3d.debuger && alert('Failed to compile shader: ' + error);
+                gl.deleteShader(fragmentShader);
+                return null;
+            }
+            // Create a program object
+            var shaderProgram = gl.createProgram();
+            if (!shaderProgram) {
+                return null;
+            }
+            // Attach the shader objects
+            gl.attachShader(shaderProgram, vertexShader);
+            gl.attachShader(shaderProgram, fragmentShader);
+            // Link the program object
+            gl.linkProgram(shaderProgram);
+            // Check the result of linking
+            var linked = gl.getProgramParameter(shaderProgram, gl.LINK_STATUS);
+            if (!linked) {
+                var error = gl.getProgramInfoLog(shaderProgram);
+                feng3d.debuger && alert('Failed to link program: ' + error);
+                gl.deleteProgram(shaderProgram);
+                gl.deleteShader(fragmentShader);
+                gl.deleteShader(vertexShader);
+                return null;
+            }
+            //获取属性信息
+            var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
+            var attributes = {};
+            var i = 0;
+            while (i < numAttributes) {
+                var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
+                if (activeInfo) {
+                    activeInfo.location = gl.getAttribLocation(shaderProgram, activeInfo.name);
+                    attributes[activeInfo.name] = activeInfo;
+                }
+            }
+            //获取uniform信息
+            var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
+            var uniforms = {};
+            var i = 0;
+            var textureID = 0;
+            while (i < numUniforms) {
+                var activeInfo = gl.getActiveUniform(shaderProgram, i++);
+                if (activeInfo) {
+                    if (activeInfo.name.indexOf("[") != -1) {
+                        //处理数组
+                        var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
+                        activeInfo.uniformBaseName = baseName;
+                        var uniformLocationlist = activeInfo.uniformLocation = [];
+                        for (var j = 0; j < activeInfo.size; j++) {
+                            var location = gl.getUniformLocation(shaderProgram, baseName + ("[" + j + "]"));
+                            location && uniformLocationlist.push(location);
+                        }
+                    }
+                    else {
+                        var uniformLocation = gl.getUniformLocation(shaderProgram, activeInfo.name);
+                        if (uniformLocation) {
+                            activeInfo.uniformLocation = uniformLocation;
+                        }
+                    }
+                    if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE) {
+                        activeInfo.textureID = textureID;
+                        textureID++;
+                    }
+                    uniforms[activeInfo.name] = activeInfo;
+                }
+            }
+            var result = { program: shaderProgram, vertex: vertexShader, fragment: fragmentShader, attributes: attributes, uniforms: uniforms };
+            this.map.set(gl, result);
+            return result;
         };
         Shader.prototype.getMacroCode = function (variables, valueObj) {
             var macroHeader = "";
@@ -12683,16 +12522,12 @@ var feng3d;
             return macroHeader;
         };
         Shader.prototype.clear = function () {
-            this._webGLProgramMap.forEach(function (value, gl) {
-                gl.deleteProgram(value);
+            this.map.forEach(function (value, gl) {
+                gl.deleteProgram(value.program);
+                gl.deleteShader(value.vertex);
+                gl.deleteShader(value.fragment);
             });
-            this._vertexShaderMap.forEach(function (value, gl) {
-                gl.deleteShader(value);
-            });
-            this._fragmentShaderMap.forEach(function (value, gl) {
-                gl.deleteShader(value);
-            });
-            this._webGLProgramMap.clear();
+            this.map.clear();
         };
         return Shader;
     }());
@@ -13301,8 +13136,12 @@ var feng3d;
             //
             if (this.anisotropy) {
                 var eXTTextureFilterAnisotropic = gl.extensions.eXTTextureFilterAnisotropic;
-                if (gl.extensions.eXTTextureFilterAnisotropic) {
-                    gl.extensions.eXTTextureFilterAnisotropic.texParameterf(textureType, this.anisotropy);
+                if (eXTTextureFilterAnisotropic) {
+                    if (this.anisotropy > gl.maxAnisotropy) {
+                        this.anisotropy = gl.maxAnisotropy;
+                        feng3d.warn(this.anisotropy + " \u8D85\u51FA maxAnisotropy \u7684\u6700\u5927\u503C " + gl.maxAnisotropy + " \uFF01,\u4F7F\u7528\u6700\u5927\u503C\u66FF\u6362\u3002");
+                    }
+                    gl.texParameterf(textureType, eXTTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, this.anisotropy);
                 }
                 else {
                     feng3d.debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
@@ -14167,29 +14006,30 @@ var feng3d;
                 var shaderMacro = renderAtomic1.getShaderMacro();
                 var shader = renderAtomic1.getShader();
                 shader.shaderMacro = shaderMacro;
-                var shaderProgram = shader.activeShaderProgram(gl);
-                if (!shaderProgram)
+                var shaderResult = shader.activeShaderProgram(gl);
+                if (!shaderResult)
                     return;
                 var renderAtomic = checkRenderData(renderAtomic1);
                 if (!renderAtomic)
                     return;
                 //
+                gl.useProgram(shaderResult.program);
                 activeShaderParams(renderAtomic.renderParams);
-                activeAttributes(renderAtomic, shaderProgram.attributes);
-                activeUniforms(renderAtomic, shaderProgram.uniforms);
+                activeAttributes(renderAtomic, shaderResult.attributes);
+                activeUniforms(renderAtomic, shaderResult.uniforms);
                 dodraw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
-                disableAttributes(shaderProgram.attributes);
+                disableAttributes(shaderResult.attributes);
             };
             function checkRenderData(renderAtomic) {
                 var atomic = new feng3d.RenderAtomic();
                 var shader = renderAtomic.getShader();
-                var shaderProgram = shader.activeShaderProgram(gl);
-                if (!shaderProgram) {
+                var shaderResult = shader.activeShaderProgram(gl);
+                if (!shaderResult) {
                     feng3d.warn("\u7F3A\u5C11\u7740\u8272\u5668\uFF0C\u65E0\u6CD5\u6E32\u67D3!");
                     return null;
                 }
                 atomic.shader = shader;
-                for (var key_1 in shaderProgram.attributes) {
+                for (var key_1 in shaderResult.attributes) {
                     var attribute = renderAtomic.getAttributeByKey(key_1);
                     if (attribute == undefined) {
                         feng3d.warn("\u7F3A\u5C11\u9876\u70B9 attribute \u6570\u636E " + key_1 + " \uFF0C\u65E0\u6CD5\u6E32\u67D3!");
@@ -14197,8 +14037,8 @@ var feng3d;
                     }
                     atomic.attributes[key_1] = attribute;
                 }
-                for (var key in shaderProgram.uniforms) {
-                    var activeInfo = shaderProgram.uniforms[key];
+                for (var key in shaderResult.uniforms) {
+                    var activeInfo = shaderResult.uniforms[key];
                     if (activeInfo.uniformBaseName) {
                         key = activeInfo.uniformBaseName;
                     }

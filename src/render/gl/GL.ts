@@ -31,6 +31,11 @@ namespace feng3d
          * WebWG2.0 或者 扩展功能
          */
         advanced: GLAdvanced;
+
+        /**
+         * 纹理各向异性过滤最大值
+         */
+        maxAnisotropy: number;
     }
 
     export class GL

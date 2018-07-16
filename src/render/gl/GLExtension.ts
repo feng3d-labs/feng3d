@@ -1,16 +1,3 @@
-interface EXTTextureFilterAnisotropic
-{
-    /**
-     * 纹理各向异性过滤最大值
-     */
-    maxAnisotropy: number;
-
-    /**
-     * 设置纹理各向异性 值
-     */
-    texParameterf(textureType: number, anisotropy: number): void;
-}
-
 namespace feng3d
 {
     /**
@@ -51,7 +38,6 @@ namespace feng3d
             this.initExtensions(gl);
 
             this.cacheGLQuery(gl);
-            new GLProgramExtension(gl);
         }
 
         private initExtensions(gl: feng3d.GL)
@@ -90,22 +76,6 @@ namespace feng3d
             this.webGLCompressedTextureS3TC = this.webGLCompressedTextureS3TC || gl.getExtension("MOZ_WEBGL_compressed_texture_s3tc");
             this.webGLDepthTexture = this.webGLDepthTexture || gl.getExtension("MOZ_WEBGL_depth_texture");
             this.webGLLoseContext = this.webGLLoseContext || gl.getExtension("MOZ_WEBGL_lose_context");
-
-            //
-            var eXTTextureFilterAnisotropic = this.eXTTextureFilterAnisotropic;
-            if (eXTTextureFilterAnisotropic)
-            {
-                var maxAnisotropy = eXTTextureFilterAnisotropic.maxAnisotropy = gl.getParameter(eXTTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-                eXTTextureFilterAnisotropic.texParameterf = (textureType: number, anisotropy: number) =>
-                {
-                    if (anisotropy > maxAnisotropy)
-                    {
-                        anisotropy = maxAnisotropy;
-                        warn(`${anisotropy} 超出 maxAnisotropy 的最大值 ${maxAnisotropy} ！,使用最大值替换。`);
-                    }
-                    gl.texParameterf(textureType, eXTTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-                };
-            }
         }
 
         /**

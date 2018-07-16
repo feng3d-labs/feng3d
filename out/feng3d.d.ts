@@ -7230,35 +7230,6 @@ declare var WebGL2RenderingContext: {
     readonly MAX_CLIENT_WAIT_TIMEOUT_WEBGL: number;
 };
 /**
- * WebGL渲染程序
- */
-interface WebGLProgram {
-    /**
-     * WebGL渲染上下文
-     */
-    gl: WebGLRenderingContext;
-    /**
-     * 顶点shader
-     */
-    vertexShader: WebGLShader;
-    /**
-     * 片段shader
-     */
-    fragmentShader: WebGLShader;
-    /**
-     * 属性信息列表
-     */
-    attributes: {
-        [name: string]: WebGLActiveInfo;
-    };
-    /**
-     * uniform信息列表
-     */
-    uniforms: {
-        [name: string]: WebGLActiveInfo;
-    };
-}
-/**
  * WebGL渲染程序有效信息
  */
 interface WebGLActiveInfo {
@@ -7278,16 +7249,6 @@ interface WebGLActiveInfo {
      * texture索引
      */
     textureID: number;
-}
-interface WebGLRenderingContext {
-    /**
-     * Create the linked program object
-     * @param gl GL context
-     * @param vshader a vertex shader program (string)
-     * @param fshader a fragment shader program (string)
-     * @return created program object, or null if the creation has failed
-     */
-    createProgram(vshader: string, fshader: string): WebGLProgram;
 }
 declare namespace feng3d {
     interface GL extends WebGLRenderingContext {
@@ -7315,6 +7276,10 @@ declare namespace feng3d {
          * WebWG2.0 或者 扩展功能
          */
         advanced: GLAdvanced;
+        /**
+         * 纹理各向异性过滤最大值
+         */
+        maxAnisotropy: number;
     }
     class GL {
         static glList: GL[];
@@ -7347,16 +7312,6 @@ declare namespace feng3d {
         drawArraysInstanced: (mode: GLenum, first: GLint, count: GLsizei, instanceCount: GLsizei) => void;
         constructor(gl: GL);
     }
-}
-interface EXTTextureFilterAnisotropic {
-    /**
-     * 纹理各向异性过滤最大值
-     */
-    maxAnisotropy: number;
-    /**
-     * 设置纹理各向异性 值
-     */
-    texParameterf(textureType: number, anisotropy: number): void;
 }
 declare namespace feng3d {
     /**
@@ -7394,11 +7349,6 @@ declare namespace feng3d {
          * @param gl GL实例
          */
         private cacheGLQuery(gl);
-    }
-}
-declare namespace feng3d {
-    class GLProgramExtension {
-        constructor(gl: GL);
     }
 }
 declare namespace feng3d {
@@ -7706,13 +7656,28 @@ declare namespace feng3d {
         /**
          * 激活渲染程序
          */
-        activeShaderProgram(gl: GL): WebGLProgram;
-        /**
-         * 着色器程序缓存
-         */
-        protected _webGLProgramMap: Map<GL, WebGLProgram>;
-        protected _vertexShaderMap: Map<GL, WebGLShader>;
-        protected _fragmentShaderMap: Map<GL, WebGLShader>;
+        activeShaderProgram(gl: GL): {
+            program: WebGLProgram;
+            vertex: WebGLShader;
+            fragment: WebGLShader;
+            attributes: {
+                [name: string]: WebGLActiveInfo;
+            };
+            uniforms: {
+                [name: string]: WebGLActiveInfo;
+            };
+        };
+        protected map: Map<GL, {
+            program: WebGLProgram;
+            vertex: WebGLShader;
+            fragment: WebGLShader;
+            attributes: {
+                [name: string]: WebGLActiveInfo;
+            };
+            uniforms: {
+                [name: string]: WebGLActiveInfo;
+            };
+        }>;
         private getMacroCode(variables, valueObj);
         private clear();
     }

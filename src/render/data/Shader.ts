@@ -51,7 +51,9 @@ namespace feng3d
             if (this.vertex == null || this.fragment == null)
             {
                 var shader = shaderlib.shaderConfig.shaders[this.shaderName];
+                //
                 this.resultVertexCode = this.vertex = shaderlib.uninclude(shader.vertex);
+                //
                 this.resultFragmentCode = this.fragment = shaderlib.uninclude(shader.fragment);
                 this.vertexMacroVariables = shaderMacroUtils.getMacroVariablesFromCode(this.vertex);
                 this.fragmentMacroVariables = shaderMacroUtils.getMacroVariablesFromCode(this.fragment);
@@ -93,159 +95,150 @@ namespace feng3d
             }
 
             //渲染程序
-            var shaderProgram = this._webGLProgramMap.get(gl);
+            if (this.map.has(gl))
+                return this.map.get(gl);
+
+            // Create shader object
+            var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+            if (vertexShader == null)
+            {
+                debuger && alert('unable to create shader');
+                return null;
+            }
+
+            // Set the shader program
+            gl.shaderSource(vertexShader, this.resultVertexCode);
+
+            // Compile the shader
+            gl.compileShader(vertexShader);
+
+            // Check the result of compilation
+            var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
+            if (!compiled)
+            {
+                var error = gl.getShaderInfoLog(vertexShader);
+                debuger && alert('Failed to compile shader: ' + error);
+                gl.deleteShader(vertexShader);
+                return null;
+            }
+
+            // Create shader object
+            var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+            if (fragmentShader == null)
+            {
+                debuger && alert('unable to create shader');
+                return null;
+            }
+
+            // Set the shader program
+            gl.shaderSource(fragmentShader, this.resultFragmentCode);
+
+            // Compile the shader
+            gl.compileShader(fragmentShader);
+
+            // Check the result of compilation
+            var compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
+            if (!compiled)
+            {
+                var error = gl.getShaderInfoLog(fragmentShader);
+                debuger && alert('Failed to compile shader: ' + error);
+                gl.deleteShader(fragmentShader);
+                return null;
+            }
+
+            // Create a program object
+            var shaderProgram = gl.createProgram();
             if (!shaderProgram)
             {
-                var vshader = this.resultVertexCode;
-                var fshader = this.resultFragmentCode;
-
-                // Create shader object
-                var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-                if (vertexShader == null)
-                {
-                    debuger && alert('unable to create shader');
-                    return null;
-                }
-
-                // Set the shader program
-                gl.shaderSource(vertexShader, vshader);
-
-                // Compile the shader
-                gl.compileShader(vertexShader);
-
-                // Check the result of compilation
-                var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
-                if (!compiled)
-                {
-                    var error = gl.getShaderInfoLog(vertexShader);
-                    debuger && alert('Failed to compile shader: ' + error);
-                    gl.deleteShader(vertexShader);
-                    return null;
-                }
-
-                this._vertexShaderMap.set(gl, vertexShader);
-
-                // Create shader object
-                var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-                if (fragmentShader == null)
-                {
-                    debuger && alert('unable to create shader');
-                    return null;
-                }
-
-                // Set the shader program
-                gl.shaderSource(fragmentShader, fshader);
-
-                // Compile the shader
-                gl.compileShader(fragmentShader);
-
-                // Check the result of compilation
-                var compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
-                if (!compiled)
-                {
-                    var error = gl.getShaderInfoLog(fragmentShader);
-                    debuger && alert('Failed to compile shader: ' + error);
-                    gl.deleteShader(fragmentShader);
-                    return null;
-                }
-
-                this._fragmentShaderMap.set(gl, fragmentShader);
-
-                // Create a program object
-                var shaderProgram = gl.createProgram();
-                if (!shaderProgram)
-                {
-                    return null;
-                }
-
-                // Attach the shader objects
-                gl.attachShader(shaderProgram, vertexShader);
-                gl.attachShader(shaderProgram, fragmentShader);
-
-                // Link the program object
-                gl.linkProgram(shaderProgram);
-
-                // Check the result of linking
-                var linked = gl.getProgramParameter(shaderProgram, gl.LINK_STATUS);
-                if (!linked)
-                {
-                    var error = gl.getProgramInfoLog(shaderProgram);
-                    debuger && alert('Failed to link program: ' + error);
-                    gl.deleteProgram(shaderProgram);
-                    gl.deleteShader(fragmentShader);
-                    gl.deleteShader(vertexShader);
-                    return null;
-                }
-                //
-                shaderProgram.gl = gl;
-                shaderProgram.vertexShader = vertexShader;
-                shaderProgram.fragmentShader = fragmentShader;
-
-                //获取属性信息
-                var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
-                shaderProgram.attributes = {};
-                var i = 0;
-                while (i < numAttributes)
-                {
-                    var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
-                    if (activeInfo)
-                    {
-                        activeInfo.location = gl.getAttribLocation(shaderProgram, activeInfo.name);
-                        shaderProgram.attributes[activeInfo.name] = activeInfo;
-                    }
-                }
-                //获取uniform信息
-                var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
-                shaderProgram.uniforms = {};
-                var i = 0;
-                var textureID = 0;
-                while (i < numUniforms)
-                {
-                    var activeInfo = gl.getActiveUniform(shaderProgram, i++);
-                    if (activeInfo)
-                    {
-                        if (activeInfo.name.indexOf("[") != -1)
-                        {
-                            //处理数组
-                            var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
-                            activeInfo.uniformBaseName = baseName;
-                            var uniformLocationlist: WebGLUniformLocation[] = activeInfo.uniformLocation = [];
-                            for (var j = 0; j < activeInfo.size; j++)
-                            {
-                                var location = gl.getUniformLocation(shaderProgram, baseName + `[${j}]`);
-                                location && uniformLocationlist.push(location);
-                            }
-                        } else
-                        {
-                            var uniformLocation = gl.getUniformLocation(shaderProgram, activeInfo.name);
-                            if (uniformLocation)
-                            {
-                                activeInfo.uniformLocation = uniformLocation;
-                            }
-                        }
-                        if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE)
-                        {
-                            activeInfo.textureID = textureID;
-                            textureID++;
-                        }
-                        shaderProgram.uniforms[activeInfo.name] = activeInfo;
-                    }
-                }
-
-                if (!shaderProgram)
-                    return null;
-                this._webGLProgramMap.set(gl, shaderProgram);
+                return null;
             }
-            gl.useProgram(shaderProgram);
-            return shaderProgram;
+
+            // Attach the shader objects
+            gl.attachShader(shaderProgram, vertexShader);
+            gl.attachShader(shaderProgram, fragmentShader);
+
+            // Link the program object
+            gl.linkProgram(shaderProgram);
+
+            // Check the result of linking
+            var linked = gl.getProgramParameter(shaderProgram, gl.LINK_STATUS);
+            if (!linked)
+            {
+                var error = gl.getProgramInfoLog(shaderProgram);
+                debuger && alert('Failed to link program: ' + error);
+                gl.deleteProgram(shaderProgram);
+                gl.deleteShader(fragmentShader);
+                gl.deleteShader(vertexShader);
+                return null;
+            }
+
+            //获取属性信息
+            var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
+            var attributes: { [name: string]: WebGLActiveInfo } = {};
+            var i = 0;
+            while (i < numAttributes)
+            {
+                var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
+                if (activeInfo)
+                {
+                    activeInfo.location = gl.getAttribLocation(shaderProgram, activeInfo.name);
+                    attributes[activeInfo.name] = activeInfo;
+                }
+            }
+            //获取uniform信息
+            var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
+            var uniforms: { [name: string]: WebGLActiveInfo } = {};
+            var i = 0;
+            var textureID = 0;
+            while (i < numUniforms)
+            {
+                var activeInfo = gl.getActiveUniform(shaderProgram, i++);
+                if (activeInfo)
+                {
+                    if (activeInfo.name.indexOf("[") != -1)
+                    {
+                        //处理数组
+                        var baseName = activeInfo.name.substring(0, activeInfo.name.indexOf("["));
+                        activeInfo.uniformBaseName = baseName;
+                        var uniformLocationlist: WebGLUniformLocation[] = activeInfo.uniformLocation = [];
+                        for (var j = 0; j < activeInfo.size; j++)
+                        {
+                            var location = gl.getUniformLocation(shaderProgram, baseName + `[${j}]`);
+                            location && uniformLocationlist.push(location);
+                        }
+                    } else
+                    {
+                        var uniformLocation = gl.getUniformLocation(shaderProgram, activeInfo.name);
+                        if (uniformLocation)
+                        {
+                            activeInfo.uniformLocation = uniformLocation;
+                        }
+                    }
+                    if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE)
+                    {
+                        activeInfo.textureID = textureID;
+                        textureID++;
+                    }
+                    uniforms[activeInfo.name] = activeInfo;
+                }
+            }
+
+            var result = { program: shaderProgram, vertex: vertexShader, fragment: fragmentShader, attributes: attributes, uniforms: uniforms };
+            this.map.set(gl, result);
+            return result;
         }
 
-        /**
-         * 着色器程序缓存
-         */
-        protected _webGLProgramMap = new Map<GL, WebGLProgram>();
-        protected _vertexShaderMap = new Map<GL, WebGLShader>();
-        protected _fragmentShaderMap = new Map<GL, WebGLShader>();
+        protected map = new Map<GL, {
+            program: WebGLProgram, vertex: WebGLShader, fragment: WebGLShader
+            /**
+             * 属性信息列表
+             */
+            attributes: { [name: string]: WebGLActiveInfo };
+            /**
+             * uniform信息列表
+             */
+            uniforms: { [name: string]: WebGLActiveInfo };
+        }>();
 
         private getMacroCode(variables: string[], valueObj: Object)
         {
@@ -266,19 +259,13 @@ namespace feng3d
 
         private clear()
         {
-            this._webGLProgramMap.forEach((value, gl) =>
+            this.map.forEach((value, gl) =>
             {
-                gl.deleteProgram(value);
+                gl.deleteProgram(value.program);
+                gl.deleteShader(value.vertex);
+                gl.deleteShader(value.fragment);
             });
-            this._vertexShaderMap.forEach((value, gl) =>
-            {
-                gl.deleteShader(value);
-            });
-            this._fragmentShaderMap.forEach((value, gl) =>
-            {
-                gl.deleteShader(value);
-            });
-            this._webGLProgramMap.clear();
+            this.map.clear();
         }
     }
 }

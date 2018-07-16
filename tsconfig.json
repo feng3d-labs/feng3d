@@ -102,7 +102,6 @@
         "src/render/gl/GL.ts",
         "src/render/gl/GLAdvanced.ts",
         "src/render/gl/GLExtension.ts",
-        "src/render/gl/GLProgramExtension.ts",
         "src/render/gl/WebGLCapabilities.ts",
         //
         "src/render/data/Uniform.ts",
