@@ -161,22 +161,8 @@ namespace feng3d
         //                  点光源
         /******************************************************/
         /**
-         * 点光源位置数组
+         * 点光源
          */
-        u_pointLightPositions: Vector3[];
-        /**
-         * 点光源颜色数组
-         */
-        u_pointLightColors: Color3[];
-        /**
-         * 点光源光照强度数组
-         */
-        u_pointLightIntensitys: number[];
-        /**
-         * 点光源光照范围数组
-         */
-        u_pointLightRanges: number[];
-
         pointLights: PointLight[];
 
         /******************************************************/

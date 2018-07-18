@@ -1,22 +1,18 @@
 #ifdef NUM_POINTLIGHT
     #if NUM_POINTLIGHT > 0
-        // //点光源位置数组
-        // uniform vec3 u_pointLightPositions[NUM_POINTLIGHT];
-        // //点光源颜色数组
-        // uniform vec3 u_pointLightColors[NUM_POINTLIGHT];
-        // //点光源光照强度数组
-        // uniform float u_pointLightIntensitys[NUM_POINTLIGHT];
-        // //点光源光照范围数组
-        // uniform float u_pointLightRanges[NUM_POINTLIGHT];
-
+        // 点光源
         struct PointLight
         {
+            // 位置
             vec3 position;
+            // 颜色
             vec3 color;
+            // 强度
             float intensity;
+            // 范围
             float range;
         };
-
+        // 点光源列表
         uniform PointLight pointLights[NUM_POINTLIGHT];
     #endif
 #endif
