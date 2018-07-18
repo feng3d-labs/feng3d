@@ -24,8 +24,8 @@ namespace feng3d
                 renderParams.depthtest = true;
                 renderParams.depthFunc = DepthFunc.LEQUAL;
 
-                this.shader = shaderlib.getShader("wireframe");
-                this.skeleton_shader = shaderlib.getShader("wireframe_skeleton");
+                this.shader = new Shader("wireframe");
+                this.skeleton_shader = new Shader("wireframe_skeleton");
             }
         }
 

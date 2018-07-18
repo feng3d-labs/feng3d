@@ -53,7 +53,7 @@ namespace feng3d
                 this.renderParams = renderParams;
                 //
 
-                this.shader = shaderlib.getShader("skybox");
+                this.shader = new Shader("skybox");
             }
         }
 

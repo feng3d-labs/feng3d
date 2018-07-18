@@ -88,7 +88,7 @@ namespace feng3d
                     this.uniforms = newuniforms;
                 }
             }
-            this.shader = shaderlib.getShader(this.shaderName);
+            this.shader = new Shader(this.shaderName);
         }
     }
 }

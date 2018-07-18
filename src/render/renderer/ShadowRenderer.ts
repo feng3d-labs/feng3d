@@ -24,8 +24,8 @@ namespace feng3d
                 renderParams.enableBlend = false;
                 renderParams.depthFunc = DepthFunc.LEQUAL;
 
-                this.shader = shaderlib.getShader("shadow");
-                this.skeleton_shader = shaderlib.getShader("shadow_skeleton");
+                this.shader = new Shader("shadow");
+                this.skeleton_shader = new Shader("shadow_skeleton");
             }
         }
 

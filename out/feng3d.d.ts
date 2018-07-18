@@ -1968,12 +1968,12 @@ declare namespace feng3d {
          * @param vertex
          * @param fragment
          */
-        getMacroVariablesFromShaderCode(vertex: string, fragment: string): any[];
+        getMacroVariablesFromShaderCode(vertex: string, fragment: string): string[];
         /**
          * 从着色器代码中获取宏变量列表
          * @param code
          */
-        getMacroVariablesFromCode(code: string): any[];
+        getMacroVariablesFromCode(code: string): string[];
     }
 }
 interface IDBObjectStore {
@@ -7643,6 +7643,29 @@ declare namespace feng3d {
         resultVertexCode: string;
         resultFragmentCode: string;
         constructor(shaderName: string);
+        private onShaderChanged();
+        /**
+         * 更新渲染代码
+         */
+        private updateShaderCode();
+        /**
+         * 编译着色器代码
+         * @param gl GL上下文
+         * @param type 着色器类型
+         * @param code 着色器代码
+         * @return 编译后的着色器对象
+         */
+        private compileShaderCode(gl, type, code);
+        private createLinkProgram(gl, vertexShader, fragmentShader);
+        /**
+         * Create the linked program object
+         * @param gl GL context
+         * @param vshader a vertex shader program (string)
+         * @param fshader a fragment shader program (string)
+         * @return created program object, or null if the creation has failed
+         */
+        private createProgram(gl, vshader, fshader);
+        private compileShaderProgram(gl, vshader, fshader);
         /**
          * 激活渲染程序
          */
@@ -8236,10 +8259,6 @@ declare namespace feng3d {
                  */
                 fragment: string;
                 cls?: new (...arg: any[]) => any;
-                /**
-                 * 处理了 include 的 shader
-                 */
-                shader?: Shader;
             };
         };
         /**
@@ -8256,11 +8275,17 @@ declare namespace feng3d {
     class ShaderLib {
         shaderConfig: ShaderConfig;
         private _shaderConfig;
+        private _shaderCache;
         constructor();
         /**
          * 获取shaderCode
          */
-        getShader(shaderName: string): Shader;
+        getShader(shaderName: string): {
+            vertex: string;
+            fragment: string;
+            vertexMacroVariables: string[];
+            fragmentMacroVariables: string[];
+        };
         /**
          * 展开 include
          */

@@ -22,10 +22,6 @@ namespace feng3d
                  */
                 fragment: string,
                 cls?: new (...arg: any[]) => any,
-                /**
-                 * 处理了 include 的 shader
-                 */
-                shader?: Shader,
             }
         },
         /**
@@ -53,6 +49,8 @@ namespace feng3d
         }
         private _shaderConfig: ShaderConfig;
 
+        private _shaderCache: { [shaderName: string]: { vertex: string, fragment: string, vertexMacroVariables: string[], fragmentMacroVariables: string[] } } = {};
+
         constructor()
         {
             feng3dDispatcher.on("assets.shaderChanged", this.onShaderChanged, this);
@@ -63,14 +61,19 @@ namespace feng3d
          */
         getShader(shaderName: string)
         {
-            var shader = this.shaderConfig.shaders[shaderName];
-            if (!shader) return;
+            if (this._shaderCache[shaderName])
+                return this._shaderCache[shaderName];
 
-            if (!shader.shader)
-            {
-                shader.shader = new Shader(shaderName);
-            }
-            return shader.shader;
+            var shader = shaderlib.shaderConfig.shaders[shaderName];
+            //
+            var vertex = shaderlib.uninclude(shader.vertex);
+            //
+            var fragment = shaderlib.uninclude(shader.fragment);
+            var vertexMacroVariables = shaderMacroUtils.getMacroVariablesFromCode(vertex);
+            var fragmentMacroVariables = shaderMacroUtils.getMacroVariablesFromCode(fragment);
+
+            this._shaderCache[shaderName] = { vertex: vertex, fragment: fragment, vertexMacroVariables: vertexMacroVariables, fragmentMacroVariables: fragmentMacroVariables };
+            return this._shaderCache[shaderName];
         }
 
         /**
@@ -94,14 +97,7 @@ namespace feng3d
 
         private onShaderChanged()
         {
-            for (const key in this.shaderConfig.shaders)
-            {
-                if (this.shaderConfig.shaders.hasOwnProperty(key))
-                {
-                    const element = this.shaderConfig.shaders[key];
-                    element.shader = null;
-                }
-            }
+            this._shaderCache = {};
         }
 
         /**

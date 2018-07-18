@@ -33,7 +33,7 @@ namespace feng3d
          */
         getMacroVariablesFromCode(code: string)
         {
-            var variables = [];
+            var variables: string[] = [];
             var lines = code.split("\n");
             for (let i = 0; i < lines.length; i++)
             {

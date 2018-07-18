@@ -25,7 +25,7 @@ namespace feng3d
                 renderParams.cullFace = CullFace.FRONT;
                 renderParams.frontFace = FrontFace.CW;
 
-                this.renderAtomic.shader = shaderlib.getShader("outline");
+                this.renderAtomic.shader = new Shader("outline");
             }
         }
 

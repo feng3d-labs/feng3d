@@ -84,23 +84,29 @@ namespace feng3d
         constructor(shaderName: string)
         {
             this.shaderName = shaderName;
+            feng3dDispatcher.on("assets.shaderChanged", this.onShaderChanged, this);
+        }
+
+        private onShaderChanged()
+        {
+            this.vertex = this.fragment = null;
         }
 
         /**
-         * 激活渲染程序
+         * 更新渲染代码
          */
-        activeShaderProgram(gl: GL)
+        private updateShaderCode()
         {
             // 获取着色器代码
             if (this.vertex == null || this.fragment == null)
             {
-                var shader = shaderlib.shaderConfig.shaders[this.shaderName];
+                var result = shaderlib.getShader(this.shaderName);
                 //
-                this.resultVertexCode = this.vertex = shaderlib.uninclude(shader.vertex);
+                this.resultVertexCode = this.vertex = result.vertex;
                 //
-                this.resultFragmentCode = this.fragment = shaderlib.uninclude(shader.fragment);
-                this.vertexMacroVariables = shaderMacroUtils.getMacroVariablesFromCode(this.vertex);
-                this.fragmentMacroVariables = shaderMacroUtils.getMacroVariablesFromCode(this.fragment);
+                this.resultFragmentCode = this.fragment = result.fragment;
+                this.vertexMacroVariables = result.vertexMacroVariables;
+                this.fragmentMacroVariables = result.fragmentMacroVariables;
             }
 
             var vertexMacroInvalid = false;
@@ -137,84 +143,106 @@ namespace feng3d
                 this.clear();
                 this.resultFragmentCode = this.vertex.replace(/#define\s+macros/, this.getMacroCode(this.fragmentMacroVariables, this.macroValues));
             }
+        }
 
-            //渲染程序
-            if (this.map.has(gl))
-                return this.map.get(gl);
-
-            // Create shader object
-            var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-            if (vertexShader == null)
+        /**
+         * 编译着色器代码
+         * @param gl GL上下文
+         * @param type 着色器类型
+         * @param code 着色器代码
+         * @return 编译后的着色器对象
+         */
+        private compileShaderCode(gl: GL, type: number, code: string)
+        {
+            var shader = gl.createShader(type);
+            if (shader == null)
             {
                 debuger && alert('unable to create shader');
                 return null;
             }
 
-            // Set the shader program
-            gl.shaderSource(vertexShader, this.resultVertexCode);
+            gl.shaderSource(shader, code);
+            gl.compileShader(shader);
 
-            // Compile the shader
-            gl.compileShader(vertexShader);
-
-            // Check the result of compilation
-            var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
+            // 检查编译结果
+            var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
             if (!compiled)
             {
-                var error = gl.getShaderInfoLog(vertexShader);
+                var error = gl.getShaderInfoLog(shader);
                 debuger && alert('Failed to compile shader: ' + error);
-                gl.deleteShader(vertexShader);
+                gl.deleteShader(shader);
                 return null;
             }
 
-            // Create shader object
-            var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-            if (fragmentShader == null)
-            {
-                debuger && alert('unable to create shader');
-                return null;
-            }
+            return shader;
+        }
 
-            // Set the shader program
-            gl.shaderSource(fragmentShader, this.resultFragmentCode);
-
-            // Compile the shader
-            gl.compileShader(fragmentShader);
-
-            // Check the result of compilation
-            var compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
-            if (!compiled)
-            {
-                var error = gl.getShaderInfoLog(fragmentShader);
-                debuger && alert('Failed to compile shader: ' + error);
-                gl.deleteShader(fragmentShader);
-                return null;
-            }
-
-            // Create a program object
-            var shaderProgram = gl.createProgram();
-            if (!shaderProgram)
+        private createLinkProgram(gl: GL, vertexShader: WebGLShader, fragmentShader: WebGLShader)
+        {
+            // 创建程序对象
+            var program = gl.createProgram();
+            if (!program)
             {
                 return null;
             }
 
-            // Attach the shader objects
-            gl.attachShader(shaderProgram, vertexShader);
-            gl.attachShader(shaderProgram, fragmentShader);
+            // 添加着色器
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
 
-            // Link the program object
-            gl.linkProgram(shaderProgram);
+            // 链接程序
+            gl.linkProgram(program);
 
-            // Check the result of linking
-            var linked = gl.getProgramParameter(shaderProgram, gl.LINK_STATUS);
+            // 检查结果
+            var linked = gl.getProgramParameter(program, gl.LINK_STATUS);
             if (!linked)
             {
-                var error = gl.getProgramInfoLog(shaderProgram);
+                var error = gl.getProgramInfoLog(program);
                 debuger && alert('Failed to link program: ' + error);
-                gl.deleteProgram(shaderProgram);
+                gl.deleteProgram(program);
                 gl.deleteShader(fragmentShader);
                 gl.deleteShader(vertexShader);
                 return null;
             }
+            return program;
+        }
+
+        /**
+         * Create the linked program object
+         * @param gl GL context
+         * @param vshader a vertex shader program (string)
+         * @param fshader a fragment shader program (string)
+         * @return created program object, or null if the creation has failed
+         */
+        private createProgram(gl: GL, vshader: string, fshader: string)
+        {
+            // 编译顶点着色器
+            var vertexShader = this.compileShaderCode(gl, gl.VERTEX_SHADER, vshader);
+            if (!vertexShader) return null;
+
+            // 编译片段着色器
+            var fragmentShader = this.compileShaderCode(gl, gl.FRAGMENT_SHADER, fshader);
+            if (!vertexShader) return null;
+
+            // 创建着色器程序
+            var shaderProgram = this.createLinkProgram(gl, vertexShader, fragmentShader);
+            return shaderProgram;
+        }
+
+        private compileShaderProgram(gl: GL, vshader: string, fshader: string)
+        {
+            // 创建着色器程序
+            // 编译顶点着色器
+            var vertexShader = this.compileShaderCode(gl, gl.VERTEX_SHADER, vshader);
+            if (!vertexShader) return null;
+
+            // 编译片段着色器
+            var fragmentShader = this.compileShaderCode(gl, gl.FRAGMENT_SHADER, fshader);
+            if (!vertexShader) return null;
+
+            // 创建着色器程序
+            var shaderProgram = this.createLinkProgram(gl, vertexShader, fragmentShader);
+            if (!shaderProgram) return null;
 
             //获取属性信息
             var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
@@ -258,7 +286,21 @@ namespace feng3d
                 }
             }
 
-            var result = { program: shaderProgram, vertex: vertexShader, fragment: fragmentShader, attributes: attributes, uniforms: uniforms };
+            return { program: shaderProgram, vertex: vertexShader, fragment: fragmentShader, attributes: attributes, uniforms: uniforms };
+        }
+
+        /**
+         * 激活渲染程序
+         */
+        activeShaderProgram(gl: GL)
+        {
+            this.updateShaderCode();
+
+            //渲染程序
+            if (this.map.has(gl))
+                return this.map.get(gl);
+
+            var result = this.compileShaderProgram(gl, this.resultVertexCode, this.resultFragmentCode);
             this.map.set(gl, result);
             return result;
         }
