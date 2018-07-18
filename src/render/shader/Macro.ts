@@ -23,6 +23,11 @@ namespace feng3d
         NUM_DIRECTIONALLIGHT: number;
 
         /**
+         * 生成投影的方向光源数量
+         */
+        NUM_DIRECTIONALLIGHT_CASTSHADOW: number;
+
+        /**
          * 骨骼关节数量
          */
         NUM_SKELETONJOINT: number;

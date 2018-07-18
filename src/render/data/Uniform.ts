@@ -157,21 +157,24 @@ namespace feng3d
          * lod0时在贴图中的uv缩放偏移向量
          */
         u_lod0vec: Vector4;
-        /******************************************************/
-        //                  点光源
-        /******************************************************/
         /**
          * 点光源
          */
         pointLights: PointLight[];
-
-        /******************************************************/
-        //                  方向光源
-        /******************************************************/
         /**
          * 方向光源数组
          */
         directionalLights: DirectionalLight[]
+
+        /**
+         * 生成投影的方向光源
+         */
+        castsShadowDirectionalLights: DirectionalLight[]
+
+        /**
+         * 方向光源投影矩阵列表
+         */
+        u_directionalShadowMatrix: Matrix4x4[];
 
         /**
          * 场景环境光

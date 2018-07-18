@@ -7457,18 +7457,22 @@ declare namespace feng3d {
          * lod0时在贴图中的uv缩放偏移向量
          */
         u_lod0vec: Vector4;
-        /******************************************************/
-        /******************************************************/
         /**
          * 点光源
          */
         pointLights: PointLight[];
-        /******************************************************/
-        /******************************************************/
         /**
          * 方向光源数组
          */
         directionalLights: DirectionalLight[];
+        /**
+         * 生成投影的方向光源
+         */
+        castsShadowDirectionalLights: DirectionalLight[];
+        /**
+         * 方向光源投影矩阵列表
+         */
+        u_directionalShadowMatrix: Matrix4x4[];
         /**
          * 场景环境光
          */
@@ -8104,6 +8108,10 @@ declare namespace feng3d {
          * 方向光源数量
          */
         NUM_DIRECTIONALLIGHT: number;
+        /**
+         * 生成投影的方向光源数量
+         */
+        NUM_DIRECTIONALLIGHT_CASTSHADOW: number;
         /**
          * 骨骼关节数量
          */
@@ -10794,7 +10802,6 @@ declare namespace feng3d {
         castsShadows: boolean;
         private _shadowMap;
         readonly shadowMap: Texture2D;
-        readonly position: Vector3;
         /**
          * 帧缓冲对象，用于处理光照阴影贴图渲染
          */
@@ -10838,6 +10845,10 @@ declare namespace feng3d {
          * 光照范围
          */
         range: number;
+        /**
+         * 光源位置
+         */
+        readonly position: Vector3;
         /**
          * 构建
          */

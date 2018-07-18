@@ -26,8 +26,31 @@ namespace feng3d
 
             renderAtomic.uniforms.pointLights = pointLights;
             renderAtomic.shaderMacro.NUM_POINTLIGHT = pointLights.length;
-            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = directionalLights.length;
-            renderAtomic.uniforms.directionalLights = directionalLights;
+
+            //
+            var castsShadowDirectionalLights: DirectionalLight[] = [];
+            var unCastsShadowDirectionalLights: DirectionalLight[] = [];
+            var directionalShadowMatrix: Matrix4x4[] = [];
+            // var castsShadows
+            directionalLights.forEach(element =>
+            {
+                if (!element.isVisibleAndEnabled) return;
+                if (element.castsShadows)
+                {
+                    castsShadowDirectionalLights.push(element);
+                    directionalShadowMatrix.push(element.shadow.camera.viewProjection);
+                } else
+                {
+                    unCastsShadowDirectionalLights.push(element);
+                }
+            });
+
+            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = unCastsShadowDirectionalLights.length;
+            renderAtomic.uniforms.directionalLights = unCastsShadowDirectionalLights;
+            //
+            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT_CASTSHADOW = castsShadowDirectionalLights.length;
+            renderAtomic.uniforms.castsShadowDirectionalLights = castsShadowDirectionalLights;
+            renderAtomic.uniforms.u_directionalShadowMatrix = directionalShadowMatrix;
         }
     }
 }

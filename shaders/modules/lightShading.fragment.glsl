@@ -17,22 +17,38 @@
     #endif
 #endif
 
-#ifdef NUM_DIRECTIONALLIGHT
-    #if NUM_DIRECTIONALLIGHT > 0
-        // 方向光
-        struct DirectionalLight
-        {
-            // 方向
-            vec3 direction;
-            // 颜色
-            vec3 color;
-            // 强度
-            float intensity;
-        };
+#if NUM_DIRECTIONALLIGHT > 0
+    // 方向光源
+    struct DirectionalLight
+    {
+        // 方向
+        vec3 direction;
+        // 颜色
+        vec3 color;
+        // 强度
+        float intensity;
+    };
+    // 方向光源列表
+    uniform DirectionalLight directionalLights[ NUM_DIRECTIONALLIGHT ];
+#endif
 
-        // 方向光列表
-        uniform DirectionalLight directionalLights[ NUM_DIRECTIONALLIGHT ];
-    #endif
+#if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0
+    // 投影的方向光源
+    struct DirectionalLightCastShadow
+    {
+        // 方向
+        vec3 direction;
+        // 颜色
+        vec3 color;
+        // 强度
+        float intensity;
+        // 阴影图
+        sampler2D shadowMap;
+    };
+    // 投影的方向光源列表
+    uniform DirectionalLightCastShadow directionalLightCastShadow[NUM_DIRECTIONALLIGHT_CASTSHADOW];
+    // 方向光源投影uv列表
+    varying vec4 v_directionalShadowCoord[ NUM_DIRECTIONALLIGHT_CASTSHADOW ];
 #endif
 
 //卡通

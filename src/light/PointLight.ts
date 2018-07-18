@@ -14,6 +14,14 @@ namespace feng3d
         range = 10;
 
         /**
+         * 光源位置
+         */
+        get position()
+        {
+            return this.transform.scenePosition;
+        }
+
+        /**
          * 构建
          */
         init(gameObject: GameObject)
