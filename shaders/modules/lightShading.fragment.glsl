@@ -19,12 +19,19 @@
 
 #ifdef NUM_DIRECTIONALLIGHT
     #if NUM_DIRECTIONALLIGHT > 0
-        //方向光源方向数组
-        uniform vec3 u_directionalLightDirections[NUM_DIRECTIONALLIGHT];
-        //方向光源颜色数组
-        uniform vec3 u_directionalLightColors[NUM_DIRECTIONALLIGHT];
-        //方向光源光照强度数组
-        uniform float u_directionalLightIntensitys[NUM_DIRECTIONALLIGHT];
+        // 方向光
+        struct DirectionalLight
+        {
+            // 方向
+            vec3 direction;
+            // 颜色
+            vec3 color;
+            // 强度
+            float intensity;
+        };
+
+        // 方向光列表
+        uniform DirectionalLight directionalLights[ NUM_DIRECTIONALLIGHT ];
     #endif
 #endif
 
@@ -78,8 +85,9 @@ vec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientC
     vec3 totalSpecularLightColor = vec3(0.0,0.0,0.0);
     #ifdef NUM_POINTLIGHT
         #if NUM_POINTLIGHT > 0
+            PointLight pointLight;
             for(int i = 0;i<NUM_POINTLIGHT;i++){
-                PointLight pointLight = pointLights[i];
+                pointLight = pointLights[i];
                 //
                 vec3 lightOffset = pointLight.position - v_worldPosition;
                 float lightDistance = length(lightOffset);
@@ -101,13 +109,15 @@ vec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientC
     #endif
     #ifdef NUM_DIRECTIONALLIGHT
         #if NUM_DIRECTIONALLIGHT > 0
+            DirectionalLight directionalLight;
             for(int i = 0;i<NUM_DIRECTIONALLIGHT;i++){
+                directionalLight = directionalLights[i];
                 //光照方向
-                vec3 lightDir = normalize(-u_directionalLightDirections[i]);
+                vec3 lightDir = normalize(-directionalLight.direction);
                 //灯光颜色
-                vec3 lightColor = u_directionalLightColors[i];
+                vec3 lightColor = directionalLight.color;
                 //灯光强度
-                float lightIntensity = u_directionalLightIntensitys[i];
+                float lightIntensity = directionalLight.intensity;
                 //
                 totalDiffuseLightColor = totalDiffuseLightColor +  calculateLightDiffuse(normal,lightDir) * lightColor * lightIntensity;
                 totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,viewDir,glossiness) * lightColor * lightIntensity;

@@ -26,6 +26,8 @@ namespace feng3d
 
             renderAtomic.uniforms.pointLights = pointLights;
             renderAtomic.shaderMacro.NUM_POINTLIGHT = pointLights.length;
+            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = directionalLights.length;
+            renderAtomic.uniforms.directionalLights = directionalLights;
 
             if (pointLights.length > 0)
             {
@@ -34,26 +36,12 @@ namespace feng3d
                 renderAtomic.shaderMacro.GLOBAL_POSITION_NEED = 1;
                 renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
             }
-            var directionalLightDirections: Vector3[] = [];
-            var directionalLightColors: Color3[] = [];
-            var directionalLightIntensitys: number[] = [];
-            for (var i = 0; i < directionalLights.length; i++)
-            {
-                var directionalLight = directionalLights[i];
-                directionalLightDirections.push(directionalLight.transform.localToWorldMatrix.forward);
-                directionalLightColors.push(directionalLight.color);
-                directionalLightIntensitys.push(directionalLight.intensity);
-            }
-            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = directionalLights.length;
+            
             if (directionalLights.length > 0)
             {
                 renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
                 renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
                 renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
-                //
-                renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
-                renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;
-                renderAtomic.uniforms.u_directionalLightIntensitys = directionalLightIntensitys;
             }
         }
     }

@@ -169,17 +169,9 @@ namespace feng3d
         //                  方向光源
         /******************************************************/
         /**
-         * 方向光源方向数组
+         * 方向光源数组
          */
-        u_directionalLightDirections: Vector3[];
-        /**
-         * 方向光源颜色数组
-         */
-        u_directionalLightColors: Color3[];
-        /**
-         * 方向光源光照强度数组
-         */
-        u_directionalLightIntensitys: number[];
+        directionalLights: DirectionalLight[]
 
         /**
          * 场景环境光
