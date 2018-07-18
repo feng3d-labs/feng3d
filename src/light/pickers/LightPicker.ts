@@ -24,33 +24,35 @@ namespace feng3d
             renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
             //设置点光源数据
 
-            renderAtomic.uniforms.pointLights = pointLights;
+            renderAtomic.uniforms.u_pointLights = pointLights;
             renderAtomic.shaderMacro.NUM_POINTLIGHT = pointLights.length;
 
             //
-            var castsShadowDirectionalLights: DirectionalLight[] = [];
-            var unCastsShadowDirectionalLights: DirectionalLight[] = [];
+            var castShadowDirectionalLights: DirectionalLight[] = [];
+            var unCastShadowDirectionalLights: DirectionalLight[] = [];
             var directionalShadowMatrix: Matrix4x4[] = [];
-            // var castsShadows
+            var directionalShadowMaps: Texture2D[] = [];
             directionalLights.forEach(element =>
             {
                 if (!element.isVisibleAndEnabled) return;
-                if (element.castsShadows)
+                if (element.castShadows)
                 {
-                    castsShadowDirectionalLights.push(element);
+                    castShadowDirectionalLights.push(element);
                     directionalShadowMatrix.push(element.shadow.camera.viewProjection);
+                    directionalShadowMaps.push(element.shadowMap);
                 } else
                 {
-                    unCastsShadowDirectionalLights.push(element);
+                    unCastShadowDirectionalLights.push(element);
                 }
             });
 
-            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = unCastsShadowDirectionalLights.length;
-            renderAtomic.uniforms.directionalLights = unCastsShadowDirectionalLights;
+            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = unCastShadowDirectionalLights.length;
+            renderAtomic.uniforms.u_directionalLights = unCastShadowDirectionalLights;
             //
-            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT_CASTSHADOW = castsShadowDirectionalLights.length;
-            renderAtomic.uniforms.castsShadowDirectionalLights = castsShadowDirectionalLights;
+            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT_CASTSHADOW = castShadowDirectionalLights.length;
+            renderAtomic.uniforms.u_castShadowDirectionalLights = castShadowDirectionalLights;
             renderAtomic.uniforms.u_directionalShadowMatrix = directionalShadowMatrix;
+            renderAtomic.uniforms.u_directionalShadowMaps = directionalShadowMaps;
         }
     }
 }

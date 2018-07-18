@@ -7460,19 +7460,23 @@ declare namespace feng3d {
         /**
          * 点光源
          */
-        pointLights: PointLight[];
+        u_pointLights: PointLight[];
         /**
          * 方向光源数组
          */
-        directionalLights: DirectionalLight[];
+        u_directionalLights: DirectionalLight[];
         /**
          * 生成投影的方向光源
          */
-        castsShadowDirectionalLights: DirectionalLight[];
+        u_castShadowDirectionalLights: DirectionalLight[];
         /**
          * 方向光源投影矩阵列表
          */
         u_directionalShadowMatrix: Matrix4x4[];
+        /**
+         * 方向光源阴影图
+         */
+        u_directionalShadowMaps: Texture2D[];
         /**
          * 场景环境光
          */
@@ -10799,7 +10803,13 @@ declare namespace feng3d {
         /**
          * 是否生成阴影
          */
-        castsShadows: boolean;
+        castShadows: boolean;
+        shadowBias: number;
+        shadowRadius: number;
+        /**
+         * 阴影图尺寸
+         */
+        readonly shadowMapSize: Vector2;
         private _shadowMap;
         readonly shadowMap: Texture2D;
         /**
