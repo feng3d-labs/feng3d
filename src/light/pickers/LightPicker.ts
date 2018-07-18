@@ -28,21 +28,6 @@ namespace feng3d
             renderAtomic.shaderMacro.NUM_POINTLIGHT = pointLights.length;
             renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = directionalLights.length;
             renderAtomic.uniforms.directionalLights = directionalLights;
-
-            if (pointLights.length > 0)
-            {
-                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.GLOBAL_POSITION_NEED = 1;
-                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
-            }
-            
-            if (directionalLights.length > 0)
-            {
-                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
-            }
         }
     }
 }

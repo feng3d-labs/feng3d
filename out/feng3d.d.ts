@@ -8153,22 +8153,6 @@ declare namespace feng3d {
          */
         HAS_ENV_METHOD: boolean;
         /**
-         * 是否需要变量全局坐标
-         */
-        GLOBAL_POSITION_NEED: number;
-        /**
-         * 是否需要属性法线
-         */
-        A_NORMAL_NEED: number;
-        /**
-         * 是否需要变量法线
-         */
-        V_NORMAL_NEED: number;
-        /**
-         * 是否需要摄像机矩阵
-         */
-        U_CAMERAMATRIX_NEED: number;
-        /**
          * 是否卡通渲染
          */
         IS_CARTOON: Boolean;
