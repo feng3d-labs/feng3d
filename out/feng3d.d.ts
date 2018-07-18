@@ -8114,8 +8114,6 @@ declare namespace feng3d {
      */
     class RenderContext extends EventDispatcher {
         renderAtomic: RenderAtomic;
-        NUM_POINTLIGHT: number;
-        NUM_DIRECTIONALLIGHT: number;
         /**
          * 摄像机
          */

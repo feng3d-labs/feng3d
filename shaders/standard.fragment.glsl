@@ -1,5 +1,8 @@
 precision mediump float;
 
+//此处将填充宏定义
+#define macros
+
 varying vec2 v_uv;
 varying vec3 v_worldPosition;
 varying vec3 v_normal;
@@ -64,16 +67,17 @@ void main(void)
     finalColor = diffuseColor;
 
     //渲染灯光
-    //获取高光值
-    float glossiness = u_glossiness;
-    //获取镜面反射基本颜色
-    vec3 specularColor = u_specular;
-
-    vec4 specularMapColor = texture2D(s_specular, v_uv);
-    specularColor.xyz = specularColor * specularMapColor.xyz;
-    glossiness = glossiness * specularMapColor.w;
-    
-    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
+    #if NUM_LIGHT > 0
+        //获取高光值
+        float glossiness = u_glossiness;
+        //获取镜面反射基本颜色
+        vec3 specularColor = u_specular;
+        vec4 specularMapColor = texture2D(s_specular, v_uv);
+        specularColor.xyz = specularMapColor.xyz;
+        glossiness = glossiness * specularMapColor.w;
+        
+        finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
+    #endif
 
     finalColor = envmapMethod(finalColor);
 

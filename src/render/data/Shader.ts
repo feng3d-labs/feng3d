@@ -77,8 +77,10 @@ namespace feng3d
             if (this.macroInvalid)
             {
                 this.clear();
-                this.vertex = result.vertex.replace(/#define\s+macros/, this.getMacroCode(result.vertexMacroVariables, this.macroValues));
-                this.fragment = result.fragment.replace(/#define\s+macros/, this.getMacroCode(result.fragmentMacroVariables, this.macroValues));
+                var vMacroCode = this.getMacroCode(result.vertexMacroVariables, this.macroValues);
+                this.vertex = result.vertex.replace(/#define\s+macros/, vMacroCode);
+                var fMacroCode = this.getMacroCode(result.fragmentMacroVariables, this.macroValues);
+                this.fragment = result.fragment.replace(/#define\s+macros/, fMacroCode);
                 this.macroInvalid = false;
             }
         }
@@ -248,7 +250,7 @@ namespace feng3d
                 if (typeof value == "boolean")
                 {
                     value && (macroHeader += `#define ${macroName}\n`);
-                } else
+                } else if (typeof value == "number")
                 {
                     macroHeader += `#define ${macroName} ${value}\n`;
                 }

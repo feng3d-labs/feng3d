@@ -9,9 +9,6 @@ namespace feng3d
     {
         renderAtomic: RenderAtomic;
 
-        NUM_POINTLIGHT = 4;
-        NUM_DIRECTIONALLIGHT = 2;
-
         /**
          * 摄像机
          */
@@ -39,76 +36,59 @@ namespace feng3d
             renderAtomic.uniforms.u_skyBoxSize = () => this.camera.lens.far / Math.sqrt(3);
             renderAtomic.uniforms.u_scaleByDepth = () => this.camera.getScaleByDepth(1);
 
-            //
             var pointLights = this.scene3d.collectComponents.pointLights.list;
             var directionalLights = this.scene3d.collectComponents.directionalLights.list;
 
             renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
-
             //收集点光源数据
             var pointLightPositions: Vector3[] = [];
             var pointLightColors: Color3[] = [];
             var pointLightIntensitys: number[] = [];
             var pointLightRanges: number[] = [];
-            for (var i = 0; i < this.NUM_POINTLIGHT; i++)
+            for (var i = 0; i < pointLights.length; i++)
             {
                 var pointLight = pointLights[i];
-                if (pointLight)
-                {
-                    pointLightPositions.push(pointLight.transform.scenePosition);
-                    pointLightColors.push(pointLight.color);
-                    pointLightIntensitys.push(pointLight.intensity);
-                    pointLightRanges.push(pointLight.range);
-                    //
-                    renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
-                    renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
-                    renderAtomic.shaderMacro.GLOBAL_POSITION_NEED = 1;
-                    renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
-
-                } else
-                {
-                    pointLightPositions.push(new Vector3());
-                    pointLightColors.push(new Color3());
-                    pointLightIntensitys.push(0);
-                    pointLightRanges.push(0);
-                }
+                pointLightPositions.push(pointLight.transform.scenePosition);
+                pointLightColors.push(pointLight.color);
+                pointLightIntensitys.push(pointLight.intensity);
+                pointLightRanges.push(pointLight.range);
             }
-            renderAtomic.shaderMacro.NUM_POINTLIGHT = pointLights.length;
             //设置点光源数据
 
-            //
-            renderAtomic.uniforms.u_pointLightPositions = pointLightPositions;
-            renderAtomic.uniforms.u_pointLightColors = pointLightColors;
-            renderAtomic.uniforms.u_pointLightIntensitys = pointLightIntensitys;
-            renderAtomic.uniforms.u_pointLightRanges = pointLightRanges;
-            //
+            renderAtomic.shaderMacro.NUM_POINTLIGHT = pointLights.length;
+            if (pointLights.length > 0)
+            {
+                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.GLOBAL_POSITION_NEED = 1;
+                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
+                //
+                renderAtomic.uniforms.u_pointLightPositions = pointLightPositions;
+                renderAtomic.uniforms.u_pointLightColors = pointLightColors;
+                renderAtomic.uniforms.u_pointLightIntensitys = pointLightIntensitys;
+                renderAtomic.uniforms.u_pointLightRanges = pointLightRanges;
+            }
             var directionalLightDirections: Vector3[] = [];
             var directionalLightColors: Color3[] = [];
             var directionalLightIntensitys: number[] = [];
-            for (var i = 0; i < this.NUM_DIRECTIONALLIGHT; i++)
+            for (var i = 0; i < directionalLights.length; i++)
             {
                 var directionalLight = directionalLights[i];
-                if (directionalLight)
-                {
-                    directionalLightDirections.push(directionalLight.transform.localToWorldMatrix.forward);
-                    directionalLightColors.push(directionalLight.color);
-                    directionalLightIntensitys.push(directionalLight.intensity);
-                    //
-                    renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
-                    renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
-                    renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
-                } else
-                {
-                    directionalLightDirections.push(new Vector3());
-                    directionalLightColors.push(new Color3());
-                    directionalLightIntensitys.push(0);
-                }
+                directionalLightDirections.push(directionalLight.transform.localToWorldMatrix.forward);
+                directionalLightColors.push(directionalLight.color);
+                directionalLightIntensitys.push(directionalLight.intensity);
             }
             renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = directionalLights.length;
-            //
-            renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
-            renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;
-            renderAtomic.uniforms.u_directionalLightIntensitys = directionalLightIntensitys;
+            if (directionalLights.length > 0)
+            {
+                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
+                //
+                renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
+                renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;
+                renderAtomic.uniforms.u_directionalLightIntensitys = directionalLightIntensitys;
+            }
 
             renderAtomic.uniforms.u_sceneAmbientColor = this.scene3d.ambientColor;
         }
