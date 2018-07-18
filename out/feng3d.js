@@ -12349,9 +12349,9 @@ var feng3d;
             if (this.macroInvalid) {
                 this.clear();
                 var vMacroCode = this.getMacroCode(result.vertexMacroVariables, this.macroValues);
-                this.vertex = result.vertex.replace(/#define\s+macros/, vMacroCode);
+                this.vertex = vMacroCode + result.vertex;
                 var fMacroCode = this.getMacroCode(result.fragmentMacroVariables, this.macroValues);
-                this.fragment = result.fragment.replace(/#define\s+macros/, fMacroCode);
+                this.fragment = fMacroCode + result.fragment;
                 this.macroInvalid = false;
             }
         };
@@ -12484,7 +12484,7 @@ var feng3d;
                     macroHeader += "#define " + macroName + " " + value + "\n";
                 }
             });
-            return macroHeader;
+            return macroHeader + "\n";
         };
         Shader.prototype.clear = function () {
             this.map.forEach(function (value, gl) {
@@ -13423,82 +13423,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 渲染环境
-     * @author feng 2017-01-04
-     */
-    var RenderContext = /** @class */ (function (_super) {
-        __extends(RenderContext, _super);
-        function RenderContext() {
-            var _this = _super.call(this) || this;
-            _this.renderAtomic = new feng3d.RenderAtomic();
-            return _this;
-        }
-        RenderContext.prototype.update = function () {
-            var _this = this;
-            var renderAtomic = this.renderAtomic;
-            //
-            renderAtomic.uniforms.u_projectionMatrix = function () { return _this.camera.lens.matrix; };
-            renderAtomic.uniforms.u_viewProjection = function () { return _this.camera.viewProjection; };
-            renderAtomic.uniforms.u_viewMatrix = function () { return _this.camera.transform.worldToLocalMatrix; };
-            renderAtomic.uniforms.u_cameraMatrix = function () { return _this.camera.transform.localToWorldMatrix; };
-            renderAtomic.uniforms.u_skyBoxSize = function () { return _this.camera.lens.far / Math.sqrt(3); };
-            renderAtomic.uniforms.u_scaleByDepth = function () { return _this.camera.getScaleByDepth(1); };
-            var pointLights = this.scene3d.collectComponents.pointLights.list;
-            var directionalLights = this.scene3d.collectComponents.directionalLights.list;
-            renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
-            //收集点光源数据
-            var pointLightPositions = [];
-            var pointLightColors = [];
-            var pointLightIntensitys = [];
-            var pointLightRanges = [];
-            for (var i = 0; i < pointLights.length; i++) {
-                var pointLight = pointLights[i];
-                pointLightPositions.push(pointLight.transform.scenePosition);
-                pointLightColors.push(pointLight.color);
-                pointLightIntensitys.push(pointLight.intensity);
-                pointLightRanges.push(pointLight.range);
-            }
-            //设置点光源数据
-            renderAtomic.shaderMacro.NUM_POINTLIGHT = pointLights.length;
-            if (pointLights.length > 0) {
-                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.GLOBAL_POSITION_NEED = 1;
-                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
-                //
-                renderAtomic.uniforms.u_pointLightPositions = pointLightPositions;
-                renderAtomic.uniforms.u_pointLightColors = pointLightColors;
-                renderAtomic.uniforms.u_pointLightIntensitys = pointLightIntensitys;
-                renderAtomic.uniforms.u_pointLightRanges = pointLightRanges;
-            }
-            var directionalLightDirections = [];
-            var directionalLightColors = [];
-            var directionalLightIntensitys = [];
-            for (var i = 0; i < directionalLights.length; i++) {
-                var directionalLight = directionalLights[i];
-                directionalLightDirections.push(directionalLight.transform.localToWorldMatrix.forward);
-                directionalLightColors.push(directionalLight.color);
-                directionalLightIntensitys.push(directionalLight.intensity);
-            }
-            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = directionalLights.length;
-            if (directionalLights.length > 0) {
-                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
-                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
-                //
-                renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
-                renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;
-                renderAtomic.uniforms.u_directionalLightIntensitys = directionalLightIntensitys;
-            }
-            renderAtomic.uniforms.u_sceneAmbientColor = this.scene3d.ambientColor;
-        };
-        return RenderContext;
-    }(feng3d.EventDispatcher));
-    feng3d.RenderContext = RenderContext;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 渲染代码库
      * @author feng 2016-12-16
      */
@@ -13585,7 +13509,7 @@ var feng3d;
             },
             "outline": {
                 "fragment": "precision mediump float;\r\n\r\nuniform vec4 u_outlineColor;\r\n\r\nvoid main(void) {\r\n   \r\n    gl_FragColor = u_outlineColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//此处将填充宏定义\r\n#define macros\r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_cameraMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\nuniform float u_outlineMorphFactor;\r\n\r\n#ifdef HAS_SKELETON_ANIMATION\r\n    #include<skeleton.vertex>\r\n#endif\r\n\r\nuniform float u_outlineSize;\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n\r\n    #ifdef HAS_SKELETON_ANIMATION\r\n        position = skeletonAnimation(position);\r\n    #endif\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //全局法线\r\n    vec3 globalNormal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n\r\n    float depth = distance(worldPosition.xyz , u_cameraMatrix[3].xyz);\r\n    \r\n    vec3 offsetDir = mix(globalNormal,normalize(worldPosition.xyz),u_outlineMorphFactor);\r\n    //摄像机远近保持粗细一致\r\n    offsetDir = offsetDir * depth * u_scaleByDepth;\r\n    //描边宽度\r\n    offsetDir = offsetDir * u_outlineSize;\r\n\r\n    worldPosition.xyz = worldPosition.xyz + offsetDir;//\r\n\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_cameraMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\nuniform float u_outlineMorphFactor;\r\n\r\n#ifdef HAS_SKELETON_ANIMATION\r\n    #include<skeleton.vertex>\r\n#endif\r\n\r\nuniform float u_outlineSize;\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n\r\n    #ifdef HAS_SKELETON_ANIMATION\r\n        position = skeletonAnimation(position);\r\n    #endif\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //全局法线\r\n    vec3 globalNormal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n\r\n    float depth = distance(worldPosition.xyz , u_cameraMatrix[3].xyz);\r\n    \r\n    vec3 offsetDir = mix(globalNormal,normalize(worldPosition.xyz),u_outlineMorphFactor);\r\n    //摄像机远近保持粗细一致\r\n    offsetDir = offsetDir * depth * u_scaleByDepth;\r\n    //描边宽度\r\n    offsetDir = offsetDir * u_outlineSize;\r\n\r\n    worldPosition.xyz = worldPosition.xyz + offsetDir;//\r\n\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
             },
             "particle": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\nvarying vec4 v_particle_color;\r\n\r\nvec4 particleAnimation(vec4 color) {\r\n\r\n    return color * v_particle_color;\r\n}\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    finalColor = particleAnimation(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
@@ -13616,8 +13540,8 @@ var feng3d;
                 "vertex": "\r\n\r\nattribute vec3 a_position;\r\n\r\nuniform mat4 u_cameraMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nuniform float u_skyBoxSize;\r\n\r\nvarying vec3 v_worldPos;\r\n\r\nvoid main(){\r\n    vec3 worldPos = a_position.xyz * u_skyBoxSize + u_cameraMatrix[3].xyz;\r\n    gl_Position = u_viewProjection * vec4(worldPos.xyz,1.0);\r\n    v_worldPos = worldPos;\r\n}"
             },
             "standard": {
-                "fragment": "precision mediump float;\r\n\r\n//此处将填充宏定义\r\n#define macros\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#include<envmap.fragment>\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.fragment>\r\n#endif\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    #if NUM_LIGHT > 0\r\n        //获取高光值\r\n        float glossiness = u_glossiness;\r\n        //获取镜面反射基本颜色\r\n        vec3 specularColor = u_specular;\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n        \r\n        finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n    #endif\r\n\r\n    finalColor = envmapMethod(finalColor);\r\n\r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        finalColor = particleAnimation(finalColor);\r\n    #endif\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//此处将填充宏定义\r\n#define macros\r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nvarying vec3 v_normal;\r\n\r\nattribute vec3 a_tangent;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform float u_PointSize;\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n    //输出全局坐标\r\n    v_worldPosition = worldPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n    \r\n    gl_PointSize = u_PointSize;\r\n}"
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#include<envmap.fragment>\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.fragment>\r\n#endif\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    #if NUM_LIGHT > 0\r\n        //获取高光值\r\n        float glossiness = u_glossiness;\r\n        //获取镜面反射基本颜色\r\n        vec3 specularColor = u_specular;\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n        \r\n        finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n    #endif\r\n\r\n    finalColor = envmapMethod(finalColor);\r\n\r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        finalColor = particleAnimation(finalColor);\r\n    #endif\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nvarying vec3 v_normal;\r\n\r\nattribute vec3 a_tangent;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform float u_PointSize;\r\n\r\nvoid main(void) {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n    //输出全局坐标\r\n    v_worldPosition = worldPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n    \r\n    gl_PointSize = u_PointSize;\r\n}"
             },
             "terrain": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#include<terrain.fragment>\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#include<envmap.fragment>\r\n\r\nvoid main(void)\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    diffuseColor = terrainMethod(diffuseColor, v_uv);\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n    #ifdef HAS_SPECULAR_SAMPLER\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n    #endif\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    finalColor = envmapMethod(finalColor);\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
@@ -14216,7 +14140,7 @@ var feng3d;
      */
     var ForwardRenderer = /** @class */ (function () {
         function ForwardRenderer() {
-            this.renderContext = new feng3d.RenderContext();
+            this.renderAtomic = new feng3d.RenderAtomic();
         }
         /**
          * 渲染
@@ -14225,16 +14149,22 @@ var feng3d;
             var _this = this;
             var blenditems = scene3d.getPickCache(camera).blenditems;
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
-            this.renderContext.camera = camera;
-            this.renderContext.scene3d = scene3d;
-            this.renderContext.update();
+            var uniforms = this.renderAtomic.uniforms;
+            //
+            uniforms.u_projectionMatrix = function () { return camera.lens.matrix; };
+            uniforms.u_viewProjection = function () { return camera.viewProjection; };
+            uniforms.u_viewMatrix = function () { return camera.transform.worldToLocalMatrix; };
+            uniforms.u_cameraMatrix = function () { return camera.transform.localToWorldMatrix; };
+            uniforms.u_skyBoxSize = function () { return camera.lens.far / Math.sqrt(3); };
+            uniforms.u_scaleByDepth = function () { return camera.getScaleByDepth(1); };
+            uniforms.u_sceneAmbientColor = scene3d.ambientColor;
             unblenditems.concat(blenditems).forEach(function (item) { return _this.drawRenderables(item, gl); });
         };
         ForwardRenderer.prototype.drawRenderables = function (meshRenderer, gl) {
             //绘制
             var renderAtomic = meshRenderer.gameObject.renderAtomic;
             meshRenderer.gameObject.preRender(renderAtomic);
-            renderAtomic.next = this.renderContext.renderAtomic;
+            renderAtomic.next = this.renderAtomic;
             gl.renderer.draw(renderAtomic);
         };
         return ForwardRenderer;
@@ -14299,7 +14229,7 @@ var feng3d;
             // log(`选中索引3D对象${id}`, data.toString());
             return this.objects[id];
         };
-        MouseRenderer.prototype.drawRenderables = function (renderContext, meshRenderer) {
+        MouseRenderer.prototype.drawRenderables = function (gl, meshRenderer) {
             if (meshRenderer.gameObject.mouseEnabled) {
                 var object = meshRenderer.gameObject;
                 var u_objectID = this.objects.length;
@@ -16552,7 +16482,7 @@ var feng3d;
     var MeshRenderer = /** @class */ (function (_super) {
         __extends(MeshRenderer, _super);
         function MeshRenderer() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
             /**
              * 是否投射阴影
              */
@@ -16561,6 +16491,7 @@ var feng3d;
              * 是否接受阴影
              */
             _this.receiveShadows = false;
+            _this.lightPicker = new feng3d.LightPicker(_this);
             return _this;
         }
         Object.defineProperty(MeshRenderer.prototype, "single", {
@@ -16605,6 +16536,7 @@ var feng3d;
             //
             this._geometry.preRender(renderAtomic);
             this.material.preRender(renderAtomic);
+            this.lightPicker.preRender(renderAtomic);
         };
         /**
          * 销毁
@@ -21040,6 +20972,66 @@ var feng3d;
         return PointLight;
     }(feng3d.Light));
     feng3d.PointLight = PointLight;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var LightPicker = /** @class */ (function () {
+        function LightPicker(meshRenderer) {
+            this._meshRenderer = meshRenderer;
+        }
+        LightPicker.prototype.preRender = function (renderAtomic) {
+            var scene3d = this._meshRenderer.gameObject.scene;
+            var pointLights = scene3d.collectComponents.pointLights.list;
+            var directionalLights = scene3d.collectComponents.directionalLights.list;
+            renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
+            //收集点光源数据
+            var pointLightPositions = [];
+            var pointLightColors = [];
+            var pointLightIntensitys = [];
+            var pointLightRanges = [];
+            for (var i = 0; i < pointLights.length; i++) {
+                var pointLight = pointLights[i];
+                pointLightPositions.push(pointLight.transform.scenePosition);
+                pointLightColors.push(pointLight.color);
+                pointLightIntensitys.push(pointLight.intensity);
+                pointLightRanges.push(pointLight.range);
+            }
+            //设置点光源数据
+            renderAtomic.shaderMacro.NUM_POINTLIGHT = pointLights.length;
+            if (pointLights.length > 0) {
+                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.GLOBAL_POSITION_NEED = 1;
+                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
+                //
+                renderAtomic.uniforms.u_pointLightPositions = pointLightPositions;
+                renderAtomic.uniforms.u_pointLightColors = pointLightColors;
+                renderAtomic.uniforms.u_pointLightIntensitys = pointLightIntensitys;
+                renderAtomic.uniforms.u_pointLightRanges = pointLightRanges;
+            }
+            var directionalLightDirections = [];
+            var directionalLightColors = [];
+            var directionalLightIntensitys = [];
+            for (var i = 0; i < directionalLights.length; i++) {
+                var directionalLight = directionalLights[i];
+                directionalLightDirections.push(directionalLight.transform.localToWorldMatrix.forward);
+                directionalLightColors.push(directionalLight.color);
+                directionalLightIntensitys.push(directionalLight.intensity);
+            }
+            renderAtomic.shaderMacro.NUM_DIRECTIONALLIGHT = directionalLights.length;
+            if (directionalLights.length > 0) {
+                renderAtomic.shaderMacro.A_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.V_NORMAL_NEED = 1;
+                renderAtomic.shaderMacro.U_CAMERAMATRIX_NEED = 1;
+                //
+                renderAtomic.uniforms.u_directionalLightDirections = directionalLightDirections;
+                renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;
+                renderAtomic.uniforms.u_directionalLightIntensitys = directionalLightIntensitys;
+            }
+        };
+        return LightPicker;
+    }());
+    feng3d.LightPicker = LightPicker;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -8109,25 +8109,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 渲染环境
-     * @author feng 2017-01-04
-     */
-    class RenderContext extends EventDispatcher {
-        renderAtomic: RenderAtomic;
-        /**
-         * 摄像机
-         */
-        camera: Camera;
-        /**
-         * 场景
-         */
-        scene3d: Scene3D;
-        constructor();
-        update(): void;
-    }
-}
-declare namespace feng3d {
-    /**
      * 着色器宏定义
      */
     interface ShaderMacro {
@@ -8510,7 +8491,7 @@ declare namespace feng3d {
      * @author feng 2017-02-20
      */
     class ForwardRenderer {
-        private renderContext;
+        renderAtomic: RenderAtomic;
         /**
          * 渲染
          */
@@ -8542,7 +8523,7 @@ declare namespace feng3d {
          * 渲染
          */
         draw(gl: GL, viewRect: Rectangle): GameObject;
-        protected drawRenderables(renderContext: RenderContext, meshRenderer: MeshRenderer): void;
+        protected drawRenderables(gl: GL, meshRenderer: MeshRenderer): void;
         /**
          * 绘制3D对象
          */
@@ -9320,6 +9301,8 @@ declare namespace feng3d {
          * 是否接受阴影
          */
         receiveShadows: boolean;
+        lightPicker: LightPicker;
+        constructor();
         init(gameObject: GameObject): void;
         preRender(renderAtomic: RenderAtomic): void;
         /**
@@ -10894,6 +10877,13 @@ declare namespace feng3d {
          * 构建
          */
         init(gameObject: GameObject): void;
+    }
+}
+declare namespace feng3d {
+    class LightPicker {
+        private _meshRenderer;
+        constructor(meshRenderer: MeshRenderer);
+        preRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {

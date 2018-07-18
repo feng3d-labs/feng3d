@@ -64,6 +64,14 @@ namespace feng3d
         @serialize
         receiveShadows = false;
 
+        lightPicker: LightPicker;
+
+        constructor()
+        {
+            super();
+            this.lightPicker = new LightPicker(this);
+        }
+
         init(gameObject: GameObject)
         {
             super.init(gameObject);
@@ -85,6 +93,7 @@ namespace feng3d
             //
             this._geometry.preRender(renderAtomic);
             this.material.preRender(renderAtomic);
+            this.lightPicker.preRender(renderAtomic);
         }
 
         /**

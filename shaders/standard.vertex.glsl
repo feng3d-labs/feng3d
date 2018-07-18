@@ -1,8 +1,5 @@
 precision mediump float;  
 
-//此处将填充宏定义
-#define macros
-
 //坐标属性
 attribute vec3 a_position;
 attribute vec2 a_uv;

@@ -1,43 +1,19 @@
 namespace feng3d
 {
-
-    /**
-     * 渲染环境
-     * @author feng 2017-01-04
-     */
-    export class RenderContext extends EventDispatcher
+    export class LightPicker
     {
-        renderAtomic: RenderAtomic;
+        private _meshRenderer: MeshRenderer
 
-        /**
-         * 摄像机
-         */
-        camera: Camera;
-
-        /**
-         * 场景
-         */
-        scene3d: Scene3D;
-
-        constructor()
+        constructor(meshRenderer: MeshRenderer)
         {
-            super();
-            this.renderAtomic = new RenderAtomic();
+            this._meshRenderer = meshRenderer;
         }
 
-        update()
+        preRender(renderAtomic: RenderAtomic)
         {
-            var renderAtomic = this.renderAtomic;
-            //
-            renderAtomic.uniforms.u_projectionMatrix = () => this.camera.lens.matrix;
-            renderAtomic.uniforms.u_viewProjection = () => this.camera.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = () => this.camera.transform.worldToLocalMatrix;
-            renderAtomic.uniforms.u_cameraMatrix = () => this.camera.transform.localToWorldMatrix;
-            renderAtomic.uniforms.u_skyBoxSize = () => this.camera.lens.far / Math.sqrt(3);
-            renderAtomic.uniforms.u_scaleByDepth = () => this.camera.getScaleByDepth(1);
-
-            var pointLights = this.scene3d.collectComponents.pointLights.list;
-            var directionalLights = this.scene3d.collectComponents.directionalLights.list;
+            var scene3d = this._meshRenderer.gameObject.scene;
+            var pointLights = scene3d.collectComponents.pointLights.list;
+            var directionalLights = scene3d.collectComponents.directionalLights.list;
 
             renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
             //收集点光源数据
@@ -89,8 +65,6 @@ namespace feng3d
                 renderAtomic.uniforms.u_directionalLightColors = directionalLightColors;
                 renderAtomic.uniforms.u_directionalLightIntensitys = directionalLightIntensitys;
             }
-
-            renderAtomic.uniforms.u_sceneAmbientColor = this.scene3d.ambientColor;
         }
     }
 }

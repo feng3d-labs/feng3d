@@ -113,7 +113,6 @@
         //
         "src/render/FrameBufferObject.ts",
         "src/render/RenderBuffer.ts",
-        "src/render/RenderContext.ts",
         //
         "src/render/shader/Macro.ts",
         "src/render/shader/ShaderLib.ts",
@@ -196,6 +195,8 @@
         "src/light/Light.ts",
         "src/light/DirectionalLight.ts",
         "src/light/PointLight.ts",
+        //
+        "src/light/pickers/LightPicker.ts",
         //
         "src/light/shadow/LightShadow.ts",
         "src/light/shadow/DirectionalLightShadow.ts",

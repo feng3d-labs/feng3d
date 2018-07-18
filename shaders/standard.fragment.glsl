@@ -1,8 +1,5 @@
 precision mediump float;
 
-//此处将填充宏定义
-#define macros
-
 varying vec2 v_uv;
 varying vec3 v_worldPosition;
 varying vec3 v_normal;

@@ -13,7 +13,7 @@ namespace feng3d
      */
     export class ForwardRenderer
     {
-        private renderContext = new RenderContext();
+        renderAtomic = new RenderAtomic();
 
         /**
          * 渲染
@@ -23,9 +23,16 @@ namespace feng3d
             var blenditems = scene3d.getPickCache(camera).blenditems;
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
 
-            this.renderContext.camera = camera;
-            this.renderContext.scene3d = scene3d;
-            this.renderContext.update();
+            var uniforms = this.renderAtomic.uniforms;
+            //
+            uniforms.u_projectionMatrix = () => camera.lens.matrix;
+            uniforms.u_viewProjection = () => camera.viewProjection;
+            uniforms.u_viewMatrix = () => camera.transform.worldToLocalMatrix;
+            uniforms.u_cameraMatrix = () => camera.transform.localToWorldMatrix;
+            uniforms.u_skyBoxSize = () => camera.lens.far / Math.sqrt(3);
+            uniforms.u_scaleByDepth = () => camera.getScaleByDepth(1);
+
+            uniforms.u_sceneAmbientColor = scene3d.ambientColor;
 
             unblenditems.concat(blenditems).forEach(item => this.drawRenderables(item, gl));
         }
@@ -37,7 +44,7 @@ namespace feng3d
 
             meshRenderer.gameObject.preRender(renderAtomic);
 
-            renderAtomic.next = this.renderContext.renderAtomic;
+            renderAtomic.next = this.renderAtomic;
 
             gl.renderer.draw(renderAtomic);
         }

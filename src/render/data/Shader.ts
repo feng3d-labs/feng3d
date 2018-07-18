@@ -78,9 +78,9 @@ namespace feng3d
             {
                 this.clear();
                 var vMacroCode = this.getMacroCode(result.vertexMacroVariables, this.macroValues);
-                this.vertex = result.vertex.replace(/#define\s+macros/, vMacroCode);
+                this.vertex = vMacroCode + result.vertex;
                 var fMacroCode = this.getMacroCode(result.fragmentMacroVariables, this.macroValues);
-                this.fragment = result.fragment.replace(/#define\s+macros/, fMacroCode);
+                this.fragment = fMacroCode + result.fragment;
                 this.macroInvalid = false;
             }
         }
@@ -255,7 +255,7 @@ namespace feng3d
                     macroHeader += `#define ${macroName} ${value}\n`;
                 }
             });
-            return macroHeader;
+            return macroHeader + "\n";
         }
 
         private clear()
