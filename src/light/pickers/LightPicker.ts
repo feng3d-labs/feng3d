@@ -11,9 +11,15 @@ namespace feng3d
 
         preRender(renderAtomic: RenderAtomic)
         {
+            var pointLights: PointLight[] = [];
+            var directionalLights: DirectionalLight[] = [];
+
             var scene3d = this._meshRenderer.gameObject.scene;
-            var pointLights = scene3d.collectComponents.pointLights.list;
-            var directionalLights = scene3d.collectComponents.directionalLights.list;
+            if (scene3d)
+            {
+                pointLights = scene3d.collectComponents.pointLights.list;
+                directionalLights = scene3d.collectComponents.directionalLights.list;
+            }
 
             renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
             //收集点光源数据
@@ -24,10 +30,12 @@ namespace feng3d
             for (var i = 0; i < pointLights.length; i++)
             {
                 var pointLight = pointLights[i];
-                pointLightPositions.push(pointLight.transform.scenePosition);
+                pointLightPositions.push(pointLight.position);
                 pointLightColors.push(pointLight.color);
                 pointLightIntensitys.push(pointLight.intensity);
                 pointLightRanges.push(pointLight.range);
+
+
             }
             //设置点光源数据
 
@@ -43,6 +51,8 @@ namespace feng3d
                 renderAtomic.uniforms.u_pointLightColors = pointLightColors;
                 renderAtomic.uniforms.u_pointLightIntensitys = pointLightIntensitys;
                 renderAtomic.uniforms.u_pointLightRanges = pointLightRanges;
+
+                renderAtomic.uniforms.pointLights = pointLights;
             }
             var directionalLightDirections: Vector3[] = [];
             var directionalLightColors: Color3[] = [];

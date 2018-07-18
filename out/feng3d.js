@@ -4087,7 +4087,7 @@ var feng3d;
             for (var i = 0; i < lines.length; i++) {
                 var line = lines[i];
                 if (line.indexOf("#if") != -1) {
-                    var reg = /([A-Z\w]+)/g;
+                    var reg = /(\w+)/g;
                     var result;
                     while (result = reg.exec(line)) {
                         var key = result[1];
@@ -12452,20 +12452,24 @@ var feng3d;
             var textureID = 0;
             while (i < numUniforms) {
                 var activeInfo = gl.getActiveUniform(shaderProgram, i++);
+                var reg = /(\w+)/g;
                 var name = activeInfo.name;
-                if (name.indexOf("[") != -1) {
-                    //处理数组
-                    var baseName = activeInfo.name.substring(0, name.indexOf("["));
-                    for (var j = 0; j < activeInfo.size; j++) {
-                        name = baseName + ("[" + j + "]");
-                        uniforms[name] = { index: j, name: baseName, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
-                        if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE) {
-                            textureID++;
-                        }
+                var names = [name];
+                if (activeInfo.size > 1) {
+                    feng3d.assert(name.substr(-3, 3) == "[0]");
+                    var baseName = name.substring(0, name.length - 3);
+                    for (var j = 1; j < activeInfo.size; j++) {
+                        names[j] = baseName + ("[" + j + "]");
                     }
                 }
-                else {
-                    uniforms[name] = { name: name, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
+                for (var j_1 = 0; j_1 < names.length; j_1++) {
+                    name = names[j_1];
+                    var result;
+                    var paths = [];
+                    while (result = reg.exec(name)) {
+                        paths.push(result[1]);
+                    }
+                    uniforms[name] = { name: paths[0], paths: paths, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
                     if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE) {
                         textureID++;
                     }
@@ -13568,7 +13572,7 @@ var feng3d;
             "cartoon.fragment": "#ifdef cartoon_Anti_aliasing\r\n    #extension GL_OES_standard_derivatives : enable\r\n#endif\r\n\r\nuniform vec4 u_diffuseSegment;\r\nuniform vec4 u_diffuseSegmentValue;\r\nuniform float u_specularSegment;\r\n\r\n//漫反射\r\nfloat cartoonLightDiffuse(vec3 normal,vec3 lightDir){\r\n\r\n    float diff = dot(normal, lightDir);\r\n    diff = diff * 0.5 + 0.5;\r\n\r\n    #ifdef cartoon_Anti_aliasing\r\n        float w = fwidth(diff) * 2.0;\r\n        if (diff < u_diffuseSegment.x + w) {\r\n            diff = mix(u_diffuseSegment.x, u_diffuseSegment.y, smoothstep(u_diffuseSegment.x - w, u_diffuseSegment.x + w, diff));\r\n        //  diff = mix(u_diffuseSegment.x, u_diffuseSegment.y, clamp(0.5 * (diff - u_diffuseSegment.x) / w, 0, 1));\r\n        } else if (diff < u_diffuseSegment.y + w) {\r\n            diff = mix(u_diffuseSegment.y, u_diffuseSegment.z, smoothstep(u_diffuseSegment.y - w, u_diffuseSegment.y + w, diff));\r\n        //  diff = mix(u_diffuseSegment.y, u_diffuseSegment.z, clamp(0.5 * (diff - u_diffuseSegment.y) / w, 0, 1));\r\n        } else if (diff < u_diffuseSegment.z + w) {\r\n            diff = mix(u_diffuseSegment.z, u_diffuseSegment.w, smoothstep(u_diffuseSegment.z - w, u_diffuseSegment.z + w, diff));\r\n        //  diff = mix(u_diffuseSegment.z, u_diffuseSegment.w, clamp(0.5 * (diff - u_diffuseSegment.z) / w, 0, 1));\r\n        } else {\r\n            diff = u_diffuseSegment.w;\r\n        }\r\n    #else\r\n        if (diff < u_diffuseSegment.x) {\r\n            diff = u_diffuseSegmentValue.x;\r\n        } else if (diff < u_diffuseSegment.y) {\r\n            diff = u_diffuseSegmentValue.y;\r\n        } else if (diff < u_diffuseSegment.z) {\r\n            diff = u_diffuseSegmentValue.z;\r\n        } else {\r\n            diff = u_diffuseSegmentValue.w;\r\n        }\r\n    #endif\r\n\r\n    return diff;\r\n}\r\n\r\n//镜面反射漫反射\r\nfloat cartoonLightSpecular(vec3 normal,vec3 lightDir,vec3 cameraDir,float glossiness){\r\n\r\n    vec3 halfVec = normalize(lightDir + cameraDir);\r\n    float specComp = max(dot(normal,halfVec),0.0);\r\n    specComp = pow(specComp, glossiness);\r\n\r\n    #ifdef cartoon_Anti_aliasing\r\n        float w = fwidth(specComp);\r\n        if (specComp < u_specularSegment + w) {\r\n            specComp = mix(0.0, 1.0, smoothstep(u_specularSegment - w, u_specularSegment + w, specComp));\r\n            // specComp = smoothstep(u_specularSegment - w, u_specularSegment + w, specComp);\r\n        } else {\r\n            specComp = 1.0;\r\n        }\r\n    #else\r\n        if(specComp < u_specularSegment)\r\n        {\r\n            specComp = 0.0;\r\n        }else\r\n        {\r\n            specComp = 1.0;\r\n        }\r\n    #endif\r\n\r\n    return specComp;\r\n}",
             "envmap.fragment": "uniform samplerCube s_envMap;\r\nuniform float u_reflectivity;\r\n\r\nvec4 envmapMethod(vec4 finalColor)\r\n{\r\n    vec3 cameraToVertex = normalize( v_worldPosition - u_cameraMatrix[3].xyz );\r\n    vec3 reflectVec = reflect( cameraToVertex, v_normal );\r\n    vec4 envColor = textureCube( s_envMap, reflectVec );\r\n    finalColor.xyz *= envColor.xyz * u_reflectivity;\r\n    return finalColor;\r\n}",
             "fog.fragment": "#define FOGMODE_NONE    0.\r\n#define FOGMODE_EXP     1.\r\n#define FOGMODE_EXP2    2.\r\n#define FOGMODE_LINEAR  3.\r\n#define E 2.71828\r\n\r\nuniform float u_fogMode;\r\nuniform float u_fogMinDistance;\r\nuniform float u_fogMaxDistance;\r\nuniform float u_fogDensity;\r\nuniform vec3 u_fogColor;\r\n\r\nfloat CalcFogFactor(float fogDistance)\r\n{\r\n\tfloat fogCoeff = 1.0;\r\n\tif (FOGMODE_LINEAR == u_fogMode)\r\n\t{\r\n\t\tfogCoeff = (u_fogMaxDistance - fogDistance) / (u_fogMaxDistance - u_fogMinDistance);\r\n\t}\r\n\telse if (FOGMODE_EXP == u_fogMode)\r\n\t{\r\n\t\tfogCoeff = 1.0 / pow(E, fogDistance * u_fogDensity);\r\n\t}\r\n\telse if (FOGMODE_EXP2 == u_fogMode)\r\n\t{\r\n\t\tfogCoeff = 1.0 / pow(E, fogDistance * fogDistance * u_fogDensity * u_fogDensity);\r\n\t}\r\n\r\n\treturn clamp(fogCoeff, 0.0, 1.0);\r\n}\r\n\r\nvec4 fogMethod(vec4 color)\r\n{\r\n    vec3 fogDistance = u_cameraMatrix[3].xyz - v_worldPosition.xyz;\r\n\tfloat fog = CalcFogFactor(length(fogDistance));\r\n\tcolor.rgb = fog * color.rgb + (1.0 - fog) * u_fogColor;\r\n    return color;\r\n}",
-            "lightShading.fragment": "#ifdef NUM_POINTLIGHT\r\n    #if NUM_POINTLIGHT > 0\r\n        //点光源位置数组\r\n        uniform vec3 u_pointLightPositions[NUM_POINTLIGHT];\r\n        //点光源颜色数组\r\n        uniform vec3 u_pointLightColors[NUM_POINTLIGHT];\r\n        //点光源光照强度数组\r\n        uniform float u_pointLightIntensitys[NUM_POINTLIGHT];\r\n        //点光源光照范围数组\r\n        uniform float u_pointLightRanges[NUM_POINTLIGHT];\r\n    #endif\r\n#endif\r\n\r\n#ifdef NUM_DIRECTIONALLIGHT\r\n    #if NUM_DIRECTIONALLIGHT > 0\r\n        //方向光源方向数组\r\n        uniform vec3 u_directionalLightDirections[NUM_DIRECTIONALLIGHT];\r\n        //方向光源颜色数组\r\n        uniform vec3 u_directionalLightColors[NUM_DIRECTIONALLIGHT];\r\n        //方向光源光照强度数组\r\n        uniform float u_directionalLightIntensitys[NUM_DIRECTIONALLIGHT];\r\n    #endif\r\n#endif\r\n\r\n//卡通\r\n#ifdef IS_CARTOON\r\n    #include<cartoon.fragment>\r\n#endif\r\n\r\n//计算光照漫反射系数\r\nfloat calculateLightDiffuse(vec3 normal,vec3 lightDir){\r\n    #ifdef IS_CARTOON\r\n        return cartoonLightDiffuse(normal,lightDir);\r\n    #else\r\n        return clamp(dot(normal,lightDir),0.0,1.0);\r\n    #endif\r\n}\r\n\r\n//计算光照镜面反射系数\r\nfloat calculateLightSpecular(vec3 normal,vec3 lightDir,vec3 viewDir,float glossiness){\r\n\r\n    #ifdef IS_CARTOON\r\n        return cartoonLightSpecular(normal,lightDir,viewDir,glossiness);\r\n    #else\r\n        vec3 halfVec = normalize(lightDir + viewDir);\r\n        float specComp = max(dot(normal,halfVec),0.0);\r\n        specComp = pow(specComp, glossiness);\r\n\r\n        return specComp;\r\n    #endif\r\n}\r\n\r\n//根据距离计算衰减\r\nfloat computeDistanceLightFalloff(float lightDistance, float range)\r\n{\r\n    #ifdef USEPHYSICALLIGHTFALLOFF\r\n        float lightDistanceFalloff = 1.0 / ((lightDistance * lightDistance + 0.0001));\r\n    #else\r\n        float lightDistanceFalloff = max(0., 1.0 - lightDistance / range);\r\n    #endif\r\n    \r\n    return lightDistanceFalloff;\r\n}\r\n\r\n//渲染点光源\r\nvec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientColor,float glossiness){\r\n\r\n    //视线方向\r\n    vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_worldPosition);\r\n\r\n    vec3 totalDiffuseLightColor = vec3(0.0,0.0,0.0);\r\n    vec3 totalSpecularLightColor = vec3(0.0,0.0,0.0);\r\n    #ifdef NUM_POINTLIGHT\r\n        #if NUM_POINTLIGHT > 0\r\n            for(int i = 0;i<NUM_POINTLIGHT;i++){\r\n                //\r\n                vec3 lightOffset = u_pointLightPositions[i] - v_worldPosition;\r\n                float lightDistance = length(lightOffset);\r\n                //光照方向\r\n                vec3 lightDir = normalize(lightOffset);\r\n                //灯光颜色\r\n                vec3 lightColor = u_pointLightColors[i];\r\n                //灯光强度\r\n                float lightIntensity = u_pointLightIntensitys[i];\r\n                //光照范围\r\n                float range = u_pointLightRanges[i];\r\n                float attenuation = computeDistanceLightFalloff(lightDistance,range);\r\n                lightIntensity = lightIntensity * attenuation;\r\n                //\r\n                totalDiffuseLightColor = totalDiffuseLightColor +  calculateLightDiffuse(normal,lightDir) * lightColor * lightIntensity;\r\n                totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,viewDir,glossiness) * lightColor * lightIntensity;\r\n            }\r\n        #endif\r\n    #endif\r\n    #ifdef NUM_DIRECTIONALLIGHT\r\n        #if NUM_DIRECTIONALLIGHT > 0\r\n            for(int i = 0;i<NUM_DIRECTIONALLIGHT;i++){\r\n                //光照方向\r\n                vec3 lightDir = normalize(-u_directionalLightDirections[i]);\r\n                //灯光颜色\r\n                vec3 lightColor = u_directionalLightColors[i];\r\n                //灯光强度\r\n                float lightIntensity = u_directionalLightIntensitys[i];\r\n                //\r\n                totalDiffuseLightColor = totalDiffuseLightColor +  calculateLightDiffuse(normal,lightDir) * lightColor * lightIntensity;\r\n                totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,viewDir,glossiness) * lightColor * lightIntensity;\r\n            }\r\n        #endif\r\n    #endif\r\n\r\n    vec3 resultColor = vec3(0.0,0.0,0.0);\r\n    resultColor = resultColor + totalDiffuseLightColor * diffuseColor;\r\n    resultColor = resultColor + totalSpecularLightColor * specularColor;\r\n    resultColor = resultColor + ambientColor * diffuseColor;\r\n    return resultColor;\r\n}",
+            "lightShading.fragment": "#ifdef NUM_POINTLIGHT\r\n    #if NUM_POINTLIGHT > 0\r\n        // //点光源位置数组\r\n        // uniform vec3 u_pointLightPositions[NUM_POINTLIGHT];\r\n        // //点光源颜色数组\r\n        // uniform vec3 u_pointLightColors[NUM_POINTLIGHT];\r\n        // //点光源光照强度数组\r\n        // uniform float u_pointLightIntensitys[NUM_POINTLIGHT];\r\n        // //点光源光照范围数组\r\n        // uniform float u_pointLightRanges[NUM_POINTLIGHT];\r\n\r\n        struct PointLight\r\n        {\r\n            vec3 position;\r\n            vec3 color;\r\n            float intensity;\r\n            float range;\r\n        };\r\n\r\n        uniform PointLight pointLights[NUM_POINTLIGHT];\r\n    #endif\r\n#endif\r\n\r\n#ifdef NUM_DIRECTIONALLIGHT\r\n    #if NUM_DIRECTIONALLIGHT > 0\r\n        //方向光源方向数组\r\n        uniform vec3 u_directionalLightDirections[NUM_DIRECTIONALLIGHT];\r\n        //方向光源颜色数组\r\n        uniform vec3 u_directionalLightColors[NUM_DIRECTIONALLIGHT];\r\n        //方向光源光照强度数组\r\n        uniform float u_directionalLightIntensitys[NUM_DIRECTIONALLIGHT];\r\n    #endif\r\n#endif\r\n\r\n//卡通\r\n#ifdef IS_CARTOON\r\n    #include<cartoon.fragment>\r\n#endif\r\n\r\n//计算光照漫反射系数\r\nfloat calculateLightDiffuse(vec3 normal,vec3 lightDir){\r\n    #ifdef IS_CARTOON\r\n        return cartoonLightDiffuse(normal,lightDir);\r\n    #else\r\n        return clamp(dot(normal,lightDir),0.0,1.0);\r\n    #endif\r\n}\r\n\r\n//计算光照镜面反射系数\r\nfloat calculateLightSpecular(vec3 normal,vec3 lightDir,vec3 viewDir,float glossiness){\r\n\r\n    #ifdef IS_CARTOON\r\n        return cartoonLightSpecular(normal,lightDir,viewDir,glossiness);\r\n    #else\r\n        vec3 halfVec = normalize(lightDir + viewDir);\r\n        float specComp = max(dot(normal,halfVec),0.0);\r\n        specComp = pow(specComp, glossiness);\r\n\r\n        return specComp;\r\n    #endif\r\n}\r\n\r\n//根据距离计算衰减\r\nfloat computeDistanceLightFalloff(float lightDistance, float range)\r\n{\r\n    #ifdef USEPHYSICALLIGHTFALLOFF\r\n        float lightDistanceFalloff = 1.0 / ((lightDistance * lightDistance + 0.0001));\r\n    #else\r\n        float lightDistanceFalloff = max(0., 1.0 - lightDistance / range);\r\n    #endif\r\n    \r\n    return lightDistanceFalloff;\r\n}\r\n\r\n//渲染点光源\r\nvec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientColor,float glossiness){\r\n\r\n    //视线方向\r\n    vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_worldPosition);\r\n\r\n    vec3 totalDiffuseLightColor = vec3(0.0,0.0,0.0);\r\n    vec3 totalSpecularLightColor = vec3(0.0,0.0,0.0);\r\n    #ifdef NUM_POINTLIGHT\r\n        #if NUM_POINTLIGHT > 0\r\n            for(int i = 0;i<NUM_POINTLIGHT;i++){\r\n                PointLight pointLight = pointLights[i];\r\n                //\r\n                vec3 lightOffset = pointLight.position - v_worldPosition;\r\n                float lightDistance = length(lightOffset);\r\n                //光照方向\r\n                vec3 lightDir = normalize(lightOffset);\r\n                //灯光颜色\r\n                vec3 lightColor = pointLight.color;\r\n                //灯光强度\r\n                float lightIntensity = pointLight.intensity;\r\n                //光照范围\r\n                float range = pointLight.range;\r\n                float attenuation = computeDistanceLightFalloff(lightDistance,range);\r\n                lightIntensity = lightIntensity * attenuation;\r\n                //\r\n                totalDiffuseLightColor = totalDiffuseLightColor +  calculateLightDiffuse(normal,lightDir) * lightColor * lightIntensity;\r\n                totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,viewDir,glossiness) * lightColor * lightIntensity;\r\n            }\r\n        #endif\r\n    #endif\r\n    #ifdef NUM_DIRECTIONALLIGHT\r\n        #if NUM_DIRECTIONALLIGHT > 0\r\n            for(int i = 0;i<NUM_DIRECTIONALLIGHT;i++){\r\n                //光照方向\r\n                vec3 lightDir = normalize(-u_directionalLightDirections[i]);\r\n                //灯光颜色\r\n                vec3 lightColor = u_directionalLightColors[i];\r\n                //灯光强度\r\n                float lightIntensity = u_directionalLightIntensitys[i];\r\n                //\r\n                totalDiffuseLightColor = totalDiffuseLightColor +  calculateLightDiffuse(normal,lightDir) * lightColor * lightIntensity;\r\n                totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,viewDir,glossiness) * lightColor * lightIntensity;\r\n            }\r\n        #endif\r\n    #endif\r\n\r\n    vec3 resultColor = vec3(0.0,0.0,0.0);\r\n    resultColor = resultColor + totalDiffuseLightColor * diffuseColor;\r\n    resultColor = resultColor + totalSpecularLightColor * specularColor;\r\n    resultColor = resultColor + ambientColor * diffuseColor;\r\n    return resultColor;\r\n}",
             "pointLightShading1.declare": "//参考资料\r\n//http://blog.csdn.net/leonwei/article/details/44539217\r\n//https://github.com/mcleary/pbr/blob/master/shaders/phong_pbr_frag.glsl\r\n\r\n#if NUM_POINTLIGHT > 0\r\n    //点光源位置列表\r\n    uniform vec3 u_pointLightPositions[NUM_POINTLIGHT];\r\n    //点光源漫反射颜色\r\n    uniform vec3 u_pointLightColors[NUM_POINTLIGHT];\r\n    //点光源镜面反射颜色\r\n    uniform float u_pointLightIntensitys[NUM_POINTLIGHT];\r\n    //反射率\r\n    uniform float u_reflectance;\r\n    //粗糙度\r\n    uniform float u_roughness;\r\n    //金属度\r\n    uniform float u_metalic;\r\n\r\n    vec3 fresnelSchlick(float VdotH,vec3 reflectance){\r\n\r\n        return reflectance + (1.0 - reflectance) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);\r\n        // return reflectance;\r\n    }\r\n\r\n    float normalDistributionGGX(float NdotH,float alphaG){\r\n\r\n        float alphaG2 = alphaG * alphaG;\r\n        float d = NdotH * NdotH * (alphaG2 - 1.0) + 1.0; \r\n        return alphaG2 / (3.1415926 * d * d);\r\n    }\r\n\r\n    float smithVisibility(float dot,float alphaG){\r\n\r\n        float tanSquared = (1.0 - dot * dot) / (dot * dot);\r\n        return 2.0 / (1.0 + sqrt(1.0 + alphaG * alphaG * tanSquared));\r\n    }\r\n\r\n    vec3 calculateLight(vec3 normal,vec3 cameraDir,vec3 lightDir,vec3 lightColor,float lightIntensity,vec3 baseColor,vec3 reflectance,float roughness){\r\n\r\n        //BRDF = D(h) * F(1, h) * V(l, v, h) / (4 * dot(n, l) * dot(n, v));\r\n\r\n        vec3 halfVec = normalize(lightDir + cameraDir);\r\n        float NdotL = clamp(dot(normal,lightDir),0.0,1.0);\r\n        float NdotH = clamp(dot(normal,halfVec),0.0,1.0);\r\n        float NdotV = max(abs(dot(normal,cameraDir)),0.000001);\r\n        float VdotH = clamp(dot(cameraDir, halfVec),0.0,1.0);\r\n        \r\n        float alphaG = max(roughness * roughness,0.0005);\r\n\r\n        //F(v,h)\r\n        vec3 F = fresnelSchlick(VdotH, reflectance);\r\n\r\n        //D(h)\r\n        float D = normalDistributionGGX(NdotH,alphaG);\r\n\r\n        //V(l,h)\r\n        float V = smithVisibility(NdotL,alphaG) * smithVisibility(NdotV,alphaG) / (4.0 * NdotL * NdotV);\r\n\r\n        vec3 specular = max(0.0, D * V) * 3.1415926 * F;\r\n        \r\n        return (baseColor + specular) * NdotL * lightColor * lightIntensity;\r\n    }\r\n\r\n    //渲染点光源\r\n    vec3 pointLightShading(vec3 normal,vec3 baseColor){\r\n\r\n        float reflectance = u_reflectance;\r\n        float roughness = u_roughness;\r\n        float metalic = u_metalic;\r\n\r\n        reflectance = mix(0.0,0.5,reflectance);\r\n        vec3 realBaseColor = (1.0 - metalic) * baseColor;\r\n        vec3 realReflectance = mix(vec3(reflectance),baseColor,metalic);\r\n\r\n        vec3 totalLightColor = vec3(0.0,0.0,0.0);\r\n        for(int i = 0;i<NUM_POINTLIGHT;i++){\r\n            //光照方向\r\n            vec3 lightDir = normalize(u_pointLightPositions[i] - v_worldPosition);\r\n            //视线方向\r\n            vec3 cameraDir = normalize(u_cameraMatrix[3].xyz - v_worldPosition);\r\n            //灯光颜色\r\n            vec3 lightColor = u_pointLightColors[i];\r\n            //灯光强度\r\n            float lightIntensity = u_pointLightIntensitys[i];\r\n\r\n            totalLightColor = totalLightColor + calculateLight(normal,cameraDir,lightDir,lightColor,lightIntensity,realBaseColor,realReflectance,roughness);\r\n        }\r\n        \r\n        return totalLightColor;\r\n    }\r\n#endif",
             "pointLightShading1.main": "#if NUM_POINTLIGHT > 0\r\n    // finalColor = finalColor * 0.5 +  pointLightShading(v_normal,u_baseColor) * 0.5;\r\n    finalColor.xyz = pointLightShading(v_normal,finalColor.xyz);\r\n#endif",
             "skeleton.vertex": "\r\nattribute vec4 a_jointindex0;\r\nattribute vec4 a_jointweight0;\r\n\r\n#ifdef HAS_a_jointindex1\r\n    attribute vec4 a_jointindex1;\r\n    attribute vec4 a_jointweight1;\r\n#endif\r\n\r\nuniform mat4 u_skeletonGlobalMatriices[150];\r\n\r\nvec4 skeletonAnimation(vec4 position) {\r\n\r\n    vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);\r\n    for(int i = 0; i < 4; i++){\r\n        totalPosition += u_skeletonGlobalMatriices[int(a_jointindex0[i])] * position * a_jointweight0[i];\r\n    }\r\n    #ifdef HAS_a_jointindex1\r\n        for(int i = 0; i < 4; i++){\r\n            totalPosition += u_skeletonGlobalMatriices[int(a_jointindex1[i])] * position * a_jointweight1[i];\r\n        }\r\n    #endif\r\n    position.xyz = totalPosition.xyz;\r\n    return position;\r\n}",
@@ -14003,15 +14007,15 @@ var feng3d;
              * 激活常量
              */
             function activeUniforms(renderAtomic, uniformInfos) {
+                var uniforms = renderAtomic.uniforms;
                 for (var name in uniformInfos) {
                     var activeInfo = uniformInfos[name];
-                    var uniformData = feng3d.lazy.getvalue(renderAtomic.uniforms[activeInfo.name]);
-                    if (activeInfo.index != undefined) {
-                        setContext3DUniform(activeInfo, uniformData[activeInfo.index]);
+                    var paths = activeInfo.paths;
+                    var uniformData = uniforms[paths[0]];
+                    for (var i = 1; i < paths.length; i++) {
+                        uniformData = uniformData[paths[i]];
                     }
-                    else {
-                        setContext3DUniform(activeInfo, uniformData);
-                    }
+                    setContext3DUniform(activeInfo, uniformData);
                 }
             }
             /**
@@ -20838,6 +20842,13 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Light.prototype, "position", {
+            get: function () {
+                return this.transform.scenePosition;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Light.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
         };
@@ -20980,9 +20991,13 @@ var feng3d;
             this._meshRenderer = meshRenderer;
         }
         LightPicker.prototype.preRender = function (renderAtomic) {
+            var pointLights = [];
+            var directionalLights = [];
             var scene3d = this._meshRenderer.gameObject.scene;
-            var pointLights = scene3d.collectComponents.pointLights.list;
-            var directionalLights = scene3d.collectComponents.directionalLights.list;
+            if (scene3d) {
+                pointLights = scene3d.collectComponents.pointLights.list;
+                directionalLights = scene3d.collectComponents.directionalLights.list;
+            }
             renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
             //收集点光源数据
             var pointLightPositions = [];
@@ -20991,7 +21006,7 @@ var feng3d;
             var pointLightRanges = [];
             for (var i = 0; i < pointLights.length; i++) {
                 var pointLight = pointLights[i];
-                pointLightPositions.push(pointLight.transform.scenePosition);
+                pointLightPositions.push(pointLight.position);
                 pointLightColors.push(pointLight.color);
                 pointLightIntensitys.push(pointLight.intensity);
                 pointLightRanges.push(pointLight.range);
@@ -21008,6 +21023,7 @@ var feng3d;
                 renderAtomic.uniforms.u_pointLightColors = pointLightColors;
                 renderAtomic.uniforms.u_pointLightIntensitys = pointLightIntensitys;
                 renderAtomic.uniforms.u_pointLightRanges = pointLightRanges;
+                renderAtomic.uniforms.pointLights = pointLights;
             }
             var directionalLightDirections = [];
             var directionalLightColors = [];

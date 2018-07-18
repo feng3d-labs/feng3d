@@ -40,7 +40,7 @@ namespace feng3d
                 const line = lines[i];
                 if (line.indexOf("#if") != -1)
                 {
-                    var reg = /([A-Z\w]+)/g;
+                    var reg = /(\w+)/g;
                     var result: RegExpExecArray;
                     while (result = reg.exec(line))
                     {

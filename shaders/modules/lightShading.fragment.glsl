@@ -1,13 +1,23 @@
 #ifdef NUM_POINTLIGHT
     #if NUM_POINTLIGHT > 0
-        //点光源位置数组
-        uniform vec3 u_pointLightPositions[NUM_POINTLIGHT];
-        //点光源颜色数组
-        uniform vec3 u_pointLightColors[NUM_POINTLIGHT];
-        //点光源光照强度数组
-        uniform float u_pointLightIntensitys[NUM_POINTLIGHT];
-        //点光源光照范围数组
-        uniform float u_pointLightRanges[NUM_POINTLIGHT];
+        // //点光源位置数组
+        // uniform vec3 u_pointLightPositions[NUM_POINTLIGHT];
+        // //点光源颜色数组
+        // uniform vec3 u_pointLightColors[NUM_POINTLIGHT];
+        // //点光源光照强度数组
+        // uniform float u_pointLightIntensitys[NUM_POINTLIGHT];
+        // //点光源光照范围数组
+        // uniform float u_pointLightRanges[NUM_POINTLIGHT];
+
+        struct PointLight
+        {
+            vec3 position;
+            vec3 color;
+            float intensity;
+            float range;
+        };
+
+        uniform PointLight pointLights[NUM_POINTLIGHT];
     #endif
 #endif
 
@@ -73,17 +83,18 @@ vec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientC
     #ifdef NUM_POINTLIGHT
         #if NUM_POINTLIGHT > 0
             for(int i = 0;i<NUM_POINTLIGHT;i++){
+                PointLight pointLight = pointLights[i];
                 //
-                vec3 lightOffset = u_pointLightPositions[i] - v_worldPosition;
+                vec3 lightOffset = pointLight.position - v_worldPosition;
                 float lightDistance = length(lightOffset);
                 //光照方向
                 vec3 lightDir = normalize(lightOffset);
                 //灯光颜色
-                vec3 lightColor = u_pointLightColors[i];
+                vec3 lightColor = pointLight.color;
                 //灯光强度
-                float lightIntensity = u_pointLightIntensitys[i];
+                float lightIntensity = pointLight.intensity;
                 //光照范围
-                float range = u_pointLightRanges[i];
+                float range = pointLight.range;
                 float attenuation = computeDistanceLightFalloff(lightDistance,range);
                 lightIntensity = lightIntensity * attenuation;
                 //

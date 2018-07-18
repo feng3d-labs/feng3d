@@ -201,24 +201,30 @@ namespace feng3d
             while (i < numUniforms)
             {
                 var activeInfo = gl.getActiveUniform(shaderProgram, i++);
-                var name = activeInfo.name;
-                if (name.indexOf("[") != -1)
-                {
-                    //处理数组
-                    var baseName = activeInfo.name.substring(0, name.indexOf("["));
-                    for (var j = 0; j < activeInfo.size; j++)
-                    {
-                        name = baseName + `[${j}]`;
+                var reg = /(\w+)/g;
 
-                        uniforms[name] = { index: j, name: baseName, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
-                        if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE)
-                        {
-                            textureID++;
-                        }
-                    }
-                } else
+                var name = activeInfo.name;
+                var names = [name];
+                if (activeInfo.size > 1)
                 {
-                    uniforms[name] = { name: name, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
+                    assert(name.substr(-3, 3) == "[0]");
+                    var baseName = name.substring(0, name.length - 3);
+                    for (var j = 1; j < activeInfo.size; j++)
+                    {
+                        names[j] = baseName + `[${j}]`;
+                    }
+                }
+
+                for (let j = 0; j < names.length; j++)
+                {
+                    name = names[j];
+                    var result: RegExpExecArray;
+                    var paths: string[] = [];
+                    while (result = reg.exec(name))
+                    {
+                        paths.push(result[1]);
+                    }
+                    uniforms[name] = { name: paths[0], paths: paths, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
                     if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE)
                     {
                         textureID++;
@@ -294,7 +300,7 @@ namespace feng3d
         /**
          * Uniform数组索引，当Uniform数据为数组数据时生效
          */
-        index?: number;
+        paths: string[];
     }
 
     export interface AttributeInfo

@@ -7475,6 +7475,7 @@ declare namespace feng3d {
          * 点光源光照范围数组
          */
         u_pointLightRanges: number[];
+        pointLights: PointLight[];
         /******************************************************/
         /******************************************************/
         /**
@@ -7661,7 +7662,7 @@ declare namespace feng3d {
         /**
          * Uniform数组索引，当Uniform数据为数组数据时生效
          */
-        index?: number;
+        paths: string[];
     }
     interface AttributeInfo {
         /**
@@ -10830,6 +10831,7 @@ declare namespace feng3d {
         castsShadows: boolean;
         private _shadowMap;
         readonly shadowMap: Texture2D;
+        readonly position: Vector3;
         /**
          * 帧缓冲对象，用于处理光照阴影贴图渲染
          */

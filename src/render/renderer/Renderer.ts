@@ -172,18 +172,17 @@ namespace feng3d
              */
             function activeUniforms(renderAtomic: RenderAtomic, uniformInfos: { [name: string]: UniformInfo })
             {
+                var uniforms = renderAtomic.uniforms;
                 for (var name in uniformInfos)
                 {
                     var activeInfo = uniformInfos[name];
-                    var uniformData = lazy.getvalue(renderAtomic.uniforms[activeInfo.name]);
-
-                    if (activeInfo.index != undefined)
+                    var paths = activeInfo.paths;
+                    var uniformData = uniforms[paths[0]];
+                    for (let i = 1; i < paths.length; i++)
                     {
-                        setContext3DUniform(activeInfo, uniformData[activeInfo.index]);
-                    } else
-                    {
-                        setContext3DUniform(activeInfo, uniformData);
+                        uniformData = uniformData[paths[i]];
                     }
+                    setContext3DUniform(activeInfo, uniformData);
                 }
             }
 

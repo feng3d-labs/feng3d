@@ -40,6 +40,11 @@ namespace feng3d
             return this._shadowMap;
         }
 
+        get position()
+        {
+            return this.transform.scenePosition;
+        }
+
         /**
          * 帧缓冲对象，用于处理光照阴影贴图渲染
          */
