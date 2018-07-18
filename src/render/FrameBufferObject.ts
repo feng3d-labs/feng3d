@@ -47,9 +47,9 @@ namespace feng3d
         {
             var framebuffer = this.frameBuffer.active(gl);
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            // if (this._invalid)
-            // {
-            //     this._invalid = false;
+            if (this._invalid)
+            {
+                this._invalid = false;
                 this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
                 this.texture.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
                 this.depthBuffer.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
@@ -69,8 +69,9 @@ namespace feng3d
                     debuger && alert('Frame buffer object is incomplete: ' + e.toString());
                     return null;
                 }
-            // }
+            }
 
+            gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 

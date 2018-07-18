@@ -13319,26 +13319,26 @@ var feng3d;
         FrameBufferObject.prototype.active = function (gl) {
             var framebuffer = this.frameBuffer.active(gl);
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            // if (this._invalid)
-            // {
-            //     this._invalid = false;
-            this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
-            this.texture.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
-            this.depthBuffer.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
-            this.depthBuffer.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
-            //
-            var texture = this.texture.active(gl);
-            var depthBuffer = this.depthBuffer.active(gl);
-            // Attach the texture and the renderbuffer object to the FBO
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-            // Check if FBO is configured correctly
-            var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-            if (gl.FRAMEBUFFER_COMPLETE !== e) {
-                feng3d.debuger && alert('Frame buffer object is incomplete: ' + e.toString());
-                return null;
+            if (this._invalid) {
+                this._invalid = false;
+                this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
+                this.texture.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
+                this.depthBuffer.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
+                this.depthBuffer.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
+                //
+                var texture = this.texture.active(gl);
+                var depthBuffer = this.depthBuffer.active(gl);
+                // Attach the texture and the renderbuffer object to the FBO
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+                // Check if FBO is configured correctly
+                var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+                if (gl.FRAMEBUFFER_COMPLETE !== e) {
+                    feng3d.debuger && alert('Frame buffer object is incomplete: ' + e.toString());
+                    return null;
+                }
             }
-            // }
+            gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             return framebuffer;
