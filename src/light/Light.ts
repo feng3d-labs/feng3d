@@ -32,9 +32,10 @@ namespace feng3d
          */
         @oav()
         @serialize
-        castShadows = true;
+        castShadows = false;
 
-        shadowBias = 0;
+        @oav() 
+        shadowBias = -0.005;
 
         shadowRadius = 1;
 
@@ -43,13 +44,12 @@ namespace feng3d
          */
         get shadowMapSize()
         {
-            return this._shadowMap.getSize();
+            return this.shadowMap.getSize();
         }
 
-        private _shadowMap: Texture2D = new RenderTargetTexture2D();
         get shadowMap()
         {
-            return this._shadowMap;
+            return this.frameBufferObject.texture;
         }
 
         /**

@@ -10810,8 +10810,7 @@ declare namespace feng3d {
          * 阴影图尺寸
          */
         readonly shadowMapSize: Vector2;
-        private _shadowMap;
-        readonly shadowMap: Texture2D;
+        readonly shadowMap: RenderTargetTexture2D;
         /**
          * 帧缓冲对象，用于处理光照阴影贴图渲染
          */

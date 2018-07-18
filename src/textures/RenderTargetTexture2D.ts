@@ -15,6 +15,7 @@ namespace feng3d
         {
             super(raw);
             this._isRenderTarget = true;
+            this.format = TextureFormat.RGBA;
             this.minFilter = TextureMinFilter.NEAREST;
             this.magFilter = TextureMagFilter.NEAREST;
         }

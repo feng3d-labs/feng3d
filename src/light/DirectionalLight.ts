@@ -74,9 +74,12 @@ namespace feng3d
                 // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
                 // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
                 textureMaterial.uniforms.s_texture = <any>this.frameBufferObject.texture;
+                textureMaterial.renderParams.enableBlend = true;
+                textureMaterial.renderParams.sfactor = BlendFactor.ONE;
+                textureMaterial.renderParams.dfactor = BlendFactor.ZERO;
             }
 
-            var depth = viewCamera.lens.near + 0.001 * (viewCamera.lens.far - viewCamera.lens.near);
+            var depth = viewCamera.lens.near * 2;
             gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleTo(depth));
             var billboardComponent = gameObject.getComponent(BillboardComponent);
             billboardComponent.camera = viewCamera;
