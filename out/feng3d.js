@@ -12311,52 +12311,46 @@ var feng3d;
              * shader 中的 宏
              */
             this.shaderMacro = {};
+            this.macroInvalid = true;
             this.map = new Map();
             this.shaderName = shaderName;
             feng3d.feng3dDispatcher.on("assets.shaderChanged", this.onShaderChanged, this);
         }
+        /**
+         * 激活渲染程序
+         */
+        Shader.prototype.activeShaderProgram = function (gl) {
+            this.updateShaderCode();
+            //渲染程序
+            if (this.map.has(gl))
+                return this.map.get(gl);
+            var result = this.compileShaderProgram(gl, this.vertex, this.fragment);
+            this.map.set(gl, result);
+            return result;
+        };
         Shader.prototype.onShaderChanged = function () {
-            this.vertex = this.fragment = null;
+            this.macroInvalid = true;
         };
         /**
          * 更新渲染代码
          */
         Shader.prototype.updateShaderCode = function () {
             // 获取着色器代码
-            if (this.vertex == null || this.fragment == null) {
-                var result = feng3d.shaderlib.getShader(this.shaderName);
-                //
-                this.resultVertexCode = this.vertex = result.vertex;
-                //
-                this.resultFragmentCode = this.fragment = result.fragment;
-                this.vertexMacroVariables = result.vertexMacroVariables;
-                this.fragmentMacroVariables = result.fragmentMacroVariables;
-            }
-            var vertexMacroInvalid = false;
-            for (var i = 0; i < this.vertexMacroVariables.length; i++) {
-                var macroVariable = this.vertexMacroVariables[i];
+            var result = feng3d.shaderlib.getShader(this.shaderName);
+            var macroVariables = result.vertexMacroVariables.concat(result.fragmentMacroVariables);
+            for (var i = 0; i < macroVariables.length; i++) {
+                var macroVariable = macroVariables[i];
                 var value = this.shaderMacro[macroVariable];
                 if (this.macroValues[macroVariable] != value) {
                     this.macroValues[macroVariable] = value;
-                    vertexMacroInvalid = true;
+                    this.macroInvalid = true;
                 }
             }
-            var fragmentMacroInvalid = false;
-            for (var i = 0; i < this.fragmentMacroVariables.length; i++) {
-                var macroVariable = this.fragmentMacroVariables[i];
-                var value = this.shaderMacro[macroVariable];
-                if (this.macroValues[macroVariable] != value) {
-                    this.macroValues[macroVariable] = value;
-                    fragmentMacroInvalid = true;
-                }
-            }
-            if (vertexMacroInvalid) {
+            if (this.macroInvalid) {
                 this.clear();
-                this.resultVertexCode = this.vertex.replace(/#define\s+macros/, this.getMacroCode(this.vertexMacroVariables, this.macroValues));
-            }
-            if (fragmentMacroInvalid) {
-                this.clear();
-                this.resultFragmentCode = this.vertex.replace(/#define\s+macros/, this.getMacroCode(this.fragmentMacroVariables, this.macroValues));
+                this.vertex = result.vertex.replace(/#define\s+macros/, this.getMacroCode(result.vertexMacroVariables, this.macroValues));
+                this.fragment = result.fragment.replace(/#define\s+macros/, this.getMacroCode(result.fragmentMacroVariables, this.macroValues));
+                this.macroInvalid = false;
             }
         };
         /**
@@ -12476,18 +12470,6 @@ var feng3d;
                 }
             }
             return { program: shaderProgram, vertex: vertexShader, fragment: fragmentShader, attributes: attributes, uniforms: uniforms };
-        };
-        /**
-         * 激活渲染程序
-         */
-        Shader.prototype.activeShaderProgram = function (gl) {
-            this.updateShaderCode();
-            //渲染程序
-            if (this.map.has(gl))
-                return this.map.get(gl);
-            var result = this.compileShaderProgram(gl, this.resultVertexCode, this.resultFragmentCode);
-            this.map.set(gl, result);
-            return result;
         };
         Shader.prototype.getMacroCode = function (variables, valueObj) {
             var macroHeader = "";

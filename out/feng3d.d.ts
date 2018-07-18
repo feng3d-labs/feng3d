@@ -7577,6 +7577,70 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * shader
+     */
+    class Shader {
+        constructor(shaderName: string);
+        /**
+         * 激活渲染程序
+         */
+        activeShaderProgram(gl: GL): {
+            program: WebGLProgram;
+            vertex: WebGLShader;
+            fragment: WebGLShader;
+            attributes: {
+                [name: string]: AttributeInfo;
+            };
+            uniforms: {
+                [name: string]: UniformInfo;
+            };
+        };
+        /**
+         * 着色器名称
+         */
+        private shaderName;
+        /**
+         * 顶点着色器代码
+         */
+        private vertex;
+        /**
+         * 片段着色器代码
+         */
+        private fragment;
+        private macroValues;
+        /**
+         * shader 中的 宏
+         */
+        shaderMacro: ShaderMacro;
+        macroInvalid: boolean;
+        private onShaderChanged();
+        /**
+         * 更新渲染代码
+         */
+        private updateShaderCode();
+        /**
+         * 编译着色器代码
+         * @param gl GL上下文
+         * @param type 着色器类型
+         * @param code 着色器代码
+         * @return 编译后的着色器对象
+         */
+        private compileShaderCode(gl, type, code);
+        private createLinkProgram(gl, vertexShader, fragmentShader);
+        /**
+         * Create the linked program object
+         * @param gl GL context
+         * @param vshader a vertex shader program (string)
+         * @param fshader a fragment shader program (string)
+         * @return created program object, or null if the creation has failed
+         */
+        private createProgram(gl, vshader, fshader);
+        private compileShaderProgram(gl, vshader, fshader);
+        private map;
+        private getMacroCode(variables, valueObj);
+        private clear();
+    }
+    /**
      * WebGL渲染程序有效信息
      */
     interface UniformInfo {
@@ -7610,89 +7674,6 @@ declare namespace feng3d {
          * 属性地址
          */
         location: number;
-    }
-    /**
-     * shader
-     */
-    class Shader {
-        /**
-         * 着色器名称
-         */
-        private shaderName;
-        /**
-         * 顶点着色器代码
-         */
-        private vertex;
-        /**
-         * 片段着色器代码
-         */
-        private fragment;
-        /**
-         * 顶点着色器宏变量列表
-         */
-        private vertexMacroVariables;
-        /**
-         * 片段着色器宏变量列表
-         */
-        private fragmentMacroVariables;
-        private macroValues;
-        /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro;
-        resultVertexCode: string;
-        resultFragmentCode: string;
-        constructor(shaderName: string);
-        private onShaderChanged();
-        /**
-         * 更新渲染代码
-         */
-        private updateShaderCode();
-        /**
-         * 编译着色器代码
-         * @param gl GL上下文
-         * @param type 着色器类型
-         * @param code 着色器代码
-         * @return 编译后的着色器对象
-         */
-        private compileShaderCode(gl, type, code);
-        private createLinkProgram(gl, vertexShader, fragmentShader);
-        /**
-         * Create the linked program object
-         * @param gl GL context
-         * @param vshader a vertex shader program (string)
-         * @param fshader a fragment shader program (string)
-         * @return created program object, or null if the creation has failed
-         */
-        private createProgram(gl, vshader, fshader);
-        private compileShaderProgram(gl, vshader, fshader);
-        /**
-         * 激活渲染程序
-         */
-        activeShaderProgram(gl: GL): {
-            program: WebGLProgram;
-            vertex: WebGLShader;
-            fragment: WebGLShader;
-            attributes: {
-                [name: string]: AttributeInfo;
-            };
-            uniforms: {
-                [name: string]: UniformInfo;
-            };
-        };
-        protected map: Map<GL, {
-            program: WebGLProgram;
-            vertex: WebGLShader;
-            fragment: WebGLShader;
-            attributes: {
-                [name: string]: AttributeInfo;
-            };
-            uniforms: {
-                [name: string]: UniformInfo;
-            };
-        }>;
-        private getMacroCode(variables, valueObj);
-        private clear();
     }
 }
 declare namespace feng3d {

@@ -1,54 +1,32 @@
 namespace feng3d
 {
     /**
-     * WebGL渲染程序有效信息
-     */
-    export interface UniformInfo
-    {
-        /**
-         * uniform名称
-         */
-        name: string;
-
-        size: number;
-        type: number;
-        /**
-         * uniform地址
-         */
-        location: WebGLUniformLocation;
-        /**
-         * texture索引
-         */
-        textureID: number;
-
-        /**
-         * Uniform数组索引，当Uniform数据为数组数据时生效
-         */
-        index?: number;
-    }
-
-    export interface AttributeInfo
-    {
-        /**
-         * 名称
-         */
-        name: string;
-
-        size: number;
-        type: number;
-
-        /**
-         * 属性地址
-         */
-        location: number;
-
-    }
-
-    /**
      * shader
      */
     export class Shader
     {
+        constructor(shaderName: string)
+        {
+            this.shaderName = shaderName;
+            feng3dDispatcher.on("assets.shaderChanged", this.onShaderChanged, this);
+        }
+
+        /**
+         * 激活渲染程序
+         */
+        activeShaderProgram(gl: GL)
+        {
+            this.updateShaderCode();
+
+            //渲染程序
+            if (this.map.has(gl))
+                return this.map.get(gl);
+
+            var result = this.compileShaderProgram(gl, this.vertex, this.fragment);
+            this.map.set(gl, result);
+            return result;
+        }
+
         /**
          * 着色器名称
          */
@@ -61,14 +39,6 @@ namespace feng3d
          * 片段着色器代码
          */
         private fragment: string
-        /**
-         * 顶点着色器宏变量列表
-         */
-        private vertexMacroVariables: string[];
-        /**
-         * 片段着色器宏变量列表
-         */
-        private fragmentMacroVariables: string[];
 
         private macroValues = {};
 
@@ -77,19 +47,11 @@ namespace feng3d
          */
         shaderMacro: ShaderMacro = <any>{};
 
-        //
-        resultVertexCode: string;
-        resultFragmentCode: string;
-
-        constructor(shaderName: string)
-        {
-            this.shaderName = shaderName;
-            feng3dDispatcher.on("assets.shaderChanged", this.onShaderChanged, this);
-        }
+        macroInvalid = true;
 
         private onShaderChanged()
         {
-            this.vertex = this.fragment = null;
+            this.macroInvalid = true;
         }
 
         /**
@@ -98,50 +60,26 @@ namespace feng3d
         private updateShaderCode()
         {
             // 获取着色器代码
-            if (this.vertex == null || this.fragment == null)
-            {
-                var result = shaderlib.getShader(this.shaderName);
-                //
-                this.resultVertexCode = this.vertex = result.vertex;
-                //
-                this.resultFragmentCode = this.fragment = result.fragment;
-                this.vertexMacroVariables = result.vertexMacroVariables;
-                this.fragmentMacroVariables = result.fragmentMacroVariables;
-            }
+            var result = shaderlib.getShader(this.shaderName);
 
-            var vertexMacroInvalid = false;
-            for (let i = 0; i < this.vertexMacroVariables.length; i++)
+            var macroVariables = result.vertexMacroVariables.concat(result.fragmentMacroVariables);
+            for (let i = 0; i < macroVariables.length; i++)
             {
-                const macroVariable = this.vertexMacroVariables[i];
+                const macroVariable = macroVariables[i];
                 var value = this.shaderMacro[macroVariable];
                 if (this.macroValues[macroVariable] != value)
                 {
                     this.macroValues[macroVariable] = value;
-                    vertexMacroInvalid = true;
-                }
-            }
-            var fragmentMacroInvalid = false;
-            for (let i = 0; i < this.fragmentMacroVariables.length; i++)
-            {
-                const macroVariable = this.fragmentMacroVariables[i];
-                var value = this.shaderMacro[macroVariable];
-                if (this.macroValues[macroVariable] != value)
-                {
-                    this.macroValues[macroVariable] = value;
-                    fragmentMacroInvalid = true;
+                    this.macroInvalid = true;
                 }
             }
 
-            if (vertexMacroInvalid)
+            if (this.macroInvalid)
             {
                 this.clear();
-                this.resultVertexCode = this.vertex.replace(/#define\s+macros/, this.getMacroCode(this.vertexMacroVariables, this.macroValues));
-            }
-
-            if (fragmentMacroInvalid)
-            {
-                this.clear();
-                this.resultFragmentCode = this.vertex.replace(/#define\s+macros/, this.getMacroCode(this.fragmentMacroVariables, this.macroValues));
+                this.vertex = result.vertex.replace(/#define\s+macros/, this.getMacroCode(result.vertexMacroVariables, this.macroValues));
+                this.fragment = result.fragment.replace(/#define\s+macros/, this.getMacroCode(result.fragmentMacroVariables, this.macroValues));
+                this.macroInvalid = false;
             }
         }
 
@@ -289,23 +227,7 @@ namespace feng3d
             return { program: shaderProgram, vertex: vertexShader, fragment: fragmentShader, attributes: attributes, uniforms: uniforms };
         }
 
-        /**
-         * 激活渲染程序
-         */
-        activeShaderProgram(gl: GL)
-        {
-            this.updateShaderCode();
-
-            //渲染程序
-            if (this.map.has(gl))
-                return this.map.get(gl);
-
-            var result = this.compileShaderProgram(gl, this.resultVertexCode, this.resultFragmentCode);
-            this.map.set(gl, result);
-            return result;
-        }
-
-        protected map = new Map<GL, {
+        private map = new Map<GL, {
             program: WebGLProgram, vertex: WebGLShader, fragment: WebGLShader
             /**
              * 属性信息列表
@@ -344,5 +266,49 @@ namespace feng3d
             });
             this.map.clear();
         }
+    }
+
+    /**
+     * WebGL渲染程序有效信息
+     */
+    export interface UniformInfo
+    {
+        /**
+         * uniform名称
+         */
+        name: string;
+
+        size: number;
+        type: number;
+        /**
+         * uniform地址
+         */
+        location: WebGLUniformLocation;
+        /**
+         * texture索引
+         */
+        textureID: number;
+
+        /**
+         * Uniform数组索引，当Uniform数据为数组数据时生效
+         */
+        index?: number;
+    }
+
+    export interface AttributeInfo
+    {
+        /**
+         * 名称
+         */
+        name: string;
+
+        size: number;
+        type: number;
+
+        /**
+         * 属性地址
+         */
+        location: number;
+
     }
 }
