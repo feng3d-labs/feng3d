@@ -8058,6 +8058,9 @@ declare namespace feng3d {
         frameBuffer: FrameBuffer;
         texture: RenderTargetTexture2D;
         depthBuffer: RenderBuffer;
+        constructor(width?: number, height?: number);
+        active(gl: GL): WebGLFramebuffer;
+        deactive(gl: GL): void;
         /**
          * 是否失效
          */
@@ -8066,9 +8069,9 @@ declare namespace feng3d {
          * 使失效
          */
         protected invalidate(): void;
-        constructor(width?: number, height?: number);
-        active(gl: GL): WebGLFramebuffer;
-        deactive(gl: GL): void;
+        private _map;
+        private invalidateSize();
+        private clear();
     }
 }
 declare namespace feng3d {
@@ -8522,7 +8525,6 @@ declare namespace feng3d {
     var shadowRenderer: ShadowRenderer;
     class ShadowRenderer {
         renderAtomic: RenderAtomic;
-        private renderParams;
         private shader;
         private skeleton_shader;
         init(): void;

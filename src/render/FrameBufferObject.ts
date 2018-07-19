@@ -6,10 +6,10 @@ namespace feng3d
      */
     export class FrameBufferObject
     {
-        @watch("invalidate")
+        @watch("invalidateSize")
         OFFSCREEN_WIDTH = 1024;
 
-        @watch("invalidate")
+        @watch("invalidateSize")
         OFFSCREEN_HEIGHT = 1024;
 
         @watch("invalidate")
@@ -20,6 +20,62 @@ namespace feng3d
 
         @watch("invalidate")
         depthBuffer: RenderBuffer;
+
+        constructor(width = 1024, height = 1024)
+        {
+            this.frameBuffer = new FrameBuffer();
+            this.texture = new RenderTargetTexture2D();
+            this.depthBuffer = new RenderBuffer();
+            this.OFFSCREEN_WIDTH = width;
+            this.OFFSCREEN_HEIGHT = height;
+        }
+
+        active(gl: GL)
+        {
+            if (this._invalid)
+            {
+                this._invalid = false;
+                this.clear();
+            }
+
+            var obj = this._map.get(gl);
+            if (!obj)
+            {
+                var framebuffer = this.frameBuffer.active(gl);
+                var texture = this.texture.active(gl);
+                var depthBuffer = this.depthBuffer.active(gl);
+
+                // 绑定帧缓冲区对象
+                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+                // 设置颜色关联对象
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                // 设置深度关联对象
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+
+                // 检查Framebuffer状态
+                var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+                if (gl.FRAMEBUFFER_COMPLETE !== e)
+                {
+                    debuger && alert('Frame buffer object is incomplete: ' + e.toString());
+                    return null;
+                }
+                obj = { framebuffer: framebuffer, texture: texture, depthBuffer: depthBuffer };
+                this._map.set(gl, obj);
+            } else
+            {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, obj.framebuffer);
+            }
+            gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            return framebuffer;
+        }
+
+        deactive(gl: GL)
+        {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        }
 
         /**
          * 是否失效
@@ -34,53 +90,28 @@ namespace feng3d
             this._invalid = true;
         }
 
-        constructor(width = 1024, height = 1024)
-        {
-            this.OFFSCREEN_WIDTH = width;
-            this.OFFSCREEN_HEIGHT = height;
-            this.frameBuffer = new FrameBuffer();
-            this.texture = new RenderTargetTexture2D();
-            this.depthBuffer = new RenderBuffer();
-        }
+        private _map = new Map<GL, {
+            framebuffer: WebGLFramebuffer, texture: WebGLTexture, depthBuffer: WebGLRenderbuffer
+        }>();
 
-        active(gl: GL)
+        private invalidateSize()
         {
-            var framebuffer = this.frameBuffer.active(gl);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            if (this._invalid)
+            if (this.texture)
             {
-                this._invalid = false;
                 this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
                 this.texture.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
+            }
+            if (this.depthBuffer)
+            {
                 this.depthBuffer.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
                 this.depthBuffer.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
-                //
-                var texture = this.texture.active(gl);
-                var depthBuffer = this.depthBuffer.active(gl);
-
-                // Attach the texture and the renderbuffer object to the FBO
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-
-                // Check if FBO is configured correctly
-                var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-                if (gl.FRAMEBUFFER_COMPLETE !== e)
-                {
-                    debuger && alert('Frame buffer object is incomplete: ' + e.toString());
-                    return null;
-                }
             }
-
-            gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
-            gl.clearColor(1.0, 1.0, 1.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-            return framebuffer;
+            this._invalid = true;
         }
 
-        deactive(gl: GL)
+        private clear()
         {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            this._map.clear();
         }
     }
 

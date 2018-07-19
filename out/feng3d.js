@@ -13304,39 +13304,40 @@ var feng3d;
              * 是否失效
              */
             this._invalid = true;
-            this.OFFSCREEN_WIDTH = width;
-            this.OFFSCREEN_HEIGHT = height;
+            this._map = new Map();
             this.frameBuffer = new feng3d.FrameBuffer();
             this.texture = new feng3d.RenderTargetTexture2D();
             this.depthBuffer = new feng3d.RenderBuffer();
+            this.OFFSCREEN_WIDTH = width;
+            this.OFFSCREEN_HEIGHT = height;
         }
-        /**
-         * 使失效
-         */
-        FrameBufferObject.prototype.invalidate = function () {
-            this._invalid = true;
-        };
         FrameBufferObject.prototype.active = function (gl) {
-            var framebuffer = this.frameBuffer.active(gl);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             if (this._invalid) {
                 this._invalid = false;
-                this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
-                this.texture.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
-                this.depthBuffer.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
-                this.depthBuffer.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
-                //
+                this.clear();
+            }
+            var obj = this._map.get(gl);
+            if (!obj) {
+                var framebuffer = this.frameBuffer.active(gl);
                 var texture = this.texture.active(gl);
                 var depthBuffer = this.depthBuffer.active(gl);
-                // Attach the texture and the renderbuffer object to the FBO
+                // 绑定帧缓冲区对象
+                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+                // 设置颜色关联对象
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                // 设置深度关联对象
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-                // Check if FBO is configured correctly
+                // 检查Framebuffer状态
                 var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
                 if (gl.FRAMEBUFFER_COMPLETE !== e) {
                     feng3d.debuger && alert('Frame buffer object is incomplete: ' + e.toString());
                     return null;
                 }
+                obj = { framebuffer: framebuffer, texture: texture, depthBuffer: depthBuffer };
+                this._map.set(gl, obj);
+            }
+            else {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, obj.framebuffer);
             }
             gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -13346,11 +13347,31 @@ var feng3d;
         FrameBufferObject.prototype.deactive = function (gl) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         };
+        /**
+         * 使失效
+         */
+        FrameBufferObject.prototype.invalidate = function () {
+            this._invalid = true;
+        };
+        FrameBufferObject.prototype.invalidateSize = function () {
+            if (this.texture) {
+                this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
+                this.texture.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
+            }
+            if (this.depthBuffer) {
+                this.depthBuffer.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
+                this.depthBuffer.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
+            }
+            this._invalid = true;
+        };
+        FrameBufferObject.prototype.clear = function () {
+            this._map.clear();
+        };
         __decorate([
-            feng3d.watch("invalidate")
+            feng3d.watch("invalidateSize")
         ], FrameBufferObject.prototype, "OFFSCREEN_WIDTH", void 0);
         __decorate([
-            feng3d.watch("invalidate")
+            feng3d.watch("invalidateSize")
         ], FrameBufferObject.prototype, "OFFSCREEN_HEIGHT", void 0);
         __decorate([
             feng3d.watch("invalidate")
@@ -14280,9 +14301,6 @@ var feng3d;
         ShadowRenderer.prototype.init = function () {
             if (!this.renderAtomic) {
                 this.renderAtomic = new feng3d.RenderAtomic();
-                var renderParams = this.renderAtomic.renderParams;
-                renderParams.enableBlend = false;
-                renderParams.depthFunc = feng3d.DepthFunc.LEQUAL;
                 this.shader = new feng3d.Shader("shadow");
                 this.skeleton_shader = new feng3d.Shader("shadow_skeleton");
             }

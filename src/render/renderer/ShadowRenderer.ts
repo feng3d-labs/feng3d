@@ -11,7 +11,6 @@ namespace feng3d
     {
         renderAtomic: RenderAtomic;
 
-        private renderParams: RenderParams;
         private shader: Shader;
         private skeleton_shader: Shader;
 
@@ -20,9 +19,6 @@ namespace feng3d
             if (!this.renderAtomic)
             {
                 this.renderAtomic = new RenderAtomic();
-                var renderParams = this.renderAtomic.renderParams;
-                renderParams.enableBlend = false;
-                renderParams.depthFunc = DepthFunc.LEQUAL;
 
                 this.shader = new Shader("shadow");
                 this.skeleton_shader = new Shader("shadow_skeleton");
