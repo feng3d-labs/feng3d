@@ -40,15 +40,24 @@ namespace feng3d
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, worldBounds: Box)
+        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, meshRenderers: MeshRenderer[])
         {
+            var worldBounds: Box = meshRenderers.reduce((pre: Box, i) =>
+            {
+                var box = i.getComponent(Bounding).worldBounds;
+                if (!pre)
+                    return box.clone();
+                pre.union(box);
+                return pre;
+            }, null);
+
             // 
             var center = worldBounds.getCenter();
-            var radius = worldBounds.getSize().length;
+            var radius = worldBounds.getSize().length / 2;
             // 
             var near = 1;
             this.shadow.camera.transform.position = center.addTo(this.direction.scaleTo(radius + near).negate());
-            this.shadow.camera.transform.lookAt(center);
+            this.shadow.camera.transform.lookAt(center, this.shadow.camera.transform.upVector);
             //
             this.shadow.camera.lens = new OrthographicLens(-radius, radius, radius, - radius, near, near + radius * 2);
 

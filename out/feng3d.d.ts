@@ -10840,7 +10840,7 @@ declare namespace feng3d {
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, worldBounds: Box): void;
+        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, meshRenderers: MeshRenderer[]): void;
         private updateDebugShadowMap(scene3d, viewCamera);
     }
 }

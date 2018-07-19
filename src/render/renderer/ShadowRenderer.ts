@@ -48,18 +48,10 @@ namespace feng3d
             var meshRenderers = scene3d.getPickByDirectionalLight(light);
             if (meshRenderers.length == 0)
                 return;
-            var worldBounds: Box = meshRenderers.reduce((pre: Box, i) =>
-            {
-                var box = i.getComponent(Bounding).worldBounds;
-                if (!pre)
-                    return box.clone();
-                pre.union(box);
-                return pre;
-            }, null)
 
             light.frameBufferObject.active(gl);
 
-            light.updateShadowByCamera(scene3d, camera, worldBounds);
+            light.updateShadowByCamera(scene3d, camera, meshRenderers);
 
             var shadowCamera = light.shadow.camera;
 

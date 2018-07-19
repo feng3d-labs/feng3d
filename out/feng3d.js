@@ -14302,15 +14302,8 @@ var feng3d;
             var meshRenderers = scene3d.getPickByDirectionalLight(light);
             if (meshRenderers.length == 0)
                 return;
-            var worldBounds = meshRenderers.reduce(function (pre, i) {
-                var box = i.getComponent(feng3d.Bounding).worldBounds;
-                if (!pre)
-                    return box.clone();
-                pre.union(box);
-                return pre;
-            }, null);
             light.frameBufferObject.active(gl);
-            light.updateShadowByCamera(scene3d, camera, worldBounds);
+            light.updateShadowByCamera(scene3d, camera, meshRenderers);
             var shadowCamera = light.shadow.camera;
             //
             this.renderAtomic.renderParams.useViewRect = true;
@@ -20913,14 +20906,21 @@ var feng3d;
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        DirectionalLight.prototype.updateShadowByCamera = function (scene3d, viewCamera, worldBounds) {
+        DirectionalLight.prototype.updateShadowByCamera = function (scene3d, viewCamera, meshRenderers) {
+            var worldBounds = meshRenderers.reduce(function (pre, i) {
+                var box = i.getComponent(feng3d.Bounding).worldBounds;
+                if (!pre)
+                    return box.clone();
+                pre.union(box);
+                return pre;
+            }, null);
             // 
             var center = worldBounds.getCenter();
-            var radius = worldBounds.getSize().length;
+            var radius = worldBounds.getSize().length / 2;
             // 
             var near = 1;
             this.shadow.camera.transform.position = center.addTo(this.direction.scaleTo(radius + near).negate());
-            this.shadow.camera.transform.lookAt(center);
+            this.shadow.camera.transform.lookAt(center, this.shadow.camera.transform.upVector);
             //
             this.shadow.camera.lens = new feng3d.OrthographicLens(-radius, radius, radius, -radius, near, near + radius * 2);
             this.updateDebugShadowMap(scene3d, viewCamera);
