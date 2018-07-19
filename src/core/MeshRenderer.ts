@@ -55,7 +55,7 @@ namespace feng3d
          */
         @oav()
         @serialize
-        castShadows = true;
+        castShadows = false;
 
         /**
          * 是否接受阴影

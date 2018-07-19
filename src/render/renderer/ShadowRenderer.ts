@@ -41,8 +41,11 @@ namespace feng3d
         {
             this.init();
 
+            // 获取影响阴影图的渲染对象
             var meshRenderers = scene3d.getPickByDirectionalLight(light);
-            if (meshRenderers.length == 0)
+            // 筛选投射阴影的渲染对象
+            var castShadowsMeshRenderers = meshRenderers.filter(i => i.castShadows);
+            if (castShadowsMeshRenderers.length == 0)
                 return;
 
             light.frameBufferObject.active(gl);
@@ -60,7 +63,7 @@ namespace feng3d
             this.renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
             this.renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
 
-            meshRenderers.forEach(element =>
+            castShadowsMeshRenderers.forEach(element =>
             {
                 this.drawGameObject(gl, element.gameObject);
             });

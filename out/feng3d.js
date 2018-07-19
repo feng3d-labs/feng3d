@@ -14317,8 +14317,11 @@ var feng3d;
         ShadowRenderer.prototype.drawForLight = function (gl, light, scene3d, camera) {
             var _this = this;
             this.init();
+            // 获取影响阴影图的渲染对象
             var meshRenderers = scene3d.getPickByDirectionalLight(light);
-            if (meshRenderers.length == 0)
+            // 筛选投射阴影的渲染对象
+            var castShadowsMeshRenderers = meshRenderers.filter(function (i) { return i.castShadows; });
+            if (castShadowsMeshRenderers.length == 0)
                 return;
             light.frameBufferObject.active(gl);
             light.updateShadowByCamera(scene3d, camera, meshRenderers);
@@ -14331,7 +14334,7 @@ var feng3d;
             this.renderAtomic.uniforms.u_viewProjection = function () { return shadowCamera.viewProjection; };
             this.renderAtomic.uniforms.u_viewMatrix = function () { return shadowCamera.transform.worldToLocalMatrix; };
             this.renderAtomic.uniforms.u_cameraMatrix = function () { return shadowCamera.transform.localToWorldMatrix; };
-            meshRenderers.forEach(function (element) {
+            castShadowsMeshRenderers.forEach(function (element) {
                 _this.drawGameObject(gl, element.gameObject);
             });
             light.frameBufferObject.deactive(gl);
@@ -16503,7 +16506,7 @@ var feng3d;
             /**
              * 是否投射阴影
              */
-            _this.castShadows = true;
+            _this.castShadows = false;
             /**
              * 是否接受阴影
              */
@@ -16909,7 +16912,9 @@ var feng3d;
                 if (!item.visible)
                     continue;
                 var meshRenderer = item.getComponent(feng3d.MeshRenderer);
-                if (meshRenderer && meshRenderer.castShadows && !meshRenderer.material.renderParams.enableBlend) {
+                if (meshRenderer && (meshRenderer.castShadows || meshRenderer.receiveShadows)
+                    && !meshRenderer.material.renderParams.enableBlend
+                    && meshRenderer.material.renderParams.renderMode == feng3d.RenderMode.TRIANGLES) {
                     targets.push(meshRenderer);
                 }
                 item.children.forEach(function (element) {

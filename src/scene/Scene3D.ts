@@ -281,7 +281,10 @@ namespace feng3d
                 var item = openlist.shift();
                 if (!item.visible) continue;
                 var meshRenderer = item.getComponent(MeshRenderer);
-                if (meshRenderer && meshRenderer.castShadows && !meshRenderer.material.renderParams.enableBlend)
+                if (meshRenderer && (meshRenderer.castShadows || meshRenderer.receiveShadows)
+                    && !meshRenderer.material.renderParams.enableBlend
+                    && meshRenderer.material.renderParams.renderMode == RenderMode.TRIANGLES
+                )
                 {
                     targets.push(meshRenderer);
                 }
