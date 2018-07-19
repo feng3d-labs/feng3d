@@ -11,14 +11,12 @@ namespace feng3d
     export class SkyboxRenderer
     {
         private renderAtomic: RenderAtomic;
-        private renderParams: RenderParams;
-        private shader: Shader;
 
         init()
         {
             if (!this.renderAtomic)
             {
-                var renderAtomic = new RenderAtomic();
+                var renderAtomic = this.renderAtomic = new RenderAtomic();
                 //八个顶点，32个number
                 var vertexPositionData = [ //
                     -1, 1, -1,//
@@ -42,18 +40,12 @@ namespace feng3d
                 ];
                 renderAtomic.indexBuffer = new Index();
                 renderAtomic.indexBuffer.indices = indices;
-                this.renderAtomic = renderAtomic;
                 //
-                var renderParams = new RenderParams();
-                renderParams.renderMode = RenderMode.TRIANGLES;
-                renderParams.enableBlend = false;
-                renderParams.depthMask = true;
-                renderParams.depthtest = true;
+                var renderParams = renderAtomic.renderParams;
                 renderParams.cullFace = CullFace.NONE;
-                this.renderParams = renderParams;
                 //
 
-                this.shader = new Shader("skybox");
+                renderAtomic.shader = new Shader("skybox");
             }
         }
 
@@ -82,8 +74,6 @@ namespace feng3d
             this.init();
 
             //
-            this.renderAtomic.renderParams = this.renderParams;
-            this.renderAtomic.shader = this.shader;
             skybox.gameObject.preRender(this.renderAtomic);
 
             //

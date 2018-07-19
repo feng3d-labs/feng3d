@@ -13333,6 +13333,8 @@ var feng3d;
                     feng3d.debuger && alert('Frame buffer object is incomplete: ' + e.toString());
                     return null;
                 }
+                gl.bindTexture(gl.TEXTURE_2D, null);
+                gl.bindRenderbuffer(gl.RENDERBUFFER, null);
                 obj = { framebuffer: framebuffer, texture: texture, depthBuffer: depthBuffer };
                 this._map.set(gl, obj);
             }
@@ -13342,7 +13344,7 @@ var feng3d;
             gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            return framebuffer;
+            return obj;
         };
         FrameBufferObject.prototype.deactive = function (gl) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -14321,10 +14323,8 @@ var feng3d;
             var meshRenderers = scene3d.getPickByDirectionalLight(light);
             // 筛选投射阴影的渲染对象
             var castShadowsMeshRenderers = meshRenderers.filter(function (i) { return i.castShadows; });
-            if (castShadowsMeshRenderers.length == 0)
-                return;
-            light.frameBufferObject.active(gl);
             light.updateShadowByCamera(scene3d, camera, meshRenderers);
+            light.frameBufferObject.active(gl);
             var shadowCamera = light.shadow.camera;
             //
             this.renderAtomic.renderParams.useViewRect = true;
@@ -14372,12 +14372,8 @@ var feng3d;
             if (!this.renderAtomic) {
                 this.renderAtomic = new feng3d.RenderAtomic();
                 var renderParams = this.renderAtomic.renderParams;
-                renderParams.renderMode = feng3d.RenderMode.TRIANGLES;
                 renderParams.enableBlend = false;
-                renderParams.depthMask = true;
-                renderParams.depthtest = true;
                 renderParams.cullFace = feng3d.CullFace.FRONT;
-                renderParams.frontFace = feng3d.FrontFace.CW;
                 this.renderAtomic.shader = new feng3d.Shader("outline");
             }
         };
@@ -14448,10 +14444,7 @@ var feng3d;
                 this.renderAtomic = new feng3d.RenderAtomic();
                 var renderParams = this.renderAtomic.renderParams;
                 renderParams.renderMode = feng3d.RenderMode.LINES;
-                renderParams.enableBlend = false;
-                renderParams.depthMask = false;
-                renderParams.depthtest = true;
-                renderParams.depthFunc = feng3d.DepthFunc.LEQUAL;
+                // renderParams.depthMask = false;
                 this.shader = new feng3d.Shader("wireframe");
                 this.skeleton_shader = new feng3d.Shader("wireframe_skeleton");
             }
@@ -14460,15 +14453,14 @@ var feng3d;
          * 渲染
          */
         WireframeRenderer.prototype.draw = function (gl, scene3d, camera) {
+            var _this = this;
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
-            if (unblenditems.length == 0)
+            var wireframes = unblenditems.filter(function (i) { return i.getComponent(WireframeComponent); });
+            if (wireframes.length == 0)
                 return;
-            for (var i = 0; i < unblenditems.length; i++) {
-                var item = unblenditems[i];
-                if (item.getComponent(WireframeComponent)) {
-                    this.drawGameObject(gl, item.gameObject); //
-                }
-            }
+            wireframes.forEach(function (element) {
+                _this.drawGameObject(gl, element.gameObject); //
+            });
         };
         /**
          * 绘制3D对象
@@ -14654,7 +14646,7 @@ var feng3d;
         }
         SkyboxRenderer.prototype.init = function () {
             if (!this.renderAtomic) {
-                var renderAtomic = new feng3d.RenderAtomic();
+                var renderAtomic = this.renderAtomic = new feng3d.RenderAtomic();
                 //八个顶点，32个number
                 var vertexPositionData = [
                     -1, 1, -1,
@@ -14678,17 +14670,11 @@ var feng3d;
                 ];
                 renderAtomic.indexBuffer = new feng3d.Index();
                 renderAtomic.indexBuffer.indices = indices;
-                this.renderAtomic = renderAtomic;
                 //
-                var renderParams = new feng3d.RenderParams();
-                renderParams.renderMode = feng3d.RenderMode.TRIANGLES;
-                renderParams.enableBlend = false;
-                renderParams.depthMask = true;
-                renderParams.depthtest = true;
+                var renderParams = renderAtomic.renderParams;
                 renderParams.cullFace = feng3d.CullFace.NONE;
-                this.renderParams = renderParams;
                 //
-                this.shader = new feng3d.Shader("skybox");
+                renderAtomic.shader = new feng3d.Shader("skybox");
             }
         };
         /**
@@ -14712,8 +14698,6 @@ var feng3d;
                 return;
             this.init();
             //
-            this.renderAtomic.renderParams = this.renderParams;
-            this.renderAtomic.shader = this.shader;
             skybox.gameObject.preRender(this.renderAtomic);
             //
             this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
@@ -16331,14 +16315,14 @@ var feng3d;
             var viewRect = this.viewRect;
             this.camera.viewRect = viewRect;
             this.camera.lens.aspect = viewRect.width / viewRect.height;
+            init(this.gl, this.scene);
             //鼠标拾取渲染
             this.mouse3DManager.draw(this.scene, this.camera);
             //绘制阴影图
             feng3d.shadowRenderer.draw(this.gl, this.scene, this.camera);
-            init(this.gl, this.scene);
             feng3d.skyboxRenderer.draw(this.gl, this.scene, this.camera);
             // 默认渲染
-            var forwardresult = feng3d.forwardRenderer.draw(this.gl, this.scene, this.camera);
+            feng3d.forwardRenderer.draw(this.gl, this.scene, this.camera);
             feng3d.outlineRenderer.draw(this.gl, this.scene, this.camera);
             feng3d.wireframeRenderer.draw(this.gl, this.scene, this.camera);
         };
@@ -16506,7 +16490,7 @@ var feng3d;
             /**
              * 是否投射阴影
              */
-            _this.castShadows = false;
+            _this.castShadows = true;
             /**
              * 是否接受阴影
              */

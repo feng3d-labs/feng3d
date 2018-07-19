@@ -45,12 +45,10 @@ namespace feng3d
             var meshRenderers = scene3d.getPickByDirectionalLight(light);
             // 筛选投射阴影的渲染对象
             var castShadowsMeshRenderers = meshRenderers.filter(i => i.castShadows);
-            if (castShadowsMeshRenderers.length == 0)
-                return;
-
-            light.frameBufferObject.active(gl);
 
             light.updateShadowByCamera(scene3d, camera, meshRenderers);
+
+            light.frameBufferObject.active(gl);
 
             var shadowCamera = light.shadow.camera;
 

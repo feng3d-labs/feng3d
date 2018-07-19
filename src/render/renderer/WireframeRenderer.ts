@@ -19,10 +19,7 @@ namespace feng3d
                 this.renderAtomic = new RenderAtomic();
                 var renderParams = this.renderAtomic.renderParams;
                 renderParams.renderMode = RenderMode.LINES;
-                renderParams.enableBlend = false;
-                renderParams.depthMask = false;
-                renderParams.depthtest = true;
-                renderParams.depthFunc = DepthFunc.LEQUAL;
+                // renderParams.depthMask = false;
 
                 this.shader = new Shader("wireframe");
                 this.skeleton_shader = new Shader("wireframe_skeleton");
@@ -36,17 +33,15 @@ namespace feng3d
         {
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
 
-            if (unblenditems.length == 0)
+            var wireframes = unblenditems.filter(i => i.getComponent(WireframeComponent));
+
+            if (wireframes.length == 0)
                 return;
 
-            for (var i = 0; i < unblenditems.length; i++)
+            wireframes.forEach(element =>
             {
-                var item = unblenditems[i];
-                if (item.getComponent(WireframeComponent))
-                {
-                    this.drawGameObject(gl, item.gameObject);            //
-                }
-            }
+                this.drawGameObject(gl, element.gameObject);            //
+            });
         }
 
         /**

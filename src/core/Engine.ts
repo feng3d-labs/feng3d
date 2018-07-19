@@ -158,18 +158,18 @@ namespace feng3d
             this.camera.viewRect = viewRect;
             this.camera.lens.aspect = viewRect.width / viewRect.height;
 
+            init(this.gl, this.scene);
+
             //鼠标拾取渲染
             this.mouse3DManager.draw(this.scene, this.camera);
 
             //绘制阴影图
             shadowRenderer.draw(this.gl, this.scene, this.camera);
 
-            init(this.gl, this.scene);
-
             skyboxRenderer.draw(this.gl, this.scene, this.camera);
 
             // 默认渲染
-            var forwardresult = forwardRenderer.draw(this.gl, this.scene, this.camera);
+            forwardRenderer.draw(this.gl, this.scene, this.camera);
 
             outlineRenderer.draw(this.gl, this.scene, this.camera);
 

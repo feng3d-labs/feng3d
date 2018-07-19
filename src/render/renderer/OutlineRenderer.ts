@@ -18,12 +18,8 @@ namespace feng3d
             {
                 this.renderAtomic = new RenderAtomic();
                 var renderParams = this.renderAtomic.renderParams;
-                renderParams.renderMode = RenderMode.TRIANGLES;
                 renderParams.enableBlend = false;
-                renderParams.depthMask = true;
-                renderParams.depthtest = true;
                 renderParams.cullFace = CullFace.FRONT;
-                renderParams.frontFace = FrontFace.CW;
 
                 this.renderAtomic.shader = new Shader("outline");
             }

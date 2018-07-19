@@ -59,6 +59,10 @@ namespace feng3d
                     debuger && alert('Frame buffer object is incomplete: ' + e.toString());
                     return null;
                 }
+
+                gl.bindTexture(gl.TEXTURE_2D, null);
+                gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+                
                 obj = { framebuffer: framebuffer, texture: texture, depthBuffer: depthBuffer };
                 this._map.set(gl, obj);
             } else
@@ -69,7 +73,7 @@ namespace feng3d
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            return framebuffer;
+            return obj;
         }
 
         deactive(gl: GL)

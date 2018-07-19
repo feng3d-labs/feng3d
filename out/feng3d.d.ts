@@ -8059,7 +8059,11 @@ declare namespace feng3d {
         texture: RenderTargetTexture2D;
         depthBuffer: RenderBuffer;
         constructor(width?: number, height?: number);
-        active(gl: GL): WebGLFramebuffer;
+        active(gl: GL): {
+            framebuffer: WebGLFramebuffer;
+            texture: WebGLTexture;
+            depthBuffer: WebGLRenderbuffer;
+        };
         deactive(gl: GL): void;
         /**
          * 是否失效
@@ -8664,8 +8668,6 @@ declare namespace feng3d {
      */
     class SkyboxRenderer {
         private renderAtomic;
-        private renderParams;
-        private shader;
         init(): void;
         /**
          * 绘制场景中天空盒
