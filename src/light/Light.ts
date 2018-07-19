@@ -32,9 +32,8 @@ namespace feng3d
          */
         @oav()
         @serialize
-        castShadows = false;
+        castShadows = true;
 
-        @oav() 
         shadowBias = -0.005;
 
         shadowRadius = 1;

@@ -16492,11 +16492,11 @@ var feng3d;
             /**
              * 是否投射阴影
              */
-            _this.castShadows = false;
+            _this.castShadows = true;
             /**
              * 是否接受阴影
              */
-            _this.receiveShadows = false;
+            _this.receiveShadows = true;
             _this.lightPicker = new feng3d.LightPicker(_this);
             return _this;
         }
@@ -20830,7 +20830,7 @@ var feng3d;
             /**
              * 是否生成阴影
              */
-            _this.castShadows = false;
+            _this.castShadows = true;
             _this.shadowBias = -0.005;
             _this.shadowRadius = 1;
             /**
@@ -20874,9 +20874,6 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], Light.prototype, "castShadows", void 0);
-        __decorate([
-            feng3d.oav()
-        ], Light.prototype, "shadowBias", void 0);
         return Light;
     }(feng3d.Behaviour));
     feng3d.Light = Light;
@@ -21014,6 +21011,7 @@ var feng3d;
             this._meshRenderer = meshRenderer;
         }
         LightPicker.prototype.preRender = function (renderAtomic) {
+            var _this = this;
             var pointLights = [];
             var directionalLights = [];
             var scene3d = this._meshRenderer.gameObject.scene;
@@ -21033,7 +21031,7 @@ var feng3d;
             directionalLights.forEach(function (element) {
                 if (!element.isVisibleAndEnabled)
                     return;
-                if (element.castShadows) {
+                if (element.castShadows && _this._meshRenderer.receiveShadows) {
                     castShadowDirectionalLights.push(element);
                     directionalShadowMatrix.push(element.shadow.camera.viewProjection);
                     directionalShadowMaps.push(element.shadowMap);

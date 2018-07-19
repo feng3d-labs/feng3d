@@ -35,7 +35,7 @@ namespace feng3d
             directionalLights.forEach(element =>
             {
                 if (!element.isVisibleAndEnabled) return;
-                if (element.castShadows)
+                if (element.castShadows && this._meshRenderer.receiveShadows)
                 {
                     castShadowDirectionalLights.push(element);
                     directionalShadowMatrix.push(element.shadow.camera.viewProjection);
