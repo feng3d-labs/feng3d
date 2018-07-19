@@ -28,6 +28,7 @@ uniform vec4 u_sceneAmbientColor;
 uniform vec4 u_ambient;
 uniform sampler2D s_ambient;
 
+#include<packing>
 #include<terrain.fragment>
 
 #include<lightShading.fragment>

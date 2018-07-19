@@ -22,6 +22,7 @@ varying vec3 v_bitangent;
 uniform float u_PointSize;
 
 #include<skeleton.vertex>
+#include<lights_declare.vertex>
 
 void main(void) {
 
@@ -46,4 +47,6 @@ void main(void) {
     v_bitangent = cross(v_normal,v_tangent);
     
     gl_PointSize = u_PointSize;
+
+    #include<lights.vertex>
 }
