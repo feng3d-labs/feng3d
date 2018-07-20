@@ -198,6 +198,7 @@
         //
         "src/light/pickers/LightPicker.ts",
         //
+        "src/light/shadow/ShadowType.ts",
         "src/light/shadow/LightShadow.ts",
         "src/light/shadow/DirectionalLightShadow.ts",
         //镜头控制

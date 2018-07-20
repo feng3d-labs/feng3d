@@ -64,6 +64,10 @@ namespace feng3d
         @serialize
         receiveShadows = true;
 
+        // shadowyType = 
+        
+        // SHADOWMAP_TYPE
+        
         lightPicker: LightPicker;
 
         constructor()

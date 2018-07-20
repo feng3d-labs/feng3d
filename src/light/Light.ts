@@ -28,11 +28,11 @@ namespace feng3d
         intensity = 1;
 
         /**
-         * 是否生成阴影
+         * 阴影类型
          */
         @oav()
         @serialize
-        castShadows = true;
+        shadowType = ShadowType.No_Shadows;
 
         shadowBias = -0.005;
 

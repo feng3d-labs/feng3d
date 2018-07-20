@@ -30,7 +30,7 @@ namespace feng3d
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
-            var lights = scene3d.collectComponents.directionalLights.list.filter((i) => i.castShadows);
+            var lights = scene3d.collectComponents.directionalLights.list.filter((i) => i.shadowType != ShadowType.No_Shadows);
             for (var i = 0; i < lights.length; i++)
             {
                 this.drawForLight(gl, lights[i], scene3d, camera);

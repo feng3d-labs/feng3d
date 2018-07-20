@@ -10805,9 +10805,9 @@ declare namespace feng3d {
          */
         intensity: number;
         /**
-         * 是否生成阴影
+         * 阴影类型
          */
-        castShadows: boolean;
+        shadowType: ShadowType;
         shadowBias: number;
         shadowRadius: number;
         /**
@@ -10873,6 +10873,29 @@ declare namespace feng3d {
         private _meshRenderer;
         constructor(meshRenderer: MeshRenderer);
         preRender(renderAtomic: RenderAtomic): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 阴影类型
+     */
+    enum ShadowType {
+        /**
+         * 没有阴影
+         */
+        No_Shadows = 0,
+        /**
+         * 硬阴影
+         */
+        Hard_Shadows = 1,
+        /**
+         * PCF 阴影
+         */
+        PCF_Shadows = 2,
+        /**
+         * PCF 软阴影
+         */
+        PCF_Soft_Shadows = 3,
     }
 }
 declare namespace feng3d {

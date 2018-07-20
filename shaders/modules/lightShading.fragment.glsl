@@ -1,20 +1,19 @@
-#ifdef NUM_POINTLIGHT
-    #if NUM_POINTLIGHT > 0
-        // 点光源
-        struct PointLight
-        {
-            // 位置
-            vec3 position;
-            // 颜色
-            vec3 color;
-            // 强度
-            float intensity;
-            // 范围
-            float range;
-        };
-        // 点光源列表
-        uniform PointLight u_pointLights[NUM_POINTLIGHT];
-    #endif
+
+#if NUM_POINTLIGHT > 0
+    // 点光源
+    struct PointLight
+    {
+        // 位置
+        vec3 position;
+        // 颜色
+        vec3 color;
+        // 强度
+        float intensity;
+        // 范围
+        float range;
+    };
+    // 点光源列表
+    uniform PointLight u_pointLights[NUM_POINTLIGHT];
 #endif
 
 #if NUM_DIRECTIONALLIGHT > 0
@@ -42,10 +41,12 @@
         vec3 color;
         // 强度
         float intensity;
+        // 阴影类型
+        int shadowType;
 
         float shadowBias;
-		float shadowRadius;
-		vec2 shadowMapSize;
+        float shadowRadius;
+        vec2 shadowMapSize;
     };
     // 投影的方向光源列表
     uniform CastShadowDirectionalLight u_castShadowDirectionalLights[NUM_DIRECTIONALLIGHT_CASTSHADOW];
@@ -122,8 +123,8 @@ float texture2DShadowLerp( sampler2D depths, vec2 size, vec2 uv, float compare )
 }
 
 // 计算阴影值 @see https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/shadowmap_pars_fragment.glsl
-float getShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord ) {
-
+float getShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord ) 
+{
     float shadow = 1.0;
 
     shadowCoord.z += shadowBias;
@@ -140,52 +141,54 @@ float getShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias, floa
 
     if ( frustumTest ) {
 
-    #if defined( SHADOWMAP_TYPE_PCF )
+        if (shadowType == 2)
+        {
+            // PCF
+            vec2 texelSize = vec2( 1.0 ) / shadowMapSize;
 
-        vec2 texelSize = vec2( 1.0 ) / shadowMapSize;
+            float dx0 = - texelSize.x * shadowRadius;
+            float dy0 = - texelSize.y * shadowRadius;
+            float dx1 = + texelSize.x * shadowRadius;
+            float dy1 = + texelSize.y * shadowRadius;
 
-        float dx0 = - texelSize.x * shadowRadius;
-        float dy0 = - texelSize.y * shadowRadius;
-        float dx1 = + texelSize.x * shadowRadius;
-        float dy1 = + texelSize.y * shadowRadius;
+            shadow = (
+                texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +
+                texture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +
+                texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +
+                texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +
+                texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z ) +
+                texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +
+                texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +
+                texture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +
+                texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )
+            ) * ( 1.0 / 9.0 );
+        }
+        else if(shadowType == 3)
+        {
+            // PCF soft
+            vec2 texelSize = vec2( 1.0 ) / shadowMapSize;
 
-        shadow = (
-            texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +
-            texture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +
-            texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +
-            texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +
-            texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z ) +
-            texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +
-            texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +
-            texture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +
-            texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )
-        ) * ( 1.0 / 9.0 );
+            float dx0 = - texelSize.x * shadowRadius;
+            float dy0 = - texelSize.y * shadowRadius;
+            float dx1 = + texelSize.x * shadowRadius;
+            float dy1 = + texelSize.y * shadowRadius;
 
-    #elif defined( SHADOWMAP_TYPE_PCF_SOFT )
-
-        vec2 texelSize = vec2( 1.0 ) / shadowMapSize;
-
-        float dx0 = - texelSize.x * shadowRadius;
-        float dy0 = - texelSize.y * shadowRadius;
-        float dx1 = + texelSize.x * shadowRadius;
-        float dy1 = + texelSize.y * shadowRadius;
-
-        shadow = (
-            texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +
-            texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +
-            texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +
-            texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +
-            texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy, shadowCoord.z ) +
-            texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +
-            texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +
-            texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +
-            texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )
-        ) * ( 1.0 / 9.0 );
-
-    #else // no percentage-closer filtering:
-        shadow = texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z );
-    #endif
-
+            shadow = (
+                texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +
+                texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +
+                texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +
+                texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +
+                texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy, shadowCoord.z ) +
+                texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +
+                texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +
+                texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +
+                texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )
+            ) * ( 1.0 / 9.0 );
+        }
+        else
+        {
+            shadow = texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z );
+        }
     }
 
     return shadow;
@@ -251,7 +254,7 @@ vec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientC
             //灯光强度
             float lightIntensity = castShadowDirectionalLight.intensity;
             // 计算阴影
-            float shadow = getShadow( u_directionalShadowMaps[i], castShadowDirectionalLight.shadowMapSize, castShadowDirectionalLight.shadowBias, castShadowDirectionalLight.shadowRadius, v_directionalShadowCoord[ i ] );
+            float shadow = getShadow( u_directionalShadowMaps[i], castShadowDirectionalLight.shadowType, castShadowDirectionalLight.shadowMapSize, castShadowDirectionalLight.shadowBias, castShadowDirectionalLight.shadowRadius, v_directionalShadowCoord[ i ] );
             //
             totalDiffuseLightColor = totalDiffuseLightColor +  calculateLightDiffuse(normal,lightDir) * lightColor * lightIntensity * shadow;
             totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,viewDir,glossiness) * lightColor * lightIntensity * shadow;
