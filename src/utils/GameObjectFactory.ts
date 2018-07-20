@@ -22,7 +22,7 @@ namespace feng3d
         {
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(MeshRenderer);
-            model.geometry = new PlaneGeometry();
+            model.geometry = new PlaneGeometry({ width: 10, height: 10 });
             model.material = materialFactory.create("standard");
             return gameobject;
         }

@@ -30,7 +30,7 @@ namespace feng3d
         /**
          * 阴影类型
          */
-        @oav()
+        @oav({ component: "OAVEnum", componentParam: { enumClass: ShadowType } })
         @serialize
         shadowType = ShadowType.No_Shadows;
 

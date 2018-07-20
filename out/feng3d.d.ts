@@ -10768,6 +10768,56 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 阴影类型
+     */
+    enum ShadowType {
+        /**
+         * 没有阴影
+         */
+        No_Shadows = 0,
+        /**
+         * 硬阴影
+         */
+        Hard_Shadows = 1,
+        /**
+         * PCF 阴影
+         */
+        PCF_Shadows = 2,
+        /**
+         * PCF 软阴影
+         */
+        PCF_Soft_Shadows = 3,
+    }
+}
+declare namespace feng3d {
+    /**
+     * 灯光阴影
+     *
+     * #### 参考
+     * 1. https://github.com/mrdoob/three.js/blob/dev/src/lights/LightShadow.js
+     */
+    class LightShadow {
+        /**
+         * 投影摄像机
+         */
+        camera: Camera;
+        bias: number;
+        radius: number;
+        /**
+         * 阴影图尺寸
+         */
+        mapSize: Vector2;
+        map: any;
+        matrix: Matrix4x4;
+        constructor();
+    }
+}
+declare namespace feng3d {
+    class DirectionalLightShadow extends LightShadow {
+    }
+}
+declare namespace feng3d {
+    /**
      * 灯光类型
      * @author feng 2016-12-12
      */
@@ -10873,56 +10923,6 @@ declare namespace feng3d {
         private _meshRenderer;
         constructor(meshRenderer: MeshRenderer);
         preRender(renderAtomic: RenderAtomic): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 阴影类型
-     */
-    enum ShadowType {
-        /**
-         * 没有阴影
-         */
-        No_Shadows = 0,
-        /**
-         * 硬阴影
-         */
-        Hard_Shadows = 1,
-        /**
-         * PCF 阴影
-         */
-        PCF_Shadows = 2,
-        /**
-         * PCF 软阴影
-         */
-        PCF_Soft_Shadows = 3,
-    }
-}
-declare namespace feng3d {
-    /**
-     * 灯光阴影
-     *
-     * #### 参考
-     * 1. https://github.com/mrdoob/three.js/blob/dev/src/lights/LightShadow.js
-     */
-    class LightShadow {
-        /**
-         * 投影摄像机
-         */
-        camera: Camera;
-        bias: number;
-        radius: number;
-        /**
-         * 阴影图尺寸
-         */
-        mapSize: Vector2;
-        map: any;
-        matrix: Matrix4x4;
-        constructor();
-    }
-}
-declare namespace feng3d {
-    class DirectionalLightShadow extends LightShadow {
     }
 }
 declare namespace feng3d {

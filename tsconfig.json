@@ -191,16 +191,16 @@
         "src/materials/TextureMaterial.ts",
         "src/materials/StandardMaterial.ts",
         //灯光
+        "src/light/shadow/ShadowType.ts",
+        "src/light/shadow/LightShadow.ts",
+        "src/light/shadow/DirectionalLightShadow.ts",
+        //
         "src/light/LightType.ts",
         "src/light/Light.ts",
         "src/light/DirectionalLight.ts",
         "src/light/PointLight.ts",
         //
         "src/light/pickers/LightPicker.ts",
-        //
-        "src/light/shadow/ShadowType.ts",
-        "src/light/shadow/LightShadow.ts",
-        "src/light/shadow/DirectionalLightShadow.ts",
         //镜头控制
         "src/controllers/ControllerBase.ts",
         "src/controllers/LookAtController.ts",

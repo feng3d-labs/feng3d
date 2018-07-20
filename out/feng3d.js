@@ -20790,6 +20790,66 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 阴影类型
+     */
+    var ShadowType;
+    (function (ShadowType) {
+        /**
+         * 没有阴影
+         */
+        ShadowType[ShadowType["No_Shadows"] = 0] = "No_Shadows";
+        /**
+         * 硬阴影
+         */
+        ShadowType[ShadowType["Hard_Shadows"] = 1] = "Hard_Shadows";
+        /**
+         * PCF 阴影
+         */
+        ShadowType[ShadowType["PCF_Shadows"] = 2] = "PCF_Shadows";
+        /**
+         * PCF 软阴影
+         */
+        ShadowType[ShadowType["PCF_Soft_Shadows"] = 3] = "PCF_Soft_Shadows";
+    })(ShadowType = feng3d.ShadowType || (feng3d.ShadowType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 灯光阴影
+     *
+     * #### 参考
+     * 1. https://github.com/mrdoob/three.js/blob/dev/src/lights/LightShadow.js
+     */
+    var LightShadow = /** @class */ (function () {
+        function LightShadow() {
+            this.bias = 0;
+            this.radius = 1;
+            /**
+             * 阴影图尺寸
+             */
+            this.mapSize = new feng3d.Vector2(512, 512);
+            this.map = null;
+            this.matrix = new feng3d.Matrix4x4();
+            this.camera = feng3d.GameObject.create("LightShadowCamera").addComponent(feng3d.Camera);
+        }
+        return LightShadow;
+    }());
+    feng3d.LightShadow = LightShadow;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var DirectionalLightShadow = /** @class */ (function (_super) {
+        __extends(DirectionalLightShadow, _super);
+        function DirectionalLightShadow() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return DirectionalLightShadow;
+    }(feng3d.LightShadow));
+    feng3d.DirectionalLightShadow = DirectionalLightShadow;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 灯光类型
      * @author feng 2016-12-12
      */
@@ -20871,7 +20931,7 @@ var feng3d;
             feng3d.serialize
         ], Light.prototype, "intensity", void 0);
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.ShadowType } }),
             feng3d.serialize
         ], Light.prototype, "shadowType", void 0);
         return Light;
@@ -21058,66 +21118,6 @@ var feng3d;
         return LightPicker;
     }());
     feng3d.LightPicker = LightPicker;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 阴影类型
-     */
-    var ShadowType;
-    (function (ShadowType) {
-        /**
-         * 没有阴影
-         */
-        ShadowType[ShadowType["No_Shadows"] = 0] = "No_Shadows";
-        /**
-         * 硬阴影
-         */
-        ShadowType[ShadowType["Hard_Shadows"] = 1] = "Hard_Shadows";
-        /**
-         * PCF 阴影
-         */
-        ShadowType[ShadowType["PCF_Shadows"] = 2] = "PCF_Shadows";
-        /**
-         * PCF 软阴影
-         */
-        ShadowType[ShadowType["PCF_Soft_Shadows"] = 3] = "PCF_Soft_Shadows";
-    })(ShadowType = feng3d.ShadowType || (feng3d.ShadowType = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 灯光阴影
-     *
-     * #### 参考
-     * 1. https://github.com/mrdoob/three.js/blob/dev/src/lights/LightShadow.js
-     */
-    var LightShadow = /** @class */ (function () {
-        function LightShadow() {
-            this.bias = 0;
-            this.radius = 1;
-            /**
-             * 阴影图尺寸
-             */
-            this.mapSize = new feng3d.Vector2(512, 512);
-            this.map = null;
-            this.matrix = new feng3d.Matrix4x4();
-            this.camera = feng3d.GameObject.create("LightShadowCamera").addComponent(feng3d.Camera);
-        }
-        return LightShadow;
-    }());
-    feng3d.LightShadow = LightShadow;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var DirectionalLightShadow = /** @class */ (function (_super) {
-        __extends(DirectionalLightShadow, _super);
-        function DirectionalLightShadow() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return DirectionalLightShadow;
-    }(feng3d.LightShadow));
-    feng3d.DirectionalLightShadow = DirectionalLightShadow;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -26750,7 +26750,7 @@ var feng3d;
             if (name === void 0) { name = "plane"; }
             var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.MeshRenderer);
-            model.geometry = new feng3d.PlaneGeometry();
+            model.geometry = new feng3d.PlaneGeometry({ width: 10, height: 10 });
             model.material = feng3d.materialFactory.create("standard");
             return gameobject;
         };
