@@ -1,5 +1,164 @@
 namespace feng3d
 {
+    /**
+     * 鼠标事件管理
+     * @author feng 2014-4-29
+     */
+    export class Mouse3DManager
+    {
+        @watch("mouseInputChanged")
+        mouseInput: MouseInput;
+
+        get selectedGameObject()
+        {
+            return this._selectedGameObject;
+        }
+        set selectedGameObject(v)
+        {
+            this.setSelectedGameObject(v);
+        }
+        private _selectedGameObject: GameObject;
+        private mouseEventTypes: string[] = [];
+
+        /**
+         * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
+         */
+        private preMouseDownGameObject: GameObject | null;
+        /**
+         * 统计处理click次数，判断是否达到dblclick
+         */
+        private gameObjectClickNum: number;
+
+        /**
+         * 视窗，鼠标在该矩形内时为有效事件
+         */
+        viewport: Lazy<Rectangle>
+
+        constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)
+        {
+            //
+            this.mouseInput = mouseInput;
+            this.viewport = viewport;
+        }
+
+        pick(scene3d: Scene3D, camera: Camera)
+        {
+            var mouseRay3D = camera.getMouseRay3D();
+            //计算得到鼠标射线相交的物体
+            var mouseCollisionEntitys = scene3d.mouseCheckObjects;
+
+            var pickingCollisionVO: PickingCollisionVO | null = null;
+            for (var i = 0; i < mouseCollisionEntitys.length; i++)
+            {
+                var entitys = mouseCollisionEntitys[i].objects;
+                pickingCollisionVO = raycaster.pick(mouseRay3D, entitys);
+                if (pickingCollisionVO)
+                    break;
+            }
+
+            var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
+            return gameobject;
+        }
+
+        private mouseInputChanged(property, oldValue: MouseInput, newValue: MouseInput)
+        {
+            if (oldValue)
+            {
+                mouseEventTypes.forEach(element =>
+                {
+                    oldValue.off(element, this.onMouseEvent, this);
+                });
+            }
+            if (newValue)
+            {
+                mouseEventTypes.forEach(element =>
+                {
+                    newValue.on(element, this.onMouseEvent, this);
+                });
+            }
+        }
+
+        private dispatch(type)
+        {
+            if (this.viewport)
+            {
+                var bound = lazy.getvalue(this.viewport);
+                if (!bound.contains(windowEventProxy.clientX, windowEventProxy.clientY))
+                    return;
+            }
+
+            if (this.mouseEventTypes.indexOf(type) == -1)
+                this.mouseEventTypes.push(type);
+        }
+
+        /**
+         * 监听鼠标事件收集事件类型
+         */
+        private onMouseEvent(event: Event<any>)
+        {
+            this.dispatch(event.type);
+        }
+
+        /**
+         * 设置选中对象
+         */
+        private setSelectedGameObject(value: GameObject)
+        {
+            if (this._selectedGameObject != value)
+            {
+                if (this._selectedGameObject)
+                    this._selectedGameObject.dispatch("mouseout", null, true);
+                if (value)
+                    value.dispatch("mouseover", null, true);
+            }
+            this._selectedGameObject = value;
+            if (this._selectedGameObject)
+            {
+                this.mouseEventTypes.forEach(element =>
+                {
+                    switch (element)
+                    {
+                        case "mousedown":
+                            if (this.preMouseDownGameObject != this._selectedGameObject)
+                            {
+                                this.gameObjectClickNum = 0;
+                                this.preMouseDownGameObject = this._selectedGameObject;
+                            }
+                            this._selectedGameObject.dispatch(element, null, true);
+                            break;
+                        case "mouseup":
+                            if (this._selectedGameObject == this.preMouseDownGameObject)
+                            {
+                                this.gameObjectClickNum++;
+                            } else
+                            {
+                                this.gameObjectClickNum = 0;
+                                this.preMouseDownGameObject = null;
+                            }
+                            this._selectedGameObject.dispatch(element, null, true);
+                            break;
+                        case "mousemove":
+                            this._selectedGameObject.dispatch(element, null, true);
+                            break;
+                        case "click":
+                            if (this.gameObjectClickNum > 0)
+                                this._selectedGameObject.dispatch(element, null, true);
+                            break;
+                        case "dblclick":
+                            if (this.gameObjectClickNum > 1)
+                                this._selectedGameObject.dispatch(element, null, true);
+                            break;
+                    }
+                });
+            } else
+            {
+                this.gameObjectClickNum = 0;
+                this.preMouseDownGameObject = null;
+            }
+            this.mouseEventTypes.length = 0;
+        }
+    }
+
     export interface MouseInput
     {
         once<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => void, thisObject?: any, priority?: number): void;
@@ -89,179 +248,6 @@ namespace feng3d
             }
 
             this.dispatch(<any>type, { mouseX: event.clientX, mouseY: event.clientY });
-        }
-    }
-
-    /**
-     * 鼠标事件管理
-     * @author feng 2014-4-29
-     */
-    export class Mouse3DManager
-    {
-        @watch("mouseInputChanged")
-        mouseInput: MouseInput;
-
-        get selectedGameObject()
-        {
-            return this._selectedGameObject;
-        }
-        private _selectedGameObject: GameObject;
-        private mouseEventTypes: string[] = [];
-
-        /**
-         * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
-         */
-        private preMouseDownGameObject: GameObject | null;
-        /**
-         * 统计处理click次数，判断是否达到dblclick
-         */
-        private gameObjectClickNum: number;
-
-        /**
-         * 视窗，鼠标在该矩形内时为有效事件
-         */
-        viewport: Lazy<Rectangle>
-
-        constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)
-        {
-            //
-            this.mouseInput = mouseInput;
-            this.viewport = viewport;
-        }
-
-        private mouseInputChanged(property, oldValue: MouseInput, newValue: MouseInput)
-        {
-            if (oldValue)
-            {
-                mouseEventTypes.forEach(element =>
-                {
-                    oldValue.off(element, this.onMouseEvent, this);
-                });
-            }
-            if (newValue)
-            {
-                mouseEventTypes.forEach(element =>
-                {
-                    newValue.on(element, this.onMouseEvent, this);
-                });
-            }
-        }
-
-        /**
-         * 渲染
-         */
-        draw(scene3d: Scene3D, camera: Camera)
-        {
-            if (this.mouseEventTypes.length == 0)
-                return;
-            var mouseCollisionEntitys = scene3d.mouseCheckObjects;
-            if (mouseCollisionEntitys.length == 0)
-                return;
-
-            this.pick(scene3d, camera);
-        }
-
-        dispatch(type)
-        {
-            if (this.viewport)
-            {
-                var bound = lazy.getvalue(this.viewport);
-                if (!bound.contains(windowEventProxy.clientX, windowEventProxy.clientY))
-                    return;
-            }
-
-            if (this.mouseEventTypes.indexOf(type) == -1)
-                this.mouseEventTypes.push(type);
-        }
-
-        /**
-         * 监听鼠标事件收集事件类型
-         */
-        private onMouseEvent(event: Event<any>)
-        {
-            this.dispatch(event.type);
-        }
-
-        private pick(scene3d: Scene3D, camera: Camera)
-        {
-            var mouseRay3D = camera.getMouseRay3D();
-            //计算得到鼠标射线相交的物体
-            var mouseCollisionEntitys = scene3d.mouseCheckObjects;
-
-            var pickingCollisionVO: PickingCollisionVO | null = null;
-            for (var i = 0; i < mouseCollisionEntitys.length; i++)
-            {
-                var entitys = mouseCollisionEntitys[i].objects;
-                pickingCollisionVO = raycaster.pick(mouseRay3D, entitys);
-                if (pickingCollisionVO)
-                    break;
-            }
-
-            var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
-
-            if (gameobject)
-                this.setSelectedGameObject(gameobject);
-            else
-                this.setSelectedGameObject(scene3d.gameObject);
-        }
-
-        /**
-         * 设置选中对象
-         */
-        private setSelectedGameObject(value: GameObject)
-        {
-            if (this._selectedGameObject != value)
-            {
-                if (this._selectedGameObject)
-                    this._selectedGameObject.dispatch("mouseout", null, true);
-                if (value)
-                    value.dispatch("mouseover", null, true);
-            }
-            this._selectedGameObject = value;
-            if (this._selectedGameObject)
-            {
-                this.mouseEventTypes.forEach(element =>
-                {
-                    switch (element)
-                    {
-                        case "mousedown":
-                            if (this.preMouseDownGameObject != this._selectedGameObject)
-                            {
-                                this.gameObjectClickNum = 0;
-                                this.preMouseDownGameObject = this._selectedGameObject;
-                            }
-                            this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "mouseup":
-                            if (this._selectedGameObject == this.preMouseDownGameObject)
-                            {
-                                this.gameObjectClickNum++;
-                            } else
-                            {
-                                this.gameObjectClickNum = 0;
-                                this.preMouseDownGameObject = null;
-                            }
-                            this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "mousemove":
-                            this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "click":
-                            if (this.gameObjectClickNum > 0)
-                                this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "dblclick":
-                            if (this.gameObjectClickNum > 1)
-                                this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                    }
-                });
-            } else
-            {
-                this.gameObjectClickNum = 0;
-                this.preMouseDownGameObject = null;
-            }
-            this.mouseEventTypes.length = 0;
         }
     }
 

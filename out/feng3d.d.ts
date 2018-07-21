@@ -9191,6 +9191,7 @@ declare namespace feng3d {
          * 鼠标事件管理
          */
         mouse3DManager: Mouse3DManager;
+        protected selectedObject: GameObject;
         /**
          * 鼠标在3D视图中的位置
          */
@@ -9369,10 +9370,6 @@ declare namespace feng3d {
      */
     class Scene3D extends Component {
         /**
-         * 是否编辑器模式
-         */
-        iseditor: boolean;
-        /**W
          * 背景颜色
          */
         background: Color4;
@@ -12524,6 +12521,40 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 鼠标事件管理
+     * @author feng 2014-4-29
+     */
+    class Mouse3DManager {
+        mouseInput: MouseInput;
+        selectedGameObject: GameObject;
+        private _selectedGameObject;
+        private mouseEventTypes;
+        /**
+         * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
+         */
+        private preMouseDownGameObject;
+        /**
+         * 统计处理click次数，判断是否达到dblclick
+         */
+        private gameObjectClickNum;
+        /**
+         * 视窗，鼠标在该矩形内时为有效事件
+         */
+        viewport: Lazy<Rectangle>;
+        constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
+        pick(scene3d: Scene3D, camera: Camera): GameObject;
+        private mouseInputChanged(property, oldValue, newValue);
+        private dispatch(type);
+        /**
+         * 监听鼠标事件收集事件类型
+         */
+        private onMouseEvent(event);
+        /**
+         * 设置选中对象
+         */
+        private setSelectedGameObject(value);
+    }
     interface MouseInput {
         once<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         has<K extends keyof MouseEventMap>(type: K): boolean;
@@ -12557,44 +12588,6 @@ declare namespace feng3d {
          * 监听鼠标事件收集事件类型
          */
         private onMouseEvent(event);
-    }
-    /**
-     * 鼠标事件管理
-     * @author feng 2014-4-29
-     */
-    class Mouse3DManager {
-        mouseInput: MouseInput;
-        readonly selectedGameObject: GameObject;
-        private _selectedGameObject;
-        private mouseEventTypes;
-        /**
-         * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
-         */
-        private preMouseDownGameObject;
-        /**
-         * 统计处理click次数，判断是否达到dblclick
-         */
-        private gameObjectClickNum;
-        /**
-         * 视窗，鼠标在该矩形内时为有效事件
-         */
-        viewport: Lazy<Rectangle>;
-        constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
-        private mouseInputChanged(property, oldValue, newValue);
-        /**
-         * 渲染
-         */
-        draw(scene3d: Scene3D, camera: Camera): void;
-        dispatch(type: any): void;
-        /**
-         * 监听鼠标事件收集事件类型
-         */
-        private onMouseEvent(event);
-        private pick(scene3d, camera);
-        /**
-         * 设置选中对象
-         */
-        private setSelectedGameObject(value);
     }
     interface MouseEventMap {
         /**

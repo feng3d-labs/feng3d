@@ -61,6 +61,7 @@ namespace feng3d
          * 鼠标事件管理
          */
         mouse3DManager: Mouse3DManager;
+        protected selectedObject: GameObject;
 
         /**
          * 鼠标在3D视图中的位置
@@ -139,6 +140,7 @@ namespace feng3d
         update()
         {
             this.render();
+            this.mouse3DManager.selectedGameObject = this.selectedObject;
         }
 
         /**
@@ -158,31 +160,21 @@ namespace feng3d
             this.camera.viewRect = viewRect;
             this.camera.lens.aspect = viewRect.width / viewRect.height;
 
-            init(this.gl, this.scene);
+            // 默认渲染
+            this.gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+            this.gl.enable(this.gl.DEPTH_TEST);
 
             //鼠标拾取渲染
-            this.mouse3DManager.draw(this.scene, this.camera);
-
+            this.selectedObject = this.mouse3DManager.pick(this.scene, this.camera);
             //绘制阴影图
             shadowRenderer.draw(this.gl, this.scene, this.camera);
-
             skyboxRenderer.draw(this.gl, this.scene, this.camera);
-
             // 默认渲染
             forwardRenderer.draw(this.gl, this.scene, this.camera);
-
             outlineRenderer.draw(this.gl, this.scene, this.camera);
-
             wireframeRenderer.draw(this.gl, this.scene, this.camera);
         }
-    }
-
-    function init(gl: GL, scene3D: Scene3D)
-    {
-        // 默认渲染
-        gl.clearColor(scene3D.background.r, scene3D.background.g, scene3D.background.b, scene3D.background.a);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.DEPTH_TEST);
     }
 }
 

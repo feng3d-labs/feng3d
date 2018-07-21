@@ -18,10 +18,6 @@ namespace feng3d
     export class Scene3D extends Component
     {
         /**
-         * 是否编辑器模式
-         */
-        iseditor = false;
-        /**W
          * 背景颜色
          */
         @serialize
