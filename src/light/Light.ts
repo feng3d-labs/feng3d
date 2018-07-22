@@ -34,9 +34,20 @@ namespace feng3d
         @serialize
         shadowType = ShadowType.No_Shadows;
 
+        /**
+         * 阴影偏差，用来解决判断是否为阴影时精度问题
+         */
         shadowBias = -0.005;
 
+        /**
+         * 阴影半径，边缘宽度
+         */
         shadowRadius = 1;
+
+        /**
+         * 阴影近平面距离
+         */
+        shadowNear = 0.2;
 
         /**
          * 阴影图尺寸

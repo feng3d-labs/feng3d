@@ -38,7 +38,7 @@ namespace feng3d
                 if (element.shadowType != ShadowType.No_Shadows && this._meshRenderer.receiveShadows)
                 {
                     castShadowDirectionalLights.push(element);
-                    directionalShadowMatrix.push(element.shadow.camera.viewProjection);
+                    directionalShadowMatrix.push(element.shadowCamera.viewProjection);
                     directionalShadowMaps.push(element.shadowMap);
                 } else
                 {

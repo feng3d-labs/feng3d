@@ -192,8 +192,6 @@
         "src/materials/StandardMaterial.ts",
         //灯光
         "src/light/shadow/ShadowType.ts",
-        "src/light/shadow/LightShadow.ts",
-        "src/light/shadow/DirectionalLightShadow.ts",
         //
         "src/light/LightType.ts",
         "src/light/Light.ts",

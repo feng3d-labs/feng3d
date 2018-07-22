@@ -50,7 +50,7 @@ namespace feng3d
 
             light.frameBufferObject.active(gl);
 
-            var shadowCamera = light.shadow.camera;
+            var shadowCamera = light.shadowCamera;
 
             //
             this.renderAtomic.renderParams.useViewRect = true;

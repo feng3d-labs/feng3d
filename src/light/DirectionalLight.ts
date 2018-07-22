@@ -7,8 +7,11 @@ namespace feng3d
      */
     export class DirectionalLight extends Light
     {
-        shadow = new DirectionalLightShadow();
-
+        /**
+         * 投影摄像机
+         */
+        shadowCamera: Camera;
+        
         @oav({ componentParam: { tooltip: "是否调试阴影图" } })
         debugShadowMap = false;
 
@@ -25,6 +28,7 @@ namespace feng3d
         constructor()
         {
             super();
+            this.shadowCamera = GameObject.create("LightShadowCamera").addComponent(Camera);
         }
 
         /**
@@ -55,11 +59,10 @@ namespace feng3d
             var center = worldBounds.getCenter();
             var radius = worldBounds.getSize().length / 2;
             // 
-            var near = 1;
-            this.shadow.camera.transform.position = center.addTo(this.direction.scaleTo(radius + near).negate());
-            this.shadow.camera.transform.lookAt(center, this.shadow.camera.transform.upVector);
+            this.shadowCamera.transform.position = center.addTo(this.direction.scaleTo(radius + this.shadowNear).negate());
+            this.shadowCamera.transform.lookAt(center, this.shadowCamera.transform.upVector);
             //
-            this.shadow.camera.lens = new OrthographicLens(-radius, radius, radius, - radius, near, near + radius * 2);
+            this.shadowCamera.lens = new OrthographicLens(-radius, radius, radius, - radius, this.shadowNear, this.shadowNear + radius * 2);
 
             this.updateDebugShadowMap(scene3d, viewCamera);
         }

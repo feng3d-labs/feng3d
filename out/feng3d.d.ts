@@ -10788,33 +10788,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 灯光阴影
-     *
-     * #### 参考
-     * 1. https://github.com/mrdoob/three.js/blob/dev/src/lights/LightShadow.js
-     */
-    class LightShadow {
-        /**
-         * 投影摄像机
-         */
-        camera: Camera;
-        bias: number;
-        radius: number;
-        /**
-         * 阴影图尺寸
-         */
-        mapSize: Vector2;
-        map: any;
-        matrix: Matrix4x4;
-        constructor();
-    }
-}
-declare namespace feng3d {
-    class DirectionalLightShadow extends LightShadow {
-    }
-}
-declare namespace feng3d {
-    /**
      * 灯光类型
      * @author feng 2016-12-12
      */
@@ -10855,8 +10828,18 @@ declare namespace feng3d {
          * 阴影类型
          */
         shadowType: ShadowType;
+        /**
+         * 阴影偏差，用来解决判断是否为阴影时精度问题
+         */
         shadowBias: number;
+        /**
+         * 阴影半径，边缘宽度
+         */
         shadowRadius: number;
+        /**
+         * 阴影近平面距离
+         */
+        shadowNear: number;
         /**
          * 阴影图尺寸
          */
@@ -10875,7 +10858,10 @@ declare namespace feng3d {
      * @author feng 2016-12-13
      */
     class DirectionalLight extends Light {
-        shadow: DirectionalLightShadow;
+        /**
+         * 投影摄像机
+         */
+        shadowCamera: Camera;
         debugShadowMap: boolean;
         private debugShadowMapObject;
         /**

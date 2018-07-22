@@ -43,9 +43,11 @@
         float intensity;
         // 阴影类型
         int shadowType;
-
+        // 阴影偏差，用来解决判断是否为阴影时精度问题
         float shadowBias;
+        // 阴影半径，边缘宽度
         float shadowRadius;
+        // 阴影图尺寸
         vec2 shadowMapSize;
     };
     // 投影的方向光源列表
