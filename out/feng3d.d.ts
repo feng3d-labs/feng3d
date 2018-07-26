@@ -7473,6 +7473,18 @@ declare namespace feng3d {
          */
         u_pointLights: PointLight[];
         /**
+         * 生成投影的点光源
+         */
+        u_castShadowPointLights: PointLight[];
+        /**
+         * 点光源投影矩阵列表
+         */
+        u_pointShadowMatrix: Matrix4x4[];
+        /**
+         * 方向光源阴影图
+         */
+        u_pointShadowMaps: Texture2D[];
+        /**
          * 方向光源数组
          */
         u_directionalLights: DirectionalLight[];
@@ -8134,6 +8146,10 @@ declare namespace feng3d {
          * 生成投影的方向光源数量
          */
         NUM_DIRECTIONALLIGHT_CASTSHADOW: number;
+        /**
+         * 生成投影的点光源数量
+         */
+        NUM_POINTLIGHT_CASTSHADOW: number;
         /**
          * 骨骼关节数量
          */
@@ -10931,6 +10947,11 @@ declare namespace feng3d {
          * 阴影图尺寸
          */
         readonly shadowMapSize: Vector2;
+        /**
+         * 投影最近距离
+         */
+        private shadowCameraNear;
+        readonly shadowCameraFar: number;
         private perspectiveLens;
         constructor();
         /**

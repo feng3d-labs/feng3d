@@ -16,6 +16,37 @@
     uniform PointLight u_pointLights[NUM_POINTLIGHT];
 #endif
 
+#if NUM_POINTLIGHT_CASTSHADOW > 0
+    // 投影的点光源
+    struct CastShadowPointLight
+    {
+        // 位置
+        vec3 position;
+        // 颜色
+        vec3 color;
+        // 强度
+        float intensity;
+        // 范围
+        float range;
+        // 阴影类型
+        int shadowType;
+        // 阴影偏差，用来解决判断是否为阴影时精度问题
+        float shadowBias;
+        // 阴影半径，边缘宽度
+        float shadowRadius;
+        // 阴影图尺寸
+        vec2 shadowMapSize;
+        float shadowCameraNear;
+        float shadowCameraFar;
+    };
+    // 投影的点光源列表
+    uniform CastShadowPointLight u_castShadowPointLights[NUM_POINTLIGHT_CASTSHADOW];
+    // 点光源阴影图
+    uniform sampler2D u_pointShadowMaps[NUM_POINTLIGHT_CASTSHADOW];
+    // 点光源投影uv列表
+    varying vec4 v_pointShadowCoord[ NUM_POINTLIGHT_CASTSHADOW ];
+#endif
+
 #if NUM_DIRECTIONALLIGHT > 0
     // 方向光源
     struct DirectionalLight

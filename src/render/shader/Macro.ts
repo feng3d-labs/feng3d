@@ -26,6 +26,11 @@ namespace feng3d
          * 生成投影的方向光源数量
          */
         NUM_DIRECTIONALLIGHT_CASTSHADOW: number;
+        
+        /**
+         * 生成投影的点光源数量
+         */
+        NUM_POINTLIGHT_CASTSHADOW: number;
 
         /**
          * 骨骼关节数量

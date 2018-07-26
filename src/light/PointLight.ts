@@ -31,12 +31,22 @@ namespace feng3d
             return this.shadowMap.getSize().multiply(new Vector2(1 / 4, 1 / 2));
         }
 
+        /**
+         * 投影最近距离
+         */
+        private shadowCameraNear = 0.1;
+
+        get shadowCameraFar()
+        {
+            return this.range;
+        }
+
         private perspectiveLens: PerspectiveLens;
 
         constructor()
         {
             super();
-            this.perspectiveLens = this.shadowCamera.lens = new PerspectiveLens(90, 1, 0.1, this.range);
+            this.perspectiveLens = this.shadowCamera.lens = new PerspectiveLens(90, 1, this.shadowCameraNear, this.shadowCameraFar);
         }
 
         /**
