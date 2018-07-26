@@ -10884,8 +10884,11 @@ declare namespace feng3d {
          * 帧缓冲对象，用于处理光照阴影贴图渲染
          */
         frameBufferObject: FrameBufferObject;
+        debugShadowMap: boolean;
+        private debugShadowMapObject;
         constructor();
         init(gameObject: GameObject): void;
+        updateDebugShadowMap(scene3d: Scene3D, viewCamera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -10894,8 +10897,6 @@ declare namespace feng3d {
      * @author feng 2016-12-13
      */
     class DirectionalLight extends Light {
-        debugShadowMap: boolean;
-        private debugShadowMapObject;
         /**
          * 光照方向
          */
@@ -10910,7 +10911,6 @@ declare namespace feng3d {
          * @param viewCamera 视窗摄像机
          */
         updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, meshRenderers: MeshRenderer[]): void;
-        private updateDebugShadowMap(scene3d, viewCamera);
     }
 }
 declare namespace feng3d {

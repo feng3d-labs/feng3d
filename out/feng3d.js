@@ -14328,10 +14328,12 @@ var feng3d;
         ShadowRenderer.prototype.draw = function (gl, scene3d, camera) {
             var pointLights = scene3d.collectComponents.pointLights.list.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
             for (var i = 0; i < pointLights.length; i++) {
+                pointLights[i].updateDebugShadowMap(scene3d, camera);
                 this.drawForPointLight(gl, pointLights[i], scene3d, camera);
             }
             var directionalLights = scene3d.collectComponents.directionalLights.list.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
             for (var i = 0; i < directionalLights.length; i++) {
+                directionalLights[i].updateDebugShadowMap(scene3d, camera);
                 this.drawForDirectionalLight(gl, directionalLights[i], scene3d, camera);
             }
         };
@@ -21025,6 +21027,7 @@ var feng3d;
              * 帧缓冲对象，用于处理光照阴影贴图渲染
              */
             _this.frameBufferObject = new feng3d.FrameBufferObject();
+            _this.debugShadowMap = false;
             _this.shadowCamera = feng3d.GameObject.create("LightShadowCamera").addComponent(feng3d.Camera);
             return _this;
         }
@@ -21048,6 +21051,37 @@ var feng3d;
         Light.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
         };
+        Light.prototype.updateDebugShadowMap = function (scene3d, viewCamera) {
+            var gameObject = this.debugShadowMapObject;
+            if (!gameObject) {
+                gameObject = this.debugShadowMapObject = feng3d.gameObjectFactory.createPlane("debugShadowMapObject");
+                gameObject.showinHierarchy = false;
+                gameObject.serializable = false;
+                gameObject.mouseEnabled = false;
+                gameObject.addComponent(feng3d.BillboardComponent);
+                //材质
+                var model = gameObject.getComponent(feng3d.MeshRenderer);
+                model.geometry = new feng3d.PlaneGeometry({ width: 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
+                var textureMaterial = model.material = feng3d.materialFactory.create("texture");
+                //
+                // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
+                // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
+                textureMaterial.uniforms.s_texture = this.frameBufferObject.texture;
+                textureMaterial.renderParams.enableBlend = true;
+                textureMaterial.renderParams.sfactor = feng3d.BlendFactor.ONE;
+                textureMaterial.renderParams.dfactor = feng3d.BlendFactor.ZERO;
+            }
+            var depth = viewCamera.lens.near * 2;
+            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleTo(depth));
+            var billboardComponent = gameObject.getComponent(feng3d.BillboardComponent);
+            billboardComponent.camera = viewCamera;
+            if (this.debugShadowMap) {
+                scene3d.gameObject.addChild(gameObject);
+            }
+            else {
+                gameObject.remove();
+            }
+        };
         __decorate([
             feng3d.serialize
         ], Light.prototype, "lightType", void 0);
@@ -21063,6 +21097,9 @@ var feng3d;
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.ShadowType } }),
             feng3d.serialize
         ], Light.prototype, "shadowType", void 0);
+        __decorate([
+            feng3d.oav({ componentParam: { tooltip: "是否调试阴影图" } })
+        ], Light.prototype, "debugShadowMap", void 0);
         return Light;
     }(feng3d.Behaviour));
     feng3d.Light = Light;
@@ -21076,9 +21113,7 @@ var feng3d;
     var DirectionalLight = /** @class */ (function (_super) {
         __extends(DirectionalLight, _super);
         function DirectionalLight() {
-            var _this = _super.call(this) || this;
-            _this.debugShadowMap = false;
-            return _this;
+            return _super.call(this) || this;
         }
         Object.defineProperty(DirectionalLight.prototype, "direction", {
             /**
@@ -21117,42 +21152,7 @@ var feng3d;
             this.shadowCamera.transform.lookAt(center, this.shadowCamera.transform.upVector);
             //
             this.shadowCamera.lens = new feng3d.OrthographicLens(-radius, radius, radius, -radius, this.shadowNear, this.shadowNear + radius * 2);
-            this.updateDebugShadowMap(scene3d, viewCamera);
         };
-        DirectionalLight.prototype.updateDebugShadowMap = function (scene3d, viewCamera) {
-            var gameObject = this.debugShadowMapObject;
-            if (!gameObject) {
-                gameObject = this.debugShadowMapObject = feng3d.gameObjectFactory.createPlane("debugShadowMapObject");
-                gameObject.showinHierarchy = false;
-                gameObject.serializable = false;
-                gameObject.mouseEnabled = false;
-                gameObject.addComponent(feng3d.BillboardComponent);
-                //材质
-                var model = gameObject.getComponent(feng3d.MeshRenderer);
-                model.geometry = new feng3d.PlaneGeometry({ width: 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-                var textureMaterial = model.material = feng3d.materialFactory.create("texture");
-                //
-                // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
-                // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
-                textureMaterial.uniforms.s_texture = this.frameBufferObject.texture;
-                textureMaterial.renderParams.enableBlend = true;
-                textureMaterial.renderParams.sfactor = feng3d.BlendFactor.ONE;
-                textureMaterial.renderParams.dfactor = feng3d.BlendFactor.ZERO;
-            }
-            var depth = viewCamera.lens.near * 2;
-            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleTo(depth));
-            var billboardComponent = gameObject.getComponent(feng3d.BillboardComponent);
-            billboardComponent.camera = viewCamera;
-            if (this.debugShadowMap) {
-                scene3d.gameObject.addChild(gameObject);
-            }
-            else {
-                gameObject.remove();
-            }
-        };
-        __decorate([
-            feng3d.oav({ componentParam: { tooltip: "是否调试阴影图" } })
-        ], DirectionalLight.prototype, "debugShadowMap", void 0);
         return DirectionalLight;
     }(feng3d.Light));
     feng3d.DirectionalLight = DirectionalLight;

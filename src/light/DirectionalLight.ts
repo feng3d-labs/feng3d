@@ -7,11 +7,6 @@ namespace feng3d
      */
     export class DirectionalLight extends Light
     {
-        @oav({ componentParam: { tooltip: "是否调试阴影图" } })
-        debugShadowMap = false;
-
-        private debugShadowMapObject: GameObject;
-
         /**
          * 光照方向
          */
@@ -57,46 +52,6 @@ namespace feng3d
             this.shadowCamera.transform.lookAt(center, this.shadowCamera.transform.upVector);
             //
             this.shadowCamera.lens = new OrthographicLens(-radius, radius, radius, - radius, this.shadowNear, this.shadowNear + radius * 2);
-
-            this.updateDebugShadowMap(scene3d, viewCamera);
-        }
-
-        private updateDebugShadowMap(scene3d: Scene3D, viewCamera: Camera)
-        {
-            var gameObject = this.debugShadowMapObject;
-            if (!gameObject)
-            {
-                gameObject = this.debugShadowMapObject = gameObjectFactory.createPlane("debugShadowMapObject");
-                gameObject.showinHierarchy = false;
-                gameObject.serializable = false;
-                gameObject.mouseEnabled = false;
-                gameObject.addComponent(BillboardComponent);
-
-                //材质
-                var model = gameObject.getComponent(MeshRenderer);
-                model.geometry = new feng3d.PlaneGeometry({ width: 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-                var textureMaterial = model.material = feng3d.materialFactory.create("texture");
-                //
-                // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
-                // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
-                textureMaterial.uniforms.s_texture = <any>this.frameBufferObject.texture;
-                textureMaterial.renderParams.enableBlend = true;
-                textureMaterial.renderParams.sfactor = BlendFactor.ONE;
-                textureMaterial.renderParams.dfactor = BlendFactor.ZERO;
-            }
-
-            var depth = viewCamera.lens.near * 2;
-            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleTo(depth));
-            var billboardComponent = gameObject.getComponent(BillboardComponent);
-            billboardComponent.camera = viewCamera;
-
-            if (this.debugShadowMap)
-            {
-                scene3d.gameObject.addChild(gameObject);
-            } else
-            {
-                gameObject.remove();
-            }
         }
     }
 }
