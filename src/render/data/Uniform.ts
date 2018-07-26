@@ -170,7 +170,7 @@ namespace feng3d
         /**
          * 点光源投影矩阵列表
          */
-        u_pointShadowMatrix: Matrix4x4[];
+        u_pointShadowMatrixs: Matrix4x4[];
 
         /**
          * 方向光源阴影图
@@ -190,7 +190,7 @@ namespace feng3d
         /**
          * 方向光源投影矩阵列表
          */
-        u_directionalShadowMatrix: Matrix4x4[];
+        u_directionalShadowMatrixs: Matrix4x4[];
         /**
          * 方向光源阴影图
          */

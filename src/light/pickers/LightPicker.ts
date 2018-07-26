@@ -26,7 +26,7 @@ namespace feng3d
             //设置点光源数据
             var castShadowPointLights: PointLight[] = [];
             var unCastShadowPointLights: PointLight[] = [];
-            var pointShadowMatrix: Matrix4x4[] = [];
+            var pointShadowMatrixs: Matrix4x4[] = [];
             var pointShadowMaps: Texture2D[] = [];
             pointLights.forEach(element =>
             {
@@ -34,7 +34,7 @@ namespace feng3d
                 if (element.shadowType != ShadowType.No_Shadows && this._meshRenderer.receiveShadows)
                 {
                     castShadowPointLights.push(element);
-                    pointShadowMatrix.push(element.shadowCamera.viewProjection);
+                    pointShadowMatrixs.push(element.shadowCamera.viewProjection);
                     pointShadowMaps.push(element.shadowMap);
                 } else
                 {
@@ -46,7 +46,7 @@ namespace feng3d
             //
             renderAtomic.uniforms.u_pointLights = unCastShadowPointLights;
             renderAtomic.uniforms.u_castShadowPointLights = castShadowPointLights;
-            renderAtomic.uniforms.u_pointShadowMatrix = pointShadowMatrix;
+            renderAtomic.uniforms.u_pointShadowMatrixs = pointShadowMatrixs;
             renderAtomic.uniforms.u_pointShadowMaps = pointShadowMaps;
 
             // 设置方向光源数据
@@ -73,7 +73,7 @@ namespace feng3d
             //
             renderAtomic.uniforms.u_directionalLights = unCastShadowDirectionalLights;
             renderAtomic.uniforms.u_castShadowDirectionalLights = castShadowDirectionalLights;
-            renderAtomic.uniforms.u_directionalShadowMatrix = directionalShadowMatrix;
+            renderAtomic.uniforms.u_directionalShadowMatrixs = directionalShadowMatrix;
             renderAtomic.uniforms.u_directionalShadowMaps = directionalShadowMaps;
         }
     }
