@@ -10931,11 +10931,13 @@ declare namespace feng3d {
          * 阴影图尺寸
          */
         readonly shadowMapSize: Vector2;
+        private perspectiveLens;
         constructor();
         /**
          * 构建
          */
         init(gameObject: GameObject): void;
+        private invalidRange();
     }
 }
 declare namespace feng3d {

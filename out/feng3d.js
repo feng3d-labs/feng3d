@@ -21061,7 +21061,7 @@ var feng3d;
                 gameObject.addComponent(feng3d.BillboardComponent);
                 //材质
                 var model = gameObject.getComponent(feng3d.MeshRenderer);
-                model.geometry = new feng3d.PlaneGeometry({ width: 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
+                model.geometry = new feng3d.PlaneGeometry({ width: this.lightType == feng3d.LightType.Directional ? 0.5 : 1, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 var textureMaterial = model.material = feng3d.materialFactory.create("texture");
                 //
                 // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
@@ -21143,7 +21143,7 @@ var feng3d;
                     return box.clone();
                 pre.union(box);
                 return pre;
-            }, null);
+            }, null) || new feng3d.Box(new feng3d.Vector3(), new feng3d.Vector3(1, 1, 1));
             // 
             var center = worldBounds.getCenter();
             var radius = worldBounds.getSize().length / 2;
@@ -21171,7 +21171,7 @@ var feng3d;
              * 光照范围
              */
             _this.range = 10;
-            _this.shadowCamera.lens = new feng3d.PerspectiveLens(90, 1, 0.5, 500);
+            _this.perspectiveLens = _this.shadowCamera.lens = new feng3d.PerspectiveLens(90, 1, 0.1, _this.range);
             return _this;
         }
         Object.defineProperty(PointLight.prototype, "position", {
@@ -21185,7 +21185,6 @@ var feng3d;
             configurable: true
         });
         Object.defineProperty(PointLight.prototype, "shadowMapSize", {
-            // shadowMatrix = new Matrix4x4();
             /**
              * 阴影图尺寸
              */
@@ -21202,9 +21201,14 @@ var feng3d;
             _super.prototype.init.call(this, gameObject);
             this.lightType = feng3d.LightType.Point;
         };
+        PointLight.prototype.invalidRange = function () {
+            if (this.perspectiveLens)
+                this.perspectiveLens.far = this.range;
+        };
         __decorate([
             feng3d.oav(),
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.watch("invalidRange")
         ], PointLight.prototype, "range", void 0);
         return PointLight;
     }(feng3d.Light));

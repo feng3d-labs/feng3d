@@ -42,7 +42,7 @@ namespace feng3d
                     return box.clone();
                 pre.union(box);
                 return pre;
-            }, null);
+            }, null) || new Box(new Vector3(), new Vector3(1, 1, 1));
 
             // 
             var center = worldBounds.getCenter();

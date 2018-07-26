@@ -11,7 +11,9 @@ namespace feng3d
          */
         @oav()
         @serialize
+        @watch("invalidRange")
         range = 10;
+
 
         /**
          * 光源位置
@@ -21,8 +23,6 @@ namespace feng3d
             return this.transform.scenePosition;
         }
 
-        // shadowMatrix = new Matrix4x4();
-
         /**
          * 阴影图尺寸
          */
@@ -31,10 +31,12 @@ namespace feng3d
             return this.shadowMap.getSize().multiply(new Vector2(1 / 4, 1 / 2));
         }
 
+        private perspectiveLens: PerspectiveLens;
+
         constructor()
         {
             super();
-            this.shadowCamera.lens = new PerspectiveLens(90, 1, 0.5, 500);
+            this.perspectiveLens = this.shadowCamera.lens = new PerspectiveLens(90, 1, 0.1, this.range);
         }
 
         /**
@@ -44,6 +46,12 @@ namespace feng3d
         {
             super.init(gameObject);
             this.lightType = LightType.Point;
+        }
+
+        private invalidRange()
+        {
+            if (this.perspectiveLens)
+                this.perspectiveLens.far = this.range;
         }
     }
 }

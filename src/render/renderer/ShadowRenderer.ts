@@ -75,6 +75,7 @@ namespace feng3d
             // positive X
             cube2DViewPorts[0].init(vpWidth * 2, vpHeight, vpWidth, vpHeight);
             // negative X
+            
             cube2DViewPorts[1].init(0, vpHeight, vpWidth, vpHeight);
             // positive Z
             cube2DViewPorts[2].init(vpWidth * 3, vpHeight, vpWidth, vpHeight);
