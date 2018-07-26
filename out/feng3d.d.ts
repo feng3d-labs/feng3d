@@ -2559,6 +2559,17 @@ declare namespace feng3d {
          */
         subTo(v: Vector2, vout?: Vector2): Vector2;
         /**
+         * 乘以向量
+         * @param a 向量
+         */
+        multiply(a: Vector2): this;
+        /**
+         * 乘以向量
+         * @param a 向量
+         * @param vout 输出向量
+         */
+        multiplyTo(a: Vector2, vout?: Vector2): Vector2;
+        /**
          * 插值到指定向量
          * @param v 目标向量
          * @param alpha 插值系数
@@ -3212,7 +3223,7 @@ declare namespace feng3d {
          * @param width 矩形的宽度（以像素为单位）。
          * @param height 矩形的高度（以像素为单位）。
          */
-        setTo(x: number, y: number, width: number, height: number): Rectangle;
+        init(x: number, y: number, width: number, height: number): Rectangle;
         /**
          * 确定由此 Rectangle 对象定义的矩形区域内是否包含指定的点。
          * @param x 检测点的x轴
@@ -8528,15 +8539,16 @@ declare namespace feng3d {
      */
     var shadowRenderer: ShadowRenderer;
     class ShadowRenderer {
-        renderAtomic: RenderAtomic;
+        private renderAtomic;
         private shader;
         private skeleton_shader;
-        init(): void;
+        private init();
         /**
          * 渲染
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
-        drawForLight(gl: GL, light: DirectionalLight, scene3d: Scene3D, camera: Camera): any;
+        private drawForPointLight(gl, light, scene3d, camera);
+        private drawForDirectionalLight(gl, light, scene3d, camera);
         /**
          * 绘制3D对象
          */
@@ -9414,10 +9426,11 @@ declare namespace feng3d {
                 list: Behaviour[];
             };
         };
-        _mouseCheckObjects: {
-            layer: number;
-            objects: GameObject[];
-        }[];
+        private _mouseCheckObjects;
+        private _meshRenderers;
+        private _visibleAndEnabledMeshRenderers;
+        private _skyBoxs;
+        private _activeSkyBoxs;
         /**
          * 构造3D场景
          */
@@ -9426,6 +9439,19 @@ declare namespace feng3d {
         initCollectComponents(): void;
         private onEnterFrame(interval);
         update(): void;
+        /**
+         * 所有MeshRenderer
+         */
+        readonly meshRenderers: MeshRenderer[];
+        /**
+         * 所有 可见且开启的 MeshRenderer
+         */
+        readonly visibleAndEnabledMeshRenderers: MeshRenderer[];
+        /**
+         * 所有 SkyBox
+         */
+        readonly skyBoxs: SkyBox[];
+        readonly activeSkyBoxs: SkyBox[];
         readonly mouseCheckObjects: {
             layer: number;
             objects: GameObject[];
@@ -9449,6 +9475,11 @@ declare namespace feng3d {
          * @param light
          */
         getPickByDirectionalLight(light: DirectionalLight): MeshRenderer[];
+        /**
+         * 获取 可被摄像机看见的 MeshRenderer列表
+         * @param camera
+         */
+        getMeshRenderersByCamera(camera: Camera): MeshRenderer[];
     }
 }
 declare namespace feng3d {
@@ -10841,6 +10872,10 @@ declare namespace feng3d {
          */
         shadowNear: number;
         /**
+         * 投影摄像机
+         */
+        shadowCamera: Camera;
+        /**
          * 阴影图尺寸
          */
         readonly shadowMapSize: Vector2;
@@ -10849,6 +10884,7 @@ declare namespace feng3d {
          * 帧缓冲对象，用于处理光照阴影贴图渲染
          */
         frameBufferObject: FrameBufferObject;
+        constructor();
         init(gameObject: GameObject): void;
     }
 }
@@ -10858,10 +10894,6 @@ declare namespace feng3d {
      * @author feng 2016-12-13
      */
     class DirectionalLight extends Light {
-        /**
-         * 投影摄像机
-         */
-        shadowCamera: Camera;
         debugShadowMap: boolean;
         private debugShadowMapObject;
         /**
@@ -10895,6 +10927,11 @@ declare namespace feng3d {
          * 光源位置
          */
         readonly position: Vector3;
+        /**
+         * 阴影图尺寸
+         */
+        readonly shadowMapSize: Vector2;
+        constructor();
         /**
          * 构建
          */

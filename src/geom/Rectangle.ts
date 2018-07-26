@@ -158,7 +158,7 @@ namespace feng3d
          * @param width 矩形的宽度（以像素为单位）。
          * @param height 矩形的高度（以像素为单位）。
          */
-        setTo(x: number, y: number, width: number, height: number): Rectangle
+        init(x: number, y: number, width: number, height: number): Rectangle
         {
             this.x = x;
             this.y = y;
@@ -392,7 +392,7 @@ namespace feng3d
             }
             let l = Math.min(result.x, toUnion.x);
             let t = Math.min(result.y, toUnion.y);
-            result.setTo(l, t,
+            result.init(l, t,
                 Math.max(result.right, toUnion.right) - l,
                 Math.max(result.bottom, toUnion.bottom) - t);
             return result;

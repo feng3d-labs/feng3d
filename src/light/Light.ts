@@ -50,6 +50,11 @@ namespace feng3d
         shadowNear = 0.2;
 
         /**
+         * 投影摄像机
+         */
+        shadowCamera: Camera;
+
+        /**
          * 阴影图尺寸
          */
         get shadowMapSize()
@@ -66,6 +71,12 @@ namespace feng3d
          * 帧缓冲对象，用于处理光照阴影贴图渲染
          */
         frameBufferObject = new FrameBufferObject();
+
+        constructor()
+        {
+            super();
+            this.shadowCamera = GameObject.create("LightShadowCamera").addComponent(Camera);
+        }
 
         init(gameObject: GameObject)
         {

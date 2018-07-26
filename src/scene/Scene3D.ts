@@ -69,7 +69,11 @@ namespace feng3d
             };
         };
 
-        _mouseCheckObjects: { layer: number, objects: GameObject[] }[];
+        private _mouseCheckObjects: { layer: number, objects: GameObject[] }[];
+        private _meshRenderers: MeshRenderer[];
+        private _visibleAndEnabledMeshRenderers: MeshRenderer[];
+        private _skyBoxs: SkyBox[];
+        private _activeSkyBoxs: SkyBox[];
 
         /**
          * 构造3D场景
@@ -137,6 +141,55 @@ namespace feng3d
         update()
         {
             this._mouseCheckObjects = <any>null;
+            this._meshRenderers = null;
+            this._visibleAndEnabledMeshRenderers = null;
+            this._skyBoxs = null;
+            this._activeSkyBoxs = null;
+        }
+
+        /**
+         * 所有MeshRenderer
+         */
+        get meshRenderers()
+        {
+            if (!this._meshRenderers)
+            {
+                this._meshRenderers = this.getComponentsInChildren(MeshRenderer);
+            }
+            return this._meshRenderers;
+        }
+
+        /**
+         * 所有 可见且开启的 MeshRenderer
+         */
+        get visibleAndEnabledMeshRenderers()
+        {
+            if (!this._visibleAndEnabledMeshRenderers)
+            {
+                this._visibleAndEnabledMeshRenderers = this.meshRenderers.filter(i => i.isVisibleAndEnabled)
+            }
+            return this._visibleAndEnabledMeshRenderers;
+        }
+
+        /**
+         * 所有 SkyBox
+         */
+        get skyBoxs()
+        {
+            if (!this._skyBoxs)
+            {
+                this._skyBoxs = this.getComponentsInChildren(SkyBox);
+            }
+            return this._skyBoxs;
+        }
+
+        get activeSkyBoxs()
+        {
+            if (!this._activeSkyBoxs)
+            {
+                this._activeSkyBoxs = this.skyBoxs.filter(i => i.gameObject.globalVisible);
+            }
+            return this._activeSkyBoxs;
         }
 
         get mouseCheckObjects()
@@ -290,6 +343,25 @@ namespace feng3d
                 });
             }
             return targets;
+        }
+
+        /**
+         * 获取 可被摄像机看见的 MeshRenderer列表
+         * @param camera 
+         */
+        getMeshRenderersByCamera(camera: Camera)
+        {
+            var results = this.visibleAndEnabledMeshRenderers.filter(i =>
+            {
+                var boundingComponent = i.getComponent(Bounding);
+                if (boundingComponent.selfWorldBounds)
+                {
+                    if (camera.frustum.intersectsBox(boundingComponent.selfWorldBounds))
+                        return true;
+                }
+                return false;
+            });
+            return results;
         }
     }
 }

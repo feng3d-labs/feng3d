@@ -5226,6 +5226,24 @@ var feng3d;
             return vout.init(this.x - v.x, this.y - v.y);
         };
         /**
+         * 乘以向量
+         * @param a 向量
+         */
+        Vector2.prototype.multiply = function (a) {
+            this.x *= a.x;
+            this.y *= a.y;
+            return this;
+        };
+        /**
+         * 乘以向量
+         * @param a 向量
+         * @param vout 输出向量
+         */
+        Vector2.prototype.multiplyTo = function (a, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            return vout.copy(this).multiply(a);
+        };
+        /**
          * 插值到指定向量
          * @param v 目标向量
          * @param alpha 插值系数
@@ -6399,7 +6417,7 @@ var feng3d;
          * @param width 矩形的宽度（以像素为单位）。
          * @param height 矩形的高度（以像素为单位）。
          */
-        Rectangle.prototype.setTo = function (x, y, width, height) {
+        Rectangle.prototype.init = function (x, y, width, height) {
             this.x = x;
             this.y = y;
             this.width = width;
@@ -6586,7 +6604,7 @@ var feng3d;
             }
             var l = Math.min(result.x, toUnion.x);
             var t = Math.min(result.y, toUnion.y);
-            result.setTo(l, t, Math.max(result.right, toUnion.right) - l, Math.max(result.bottom, toUnion.bottom) - t);
+            result.init(l, t, Math.max(result.right, toUnion.right) - l, Math.max(result.bottom, toUnion.bottom) - t);
             return result;
         };
         Object.defineProperty(Rectangle.prototype, "size", {
@@ -13341,9 +13359,6 @@ var feng3d;
             else {
                 gl.bindFramebuffer(gl.FRAMEBUFFER, obj.framebuffer);
             }
-            gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
-            gl.clearColor(1.0, 1.0, 1.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             return obj;
         };
         FrameBufferObject.prototype.deactive = function (gl) {
@@ -14311,12 +14326,72 @@ var feng3d;
          * 渲染
          */
         ShadowRenderer.prototype.draw = function (gl, scene3d, camera) {
-            var lights = scene3d.collectComponents.directionalLights.list.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
-            for (var i = 0; i < lights.length; i++) {
-                this.drawForLight(gl, lights[i], scene3d, camera);
+            var pointLights = scene3d.collectComponents.pointLights.list.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
+            for (var i = 0; i < pointLights.length; i++) {
+                this.drawForPointLight(gl, pointLights[i], scene3d, camera);
+            }
+            var directionalLights = scene3d.collectComponents.directionalLights.list.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
+            for (var i = 0; i < directionalLights.length; i++) {
+                this.drawForDirectionalLight(gl, directionalLights[i], scene3d, camera);
             }
         };
-        ShadowRenderer.prototype.drawForLight = function (gl, light, scene3d, camera) {
+        ShadowRenderer.prototype.drawForPointLight = function (gl, light, scene3d, camera) {
+            var _this = this;
+            this.init();
+            light.frameBufferObject.active(gl);
+            //
+            gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            var vpWidth = light.shadowMapSize.x;
+            var vpHeight = light.shadowMapSize.y;
+            // These viewports map a cube-map onto a 2D texture with the
+            // following orientation:
+            //
+            //  xzXZ
+            //   y Y
+            //
+            // X - Positive x direction
+            // x - Negative x direction
+            // Y - Positive y direction
+            // y - Negative y direction
+            // Z - Positive z direction
+            // z - Negative z direction
+            // positive X
+            cube2DViewPorts[0].init(vpWidth * 2, vpHeight, vpWidth, vpHeight);
+            // negative X
+            cube2DViewPorts[1].init(0, vpHeight, vpWidth, vpHeight);
+            // positive Z
+            cube2DViewPorts[2].init(vpWidth * 3, vpHeight, vpWidth, vpHeight);
+            // negative Z
+            cube2DViewPorts[3].init(vpWidth, vpHeight, vpWidth, vpHeight);
+            // positive Y
+            cube2DViewPorts[4].init(vpWidth * 3, 0, vpWidth, vpHeight);
+            // negative Y
+            cube2DViewPorts[5].init(vpWidth, 0, vpWidth, vpHeight);
+            var shadowCamera = light.shadowCamera;
+            shadowCamera.transform.position = light.transform.position;
+            for (var face = 0; face < 6; face++) {
+                shadowCamera.transform.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
+                // 获取影响阴影图的渲染对象
+                var meshRenderers = scene3d.getMeshRenderersByCamera(shadowCamera);
+                // 筛选投射阴影的渲染对象
+                var castShadowsMeshRenderers = meshRenderers.filter(function (i) { return i.castShadows; });
+                //
+                this.renderAtomic.renderParams.useViewRect = true;
+                this.renderAtomic.renderParams.viewRect = cube2DViewPorts[face];
+                //
+                this.renderAtomic.uniforms.u_projectionMatrix = function () { return shadowCamera.lens.matrix; };
+                this.renderAtomic.uniforms.u_viewProjection = function () { return shadowCamera.viewProjection; };
+                this.renderAtomic.uniforms.u_viewMatrix = function () { return shadowCamera.transform.worldToLocalMatrix; };
+                this.renderAtomic.uniforms.u_cameraMatrix = function () { return shadowCamera.transform.localToWorldMatrix; };
+                castShadowsMeshRenderers.forEach(function (element) {
+                    _this.drawGameObject(gl, element.gameObject);
+                });
+            }
+            light.frameBufferObject.deactive(gl);
+        };
+        ShadowRenderer.prototype.drawForDirectionalLight = function (gl, light, scene3d, camera) {
             var _this = this;
             this.init();
             // 获取影响阴影图的渲染对象
@@ -14325,6 +14400,10 @@ var feng3d;
             var castShadowsMeshRenderers = meshRenderers.filter(function (i) { return i.castShadows; });
             light.updateShadowByCamera(scene3d, camera, meshRenderers);
             light.frameBufferObject.active(gl);
+            //
+            gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             var shadowCamera = light.shadowCamera;
             //
             this.renderAtomic.renderParams.useViewRect = true;
@@ -14359,6 +14438,18 @@ var feng3d;
     }());
     feng3d.ShadowRenderer = ShadowRenderer;
     feng3d.shadowRenderer = new ShadowRenderer();
+    var cube2DViewPorts = [
+        new feng3d.Rectangle(), new feng3d.Rectangle(), new feng3d.Rectangle(),
+        new feng3d.Rectangle(), new feng3d.Rectangle(), new feng3d.Rectangle()
+    ];
+    var cubeUps = [
+        new feng3d.Vector3(0, 1, 0), new feng3d.Vector3(0, 1, 0), new feng3d.Vector3(0, 1, 0),
+        new feng3d.Vector3(0, 1, 0), new feng3d.Vector3(0, 0, 1), new feng3d.Vector3(0, 0, -1)
+    ];
+    var cubeDirections = [
+        new feng3d.Vector3(1, 0, 0), new feng3d.Vector3(-1, 0, 0), new feng3d.Vector3(0, 0, 1),
+        new feng3d.Vector3(0, 0, -1), new feng3d.Vector3(0, 1, 0), new feng3d.Vector3(0, -1, 0)
+    ];
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16783,7 +16874,60 @@ var feng3d;
         };
         Scene3D.prototype.update = function () {
             this._mouseCheckObjects = null;
+            this._meshRenderers = null;
+            this._visibleAndEnabledMeshRenderers = null;
+            this._skyBoxs = null;
+            this._activeSkyBoxs = null;
         };
+        Object.defineProperty(Scene3D.prototype, "meshRenderers", {
+            /**
+             * 所有MeshRenderer
+             */
+            get: function () {
+                if (!this._meshRenderers) {
+                    this._meshRenderers = this.getComponentsInChildren(feng3d.MeshRenderer);
+                }
+                return this._meshRenderers;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene3D.prototype, "visibleAndEnabledMeshRenderers", {
+            /**
+             * 所有 可见且开启的 MeshRenderer
+             */
+            get: function () {
+                if (!this._visibleAndEnabledMeshRenderers) {
+                    this._visibleAndEnabledMeshRenderers = this.meshRenderers.filter(function (i) { return i.isVisibleAndEnabled; });
+                }
+                return this._visibleAndEnabledMeshRenderers;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene3D.prototype, "skyBoxs", {
+            /**
+             * 所有 SkyBox
+             */
+            get: function () {
+                if (!this._skyBoxs) {
+                    this._skyBoxs = this.getComponentsInChildren(feng3d.SkyBox);
+                }
+                return this._skyBoxs;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene3D.prototype, "activeSkyBoxs", {
+            get: function () {
+                if (!this._activeSkyBoxs) {
+                    this._activeSkyBoxs = this.skyBoxs.filter(function (i) { return i.gameObject.globalVisible; });
+                }
+                return this._activeSkyBoxs;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Scene3D.prototype, "mouseCheckObjects", {
             get: function () {
                 if (this._mouseCheckObjects)
@@ -16900,6 +17044,21 @@ var feng3d;
                 });
             }
             return targets;
+        };
+        /**
+         * 获取 可被摄像机看见的 MeshRenderer列表
+         * @param camera
+         */
+        Scene3D.prototype.getMeshRenderersByCamera = function (camera) {
+            var results = this.visibleAndEnabledMeshRenderers.filter(function (i) {
+                var boundingComponent = i.getComponent(feng3d.Bounding);
+                if (boundingComponent.selfWorldBounds) {
+                    if (camera.frustum.intersectsBox(boundingComponent.selfWorldBounds))
+                        return true;
+                }
+                return false;
+            });
+            return results;
         };
         __decorate([
             feng3d.serialize,
@@ -20837,7 +20996,7 @@ var feng3d;
     var Light = /** @class */ (function (_super) {
         __extends(Light, _super);
         function Light() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
             /**
              * 颜色
              */
@@ -20866,6 +21025,7 @@ var feng3d;
              * 帧缓冲对象，用于处理光照阴影贴图渲染
              */
             _this.frameBufferObject = new feng3d.FrameBufferObject();
+            _this.shadowCamera = feng3d.GameObject.create("LightShadowCamera").addComponent(feng3d.Camera);
             return _this;
         }
         Object.defineProperty(Light.prototype, "shadowMapSize", {
@@ -20918,7 +21078,6 @@ var feng3d;
         function DirectionalLight() {
             var _this = _super.call(this) || this;
             _this.debugShadowMap = false;
-            _this.shadowCamera = feng3d.GameObject.create("LightShadowCamera").addComponent(feng3d.Camera);
             return _this;
         }
         Object.defineProperty(DirectionalLight.prototype, "direction", {
@@ -21007,11 +21166,12 @@ var feng3d;
     var PointLight = /** @class */ (function (_super) {
         __extends(PointLight, _super);
         function PointLight() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
             /**
              * 光照范围
              */
             _this.range = 10;
+            _this.shadowCamera.lens = new feng3d.PerspectiveLens(90, 1, 0.5, 500);
             return _this;
         }
         Object.defineProperty(PointLight.prototype, "position", {
@@ -21020,6 +21180,17 @@ var feng3d;
              */
             get: function () {
                 return this.transform.scenePosition;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointLight.prototype, "shadowMapSize", {
+            // shadowMatrix = new Matrix4x4();
+            /**
+             * 阴影图尺寸
+             */
+            get: function () {
+                return this.shadowMap.getSize().multiply(new feng3d.Vector2(1 / 4, 1 / 2));
             },
             enumerable: true,
             configurable: true

@@ -21,6 +21,22 @@ namespace feng3d
             return this.transform.scenePosition;
         }
 
+        // shadowMatrix = new Matrix4x4();
+
+        /**
+         * 阴影图尺寸
+         */
+        get shadowMapSize()
+        {
+            return this.shadowMap.getSize().multiply(new Vector2(1 / 4, 1 / 2));
+        }
+
+        constructor()
+        {
+            super();
+            this.shadowCamera.lens = new PerspectiveLens(90, 1, 0.5, 500);
+        }
+
         /**
          * 构建
          */

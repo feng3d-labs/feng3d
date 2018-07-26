@@ -7,11 +7,6 @@ namespace feng3d
      */
     export class DirectionalLight extends Light
     {
-        /**
-         * 投影摄像机
-         */
-        shadowCamera: Camera;
-        
         @oav({ componentParam: { tooltip: "是否调试阴影图" } })
         debugShadowMap = false;
 
@@ -28,7 +23,6 @@ namespace feng3d
         constructor()
         {
             super();
-            this.shadowCamera = GameObject.create("LightShadowCamera").addComponent(Camera);
         }
 
         /**

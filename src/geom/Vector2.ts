@@ -190,6 +190,27 @@ namespace feng3d
         }
 
         /**
+         * 乘以向量
+         * @param a 向量
+         */
+        multiply(a: Vector2)
+        {
+            this.x *= a.x;
+            this.y *= a.y;
+            return this;
+        }
+
+        /**
+         * 乘以向量
+         * @param a 向量
+         * @param vout 输出向量
+         */
+        multiplyTo(a: Vector2, vout = new Vector2())
+        {
+            return vout.copy(this).multiply(a);
+        }
+
+        /**
          * 插值到指定向量
          * @param v 目标向量
          * @param alpha 插值系数

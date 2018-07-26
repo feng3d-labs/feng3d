@@ -69,9 +69,6 @@ namespace feng3d
             {
                 gl.bindFramebuffer(gl.FRAMEBUFFER, obj.framebuffer);
             }
-            gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
-            gl.clearColor(1.0, 1.0, 1.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             return obj;
         }
