@@ -160,6 +160,8 @@ float getShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float 
 {
     float shadow = 1.0;
 
+    shadowCoord.xyz /= shadowCoord.w;
+	shadowCoord = (shadowCoord + 1.0) / 2.0;
     shadowCoord.z += shadowBias;
 
     // if ( something && something ) breaks ATI OpenGL shader compiler
