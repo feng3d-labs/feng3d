@@ -277,30 +277,30 @@ vec2 cubeToUV( vec3 v, float texelSizeY ) {
 
         if ( v.z > 0.0 )
         {
-            planar.x = (1.0 - v.x) * 0.25 + 0.75;
-            planar.y = v.y * 0.5 + 0.5;
+            planar.x = (0.5 + v.x * 0.5) * 0.25 + 0.75;
+            planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;
         }else
         {
-            planar.x = v.x * 0.25 + 0.25;
-            planar.y = v.y * 0.5 + 0.5;
+            planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.25;
+            planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;
         }
     } else if ( absV.x >= almostOne ) {
 
         if( v.x > 0.0)
         {
-            planar.x = v.z * 0.25 + 0.5;
-            planar.y = v.y * 0.5 + 0.5;
+            planar.x = (0.5 - v.z * 0.5) * 0.25 + 0.5;
+            planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;
         }else
         {
-            planar.x = (1.0 - v.z) * 0.25 + 0.0;
-            planar.y = v.y * 0.5 + 0.5;
+            planar.x = (0.5 + v.z * 0.5) * 0.25 + 0.0;
+            planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;
         }
     } else if ( absV.y >= almostOne ) {
 
         if( v.y > 0.0)
         {
-            planar.x = v.x * 0.25 + 0.75;
-            planar.y = v.z * 0.5 + 0.0;
+            planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.75;
+            planar.y = (0.5 + v.z * 0.5) * 0.5 + 0.0;
         }else
         {
             planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.25;
