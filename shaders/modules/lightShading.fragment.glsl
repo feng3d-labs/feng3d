@@ -266,38 +266,48 @@ vec2 cubeToUV( vec3 v, float texelSizeY ) {
 
     // space: -1 ... 1 range for each square
     //
-    // #X##		dim    := ( 4 , 2 )
-    //  # #		center := ( 1 , 1 )
+    // #X##		dim    := ( 1/4 , 1/2 )
+    //  # #		center := ( 1/2 , 1/2 )
 
-    vec2 planar = v.xy;
+    vec2 planar;
 
-    float almostATexel = 1.5 * texelSizeY;
-    float almostOne = 1.0 - almostATexel;
+    float almostOne = 1.0 - 1.5 * texelSizeY;
 
     if ( absV.z >= almostOne ) {
 
         if ( v.z > 0.0 )
-            planar.x = 4.0 - v.x;
-
+        {
+            planar.x = (1.0 - v.x) * 0.25 + 0.75;
+            planar.y = v.y * 0.5 + 0.5;
+        }else
+        {
+            planar.x = v.x * 0.25 + 0.25;
+            planar.y = v.y * 0.5 + 0.5;
+        }
     } else if ( absV.x >= almostOne ) {
 
-        float signX = sign( v.x );
-        planar.x = v.z * signX + 2.0 * signX;
-
+        if( v.x > 0.0)
+        {
+            planar.x = v.z * 0.25 + 0.5;
+            planar.y = v.y * 0.5 + 0.5;
+        }else
+        {
+            planar.x = (1.0 - v.z) * 0.25 + 0.0;
+            planar.y = v.y * 0.5 + 0.5;
+        }
     } else if ( absV.y >= almostOne ) {
 
-        float signY = sign( v.y );
-        planar.x = v.x + 2.0 * signY + 2.0;
-        planar.y = v.z * signY - 2.0;
-
+        if( v.y > 0.0)
+        {
+            planar.x = v.x * 0.25 + 0.75;
+            planar.y = v.z * 0.5 + 0.0;
+        }else
+        {
+            planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.25;
+            planar.y = (0.5 - v.z * 0.5) * 0.5 + 0.0;
+        }
     }
-
-    // Transform to UV space
-
-    // scale := 0.5 / dim
-    // translate := ( center + 0.5 ) / dim
-    return vec2( 0.125, 0.25 ) * planar + vec2( 0.375, 0.75 );
-
+    return planar;
 }
 
 float getPointShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar ) {
