@@ -153,7 +153,12 @@ namespace feng3d
             renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
             renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
             renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
-
+            //
+            renderAtomic.uniforms.u_lightType = light.lightType;
+            renderAtomic.uniforms.u_lightPosition = shadowCamera.transform.scenePosition;
+            renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
+            renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
+            //
             castShadowsMeshRenderers.forEach(element =>
             {
                 this.drawGameObject(gl, element.gameObject);
