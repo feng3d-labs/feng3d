@@ -72,8 +72,6 @@ float computeDistanceLightFalloff(float lightDistance, float range)
     return lightDistanceFalloff;
 }
 
-
-
 //渲染点光源
 vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambientColor, float glossiness)
 {
@@ -83,7 +81,8 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
     vec3 resultColor = vec3(0.0,0.0,0.0);
     #if NUM_POINTLIGHT > 0
         PointLight pointLight;
-        for(int i = 0;i<NUM_POINTLIGHT;i++){
+        for(int i = 0;i<NUM_POINTLIGHT;i++)
+        {
             pointLight = u_pointLights[i];
             //
             vec3 lightOffset = pointLight.position - v_worldPosition;
@@ -92,15 +91,20 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
             //灯光颜色
             vec3 lightColor = pointLight.color;
             //灯光强度
-            float lightIntensity = pointLight.intensity * computeDistanceLightFalloff(length(lightOffset), pointLight.range);
-            //
-            resultColor += (calculateLightDiffuse(normal, lightDir) * diffuseColor + calculateLightSpecular(normal, lightDir, viewDir, glossiness) * specularColor) * lightColor * lightIntensity;
+            float lightIntensity = pointLight.intensity;
+            float falloff = computeDistanceLightFalloff(length(lightOffset), pointLight.range);
+            float diffuse = calculateLightDiffuse(normal, lightDir);
+            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
+            float shadow = 1.0;
+            
+            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;
         }
     #endif
 
     #if NUM_POINTLIGHT_CASTSHADOW > 0
         CastShadowPointLight castShadowPointLight;
-        for(int i = 0;i<NUM_POINTLIGHT_CASTSHADOW;i++){
+        for(int i = 0;i<NUM_POINTLIGHT_CASTSHADOW;i++)
+        {
             castShadowPointLight = u_castShadowPointLights[i];
             //
             vec3 lightOffset = castShadowPointLight.position - v_worldPosition;
@@ -109,17 +113,21 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
             //灯光颜色
             vec3 lightColor = castShadowPointLight.color;
             //灯光强度
-            float lightIntensity = castShadowPointLight.intensity * computeDistanceLightFalloff(length(lightOffset), castShadowPointLight.range);
+            float lightIntensity = castShadowPointLight.intensity;
+            float falloff = computeDistanceLightFalloff(length(lightOffset), castShadowPointLight.range);
             // 计算阴影
             float shadow = getPointShadow( u_pointShadowMaps[ i ], castShadowPointLight.shadowType, castShadowPointLight.shadowMapSize, castShadowPointLight.shadowBias, castShadowPointLight.shadowRadius, -lightOffset, castShadowPointLight.shadowCameraNear, castShadowPointLight.shadowCameraFar );
+            float diffuse = calculateLightDiffuse(normal, lightDir);
+            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
             //
-            resultColor += (calculateLightDiffuse(normal, lightDir) * diffuseColor + calculateLightSpecular(normal, lightDir, viewDir, glossiness) * specularColor) * lightColor * lightIntensity * shadow;
+            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;
         }
     #endif
 
     #if NUM_DIRECTIONALLIGHT > 0
         DirectionalLight directionalLight;
-        for(int i = 0;i<NUM_DIRECTIONALLIGHT;i++){
+        for(int i = 0;i<NUM_DIRECTIONALLIGHT;i++)
+        {
             directionalLight = u_directionalLights[i];
             //光照方向
             vec3 lightDir = normalize(-directionalLight.direction);
@@ -127,14 +135,20 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
             vec3 lightColor = directionalLight.color;
             //灯光强度
             float lightIntensity = directionalLight.intensity;
+
+            float falloff = 1.0;
+            float diffuse = calculateLightDiffuse(normal, lightDir);
+            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
+            float shadow = 1.0;
             //
-            resultColor += (calculateLightDiffuse(normal, lightDir) * diffuseColor + calculateLightSpecular(normal, lightDir, viewDir, glossiness) * specularColor) * lightColor * lightIntensity;
+            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;
         }
     #endif
 
     #if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0
         CastShadowDirectionalLight castShadowDirectionalLight;
-        for(int i = 0;i<NUM_DIRECTIONALLIGHT_CASTSHADOW;i++){
+        for(int i = 0;i<NUM_DIRECTIONALLIGHT_CASTSHADOW;i++)
+        {
             castShadowDirectionalLight = u_castShadowDirectionalLights[i];
             //光照方向
             vec3 lightDir = normalize(-castShadowDirectionalLight.direction);
@@ -144,8 +158,12 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
             float lightIntensity = castShadowDirectionalLight.intensity;
             // 计算阴影
             float shadow = getShadow( u_directionalShadowMaps[i], castShadowDirectionalLight.shadowType, castShadowDirectionalLight.shadowMapSize, castShadowDirectionalLight.shadowBias, castShadowDirectionalLight.shadowRadius, v_directionalShadowCoord[ i ] );
+            
+            float falloff = 1.0;
+            float diffuse = calculateLightDiffuse(normal, lightDir);
+            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
             //
-            resultColor += (calculateLightDiffuse(normal, lightDir) * diffuseColor + calculateLightSpecular(normal, lightDir, viewDir, glossiness) * specularColor) * lightColor * lightIntensity * shadow;
+            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;
         }
     #endif
 

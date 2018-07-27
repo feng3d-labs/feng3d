@@ -22,8 +22,15 @@ namespace feng3d
             if (this.map.has(gl))
                 return this.map.get(gl);
 
-            var result = this.compileShaderProgram(gl, this.vertex, this.fragment);
-            this.map.set(gl, result);
+            try
+            {
+                var result = this.compileShaderProgram(gl, this.vertex, this.fragment);
+                this.map.set(gl, result);
+            } catch (error)
+            {
+                feng3d.error(`${this.shaderName} 编译失败！`)
+                return null;
+            }
             return result;
         }
 
