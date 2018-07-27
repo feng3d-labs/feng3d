@@ -91,20 +91,18 @@ namespace feng3d
 
             var renderAtomic = this.renderAtomic;
 
-            // for (var face = 0; face < 6; face++)
-            // {
-                // shadowCamera.transform.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
+            for (var face = 0; face < 6; face++)
+            {
+                shadowCamera.transform.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
 
                 // 获取影响阴影图的渲染对象
-                // var meshRenderers = scene3d.getMeshRenderersByCamera(shadowCamera);
-                var meshRenderers = scene3d.visibleAndEnabledMeshRenderers;
+                var meshRenderers = scene3d.getMeshRenderersByCamera(shadowCamera);
                 // 筛选投射阴影的渲染对象
                 var castShadowsMeshRenderers = meshRenderers.filter(i => i.castShadows);
 
                 //
                 renderAtomic.renderParams.useViewRect = true;
-                // renderAtomic.renderParams.viewRect = cube2DViewPorts[face];
-                renderAtomic.renderParams.viewRect = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT)
+                renderAtomic.renderParams.viewRect = cube2DViewPorts[face];
 
                 //
                 renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
@@ -116,13 +114,12 @@ namespace feng3d
                 renderAtomic.uniforms.u_lightPosition = light.position;
                 renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
                 renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
-                renderAtomic.uniforms.u_shadowMapSize = light.shadowMapSize;
 
                 castShadowsMeshRenderers.forEach(element =>
                 {
                     this.drawGameObject(gl, element.gameObject);
                 });
-            // }
+            }
             light.frameBufferObject.deactive(gl);
         }
 
@@ -156,12 +153,6 @@ namespace feng3d
             renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
             renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
             renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
-            //
-            renderAtomic.uniforms.u_lightType = light.lightType;
-            renderAtomic.uniforms.u_lightPosition = light.transform.scenePosition;
-            renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
-            renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
-            renderAtomic.uniforms.u_shadowMapSize = light.shadowMapSize;
 
             castShadowsMeshRenderers.forEach(element =>
             {

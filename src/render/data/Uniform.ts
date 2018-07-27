@@ -295,6 +295,5 @@ namespace feng3d
         u_lightPosition: Vector3;
         u_shadowCameraNear: number;
         u_shadowCameraFar: number;
-        u_shadowMapSize: Vector2;
     }
 }
