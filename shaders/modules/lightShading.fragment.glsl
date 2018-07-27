@@ -310,7 +310,7 @@ vec2 cubeToUV( vec3 v, float texelSizeY ) {
     return planar;
 }
 
-float getPointShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar ) {
+float getPointShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar ) {
 
     vec2 texelSize = vec2( 1.0 ) / ( shadowMapSize * vec2( 4.0, 2.0 ) );
 
@@ -325,8 +325,8 @@ float getPointShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias,
     // bd3D = base direction 3D
     vec3 bd3D = normalize( lightToPosition );
 
-    #if defined( SHADOWMAP_TYPE_PCF ) || defined( SHADOWMAP_TYPE_PCF_SOFT )
-
+    if(shadowType == 2 || shadowType == 3)
+    {
         vec2 offset = vec2( - 1, 1 ) * shadowRadius * texelSize.y;
 
         return (
@@ -340,13 +340,10 @@ float getPointShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias,
             texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xxx, texelSize.y ), dp ) +
             texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yxx, texelSize.y ), dp )
         ) * ( 1.0 / 9.0 );
-
-    #else // no percentage-closer filtering
-
+    }else
+    {
         return texture2DCompare( shadowMap, cubeToUV( bd3D, texelSize.y ), dp );
-
-    #endif
-
+    }
 }
 
 //渲染点光源
@@ -398,7 +395,7 @@ vec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientC
             float attenuation = computeDistanceLightFalloff(lightDistance,range);
             lightIntensity = lightIntensity * attenuation;
             // 计算阴影
-            float shadow = getPointShadow( u_pointShadowMaps[ i ], castShadowPointLight.shadowMapSize, castShadowPointLight.shadowBias, castShadowPointLight.shadowRadius, -lightOffset, castShadowPointLight.shadowCameraNear, castShadowPointLight.shadowCameraFar );
+            float shadow = getPointShadow( u_pointShadowMaps[ i ], castShadowPointLight.shadowType, castShadowPointLight.shadowMapSize, castShadowPointLight.shadowBias, castShadowPointLight.shadowRadius, -lightOffset, castShadowPointLight.shadowCameraNear, castShadowPointLight.shadowCameraFar );
             //
             totalDiffuseLightColor = totalDiffuseLightColor +  calculateLightDiffuse(normal,lightDir) * lightColor * lightIntensity * shadow;
             totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,viewDir,glossiness) * lightColor * lightIntensity * shadow;
