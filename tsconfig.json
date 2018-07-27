@@ -197,6 +197,7 @@
         "src/light/Light.ts",
         "src/light/DirectionalLight.ts",
         "src/light/PointLight.ts",
+        "src/light/SpotLight.ts",
         //
         "src/light/pickers/LightPicker.ts",
         //镜头控制

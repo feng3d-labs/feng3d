@@ -10960,6 +10960,35 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 聚光灯光源
+     * @author feng 2016-12-13
+     */
+    class SpotLight extends Light {
+        /**
+         * 光照范围
+         */
+        range: number;
+        angle: number;
+        /**
+         * 光源位置
+         */
+        readonly position: Vector3;
+        /**
+         * 阴影图尺寸
+         */
+        readonly shadowMapSize: Vector2;
+        private perspectiveLens;
+        constructor();
+        /**
+         * 构建
+         */
+        init(gameObject: GameObject): void;
+        private invalidRange();
+        private invalidAngle();
+    }
+}
+declare namespace feng3d {
     class LightPicker {
         private _meshRenderer;
         constructor(meshRenderer: MeshRenderer);

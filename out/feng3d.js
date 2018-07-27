@@ -21246,6 +21246,73 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 聚光灯光源
+     * @author feng 2016-12-13
+     */
+    var SpotLight = /** @class */ (function (_super) {
+        __extends(SpotLight, _super);
+        function SpotLight() {
+            var _this = _super.call(this) || this;
+            /**
+             * 光照范围
+             */
+            _this.range = 10;
+            _this.angle = 30;
+            _this.perspectiveLens = _this.shadowCamera.lens = new feng3d.PerspectiveLens(_this.angle, 1, 0.1, _this.range);
+            return _this;
+        }
+        Object.defineProperty(SpotLight.prototype, "position", {
+            /**
+             * 光源位置
+             */
+            get: function () {
+                return this.transform.scenePosition;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SpotLight.prototype, "shadowMapSize", {
+            /**
+             * 阴影图尺寸
+             */
+            get: function () {
+                return this.shadowMap.getSize().multiply(new feng3d.Vector2(1 / 4, 1 / 2));
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 构建
+         */
+        SpotLight.prototype.init = function (gameObject) {
+            _super.prototype.init.call(this, gameObject);
+            this.lightType = feng3d.LightType.Point;
+        };
+        SpotLight.prototype.invalidRange = function () {
+            if (this.shadowCamera)
+                this.shadowCamera.lens.far = this.range;
+        };
+        SpotLight.prototype.invalidAngle = function () {
+            if (this.perspectiveLens)
+                this.perspectiveLens.fov = this.angle;
+        };
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize,
+            feng3d.watch("invalidRange")
+        ], SpotLight.prototype, "range", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize,
+            feng3d.watch("invalidAngle")
+        ], SpotLight.prototype, "angle", void 0);
+        return SpotLight;
+    }(feng3d.Light));
+    feng3d.SpotLight = SpotLight;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var LightPicker = /** @class */ (function () {
         function LightPicker(meshRenderer) {
             this._meshRenderer = meshRenderer;
