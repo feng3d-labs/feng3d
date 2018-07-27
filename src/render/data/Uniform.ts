@@ -168,11 +168,6 @@ namespace feng3d
         u_castShadowPointLights: PointLight[]
 
         /**
-         * 点光源投影矩阵列表
-         */
-        u_pointShadowMatrixs: Matrix4x4[];
-
-        /**
          * 方向光源阴影图
          */
         u_pointShadowMaps: Texture2D[];

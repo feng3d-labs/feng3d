@@ -26,8 +26,6 @@
         uniform CastShadowPointLight u_castShadowPointLights[NUM_POINTLIGHT_CASTSHADOW];
         // 点光源阴影图
         uniform sampler2D u_pointShadowMaps[NUM_POINTLIGHT_CASTSHADOW];
-        // 点光源投影uv列表
-        varying vec4 v_pointShadowCoord[ NUM_POINTLIGHT_CASTSHADOW ];
     #endif
 
     #if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0
