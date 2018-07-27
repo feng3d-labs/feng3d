@@ -290,5 +290,10 @@ namespace feng3d
          * 线框颜色
          */
         u_wireframeColor: Color4;
+
+        u_lightType: LightType;
+        u_lightPosition: Vector3;
+        u_shadowCameraNear: number;
+        u_shadowCameraFar: number;
     }
 }

@@ -47,7 +47,18 @@ namespace feng3d
         /**
          * 阴影近平面距离
          */
-        shadowNear = 0.2;
+        get shadowCameraNear()
+        {
+            return this.shadowCamera.lens.near;
+        }
+
+        /**
+         * 阴影近平面距离
+         */
+        get shadowCameraFar()
+        {
+            return this.shadowCamera.lens.far;
+        }
 
         /**
          * 投影摄像机

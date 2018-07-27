@@ -48,10 +48,10 @@ namespace feng3d
             var center = worldBounds.getCenter();
             var radius = worldBounds.getSize().length / 2;
             // 
-            this.shadowCamera.transform.position = center.addTo(this.direction.scaleTo(radius + this.shadowNear).negate());
+            this.shadowCamera.transform.position = center.addTo(this.direction.scaleTo(radius + this.shadowCameraNear).negate());
             this.shadowCamera.transform.lookAt(center, this.shadowCamera.transform.upVector);
             //
-            this.shadowCamera.lens = new OrthographicLens(-radius, radius, radius, - radius, this.shadowNear, this.shadowNear + radius * 2);
+            this.shadowCamera.lens = new OrthographicLens(-radius, radius, radius, - radius, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
         }
     }
 }

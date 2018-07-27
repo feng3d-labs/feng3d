@@ -7584,6 +7584,10 @@ declare namespace feng3d {
          * 线框颜色
          */
         u_wireframeColor: Color4;
+        u_lightType: LightType;
+        u_lightPosition: Vector3;
+        u_shadowCameraNear: number;
+        u_shadowCameraFar: number;
     }
 }
 declare namespace feng3d {
@@ -10840,13 +10844,13 @@ declare namespace feng3d {
      */
     enum LightType {
         /**
-         * 点光
-         */
-        Point = 0,
-        /**
          * 方向光
          */
-        Directional = 1,
+        Directional = 0,
+        /**
+         * 点光
+         */
+        Point = 1,
         /**
          * 聚光灯
          */
@@ -10886,7 +10890,11 @@ declare namespace feng3d {
         /**
          * 阴影近平面距离
          */
-        shadowNear: number;
+        readonly shadowCameraNear: number;
+        /**
+         * 阴影近平面距离
+         */
+        readonly shadowCameraFar: number;
         /**
          * 投影摄像机
          */
@@ -10947,12 +10955,6 @@ declare namespace feng3d {
          * 阴影图尺寸
          */
         readonly shadowMapSize: Vector2;
-        /**
-         * 投影最近距离
-         */
-        private shadowCameraNear;
-        readonly shadowCameraFar: number;
-        private perspectiveLens;
         constructor();
         /**
          * 构建

@@ -300,13 +300,13 @@ vec2 cubeToUV( vec3 v, float texelSizeY ) {
 
 }
 
-float getPointShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord, float shadowCameraNear, float shadowCameraFar ) {
+float getPointShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar ) {
 
     vec2 texelSize = vec2( 1.0 ) / ( shadowMapSize * vec2( 4.0, 2.0 ) );
 
     // for point lights, the uniform @vShadowCoord is re-purposed to hold
     // the vector from the light to the world-space position of the fragment.
-    vec3 lightToPosition = shadowCoord.xyz;
+    // vec3 lightToPosition = shadowCoord.xyz;
 
     // dp = normalized distance from light to fragment position
     float dp = ( length( lightToPosition ) - shadowCameraNear ) / ( shadowCameraFar - shadowCameraNear ); // need to clamp?
@@ -388,7 +388,7 @@ vec3 lightShading(vec3 normal,vec3 diffuseColor,vec3 specularColor,vec3 ambientC
             float attenuation = computeDistanceLightFalloff(lightDistance,range);
             lightIntensity = lightIntensity * attenuation;
             // 计算阴影
-            float shadow = getPointShadow( u_pointShadowMaps[ i ], castShadowPointLight.shadowMapSize, castShadowPointLight.shadowBias, castShadowPointLight.shadowRadius, v_pointShadowCoord[ i ], castShadowPointLight.shadowCameraNear, castShadowPointLight.shadowCameraFar );
+            float shadow = getPointShadow( u_pointShadowMaps[ i ], castShadowPointLight.shadowMapSize, castShadowPointLight.shadowBias, castShadowPointLight.shadowRadius, -lightOffset, castShadowPointLight.shadowCameraNear, castShadowPointLight.shadowCameraFar );
             //
             totalDiffuseLightColor = totalDiffuseLightColor +  calculateLightDiffuse(normal,lightDir) * lightColor * lightIntensity * shadow;
             totalSpecularLightColor = totalSpecularLightColor +  calculateLightSpecular(normal,lightDir,viewDir,glossiness) * lightColor * lightIntensity * shadow;

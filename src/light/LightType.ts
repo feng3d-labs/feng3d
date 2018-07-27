@@ -8,16 +8,16 @@ namespace feng3d
     export enum LightType
     {
         /**
-         * 点光
-         */
-        Point,
-        /**
          * 方向光
          */
-        Directional,
+        Directional = 0,
+        /**
+         * 点光
+         */
+        Point = 1,
         /**
          * 聚光灯
          */
-        Spot
+        Spot = 2
     }
 }

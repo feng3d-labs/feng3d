@@ -75,7 +75,7 @@ namespace feng3d
             // positive X
             cube2DViewPorts[0].init(vpWidth * 2, vpHeight, vpWidth, vpHeight);
             // negative X
-            
+
             cube2DViewPorts[1].init(0, vpHeight, vpWidth, vpHeight);
             // positive Z
             cube2DViewPorts[2].init(vpWidth * 3, vpHeight, vpWidth, vpHeight);
@@ -89,6 +89,8 @@ namespace feng3d
             var shadowCamera = light.shadowCamera;
             shadowCamera.transform.position = light.transform.position;
 
+            var renderAtomic = this.renderAtomic;
+
             for (var face = 0; face < 6; face++)
             {
                 shadowCamera.transform.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
@@ -99,14 +101,19 @@ namespace feng3d
                 var castShadowsMeshRenderers = meshRenderers.filter(i => i.castShadows);
 
                 //
-                this.renderAtomic.renderParams.useViewRect = true;
-                this.renderAtomic.renderParams.viewRect = cube2DViewPorts[face];
+                renderAtomic.renderParams.useViewRect = true;
+                renderAtomic.renderParams.viewRect = cube2DViewPorts[face];
 
                 //
-                this.renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
-                this.renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
-                this.renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
-                this.renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
+                renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
+                renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
+                renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
+                renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
+                //
+                renderAtomic.uniforms.u_lightType = light.lightType;
+                renderAtomic.uniforms.u_lightPosition = light.position;
+                renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
+                renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
 
                 castShadowsMeshRenderers.forEach(element =>
                 {
@@ -137,14 +144,15 @@ namespace feng3d
 
             var shadowCamera = light.shadowCamera;
 
+            var renderAtomic = this.renderAtomic;
             //
-            this.renderAtomic.renderParams.useViewRect = true;
-            this.renderAtomic.renderParams.viewRect = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT)
+            renderAtomic.renderParams.useViewRect = true;
+            renderAtomic.renderParams.viewRect = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT)
             //
-            this.renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
-            this.renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
-            this.renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
-            this.renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
+            renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
+            renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
+            renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
 
             castShadowsMeshRenderers.forEach(element =>
             {
