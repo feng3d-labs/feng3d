@@ -3324,12 +3324,12 @@ var feng3d;
             return this;
         };
         /**
-         * 注册帧函数（只执行一次）
+         * 下一帧执行方法
          * @param func  执行方法
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        Ticker.prototype.onceframe = function (func, thisObject, priority) {
+        Ticker.prototype.nextframe = function (func, thisObject, priority) {
             var _this = this;
             if (priority === void 0) { priority = 0; }
             this.once(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);

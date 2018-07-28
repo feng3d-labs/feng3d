@@ -1661,12 +1661,12 @@ declare namespace feng3d {
          */
         onframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
         /**
-         * 注册帧函数（只执行一次）
+         * 下一帧执行方法
          * @param func  执行方法
          * @param thisObject    方法this指针
          * @param priority      执行优先级
          */
-        onceframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+        nextframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
         /**
          * 注销帧函数（只执行一次）
          * @param func  执行方法
