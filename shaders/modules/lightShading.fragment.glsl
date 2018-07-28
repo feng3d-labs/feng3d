@@ -114,7 +114,7 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
             vec3 lightOffset = spotLight.position - v_worldPosition;
             //光照方向
             vec3 lightDir = normalize(lightOffset);
-            float angleCos = dot(lightDir, spotLight.direction);
+            float angleCos = dot(lightDir, -spotLight.direction);
             if(angleCos > spotLight.coneCos)
             {
                 float spotEffect = smoothstep( spotLight.coneCos, spotLight.penumbraCos, angleCos );
