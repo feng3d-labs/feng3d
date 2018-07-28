@@ -8583,6 +8583,7 @@ declare namespace feng3d {
          * 渲染
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
+        private drawForSpotLight(gl, light, scene3d, camera);
         private drawForPointLight(gl, light, scene3d, camera);
         private drawForDirectionalLight(gl, light, scene3d, camera);
         /**

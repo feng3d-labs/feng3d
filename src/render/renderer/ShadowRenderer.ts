@@ -37,12 +37,63 @@ namespace feng3d
                 this.drawForPointLight(gl, pointLights[i], scene3d, camera);
             }
 
+            var spotLights = scene3d.activeSpotLights.filter((i) => i.shadowType != ShadowType.No_Shadows);
+            for (var i = 0; i < spotLights.length; i++)
+            {
+                spotLights[i].updateDebugShadowMap(scene3d, camera);
+                this.drawForSpotLight(gl, spotLights[i], scene3d, camera);
+            }
+
             var directionalLights = scene3d.activeDirectionalLights.filter((i) => i.shadowType != ShadowType.No_Shadows);
             for (var i = 0; i < directionalLights.length; i++)
             {
                 directionalLights[i].updateDebugShadowMap(scene3d, camera);
                 this.drawForDirectionalLight(gl, directionalLights[i], scene3d, camera);
             }
+        }
+
+        private drawForSpotLight(gl: GL, light: SpotLight, scene3d: Scene3D, camera: Camera): any
+        {
+            this.init();
+
+            light.frameBufferObject.active(gl);
+
+            //
+            gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            var shadowCamera = light.shadowCamera;
+            shadowCamera.transform.localToWorldMatrix = light.transform.localToWorldMatrix;
+
+            var renderAtomic = this.renderAtomic;
+
+            // 获取影响阴影图的渲染对象
+            var meshRenderers = scene3d.getMeshRenderersByCamera(shadowCamera);
+            // 筛选投射阴影的渲染对象
+            var castShadowsMeshRenderers = meshRenderers.filter(i => i.castShadows);
+
+            //
+            renderAtomic.renderParams.useViewRect = true;
+            renderAtomic.renderParams.viewRect = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+
+            //
+            renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
+            renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
+            renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
+            //
+            renderAtomic.uniforms.u_lightType = light.lightType;
+            renderAtomic.uniforms.u_lightPosition = light.position;
+            renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
+            renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
+
+            castShadowsMeshRenderers.forEach(element =>
+            {
+                this.drawGameObject(gl, element.gameObject);
+            });
+
+            light.frameBufferObject.deactive(gl);
         }
 
         private drawForPointLight(gl: GL, light: PointLight, scene3d: Scene3D, camera: Camera): any
@@ -147,7 +198,7 @@ namespace feng3d
             var renderAtomic = this.renderAtomic;
             //
             renderAtomic.renderParams.useViewRect = true;
-            renderAtomic.renderParams.viewRect = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT)
+            renderAtomic.renderParams.viewRect = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
             //
             renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
             renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;

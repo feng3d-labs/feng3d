@@ -14338,11 +14338,49 @@ var feng3d;
                 pointLights[i].updateDebugShadowMap(scene3d, camera);
                 this.drawForPointLight(gl, pointLights[i], scene3d, camera);
             }
+            var spotLights = scene3d.activeSpotLights.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
+            for (var i = 0; i < spotLights.length; i++) {
+                spotLights[i].updateDebugShadowMap(scene3d, camera);
+                this.drawForSpotLight(gl, spotLights[i], scene3d, camera);
+            }
             var directionalLights = scene3d.activeDirectionalLights.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
             for (var i = 0; i < directionalLights.length; i++) {
                 directionalLights[i].updateDebugShadowMap(scene3d, camera);
                 this.drawForDirectionalLight(gl, directionalLights[i], scene3d, camera);
             }
+        };
+        ShadowRenderer.prototype.drawForSpotLight = function (gl, light, scene3d, camera) {
+            var _this = this;
+            this.init();
+            light.frameBufferObject.active(gl);
+            //
+            gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            var shadowCamera = light.shadowCamera;
+            shadowCamera.transform.localToWorldMatrix = light.transform.localToWorldMatrix;
+            var renderAtomic = this.renderAtomic;
+            // 获取影响阴影图的渲染对象
+            var meshRenderers = scene3d.getMeshRenderersByCamera(shadowCamera);
+            // 筛选投射阴影的渲染对象
+            var castShadowsMeshRenderers = meshRenderers.filter(function (i) { return i.castShadows; });
+            //
+            renderAtomic.renderParams.useViewRect = true;
+            renderAtomic.renderParams.viewRect = new feng3d.Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+            //
+            renderAtomic.uniforms.u_projectionMatrix = function () { return shadowCamera.lens.matrix; };
+            renderAtomic.uniforms.u_viewProjection = function () { return shadowCamera.viewProjection; };
+            renderAtomic.uniforms.u_viewMatrix = function () { return shadowCamera.transform.worldToLocalMatrix; };
+            renderAtomic.uniforms.u_cameraMatrix = function () { return shadowCamera.transform.localToWorldMatrix; };
+            //
+            renderAtomic.uniforms.u_lightType = light.lightType;
+            renderAtomic.uniforms.u_lightPosition = light.position;
+            renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
+            renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
+            castShadowsMeshRenderers.forEach(function (element) {
+                _this.drawGameObject(gl, element.gameObject);
+            });
+            light.frameBufferObject.deactive(gl);
         };
         ShadowRenderer.prototype.drawForPointLight = function (gl, light, scene3d, camera) {
             var _this = this;
@@ -21147,7 +21185,7 @@ var feng3d;
                 gameObject.addComponent(feng3d.BillboardComponent);
                 //材质
                 var model = gameObject.getComponent(feng3d.MeshRenderer);
-                model.geometry = new feng3d.PlaneGeometry({ width: this.lightType == feng3d.LightType.Directional ? 0.5 : 1, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
+                model.geometry = new feng3d.PlaneGeometry({ width: this.lightType == feng3d.LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 var textureMaterial = model.material = feng3d.materialFactory.create("texture");
                 //
                 // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
