@@ -20,9 +20,14 @@ namespace feng3d
             {
                 pointLights = scene3d.collectComponents.pointLights.list;
                 directionalLights = scene3d.collectComponents.directionalLights.list;
+
+
+                pointLights = scene3d.activePointLights;
+                directionalLights = scene3d.activeDirectionalLights;
+                spotLights = scene3d.activeSpotLights;
             }
 
-            renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
+            renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length + spotLights.length;
 
             //设置点光源数据
             var castShadowPointLights: PointLight[] = [];

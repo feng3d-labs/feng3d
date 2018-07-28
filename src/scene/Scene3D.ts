@@ -74,6 +74,12 @@ namespace feng3d
         private _visibleAndEnabledMeshRenderers: MeshRenderer[];
         private _skyBoxs: SkyBox[];
         private _activeSkyBoxs: SkyBox[];
+        private _directionalLights: DirectionalLight[];
+        private _activeDirectionalLights: DirectionalLight[];
+        private _pointLights: PointLight[];
+        private _activePointLights: PointLight[];
+        private _spotLights: SpotLight[];
+        private _activeSpotLights: SpotLight[];
 
         /**
          * 构造3D场景
@@ -145,6 +151,12 @@ namespace feng3d
             this._visibleAndEnabledMeshRenderers = null;
             this._skyBoxs = null;
             this._activeSkyBoxs = null;
+            this._directionalLights = null;
+            this._activeDirectionalLights = null;
+            this._pointLights = null;
+            this._activePointLights = null;
+            this._spotLights = null;
+            this._activeSpotLights = null;
         }
 
         /**
@@ -152,11 +164,7 @@ namespace feng3d
          */
         get meshRenderers()
         {
-            if (!this._meshRenderers)
-            {
-                this._meshRenderers = this.getComponentsInChildren(MeshRenderer);
-            }
-            return this._meshRenderers;
+            return this._meshRenderers = this._meshRenderers || this.getComponentsInChildren(MeshRenderer);
         }
 
         /**
@@ -164,11 +172,7 @@ namespace feng3d
          */
         get visibleAndEnabledMeshRenderers()
         {
-            if (!this._visibleAndEnabledMeshRenderers)
-            {
-                this._visibleAndEnabledMeshRenderers = this.meshRenderers.filter(i => i.isVisibleAndEnabled)
-            }
-            return this._visibleAndEnabledMeshRenderers;
+            return this._visibleAndEnabledMeshRenderers = this._visibleAndEnabledMeshRenderers || this.meshRenderers.filter(i => i.isVisibleAndEnabled)
         }
 
         /**
@@ -176,20 +180,42 @@ namespace feng3d
          */
         get skyBoxs()
         {
-            if (!this._skyBoxs)
-            {
-                this._skyBoxs = this.getComponentsInChildren(SkyBox);
-            }
-            return this._skyBoxs;
+            return this._skyBoxs = this._skyBoxs || this.getComponentsInChildren(SkyBox);
         }
 
         get activeSkyBoxs()
         {
-            if (!this._activeSkyBoxs)
-            {
-                this._activeSkyBoxs = this.skyBoxs.filter(i => i.gameObject.globalVisible);
-            }
-            return this._activeSkyBoxs;
+            return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter(i => i.gameObject.globalVisible);
+        }
+
+        get directionalLights()
+        {
+            return this._directionalLights = this._directionalLights || this.getComponentsInChildren(DirectionalLight);
+        }
+
+        get activeDirectionalLights()
+        {
+            return this._activeDirectionalLights = this._activeDirectionalLights || this.directionalLights.filter(i => i.isVisibleAndEnabled);
+        }
+
+        get pointLights()
+        {
+            return this._pointLights = this._pointLights || this.getComponentsInChildren(PointLight);
+        }
+
+        get activePointLights()
+        {
+            return this._activePointLights = this._activePointLights || this.pointLights.filter(i => i.isVisibleAndEnabled);
+        }
+
+        get spotLights()
+        {
+            return this._spotLights = this._spotLights || this.getComponentsInChildren(SpotLight);
+        }
+
+        get activeSpotLights()
+        {
+            return this._activeSpotLights = this._activeSpotLights || this.spotLights.filter(i => i.isVisibleAndEnabled);
         }
 
         get mouseCheckObjects()

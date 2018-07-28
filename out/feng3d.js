@@ -16900,16 +16900,19 @@ var feng3d;
             this._visibleAndEnabledMeshRenderers = null;
             this._skyBoxs = null;
             this._activeSkyBoxs = null;
+            this._directionalLights = null;
+            this._activeDirectionalLights = null;
+            this._pointLights = null;
+            this._activePointLights = null;
+            this._spotLights = null;
+            this._activeSpotLights = null;
         };
         Object.defineProperty(Scene3D.prototype, "meshRenderers", {
             /**
              * 所有MeshRenderer
              */
             get: function () {
-                if (!this._meshRenderers) {
-                    this._meshRenderers = this.getComponentsInChildren(feng3d.MeshRenderer);
-                }
-                return this._meshRenderers;
+                return this._meshRenderers = this._meshRenderers || this.getComponentsInChildren(feng3d.MeshRenderer);
             },
             enumerable: true,
             configurable: true
@@ -16919,10 +16922,7 @@ var feng3d;
              * 所有 可见且开启的 MeshRenderer
              */
             get: function () {
-                if (!this._visibleAndEnabledMeshRenderers) {
-                    this._visibleAndEnabledMeshRenderers = this.meshRenderers.filter(function (i) { return i.isVisibleAndEnabled; });
-                }
-                return this._visibleAndEnabledMeshRenderers;
+                return this._visibleAndEnabledMeshRenderers = this._visibleAndEnabledMeshRenderers || this.meshRenderers.filter(function (i) { return i.isVisibleAndEnabled; });
             },
             enumerable: true,
             configurable: true
@@ -16932,20 +16932,56 @@ var feng3d;
              * 所有 SkyBox
              */
             get: function () {
-                if (!this._skyBoxs) {
-                    this._skyBoxs = this.getComponentsInChildren(feng3d.SkyBox);
-                }
-                return this._skyBoxs;
+                return this._skyBoxs = this._skyBoxs || this.getComponentsInChildren(feng3d.SkyBox);
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Scene3D.prototype, "activeSkyBoxs", {
             get: function () {
-                if (!this._activeSkyBoxs) {
-                    this._activeSkyBoxs = this.skyBoxs.filter(function (i) { return i.gameObject.globalVisible; });
-                }
-                return this._activeSkyBoxs;
+                return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter(function (i) { return i.gameObject.globalVisible; });
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene3D.prototype, "directionalLights", {
+            get: function () {
+                return this._directionalLights = this._directionalLights || this.getComponentsInChildren(feng3d.DirectionalLight);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene3D.prototype, "activeDirectionalLights", {
+            get: function () {
+                return this._activeDirectionalLights = this._activeDirectionalLights || this.directionalLights.filter(function (i) { return i.isVisibleAndEnabled; });
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene3D.prototype, "pointLights", {
+            get: function () {
+                return this._pointLights = this._pointLights || this.getComponentsInChildren(feng3d.PointLight);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene3D.prototype, "activePointLights", {
+            get: function () {
+                return this._activePointLights = this._activePointLights || this.pointLights.filter(function (i) { return i.isVisibleAndEnabled; });
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene3D.prototype, "spotLights", {
+            get: function () {
+                return this._spotLights = this._spotLights || this.getComponentsInChildren(feng3d.SpotLight);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene3D.prototype, "activeSpotLights", {
+            get: function () {
+                return this._activeSpotLights = this._activeSpotLights || this.spotLights.filter(function (i) { return i.isVisibleAndEnabled; });
             },
             enumerable: true,
             configurable: true
@@ -21319,8 +21355,11 @@ var feng3d;
             if (scene3d) {
                 pointLights = scene3d.collectComponents.pointLights.list;
                 directionalLights = scene3d.collectComponents.directionalLights.list;
+                pointLights = scene3d.activePointLights;
+                directionalLights = scene3d.activeDirectionalLights;
+                spotLights = scene3d.activeSpotLights;
             }
-            renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length;
+            renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length + spotLights.length;
             //设置点光源数据
             var castShadowPointLights = [];
             var unCastShadowPointLights = [];

@@ -9467,6 +9467,12 @@ declare namespace feng3d {
         private _visibleAndEnabledMeshRenderers;
         private _skyBoxs;
         private _activeSkyBoxs;
+        private _directionalLights;
+        private _activeDirectionalLights;
+        private _pointLights;
+        private _activePointLights;
+        private _spotLights;
+        private _activeSpotLights;
         /**
          * 构造3D场景
          */
@@ -9488,6 +9494,12 @@ declare namespace feng3d {
          */
         readonly skyBoxs: SkyBox[];
         readonly activeSkyBoxs: SkyBox[];
+        readonly directionalLights: DirectionalLight[];
+        readonly activeDirectionalLights: DirectionalLight[];
+        readonly pointLights: PointLight[];
+        readonly activePointLights: PointLight[];
+        readonly spotLights: SpotLight[];
+        readonly activeSpotLights: SpotLight[];
         readonly mouseCheckObjects: {
             layer: number;
             objects: GameObject[];
