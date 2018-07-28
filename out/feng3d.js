@@ -21325,7 +21325,7 @@ var feng3d;
             /**
              *
              */
-            _this.angle = 30;
+            _this.angle = 60;
             /**
              * 半影.
              */
@@ -21338,14 +21338,14 @@ var feng3d;
              * 椎体cos值
              */
             get: function () {
-                return Math.cos(this.angle * feng3d.FMath.DEG2RAD);
+                return Math.cos(this.angle * 0.5 * feng3d.FMath.DEG2RAD);
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(SpotLight.prototype, "penumbraCos", {
             get: function () {
-                return Math.cos(this.angle * feng3d.FMath.DEG2RAD * (1 - this.penumbra));
+                return Math.cos(this.angle * 0.5 * feng3d.FMath.DEG2RAD * (1 - this.penumbra));
             },
             enumerable: true,
             configurable: true
@@ -21368,6 +21368,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.watch("invalidAngle")
         ], SpotLight.prototype, "angle", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], SpotLight.prototype, "penumbra", void 0);
         return SpotLight;
     }(feng3d.Light));
     feng3d.SpotLight = SpotLight;

@@ -22,11 +22,13 @@ namespace feng3d
         @oav()
         @serialize
         @watch("invalidAngle")
-        angle = 30;
+        angle = 60;
 
         /**
          * 半影.
          */
+        @oav()
+        @serialize
         penumbra = 0;
 
         /**
@@ -34,12 +36,12 @@ namespace feng3d
          */
         get coneCos()
         {
-            return Math.cos(this.angle * FMath.DEG2RAD);
+            return Math.cos(this.angle * 0.5 * FMath.DEG2RAD);
         }
 
         get penumbraCos()
         {
-            return Math.cos(this.angle * FMath.DEG2RAD * (1 - this.penumbra));
+            return Math.cos(this.angle * 0.5 * FMath.DEG2RAD * (1 - this.penumbra));
         }
 
         private perspectiveLens: PerspectiveLens;
