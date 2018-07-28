@@ -7488,6 +7488,7 @@ declare namespace feng3d {
          * 生成投影的聚光灯光源
          */
         u_castShadowSpotLights: SpotLight[];
+        u_spotShadowMatrix: Matrix4x4[];
         /**
          * 点光源阴影图
          */

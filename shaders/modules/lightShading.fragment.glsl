@@ -16,7 +16,7 @@
 #endif
 
 #if NUM_SPOT_LIGHTS > 0
-    // 方向光源
+    // 聚光灯
     struct SpotLight
     {
         // 位置
@@ -104,34 +104,6 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
     vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_worldPosition);
 
     vec3 resultColor = vec3(0.0,0.0,0.0);
-
-    #if NUM_SPOT_LIGHTS > 0
-        SpotLight spotLight;
-        for(int i = 0; i < NUM_SPOT_LIGHTS; i++)
-        {
-            spotLight = u_spotLights[i];
-            //
-            vec3 lightOffset = spotLight.position - v_worldPosition;
-            //光照方向
-            vec3 lightDir = normalize(lightOffset);
-            float angleCos = dot(lightDir, -spotLight.direction);
-            if(angleCos > spotLight.coneCos)
-            {
-                float spotEffect = smoothstep( spotLight.coneCos, spotLight.penumbraCos, angleCos );
-                
-                //灯光颜色
-                vec3 lightColor = spotLight.color;
-                //灯光强度
-                float lightIntensity = spotLight.intensity;
-                float falloff = computeDistanceLightFalloff(length(lightOffset), spotLight.range);
-                float diffuse = calculateLightDiffuse(normal, lightDir);
-                float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
-                float shadow = 1.0;
-                
-                resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow * spotEffect;
-            }            
-        }
-    #endif
     
     #if NUM_POINTLIGHT > 0
         PointLight pointLight;
@@ -175,6 +147,63 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
             float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
             //
             resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;
+        }
+    #endif
+
+    #if NUM_SPOT_LIGHTS > 0
+        SpotLight spotLight;
+        for(int i = 0; i < NUM_SPOT_LIGHTS; i++)
+        {
+            spotLight = u_spotLights[i];
+            //
+            vec3 lightOffset = spotLight.position - v_worldPosition;
+            //光照方向
+            vec3 lightDir = normalize(lightOffset);
+            float angleCos = dot(lightDir, -spotLight.direction);
+            if(angleCos > spotLight.coneCos)
+            {
+                float spotEffect = smoothstep( spotLight.coneCos, spotLight.penumbraCos, angleCos );
+                
+                //灯光颜色
+                vec3 lightColor = spotLight.color;
+                //灯光强度
+                float lightIntensity = spotLight.intensity;
+                float falloff = computeDistanceLightFalloff(length(lightOffset), spotLight.range);
+                float diffuse = calculateLightDiffuse(normal, lightDir);
+                float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
+                float shadow = 1.0;
+                
+                resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow * spotEffect;
+            }            
+        }
+    #endif
+    
+    #if NUM_SPOT_LIGHTS_CASTSHADOW > 0
+        CastShadowSpotLight castShadowSpotLight;
+        for(int i = 0; i < NUM_SPOT_LIGHTS_CASTSHADOW; i++)
+        {
+            castShadowSpotLight = u_castShadowSpotLights[i];
+            //
+            vec3 lightOffset = castShadowSpotLight.position - v_worldPosition;
+            //光照方向
+            vec3 lightDir = normalize(lightOffset);
+            float angleCos = dot(lightDir, -castShadowSpotLight.direction);
+            if(angleCos > castShadowSpotLight.coneCos)
+            {
+                float spotEffect = smoothstep( castShadowSpotLight.coneCos, castShadowSpotLight.penumbraCos, angleCos );
+                
+                //灯光颜色
+                vec3 lightColor = castShadowSpotLight.color;
+                //灯光强度
+                float lightIntensity = castShadowSpotLight.intensity;
+                float falloff = computeDistanceLightFalloff(length(lightOffset), castShadowSpotLight.range);
+                float diffuse = calculateLightDiffuse(normal, lightDir);
+                float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
+                // 计算阴影
+                float shadow = getShadow( u_spotShadowMaps[i], castShadowSpotLight.shadowType, castShadowSpotLight.shadowMapSize, castShadowSpotLight.shadowBias, castShadowSpotLight.shadowRadius, v_spotShadowCoord[ i ] );
+                
+                resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow * spotEffect;
+            }            
         }
     #endif
 

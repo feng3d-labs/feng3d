@@ -182,6 +182,8 @@ namespace feng3d
          */
         u_castShadowSpotLights: SpotLight[]
 
+        u_spotShadowMatrix: Matrix4x4[];
+
         /**
          * 点光源阴影图
          */

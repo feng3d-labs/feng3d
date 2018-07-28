@@ -52,12 +52,14 @@ namespace feng3d
             var castShadowSpotLights: SpotLight[] = [];
             var unCastShadowSpotLights: SpotLight[] = [];
             var spotShadowMaps: Texture2D[] = [];
+            var spotShadowMatrix: Matrix4x4[] = [];
             spotLights.forEach(element =>
             {
                 if (!element.isVisibleAndEnabled) return;
                 if (element.shadowType != ShadowType.No_Shadows && this._meshRenderer.receiveShadows)
                 {
                     castShadowSpotLights.push(element);
+                    spotShadowMatrix.push(element.shadowCamera.viewProjection);
                     spotShadowMaps.push(element.shadowMap);
                 } else
                 {
@@ -69,6 +71,7 @@ namespace feng3d
             //
             renderAtomic.uniforms.u_spotLights = unCastShadowSpotLights;
             renderAtomic.uniforms.u_castShadowSpotLights = castShadowSpotLights;
+            renderAtomic.uniforms.u_spotShadowMatrix = spotShadowMatrix;
             renderAtomic.uniforms.u_spotShadowMaps = spotShadowMaps;
 
             // 设置方向光源数据
