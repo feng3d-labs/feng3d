@@ -15,6 +15,29 @@
     uniform PointLight u_pointLights[NUM_POINTLIGHT];
 #endif
 
+#if NUM_SPOT_LIGHTS > 0
+    // 方向光源
+    struct SpotLight
+    {
+        // 位置
+        vec3 position;
+        // 颜色
+        vec3 color;
+        // 强度
+        float intensity;
+        // 范围
+        float range;
+        // 方向
+        vec3 direction;
+        // 椎体cos值
+        float coneCos;
+        // 半影cos
+        float penumbraCos;
+    };
+    // 方向光源列表
+    uniform SpotLight u_spotLights[ NUM_SPOT_LIGHTS ];
+#endif
+
 #if NUM_DIRECTIONALLIGHT > 0
     // 方向光源
     struct DirectionalLight
@@ -29,6 +52,8 @@
     // 方向光源列表
     uniform DirectionalLight u_directionalLights[ NUM_DIRECTIONALLIGHT ];
 #endif
+
+
 
 //卡通
 #ifdef IS_CARTOON
@@ -79,6 +104,35 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
     vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_worldPosition);
 
     vec3 resultColor = vec3(0.0,0.0,0.0);
+
+    #if NUM_SPOT_LIGHTS > 0
+        SpotLight spotLight;
+        for(int i = 0; i < NUM_SPOT_LIGHTS; i++)
+        {
+            spotLight = u_spotLights[i];
+            //
+            vec3 lightOffset = spotLight.position - v_worldPosition;
+            //光照方向
+            vec3 lightDir = normalize(lightOffset);
+            float angleCos = dot(lightDir, spotLight.direction);
+            if(angleCos > spotLight.coneCos)
+            {
+                float spotEffect = smoothstep( spotLight.coneCos, spotLight.penumbraCos, angleCos );
+                
+                //灯光颜色
+                vec3 lightColor = spotLight.color;
+                //灯光强度
+                float lightIntensity = spotLight.intensity;
+                float falloff = computeDistanceLightFalloff(length(lightOffset), spotLight.range);
+                float diffuse = calculateLightDiffuse(normal, lightDir);
+                float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
+                float shadow = 1.0;
+                
+                resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow * spotEffect;
+            }            
+        }
+    #endif
+    
     #if NUM_POINTLIGHT > 0
         PointLight pointLight;
         for(int i = 0;i<NUM_POINTLIGHT;i++)

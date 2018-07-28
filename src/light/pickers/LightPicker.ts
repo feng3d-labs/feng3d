@@ -13,6 +13,7 @@ namespace feng3d
         {
             var pointLights: PointLight[] = [];
             var directionalLights: DirectionalLight[] = [];
+            var spotLights: SpotLight[] = [];
 
             var scene3d = this._meshRenderer.gameObject.scene;
             if (scene3d)
@@ -45,6 +46,29 @@ namespace feng3d
             renderAtomic.uniforms.u_pointLights = unCastShadowPointLights;
             renderAtomic.uniforms.u_castShadowPointLights = castShadowPointLights;
             renderAtomic.uniforms.u_pointShadowMaps = pointShadowMaps;
+
+            //设置聚光灯光源数据
+            var castShadowSpotLights: SpotLight[] = [];
+            var unCastShadowSpotLights: SpotLight[] = [];
+            var spotShadowMaps: Texture2D[] = [];
+            spotLights.forEach(element =>
+            {
+                if (!element.isVisibleAndEnabled) return;
+                if (element.shadowType != ShadowType.No_Shadows && this._meshRenderer.receiveShadows)
+                {
+                    castShadowSpotLights.push(element);
+                    spotShadowMaps.push(element.shadowMap);
+                } else
+                {
+                    unCastShadowSpotLights.push(element);
+                }
+            });
+            renderAtomic.shaderMacro.NUM_SPOT_LIGHTS = unCastShadowSpotLights.length;
+            renderAtomic.shaderMacro.NUM_SPOT_LIGHTS_CASTSHADOW = castShadowSpotLights.length;
+            //
+            renderAtomic.uniforms.u_spotLights = unCastShadowSpotLights;
+            renderAtomic.uniforms.u_castShadowSpotLights = castShadowSpotLights;
+            renderAtomic.uniforms.u_spotShadowMaps = spotShadowMaps;
 
             // 设置方向光源数据
             var castShadowDirectionalLights: DirectionalLight[] = [];

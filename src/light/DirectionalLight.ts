@@ -7,26 +7,11 @@ namespace feng3d
      */
     export class DirectionalLight extends Light
     {
-        /**
-         * 光照方向
-         */
-        get direction()
-        {
-            return this.transform.localToWorldMatrix.forward
-        }
+        lightType = LightType.Directional;
 
         constructor()
         {
             super();
-        }
-
-        /**
-         * 构建
-         */
-        init(gameObject: GameObject)
-        {
-            super.init(gameObject);
-            this.lightType = LightType.Directional;
         }
 
         /**

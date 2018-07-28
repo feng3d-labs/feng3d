@@ -7477,9 +7477,21 @@ declare namespace feng3d {
          */
         u_castShadowPointLights: PointLight[];
         /**
-         * 方向光源阴影图
+         * 点光源阴影图
          */
         u_pointShadowMaps: Texture2D[];
+        /**
+         * 聚光灯光源
+         */
+        u_spotLights: SpotLight[];
+        /**
+         * 生成投影的聚光灯光源
+         */
+        u_castShadowSpotLights: SpotLight[];
+        /**
+         * 点光源阴影图
+         */
+        u_spotShadowMaps: Texture2D[];
         /**
          * 方向光源数组
          */
@@ -8150,6 +8162,14 @@ declare namespace feng3d {
          * 生成投影的点光源数量
          */
         NUM_POINTLIGHT_CASTSHADOW: number;
+        /**
+         * 聚光灯光源数量
+         */
+        NUM_SPOT_LIGHTS: number;
+        /**
+         * 生成投影的聚光灯光源数量
+         */
+        NUM_SPOT_LIGHTS_CASTSHADOW: number;
         /**
          * 骨骼关节数量
          */
@@ -10876,6 +10896,14 @@ declare namespace feng3d {
          */
         shadowType: ShadowType;
         /**
+         * 光源位置
+         */
+        readonly position: Vector3;
+        /**
+         * 光照方向
+         */
+        readonly direction: Vector3;
+        /**
          * 阴影偏差，用来解决判断是否为阴影时精度问题
          */
         shadowBias: number;
@@ -10917,15 +10945,8 @@ declare namespace feng3d {
      * @author feng 2016-12-13
      */
     class DirectionalLight extends Light {
-        /**
-         * 光照方向
-         */
-        readonly direction: Vector3;
+        lightType: LightType;
         constructor();
-        /**
-         * 构建
-         */
-        init(gameObject: GameObject): void;
         /**
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
@@ -10939,23 +10960,16 @@ declare namespace feng3d {
      * @author feng 2016-12-13
      */
     class PointLight extends Light {
+        lightType: LightType;
         /**
          * 光照范围
          */
         range: number;
         /**
-         * 光源位置
-         */
-        readonly position: Vector3;
-        /**
          * 阴影图尺寸
          */
         readonly shadowMapSize: Vector2;
         constructor();
-        /**
-         * 构建
-         */
-        init(gameObject: GameObject): void;
         private invalidRange();
     }
 }
@@ -10965,25 +10979,26 @@ declare namespace feng3d {
      * @author feng 2016-12-13
      */
     class SpotLight extends Light {
+        lightType: LightType;
         /**
          * 光照范围
          */
         range: number;
+        /**
+         *
+         */
         angle: number;
         /**
-         * 光源位置
+         * 半影.
          */
-        readonly position: Vector3;
+        penumbra: number;
         /**
-         * 阴影图尺寸
+         * 椎体cos值
          */
-        readonly shadowMapSize: Vector2;
+        readonly coneCos: number;
+        readonly penumbraCos: number;
         private perspectiveLens;
         constructor();
-        /**
-         * 构建
-         */
-        init(gameObject: GameObject): void;
         private invalidRange();
         private invalidAngle();
     }

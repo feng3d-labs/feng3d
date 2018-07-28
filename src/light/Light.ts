@@ -35,6 +35,22 @@ namespace feng3d
         shadowType = ShadowType.No_Shadows;
 
         /**
+         * 光源位置
+         */
+        get position()
+        {
+            return this.transform.scenePosition;
+        }
+
+        /**
+         * 光照方向
+         */
+        get direction()
+        {
+            return this.transform.localToWorldMatrix.forward
+        }
+
+        /**
          * 阴影偏差，用来解决判断是否为阴影时精度问题
          */
         shadowBias = -0.005;

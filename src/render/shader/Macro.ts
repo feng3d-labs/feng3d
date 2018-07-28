@@ -32,6 +32,16 @@ namespace feng3d
          */
         NUM_POINTLIGHT_CASTSHADOW: number;
 
+        /** 
+         * 聚光灯光源数量
+         */
+        NUM_SPOT_LIGHTS: number;
+
+        /** 
+         * 生成投影的聚光灯光源数量
+         */
+        NUM_SPOT_LIGHTS_CASTSHADOW: number;
+
         /**
          * 骨骼关节数量
          */

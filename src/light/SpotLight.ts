@@ -6,6 +6,8 @@ namespace feng3d
      */
     export class SpotLight extends Light
     {
+        lightType = LightType.Spot;
+
         /**
          * 光照范围
          */
@@ -14,25 +16,30 @@ namespace feng3d
         @watch("invalidRange")
         range = 10;
 
+        /**
+         * 
+         */
         @oav()
         @serialize
         @watch("invalidAngle")
         angle = 30;
 
         /**
-         * 光源位置
+         * 半影.
          */
-        get position()
-        {
-            return this.transform.scenePosition;
-        }
+        penumbra = 0;
 
         /**
-         * 阴影图尺寸
+         * 椎体cos值
          */
-        get shadowMapSize()
+        get coneCos()
         {
-            return this.shadowMap.getSize().multiply(new Vector2(1 / 4, 1 / 2));
+            return Math.cos(this.angle * FMath.DEG2RAD);
+        }
+
+        get penumbraCos()
+        {
+            return Math.cos(this.angle * FMath.DEG2RAD * (1 - this.penumbra));
         }
 
         private perspectiveLens: PerspectiveLens;
@@ -41,15 +48,6 @@ namespace feng3d
         {
             super();
             this.perspectiveLens = this.shadowCamera.lens = new PerspectiveLens(this.angle, 1, 0.1, this.range);
-        }
-
-        /**
-         * 构建
-         */
-        init(gameObject: GameObject)
-        {
-            super.init(gameObject);
-            this.lightType = LightType.Point;
         }
 
         private invalidRange()

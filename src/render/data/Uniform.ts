@@ -168,9 +168,24 @@ namespace feng3d
         u_castShadowPointLights: PointLight[]
 
         /**
-         * 方向光源阴影图
+         * 点光源阴影图
          */
         u_pointShadowMaps: Texture2D[];
+
+        /**
+         * 聚光灯光源
+         */
+        u_spotLights: SpotLight[];
+
+        /**
+         * 生成投影的聚光灯光源
+         */
+        u_castShadowSpotLights: SpotLight[]
+
+        /**
+         * 点光源阴影图
+         */
+        u_spotShadowMaps: Texture2D[];
 
         /**
          * 方向光源数组

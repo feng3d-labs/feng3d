@@ -6,6 +6,8 @@ namespace feng3d
      */
     export class PointLight extends Light
     {
+        lightType = LightType.Point;
+
         /**
          * 光照范围
          */
@@ -13,14 +15,6 @@ namespace feng3d
         @serialize
         @watch("invalidRange")
         range = 10;
-
-        /**
-         * 光源位置
-         */
-        get position()
-        {
-            return this.transform.scenePosition;
-        }
 
         /**
          * 阴影图尺寸
@@ -34,15 +28,6 @@ namespace feng3d
         {
             super();
             this.shadowCamera.lens = new PerspectiveLens(90, 1, 0.1, this.range);
-        }
-
-        /**
-         * 构建
-         */
-        init(gameObject: GameObject)
-        {
-            super.init(gameObject);
-            this.lightType = LightType.Point;
         }
 
         private invalidRange()
