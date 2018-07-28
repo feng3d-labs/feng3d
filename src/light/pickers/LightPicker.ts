@@ -18,10 +18,6 @@ namespace feng3d
             var scene3d = this._meshRenderer.gameObject.scene;
             if (scene3d)
             {
-                pointLights = scene3d.collectComponents.pointLights.list;
-                directionalLights = scene3d.collectComponents.directionalLights.list;
-
-
                 pointLights = scene3d.activePointLights;
                 directionalLights = scene3d.activeDirectionalLights;
                 spotLights = scene3d.activeSpotLights;

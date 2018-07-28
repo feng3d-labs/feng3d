@@ -9429,39 +9429,6 @@ declare namespace feng3d {
          * 指定更新脚本标记，用于过滤需要调用update的脚本
          */
         updateScriptFlag: ScriptFlag;
-        /**
-         * 收集组件
-         */
-        collectComponents: {
-            cameras: {
-                cls: typeof Camera;
-                list: Camera[];
-            };
-            pointLights: {
-                cls: typeof PointLight;
-                list: PointLight[];
-            };
-            directionalLights: {
-                cls: typeof DirectionalLight;
-                list: DirectionalLight[];
-            };
-            skyboxs: {
-                cls: typeof SkyBox;
-                list: SkyBox[];
-            };
-            animations: {
-                cls: typeof Animation;
-                list: Animation[];
-            };
-            scripts: {
-                cls: typeof ScriptComponent;
-                list: ScriptComponent[];
-            };
-            behaviours: {
-                cls: typeof Behaviour;
-                list: Behaviour[];
-            };
-        };
         private _mouseCheckObjects;
         private _meshRenderers;
         private _visibleAndEnabledMeshRenderers;
@@ -9473,6 +9440,10 @@ declare namespace feng3d {
         private _activePointLights;
         private _spotLights;
         private _activeSpotLights;
+        private _animations;
+        private _activeAnimations;
+        private _behaviours;
+        private _activeBehaviours;
         /**
          * 构造3D场景
          */
@@ -9500,6 +9471,10 @@ declare namespace feng3d {
         readonly activePointLights: PointLight[];
         readonly spotLights: SpotLight[];
         readonly activeSpotLights: SpotLight[];
+        readonly animations: Animation[];
+        readonly activeAnimations: Animation[];
+        readonly behaviours: Behaviour[];
+        readonly activeBehaviours: Behaviour[];
         readonly mouseCheckObjects: {
             layer: number;
             objects: GameObject[];
@@ -9508,10 +9483,6 @@ declare namespace feng3d {
         _removeGameObject(gameobject: GameObject): void;
         _addComponent(component: Component): void;
         _removeComponent(component: Component): void;
-        /**
-         * 获取天空盒
-         */
-        getActiveSkyBox(): SkyBox;
         private pickMap;
         /**
          * 获取拾取缓存
@@ -12006,7 +11977,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class Animation extends Component {
+    class Animation extends Behaviour {
         animation: AnimationClip;
         private _animation;
         animations: AnimationClip[];

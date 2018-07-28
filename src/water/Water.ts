@@ -11,7 +11,7 @@ namespace feng3d
 
         preRender(renderAtomic: RenderAtomic)
         {
-            var sun = this.gameObject.scene.collectComponents.directionalLights.list[0];
+            var sun = this.gameObject.scene.activeDirectionalLights[0];
             if (sun)
             {
                 this.material.uniforms.u_sunColor = sun.color;

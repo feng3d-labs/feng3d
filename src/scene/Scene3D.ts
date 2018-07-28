@@ -35,40 +35,6 @@ namespace feng3d
          */
         updateScriptFlag = ScriptFlag.feng3d;
 
-        /**
-         * 收集组件
-         */
-        collectComponents: {
-            cameras: {
-                cls: typeof Camera;
-                list: Camera[];
-            };
-            pointLights: {
-                cls: typeof PointLight;
-                list: PointLight[];
-            };
-            directionalLights: {
-                cls: typeof DirectionalLight;
-                list: DirectionalLight[];
-            };
-            skyboxs: {
-                cls: typeof SkyBox;
-                list: SkyBox[];
-            };
-            animations: {
-                cls: typeof Animation;
-                list: Animation[];
-            };
-            scripts: {
-                cls: typeof ScriptComponent;
-                list: ScriptComponent[];
-            };
-            behaviours: {
-                cls: typeof Behaviour;
-                list: Behaviour[];
-            };
-        };
-
         private _mouseCheckObjects: { layer: number, objects: GameObject[] }[];
         private _meshRenderers: MeshRenderer[];
         private _visibleAndEnabledMeshRenderers: MeshRenderer[];
@@ -80,6 +46,10 @@ namespace feng3d
         private _activePointLights: PointLight[];
         private _spotLights: SpotLight[];
         private _activeSpotLights: SpotLight[];
+        private _animations: Animation[];
+        private _activeAnimations: Animation[];
+        private _behaviours: Behaviour[];
+        private _activeBehaviours: Behaviour[];
 
         /**
          * 构造3D场景
@@ -103,15 +73,6 @@ namespace feng3d
 
         initCollectComponents()
         {
-            this.collectComponents = {
-                cameras: { cls: Camera, list: new Array<Camera>() },
-                pointLights: { cls: PointLight, list: new Array<PointLight>() },
-                directionalLights: { cls: DirectionalLight, list: new Array<DirectionalLight>() },
-                skyboxs: { cls: SkyBox, list: new Array<SkyBox>() },
-                animations: { cls: Animation, list: new Array<Animation>() },
-                behaviours: { cls: Behaviour, list: new Array<Behaviour>() },
-                scripts: { cls: ScriptComponent, list: new Array<ScriptComponent>() },
-            };
             var _this = this;
             collect(this.gameObject);
 
@@ -132,12 +93,12 @@ namespace feng3d
             // 每帧清理拾取缓存
             this.pickMap.forEach(item => item.clear());
 
-            this.collectComponents.animations.list.forEach(element =>
+            this.animations.forEach(element =>
             {
                 if (element.isplaying)
                     element.update(interval);
             });
-            this.collectComponents.behaviours.list.forEach(element =>
+            this.behaviours.forEach(element =>
             {
                 if (element.isVisibleAndEnabled && (this.updateScriptFlag & element.flag))
                     element.update(interval);
@@ -157,6 +118,10 @@ namespace feng3d
             this._activePointLights = null;
             this._spotLights = null;
             this._activeSpotLights = null;
+            this._animations = null;
+            this._activeAnimations = null;
+            this._behaviours = null;
+            this._activeBehaviours = null;
         }
 
         /**
@@ -218,6 +183,26 @@ namespace feng3d
             return this._activeSpotLights = this._activeSpotLights || this.spotLights.filter(i => i.isVisibleAndEnabled);
         }
 
+        get animations()
+        {
+            return this._animations = this._animations || this.getComponentsInChildren(Animation);
+        }
+
+        get activeAnimations()
+        {
+            return this._activeAnimations = this._activeAnimations || this.animations.filter(i => i.isVisibleAndEnabled);
+        }
+
+        get behaviours()
+        {
+            return this._behaviours = this._behaviours || this.getComponentsInChildren(Behaviour);
+        }
+
+        get activeBehaviours()
+        {
+            return this._activeBehaviours = this._activeBehaviours || this.behaviours.filter(i => i.isVisibleAndEnabled);
+        }
+
         get mouseCheckObjects()
         {
             if (this._mouseCheckObjects)
@@ -277,56 +262,12 @@ namespace feng3d
 
         _addComponent(component: Component)
         {
-            var collectComponents = this.collectComponents;
-            for (var key in collectComponents)
-            {
-                if (collectComponents.hasOwnProperty(key))
-                {
-                    var element: {
-                        cls: typeof Component;
-                        list: Component[];
-                    } = collectComponents[key];
-                    if (component instanceof element.cls)
-                    {
-                        element.list.push(component);
-                    }
-                }
-            }
             this.dispatch("addComponentToScene", component);
         }
 
         _removeComponent(component: Component)
         {
-            var collectComponents = this.collectComponents;
-            for (var key in collectComponents)
-            {
-                if (collectComponents.hasOwnProperty(key))
-                {
-                    var element: {
-                        cls: typeof Component;
-                        list: Component[];
-                    } = collectComponents[key];
-                    if (component instanceof element.cls)
-                    {
-                        var index = element.list.indexOf(component);
-                        if (index != -1)
-                            element.list.splice(index, 1);
-                    }
-                }
-            }
             this.dispatch("removeComponentFromScene", component);
-        }
-
-        /**
-         * 获取天空盒
-         */
-        getActiveSkyBox()
-        {
-            var skyboxs = this.collectComponents.skyboxs.list.filter((skybox) =>
-            {
-                return skybox.gameObject.globalVisible;
-            });
-            return skyboxs[0];
         }
 
         private pickMap = new Map<Camera, ScenePickCache>();

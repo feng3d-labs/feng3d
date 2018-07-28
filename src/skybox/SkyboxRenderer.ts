@@ -57,7 +57,7 @@ namespace feng3d
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
-            var skybox = scene3d.getActiveSkyBox();
+            var skybox = scene3d.activeSkyBoxs[0];
             this.drawSkyBox(gl, skybox, camera);
         }
 

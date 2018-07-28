@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export class Animation extends Component
+    export class Animation extends Behaviour
     {
         @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } })
         @serialize

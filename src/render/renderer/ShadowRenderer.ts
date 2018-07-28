@@ -30,14 +30,14 @@ namespace feng3d
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
-            var pointLights = scene3d.collectComponents.pointLights.list.filter((i) => i.shadowType != ShadowType.No_Shadows);
+            var pointLights = scene3d.activePointLights.filter((i) => i.shadowType != ShadowType.No_Shadows);
             for (var i = 0; i < pointLights.length; i++)
             {
                 pointLights[i].updateDebugShadowMap(scene3d, camera);
                 this.drawForPointLight(gl, pointLights[i], scene3d, camera);
             }
 
-            var directionalLights = scene3d.collectComponents.directionalLights.list.filter((i) => i.shadowType != ShadowType.No_Shadows);
+            var directionalLights = scene3d.activeDirectionalLights.filter((i) => i.shadowType != ShadowType.No_Shadows);
             for (var i = 0; i < directionalLights.length; i++)
             {
                 directionalLights[i].updateDebugShadowMap(scene3d, camera);
