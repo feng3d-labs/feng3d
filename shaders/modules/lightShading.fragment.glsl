@@ -168,7 +168,7 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
                 vec3 lightColor = spotLight.color;
                 //灯光强度
                 float lightIntensity = spotLight.intensity;
-                float falloff = computeDistanceLightFalloff(length(lightOffset), spotLight.range);
+                float falloff = computeDistanceLightFalloff(length(lightOffset) * angleCos, spotLight.range);
                 float diffuse = calculateLightDiffuse(normal, lightDir);
                 float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
                 float shadow = 1.0;
@@ -196,7 +196,7 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
                 vec3 lightColor = castShadowSpotLight.color;
                 //灯光强度
                 float lightIntensity = castShadowSpotLight.intensity;
-                float falloff = computeDistanceLightFalloff(length(lightOffset), castShadowSpotLight.range);
+                float falloff = computeDistanceLightFalloff(length(lightOffset) * angleCos, castShadowSpotLight.range);
                 float diffuse = calculateLightDiffuse(normal, lightDir);
                 float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
                 // 计算阴影
