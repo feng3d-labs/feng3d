@@ -200,7 +200,7 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
                 float diffuse = calculateLightDiffuse(normal, lightDir);
                 float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
                 // 计算阴影
-                float shadow = getShadow( u_spotShadowMaps[i], castShadowSpotLight.shadowType, castShadowSpotLight.shadowMapSize, castShadowSpotLight.shadowBias, castShadowSpotLight.shadowRadius, v_spotShadowCoord[ i ] );
+                float shadow = getShadow( u_spotShadowMaps[i], castShadowSpotLight.shadowType, castShadowSpotLight.shadowMapSize, castShadowSpotLight.shadowBias, castShadowSpotLight.shadowRadius, v_spotShadowCoord[ i ], -lightOffset, castShadowSpotLight.shadowCameraNear, castShadowSpotLight.shadowCameraFar);
                 
                 resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow * spotEffect;
             }            
@@ -233,6 +233,8 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
         for(int i = 0;i<NUM_DIRECTIONALLIGHT_CASTSHADOW;i++)
         {
             castShadowDirectionalLight = u_castShadowDirectionalLights[i];
+            //
+            vec3 lightOffset = castShadowDirectionalLight.position - v_worldPosition;
             //光照方向
             vec3 lightDir = normalize(-castShadowDirectionalLight.direction);
             //灯光颜色
@@ -240,7 +242,7 @@ vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambie
             //灯光强度
             float lightIntensity = castShadowDirectionalLight.intensity;
             // 计算阴影
-            float shadow = getShadow( u_directionalShadowMaps[i], castShadowDirectionalLight.shadowType, castShadowDirectionalLight.shadowMapSize, castShadowDirectionalLight.shadowBias, castShadowDirectionalLight.shadowRadius, v_directionalShadowCoord[ i ] );
+            float shadow = getShadow( u_directionalShadowMaps[i], castShadowDirectionalLight.shadowType, castShadowDirectionalLight.shadowMapSize, castShadowDirectionalLight.shadowBias, castShadowDirectionalLight.shadowRadius, v_directionalShadowCoord[ i ], -lightOffset, castShadowDirectionalLight.shadowCameraNear, castShadowDirectionalLight.shadowCameraFar);
             
             float falloff = 1.0;
             float diffuse = calculateLightDiffuse(normal, lightDir);

@@ -9,6 +9,14 @@ namespace feng3d
     {
         lightType = LightType.Directional;
 
+        /**
+         * 光源位置
+         */
+        get position()
+        {
+            return this.shadowCamera.transform.scenePosition;
+        }
+
         constructor()
         {
             super();

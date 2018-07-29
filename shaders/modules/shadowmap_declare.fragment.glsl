@@ -55,6 +55,8 @@
             float shadowRadius;
             // 阴影图尺寸
             vec2 shadowMapSize;
+            float shadowCameraNear;
+            float shadowCameraFar;
         };
         // 投影的投影的聚光灯列表
         uniform CastShadowSpotLight u_castShadowSpotLights[NUM_SPOT_LIGHTS_CASTSHADOW];
@@ -82,6 +84,10 @@
             float shadowRadius;
             // 阴影图尺寸
             vec2 shadowMapSize;
+            // 位置
+            vec3 position;
+            float shadowCameraNear;
+            float shadowCameraFar;
         };
         // 投影的方向光源列表
         uniform CastShadowDirectionalLight u_castShadowDirectionalLights[NUM_DIRECTIONALLIGHT_CASTSHADOW];
@@ -119,13 +125,17 @@
     }
 
     // 计算阴影值 @see https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/shadowmap_pars_fragment.glsl
-    float getShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord ) 
+    float getShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar) 
     {
         float shadow = 1.0;
 
-        shadowCoord.xyz /= shadowCoord.w;
-        shadowCoord = (shadowCoord + 1.0) / 2.0;
-        shadowCoord.z += shadowBias;
+        shadowCoord.xy /= shadowCoord.w;
+        shadowCoord.xy = (shadowCoord.xy + 1.0) / 2.0;
+
+        // dp = normalized distance from light to fragment position
+        float dp = ( length( lightToPosition ) - shadowCameraNear ) / ( shadowCameraFar - shadowCameraNear ); // need to clamp?
+        dp += shadowBias;
+        shadowCoord.z = dp;
 
         // if ( something && something ) breaks ATI OpenGL shader compiler
         // if ( all( something, something ) ) using this instead

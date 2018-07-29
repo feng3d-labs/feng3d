@@ -10931,6 +10931,10 @@ declare namespace feng3d {
      */
     class DirectionalLight extends Light {
         lightType: LightType;
+        /**
+         * 光源位置
+         */
+        readonly position: Vector3;
         constructor();
         /**
          * 通过视窗摄像机进行更新
