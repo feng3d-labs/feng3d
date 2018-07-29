@@ -22555,6 +22555,7 @@ var feng3d;
                 this.material.uniforms.u_sunColor = sun.color;
                 this.material.uniforms.u_sunDirection = sun.transform.localToWorldMatrix.forward.clone().negate();
             }
+            var clipBias = 0;
             this.material.uniforms.u_time += 1.0 / 60.0;
             this.material.uniforms.u_textureMatrix;
             //
@@ -22594,6 +22595,12 @@ var feng3d;
             q.z = -1.0;
             q.w = (1.0 + projectionMatrix.rawData[10]) / projectionMatrix.rawData[14];
             clipPlane.scale(2.0 / clipPlane.dot(q));
+            projectionMatrix.rawData[2] = clipPlane.x;
+            projectionMatrix.rawData[6] = clipPlane.y;
+            projectionMatrix.rawData[10] = clipPlane.z + 1.0 - clipBias;
+            projectionMatrix.rawData[14] = clipPlane.w;
+            var eye = camera.transform.scenePosition;
+            // forwardRenderer.draw(gl, scene3d, mirrorCamera);
             _super.prototype.beforeRender.call(this, renderAtomic, scene3d, camera);
         };
         return Water;
