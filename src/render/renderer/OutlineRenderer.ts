@@ -68,7 +68,7 @@ namespace feng3d
             super.init(gameobject);
         }
 
-        preRender(renderAtomic: RenderAtomic)
+        beforeRender(renderAtomic: RenderAtomic)
         {
             renderAtomic.uniforms.u_outlineSize = () => this.size;
             renderAtomic.uniforms.u_outlineColor = () => this.color;

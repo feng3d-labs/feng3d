@@ -316,6 +316,14 @@ namespace feng3d
         }
 
         /**
+         * 如果当前 Vector4 对象和作为参数指定的 Vector4 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
+         */
+        dot(a: Vector4)
+        {
+            return this.x * a.x + this.y * a.y + this.z * a.z + this.w * a.w;
+        }
+
+        /**
          * 获取到指定向量的插值
          * @param v 终点插值向量
          * @param alpha 插值系数

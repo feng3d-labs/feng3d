@@ -5795,15 +5795,6 @@ var feng3d;
             mat.transformVector(this, this);
             return this;
         };
-        Vector3.prototype.applyMatrix41 = function (m) {
-            var x = this.x, y = this.y, z = this.z;
-            var e = m.rawData;
-            var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
-            this.x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
-            this.y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
-            this.z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
-            return this;
-        };
         /**
          * 应用四元素
          * @param q 四元素
@@ -5836,6 +5827,13 @@ var feng3d;
          */
         Vector3.prototype.distance = function (v) {
             return Math.sqrt(this.distanceSquared(v));
+        };
+        /**
+         * 反射
+         * @param normal
+         */
+        Vector3.prototype.reflect = function (normal) {
+            return this.sub(normal.multiplyNumberTo(2 * this.dot(normal)));
         };
         /**
          * 向下取整
@@ -6205,6 +6203,12 @@ var feng3d;
          */
         Vector4.prototype.scaleTo = function (s) {
             return this.clone().scale(s);
+        };
+        /**
+         * 如果当前 Vector4 对象和作为参数指定的 Vector4 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
+         */
+        Vector4.prototype.dot = function (a) {
+            return this.x * a.x + this.y * a.y + this.z * a.z + this.w * a.w;
         };
         /**
          * 获取到指定向量的插值
@@ -13859,7 +13863,7 @@ var feng3d;
         Component.prototype.dispose = function () {
             this._gameObject = null;
         };
-        Component.prototype.preRender = function (renderAtomic, scene3d, camera) {
+        Component.prototype.beforeRender = function (renderAtomic, scene3d, camera) {
         };
         __decorate([
             feng3d.serialize
@@ -14556,7 +14560,7 @@ var feng3d;
         OutLineComponent.prototype.init = function (gameobject) {
             _super.prototype.init.call(this, gameobject);
         };
-        OutLineComponent.prototype.preRender = function (renderAtomic) {
+        OutLineComponent.prototype.beforeRender = function (renderAtomic) {
             var _this = this;
             renderAtomic.uniforms.u_outlineSize = function () { return _this.size; };
             renderAtomic.uniforms.u_outlineColor = function () { return _this.color; };
@@ -14661,9 +14665,9 @@ var feng3d;
         WireframeComponent.prototype.init = function (gameobject) {
             _super.prototype.init.call(this, gameobject);
         };
-        WireframeComponent.prototype.preRender = function (renderAtomic, scene3d, camera) {
+        WireframeComponent.prototype.beforeRender = function (renderAtomic, scene3d, camera) {
             var _this = this;
-            _super.prototype.preRender.call(this, renderAtomic, scene3d, camera);
+            _super.prototype.beforeRender.call(this, renderAtomic, scene3d, camera);
             renderAtomic.uniforms.u_wireframeColor = function () { return _this.color; };
         };
         __decorate([
@@ -14710,7 +14714,7 @@ var feng3d;
         CartoonComponent.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
         };
-        CartoonComponent.prototype.preRender = function (renderAtomic) {
+        CartoonComponent.prototype.beforeRender = function (renderAtomic) {
             var _this = this;
             renderAtomic.uniforms.u_diffuseSegment = function () { return _this.diffuseSegment; };
             renderAtomic.uniforms.u_diffuseSegmentValue = function () { return _this.diffuseSegmentValue; };
@@ -14768,7 +14772,7 @@ var feng3d;
         SkyBox.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
         };
-        SkyBox.prototype.preRender = function (renderAtomic) {
+        SkyBox.prototype.beforeRender = function (renderAtomic) {
             var _this = this;
             renderAtomic.uniforms.s_skyboxTexture = function () { return _this.s_skyboxTexture; };
         };
@@ -16167,7 +16171,7 @@ var feng3d;
         };
         GameObject.prototype.preRender = function (renderAtomic, scene3d, camera) {
             this._components.forEach(function (element) {
-                element.preRender(renderAtomic, scene3d, camera);
+                element.beforeRender(renderAtomic, scene3d, camera);
             });
         };
         /**
@@ -16673,7 +16677,7 @@ var feng3d;
             if (!this.material)
                 this.material = feng3d.materialFactory.create("standard");
         };
-        MeshRenderer.prototype.preRender = function (renderAtomic) {
+        MeshRenderer.prototype.beforeRender = function (renderAtomic, scene3d, camera) {
             var _this = this;
             renderAtomic.uniforms.u_modelMatrix = function () { return _this.transform.localToWorldMatrix; };
             renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.transform.ITlocalToWorldMatrix; };
@@ -22545,7 +22549,7 @@ var feng3d;
             _this.material = feng3d.materialFactory.create("water");
             return _this;
         }
-        Water.prototype.preRender = function (renderAtomic) {
+        Water.prototype.beforeRender = function (renderAtomic, scene3d, camera) {
             var sun = this.gameObject.scene.activeDirectionalLights[0];
             if (sun) {
                 this.material.uniforms.u_sunColor = sun.color;
@@ -22553,7 +22557,44 @@ var feng3d;
             }
             this.material.uniforms.u_time += 1.0 / 60.0;
             this.material.uniforms.u_textureMatrix;
-            _super.prototype.preRender.call(this, renderAtomic);
+            //
+            var mirrorWorldPosition = this.transform.scenePosition;
+            var cameraWorldPosition = camera.transform.scenePosition;
+            var rotationMatrix = this.transform.rotationMatrix;
+            var normal = rotationMatrix.forward;
+            var view = mirrorWorldPosition.subTo(cameraWorldPosition);
+            if (view.dot(normal) > 0)
+                return;
+            view.reflect(normal).negate();
+            view.add(mirrorWorldPosition);
+            rotationMatrix = camera.transform.rotationMatrix;
+            var lookAtPosition = new feng3d.Vector3(0, 0, -1);
+            lookAtPosition.applyMatrix4x4(rotationMatrix);
+            lookAtPosition.add(cameraWorldPosition);
+            var target = mirrorWorldPosition.subTo(lookAtPosition);
+            target.reflect(normal).negate();
+            target.add(mirrorWorldPosition);
+            var mirrorCamera = feng3d.GameObject.create("waterMirrorCamera").addComponent(feng3d.Camera);
+            mirrorCamera.transform.position = view;
+            mirrorCamera.transform.lookAt(target, rotationMatrix.up);
+            mirrorCamera.lens = camera.lens;
+            var textureMatrix = new feng3d.Matrix4x4([
+                0.5, 0.0, 0.0, 0.0,
+                0.0, 0.5, 0.0, 0.0,
+                0.0, 0.0, 0.5, 0.0,
+                0.5, 0.5, 0.5, 1.0
+            ]);
+            textureMatrix.append(mirrorCamera.viewProjection);
+            var mirrorPlane = feng3d.Plane3D.fromNormalAndPoint(mirrorCamera.transform.worldToLocalMatrix.deltaTransformVector(normal), mirrorCamera.transform.worldToLocalMatrix.transformVector(mirrorWorldPosition));
+            var clipPlane = new feng3d.Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
+            var projectionMatrix = mirrorCamera.lens.matrix;
+            var q = new feng3d.Vector4();
+            q.x = (clipPlane.x / Math.abs(clipPlane.x) + projectionMatrix.rawData[8]) / projectionMatrix.rawData[0];
+            q.y = (clipPlane.y / Math.abs(clipPlane.y) + projectionMatrix.rawData[9]) / projectionMatrix.rawData[5];
+            q.z = -1.0;
+            q.w = (1.0 + projectionMatrix.rawData[10]) / projectionMatrix.rawData[14];
+            clipPlane.scale(2.0 / clipPlane.dot(q));
+            _super.prototype.beforeRender.call(this, renderAtomic, scene3d, camera);
         };
         return Water;
     }(feng3d.MeshRenderer));
@@ -23602,9 +23643,9 @@ var feng3d;
                 throw new Error("\u65E0\u6CD5\u5904\u7406" + feng3d.classUtils.getQualifiedClassName(data) + "\u7C92\u5B50\u5C5E\u6027");
             }
         };
-        ParticleSystem.prototype.preRender = function (renderAtomic) {
+        ParticleSystem.prototype.beforeRender = function (renderAtomic, scene3d, camera) {
             var _this = this;
-            _super.prototype.preRender.call(this, renderAtomic);
+            _super.prototype.beforeRender.call(this, renderAtomic, scene3d, camera);
             this.components.forEach(function (element) {
                 element.setRenderState(_this, renderAtomic);
             });
@@ -23990,9 +24031,9 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        SkinnedMeshRenderer.prototype.preRender = function (renderAtomic) {
+        SkinnedMeshRenderer.prototype.beforeRender = function (renderAtomic) {
             var _this = this;
-            _super.prototype.preRender.call(this, renderAtomic);
+            _super.prototype.beforeRender.call(this, renderAtomic);
             renderAtomic.uniforms.u_modelMatrix = function () { return _this.u_modelMatrix; };
             renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.u_ITModelMatrix; };
             //

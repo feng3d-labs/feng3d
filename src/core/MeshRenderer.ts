@@ -65,9 +65,9 @@ namespace feng3d
         receiveShadows = true;
 
         // shadowyType = 
-        
+
         // SHADOWMAP_TYPE
-        
+
         lightPicker: LightPicker;
 
         constructor()
@@ -87,7 +87,7 @@ namespace feng3d
                 this.material = materialFactory.create("standard");
         }
 
-        preRender(renderAtomic: RenderAtomic)
+        beforeRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
             renderAtomic.uniforms.u_modelMatrix = () => this.transform.localToWorldMatrix;
             renderAtomic.uniforms.u_ITModelMatrix = () => this.transform.ITlocalToWorldMatrix;

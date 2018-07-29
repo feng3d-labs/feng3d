@@ -162,7 +162,7 @@ namespace feng3d
             this._gameObject = <any>null;
         }
 
-        preRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
 
         }

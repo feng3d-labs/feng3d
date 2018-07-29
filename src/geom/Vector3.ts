@@ -578,20 +578,6 @@ namespace feng3d
             return this;
         }
 
-        applyMatrix41(m: Matrix4x4)
-        {
-            var x = this.x, y = this.y, z = this.z;
-            var e = m.rawData;
-
-            var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
-
-            this.x = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
-            this.y = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
-            this.z = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
-
-            return this;
-        }
-
         /**
          * 应用四元素
          * @param q 四元素
@@ -634,6 +620,15 @@ namespace feng3d
         distance(v: Vector3)
         {
             return Math.sqrt(this.distanceSquared(v));
+        }
+
+        /**
+         * 反射
+         * @param normal 
+         */
+        reflect(normal: Vector3)
+        {
+            return this.sub(normal.multiplyNumberTo(2 * this.dot(normal)));
         }
 
         /**

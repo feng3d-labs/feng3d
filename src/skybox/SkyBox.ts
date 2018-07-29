@@ -20,7 +20,7 @@ namespace feng3d
             super.init(gameObject)
         }
 
-        preRender(renderAtomic: RenderAtomic)
+        beforeRender(renderAtomic: RenderAtomic)
         {
             renderAtomic.uniforms.s_skyboxTexture = () => this.s_skyboxTexture;
         }

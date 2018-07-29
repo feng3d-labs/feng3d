@@ -122,9 +122,9 @@ namespace feng3d
             super.init(gameobject);
         }
 
-        preRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
-            super.preRender(renderAtomic, scene3d, camera);
+            super.beforeRender(renderAtomic, scene3d, camera);
 
             renderAtomic.uniforms.u_wireframeColor = () => this.color;
         }

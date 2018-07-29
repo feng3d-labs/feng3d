@@ -717,7 +717,7 @@ namespace feng3d
         {
             this._components.forEach(element =>
             {
-                element.preRender(renderAtomic, scene3d, camera);
+                element.beforeRender(renderAtomic, scene3d, camera);
             });
         }
     }

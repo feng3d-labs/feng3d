@@ -2897,7 +2897,6 @@ declare namespace feng3d {
          * @param mat 矩阵
          */
         applyMatrix4x4(mat: Matrix4x4): this;
-        applyMatrix41(m: Matrix4x4): this;
         /**
          * 应用四元素
          * @param q 四元素
@@ -2913,6 +2912,11 @@ declare namespace feng3d {
          * @param v 点
          */
         distance(v: Vector3): number;
+        /**
+         * 反射
+         * @param normal
+         */
+        reflect(normal: Vector3): this;
         /**
          * 向下取整
          */
@@ -3101,6 +3105,10 @@ declare namespace feng3d {
          * @return 返回新向量
          */
         scaleTo(s: number): Vector4;
+        /**
+         * 如果当前 Vector4 对象和作为参数指定的 Vector4 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
+         */
+        dot(a: Vector4): number;
         /**
          * 获取到指定向量的插值
          * @param v 终点插值向量
@@ -8463,7 +8471,7 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
-        preRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -8610,7 +8618,7 @@ declare namespace feng3d {
         color: Color4;
         outlineMorphFactor: number;
         init(gameobject: GameObject): void;
-        preRender(renderAtomic: RenderAtomic): void;
+        beforeRender(renderAtomic: RenderAtomic): void;
     }
     interface Uniforms {
         /**
@@ -8661,7 +8669,7 @@ declare namespace feng3d {
         showInInspector: boolean;
         color: Color4;
         init(gameobject: GameObject): void;
-        preRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -8684,7 +8692,7 @@ declare namespace feng3d {
         cartoon_Anti_aliasing: boolean;
         _cartoon_Anti_aliasing: boolean;
         init(gameObject: GameObject): void;
-        preRender(renderAtomic: RenderAtomic): void;
+        beforeRender(renderAtomic: RenderAtomic): void;
     }
     interface Uniforms {
         u_diffuseSegment: Vector4;
@@ -8700,7 +8708,7 @@ declare namespace feng3d {
         s_skyboxTexture: TextureCube;
         constructor();
         init(gameObject: GameObject): void;
-        preRender(renderAtomic: RenderAtomic): void;
+        beforeRender(renderAtomic: RenderAtomic): void;
     }
 }
 declare namespace feng3d {
@@ -9330,7 +9338,7 @@ declare namespace feng3d {
         lightPicker: LightPicker;
         constructor();
         init(gameObject: GameObject): void;
-        preRender(renderAtomic: RenderAtomic): void;
+        beforeRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         /**
          * 销毁
          */
@@ -11349,7 +11357,7 @@ declare namespace feng3d {
     class Water extends MeshRenderer {
         geometry: PlaneGeometry;
         material: WaterMaterial;
-        preRender(renderAtomic: RenderAtomic): void;
+        beforeRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -11820,7 +11828,7 @@ declare namespace feng3d {
          * @param data              属性数据
          */
         private collectionParticleAttribute(attribute, particle);
-        preRender(renderAtomic: RenderAtomic): void;
+        beforeRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -11938,7 +11946,7 @@ declare namespace feng3d {
         private readonly u_modelMatrix;
         private readonly u_ITModelMatrix;
         private readonly u_skeletonGlobalMatriices;
-        preRender(renderAtomic: RenderAtomic): void;
+        beforeRender(renderAtomic: RenderAtomic): void;
         /**
          * 销毁
          */
