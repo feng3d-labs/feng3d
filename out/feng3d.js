@@ -13859,7 +13859,7 @@ var feng3d;
         Component.prototype.dispose = function () {
             this._gameObject = null;
         };
-        Component.prototype.preRender = function (renderAtomic) {
+        Component.prototype.preRender = function (renderAtomic, scene3d, camera) {
         };
         __decorate([
             feng3d.serialize
@@ -14209,14 +14209,13 @@ var feng3d;
             uniforms.u_skyBoxSize = function () { return camera.lens.far / Math.sqrt(3); };
             uniforms.u_scaleByDepth = function () { return camera.getScaleByDepth(1); };
             uniforms.u_sceneAmbientColor = scene3d.ambientColor;
-            unblenditems.concat(blenditems).forEach(function (item) { return _this.drawRenderables(item, gl); });
-        };
-        ForwardRenderer.prototype.drawRenderables = function (meshRenderer, gl) {
-            //绘制
-            var renderAtomic = meshRenderer.gameObject.renderAtomic;
-            meshRenderer.gameObject.preRender(renderAtomic);
-            renderAtomic.next = this.renderAtomic;
-            gl.renderer.draw(renderAtomic);
+            unblenditems.concat(blenditems).forEach(function (meshRenderer) {
+                //绘制
+                var renderAtomic = meshRenderer.gameObject.renderAtomic;
+                meshRenderer.gameObject.preRender(renderAtomic, scene3d, camera);
+                renderAtomic.next = _this.renderAtomic;
+                gl.renderer.draw(renderAtomic);
+            });
         };
         return ForwardRenderer;
     }());
@@ -14378,7 +14377,7 @@ var feng3d;
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             castShadowsMeshRenderers.forEach(function (element) {
-                _this.drawGameObject(gl, element.gameObject);
+                _this.drawGameObject(gl, element.gameObject, scene3d, camera);
             });
             light.frameBufferObject.deactive(gl);
         };
@@ -14439,7 +14438,7 @@ var feng3d;
                 renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
                 renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
                 castShadowsMeshRenderers.forEach(function (element) {
-                    _this.drawGameObject(gl, element.gameObject);
+                    _this.drawGameObject(gl, element.gameObject, scene3d, camera);
                 });
             }
             light.frameBufferObject.deactive(gl);
@@ -14474,16 +14473,16 @@ var feng3d;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             //
             castShadowsMeshRenderers.forEach(function (element) {
-                _this.drawGameObject(gl, element.gameObject);
+                _this.drawGameObject(gl, element.gameObject, scene3d, camera);
             });
             light.frameBufferObject.deactive(gl);
         };
         /**
          * 绘制3D对象
          */
-        ShadowRenderer.prototype.drawGameObject = function (gl, gameObject) {
+        ShadowRenderer.prototype.drawGameObject = function (gl, gameObject, scene3d, camera) {
             var renderAtomic = gameObject.renderAtomic;
-            gameObject.preRender(renderAtomic);
+            gameObject.preRender(renderAtomic, scene3d, camera);
             var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
             if (meshRenderer instanceof feng3d.SkinnedMeshRenderer) {
                 this.renderAtomic.shader = this.skeleton_shader;
@@ -14530,22 +14529,16 @@ var feng3d;
         };
         OutlineRenderer.prototype.draw = function (gl, scene3d, camera) {
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
+            this.init();
             for (var i = 0; i < unblenditems.length; i++) {
-                var item = unblenditems[i];
-                if (item.getComponent(OutLineComponent) || item.getComponent(feng3d.CartoonComponent)) {
-                    this.drawGameObject(gl, item.gameObject); //
+                var meshRenderer = unblenditems[i];
+                if (meshRenderer.getComponent(OutLineComponent) || meshRenderer.getComponent(feng3d.CartoonComponent)) {
+                    var renderAtomic = meshRenderer.gameObject.renderAtomic;
+                    meshRenderer.gameObject.preRender(renderAtomic, scene3d, camera);
+                    this.renderAtomic.next = renderAtomic;
+                    gl.renderer.draw(this.renderAtomic);
                 }
             }
-        };
-        /**
-         * 绘制3D对象
-         */
-        OutlineRenderer.prototype.drawGameObject = function (gl, gameObject) {
-            this.init();
-            var renderAtomic = gameObject.renderAtomic;
-            gameObject.preRender(renderAtomic);
-            this.renderAtomic.next = renderAtomic;
-            gl.renderer.draw(this.renderAtomic);
         };
         return OutlineRenderer;
     }());
@@ -14610,15 +14603,15 @@ var feng3d;
             if (wireframes.length == 0)
                 return;
             wireframes.forEach(function (element) {
-                _this.drawGameObject(gl, element.gameObject); //
+                _this.drawGameObject(gl, element.gameObject, scene3d, camera); //
             });
         };
         /**
          * 绘制3D对象
          */
-        WireframeRenderer.prototype.drawGameObject = function (gl, gameObject) {
+        WireframeRenderer.prototype.drawGameObject = function (gl, gameObject, scene3d, camera) {
             var renderAtomic = gameObject.renderAtomic;
-            gameObject.preRender(renderAtomic);
+            gameObject.preRender(renderAtomic, scene3d, camera);
             var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
             var renderMode = feng3d.lazy.getvalue(renderAtomic.renderParams.renderMode);
             if (renderMode == feng3d.RenderMode.POINTS
@@ -14668,9 +14661,9 @@ var feng3d;
         WireframeComponent.prototype.init = function (gameobject) {
             _super.prototype.init.call(this, gameobject);
         };
-        WireframeComponent.prototype.preRender = function (renderAtomic) {
+        WireframeComponent.prototype.preRender = function (renderAtomic, scene3d, camera) {
             var _this = this;
-            _super.prototype.preRender.call(this, renderAtomic);
+            _super.prototype.preRender.call(this, renderAtomic, scene3d, camera);
             renderAtomic.uniforms.u_wireframeColor = function () { return _this.color; };
         };
         __decorate([
@@ -14836,7 +14829,7 @@ var feng3d;
          */
         SkyboxRenderer.prototype.draw = function (gl, scene3d, camera) {
             var skybox = scene3d.activeSkyBoxs[0];
-            this.drawSkyBox(gl, skybox, camera);
+            this.drawSkyBox(gl, skybox, scene3d, camera);
         };
         /**
          * 绘制天空盒
@@ -14844,12 +14837,12 @@ var feng3d;
          * @param skybox 天空盒
          * @param camera 摄像机
          */
-        SkyboxRenderer.prototype.drawSkyBox = function (gl, skybox, camera) {
+        SkyboxRenderer.prototype.drawSkyBox = function (gl, skybox, scene3d, camera) {
             if (!skybox)
                 return;
             this.init();
             //
-            skybox.gameObject.preRender(this.renderAtomic);
+            skybox.gameObject.preRender(this.renderAtomic, scene3d, camera);
             //
             this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
             this.renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
@@ -16172,9 +16165,9 @@ var feng3d;
             while (this.numChildren > 0)
                 this.getChildAt(0).dispose();
         };
-        GameObject.prototype.preRender = function (renderAtomic) {
+        GameObject.prototype.preRender = function (renderAtomic, scene3d, camera) {
             this._components.forEach(function (element) {
-                element.preRender(renderAtomic);
+                element.preRender(renderAtomic, scene3d, camera);
             });
         };
         /**

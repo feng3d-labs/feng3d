@@ -22,6 +22,10 @@ namespace feng3d
 
             this.material.uniforms.u_textureMatrix
 
+
+            
+            
+
             super.preRender(renderAtomic);
         }
     }

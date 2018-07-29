@@ -40,17 +40,17 @@ namespace feng3d
 
             wireframes.forEach(element =>
             {
-                this.drawGameObject(gl, element.gameObject);            //
+                this.drawGameObject(gl, element.gameObject, scene3d, camera);            //
             });
         }
 
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject)
+        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera)
         {
             var renderAtomic = gameObject.renderAtomic;
-            gameObject.preRender(renderAtomic);
+            gameObject.preRender(renderAtomic, scene3d, camera);
             var meshRenderer = gameObject.getComponent(MeshRenderer);
 
             var renderMode = lazy.getvalue(renderAtomic.renderParams.renderMode);
@@ -122,9 +122,9 @@ namespace feng3d
             super.init(gameobject);
         }
 
-        preRender(renderAtomic: RenderAtomic)
+        preRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
-            super.preRender(renderAtomic);
+            super.preRender(renderAtomic, scene3d, camera);
 
             renderAtomic.uniforms.u_wireframeColor = () => this.color;
         }

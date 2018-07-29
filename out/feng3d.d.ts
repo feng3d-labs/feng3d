@@ -8463,7 +8463,7 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
-        preRender(renderAtomic: RenderAtomic): void;
+        preRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -8527,7 +8527,6 @@ declare namespace feng3d {
          * 渲染
          */
         draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
-        drawRenderables(meshRenderer: MeshRenderer, gl: GL): void;
     }
 }
 declare namespace feng3d {
@@ -8590,7 +8589,7 @@ declare namespace feng3d {
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject): void;
+        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -8605,10 +8604,6 @@ declare namespace feng3d {
         renderAtomic: RenderAtomic;
         init(): void;
         draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
-        /**
-         * 绘制3D对象
-         */
-        drawGameObject(gl: GL, gameObject: GameObject): void;
     }
     class OutLineComponent extends Component {
         size: number;
@@ -8650,7 +8645,7 @@ declare namespace feng3d {
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject): void;
+        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera): void;
     }
     interface RenderAtomic {
         /**
@@ -8666,7 +8661,7 @@ declare namespace feng3d {
         showInInspector: boolean;
         color: Color4;
         init(gameobject: GameObject): void;
-        preRender(renderAtomic: RenderAtomic): void;
+        preRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -8732,7 +8727,7 @@ declare namespace feng3d {
          * @param skybox 天空盒
          * @param camera 摄像机
          */
-        drawSkyBox(gl: GL, skybox: SkyBox, camera: Camera): void;
+        drawSkyBox(gl: GL, skybox: SkyBox, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -9163,7 +9158,7 @@ declare namespace feng3d {
          */
         dispose(): void;
         disposeWithChildren(): void;
-        preRender(renderAtomic: RenderAtomic): void;
+        preRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {

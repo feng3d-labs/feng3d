@@ -29,29 +29,21 @@ namespace feng3d
         {
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
 
-            for (var i = 0; i < unblenditems.length; i++)
-            {
-                var item = unblenditems[i];
-                if (item.getComponent(OutLineComponent) || item.getComponent(CartoonComponent))
-                {
-                    this.drawGameObject(gl, item.gameObject);            //
-                }
-            }
-        }
-
-        /**
-         * 绘制3D对象
-         */
-        drawGameObject(gl: GL, gameObject: GameObject)
-        {
             this.init();
 
-            var renderAtomic = gameObject.renderAtomic;
-            gameObject.preRender(renderAtomic);
+            for (var i = 0; i < unblenditems.length; i++)
+            {
+                var meshRenderer = unblenditems[i];
+                if (meshRenderer.getComponent(OutLineComponent) || meshRenderer.getComponent(CartoonComponent))
+                {
+                    var renderAtomic = meshRenderer.gameObject.renderAtomic;
+                    meshRenderer.gameObject.preRender(renderAtomic, scene3d, camera);
 
-            this.renderAtomic.next = renderAtomic;
+                    this.renderAtomic.next = renderAtomic;
 
-            gl.renderer.draw(this.renderAtomic);
+                    gl.renderer.draw(this.renderAtomic);
+                }
+            }
         }
     }
 

@@ -58,7 +58,7 @@ namespace feng3d
         draw(gl: GL, scene3d: Scene3D, camera: Camera)
         {
             var skybox = scene3d.activeSkyBoxs[0];
-            this.drawSkyBox(gl, skybox, camera);
+            this.drawSkyBox(gl, skybox, scene3d, camera);
         }
 
         /**
@@ -67,14 +67,14 @@ namespace feng3d
          * @param skybox 天空盒
          * @param camera 摄像机
          */
-        drawSkyBox(gl: GL, skybox: SkyBox, camera: Camera)
+        drawSkyBox(gl: GL, skybox: SkyBox, scene3d: Scene3D, camera: Camera)
         {
             if (!skybox) return;
 
             this.init();
 
             //
-            skybox.gameObject.preRender(this.renderAtomic);
+            skybox.gameObject.preRender(this.renderAtomic, scene3d, camera);
 
             //
             this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;

@@ -90,7 +90,7 @@ namespace feng3d
 
             castShadowsMeshRenderers.forEach(element =>
             {
-                this.drawGameObject(gl, element.gameObject);
+                this.drawGameObject(gl, element.gameObject, scene3d, camera);
             });
 
             light.frameBufferObject.deactive(gl);
@@ -168,7 +168,7 @@ namespace feng3d
 
                 castShadowsMeshRenderers.forEach(element =>
                 {
-                    this.drawGameObject(gl, element.gameObject);
+                    this.drawGameObject(gl, element.gameObject, scene3d, camera);
                 });
             }
             light.frameBufferObject.deactive(gl);
@@ -212,7 +212,7 @@ namespace feng3d
             //
             castShadowsMeshRenderers.forEach(element =>
             {
-                this.drawGameObject(gl, element.gameObject);
+                this.drawGameObject(gl, element.gameObject, scene3d, camera);
             });
 
             light.frameBufferObject.deactive(gl);
@@ -221,10 +221,10 @@ namespace feng3d
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject)
+        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera)
         {
             var renderAtomic = gameObject.renderAtomic;
-            gameObject.preRender(renderAtomic);
+            gameObject.preRender(renderAtomic, scene3d, camera);
             var meshRenderer = gameObject.getComponent(MeshRenderer);
 
             if (meshRenderer instanceof SkinnedMeshRenderer)
