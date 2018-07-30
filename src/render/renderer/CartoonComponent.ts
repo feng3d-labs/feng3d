@@ -51,7 +51,7 @@ namespace feng3d
             super.init(gameObject);
         }
 
-        beforeRender(renderAtomic: RenderAtomic)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
             renderAtomic.uniforms.u_diffuseSegment = () => this.diffuseSegment;
             renderAtomic.uniforms.u_diffuseSegmentValue = () => this.diffuseSegmentValue;

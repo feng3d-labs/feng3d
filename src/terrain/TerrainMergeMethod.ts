@@ -26,7 +26,7 @@ namespace feng3d
             this.splatMergeTexture.wrapT = TextureWrap.REPEAT;
         }
 
-        preRender(renderAtomic: RenderAtomic)
+        beforeRender(renderAtomic: RenderAtomic)
         {
             renderAtomic.uniforms.s_blendTexture = this.blendTexture;
             renderAtomic.uniforms.s_splatMergeTexture = this.splatMergeTexture;

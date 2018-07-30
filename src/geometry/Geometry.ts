@@ -680,7 +680,7 @@ namespace feng3d
             }
         }
 
-        preRender(renderAtomic: RenderAtomic)
+        beforeRender(renderAtomic: RenderAtomic)
         {
             renderAtomic.indexBuffer = renderAtomic.indexBuffer || new Index();
             renderAtomic.indexBuffer.indices = this.indices;

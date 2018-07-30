@@ -50,7 +50,7 @@ namespace feng3d
         drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera)
         {
             var renderAtomic = gameObject.renderAtomic;
-            gameObject.preRender(renderAtomic, scene3d, camera);
+            gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
             var meshRenderer = gameObject.getComponent(MeshRenderer);
 
             var renderMode = lazy.getvalue(renderAtomic.renderParams.renderMode);
@@ -122,9 +122,9 @@ namespace feng3d
             super.init(gameobject);
         }
 
-        beforeRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
-            super.beforeRender(renderAtomic, scene3d, camera);
+            super.beforeRender(gl, renderAtomic, scene3d, camera);
 
             renderAtomic.uniforms.u_wireframeColor = () => this.color;
         }

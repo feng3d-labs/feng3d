@@ -214,9 +214,9 @@ namespace feng3d
             }
         }
 
-        beforeRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
-            super.beforeRender(renderAtomic, scene3d, camera);
+            super.beforeRender(gl, renderAtomic, scene3d, camera);
 
             this.components.forEach(element =>
             {

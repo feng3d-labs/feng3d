@@ -87,7 +87,7 @@ namespace feng3d
                 this.material = materialFactory.create("standard");
         }
 
-        beforeRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
             renderAtomic.uniforms.u_modelMatrix = () => this.transform.localToWorldMatrix;
             renderAtomic.uniforms.u_ITModelMatrix = () => this.transform.ITlocalToWorldMatrix;
@@ -95,9 +95,9 @@ namespace feng3d
             renderAtomic.uniforms.u_ITMVMatrix = () => lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose();
 
             //
-            this._geometry.preRender(renderAtomic);
-            this.material.preRender(renderAtomic);
-            this.lightPicker.preRender(renderAtomic);
+            this._geometry.beforeRender(renderAtomic);
+            this.material.beforeRender(renderAtomic);
+            this.lightPicker.beforeRender(renderAtomic);
         }
 
         /**

@@ -37,7 +37,7 @@ namespace feng3d
                 if (meshRenderer.getComponent(OutLineComponent) || meshRenderer.getComponent(CartoonComponent))
                 {
                     var renderAtomic = meshRenderer.gameObject.renderAtomic;
-                    meshRenderer.gameObject.preRender(renderAtomic, scene3d, camera);
+                    meshRenderer.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
 
                     this.renderAtomic.next = renderAtomic;
 
@@ -68,7 +68,7 @@ namespace feng3d
             super.init(gameobject);
         }
 
-        beforeRender(renderAtomic: RenderAtomic)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
             renderAtomic.uniforms.u_outlineSize = () => this.size;
             renderAtomic.uniforms.u_outlineColor = () => this.color;

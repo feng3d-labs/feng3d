@@ -74,7 +74,7 @@ namespace feng3d
             this.init();
 
             //
-            skybox.gameObject.preRender(this.renderAtomic, scene3d, camera);
+            skybox.gameObject.beforeRender(gl, this.renderAtomic, scene3d, camera);
 
             //
             this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;

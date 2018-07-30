@@ -9,7 +9,7 @@ namespace feng3d
             this._meshRenderer = meshRenderer;
         }
 
-        preRender(renderAtomic: RenderAtomic)
+        beforeRender(renderAtomic: RenderAtomic)
         {
             var pointLights: PointLight[] = [];
             var directionalLights: DirectionalLight[] = [];

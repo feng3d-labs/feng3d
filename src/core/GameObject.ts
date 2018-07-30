@@ -713,11 +713,11 @@ namespace feng3d
                 this.getChildAt(0).dispose();
         }
 
-        preRender(renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
             this._components.forEach(element =>
             {
-                element.beforeRender(renderAtomic, scene3d, camera);
+                element.beforeRender(gl, renderAtomic, scene3d, camera);
             });
         }
     }

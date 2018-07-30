@@ -76,9 +76,9 @@ namespace feng3d
             return this.skeletonGlobalMatriices;
         }
 
-        beforeRender(renderAtomic: RenderAtomic)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
-            super.beforeRender(renderAtomic);
+            super.beforeRender(gl, renderAtomic, scene3d, camera);
 
             renderAtomic.uniforms.u_modelMatrix = () => this.u_modelMatrix;
             renderAtomic.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;

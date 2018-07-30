@@ -61,7 +61,7 @@ namespace feng3d
             feng3dDispatcher.on("assets.shaderChanged", this.onShaderChanged, this);
         }
 
-        preRender(renderAtomic: RenderAtomic)
+        beforeRender(renderAtomic: RenderAtomic)
         {
             for (const key in this.uniforms)
             {

@@ -224,7 +224,7 @@ namespace feng3d
         drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera)
         {
             var renderAtomic = gameObject.renderAtomic;
-            gameObject.preRender(renderAtomic, scene3d, camera);
+            gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
             var meshRenderer = gameObject.getComponent(MeshRenderer);
 
             if (meshRenderer instanceof SkinnedMeshRenderer)

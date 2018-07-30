@@ -39,7 +39,7 @@ namespace feng3d
                 //绘制
                 var renderAtomic = meshRenderer.gameObject.renderAtomic;
 
-                meshRenderer.gameObject.preRender(renderAtomic, scene3d, camera);
+                meshRenderer.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
 
                 renderAtomic.next = this.renderAtomic;
 
