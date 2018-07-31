@@ -28,9 +28,9 @@ namespace feng3d
 		 * @param fov 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
          * 
 		 */
-        constructor(fov = 60, aspectRatio = 1, near = 0.3, far = 2000)
+        constructor(fov = 60, aspect = 1, near = 0.3, far = 2000)
         {
-            super(aspectRatio, near, far);
+            super(aspect, near, far);
             this.fov = fov;
         }
 
@@ -113,6 +113,11 @@ namespace feng3d
                 new Vector3(tan * far * aspect, -tan * far, far),
                 new Vector3(tan * near * aspect, tan * near, near),
                 new Vector3(tan * far * aspect, tan * far, far)]);
+        }
+
+        clone()
+        {
+            return new PerspectiveLens(this.fov, this.aspect, this.near, this.far);
         }
     }
 }

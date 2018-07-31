@@ -101,5 +101,10 @@ namespace feng3d
             this.left = center + 0.5 * w * (this.left - center) / Math.abs(this.left - center);
             this.right = center + 0.5 * w * (this.right - center) / Math.abs(this.right - center);
         }
+
+        clone()
+        {
+            return new OrthographicLens(this.left, this.right, this.top, this.bottom, this.near, this.far);
+        }
     }
 }

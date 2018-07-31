@@ -9921,6 +9921,10 @@ declare namespace feng3d {
          * 更新最小包围盒
          */
         protected abstract updateViewBox(): void;
+        /**
+         * 克隆
+         */
+        abstract clone(): LensBase;
     }
 }
 declare namespace feng3d {
@@ -9962,6 +9966,7 @@ declare namespace feng3d {
         protected updateMatrix(): void;
         protected updateViewBox(): void;
         private aspectRatioChanged();
+        clone(): OrthographicLens;
     }
 }
 declare namespace feng3d {
@@ -9983,7 +9988,7 @@ declare namespace feng3d {
          * @param fov 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
          *
          */
-        constructor(fov?: number, aspectRatio?: number, near?: number, far?: number);
+        constructor(fov?: number, aspect?: number, near?: number, far?: number);
         /**
          * 焦距
          */
@@ -10010,6 +10015,7 @@ declare namespace feng3d {
         unproject(point3d: Vector3, v?: Vector3): Vector3;
         protected updateMatrix(): void;
         protected updateViewBox(): void;
+        clone(): PerspectiveLens;
     }
 }
 declare namespace feng3d {

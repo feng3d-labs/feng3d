@@ -18479,6 +18479,9 @@ var feng3d;
             this.left = center + 0.5 * w * (this.left - center) / Math.abs(this.left - center);
             this.right = center + 0.5 * w * (this.right - center) / Math.abs(this.right - center);
         };
+        OrthographicLens.prototype.clone = function () {
+            return new OrthographicLens(this.left, this.right, this.top, this.bottom, this.near, this.far);
+        };
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
@@ -18521,12 +18524,12 @@ var feng3d;
          * @param fov 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
          *
          */
-        function PerspectiveLens(fov, aspectRatio, near, far) {
+        function PerspectiveLens(fov, aspect, near, far) {
             if (fov === void 0) { fov = 60; }
-            if (aspectRatio === void 0) { aspectRatio = 1; }
+            if (aspect === void 0) { aspect = 1; }
             if (near === void 0) { near = 0.3; }
             if (far === void 0) { far = 2000; }
-            var _this = _super.call(this, aspectRatio, near, far) || this;
+            var _this = _super.call(this, aspect, near, far) || this;
             _this.fov = fov;
             return _this;
         }
@@ -18604,6 +18607,9 @@ var feng3d;
                 new feng3d.Vector3(tan * near * aspect, tan * near, near),
                 new feng3d.Vector3(tan * far * aspect, tan * far, far)
             ]);
+        };
+        PerspectiveLens.prototype.clone = function () {
+            return new PerspectiveLens(this.fov, this.aspect, this.near, this.far);
         };
         __decorate([
             feng3d.watch("invalidate"),
@@ -22558,49 +22564,48 @@ var feng3d;
             var clipBias = 0;
             this.material.uniforms.u_time += 1.0 / 60.0;
             this.material.uniforms.u_textureMatrix;
-            // //
-            // var mirrorWorldPosition = this.transform.scenePosition;
-            // var cameraWorldPosition = camera.transform.scenePosition;
-            // var rotationMatrix = this.transform.rotationMatrix;
-            // var normal = rotationMatrix.forward;
-            // var view = mirrorWorldPosition.subTo(cameraWorldPosition);
-            // if (view.dot(normal) > 0) return;
-            // view.reflect(normal).negate();
-            // view.add(mirrorWorldPosition);
-            // rotationMatrix = camera.transform.rotationMatrix;
-            // var lookAtPosition = new Vector3(0, 0, -1);
-            // lookAtPosition.applyMatrix4x4(rotationMatrix);
-            // lookAtPosition.add(cameraWorldPosition);
-            // var target = mirrorWorldPosition.subTo(lookAtPosition);
-            // target.reflect(normal).negate();
-            // target.add(mirrorWorldPosition);
-            // var mirrorCamera = GameObject.create("waterMirrorCamera").addComponent(Camera);
-            // mirrorCamera.transform.position = view;
-            // mirrorCamera.transform.lookAt(target, rotationMatrix.up);
-            // mirrorCamera.lens = camera.lens;
-            // var textureMatrix = new Matrix4x4(
-            //     [
-            //         0.5, 0.0, 0.0, 0.0,
-            //         0.0, 0.5, 0.0, 0.0,
-            //         0.0, 0.0, 0.5, 0.0,
-            //         0.5, 0.5, 0.5, 1.0
-            //     ]
-            // );
-            // textureMatrix.append(mirrorCamera.viewProjection);
-            // var mirrorPlane = Plane3D.fromNormalAndPoint(mirrorCamera.transform.worldToLocalMatrix.deltaTransformVector(normal), mirrorCamera.transform.worldToLocalMatrix.transformVector(mirrorWorldPosition));
-            // var clipPlane = new Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
-            // var projectionMatrix = mirrorCamera.lens.matrix;
-            // var q = new Vector4();
-            // q.x = (clipPlane.x / Math.abs(clipPlane.x) + projectionMatrix.rawData[8]) / projectionMatrix.rawData[0];
-            // q.y = (clipPlane.y / Math.abs(clipPlane.y) + projectionMatrix.rawData[9]) / projectionMatrix.rawData[5];
-            // q.z = - 1.0;
-            // q.w = (1.0 + projectionMatrix.rawData[10]) / projectionMatrix.rawData[14];
-            // clipPlane.scale(2.0 / clipPlane.dot(q));
-            // projectionMatrix.rawData[2] = clipPlane.x;
-            // projectionMatrix.rawData[6] = clipPlane.y;
-            // projectionMatrix.rawData[10] = clipPlane.z + 1.0 - clipBias;
-            // projectionMatrix.rawData[14] = clipPlane.w;
-            // var eye = camera.transform.scenePosition;
+            //
+            var mirrorWorldPosition = this.transform.scenePosition;
+            var cameraWorldPosition = camera.transform.scenePosition;
+            var rotationMatrix = this.transform.rotationMatrix;
+            var normal = rotationMatrix.forward;
+            var view = mirrorWorldPosition.subTo(cameraWorldPosition);
+            if (view.dot(normal) > 0)
+                return;
+            view.reflect(normal).negate();
+            view.add(mirrorWorldPosition);
+            rotationMatrix = camera.transform.rotationMatrix;
+            var lookAtPosition = new feng3d.Vector3(0, 0, -1);
+            lookAtPosition.applyMatrix4x4(rotationMatrix);
+            lookAtPosition.add(cameraWorldPosition);
+            var target = mirrorWorldPosition.subTo(lookAtPosition);
+            target.reflect(normal).negate();
+            target.add(mirrorWorldPosition);
+            var mirrorCamera = feng3d.GameObject.create("waterMirrorCamera").addComponent(feng3d.Camera);
+            mirrorCamera.transform.position = view;
+            mirrorCamera.transform.lookAt(target, rotationMatrix.up);
+            mirrorCamera.lens = camera.lens.clone();
+            var textureMatrix = new feng3d.Matrix4x4([
+                0.5, 0.0, 0.0, 0.0,
+                0.0, 0.5, 0.0, 0.0,
+                0.0, 0.0, 0.5, 0.0,
+                0.5, 0.5, 0.5, 1.0
+            ]);
+            textureMatrix.append(mirrorCamera.viewProjection);
+            var mirrorPlane = feng3d.Plane3D.fromNormalAndPoint(mirrorCamera.transform.worldToLocalMatrix.deltaTransformVector(normal), mirrorCamera.transform.worldToLocalMatrix.transformVector(mirrorWorldPosition));
+            var clipPlane = new feng3d.Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
+            var projectionMatrix = mirrorCamera.lens.matrix;
+            var q = new feng3d.Vector4();
+            q.x = (clipPlane.x / Math.abs(clipPlane.x) + projectionMatrix.rawData[8]) / projectionMatrix.rawData[0];
+            q.y = (clipPlane.y / Math.abs(clipPlane.y) + projectionMatrix.rawData[9]) / projectionMatrix.rawData[5];
+            q.z = -1.0;
+            q.w = (1.0 + projectionMatrix.rawData[10]) / projectionMatrix.rawData[14];
+            clipPlane.scale(2.0 / clipPlane.dot(q));
+            projectionMatrix.rawData[2] = clipPlane.x;
+            projectionMatrix.rawData[6] = clipPlane.y;
+            projectionMatrix.rawData[10] = clipPlane.z + 1.0 - clipBias;
+            projectionMatrix.rawData[14] = clipPlane.w;
+            var eye = camera.transform.scenePosition;
             // forwardRenderer.draw(gl, scene3d, mirrorCamera);
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
         };

@@ -197,5 +197,10 @@ namespace feng3d
 		 * 更新最小包围盒
 		 */
 		protected abstract updateViewBox(): void;
+
+		/**
+		 * 克隆
+		 */
+		abstract clone(): LensBase;
 	}
 }
