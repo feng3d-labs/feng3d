@@ -8,8 +8,8 @@ uniform mat4 u_textureMatrix;
 varying vec4 v_mirrorCoord;
 varying vec4 v_worldPosition;
 
-void main() {
-
+void main() 
+{
 	vec4 position = vec4(a_position,1.0);
 	//获取全局坐标
     vec4 worldPosition = u_modelMatrix * position;

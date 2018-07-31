@@ -16,7 +16,8 @@ uniform vec3 u_sunColor;
 uniform vec3 u_sunDirection;
 uniform vec3 u_waterColor;
 
-vec4 getNoise( vec2 uv ) {
+vec4 getNoise( vec2 uv ) 
+{
 	vec2 uv0 = ( uv / 103.0 ) + vec2(u_time / 17.0, u_time / 29.0);
 	vec2 uv1 = uv / 107.0-vec2( u_time / -19.0, u_time / 31.0 );
 	vec2 uv2 = uv / vec2( 8907.0, 9803.0 ) + vec2( u_time / 101.0, u_time / 97.0 );
@@ -28,14 +29,16 @@ vec4 getNoise( vec2 uv ) {
 	return noise * 0.5 - 1.0;
 }
 
-void sunLight( const vec3 surfaceNormal, const vec3 eyeDirection, float shiny, float spec, float diffuse, inout vec3 diffuseColor, inout vec3 specularColor ) {
+void sunLight( const vec3 surfaceNormal, const vec3 eyeDirection, float shiny, float spec, float diffuse, inout vec3 diffuseColor, inout vec3 specularColor ) 
+{
 	vec3 reflection = normalize( reflect( -u_sunDirection, surfaceNormal ) );
 	float direction = max( 0.0, dot( eyeDirection, reflection ) );
 	specularColor += pow( direction, shiny ) * u_sunColor * spec;
 	diffuseColor += max( dot( u_sunDirection, surfaceNormal ), 0.0 ) * u_sunColor * diffuse;
 }
 
-void main() {
+void main() 
+{
 	vec4 noise = getNoise( v_worldPosition.xz * u_size );
 	vec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );
 	vec3 diffuseLight = vec3(0.0);
@@ -57,4 +60,8 @@ void main() {
 	vec3 albedo = mix( ( u_sunColor * diffuseLight * 0.3 + scatter ) * shadowMask, ( vec3( 0.1 ) + reflectionSample * 0.9 + reflectionSample * specularLight ), reflectance);
 	vec3 outgoingLight = albedo;
 	gl_FragColor = vec4( outgoingLight, u_alpha );
+
+	// debug
+	// gl_FragColor = vec4( reflectionSample, 1.0 );
+	// gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
 }

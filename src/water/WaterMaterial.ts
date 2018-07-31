@@ -38,7 +38,7 @@ namespace feng3d
         /**
          * 镜面反射贴图
          */
-        s_mirrorSampler = new UrlImageTexture2D();
+        s_mirrorSampler = new RenderTargetTexture2D();
         
         u_textureMatrix = new Matrix4x4();
         u_sunColor = new Color3().fromUnit(0x7F7F7F);

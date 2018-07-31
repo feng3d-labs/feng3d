@@ -9,6 +9,11 @@ namespace feng3d
 
         material = materialFactory.create("water");
 
+        /**
+         * 帧缓冲对象，用于处理水面反射
+         */
+        frameBufferObject = new FrameBufferObject();
+
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
             var sun = this.gameObject.scene.activeDirectionalLights[0];
@@ -21,8 +26,6 @@ namespace feng3d
             var clipBias = 0;
 
             this.material.uniforms.u_time += 1.0 / 60.0;
-
-            this.material.uniforms.u_textureMatrix
 
             //
             var mirrorWorldPosition = this.transform.scenePosition;
@@ -84,8 +87,24 @@ namespace feng3d
 
             var eye = camera.transform.scenePosition;
 
-            // forwardRenderer.draw(gl, scene3d, mirrorCamera);
+            // 
+            var frameBufferObject = this.frameBufferObject;
+            frameBufferObject.active(gl);
 
+            //
+            gl.viewport(0, 0, frameBufferObject.OFFSCREEN_WIDTH, frameBufferObject.OFFSCREEN_HEIGHT);
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            forwardRenderer.draw(gl, scene3d, mirrorCamera);
+            // forwardRenderer.draw(gl, scene3d, camera);
+
+            frameBufferObject.deactive(gl);
+
+            //
+            this.material.uniforms.s_mirrorSampler = frameBufferObject.texture;
+            
+            // this.material.uniforms.u_textureMatrix = textureMatrix;
 
             super.beforeRender(gl, renderAtomic, scene3d, camera);
         }

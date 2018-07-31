@@ -11363,6 +11363,10 @@ declare namespace feng3d {
     class Water extends MeshRenderer {
         geometry: PlaneGeometry;
         material: WaterMaterial;
+        /**
+         * 帧缓冲对象，用于处理水面反射
+         */
+        frameBufferObject: FrameBufferObject;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
@@ -11383,7 +11387,7 @@ declare namespace feng3d {
         /**
          * 镜面反射贴图
          */
-        s_mirrorSampler: UrlImageTexture2D;
+        s_mirrorSampler: RenderTargetTexture2D;
         u_textureMatrix: Matrix4x4;
         u_sunColor: Color3;
         u_sunDirection: Vector3;
