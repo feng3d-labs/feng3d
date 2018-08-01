@@ -27,6 +27,12 @@ namespace feng3d
 
             this.material.uniforms.u_time += 1.0 / 60.0;
 
+            // this.material.uniforms.s_mirrorSampler.url = "Assets/floor_diffuse.jpg";
+
+            super.beforeRender(gl, renderAtomic, scene3d, camera);
+
+            if (true)
+                return;
             //
             var mirrorWorldPosition = this.transform.scenePosition;
             var cameraWorldPosition = camera.transform.scenePosition;
@@ -96,17 +102,16 @@ namespace feng3d
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            forwardRenderer.draw(gl, scene3d, mirrorCamera);
+            skyboxRenderer.draw(gl, scene3d, mirrorCamera);
+            // forwardRenderer.draw(gl, scene3d, mirrorCamera);
             // forwardRenderer.draw(gl, scene3d, camera);
 
             frameBufferObject.deactive(gl);
 
             //
-            this.material.uniforms.s_mirrorSampler = frameBufferObject.texture;
-            
-            // this.material.uniforms.u_textureMatrix = textureMatrix;
+            // this.material.uniforms.s_mirrorSampler = frameBufferObject.texture;
 
-            super.beforeRender(gl, renderAtomic, scene3d, camera);
+            this.material.uniforms.u_textureMatrix = textureMatrix;
         }
     }
 }

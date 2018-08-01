@@ -11387,7 +11387,7 @@ declare namespace feng3d {
         /**
          * 镜面反射贴图
          */
-        s_mirrorSampler: RenderTargetTexture2D;
+        s_mirrorSampler: UrlImageTexture2D;
         u_textureMatrix: Matrix4x4;
         u_sunColor: Color3;
         u_sunDirection: Vector3;
