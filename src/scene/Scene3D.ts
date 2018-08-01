@@ -93,11 +93,6 @@ namespace feng3d
             // 每帧清理拾取缓存
             this.pickMap.forEach(item => item.clear());
 
-            this.animations.forEach(element =>
-            {
-                if (element.isplaying)
-                    element.update(interval);
-            });
             this.behaviours.forEach(element =>
             {
                 if (element.isVisibleAndEnabled && (this.updateScriptFlag & element.flag))

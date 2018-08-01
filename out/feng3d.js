@@ -16911,10 +16911,6 @@ var feng3d;
             var _this = this;
             // 每帧清理拾取缓存
             this.pickMap.forEach(function (item) { return item.clear(); });
-            this.animations.forEach(function (element) {
-                if (element.isplaying)
-                    element.update(interval);
-            });
             this.behaviours.forEach(function (element) {
                 if (element.isVisibleAndEnabled && (_this.updateScriptFlag & element.flag))
                     element.update(interval);
@@ -24205,7 +24201,8 @@ var feng3d;
             configurable: true
         });
         Animation.prototype.update = function (interval) {
-            this.time += interval * this.playspeed;
+            if (this.isplaying)
+                this.time += interval * this.playspeed;
         };
         Animation.prototype.updateAni = function () {
             if (!this.animation)

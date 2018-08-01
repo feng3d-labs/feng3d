@@ -51,7 +51,8 @@ namespace feng3d
 
         public update(interval: number)
         {
-            this.time += interval * this.playspeed;
+            if (this.isplaying)
+                this.time += interval * this.playspeed;
         }
         private num = 0;
         private updateAni()
