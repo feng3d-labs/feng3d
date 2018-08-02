@@ -27489,7 +27489,7 @@ var feng3d;
      * feng3d的版本号
      * @author feng 2015-03-20
      */
-    feng3d.revision = "0.0.0";
+    feng3d.revision = "2018.08.02";
     /**
      * 是否开启调试(主要用于断言)
      */

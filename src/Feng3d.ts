@@ -20,7 +20,7 @@ namespace feng3d
      * feng3d的版本号
      * @author feng 2015-03-20
      */
-    export var revision: string = "0.0.0";
+    export var revision: string = "2018.08.02";
     /**
      * 是否开启调试(主要用于断言)
      */
