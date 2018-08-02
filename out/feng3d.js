@@ -22565,7 +22565,7 @@ var feng3d;
             this.material.uniforms.u_time += 1.0 / 60.0;
             // this.material.uniforms.s_mirrorSampler.url = "Assets/floor_diffuse.jpg";
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
-            if (true)
+            if (1)
                 return;
             //
             var mirrorWorldPosition = this.transform.scenePosition;

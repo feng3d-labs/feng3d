@@ -31,8 +31,7 @@ namespace feng3d
 
             super.beforeRender(gl, renderAtomic, scene3d, camera);
 
-            if (true)
-                return;
+            if (1) return;
             //
             var mirrorWorldPosition = this.transform.scenePosition;
             var cameraWorldPosition = camera.transform.scenePosition;
