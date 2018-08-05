@@ -8953,12 +8953,6 @@ declare namespace feng3d {
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
-     * 鼠标拾取层级
-     */
-    var mouselayer: {
-        editor: number;
-    };
-    /**
      * Base class for all entities in feng3d scenes.
      */
     class GameObject extends Feng3dObject {
@@ -8971,10 +8965,6 @@ declare namespace feng3d {
         protected _children: GameObject[];
         protected _scene: Scene3D | null;
         protected _parent: GameObject | null;
-        /**
-         * 鼠标拾取层级（优先级），拾取过程优先考虑层级再考虑深度
-         */
-        mouselayer: number;
         /**
          * 是否可序列化
          */
@@ -9480,10 +9470,7 @@ declare namespace feng3d {
         readonly activeAnimations: Animation[];
         readonly behaviours: Behaviour[];
         readonly activeBehaviours: Behaviour[];
-        readonly mouseCheckObjects: {
-            layer: number;
-            objects: GameObject[];
-        }[];
+        readonly mouseCheckObjects: any[];
         _addGameObject(gameobject: GameObject): void;
         _removeGameObject(gameobject: GameObject): void;
         _addComponent(component: Component): void;

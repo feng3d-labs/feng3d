@@ -204,7 +204,7 @@ namespace feng3d
                 return this._mouseCheckObjects;
 
             var checkList = this.gameObject.getChildren();
-            var layers: { [mouselayer: number]: GameObject[] } = {};
+            var gameObjects = this._mouseCheckObjects = [];
             var i = 0;
             //获取所有需要拾取的对象并分层存储
             while (i < checkList.length)
@@ -214,26 +214,12 @@ namespace feng3d
                 {
                     if (checkObject.getComponents(MeshRenderer))
                     {
-                        var mouselayer = ~~checkObject.mouselayer;
-                        layers[mouselayer] = layers[mouselayer] || [];
-                        layers[mouselayer].push(checkObject);
+                        gameObjects.push(checkObject);
                     }
                     checkList = checkList.concat(checkObject.getChildren());
                 }
             }
-            //获取分层数组
-            this._mouseCheckObjects = [];
-            var results = this._mouseCheckObjects;
-            for (var layer in layers)
-            {
-                if (layers.hasOwnProperty(layer))
-                {
-                    results.push({ layer: ~~layer, objects: layers[layer] });
-                }
-            }
-            //按层级排序
-            results = results.sort((a, b) => { return b.layer - a.layer; });
-            return results;
+            return gameObjects;
         }
 
         _addGameObject(gameobject: GameObject)

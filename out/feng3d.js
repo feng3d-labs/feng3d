@@ -15632,12 +15632,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 鼠标拾取层级
-     */
-    feng3d.mouselayer = {
-        editor: 100
-    };
-    /**
      * Base class for all entities in feng3d scenes.
      */
     var GameObject = /** @class */ (function (_super) {
@@ -17045,31 +17039,19 @@ var feng3d;
                 if (this._mouseCheckObjects)
                     return this._mouseCheckObjects;
                 var checkList = this.gameObject.getChildren();
-                var layers = {};
+                var gameObjects = this._mouseCheckObjects = [];
                 var i = 0;
                 //获取所有需要拾取的对象并分层存储
                 while (i < checkList.length) {
                     var checkObject = checkList[i++];
                     if (checkObject.mouseEnabled) {
                         if (checkObject.getComponents(feng3d.MeshRenderer)) {
-                            var mouselayer = ~~checkObject.mouselayer;
-                            layers[mouselayer] = layers[mouselayer] || [];
-                            layers[mouselayer].push(checkObject);
+                            gameObjects.push(checkObject);
                         }
                         checkList = checkList.concat(checkObject.getChildren());
                     }
                 }
-                //获取分层数组
-                this._mouseCheckObjects = [];
-                var results = this._mouseCheckObjects;
-                for (var layer in layers) {
-                    if (layers.hasOwnProperty(layer)) {
-                        results.push({ layer: ~~layer, objects: layers[layer] });
-                    }
-                }
-                //按层级排序
-                results = results.sort(function (a, b) { return b.layer - a.layer; });
-                return results;
+                return gameObjects;
             },
             enumerable: true,
             configurable: true
@@ -27295,14 +27277,7 @@ var feng3d;
         Mouse3DManager.prototype.pick = function (scene3d, camera) {
             var mouseRay3D = camera.getMouseRay3D();
             //计算得到鼠标射线相交的物体
-            var mouseCollisionEntitys = scene3d.mouseCheckObjects;
-            var pickingCollisionVO = null;
-            for (var i = 0; i < mouseCollisionEntitys.length; i++) {
-                var entitys = mouseCollisionEntitys[i].objects;
-                pickingCollisionVO = feng3d.raycaster.pick(mouseRay3D, entitys);
-                if (pickingCollisionVO)
-                    break;
-            }
+            var pickingCollisionVO = feng3d.raycaster.pick(mouseRay3D, scene3d.mouseCheckObjects);
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
             return gameobject;
         };

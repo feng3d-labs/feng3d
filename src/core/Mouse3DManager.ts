@@ -45,16 +45,7 @@ namespace feng3d
         {
             var mouseRay3D = camera.getMouseRay3D();
             //计算得到鼠标射线相交的物体
-            var mouseCollisionEntitys = scene3d.mouseCheckObjects;
-
-            var pickingCollisionVO: PickingCollisionVO | null = null;
-            for (var i = 0; i < mouseCollisionEntitys.length; i++)
-            {
-                var entitys = mouseCollisionEntitys[i].objects;
-                pickingCollisionVO = raycaster.pick(mouseRay3D, entitys);
-                if (pickingCollisionVO)
-                    break;
-            }
+            var pickingCollisionVO = raycaster.pick(mouseRay3D, scene3d.mouseCheckObjects);
 
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
             return gameobject;

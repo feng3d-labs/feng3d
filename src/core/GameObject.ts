@@ -51,13 +51,6 @@ namespace feng3d
     }
 
     /**
-     * 鼠标拾取层级
-     */
-    export var mouselayer = {
-        editor: 100
-    };
-
-    /**
      * Base class for all entities in feng3d scenes.
      */
     export class GameObject extends Feng3dObject
@@ -73,11 +66,6 @@ namespace feng3d
         protected _children: GameObject[] = [];
         protected _scene: Scene3D | null;
         protected _parent: GameObject | null;
-
-        /**
-         * 鼠标拾取层级（优先级），拾取过程优先考虑层级再考虑深度
-         */
-        mouselayer: number;
 
         /**
          * 是否可序列化
