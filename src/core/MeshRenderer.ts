@@ -70,6 +70,46 @@ namespace feng3d
 
         lightPicker: LightPicker;
 
+        private _selfLocalBounds: Box | null;
+        private _selfWorldBounds: Box | null;
+
+		/**
+		 * 自身局部包围盒
+		 */
+        get selfLocalBounds()
+        {
+            if (!this._selfLocalBounds)
+                this.updateBounds();
+
+            return this._selfLocalBounds;
+        }
+
+		/**
+		 * 自身世界包围盒
+		 */
+        get selfWorldBounds()
+        {
+            if (!this._selfWorldBounds)
+                this.updateWorldBounds();
+
+            return this._selfWorldBounds;
+        }
+
+        /**
+         * 世界包围盒
+         */
+        get worldBounds()
+        {
+            var box = this.selfWorldBounds;
+            if (!box) box = new Box(this.transform.position, this.transform.position);
+            this.gameObject.children.forEach(element =>
+            {
+                var ebox = element.getComponent(MeshRenderer).worldBounds;
+                box.union(ebox);
+            });
+            return box;
+        }
+
         constructor()
         {
             super();
@@ -85,6 +125,9 @@ namespace feng3d
 
             if (!this.material)
                 this.material = materialFactory.create("standard");
+
+            this.on("boundsInvalid", this.onBoundsChange, this);
+            this.on("scenetransformChanged", this.invalidateSceneTransform, this);
         }
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
@@ -121,6 +164,85 @@ namespace feng3d
             {
                 error("material 必须继承与 Material!");
             }
+        }
+
+
+		/**
+		 * @inheritDoc
+		 */
+        private invalidateSceneTransform()
+        {
+            this._selfWorldBounds = null;
+        }
+
+        /**
+          * 判断射线是否穿过对象
+          * @param ray3D
+          * @return
+          */
+        isIntersectingRay(ray3D: Ray3D)
+        {
+            if (!this.selfLocalBounds)
+                return null;
+
+            var localNormal = new Vector3();
+
+            //转换到当前实体坐标系空间
+            var localRay = new Ray3D();
+
+            this.transform.worldToLocalMatrix.transformVector(ray3D.position, localRay.position);
+            this.transform.worldToLocalMatrix.deltaTransformVector(ray3D.direction, localRay.direction);
+
+            //检测射线与边界的碰撞
+            var rayEntryDistance = this.selfLocalBounds.rayIntersection(localRay.position, localRay.direction, localNormal);
+            if (rayEntryDistance < 0)
+                return null;
+
+            var meshRenderer = this.getComponent(MeshRenderer);
+
+            //保存碰撞数据
+            var pickingCollisionVO: PickingCollisionVO = {
+                gameObject: this.gameObject,
+                localNormal: localNormal,
+                localRay: localRay,
+                rayEntryDistance: rayEntryDistance,
+                ray3D: ray3D,
+                rayOriginIsInsideBounds: rayEntryDistance == 0,
+                geometry: meshRenderer.geometry,
+                cullFace: meshRenderer.material.renderParams.cullFace,
+            };
+
+            return pickingCollisionVO;
+        }
+
+		/**
+		 * 更新世界边界
+		 */
+        private updateWorldBounds()
+        {
+            if (this.selfLocalBounds && this.transform.localToWorldMatrix)
+            {
+                this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
+            }
+        }
+
+        /**
+         * 处理包围盒变换事件
+         */
+        private onBoundsChange()
+        {
+            this._selfLocalBounds = null;
+            this._selfWorldBounds = null;
+        }
+
+        /**
+		 * @inheritDoc
+		 */
+        private updateBounds()
+        {
+            var meshRenderer = this.gameObject.getComponent(MeshRenderer);
+            if (meshRenderer && meshRenderer.geometry)
+                this._selfLocalBounds = meshRenderer.geometry.bounding;
         }
     }
 }

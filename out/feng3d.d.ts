@@ -9159,53 +9159,6 @@ declare namespace feng3d {
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
-declare namespace feng3d {
-    /**
-     * 包围盒组件
-     */
-    class Bounding extends Component {
-        readonly single: boolean;
-        showInInspector: boolean;
-        serializable: boolean;
-        private _selfLocalBounds;
-        private _selfWorldBounds;
-        init(gameObject: GameObject): void;
-        /**
-         * 自身局部包围盒
-         */
-        readonly selfLocalBounds: Box;
-        /**
-         * @inheritDoc
-         */
-        private invalidateSceneTransform();
-        /**
-          * 判断射线是否穿过对象
-          * @param ray3D
-          * @return
-          */
-        isIntersectingRay(ray3D: Ray3D): PickingCollisionVO;
-        /**
-         * 自身世界包围盒
-         */
-        readonly selfWorldBounds: Box;
-        /**
-         * 世界包围盒
-         */
-        readonly worldBounds: Box;
-        /**
-         * 更新世界边界
-         */
-        private updateWorldBounds();
-        /**
-         * 处理包围盒变换事件
-         */
-        private onBoundsChange();
-        /**
-         * @inheritDoc
-         */
-        private updateBounds();
-    }
-}
 interface HTMLCanvasElement {
     gl: feng3d.GL;
 }
@@ -9326,6 +9279,20 @@ declare namespace feng3d {
          */
         receiveShadows: boolean;
         lightPicker: LightPicker;
+        private _selfLocalBounds;
+        private _selfWorldBounds;
+        /**
+         * 自身局部包围盒
+         */
+        readonly selfLocalBounds: Box;
+        /**
+         * 自身世界包围盒
+         */
+        readonly selfWorldBounds: Box;
+        /**
+         * 世界包围盒
+         */
+        readonly worldBounds: Box;
         constructor();
         init(gameObject: GameObject): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
@@ -9335,6 +9302,28 @@ declare namespace feng3d {
         dispose(): void;
         private onBoundsInvalid(event);
         private materialChanged();
+        /**
+         * @inheritDoc
+         */
+        private invalidateSceneTransform();
+        /**
+          * 判断射线是否穿过对象
+          * @param ray3D
+          * @return
+          */
+        isIntersectingRay(ray3D: Ray3D): PickingCollisionVO;
+        /**
+         * 更新世界边界
+         */
+        private updateWorldBounds();
+        /**
+         * 处理包围盒变换事件
+         */
+        private onBoundsChange();
+        /**
+         * @inheritDoc
+         */
+        private updateBounds();
     }
 }
 declare namespace feng3d {

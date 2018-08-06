@@ -30,7 +30,7 @@ namespace feng3d
         {
             var worldBounds: Box = meshRenderers.reduce((pre: Box, i) =>
             {
-                var box = i.getComponent(Bounding).worldBounds;
+                var box = i.getComponent(MeshRenderer).worldBounds;
                 if (!pre)
                     return box.clone();
                 pre.union(box);

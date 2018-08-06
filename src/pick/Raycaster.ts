@@ -22,8 +22,8 @@ namespace feng3d
             //与包围盒碰撞
             gameObjects.forEach(gameObject =>
             {
-                var bounding = gameObject.getComponent(Bounding);
-                var pickingCollisionVO = bounding && bounding.isIntersectingRay(ray3D);
+                var meshRenderer = gameObject.getComponent(MeshRenderer);
+                var pickingCollisionVO = meshRenderer && meshRenderer.isIntersectingRay(ray3D);
                 if (pickingCollisionVO)
                     pickingCollisionVOs.push(pickingCollisionVO);
             });

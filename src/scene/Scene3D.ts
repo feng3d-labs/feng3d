@@ -301,10 +301,10 @@ namespace feng3d
         {
             var results = this.visibleAndEnabledMeshRenderers.filter(i =>
             {
-                var boundingComponent = i.getComponent(Bounding);
-                if (boundingComponent.selfWorldBounds)
+                var meshRenderer = i.getComponent(MeshRenderer);
+                if (meshRenderer.selfWorldBounds)
                 {
-                    if (camera.frustum.intersectsBox(boundingComponent.selfWorldBounds))
+                    if (camera.frustum.intersectsBox(meshRenderer.selfWorldBounds))
                         return true;
                 }
                 return false;
