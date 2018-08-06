@@ -2,7 +2,7 @@ namespace feng3d
 {
     var supportNUM_SKELETONJOINT = 150;
 
-    export class SkinnedMeshRenderer extends MeshRenderer
+    export class SkinnedModel extends Model
     {
         get single() { return true; }
 

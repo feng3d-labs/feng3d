@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * The Water component renders the terrain.
      */
-    export class Water extends MeshRenderer
+    export class Water extends Model
     {
         geometry = new PlaneGeometry({ width: 10, height: 10 });
 

@@ -2,11 +2,11 @@ namespace feng3d
 {
     export class LightPicker
     {
-        private _meshRenderer: MeshRenderer
+        private _model: Model
 
-        constructor(meshRenderer: MeshRenderer)
+        constructor(model: Model)
         {
-            this._meshRenderer = meshRenderer;
+            this._model = model;
         }
 
         beforeRender(renderAtomic: RenderAtomic)
@@ -15,7 +15,7 @@ namespace feng3d
             var directionalLights: DirectionalLight[] = [];
             var spotLights: SpotLight[] = [];
 
-            var scene3d = this._meshRenderer.gameObject.scene;
+            var scene3d = this._model.gameObject.scene;
             if (scene3d)
             {
                 pointLights = scene3d.activePointLights;
@@ -32,7 +32,7 @@ namespace feng3d
             pointLights.forEach(element =>
             {
                 if (!element.isVisibleAndEnabled) return;
-                if (element.shadowType != ShadowType.No_Shadows && this._meshRenderer.receiveShadows)
+                if (element.shadowType != ShadowType.No_Shadows && this._model.receiveShadows)
                 {
                     castShadowPointLights.push(element);
                     pointShadowMaps.push(element.shadowMap);
@@ -56,7 +56,7 @@ namespace feng3d
             spotLights.forEach(element =>
             {
                 if (!element.isVisibleAndEnabled) return;
-                if (element.shadowType != ShadowType.No_Shadows && this._meshRenderer.receiveShadows)
+                if (element.shadowType != ShadowType.No_Shadows && this._model.receiveShadows)
                 {
                     castShadowSpotLights.push(element);
                     spotShadowMatrix.push(element.shadowCamera.viewProjection);
@@ -82,7 +82,7 @@ namespace feng3d
             directionalLights.forEach(element =>
             {
                 if (!element.isVisibleAndEnabled) return;
-                if (element.shadowType != ShadowType.No_Shadows && this._meshRenderer.receiveShadows)
+                if (element.shadowType != ShadowType.No_Shadows && this._model.receiveShadows)
                 {
                     castShadowDirectionalLights.push(element);
                     directionalShadowMatrix.push(element.shadowCamera.viewProjection);

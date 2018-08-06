@@ -26,11 +26,11 @@ namespace feng3d
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, meshRenderers: MeshRenderer[])
+        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, models: Model[])
         {
-            var worldBounds: Box = meshRenderers.reduce((pre: Box, i) =>
+            var worldBounds: Box = models.reduce((pre: Box, i) =>
             {
-                var box = i.getComponent(MeshRenderer).worldBounds;
+                var box = i.getComponent(Model).worldBounds;
                 if (!pre)
                     return box.clone();
                 pre.union(box);

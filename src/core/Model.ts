@@ -2,17 +2,17 @@ namespace feng3d
 {
     export interface ComponentRawMap
     {
-        MeshRendererRaw: MeshRendererRaw
+        ModelRaw: ModelRaw
     }
 
-    export interface MeshRendererRaw
+    export interface ModelRaw
     {
-        __class__: "feng3d.MeshRenderer",
+        __class__: "feng3d.Model",
         geometry?: Geometrys,
         material?: ValueOf<MaterialRawMap>;
     }
 
-    export class MeshRenderer extends Behaviour
+    export class Model extends Behaviour
     {
         get single() { return true; }
 
@@ -63,10 +63,6 @@ namespace feng3d
         @serialize
         receiveShadows = true;
 
-        // shadowyType = 
-
-        // SHADOWMAP_TYPE
-
         lightPicker: LightPicker;
 
         private _selfLocalBounds: Box | null;
@@ -103,7 +99,7 @@ namespace feng3d
             if (!box) box = new Box(this.transform.position, this.transform.position);
             this.gameObject.children.forEach(element =>
             {
-                var ebox = element.getComponent(MeshRenderer).worldBounds;
+                var ebox = element.getComponent(Model).worldBounds;
                 box.union(ebox);
             });
             return box;
@@ -164,7 +160,7 @@ namespace feng3d
             if (rayEntryDistance < 0)
                 return null;
 
-            var meshRenderer = this.getComponent(MeshRenderer);
+            var model = this.getComponent(Model);
 
             //保存碰撞数据
             var pickingCollisionVO: PickingCollisionVO = {
@@ -174,8 +170,8 @@ namespace feng3d
                 rayEntryDistance: rayEntryDistance,
                 ray3D: ray3D,
                 rayOriginIsInsideBounds: rayEntryDistance == 0,
-                geometry: meshRenderer.geometry,
-                cullFace: meshRenderer.material.renderParams.cullFace,
+                geometry: model.geometry,
+                cullFace: model.material.renderParams.cullFace,
             };
 
             return pickingCollisionVO;
@@ -221,9 +217,9 @@ namespace feng3d
 		 */
         private updateBounds()
         {
-            var meshRenderer = this.gameObject.getComponent(MeshRenderer);
-            if (meshRenderer && meshRenderer.geometry)
-                this._selfLocalBounds = meshRenderer.geometry.bounding;
+            var model = this.gameObject.getComponent(Model);
+            if (model && model.geometry)
+                this._selfLocalBounds = model.geometry.bounding;
         }
     }
 }

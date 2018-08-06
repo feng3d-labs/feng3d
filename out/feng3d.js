@@ -14213,10 +14213,10 @@ var feng3d;
             uniforms.u_skyBoxSize = function () { return camera.lens.far / Math.sqrt(3); };
             uniforms.u_scaleByDepth = function () { return camera.getScaleByDepth(1); };
             uniforms.u_sceneAmbientColor = scene3d.ambientColor;
-            unblenditems.concat(blenditems).forEach(function (meshRenderer) {
+            unblenditems.concat(blenditems).forEach(function (model) {
                 //绘制
-                var renderAtomic = meshRenderer.gameObject.renderAtomic;
-                meshRenderer.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+                var renderAtomic = model.gameObject.renderAtomic;
+                model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
                 renderAtomic.next = _this.renderAtomic;
                 gl.renderer.draw(renderAtomic);
             });
@@ -14283,14 +14283,14 @@ var feng3d;
             // log(`选中索引3D对象${id}`, data.toString());
             return this.objects[id];
         };
-        MouseRenderer.prototype.drawRenderables = function (gl, meshRenderer) {
-            if (meshRenderer.gameObject.mouseEnabled) {
-                var object = meshRenderer.gameObject;
+        MouseRenderer.prototype.drawRenderables = function (gl, model) {
+            if (model.gameObject.mouseEnabled) {
+                var object = model.gameObject;
                 var u_objectID = this.objects.length;
                 this.objects[u_objectID] = object;
                 var renderAtomic = object.renderAtomic;
                 renderAtomic.uniforms.u_objectID = u_objectID;
-                // super.drawRenderables(renderContext, meshRenderer);
+                // super.drawRenderables(renderContext, model);
             }
         };
         /**
@@ -14364,9 +14364,9 @@ var feng3d;
             shadowCamera.transform.localToWorldMatrix = light.transform.localToWorldMatrix;
             var renderAtomic = this.renderAtomic;
             // 获取影响阴影图的渲染对象
-            var meshRenderers = scene3d.getMeshRenderersByCamera(shadowCamera);
+            var models = scene3d.getModelsByCamera(shadowCamera);
             // 筛选投射阴影的渲染对象
-            var castShadowsMeshRenderers = meshRenderers.filter(function (i) { return i.castShadows; });
+            var castShadowsModels = models.filter(function (i) { return i.castShadows; });
             //
             renderAtomic.renderParams.useViewRect = true;
             renderAtomic.renderParams.viewRect = new feng3d.Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -14380,7 +14380,7 @@ var feng3d;
             renderAtomic.uniforms.u_lightPosition = light.position;
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
-            castShadowsMeshRenderers.forEach(function (element) {
+            castShadowsModels.forEach(function (element) {
                 _this.drawGameObject(gl, element.gameObject, scene3d, camera);
             });
             light.frameBufferObject.deactive(gl);
@@ -14425,9 +14425,9 @@ var feng3d;
             for (var face = 0; face < 6; face++) {
                 shadowCamera.transform.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
                 // 获取影响阴影图的渲染对象
-                var meshRenderers = scene3d.getMeshRenderersByCamera(shadowCamera);
+                var models = scene3d.getModelsByCamera(shadowCamera);
                 // 筛选投射阴影的渲染对象
-                var castShadowsMeshRenderers = meshRenderers.filter(function (i) { return i.castShadows; });
+                var castShadowsModels = models.filter(function (i) { return i.castShadows; });
                 //
                 renderAtomic.renderParams.useViewRect = true;
                 renderAtomic.renderParams.viewRect = cube2DViewPorts[face];
@@ -14441,7 +14441,7 @@ var feng3d;
                 renderAtomic.uniforms.u_lightPosition = light.position;
                 renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
                 renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
-                castShadowsMeshRenderers.forEach(function (element) {
+                castShadowsModels.forEach(function (element) {
                     _this.drawGameObject(gl, element.gameObject, scene3d, camera);
                 });
             }
@@ -14451,10 +14451,10 @@ var feng3d;
             var _this = this;
             this.init();
             // 获取影响阴影图的渲染对象
-            var meshRenderers = scene3d.getPickByDirectionalLight(light);
+            var models = scene3d.getPickByDirectionalLight(light);
             // 筛选投射阴影的渲染对象
-            var castShadowsMeshRenderers = meshRenderers.filter(function (i) { return i.castShadows; });
-            light.updateShadowByCamera(scene3d, camera, meshRenderers);
+            var castShadowsModels = models.filter(function (i) { return i.castShadows; });
+            light.updateShadowByCamera(scene3d, camera, models);
             light.frameBufferObject.active(gl);
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -14476,7 +14476,7 @@ var feng3d;
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             //
-            castShadowsMeshRenderers.forEach(function (element) {
+            castShadowsModels.forEach(function (element) {
                 _this.drawGameObject(gl, element.gameObject, scene3d, camera);
             });
             light.frameBufferObject.deactive(gl);
@@ -14487,8 +14487,8 @@ var feng3d;
         ShadowRenderer.prototype.drawGameObject = function (gl, gameObject, scene3d, camera) {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
-            var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
-            if (meshRenderer instanceof feng3d.SkinnedMeshRenderer) {
+            var model = gameObject.getComponent(feng3d.Model);
+            if (model instanceof feng3d.SkinnedModel) {
                 this.renderAtomic.shader = this.skeleton_shader;
             }
             else {
@@ -14535,10 +14535,10 @@ var feng3d;
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
             this.init();
             for (var i = 0; i < unblenditems.length; i++) {
-                var meshRenderer = unblenditems[i];
-                if (meshRenderer.getComponent(OutLineComponent) || meshRenderer.getComponent(feng3d.CartoonComponent)) {
-                    var renderAtomic = meshRenderer.gameObject.renderAtomic;
-                    meshRenderer.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+                var model = unblenditems[i];
+                if (model.getComponent(OutLineComponent) || model.getComponent(feng3d.CartoonComponent)) {
+                    var renderAtomic = model.gameObject.renderAtomic;
+                    model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
                     this.renderAtomic.next = renderAtomic;
                     gl.renderer.draw(this.renderAtomic);
                 }
@@ -14616,7 +14616,7 @@ var feng3d;
         WireframeRenderer.prototype.drawGameObject = function (gl, gameObject, scene3d, camera) {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
-            var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
+            var model = gameObject.getComponent(feng3d.Model);
             var renderMode = feng3d.lazy.getvalue(renderAtomic.renderParams.renderMode);
             if (renderMode == feng3d.RenderMode.POINTS
                 || renderMode == feng3d.RenderMode.LINES
@@ -14625,7 +14625,7 @@ var feng3d;
                 return;
             this.init();
             this.renderAtomic.next = renderAtomic;
-            if (meshRenderer instanceof feng3d.SkinnedMeshRenderer) {
+            if (model instanceof feng3d.SkinnedModel) {
                 this.renderAtomic.shader = this.skeleton_shader;
             }
             else {
@@ -16496,9 +16496,9 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var MeshRenderer = /** @class */ (function (_super) {
-        __extends(MeshRenderer, _super);
-        function MeshRenderer() {
+    var Model = /** @class */ (function (_super) {
+        __extends(Model, _super);
+        function Model() {
             var _this = _super.call(this) || this;
             /**
              * 是否投射阴影
@@ -16511,12 +16511,12 @@ var feng3d;
             _this.lightPicker = new feng3d.LightPicker(_this);
             return _this;
         }
-        Object.defineProperty(MeshRenderer.prototype, "single", {
+        Object.defineProperty(Model.prototype, "single", {
             get: function () { return true; },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(MeshRenderer.prototype, "geometry", {
+        Object.defineProperty(Model.prototype, "geometry", {
             /**
              * Returns the instantiated Mesh assigned to the mesh filter.
              */
@@ -16537,7 +16537,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(MeshRenderer.prototype, "selfLocalBounds", {
+        Object.defineProperty(Model.prototype, "selfLocalBounds", {
             /**
              * 自身局部包围盒
              */
@@ -16549,7 +16549,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(MeshRenderer.prototype, "selfWorldBounds", {
+        Object.defineProperty(Model.prototype, "selfWorldBounds", {
             /**
              * 自身世界包围盒
              */
@@ -16561,7 +16561,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(MeshRenderer.prototype, "worldBounds", {
+        Object.defineProperty(Model.prototype, "worldBounds", {
             /**
              * 世界包围盒
              */
@@ -16570,7 +16570,7 @@ var feng3d;
                 if (!box)
                     box = new feng3d.Box(this.transform.position, this.transform.position);
                 this.gameObject.children.forEach(function (element) {
-                    var ebox = element.getComponent(MeshRenderer).worldBounds;
+                    var ebox = element.getComponent(Model).worldBounds;
                     box.union(ebox);
                 });
                 return box;
@@ -16578,7 +16578,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        MeshRenderer.prototype.init = function (gameObject) {
+        Model.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
             if (!this.geometry)
                 this.geometry = new feng3d.CubeGeometry();
@@ -16586,7 +16586,7 @@ var feng3d;
                 this.material = feng3d.materialFactory.create("standard");
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         };
-        MeshRenderer.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+        Model.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             var _this = this;
             renderAtomic.uniforms.u_modelMatrix = function () { return _this.transform.localToWorldMatrix; };
             renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.transform.ITlocalToWorldMatrix; };
@@ -16602,7 +16602,7 @@ var feng3d;
           * @param ray3D
           * @return
           */
-        MeshRenderer.prototype.isIntersectingRay = function (ray3D) {
+        Model.prototype.isIntersectingRay = function (ray3D) {
             if (!this.selfLocalBounds)
                 return null;
             var localNormal = new feng3d.Vector3();
@@ -16614,7 +16614,7 @@ var feng3d;
             var rayEntryDistance = this.selfLocalBounds.rayIntersection(localRay.position, localRay.direction, localNormal);
             if (rayEntryDistance < 0)
                 return null;
-            var meshRenderer = this.getComponent(MeshRenderer);
+            var model = this.getComponent(Model);
             //保存碰撞数据
             var pickingCollisionVO = {
                 gameObject: this.gameObject,
@@ -16623,26 +16623,26 @@ var feng3d;
                 rayEntryDistance: rayEntryDistance,
                 ray3D: ray3D,
                 rayOriginIsInsideBounds: rayEntryDistance == 0,
-                geometry: meshRenderer.geometry,
-                cullFace: meshRenderer.material.renderParams.cullFace,
+                geometry: model.geometry,
+                cullFace: model.material.renderParams.cullFace,
             };
             return pickingCollisionVO;
         };
         /**
          * 销毁
          */
-        MeshRenderer.prototype.dispose = function () {
+        Model.prototype.dispose = function () {
             this.geometry = null;
             this.material = null;
             _super.prototype.dispose.call(this);
         };
-        MeshRenderer.prototype.onScenetransformChanged = function () {
+        Model.prototype.onScenetransformChanged = function () {
             this._selfWorldBounds = null;
         };
         /**
          * 更新世界边界
          */
-        MeshRenderer.prototype.updateWorldBounds = function () {
+        Model.prototype.updateWorldBounds = function () {
             if (this.selfLocalBounds && this.transform.localToWorldMatrix) {
                 this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
             }
@@ -16650,37 +16650,37 @@ var feng3d;
         /**
          * 处理包围盒变换事件
          */
-        MeshRenderer.prototype.onBoundsInvalid = function () {
+        Model.prototype.onBoundsInvalid = function () {
             this._selfLocalBounds = null;
             this._selfWorldBounds = null;
         };
         /**
          * @inheritDoc
          */
-        MeshRenderer.prototype.updateBounds = function () {
-            var meshRenderer = this.gameObject.getComponent(MeshRenderer);
-            if (meshRenderer && meshRenderer.geometry)
-                this._selfLocalBounds = meshRenderer.geometry.bounding;
+        Model.prototype.updateBounds = function () {
+            var model = this.gameObject.getComponent(Model);
+            if (model && model.geometry)
+                this._selfLocalBounds = model.geometry.bounding;
         };
         __decorate([
             feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } }),
             feng3d.serialize
-        ], MeshRenderer.prototype, "geometry", null);
+        ], Model.prototype, "geometry", null);
         __decorate([
             feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } }),
             feng3d.serialize
-        ], MeshRenderer.prototype, "material", void 0);
+        ], Model.prototype, "material", void 0);
         __decorate([
             feng3d.oav(),
             feng3d.serialize
-        ], MeshRenderer.prototype, "castShadows", void 0);
+        ], Model.prototype, "castShadows", void 0);
         __decorate([
             feng3d.oav(),
             feng3d.serialize
-        ], MeshRenderer.prototype, "receiveShadows", void 0);
-        return MeshRenderer;
+        ], Model.prototype, "receiveShadows", void 0);
+        return Model;
     }(feng3d.Behaviour));
-    feng3d.MeshRenderer = MeshRenderer;
+    feng3d.Model = Model;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16875,8 +16875,8 @@ var feng3d;
         };
         Scene3D.prototype.update = function () {
             this._mouseCheckObjects = null;
-            this._meshRenderers = null;
-            this._visibleAndEnabledMeshRenderers = null;
+            this._models = null;
+            this._visibleAndEnabledModels = null;
             this._skyBoxs = null;
             this._activeSkyBoxs = null;
             this._directionalLights = null;
@@ -16890,22 +16890,22 @@ var feng3d;
             this._behaviours = null;
             this._activeBehaviours = null;
         };
-        Object.defineProperty(Scene3D.prototype, "meshRenderers", {
+        Object.defineProperty(Scene3D.prototype, "models", {
             /**
-             * 所有MeshRenderer
+             * 所有 Model
              */
             get: function () {
-                return this._meshRenderers = this._meshRenderers || this.getComponentsInChildren(feng3d.MeshRenderer);
+                return this._models = this._models || this.getComponentsInChildren(feng3d.Model);
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "visibleAndEnabledMeshRenderers", {
+        Object.defineProperty(Scene3D.prototype, "visibleAndEnabledModels", {
             /**
-             * 所有 可见且开启的 MeshRenderer
+             * 所有 可见且开启的 Model
              */
             get: function () {
-                return this._visibleAndEnabledMeshRenderers = this._visibleAndEnabledMeshRenderers || this.meshRenderers.filter(function (i) { return i.isVisibleAndEnabled; });
+                return this._visibleAndEnabledModels = this._visibleAndEnabledModels || this.models.filter(function (i) { return i.isVisibleAndEnabled; });
             },
             enumerable: true,
             configurable: true
@@ -17008,7 +17008,7 @@ var feng3d;
                 while (i < checkList.length) {
                     var checkObject = checkList[i++];
                     if (checkObject.mouseEnabled) {
-                        if (checkObject.getComponents(feng3d.MeshRenderer)) {
+                        if (checkObject.getComponents(feng3d.Model)) {
                             gameObjects.push(checkObject);
                         }
                         checkList = checkList.concat(checkObject.getChildren());
@@ -17061,11 +17061,11 @@ var feng3d;
                 var item = openlist.shift();
                 if (!item.visible)
                     continue;
-                var meshRenderer = item.getComponent(feng3d.MeshRenderer);
-                if (meshRenderer && (meshRenderer.castShadows || meshRenderer.receiveShadows)
-                    && !meshRenderer.material.renderParams.enableBlend
-                    && meshRenderer.material.renderParams.renderMode == feng3d.RenderMode.TRIANGLES) {
-                    targets.push(meshRenderer);
+                var model = item.getComponent(feng3d.Model);
+                if (model && (model.castShadows || model.receiveShadows)
+                    && !model.material.renderParams.enableBlend
+                    && model.material.renderParams.renderMode == feng3d.RenderMode.TRIANGLES) {
+                    targets.push(model);
                 }
                 item.children.forEach(function (element) {
                     openlist.push(element);
@@ -17074,14 +17074,14 @@ var feng3d;
             return targets;
         };
         /**
-         * 获取 可被摄像机看见的 MeshRenderer列表
+         * 获取 可被摄像机看见的 Model 列表
          * @param camera
          */
-        Scene3D.prototype.getMeshRenderersByCamera = function (camera) {
-            var results = this.visibleAndEnabledMeshRenderers.filter(function (i) {
-                var meshRenderer = i.getComponent(feng3d.MeshRenderer);
-                if (meshRenderer.selfWorldBounds) {
-                    if (camera.frustum.intersectsBox(meshRenderer.selfWorldBounds))
+        Scene3D.prototype.getModelsByCamera = function (camera) {
+            var results = this.visibleAndEnabledModels.filter(function (i) {
+                var model = i.getComponent(feng3d.Model);
+                if (model.selfWorldBounds) {
+                    if (camera.frustum.intersectsBox(model.selfWorldBounds))
                         return true;
                 }
                 return false;
@@ -17110,37 +17110,37 @@ var feng3d;
             this.scene = scene;
             this.camera = camera;
         }
-        Object.defineProperty(ScenePickCache.prototype, "activeMeshRenderers", {
+        Object.defineProperty(ScenePickCache.prototype, "activeModels", {
             /**
              * 获取需要渲染的对象
              *
              * #### 渲染需求条件
              * 1. visible == true
              * 1. 在摄像机视锥内
-             * 1. meshRenderer.enabled == true
+             * 1. model.enabled == true
              *
              * @param gameObject
              * @param camera
              */
             get: function () {
-                if (this._activeMeshRenderers)
-                    return this._activeMeshRenderers;
-                var meshRenderers = this._activeMeshRenderers = [];
+                if (this._activeModels)
+                    return this._activeModels;
+                var models = this._activeModels = [];
                 var gameObjects = [this.scene.gameObject];
                 while (gameObjects.length > 0) {
                     var gameObject = gameObjects.pop();
                     if (!gameObject.visible)
                         continue;
-                    var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
-                    if (meshRenderer && meshRenderer.enabled) {
-                        if (meshRenderer.selfWorldBounds) {
-                            if (this.camera.frustum.intersectsBox(meshRenderer.selfWorldBounds))
-                                meshRenderers.push(meshRenderer);
+                    var model = gameObject.getComponent(feng3d.Model);
+                    if (model && model.enabled) {
+                        if (model.selfWorldBounds) {
+                            if (this.camera.frustum.intersectsBox(model.selfWorldBounds))
+                                models.push(model);
                         }
                     }
                     gameObjects = gameObjects.concat(gameObject.children);
                 }
-                return meshRenderers;
+                return models;
             },
             enumerable: true,
             configurable: true
@@ -17152,9 +17152,9 @@ var feng3d;
             get: function () {
                 if (this._blenditems)
                     return this._blenditems;
-                var meshRenderers = this.activeMeshRenderers;
+                var models = this.activeModels;
                 var camerapos = this.camera.transform.scenePosition;
-                var blenditems = this._blenditems = meshRenderers.filter(function (item) {
+                var blenditems = this._blenditems = models.filter(function (item) {
                     return item.material.renderParams.enableBlend;
                 }).sort(function (b, a) { return a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared; });
                 return blenditems;
@@ -17169,9 +17169,9 @@ var feng3d;
             get: function () {
                 if (this._unblenditems)
                     return this._unblenditems;
-                var meshRenderers = this.activeMeshRenderers;
+                var models = this.activeModels;
                 var camerapos = this.camera.transform.scenePosition;
-                var unblenditems = this._unblenditems = meshRenderers.filter(function (item) {
+                var unblenditems = this._unblenditems = models.filter(function (item) {
                     return !item.material.renderParams.enableBlend;
                 }).sort(function (a, b) { return a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared; });
                 return unblenditems;
@@ -17182,7 +17182,7 @@ var feng3d;
         ScenePickCache.prototype.clear = function () {
             this._blenditems = null;
             this._unblenditems = null;
-            this._activeMeshRenderers = null;
+            this._activeModels = null;
         };
         return ScenePickCache;
     }());
@@ -21129,7 +21129,7 @@ var feng3d;
                 gameObject.mouseEnabled = false;
                 gameObject.addComponent(feng3d.BillboardComponent);
                 //材质
-                var model = gameObject.getComponent(feng3d.MeshRenderer);
+                var model = gameObject.getComponent(feng3d.Model);
                 model.geometry = new feng3d.PlaneGeometry({ width: this.lightType == feng3d.LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 var textureMaterial = model.material = feng3d.materialFactory.create("texture");
                 //
@@ -21200,9 +21200,9 @@ var feng3d;
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        DirectionalLight.prototype.updateShadowByCamera = function (scene3d, viewCamera, meshRenderers) {
-            var worldBounds = meshRenderers.reduce(function (pre, i) {
-                var box = i.getComponent(feng3d.MeshRenderer).worldBounds;
+        DirectionalLight.prototype.updateShadowByCamera = function (scene3d, viewCamera, models) {
+            var worldBounds = models.reduce(function (pre, i) {
+                var box = i.getComponent(feng3d.Model).worldBounds;
                 if (!pre)
                     return box.clone();
                 pre.union(box);
@@ -21334,15 +21334,15 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     var LightPicker = /** @class */ (function () {
-        function LightPicker(meshRenderer) {
-            this._meshRenderer = meshRenderer;
+        function LightPicker(model) {
+            this._model = model;
         }
         LightPicker.prototype.beforeRender = function (renderAtomic) {
             var _this = this;
             var pointLights = [];
             var directionalLights = [];
             var spotLights = [];
-            var scene3d = this._meshRenderer.gameObject.scene;
+            var scene3d = this._model.gameObject.scene;
             if (scene3d) {
                 pointLights = scene3d.activePointLights;
                 directionalLights = scene3d.activeDirectionalLights;
@@ -21356,7 +21356,7 @@ var feng3d;
             pointLights.forEach(function (element) {
                 if (!element.isVisibleAndEnabled)
                     return;
-                if (element.shadowType != feng3d.ShadowType.No_Shadows && _this._meshRenderer.receiveShadows) {
+                if (element.shadowType != feng3d.ShadowType.No_Shadows && _this._model.receiveShadows) {
                     castShadowPointLights.push(element);
                     pointShadowMaps.push(element.shadowMap);
                 }
@@ -21378,7 +21378,7 @@ var feng3d;
             spotLights.forEach(function (element) {
                 if (!element.isVisibleAndEnabled)
                     return;
-                if (element.shadowType != feng3d.ShadowType.No_Shadows && _this._meshRenderer.receiveShadows) {
+                if (element.shadowType != feng3d.ShadowType.No_Shadows && _this._model.receiveShadows) {
                     castShadowSpotLights.push(element);
                     spotShadowMatrix.push(element.shadowCamera.viewProjection);
                     spotShadowMaps.push(element.shadowMap);
@@ -21402,7 +21402,7 @@ var feng3d;
             directionalLights.forEach(function (element) {
                 if (!element.isVisibleAndEnabled)
                     return;
-                if (element.shadowType != feng3d.ShadowType.No_Shadows && _this._meshRenderer.receiveShadows) {
+                if (element.shadowType != feng3d.ShadowType.No_Shadows && _this._model.receiveShadows) {
                     castShadowDirectionalLights.push(element);
                     directionalShadowMatrix.push(element.shadowCamera.viewProjection);
                     directionalShadowMaps.push(element.shadowMap);
@@ -21963,8 +21963,8 @@ var feng3d;
                 return null;
             //与包围盒碰撞
             gameObjects.forEach(function (gameObject) {
-                var meshRenderer = gameObject.getComponent(feng3d.MeshRenderer);
-                var pickingCollisionVO = meshRenderer && meshRenderer.isIntersectingRay(ray3D);
+                var model = gameObject.getComponent(feng3d.Model);
+                var pickingCollisionVO = model && model.isIntersectingRay(ray3D);
                 if (pickingCollisionVO)
                     pickingCollisionVOs.push(pickingCollisionVO);
             });
@@ -22557,7 +22557,7 @@ var feng3d;
             this.material.uniforms.u_textureMatrix = textureMatrix;
         };
         return Water;
-    }(feng3d.MeshRenderer));
+    }(feng3d.Model));
     feng3d.Water = Water;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -23048,7 +23048,7 @@ var feng3d;
             return _this;
         }
         return Terrain;
-    }(feng3d.MeshRenderer));
+    }(feng3d.Model));
     feng3d.Terrain = Terrain;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -23691,7 +23691,7 @@ var feng3d;
             feng3d.oav({ componentParam: { tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" } })
         ], ParticleSystem.prototype, "invalidate", null);
         return ParticleSystem;
-    }(feng3d.MeshRenderer));
+    }(feng3d.Model));
     feng3d.ParticleSystem = ParticleSystem;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -23931,16 +23931,16 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     var supportNUM_SKELETONJOINT = 150;
-    var SkinnedMeshRenderer = /** @class */ (function (_super) {
-        __extends(SkinnedMeshRenderer, _super);
-        function SkinnedMeshRenderer() {
+    var SkinnedModel = /** @class */ (function (_super) {
+        __extends(SkinnedModel, _super);
+        function SkinnedModel() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.material = feng3d.materialFactory.create("skeleton");
             _this.skeletonGlobalMatriices = (function () { var v = [new feng3d.Matrix4x4()]; var i = supportNUM_SKELETONJOINT; while (i-- > 1)
                 v.push(v[0]); return v; })();
             return _this;
         }
-        Object.defineProperty(SkinnedMeshRenderer.prototype, "single", {
+        Object.defineProperty(SkinnedModel.prototype, "single", {
             get: function () { return true; },
             enumerable: true,
             configurable: true
@@ -23948,10 +23948,10 @@ var feng3d;
         /**
          * 创建一个骨骼动画类
          */
-        SkinnedMeshRenderer.prototype.init = function (gameObject) {
+        SkinnedModel.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
         };
-        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_modelMatrix", {
+        Object.defineProperty(SkinnedModel.prototype, "u_modelMatrix", {
             get: function () {
                 if (this.cacheSkeletonComponent)
                     return this.cacheSkeletonComponent.transform.localToWorldMatrix;
@@ -23960,7 +23960,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_ITModelMatrix", {
+        Object.defineProperty(SkinnedModel.prototype, "u_ITModelMatrix", {
             get: function () {
                 if (this.cacheSkeletonComponent)
                     return this.cacheSkeletonComponent.transform.ITlocalToWorldMatrix;
@@ -23969,7 +23969,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_skeletonGlobalMatriices", {
+        Object.defineProperty(SkinnedModel.prototype, "u_skeletonGlobalMatriices", {
             get: function () {
                 if (!this.cacheSkeletonComponent) {
                     var gameObject = this.gameObject;
@@ -23996,7 +23996,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        SkinnedMeshRenderer.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+        SkinnedModel.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             var _this = this;
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
             renderAtomic.uniforms.u_modelMatrix = function () { return _this.u_modelMatrix; };
@@ -24009,23 +24009,23 @@ var feng3d;
         /**
          * 销毁
          */
-        SkinnedMeshRenderer.prototype.dispose = function () {
+        SkinnedModel.prototype.dispose = function () {
             _super.prototype.dispose.call(this);
         };
         __decorate([
             feng3d.serialize,
             feng3d.oav()
-        ], SkinnedMeshRenderer.prototype, "skinSkeleton", void 0);
+        ], SkinnedModel.prototype, "skinSkeleton", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav()
-        ], SkinnedMeshRenderer.prototype, "material", void 0);
+        ], SkinnedModel.prototype, "material", void 0);
         __decorate([
             feng3d.serialize
-        ], SkinnedMeshRenderer.prototype, "initMatrix3d", void 0);
-        return SkinnedMeshRenderer;
-    }(feng3d.MeshRenderer));
-    feng3d.SkinnedMeshRenderer = SkinnedMeshRenderer;
+        ], SkinnedModel.prototype, "initMatrix3d", void 0);
+        return SkinnedModel;
+    }(feng3d.Model));
+    feng3d.SkinnedModel = SkinnedModel;
     var SkinSkeleton = /** @class */ (function () {
         function SkinSkeleton() {
             /**
@@ -25281,8 +25281,8 @@ var feng3d;
                 for (var i = 0; i < this.geosets.length; i++) {
                     var geoset = this.geosets[i];
                     var mesh = this.meshs[i] = feng3d.GameObject.create();
-                    // var meshRenderer = mesh.addComponent(MeshRenderer);
-                    var meshRenderer = mesh.addComponent(feng3d.SkinnedMeshRenderer);
+                    // var model = mesh.addComponent(Model);
+                    var model = mesh.addComponent(feng3d.SkinnedModel);
                     var geometry = new feng3d.CustomGeometry();
                     geometry.positions = geoset.Vertices;
                     geometry.uvs = geoset.TVertices;
@@ -25302,11 +25302,11 @@ var feng3d;
                         image = image.substring(0, image.indexOf("."));
                         image += ".JPG";
                         image = this.root + image;
-                        meshRenderer.material.uniforms.s_diffuse.url = image;
-                        meshRenderer.material.renderParams.cullFace = feng3d.CullFace.FRONT;
+                        model.material.uniforms.s_diffuse.url = image;
+                        model.material.renderParams.cullFace = feng3d.CullFace.FRONT;
                     }
-                    meshRenderer.geometry = geometry;
-                    meshRenderer.skinSkeleton = skinSkeleton;
+                    model.geometry = geometry;
+                    model.skinSkeleton = skinSkeleton;
                     container.addChild(mesh);
                 }
                 var animationclips = createAnimationClips(this);
@@ -26700,7 +26700,7 @@ var feng3d;
     var _vertexIndex;
     function createMaterialObj(obj, subObj, material, mtlData) {
         var gameObject = feng3d.GameObject.create();
-        var model = gameObject.addComponent(feng3d.MeshRenderer);
+        var model = gameObject.addComponent(feng3d.Model);
         model.material = material || feng3d.materialFactory.create("standard");
         model.material.renderParams.cullFace = feng3d.CullFace.FRONT;
         var geometry = model.geometry = new feng3d.CustomGeometry();
@@ -26825,9 +26825,9 @@ var feng3d;
             var skinSkeleton = new feng3d.SkinSkeletonTemp();
             var geometry = createGeometry(md5MeshData.meshs[i], skeletonComponent, skinSkeleton);
             var skeletonGameObject = feng3d.GameObject.create();
-            var skinnedMeshRenderer = skeletonGameObject.addComponent(feng3d.SkinnedMeshRenderer);
-            skinnedMeshRenderer.geometry = geometry;
-            skinnedMeshRenderer.skinSkeleton = skinSkeleton;
+            var skinnedModel = skeletonGameObject.addComponent(feng3d.SkinnedModel);
+            skinnedModel.geometry = geometry;
+            skinnedModel.skinSkeleton = skinSkeleton;
             gameObject.addChild(skeletonGameObject);
         }
         completed && completed(gameObject);
@@ -27101,14 +27101,14 @@ var feng3d;
         GameObjectFactory.prototype.createCube = function (name) {
             if (name === void 0) { name = "cube"; }
             var gameobject = feng3d.GameObject.create(name);
-            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.CubeGeometry();
             return gameobject;
         };
         GameObjectFactory.prototype.createPlane = function (name) {
             if (name === void 0) { name = "plane"; }
             var gameobject = feng3d.GameObject.create(name);
-            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.PlaneGeometry({ width: 10, height: 10 });
             model.material = feng3d.materialFactory.create("standard");
             return gameobject;
@@ -27116,7 +27116,7 @@ var feng3d;
         GameObjectFactory.prototype.createCylinder = function (name) {
             if (name === void 0) { name = "cylinder"; }
             var gameobject = feng3d.GameObject.create(name);
-            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.CylinderGeometry();
             model.material = feng3d.materialFactory.create("standard");
             return gameobject;
@@ -27124,7 +27124,7 @@ var feng3d;
         GameObjectFactory.prototype.createCone = function (name) {
             if (name === void 0) { name = "Cone"; }
             var gameobject = feng3d.GameObject.create(name);
-            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.ConeGeometry();
             model.material = feng3d.materialFactory.create("standard");
             return gameobject;
@@ -27132,7 +27132,7 @@ var feng3d;
         GameObjectFactory.prototype.createTorus = function (name) {
             if (name === void 0) { name = "Torus"; }
             var gameobject = feng3d.GameObject.create(name);
-            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.TorusGeometry();
             model.material = feng3d.materialFactory.create("standard");
             return gameobject;
@@ -27146,7 +27146,7 @@ var feng3d;
         GameObjectFactory.prototype.createSphere = function (name) {
             if (name === void 0) { name = "sphere"; }
             var gameobject = feng3d.GameObject.create(name);
-            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.SphereGeometry();
             model.material = feng3d.materialFactory.create("standard");
             return gameobject;
@@ -27154,7 +27154,7 @@ var feng3d;
         GameObjectFactory.prototype.createCapsule = function (name) {
             if (name === void 0) { name = "capsule"; }
             var gameobject = feng3d.GameObject.create(name);
-            var model = gameobject.addComponent(feng3d.MeshRenderer);
+            var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.CapsuleGeometry();
             model.material = feng3d.materialFactory.create("standard");
             return gameobject;

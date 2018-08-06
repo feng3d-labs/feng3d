@@ -5,7 +5,7 @@ namespace feng3d
      * 粒子系统
      * @author feng 2017-01-09
      */
-    export class ParticleSystem extends MeshRenderer
+    export class ParticleSystem extends Model
     {
 
         /**

@@ -51,7 +51,7 @@ namespace feng3d
         {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
-            var meshRenderer = gameObject.getComponent(MeshRenderer);
+            var model = gameObject.getComponent(Model);
 
             var renderMode = lazy.getvalue(renderAtomic.renderParams.renderMode);
             if (renderMode == RenderMode.POINTS
@@ -64,7 +64,7 @@ namespace feng3d
             this.init();
 
             this.renderAtomic.next = renderAtomic;
-            if (meshRenderer instanceof SkinnedMeshRenderer)
+            if (model instanceof SkinnedModel)
             {
                 this.renderAtomic.shader = this.skeleton_shader;
             } else

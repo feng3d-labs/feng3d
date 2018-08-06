@@ -76,7 +76,7 @@ namespace feng3d
     function createMaterialObj(obj: OBJ_OBJData, subObj: OBJ_SubOBJ, material: Material, mtlData: Mtl_Mtl | null)
     {
         var gameObject = GameObject.create();
-        var model = gameObject.addComponent(MeshRenderer);
+        var model = gameObject.addComponent(Model);
         model.material = material || materialFactory.create("standard");
         model.material.renderParams.cullFace = CullFace.FRONT;
 

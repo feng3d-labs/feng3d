@@ -69,9 +69,9 @@ namespace feng3d
             var renderAtomic = this.renderAtomic;
 
             // 获取影响阴影图的渲染对象
-            var meshRenderers = scene3d.getMeshRenderersByCamera(shadowCamera);
+            var models = scene3d.getModelsByCamera(shadowCamera);
             // 筛选投射阴影的渲染对象
-            var castShadowsMeshRenderers = meshRenderers.filter(i => i.castShadows);
+            var castShadowsModels = models.filter(i => i.castShadows);
 
             //
             renderAtomic.renderParams.useViewRect = true;
@@ -88,7 +88,7 @@ namespace feng3d
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
 
-            castShadowsMeshRenderers.forEach(element =>
+            castShadowsModels.forEach(element =>
             {
                 this.drawGameObject(gl, element.gameObject, scene3d, camera);
             });
@@ -147,9 +147,9 @@ namespace feng3d
                 shadowCamera.transform.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
 
                 // 获取影响阴影图的渲染对象
-                var meshRenderers = scene3d.getMeshRenderersByCamera(shadowCamera);
+                var models = scene3d.getModelsByCamera(shadowCamera);
                 // 筛选投射阴影的渲染对象
-                var castShadowsMeshRenderers = meshRenderers.filter(i => i.castShadows);
+                var castShadowsModels = models.filter(i => i.castShadows);
 
                 //
                 renderAtomic.renderParams.useViewRect = true;
@@ -166,7 +166,7 @@ namespace feng3d
                 renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
                 renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
 
-                castShadowsMeshRenderers.forEach(element =>
+                castShadowsModels.forEach(element =>
                 {
                     this.drawGameObject(gl, element.gameObject, scene3d, camera);
                 });
@@ -180,11 +180,11 @@ namespace feng3d
             this.init();
 
             // 获取影响阴影图的渲染对象
-            var meshRenderers = scene3d.getPickByDirectionalLight(light);
+            var models = scene3d.getPickByDirectionalLight(light);
             // 筛选投射阴影的渲染对象
-            var castShadowsMeshRenderers = meshRenderers.filter(i => i.castShadows);
+            var castShadowsModels = models.filter(i => i.castShadows);
 
-            light.updateShadowByCamera(scene3d, camera, meshRenderers);
+            light.updateShadowByCamera(scene3d, camera, models);
 
             light.frameBufferObject.active(gl);
 
@@ -210,7 +210,7 @@ namespace feng3d
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             //
-            castShadowsMeshRenderers.forEach(element =>
+            castShadowsModels.forEach(element =>
             {
                 this.drawGameObject(gl, element.gameObject, scene3d, camera);
             });
@@ -225,9 +225,9 @@ namespace feng3d
         {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
-            var meshRenderer = gameObject.getComponent(MeshRenderer);
+            var model = gameObject.getComponent(Model);
 
-            if (meshRenderer instanceof SkinnedMeshRenderer)
+            if (model instanceof SkinnedModel)
             {
                 this.renderAtomic.shader = this.skeleton_shader;
             } else

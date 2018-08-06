@@ -34,12 +34,12 @@ namespace feng3d
 
             uniforms.u_sceneAmbientColor = scene3d.ambientColor;
 
-            unblenditems.concat(blenditems).forEach(meshRenderer =>
+            unblenditems.concat(blenditems).forEach(model =>
             {
                 //绘制
-                var renderAtomic = meshRenderer.gameObject.renderAtomic;
+                var renderAtomic = model.gameObject.renderAtomic;
 
-                meshRenderer.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+                model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
 
                 renderAtomic.next = this.renderAtomic;
 

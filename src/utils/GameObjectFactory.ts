@@ -13,7 +13,7 @@ namespace feng3d
         createCube(name: string = "cube")
         {
             var gameobject = GameObject.create(name);
-            var model = gameobject.addComponent(MeshRenderer);
+            var model = gameobject.addComponent(Model);
             model.geometry = new CubeGeometry();
             return gameobject;
         }
@@ -21,7 +21,7 @@ namespace feng3d
         createPlane(name: string = "plane")
         {
             var gameobject = GameObject.create(name);
-            var model = gameobject.addComponent(MeshRenderer);
+            var model = gameobject.addComponent(Model);
             model.geometry = new PlaneGeometry({ width: 10, height: 10 });
             model.material = materialFactory.create("standard");
             return gameobject;
@@ -30,7 +30,7 @@ namespace feng3d
         createCylinder(name: string = "cylinder")
         {
             var gameobject = GameObject.create(name);
-            var model = gameobject.addComponent(MeshRenderer);
+            var model = gameobject.addComponent(Model);
             model.geometry = new CylinderGeometry();
             model.material = materialFactory.create("standard");
             return gameobject;
@@ -39,7 +39,7 @@ namespace feng3d
         createCone(name: string = "Cone")
         {
             var gameobject = GameObject.create(name);
-            var model = gameobject.addComponent(MeshRenderer);
+            var model = gameobject.addComponent(Model);
             model.geometry = new ConeGeometry();
             model.material = materialFactory.create("standard");
             return gameobject;
@@ -48,7 +48,7 @@ namespace feng3d
         createTorus(name: string = "Torus")
         {
             var gameobject = GameObject.create(name);
-            var model = gameobject.addComponent(MeshRenderer);
+            var model = gameobject.addComponent(Model);
             model.geometry = new TorusGeometry();
             model.material = materialFactory.create("standard");
             return gameobject;
@@ -64,7 +64,7 @@ namespace feng3d
         createSphere(name: string = "sphere")
         {
             var gameobject = GameObject.create(name);
-            var model = gameobject.addComponent(MeshRenderer);
+            var model = gameobject.addComponent(Model);
             model.geometry = new SphereGeometry();
             model.material = materialFactory.create("standard");
             return gameobject;
@@ -73,7 +73,7 @@ namespace feng3d
         createCapsule(name: string = "capsule")
         {
             var gameobject = GameObject.create(name);
-            var model = gameobject.addComponent(MeshRenderer);
+            var model = gameobject.addComponent(Model);
             model.geometry = new CapsuleGeometry();
             model.material = materialFactory.create("standard");
             return gameobject;

@@ -36,8 +36,8 @@ namespace feng3d
         updateScriptFlag = ScriptFlag.feng3d;
 
         private _mouseCheckObjects: { layer: number, objects: GameObject[] }[];
-        private _meshRenderers: MeshRenderer[];
-        private _visibleAndEnabledMeshRenderers: MeshRenderer[];
+        private _models: Model[];
+        private _visibleAndEnabledModels: Model[];
         private _skyBoxs: SkyBox[];
         private _activeSkyBoxs: SkyBox[];
         private _directionalLights: DirectionalLight[];
@@ -103,8 +103,8 @@ namespace feng3d
         update()
         {
             this._mouseCheckObjects = <any>null;
-            this._meshRenderers = null;
-            this._visibleAndEnabledMeshRenderers = null;
+            this._models = null;
+            this._visibleAndEnabledModels = null;
             this._skyBoxs = null;
             this._activeSkyBoxs = null;
             this._directionalLights = null;
@@ -120,19 +120,19 @@ namespace feng3d
         }
 
         /**
-         * 所有MeshRenderer
+         * 所有 Model
          */
-        get meshRenderers()
+        get models()
         {
-            return this._meshRenderers = this._meshRenderers || this.getComponentsInChildren(MeshRenderer);
+            return this._models = this._models || this.getComponentsInChildren(Model);
         }
 
         /**
-         * 所有 可见且开启的 MeshRenderer
+         * 所有 可见且开启的 Model
          */
-        get visibleAndEnabledMeshRenderers()
+        get visibleAndEnabledModels()
         {
-            return this._visibleAndEnabledMeshRenderers = this._visibleAndEnabledMeshRenderers || this.meshRenderers.filter(i => i.isVisibleAndEnabled)
+            return this._visibleAndEnabledModels = this._visibleAndEnabledModels || this.models.filter(i => i.isVisibleAndEnabled)
         }
 
         /**
@@ -212,7 +212,7 @@ namespace feng3d
                 var checkObject = checkList[i++];
                 if (checkObject.mouseEnabled)
                 {
-                    if (checkObject.getComponents(MeshRenderer))
+                    if (checkObject.getComponents(Model))
                     {
                         gameObjects.push(checkObject);
                     }
@@ -272,18 +272,18 @@ namespace feng3d
         getPickByDirectionalLight(light: DirectionalLight)
         {
             var openlist = [this.gameObject];
-            var targets: MeshRenderer[] = [];
+            var targets: Model[] = [];
             while (openlist.length > 0)
             {
                 var item = openlist.shift();
                 if (!item.visible) continue;
-                var meshRenderer = item.getComponent(MeshRenderer);
-                if (meshRenderer && (meshRenderer.castShadows || meshRenderer.receiveShadows)
-                    && !meshRenderer.material.renderParams.enableBlend
-                    && meshRenderer.material.renderParams.renderMode == RenderMode.TRIANGLES
+                var model = item.getComponent(Model);
+                if (model && (model.castShadows || model.receiveShadows)
+                    && !model.material.renderParams.enableBlend
+                    && model.material.renderParams.renderMode == RenderMode.TRIANGLES
                 )
                 {
-                    targets.push(meshRenderer);
+                    targets.push(model);
                 }
                 item.children.forEach(element =>
                 {
@@ -294,17 +294,17 @@ namespace feng3d
         }
 
         /**
-         * 获取 可被摄像机看见的 MeshRenderer列表
+         * 获取 可被摄像机看见的 Model 列表
          * @param camera 
          */
-        getMeshRenderersByCamera(camera: Camera)
+        getModelsByCamera(camera: Camera)
         {
-            var results = this.visibleAndEnabledMeshRenderers.filter(i =>
+            var results = this.visibleAndEnabledModels.filter(i =>
             {
-                var meshRenderer = i.getComponent(MeshRenderer);
-                if (meshRenderer.selfWorldBounds)
+                var model = i.getComponent(Model);
+                if (model.selfWorldBounds)
                 {
-                    if (camera.frustum.intersectsBox(meshRenderer.selfWorldBounds))
+                    if (camera.frustum.intersectsBox(model.selfWorldBounds))
                         return true;
                 }
                 return false;

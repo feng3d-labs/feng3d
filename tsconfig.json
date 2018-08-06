@@ -146,7 +146,7 @@
         //3D对象组件
         "src/component/HoldSizeComponent.ts",
         "src/component/BillboardComponent.ts",
-        "src/core/MeshRenderer.ts",
+        "src/core/Model.ts",
         "src/core/ScriptComponent.ts",
         "src/core/Script.ts",
         //3D场景
@@ -233,7 +233,7 @@
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonComponent.ts",
-        "src/animators/skeleton/SkinnedMeshRenderer.ts",
+        "src/animators/skeleton/SkinnedModel.ts",
         "src/animators/skeleton/SkeletonMaterial.ts",
         //
         "src/animation/Animation.ts",

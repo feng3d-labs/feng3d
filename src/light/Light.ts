@@ -127,7 +127,7 @@ namespace feng3d
                 gameObject.addComponent(BillboardComponent);
 
                 //材质
-                var model = gameObject.getComponent(MeshRenderer);
+                var model = gameObject.getComponent(Model);
                 model.geometry = new feng3d.PlaneGeometry({ width: this.lightType == LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 var textureMaterial = model.material = feng3d.materialFactory.create("texture");
                 //

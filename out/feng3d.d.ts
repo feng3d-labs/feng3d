@@ -8561,7 +8561,7 @@ declare namespace feng3d {
          * 渲染
          */
         draw(gl: GL, viewRect: Rectangle): GameObject;
-        protected drawRenderables(gl: GL, meshRenderer: MeshRenderer): void;
+        protected drawRenderables(gl: GL, model: Model): void;
         /**
          * 绘制3D对象
          */
@@ -9251,14 +9251,14 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface ComponentRawMap {
-        MeshRendererRaw: MeshRendererRaw;
+        ModelRaw: ModelRaw;
     }
-    interface MeshRendererRaw {
-        __class__: "feng3d.MeshRenderer";
+    interface ModelRaw {
+        __class__: "feng3d.Model";
         geometry?: Geometrys;
         material?: ValueOf<MaterialRawMap>;
     }
-    class MeshRenderer extends Behaviour {
+    class Model extends Behaviour {
         readonly single: boolean;
         /**
          * Returns the instantiated Mesh assigned to the mesh filter.
@@ -9409,8 +9409,8 @@ declare namespace feng3d {
          */
         updateScriptFlag: ScriptFlag;
         private _mouseCheckObjects;
-        private _meshRenderers;
-        private _visibleAndEnabledMeshRenderers;
+        private _models;
+        private _visibleAndEnabledModels;
         private _skyBoxs;
         private _activeSkyBoxs;
         private _directionalLights;
@@ -9432,13 +9432,13 @@ declare namespace feng3d {
         private onEnterFrame(interval);
         update(): void;
         /**
-         * 所有MeshRenderer
+         * 所有 Model
          */
-        readonly meshRenderers: MeshRenderer[];
+        readonly models: Model[];
         /**
-         * 所有 可见且开启的 MeshRenderer
+         * 所有 可见且开启的 Model
          */
-        readonly visibleAndEnabledMeshRenderers: MeshRenderer[];
+        readonly visibleAndEnabledModels: Model[];
         /**
          * 所有 SkyBox
          */
@@ -9469,12 +9469,12 @@ declare namespace feng3d {
          * 获取接收光照渲染对象列表
          * @param light
          */
-        getPickByDirectionalLight(light: DirectionalLight): MeshRenderer[];
+        getPickByDirectionalLight(light: DirectionalLight): Model[];
         /**
-         * 获取 可被摄像机看见的 MeshRenderer列表
+         * 获取 可被摄像机看见的 Model 列表
          * @param camera
          */
-        getMeshRenderersByCamera(camera: Camera): MeshRenderer[];
+        getModelsByCamera(camera: Camera): Model[];
     }
 }
 declare namespace feng3d {
@@ -9484,7 +9484,7 @@ declare namespace feng3d {
     class ScenePickCache {
         private scene;
         private camera;
-        private _activeMeshRenderers;
+        private _activeModels;
         private _blenditems;
         private _unblenditems;
         constructor(scene: Scene3D, camera: Camera);
@@ -9494,20 +9494,20 @@ declare namespace feng3d {
          * #### 渲染需求条件
          * 1. visible == true
          * 1. 在摄像机视锥内
-         * 1. meshRenderer.enabled == true
+         * 1. model.enabled == true
          *
          * @param gameObject
          * @param camera
          */
-        readonly activeMeshRenderers: MeshRenderer[];
+        readonly activeModels: Model[];
         /**
          * 半透明渲染对象
          */
-        readonly blenditems: MeshRenderer[];
+        readonly blenditems: Model[];
         /**
          * 半透明渲染对象
          */
-        readonly unblenditems: MeshRenderer[];
+        readonly unblenditems: Model[];
         clear(): void;
     }
 }
@@ -10920,7 +10920,7 @@ declare namespace feng3d {
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, meshRenderers: MeshRenderer[]): void;
+        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, models: Model[]): void;
     }
 }
 declare namespace feng3d {
@@ -10974,8 +10974,8 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class LightPicker {
-        private _meshRenderer;
-        constructor(meshRenderer: MeshRenderer);
+        private _model;
+        constructor(model: Model);
         beforeRender(renderAtomic: RenderAtomic): void;
     }
 }
@@ -11336,7 +11336,7 @@ declare namespace feng3d {
     /**
      * The Water component renders the terrain.
      */
-    class Water extends MeshRenderer {
+    class Water extends Model {
         geometry: PlaneGeometry;
         material: WaterMaterial;
         /**
@@ -11514,7 +11514,7 @@ declare namespace feng3d {
     /**
      * The Terrain component renders the terrain.
      */
-    class Terrain extends MeshRenderer {
+    class Terrain extends Model {
         /**
          * 地形资源
          */
@@ -11732,7 +11732,7 @@ declare namespace feng3d {
      * 粒子系统
      * @author feng 2017-01-09
      */
-    class ParticleSystem extends MeshRenderer {
+    class ParticleSystem extends Model {
         /**
          * 是否正在播放
          */
@@ -11915,7 +11915,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class SkinnedMeshRenderer extends MeshRenderer {
+    class SkinnedModel extends Model {
         readonly single: boolean;
         skinSkeleton: SkinSkeleton;
         material: SkeletonMaterial;

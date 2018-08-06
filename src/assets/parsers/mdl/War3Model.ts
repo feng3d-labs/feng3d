@@ -58,8 +58,8 @@ namespace feng3d.war3
 				var geoset: Geoset = this.geosets[i];
 				
 				var mesh: GameObject = this.meshs[i] = GameObject.create();
-				// var meshRenderer = mesh.addComponent(MeshRenderer);
-				var meshRenderer = mesh.addComponent(SkinnedMeshRenderer);
+				// var model = mesh.addComponent(Model);
+				var model = mesh.addComponent(SkinnedModel);
 
 				var geometry: CustomGeometry = new CustomGeometry();
 				geometry.positions = geoset.Vertices;
@@ -87,12 +87,12 @@ namespace feng3d.war3
 					image += ".JPG";
 					image = this.root + image;
 
-					meshRenderer.material.uniforms.s_diffuse.url = image;
-					meshRenderer.material.renderParams.cullFace = CullFace.FRONT;
+					model.material.uniforms.s_diffuse.url = image;
+					model.material.renderParams.cullFace = CullFace.FRONT;
 				}
 
-				meshRenderer.geometry = geometry;
-				meshRenderer.skinSkeleton = skinSkeleton;
+				model.geometry = geometry;
+				model.skinSkeleton = skinSkeleton;
 
 				container.addChild(mesh);
 			}

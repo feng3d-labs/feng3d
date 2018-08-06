@@ -9,9 +9,9 @@ namespace feng3d
         private camera: Camera;
 
         //
-        private _activeMeshRenderers: MeshRenderer[];
-        private _blenditems: MeshRenderer[];
-        private _unblenditems: MeshRenderer[];
+        private _activeModels: Model[];
+        private _blenditems: Model[];
+        private _unblenditems: Model[];
 
         constructor(scene: Scene3D, camera: Camera)
         {
@@ -25,17 +25,17 @@ namespace feng3d
          * #### 渲染需求条件
          * 1. visible == true
          * 1. 在摄像机视锥内
-         * 1. meshRenderer.enabled == true
+         * 1. model.enabled == true
          * 
          * @param gameObject 
          * @param camera 
          */
-        get activeMeshRenderers()
+        get activeModels()
         {
-            if (this._activeMeshRenderers)
-                return this._activeMeshRenderers;
+            if (this._activeModels)
+                return this._activeModels;
 
-            var meshRenderers: MeshRenderer[] = this._activeMeshRenderers = [];
+            var models: Model[] = this._activeModels = [];
 
             var gameObjects = [this.scene.gameObject];
             while (gameObjects.length > 0)
@@ -44,18 +44,18 @@ namespace feng3d
 
                 if (!gameObject.visible)
                     continue;
-                var meshRenderer = gameObject.getComponent(MeshRenderer);
-                if (meshRenderer && meshRenderer.enabled)
+                var model = gameObject.getComponent(Model);
+                if (model && model.enabled)
                 {
-                    if (meshRenderer.selfWorldBounds)
+                    if (model.selfWorldBounds)
                     {
-                        if (this.camera.frustum.intersectsBox(meshRenderer.selfWorldBounds))
-                            meshRenderers.push(meshRenderer);
+                        if (this.camera.frustum.intersectsBox(model.selfWorldBounds))
+                            models.push(model);
                     }
                 }
                 gameObjects = gameObjects.concat(gameObject.children);
             }
-            return meshRenderers;
+            return models;
         }
 
         /**
@@ -66,10 +66,10 @@ namespace feng3d
             if (this._blenditems)
                 return this._blenditems;
 
-            var meshRenderers = this.activeMeshRenderers;
+            var models = this.activeModels;
             var camerapos = this.camera.transform.scenePosition;
 
-            var blenditems = this._blenditems = meshRenderers.filter((item) =>
+            var blenditems = this._blenditems = models.filter((item) =>
             {
                 return item.material.renderParams.enableBlend;
             }).sort((b, a) => a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared);
@@ -85,10 +85,10 @@ namespace feng3d
             if (this._unblenditems)
                 return this._unblenditems;
 
-            var meshRenderers = this.activeMeshRenderers;
+            var models = this.activeModels;
             var camerapos = this.camera.transform.scenePosition;
 
-            var unblenditems = this._unblenditems = meshRenderers.filter((item) =>
+            var unblenditems = this._unblenditems = models.filter((item) =>
             {
                 return !item.material.renderParams.enableBlend;
             }).sort((a, b) => a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared);
@@ -100,7 +100,7 @@ namespace feng3d
         {
             this._blenditems = null;
             this._unblenditems = null;
-            this._activeMeshRenderers = null;
+            this._activeModels = null;
         }
     }
 }
