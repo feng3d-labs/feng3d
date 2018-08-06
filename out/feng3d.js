@@ -21008,7 +21008,7 @@ var feng3d;
         ], StandardUniforms.prototype, "u_fogDensity", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "fog" })
+            feng3d.oav({ block: "fog", component: "OAVEnum", componentParam: { enumClass: FogMode } })
         ], StandardUniforms.prototype, "u_fogMode", void 0);
         return StandardUniforms;
     }());
@@ -21994,78 +21994,64 @@ var feng3d;
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
-         * @param entitys 实体列表
+         * @param gameObjects 实体列表
          * @return
          */
-        pick: function (ray3D, entitys) {
-            var entities = [];
-            if (entitys.length == 0)
+        pick: function (ray3D, gameObjects) {
+            var pickingCollisionVOs = [];
+            if (gameObjects.length == 0)
                 return null;
             //与包围盒碰撞
-            entitys.forEach(function (entity) {
-                var boundingComponent = entity.getComponent(feng3d.Bounding);
-                var pickingCollisionVO = boundingComponent && boundingComponent.isIntersectingRay(ray3D);
+            gameObjects.forEach(function (gameObject) {
+                var bounding = gameObject.getComponent(feng3d.Bounding);
+                var pickingCollisionVO = bounding && bounding.isIntersectingRay(ray3D);
                 if (pickingCollisionVO)
-                    entities.push(pickingCollisionVO);
+                    pickingCollisionVOs.push(pickingCollisionVO);
             });
-            if (entities.length == 0)
+            if (pickingCollisionVOs.length == 0)
                 return null;
-            return getPickingCollisionVO(entities);
+            // 根据与包围盒距离进行排序
+            pickingCollisionVOs = pickingCollisionVOs.sort(function (a, b) { return a.rayEntryDistance - b.rayEntryDistance; });
+            var shortestCollisionDistance = Number.MAX_VALUE;
+            var bestCollisionVO = null;
+            for (var i = 0; i < pickingCollisionVOs.length; ++i) {
+                var pickingCollisionVO = pickingCollisionVOs[i];
+                if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)) {
+                    var result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
+                    if (result) {
+                        pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
+                        pickingCollisionVO.index = result.index;
+                        pickingCollisionVO.localNormal = result.localNormal;
+                        pickingCollisionVO.localPosition = result.localPosition;
+                        pickingCollisionVO.uv = result.uv;
+                        //
+                        shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
+                        bestCollisionVO = pickingCollisionVO;
+                    }
+                }
+            }
+            return bestCollisionVO;
+        },
+        /**
+         * 从摄像机发出射线
+         * @param camera 摄像机
+         * @param gameObjects 被检测对象
+         */
+        pickFromCameraAndMouse: function (camera, gameObjects) {
+            var ray = camera.getMouseRay3D();
+            return feng3d.raycaster.pick(ray, gameObjects);
         },
         /**
          * 从摄像机发出射线
          * @param coords 坐标
          * @param camera 摄像机
-         * @param entitys 被检测对象
+         * @param gameObjects 被检测对象
          */
-        pickFromCamera: function (coords, camera, entitys) {
+        pickFromCamera: function (coords, camera, gameObjects) {
             var ray = camera.getRay3D(coords.x, coords.y);
-            return feng3d.raycaster.pick(ray, entitys);
-        }
+            return feng3d.raycaster.pick(ray, gameObjects);
+        },
     };
-    /**
-     * 获取射线穿过的实体
-     */
-    function getPickingCollisionVO(entities) {
-        // 根据与包围盒距离进行排序
-        entities = entities.sort(function (entity1, entity2) {
-            return entity1.rayEntryDistance - entity2.rayEntryDistance;
-        });
-        // ---------------------------------------------------------------------
-        // Evaluate triangle collisions when needed.
-        // Replaces collision data provided by bounds collider with more precise data.
-        // ---------------------------------------------------------------------
-        var shortestCollisionDistance = Number.MAX_VALUE;
-        var bestCollisionVO = null;
-        var pickingCollisionVO;
-        for (var i = 0; i < entities.length; ++i) {
-            pickingCollisionVO = entities[i];
-            // If a collision exists, update the collision data and stop all checks.
-            if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && collidesBefore(pickingCollisionVO, shortestCollisionDistance)) {
-                shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
-                bestCollisionVO = pickingCollisionVO;
-            }
-        }
-        return bestCollisionVO;
-    }
-    /**
-     * 碰撞前设置碰撞状态
-     * @param shortestCollisionDistance 最短碰撞距离
-     * @param findClosest 是否寻找最优碰撞
-     * @return
-     */
-    function collidesBefore(pickingCollisionVO, shortestCollisionDistance) {
-        var result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
-        if (result) {
-            pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
-            pickingCollisionVO.index = result.index;
-            pickingCollisionVO.localNormal = result.localNormal;
-            pickingCollisionVO.localPosition = result.localPosition;
-            pickingCollisionVO.uv = result.uv;
-            return true;
-        }
-        return false;
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -27279,9 +27265,8 @@ var feng3d;
             configurable: true
         });
         Mouse3DManager.prototype.pick = function (scene3d, camera) {
-            var mouseRay3D = camera.getMouseRay3D();
             //计算得到鼠标射线相交的物体
-            var pickingCollisionVO = feng3d.raycaster.pick(mouseRay3D, scene3d.mouseCheckObjects);
+            var pickingCollisionVO = feng3d.raycaster.pickFromCameraAndMouse(camera, scene3d.mouseCheckObjects);
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
             return gameobject;
         };

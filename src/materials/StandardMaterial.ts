@@ -141,7 +141,7 @@ namespace feng3d
          * 雾模式
          */
         @serialize
-        @oav({ block: "fog" })
+        @oav({ block: "fog", component: "OAVEnum", componentParam: { enumClass: FogMode } })
         u_fogMode = FogMode.NONE;
     }
 

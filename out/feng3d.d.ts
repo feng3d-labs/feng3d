@@ -11121,11 +11121,12 @@ declare namespace feng3d {
      * @author feng 2014-4-29
      */
     var raycaster: {
-        pick(ray3D: Ray3D, entitys: GameObject[]): PickingCollisionVO;
+        pick(ray3D: Ray3D, gameObjects: GameObject[]): PickingCollisionVO;
+        pickFromCameraAndMouse(camera: Camera, gameObjects: GameObject[]): PickingCollisionVO;
         pickFromCamera(coords: {
             x: number;
             y: number;
-        }, camera: Camera, entitys: GameObject[]): PickingCollisionVO;
+        }, camera: Camera, gameObjects: GameObject[]): PickingCollisionVO;
     };
     /**
      * 拾取的碰撞数据

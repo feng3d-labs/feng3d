@@ -606,7 +606,7 @@ namespace feng3d
              * @param triangleIndex 三角形索引
              * @return 碰撞法线
              */
-            function getCollisionNormal(indices: number[], positions: number[], triangleIndex = 0): Vector3
+            function getCollisionNormal(indices: number[], positions: number[], triangleIndex = 0)
             {
                 var i0 = indices[triangleIndex] * 3;
                 var i1 = indices[triangleIndex + 1] * 3;
@@ -639,7 +639,7 @@ namespace feng3d
              * @param uvStride
              * @return 碰撞uv
              */
-            function getCollisionUV(indices: number[], uvs: number[], triangleIndex: number, v: number, w: number, u: number): Vector2
+            function getCollisionUV(indices: number[], uvs: number[], triangleIndex: number, v: number, w: number, u: number)
             {
                 var uIndex = indices[triangleIndex] * 2;
                 var uv0x = uvs[uIndex];
