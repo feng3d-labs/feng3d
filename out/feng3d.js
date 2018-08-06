@@ -16584,8 +16584,7 @@ var feng3d;
                 this.geometry = new feng3d.CubeGeometry();
             if (!this.material)
                 this.material = feng3d.materialFactory.create("standard");
-            this.on("boundsInvalid", this.onBoundsChange, this);
-            this.on("scenetransformChanged", this.invalidateSceneTransform, this);
+            this.on("scenetransformChanged", this.onScenetransformChanged, this);
         };
         MeshRenderer.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             var _this = this;
@@ -16597,28 +16596,6 @@ var feng3d;
             this._geometry.beforeRender(renderAtomic);
             this.material.beforeRender(renderAtomic);
             this.lightPicker.beforeRender(renderAtomic);
-        };
-        /**
-         * 销毁
-         */
-        MeshRenderer.prototype.dispose = function () {
-            this.geometry = null;
-            this.material = null;
-            _super.prototype.dispose.call(this);
-        };
-        MeshRenderer.prototype.onBoundsInvalid = function (event) {
-            this.dispatch(event.type, event.data);
-        };
-        MeshRenderer.prototype.materialChanged = function () {
-            if (this.material && this.material.constructor == Object) {
-                feng3d.error("material 必须继承与 Material!");
-            }
-        };
-        /**
-         * @inheritDoc
-         */
-        MeshRenderer.prototype.invalidateSceneTransform = function () {
-            this._selfWorldBounds = null;
         };
         /**
           * 判断射线是否穿过对象
@@ -16652,6 +16629,17 @@ var feng3d;
             return pickingCollisionVO;
         };
         /**
+         * 销毁
+         */
+        MeshRenderer.prototype.dispose = function () {
+            this.geometry = null;
+            this.material = null;
+            _super.prototype.dispose.call(this);
+        };
+        MeshRenderer.prototype.onScenetransformChanged = function () {
+            this._selfWorldBounds = null;
+        };
+        /**
          * 更新世界边界
          */
         MeshRenderer.prototype.updateWorldBounds = function () {
@@ -16662,7 +16650,7 @@ var feng3d;
         /**
          * 处理包围盒变换事件
          */
-        MeshRenderer.prototype.onBoundsChange = function () {
+        MeshRenderer.prototype.onBoundsInvalid = function () {
             this._selfLocalBounds = null;
             this._selfWorldBounds = null;
         };
@@ -16680,8 +16668,7 @@ var feng3d;
         ], MeshRenderer.prototype, "geometry", null);
         __decorate([
             feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } }),
-            feng3d.serialize,
-            feng3d.watch("materialChanged")
+            feng3d.serialize
         ], MeshRenderer.prototype, "material", void 0);
         __decorate([
             feng3d.oav(),

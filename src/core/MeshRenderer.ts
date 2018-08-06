@@ -47,7 +47,6 @@ namespace feng3d
          */
         @oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } })
         @serialize
-        @watch("materialChanged")
         material: Material;
 
         /**
@@ -126,8 +125,7 @@ namespace feng3d
             if (!this.material)
                 this.material = materialFactory.create("standard");
 
-            this.on("boundsInvalid", this.onBoundsChange, this);
-            this.on("scenetransformChanged", this.invalidateSceneTransform, this);
+            this.on("scenetransformChanged", this.onScenetransformChanged, this);
         }
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
@@ -141,38 +139,6 @@ namespace feng3d
             this._geometry.beforeRender(renderAtomic);
             this.material.beforeRender(renderAtomic);
             this.lightPicker.beforeRender(renderAtomic);
-        }
-
-        /**
-         * 销毁
-         */
-        dispose()
-        {
-            this.geometry = <any>null;
-            this.material = <any>null;
-            super.dispose();
-        }
-
-        private onBoundsInvalid(event: Event<Geometry>)
-        {
-            this.dispatch(<any>event.type, event.data);
-        }
-
-        private materialChanged()
-        {
-            if (this.material && this.material.constructor == Object)
-            {
-                error("material 必须继承与 Material!");
-            }
-        }
-
-
-		/**
-		 * @inheritDoc
-		 */
-        private invalidateSceneTransform()
-        {
-            this._selfWorldBounds = null;
         }
 
         /**
@@ -215,6 +181,21 @@ namespace feng3d
             return pickingCollisionVO;
         }
 
+        /**
+         * 销毁
+         */
+        dispose()
+        {
+            this.geometry = <any>null;
+            this.material = <any>null;
+            super.dispose();
+        }
+
+        private onScenetransformChanged()
+        {
+            this._selfWorldBounds = null;
+        }
+
 		/**
 		 * 更新世界边界
 		 */
@@ -229,7 +210,7 @@ namespace feng3d
         /**
          * 处理包围盒变换事件
          */
-        private onBoundsChange()
+        private onBoundsInvalid()
         {
             this._selfLocalBounds = null;
             this._selfWorldBounds = null;

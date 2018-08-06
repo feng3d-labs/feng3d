@@ -9297,21 +9297,16 @@ declare namespace feng3d {
         init(gameObject: GameObject): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         /**
-         * 销毁
-         */
-        dispose(): void;
-        private onBoundsInvalid(event);
-        private materialChanged();
-        /**
-         * @inheritDoc
-         */
-        private invalidateSceneTransform();
-        /**
           * 判断射线是否穿过对象
           * @param ray3D
           * @return
           */
         isIntersectingRay(ray3D: Ray3D): PickingCollisionVO;
+        /**
+         * 销毁
+         */
+        dispose(): void;
+        private onScenetransformChanged();
         /**
          * 更新世界边界
          */
@@ -9319,7 +9314,7 @@ declare namespace feng3d {
         /**
          * 处理包围盒变换事件
          */
-        private onBoundsChange();
+        private onBoundsInvalid();
         /**
          * @inheritDoc
          */
