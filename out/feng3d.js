@@ -16257,6 +16257,7 @@ var feng3d;
             var rayEntryDistance = this.selfLocalBounds.rayIntersection(localRay.position, localRay.direction, localNormal);
             if (rayEntryDistance < 0)
                 return null;
+            var meshRenderer = this.getComponent(feng3d.MeshRenderer);
             //保存碰撞数据
             var pickingCollisionVO = {
                 gameObject: this.gameObject,
@@ -16265,7 +16266,8 @@ var feng3d;
                 rayEntryDistance: rayEntryDistance,
                 ray3D: ray3D,
                 rayOriginIsInsideBounds: rayEntryDistance == 0,
-                geometry: this.gameObject.getComponent(feng3d.MeshRenderer).geometry,
+                geometry: meshRenderer.geometry,
+                cullFace: meshRenderer.material.renderParams.cullFace,
             };
             return pickingCollisionVO;
         };
@@ -17602,11 +17604,13 @@ var feng3d;
          * 射线投影几何体
          * @param ray                           射线
          * @param shortestCollisionDistance     当前最短碰撞距离
-         * @param bothSides                     是否检测双面
+         * @param cullFace                      裁剪面枚举
          */
-        Geometry.prototype.raycast = function (ray, shortestCollisionDistance, bothSides) {
+        Geometry.prototype.raycast = function (ray, shortestCollisionDistance, cullFace) {
             if (shortestCollisionDistance === void 0) { shortestCollisionDistance = 0; }
-            if (bothSides === void 0) { bothSides = true; }
+            if (cullFace === void 0) { cullFace = feng3d.CullFace.NONE; }
+            if (cullFace == feng3d.CullFace.FRONT_AND_BACK)
+                return null;
             var indices = this.indices;
             var positions = this.positions;
             var uvs = this.uvs;
@@ -17662,7 +17666,7 @@ var feng3d;
                 //计算射线与法线的点积，不等于零表示射线所在直线与三角面相交
                 nDotV = nx * rayDirection.x + ny * +rayDirection.y + nz * rayDirection.z; // rayDirection . normal
                 //判断射线是否与三角面相交
-                if ((!bothSides && nDotV < 0.0) || (bothSides && nDotV != 0.0)) {
+                if ((cullFace == feng3d.CullFace.FRONT && nDotV > 0.0) || (cullFace == feng3d.CullFace.BACK && nDotV < 0.0) || (cullFace == feng3d.CullFace.NONE && nDotV != 0.0)) {
                     //计算平面方程D值，参考Plane3D
                     D = -(nx * p0x + ny * p0y + nz * p0z);
                     //射线点到平面的距离
@@ -22051,7 +22055,7 @@ var feng3d;
      * @return
      */
     function collidesBefore(pickingCollisionVO, shortestCollisionDistance) {
-        var result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, true);
+        var result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
         if (result) {
             pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
             pickingCollisionVO.index = result.index;

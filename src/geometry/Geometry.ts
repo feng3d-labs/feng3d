@@ -476,10 +476,12 @@ namespace feng3d
          * 射线投影几何体
          * @param ray                           射线
          * @param shortestCollisionDistance     当前最短碰撞距离
-         * @param bothSides                     是否检测双面
+         * @param cullFace                      裁剪面枚举
          */
-        raycast(ray: Ray3D, shortestCollisionDistance = 0, bothSides = true)
+        raycast(ray: Ray3D, shortestCollisionDistance = 0, cullFace = CullFace.NONE)
         {
+            if (cullFace == CullFace.FRONT_AND_BACK) return null;
+
             var indices = this.indices;
             var positions = this.positions;
             var uvs = this.uvs;
@@ -545,7 +547,7 @@ namespace feng3d
                 //计算射线与法线的点积，不等于零表示射线所在直线与三角面相交
                 nDotV = nx * rayDirection.x + ny * +rayDirection.y + nz * rayDirection.z; // rayDirection . normal
                 //判断射线是否与三角面相交
-                if ((!bothSides && nDotV < 0.0) || (bothSides && nDotV != 0.0))
+                if ((cullFace == CullFace.FRONT && nDotV > 0.0) || (cullFace == CullFace.BACK && nDotV < 0.0) || (cullFace == CullFace.NONE && nDotV != 0.0))
                 { // an intersection must exist
                     //计算平面方程D值，参考Plane3D
                     D = -(nx * p0x + ny * p0y + nz * p0z);

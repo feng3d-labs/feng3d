@@ -9668,9 +9668,9 @@ declare namespace feng3d {
          * 射线投影几何体
          * @param ray                           射线
          * @param shortestCollisionDistance     当前最短碰撞距离
-         * @param bothSides                     是否检测双面
+         * @param cullFace                      裁剪面枚举
          */
-        raycast(ray: Ray3D, shortestCollisionDistance?: number, bothSides?: boolean): {
+        raycast(ray: Ray3D, shortestCollisionDistance?: number, cullFace?: CullFace): {
             rayEntryDistance: number;
             localPosition: Vector3;
             localNormal: Vector3;
@@ -11171,6 +11171,10 @@ declare namespace feng3d {
          * 碰撞关联的渲染对象
          */
         geometry: Geometry;
+        /**
+         * 剔除面
+         */
+        cullFace: CullFace;
     }
 }
 declare namespace feng3d {

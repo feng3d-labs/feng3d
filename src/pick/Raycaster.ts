@@ -89,7 +89,7 @@ namespace feng3d
      */
     function collidesBefore(pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean
     {
-        var result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, true);
+        var result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
         if (result)
         {
             pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
@@ -157,5 +157,10 @@ namespace feng3d
 		 * 碰撞关联的渲染对象
 		 */
         geometry: Geometry;
+
+        /**
+         * 剔除面
+         */
+        cullFace: CullFace;
     }
 }
