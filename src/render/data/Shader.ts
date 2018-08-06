@@ -5,6 +5,12 @@ namespace feng3d
      */
     export class Shader
     {
+
+        /**
+         * shader 中的 宏
+         */
+        shaderMacro: ShaderMacro = <any>{};
+
         constructor(shaderName: string)
         {
             this.shaderName = shaderName;
@@ -49,12 +55,7 @@ namespace feng3d
 
         private macroValues = {};
 
-        /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro = <any>{};
-
-        macroInvalid = true;
+        private macroInvalid = true;
 
         private onShaderChanged()
         {
@@ -324,6 +325,5 @@ namespace feng3d
          * 属性地址
          */
         location: number;
-
     }
 }

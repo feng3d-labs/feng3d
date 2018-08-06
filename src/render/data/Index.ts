@@ -10,27 +10,22 @@ namespace feng3d
         /**
          * 索引数据
          */
-        get indices()
+        @watch("invalidate")
+        indices: number[];
+
+        private invalidate()
         {
-            return this._indices;
-        }
-        set indices(value)
-        {
-            if (this._indices == value)
-                return;
-            this._indices = value;
             this.invalid = true;
         }
-        private _indices: number[];
 
         /**
          * 渲染数量
          */
         get count()
         {
-            if (!this._indices)
+            if (!this.indices)
                 return 0;
-            return this._indices.length;
+            return this.indices.length;
         }
 
         /**
@@ -81,7 +76,7 @@ namespace feng3d
                     throw "";
                 }
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this._indices), gl.STATIC_DRAW);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;

@@ -1,37 +1,5 @@
 namespace feng3d
 {
-    export type Lazy<T> = T | (() => T);
-
-    export var lazy = { getvalue: getvalue };
-
-    // export class Lazyy<T>
-    // {
-    //     lazy: T | (() => T);
-
-    //     get value()
-    //     {
-    //         if (typeof this.lazy == "function")
-    //             return this.lazy();
-    //         return this.lazy;
-    //     }
-
-    //     constructor(lazy: T | (() => T))
-    //     {
-    //         this.lazy = lazy;
-    //     }
-    // }
-
-    function getvalue<T>(lazyItem: Lazy<T>)
-    {
-        if (typeof lazyItem == "function")
-            return lazyItem();
-        return lazyItem;
-    }
-
-    export type LazyObject<T> = {
-        [P in keyof T]: Lazy<T[P]>;
-    };
-
     export type LazyUniforms = LazyObject<Uniforms>;
 
     export interface Uniforms

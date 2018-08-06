@@ -4105,6 +4105,16 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    feng3d.lazy = {
+        getvalue: function (lazyItem) {
+            if (typeof lazyItem == "function")
+                return lazyItem();
+            return lazyItem;
+        }
+    };
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var databases = {};
     /**
      *
@@ -12300,39 +12310,16 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.lazy = { getvalue: getvalue };
-    // export class Lazyy<T>
-    // {
-    //     lazy: T | (() => T);
-    //     get value()
-    //     {
-    //         if (typeof this.lazy == "function")
-    //             return this.lazy();
-    //         return this.lazy;
-    //     }
-    //     constructor(lazy: T | (() => T))
-    //     {
-    //         this.lazy = lazy;
-    //     }
-    // }
-    function getvalue(lazyItem) {
-        if (typeof lazyItem == "function")
-            return lazyItem();
-        return lazyItem;
-    }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     /**
      * shader
      */
     var Shader = /** @class */ (function () {
         function Shader(shaderName) {
-            this.macroValues = {};
             /**
              * shader 中的 宏
              */
             this.shaderMacro = {};
+            this.macroValues = {};
             this.macroInvalid = true;
             this.map = new Map();
             this.shaderName = shaderName;
@@ -12787,30 +12774,17 @@ var feng3d;
              */
             this.invalid = true;
         }
-        Object.defineProperty(Index.prototype, "indices", {
-            /**
-             * 索引数据
-             */
-            get: function () {
-                return this._indices;
-            },
-            set: function (value) {
-                if (this._indices == value)
-                    return;
-                this._indices = value;
-                this.invalid = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        Index.prototype.invalidate = function () {
+            this.invalid = true;
+        };
         Object.defineProperty(Index.prototype, "count", {
             /**
              * 渲染数量
              */
             get: function () {
-                if (!this._indices)
+                if (!this.indices)
                     return 0;
-                return this._indices.length;
+                return this.indices.length;
             },
             enumerable: true,
             configurable: true
@@ -12839,7 +12813,7 @@ var feng3d;
                     throw "";
                 }
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this._indices), gl.STATIC_DRAW);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;
@@ -12853,6 +12827,9 @@ var feng3d;
             });
             this._indexBufferMap.clear();
         };
+        __decorate([
+            feng3d.watch("invalidate")
+        ], Index.prototype, "indices", void 0);
         return Index;
     }());
     feng3d.Index = Index;

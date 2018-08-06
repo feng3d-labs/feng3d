@@ -1976,6 +1976,15 @@ declare namespace feng3d {
         getMacroVariablesFromCode(code: string): string[];
     }
 }
+declare namespace feng3d {
+    type Lazy<T> = T | (() => T);
+    type LazyObject<T> = {
+        [P in keyof T]: Lazy<T[P]>;
+    };
+    var lazy: {
+        getvalue: <T>(lazyItem: Lazy<T>) => T;
+    };
+}
 interface IDBObjectStore {
     getAllKeys(): IDBRequest;
 }
@@ -7349,13 +7358,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type Lazy<T> = T | (() => T);
-    var lazy: {
-        getvalue: <T>(lazyItem: Lazy<T>) => T;
-    };
-    type LazyObject<T> = {
-        [P in keyof T]: Lazy<T[P]>;
-    };
     type LazyUniforms = LazyObject<Uniforms>;
     interface Uniforms {
         /**
@@ -7612,6 +7614,10 @@ declare namespace feng3d {
      * shader
      */
     class Shader {
+        /**
+         * shader 中的 宏
+         */
+        shaderMacro: ShaderMacro;
         constructor(shaderName: string);
         /**
          * 激活渲染程序
@@ -7640,11 +7646,7 @@ declare namespace feng3d {
          */
         private fragment;
         private macroValues;
-        /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro;
-        macroInvalid: boolean;
+        private macroInvalid;
         private onShaderChanged();
         /**
          * 更新渲染代码
@@ -7822,7 +7824,7 @@ declare namespace feng3d {
          * 索引数据
          */
         indices: number[];
-        private _indices;
+        private invalidate();
         /**
          * 渲染数量
          */

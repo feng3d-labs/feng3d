@@ -41,6 +41,7 @@
         "src/utils/Stats.ts",
         "src/utils/PathUtils.ts",
         "src/utils/ShaderMacroUtils.ts",
+        "src/utils/Lazy.ts",
         //
         "src/assets/Storage.ts",
         "src/assets/IndexedDBfs.ts",
