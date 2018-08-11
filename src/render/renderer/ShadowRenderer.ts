@@ -236,6 +236,7 @@ namespace feng3d
             }
 
             this.renderAtomic.next = renderAtomic;
+            this.renderAtomic.renderParams.cullFace = renderAtomic.renderParams.cullFace;
 
             gl.renderer.draw(this.renderAtomic);
         }

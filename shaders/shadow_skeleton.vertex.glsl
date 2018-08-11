@@ -1,12 +1,13 @@
 precision mediump float;  
 
 attribute vec3 a_position;
-attribute vec4 a_color;
 
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 
 #include<skeleton.vertex>
+
+varying vec3 v_worldPosition;
 
 void main(void) {
 
@@ -18,5 +19,7 @@ void main(void) {
         position = particleAnimation(position);
     #endif
 
-    gl_Position = u_viewProjection * u_modelMatrix * position;
+    vec4 worldPosition = u_modelMatrix * vec4(position, 1.0);
+    gl_Position = u_viewProjection * worldPosition;
+    v_worldPosition = worldPosition.xyz;
 }
