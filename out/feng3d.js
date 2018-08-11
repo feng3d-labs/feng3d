@@ -14580,17 +14580,19 @@ var feng3d;
         WireframeRenderer.prototype.draw = function (gl, scene3d, camera) {
             var _this = this;
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
-            var wireframes = unblenditems.filter(function (i) { return i.getComponent(WireframeComponent); });
+            var wireframes = unblenditems.reduce(function (pv, cv) { var wireframe = cv.getComponent(feng3d.WireframeComponent); if (wireframe)
+                pv.push(wireframe); return pv; }, []);
             if (wireframes.length == 0)
                 return;
             wireframes.forEach(function (element) {
-                _this.drawGameObject(gl, element.gameObject, scene3d, camera); //
+                _this.drawGameObject(gl, element.gameObject, scene3d, camera, element.color); //
             });
         };
         /**
          * 绘制3D对象
          */
-        WireframeRenderer.prototype.drawGameObject = function (gl, gameObject, scene3d, camera) {
+        WireframeRenderer.prototype.drawGameObject = function (gl, gameObject, scene3d, camera, wireframeColor) {
+            if (wireframeColor === void 0) { wireframeColor = new feng3d.Color4(); }
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
             var model = gameObject.getComponent(feng3d.Model);
@@ -14620,6 +14622,7 @@ var feng3d;
                 renderAtomic.wireframeindexBuffer.indices = wireframeindices;
             }
             this.renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
+            this.renderAtomic.uniforms.u_wireframeColor = wireframeColor;
             gl.renderer.draw(this.renderAtomic);
             //
         };
@@ -14627,32 +14630,6 @@ var feng3d;
     }());
     feng3d.WireframeRenderer = WireframeRenderer;
     feng3d.wireframeRenderer = new WireframeRenderer();
-    /**
-     * 线框组件，将会对拥有该组件的对象绘制线框
-     */
-    var WireframeComponent = /** @class */ (function (_super) {
-        __extends(WireframeComponent, _super);
-        function WireframeComponent() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.serializable = false;
-            _this.showInInspector = false;
-            _this.color = new feng3d.Color4(125 / 255, 176 / 255, 250 / 255);
-            return _this;
-        }
-        WireframeComponent.prototype.init = function (gameobject) {
-            _super.prototype.init.call(this, gameobject);
-        };
-        WireframeComponent.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
-            var _this = this;
-            _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
-            renderAtomic.uniforms.u_wireframeColor = function () { return _this.color; };
-        };
-        __decorate([
-            feng3d.oav()
-        ], WireframeComponent.prototype, "color", void 0);
-        return WireframeComponent;
-    }(feng3d.Component));
-    feng3d.WireframeComponent = WireframeComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16470,6 +16447,25 @@ var feng3d;
         return BillboardComponent;
     }(feng3d.Component));
     feng3d.BillboardComponent = BillboardComponent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 线框组件，将会对拥有该组件的对象绘制线框
+     */
+    var WireframeComponent = /** @class */ (function (_super) {
+        __extends(WireframeComponent, _super);
+        function WireframeComponent() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.color = new feng3d.Color4(125 / 255, 176 / 255, 250 / 255);
+            return _this;
+        }
+        __decorate([
+            feng3d.oav()
+        ], WireframeComponent.prototype, "color", void 0);
+        return WireframeComponent;
+    }(feng3d.Component));
+    feng3d.WireframeComponent = WireframeComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

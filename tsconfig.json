@@ -147,6 +147,7 @@
         //3D对象组件
         "src/component/HoldSizeComponent.ts",
         "src/component/BillboardComponent.ts",
+        "src/component/WireframeComponent.ts",
         "src/core/Model.ts",
         "src/core/ScriptComponent.ts",
         "src/core/Script.ts",

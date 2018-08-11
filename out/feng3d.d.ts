@@ -8655,23 +8655,13 @@ declare namespace feng3d {
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera): void;
+        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera, wireframeColor?: Color4): void;
     }
     interface RenderAtomic {
         /**
          * 顶点索引缓冲
          */
         wireframeindexBuffer: Index;
-    }
-    /**
-     * 线框组件，将会对拥有该组件的对象绘制线框
-     */
-    class WireframeComponent extends Component {
-        serializable: boolean;
-        showInInspector: boolean;
-        color: Color4;
-        init(gameobject: GameObject): void;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -9249,6 +9239,14 @@ declare namespace feng3d {
         private invalidHoldSizeMatrix();
         private updateLocalToWorldMatrix();
         dispose(): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 线框组件，将会对拥有该组件的对象绘制线框
+     */
+    class WireframeComponent extends Component {
+        color: Color4;
     }
 }
 declare namespace feng3d {

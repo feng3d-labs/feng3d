@@ -33,21 +33,21 @@ namespace feng3d
         {
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
 
-            var wireframes = unblenditems.filter(i => i.getComponent(WireframeComponent));
+            var wireframes = unblenditems.reduce((pv: WireframeComponent[], cv) => { var wireframe = cv.getComponent(WireframeComponent); if (wireframe) pv.push(wireframe); return pv; }, [])
 
             if (wireframes.length == 0)
                 return;
 
             wireframes.forEach(element =>
             {
-                this.drawGameObject(gl, element.gameObject, scene3d, camera);            //
+                this.drawGameObject(gl, element.gameObject, scene3d, camera, element.color);            //
             });
         }
 
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera)
+        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera, wireframeColor = new Color4())
         {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
@@ -91,6 +91,8 @@ namespace feng3d
             }
             this.renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
 
+            this.renderAtomic.uniforms.u_wireframeColor = wireframeColor;
+
             gl.renderer.draw(this.renderAtomic);
             //
         }
@@ -104,29 +106,5 @@ namespace feng3d
          * 顶点索引缓冲
          */
         wireframeindexBuffer: Index;
-    }
-
-    /**
-     * 线框组件，将会对拥有该组件的对象绘制线框
-     */
-    export class WireframeComponent extends Component
-    {
-        serializable = false;
-        showInInspector = false;
-
-        @oav()
-        color = new Color4(125 / 255, 176 / 255, 250 / 255);
-
-        init(gameobject: GameObject)
-        {
-            super.init(gameobject);
-        }
-
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
-        {
-            super.beforeRender(gl, renderAtomic, scene3d, camera);
-
-            renderAtomic.uniforms.u_wireframeColor = () => this.color;
-        }
     }
 }
