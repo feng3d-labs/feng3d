@@ -1,11 +1,17 @@
 namespace feng3d
 {
+
 	/**
 	 * 射线投射拾取器
 	 * @author feng 2014-4-29
 	 */
-    export var raycaster = {
+    export var raycaster: Raycaster;
 
+	/**
+	 * 射线投射拾取器
+	 */
+    export class Raycaster 
+    {
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
@@ -35,12 +41,13 @@ namespace feng3d
             pickingCollisionVOs = pickingCollisionVOs.sort((a, b) => a.rayEntryDistance - b.rayEntryDistance);
 
             var shortestCollisionDistance = Number.MAX_VALUE;
-            var bestCollisionVO: PickingCollisionVO | null = null;
+            var bestCollisionVO: PickingCollisionVO = null;
+            var collisionVOs: PickingCollisionVO[] = [];
 
             for (var i = 0; i < pickingCollisionVOs.length; ++i)
             {
                 var pickingCollisionVO = pickingCollisionVOs[i];
-                if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance))
+                if (bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)
                 {
                     var result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
                     if (result)
@@ -52,38 +59,60 @@ namespace feng3d
                         pickingCollisionVO.uv = result.uv;
                         //
                         shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
+                        collisionVOs.push(pickingCollisionVO);
                         bestCollisionVO = pickingCollisionVO;
                     }
                 }
             }
 
             return bestCollisionVO;
-        },
+        }
 
         /**
-         * 从摄像机发出射线
-         * @param camera 摄像机
-         * @param gameObjects 被检测对象
+         * 获取射线穿过的实体
+         * @param ray3D 射线
+         * @param gameObjects 实体列表
+         * @return
          */
-        pickFromCameraAndMouse(camera: Camera, gameObjects: GameObject[])
+        pickAll(ray3D: Ray3D, gameObjects: GameObject[])
         {
-            var ray = camera.getMouseRay3D();
-            return raycaster.pick(ray, gameObjects);
-        },
+            var pickingCollisionVOs: PickingCollisionVO[] = [];
 
-        /**
-         * 从摄像机发出射线
-         * @param coords 坐标
-         * @param camera 摄像机
-         * @param gameObjects 被检测对象
-         */
-        pickFromCamera(coords: { x: number, y: number }, camera: Camera, gameObjects: GameObject[])
-        {
-            var ray = camera.getRay3D(coords.x, coords.y);
-            return raycaster.pick(ray, gameObjects);
-        },
+            if (gameObjects.length == 0)
+                return [];
 
-    };
+            //与包围盒碰撞
+            gameObjects.forEach(gameObject =>
+            {
+                var model = gameObject.getComponent(Model);
+                var pickingCollisionVO = model && model.isIntersectingRay(ray3D);
+                if (pickingCollisionVO)
+                    pickingCollisionVOs.push(pickingCollisionVO);
+            });
+
+            if (pickingCollisionVOs.length == 0)
+                return [];
+
+            var collisionVOs = pickingCollisionVOs.filter(v =>
+            {
+                var result = v.geometry.raycast(v.localRay, Number.MAX_VALUE, v.cullFace);
+                if (result)
+                {
+                    v.rayEntryDistance = result.rayEntryDistance;
+                    v.index = result.index;
+                    v.localNormal = result.localNormal;
+                    v.localPosition = result.localPosition;
+                    v.uv = result.uv;
+                    return true;
+                }
+                return false;
+            });
+
+            return collisionVOs;
+        }
+    }
+
+    raycaster = new Raycaster();
 
     /**
 	 * 拾取的碰撞数据

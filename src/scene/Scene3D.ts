@@ -35,7 +35,7 @@ namespace feng3d
          */
         updateScriptFlag = ScriptFlag.feng3d;
 
-        private _mouseCheckObjects: { layer: number, objects: GameObject[] }[];
+        private _mouseCheckObjects: GameObject[];
         private _models: Model[];
         private _visibleAndEnabledModels: Model[];
         private _skyBoxs: SkyBox[];
@@ -204,7 +204,7 @@ namespace feng3d
                 return this._mouseCheckObjects;
 
             var checkList = this.gameObject.getChildren();
-            var gameObjects = this._mouseCheckObjects = [];
+            this._mouseCheckObjects = [];
             var i = 0;
             //获取所有需要拾取的对象并分层存储
             while (i < checkList.length)
@@ -214,12 +214,12 @@ namespace feng3d
                 {
                     if (checkObject.getComponents(Model))
                     {
-                        gameObjects.push(checkObject);
+                        this._mouseCheckObjects.push(checkObject);
                     }
                     checkList = checkList.concat(checkObject.getChildren());
                 }
             }
-            return gameObjects;
+            return this._mouseCheckObjects;
         }
 
         _addGameObject(gameobject: GameObject)

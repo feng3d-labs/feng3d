@@ -478,7 +478,7 @@ namespace feng3d
          * @param shortestCollisionDistance     当前最短碰撞距离
          * @param cullFace                      裁剪面枚举
          */
-        raycast(ray: Ray3D, shortestCollisionDistance = 0, cullFace = CullFace.NONE)
+        raycast(ray: Ray3D, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE)
         {
             if (cullFace == CullFace.FRONT_AND_BACK) return null;
 

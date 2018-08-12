@@ -9454,7 +9454,7 @@ declare namespace feng3d {
         readonly activeAnimations: Animation[];
         readonly behaviours: Behaviour[];
         readonly activeBehaviours: Behaviour[];
-        readonly mouseCheckObjects: any[];
+        readonly mouseCheckObjects: GameObject[];
         _addGameObject(gameobject: GameObject): void;
         _removeGameObject(gameobject: GameObject): void;
         _addComponent(component: Component): void;
@@ -11104,14 +11104,26 @@ declare namespace feng3d {
      * 射线投射拾取器
      * @author feng 2014-4-29
      */
-    var raycaster: {
+    var raycaster: Raycaster;
+    /**
+     * 射线投射拾取器
+     */
+    class Raycaster {
+        /**
+         * 获取射线穿过的实体
+         * @param ray3D 射线
+         * @param gameObjects 实体列表
+         * @return
+         */
         pick(ray3D: Ray3D, gameObjects: GameObject[]): PickingCollisionVO;
-        pickFromCameraAndMouse(camera: Camera, gameObjects: GameObject[]): PickingCollisionVO;
-        pickFromCamera(coords: {
-            x: number;
-            y: number;
-        }, camera: Camera, gameObjects: GameObject[]): PickingCollisionVO;
-    };
+        /**
+         * 获取射线穿过的实体
+         * @param ray3D 射线
+         * @param gameObjects 实体列表
+         * @return
+         */
+        pickAll(ray3D: Ray3D, gameObjects: GameObject[]): PickingCollisionVO[];
+    }
     /**
      * 拾取的碰撞数据
      */
