@@ -11082,7 +11082,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 射线投射拾取器
-
      */
     var raycaster: Raycaster;
     /**

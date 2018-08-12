@@ -21924,20 +21924,19 @@ var feng3d;
          * @return
          */
         Raycaster.prototype.pick = function (ray3D, gameObjects) {
-            var pickingCollisionVOs = [];
             if (gameObjects.length == 0)
                 return null;
-            //与包围盒碰撞
-            gameObjects.forEach(function (gameObject) {
+            var pickingCollisionVOs = gameObjects.reduce(function (pv, gameObject) {
                 var model = gameObject.getComponent(feng3d.Model);
                 var pickingCollisionVO = model && model.isIntersectingRay(ray3D);
                 if (pickingCollisionVO)
-                    pickingCollisionVOs.push(pickingCollisionVO);
-            });
+                    pv.push(pickingCollisionVO);
+                return pv;
+            }, []);
             if (pickingCollisionVOs.length == 0)
                 return null;
             // 根据与包围盒距离进行排序
-            pickingCollisionVOs = pickingCollisionVOs.sort(function (a, b) { return a.rayEntryDistance - b.rayEntryDistance; });
+            pickingCollisionVOs.sort(function (a, b) { return a.rayEntryDistance - b.rayEntryDistance; });
             var shortestCollisionDistance = Number.MAX_VALUE;
             var bestCollisionVO = null;
             var collisionVOs = [];
@@ -21967,16 +21966,15 @@ var feng3d;
          * @return
          */
         Raycaster.prototype.pickAll = function (ray3D, gameObjects) {
-            var pickingCollisionVOs = [];
             if (gameObjects.length == 0)
                 return [];
-            //与包围盒碰撞
-            gameObjects.forEach(function (gameObject) {
+            var pickingCollisionVOs = gameObjects.reduce(function (pv, gameObject) {
                 var model = gameObject.getComponent(feng3d.Model);
                 var pickingCollisionVO = model && model.isIntersectingRay(ray3D);
                 if (pickingCollisionVO)
-                    pickingCollisionVOs.push(pickingCollisionVO);
-            });
+                    pv.push(pickingCollisionVO);
+                return pv;
+            }, []);
             if (pickingCollisionVOs.length == 0)
                 return [];
             var collisionVOs = pickingCollisionVOs.filter(function (v) {
