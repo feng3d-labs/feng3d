@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 颜色
-     * @author feng 2016-09-24
+
      */
     export class Color3
     {

@@ -420,7 +420,7 @@ var feng3d;
      * Bézier曲线
      * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
      *
-     * @author feng / http://feng3d.com 03/06/2018
+/ http://feng3d.com 03/06/2018
      */
     var Bezier = /** @class */ (function () {
         function Bezier() {
@@ -950,7 +950,7 @@ var feng3d;
      *
      * 当f(x)在区间 [a, b] 上连续，且 (f(a) - y) * (f(b) - y) < 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == y
      *
-     * @author feng / http://feng3d.com 05/06/2018
+/ http://feng3d.com 05/06/2018
      */
     var EquationSolving = /** @class */ (function () {
         function EquationSolving() {
@@ -1333,7 +1333,7 @@ var feng3d;
      * 2次 f(x) = a0 * x * x + a1 * x + a2;
      * ......
      *
-     * @author feng / http://feng3d.com 05/06/2018
+/ http://feng3d.com 05/06/2018
      */
     var HighFunction = /** @class */ (function () {
         /**
@@ -1364,7 +1364,7 @@ var feng3d;
     /**
      * 基于时间轴的连续三阶Bézier曲线
      *
-     * @author feng / http://feng3d.com 10/06/2018
+/ http://feng3d.com 10/06/2018
      */
     var CubicBeziers = /** @class */ (function () {
         function CubicBeziers() {
@@ -1688,7 +1688,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 代理 EventTarget, 处理js事件中this关键字问题
-     * @author feng 2016-12-19
+
      */
     var EventProxy = /** @class */ (function (_super) {
         __extends(EventProxy, _super);
@@ -2981,7 +2981,6 @@ var feng3d;
     feng3d.oav = oav;
     /**
      * 对象界面
-     * @author feng 2016-3-10
      */
     var ObjectView = /** @class */ (function () {
         function ObjectView() {
@@ -3708,7 +3707,6 @@ var feng3d;
     var CLASS_KEY = "__class__";
     /**
      * 类工具
-     * @author feng 2017-02-15
      */
     var ClassUtils = /** @class */ (function () {
         function ClassUtils() {
@@ -5328,7 +5326,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
-     * @author feng 2016-3-21
+
      */
     var Vector3 = /** @class */ (function () {
         /**
@@ -6281,7 +6279,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * Orientation3D 类是用于表示 Matrix4x4 对象的方向样式的常量值枚举。方向的三个类型分别为欧拉角、轴角和四元数。Matrix4x4 对象的 decompose 和 recompose 方法采用其中的某一个枚举类型来标识矩阵的旋转组件。
-     * @author feng 2016-3-21
+
      */
     var Orientation3D;
     (function (Orientation3D) {
@@ -6309,7 +6307,7 @@ var feng3d;
      * Rectangle 类的 x、y、width 和 height 属性相互独立；更改一个属性的值不会影响其他属性。
      * 但是，right 和 bottom 属性与这四个属性是整体相关的。例如，如果更改 right 属性的值，则 width
      * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
-     * @author feng 2016-04-27
+
      */
     var Rectangle = /** @class */ (function () {
         /**
@@ -8517,7 +8515,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 3d直线
-     * @author feng 2013-6-13
+
      */
     var Line3D = /** @class */ (function () {
         /**
@@ -8872,7 +8870,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 3D射线
-     * @author feng 2013-6-13
+
      */
     var Ray3D = /** @class */ (function (_super) {
         __extends(Ray3D, _super);
@@ -10229,7 +10227,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 点与面的相对位置
-     * @author feng
+
      */
     var PlaneClassification;
     (function (PlaneClassification) {
@@ -10251,7 +10249,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 颜色
-     * @author feng 2016-09-24
+
      */
     var Color3 = /** @class */ (function () {
         /**
@@ -10409,7 +10407,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 颜色（包含透明度）
-     * @author feng 2016-09-24
+
      */
     var Color4 = /** @class */ (function () {
         /**
@@ -10918,7 +10916,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 按键捕获
-     * @author feng 2016-4-26
+
      */
     var KeyCapture = /** @class */ (function () {
         /**
@@ -10997,7 +10995,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 按键状态
-     * @author feng 2016-4-26
+
      */
     var KeyState = /** @class */ (function (_super) {
         __extends(KeyState, _super);
@@ -11054,7 +11052,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 快捷键捕获
-     * @author feng 2016-4-26
      */
     var ShortCutCapture = /** @class */ (function () {
         /**
@@ -11242,7 +11239,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 /**
  * 按键
- * @author feng 2016-6-6
  */
 var Key = /** @class */ (function () {
     function Key(key) {
@@ -11257,7 +11253,6 @@ var Key = /** @class */ (function () {
 }());
 /**
  * 状态
- * @author feng 2016-6-6
  */
 var State = /** @class */ (function () {
     function State(state) {
@@ -11272,7 +11267,6 @@ var State = /** @class */ (function () {
 }());
 /**
  * 状态命令
- * @author feng 2016-6-6
  */
 var StateCommand = /** @class */ (function () {
     function StateCommand(state) {
@@ -11289,7 +11283,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 初始化快捷键模块
-     * @author feng 2016-4-26
+
      *
      * <pre>
 var shortcuts:Array = [ //
@@ -11404,7 +11398,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 加载类
-     * @author feng 2016-12-14
+
      */
     feng3d.Loader = {
         /**
@@ -11498,7 +11492,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 加载数据类型
-     * @author feng 2016-12-14
+
      */
     var LoaderDataFormat = /** @class */ (function () {
         function LoaderDataFormat() {
@@ -11525,7 +11519,7 @@ var feng3d;
      * 渲染模式
      * A GLenum specifying the type primitive to render. Possible values are:
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
-     * @author feng 2016-09-28
+
      */
     var RenderMode;
     (function (RenderMode) {
@@ -12521,7 +12515,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 渲染参数
-     * @author feng 2016-12-14
+
      */
     var RenderParams = /** @class */ (function () {
         function RenderParams(raw) {
@@ -12624,7 +12618,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
-     * @author feng 2016-06-20
+
      */
     var RenderAtomic = /** @class */ (function () {
         function RenderAtomic() {
@@ -12753,7 +12747,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 索引渲染数据
-     * @author feng 2017-01-04
+
      */
     var Index = /** @class */ (function () {
         function Index() {
@@ -12838,7 +12832,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 属性渲染数据
-     * @author feng 2014-8-14
+
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer}
      */
     var Attribute = /** @class */ (function () {
@@ -12964,7 +12958,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 纹理信息
-     * @author feng 2016-12-20
+
      */
     var TextureInfo = /** @class */ (function () {
         function TextureInfo(raw) {
@@ -13297,7 +13291,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 帧缓冲对象
-     * @author feng 2017-02-18
+
      */
     var FrameBufferObject = /** @class */ (function () {
         function FrameBufferObject(width, height) {
@@ -13454,7 +13448,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 渲染代码库
-     * @author feng 2016-12-16
+
      */
     var ShaderLib = /** @class */ (function () {
         function ShaderLib() {
@@ -14168,7 +14162,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 前向渲染器
-     * @author feng 2017-02-20
+
      */
     var ForwardRenderer = /** @class */ (function () {
         function ForwardRenderer() {
@@ -14225,7 +14219,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 鼠标拾取渲染器
-     * @author feng 2017-02-06
+
      */
     var MouseRenderer = /** @class */ (function (_super) {
         __extends(MouseRenderer, _super);
@@ -14288,7 +14282,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 后处理渲染器
-     * @author feng 2017-02-20
+
      */
     var PostProcessRenderer = /** @class */ (function () {
         function PostProcessRenderer() {
@@ -14818,7 +14812,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 后处理效果
-     * @author feng 2017-02-20
+
      */
     var PostEffect = /** @class */ (function () {
         function PostEffect() {
@@ -14831,7 +14825,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 快速近似抗锯齿（Fast Approximate Anti-Aliasing）后处理效果
-     * @author feng 2017-02-20
+
      *
      * @see
      * https://github.com/BabylonJS/Babylon.js/blob/master/src/Shaders/fxaa.fragment.fx
@@ -16157,7 +16151,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 3D视图
-     * @author feng 2016-05-01
+
      */
     var Engine = /** @class */ (function () {
         /**
@@ -16660,7 +16654,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 3d对象脚本
-     * @author feng 2017-03-11
+
      */
     var ScriptComponent = /** @class */ (function (_super) {
         __extends(ScriptComponent, _super);
@@ -16792,7 +16786,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 3D场景
-     * @author feng 2016-05-01
+
      */
     var Scene3D = /** @class */ (function (_super) {
         __extends(Scene3D, _super);
@@ -17166,7 +17160,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 几何体
-     * @author feng 2016-04-28
+
      */
     var Geometry = /** @class */ (function (_super) {
         __extends(Geometry, _super);
@@ -18053,7 +18047,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 点几何体
-     * @author feng 2017-01-11
+
      */
     var PointGeometry = /** @class */ (function (_super) {
         __extends(PointGeometry, _super);
@@ -18107,7 +18101,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 线段组件
-     * @author feng 2016-10-16
+
      */
     var SegmentGeometry = /** @class */ (function (_super) {
         __extends(SegmentGeometry, _super);
@@ -18158,7 +18152,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 坐标系统类型
-     * @author feng 2014-10-14
+
      */
     var CoordinateSystem = /** @class */ (function () {
         function CoordinateSystem() {
@@ -18186,7 +18180,7 @@ var feng3d;
      * 摄像机可视区域：由近、远，上，下，左，右组成的四棱柱
      * GPU空间可视区域：立方体 [(-1, -1, -1), (1, 1, 1)]
      *
-     * @author feng 2014-10-14
+
      */
     var LensBase = /** @class */ (function (_super) {
         __extends(LensBase, _super);
@@ -18431,7 +18425,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 透视摄像机镜头
-     * @author feng 2014-10-14
+
      */
     var PerspectiveLens = /** @class */ (function (_super) {
         __extends(PerspectiveLens, _super);
@@ -18545,7 +18539,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 摄像机
-     * @author feng 2016-08-16
+
      */
     var Camera = /** @class */ (function (_super) {
         __extends(Camera, _super);
@@ -18763,7 +18757,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 平面几何体
-     * @author feng 2016-09-12
+
      */
     var PlaneGeometry = /** @class */ (function (_super) {
         __extends(PlaneGeometry, _super);
@@ -18983,7 +18977,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 立（长）方体几何体
-     * @author feng 2016-09-12
+
      */
     var CubeGeometry = /** @class */ (function (_super) {
         __extends(CubeGeometry, _super);
@@ -20162,7 +20156,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 圆锥体
-     * @author feng 2017-02-07
+
      */
     var ConeGeometry = /** @class */ (function (_super) {
         __extends(ConeGeometry, _super);
@@ -20399,7 +20393,6 @@ var feng3d;
     };
     /**
      * 2D纹理
-     * @author feng 2016-12-20
      */
     var Texture2D = /** @class */ (function (_super) {
         __extends(Texture2D, _super);
@@ -20417,7 +20410,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 2D纹理
-     * @author feng 2016-12-20
      */
     var ImageTexture2D = /** @class */ (function (_super) {
         __extends(ImageTexture2D, _super);
@@ -20564,7 +20556,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 立方体纹理
-     * @author feng 2016-12-28
      */
     var TextureCube = /** @class */ (function (_super) {
         __extends(TextureCube, _super);
@@ -20648,7 +20639,7 @@ var feng3d;
     feng3d.materialFactory = new MaterialFactory();
     /**
      * 材质
-     * @author feng 2016-05-02
+
      */
     var Material = /** @class */ (function (_super) {
         __extends(Material, _super);
@@ -20978,7 +20969,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 灯光类型
-     * @author feng 2016-12-12
+
      */
     var LightType;
     (function (LightType) {
@@ -21000,7 +20991,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 灯光
-     * @author feng 2016-12-12
+
      */
     var Light = /** @class */ (function (_super) {
         __extends(Light, _super);
@@ -21151,7 +21142,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 方向光源
-     * @author feng 2016-12-13
+
      */
     var DirectionalLight = /** @class */ (function (_super) {
         __extends(DirectionalLight, _super);
@@ -21199,7 +21190,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 点光源
-     * @author feng 2016-12-13
+
      */
     var PointLight = /** @class */ (function (_super) {
         __extends(PointLight, _super);
@@ -21240,7 +21231,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 聚光灯光源
-     * @author feng 2016-12-13
+
      */
     var SpotLight = /** @class */ (function (_super) {
         __extends(SpotLight, _super);
@@ -21741,7 +21732,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * FPS模式控制器
-     * @author feng 2016-12-19
+
      */
     var FPSController = /** @class */ (function (_super) {
         __extends(FPSController, _super);
@@ -22613,7 +22604,6 @@ var feng3d;
     var defaultHeightMap = feng3d.imageUtil.createImageData();
     /**
      * 地形几何体
-     * @author feng 2016-04-28
      */
     var TerrainGeometry = /** @class */ (function (_super) {
         __extends(TerrainGeometry, _super);
@@ -22856,7 +22846,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 地形材质
-     * @author feng 2016-04-28
      */
     var TerrainMergeMethod = /** @class */ (function (_super) {
         __extends(TerrainMergeMethod, _super);
@@ -23051,7 +23040,7 @@ var feng3d;
      * 粒子
      * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性"
      * 例如：position 对应 a_particle_position
-     * @author feng 2017-01-12
+
      */
     var Particle = /** @class */ (function () {
         function Particle(index) {
@@ -23103,7 +23092,7 @@ var feng3d;
      * 粒子全局属性，作用于所有粒子
      * 粒子系统会自动在shader中匹配一个"u_particle_${attribute}"uniform数据
      * 例如：position 对应 u_particle_position
-     * @author feng 2017-01-12
+
      */
     var ParticleGlobal = /** @class */ (function () {
         function ParticleGlobal() {
@@ -23168,7 +23157,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 粒子动画组件
-     * @author feng 2017-01-09
+
      */
     var ParticleComponent = /** @class */ (function () {
         function ParticleComponent() {
@@ -23209,7 +23198,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 粒子发射器
-     * @author feng 2017-01-09
+
      */
     var ParticleEmission = /** @class */ (function (_super) {
         __extends(ParticleEmission, _super);
@@ -23320,7 +23309,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 粒子速度组件
-     * @author feng 2017-01-09
+
      */
     var ParticlePosition = /** @class */ (function (_super) {
         __extends(ParticlePosition, _super);
@@ -23346,7 +23335,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 粒子速度组件
-     * @author feng 2017-01-09
+
      */
     var ParticleVelocity = /** @class */ (function (_super) {
         __extends(ParticleVelocity, _super);
@@ -23372,7 +23361,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 粒子颜色组件
-     * @author feng 2017-03-14
+
      */
     var ParticleColor = /** @class */ (function (_super) {
         __extends(ParticleColor, _super);
@@ -23440,7 +23429,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 粒子系统
-     * @author feng 2017-01-09
+
      */
     var ParticleSystem = /** @class */ (function (_super) {
         __extends(ParticleSystem, _super);
@@ -23746,14 +23735,14 @@ var feng3d;
 (function (feng3d) {
     // /**
     //  * 骨骼数据
-    //  * @author feng 2014-5-20
+    //
     //  */
     // export class Skeleton
     // {
     // }
     /**
      * 骨骼关节数据
-     * @author feng 2014-5-20
+
      */
     var SkeletonJoint = /** @class */ (function () {
         function SkeletonJoint() {
@@ -24286,7 +24275,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * Obj模型解析器
-     * @author feng 2017-01-13
+
      */
     feng3d.OBJParser = {
         parser: parser
@@ -26636,7 +26625,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * Obj模型加载类
-     * @author feng 2017-01-18
+
      */
     feng3d.ObjLoader = {
         /**
@@ -26773,7 +26762,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * MD5模型加载类
-     * @author feng 2017-01-18
+
      */
     feng3d.MD5Loader = {
         load: load,
@@ -27199,7 +27188,7 @@ var feng3d;
 (function (feng3d) {
     /**
      * 鼠标事件管理
-     * @author feng 2014-4-29
+
      */
     var Mouse3DManager = /** @class */ (function () {
         function Mouse3DManager(mouseInput, viewport) {
@@ -27405,7 +27394,7 @@ var feng3d;
     })(RunEnvironment = feng3d.RunEnvironment || (feng3d.RunEnvironment = {}));
     /**
      * feng3d的版本号
-     * @author feng 2015-03-20
+
      */
     feng3d.revision = "2018.08.02";
     /**

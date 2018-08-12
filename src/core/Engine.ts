@@ -8,7 +8,7 @@ namespace feng3d
 
     /**
      * 3D视图
-     * @author feng 2016-05-01
+
      */
     export class Engine
     {

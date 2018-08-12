@@ -3,7 +3,7 @@ namespace feng3d
 
     /**
      * 加载类
-     * @author feng 2016-12-14
+
      */
     export var Loader = {
         /**

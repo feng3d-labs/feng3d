@@ -2,7 +2,7 @@ namespace feng3d
 {
 	/**
 	 * 圆锥体
-     * @author feng 2017-02-07
+
 	 */
 	export class ConeGeometry extends CylinderGeometry
 	{

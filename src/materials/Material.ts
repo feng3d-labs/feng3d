@@ -23,7 +23,7 @@ namespace feng3d
 
     /**
      * 材质
-     * @author feng 2016-05-02
+
      */
     export class Material extends Feng3dAssets
     {

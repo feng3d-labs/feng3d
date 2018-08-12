@@ -3,7 +3,7 @@ namespace feng3d
 
     /**
      * 点几何体
-     * @author feng 2017-01-11
+
      */
     export class PointGeometry extends Geometry
     {
@@ -51,7 +51,7 @@ namespace feng3d
 
     /**
      * 点信息
-     * @author feng 2016-10-16
+
      */
     export interface PointInfo
     {

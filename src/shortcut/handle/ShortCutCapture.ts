@@ -3,7 +3,6 @@ namespace feng3d
 
 	/**
 	 * 快捷键捕获
-	 * @author feng 2016-4-26
 	 */
 	export class ShortCutCapture
 	{
@@ -298,7 +297,6 @@ namespace feng3d
 
 /**
  * 按键
- * @author feng 2016-6-6
  */
 class Key
 {
@@ -326,7 +324,6 @@ class Key
 
 /**
  * 状态
- * @author feng 2016-6-6
  */
 class State
 {
@@ -354,7 +351,6 @@ class State
 
 /**
  * 状态命令
- * @author feng 2016-6-6
  */
 class StateCommand
 {

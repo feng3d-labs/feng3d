@@ -11,7 +11,6 @@ namespace feng3d
 
     /**
      * 2D纹理
-     * @author feng 2016-12-20
      */
     export abstract class Texture2D extends TextureInfo
     {

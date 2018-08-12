@@ -4,7 +4,7 @@ namespace feng3d
 	 * 粒子全局属性，作用于所有粒子
 	 * 粒子系统会自动在shader中匹配一个"u_particle_${attribute}"uniform数据
      * 例如：position 对应 u_particle_position
-	 * @author feng 2017-01-12
+
 	 */
     export class ParticleGlobal
     {

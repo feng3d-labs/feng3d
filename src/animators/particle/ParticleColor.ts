@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 粒子颜色组件
-     * @author feng 2017-03-14
+
      */
     export class ParticleColor extends ParticleComponent
     {

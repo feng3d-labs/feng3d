@@ -34,7 +34,7 @@ namespace feng3d
 
     /**
      * 渲染代码库
-     * @author feng 2016-12-16
+
      */
     export class ShaderLib
     {

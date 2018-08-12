@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * FPS模式控制器
-     * @author feng 2016-12-19
+
      */
     export class FPSController extends Behaviour
     {

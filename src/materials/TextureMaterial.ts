@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 纹理材质
-     * @author feng 2016-12-23
+
      */
     export type TextureMaterial = Material & { uniforms: TextureUniforms; };
     export interface MaterialFactory

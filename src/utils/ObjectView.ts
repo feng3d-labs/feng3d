@@ -89,7 +89,6 @@ namespace feng3d
 
 	/**
 	 * 对象界面
-	 * @author feng 2016-3-10
 	 */
 	export class ObjectView
 	{
@@ -506,7 +505,6 @@ namespace feng3d
 
     /**
 	 * 定义属性
-	 * @author feng 2016-3-23
 	 */
 	export interface AttributeDefinition
 	{
@@ -533,7 +531,6 @@ namespace feng3d
 
 	/**
 	 * 定义特定属性类型默认界面
-	 * @author feng 2016-3-25
 	 */
 	export interface AttributeTypeDefinition
 	{
@@ -549,7 +546,6 @@ namespace feng3d
 
 	/**
 	 * 块定义
-	 * @author feng 2016-3-23
 	 */
 	export interface BlockDefinition
 	{
@@ -571,7 +567,6 @@ namespace feng3d
 
 	/**
 	 * ObjectView类配置
-	 * @author feng 2016-3-23
 	 */
 	export interface ClassDefinition
 	{
@@ -598,7 +593,6 @@ namespace feng3d
 
 	/**
 	 * 对象属性界面接口
-	 * @author feng 2016-3-10
 	 */
 	export interface IObjectAttributeView
 	{
@@ -635,7 +629,6 @@ namespace feng3d
 
 	/**
 	 * 对象属性块界面接口
-	 * @author feng 2016-3-22
 	 */
 	export interface IObjectBlockView
 	{
@@ -668,7 +661,6 @@ namespace feng3d
 
 	/**
 	 * 对象界面接口
-	 * @author feng 2016-3-11
 	 */
 	export interface IObjectView
 	{
@@ -697,7 +689,6 @@ namespace feng3d
 
 	/**
 	 * 对象属性信息
-	 * @author feng 2016-3-10
 	 */
 	export interface AttributeViewInfo
 	{
@@ -739,7 +730,6 @@ namespace feng3d
 
 	/**
 	 * 对象属性块
-	 * @author feng 2016-3-22
 	 */
 	export interface BlockViewInfo
 	{
@@ -771,7 +761,6 @@ namespace feng3d
 
 	/**
 	 * 对象信息
-	 * @author feng 2016-3-29
 	 */
 	export interface ObjectViewInfo
 	{

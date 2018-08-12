@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 鼠标事件管理
-     * @author feng 2014-4-29
+
      */
     export class Mouse3DManager
     {

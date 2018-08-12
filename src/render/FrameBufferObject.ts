@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 帧缓冲对象
-     * @author feng 2017-02-18
+
      */
     export class FrameBufferObject
     {

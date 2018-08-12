@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 代理 EventTarget, 处理js事件中this关键字问题
-     * @author feng 2016-12-19
+
      */
     export class EventProxy extends EventDispatcher
     {

@@ -3,7 +3,7 @@ namespace feng3d
 
 	/**
 	 * 按键捕获
-	 * @author feng 2016-4-26
+
 	 */
 	export class KeyCapture
 	{

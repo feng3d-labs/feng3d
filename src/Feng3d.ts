@@ -18,7 +18,7 @@ namespace feng3d
 
     /**
      * feng3d的版本号
-     * @author feng 2015-03-20
+
      */
     export var revision: string = "2018.08.02";
     /**

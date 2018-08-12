@@ -3,7 +3,7 @@ namespace feng3d
 
     /**
      * 加载数据类型
-     * @author feng 2016-12-14
+
      */
     export class LoaderDataFormat
     {

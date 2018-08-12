@@ -26,7 +26,7 @@ namespace feng3d
 	 * 摄像机可视区域：由近、远，上，下，左，右组成的四棱柱
 	 * GPU空间可视区域：立方体 [(-1, -1, -1), (1, 1, 1)]
 	 * 
-	 * @author feng 2014-10-14
+
 	 */
 	export abstract class LensBase extends EventDispatcher
 	{

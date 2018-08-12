@@ -3,7 +3,7 @@ namespace feng3d
 
     /**
      * 立（长）方体几何体
-     * @author feng 2016-09-12
+
      */
     export class CubeGeometry extends Geometry
     {

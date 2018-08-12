@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 纹理信息
-     * @author feng 2016-12-20
+
      */
     export abstract class TextureInfo
     {

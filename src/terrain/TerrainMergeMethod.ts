@@ -3,7 +3,6 @@ namespace feng3d
 
     /**
      * 地形材质
-     * @author feng 2016-04-28
      */
     export class TerrainMergeMethod extends EventDispatcher
     {

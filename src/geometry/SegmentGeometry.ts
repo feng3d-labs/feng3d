@@ -7,7 +7,7 @@ namespace feng3d
 
     /**
      * 线段组件
-     * @author feng 2016-10-16
+
      */
     export class SegmentGeometry extends Geometry
     {
@@ -59,7 +59,7 @@ namespace feng3d
 
     /**
      * 线段
-     * @author feng 2016-10-16
+
      */
     export interface Segment
     {

@@ -270,7 +270,7 @@ declare namespace feng3d {
      * Bézier曲线
      * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
      *
-     * @author feng / http://feng3d.com 03/06/2018
+/ http://feng3d.com 03/06/2018
      */
     class Bezier {
         /**
@@ -534,7 +534,7 @@ declare namespace feng3d {
      *
      * 当f(x)在区间 [a, b] 上连续，且 (f(a) - y) * (f(b) - y) < 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == y
      *
-     * @author feng / http://feng3d.com 05/06/2018
+/ http://feng3d.com 05/06/2018
      */
     class EquationSolving {
         /**
@@ -681,7 +681,7 @@ declare namespace feng3d {
      * 2次 f(x) = a0 * x * x + a1 * x + a2;
      * ......
      *
-     * @author feng / http://feng3d.com 05/06/2018
+/ http://feng3d.com 05/06/2018
      */
     class HighFunction {
         private as;
@@ -715,7 +715,7 @@ declare namespace feng3d {
     /**
      * 基于时间轴的连续三阶Bézier曲线
      *
-     * @author feng / http://feng3d.com 10/06/2018
+/ http://feng3d.com 10/06/2018
      */
     class CubicBeziers {
         /**
@@ -911,7 +911,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 代理 EventTarget, 处理js事件中this关键字问题
-     * @author feng 2016-12-19
+
      */
     class EventProxy extends EventDispatcher {
         pageX: number;
@@ -1221,7 +1221,6 @@ declare namespace feng3d {
     var objectview: ObjectView;
     /**
      * 对象界面
-     * @author feng 2016-3-10
      */
     class ObjectView {
         /**
@@ -1324,7 +1323,6 @@ declare namespace feng3d {
     }
     /**
      * 定义属性
-     * @author feng 2016-3-23
      */
     interface AttributeDefinition {
         /**
@@ -1346,7 +1344,6 @@ declare namespace feng3d {
     }
     /**
      * 定义特定属性类型默认界面
-     * @author feng 2016-3-25
      */
     interface AttributeTypeDefinition {
         /**
@@ -1360,7 +1357,6 @@ declare namespace feng3d {
     }
     /**
      * 块定义
-     * @author feng 2016-3-23
      */
     interface BlockDefinition {
         /**
@@ -1378,7 +1374,6 @@ declare namespace feng3d {
     }
     /**
      * ObjectView类配置
-     * @author feng 2016-3-23
      */
     interface ClassDefinition {
         /**
@@ -1400,7 +1395,6 @@ declare namespace feng3d {
     }
     /**
      * 对象属性界面接口
-     * @author feng 2016-3-10
      */
     interface IObjectAttributeView {
         /**
@@ -1430,7 +1424,6 @@ declare namespace feng3d {
     }
     /**
      * 对象属性块界面接口
-     * @author feng 2016-3-22
      */
     interface IObjectBlockView {
         /**
@@ -1457,7 +1450,6 @@ declare namespace feng3d {
     }
     /**
      * 对象界面接口
-     * @author feng 2016-3-11
      */
     interface IObjectView {
         /**
@@ -1481,7 +1473,6 @@ declare namespace feng3d {
     }
     /**
      * 对象属性信息
-     * @author feng 2016-3-10
      */
     interface AttributeViewInfo {
         /**
@@ -1515,7 +1506,6 @@ declare namespace feng3d {
     }
     /**
      * 对象属性块
-     * @author feng 2016-3-22
      */
     interface BlockViewInfo {
         /**
@@ -1541,7 +1531,6 @@ declare namespace feng3d {
     }
     /**
      * 对象信息
-     * @author feng 2016-3-29
      */
     interface ObjectViewInfo {
         /**
@@ -1828,12 +1817,10 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 类工具
-     * @author feng 2017-02-15
      */
     var classUtils: ClassUtils;
     /**
      * 类工具
-     * @author feng 2017-02-15
      */
     class ClassUtils {
         /**
@@ -2620,7 +2607,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
-     * @author feng 2016-3-21
+
      */
     class Vector3 {
         /**
@@ -3146,7 +3133,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * Orientation3D 类是用于表示 Matrix4x4 对象的方向样式的常量值枚举。方向的三个类型分别为欧拉角、轴角和四元数。Matrix4x4 对象的 decompose 和 recompose 方法采用其中的某一个枚举类型来标识矩阵的旋转组件。
-     * @author feng 2016-3-21
+
      */
     enum Orientation3D {
         /**
@@ -3171,7 +3158,7 @@ declare namespace feng3d {
      * Rectangle 类的 x、y、width 和 height 属性相互独立；更改一个属性的值不会影响其他属性。
      * 但是，right 和 bottom 属性与这四个属性是整体相关的。例如，如果更改 right 属性的值，则 width
      * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
-     * @author feng 2016-04-27
+
      */
     class Rectangle {
         /**
@@ -4153,7 +4140,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 3d直线
-     * @author feng 2013-6-13
+
      */
     class Line3D {
         /**
@@ -4359,7 +4346,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 3D射线
-     * @author feng 2013-6-13
+
      */
     class Ray3D extends Line3D {
         constructor(position?: Vector3, direction?: Vector3);
@@ -4965,7 +4952,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 点与面的相对位置
-     * @author feng
+
      */
     enum PlaneClassification {
         /**
@@ -4985,7 +4972,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 颜色
-     * @author feng 2016-09-24
+
      */
     class Color3 {
         static WHITE: Color3;
@@ -5196,7 +5183,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 颜色（包含透明度）
-     * @author feng 2016-09-24
+
      */
     class Color4 {
         static WHITE: Color4;
@@ -5401,7 +5388,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 按键捕获
-     * @author feng 2016-4-26
+
      */
     class KeyCapture {
         /**
@@ -5438,7 +5425,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 按键状态
-     * @author feng 2016-4-26
+
      */
     class KeyState extends EventDispatcher {
         /**
@@ -5471,7 +5458,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 快捷键捕获
-     * @author feng 2016-4-26
      */
     class ShortCutCapture {
         /**
@@ -5585,7 +5571,6 @@ declare namespace feng3d {
 }
 /**
  * 按键
- * @author feng 2016-6-6
  */
 declare class Key {
     /**
@@ -5600,7 +5585,6 @@ declare class Key {
 }
 /**
  * 状态
- * @author feng 2016-6-6
  */
 declare class State {
     /**
@@ -5615,7 +5599,6 @@ declare class State {
 }
 /**
  * 状态命令
- * @author feng 2016-6-6
  */
 declare class StateCommand {
     /**
@@ -5633,7 +5616,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 初始化快捷键模块
-     * @author feng 2016-4-26
+
      *
      * <pre>
 var shortcuts:Array = [ //
@@ -5728,7 +5711,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 declare namespace feng3d {
     /**
      * 加载类
-     * @author feng 2016-12-14
+
      */
     var Loader: {
         loadText: (url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: (e: any) => void) => void;
@@ -5741,7 +5724,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 加载数据类型
-     * @author feng 2016-12-14
+
      */
     class LoaderDataFormat {
         /**
@@ -5763,7 +5746,7 @@ declare namespace feng3d {
      * 渲染模式
      * A GLenum specifying the type primitive to render. Possible values are:
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
-     * @author feng 2016-09-28
+
      */
     enum RenderMode {
         /**
@@ -6291,7 +6274,7 @@ interface WebGLVertexArrayObject extends WebGLObject {
 }
 /**
  * webgl 2.0 API
- * @author feng 2017-01-10
+
  */
 interface WebGL2RenderingContext extends WebGLRenderingContext {
     READ_BUFFER: number;
@@ -6692,7 +6675,7 @@ interface WebGL2RenderingContext extends WebGLRenderingContext {
 }
 /**
  * webgl 2.0 API
- * @author feng 2017-01-10
+
  */
 declare var WebGL2RenderingContext: {
     prototype: WebGL2RenderingContext;
@@ -7713,7 +7696,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 渲染参数
-     * @author feng 2016-12-14
+
      */
     class RenderParams {
         /**
@@ -7768,7 +7751,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
-     * @author feng 2016-06-20
+
      */
     class RenderAtomic {
         /**
@@ -7817,7 +7800,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 索引渲染数据
-     * @author feng 2017-01-04
+
      */
     class Index {
         /**
@@ -7901,7 +7884,7 @@ declare namespace feng3d {
     }
     /**
      * 属性渲染数据
-     * @author feng 2014-8-14
+
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer}
      */
     class Attribute {
@@ -7978,7 +7961,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 纹理信息
-     * @author feng 2016-12-20
+
      */
     abstract class TextureInfo {
         /**
@@ -8096,7 +8079,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 帧缓冲对象
-     * @author feng 2017-02-18
+
      */
     class FrameBufferObject {
         OFFSCREEN_WIDTH: number;
@@ -8271,7 +8254,7 @@ declare namespace feng3d {
     }
     /**
      * 渲染代码库
-     * @author feng 2016-12-16
+
      */
     class ShaderLib {
         shaderConfig: ShaderConfig;
@@ -8524,12 +8507,12 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 前向渲染器
-     * @author feng 2017-02-20
+
      */
     var forwardRenderer: ForwardRenderer;
     /**
      * 前向渲染器
-     * @author feng 2017-02-20
+
      */
     class ForwardRenderer {
         renderAtomic: RenderAtomic;
@@ -8555,7 +8538,7 @@ declare namespace feng3d {
     var mouseRenderer: MouseRenderer;
     /**
      * 鼠标拾取渲染器
-     * @author feng 2017-02-06
+
      */
     class MouseRenderer extends EventDispatcher {
         private objects;
@@ -8573,7 +8556,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 后处理渲染器
-     * @author feng 2017-02-20
+
      */
     class PostProcessRenderer {
     }
@@ -8733,7 +8716,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 后处理效果
-     * @author feng 2017-02-20
+
      */
     class PostEffect {
     }
@@ -8741,7 +8724,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 快速近似抗锯齿（Fast Approximate Anti-Aliasing）后处理效果
-     * @author feng 2017-02-20
+
      *
      * @see
      * https://github.com/BabylonJS/Babylon.js/blob/master/src/Shaders/fxaa.fragment.fx
@@ -9157,7 +9140,7 @@ interface HTMLCanvasElement {
 declare namespace feng3d {
     /**
      * 3D视图
-     * @author feng 2016-05-01
+
      */
     class Engine {
         canvas: HTMLCanvasElement;
@@ -9324,7 +9307,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 3d对象脚本
-     * @author feng 2017-03-11
+
      */
     class ScriptComponent extends Behaviour {
         /**
@@ -9393,7 +9376,7 @@ declare namespace feng3d {
     }
     /**
      * 3D场景
-     * @author feng 2016-05-01
+
      */
     class Scene3D extends Component {
         /**
@@ -9530,7 +9513,7 @@ declare namespace feng3d {
     }
     /**
      * 几何体
-     * @author feng 2016-04-28
+
      */
     abstract class Geometry extends Feng3dObject {
         /**
@@ -9700,7 +9683,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 点几何体
-     * @author feng 2017-01-11
+
      */
     class PointGeometry extends Geometry {
         /**
@@ -9715,7 +9698,7 @@ declare namespace feng3d {
     }
     /**
      * 点信息
-     * @author feng 2016-10-16
+
      */
     interface PointInfo {
         position?: Vector3;
@@ -9730,7 +9713,7 @@ declare namespace feng3d {
     }
     /**
      * 线段组件
-     * @author feng 2016-10-16
+
      */
     class SegmentGeometry extends Geometry {
         /**
@@ -9746,7 +9729,7 @@ declare namespace feng3d {
     }
     /**
      * 线段
-     * @author feng 2016-10-16
+
      */
     interface Segment {
         /**
@@ -9770,7 +9753,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 坐标系统类型
-     * @author feng 2014-10-14
+
      */
     class CoordinateSystem {
         /**
@@ -9806,7 +9789,7 @@ declare namespace feng3d {
      * 摄像机可视区域：由近、远，上，下，左，右组成的四棱柱
      * GPU空间可视区域：立方体 [(-1, -1, -1), (1, 1, 1)]
      *
-     * @author feng 2014-10-14
+
      */
     abstract class LensBase extends EventDispatcher {
         /**
@@ -9943,7 +9926,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 透视摄像机镜头
-     * @author feng 2014-10-14
+
      */
     class PerspectiveLens extends LensBase {
         /**
@@ -9995,7 +9978,7 @@ declare namespace feng3d {
     }
     /**
      * 摄像机
-     * @author feng 2016-08-16
+
      */
     class Camera extends Component {
         private _lens;
@@ -10085,7 +10068,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 平面几何体
-     * @author feng 2016-09-12
+
      */
     class PlaneGeometry extends Geometry {
         /**
@@ -10157,7 +10140,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 立（长）方体几何体
-     * @author feng 2016-09-12
+
      */
     class CubeGeometry extends Geometry {
         /**
@@ -10410,7 +10393,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 圆锥体
-     * @author feng 2017-02-07
+
      */
     class ConeGeometry extends CylinderGeometry {
         /**
@@ -10503,7 +10486,6 @@ declare namespace feng3d {
     };
     /**
      * 2D纹理
-     * @author feng 2016-12-20
      */
     abstract class Texture2D extends TextureInfo {
         /**
@@ -10516,7 +10498,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 2D纹理
-     * @author feng 2016-12-20
      */
     class ImageTexture2D extends Texture2D {
         image: HTMLImageElement;
@@ -10566,7 +10547,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 立方体纹理
-     * @author feng 2016-12-28
      */
     class TextureCube extends TextureInfo {
         positive_x_url: string;
@@ -10588,7 +10568,7 @@ declare namespace feng3d {
     var materialFactory: MaterialFactory;
     /**
      * 材质
-     * @author feng 2016-05-02
+
      */
     class Material extends Feng3dAssets {
         /**
@@ -10615,7 +10595,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 颜色材质
-     * @author feng 2017-01-11
+
      */
     type PointMaterial = Material & {
         uniforms: PointUniforms;
@@ -10640,7 +10620,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 颜色材质
-     * @author feng 2016-05-02
+
      */
     type ColorMaterial = Material & {
         uniforms: ColorUniforms;
@@ -10662,7 +10642,7 @@ declare namespace feng3d {
     /**
      * 线段材质
      * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
-     * @author feng 2016-10-15
+
      */
     type SegmentMaterial = Material & {
         uniforms: SegmentUniforms;
@@ -10683,7 +10663,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 纹理材质
-     * @author feng 2016-12-23
+
      */
     type TextureMaterial = Material & {
         uniforms: TextureUniforms;
@@ -10821,7 +10801,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 灯光类型
-     * @author feng 2016-12-12
+
      */
     enum LightType {
         /**
@@ -10841,7 +10821,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 灯光
-     * @author feng 2016-12-12
+
      */
     class Light extends Behaviour {
         /**
@@ -10907,7 +10887,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 方向光源
-     * @author feng 2016-12-13
+
      */
     class DirectionalLight extends Light {
         lightType: LightType;
@@ -10926,7 +10906,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 点光源
-     * @author feng 2016-12-13
+
      */
     class PointLight extends Light {
         lightType: LightType;
@@ -10945,7 +10925,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 聚光灯光源
-     * @author feng 2016-12-13
+
      */
     class SpotLight extends Light {
         lightType: LightType;
@@ -11041,7 +11021,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * FPS模式控制器
-     * @author feng 2016-12-19
+
      */
     class FPSController extends Behaviour {
         /**
@@ -11102,7 +11082,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 射线投射拾取器
-     * @author feng 2014-4-29
+
      */
     var raycaster: Raycaster;
     /**
@@ -11421,7 +11401,6 @@ declare namespace feng3d {
     }
     /**
      * 地形几何体
-     * @author feng 2016-04-28
      */
     class TerrainGeometry extends Geometry implements TerrainGeometryRaw {
         heightMapUrl: string;
@@ -11480,7 +11459,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 地形材质
-     * @author feng 2016-04-28
      */
     class TerrainMergeMethod extends EventDispatcher {
         splatMergeTexture: UrlImageTexture2D;
@@ -11543,7 +11521,7 @@ declare namespace feng3d {
      * 粒子
      * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性"
      * 例如：position 对应 a_particle_position
-     * @author feng 2017-01-12
+
      */
     class Particle {
         /**
@@ -11588,7 +11566,7 @@ declare namespace feng3d {
      * 粒子全局属性，作用于所有粒子
      * 粒子系统会自动在shader中匹配一个"u_particle_${attribute}"uniform数据
      * 例如：position 对应 u_particle_position
-     * @author feng 2017-01-12
+
      */
     class ParticleGlobal {
         /**
@@ -11622,7 +11600,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 粒子动画组件
-     * @author feng 2017-01-09
+
      */
     class ParticleComponent {
         /**
@@ -11645,7 +11623,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 粒子发射器
-     * @author feng 2017-01-09
+
      */
     class ParticleEmission extends ParticleComponent {
         /**
@@ -11686,7 +11664,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 粒子速度组件
-     * @author feng 2017-01-09
+
      */
     class ParticlePosition extends ParticleComponent {
         /**
@@ -11699,7 +11677,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 粒子速度组件
-     * @author feng 2017-01-09
+
      */
     class ParticleVelocity extends ParticleComponent {
         /**
@@ -11712,7 +11690,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 粒子颜色组件
-     * @author feng 2017-03-14
+
      */
     class ParticleColor extends ParticleComponent {
         /**
@@ -11742,7 +11720,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 粒子系统
-     * @author feng 2017-01-09
+
      */
     class ParticleSystem extends Model {
         /**
@@ -11886,7 +11864,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 骨骼关节数据
-     * @author feng 2014-5-20
+
      */
     class SkeletonJoint {
         /** 父关节索引 （-1说明本身是总父节点，这个序号其实就是行号了，譬如上面”origin“节点的序号就是0，无父节点； "body"节点序号是1，父节点序号是0，也就是说父节点是”origin“）*/
@@ -12037,7 +12015,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * Obj模型解析器
-     * @author feng 2017-01-13
+
      */
     var OBJParser: {
         parser: (context: string) => OBJ_OBJData;
@@ -12556,7 +12534,7 @@ declare namespace feng3d.war3 {
 declare namespace feng3d {
     /**
      * Obj模型加载类
-     * @author feng 2017-01-18
+
      */
     var ObjLoader: {
         load: (url: string, completed?: (gameObject: GameObject) => void) => void;
@@ -12566,7 +12544,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * MD5模型加载类
-     * @author feng 2017-01-18
+
      */
     var MD5Loader: {
         load: (url: string, completed?: (gameObject: GameObject) => void) => void;
@@ -12601,7 +12579,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 鼠标事件管理
-     * @author feng 2014-4-29
+
      */
     class Mouse3DManager {
         mouseInput: MouseInput;
@@ -12779,7 +12757,7 @@ declare namespace feng3d {
     }
     /**
      * feng3d的版本号
-     * @author feng 2015-03-20
+
      */
     var revision: string;
     /**

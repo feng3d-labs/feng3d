@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 颜色材质
-     * @author feng 2016-05-02
+
      */
     export type ColorMaterial = Material & { uniforms: ColorUniforms; };
     export interface MaterialFactory

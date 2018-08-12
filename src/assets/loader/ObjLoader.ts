@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * Obj模型加载类
-     * @author feng 2017-01-18
+
      */
     export var ObjLoader = {
         /**

@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 粒子速度组件
-     * @author feng 2017-01-09
+
      */
     export class ParticlePosition extends ParticleComponent
     {

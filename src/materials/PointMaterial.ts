@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 颜色材质
-     * @author feng 2017-01-11
+
      */
     export type PointMaterial = Material & { uniforms: PointUniforms; };
 

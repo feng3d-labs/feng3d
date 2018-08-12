@@ -3,7 +3,7 @@ namespace feng3d
 
 	/**
 	 * 坐标系统类型
-	 * @author feng 2014-10-14
+
 	 */
 	export class CoordinateSystem
 	{

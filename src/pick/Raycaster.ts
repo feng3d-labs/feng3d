@@ -3,7 +3,6 @@ namespace feng3d
 
 	/**
 	 * 射线投射拾取器
-	 * @author feng 2014-4-29
 	 */
     export var raycaster: Raycaster;
 

@@ -2,7 +2,7 @@ namespace feng3d
 {
 	/**
 	 * 3d直线
-	 * @author feng 2013-6-13
+
 	 */
     export class Line3D
     {

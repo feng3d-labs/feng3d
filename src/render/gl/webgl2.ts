@@ -26,7 +26,7 @@ declare interface WebGLVertexArrayObject extends WebGLObject { }
 
 /**
  * webgl 2.0 API
- * @author feng 2017-01-10
+
  */
 interface WebGL2RenderingContext extends WebGLRenderingContext
 {
@@ -495,7 +495,7 @@ interface WebGL2RenderingContext extends WebGLRenderingContext
 
 /**
  * webgl 2.0 API
- * @author feng 2017-01-10
+
  */
 declare var WebGL2RenderingContext: {
     prototype: WebGL2RenderingContext;

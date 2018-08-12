@@ -3,7 +3,7 @@ namespace feng3d
 
 	/**
 	 * 按键状态
-	 * @author feng 2016-4-26
+
 	 */
 	export class KeyState extends EventDispatcher
 	{

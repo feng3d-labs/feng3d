@@ -2,7 +2,7 @@ namespace feng3d
 {
 	/**
 	 * 点与面的相对位置
-	 * @author feng
+
 	 */
 	export enum PlaneClassification
 	{

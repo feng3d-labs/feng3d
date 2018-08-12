@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * MD5模型加载类
-     * @author feng 2017-01-18
+
      */
     export var MD5Loader = {
         load: load,

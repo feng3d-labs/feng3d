@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 聚光灯光源
-     * @author feng 2016-12-13
+
      */
     export class SpotLight extends Light
     {

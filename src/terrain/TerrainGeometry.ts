@@ -53,7 +53,6 @@ namespace feng3d
 
     /**
      * 地形几何体
-     * @author feng 2016-04-28
      */
     export class TerrainGeometry extends Geometry implements TerrainGeometryRaw
     {

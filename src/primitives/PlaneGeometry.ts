@@ -2,7 +2,7 @@ namespace feng3d
 {
     /**
      * 平面几何体
-     * @author feng 2016-09-12
+
      */
     export class PlaneGeometry extends Geometry
     {

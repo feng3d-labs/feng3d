@@ -31,7 +31,7 @@ namespace feng3d
 
     /**
      * 几何体
-     * @author feng 2016-04-28
+
      */
     export abstract class Geometry extends Feng3dObject
     {

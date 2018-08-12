@@ -3,7 +3,7 @@ namespace feng3d
 
 	/**
 	 * Obj模型解析器
-     * @author feng 2017-01-13
+
 	 */
     export var OBJParser = {
         parser: parser

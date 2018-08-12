@@ -3,7 +3,7 @@ namespace feng3d
 
 	/**
 	 * 索引渲染数据
-     * @author feng 2017-01-04
+
 	 */
     export class Index
     {

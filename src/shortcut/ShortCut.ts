@@ -2,7 +2,7 @@ namespace feng3d
 {
 	/**
 	 * 初始化快捷键模块
-	 * @author feng 2016-4-26
+
 	 *
 	 * <pre>
 var shortcuts:Array = [ //

@@ -4,13 +4,11 @@ namespace feng3d
 
     /**
      * 类工具
-     * @author feng 2017-02-15
      */
     export var classUtils: ClassUtils;
 
     /**
      * 类工具
-     * @author feng 2017-02-15
      */
     export class ClassUtils
     {
