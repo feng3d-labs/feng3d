@@ -8569,8 +8569,6 @@ declare namespace feng3d {
     var shadowRenderer: ShadowRenderer;
     class ShadowRenderer {
         private renderAtomic;
-        private shader;
-        private skeleton_shader;
         private init();
         /**
          * 渲染

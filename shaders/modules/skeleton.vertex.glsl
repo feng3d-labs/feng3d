@@ -7,7 +7,7 @@ attribute vec4 a_jointweight0;
     attribute vec4 a_jointweight1;
 #endif
 
-#if NUM_SKELETONJOINT > 0
+#ifdef NUM_SKELETONJOINT
     uniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];
 #endif
 

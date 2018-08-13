@@ -11,17 +11,12 @@ namespace feng3d
     {
         private renderAtomic: RenderAtomic;
 
-        private shader: Shader;
-        private skeleton_shader: Shader;
-
         private init()
         {
             if (!this.renderAtomic)
             {
                 this.renderAtomic = new RenderAtomic();
-
-                this.shader = new Shader("shadow");
-                this.skeleton_shader = new Shader("shadow_skeleton");
+                this.renderAtomic.shader = new Shader("shadow");
             }
         }
 
@@ -226,14 +221,6 @@ namespace feng3d
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
             var model = gameObject.getComponent(Model);
-
-            if (model instanceof SkinnedModel)
-            {
-                this.renderAtomic.shader = this.skeleton_shader;
-            } else
-            {
-                this.renderAtomic.shader = this.shader;
-            }
 
             this.renderAtomic.next = renderAtomic;
             this.renderAtomic.renderParams.cullFace = renderAtomic.renderParams.cullFace;
