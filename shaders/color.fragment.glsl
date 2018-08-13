@@ -6,7 +6,7 @@ uniform vec4 u_diffuseInput;
 
 
 
-void main(void) {
+void main() {
    
     gl_FragColor = u_diffuseInput;
 }

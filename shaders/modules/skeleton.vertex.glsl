@@ -7,7 +7,9 @@ attribute vec4 a_jointweight0;
     attribute vec4 a_jointweight1;
 #endif
 
-uniform mat4 u_skeletonGlobalMatriices[150];
+#if NUM_SKELETONJOINT > 0
+    uniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];
+#endif
 
 vec4 skeletonAnimation(vec4 position) {
 

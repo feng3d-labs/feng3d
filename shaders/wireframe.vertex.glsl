@@ -14,7 +14,7 @@ uniform mat4 u_viewProjection;
     #include<particle.vertex>
 #endif
 
-void main(void) {
+void main() {
 
     vec4 position = vec4(a_position,1.0);
 

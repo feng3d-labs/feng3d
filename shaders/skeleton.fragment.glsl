@@ -35,7 +35,7 @@ uniform sampler2D s_ambient;
 
 #include<envmap.fragment>
 
-void main(void)
+void main()
 {
     vec4 finalColor = vec4(1.0,1.0,1.0,1.0);
 

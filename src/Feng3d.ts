@@ -45,5 +45,5 @@ namespace feng3d
         Transform: Transform,
     };
 
-    log(`Feng3D version ${revision}`)
+    log(`feng3d version ${revision}`)
 }

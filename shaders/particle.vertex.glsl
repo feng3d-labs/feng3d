@@ -56,7 +56,7 @@ vec3 particleAnimation(vec3 position) {
     return position;
 }
 
-void main(void) {
+void main() {
 
     vec4 position = vec4(a_position,1.0);
     

@@ -17,7 +17,7 @@ uniform float u_outlineMorphFactor;
 
 uniform float u_outlineSize;
 
-void main(void) {
+void main() {
 
     vec4 position = vec4(a_position,1.0);
 

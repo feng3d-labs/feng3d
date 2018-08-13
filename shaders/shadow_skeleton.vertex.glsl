@@ -5,15 +5,19 @@ attribute vec3 a_position;
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 
-#include<skeleton.vertex>
+#ifdef HAS_SKELETON_ANIMATION
+    #include<skeleton.vertex>
+#endif
 
 varying vec3 v_worldPosition;
 
-void main(void) {
+void main() {
 
     vec4 position = vec4(a_position,1.0);
 
-    position = skeletonAnimation(position);
+    #ifdef HAS_SKELETON_ANIMATION
+        position = skeletonAnimation(position);
+    #endif
 
     #ifdef HAS_PARTICLE_ANIMATOR
         position = particleAnimation(position);

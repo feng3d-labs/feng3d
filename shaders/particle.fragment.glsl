@@ -14,7 +14,7 @@ vec4 particleAnimation(vec4 color) {
     return color * v_particle_color;
 }
 
-void main(void)
+void main()
 {
     vec4 finalColor = vec4(1.0,1.0,1.0,1.0);
 
