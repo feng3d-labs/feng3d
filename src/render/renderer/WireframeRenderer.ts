@@ -9,9 +9,6 @@ namespace feng3d
     {
         renderAtomic: RenderAtomic;
 
-        private shader: Shader;
-        private skeleton_shader: Shader;
-
         init()
         {
             if (!this.renderAtomic)
@@ -21,8 +18,7 @@ namespace feng3d
                 renderParams.renderMode = RenderMode.LINES;
                 // renderParams.depthMask = false;
 
-                this.shader = new Shader("wireframe");
-                this.skeleton_shader = new Shader("wireframe_skeleton");
+                this.renderAtomic.shader = new Shader("wireframe");
             }
         }
 
@@ -64,13 +60,6 @@ namespace feng3d
             this.init();
 
             this.renderAtomic.next = renderAtomic;
-            if (model instanceof SkinnedModel)
-            {
-                this.renderAtomic.shader = this.skeleton_shader;
-            } else
-            {
-                this.renderAtomic.shader = this.shader;
-            }
 
             //
             var oldIndexBuffer = renderAtomic.indexBuffer;
