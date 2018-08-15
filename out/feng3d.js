@@ -16514,7 +16514,7 @@ var feng3d;
             get: function () {
                 var box = this.selfWorldBounds;
                 if (!box)
-                    box = new feng3d.Box(this.transform.position, this.transform.position);
+                    box = new feng3d.Box(this.transform.scenePosition, this.transform.scenePosition);
                 this.gameObject.children.forEach(function (element) {
                     var ebox = element.getComponent(Model).worldBounds;
                     box.union(ebox);

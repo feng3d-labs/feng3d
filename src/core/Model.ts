@@ -96,7 +96,7 @@ namespace feng3d
         get worldBounds()
         {
             var box = this.selfWorldBounds;
-            if (!box) box = new Box(this.transform.position, this.transform.position);
+            if (!box) box = new Box(this.transform.scenePosition, this.transform.scenePosition);
             this.gameObject.children.forEach(element =>
             {
                 var ebox = element.getComponent(Model).worldBounds;
