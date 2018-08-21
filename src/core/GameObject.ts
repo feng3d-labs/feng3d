@@ -1,7 +1,6 @@
 namespace feng3d
 {
-
-    export type ComponentConstructor<T> = (new () => T);
+    export type Constructor<T> = (new (...args) => T);
 
     export interface GameObjectEventMap extends MouseEventMap
     {
@@ -337,7 +336,7 @@ namespace feng3d
          * Adds a component class named className to the game object.
 		 * @param param 被添加组件
 		 */
-        addComponent<T extends Component>(param: ComponentConstructor<T>, callback: (component: T) => void = null): T
+        addComponent<T extends Components>(param: Constructor<T>, callback: (component: T) => void = null): T
         {
             var component: T = this.getComponent(param);
             if (component && component.single)
@@ -368,7 +367,7 @@ namespace feng3d
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。
          */
-        private hasComponent(com: Component): boolean
+        private hasComponent(com: Components): boolean
         {
             return this._components.indexOf(com) != -1;
         }
@@ -378,7 +377,7 @@ namespace feng3d
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Component>(type: ComponentConstructor<T>): T
+        getComponent<T extends Components>(type: Constructor<T>): T
         {
             var component = this.getComponents(type)[0];
             return component;
@@ -389,7 +388,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Component>(type?: ComponentConstructor<T>): T[]
+        getComponents<T extends Components>(type?: Constructor<T>): T[]
         {
             var filterResult: Component[];
             if (!type)
@@ -410,7 +409,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends Component>(type?: ComponentConstructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
         {
             result = result || [];
             var findchildren = true;
@@ -449,7 +448,7 @@ namespace feng3d
          * @param component				子组件
          * @param index				位置索引
          */
-        setComponentIndex(component: Component, index: number): void
+        setComponentIndex(component: Components, index: number): void
         {
             debuger && assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
@@ -465,7 +464,7 @@ namespace feng3d
 		 * @param component		被设置的组件
 		 * @param index			索引
 		 */
-        setComponentAt(component: Component, index: number)
+        setComponentAt(component: Components, index: number)
         {
             if (this._components[index])
             {
@@ -478,7 +477,7 @@ namespace feng3d
 		 * 移除组件
 		 * @param component 被移除组件
 		 */
-        removeComponent(component: Component): void
+        removeComponent(component: Components): void
         {
             debuger && assert(this.hasComponent(component), "只能移除在容器中的组件");
 
@@ -491,7 +490,7 @@ namespace feng3d
          * @param component			查询的组件
          * @return				    组件在容器的索引位置
          */
-        getComponentIndex(component: Component): number
+        getComponentIndex(component: Components): number
         {
             debuger && assert(this._components.indexOf(component) != -1, "组件不在容器中");
 
@@ -525,7 +524,7 @@ namespace feng3d
             debuger && assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
             debuger && assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
 
-            var temp: Component = this._components[index1];
+            var temp: Components = this._components[index1];
             this._components[index1] = this._components[index2];
             this._components[index2] = temp;
         }
@@ -535,7 +534,7 @@ namespace feng3d
          * @param a		第一个子组件
          * @param b		第二个子组件
          */
-        swapComponents(a: Component, b: Component): void
+        swapComponents(a: Components, b: Components): void
         {
             debuger && assert(this.hasComponent(a), "第一个子组件不在容器中");
             debuger && assert(this.hasComponent(b), "第二个子组件不在容器中");
@@ -547,7 +546,7 @@ namespace feng3d
          * 移除指定类型组件
          * @param type 组件类型
          */
-        removeComponentsByType<T extends Component>(type: ComponentConstructor<T>)
+        removeComponentsByType<T extends Component>(type: Constructor<T>)
         {
             var removeComponents: T[] = [];
             for (var i = this._components.length - 1; i >= 0; i--)
@@ -589,7 +588,7 @@ namespace feng3d
         /**
 		 * 组件列表
 		 */
-        protected _components: Component[] = [];
+        protected _components: Components[] = [];
         @serialize
         @oav({ component: "OAVComponentList" })
         get components()
@@ -625,7 +624,7 @@ namespace feng3d
 		 * @param component		被添加的组件
 		 * @param index			插入的位置
 		 */
-        private addComponentAt(component: Component, index: number): void
+        private addComponentAt(component: Components, index: number): void
         {
             if (component == null)
                 return;

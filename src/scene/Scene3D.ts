@@ -11,9 +11,10 @@ namespace feng3d
         removeComponentFromScene: Component;
     }
 
+    export interface ComponentMap { Scene3D: Scene3D; }
+
     /**
      * 3D场景
-
      */
     export class Scene3D extends Component
     {

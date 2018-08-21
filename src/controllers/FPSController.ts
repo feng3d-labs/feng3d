@@ -1,8 +1,10 @@
 namespace feng3d
 {
+    
+    export interface ComponentMap { FPSController: FPSController; }
+
     /**
      * FPS模式控制器
-
      */
     export class FPSController extends Behaviour
     {

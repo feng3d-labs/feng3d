@@ -1,6 +1,5 @@
 namespace feng3d
 {
-
     /**
      * 灯光
 

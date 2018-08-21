@@ -1,5 +1,8 @@
 namespace feng3d
 {
+
+    export interface ComponentMap { ScriptComponent: ScriptComponent; }
+    
     /**
      * 3d对象脚本
 

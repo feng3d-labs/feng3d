@@ -1,5 +1,7 @@
 namespace feng3d
 {
+    export interface ComponentMap { SkeletonComponent: SkeletonComponent; }
+
     export class SkeletonComponent extends Component
     {
         /** 骨骼关节数据列表 */

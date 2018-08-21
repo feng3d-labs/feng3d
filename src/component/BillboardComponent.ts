@@ -1,5 +1,8 @@
 namespace feng3d
 {
+
+    export interface ComponentMap { BillboardComponent: BillboardComponent; }
+
     export class BillboardComponent extends Component
     {
         /**

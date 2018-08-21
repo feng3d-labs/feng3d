@@ -1,8 +1,10 @@
 namespace feng3d
 {
+    
+    export interface ComponentMap { PointLight: PointLight; }
+    
     /**
      * 点光源
-
      */
     export class PointLight extends Light
     {

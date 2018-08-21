@@ -8476,10 +8476,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type ValueOf<T> = T[keyof T];
-    interface ComponentRawMap {
+    interface ComponentMap {
     }
-    type ComponentRaw = ValueOf<ComponentRawMap>;
+    type Components = ComponentMap[keyof ComponentMap];
     interface Component {
         once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
@@ -8528,22 +8527,22 @@ declare namespace feng3d {
          * @param type				The type of Component to retrieve.
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Component>(type: ComponentConstructor<T>): T;
+        getComponent<T extends Components>(type: Constructor<T>): any;
         /**
          * Returns all components of Type type in the GameObject.
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Component>(type?: ComponentConstructor<T>): T[];
+        getComponents<T extends Components>(type?: Constructor<T>): any;
         /**
          * Returns all components of Type type in the GameObject.
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends Component>(type?: ComponentConstructor<T>, filter?: (compnent: T) => {
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
             findchildren: boolean;
             value: boolean;
-        }, result?: T[]): T[];
+        }, result?: T[]): any;
         private _gameObject;
         private _tag;
         /**
@@ -8563,6 +8562,9 @@ declare namespace feng3d {
         feng3d = 1,
         editor = 2,
         all = 255
+    }
+    interface ComponentMap {
+        Behaviour: Behaviour;
     }
     /**
      * Behaviours are Components that can be enabled or disabled.
@@ -8695,6 +8697,9 @@ declare namespace feng3d {
         init(): void;
         draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
     }
+    interface ComponentMap {
+        OutLineComponent: OutLineComponent;
+    }
     class OutLineComponent extends Component {
         size: number;
         color: Color4;
@@ -8743,6 +8748,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        CartoonComponent: CartoonComponent;
+    }
     /**
      * 参考
      */
@@ -8771,6 +8779,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        SkyBox: SkyBox;
+    }
     /**
      * 天空盒组件
      */
@@ -8842,6 +8853,9 @@ declare namespace feng3d {
          * 场景矩阵变化
          */
         scenetransformChanged: Transform;
+    }
+    interface ComponentMap {
+        Transfrom: Transform;
     }
     /**
      * Position, rotation and scale of an object.
@@ -8980,7 +8994,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type ComponentConstructor<T> = (new () => T);
+    type Constructor<T> = (new (...args: any[]) => T);
     interface GameObjectEventMap extends MouseEventMap {
         /**
          * 添加子组件事件
@@ -9117,7 +9131,7 @@ declare namespace feng3d {
          * Adds a component class named className to the game object.
          * @param param 被添加组件
          */
-        addComponent<T extends Component>(param: ComponentConstructor<T>, callback?: (component: T) => void): T;
+        addComponent<T extends Components>(param: Constructor<T>, callback?: (component: T) => void): T;
         /**
          * 添加脚本
          * @param script   脚本路径
@@ -9134,19 +9148,19 @@ declare namespace feng3d {
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Component>(type: ComponentConstructor<T>): T;
+        getComponent<T extends Components>(type: Constructor<T>): T;
         /**
          * Returns all components of Type type in the GameObject.
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Component>(type?: ComponentConstructor<T>): T[];
+        getComponents<T extends Components>(type?: Constructor<T>): T[];
         /**
          * Returns the component of Type type in the GameObject or any of its children using depth first search.
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends Component>(type?: ComponentConstructor<T>, filter?: (compnent: T) => {
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
             findchildren: boolean;
             value: boolean;
         }, result?: T[]): T[];
@@ -9155,24 +9169,24 @@ declare namespace feng3d {
          * @param component				子组件
          * @param index				位置索引
          */
-        setComponentIndex(component: Component, index: number): void;
+        setComponentIndex(component: Components, index: number): void;
         /**
          * 设置组件到指定位置
          * @param component		被设置的组件
          * @param index			索引
          */
-        setComponentAt(component: Component, index: number): void;
+        setComponentAt(component: Components, index: number): void;
         /**
          * 移除组件
          * @param component 被移除组件
          */
-        removeComponent(component: Component): void;
+        removeComponent(component: Components): void;
         /**
          * 获取组件在容器的索引位置
          * @param component			查询的组件
          * @return				    组件在容器的索引位置
          */
-        getComponentIndex(component: Component): number;
+        getComponentIndex(component: Components): number;
         /**
          * 移除组件
          * @param index		要删除的 Component 的子索引。
@@ -9189,12 +9203,12 @@ declare namespace feng3d {
          * @param a		第一个子组件
          * @param b		第二个子组件
          */
-        swapComponents(a: Component, b: Component): void;
+        swapComponents(a: Components, b: Components): void;
         /**
          * 移除指定类型组件
          * @param type 组件类型
          */
-        removeComponentsByType<T extends Component>(type: ComponentConstructor<T>): T[];
+        removeComponentsByType<T extends Component>(type: Constructor<T>): T[];
         /**
          * Finds a game object by name and returns it.
          * @param name
@@ -9204,8 +9218,8 @@ declare namespace feng3d {
         /**
          * 组件列表
          */
-        protected _components: Component[];
-        components: Component[];
+        protected _components: Components[];
+        components: (PointLight | SpotLight | DirectionalLight | Transform | Behaviour | OutLineComponent | CartoonComponent | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | Model | ScriptComponent | Scene3D | Camera | FPSController | AudioListener | AudioSource | SkeletonComponent | Animation)[];
         /**
          * 添加组件到指定位置
          * @param component		被添加的组件
@@ -9287,6 +9301,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        HoldSizeComponent: HoldSizeComponent;
+    }
     class HoldSizeComponent extends Component {
         /**
          * 保持缩放尺寸
@@ -9306,6 +9323,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        BillboardComponent: BillboardComponent;
+    }
     class BillboardComponent extends Component {
         /**
          * 相对
@@ -9320,6 +9340,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        WireframeComponent: WireframeComponent;
+    }
     /**
      * 线框组件，将会对拥有该组件的对象绘制线框
      */
@@ -9328,13 +9351,8 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface ComponentRawMap {
-        ModelRaw: ModelRaw;
-    }
-    interface ModelRaw {
-        __class__: "feng3d.Model";
-        geometry?: Geometrys;
-        material?: ValueOf<MaterialRawMap>;
+    interface ComponentMap {
+        Model: Model;
     }
     class Model extends Behaviour {
         readonly single: boolean;
@@ -9400,6 +9418,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        ScriptComponent: ScriptComponent;
+    }
     /**
      * 3d对象脚本
 
@@ -9469,9 +9490,11 @@ declare namespace feng3d {
         addComponentToScene: Component;
         removeComponentFromScene: Component;
     }
+    interface ComponentMap {
+        Scene3D: Scene3D;
+    }
     /**
      * 3D场景
-
      */
     class Scene3D extends Component {
         /**
@@ -9512,26 +9535,26 @@ declare namespace feng3d {
         /**
          * 所有 Model
          */
-        readonly models: Model[];
+        readonly models: any;
         /**
          * 所有 可见且开启的 Model
          */
-        readonly visibleAndEnabledModels: Model[];
+        readonly visibleAndEnabledModels: any;
         /**
          * 所有 SkyBox
          */
-        readonly skyBoxs: SkyBox[];
-        readonly activeSkyBoxs: SkyBox[];
-        readonly directionalLights: DirectionalLight[];
-        readonly activeDirectionalLights: DirectionalLight[];
-        readonly pointLights: PointLight[];
-        readonly activePointLights: PointLight[];
-        readonly spotLights: SpotLight[];
-        readonly activeSpotLights: SpotLight[];
-        readonly animations: Animation[];
-        readonly activeAnimations: Animation[];
-        readonly behaviours: Behaviour[];
-        readonly activeBehaviours: Behaviour[];
+        readonly skyBoxs: any;
+        readonly activeSkyBoxs: any;
+        readonly directionalLights: any;
+        readonly activeDirectionalLights: any;
+        readonly pointLights: any;
+        readonly activePointLights: any;
+        readonly spotLights: any;
+        readonly activeSpotLights: any;
+        readonly animations: any;
+        readonly activeAnimations: any;
+        readonly behaviours: any;
+        readonly activeBehaviours: any;
         readonly mouseCheckObjects: GameObject[];
         _addGameObject(gameobject: GameObject): void;
         _removeGameObject(gameobject: GameObject): void;
@@ -9552,7 +9575,7 @@ declare namespace feng3d {
          * 获取 可被摄像机看见的 Model 列表
          * @param camera
          */
-        getModelsByCamera(camera: Camera): Model[];
+        getModelsByCamera(camera: Camera): any;
     }
 }
 declare namespace feng3d {
@@ -10074,6 +10097,9 @@ declare namespace feng3d {
 declare namespace feng3d {
     interface GameObjectEventMap {
         lensChanged: any;
+    }
+    interface ComponentMap {
+        Camera: Camera;
     }
     /**
      * 摄像机
@@ -10984,9 +11010,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        DirectionalLight: DirectionalLight;
+    }
     /**
      * 方向光源
-
      */
     class DirectionalLight extends Light {
         lightType: LightType;
@@ -11003,9 +11031,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        PointLight: PointLight;
+    }
     /**
      * 点光源
-
      */
     class PointLight extends Light {
         lightType: LightType;
@@ -11022,9 +11052,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        SpotLight: SpotLight;
+    }
     /**
      * 聚光灯光源
-
      */
     class SpotLight extends Light {
         lightType: LightType;
@@ -11118,9 +11150,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        FPSController: FPSController;
+    }
     /**
      * FPS模式控制器
-
      */
     class FPSController extends Behaviour {
         /**
@@ -11255,6 +11289,9 @@ declare namespace feng3d {
 declare namespace feng3d {
     var audioCtx: AudioContext;
     var globalGain: GainNode;
+    interface ComponentMap {
+        AudioListener: AudioListener;
+    }
     /**
      * 声音监听器
      */
@@ -11291,6 +11328,9 @@ declare namespace feng3d {
          * pow(distance / refDistance, -rolloffFactor)
          */
         exponential = "exponential"
+    }
+    interface ComponentMap {
+        AudioSource: AudioSource;
     }
     /**
      * 声源
@@ -11928,6 +11968,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        SkeletonComponent: SkeletonComponent;
+    }
     class SkeletonComponent extends Component {
         /** 骨骼关节数据列表 */
         joints: SkeletonJoint[];
@@ -12011,6 +12054,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        Animation: Animation;
+    }
     class Animation extends Behaviour {
         animation: AnimationClip;
         private _animation;

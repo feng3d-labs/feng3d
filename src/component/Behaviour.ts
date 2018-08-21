@@ -7,6 +7,8 @@ namespace feng3d
         all = (1 << 8) - 1,
     }
 
+    export interface ComponentMap { Behaviour: Behaviour; }
+
     /**
      * Behaviours are Components that can be enabled or disabled.
      * 

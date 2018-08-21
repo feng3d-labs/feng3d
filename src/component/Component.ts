@@ -1,11 +1,7 @@
 namespace feng3d
 {
-
-    export type ValueOf<T> = T[keyof T];
-    export interface ComponentRawMap
-    {
-    }
-    export type ComponentRaw = ValueOf<ComponentRawMap>;
+    export interface ComponentMap { }
+    export type Components = ComponentMap[keyof ComponentMap];
 
     export interface Component
     {
@@ -100,7 +96,7 @@ namespace feng3d
          * @param type				The type of Component to retrieve.
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Component>(type: ComponentConstructor<T>)
+        getComponent<T extends Components>(type: Constructor<T>)
         {
             return this.gameObject.getComponent(type);
         }
@@ -110,7 +106,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Component>(type?: ComponentConstructor<T>)
+        getComponents<T extends Components>(type?: Constructor<T>)
         {
             return this.gameObject.getComponents(type);
         }
@@ -120,7 +116,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends Component>(type?: ComponentConstructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[])
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[])
         {
             return this.gameObject.getComponentsInChildren(type, filter, result);
         }

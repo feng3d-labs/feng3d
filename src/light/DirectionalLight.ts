@@ -1,9 +1,9 @@
 namespace feng3d
 {
 
+    export interface ComponentMap { DirectionalLight: DirectionalLight; }
     /**
      * 方向光源
-
      */
     export class DirectionalLight extends Light
     {

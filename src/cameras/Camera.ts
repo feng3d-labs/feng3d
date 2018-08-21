@@ -5,6 +5,8 @@ namespace feng3d
         lensChanged;
     }
 
+    export interface ComponentMap { Camera: Camera; }
+
 	/**
 	 * 摄像机
 

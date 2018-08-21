@@ -1,5 +1,8 @@
 namespace feng3d
 {
+    
+    export interface ComponentMap { SkyBox: SkyBox; }
+    
     /**
      * 天空盒组件
      */

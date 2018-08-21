@@ -16770,7 +16770,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 3D场景
-
      */
     var Scene3D = /** @class */ (function (_super) {
         __extends(Scene3D, _super);
@@ -21126,7 +21125,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 方向光源
-
      */
     var DirectionalLight = /** @class */ (function (_super) {
         __extends(DirectionalLight, _super);
@@ -21174,7 +21172,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 点光源
-
      */
     var PointLight = /** @class */ (function (_super) {
         __extends(PointLight, _super);
@@ -21215,7 +21212,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 聚光灯光源
-
      */
     var SpotLight = /** @class */ (function (_super) {
         __extends(SpotLight, _super);
@@ -21716,7 +21712,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * FPS模式控制器
-
      */
     var FPSController = /** @class */ (function (_super) {
         __extends(FPSController, _super);

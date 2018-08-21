@@ -1,5 +1,8 @@
 namespace feng3d
 {
+    
+    export interface ComponentMap { CartoonComponent: CartoonComponent; }
+    
     /**
      * 参考
      */

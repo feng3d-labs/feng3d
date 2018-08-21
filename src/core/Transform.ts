@@ -19,6 +19,8 @@ namespace feng3d
 
     var fixedNum = 6;
 
+    export interface ComponentMap { Transfrom: Transform; }
+
 	/**
 	 * Position, rotation and scale of an object.
      * 

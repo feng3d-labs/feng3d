@@ -1,5 +1,8 @@
 namespace feng3d
 {
+
+    export interface ComponentMap { HoldSizeComponent: HoldSizeComponent; }
+
     export class HoldSizeComponent extends Component
     {
         /**

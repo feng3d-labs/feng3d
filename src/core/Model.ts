@@ -1,16 +1,6 @@
 namespace feng3d
 {
-    export interface ComponentRawMap
-    {
-        ModelRaw: ModelRaw
-    }
-
-    export interface ModelRaw
-    {
-        __class__: "feng3d.Model",
-        geometry?: Geometrys,
-        material?: ValueOf<MaterialRawMap>;
-    }
+    export interface ComponentMap { Model: Model }
 
     export class Model extends Behaviour
     {

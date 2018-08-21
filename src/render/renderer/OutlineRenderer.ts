@@ -49,6 +49,8 @@ namespace feng3d
 
     outlineRenderer = new OutlineRenderer();
 
+    export interface ComponentMap { OutLineComponent: OutLineComponent; }
+
     export class OutLineComponent extends Component
     {
         @oav()

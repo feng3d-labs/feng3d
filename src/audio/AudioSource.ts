@@ -20,6 +20,7 @@ namespace feng3d
         exponential = "exponential",
     }
 
+    export interface ComponentMap { AudioSource: AudioSource; }
     /**
      * 声源
      * @see https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
