@@ -27506,7 +27506,7 @@ var feng3d;
      * feng3d的版本号
 
      */
-    feng3d.revision = "2018.08.02";
+    feng3d.revision = "2018.08.22";
     /**
      * 是否开启调试(主要用于断言)
      */
