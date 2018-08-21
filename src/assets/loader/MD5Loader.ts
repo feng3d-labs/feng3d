@@ -67,7 +67,7 @@ namespace feng3d
 
             var skeletonGameObject = GameObject.create();
 
-            var skinnedModel = skeletonGameObject.addComponent(SkinnedModel);
+            var skinnedModel: SkinnedModel = skeletonGameObject.addComponent(SkinnedModel);
             skinnedModel.geometry = geometry;
             skinnedModel.skinSkeleton = skinSkeleton;
 

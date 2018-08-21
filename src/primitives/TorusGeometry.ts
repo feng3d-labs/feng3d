@@ -1,5 +1,8 @@
 namespace feng3d
 {
+
+	export interface GeometryMap { TorusGeometry: TorusGeometry }
+
 	/**
 	 * 圆环几何体
 	 */

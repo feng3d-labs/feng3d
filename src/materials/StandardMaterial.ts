@@ -1,8 +1,3 @@
-interface Object
-{
-    __class__: string;
-}
-
 namespace feng3d
 {
     export type StandardMaterial = Material & { uniforms: StandardUniforms; };

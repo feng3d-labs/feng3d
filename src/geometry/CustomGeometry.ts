@@ -1,5 +1,7 @@
 namespace feng3d
 {
+    export interface GeometryMap { CustomGeometry: CustomGeometry }
+    
     export class CustomGeometry extends Geometry
     {
         /**

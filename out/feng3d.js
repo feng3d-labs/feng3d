@@ -14837,6 +14837,7 @@ var feng3d;
          */
         function Transform() {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.Transform";
             //------------------------------------------
             // Private Properties
             //------------------------------------------
@@ -16452,6 +16453,7 @@ var feng3d;
         __extends(Model, _super);
         function Model() {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.Model";
             /**
              * 是否投射阴影
              */
@@ -18030,7 +18032,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 点几何体
-
      */
     var PointGeometry = /** @class */ (function (_super) {
         __extends(PointGeometry, _super);
@@ -18084,7 +18085,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 线段组件
-
      */
     var SegmentGeometry = /** @class */ (function (_super) {
         __extends(SegmentGeometry, _super);
@@ -18740,7 +18740,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 平面几何体
-
      */
     var PlaneGeometry = /** @class */ (function (_super) {
         __extends(PlaneGeometry, _super);
@@ -18960,7 +18959,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 立（长）方体几何体
-
      */
     var CubeGeometry = /** @class */ (function (_super) {
         __extends(CubeGeometry, _super);
@@ -18969,6 +18967,7 @@ var feng3d;
          */
         function CubeGeometry(raw) {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.CubeGeometry";
             /**
              * 宽度
              */
@@ -19578,7 +19577,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 胶囊体几何体
-     * @author DawnKing 2016-09-12
      */
     var CapsuleGeometry = /** @class */ (function (_super) {
         __extends(CapsuleGeometry, _super);
@@ -20628,6 +20626,7 @@ var feng3d;
         __extends(Material, _super);
         function Material(raw) {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.Material";
             /**
              * shader名称
              */
@@ -21130,6 +21129,7 @@ var feng3d;
         __extends(DirectionalLight, _super);
         function DirectionalLight() {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.DirectionalLight";
             _this.lightType = feng3d.LightType.Directional;
             return _this;
         }
@@ -22589,12 +22589,33 @@ var feng3d;
          */
         function TerrainGeometry(raw) {
             var _this = _super.call(this) || this;
+            /**
+             * 地形宽度
+             */
             _this.width = 10;
+            /**
+             * 地形高度
+             */
             _this.height = 1;
+            /**
+             * 地形深度
+             */
             _this.depth = 10;
+            /**
+             * 横向网格段数
+             */
             _this.segmentsW = 30;
+            /**
+             * 纵向网格段数
+             */
             _this.segmentsH = 30;
+            /**
+             * 最大地形高度
+             */
             _this.maxElevation = 255;
+            /**
+             * 最小地形高度
+             */
             _this.minElevation = 0;
             _this._heightMap = defaultHeightMap;
             _this.name = "terrain";

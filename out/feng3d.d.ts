@@ -8863,6 +8863,7 @@ declare namespace feng3d {
      * Every object in a scene has a Transform. It's used to store and manipulate the position, rotation and scale of the object. Every Transform can have a parent, which allows you to apply position, rotation and scale hierarchically. This is the hierarchy seen in the Hierarchy pane.
      */
     class Transform extends Component {
+        __class__: "feng3d.Transform";
         readonly single: boolean;
         /**
          * 创建一个实体，该类为虚类
@@ -9355,11 +9356,12 @@ declare namespace feng3d {
         Model: Model;
     }
     class Model extends Behaviour {
+        __class__: "feng3d.Model";
         readonly single: boolean;
         /**
          * Returns the instantiated Mesh assigned to the mesh filter.
          */
-        geometry: Geometry;
+        geometry: CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry;
         private _geometry;
         /**
          * 材质
@@ -9613,9 +9615,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type Geometrys = (gPartial<SegmentGeometry> & {
-        __class__: "feng3d.SegmentGeometry";
-    }) | gPartial<PlaneGeometry> | gPartial<CubeGeometry> | gPartial<SphereGeometry> | gPartial<CapsuleGeometry> | gPartial<CylinderGeometry> | gPartial<ConeGeometry> | gPartial<TorusGeometry>;
+    interface GeometryMap {
+    }
+    type Geometrys = GeometryMap[keyof GeometryMap];
     interface GeometryEventMap {
         /**
          * 包围盒失效
@@ -9774,6 +9776,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface GeometryMap {
+        CustomGeometry: CustomGeometry;
+    }
     class CustomGeometry extends Geometry {
         /**
          * 顶点索引缓冲
@@ -9803,9 +9808,11 @@ declare namespace feng3d {
     function createVertexTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights?: boolean): Array<number>;
 }
 declare namespace feng3d {
+    interface GeometryMap {
+        PointGeometry: PointGeometry;
+    }
     /**
      * 点几何体
-
      */
     class PointGeometry extends Geometry {
         /**
@@ -9833,9 +9840,11 @@ declare namespace feng3d {
     interface SegmentGeometryRaw {
         __class__: "feng3d.SegmentGeometry";
     }
+    interface GeometryMap {
+        SegmentGeometry: SegmentGeometry;
+    }
     /**
      * 线段组件
-
      */
     class SegmentGeometry extends Geometry {
         /**
@@ -10191,9 +10200,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface GeometryMap {
+        PlaneGeometry: PlaneGeometry;
+    }
     /**
      * 平面几何体
-
      */
     class PlaneGeometry extends Geometry {
         /**
@@ -10263,11 +10274,14 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface GeometryMap {
+        CubeGeometry: CubeGeometry;
+    }
     /**
      * 立（长）方体几何体
-
      */
     class CubeGeometry extends Geometry {
+        __class__: "feng3d.CubeGeometry";
         /**
          * 宽度
          */
@@ -10343,6 +10357,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface GeometryMap {
+        SphereGeometry: SphereGeometry;
+    }
     /**
      * 球体几何体
      * @author DawnKing 2016-09-12
@@ -10392,9 +10409,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface GeometryMap {
+        CapsuleGeometry: CapsuleGeometry;
+    }
     /**
      * 胶囊体几何体
-     * @author DawnKing 2016-09-12
      */
     class CapsuleGeometry extends Geometry {
         /**
@@ -10451,6 +10470,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface GeometryMap {
+        CylinderGeometry: CylinderGeometry;
+    }
     /**
      * 圆柱体几何体
      * @author DawnKing 2016-09-12
@@ -10540,6 +10562,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface GeometryMap {
+        TorusGeometry: TorusGeometry;
+    }
     /**
      * 圆环几何体
      */
@@ -10696,6 +10721,7 @@ declare namespace feng3d {
 
      */
     class Material extends Feng3dAssets {
+        __class__: "feng3d.Material";
         /**
          * shader名称
          */
@@ -10809,9 +10835,6 @@ declare namespace feng3d {
          */
         s_texture: UrlImageTexture2D;
     }
-}
-interface Object {
-    __class__: string;
 }
 declare namespace feng3d {
     type StandardMaterial = Material & {
@@ -11017,6 +11040,7 @@ declare namespace feng3d {
      * 方向光源
      */
     class DirectionalLight extends Light {
+        __class__: "feng3d.DirectionalLight";
         lightType: LightType;
         /**
          * 光源位置
@@ -11451,60 +11475,50 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 地形几何体原始数据
-     */
-    interface TerrainGeometryRaw {
-        /**
-         * 高度图路径
-         */
-        heightMapUrl?: string;
-        /**
-         * 地形宽度
-         */
-        width?: number;
-        /**
-         * 地形高度
-         */
-        height?: number;
-        /**
-         * 地形深度
-         */
-        depth?: number;
-        /**
-         * 横向网格段数
-         */
-        segmentsW?: number;
-        /**
-         * 纵向网格段数
-         */
-        segmentsH?: number;
-        /**
-         * 最大地形高度
-         */
-        maxElevation?: number;
-        /**
-         * 最小地形高度
-         */
-        minElevation?: number;
+    interface GeometryMap {
+        TerrainGeometry: TerrainGeometry;
     }
     /**
      * 地形几何体
      */
-    class TerrainGeometry extends Geometry implements TerrainGeometryRaw {
+    class TerrainGeometry extends Geometry {
+        /**
+         * 高度图路径
+         */
         heightMapUrl: string;
+        /**
+         * 地形宽度
+         */
         width: number;
+        /**
+         * 地形高度
+         */
         height: number;
+        /**
+         * 地形深度
+         */
         depth: number;
+        /**
+         * 横向网格段数
+         */
         segmentsW: number;
+        /**
+         * 纵向网格段数
+         */
         segmentsH: number;
+        /**
+         * 最大地形高度
+         */
         maxElevation: number;
+        /**
+         * 最小地形高度
+         */
         minElevation: number;
         private _heightMap;
         /**
          * 创建高度地形 拥有segmentsW*segmentsH个顶点
          */
-        constructor(raw?: TerrainGeometryRaw);
+        constructor(raw?: gPartial<TerrainGeometry>);
         /**
          * 几何体变脏
          */
@@ -11832,7 +11846,7 @@ declare namespace feng3d {
          * 粒子数量
          */
         numParticles: number;
-        geometry: Geometry;
+        geometry: Geometrys;
         material: Material;
         /**
          * 粒子全局属性

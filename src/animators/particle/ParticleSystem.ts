@@ -45,7 +45,7 @@ namespace feng3d
 
         @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } })
         @serialize
-        geometry: Geometry = new PointGeometry();
+        geometry: Geometrys = new PointGeometry();
 
         @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "material", datatype: "material" } } })
         @serialize

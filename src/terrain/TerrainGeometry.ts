@@ -2,95 +2,76 @@ namespace feng3d
 {
 
     /**
-     * 地形几何体原始数据
-     */
-    export interface TerrainGeometryRaw
-    {
-        /**
-         * 高度图路径
-         */
-        heightMapUrl?: string
-        /**
-         * 地形宽度
-         */
-        width?: number;
-
-        /**
-         * 地形高度
-         */
-        height?: number;
-
-        /**
-         * 地形深度
-         */
-        depth?: number;
-
-        /**
-         * 横向网格段数
-         */
-        segmentsW?: number;
-
-        /**
-         * 纵向网格段数
-         */
-        segmentsH?: number;
-
-        /**
-         * 最大地形高度
-         */
-        maxElevation?: number;
-
-        /**
-         * 最小地形高度
-         */
-        minElevation?: number;
-    }
-
-    /**
      * 默认高度图
      */
     var defaultHeightMap = imageUtil.createImageData();
 
+    export interface GeometryMap { TerrainGeometry: TerrainGeometry }
+
     /**
      * 地形几何体
      */
-    export class TerrainGeometry extends Geometry implements TerrainGeometryRaw
+    export class TerrainGeometry extends Geometry
     {
+        /**
+         * 高度图路径
+         */
         @serialize
         @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         @watch("invalidateGeometry")
         heightMapUrl: string;
 
+        /**
+         * 地形宽度
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         width = 10;
 
+        /**
+         * 地形高度
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         height = 1;
 
+        /**
+         * 地形深度
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         depth = 10;
 
+        /**
+         * 横向网格段数
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         segmentsW = 30;
 
+        /**
+         * 纵向网格段数
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         segmentsH = 30;
 
+        /**
+         * 最大地形高度
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
         maxElevation = 255;
 
+        /**
+         * 最小地形高度
+         */
         @serialize
         @oav()
         @watch("invalidateGeometry")
@@ -101,7 +82,7 @@ namespace feng3d
 		/**
 		 * 创建高度地形 拥有segmentsW*segmentsH个顶点
 		 */
-        constructor(raw?: TerrainGeometryRaw)
+        constructor(raw?: gPartial<TerrainGeometry>)
         {
             super();
             this.name = "terrain";

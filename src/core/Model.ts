@@ -4,6 +4,8 @@ namespace feng3d
 
     export class Model extends Behaviour
     {
+        __class__: "feng3d.Model" = "feng3d.Model";
+
         get single() { return true; }
 
         /**
@@ -29,7 +31,7 @@ namespace feng3d
                 this._geometry.on("boundsInvalid", this.onBoundsInvalid, this);
             }
         }
-        private _geometry: Geometry;
+        private _geometry: Geometrys;
 
         /**
          * 材质

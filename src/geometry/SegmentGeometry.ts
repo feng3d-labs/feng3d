@@ -5,9 +5,10 @@ namespace feng3d
         __class__: "feng3d.SegmentGeometry"
     }
 
+    export interface GeometryMap { SegmentGeometry: SegmentGeometry }
+
     /**
      * 线段组件
-
      */
     export class SegmentGeometry extends Geometry
     {

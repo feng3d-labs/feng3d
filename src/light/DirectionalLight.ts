@@ -7,6 +7,8 @@ namespace feng3d
      */
     export class DirectionalLight extends Light
     {
+        __class__: "feng3d.DirectionalLight" = "feng3d.DirectionalLight";
+
         lightType = LightType.Directional;
 
         /**

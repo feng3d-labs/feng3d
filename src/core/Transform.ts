@@ -29,6 +29,8 @@ namespace feng3d
     @ov({ component: "OVTransform" })
     export class Transform extends Component
     {
+        __class__: "feng3d.Transform" = "feng3d.Transform";
+
         get single() { return true; }
 
 		/**

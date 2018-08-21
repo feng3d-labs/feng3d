@@ -1,9 +1,10 @@
 namespace feng3d
 {
 
+    export interface GeometryMap { PointGeometry: PointGeometry }
+
     /**
      * 点几何体
-
      */
     export class PointGeometry extends Geometry
     {

@@ -1,8 +1,9 @@
 namespace feng3d
 {
+    export interface GeometryMap { PlaneGeometry: PlaneGeometry }
+
     /**
      * 平面几何体
-
      */
     export class PlaneGeometry extends Geometry
     {

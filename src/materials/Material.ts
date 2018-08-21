@@ -27,6 +27,8 @@ namespace feng3d
      */
     export class Material extends Feng3dAssets
     {
+        __class__: "feng3d.Material" = "feng3d.Material";
+
         /**
          * shader名称
          */

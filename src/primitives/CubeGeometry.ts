@@ -1,12 +1,15 @@
 namespace feng3d
 {
 
+    export interface GeometryMap { CubeGeometry: CubeGeometry }
+
     /**
      * 立（长）方体几何体
-
      */
     export class CubeGeometry extends Geometry
     {
+        __class__: "feng3d.CubeGeometry" = "feng3d.CubeGeometry";
+
         /**
          * 宽度
          */
