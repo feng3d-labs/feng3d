@@ -356,17 +356,6 @@ namespace feng3d
     }
 }
 
-interface PannerNode
-{
-    positionX: { value: number };
-    positionY: { value: number };
-    positionZ: { value: number };
-
-    orientationX: { value: number };
-    orientationY: { value: number };
-    orientationZ: { value: number };
-}
-
 function createPanner()
 {
     var panner = this.panner = feng3d.audioCtx.createPanner();

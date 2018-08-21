@@ -107,7 +107,7 @@ getset平均耗时比 17.3
         /**
          * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
          * @param host 
-         * @param property 
+         * @param property1 
          * @param handler 
          * @param thisObject 
          */
@@ -121,23 +121,24 @@ getset平均耗时比 17.3
                 });
             }
             var watchs: Watchs = host[bindables];
-            if (!watchs[property])
+            var property1 = <string>property;
+            if (!watchs[property1])
             {
-                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property);
-                watchs[property] = { value: host[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property1);
+                watchs[property1] = { value: host[property1], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data: PropertyDescriptor = getPropertyDescriptor(host, property);
+                var data: PropertyDescriptor = getPropertyDescriptor(host, property1);
                 if (data && data.set && data.get)
                 {
                     data = <any>{ enumerable: true, configurable: true, get: data.get, set: data.set };
                     var orgSet = data.set;
                     data.set = function (value: any)
                     {
-                        var oldvalue = this[<any>property];
+                        var oldvalue = this[<any>property1];
                         if (oldvalue != value)
                         {
                             orgSet && orgSet.call(this, value);
-                            notifyListener(this, property, oldvalue);
+                            notifyListener(this, property1, oldvalue);
                         }
                     };
                 }
@@ -146,15 +147,15 @@ getset平均耗时比 17.3
                     data = <any>{ enumerable: true, configurable: true };
                     data.get = function (): any
                     {
-                        return this[bindables][property].value;
+                        return this[bindables][property1].value;
                     };
                     data.set = function (value: any)
                     {
-                        var oldvalue = this[bindables][property].value;
+                        var oldvalue = this[bindables][property1].value;
                         if (oldvalue != value)
                         {
-                            this[bindables][property].value = value;
-                            notifyListener(this, property, oldvalue);
+                            this[bindables][property1].value = value;
+                            notifyListener(this, property1, oldvalue);
                         }
                     };
                 }
@@ -162,10 +163,10 @@ getset平均耗时比 17.3
                 {
                     throw "watch 失败！";
                 }
-                Object.defineProperty(host, property, data);
+                Object.defineProperty(host, property1, data);
             }
 
-            var propertywatchs = watchs[property];
+            var propertywatchs = watchs[property1];
             var has = propertywatchs.handlers.reduce((v, item) => { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
             if (!has)
                 propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
@@ -175,9 +176,10 @@ getset平均耗时比 17.3
         {
             var watchs: Watchs = host[bindables];
             if (!watchs) return;
-            if (watchs[property])
+            var property1 = <string>property;
+            if (watchs[property1])
             {
-                var handlers = watchs[property].handlers;
+                var handlers = watchs[property1].handlers;
                 if (handler === undefined)
                     handlers.length = 0;
                 for (var i = handlers.length - 1; i >= 0; i--)
@@ -187,12 +189,12 @@ getset平均耗时比 17.3
                 }
                 if (handlers.length == 0)
                 {
-                    var value = host[property];
-                    delete host[property];
-                    if (watchs[property].oldPropertyDescriptor)
-                        Object.defineProperty(host, property, watchs[property].oldPropertyDescriptor);
-                    host[property] = value;
-                    delete watchs[property];
+                    var value = host[property1];
+                    delete host[property1];
+                    if (watchs[property1].oldPropertyDescriptor)
+                        Object.defineProperty(host, property1, watchs[property1].oldPropertyDescriptor);
+                    host[property1] = value;
+                    delete watchs[property1];
                 }
                 if (Object.keys(watchs).length == 0)
                 {

@@ -46,7 +46,7 @@ namespace feng3d
 			if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
 				constructor["prototype"][OBJECTVIEW_KEY] = {};
 			var objectview: ClassDefinition = constructor["prototype"][OBJECTVIEW_KEY];
-			objectview.component = param.component;
+			objectview.component = <string>param.component;
 			objectview.componentParam = param.componentParam;
 		}
 	}
@@ -214,7 +214,7 @@ namespace feng3d
 			var objectview: ClassDefinition = target[OBJECTVIEW_KEY] || {};
 			var attributeDefinitionVec: AttributeDefinition[] = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
 			attributeDefinitionVec.push({
-				name: propertyKey, block: param && param.block, component: param && param.component, componentParam: param && param.componentParam
+				name: propertyKey, block: param && param.block, component: param && <string>param.component, componentParam: param && param.componentParam
 			});
 		}
 		/**

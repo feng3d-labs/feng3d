@@ -81,21 +81,6 @@ namespace feng3d
     }
 }
 
-interface AudioListener
-{
-    positionX: { value: number };
-    positionY: { value: number };
-    positionZ: { value: number };
-
-    forwardX: { value: number };
-    forwardY: { value: number };
-    forwardZ: { value: number };
-
-    upX: { value: number };
-    upY: { value: number };
-    upZ: { value: number };
-}
-
 (() =>
 {
     window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];

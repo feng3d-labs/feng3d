@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -19,13 +22,13 @@ if (typeof Object.assign != 'function') {
     Object.defineProperty(Object, "assign", {
         value: function assign(target, varArgs) {
             'use strict';
-            if (target == null) {
+            if (target == null) { // TypeError if undefined or null
                 throw new TypeError('Cannot convert undefined or null to object');
             }
             var to = Object(target);
             for (var index = 1; index < arguments.length; index++) {
                 var nextSource = arguments[index];
-                if (nextSource != null) {
+                if (nextSource != null) { // Skip over if undefined or null
                     for (var nextKey in nextSource) {
                         // Avoid bugs when hasOwnProperty is shadowed
                         if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
@@ -2049,7 +2052,7 @@ var feng3d;
         var request = new XMLHttpRequest();
         request.onreadystatechange = function (ev) {
             var result = ev.type;
-            if (request.readyState == 4) {
+            if (request.readyState == 4) { // 4 = "loaded"
                 request.onreadystatechange = null;
                 // handle retries in case of load failure
                 if (request.status < 200 || request.status > 300) {
@@ -2405,7 +2408,7 @@ getset平均耗时比 17.3
         /**
          * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
          * @param host
-         * @param property
+         * @param property1
          * @param handler
          * @param thisObject
          */
@@ -2417,41 +2420,42 @@ getset平均耗时比 17.3
                 });
             }
             var watchs = host[bindables];
-            if (!watchs[property]) {
-                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property);
-                watchs[property] = { value: host[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
+            var property1 = property;
+            if (!watchs[property1]) {
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property1);
+                watchs[property1] = { value: host[property1], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data = getPropertyDescriptor(host, property);
+                var data = getPropertyDescriptor(host, property1);
                 if (data && data.set && data.get) {
                     data = { enumerable: true, configurable: true, get: data.get, set: data.set };
                     var orgSet = data.set;
                     data.set = function (value) {
-                        var oldvalue = this[property];
+                        var oldvalue = this[property1];
                         if (oldvalue != value) {
                             orgSet && orgSet.call(this, value);
-                            notifyListener(this, property, oldvalue);
+                            notifyListener(this, property1, oldvalue);
                         }
                     };
                 }
                 else if (!data || (!data.get && !data.set)) {
                     data = { enumerable: true, configurable: true };
                     data.get = function () {
-                        return this[bindables][property].value;
+                        return this[bindables][property1].value;
                     };
                     data.set = function (value) {
-                        var oldvalue = this[bindables][property].value;
+                        var oldvalue = this[bindables][property1].value;
                         if (oldvalue != value) {
-                            this[bindables][property].value = value;
-                            notifyListener(this, property, oldvalue);
+                            this[bindables][property1].value = value;
+                            notifyListener(this, property1, oldvalue);
                         }
                     };
                 }
                 else {
                     throw "watch 失败！";
                 }
-                Object.defineProperty(host, property, data);
+                Object.defineProperty(host, property1, data);
             }
-            var propertywatchs = watchs[property];
+            var propertywatchs = watchs[property1];
             var has = propertywatchs.handlers.reduce(function (v, item) { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
             if (!has)
                 propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
@@ -2460,8 +2464,9 @@ getset平均耗时比 17.3
             var watchs = host[bindables];
             if (!watchs)
                 return;
-            if (watchs[property]) {
-                var handlers = watchs[property].handlers;
+            var property1 = property;
+            if (watchs[property1]) {
+                var handlers = watchs[property1].handlers;
                 if (handler === undefined)
                     handlers.length = 0;
                 for (var i = handlers.length - 1; i >= 0; i--) {
@@ -2469,12 +2474,12 @@ getset平均耗时比 17.3
                         handlers.splice(i, 1);
                 }
                 if (handlers.length == 0) {
-                    var value = host[property];
-                    delete host[property];
-                    if (watchs[property].oldPropertyDescriptor)
-                        Object.defineProperty(host, property, watchs[property].oldPropertyDescriptor);
-                    host[property] = value;
-                    delete watchs[property];
+                    var value = host[property1];
+                    delete host[property1];
+                    if (watchs[property1].oldPropertyDescriptor)
+                        Object.defineProperty(host, property1, watchs[property1].oldPropertyDescriptor);
+                    host[property1] = value;
+                    delete watchs[property1];
                 }
                 if (Object.keys(watchs).length == 0) {
                     delete host[bindables];
@@ -2905,7 +2910,7 @@ var feng3d;
 //     },
 //     enumerable: false,
 //     configurable: true
-// }); 
+// });
 var feng3d;
 (function (feng3d) {
     /**
@@ -7269,7 +7274,8 @@ var feng3d;
              * 一个用于确定矩阵是否可逆的数字。
              */
             get: function () {
-                return ((this.rawData[0] * this.rawData[5] - this.rawData[4] * this.rawData[1]) * (this.rawData[10] * this.rawData[15] - this.rawData[14] * this.rawData[11]) //
+                return ( //
+                (this.rawData[0] * this.rawData[5] - this.rawData[4] * this.rawData[1]) * (this.rawData[10] * this.rawData[15] - this.rawData[14] * this.rawData[11]) //
                     - (this.rawData[0] * this.rawData[9] - this.rawData[8] * this.rawData[1]) * (this.rawData[6] * this.rawData[15] - this.rawData[14] * this.rawData[7]) //
                     + (this.rawData[0] * this.rawData[13] - this.rawData[12] * this.rawData[1]) * (this.rawData[6] * this.rawData[11] - this.rawData[10] * this.rawData[7]) //
                     + (this.rawData[4] * this.rawData[9] - this.rawData[8] * this.rawData[5]) * (this.rawData[2] * this.rawData[15] - this.rawData[14] * this.rawData[3]) //
@@ -7670,7 +7676,7 @@ var feng3d;
                 ty = (c - i) / len;
                 tz = (e - b) / len;
             }
-            else {
+            else { //Orientation3D.QUATERNION
                 var tr = a + f + k;
                 if (tr > 0) {
                     tw = Math.sqrt(1 + tr) / 2;
@@ -9817,7 +9823,7 @@ var feng3d;
             var b = 2 * (px * vx + py * vy + pz * vz);
             var c = px * px + py * py + pz * pz - this.radius * this.radius;
             var det = b * b - 4 * a * c;
-            if (det >= 0) {
+            if (det >= 0) { // ray goes through sphere
                 var sqrtDet = Math.sqrt(det);
                 rayEntryDistance = (-b - sqrtDet) / (2 * a);
                 if (rayEntryDistance >= 0) {
@@ -11474,7 +11480,7 @@ var feng3d;
      */
     function onRequestReadystatechange(request, loadItem) {
         return function (ev) {
-            if (request.readyState == 4) {
+            if (request.readyState == 4) { // 4 = "loaded"
                 request.onreadystatechange = null;
                 if (request.status >= 200 && request.status < 300) {
                     var content = loadItem.dataFormat == feng3d.LoaderDataFormat.TEXT ? request.responseText : request.response;
@@ -16276,7 +16282,7 @@ var feng3d;
     }());
     feng3d.Engine = Engine;
 })(feng3d || (feng3d = {}));
-// var viewRect0 = { x: 0, y: 0, w: 400, h: 300 }; 
+// var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };
 var feng3d;
 (function (feng3d) {
     var HoldSizeComponent = /** @class */ (function (_super) {
@@ -16769,21 +16775,21 @@ var feng3d;
     var Scene3D = /** @class */ (function (_super) {
         __extends(Scene3D, _super);
         function Scene3D() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this_1 = _super !== null && _super.apply(this, arguments) || this;
             /**
              * 背景颜色
              */
-            _this.background = new feng3d.Color4(0, 0, 0, 1);
+            _this_1.background = new feng3d.Color4(0, 0, 0, 1);
             /**
              * 环境光强度
              */
-            _this.ambientColor = new feng3d.Color4();
+            _this_1.ambientColor = new feng3d.Color4();
             /**
              * 指定更新脚本标记，用于过滤需要调用update的脚本
              */
-            _this.updateScriptFlag = feng3d.ScriptFlag.feng3d;
-            _this.pickMap = new Map();
-            return _this;
+            _this_1.updateScriptFlag = feng3d.ScriptFlag.feng3d;
+            _this_1.pickMap = new Map();
+            return _this_1;
         }
         /**
          * 构造3D场景
@@ -16811,11 +16817,11 @@ var feng3d;
             }
         };
         Scene3D.prototype.onEnterFrame = function (interval) {
-            var _this = this;
+            var _this_1 = this;
             // 每帧清理拾取缓存
             this.pickMap.forEach(function (item) { return item.clear(); });
             this.behaviours.forEach(function (element) {
-                if (element.isVisibleAndEnabled && (_this.updateScriptFlag & element.flag))
+                if (element.isVisibleAndEnabled && (_this_1.updateScriptFlag & element.flag))
                     element.update(interval);
             });
         };
@@ -16966,16 +16972,16 @@ var feng3d;
             configurable: true
         });
         Scene3D.prototype._addGameObject = function (gameobject) {
-            var _this = this;
+            var _this_1 = this;
             gameobject.components.forEach(function (element) {
-                _this._addComponent(element);
+                _this_1._addComponent(element);
             });
             this.dispatch("addToScene", gameobject);
         };
         Scene3D.prototype._removeGameObject = function (gameobject) {
-            var _this = this;
+            var _this_1 = this;
             gameobject.components.forEach(function (element) {
-                _this._removeComponent(element);
+                _this_1._removeComponent(element);
             });
             this.dispatch("removeFromScene", gameobject);
         };
@@ -17537,7 +17543,7 @@ var feng3d;
             var numIndices = indices.length;
             var result = {};
             //遍历每个三角形 检测碰撞
-            for (var index = 0; index < numIndices; index += 3) {
+            for (var index = 0; index < numIndices; index += 3) { // sweep all triangles
                 //三角形三个顶点索引
                 i0 = indices[index] * 3;
                 i1 = indices[index + 1] * 3;
@@ -17572,7 +17578,7 @@ var feng3d;
                 //计算射线与法线的点积，不等于零表示射线所在直线与三角面相交
                 nDotV = nx * rayDirection.x + ny * +rayDirection.y + nz * rayDirection.z; // rayDirection . normal
                 //判断射线是否与三角面相交
-                if ((cullFace == feng3d.CullFace.FRONT && nDotV > 0.0) || (cullFace == feng3d.CullFace.BACK && nDotV < 0.0) || (cullFace == feng3d.CullFace.NONE && nDotV != 0.0)) {
+                if ((cullFace == feng3d.CullFace.FRONT && nDotV > 0.0) || (cullFace == feng3d.CullFace.BACK && nDotV < 0.0) || (cullFace == feng3d.CullFace.NONE && nDotV != 0.0)) { // an intersection must exist
                     //计算平面方程D值，参考Plane3D
                     D = -(nx * p0x + ny * p0y + nz * p0z);
                     //射线点到平面的距离
@@ -27395,24 +27401,3 @@ var feng3d;
     feng3d.log("feng3d version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-
-(function universalModuleDefinition(root, factory)
-{
-    if (root && root["feng3d"])
-    {
-        return;
-    }
-    if (typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
-    else if (typeof define === 'function' && define.amd)
-        define([], factory);
-    else if (typeof exports === 'object')
-        exports["feng3d"] = factory();
-    else
-    {
-        root["feng3d"] = factory();
-    }
-})(this, function ()
-{
-    return feng3d;
-});
