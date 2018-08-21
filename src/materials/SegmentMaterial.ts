@@ -1,18 +1,18 @@
 namespace feng3d
 {
+    export interface MaterialMap { SegmentMaterial: SegmentMaterial }
+
     /**
 	 * 线段材质
      * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
-
 	 */
-    export type SegmentMaterial = Material & { uniforms: SegmentUniforms; };
-    export interface MaterialFactory
+    export class SegmentMaterial extends Material
     {
-        create(shader: "segment", raw?: gPartial<SegmentMaterial>): SegmentMaterial;
-    }
-    export interface MaterialRawMap
-    {
-        segment: gPartial<SegmentMaterial>
+        __class__: "feng3d.SegmentMaterial" = "feng3d.SegmentMaterial";
+
+        shaderName: "segment" = "segment";
+
+        uniforms = new SegmentUniforms();
     }
 
     export class SegmentUniforms

@@ -7,6 +7,9 @@ namespace feng3d
      */
     export class PlaneGeometry extends Geometry
     {
+
+        __class__: "feng3d.PlaneGeometry" = "feng3d.PlaneGeometry";
+        
         /**
          * 宽度
          */

@@ -1,15 +1,5 @@
 namespace feng3d
 {
-    export type StandardMaterial = Material & { uniforms: StandardUniforms; };
-
-    export interface MaterialFactory
-    {
-        create(shader: "standard", raw?: gPartial<StandardMaterial>): StandardMaterial;
-    }
-    export interface MaterialRawMap
-    {
-        standard: gPartial<StandardMaterial>
-    }
     /**
      * 雾模式
      */
@@ -19,6 +9,22 @@ namespace feng3d
         EXP = 1,
         EXP2 = 2,
         LINEAR = 3
+    }
+
+    export interface MaterialMap { StandardMaterial: StandardMaterial }
+
+    export class StandardMaterial extends Material
+    {
+        __class__: "feng3d.StandardMaterial" = "feng3d.StandardMaterial";
+
+        shaderName: "standard" = "standard";
+
+        /**
+         * Uniform数据
+         */
+        @serialize
+        @oav({ component: "OAVObjectView" })
+        uniforms = new StandardUniforms();
     }
 
     export class StandardUniforms

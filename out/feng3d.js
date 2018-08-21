@@ -16537,7 +16537,7 @@ var feng3d;
             if (!this.geometry)
                 this.geometry = new feng3d.CubeGeometry();
             if (!this.material)
-                this.material = feng3d.materialFactory.create("standard");
+                this.material = new feng3d.StandardMaterial();
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         };
         Model.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
@@ -18748,6 +18748,7 @@ var feng3d;
          */
         function PlaneGeometry(raw) {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.PlaneGeometry";
             /**
              * 宽度
              */
@@ -19397,6 +19398,7 @@ var feng3d;
          */
         function SphereGeometry(raw) {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.SphereGeometry";
             /**
              * 球体半径
              */
@@ -19590,6 +19592,7 @@ var feng3d;
          */
         function CapsuleGeometry(raw) {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.CapsuleGeometry";
             /**
              * 胶囊体半径
              */
@@ -19789,6 +19792,7 @@ var feng3d;
          */
         function CylinderGeometry(raw) {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.CylinderGeometry";
             /**
              * 顶部半径
              */
@@ -20146,6 +20150,7 @@ var feng3d;
          */
         function ConeGeometry(raw) {
             var _this = _super.call(this, raw) || this;
+            _this.__class__ = "feng3d.ConeGeometry";
             /**
              * 底部半径 private
              */
@@ -20177,6 +20182,7 @@ var feng3d;
          */
         function TorusGeometry(raw) {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.TorusGeometry";
             /**
              * 半径
              */
@@ -20598,27 +20604,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 材质工厂
-     */
-    var MaterialFactory = /** @class */ (function () {
-        function MaterialFactory() {
-        }
-        /**
-         * 创建材质
-         * @param shader shader名称
-         * @param raw 材质数据
-         */
-        MaterialFactory.prototype.create = function (shader, raw) {
-            raw = raw || {};
-            raw.shaderName = shader;
-            var material = new Material(raw);
-            return material;
-        };
-        return MaterialFactory;
-    }());
-    feng3d.MaterialFactory = MaterialFactory;
-    feng3d.materialFactory = new MaterialFactory();
-    /**
      * 材质
 
      */
@@ -20626,7 +20611,6 @@ var feng3d;
         __extends(Material, _super);
         function Material(raw) {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.Material";
             /**
              * shader名称
              */
@@ -20634,7 +20618,7 @@ var feng3d;
             /**
              * Uniform数据
              */
-            _this.uniforms = new feng3d.StandardUniforms();
+            _this.uniforms = {};
             /**
              * 渲染参数
              */
@@ -20683,6 +20667,21 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 颜色材质
+     */
+    var PointMaterial = /** @class */ (function (_super) {
+        __extends(PointMaterial, _super);
+        function PointMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.PointMaterial";
+            _this.shaderName = "point";
+            _this.uniforms = new PointUniforms();
+            return _this;
+        }
+        return PointMaterial;
+    }(feng3d.Material));
+    feng3d.PointMaterial = PointMaterial;
     var PointUniforms = /** @class */ (function () {
         function PointUniforms() {
             /**
@@ -20709,6 +20708,21 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 颜色材质
+     */
+    var ColorMaterial = /** @class */ (function (_super) {
+        __extends(ColorMaterial, _super);
+        function ColorMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.ColorMaterial";
+            _this.shaderName = "color";
+            _this.uniforms = new ColorUniforms();
+            return _this;
+        }
+        return ColorMaterial;
+    }(feng3d.Material));
+    feng3d.ColorMaterial = ColorMaterial;
     var ColorUniforms = /** @class */ (function () {
         function ColorUniforms() {
             /**
@@ -20727,6 +20741,22 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 线段材质
+     * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
+     */
+    var SegmentMaterial = /** @class */ (function (_super) {
+        __extends(SegmentMaterial, _super);
+        function SegmentMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.SegmentMaterial";
+            _this.shaderName = "segment";
+            _this.uniforms = new SegmentUniforms();
+            return _this;
+        }
+        return SegmentMaterial;
+    }(feng3d.Material));
+    feng3d.SegmentMaterial = SegmentMaterial;
     var SegmentUniforms = /** @class */ (function () {
         function SegmentUniforms() {
             /**
@@ -20745,6 +20775,21 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 纹理材质
+     */
+    var TextureMaterial = /** @class */ (function (_super) {
+        __extends(TextureMaterial, _super);
+        function TextureMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.TextureMaterial";
+            _this.shaderName = "texture";
+            _this.uniforms = new TextureUniforms();
+            return _this;
+        }
+        return TextureMaterial;
+    }(feng3d.Material));
+    feng3d.TextureMaterial = TextureMaterial;
     var TextureUniforms = /** @class */ (function () {
         function TextureUniforms() {
             /**
@@ -20781,6 +20826,25 @@ var feng3d;
         FogMode[FogMode["EXP2"] = 2] = "EXP2";
         FogMode[FogMode["LINEAR"] = 3] = "LINEAR";
     })(FogMode = feng3d.FogMode || (feng3d.FogMode = {}));
+    var StandardMaterial = /** @class */ (function (_super) {
+        __extends(StandardMaterial, _super);
+        function StandardMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.StandardMaterial";
+            _this.shaderName = "standard";
+            /**
+             * Uniform数据
+             */
+            _this.uniforms = new StandardUniforms();
+            return _this;
+        }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVObjectView" })
+        ], StandardMaterial.prototype, "uniforms", void 0);
+        return StandardMaterial;
+    }(feng3d.Material));
+    feng3d.StandardMaterial = StandardMaterial;
     var StandardUniforms = /** @class */ (function () {
         function StandardUniforms() {
             /**
@@ -21078,7 +21142,7 @@ var feng3d;
                 //材质
                 var model = gameObject.getComponent(feng3d.Model);
                 model.geometry = new feng3d.PlaneGeometry({ width: this.lightType == feng3d.LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-                var textureMaterial = model.material = feng3d.materialFactory.create("texture");
+                var textureMaterial = model.material = new feng3d.TextureMaterial();
                 //
                 // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
                 // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
@@ -22442,7 +22506,7 @@ var feng3d;
         function Water() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.geometry = new feng3d.PlaneGeometry({ width: 10, height: 10 });
-            _this.material = feng3d.materialFactory.create("water");
+            _this.material = new feng3d.WaterMaterial();
             /**
              * 帧缓冲对象，用于处理水面反射
              */
@@ -22524,6 +22588,18 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var WaterMaterial = /** @class */ (function (_super) {
+        __extends(WaterMaterial, _super);
+        function WaterMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.WaterMaterial";
+            _this.shaderName = "water";
+            _this.uniforms = new WaterUniforms();
+            return _this;
+        }
+        return WaterMaterial;
+    }(feng3d.Material));
+    feng3d.WaterMaterial = WaterMaterial;
     var WaterUniforms = /** @class */ (function () {
         function WaterUniforms() {
             this.u_alpha = 1.0;
@@ -22795,6 +22871,18 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var TerrainMaterial = /** @class */ (function (_super) {
+        __extends(TerrainMaterial, _super);
+        function TerrainMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.TerrainMaterial";
+            _this.shaderName = "terrain";
+            _this.uniforms = new TerrainUniforms();
+            return _this;
+        }
+        return TerrainMaterial;
+    }(feng3d.Material));
+    feng3d.TerrainMaterial = TerrainMaterial;
     var TerrainUniforms = /** @class */ (function (_super) {
         __extends(TerrainUniforms, _super);
         function TerrainUniforms() {
@@ -23025,7 +23113,7 @@ var feng3d;
              * 地形几何体数据
              */
             _this.geometry = new feng3d.TerrainGeometry();
-            _this.material = feng3d.materialFactory.create("terrain");
+            _this.material = new feng3d.TerrainMaterial();
             return _this;
         }
         return Terrain;
@@ -23454,7 +23542,7 @@ var feng3d;
              */
             _this.numParticles = 1000;
             _this.geometry = new feng3d.PointGeometry();
-            _this.material = feng3d.materialFactory.create("particle", { renderParams: { renderMode: feng3d.RenderMode.POINTS } });
+            _this.material = new feng3d.ParticleMaterial({ renderParams: { renderMode: feng3d.RenderMode.POINTS } });
             /**
              * 粒子全局属性
              */
@@ -23677,6 +23765,18 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var ParticleMaterial = /** @class */ (function (_super) {
+        __extends(ParticleMaterial, _super);
+        function ParticleMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.ParticleMaterial";
+            _this.shaderName = "particle";
+            _this.uniforms = new ParticleUniforms();
+            return _this;
+        }
+        return ParticleMaterial;
+    }(feng3d.Material));
+    feng3d.ParticleMaterial = ParticleMaterial;
     var ParticleUniforms = /** @class */ (function (_super) {
         __extends(ParticleUniforms, _super);
         function ParticleUniforms() {
@@ -23916,7 +24016,7 @@ var feng3d;
         __extends(SkinnedModel, _super);
         function SkinnedModel() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.material = feng3d.materialFactory.create("skeleton");
+            _this.material = new feng3d.SkeletonMaterial();
             _this.skeletonGlobalMatriices = (function () { var v = [new feng3d.Matrix4x4()]; var i = supportNUM_SKELETONJOINT; while (i-- > 1)
                 v.push(v[0]); return v; })();
             return _this;
@@ -24057,6 +24157,18 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var SkeletonMaterial = /** @class */ (function (_super) {
+        __extends(SkeletonMaterial, _super);
+        function SkeletonMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.SkeletonMaterial";
+            _this.shaderName = "skeleton";
+            _this.uniforms = new SkeletonUniforms();
+            return _this;
+        }
+        return SkeletonMaterial;
+    }(feng3d.Material));
+    feng3d.SkeletonMaterial = SkeletonMaterial;
     var SkeletonUniforms = /** @class */ (function (_super) {
         __extends(SkeletonUniforms, _super);
         function SkeletonUniforms() {
@@ -26638,7 +26750,7 @@ var feng3d;
      */
     function load(url, completed) {
         feng3d.Loader.loadText(url, function (content) {
-            var material = feng3d.materialFactory.create("standard");
+            var material = new feng3d.StandardMaterial();
             var objData = feng3d.OBJParser.parser(content);
             var mtl = objData.mtl;
             if (mtl) {
@@ -26654,7 +26766,7 @@ var feng3d;
         });
     }
     function parse(content, completed) {
-        var material = feng3d.materialFactory.create("standard");
+        var material = new feng3d.StandardMaterial();
         var objData = feng3d.OBJParser.parser(content);
         createObj(objData, material, null, completed);
     }
@@ -26682,7 +26794,7 @@ var feng3d;
     function createMaterialObj(obj, subObj, material, mtlData) {
         var gameObject = feng3d.GameObject.create();
         var model = gameObject.addComponent(feng3d.Model);
-        model.material = material || feng3d.materialFactory.create("standard");
+        model.material = material || new feng3d.StandardMaterial();
         model.material.renderParams.cullFace = feng3d.CullFace.FRONT;
         var geometry = model.geometry = new feng3d.CustomGeometry();
         var vertices = [];
@@ -26710,7 +26822,7 @@ var feng3d;
         if (mtlData && subObj.material && mtlData[subObj.material]) {
             var materialInfo = mtlData[subObj.material];
             var kd = materialInfo.kd;
-            var standardMaterial = feng3d.materialFactory.create("standard");
+            var standardMaterial = new feng3d.StandardMaterial();
             var materialInfo = mtlData[subObj.material];
             var kd = materialInfo.kd;
             standardMaterial.uniforms.u_diffuse = new feng3d.Color4(kd[0], kd[1], kd[2]);
@@ -27091,7 +27203,7 @@ var feng3d;
             var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.PlaneGeometry({ width: 10, height: 10 });
-            model.material = feng3d.materialFactory.create("standard");
+            model.material = new feng3d.StandardMaterial();
             return gameobject;
         };
         GameObjectFactory.prototype.createCylinder = function (name) {
@@ -27099,7 +27211,7 @@ var feng3d;
             var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.CylinderGeometry();
-            model.material = feng3d.materialFactory.create("standard");
+            model.material = new feng3d.StandardMaterial();
             return gameobject;
         };
         GameObjectFactory.prototype.createCone = function (name) {
@@ -27107,7 +27219,7 @@ var feng3d;
             var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.ConeGeometry();
-            model.material = feng3d.materialFactory.create("standard");
+            model.material = new feng3d.StandardMaterial();
             return gameobject;
         };
         GameObjectFactory.prototype.createTorus = function (name) {
@@ -27115,7 +27227,7 @@ var feng3d;
             var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.TorusGeometry();
-            model.material = feng3d.materialFactory.create("standard");
+            model.material = new feng3d.StandardMaterial();
             return gameobject;
         };
         GameObjectFactory.prototype.createTerrain = function (name) {
@@ -27129,7 +27241,7 @@ var feng3d;
             var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.SphereGeometry();
-            model.material = feng3d.materialFactory.create("standard");
+            model.material = new feng3d.StandardMaterial();
             return gameobject;
         };
         GameObjectFactory.prototype.createCapsule = function (name) {
@@ -27137,7 +27249,7 @@ var feng3d;
             var gameobject = feng3d.GameObject.create(name);
             var model = gameobject.addComponent(feng3d.Model);
             model.geometry = new feng3d.CapsuleGeometry();
-            model.material = feng3d.materialFactory.create("standard");
+            model.material = new feng3d.StandardMaterial();
             return gameobject;
         };
         GameObjectFactory.prototype.createCamera = function (name) {

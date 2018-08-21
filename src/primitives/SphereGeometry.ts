@@ -8,6 +8,9 @@ namespace feng3d
      */
     export class SphereGeometry extends Geometry
     {
+
+        __class__: "feng3d.SphereGeometry" = "feng3d.SphereGeometry";
+        
         /**
          * 球体半径
          */

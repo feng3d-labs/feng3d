@@ -15,6 +15,6 @@ namespace feng3d
          */
         geometry = new TerrainGeometry();
 
-        material = materialFactory.create("terrain");
+        material = new TerrainMaterial();
     }
 }

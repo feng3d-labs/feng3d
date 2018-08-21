@@ -12,7 +12,7 @@ namespace feng3d
 
         @serialize
         @oav()
-        material = materialFactory.create("skeleton");
+        material = new SkeletonMaterial();
 
         private skeletonGlobalMatriices: Matrix4x4[] = (() => { var v = [new Matrix4x4()]; var i = supportNUM_SKELETONJOINT; while (i-- > 1) v.push(v[0]); return v; })();
 

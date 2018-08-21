@@ -1,18 +1,19 @@
 namespace feng3d
 {
+    export interface MaterialMap { ColorMaterial: ColorMaterial }
+
     /**
      * 颜色材质
-
      */
-    export type ColorMaterial = Material & { uniforms: ColorUniforms; };
-    export interface MaterialFactory
+    export class ColorMaterial extends Material
     {
-        create(shader: "color", raw?: gPartial<ColorMaterial>): ColorMaterial;
+        __class__: "feng3d.ColorMaterial" = "feng3d.ColorMaterial";
+
+        shaderName: "color" = "color";
+
+        uniforms = new ColorUniforms();
     }
-    export interface MaterialRawMap
-    {
-        color: gPartial<ColorMaterial>
-    }
+
     export class ColorUniforms
     {
         /** 

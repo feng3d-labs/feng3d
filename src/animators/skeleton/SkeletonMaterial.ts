@@ -1,15 +1,16 @@
 namespace feng3d
 {
-    export type SkeletonMaterial = Material & { uniforms: SkeletonUniforms; };
+    export interface MaterialMap { SkeletonMaterial: SkeletonMaterial }
 
-    export interface MaterialFactory
+    export class SkeletonMaterial extends Material
     {
-        create(shader: "skeleton", raw?: gPartial<SkeletonMaterial>): SkeletonMaterial;
+        __class__: "feng3d.SkeletonMaterial" = "feng3d.SkeletonMaterial";
+
+        shaderName: "skeleton" = "skeleton";
+
+        uniforms = new SkeletonUniforms();
     }
-    export interface MaterialRawMap
-    {
-        skeleton: gPartial<SkeletonMaterial>
-    }
+
     export class SkeletonUniforms extends StandardUniforms
     {
 

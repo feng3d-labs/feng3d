@@ -1,10 +1,14 @@
 namespace feng3d
 {
-    export type TerrainMaterial = Material & { uniforms: TerrainUniforms; };
+    export interface MaterialMap { TerrainMaterial: TerrainMaterial }
 
-    export interface MaterialFactory
+    export class TerrainMaterial extends Material
     {
-        create(shader: "terrain", raw?: gPartial<TerrainMaterial>): TerrainMaterial;
+        __class__: "feng3d.TerrainMaterial" = "feng3d.TerrainMaterial";
+
+        shaderName: "terrain" = "terrain";
+
+        uniforms = new TerrainUniforms();
     }
 
     export class TerrainUniforms extends StandardUniforms

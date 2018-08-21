@@ -6639,9 +6639,7 @@ interface WebGL2RenderingContext extends WebGLRenderingContext {
     bufferData(target: GLenum, size: GLsizeiptr, usage: GLenum): any;
     bufferData(target: GLenum, srcData: ArrayBuffer, usage: GLenum): any;
     bufferData(target: GLenum, srcData: ArrayBufferView, usage: GLenum): any;
-    bufferSubData(target: GLenum, dstByteOffset: GLintptr, srcData: BufferDataSource): any;
     bufferData(target: GLenum, srcData: ArrayBufferView, usage: GLenum, srcOffset: GLuint, length?: GLuint): any;
-    bufferSubData(target: GLenum, dstByteOffset: GLintptr, srcData: ArrayBufferView, srcOffset: GLuint, length?: GLuint): any;
     copyBufferSubData(readTarget: GLenum, writeTarget: GLenum, readOffset: GLintptr, writeOffset: GLintptr, size: GLsizeiptr): any;
     getBufferSubData(target: GLenum, srcByteOffset: GLintptr, dstBuffer: ArrayBufferView, dstOffset?: GLuint, length?: GLuint): any;
     blitFramebuffer(srcX0: GLint, srcY0: GLint, srcX1: GLint, srcY1: GLint, dstX0: GLint, dstY0: GLint, dstX1: GLint, dstY1: GLint, mask: GLbitfield, filter: GLenum): any;
@@ -6671,12 +6669,8 @@ interface WebGL2RenderingContext extends WebGLRenderingContext {
     texSubImage3D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, zoffset: GLint, width: GLsizei, height: GLsizei, depth: GLsizei, format: GLenum, type: GLenum, source: TexImageSource): any;
     texSubImage3D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, zoffset: GLint, width: GLsizei, height: GLsizei, depth: GLsizei, format: GLenum, type: GLenum, srcData: ArrayBufferView, srcOffset?: GLuint): any;
     copyTexSubImage3D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, zoffset: GLint, x: GLint, y: GLint, width: GLsizei, height: GLsizei): any;
-    compressedTexImage2D(target: GLenum, level: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei, border: GLint, imageSize: GLsizei, offset: GLintptr): any;
-    compressedTexImage2D(target: GLenum, level: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei, border: GLint, srcData: ArrayBufferView, srcOffset?: GLuint, srcLengthOverride?: GLuint): any;
     compressedTexImage3D(target: GLenum, level: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei, depth: GLsizei, border: GLint, imageSize: GLsizei, offset: GLintptr): any;
     compressedTexImage3D(target: GLenum, level: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei, depth: GLsizei, border: GLint, srcData: ArrayBufferView, srcOffset?: GLuint, srcLengthOverride?: GLuint): any;
-    compressedTexSubImage2D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, width: GLsizei, height: GLsizei, format: GLenum, imageSize: GLsizei, offset: GLintptr): any;
-    compressedTexSubImage2D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, width: GLsizei, height: GLsizei, format: GLenum, srcData: ArrayBufferView, srcOffset?: GLuint, srcLengthOverride?: GLuint): any;
     compressedTexSubImage3D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, zoffset: GLint, width: GLsizei, height: GLsizei, depth: GLsizei, format: GLenum, imageSize: GLsizei, offset: GLintptr): any;
     compressedTexSubImage3D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, zoffset: GLint, width: GLsizei, height: GLsizei, depth: GLsizei, format: GLenum, srcData: ArrayBufferView, srcOffset?: GLuint, srcLengthOverride?: GLuint): any;
     getFragDataLocation(program: WebGLProgram, name: DOMString): number;
@@ -6714,9 +6708,6 @@ interface WebGL2RenderingContext extends WebGLRenderingContext {
     drawArraysInstanced(mode: GLenum, first: GLint, count: GLsizei, instanceCount: GLsizei): any;
     drawElementsInstanced(mode: GLenum, count: GLsizei, type: GLenum, offset: GLintptr, instanceCount: GLsizei): any;
     drawRangeElements(mode: GLenum, start: GLuint, end: GLuint, count: GLsizei, type: GLenum, offset: GLintptr): any;
-    readPixels(x: GLint, y: GLint, width: GLsizei, height: GLsizei, format: GLenum, type: GLenum, dstData: ArrayBufferView): any;
-    readPixels(x: GLint, y: GLint, width: GLsizei, height: GLsizei, format: GLenum, type: GLenum, offset: GLintptr): any;
-    readPixels(x: GLint, y: GLint, width: GLsizei, height: GLsizei, format: GLenum, type: GLenum, dstData: ArrayBufferView, dstOffset: GLuint): any;
     drawBuffers(buffers: GLenum[]): any;
     clearBufferfv(buffer: GLenum, drawbuffer: GLint, values: Float32List, srcOffset?: GLuint): any;
     clearBufferiv(buffer: GLenum, drawbuffer: GLint, values: Int32List, srcOffset?: GLuint): any;
@@ -9367,7 +9358,7 @@ declare namespace feng3d {
          * 材质
          * Returns the first instantiated Material assigned to the renderer.
          */
-        material: Material;
+        material: Materials;
         /**
          * 是否投射阴影
          */
@@ -10207,6 +10198,7 @@ declare namespace feng3d {
      * 平面几何体
      */
     class PlaneGeometry extends Geometry {
+        __class__: "feng3d.PlaneGeometry";
         /**
          * 宽度
          */
@@ -10365,6 +10357,7 @@ declare namespace feng3d {
      * @author DawnKing 2016-09-12
      */
     class SphereGeometry extends Geometry {
+        __class__: "feng3d.SphereGeometry";
         /**
          * 球体半径
          */
@@ -10416,6 +10409,7 @@ declare namespace feng3d {
      * 胶囊体几何体
      */
     class CapsuleGeometry extends Geometry {
+        __class__: "feng3d.CapsuleGeometry";
         /**
          * 胶囊体半径
          */
@@ -10478,6 +10472,7 @@ declare namespace feng3d {
      * @author DawnKing 2016-09-12
      */
     class CylinderGeometry extends Geometry {
+        __class__: "feng3d.CylinderGeometry" | "feng3d.ConeGeometry";
         /**
          * 顶部半径
          */
@@ -10543,6 +10538,7 @@ declare namespace feng3d {
 
      */
     class ConeGeometry extends CylinderGeometry {
+        __class__: "feng3d.ConeGeometry";
         /**
          * 底部半径 private
          */
@@ -10569,6 +10565,7 @@ declare namespace feng3d {
      * 圆环几何体
      */
     class TorusGeometry extends Geometry {
+        __class__: "feng3d.TorusGeometry";
         /**
          * 半径
          */
@@ -10710,18 +10707,14 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 材质工厂
-     */
-    class MaterialFactory {
+    interface MaterialMap {
     }
-    var materialFactory: MaterialFactory;
+    type Materials = MaterialMap[keyof MaterialMap];
     /**
      * 材质
 
      */
     class Material extends Feng3dAssets {
-        __class__: "feng3d.Material";
         /**
          * shader名称
          */
@@ -10729,7 +10722,7 @@ declare namespace feng3d {
         /**
          * Uniform数据
          */
-        uniforms: Object;
+        uniforms: {};
         /**
          * 渲染参数
          */
@@ -10744,18 +10737,16 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface MaterialMap {
+        PointMaterial: PointMaterial;
+    }
     /**
      * 颜色材质
-
      */
-    type PointMaterial = Material & {
+    class PointMaterial extends Material {
+        __class__: "feng3d.PointMaterial";
+        shaderName: "point";
         uniforms: PointUniforms;
-    };
-    interface MaterialFactory {
-        create(shader: "point", raw?: gPartial<PointMaterial>): PointMaterial;
-    }
-    interface MaterialRawMap {
-        point: gPartial<PointMaterial>;
     }
     class PointUniforms {
         /**
@@ -10769,18 +10760,16 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface MaterialMap {
+        ColorMaterial: ColorMaterial;
+    }
     /**
      * 颜色材质
-
      */
-    type ColorMaterial = Material & {
+    class ColorMaterial extends Material {
+        __class__: "feng3d.ColorMaterial";
+        shaderName: "color";
         uniforms: ColorUniforms;
-    };
-    interface MaterialFactory {
-        create(shader: "color", raw?: gPartial<ColorMaterial>): ColorMaterial;
-    }
-    interface MaterialRawMap {
-        color: gPartial<ColorMaterial>;
     }
     class ColorUniforms {
         /**
@@ -10790,19 +10779,17 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface MaterialMap {
+        SegmentMaterial: SegmentMaterial;
+    }
     /**
      * 线段材质
      * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
-
      */
-    type SegmentMaterial = Material & {
+    class SegmentMaterial extends Material {
+        __class__: "feng3d.SegmentMaterial";
+        shaderName: "segment";
         uniforms: SegmentUniforms;
-    };
-    interface MaterialFactory {
-        create(shader: "segment", raw?: gPartial<SegmentMaterial>): SegmentMaterial;
-    }
-    interface MaterialRawMap {
-        segment: gPartial<SegmentMaterial>;
     }
     class SegmentUniforms {
         /**
@@ -10812,18 +10799,16 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface MaterialMap {
+        TextureMaterial: TextureMaterial;
+    }
     /**
      * 纹理材质
-
      */
-    type TextureMaterial = Material & {
+    class TextureMaterial extends Material {
+        __class__: "feng3d.TextureMaterial";
+        shaderName: "texture";
         uniforms: TextureUniforms;
-    };
-    interface MaterialFactory {
-        create(shader: "texture", raw?: gPartial<TextureMaterial>): TextureMaterial;
-    }
-    interface MaterialRawMap {
-        texture: gPartial<TextureMaterial>;
     }
     class TextureUniforms {
         /**
@@ -10837,15 +10822,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type StandardMaterial = Material & {
-        uniforms: StandardUniforms;
-    };
-    interface MaterialFactory {
-        create(shader: "standard", raw?: gPartial<StandardMaterial>): StandardMaterial;
-    }
-    interface MaterialRawMap {
-        standard: gPartial<StandardMaterial>;
-    }
     /**
      * 雾模式
      */
@@ -10854,6 +10830,17 @@ declare namespace feng3d {
         EXP = 1,
         EXP2 = 2,
         LINEAR = 3
+    }
+    interface MaterialMap {
+        StandardMaterial: StandardMaterial;
+    }
+    class StandardMaterial extends Material {
+        __class__: "feng3d.StandardMaterial";
+        shaderName: "standard";
+        /**
+         * Uniform数据
+         */
+        uniforms: StandardUniforms;
     }
     class StandardUniforms {
         /**
@@ -11452,11 +11439,13 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type WaterMaterial = Material & {
+    interface MaterialMap {
+        WaterMaterial: WaterMaterial;
+    }
+    class WaterMaterial extends Material {
+        __class__: "feng3d.WaterMaterial";
+        shaderName: "water";
         uniforms: WaterUniforms;
-    };
-    interface MaterialFactory {
-        create(shader: "water", raw?: gPartial<WaterMaterial>): WaterMaterial;
     }
     class WaterUniforms {
         u_alpha: number;
@@ -11545,11 +11534,13 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type TerrainMaterial = Material & {
+    interface MaterialMap {
+        TerrainMaterial: TerrainMaterial;
+    }
+    class TerrainMaterial extends Material {
+        __class__: "feng3d.TerrainMaterial";
+        shaderName: "terrain";
         uniforms: TerrainUniforms;
-    };
-    interface MaterialFactory {
-        create(shader: "terrain", raw?: gPartial<TerrainMaterial>): TerrainMaterial;
     }
     class TerrainUniforms extends StandardUniforms {
         s_splatTexture1: UrlImageTexture2D;
@@ -11846,8 +11837,8 @@ declare namespace feng3d {
          * 粒子数量
          */
         numParticles: number;
-        geometry: Geometrys;
-        material: Material;
+        geometry: PointGeometry;
+        material: ParticleMaterial;
         /**
          * 粒子全局属性
          */
@@ -11911,14 +11902,13 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type ParticleMaterial = Material & {
-        uniforms: ParticleUniforms;
-    };
-    interface MaterialFactory {
-        create(shader: "particle", raw?: gPartial<ParticleMaterial>): ParticleMaterial;
+    interface MaterialMap {
+        ParticleMaterial: ParticleMaterial;
     }
-    interface MaterialRawMap {
-        particle: gPartial<ParticleMaterial>;
+    class ParticleMaterial extends Material {
+        __class__: "feng3d.ParticleMaterial";
+        shaderName: "particle";
+        uniforms: ParticleUniforms;
     }
     class ParticleUniforms extends StandardUniforms {
     }
@@ -12055,14 +12045,13 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type SkeletonMaterial = Material & {
-        uniforms: SkeletonUniforms;
-    };
-    interface MaterialFactory {
-        create(shader: "skeleton", raw?: gPartial<SkeletonMaterial>): SkeletonMaterial;
+    interface MaterialMap {
+        SkeletonMaterial: SkeletonMaterial;
     }
-    interface MaterialRawMap {
-        skeleton: gPartial<SkeletonMaterial>;
+    class SkeletonMaterial extends Material {
+        __class__: "feng3d.SkeletonMaterial";
+        shaderName: "skeleton";
+        uniforms: SkeletonUniforms;
     }
     class SkeletonUniforms extends StandardUniforms {
     }

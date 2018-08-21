@@ -19,7 +19,7 @@ namespace feng3d
     {
         Loader.loadText(url, (content: string) =>
         {
-            var material = materialFactory.create("standard")
+            var material = new StandardMaterial();
             var objData = OBJParser.parser(content);
             var mtl = objData.mtl;
             if (mtl)
@@ -39,12 +39,12 @@ namespace feng3d
 
     function parse(content: string, completed?: (gameObject: GameObject) => void)
     {
-        var material = materialFactory.create("standard")
+        var material = new StandardMaterial();
         var objData = OBJParser.parser(content);
         createObj(objData, material, null, completed);
     }
 
-    function createObj(objData: OBJ_OBJData, material: Material, mtlData: Mtl_Mtl | null, completed?: (gameObject: GameObject) => void)
+    function createObj(objData: OBJ_OBJData, material: Materials, mtlData: Mtl_Mtl | null, completed?: (gameObject: GameObject) => void)
     {
         var object = GameObject.create();
         var objs = objData.objs;
@@ -57,7 +57,7 @@ namespace feng3d
         completed && completed(object);
     }
 
-    function createSubObj(objData: OBJ_OBJData, obj: OBJ_OBJ, material: Material, mtlData: Mtl_Mtl | null)
+    function createSubObj(objData: OBJ_OBJData, obj: OBJ_OBJ, material: Materials, mtlData: Mtl_Mtl | null)
     {
         var gameObject = GameObject.create(obj.name);
 
@@ -73,11 +73,11 @@ namespace feng3d
     var _realIndices: string[];
     var _vertexIndex: number;
 
-    function createMaterialObj(obj: OBJ_OBJData, subObj: OBJ_SubOBJ, material: Material, mtlData: Mtl_Mtl | null)
+    function createMaterialObj(obj: OBJ_OBJData, subObj: OBJ_SubOBJ, material: Materials, mtlData: Mtl_Mtl | null)
     {
         var gameObject = GameObject.create();
         var model = gameObject.addComponent(Model);
-        model.material = material || materialFactory.create("standard");
+        model.material = material || new StandardMaterial();
         model.material.renderParams.cullFace = CullFace.FRONT;
 
         var geometry = model.geometry = new CustomGeometry();
@@ -112,7 +112,7 @@ namespace feng3d
         {
             var materialInfo = mtlData[subObj.material];
             var kd = materialInfo.kd;
-            var standardMaterial = materialFactory.create("standard");
+            var standardMaterial = new StandardMaterial();
             var materialInfo = mtlData[subObj.material];
             var kd = materialInfo.kd;
             standardMaterial.uniforms.u_diffuse = new Color4(kd[0], kd[1], kd[2]);

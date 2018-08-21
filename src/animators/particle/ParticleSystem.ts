@@ -45,11 +45,11 @@ namespace feng3d
 
         @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } })
         @serialize
-        geometry: Geometrys = new PointGeometry();
+        geometry = new PointGeometry();
 
         @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "material", datatype: "material" } } })
         @serialize
-        material: Material = materialFactory.create("particle", { renderParams: { renderMode: RenderMode.POINTS } });
+        material = new ParticleMaterial({ renderParams: { renderMode: RenderMode.POINTS } });
 
         /**
          * 粒子全局属性

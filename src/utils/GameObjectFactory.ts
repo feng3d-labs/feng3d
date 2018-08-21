@@ -23,7 +23,7 @@ namespace feng3d
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(Model);
             model.geometry = new PlaneGeometry({ width: 10, height: 10 });
-            model.material = materialFactory.create("standard");
+            model.material = new StandardMaterial();
             return gameobject;
         }
 
@@ -32,7 +32,7 @@ namespace feng3d
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(Model);
             model.geometry = new CylinderGeometry();
-            model.material = materialFactory.create("standard");
+            model.material = new StandardMaterial();
             return gameobject;
         }
 
@@ -41,7 +41,7 @@ namespace feng3d
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(Model);
             model.geometry = new ConeGeometry();
-            model.material = materialFactory.create("standard");
+            model.material = new StandardMaterial();
             return gameobject;
         }
 
@@ -50,7 +50,7 @@ namespace feng3d
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(Model);
             model.geometry = new TorusGeometry();
-            model.material = materialFactory.create("standard");
+            model.material = new StandardMaterial();
             return gameobject;
         }
 
@@ -66,7 +66,7 @@ namespace feng3d
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(Model);
             model.geometry = new SphereGeometry();
-            model.material = materialFactory.create("standard");
+            model.material = new StandardMaterial();
             return gameobject;
         }
 
@@ -75,7 +75,7 @@ namespace feng3d
             var gameobject = GameObject.create(name);
             var model = gameobject.addComponent(Model);
             model.geometry = new CapsuleGeometry();
-            model.material = materialFactory.create("standard");
+            model.material = new StandardMaterial();
             return gameobject;
         }
 

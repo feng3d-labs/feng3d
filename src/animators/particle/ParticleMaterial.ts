@@ -1,15 +1,15 @@
 namespace feng3d
 {
-    export type ParticleMaterial = Material & { uniforms: ParticleUniforms; };
 
-    export interface MaterialFactory
-    {
-        create(shader: "particle", raw?: gPartial<ParticleMaterial>): ParticleMaterial;
-    }
+    export interface MaterialMap { ParticleMaterial: ParticleMaterial }
 
-    export interface MaterialRawMap
+    export class ParticleMaterial extends Material
     {
-        particle: gPartial<ParticleMaterial>
+        __class__: "feng3d.ParticleMaterial" = "feng3d.ParticleMaterial";
+
+        shaderName: "particle" = "particle";
+
+        uniforms = new ParticleUniforms();
     }
 
     export class ParticleUniforms extends StandardUniforms

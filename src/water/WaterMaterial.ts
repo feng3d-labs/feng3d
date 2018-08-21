@@ -1,10 +1,14 @@
 namespace feng3d
 {
-    export type WaterMaterial = Material & { uniforms: WaterUniforms; };
+    export interface MaterialMap { WaterMaterial: WaterMaterial }
 
-    export interface MaterialFactory
+    export class WaterMaterial extends Material
     {
-        create(shader: "water", raw?: gPartial<WaterMaterial>): WaterMaterial;
+        __class__: "feng3d.WaterMaterial" = "feng3d.WaterMaterial";
+
+        shaderName: "water" = "water";
+
+        uniforms = new WaterUniforms();
     }
 
     export class WaterUniforms

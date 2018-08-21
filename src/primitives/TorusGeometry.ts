@@ -8,6 +8,9 @@ namespace feng3d
 	 */
 	export class TorusGeometry extends Geometry
 	{
+
+        __class__: "feng3d.TorusGeometry" = "feng3d.TorusGeometry";
+		
 		/**
 		 * 半径
 		 */

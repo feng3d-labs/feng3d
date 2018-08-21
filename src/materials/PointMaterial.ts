@@ -1,19 +1,18 @@
 namespace feng3d
 {
+
+    export interface MaterialMap { PointMaterial: PointMaterial }
+
     /**
      * 颜色材质
-
      */
-    export type PointMaterial = Material & { uniforms: PointUniforms; };
-
-    export interface MaterialFactory
+    export class PointMaterial extends Material
     {
-        create(shader: "point", raw?: gPartial<PointMaterial>): PointMaterial;
-    }
+        __class__: "feng3d.PointMaterial" = "feng3d.PointMaterial";
 
-    export interface MaterialRawMap
-    {
-        point: gPartial<PointMaterial>
+        shaderName: "point" = "point";
+
+        uniforms = new PointUniforms();
     }
 
     export class PointUniforms

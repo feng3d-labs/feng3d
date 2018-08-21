@@ -9,6 +9,8 @@ namespace feng3d
      */
     export class CylinderGeometry extends Geometry
     {
+        __class__: "feng3d.CylinderGeometry" | "feng3d.ConeGeometry" = "feng3d.CylinderGeometry";
+
         /**
          * 顶部半径
          */

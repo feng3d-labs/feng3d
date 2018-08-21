@@ -1,25 +1,8 @@
 namespace feng3d
 {
-    /**
-     * 材质工厂
-     */
-    export class MaterialFactory
-    {
-        /**
-         * 创建材质
-         * @param shader shader名称
-         * @param raw 材质数据
-         */
-        create(shader: string, raw?: gPartial<Material>)
-        {
-            raw = raw || {};
-            raw.shaderName = <any>shader;
-            var material = new Material(raw);
-            return material;
-        }
-    }
+    export interface MaterialMap { }
 
-    export var materialFactory = new MaterialFactory();
+    export type Materials = MaterialMap[keyof MaterialMap];
 
     /**
      * 材质
@@ -27,8 +10,6 @@ namespace feng3d
      */
     export class Material extends Feng3dAssets
     {
-        __class__: "feng3d.Material" = "feng3d.Material";
-
         /**
          * shader名称
          */
@@ -42,7 +23,7 @@ namespace feng3d
          */
         @serialize
         @oav({ component: "OAVObjectView" })
-        uniforms: Object = new StandardUniforms();
+        uniforms = {};
 
         /**
          * 渲染参数

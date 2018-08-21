@@ -7,7 +7,7 @@ namespace feng3d
     {
         geometry = new PlaneGeometry({ width: 10, height: 10 });
 
-        material = materialFactory.create("water");
+        material = new WaterMaterial();
 
         /**
          * 帧缓冲对象，用于处理水面反射
