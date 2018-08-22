@@ -8430,7 +8430,6 @@ declare namespace feng3d {
          * 创建一个组件容器
          */
         constructor();
-        set(setfun: (space: this) => void): this;
         init(gameObject: GameObject): void;
         /**
          * Returns the component of Type type if the game object has one attached, null if it doesn't.

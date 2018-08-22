@@ -80,12 +80,6 @@ namespace feng3d
             super();
         }
 
-        set(setfun: (space: this) => void)
-        {
-            setfun(this);
-            return this;
-        }
-
         init(gameObject: GameObject)
         {
             this._gameObject = gameObject;

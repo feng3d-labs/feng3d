@@ -13699,10 +13699,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Component.prototype.set = function (setfun) {
-            setfun(this);
-            return this;
-        };
         Component.prototype.init = function (gameObject) {
             this._gameObject = gameObject;
         };
