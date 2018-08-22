@@ -50,7 +50,7 @@ namespace feng3d
 
         @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "material", datatype: "material" } } })
         @serialize
-        material = new ParticleMaterial({ renderParams: { renderMode: RenderMode.POINTS } });
+        material = new ParticleMaterial().value({ renderParams: { renderMode: RenderMode.POINTS } });
 
         /**
          * 粒子全局属性

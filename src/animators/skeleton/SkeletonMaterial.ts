@@ -9,11 +9,6 @@ namespace feng3d
         shaderName: "skeleton" = "skeleton";
 
         uniforms = new SkeletonUniforms();
-
-        constructor(raw?: gPartial<SkeletonMaterial>)
-        {
-            super(raw);
-        }
     }
 
     export class SkeletonUniforms extends StandardUniforms

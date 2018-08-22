@@ -13,11 +13,6 @@ namespace feng3d
         shaderName: "segment" = "segment";
 
         uniforms = new SegmentUniforms();
-
-        constructor(raw?: gPartial<SegmentMaterial>)
-        {
-            super(raw);
-        }
     }
 
     export class SegmentUniforms

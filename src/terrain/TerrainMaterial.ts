@@ -9,11 +9,6 @@ namespace feng3d
         shaderName: "terrain" = "terrain";
 
         uniforms = new TerrainUniforms();
-
-        constructor(raw?: gPartial<TerrainMaterial>)
-        {
-            super(raw);
-        }
     }
 
     export class TerrainUniforms extends StandardUniforms

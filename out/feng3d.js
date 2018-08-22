@@ -4118,6 +4118,29 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * Base class for all objects feng3d can reference.
+     *
+     * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
+     */
+    var Feng3dObject = /** @class */ (function (_super) {
+        __extends(Feng3dObject, _super);
+        //------------------------------------------
+        // Functions
+        //------------------------------------------
+        function Feng3dObject() {
+            return _super.call(this) || this;
+        }
+        Feng3dObject.prototype.value = function (v) {
+            feng3d.serialization.setValue(this, v);
+            return this;
+        };
+        return Feng3dObject;
+    }(feng3d.EventDispatcher));
+    feng3d.Feng3dObject = Feng3dObject;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var databases = {};
     /**
      *
@@ -4926,8 +4949,10 @@ var feng3d;
     /**
      * feng3d资源
      */
-    var Feng3dAssets = /** @class */ (function () {
+    var Feng3dAssets = /** @class */ (function (_super) {
+        __extends(Feng3dAssets, _super);
         function Feng3dAssets() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Feng3dAssets.prototype.pathChanged = function () {
             // 更新名字
@@ -4937,7 +4962,7 @@ var feng3d;
             feng3d.watch("pathChanged")
         ], Feng3dAssets.prototype, "path", void 0);
         return Feng3dAssets;
-    }());
+    }(feng3d.Feng3dObject));
     feng3d.Feng3dAssets = Feng3dAssets;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -13607,115 +13632,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Bit mask that controls object destruction, saving and visibility in inspectors.
-     */
-    var HideFlags;
-    (function (HideFlags) {
-        /**
-         * A normal, visible object. This is the default.
-         */
-        HideFlags[HideFlags["None"] = 0] = "None";
-        /**
-         * The object will not appear in the hierarchy.
-         */
-        HideFlags[HideFlags["HideInHierarchy"] = 1] = "HideInHierarchy";
-        /**
-         * It is not possible to view it in the inspector.
-         */
-        HideFlags[HideFlags["HideInInspector"] = 2] = "HideInInspector";
-        /**
-         * The object will not be saved to the scene in the editor.
-         */
-        HideFlags[HideFlags["DontSaveInEditor"] = 4] = "DontSaveInEditor";
-        /**
-         * The object is not be editable in the inspector.
-         */
-        HideFlags[HideFlags["NotEditable"] = 8] = "NotEditable";
-        /**
-         * The object will not be saved when building a player.
-         */
-        HideFlags[HideFlags["DontSaveInBuild"] = 16] = "DontSaveInBuild";
-        /**
-         * The object will not be unloaded by Resources.UnloadUnusedAssets.
-         */
-        HideFlags[HideFlags["DontUnloadUnusedAsset"] = 32] = "DontUnloadUnusedAsset";
-        /**
-         * The object will not be saved to the scene. It will not be destroyed when a new scene is loaded. It is a shortcut for HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor | HideFlags.DontUnloadUnusedAsset.
-         */
-        HideFlags[HideFlags["DontSave"] = 52] = "DontSave";
-        /**
-         * A combination of not shown in the hierarchy, not saved to to scenes and not unloaded by The object will not be unloaded by Resources.UnloadUnusedAssets.
-         */
-        HideFlags[HideFlags["HideAndDontSave"] = 61] = "HideAndDontSave";
-    })(HideFlags = feng3d.HideFlags || (feng3d.HideFlags = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * Base class for all objects feng3d can reference.
-     *
-     * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
-     */
-    var Feng3dObject = /** @class */ (function (_super) {
-        __extends(Feng3dObject, _super);
-        //------------------------------------------
-        // Functions
-        //------------------------------------------
-        function Feng3dObject() {
-            return _super.call(this) || this;
-        }
-        /**
-         * Removes a gameobject, component or asset.
-         * @param obj	The Feng3dObject to destroy.
-         * @param t	    The optional amount of time to delay before destroying the Feng3dObject.
-         */
-        Feng3dObject.destroy = function (obj, t) {
-            if (t === void 0) { t = 0; }
-        };
-        /**
-         * Destroys the Feng3dObject obj immediately.
-         * @param obj	                    Feng3dObject to be destroyed.
-         * @param allowDestroyingAssets	    Set to true to allow assets to be destoyed.
-         */
-        Feng3dObject.destroyImmediate = function (obj, allowDestroyingAssets) {
-            if (allowDestroyingAssets === void 0) { allowDestroyingAssets = false; }
-        };
-        /**
-         * Makes the Feng3dObject target not be destroyed automatically when loading a new scene.
-         */
-        Feng3dObject.dontDestroyOnLoad = function (target) {
-        };
-        /**
-         * Returns the first active loaded Feng3dObject of Type type.
-         */
-        Feng3dObject.findObjectOfType = function (type) {
-            return null;
-        };
-        /**
-         * Returns a list of all active loaded objects of Type type.
-         */
-        Feng3dObject.findObjectsOfType = function (type) {
-            return null;
-        };
-        /**
-         * Returns a copy of the Feng3dObject original.
-         * @param original	An existing Feng3dObject that you want to make a copy of.
-         * @param position	Position for the new Feng3dObject(default Vector3.zero).
-         * @param rotation	Orientation of the new Feng3dObject(default Quaternion.identity).
-         * @param parent	The transform the Feng3dObject will be parented to.
-         * @param worldPositionStays	If when assigning the parent the original world position should be maintained.
-         */
-        Feng3dObject.instantiate = function (original, position, rotation, parent, worldPositionStays) {
-            if (worldPositionStays === void 0) { worldPositionStays = false; }
-            return null;
-        };
-        return Feng3dObject;
-    }(feng3d.EventDispatcher));
-    feng3d.Feng3dObject = Feng3dObject;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * Base class for everything attached to GameObjects.
      *
      * Note that your code will never directly create a Component. Instead, you write script code, and attach the script to a GameObject. See Also: ScriptableObject as a way to create scripts that do not attach to any GameObject.
@@ -20610,7 +20526,7 @@ var feng3d;
      */
     var Material = /** @class */ (function (_super) {
         __extends(Material, _super);
-        function Material(raw) {
+        function Material() {
             var _this = _super.call(this) || this;
             /**
              * shader名称
@@ -20624,15 +20540,9 @@ var feng3d;
              * 渲染参数
              */
             _this.renderParams = new feng3d.RenderParams();
-            feng3d.serialization.setValue(_this, raw);
             feng3d.feng3dDispatcher.on("assets.shaderChanged", _this.onShaderChanged, _this);
             return _this;
         }
-        Material.prototype.value = function (v) {
-            feng3d.serialization.setValue(this, v);
-            return this;
-        };
-        ;
         Material.prototype.beforeRender = function (renderAtomic) {
             for (var key in this.uniforms) {
                 if (this.uniforms.hasOwnProperty(key)) {
@@ -20678,8 +20588,8 @@ var feng3d;
      */
     var PointMaterial = /** @class */ (function (_super) {
         __extends(PointMaterial, _super);
-        function PointMaterial(raw) {
-            var _this = _super.call(this, raw) || this;
+        function PointMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.PointMaterial";
             _this.shaderName = "point";
             _this.uniforms = new PointUniforms();
@@ -20719,8 +20629,8 @@ var feng3d;
      */
     var ColorMaterial = /** @class */ (function (_super) {
         __extends(ColorMaterial, _super);
-        function ColorMaterial(raw) {
-            var _this = _super.call(this, raw) || this;
+        function ColorMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.ColorMaterial";
             _this.shaderName = "color";
             _this.uniforms = new ColorUniforms();
@@ -20753,8 +20663,8 @@ var feng3d;
      */
     var SegmentMaterial = /** @class */ (function (_super) {
         __extends(SegmentMaterial, _super);
-        function SegmentMaterial(raw) {
-            var _this = _super.call(this, raw) || this;
+        function SegmentMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.SegmentMaterial";
             _this.shaderName = "segment";
             _this.uniforms = new SegmentUniforms();
@@ -20786,8 +20696,8 @@ var feng3d;
      */
     var TextureMaterial = /** @class */ (function (_super) {
         __extends(TextureMaterial, _super);
-        function TextureMaterial(raw) {
-            var _this = _super.call(this, raw) || this;
+        function TextureMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.TextureMaterial";
             _this.shaderName = "texture";
             _this.uniforms = new TextureUniforms();
@@ -20834,8 +20744,8 @@ var feng3d;
     })(FogMode = feng3d.FogMode || (feng3d.FogMode = {}));
     var StandardMaterial = /** @class */ (function (_super) {
         __extends(StandardMaterial, _super);
-        function StandardMaterial(raw) {
-            var _this = _super.call(this, raw) || this;
+        function StandardMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.StandardMaterial";
             _this.shaderName = "standard";
             /**
@@ -22598,8 +22508,8 @@ var feng3d;
 (function (feng3d) {
     var WaterMaterial = /** @class */ (function (_super) {
         __extends(WaterMaterial, _super);
-        function WaterMaterial(raw) {
-            var _this = _super.call(this, raw) || this;
+        function WaterMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.WaterMaterial";
             _this.shaderName = "water";
             _this.uniforms = new WaterUniforms();
@@ -22881,8 +22791,8 @@ var feng3d;
 (function (feng3d) {
     var TerrainMaterial = /** @class */ (function (_super) {
         __extends(TerrainMaterial, _super);
-        function TerrainMaterial(raw) {
-            var _this = _super.call(this, raw) || this;
+        function TerrainMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.TerrainMaterial";
             _this.shaderName = "terrain";
             _this.uniforms = new TerrainUniforms();
@@ -23552,7 +23462,7 @@ var feng3d;
              */
             _this.numParticles = 1000;
             _this.geometry = new feng3d.PointGeometry();
-            _this.material = new feng3d.ParticleMaterial({ renderParams: { renderMode: feng3d.RenderMode.POINTS } });
+            _this.material = new feng3d.ParticleMaterial().value({ renderParams: { renderMode: feng3d.RenderMode.POINTS } });
             /**
              * 粒子全局属性
              */
@@ -23777,8 +23687,8 @@ var feng3d;
 (function (feng3d) {
     var ParticleMaterial = /** @class */ (function (_super) {
         __extends(ParticleMaterial, _super);
-        function ParticleMaterial(raw) {
-            var _this = _super.call(this, raw) || this;
+        function ParticleMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.ParticleMaterial";
             _this.shaderName = "particle";
             _this.uniforms = new ParticleUniforms();
@@ -24169,8 +24079,8 @@ var feng3d;
 (function (feng3d) {
     var SkeletonMaterial = /** @class */ (function (_super) {
         __extends(SkeletonMaterial, _super);
-        function SkeletonMaterial(raw) {
-            var _this = _super.call(this, raw) || this;
+        function SkeletonMaterial() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.SkeletonMaterial";
             _this.shaderName = "skeleton";
             _this.uniforms = new SkeletonUniforms();

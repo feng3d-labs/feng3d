@@ -43,6 +43,8 @@
         "src/utils/ShaderMacroUtils.ts",
         "src/utils/Lazy.ts",
         //
+        "src/core/Feng3dObject.ts",
+        //
         "src/assets/Storage.ts",
         "src/assets/IndexedDBfs.ts",
         "src/assets/HttpFS.ts",
@@ -118,9 +120,6 @@
         "src/render/shader/Macro.ts",
         "src/render/shader/ShaderLib.ts",
         "src/autofiles/ShaderConfig.ts",
-        //
-        "src/core/HideFlags.ts",
-        "src/core/Feng3dObject.ts",
         //组件模块
         "src/component/Component.ts",
         "src/component/Behaviour.ts",

@@ -1988,6 +1988,17 @@ declare namespace feng3d {
         getvalue: <T>(lazyItem: Lazy<T>) => T;
     };
 }
+declare namespace feng3d {
+    /**
+     * Base class for all objects feng3d can reference.
+     *
+     * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
+     */
+    class Feng3dObject extends EventDispatcher {
+        value(v: gPartial<this>): this;
+        constructor();
+    }
+}
 interface IDBObjectStore {
     getAllKeys(): IDBRequest;
 }
@@ -2430,7 +2441,7 @@ declare namespace feng3d {
     /**
      * feng3d资源
      */
-    class Feng3dAssets {
+    class Feng3dAssets extends Feng3dObject {
         /**
          * 路径
          */
@@ -8376,97 +8387,6 @@ declare namespace feng3d {
 declare namespace feng3d {
 }
 declare namespace feng3d {
-    /**
-     * Bit mask that controls object destruction, saving and visibility in inspectors.
-     */
-    enum HideFlags {
-        /**
-         * A normal, visible object. This is the default.
-         */
-        None = 0,
-        /**
-         * The object will not appear in the hierarchy.
-         */
-        HideInHierarchy = 1,
-        /**
-         * It is not possible to view it in the inspector.
-         */
-        HideInInspector = 2,
-        /**
-         * The object will not be saved to the scene in the editor.
-         */
-        DontSaveInEditor = 4,
-        /**
-         * The object is not be editable in the inspector.
-         */
-        NotEditable = 8,
-        /**
-         * The object will not be saved when building a player.
-         */
-        DontSaveInBuild = 16,
-        /**
-         * The object will not be unloaded by Resources.UnloadUnusedAssets.
-         */
-        DontUnloadUnusedAsset = 32,
-        /**
-         * The object will not be saved to the scene. It will not be destroyed when a new scene is loaded. It is a shortcut for HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor | HideFlags.DontUnloadUnusedAsset.
-         */
-        DontSave = 52,
-        /**
-         * A combination of not shown in the hierarchy, not saved to to scenes and not unloaded by The object will not be unloaded by Resources.UnloadUnusedAssets.
-         */
-        HideAndDontSave = 61
-    }
-}
-declare namespace feng3d {
-    type Type<T extends Feng3dObject> = new () => T;
-    /**
-     * Base class for all objects feng3d can reference.
-     *
-     * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
-     */
-    class Feng3dObject extends EventDispatcher {
-        /**
-         * Should the Feng3dObject be hidden, saved with the scene or modifiable by the user?
-         */
-        hideFlags: HideFlags;
-        constructor();
-        /**
-         * Removes a gameobject, component or asset.
-         * @param obj	The Feng3dObject to destroy.
-         * @param t	    The optional amount of time to delay before destroying the Feng3dObject.
-         */
-        static destroy(obj: Feng3dObject, t?: number): void;
-        /**
-         * Destroys the Feng3dObject obj immediately.
-         * @param obj	                    Feng3dObject to be destroyed.
-         * @param allowDestroyingAssets	    Set to true to allow assets to be destoyed.
-         */
-        static destroyImmediate(obj: Feng3dObject, allowDestroyingAssets?: boolean): void;
-        /**
-         * Makes the Feng3dObject target not be destroyed automatically when loading a new scene.
-         */
-        static dontDestroyOnLoad(target: Feng3dObject): void;
-        /**
-         * Returns the first active loaded Feng3dObject of Type type.
-         */
-        static findObjectOfType<T extends Feng3dObject>(type: Type<T>): T | null;
-        /**
-         * Returns a list of all active loaded objects of Type type.
-         */
-        static findObjectsOfType<T extends Feng3dObject>(type: Type<T>): T[] | null;
-        /**
-         * Returns a copy of the Feng3dObject original.
-         * @param original	An existing Feng3dObject that you want to make a copy of.
-         * @param position	Position for the new Feng3dObject(default Vector3.zero).
-         * @param rotation	Orientation of the new Feng3dObject(default Quaternion.identity).
-         * @param parent	The transform the Feng3dObject will be parented to.
-         * @param worldPositionStays	If when assigning the parent the original world position should be maintained.
-         */
-        static instantiate<T extends Feng3dObject>(original: T, position?: Vector3, rotation?: Quaternion, parent?: Transform, worldPositionStays?: boolean): T | null;
-    }
-}
-declare namespace feng3d {
     interface ComponentMap {
     }
     type Components = ComponentMap[keyof ComponentMap];
@@ -9092,7 +9012,7 @@ declare namespace feng3d {
          */
         readonly globalVisible: any;
         readonly scene: Scene3D;
-        components: (PointLight | SpotLight | DirectionalLight | Transform | Behaviour | OutLineComponent | CartoonComponent | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | Model | ScriptComponent | Scene3D | Camera | FPSController | AudioListener | AudioSource | SkeletonComponent | Animation)[];
+        components: (PointLight | SpotLight | DirectionalLight | Behaviour | OutLineComponent | CartoonComponent | SkyBox | Transform | HoldSizeComponent | BillboardComponent | WireframeComponent | Model | ScriptComponent | Scene3D | Camera | FPSController | AudioListener | AudioSource | SkeletonComponent | Animation)[];
         /**
          * 构建3D对象
          */
@@ -10739,8 +10659,7 @@ declare namespace feng3d {
          * 渲染程序
          */
         shader: Shader;
-        value(v: gPartial<this>): this;
-        constructor(raw?: gPartial<Material>);
+        constructor();
         beforeRender(renderAtomic: RenderAtomic): void;
         private onShaderChanged;
     }
@@ -10756,7 +10675,6 @@ declare namespace feng3d {
         __class__: "feng3d.PointMaterial";
         shaderName: "point";
         uniforms: PointUniforms;
-        constructor(raw?: gPartial<PointMaterial>);
     }
     class PointUniforms {
         /**
@@ -10780,7 +10698,6 @@ declare namespace feng3d {
         __class__: "feng3d.ColorMaterial";
         shaderName: "color";
         uniforms: ColorUniforms;
-        constructor(raw?: gPartial<ColorMaterial>);
     }
     class ColorUniforms {
         /**
@@ -10801,7 +10718,6 @@ declare namespace feng3d {
         __class__: "feng3d.SegmentMaterial";
         shaderName: "segment";
         uniforms: SegmentUniforms;
-        constructor(raw?: gPartial<SegmentMaterial>);
     }
     class SegmentUniforms {
         /**
@@ -10821,7 +10737,6 @@ declare namespace feng3d {
         __class__: "feng3d.TextureMaterial";
         shaderName: "texture";
         uniforms: TextureUniforms;
-        constructor(raw?: gPartial<TextureMaterial>);
     }
     class TextureUniforms {
         /**
@@ -10854,7 +10769,6 @@ declare namespace feng3d {
          * Uniform数据
          */
         uniforms: StandardUniforms;
-        constructor(raw?: gPartial<StandardMaterial>);
     }
     class StandardUniforms {
         /**
@@ -11462,7 +11376,6 @@ declare namespace feng3d {
         __class__: "feng3d.WaterMaterial";
         shaderName: "water";
         uniforms: WaterUniforms;
-        constructor(raw?: gPartial<WaterMaterial>);
     }
     class WaterUniforms {
         u_alpha: number;
@@ -11558,7 +11471,6 @@ declare namespace feng3d {
         __class__: "feng3d.TerrainMaterial";
         shaderName: "terrain";
         uniforms: TerrainUniforms;
-        constructor(raw?: gPartial<TerrainMaterial>);
     }
     class TerrainUniforms extends StandardUniforms {
         s_splatTexture1: UrlImageTexture2D;
@@ -11929,7 +11841,6 @@ declare namespace feng3d {
         __class__: "feng3d.ParticleMaterial";
         shaderName: "particle";
         uniforms: ParticleUniforms;
-        constructor(raw?: gPartial<ParticleMaterial>);
     }
     class ParticleUniforms extends StandardUniforms {
     }
@@ -12074,7 +11985,6 @@ declare namespace feng3d {
         __class__: "feng3d.SkeletonMaterial";
         shaderName: "skeleton";
         uniforms: SkeletonUniforms;
-        constructor(raw?: gPartial<SkeletonMaterial>);
     }
     class SkeletonUniforms extends StandardUniforms {
     }

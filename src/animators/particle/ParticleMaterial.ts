@@ -10,11 +10,6 @@ namespace feng3d
         shaderName: "particle" = "particle";
 
         uniforms = new ParticleUniforms();
-
-        constructor(raw?: gPartial<ParticleMaterial>)
-        {
-            super(raw);
-        }
     }
 
     export class ParticleUniforms extends StandardUniforms

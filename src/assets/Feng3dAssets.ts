@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * feng3d资源
      */
-    export class Feng3dAssets
+    export class Feng3dAssets extends Feng3dObject
     {
         /**
          * 路径

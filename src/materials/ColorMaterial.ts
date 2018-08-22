@@ -12,11 +12,6 @@ namespace feng3d
         shaderName: "color" = "color";
 
         uniforms = new ColorUniforms();
-
-        constructor(raw?: gPartial<ColorMaterial>)
-        {
-            super(raw);
-        }
     }
 
     export class ColorUniforms

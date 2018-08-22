@@ -36,16 +36,9 @@ namespace feng3d
          */
         shader: Shader;
 
-        value(v: gPartial<this>)
-        {
-            feng3d.serialization.setValue(this, <any>v);
-            return this;
-        };
-
-        constructor(raw?: gPartial<Material>)
+        constructor()
         {
             super();
-            serialization.setValue(this, raw);
             feng3dDispatcher.on("assets.shaderChanged", this.onShaderChanged, this);
         }
 

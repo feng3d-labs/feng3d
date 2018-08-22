@@ -9,11 +9,6 @@ namespace feng3d
         shaderName: "water" = "water";
 
         uniforms = new WaterUniforms();
-
-        constructor(raw?: gPartial<WaterMaterial>)
-        {
-            super(raw);
-        }
     }
 
     export class WaterUniforms
