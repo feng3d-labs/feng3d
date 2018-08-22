@@ -8692,6 +8692,7 @@ declare namespace feng3d {
         OutLineComponent: OutLineComponent;
     }
     class OutLineComponent extends Component {
+        __class__: "feng3d.OutLineComponent";
         size: number;
         color: Color4;
         outlineMorphFactor: number;
@@ -8746,6 +8747,7 @@ declare namespace feng3d {
      * 参考
      */
     class CartoonComponent extends Component {
+        __class__: "feng3d.CartoonComponent";
         outlineSize: number;
         outlineColor: Color4;
         outlineMorphFactor: number;
@@ -8777,6 +8779,7 @@ declare namespace feng3d {
      * 天空盒组件
      */
     class SkyBox extends Component {
+        __class__: "feng3d.SkyBox";
         s_skyboxTexture: TextureCube;
         constructor();
         init(gameObject: GameObject): void;
@@ -9034,6 +9037,7 @@ declare namespace feng3d {
      * 游戏对象，场景唯一存在的对象类型
      */
     class GameObject extends Feng3dObject {
+        __class__: "feng3d.GameObject";
         readonly renderAtomic: RenderAtomic;
         /**
          * 游戏对象池
@@ -9298,6 +9302,7 @@ declare namespace feng3d {
         HoldSizeComponent: HoldSizeComponent;
     }
     class HoldSizeComponent extends Component {
+        __class__: "feng3d.HoldSizeComponent";
         /**
          * 保持缩放尺寸
          */
@@ -9340,6 +9345,7 @@ declare namespace feng3d {
      * 线框组件，将会对拥有该组件的对象绘制线框
      */
     class WireframeComponent extends Component {
+        __class__: "feng3d.WireframeComponent";
         color: Color4;
     }
 }
@@ -9491,6 +9497,7 @@ declare namespace feng3d {
      * 3D场景
      */
     class Scene3D extends Component {
+        __class__: "feng3d.Scene3D";
         /**
          * 背景颜色
          */
@@ -11990,6 +11997,7 @@ declare namespace feng3d {
         SkeletonComponent: SkeletonComponent;
     }
     class SkeletonComponent extends Component {
+        __class__: "feng3d.SkeletonComponent";
         /** 骨骼关节数据列表 */
         joints: SkeletonJoint[];
         private isInitJoints;

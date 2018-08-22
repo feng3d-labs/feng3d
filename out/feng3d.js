@@ -14515,6 +14515,7 @@ var feng3d;
         __extends(OutLineComponent, _super);
         function OutLineComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.OutLineComponent";
             _this.size = 1;
             _this.color = new feng3d.Color4(0.2, 0.2, 0.2, 1.0);
             _this.outlineMorphFactor = 0.0;
@@ -14619,6 +14620,7 @@ var feng3d;
         __extends(CartoonComponent, _super);
         function CartoonComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.CartoonComponent";
             _this.outlineSize = 1;
             _this.outlineColor = new feng3d.Color4(0.2, 0.2, 0.2, 1.0);
             _this.outlineMorphFactor = 0.0;
@@ -14698,6 +14700,7 @@ var feng3d;
         __extends(SkyBox, _super);
         function SkyBox() {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.SkyBox";
             _this.s_skyboxTexture = new feng3d.TextureCube();
             return _this;
             //
@@ -15579,6 +15582,7 @@ var feng3d;
         function GameObject(raw) {
             if (raw === void 0) { raw = {}; }
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.GameObject";
             _this.renderAtomic = new feng3d.RenderAtomic();
             /**
              * 是否可序列化
@@ -16281,6 +16285,7 @@ var feng3d;
         __extends(HoldSizeComponent, _super);
         function HoldSizeComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.HoldSizeComponent";
             _this._holdSize = 1;
             return _this;
         }
@@ -16430,6 +16435,7 @@ var feng3d;
         __extends(WireframeComponent, _super);
         function WireframeComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.WireframeComponent";
             _this.color = new feng3d.Color4(125 / 255, 176 / 255, 250 / 255);
             return _this;
         }
@@ -16770,6 +16776,7 @@ var feng3d;
         __extends(Scene3D, _super);
         function Scene3D() {
             var _this_1 = _super !== null && _super.apply(this, arguments) || this;
+            _this_1.__class__ = "feng3d.Scene3D";
             /**
              * 背景颜色
              */
@@ -23874,6 +23881,7 @@ var feng3d;
         __extends(SkeletonComponent, _super);
         function SkeletonComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.SkeletonComponent";
             /** 骨骼关节数据列表 */
             _this.joints = [];
             _this.isInitJoints = false;
@@ -27192,6 +27200,7 @@ var feng3d;
             return new feng3d.GameObject({
                 name: name, components: [
                     { __class__: "feng3d.Model", geometry: new feng3d.CubeGeometry() },
+                    { __class__: "feng3d.Water" }
                 ]
             });
         };

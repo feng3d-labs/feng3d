@@ -1,13 +1,15 @@
 namespace feng3d
 {
-    
+
     export interface ComponentMap { SkyBox: SkyBox; }
-    
+
     /**
      * 天空盒组件
      */
     export class SkyBox extends Component
     {
+        __class__: "feng3d.SkyBox" = "feng3d.SkyBox";
+
         @serialize
         @oav({ component: "OAVPick", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         s_skyboxTexture = new TextureCube();

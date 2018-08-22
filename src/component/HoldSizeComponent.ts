@@ -5,6 +5,9 @@ namespace feng3d
 
     export class HoldSizeComponent extends Component
     {
+
+        __class__: "feng3d.HoldSizeComponent" = "feng3d.HoldSizeComponent";
+
         /**
          * 保持缩放尺寸
          */

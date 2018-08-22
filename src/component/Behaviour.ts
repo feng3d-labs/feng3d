@@ -18,6 +18,7 @@ namespace feng3d
      */
     export class Behaviour extends Component
     {
+
         /**
          * Enabled Behaviours are Updated, disabled Behaviours are not.
          */

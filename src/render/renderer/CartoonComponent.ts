@@ -8,6 +8,9 @@ namespace feng3d
      */
     export class CartoonComponent extends Component
     {
+
+        __class__: "feng3d.CartoonComponent" = "feng3d.CartoonComponent";
+
         @oav()
         @serialize
         outlineSize = 1;

@@ -59,6 +59,9 @@ namespace feng3d
      */
     export class GameObject extends Feng3dObject
     {
+        
+        __class__: "feng3d.GameObject" = "feng3d.GameObject";
+        
         readonly renderAtomic = new RenderAtomic();
 
         /**
