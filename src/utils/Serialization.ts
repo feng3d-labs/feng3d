@@ -203,7 +203,8 @@ namespace feng3d
             this.setValue(target, object);
             return target;
         }
-        setValue(target: Object, object: Object)
+
+        setValue<T>(target: T, object: gPartial<T>)
         {
             if (!object) return;
 
@@ -226,7 +227,7 @@ namespace feng3d
             //     }
             // }
         }
-        setPropertyValue(target: Object, object: Object, property: string)
+        setPropertyValue<T>(target: T, object: gPartial<T>, property: string)
         {
             if (target[property] == object[property])
                 return;

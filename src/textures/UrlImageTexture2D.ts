@@ -12,6 +12,7 @@ namespace feng3d
             super(raw);
             //
             feng3dDispatcher.on("assets.imageAssetsChanged", this.onImageAssetsChanged, this);
+            this.urlChanged();
         }
 
         private urlChanged()

@@ -6,7 +6,6 @@ namespace feng3d
 
     /**
      * 材质
-
      */
     export class Material extends Feng3dAssets
     {
@@ -37,6 +36,12 @@ namespace feng3d
          */
         shader: Shader;
 
+        value(v: gPartial<this>)
+        {
+            feng3d.serialization.setValue(this, <any>v);
+            return this;
+        };
+
         constructor(raw?: gPartial<Material>)
         {
             super();
@@ -61,13 +66,13 @@ namespace feng3d
 
         private onShaderChanged()
         {
-            var cls = shaderConfig.shaders[this.shaderName].cls
+            var cls = shaderConfig.shaders[this.shaderName].cls;
             if (cls)
             {
                 if (!(this.uniforms instanceof cls))
                 {
                     var newuniforms = new cls();
-                    serialization.setValue(newuniforms, this.uniforms);
+                    serialization.setValue(newuniforms, <any>this.uniforms);
                     this.uniforms = newuniforms;
                 }
             }

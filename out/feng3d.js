@@ -20424,6 +20424,7 @@ var feng3d;
             _this.url = "";
             //
             feng3d.feng3dDispatcher.on("assets.imageAssetsChanged", _this.onImageAssetsChanged, _this);
+            _this.urlChanged();
             return _this;
         }
         UrlImageTexture2D.prototype.urlChanged = function () {
@@ -20606,7 +20607,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 材质
-
      */
     var Material = /** @class */ (function (_super) {
         __extends(Material, _super);
@@ -20628,6 +20628,11 @@ var feng3d;
             feng3d.feng3dDispatcher.on("assets.shaderChanged", _this.onShaderChanged, _this);
             return _this;
         }
+        Material.prototype.value = function (v) {
+            feng3d.serialization.setValue(this, v);
+            return this;
+        };
+        ;
         Material.prototype.beforeRender = function (renderAtomic) {
             for (var key in this.uniforms) {
                 if (this.uniforms.hasOwnProperty(key)) {
@@ -27200,7 +27205,6 @@ var feng3d;
             return new feng3d.GameObject({
                 name: name, components: [
                     { __class__: "feng3d.Model", geometry: new feng3d.CubeGeometry() },
-                    { __class__: "feng3d.Water" }
                 ]
             });
         };

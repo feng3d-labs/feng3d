@@ -1197,8 +1197,8 @@ declare namespace feng3d {
          * @returns 反序列化后的数据
          */
         deserialize(object: any): any;
-        setValue(target: Object, object: Object): void;
-        setPropertyValue(target: Object, object: Object, property: string): void;
+        setValue<T>(target: T, object: gPartial<T>): void;
+        setPropertyValue<T>(target: T, object: gPartial<T>, property: string): void;
         clone<T>(target: T): T;
     }
 }
@@ -10721,7 +10721,6 @@ declare namespace feng3d {
     type Materials = MaterialMap[keyof MaterialMap];
     /**
      * 材质
-
      */
     class Material extends Feng3dAssets {
         /**
@@ -10740,6 +10739,7 @@ declare namespace feng3d {
          * 渲染程序
          */
         shader: Shader;
+        value(v: gPartial<this>): this;
         constructor(raw?: gPartial<Material>);
         beforeRender(renderAtomic: RenderAtomic): void;
         private onShaderChanged;
