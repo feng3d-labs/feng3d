@@ -47,7 +47,7 @@ namespace feng3d
 
     function createMD5Mesh(md5MeshData: MD5MeshData, completed?: (gameObject: GameObject) => void)
     {
-        var gameObject = GameObject.create();
+        var gameObject = new GameObject();
         gameObject.addComponent(Animation);
         gameObject.transform.rx = -90;
 
@@ -65,7 +65,7 @@ namespace feng3d
             var skinSkeleton = new SkinSkeletonTemp();
             var geometry = createGeometry(md5MeshData.meshs[i], skeletonComponent, skinSkeleton);
 
-            var skeletonGameObject = GameObject.create();
+            var skeletonGameObject = new GameObject();
 
             var skinnedModel: SkinnedModel = skeletonGameObject.addComponent(SkinnedModel);
             skinnedModel.geometry = geometry;

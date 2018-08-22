@@ -9211,7 +9211,6 @@ declare namespace feng3d {
          * @param name
          */
         static find(name: string): GameObject;
-        static create(name?: string, raw?: gPartial<GameObject>): GameObject;
         /**
          * 组件列表
          */

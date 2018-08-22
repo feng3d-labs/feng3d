@@ -605,14 +605,6 @@ namespace feng3d
             return target;
         }
 
-        static create(name = "GameObject", raw?: gPartial<GameObject>)
-        {
-            raw = raw || {};
-            raw.name = name;
-            var gameobject = new GameObject(raw);
-            return gameobject;
-        }
-
         //------------------------------------------
         // Protected Properties
         //------------------------------------------

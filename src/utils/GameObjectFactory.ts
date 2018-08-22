@@ -6,13 +6,13 @@ namespace feng3d
     {
         createGameObject(name = "GameObject")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             return gameobject;
         }
 
         createCube(name: string = "cube")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             var model = gameobject.addComponent(Model);
             model.geometry = new CubeGeometry();
             return gameobject;
@@ -20,7 +20,7 @@ namespace feng3d
 
         createPlane(name: string = "plane")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             var model = gameobject.addComponent(Model);
             model.geometry = new PlaneGeometry({ width: 10, height: 10 });
             model.material = new StandardMaterial();
@@ -29,7 +29,7 @@ namespace feng3d
 
         createCylinder(name: string = "cylinder")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             var model = gameobject.addComponent(Model);
             model.geometry = new CylinderGeometry();
             model.material = new StandardMaterial();
@@ -38,7 +38,7 @@ namespace feng3d
 
         createCone(name: string = "Cone")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             var model = gameobject.addComponent(Model);
             model.geometry = new ConeGeometry();
             model.material = new StandardMaterial();
@@ -47,7 +47,7 @@ namespace feng3d
 
         createTorus(name: string = "Torus")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             var model = gameobject.addComponent(Model);
             model.geometry = new TorusGeometry();
             model.material = new StandardMaterial();
@@ -56,14 +56,14 @@ namespace feng3d
 
         createTerrain(name: string = "Terrain")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             gameobject.addComponent(Terrain);
             return gameobject;
         }
 
         createSphere(name: string = "sphere")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             var model = gameobject.addComponent(Model);
             model.geometry = new SphereGeometry();
             model.material = new StandardMaterial();
@@ -72,7 +72,7 @@ namespace feng3d
 
         createCapsule(name: string = "capsule")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             var model = gameobject.addComponent(Model);
             model.geometry = new CapsuleGeometry();
             model.material = new StandardMaterial();
@@ -81,21 +81,21 @@ namespace feng3d
 
         createCamera(name: string = "Camera")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             gameobject.addComponent(Camera);
             return gameobject;
         }
 
         createPointLight(name: string = "PointLight")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             gameobject.addComponent(PointLight);
             return gameobject;
         }
 
         createParticle(name = "Particle")
         {
-            var _particleMesh = GameObject.create("particle");
+            var _particleMesh = new GameObject({ name: name });
             var particleSystem = _particleMesh.addComponent(ParticleSystem);
 
             // particleSystem.numParticles = 1000;
@@ -116,7 +116,7 @@ namespace feng3d
 
         createWater(name: string = "water")
         {
-            var gameobject = GameObject.create(name);
+            var gameobject = new GameObject({ name: name });
             gameobject.addComponent(Water);
             return gameobject;
         }

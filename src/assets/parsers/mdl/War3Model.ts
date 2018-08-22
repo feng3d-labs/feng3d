@@ -47,7 +47,7 @@ namespace feng3d.war3
 			this.meshs = [];
 			this.meshs.length = this.geosets.length;
 
-			var container = GameObject.create(this.model.name);
+			var container = new GameObject({ name: this.model.name });
 
 			var skeletonjoints = createSkeleton(this);
 			this.skeletonComponent = container.addComponent(SkeletonComponent);
@@ -56,8 +56,8 @@ namespace feng3d.war3
 			for (var i: number = 0; i < this.geosets.length; i++)
 			{
 				var geoset: Geoset = this.geosets[i];
-				
-				var mesh: GameObject = this.meshs[i] = GameObject.create();
+
+				var mesh: GameObject = this.meshs[i] = new GameObject();
 				// var model = mesh.addComponent(Model);
 				var model = mesh.addComponent(SkinnedModel);
 

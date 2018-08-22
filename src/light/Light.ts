@@ -106,7 +106,7 @@ namespace feng3d
         constructor()
         {
             super();
-            this.shadowCamera = GameObject.create("LightShadowCamera").addComponent(Camera);
+            this.shadowCamera = new GameObject({ name: "LightShadowCamera" }).addComponent(Camera);
         }
 
         init(gameObject: GameObject)

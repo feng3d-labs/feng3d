@@ -46,7 +46,7 @@ namespace feng3d
 
     function createObj(objData: OBJ_OBJData, material: Materials, mtlData: Mtl_Mtl | null, completed?: (gameObject: GameObject) => void)
     {
-        var object = GameObject.create();
+        var object = new GameObject();
         var objs = objData.objs;
         for (var i = 0; i < objs.length; i++)
         {
@@ -59,7 +59,7 @@ namespace feng3d
 
     function createSubObj(objData: OBJ_OBJData, obj: OBJ_OBJ, material: Materials, mtlData: Mtl_Mtl | null)
     {
-        var gameObject = GameObject.create(obj.name);
+        var gameObject = new GameObject({ name: obj.name });
 
         var subObjs = obj.subObjs;
         for (var i = 0; i < subObjs.length; i++)
@@ -75,7 +75,7 @@ namespace feng3d
 
     function createMaterialObj(obj: OBJ_OBJData, subObj: OBJ_SubOBJ, material: Materials, mtlData: Mtl_Mtl | null)
     {
-        var gameObject = GameObject.create();
+        var gameObject = new GameObject();
         var model = gameObject.addComponent(Model);
         model.material = material || new StandardMaterial();
         model.material.renderParams.cullFace = CullFace.FRONT;
