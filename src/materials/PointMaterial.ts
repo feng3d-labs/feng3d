@@ -13,6 +13,11 @@ namespace feng3d
         shaderName: "point" = "point";
 
         uniforms = new PointUniforms();
+
+        constructor(raw?: gPartial<PointMaterial>)
+        {
+            super(raw);
+        }
     }
 
     export class PointUniforms

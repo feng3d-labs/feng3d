@@ -5,6 +5,8 @@ namespace feng3d
 
     export class BillboardComponent extends Component
     {
+        __class__: "feng3d.BillboardComponent" = "feng3d.BillboardComponent";
+
         /**
          * 相对
          */
@@ -25,18 +27,19 @@ namespace feng3d
             this.invalidHoldSizeMatrix();
         }
 
-        private _holdSize = 1;
-        private _camera: Camera | null;
+        private _camera: Camera;
 
         init(gameobject: GameObject)
         {
             super.init(gameobject);
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+            this.invalidHoldSizeMatrix();
         }
 
         private invalidHoldSizeMatrix()
         {
-            this.transform["invalidateSceneTransform"]();
+            if (this._gameObject)
+                this.transform["invalidateSceneTransform"]();
         }
 
         private updateLocalToWorldMatrix()

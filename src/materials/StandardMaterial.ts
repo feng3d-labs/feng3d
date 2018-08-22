@@ -25,6 +25,11 @@ namespace feng3d
         @serialize
         @oav({ component: "OAVObjectView" })
         uniforms = new StandardUniforms();
+
+        constructor(raw?: gPartial<StandardMaterial>)
+        {
+            super(raw);
+        }
     }
 
     export class StandardUniforms

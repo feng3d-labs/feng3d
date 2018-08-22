@@ -8534,8 +8534,6 @@ declare namespace feng3d {
             findchildren: boolean;
             value: boolean;
         }, result?: T[]): any;
-        private _gameObject;
-        private _tag;
         /**
          * 派发事件
          * @param event   事件对象
@@ -8546,6 +8544,8 @@ declare namespace feng3d {
          */
         dispose(): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        protected _gameObject: GameObject;
+        private _tag;
     }
 }
 declare namespace feng3d {
@@ -9320,11 +9320,11 @@ declare namespace feng3d {
         BillboardComponent: BillboardComponent;
     }
     class BillboardComponent extends Component {
+        __class__: "feng3d.BillboardComponent";
         /**
          * 相对
          */
         camera: Camera;
-        private _holdSize;
         private _camera;
         init(gameobject: GameObject): void;
         private invalidHoldSizeMatrix;
@@ -10749,6 +10749,7 @@ declare namespace feng3d {
         __class__: "feng3d.PointMaterial";
         shaderName: "point";
         uniforms: PointUniforms;
+        constructor(raw?: gPartial<PointMaterial>);
     }
     class PointUniforms {
         /**
@@ -10772,6 +10773,7 @@ declare namespace feng3d {
         __class__: "feng3d.ColorMaterial";
         shaderName: "color";
         uniforms: ColorUniforms;
+        constructor(raw?: gPartial<ColorMaterial>);
     }
     class ColorUniforms {
         /**
@@ -10792,6 +10794,7 @@ declare namespace feng3d {
         __class__: "feng3d.SegmentMaterial";
         shaderName: "segment";
         uniforms: SegmentUniforms;
+        constructor(raw?: gPartial<SegmentMaterial>);
     }
     class SegmentUniforms {
         /**
@@ -10811,6 +10814,7 @@ declare namespace feng3d {
         __class__: "feng3d.TextureMaterial";
         shaderName: "texture";
         uniforms: TextureUniforms;
+        constructor(raw?: gPartial<TextureMaterial>);
     }
     class TextureUniforms {
         /**
@@ -10843,6 +10847,7 @@ declare namespace feng3d {
          * Uniform数据
          */
         uniforms: StandardUniforms;
+        constructor(raw?: gPartial<StandardMaterial>);
     }
     class StandardUniforms {
         /**
@@ -11450,6 +11455,7 @@ declare namespace feng3d {
         __class__: "feng3d.WaterMaterial";
         shaderName: "water";
         uniforms: WaterUniforms;
+        constructor(raw?: gPartial<WaterMaterial>);
     }
     class WaterUniforms {
         u_alpha: number;
@@ -11545,6 +11551,7 @@ declare namespace feng3d {
         __class__: "feng3d.TerrainMaterial";
         shaderName: "terrain";
         uniforms: TerrainUniforms;
+        constructor(raw?: gPartial<TerrainMaterial>);
     }
     class TerrainUniforms extends StandardUniforms {
         s_splatTexture1: UrlImageTexture2D;
@@ -11915,6 +11922,7 @@ declare namespace feng3d {
         __class__: "feng3d.ParticleMaterial";
         shaderName: "particle";
         uniforms: ParticleUniforms;
+        constructor(raw?: gPartial<ParticleMaterial>);
     }
     class ParticleUniforms extends StandardUniforms {
     }
@@ -12058,6 +12066,7 @@ declare namespace feng3d {
         __class__: "feng3d.SkeletonMaterial";
         shaderName: "skeleton";
         uniforms: SkeletonUniforms;
+        constructor(raw?: gPartial<SkeletonMaterial>);
     }
     class SkeletonUniforms extends StandardUniforms {
     }

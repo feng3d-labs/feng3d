@@ -16368,7 +16368,7 @@ var feng3d;
         __extends(BillboardComponent, _super);
         function BillboardComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._holdSize = 1;
+            _this.__class__ = "feng3d.BillboardComponent";
             return _this;
         }
         Object.defineProperty(BillboardComponent.prototype, "camera", {
@@ -16394,9 +16394,11 @@ var feng3d;
         BillboardComponent.prototype.init = function (gameobject) {
             _super.prototype.init.call(this, gameobject);
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+            this.invalidHoldSizeMatrix();
         };
         BillboardComponent.prototype.invalidHoldSizeMatrix = function () {
-            this.transform["invalidateSceneTransform"]();
+            if (this._gameObject)
+                this.transform["invalidateSceneTransform"]();
         };
         BillboardComponent.prototype.updateLocalToWorldMatrix = function () {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
@@ -20664,8 +20666,8 @@ var feng3d;
      */
     var PointMaterial = /** @class */ (function (_super) {
         __extends(PointMaterial, _super);
-        function PointMaterial() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function PointMaterial(raw) {
+            var _this = _super.call(this, raw) || this;
             _this.__class__ = "feng3d.PointMaterial";
             _this.shaderName = "point";
             _this.uniforms = new PointUniforms();
@@ -20705,8 +20707,8 @@ var feng3d;
      */
     var ColorMaterial = /** @class */ (function (_super) {
         __extends(ColorMaterial, _super);
-        function ColorMaterial() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function ColorMaterial(raw) {
+            var _this = _super.call(this, raw) || this;
             _this.__class__ = "feng3d.ColorMaterial";
             _this.shaderName = "color";
             _this.uniforms = new ColorUniforms();
@@ -20739,8 +20741,8 @@ var feng3d;
      */
     var SegmentMaterial = /** @class */ (function (_super) {
         __extends(SegmentMaterial, _super);
-        function SegmentMaterial() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function SegmentMaterial(raw) {
+            var _this = _super.call(this, raw) || this;
             _this.__class__ = "feng3d.SegmentMaterial";
             _this.shaderName = "segment";
             _this.uniforms = new SegmentUniforms();
@@ -20772,8 +20774,8 @@ var feng3d;
      */
     var TextureMaterial = /** @class */ (function (_super) {
         __extends(TextureMaterial, _super);
-        function TextureMaterial() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function TextureMaterial(raw) {
+            var _this = _super.call(this, raw) || this;
             _this.__class__ = "feng3d.TextureMaterial";
             _this.shaderName = "texture";
             _this.uniforms = new TextureUniforms();
@@ -20820,8 +20822,8 @@ var feng3d;
     })(FogMode = feng3d.FogMode || (feng3d.FogMode = {}));
     var StandardMaterial = /** @class */ (function (_super) {
         __extends(StandardMaterial, _super);
-        function StandardMaterial() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function StandardMaterial(raw) {
+            var _this = _super.call(this, raw) || this;
             _this.__class__ = "feng3d.StandardMaterial";
             _this.shaderName = "standard";
             /**
@@ -22584,8 +22586,8 @@ var feng3d;
 (function (feng3d) {
     var WaterMaterial = /** @class */ (function (_super) {
         __extends(WaterMaterial, _super);
-        function WaterMaterial() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function WaterMaterial(raw) {
+            var _this = _super.call(this, raw) || this;
             _this.__class__ = "feng3d.WaterMaterial";
             _this.shaderName = "water";
             _this.uniforms = new WaterUniforms();
@@ -22867,8 +22869,8 @@ var feng3d;
 (function (feng3d) {
     var TerrainMaterial = /** @class */ (function (_super) {
         __extends(TerrainMaterial, _super);
-        function TerrainMaterial() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function TerrainMaterial(raw) {
+            var _this = _super.call(this, raw) || this;
             _this.__class__ = "feng3d.TerrainMaterial";
             _this.shaderName = "terrain";
             _this.uniforms = new TerrainUniforms();
@@ -23763,8 +23765,8 @@ var feng3d;
 (function (feng3d) {
     var ParticleMaterial = /** @class */ (function (_super) {
         __extends(ParticleMaterial, _super);
-        function ParticleMaterial() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function ParticleMaterial(raw) {
+            var _this = _super.call(this, raw) || this;
             _this.__class__ = "feng3d.ParticleMaterial";
             _this.shaderName = "particle";
             _this.uniforms = new ParticleUniforms();
@@ -24154,8 +24156,8 @@ var feng3d;
 (function (feng3d) {
     var SkeletonMaterial = /** @class */ (function (_super) {
         __extends(SkeletonMaterial, _super);
-        function SkeletonMaterial() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function SkeletonMaterial(raw) {
+            var _this = _super.call(this, raw) || this;
             _this.__class__ = "feng3d.SkeletonMaterial";
             _this.shaderName = "skeleton";
             _this.uniforms = new SkeletonUniforms();

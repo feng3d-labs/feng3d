@@ -13,6 +13,11 @@ namespace feng3d
         shaderName: "texture" = "texture";
 
         uniforms = new TextureUniforms();
+
+        constructor(raw?: gPartial<TextureMaterial>)
+        {
+            super(raw);
+        }
     }
 
     export class TextureUniforms
