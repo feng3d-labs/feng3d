@@ -8,6 +8,8 @@ namespace feng3d
      */
     export class PointLight extends Light
     {
+        __class__: "feng3d.PointLight" = "feng3d.PointLight";
+        
         lightType = LightType.Point;
 
         /**

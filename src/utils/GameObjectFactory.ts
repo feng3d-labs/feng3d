@@ -6,97 +6,96 @@ namespace feng3d
     {
         createGameObject(name = "GameObject")
         {
-            var gameobject = new GameObject({ name: name });
-            return gameobject;
+            return new GameObject({ name: name });
         }
 
         createCube(name: string = "cube")
         {
-            var gameobject = new GameObject({ name: name });
-            var model = gameobject.addComponent(Model);
-            model.geometry = new CubeGeometry();
-            return gameobject;
+            return new GameObject({
+                name: name, components: [
+                    { __class__: "feng3d.Model", geometry: new CubeGeometry() },
+                ]
+            });
         }
 
         createPlane(name: string = "plane")
         {
-            var gameobject = new GameObject({ name: name });
-            var model = gameobject.addComponent(Model);
-            model.geometry = new PlaneGeometry({ width: 10, height: 10 });
-            model.material = new StandardMaterial();
-            return gameobject;
+            return new GameObject({
+                name: name,
+                components: [{ __class__: "feng3d.Model", geometry: new PlaneGeometry({ width: 10, height: 10 }) },]
+            });
         }
 
         createCylinder(name: string = "cylinder")
         {
-            var gameobject = new GameObject({ name: name });
-            var model = gameobject.addComponent(Model);
-            model.geometry = new CylinderGeometry();
-            model.material = new StandardMaterial();
-            return gameobject;
+            return new GameObject({
+                name: name,
+                components: [{ __class__: "feng3d.Model", geometry: new CylinderGeometry() },]
+            });
         }
 
         createCone(name: string = "Cone")
         {
-            var gameobject = new GameObject({ name: name });
-            var model = gameobject.addComponent(Model);
-            model.geometry = new ConeGeometry();
-            model.material = new StandardMaterial();
-            return gameobject;
+            return new GameObject({
+                name: name,
+                components: [{ __class__: "feng3d.Model", geometry: new ConeGeometry() },]
+            });
         }
 
         createTorus(name: string = "Torus")
         {
-            var gameobject = new GameObject({ name: name });
-            var model = gameobject.addComponent(Model);
-            model.geometry = new TorusGeometry();
-            model.material = new StandardMaterial();
-            return gameobject;
-        }
-
-        createTerrain(name: string = "Terrain")
-        {
-            var gameobject = new GameObject({ name: name });
-            gameobject.addComponent(Terrain);
-            return gameobject;
+            return new GameObject({
+                name: name,
+                components: [{ __class__: "feng3d.Model", geometry: new TorusGeometry() },]
+            });
         }
 
         createSphere(name: string = "sphere")
         {
-            var gameobject = new GameObject({ name: name });
-            var model = gameobject.addComponent(Model);
-            model.geometry = new SphereGeometry();
-            model.material = new StandardMaterial();
-            return gameobject;
+            return new GameObject({
+                name: name,
+                components: [{ __class__: "feng3d.Model", geometry: new SphereGeometry() },]
+            });
         }
 
         createCapsule(name: string = "capsule")
         {
-            var gameobject = new GameObject({ name: name });
-            var model = gameobject.addComponent(Model);
-            model.geometry = new CapsuleGeometry();
-            model.material = new StandardMaterial();
-            return gameobject;
+            return new GameObject({
+                name: name,
+                components: [{ __class__: "feng3d.Model", geometry: new CapsuleGeometry() },]
+            });
+        }
+
+        createTerrain(name: string = "Terrain")
+        {
+            return new GameObject({
+                name: name,
+                components: [{ __class__: "feng3d.Terrain" },]
+            });
         }
 
         createCamera(name: string = "Camera")
         {
-            var gameobject = new GameObject({ name: name });
-            gameobject.addComponent(Camera);
-            return gameobject;
+            return new GameObject({
+                name: name,
+                components: [{ __class__: "feng3d.Camera" },]
+            });
         }
 
         createPointLight(name: string = "PointLight")
         {
-            var gameobject = new GameObject({ name: name });
-            gameobject.addComponent(PointLight);
-            return gameobject;
+            return new GameObject({
+                name: name,
+                components: [{ __class__: "feng3d.PointLight" },]
+            });
         }
 
         createParticle(name = "Particle")
         {
-            var _particleMesh = new GameObject({ name: name });
-            var particleSystem = _particleMesh.addComponent(ParticleSystem);
+            return new GameObject({
+                name: name,
+                components: [{ __class__: "feng3d.ParticleSystem" },],
+            });
 
             // particleSystem.numParticles = 1000;
             // //通过函数来创建粒子初始状态
@@ -111,14 +110,14 @@ namespace feng3d
             //     }, priority: 0
             // });
             // particleSystem.cycle = 10;
-            return _particleMesh;
         }
 
         createWater(name: string = "water")
         {
-            var gameobject = new GameObject({ name: name });
-            gameobject.addComponent(Water);
-            return gameobject;
+            return new GameObject({
+                name: name,
+                components: [{ __class__: "feng3d.Water" },],
+            });
         }
     }
 

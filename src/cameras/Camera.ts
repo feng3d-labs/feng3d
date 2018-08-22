@@ -13,6 +13,8 @@ namespace feng3d
 	 */
     export class Camera extends Component
     {
+        __class__: "feng3d.Camera" = "feng3d.Camera";
+
         private _lens: LensBase;
         private _viewProjection: Matrix4x4 = new Matrix4x4();
         private _viewProjectionInvalid = true;

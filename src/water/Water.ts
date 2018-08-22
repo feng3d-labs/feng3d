@@ -5,6 +5,8 @@ namespace feng3d
      */
     export class Water extends Model
     {
+        __class__: "feng3d.Water" = "feng3d.Water";
+
         geometry = new PlaneGeometry({ width: 10, height: 10 });
 
         material = new WaterMaterial();

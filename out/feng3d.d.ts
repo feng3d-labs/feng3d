@@ -9348,7 +9348,7 @@ declare namespace feng3d {
         Model: Model;
     }
     class Model extends Behaviour {
-        __class__: "feng3d.Model";
+        __class__: "feng3d.Model" | "feng3d.Terrain" | "feng3d.Water" | "feng3d.ParticleSystem";
         readonly single: boolean;
         /**
          * Returns the instantiated Mesh assigned to the mesh filter.
@@ -10107,6 +10107,7 @@ declare namespace feng3d {
 
      */
     class Camera extends Component {
+        __class__: "feng3d.Camera";
         private _lens;
         private _viewProjection;
         private _viewProjectionInvalid;
@@ -11050,6 +11051,7 @@ declare namespace feng3d {
      * 点光源
      */
     class PointLight extends Light {
+        __class__: "feng3d.PointLight";
         lightType: LightType;
         /**
          * 光照范围
@@ -11430,6 +11432,7 @@ declare namespace feng3d {
      * The Water component renders the terrain.
      */
     class Water extends Model {
+        __class__: "feng3d.Water";
         geometry: PlaneGeometry;
         material: WaterMaterial;
         /**
@@ -11600,6 +11603,7 @@ declare namespace feng3d {
      * The Terrain component renders the terrain.
      */
     class Terrain extends Model {
+        __class__: "feng3d.Terrain";
         /**
          * 地形资源
          */
@@ -11818,6 +11822,7 @@ declare namespace feng3d {
 
      */
     class ParticleSystem extends Model {
+        __class__: "feng3d.ParticleSystem";
         /**
          * 是否正在播放
          */
@@ -12689,9 +12694,9 @@ declare namespace feng3d {
         createCylinder(name?: string): GameObject;
         createCone(name?: string): GameObject;
         createTorus(name?: string): GameObject;
-        createTerrain(name?: string): GameObject;
         createSphere(name?: string): GameObject;
         createCapsule(name?: string): GameObject;
+        createTerrain(name?: string): GameObject;
         createCamera(name?: string): GameObject;
         createPointLight(name?: string): GameObject;
         createParticle(name?: string): GameObject;
