@@ -49,8 +49,13 @@ namespace feng3d
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any);
     }
 
+    export interface GameObjectUserData
+    {
+
+    }
+
     /**
-     * Base class for all entities in feng3d scenes.
+     * 游戏对象，场景唯一存在的对象类型
      */
     export class GameObject extends Feng3dObject
     {
@@ -60,11 +65,6 @@ namespace feng3d
          * 游戏对象池
          */
         public static pool = new Map<string, GameObject>();
-
-        private guid: string;
-        protected _children: GameObject[] = [];
-        protected _scene: Scene3D | null;
-        protected _parent: GameObject | null;
 
         /**
          * 是否可序列化
@@ -106,7 +106,7 @@ namespace feng3d
         /**
          * 用户自定义数据
          */
-        userData: any;
+        userData: GameObjectUserData = {};
 
         //------------------------------------------
         // Variables
@@ -122,7 +122,7 @@ namespace feng3d
         }
         private _transform: Transform;
 
-        get parent(): GameObject | null
+        get parent()
         {
             return this._parent;
         }
@@ -149,7 +149,7 @@ namespace feng3d
             }
         }
 
-        get numChildren(): number
+        get numChildren()
         {
             return this._children.length;
         }
@@ -157,7 +157,7 @@ namespace feng3d
 		/**
 		 * 子组件个数
 		 */
-        get numComponents(): number
+        get numComponents()
         {
             return this._components.length;
         }
@@ -170,6 +170,30 @@ namespace feng3d
             if (this.parent)
                 return this.visible && this.parent.globalVisible;
             return this.visible;
+        }
+
+        get scene()
+        {
+            return this._scene;
+        }
+
+        @serialize
+        @oav({ component: "OAVComponentList" })
+        get components()
+        {
+            return this._components.concat();
+        }
+        set components(value)
+        {
+            if (!value) return;
+            for (var i = 0, n = value.length; i < n; i++)
+            {
+                var compnent = value[i];
+                if (!compnent) continue;
+                if (compnent.single) this.removeComponentsByType(<any>compnent.constructor);
+                this.addComponentAt(value[i], this.numComponents);
+            }
+            this._transform = <any>null;
         }
 
         //------------------------------------------
@@ -189,7 +213,7 @@ namespace feng3d
             GameObject.pool.set(this.guid, this);
         }
 
-        find(name: string): GameObject | null
+        find(name: string): GameObject
         {
             if (this.name == name)
                 return this;
@@ -204,7 +228,7 @@ namespace feng3d
 
         contains(child: GameObject)
         {
-            var checkitem: GameObject | null = child;
+            var checkitem = child;
             do
             {
                 if (checkitem == this)
@@ -228,7 +252,7 @@ namespace feng3d
             return child;
         }
 
-        addChildren(...childarray)
+        addChildren(...childarray: GameObject[])
         {
             for (var child_key_a in childarray)
             {
@@ -262,45 +286,10 @@ namespace feng3d
             this.removeChildInternal(index, child);
         }
 
-        private _setParent(value: GameObject | null)
-        {
-            this._parent = value;
-            this.updateScene();
-            this.transform["invalidateSceneTransform"]();
-        }
-
         getChildAt(index: number)
         {
             index = index;
             return this._children[index];
-        }
-
-        get scene(): Scene3D | null
-        {
-            return this._scene;
-        }
-
-        private updateScene()
-        {
-            var newScene = this._parent ? this._parent._scene : null;
-            if (this._scene == newScene)
-                return;
-            if (this._scene)
-            {
-                this.dispatch("removedFromScene", this);
-                this._scene._removeGameObject(this);
-            }
-            this._scene = newScene;
-            if (this._scene)
-            {
-                this.dispatch("addedToScene", this);
-                this._scene._addGameObject(this);
-            }
-            for (let i = 0, n = this._children.length; i < n; i++)
-            {
-                this._children[i].updateScene();
-            }
-            this.dispatch("sceneChanged", this);
         }
 
         /**
@@ -309,15 +298,6 @@ namespace feng3d
         getChildren()
         {
             return this._children.concat();
-        }
-
-        private removeChildInternal(childIndex: number, child: GameObject)
-        {
-            childIndex = childIndex;
-            this._children.splice(childIndex, 1);
-            child._setParent(null);
-
-            this.dispatch("removed", child, true);
         }
 
         /**
@@ -360,16 +340,6 @@ namespace feng3d
             scriptComponent.script = script;
             this.addComponentAt(scriptComponent, this._components.length);
             return scriptComponent;
-        }
-
-        /**
-         * 判断是否拥有组件
-         * @param com	被检测的组件
-         * @return		true：拥有该组件；false：不拥有该组件。
-         */
-        private hasComponent(com: Components): boolean
-        {
-            return this._components.indexOf(com) != -1;
         }
 
         /**
@@ -546,7 +516,7 @@ namespace feng3d
          * 移除指定类型组件
          * @param type 组件类型
          */
-        removeComponentsByType<T extends Component>(type: Constructor<T>)
+        removeComponentsByType<T extends Components>(type: Constructor<T>)
         {
             var removeComponents: T[] = [];
             for (var i = this._components.length - 1; i >= 0; i--)
@@ -555,96 +525,6 @@ namespace feng3d
                     removeComponents.push(<T>this.removeComponentAt(i));
             }
             return removeComponents;
-        }
-        //------------------------------------------
-        // Static Functions
-        //------------------------------------------
-        /**
-         * Finds a game object by name and returns it.
-         * @param name 
-         */
-        static find(name: string)
-        {
-            var target: GameObject | null = null;
-            this.pool.forEach(element =>
-            {
-                if (target == null && element.name == name)
-                    target = element;
-            });
-            return target;
-        }
-
-        static create(name = "GameObject", raw?: gPartial<GameObject>)
-        {
-            raw = raw || {};
-            raw.name = name;
-            var gameobject = new GameObject(raw);
-            return gameobject;
-        }
-
-        //------------------------------------------
-        // Protected Properties
-        //------------------------------------------
-        /**
-		 * 组件列表
-		 */
-        protected _components: Components[] = [];
-        @serialize
-        @oav({ component: "OAVComponentList" })
-        get components()
-        {
-            return this._components.concat();
-        }
-        set components(value)
-        {
-            if (!value) return;
-            for (var i = 0, n = value.length; i < n; i++)
-            {
-                var compnent = value[i];
-                if (!compnent) continue;
-                if (compnent.single) this.removeComponentsByType(<any>compnent.constructor);
-                this.addComponentAt(value[i], this.numComponents);
-            }
-            this._transform = <any>null;
-        }
-
-        //------------------------------------------
-        // Protected Functions
-        //------------------------------------------
-
-        //------------------------------------------
-        // Private Properties
-        //------------------------------------------
-
-        //------------------------------------------
-        // Private Methods
-        //------------------------------------------
-		/**
-		 * 添加组件到指定位置
-		 * @param component		被添加的组件
-		 * @param index			插入的位置
-		 */
-        private addComponentAt(component: Components, index: number): void
-        {
-            if (component == null)
-                return;
-            debuger && assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
-
-            if (this.hasComponent(component))
-            {
-                index = Math.min(index, this._components.length - 1);
-                this.setComponentIndex(component, index)
-                return;
-            }
-            //组件唯一时移除同类型的组件
-            if (component.single)
-                this.removeComponentsByType(<new () => Component>component.constructor);
-
-            this._components.splice(index, 0, component);
-            component.init(this);
-            //派发添加组件事件
-            this.dispatch("addedComponent", component);
-            this._scene && this._scene._addComponent(component);
         }
 
         /**
@@ -705,6 +585,133 @@ namespace feng3d
             {
                 element.beforeRender(gl, renderAtomic, scene3d, camera);
             });
+        }
+
+        //------------------------------------------
+        // Static Functions
+        //------------------------------------------
+        /**
+         * Finds a game object by name and returns it.
+         * @param name 
+         */
+        static find(name: string)
+        {
+            var target: GameObject | null = null;
+            this.pool.forEach(element =>
+            {
+                if (target == null && element.name == name)
+                    target = element;
+            });
+            return target;
+        }
+
+        static create(name = "GameObject", raw?: gPartial<GameObject>)
+        {
+            raw = raw || {};
+            raw.name = name;
+            var gameobject = new GameObject(raw);
+            return gameobject;
+        }
+
+        //------------------------------------------
+        // Protected Properties
+        //------------------------------------------
+        /**
+		 * 组件列表
+		 */
+        protected _components: Components[] = [];
+        protected _children: GameObject[] = [];
+        protected _scene: Scene3D;
+        protected _parent: GameObject;
+
+        //------------------------------------------
+        // Protected Functions
+        //------------------------------------------
+
+        //------------------------------------------
+        // Private Properties
+        //------------------------------------------
+        private guid: string;
+
+        //------------------------------------------
+        // Private Methods
+        //------------------------------------------
+
+        private _setParent(value: GameObject | null)
+        {
+            this._parent = value;
+            this.updateScene();
+            this.transform["invalidateSceneTransform"]();
+        }
+
+        private updateScene()
+        {
+            var newScene = this._parent ? this._parent._scene : null;
+            if (this._scene == newScene)
+                return;
+            if (this._scene)
+            {
+                this.dispatch("removedFromScene", this);
+                this._scene._removeGameObject(this);
+            }
+            this._scene = newScene;
+            if (this._scene)
+            {
+                this.dispatch("addedToScene", this);
+                this._scene._addGameObject(this);
+            }
+            for (let i = 0, n = this._children.length; i < n; i++)
+            {
+                this._children[i].updateScene();
+            }
+            this.dispatch("sceneChanged", this);
+        }
+
+        private removeChildInternal(childIndex: number, child: GameObject)
+        {
+            childIndex = childIndex;
+            this._children.splice(childIndex, 1);
+            child._setParent(null);
+
+            this.dispatch("removed", child, true);
+        }
+
+        /**
+         * 判断是否拥有组件
+         * @param com	被检测的组件
+         * @return		true：拥有该组件；false：不拥有该组件。
+         */
+        private hasComponent(com: Components): boolean
+        {
+            return this._components.indexOf(com) != -1;
+        }
+
+		/**
+		 * 添加组件到指定位置
+		 * @param component		被添加的组件
+		 * @param index			插入的位置
+		 */
+        private addComponentAt(component: Components, index: number): void
+        {
+            if (component == null)
+                return;
+            debuger && assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
+
+            if (this.hasComponent(component))
+            {
+                index = Math.min(index, this._components.length - 1);
+                this.setComponentIndex(component, index)
+                return;
+            }
+            //组件唯一时移除同类型的组件
+            if (component.single)
+                this.removeComponentsByType(<Constructor<Components>>component.constructor);
+
+            this._components.splice(index, 0, component);
+            component.init(this);
+            //派发添加组件事件
+            this.dispatch("addedComponent", component);
+            this._scene && this._scene._addComponent(component);
         }
     }
 }

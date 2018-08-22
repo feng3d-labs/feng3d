@@ -15566,7 +15566,7 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Base class for all entities in feng3d scenes.
+     * 游戏对象，场景唯一存在的对象类型
      */
     var GameObject = /** @class */ (function (_super) {
         __extends(GameObject, _super);
@@ -15580,7 +15580,6 @@ var feng3d;
             if (raw === void 0) { raw = {}; }
             var _this = _super.call(this) || this;
             _this.renderAtomic = new feng3d.RenderAtomic();
-            _this._children = [];
             /**
              * 是否可序列化
              */
@@ -15601,6 +15600,10 @@ var feng3d;
              * 模型生成的导航网格类型
              */
             _this.navigationArea = -1;
+            /**
+             * 用户自定义数据
+             */
+            _this.userData = {};
             //------------------------------------------
             // Protected Properties
             //------------------------------------------
@@ -15608,6 +15611,7 @@ var feng3d;
              * 组件列表
              */
             _this._components = [];
+            _this._children = [];
             _this.name = raw.name || "GameObject";
             _this.addComponent(feng3d.Transform);
             _this.guid = feng3d.FMath.generateUUID();
@@ -15687,6 +15691,33 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(GameObject.prototype, "scene", {
+            get: function () {
+                return this._scene;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GameObject.prototype, "components", {
+            get: function () {
+                return this._components.concat();
+            },
+            set: function (value) {
+                if (!value)
+                    return;
+                for (var i = 0, n = value.length; i < n; i++) {
+                    var compnent = value[i];
+                    if (!compnent)
+                        continue;
+                    if (compnent.single)
+                        this.removeComponentsByType(compnent.constructor);
+                    this.addComponentAt(value[i], this.numComponents);
+                }
+                this._transform = null;
+            },
+            enumerable: true,
+            configurable: true
+        });
         GameObject.prototype.find = function (name) {
             if (this.name == name)
                 return this;
@@ -15747,51 +15778,15 @@ var feng3d;
             var child = this._children[index];
             this.removeChildInternal(index, child);
         };
-        GameObject.prototype._setParent = function (value) {
-            this._parent = value;
-            this.updateScene();
-            this.transform["invalidateSceneTransform"]();
-        };
         GameObject.prototype.getChildAt = function (index) {
             index = index;
             return this._children[index];
-        };
-        Object.defineProperty(GameObject.prototype, "scene", {
-            get: function () {
-                return this._scene;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        GameObject.prototype.updateScene = function () {
-            var newScene = this._parent ? this._parent._scene : null;
-            if (this._scene == newScene)
-                return;
-            if (this._scene) {
-                this.dispatch("removedFromScene", this);
-                this._scene._removeGameObject(this);
-            }
-            this._scene = newScene;
-            if (this._scene) {
-                this.dispatch("addedToScene", this);
-                this._scene._addGameObject(this);
-            }
-            for (var i = 0, n = this._children.length; i < n; i++) {
-                this._children[i].updateScene();
-            }
-            this.dispatch("sceneChanged", this);
         };
         /**
          * 获取子对象列表（备份）
          */
         GameObject.prototype.getChildren = function () {
             return this._children.concat();
-        };
-        GameObject.prototype.removeChildInternal = function (childIndex, child) {
-            childIndex = childIndex;
-            this._children.splice(childIndex, 1);
-            child._setParent(null);
-            this.dispatch("removed", child, true);
         };
         /**
          * 获取指定位置索引的子组件
@@ -15828,14 +15823,6 @@ var feng3d;
             scriptComponent.script = script;
             this.addComponentAt(scriptComponent, this._components.length);
             return scriptComponent;
-        };
-        /**
-         * 判断是否拥有组件
-         * @param com	被检测的组件
-         * @return		true：拥有该组件；false：不拥有该组件。
-         */
-        GameObject.prototype.hasComponent = function (com) {
-            return this._components.indexOf(com) != -1;
         };
         /**
          * Returns the component of Type type if the game object has one attached, null if it doesn't.
@@ -15983,80 +15970,6 @@ var feng3d;
             }
             return removeComponents;
         };
-        //------------------------------------------
-        // Static Functions
-        //------------------------------------------
-        /**
-         * Finds a game object by name and returns it.
-         * @param name
-         */
-        GameObject.find = function (name) {
-            var target = null;
-            this.pool.forEach(function (element) {
-                if (target == null && element.name == name)
-                    target = element;
-            });
-            return target;
-        };
-        GameObject.create = function (name, raw) {
-            if (name === void 0) { name = "GameObject"; }
-            raw = raw || {};
-            raw.name = name;
-            var gameobject = new GameObject(raw);
-            return gameobject;
-        };
-        Object.defineProperty(GameObject.prototype, "components", {
-            get: function () {
-                return this._components.concat();
-            },
-            set: function (value) {
-                if (!value)
-                    return;
-                for (var i = 0, n = value.length; i < n; i++) {
-                    var compnent = value[i];
-                    if (!compnent)
-                        continue;
-                    if (compnent.single)
-                        this.removeComponentsByType(compnent.constructor);
-                    this.addComponentAt(value[i], this.numComponents);
-                }
-                this._transform = null;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        //------------------------------------------
-        // Protected Functions
-        //------------------------------------------
-        //------------------------------------------
-        // Private Properties
-        //------------------------------------------
-        //------------------------------------------
-        // Private Methods
-        //------------------------------------------
-        /**
-         * 添加组件到指定位置
-         * @param component		被添加的组件
-         * @param index			插入的位置
-         */
-        GameObject.prototype.addComponentAt = function (component, index) {
-            if (component == null)
-                return;
-            feng3d.debuger && feng3d.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
-            if (this.hasComponent(component)) {
-                index = Math.min(index, this._components.length - 1);
-                this.setComponentIndex(component, index);
-                return;
-            }
-            //组件唯一时移除同类型的组件
-            if (component.single)
-                this.removeComponentsByType(component.constructor);
-            this._components.splice(index, 0, component);
-            component.init(this);
-            //派发添加组件事件
-            this.dispatch("addedComponent", component);
-            this._scene && this._scene._addComponent(component);
-        };
         /**
          * 派发事件
          *
@@ -16100,6 +16013,91 @@ var feng3d;
             this._components.forEach(function (element) {
                 element.beforeRender(gl, renderAtomic, scene3d, camera);
             });
+        };
+        //------------------------------------------
+        // Static Functions
+        //------------------------------------------
+        /**
+         * Finds a game object by name and returns it.
+         * @param name
+         */
+        GameObject.find = function (name) {
+            var target = null;
+            this.pool.forEach(function (element) {
+                if (target == null && element.name == name)
+                    target = element;
+            });
+            return target;
+        };
+        GameObject.create = function (name, raw) {
+            if (name === void 0) { name = "GameObject"; }
+            raw = raw || {};
+            raw.name = name;
+            var gameobject = new GameObject(raw);
+            return gameobject;
+        };
+        //------------------------------------------
+        // Private Methods
+        //------------------------------------------
+        GameObject.prototype._setParent = function (value) {
+            this._parent = value;
+            this.updateScene();
+            this.transform["invalidateSceneTransform"]();
+        };
+        GameObject.prototype.updateScene = function () {
+            var newScene = this._parent ? this._parent._scene : null;
+            if (this._scene == newScene)
+                return;
+            if (this._scene) {
+                this.dispatch("removedFromScene", this);
+                this._scene._removeGameObject(this);
+            }
+            this._scene = newScene;
+            if (this._scene) {
+                this.dispatch("addedToScene", this);
+                this._scene._addGameObject(this);
+            }
+            for (var i = 0, n = this._children.length; i < n; i++) {
+                this._children[i].updateScene();
+            }
+            this.dispatch("sceneChanged", this);
+        };
+        GameObject.prototype.removeChildInternal = function (childIndex, child) {
+            childIndex = childIndex;
+            this._children.splice(childIndex, 1);
+            child._setParent(null);
+            this.dispatch("removed", child, true);
+        };
+        /**
+         * 判断是否拥有组件
+         * @param com	被检测的组件
+         * @return		true：拥有该组件；false：不拥有该组件。
+         */
+        GameObject.prototype.hasComponent = function (com) {
+            return this._components.indexOf(com) != -1;
+        };
+        /**
+         * 添加组件到指定位置
+         * @param component		被添加的组件
+         * @param index			插入的位置
+         */
+        GameObject.prototype.addComponentAt = function (component, index) {
+            if (component == null)
+                return;
+            feng3d.debuger && feng3d.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
+            if (this.hasComponent(component)) {
+                index = Math.min(index, this._components.length - 1);
+                this.setComponentIndex(component, index);
+                return;
+            }
+            //组件唯一时移除同类型的组件
+            if (component.single)
+                this.removeComponentsByType(component.constructor);
+            this._components.splice(index, 0, component);
+            component.init(this);
+            //派发添加组件事件
+            this.dispatch("addedComponent", component);
+            this._scene && this._scene._addComponent(component);
         };
         /**
          * 游戏对象池

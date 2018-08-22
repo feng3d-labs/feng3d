@@ -9028,8 +9028,10 @@ declare namespace feng3d {
         on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): any;
     }
+    interface GameObjectUserData {
+    }
     /**
-     * Base class for all entities in feng3d scenes.
+     * 游戏对象，场景唯一存在的对象类型
      */
     class GameObject extends Feng3dObject {
         readonly renderAtomic: RenderAtomic;
@@ -9037,10 +9039,6 @@ declare namespace feng3d {
          * 游戏对象池
          */
         static pool: Map<string, GameObject>;
-        private guid;
-        protected _children: GameObject[];
-        protected _scene: Scene3D | null;
-        protected _parent: GameObject | null;
         /**
          * 是否可序列化
          */
@@ -9069,13 +9067,13 @@ declare namespace feng3d {
         /**
          * 用户自定义数据
          */
-        userData: any;
+        userData: GameObjectUserData;
         /**
          * The Transform attached to this GameObject. (null if there is none attached).
          */
         readonly transform: Transform;
         private _transform;
-        readonly parent: GameObject | null;
+        readonly parent: GameObject;
         /**
          * 子对象
          */
@@ -9089,29 +9087,27 @@ declare namespace feng3d {
          * 全局是否可见
          */
         readonly globalVisible: any;
+        readonly scene: Scene3D;
+        components: (PointLight | SpotLight | DirectionalLight | Transform | Behaviour | OutLineComponent | CartoonComponent | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | Model | ScriptComponent | Scene3D | Camera | FPSController | AudioListener | AudioSource | SkeletonComponent | Animation)[];
         /**
          * 构建3D对象
          */
         constructor(raw?: gPartial<GameObject>);
-        find(name: string): GameObject | null;
+        find(name: string): GameObject;
         contains(child: GameObject): boolean;
         addChild(child: GameObject): GameObject;
-        addChildren(...childarray: any[]): void;
+        addChildren(...childarray: GameObject[]): void;
         /**
          * 移除自身
          */
         remove(): void;
         removeChild(child: GameObject): void;
         removeChildAt(index: number): void;
-        private _setParent;
         getChildAt(index: number): GameObject;
-        readonly scene: Scene3D | null;
-        private updateScene;
         /**
          * 获取子对象列表（备份）
          */
         getChildren(): GameObject[];
-        private removeChildInternal;
         /**
          * 获取指定位置索引的子组件
          * @param index			位置索引
@@ -9129,12 +9125,6 @@ declare namespace feng3d {
          * @param script   脚本路径
          */
         addScript(script: string): ScriptComponent;
-        /**
-         * 判断是否拥有组件
-         * @param com	被检测的组件
-         * @return		true：拥有该组件；false：不拥有该组件。
-         */
-        private hasComponent;
         /**
          * Returns the component of Type type if the game object has one attached, null if it doesn't.
          * @param type				类定义
@@ -9200,24 +9190,7 @@ declare namespace feng3d {
          * 移除指定类型组件
          * @param type 组件类型
          */
-        removeComponentsByType<T extends Component>(type: Constructor<T>): T[];
-        /**
-         * Finds a game object by name and returns it.
-         * @param name
-         */
-        static find(name: string): GameObject;
-        static create(name?: string, raw?: gPartial<GameObject>): GameObject;
-        /**
-         * 组件列表
-         */
-        protected _components: Components[];
-        components: (PointLight | SpotLight | DirectionalLight | Transform | Behaviour | OutLineComponent | CartoonComponent | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | Model | ScriptComponent | Scene3D | Camera | FPSController | AudioListener | AudioSource | SkeletonComponent | Animation)[];
-        /**
-         * 添加组件到指定位置
-         * @param component		被添加的组件
-         * @param index			插入的位置
-         */
-        private addComponentAt;
+        removeComponentsByType<T extends Components>(type: Constructor<T>): T[];
         /**
          * 派发事件
          *
@@ -9233,6 +9206,35 @@ declare namespace feng3d {
         dispose(): void;
         disposeWithChildren(): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        /**
+         * Finds a game object by name and returns it.
+         * @param name
+         */
+        static find(name: string): GameObject;
+        static create(name?: string, raw?: gPartial<GameObject>): GameObject;
+        /**
+         * 组件列表
+         */
+        protected _components: Components[];
+        protected _children: GameObject[];
+        protected _scene: Scene3D;
+        protected _parent: GameObject;
+        private guid;
+        private _setParent;
+        private updateScene;
+        private removeChildInternal;
+        /**
+         * 判断是否拥有组件
+         * @param com	被检测的组件
+         * @return		true：拥有该组件；false：不拥有该组件。
+         */
+        private hasComponent;
+        /**
+         * 添加组件到指定位置
+         * @param component		被添加的组件
+         * @param index			插入的位置
+         */
+        private addComponentAt;
     }
 }
 interface HTMLCanvasElement {
