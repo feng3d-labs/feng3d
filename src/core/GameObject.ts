@@ -205,13 +205,12 @@ namespace feng3d
         /**
          * 构建3D对象
          */
-        constructor(raw: gPartial<GameObject> = {})
+        constructor()
         {
             super();
-            this.name = raw.name || "GameObject";
+            this.name = "GameObject";
             this.addComponent(Transform);
             this.guid = FMath.generateUUID();
-            serialization.setValue(this, raw);
             //
             GameObject.pool.set(this.guid, this);
         }

@@ -6,12 +6,12 @@ namespace feng3d
     {
         createGameObject(name = "GameObject")
         {
-            return new GameObject({ name: name });
+            return new GameObject().value({ name: name });
         }
 
         createCube(name: string = "cube")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name, components: [
                     { __class__: "feng3d.Model", geometry: new CubeGeometry() },
                 ]
@@ -20,7 +20,7 @@ namespace feng3d
 
         createPlane(name: string = "plane")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new PlaneGeometry({ width: 10, height: 10 }) },]
             });
@@ -28,7 +28,7 @@ namespace feng3d
 
         createCylinder(name: string = "cylinder")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new CylinderGeometry() },]
             });
@@ -36,7 +36,7 @@ namespace feng3d
 
         createCone(name: string = "Cone")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new ConeGeometry() },]
             });
@@ -44,7 +44,7 @@ namespace feng3d
 
         createTorus(name: string = "Torus")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new TorusGeometry() },]
             });
@@ -52,7 +52,7 @@ namespace feng3d
 
         createSphere(name: string = "sphere")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new SphereGeometry() },]
             });
@@ -60,7 +60,7 @@ namespace feng3d
 
         createCapsule(name: string = "capsule")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new CapsuleGeometry() },]
             });
@@ -68,7 +68,7 @@ namespace feng3d
 
         createTerrain(name: string = "Terrain")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Terrain" },]
             });
@@ -76,7 +76,7 @@ namespace feng3d
 
         createCamera(name: string = "Camera")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Camera" },]
             });
@@ -84,7 +84,7 @@ namespace feng3d
 
         createPointLight(name: string = "PointLight")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.PointLight" },]
             });
@@ -92,7 +92,7 @@ namespace feng3d
 
         createParticle(name = "Particle")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.ParticleSystem" },],
             });
@@ -114,7 +114,7 @@ namespace feng3d
 
         createWater(name: string = "water")
         {
-            return new GameObject({
+            return new GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Water" },],
             });

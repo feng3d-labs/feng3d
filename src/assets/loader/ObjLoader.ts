@@ -59,7 +59,7 @@ namespace feng3d
 
     function createSubObj(objData: OBJ_OBJData, obj: OBJ_OBJ, material: Materials, mtlData: Mtl_Mtl | null)
     {
-        var gameObject = new GameObject({ name: obj.name });
+        var gameObject = new GameObject().value({ name: obj.name });
 
         var subObjs = obj.subObjs;
         for (var i = 0; i < subObjs.length; i++)

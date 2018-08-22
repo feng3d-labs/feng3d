@@ -1996,7 +1996,6 @@ declare namespace feng3d {
      */
     class Feng3dObject extends EventDispatcher {
         value(v: gPartial<this>): this;
-        constructor();
     }
 }
 interface IDBObjectStore {
@@ -9016,7 +9015,7 @@ declare namespace feng3d {
         /**
          * 构建3D对象
          */
-        constructor(raw?: gPartial<GameObject>);
+        constructor();
         find(name: string): GameObject;
         contains(child: GameObject): boolean;
         addChild(child: GameObject): GameObject;

@@ -4125,11 +4125,8 @@ var feng3d;
      */
     var Feng3dObject = /** @class */ (function (_super) {
         __extends(Feng3dObject, _super);
-        //------------------------------------------
-        // Functions
-        //------------------------------------------
         function Feng3dObject() {
-            return _super.call(this) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Feng3dObject.prototype.value = function (v) {
             feng3d.serialization.setValue(this, v);
@@ -15495,8 +15492,7 @@ var feng3d;
         /**
          * 构建3D对象
          */
-        function GameObject(raw) {
-            if (raw === void 0) { raw = {}; }
+        function GameObject() {
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.GameObject";
             _this.renderAtomic = new feng3d.RenderAtomic();
@@ -15532,10 +15528,9 @@ var feng3d;
              */
             _this._components = [];
             _this._children = [];
-            _this.name = raw.name || "GameObject";
+            _this.name = "GameObject";
             _this.addComponent(feng3d.Transform);
             _this.guid = feng3d.FMath.generateUUID();
-            feng3d.serialization.setValue(_this, raw);
             //
             GameObject.pool.set(_this.guid, _this);
             return _this;
@@ -16070,7 +16065,7 @@ var feng3d;
             }
             feng3d.debuger && feng3d.assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
             this.canvas = canvas;
-            this.scene = scene || new feng3d.GameObject({ name: "scene" }).addComponent(feng3d.Scene3D);
+            this.scene = scene || new feng3d.GameObject().value({ name: "scene" }).addComponent(feng3d.Scene3D);
             this.camera = camera;
             this.start();
             this.mouse3DManager = new feng3d.Mouse3DManager(new feng3d.WindowMouseInput(), function () { return _this.viewRect; });
@@ -16083,7 +16078,7 @@ var feng3d;
                 if (!this._camera) {
                     var cameras = this.scene.getComponentsInChildren(feng3d.Camera);
                     if (cameras.length == 0) {
-                        this._camera = new feng3d.GameObject({ name: "defaultCamera" }).addComponent(feng3d.Camera);
+                        this._camera = new feng3d.GameObject().value({ name: "defaultCamera" }).addComponent(feng3d.Camera);
                         this.scene.gameObject.addChild(this._camera.gameObject);
                     }
                     else {
@@ -20984,7 +20979,7 @@ var feng3d;
              */
             _this.frameBufferObject = new feng3d.FrameBufferObject();
             _this.debugShadowMap = false;
-            _this.shadowCamera = new feng3d.GameObject({ name: "LightShadowCamera" }).addComponent(feng3d.Camera);
+            _this.shadowCamera = new feng3d.GameObject().value({ name: "LightShadowCamera" }).addComponent(feng3d.Camera);
             return _this;
         }
         Object.defineProperty(Light.prototype, "position", {
@@ -22460,7 +22455,7 @@ var feng3d;
             var target = mirrorWorldPosition.subTo(lookAtPosition);
             target.reflect(normal).negate();
             target.add(mirrorWorldPosition);
-            var mirrorCamera = new feng3d.GameObject({ name: "waterMirrorCamera" }).addComponent(feng3d.Camera);
+            var mirrorCamera = new feng3d.GameObject().value({ name: "waterMirrorCamera" }).addComponent(feng3d.Camera);
             mirrorCamera.transform.position = view;
             mirrorCamera.transform.lookAt(target, rotationMatrix.up);
             mirrorCamera.lens = camera.lens.clone();
@@ -23904,7 +23899,7 @@ var feng3d;
                 }
                 var jointGameobject = parentGameobject.find(skeletonJoint.name);
                 if (!jointGameobject) {
-                    jointGameobject = new feng3d.GameObject({ name: skeletonJoint.name, serializable: false });
+                    jointGameobject = new feng3d.GameObject().value({ name: skeletonJoint.name, serializable: false });
                     parentGameobject.addChild(jointGameobject);
                 }
                 var transform = jointGameobject.transform;
@@ -25287,7 +25282,7 @@ var feng3d;
             War3Model.prototype.getMesh = function () {
                 this.meshs = [];
                 this.meshs.length = this.geosets.length;
-                var container = new feng3d.GameObject({ name: this.model.name });
+                var container = new feng3d.GameObject().value({ name: this.model.name });
                 var skeletonjoints = createSkeleton(this);
                 this.skeletonComponent = container.addComponent(feng3d.SkeletonComponent);
                 this.skeletonComponent.joints = skeletonjoints;
@@ -26701,7 +26696,7 @@ var feng3d;
         completed && completed(object);
     }
     function createSubObj(objData, obj, material, mtlData) {
-        var gameObject = new feng3d.GameObject({ name: obj.name });
+        var gameObject = new feng3d.GameObject().value({ name: obj.name });
         var subObjs = obj.subObjs;
         for (var i = 0; i < subObjs.length; i++) {
             var materialObj = createMaterialObj(objData, subObjs[i], material, mtlData);
@@ -27108,11 +27103,11 @@ var feng3d;
         }
         GameObjectFactory.prototype.createGameObject = function (name) {
             if (name === void 0) { name = "GameObject"; }
-            return new feng3d.GameObject({ name: name });
+            return new feng3d.GameObject().value({ name: name });
         };
         GameObjectFactory.prototype.createCube = function (name) {
             if (name === void 0) { name = "cube"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name, components: [
                     { __class__: "feng3d.Model", geometry: new feng3d.CubeGeometry() },
                 ]
@@ -27120,70 +27115,70 @@ var feng3d;
         };
         GameObjectFactory.prototype.createPlane = function (name) {
             if (name === void 0) { name = "plane"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new feng3d.PlaneGeometry({ width: 10, height: 10 }) },]
             });
         };
         GameObjectFactory.prototype.createCylinder = function (name) {
             if (name === void 0) { name = "cylinder"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new feng3d.CylinderGeometry() },]
             });
         };
         GameObjectFactory.prototype.createCone = function (name) {
             if (name === void 0) { name = "Cone"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new feng3d.ConeGeometry() },]
             });
         };
         GameObjectFactory.prototype.createTorus = function (name) {
             if (name === void 0) { name = "Torus"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new feng3d.TorusGeometry() },]
             });
         };
         GameObjectFactory.prototype.createSphere = function (name) {
             if (name === void 0) { name = "sphere"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new feng3d.SphereGeometry() },]
             });
         };
         GameObjectFactory.prototype.createCapsule = function (name) {
             if (name === void 0) { name = "capsule"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Model", geometry: new feng3d.CapsuleGeometry() },]
             });
         };
         GameObjectFactory.prototype.createTerrain = function (name) {
             if (name === void 0) { name = "Terrain"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Terrain" },]
             });
         };
         GameObjectFactory.prototype.createCamera = function (name) {
             if (name === void 0) { name = "Camera"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Camera" },]
             });
         };
         GameObjectFactory.prototype.createPointLight = function (name) {
             if (name === void 0) { name = "PointLight"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.PointLight" },]
             });
         };
         GameObjectFactory.prototype.createParticle = function (name) {
             if (name === void 0) { name = "Particle"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.ParticleSystem" },],
             });
@@ -27203,7 +27198,7 @@ var feng3d;
         };
         GameObjectFactory.prototype.createWater = function (name) {
             if (name === void 0) { name = "water"; }
-            return new feng3d.GameObject({
+            return new feng3d.GameObject().value({
                 name: name,
                 components: [{ __class__: "feng3d.Water" },],
             });

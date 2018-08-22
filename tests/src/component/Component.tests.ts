@@ -6,7 +6,7 @@ namespace feng3d
         // 测试Component配发的事件会先传递到GameObject中然后传递到组件中
         QUnit.test("dispatchEvent", (assert) =>
         {
-            var c = new GameObject({ name: "t" }).addComponent(Camera);
+            var c = new GameObject().value({ name: "t" }).addComponent(Camera);
 
             var e = c.dispatch("lensChanged");
             c.dispatchEvent(e);

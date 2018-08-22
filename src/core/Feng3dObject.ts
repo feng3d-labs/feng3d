@@ -13,13 +13,5 @@ namespace feng3d
             feng3d.serialization.setValue(this, <any>v);
             return this;
         }
-
-        //------------------------------------------
-        // Functions
-        //------------------------------------------
-        constructor()
-        {
-            super();
-        }
     }
 }

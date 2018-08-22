@@ -6,7 +6,7 @@ namespace feng3d
         // 测试GameObject配发的事件会先处理自身然后传递到组件中
         QUnit.test("dispatchEvent", (assert) =>
         {
-            var g = new GameObject({ name: "t" });
+            var g = new GameObject().value({ name: "t" });
 
             var e = g.dispatch("click");
             g.dispatchEvent(e);
