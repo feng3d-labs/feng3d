@@ -22,7 +22,7 @@ namespace feng3d
         {
             return new GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: new PlaneGeometry({ width: 10, height: 10 }) },]
+                components: [{ __class__: "feng3d.Model", geometry: new PlaneGeometry().value({ width: 10, height: 10 }) },]
             });
         }
 

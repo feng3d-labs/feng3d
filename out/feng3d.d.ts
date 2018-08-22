@@ -10147,10 +10147,7 @@ declare namespace feng3d {
          * 是否朝上
          */
         yUp: boolean;
-        /**
-         * 创建平面几何体
-         */
-        constructor(raw?: gPartial<PlaneGeometry>);
+        name: string;
         /**
          * 构建几何体数据
          */
@@ -10202,6 +10199,7 @@ declare namespace feng3d {
      */
     class CubeGeometry extends Geometry {
         __class__: "feng3d.CubeGeometry";
+        name: string;
         /**
          * 宽度
          */
@@ -10230,10 +10228,6 @@ declare namespace feng3d {
          * 是否为6块贴图，默认true。
          */
         tile6: boolean;
-        /**
-         * 创建立方几何体
-         */
-        constructor(raw?: gPartial<CubeGeometry>);
         protected buildGeometry(): void;
         /**
          * 构建坐标
@@ -10302,10 +10296,7 @@ declare namespace feng3d {
          * 是否朝上
          */
         yUp: boolean;
-        /**
-         * 创建球形几何体
-         */
-        constructor(raw?: gPartial<SphereGeometry>);
+        name: string;
         /**
          * 构建几何体数据
          * @param this.radius 球体半径
@@ -10358,15 +10349,7 @@ declare namespace feng3d {
          * 正面朝向 true:Y+ false:Z+
          */
         yUp: boolean;
-        /**
-         * 创建胶囊几何体
-         * @param radius 胶囊体半径
-         * @param height 胶囊体高度
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
-         */
-        constructor(raw?: gPartial<CapsuleGeometry>);
+        name: string;
         /**
          * 构建几何体数据
          * @param radius 胶囊体半径
@@ -10437,10 +10420,7 @@ declare namespace feng3d {
          * 是否朝上
          */
         yUp: boolean;
-        /**
-         * 创建圆柱体
-         */
-        constructor(raw?: gPartial<CylinderGeometry>);
+        name: string;
         /**
          * 构建几何体数据
          */
@@ -10467,6 +10447,7 @@ declare namespace feng3d {
      */
     class ConeGeometry extends CylinderGeometry {
         __class__: "feng3d.ConeGeometry";
+        name: string;
         /**
          * 底部半径 private
          */
@@ -10479,10 +10460,6 @@ declare namespace feng3d {
          * 侧面是否封口 private
          */
         surfaceClosed: boolean;
-        /**
-         * 创建圆锥体
-         */
-        constructor(raw?: gPartial<ConeGeometry>);
     }
 }
 declare namespace feng3d {
@@ -10514,10 +10491,7 @@ declare namespace feng3d {
          * 是否朝上
          */
         yUp: boolean;
-        /**
-         * 创建<code>Torus</code>实例
-         */
-        constructor(raw?: gPartial<TorusGeometry>);
+        name: string;
         protected _vertexPositionData: number[];
         protected _vertexNormalData: number[];
         protected _vertexTangentData: number[];

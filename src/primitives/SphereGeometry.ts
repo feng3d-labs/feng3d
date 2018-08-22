@@ -43,16 +43,7 @@ namespace feng3d
         @watch("invalidateGeometry")
         yUp = true;
 
-        /**
-         * 创建球形几何体
-         */
-        constructor(raw?: gPartial<SphereGeometry>)
-        {
-            super();
-
-            this.name = "Sphere";
-            serialization.setValue(this, raw);
-        }
+        name = "Sphere";
 
         /**
          * 构建几何体数据

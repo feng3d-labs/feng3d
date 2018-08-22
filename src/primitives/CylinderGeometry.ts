@@ -83,17 +83,8 @@ namespace feng3d
         @oav()
         yUp = true;
 
-        /**
-         * 创建圆柱体
-         */
-        constructor(raw?: gPartial<CylinderGeometry>)
-        {
-            super();
-
-            this.name = "Cylinder";
-            serialization.setValue(this, raw);
-        }
-
+        name = "Cylinder";
+        
         /**
          * 构建几何体数据
          */

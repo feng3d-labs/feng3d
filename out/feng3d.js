@@ -18655,11 +18655,8 @@ var feng3d;
      */
     var PlaneGeometry = /** @class */ (function (_super) {
         __extends(PlaneGeometry, _super);
-        /**
-         * 创建平面几何体
-         */
-        function PlaneGeometry(raw) {
-            var _this = _super.call(this) || this;
+        function PlaneGeometry() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.PlaneGeometry";
             /**
              * 宽度
@@ -18682,7 +18679,6 @@ var feng3d;
              */
             _this.yUp = true;
             _this.name = "Plane";
-            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
@@ -18875,12 +18871,10 @@ var feng3d;
      */
     var CubeGeometry = /** @class */ (function (_super) {
         __extends(CubeGeometry, _super);
-        /**
-         * 创建立方几何体
-         */
-        function CubeGeometry(raw) {
-            var _this = _super.call(this) || this;
+        function CubeGeometry() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.CubeGeometry";
+            _this.name = "Cube";
             /**
              * 宽度
              */
@@ -18909,8 +18903,6 @@ var feng3d;
              * 是否为6块贴图，默认true。
              */
             _this.tile6 = true;
-            _this.name = "Cube";
-            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         CubeGeometry.prototype.buildGeometry = function () {
@@ -19305,11 +19297,8 @@ var feng3d;
      */
     var SphereGeometry = /** @class */ (function (_super) {
         __extends(SphereGeometry, _super);
-        /**
-         * 创建球形几何体
-         */
-        function SphereGeometry(raw) {
-            var _this = _super.call(this) || this;
+        function SphereGeometry() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.SphereGeometry";
             /**
              * 球体半径
@@ -19328,7 +19317,6 @@ var feng3d;
              */
             _this.yUp = true;
             _this.name = "Sphere";
-            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
@@ -19494,16 +19482,8 @@ var feng3d;
      */
     var CapsuleGeometry = /** @class */ (function (_super) {
         __extends(CapsuleGeometry, _super);
-        /**
-         * 创建胶囊几何体
-         * @param radius 胶囊体半径
-         * @param height 胶囊体高度
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
-         */
-        function CapsuleGeometry(raw) {
-            var _this = _super.call(this) || this;
+        function CapsuleGeometry() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.CapsuleGeometry";
             /**
              * 胶囊体半径
@@ -19526,7 +19506,6 @@ var feng3d;
              */
             _this.yUp = true;
             _this.name = "Capsule";
-            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
@@ -19699,11 +19678,8 @@ var feng3d;
      */
     var CylinderGeometry = /** @class */ (function (_super) {
         __extends(CylinderGeometry, _super);
-        /**
-         * 创建圆柱体
-         */
-        function CylinderGeometry(raw) {
-            var _this = _super.call(this) || this;
+        function CylinderGeometry() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.CylinderGeometry";
             /**
              * 顶部半径
@@ -19742,7 +19718,6 @@ var feng3d;
              */
             _this.yUp = true;
             _this.name = "Cylinder";
-            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
@@ -20057,12 +20032,10 @@ var feng3d;
      */
     var ConeGeometry = /** @class */ (function (_super) {
         __extends(ConeGeometry, _super);
-        /**
-         * 创建圆锥体
-         */
-        function ConeGeometry(raw) {
-            var _this = _super.call(this, raw) || this;
+        function ConeGeometry() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.ConeGeometry";
+            _this.name = "Cone";
             /**
              * 底部半径 private
              */
@@ -20075,7 +20048,6 @@ var feng3d;
              * 侧面是否封口 private
              */
             _this.surfaceClosed = true;
-            _this.name = "Cone";
             return _this;
         }
         return ConeGeometry;
@@ -20089,11 +20061,8 @@ var feng3d;
      */
     var TorusGeometry = /** @class */ (function (_super) {
         __extends(TorusGeometry, _super);
-        /**
-         * 创建<code>Torus</code>实例
-         */
-        function TorusGeometry(raw) {
-            var _this = _super.call(this) || this;
+        function TorusGeometry() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.TorusGeometry";
             /**
              * 半径
@@ -20115,11 +20084,10 @@ var feng3d;
              * 是否朝上
              */
             _this.yUp = true;
+            _this.name = "Torus";
             _this._vertexPositionStride = 3;
             _this._vertexNormalStride = 3;
             _this._vertexTangentStride = 3;
-            _this.name = "Torus";
-            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
@@ -21052,7 +21020,7 @@ var feng3d;
                 gameObject.addComponent(feng3d.BillboardComponent);
                 //材质
                 var model = gameObject.getComponent(feng3d.Model);
-                model.geometry = new feng3d.PlaneGeometry({ width: this.lightType == feng3d.LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
+                model.geometry = new feng3d.PlaneGeometry().value({ width: this.lightType == feng3d.LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 var textureMaterial = model.material = new feng3d.TextureMaterial();
                 //
                 // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
@@ -22418,7 +22386,7 @@ var feng3d;
         function Water() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Water";
-            _this.geometry = new feng3d.PlaneGeometry({ width: 10, height: 10 });
+            _this.geometry = new feng3d.PlaneGeometry().value({ width: 10, height: 10 });
             _this.material = new feng3d.WaterMaterial();
             /**
              * 帧缓冲对象，用于处理水面反射
@@ -27117,7 +27085,7 @@ var feng3d;
             if (name === void 0) { name = "plane"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: new feng3d.PlaneGeometry({ width: 10, height: 10 }) },]
+                components: [{ __class__: "feng3d.Model", geometry: new feng3d.PlaneGeometry().value({ width: 10, height: 10 }) },]
             });
         };
         GameObjectFactory.prototype.createCylinder = function (name) {

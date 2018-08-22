@@ -50,21 +50,8 @@ namespace feng3d
         @watch("invalidateGeometry")
         yUp = true;
 
-        /**
-         * 创建胶囊几何体
-         * @param radius 胶囊体半径
-         * @param height 胶囊体高度
-         * @param segmentsW 横向分割数
-         * @param segmentsH 纵向分割数
-         * @param yUp 正面朝向 true:Y+ false:Z+
-         */
-        constructor(raw?: gPartial<CapsuleGeometry>)
-        {
-            super();
-            this.name = "Capsule";
-            serialization.setValue(this, raw);
-        }
-
+        name = "Capsule";
+        
         /**
          * 构建几何体数据
          * @param radius 胶囊体半径

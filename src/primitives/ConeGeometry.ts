@@ -6,8 +6,10 @@ namespace feng3d
 	 */
 	export class ConeGeometry extends CylinderGeometry
 	{
-        __class__: "feng3d.ConeGeometry" = "feng3d.ConeGeometry";
-		
+		__class__: "feng3d.ConeGeometry" = "feng3d.ConeGeometry";
+
+		name = "Cone";
+
         /**
          * 底部半径 private
          */
@@ -22,14 +24,5 @@ namespace feng3d
          * 侧面是否封口 private
          */
 		surfaceClosed = true;
-
-		/**
-		 * 创建圆锥体
-		 */
-		constructor(raw?: gPartial<ConeGeometry>)
-		{
-			super(<any>raw);
-			this.name = "Cone";
-		}
 	}
 }

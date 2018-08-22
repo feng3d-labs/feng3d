@@ -10,6 +10,8 @@ namespace feng3d
     {
         __class__: "feng3d.CubeGeometry" = "feng3d.CubeGeometry";
 
+        name = "Cube";
+
         /**
          * 宽度
          */
@@ -66,16 +68,6 @@ namespace feng3d
         @oav()
         @watch("invalidateGeometry")
         tile6 = true;
-
-        /**
-         * 创建立方几何体
-         */
-        constructor(raw?: gPartial<CubeGeometry>)
-        {
-            super();
-            this.name = "Cube";
-            serialization.setValue(this, raw);
-        }
 
         protected buildGeometry()
         {

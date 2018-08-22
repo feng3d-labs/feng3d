@@ -9,8 +9,8 @@ namespace feng3d
 	export class TorusGeometry extends Geometry
 	{
 
-        __class__: "feng3d.TorusGeometry" = "feng3d.TorusGeometry";
-		
+		__class__: "feng3d.TorusGeometry" = "feng3d.TorusGeometry";
+
 		/**
 		 * 半径
 		 */
@@ -51,16 +51,7 @@ namespace feng3d
 		@watch("invalidateGeometry")
 		yUp = true;
 
-		/**
-		 * 创建<code>Torus</code>实例
-		 */
-		constructor(raw?: gPartial<TorusGeometry>)
-		{
-			super();
-
-			this.name = "Torus";
-			serialization.setValue(this, raw);
-		}
+		name = "Torus";
 
 		//
 		protected _vertexPositionData: number[];

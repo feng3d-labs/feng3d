@@ -50,17 +50,8 @@ namespace feng3d
         @watch("invalidateGeometry")
         yUp = true;
 
-        /**
-         * 创建平面几何体
-         */
-        constructor(raw?: gPartial<PlaneGeometry>)
-        {
-            super();
-
-            this.name = "Plane";
-            serialization.setValue(this, raw);
-        }
-
+        name = "Plane";
+        
         /**
          * 构建几何体数据
          */
